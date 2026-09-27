@@ -2,9 +2,9 @@
 
 ## Brief
 
-`models/som-code-python` is the Python corpus project of the Snippet-Oriented
+`som-code-python` is the Python corpus project of the Snippet-Oriented
 Model. It owns the material the engine in
-[`models/som-core`](../som-core/README.md) learns Python from: executable
+[`som-core`](../som-core/README.md) learns Python from: executable
 oracle families, each a gold program and five near misses judged by a fixture
 that runs them, and the snippet instruction set (ISA) the generator assembles
 programs from. Its subject is the Python ecosystem: how FastAPI, Pydantic,
@@ -24,27 +24,27 @@ assembles into code that compiles.
 ## Primary workflow
 
 1. Create the project virtualenv with
-   `uv sync --project models/som-code-python`; it installs every library the
+   `uv sync --project som-code-python`; it installs every library the
    candidates and fixtures import plus `ruff`, `mypy`, `pylint`, and the stub
    packages.
 2. Run the oracle harness over every family with
-   `uv run --project models/som-code-python python models/som-code-python/scripts/verify_harness.py`;
+   `uv run --project som-code-python python som-code-python/scripts/verify_harness.py`;
    pass family prefixes such as `08 09 10` to scope it.
 3. Run the quality gate with
-   `uv run --project models/som-code-python python models/som-code-python/scripts/verify_quality.py`
+   `uv run --project som-code-python python som-code-python/scripts/verify_quality.py`
    after changing any candidate; it takes the same family prefixes.
 4. Run the curation check with
-   `uv run --project models/som-code-python python models/som-code-python/scripts/verify_curation.py`
+   `uv run --project som-code-python python som-code-python/scripts/verify_curation.py`
    after editing any `family.json`; it reads the rationale and caption fields,
    re-measures `decompiled` from the gold source, and never executes a
    candidate.
 5. Run the round trip with
-   `uv run --project models/som-code-python python models/som-code-python/scripts/verify_roundtrip.py`
+   `uv run --project som-code-python python som-code-python/scripts/verify_roundtrip.py`
    after changing a gold, its `decompiled` block, or the engine's assembler;
    it rebuilds every gold from its operation list with `som assemble`,
    compares the AST, and runs the fixture on the rebuilt file.
 6. Run the snippet ISA verifier with
-   `uv run --project models/som-code-python python models/som-code-python/scripts/verify_snippets.py`
+   `uv run --project som-code-python python som-code-python/scripts/verify_snippets.py`
    after touching anything under `data/snippets/`.
 7. The engine's loader reads `data/curated` and, when it holds a family,
    `data/user`; add your own families under `data/user/` as
@@ -93,7 +93,7 @@ why the community default does not fit a corpus candidate.
 `data/snippets/<library>/<id>.json` is one instruction of the ISA: an `id`,
 a `description`, the `imports` it needs, and a `template` of literal text
 with `{{name}}` placeholders and one-level `{{#name}}...{{/name}}` list
-sections (`models/som-core/docs/reference/layer-records.md` § Snippet
+sections (`som-core/docs/reference/layer-records.md` § Snippet
 templates). The decompiler turns a gold block into `INSERT_SNIPPET` only when
 the extracted parameters render back to the block byte for byte. A snippet
 earns its place by use: the verifier counts, from each family's
@@ -106,7 +106,7 @@ names an id the ISA lacks.
 - The family layout and the harness contract are the docstring of
   `scripts/verify_harness.py`; the snippet schema and the
   ISA rules are the docstring of `scripts/verify_snippets.py`.
-- The engine reads the corpus through `models/som-core`'s dataset loader, so
+- The engine reads the corpus through `som-core`'s dataset loader, so
   a layout change here is a change to that project as well.
 - The product promises per area live under
   [docs/product](docs/product/README.md).
@@ -117,11 +117,11 @@ names an id the ISA lacks.
 
 | Capability | ID | User promise | Sources |
 |---|---|---|---|
-| Executable oracle corpus | `oracle-corpus` | Every family with a fixture has a gold candidate that exits 0 and near misses that fail on exactly the fixture tests their `caught_by` declares, and the harness exits non-zero on any other outcome, including a declared oracle that is not the fixture it ran. | `models/som-code-python` |
-| Curated rationale | `curated-rationale` | Every family states what it teaches and why its oracle is executable, every near miss states its observable consequence and the fixture tests that catch it, every gold program has a long caption grounded in its source, and the check exits non-zero on any missing, trivial, label-leaking, or ungrounded field. | `models/som-code-python` |
-| Code quality | `code-quality` | Every gold candidate passes ruff, ruff format, mypy in strict mode, and pylint with zero messages, every near miss passes ruff format and the style rules, and the gate exits non-zero naming each candidate that does not. | `models/som-code-python` |
-| Decompiled layer records | `decompiled-layer-records` | Every family carries an authored L1 plan and the L2 topology, L3 operation list, and snippet coverage measured from its gold, and `som assemble` rebuilds every gold within the scope limit, and the multi-file TODO fixture, from those records to the same AST, with the family's fixture passing on the rebuilt file. | `models/som-code-python`, `models/som-core` |
-| Snippet ISA | `snippet-isa` | Every snippet is used by at least two families' operation lists, has no line that is only a placeholder, and renders its first use to Python, and the verifier reports how many corpus blocks the ISA expresses. | `models/som-code-python`, `models/som-core` |
+| Executable oracle corpus | `oracle-corpus` | Every family with a fixture has a gold candidate that exits 0 and near misses that fail on exactly the fixture tests their `caught_by` declares, and the harness exits non-zero on any other outcome, including a declared oracle that is not the fixture it ran. | `som-code-python` |
+| Curated rationale | `curated-rationale` | Every family states what it teaches and why its oracle is executable, every near miss states its observable consequence and the fixture tests that catch it, every gold program has a long caption grounded in its source, and the check exits non-zero on any missing, trivial, label-leaking, or ungrounded field. | `som-code-python` |
+| Code quality | `code-quality` | Every gold candidate passes ruff, ruff format, mypy in strict mode, and pylint with zero messages, every near miss passes ruff format and the style rules, and the gate exits non-zero naming each candidate that does not. | `som-code-python` |
+| Decompiled layer records | `decompiled-layer-records` | Every family carries an authored L1 plan and the L2 topology, L3 operation list, and snippet coverage measured from its gold, and `som assemble` rebuilds every gold within the scope limit, and the multi-file TODO fixture, from those records to the same AST, with the family's fixture passing on the rebuilt file. | `som-code-python`, `som-core` |
+| Snippet ISA | `snippet-isa` | Every snippet is used by at least two families' operation lists, has no line that is only a placeholder, and renders its first use to Python, and the verifier reports how many corpus blocks the ISA expresses. | `som-code-python`, `som-core` |
 
 ### Executable oracle corpus
 
@@ -131,8 +131,8 @@ names an id the ISA lacks.
   declares, and the harness exits non-zero on any other outcome, including a
   declared oracle that is not the fixture it ran.
 - Sources:
-  - `models/som-code-python` owns the families, the fixtures, and the harness.
-- Gate: `uv run --project models/som-code-python python models/som-code-python/scripts/verify_harness.py`
+  - `som-code-python` owns the families, the fixtures, and the harness.
+- Gate: `uv run --project som-code-python python som-code-python/scripts/verify_harness.py`
 
 ### Curated rationale
 
@@ -143,8 +143,8 @@ names an id the ISA lacks.
   names what its source raises and imports, and the check exits non-zero on
   any missing, trivial, label-leaking, or ungrounded field.
 - Sources:
-  - `models/som-code-python` owns the rationale and caption fields, the decompiler, the corpus README, and the curation check.
-- Gate: `uv run --project models/som-code-python python models/som-code-python/scripts/verify_curation.py`
+  - `som-code-python` owns the rationale and caption fields, the decompiler, the corpus README, and the curation check.
+- Gate: `uv run --project som-code-python python som-code-python/scripts/verify_curation.py`
 
 ### Code quality
 
@@ -154,8 +154,8 @@ names an id the ISA lacks.
   and the style rules, and the gate exits non-zero naming each candidate
   that does not.
 - Sources:
-  - `models/som-code-python` owns the tool configuration in `pyproject.toml` and the quality gate.
-- Gate: `uv run --project models/som-code-python python models/som-code-python/scripts/verify_quality.py`
+  - `som-code-python` owns the tool configuration in `pyproject.toml` and the quality gate.
+- Gate: `uv run --project som-code-python python som-code-python/scripts/verify_quality.py`
 
 ### Decompiled layer records
 
@@ -166,9 +166,9 @@ names an id the ISA lacks.
   multi-file TODO fixture, from those records to the same AST, with the
   family's fixture passing on the rebuilt file.
 - Sources:
-  - `models/som-code-python` owns the plans, the decompiler, and the round-trip gate.
-  - `models/som-core` owns the record schema and the assembler.
-- Gate: `uv run --project models/som-code-python python models/som-code-python/scripts/verify_roundtrip.py`
+  - `som-code-python` owns the plans, the decompiler, and the round-trip gate.
+  - `som-core` owns the record schema and the assembler.
+- Gate: `uv run --project som-code-python python som-code-python/scripts/verify_roundtrip.py`
 
 ### Snippet ISA
 
@@ -177,9 +177,9 @@ names an id the ISA lacks.
   has no line that is only a placeholder, and renders its first use to
   Python, and the verifier reports how many corpus blocks the ISA expresses.
 - Sources:
-  - `models/som-code-python` owns the snippet definitions, the decompiler that matches them, and the verifier.
-  - `models/som-core` owns the template syntax and its renderer.
-- Gate: `uv run --project models/som-code-python python models/som-code-python/scripts/verify_snippets.py`
+  - `som-code-python` owns the snippet definitions, the decompiler that matches them, and the verifier.
+  - `som-core` owns the template syntax and its renderer.
+- Gate: `uv run --project som-code-python python som-code-python/scripts/verify_snippets.py`
 
 ## Supporting documents
 

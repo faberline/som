@@ -293,7 +293,6 @@ def find_default_corpora(search_root: Path | str | None = None) -> list[Path]:
 
     start = Path(search_root).resolve() if search_root else Path.cwd().resolve()
     roots = [
-        start / "models" / "som-code-python" / "data",
         start / "som-code-python" / "data",
         start / "data",
         start.parent / "som-code-python" / "data",

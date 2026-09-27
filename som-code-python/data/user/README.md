@@ -33,10 +33,10 @@ Hold your families to the curated bar before training on them, from the
 repository root:
 
 ```
-uv run --project models/som-code-python python models/som-code-python/scripts/verify_harness.py --corpus models/som-code-python/data/user
-uv run --project models/som-code-python python models/som-code-python/scripts/decompile_gold.py --corpus models/som-code-python/data/user --write
-uv run --project models/som-code-python python models/som-code-python/scripts/verify_curation.py --corpus models/som-code-python/data/user
-uv run --project models/som-code-python python models/som-code-python/scripts/verify_quality.py --corpus models/som-code-python/data/user
+uv run --project som-code-python python som-code-python/scripts/verify_harness.py --corpus som-code-python/data/user
+uv run --project som-code-python python som-code-python/scripts/decompile_gold.py --corpus som-code-python/data/user --write
+uv run --project som-code-python python som-code-python/scripts/verify_curation.py --corpus som-code-python/data/user
+uv run --project som-code-python python som-code-python/scripts/verify_quality.py --corpus som-code-python/data/user
 ```
 
 The loader does not run these gates for you: an unchecked family trains

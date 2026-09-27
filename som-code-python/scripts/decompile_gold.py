@@ -16,7 +16,7 @@ two cannot drift apart:
   decorator or an ``HTTPException``.
 - ``topology``, ``ops``, ``coverage``: the L2 topology and L3 operation list
   that rebuild the gold, and how many of its blocks the snippet ISA
-  expresses (``models/som-core/docs/reference/layer-records.md``). A block
+  expresses (``som-core/docs/reference/layer-records.md``). A block
   runs from the first non-blank line after the previous statement to its
   own last line, so a comment above a block travels with it; a block is
   ``INSERT_SNIPPET`` only when a snippet template matches its source in

@@ -18,8 +18,8 @@ from som_core.dataset import (
     weighted_epoch,
 )
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-CURATED = REPO_ROOT / "models" / "som-code-python" / "data" / "curated"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CURATED = REPO_ROOT / "som-code-python" / "data" / "curated"
 
 
 def write_family(
@@ -136,7 +136,7 @@ def test_load_corpora_refuses_an_empty_corpus(tmp_path: Path) -> None:
 
 
 def test_default_corpora_add_the_user_layer_only_when_it_has_a_family(tmp_path: Path) -> None:
-    data = tmp_path / "models" / "som-code-python" / "data"
+    data = tmp_path / "som-code-python" / "data"
     write_family(data / "curated", "00-ours")
     (data / "user" / "families").mkdir(parents=True)
     assert find_default_corpora(tmp_path) == [(data / "curated").resolve()]
@@ -147,7 +147,7 @@ def test_default_corpora_add_the_user_layer_only_when_it_has_a_family(tmp_path: 
 
 
 def test_a_user_family_cannot_shadow_a_curated_one(tmp_path: Path) -> None:
-    data = tmp_path / "models" / "som-code-python" / "data"
+    data = tmp_path / "som-code-python" / "data"
     write_family(data / "curated", "00-same")
     write_family(data / "user", "00-same")
     with pytest.raises(ValueError, match="claimed by both"):

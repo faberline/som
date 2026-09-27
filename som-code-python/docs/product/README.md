@@ -32,7 +32,7 @@ carved from these sections, not the other way round.
 The corpus makes promises about data, never about a model. A family is
 proven by its fixture running the candidates; a snippet is proven by the
 verifier assembling and compiling it. The engine that trains on this data is
-`models/som-core`, and the layer model it implements is that project's
+`som-core`, and the layer model it implements is that project's
 reference document. This project teaches the Python ecosystem written as
 modern, PEP 8, pythonic code that ruff, mypy, and pylint accept; algorithms,
 data structures, and design patterns as such belong to the language-neutral

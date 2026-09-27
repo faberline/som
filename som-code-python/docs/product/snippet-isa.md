@@ -22,7 +22,7 @@ This area spans the README capability `snippet-isa`.
   remaining literal blocks are route and function bodies with branching
   logic, exception handlers, CLI commands, test instrumentation, and the
   code of libraries only one family uses.
-- Non-goals: the assembler, which `models/som-core` owns; nested sections or
+- Non-goals: the assembler, which `som-core` owns; nested sections or
   multi-line placeholders.
 - Neighbours: the decompiler outcome in [data-pipeline.md](data-pipeline.md),
   whose L3 records are what the verifier counts.

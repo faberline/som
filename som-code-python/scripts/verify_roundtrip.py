@@ -3,7 +3,7 @@
 
 For every family, ``decompiled.topology`` and ``decompiled.ops`` go through
 the reference assembler (``som assemble``, run as a subprocess from
-``models/som-core``), and the assembled ``candidate.py`` must:
+``som-core``), and the assembled ``candidate.py`` must:
 
 - parse to the same ``ast.dump`` as the gold, and
 - pass the family's fixture, run exactly as ``scripts/verify_harness.py``

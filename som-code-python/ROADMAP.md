@@ -3,7 +3,7 @@
 ## Purpose
 
 This roadmap orders the work that turns the Python corpus into the training
-material the four-layer generator in `models/som-core` needs. The order is
+material the four-layer generator in `som-core` needs. The order is
 data first: finish the oracle fixtures, then harden the near misses and
 cover the ISA's long tail so more of each gold is expressed as snippets. The subject stays the Python
 ecosystem written as code its community accepts. The current

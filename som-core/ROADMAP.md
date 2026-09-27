@@ -107,7 +107,7 @@ The current support state is in [STATUS.md](STATUS.md).
 ### Rust target corpus
 
 - ID: `rust-target-corpus`
-- Outcome: A `models/som-code-rust` corpus project exists with its own oracle
+- Outcome: A `som-code-rust` corpus project exists with its own oracle
   families and snippet ISA, and the engine trains on both languages from one
   command.
 - Boundary: A second corpus project and the engine's `--domain` switch; not a

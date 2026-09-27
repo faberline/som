@@ -2,7 +2,7 @@
 
 The records the four SOM layers pass down, and the operation vocabulary the
 assembler executes. `src/som_core/records.py` enforces this document;
-`models/som-code-python/scripts/decompile_gold.py` measures L2 and L3 from
+`som-code-python/scripts/decompile_gold.py` measures L2 and L3 from
 each gold program, and the corpus author writes L1 by hand. Each layer model
 is trained to generate the next record from the one above it. No record
 holds alternatives to choose between.

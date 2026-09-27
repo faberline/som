@@ -2,10 +2,10 @@
 
 ## Brief
 
-How to change `models/som-code-python`. What it promises lives in
+How to change `som-code-python`. What it promises lives in
 [README.md](README.md); the per-surface support state is in
 [STATUS.md](STATUS.md); repository-wide authoring and verification rules live
-in the root [CONTRIBUTING.md](../../CONTRIBUTING.md).
+in the root [CONTRIBUTING.md](https://github.com/faberline/workspace/blob/main/CONTRIBUTING.md).
 
 The project is data plus the scripts that verify it. A family is a directory
 under `data/curated/families/` with `family.json`, `gold`, and `miss_1`
@@ -38,9 +38,9 @@ same edit to all five near misses so each stays a minimal edit of its gold
 and shares its comments and docstrings. A suppression comment is the last
 resort and says why on the same line.
 
-Create the virtualenv with `uv sync --project models/som-code-python`; the
+Create the virtualenv with `uv sync --project som-code-python`; the
 gates run from the repository root through `uv run`. There is no `aw` phase
-ladder for `models/` yet, so a change here is verified by running the gates
+ladder for som yet, so a change here is verified by running the gates
 below before and after and keeping the STATUS matrix true to what they
 observe.
 
@@ -48,14 +48,14 @@ observe.
 
 | Gate | Command |
 |---|---|
-| Oracle corpus, every family | `uv run --project models/som-code-python python models/som-code-python/scripts/verify_harness.py` |
-| Curated rationale | `uv run --project models/som-code-python python models/som-code-python/scripts/verify_curation.py` |
-| Code quality | `uv run --project models/som-code-python python models/som-code-python/scripts/verify_quality.py` |
-| Round trip | `uv run --project models/som-code-python python models/som-code-python/scripts/verify_roundtrip.py` |
-| Snippet ISA | `uv run --project models/som-code-python python models/som-code-python/scripts/verify_snippets.py` |
-| Project test suite | `uv run --project models/som-code-python python -m pytest models/som-code-python/tests -q` |
-| Product document contract | `uv run --python 3.13 --no-project scripts/meta/project_docs_contract.py check models/som-code-python --format json` |
-| META-doc contract | `uv run --project apps/aw aw metadoc check models/som-code-python` |
+| Oracle corpus, every family | `uv run --project som-code-python python som-code-python/scripts/verify_harness.py` |
+| Curated rationale | `uv run --project som-code-python python som-code-python/scripts/verify_curation.py` |
+| Code quality | `uv run --project som-code-python python som-code-python/scripts/verify_quality.py` |
+| Round trip | `uv run --project som-code-python python som-code-python/scripts/verify_roundtrip.py` |
+| Snippet ISA | `uv run --project som-code-python python som-code-python/scripts/verify_snippets.py` |
+| Project test suite | `uv run --project som-code-python python -m pytest som-code-python/tests -q` |
+| Product document contract | `uv run --python 3.13 --no-project scripts/meta/project_docs_contract.py check som-code-python --format json` |
+| META-doc contract | `aw metadoc check som-code-python` |
 
 Run the two document checks after editing `README.md`, `STATUS.md`,
 `ROADMAP.md`, or anything under `docs/product/`. Run the harness, the

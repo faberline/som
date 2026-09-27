@@ -48,7 +48,7 @@ training time or at inference. This area spans the README capabilities
   topology over five files or twenty blocks, which is the planner's
   `SCOPE_TOO_LARGE` refusal.
 - Non-goals: the decompiler that emits the records, which stays in
-  `models/som-code-python`.
+  `som-code-python`.
 - Neighbours: [Corpus loader](#corpus-loader) above, which carries the
   records on every row; the generation area, whose layers emit them.
 - Status rows: `layer-records`.

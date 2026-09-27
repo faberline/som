@@ -13,7 +13,7 @@ Rules this script owns, one defect line per violation:
   ``description`` and ``template``; every ``imports`` entry parses as one
   import statement.
 - Syntax: tags are ``{{name}}`` or a one-level ``{{#name}}...{{/name}}``
-  section (``models/som-core/docs/reference/layer-records.md``).
+  section (``som-core/docs/reference/layer-records.md``).
 - No holes: every template line that carries a placeholder still has a
   non-whitespace literal once its tags are removed, so ``    {{body}}``
   cannot smuggle arbitrary code into a snippet.

@@ -19,12 +19,12 @@ trip that proves them.
 
 - Problem: none open as shipped.
 - Who: corpus authors; anyone running the gates on a fresh checkout.
-- Promise: `uv sync --project models/som-code-python` resolves from the lock
+- Promise: `uv sync --project som-code-python` resolves from the lock
   file and installs every library the candidates and fixtures import plus
   the quality tools, and every gate runs through `uv run --project
-  models/som-code-python`.
+  som-code-python`.
 - Non-goals: publishing a package; a console script, which the engine in
-  `models/som-core` owns.
+  `som-core` owns.
 - Neighbours: [Project test suite](#project-test-suite) above, which runs
   through the same entry.
 - Status rows: `uv-runnable-packaging`.

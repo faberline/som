@@ -28,7 +28,7 @@ the other way round.
 ## Positioning
 
 The engine consumes what the corpus projects produce and never owns corpus
-content. `models/som-code-python` owns the executable oracle families, the
+content. `som-code-python` owns the executable oracle families, the
 snippet ISA, the authored L1 plans, and the decompiler that measures L2 and
 L3 records from each gold program; this project owns the record schema, the
 models that learn from those records, and the assembler that executes an L3

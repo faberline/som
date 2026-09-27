@@ -9,7 +9,7 @@ sanitized environment, same timeout), then the gold quality gate of
 strict ``mypy``, ``pylint``) on the same file. It prints one JSON object:
 ``{"family", "fixture": <exit code or null when the family has no fixture>,
 "fixture_tail", "quality": [<message>...]}``. ``som eval`` in
-``models/som-core`` is the caller; the exit code is 0 whenever a verdict was
+``som-core`` is the caller; the exit code is 0 whenever a verdict was
 printed, and 2 when the family or the candidate file does not exist.
 """
 

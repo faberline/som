@@ -23,7 +23,7 @@ non-trivial, and bound to the fixture and the gold source it claims:
   source: it names every exception class the gold raises, every status code
   it declares, and every third-party library it imports, and it names no
   exception class that neither the gold nor the fixture mentions.
-- ``plan`` is the L1 record (``models/som-core/docs/reference/layer-records.md``):
+- ``plan`` is the L1 record (``som-core/docs/reference/layer-records.md``):
   exactly ``intent``, ``target``, and a non-empty ``constraints`` list, all
   non-empty strings; the constraints name every exception class the gold
   raises and every status code it declares; and neither the ``requirement``

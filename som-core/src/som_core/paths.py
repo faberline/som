@@ -1,6 +1,6 @@
 """Project paths and small JSON helpers for the engine.
 
-``ROOT`` is the ``models/som-core`` project directory (``src/som_core`` is two
+``ROOT`` is the ``som-core`` project directory (``src/som_core`` is two
 levels below it); the base-model cache and ``sources.lock.json`` live there.
 """
 

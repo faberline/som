@@ -122,7 +122,7 @@ rationale cannot drift from the behavior it describes.
 
 ## How the layers consume it
 
-- The discriminator head in `models/som-core` reads `candidates[].kind`
+- The discriminator head in `som-core` reads `candidates[].kind`
   and the candidate text and learns to rank gold above each near miss.
   `why_wrong` and `caught_by` are the supervision for the next step, a
   critic that names the defect and the test that would expose it.
@@ -144,12 +144,12 @@ rationale cannot drift from the behavior it describes.
 From the repository root:
 
 ```
-uv run --project models/som-code-python python models/som-code-python/scripts/verify_harness.py
-uv run --project models/som-code-python python models/som-code-python/scripts/verify_curation.py
-uv run --project models/som-code-python python models/som-code-python/scripts/verify_quality.py
+uv run --project som-code-python python som-code-python/scripts/verify_harness.py
+uv run --project som-code-python python som-code-python/scripts/verify_curation.py
+uv run --project som-code-python python som-code-python/scripts/verify_quality.py
 ```
 
-All three read `data/curated` by default; pass `--corpus models/som-code-python/data/user`
+All three read `data/curated` by default; pass `--corpus som-code-python/data/user`
 to hold your own families to the same bar.
 
 The harness runs every candidate against its fixture and requires gold exit
@@ -170,7 +170,7 @@ quality gate holds every gold candidate to ruff, ruff format, `mypy
 and the style rules `E,W,I,UP`, so a model cannot tell gold from near miss by
 style. All three print `[RESULT: SUCCESS]` or one line per defect.
 
-`models/som-code-python/scripts/decompile_gold.py --write` refreshes
+`som-code-python/scripts/decompile_gold.py --write` refreshes
 `decompiled` after a gold candidate changes; `--draft <dir>` writes one
 sheet per family for the person revising its caption.
 
@@ -184,7 +184,7 @@ sheet per family for the person revising its caption.
   `non-minimal-near-misses`.
 - The families cover the Python ecosystem: library contracts written as
   modern, typed, pythonic code. Algorithm, data-structure, and
-  design-pattern families belong to `models/som-code` and are not here.
+  design-pattern families belong to `som-code` and are not here.
 - The gold candidates pass the quality gate, but pandas and scikit-learn are
   the only data-science libraries imported for real; the PyTorch,
   Playwright, and Selenium families (49, 50, 68 to 70) take duck-typed
