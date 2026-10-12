@@ -124,8 +124,9 @@ The candidate saves that policy as a hashed sidecar.
 The focused Python tests pass 165 cases.
 The fresh prefix gate passes 135 cases. The native M2 model path passes 12.
 The existing compact codec and compiler pass all 163 valid and 38 invalid cases.
-The controller is verifying all 2,700 new targets.
-Complete reference admission follows these prerequisites.
+All 2,700 new targets pass lossless recovery, Rust decoding and prefix parity.
+The controller is checking M2 protection before new source sealing.
+Complete reference quality and behavior admission follows these prerequisites.
 These partial checks do not admit weights or establish improved model accuracy.
 
 The controller PID is 37433. Its local command is:

@@ -59,6 +59,8 @@ Read [the continuation index](evidence/m3-2026-10-12-continuation.json).
 Check local `evals/m3-flow-2026-10-12/r1/pipeline-001/result.json`.
 Controller PID 37433 holds the AW write claim while it runs.
 Do not start a second trainer or change its sealed source.
+All 2,700 new targets pass lossless, Rust decode and prefix-set checks.
+M2 protection, new source sealing and full artifact admission still precede training.
 It starts a new seed-17 candidate only after all 2,700 new admission cases pass.
 It keeps the same shared time ledger and stops before formal model acceptance.
 

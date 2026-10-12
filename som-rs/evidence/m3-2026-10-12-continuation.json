@@ -1,10 +1,10 @@
 {
   "version": "som.m3-continuation-index.v1",
-  "recorded_at": "2026-10-12T06:37:05.187750+00:00",
+  "recorded_at": "2026-10-12T06:48:11.560991+00:00",
   "base_commit": "1a688c12e8af5edfa531c016debee3bb2a2554cb",
   "source_round": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1",
   "candidate": "/Users/chrischeng/faberlines/som/som-rs/models/flow-m3-candidate/flow-first-r10-20261012-001",
-  "status_at_capture": "target-parity",
+  "status_at_capture": "pretraining-protection",
   "controller_pid": 37433,
   "controller_path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/run_round.py",
   "controller_sha256": "d373e871b478badf6a99d1cb9613f556775d795f63f258b565f522fac3cf5772",
@@ -73,12 +73,21 @@
       "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/compact-compiler-refusals-001/result.json",
       "sha256": "dcf8ebf4379a1a4763c289eb86293f6abc6ff29ba2177197d9dcace76a20b6b3",
       "passed": true
+    },
+    "new-input-parity-001/result.json": {
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/new-input-parity-001/result.json",
+      "sha256": "fbb4b0180e83d18f7b273a11fff1327fb7e2b25ec0e30a5d5ad8b4edce96744f",
+      "passed": true,
+      "matched": 2700,
+      "target_roundtrips": 2700,
+      "target_native_decodes": 2700,
+      "target_mask_matches": 2700
     }
   },
   "full_admission": {
     "required": 2700,
     "complete": false,
-    "status": "pending; requires all new target and source prerequisites"
+    "status": "pending; fresh M2 protection and source sealing precede the complete quality and behavior gate"
   },
   "training": {
     "started": false,
@@ -116,5 +125,13 @@
   "M3_state": "open",
   "paid_agent_runs": 0,
   "real_cloud_runs": 0,
-  "aw_claim": "retained while the background controller writes; refreshed every 20 seconds; released at controller exit"
+  "aw_claim": "retained while the background controller writes; refreshed every 20 seconds; released at controller exit",
+  "policy_source_commit": "59dd63396bc2a2f1f3eb60853413029eb7c0e6f2",
+  "raw_target_proof_sha256": {
+    "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/new-input-parity-001/requests.jsonl": "9b8b95559cae584c435bcd9c7cb946c58d92d3011eec473aff62fa263b0ac953",
+    "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/new-input-parity-001/rust.stdout": "a7f8125ef7660622f8962ba32f855180c5328e8392ddc613a2feb8397c5c7766",
+    "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/new-input-parity-001/rust.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/new-input-parity-001/records.jsonl": "b4e2969b17f488bf4762f662fd9c4ddbe19d0d9b986f89159b49eeca870df93f",
+    "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/new-input-parity-001/mask-traces.jsonl.gz": "505f09cc96f62bfeefdb3839865f6112cc826be01f49666431334163a9543d9e"
+  }
 }
