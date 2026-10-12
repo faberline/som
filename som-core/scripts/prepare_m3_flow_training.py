@@ -16,14 +16,14 @@ import traceback
 from audit_business_transactions import source_hashes
 from composed_evidence import failure_details
 from m3_local_fixture import M3Fixture, close_native, interruption
-from som_core import composed, flow_codec, flow_compact, quality
+from som_core import composed, flow_codec, flow_compact, flow_m3_target, quality
 from som_core.flow_constraints import State, policy
 from som_core.flow_m3_data import COUNTS
 from som_core.flow_m3_evidence import ROOT, case_evidence, digest, hashes, verify_artifact_record, verify_runtime, verify_seal
 from som_core.train_flow import BLOCKS, LEGACY, LIMITS
 from som_core.train_flow_m3 import ADMISSION_VERSION
 from som_core.v1 import load_blocks
-from verify_flow_masks import tokens, trace
+from verify_flow_masks import trace
 from verify_flow_service import verify as verify_behavior
 from verify_python_quality import verify as verify_quality
 
@@ -123,7 +123,8 @@ def main() -> None:
                     (directory / "prompt.json").write_text(composed.canonical(prompt) + "\n")
                     (directory / "dsl.json").write_text(composed.canonical(plan) + "\n")
                     features = flow_codec.features_m3_bound(prompt, flow_compact.metadata())
-                    encoded = flow_codec.encode(prompt, plan, flow_compact.metadata())
+                    encoded = flow_m3_target.encode(prompt, plan, flow_compact.metadata())
+                    record["target_policy"] = flow_m3_target.VERSION
                     (directory / "input.txt").write_text(features)
                     (directory / "target.txt").write_text(encoded)
                     files = flow_compact.assemble(prompt, plan, library, LEGACY / "ruff")
@@ -140,7 +141,7 @@ def main() -> None:
                         input_tokens=features.count("<"), output_tokens=encoded.count("<"))
                     if record["files"] > 12 or record["blocks"] > 64 or max(record["input_tokens"], record["output_tokens"]) > 2048:
                         raise ValueError("normal product exceeds a fixed budget")
-                    selected = tokens(prompt, plan)
+                    selected = flow_m3_target.token_ids(encoded)
                     mask.stdin.write(composed.canonical({"prompt": prompt, "tokens": selected}) + "\n")
                     mask.stdin.flush()
                     rust = json.loads(mask.stdout.readline())
@@ -198,6 +199,7 @@ def main() -> None:
                      "dataset_sha256": digest(args.data / "manifest.json"),
                      "source_seal_sha256": digest(args.source_seal),
                      "blocks_sha256": digest(BLOCKS), "decode_policy": policy(),
+                     "target_policy": flow_m3_target.policy(),
                      "quality_behavior_report": str((args.output / "result.json").relative_to(ROOT)),
                      "evidence_sha256": {str(path.resolve().relative_to(ROOT)): digest(path) for path in evidence},
                      "formal_training_examples": 0}

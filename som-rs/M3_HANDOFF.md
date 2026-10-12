@@ -2,7 +2,8 @@
 
 M2 passed. Issues #4–#6 and milestone 2 are closed on GitHub.
 Read [the M2 closeout](M2_CLOSEOUT.md) before work starts.
-M3 remains open. The r6 round uses `flow-m3-r10` and v3 input bindings.
+M3 remains open. The active continuation round is `m3-flow-2026-10-12/r1`.
+The preserved r6 round uses `flow-m3-r10` and v3 input bindings.
 All 2,700 training and development reference products passed admission.
 The controller and trainer stopped after an interruption.
 The last complete checkpoint is step 74,000. Its raw check passed 3/300.
@@ -22,7 +23,7 @@ Read [the current status](M3_STATUS.md) before work starts.
 
 ## Start the next session
 
-1. Use a clean source worktree from the landed `a657f49` baseline.
+1. Read the active controller state before using a source worktree from main.
    Retained model and runtime assets are in `/Users/chrischeng/faberlines/som`.
    Recovery documents and receipts are in
    `/Users/chrischeng/.codex/worktrees/76af/som`.
@@ -50,9 +51,16 @@ GitHub #21–#23 have updated results and are closed as completed.
 The 19 child tickets now have five complete and 14 open results.
 The human authorized publication of these documents and the evidence index.
 The human also authorized continued training under #24.
-No trainer source, frozen target or weight was changed.
+The recovery diagnosis changed no trainer source, frozen target or weight.
+The continuation round now uses the versioned M3 flow-first target policy.
 No training restart occurred during the diagnosis. M2 remains the default.
-The next round must pass fresh source sealing and admission before training.
+The active controller must pass fresh source sealing and admission before training.
+Read [the continuation index](evidence/m3-2026-10-12-continuation.json).
+Check local `evals/m3-flow-2026-10-12/r1/pipeline-001/result.json`.
+Controller PID 37433 holds the AW write claim while it runs.
+Do not start a second trainer or change its sealed source.
+It starts a new seed-17 candidate only after all 2,700 new admission cases pass.
+It keeps the same shared time ledger and stops before formal model acceptance.
 
 The human approved landing the exact 602-file source list on main.
 Weights, executables and raw evaluation records remain on this workstation.

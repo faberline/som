@@ -19,7 +19,7 @@ import signal
 import time
 from uuid import uuid4
 
-from . import composed, flow, flow_codec, flow_compact, quality
+from . import composed, flow, flow_codec, flow_compact, flow_m3_target, quality
 from .flow_constraints import VERSION as POLICY_VERSION, policy
 from .flow_m3_data import COUNTS, fingerprints
 from .flow_m3_evidence import verify_artifact_record, verify_receipt_hashes, verify_seal
@@ -30,13 +30,15 @@ PURPOSE = "m3-supervised-composition"
 ADMISSION_VERSION = "som.flow.m3-training-admission.v1"
 CONFIG = dict(SMOKE_CONFIG, training_profile=PURPOSE,
               flow_decode_policy=POLICY_VERSION,
-              flow_input_policy=flow_codec.M3_BOUND_INPUT_VERSION)
+              flow_input_policy=flow_codec.M3_BOUND_INPUT_VERSION,
+              flow_output_policy=flow_m3_target.VERSION)
 BUDGET = ROOT / "som-rs/models/flow-m3-candidate/training-budget.json"
 TIME_LIMIT = 168 * 3600
 SIDECARS = ("contracts.json", "contract.md", "codec.json", "admission.json",
             "development.jsonl", "training.jsonl", "dataset.json", "decode-policy.json",
             "quality.json", "ruff", "pyproject.toml", "quality-contract.md",
-            "quality-exceptions.json", "output-budget.json", "input-policy.json")
+            "quality-exceptions.json", "output-budget.json", "input-policy.json",
+            "target-policy.json")
 
 
 def output_guard(args: argparse.Namespace, *, saving: bool = False) -> None:
@@ -70,7 +72,9 @@ def verify_admission(args: argparse.Namespace, *, saving: bool = False) -> dict:
             or admission.get("blocks_sha256") != digest(BLOCKS)
             or admission.get("quality_behavior_passed") is not True
             or seal.get("version") != "som.flow.m3-source-seal.v1"
-            or seal.get("decode_policy") != policy()):
+            or seal.get("decode_policy") != policy()
+            or seal.get("target_policy") != flow_m3_target.policy()
+            or admission.get("target_policy") != flow_m3_target.policy()):
         raise ValueError("M3 data, source or complete artifact admission is missing or stale")
     verify_seal(args.seal, args.data.parent)
     verify_files(admission.get("evidence_sha256"), "M3 admission evidence")
@@ -86,6 +90,8 @@ def verify_admission(args: argparse.Namespace, *, saving: bool = False) -> dict:
                {f"m3-{split}-{index:04d}" for split in ("train", "dev") for index in range(COUNTS[split])}):
         raise ValueError("M3 requires every train/development quality and behavior receipt")
     for row in rows:
+        if row.get("target_policy") != flow_m3_target.VERSION:
+            raise ValueError("M3 artifact target differs from the admitted output policy")
         verify_artifact_record(row)
         verify_receipt_hashes(row, admission["evidence_sha256"])
     if args.blocks.resolve() != BLOCKS or args.legacy.resolve() != LEGACY:
@@ -114,7 +120,7 @@ def examples(path: Path, expected: int) -> list[Example]:
         prompt, plan = row["prompt"], row["dsl"]
         if fingerprints(prompt) != row["fingerprints"]:
             raise ValueError("M3 actual input or graph fingerprint is stale")
-        target = flow_codec.encode(prompt, plan, flow_compact.metadata())
+        target = flow_m3_target.encode(prompt, plan, flow_compact.metadata())
         result.append(Example(row["id"], flow_codec.features_m3_bound(prompt, flow_compact.metadata()), target))
     if len({row.source for row in result}) != expected:
         raise ValueError("M3 repeats an actual input")
@@ -175,6 +181,7 @@ def write_sidecars(args, codec):
     shutil.copy2(flow.CONTRACT_PATH, out / "contract.md")
     shutil.copy2(BUDGET_POLICY, out / "output-budget.json")
     shutil.copy2(ROOT / "som-rs/contracts/m3-input-bindings.v3.json", out / "input-policy.json")
+    shutil.copy2(flow_m3_target.POLICY, out / "target-policy.json")
     shutil.copy2(args.data, out / "training.jsonl")
     shutil.copy2(args.dev, out / "development.jsonl")
     shutil.copy2(args.data.parent / "manifest.json", out / "dataset.json")
@@ -217,7 +224,7 @@ def fit(args, train, dev, codec, train_pairs, dev_pairs, allowance):
     mx.random.seed(17)
     rng = random.Random(17)
     model = Model(ModelArgs(**{key: value for key, value in CONFIG.items()
-                             if key not in {"output_mode", "max_new_tokens", "training_profile", "flow_decode_policy", "flow_input_policy"}}))
+                             if key not in {"output_mode", "max_new_tokens", "training_profile", "flow_decode_policy", "flow_input_policy", "flow_output_policy"}}))
     optimizer = optim.Adam(learning_rate=3e-4)
     write_sidecars(args, codec)
     def loss(network, ids, mask):
@@ -275,6 +282,7 @@ def fit(args, train, dev, codec, train_pairs, dev_pairs, allowance):
         names = ("tokenizer.json", "config.json", "model.safetensors", *SIDECARS)
         manifest = {"purpose": PURPOSE, "prompt_version": flow.VERSION, "dsl_version": flow.DSL_VERSION,
             "output_mode": "flow_plan", "quality_contract": quality.VERSION, "decode_policy": POLICY_VERSION,
+            "target_policy": flow_m3_target.VERSION,
             "training_seed": 17, "training_examples": 2400, "development_examples": 300,
             "formal_training_examples": 0, "training_steps": completed,
             "elapsed_seconds": time.monotonic() - started, "blocks_sha256": digest(BLOCKS),

@@ -16,6 +16,7 @@ from som_core.flow_m3_evidence import ROOT, RUNTIME_EXECUTABLES, case_evidence, 
 from som_core.train_flow import BLOCKS, LIMITS
 from som_core.train_flow_m3 import ADMISSION_VERSION
 from som_core.flow_constraints import policy
+from som_core import flow_m3_target
 
 
 def main() -> None:
@@ -170,7 +171,8 @@ def main() -> None:
             admission = {"version": ADMISSION_VERSION, "counts": COUNTS, "limits": LIMITS,
                 "quality_behavior_passed": True, "dataset_sha256": report["dataset_sha256"],
                 "source_seal_sha256": digest(args.source_seal), "blocks_sha256": digest(BLOCKS),
-                "decode_policy": policy(), "formal_training_examples": 0,
+                "decode_policy": policy(), "target_policy": flow_m3_target.policy(),
+                "formal_training_examples": 0,
                 "quality_behavior_report": str(result.relative_to(ROOT)),
                 "evidence_sha256": {str(path.resolve().relative_to(ROOT)): digest(path) for path in evidence}}
             (args.output / "admission.json").write_text(json.dumps(admission, indent=2) + "\n")

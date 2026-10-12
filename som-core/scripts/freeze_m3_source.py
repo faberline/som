@@ -8,7 +8,7 @@ from pathlib import Path
 import tarfile
 
 from audit_m3_flow_data import audit
-from som_core import flow_codec
+from som_core import flow_codec, flow_m3_target
 from som_core.flow_constraints import policy
 from som_core.flow_m3_evidence import (
     ROOT, RUNTIME_EXECUTABLES, SEAL_VERSION, digest, hashes, sources,
@@ -50,6 +50,10 @@ def main() -> None:
             or input_proof.get("source_sha256") != before
             or input_proof.get("dataset_sha256") != digest(data / "manifest.json")
             or input_proof.get("binary_sha256") != digest(runtime / "som-flow-codec")
+            or input_proof.get("target_policy") != flow_m3_target.policy()
+            or input_proof.get("target_roundtrips") != 2700
+            or input_proof.get("target_native_decodes") != 2700
+            or input_proof.get("target_mask_matches") != 2700
             or input_proof.get("formal_opened_for_model_evaluation") is not False
             or input_proof.get("optimizer_updates") != 0):
         raise ValueError("M3 needs complete unchanged-source parity for the new input policy")
@@ -69,7 +73,8 @@ def main() -> None:
             "source_sha256": before, "dataset_sha256": digest(data / "manifest.json"),
             "runtime_sha256": {str(path.relative_to(ROOT)): digest(path) for path in
                 (runtime / name for name in (*RUNTIME_EXECUTABLES, "runtime.json"))},
-            "decode_policy": policy(), "training_admission": False,
+            "decode_policy": policy(), "target_policy": flow_m3_target.policy(),
+            "training_admission": False,
             "formal_opened_for_model_evaluation": False,
             "evidence_sha256": {str(path.resolve().relative_to(ROOT)): digest(path)
                                 for path in (report_path, args.mask_receipt, args.native_receipt,

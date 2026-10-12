@@ -1,0 +1,120 @@
+{
+  "version": "som.m3-continuation-index.v1",
+  "recorded_at": "2026-10-12T06:37:05.187750+00:00",
+  "base_commit": "1a688c12e8af5edfa531c016debee3bb2a2554cb",
+  "source_round": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1",
+  "candidate": "/Users/chrischeng/faberlines/som/som-rs/models/flow-m3-candidate/flow-first-r10-20261012-001",
+  "status_at_capture": "target-parity",
+  "controller_pid": 37433,
+  "controller_path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/run_round.py",
+  "controller_sha256": "d373e871b478badf6a99d1cb9613f556775d795f63f258b565f522fac3cf5772",
+  "launch": {
+    "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/launch.json",
+    "sha256": "e760066c9fba3c6666d7314c525a9687214e4968516c9d474c4b3defb4a6b7a2"
+  },
+  "target_policy": "som.flow.m3-output-order.v1",
+  "root_keys": [
+    "flow",
+    "files",
+    "version"
+  ],
+  "source_changes": {
+    "som-core/src/som_core/flow_m3_target.py": {
+      "before": null,
+      "after": "94f8b095188f9984f5d48b2c52f5fe1f7682577ca66ffd45fcb3e8018a94cc7a"
+    },
+    "som-core/src/som_core/train_flow_m3.py": {
+      "before": "5592b631cea9afc1c46a8763cc4bb57497f817d8c9f7bd27eda8f762143fcad0",
+      "after": "dfbf8ca417804e67d7d430b99df2882bdb9df6375f9ba0d6927459fbcca3a334"
+    },
+    "som-core/scripts/freeze_m3_source.py": {
+      "before": "a70f7de19a1ca7d4379e03d8105f0f9478df39a983d6ed7a3dff1186364b922e",
+      "after": "f2d0203317f06f5d4dfb46e166a6cce43292c5e94822faf69f252d7452b81782"
+    },
+    "som-core/scripts/prepare_m3_flow_training.py": {
+      "before": "bfa720d7044fef18057e381d88128982164ab834a8022d90dc1a7a50631c55e7",
+      "after": "a7b218fc962344b1cd94e7ac65d681ec3c4e3ebc34ec02cf80632c02447f0e84"
+    },
+    "som-core/scripts/run_m3_flow_gate.py": {
+      "before": "9f69be05bb26d06562f35e8bb70947bc33dea36843de8d355d004eae1700fb62",
+      "after": "10fee85448bde674ffb11b950ad32ef9acddc893dd1b6a05e20277384e9f8d4f"
+    },
+    "som-core/tests/test_flow_m3_target.py": {
+      "before": null,
+      "after": "af06af866d3cf07a6e0c6659b8e2428a41b6bae72456695cb4c1762d6a88b33d"
+    },
+    "som-rs/contracts/m3-output-order.v1.json": {
+      "before": null,
+      "after": "bdbbadd7f88815c172e58e90b75889fc897e972b3c5dc33df9ec63ad5aab4eb9"
+    }
+  },
+  "prerequisites": {
+    "python-prerequisites-001.json": {
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/python-prerequisites-001.json",
+      "sha256": "c2e8ca0e29d914cc80764088497548e92095de2d9d1134af9091615c948b2bb1",
+      "passed": true
+    },
+    "mask-parity-001/result.json": {
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/mask-parity-001/result.json",
+      "sha256": "690a4454e8ddb4862dd3b96523b39983747d530c8ab236a4e11b56d61ba00bdb",
+      "passed": true
+    },
+    "native-constrained-smoke-001/result.json": {
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/native-constrained-smoke-001/result.json",
+      "sha256": "8bfe27b1d44ac3b8e2618940f4f0c7cbd13051bf5db9eeae9bfa300c9e5b6847",
+      "passed": true
+    },
+    "compact-codec-refusals-001/result.json": {
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/compact-codec-refusals-001/result.json",
+      "sha256": "66658b073b24a72f50400bba6d4e0ca7ee24dbe13d5161b006534b7cd1cd21d2",
+      "passed": true
+    },
+    "compact-compiler-refusals-001/result.json": {
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/compact-compiler-refusals-001/result.json",
+      "sha256": "dcf8ebf4379a1a4763c289eb86293f6abc6ff29ba2177197d9dcace76a20b6b3",
+      "passed": true
+    }
+  },
+  "full_admission": {
+    "required": 2700,
+    "complete": false,
+    "status": "pending; requires all new target and source prerequisites"
+  },
+  "training": {
+    "started": false,
+    "continuation_mode": "fresh candidate from seed 17; not an exact resume of checkpoint 74000",
+    "shared_budget": "/Users/chrischeng/faberlines/som/som-rs/models/flow-m3-candidate/training-budget.json",
+    "limit_seconds": 604800,
+    "spent_seconds_before_training": 231398.2452680124,
+    "remaining_seconds_before_training": 373401.7547319876,
+    "automatic_start_condition": "fresh same-source 2700/2700 admission; no unclosed budget attempt",
+    "stop_after": "earliest raw development 300/300 or remaining shared time exhausted"
+  },
+  "M2_health_at_capture": {
+    "block_count": 357,
+    "blocks_loaded": true,
+    "blocks_sha256": "5a75971536ae02f627bb4a4e97737604cefc120e71293b8c10f7dcc442c460ea",
+    "dsl_version": "som.dsl.v3",
+    "flow_codec_version": "som.flow.compact-codec.v1",
+    "flow_model_evidence": "seen-development-fixtures-only",
+    "flow_output_budget": "som.m2.output-budget.v2",
+    "flow_prompt_version": "som.prompt.v7",
+    "formatter_version": "ruff 0.16.6",
+    "model_loaded": true,
+    "model_manifest_sha256": "24ba15d15ff2dae6f6551c70f1dfc8876526c9f3d80dc4d6581fab6ad065f0b7",
+    "quality_contract": "som.python-quality.v1",
+    "status": "ok",
+    "training_steps": 2000
+  },
+  "current_pointers": {
+    "som-rs/models/current": "flow-m2-candidate/smoke-r31-001",
+    "som-code-python/data/blocks/current": "flow-v7-compact"
+  },
+  "raw_records_local": true,
+  "formal_model_evaluation": "unrun",
+  "default_promoted": false,
+  "M3_state": "open",
+  "paid_agent_runs": 0,
+  "real_cloud_runs": 0,
+  "aw_claim": "retained while the background controller writes; refreshed every 20 seconds; released at controller exit"
+}

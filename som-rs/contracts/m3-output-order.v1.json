@@ -1,0 +1,8 @@
+{
+  "version": "som.flow.m3-output-order.v1",
+  "codec_version": "som.flow.compact-codec.v1",
+  "root_keys": ["flow", "files", "version"],
+  "nested_keys": "sorted",
+  "output_limit": 2048,
+  "decode": "lossless; every choice is emitted; no repair"
+}

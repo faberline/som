@@ -106,7 +106,7 @@
         "m2_entry_state",
         "development_diagnosis"
       ],
-      "evidence": "尚無合格 checkpoint。M2 預設保持原狀。",
+      "evidence": "新輪次 m3-flow-2026-10-12/r1 已啟動。flow-first 目標政策已有 165 項 Python 測試；完整新入場檢查進行中。全部 2,700 通過後才自動從 seed 17 訓練。共用時間帳上限未變。見 evidence/m3-2026-10-12-continuation.json。",
       "acceptance": [
         "訓練前核對同來源 admission。來源改變時使用新封存輪次並重跑受影響的完整 admission。",
         "維持 Python／MLX、兩層、width 64、4 heads、vocab 1,024、context 4,096、seed 17、batch 8、Adam 3e-4 與只算輸出 loss。",

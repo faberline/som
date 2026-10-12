@@ -1,9 +1,10 @@
 # M3 status — 2026-10-12
 
 M3 is not complete. The accepted development model remains M2.
-The current M3 round is `m3-flow-2026-10-05/r6`.
-Its dataset is `som-core/data/flow-m3-r10`.
-Its candidate is `models/flow-m3-candidate/r6-r10-001`.
+The active continuation round is `m3-flow-2026-10-12/r1`.
+Its dataset remains `som-core/data/flow-m3-r10`.
+Its fresh candidate is `models/flow-m3-candidate/flow-first-r10-20261012-001`.
+The prior r6 round and its step 74,000 checkpoint remain preserved.
 The recovery work for #21, #22 and #23 is complete.
 Their results are saved on GitHub. All three tickets are closed as completed.
 The [recovery index](evidence/m3-2026-10-12-recovery.json) binds the new receipts.
@@ -11,6 +12,9 @@ Recovery receipts stay in the `76af/som` worktree on this workstation.
 The original model and runtime assets stay in `/Users/chrischeng/faberlines/som`.
 
 ## Verified progress
+
+This table records the preserved r6 evidence.
+The active continuation round has separate checks below.
 
 | Gate | Result | Scope |
 |---|---|---|
@@ -101,10 +105,47 @@ This puts flow information first while the model still emits every file and bloc
 The current flow-key offset is 1,126–1,392 tokens. The proposed offset is one.
 All 2,700 reordered reference sequences decode to the same plans and keep
 the same output token lengths. No accuracy improvement is claimed.
-This proposal has not changed the trainer or the frozen targets.
-It requires a new sealed source round and complete admission before training.
+The diagnosis did not change the trainer or frozen targets.
+The new continuation round implements this proposal with an explicit version.
+It requires a new source seal and complete admission before training.
 Keep the fixed model, Adam settings, seed and every acceptance rule.
 Keep formal cases outside diagnosis and checkpoint selection.
+
+## Active continuation round
+
+The human authorized continued training on 2026-10-12.
+The M3 target policy is `som.flow.m3-output-order.v1`.
+It changes only the root output-key order to `flow`, `files`, `version`.
+The model still emits every file, block, transaction and reference.
+The M2 codec, v3 input, architecture, optimizer and seed remain unchanged.
+The trainer, admission and source seal require the same target-policy version.
+The candidate saves that policy as a hashed sidecar.
+
+The focused Python tests pass 165 cases.
+The fresh prefix gate passes 135 cases. The native M2 model path passes 12.
+The existing compact codec and compiler pass all 163 valid and 38 invalid cases.
+The controller is verifying all 2,700 new targets.
+Complete reference admission follows these prerequisites.
+These partial checks do not admit weights or establish improved model accuracy.
+
+The controller PID is 37433. Its local command is:
+
+```text
+/Users/chrischeng/faberlines/som/som-rs/runtime/acceptance-m3-venv/bin/python /Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/run_round.py
+```
+
+It must seal the new source and pass all 2,700 admission products.
+It then starts a fresh candidate from seed 17 with the same shared time ledger.
+Every 1,000 steps, it checks all 300 raw development sequences.
+It stops at the earliest 300/300 checkpoint or the remaining time limit.
+It does not run formal model acceptance or promote the candidate.
+The model, runtime, source archive and raw records stay on this workstation.
+See [the continuation index](evidence/m3-2026-10-12-continuation.json).
+
+The AW claim remains held while this controller writes.
+It refreshes its activity and releases the claim when it exits.
+Read its live `pipeline-001/result.json` before starting another controller.
+Do not change the sealed source during this round.
 
 ## Development service
 
@@ -167,8 +208,9 @@ Each ticket has one bounded scope, dependencies and acceptance checks.
 
 GitHub readback confirms #21–#23 are closed as completed.
 The human authorized document publication and continued training under #24.
-Next, #24 requires a chosen source policy, a new source seal and complete
-admission before fresh training. No training restart occurred in this recovery.
+Work under #24 has started in the new round. Training starts automatically
+only after its complete same-source admission. No optimizer update occurred
+during the recovery diagnosis.
 The [machine-readable plan](plans/m3-work-breakdown-2026-10-11.json)
 stores the same ticket IDs and dependencies.
 Do not close M3 or switch its default from partial checks.
