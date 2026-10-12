@@ -1,0 +1,193 @@
+{
+  "version": "som.m3-recovery-index.v1",
+  "recorded_at": "2026-10-12T04:14:16.488982+00:00",
+  "baseline_commit": "a657f49e3ab2d6cef80d0e44637967d6697021af",
+  "milestone_complete": false,
+  "retained_assets_root": "/Users/chrischeng/faberlines/som",
+  "recovery_worktree": "/Users/chrischeng/.codex/worktrees/76af/som",
+  "local_work": {
+    "21": "complete; interruption settled conservatively",
+    "22": "complete; M2 startup, complete new/old CLI and v4 rollback passed",
+    "23": "complete; diagnosis and testable repair proposal saved"
+  },
+  "tracker_changed": true,
+  "tracker_states_at_last_read": {
+    "21": "closed",
+    "22": "closed",
+    "23": "closed"
+  },
+  "receipts": {
+    "interruption-001": {
+      "path": "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-recovery-2026-10-12/interruption-001/result.json",
+      "sha256": "1989fd6b43e245459a832a91676908ad3019e9cf063da8920650a1c827aaa57b"
+    },
+    "m2-entry-001": {
+      "path": "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-recovery-2026-10-12/m2-entry-001/result.json",
+      "sha256": "2a9e8071a15ed9e336aa5b4e111fdf7c10e25b76a109f79da7f7434a6bdbae60"
+    },
+    "development-diagnosis-001": {
+      "path": "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-recovery-2026-10-12/development-diagnosis-001/result.json",
+      "sha256": "b6763fc30694b68946e341d965a41dcadddfedde38f05b137c1b81f24d12d4fd"
+    },
+    "error-summary-v2": {
+      "path": "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-recovery-2026-10-12/development-diagnosis-001/error-summary-v2.json",
+      "sha256": "40e26f3a2101a6f3e00ce111ffff934e7a05fd4609e01152fd69db4e86fc83e6"
+    },
+    "diagnosis-runtime": {
+      "path": "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-recovery-2026-10-12/development-diagnosis-001/runtime-receipt.json",
+      "sha256": "441dcf915b861758d8efdf56c849eb5d623700a7285b90b617188d84c2e3f753"
+    },
+    "final-verification": {
+      "path": "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-recovery-2026-10-12/final-verification.json",
+      "sha256": "fd161121425518e3c4819d5f0645f55b167c91af3f642933bec5ccc6711857c5"
+    }
+  },
+  "raw_records_sha256": {
+    "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-recovery-2026-10-12/development-diagnosis-001/raw-dev-single-control.jsonl": "ddc06b5be99f6b0503e356bc8325ae7e8557b69324b55f069667d7d711d5a9da",
+    "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-recovery-2026-10-12/development-diagnosis-001/raw-dev.jsonl": "ace317b5e9cb7de458d3c7aa886313233448bc1ce09be0590d312679bbff1cb8",
+    "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-recovery-2026-10-12/development-diagnosis-001/raw-train.jsonl": "0ac6eef07da6c7eda34f9752f7cfe20291b4bf6ae1aad24ae588e22d0978e7c0",
+    "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-recovery-2026-10-12/development-diagnosis-001/teacher-dev-source-swap.jsonl": "52dc9aef29f5c472194885e332adef41c67c1a2b8f75755c0031272a521a348f",
+    "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-recovery-2026-10-12/development-diagnosis-001/teacher-dev.jsonl": "12e201ff18faef6ad06b68966721df25dda9ab4173ed7e340a3093b5d0d392de",
+    "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-recovery-2026-10-12/development-diagnosis-001/teacher-train.jsonl": "ef79b724dc63fd68ed05477e9ce79cbe62c73771c9da4f0ea292c307ae35a578"
+  },
+  "budget": {
+    "path": "/Users/chrischeng/faberlines/som/som-rs/models/flow-m3-candidate/training-budget.json",
+    "sha256": "9bc920678f899c2be2277d9ed4ae0e73c262bd99d0728c18ca513a6a7008414f",
+    "limit_seconds": 604800,
+    "attempts": 5,
+    "unfinished_attempts": 0,
+    "spent_seconds": 231398.2452680124,
+    "remaining_seconds": 373401.7547319876,
+    "interruption_charge_seconds": 138741.4745771885,
+    "diagnosis_charge_seconds": 491.2679972920014,
+    "exact_interruption_stop_time_known": false
+  },
+  "M2": {
+    "pid": 21386,
+    "url": "http://127.0.0.1:8765",
+    "binary_sha256": "14cf0a67fbcc943639c9e0efb661d6aaf0de7b00289c05fc52819f9e97f239d6",
+    "model_manifest_sha256": "24ba15d15ff2dae6f6551c70f1dfc8876526c9f3d80dc4d6581fab6ad065f0b7",
+    "blocks_sha256": "5a75971536ae02f627bb4a4e97737604cefc120e71293b8c10f7dcc442c460ea",
+    "current_pointers": {
+      "som-rs/models/current": "flow-m2-candidate/smoke-r31-001",
+      "som-code-python/data/blocks/current": "flow-v7-compact"
+    },
+    "full_cli_responses_equal": true,
+    "rollback_canary_passed": true
+  },
+  "diagnosis": {
+    "raw_development_exact": 3,
+    "development_total": 300,
+    "historical_and_teacher_first_errors_match": 300,
+    "raw_train_control_exact": 1,
+    "raw_train_control_total": 16,
+    "first_error_categories": {
+      "block": 133,
+      "order": 16,
+      "transaction": 6,
+      "reference": 101,
+      "end_token": 0,
+      "length": 21,
+      "argument_or_schema": 20
+    },
+    "encoding_roundtrips": 2700,
+    "teacher_forcing": {
+      "dev300": {
+        "examples": 300,
+        "complete_exact": 3,
+        "token_accuracy": 0.9923247472809843,
+        "mean_output_loss": 0.0344072204557204,
+        "flow_errors": 3208
+      },
+      "train16": {
+        "examples": 16,
+        "complete_exact": 1,
+        "token_accuracy": 0.9983616629121441,
+        "mean_output_loss": 0.004878080181721022,
+        "flow_errors": 39
+      },
+      "dev8_source_swap": {
+        "examples": 8,
+        "complete_exact": 0,
+        "token_accuracy": 0.9857422193254033,
+        "mean_output_loss": 0.08961757021539274,
+        "flow_errors": 107
+      }
+    },
+    "conclusion": "The model has not learned complete flow composition reliably. Encoding, loss-mask and evaluator controls passed. The 16 training cases are a diagnostic sample, not full training-set accuracy.",
+    "repair_proposal": {
+      "model_changes": false,
+      "optimizer_changes": false,
+      "input_changes": false,
+      "root_output_key_order": [
+        "flow",
+        "files",
+        "version"
+      ],
+      "lossless_roundtrips": 2700,
+      "unchanged_output_lengths": 2700,
+      "current_flow_offset": {
+        "min": 1126,
+        "max": 1392,
+        "mean": 1277.1977777777777
+      },
+      "proposed_flow_offset": 1,
+      "training_started": false,
+      "accuracy_improvement_proven": false,
+      "new_sealed_round_and_admission_required": true
+    }
+  },
+  "verification": {
+    "sources_and_weights_unchanged": true,
+    "original_closed_attempts_unchanged": true,
+    "current_pointers_unchanged": true,
+    "diagnosis_exit_code": 0
+  },
+  "exact_resume_supported": false,
+  "training_restarted": false,
+  "formal_inputs_opened_for_diagnosis": false,
+  "formal_model_evaluation": "unrun",
+  "optimizer_updates": 0,
+  "new_weights_saved": false,
+  "M3_promotion": "unrun",
+  "paid_agent_runs": 0,
+  "real_cloud_runs": 0,
+  "publication": {
+    "recorded_at": "2026-10-12T06:14:30.351305+00:00",
+    "issues": {
+      "21": {
+        "url": "https://github.com/faberline/som/issues/21",
+        "state": "closed",
+        "state_reason": "completed",
+        "closed_at": "2026-10-12T06:13:36Z",
+        "readback_path": "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-publication-2026-10-12/issue-21-readback.json",
+        "readback_sha256": "7dfd2156bf928cb9c618f0a96a0ec8148033373232fdab1aecf27f18e7f30bd9"
+      },
+      "22": {
+        "url": "https://github.com/faberline/som/issues/22",
+        "state": "closed",
+        "state_reason": "completed",
+        "closed_at": "2026-10-12T06:13:41Z",
+        "readback_path": "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-publication-2026-10-12/issue-22-readback.json",
+        "readback_sha256": "468c0482b7f2dd44fe5a4ee424a40bb83918eaee44dc1673aba53b9efa024607"
+      },
+      "23": {
+        "url": "https://github.com/faberline/som/issues/23",
+        "state": "closed",
+        "state_reason": "completed",
+        "closed_at": "2026-10-12T06:13:44Z",
+        "readback_path": "/Users/chrischeng/.codex/worktrees/76af/som/.local/m3-publication-2026-10-12/issue-23-readback.json",
+        "readback_sha256": "53b17fcee58e374be37367996ebc04e100957a3a3d23274c9dd931c4b133fe86"
+      }
+    },
+    "milestone_state": "open",
+    "parents_8_9_kept_open": true,
+    "models_and_raw_records_local": true,
+    "main_metadata_paths": [
+      "som-rs/M3_HANDOFF.md",
+      "som-rs/M3_STATUS.md",
+      "som-rs/evidence/m3-2026-10-12-recovery.json",
+      "som-rs/plans/m3-work-breakdown-2026-10-11.json"
+    ]
+  }
+}

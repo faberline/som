@@ -8,8 +8,13 @@ The controller and trainer stopped after an interruption.
 The last complete checkpoint is step 74,000. Its raw check passed 3/300.
 The log reaches step 75,000. This is not a complete checkpoint acceptance.
 All original results and weights remain saved.
-The shared time ledger still has an unfinished attempt. Settle it before
-any restart. Do not reset its one-week total or drop failed attempts.
+The shared time ledger is settled. Its five attempts are closed.
+Used time is 231,398.245 seconds. Remaining time is 373,401.755 seconds.
+The interruption charge includes sleep, failure and downtime.
+The exact stop time and trainer exit code remain unknown.
+Do not reset the one-week total or drop failed attempts.
+The checkpoint has no saved optimizer, random-number or batch-position state.
+Do not claim exact continuation from its weights.
 The model size, optimizer, seed and acceptance gates remain fixed.
 The dataset has 2,400 training, 300 development and 300 formal cases.
 Formal model checks, full protection and M3 promotion remain unrun.
@@ -17,24 +22,41 @@ Read [the current status](M3_STATUS.md) before work starts.
 
 ## Start the next session
 
-1. Use the repository at `/Users/chrischeng/faberlines/som` on `main`.
+1. Use a clean source worktree from the landed `a657f49` baseline.
+   Retained model and runtime assets are in `/Users/chrischeng/faberlines/som`.
+   Recovery documents and receipts are in
+   `/Users/chrischeng/.codex/worktrees/76af/som`.
    Read [M3_STATUS.md](M3_STATUS.md) and
    [the ticket plan](plans/m3-work-breakdown-2026-10-11.json).
-2. Start [#21](https://github.com/faberline/som/issues/21).
-   Record the interruption and settle the unfinished time-ledger attempt.
-   A null elapsed value does not mean zero time.
-3. Complete [#22](https://github.com/faberline/som/issues/22).
-   Verify the saved M2 executable, health and rollback entry.
-4. Complete [#23](https://github.com/faberline/som/issues/23).
-   Diagnose the 3/300 raw development result from train and development data.
+2. Read the [recovery index](evidence/m3-2026-10-12-recovery.json).
+   GitHub #21 is closed. The ledger has no unfinished attempt.
+   Original interruption evidence and the original null elapsed value are archived.
+3. GitHub [#22](https://github.com/faberline/som/issues/22) is closed.
+   M2 starts again, its health matches and complete new/old CLI replies match.
+   The v4 rollback startup and old CLI reply also pass.
+4. GitHub [#23](https://github.com/faberline/som/issues/23) is closed.
+   Full raw replay remains 3/300. All 300 first errors match the original receipt.
+   Encoding, v3 binding and evaluator controls pass.
+   The 16-case training control is only 1/16 complete.
+   The model has not learned complete flow composition reliably.
+   Read the testable flow-first target proposal in M3_STATUS.md.
+   It needs a new sealed round and complete admission before fresh training.
    Keep formal cases outside diagnosis and checkpoint selection.
 5. Follow the ticket dependencies for training and acceptance.
    Keep the earliest raw 300/300 development checkpoint rule.
    Keep the formal Rust Metal constrained 300/300 rule.
 
+GitHub #21–#23 have updated results and are closed as completed.
+The 19 child tickets now have five complete and 14 open results.
+The human authorized publication of these documents and the evidence index.
+The human also authorized continued training under #24.
+No trainer source, frozen target or weight was changed.
+No training restart occurred during the diagnosis. M2 remains the default.
+The next round must pass fresh source sealing and admission before training.
+
 The human approved landing the exact 602-file source list on main.
 Weights, executables and raw evaluation records remain on this workstation.
-No training restart is part of this handoff.
+Training continuation does not authorize M3 promotion or a current switch.
 Check AW ownership before a new session writes.
 The old session verified its AW identity and worktree claim during landing.
 Register the new session's own identity. Do not reuse the old private token.

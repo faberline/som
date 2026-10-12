@@ -1,9 +1,14 @@
-# M3 status — 2026-10-11
+# M3 status — 2026-10-12
 
 M3 is not complete. The accepted development model remains M2.
 The current M3 round is `m3-flow-2026-10-05/r6`.
 Its dataset is `som-core/data/flow-m3-r10`.
 Its candidate is `models/flow-m3-candidate/r6-r10-001`.
+The recovery work for #21, #22 and #23 is complete.
+Their results are saved on GitHub. All three tickets are closed as completed.
+The [recovery index](evidence/m3-2026-10-12-recovery.json) binds the new receipts.
+Recovery receipts stay in the `76af/som` worktree on this workstation.
+The original model and runtime assets stay in `/Users/chrischeng/faberlines/som`.
 
 ## Verified progress
 
@@ -35,27 +40,84 @@ It records `KeyboardInterrupt('M3 controller interrupted')`.
 The original controller PID 34521 and trainer PID 24247 are absent.
 Do not treat their old launch records as live processes.
 
-The time ledger has one unfinished attempt.
-Its three closed attempts used 33,090.980, 40,931.669 and 18,142.853 seconds.
-The interrupted attempt still has `elapsed_seconds: null`.
-This value does not mean zero time. Settle it from retained evidence first.
-The shared limit stays at 604,800 seconds.
+The shared time ledger now has five closed attempts and no unfinished attempt.
+The first three attempts are unchanged.
+The interrupted attempt is charged 138,741.475 seconds.
+This is conservative wall time through a fresh check of process absence.
+It includes sleep, failure and downtime. The exact stop time is unknown.
+The original ledger with its null elapsed value remains archived.
+The diagnosis adds 491.268 seconds to the same ledger.
+The total is 231,398.245 seconds, or 64.28 hours.
+The remaining time is 373,401.755 seconds, or 103.72 hours.
+The shared limit stays at 604,800 seconds. No attempt was dropped.
 
-First record the interruption and settle the time ledger.
-Then diagnose the low raw complete-sequence score from train and development.
-Do not use formal inputs for diagnosis or checkpoint selection.
-Keep the fixed model size and all acceptance rules.
-Verify source identity and admission before any new training action.
-If recovery needs new source, use a new sealed round.
-Keep the old failures and receipts.
+The saved checkpoint has weights and a manifest.
+It has no saved Adam state, random-number state or batch position.
+Exact continuation from step 74,000 is not supported by the retained evidence.
+The trainer exit code remains unknown.
+The original launch arguments, interruption, log and checkpoint are archived.
+
+## Development diagnosis
+
+The full raw replay remains 3/300 at checkpoint 74,000.
+All 300 first-error positions and token choices match the original receipt.
+They also match checks with the correct output prefix supplied to the model.
+One separate case gives the same output alone and in a batch.
+All 2,700 train and development inputs pass lossless encoding, v3 semantic
+recovery, tokenizer and output loss-mask checks.
+Formal inputs were not opened for diagnosis. No optimizer update was made.
+
+The average development token accuracy is 99.23%.
+The flow section is 95.08%. The other sections are 99.94%.
+The flow section contains 93.23% of the token errors.
+A fixed 16-case training sample passes only 1/16 complete raw sequences.
+This sample is a diagnosis control. It is not full training-set accuracy.
+An eight-case source-swap control raises average loss from 0.02236 to 0.08962.
+The model uses the input, but it has not learned complete flow composition.
+These controls found no encoding, loss-mask or evaluator error.
+
+| First error | Failed cases | Later aligned token edits |
+|---|---:|---:|
+| Block or operation choice | 133 | 680 |
+| Node order or name | 16 | 2,407 |
+| Transaction or undo | 6 | 853 |
+| Reference | 101 | 7,067 |
+| End token | 0 | 0 |
+| Structure or length | 21 | 12,181 |
+| Argument or schema | 20 | 1,143 |
+
+The first-error column covers all 297 failed cases once.
+The later column counts aligned token edits, not independent failures.
+Repeated tokens can make an alignment ambiguous.
+The refined v2 error summary corrects extra-token classification.
+The original r1 summary remains preserved.
+All 300 outputs contain an end token.
+It appears earlier than the reference in 117 cases and later in 123 cases.
+Only 60 outputs have the reference length. Only three are fully correct.
+
+The testable repair proposal is to emit the root keys as `flow`, `files`,
+then `version` in a new M3 training target policy.
+This puts flow information first while the model still emits every file and block.
+The current flow-key offset is 1,126–1,392 tokens. The proposed offset is one.
+All 2,700 reordered reference sequences decode to the same plans and keep
+the same output token lengths. No accuracy improvement is claimed.
+This proposal has not changed the trainer or the frozen targets.
+It requires a new sealed source round and complete admission before training.
+Keep the fixed model, Adam settings, seed and every acceptance rule.
+Keep formal cases outside diagnosis and checkpoint selection.
 
 ## Development service
 
 `models/current` points to `flow-m2-candidate/smoke-r31-001`.
 `../som-code-python/data/blocks/current` points to `flow-v7-compact`.
 Both pointers remain unchanged.
-The local health request failed during this handoff check.
-Check the saved M2 executable and startup record before restoring service.
+The retained M2 executable was started again on `127.0.0.1:8765`.
+Its fresh health response matches the accepted M2 response.
+One new prompt and one legacy prompt return complete 12-file CLI responses.
+Both responses equal their saved responses exactly.
+The saved v4 rollback also starts on test port 18765 and passes its old CLI case.
+The owned rollback test process was stopped. The M2 default remains running.
+These are entry checks. They do not replace the full M3 acceptance gates.
 See [CURRENT.md](CURRENT.md) for the accepted command and rollback proof.
 
 ## Evidence and local assets
@@ -78,16 +140,16 @@ A fresh clone has source and test data, but it does not have trained weights.
 The data parent [#7](https://github.com/faberline/som/issues/7) is complete.
 Training parent [#8](https://github.com/faberline/som/issues/8) stays open.
 Native acceptance parent [#9](https://github.com/faberline/som/issues/9) stays open.
-M3 stays open. Its 19 child tickets have 2 complete and 17 open results.
+M3 stays open. Its 19 child tickets have five complete and 14 open results.
 Each ticket has one bounded scope, dependencies and acceptance checks.
 
 | Ticket | State | Work |
 |---|---|---|
 | [#19](https://github.com/faberline/som/issues/19) | Complete | Data split and zero overlap |
 | [#20](https://github.com/faberline/som/issues/20) | Complete | Reference quality and behavior admission |
-| [#21](https://github.com/faberline/som/issues/21) | Open | Interruption and time accounting |
-| [#22](https://github.com/faberline/som/issues/22) | Open | M2 service and rollback entry |
-| [#23](https://github.com/faberline/som/issues/23) | Open | Raw development failure diagnosis |
+| [#21](https://github.com/faberline/som/issues/21) | Complete | Interruption and time accounting |
+| [#22](https://github.com/faberline/som/issues/22) | Complete | M2 service and rollback entry |
+| [#23](https://github.com/faberline/som/issues/23) | Complete | Raw development failure diagnosis |
 | [#24](https://github.com/faberline/som/issues/24) | Open | Fixed-model training and earliest checkpoint |
 | [#25](https://github.com/faberline/som/issues/25) | Open | Candidate manifest and load data |
 | [#26](https://github.com/faberline/som/issues/26) | Open | Constraint sets, alternatives and refusals |
@@ -103,9 +165,10 @@ Each ticket has one bounded scope, dependencies and acceptance checks.
 | [#36](https://github.com/faberline/som/issues/36) | Open | Full-scope audit, evidence and report |
 | [#37](https://github.com/faberline/som/issues/37) | Open | Safe promotion, tracker readback and cleanup |
 
-Start with [#21](https://github.com/faberline/som/issues/21) to settle the time ledger.
-Restore the M2 entry with [#22](https://github.com/faberline/som/issues/22).
-Then use [#23](https://github.com/faberline/som/issues/23) for model diagnosis.
+GitHub readback confirms #21–#23 are closed as completed.
+The human authorized document publication and continued training under #24.
+Next, #24 requires a chosen source policy, a new source seal and complete
+admission before fresh training. No training restart occurred in this recovery.
 The [machine-readable plan](plans/m3-work-breakdown-2026-10-11.json)
 stores the same ticket IDs and dependencies.
 Do not close M3 or switch its default from partial checks.

@@ -8,7 +8,7 @@
     9
   ],
   "status": "incomplete",
-  "first_action": "interruption_budget",
+  "first_action": "training_checkpoint",
   "scope": "Preserve the M2 default and all sealed assets. Complete the original M3 goal without relaxing acceptance.",
   "tasks": [
     {
@@ -48,9 +48,9 @@
       "key": "interruption_budget",
       "parent": 8,
       "title": "M3：封存訓練中斷並結清共用時間帳本",
-      "status": "open",
+      "status": "complete",
       "depends_on": [],
-      "evidence": "控制程序與訓練程序已停止。最後完整 checkpoint 74,000；日誌至 75,000。帳本仍有 elapsed_seconds=null 的未結束 attempt。",
+      "evidence": "中斷證據已封存。五次 attempt 已结清；已用 231,398.245 秒，剩餘 373,401.755 秒，上限 604,800 秒。缺少 optimizer、RNG、batch 狀態，不宣稱精確續接。 收據與雜湊見 evidence/m3-2026-10-12-recovery.json。",
       "acceptance": [
         "保存程序消失的證據、控制器 KeyboardInterrupt、日誌、最後完整 checkpoint 與原始啟動參數。",
         "依現有證據結清未結束 attempt；null 不當成零。保留所有舊 attempts、睡眠與故障時間。",
@@ -64,9 +64,9 @@
       "key": "m2_entry_state",
       "parent": 8,
       "title": "M3：恢復並核對 M2 本機服務及回復入口",
-      "status": "open",
+      "status": "complete",
       "depends_on": [],
-      "evidence": "兩個 current 指標未變；交接時 GET /healthz 連線失敗。",
+      "evidence": "M2 原設定重新啟動、健康雜湊與完整新舊 CLI 回應通過。v4 回復重新啟動及舊 CLI 對照通過。兩個 current 指標未變。 收據與雜湊見 evidence/m3-2026-10-12-recovery.json。",
       "acceptance": [
         "核對 CURRENT.md 所列 M2 model、block、持久化 Rust 執行檔與原始切換／回復紀錄的雜湊。",
         "確認埠與程序所有者後，以原 M2 設定恢复 loopback 服務。保存命令、PID、日誌及健康回應。",
@@ -80,11 +80,11 @@
       "key": "development_diagnosis",
       "parent": 8,
       "title": "M3：分析 74,000 步仍只有 3／300 的完整序列錯誤",
-      "status": "open",
+      "status": "complete",
       "depends_on": [
         "interruption_budget"
       ],
-      "evidence": "74,000 步原始開發完整序列 3／300；token loss 低不代表完整計畫符合需求。",
+      "evidence": "原始 dev 重播 3／300；300 個首錯吻合。編碼與評估對照通過。模型未可靠學會完整 flow；封存 flow-first 目標修正方案，新輪次需重新 admission。 收據與雜湊見 evidence/m3-2026-10-12-recovery.json。",
       "acceptance": [
         "只使用訓練及開發資料。正式測試保持未開啟。",
         "按 block、順序、交易、引用、結束 token 與長度分類首錯及後續錯誤。",
@@ -377,13 +377,14 @@
   ],
   "tracker_readback": {
     "children": 19,
-    "completed_children": 2,
-    "open_children": 17,
+    "completed_children": 5,
+    "open_children": 14,
     "parent_states": {
       "7": "closed",
       "8": "open",
       "9": "open"
     },
-    "milestone_state": "open"
+    "milestone_state": "open",
+    "recorded_at": "2026-10-12T06:14:30.351305+00:00"
   }
 }
