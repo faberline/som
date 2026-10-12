@@ -6,11 +6,40 @@ use std::{fs, path::Path};
 
 pub const PURPOSE: &str = "m3-supervised-composition";
 pub const ADMISSION_VERSION: &str = "som.flow.m3-training-admission.v1";
+pub const TARGET_POLICY_VERSION: &str = "som.flow.m3-output-order.v1";
+pub const TARGET_POLICY_TEXT: &str = include_str!("../contracts/m3-output-order.v1.json");
 pub const EXTRA_SIDECARS: &[&str] = &["training.jsonl", "dataset.json", "decode-policy.json", "input-policy.json"];
 fn unavailable(detail: &str) -> SomError { SomError::new("MODEL_UNAVAILABLE", detail) }
 fn bytes(path: &Path) -> Result<Vec<u8>, SomError> { fs::read(path).map_err(|e| unavailable(&e.to_string())) }
 fn json_file(path: &Path) -> Result<Value, SomError> { serde_json::from_slice(&bytes(path)?).map_err(|e| unavailable(&e.to_string())) }
 fn hash(value: &[u8]) -> String { format!("{:x}", Sha256::digest(value)) }
+
+
+/// Retained M3 exports have no target-order sidecar. New exports bind it.
+pub fn extra_sidecars(config: &Value) -> Result<Vec<&'static str>, SomError> {
+    let mut names = EXTRA_SIDECARS.to_vec();
+    if !config["flow_output_policy"].is_null() {
+        if config["flow_output_policy"] != TARGET_POLICY_VERSION {
+            return Err(unavailable("unknown M3 output policy"));
+        }
+        names.push("target-policy.json");
+    }
+    Ok(names)
+}
+
+fn verify_target_policy(model: &Path, config: &Value, manifest: &Value, admission: &Value) -> Result<(), SomError> {
+    extra_sidecars(config)?;
+    if config["flow_output_policy"].is_null() {
+        if !manifest["target_policy"].is_null() || !admission["target_policy"].is_null() {
+            return Err(unavailable("M3 target policy requires an explicit configuration"));
+        }
+    } else if manifest["target_policy"] != TARGET_POLICY_VERSION
+        || admission["target_policy"] != serde_json::from_str::<Value>(TARGET_POLICY_TEXT).unwrap()
+        || bytes(&model.join("target-policy.json"))? != TARGET_POLICY_TEXT.as_bytes() {
+        return Err(unavailable("compiled M3 target policy differs from the export"));
+    }
+    Ok(())
+}
 
 pub fn verify_config(config: &Value) -> Result<(), SomError> {
     flow_model::verify_config(config)?;
@@ -18,6 +47,7 @@ pub fn verify_config(config: &Value) -> Result<(), SomError> {
         || config["flow_input_policy"].as_str().and_then(flow_codec::input_policy_text).is_none() {
         return Err(unavailable("M3 requires its own training profile and constrained decode policy"));
     }
+    extra_sidecars(config)?;
     Ok(())
 }
 
@@ -33,6 +63,7 @@ pub fn verify_sidecars(model: &Path, manifest: &Value) -> Result<(), SomError> {
     }
     let admission = json_file(&model.join("admission.json"))?;
     let config = json_file(&model.join("config.json"))?;
+    verify_target_policy(model, &config, manifest, &admission)?;
     let input_text = config["flow_input_policy"].as_str()
         .and_then(flow_codec::input_policy_text)
         .ok_or_else(|| unavailable("unknown flow input policy"))?;
@@ -114,6 +145,40 @@ mod tests {
         let mut missing = config;
         missing.as_object_mut().unwrap().remove("flow_input_policy");
         assert_eq!(verify_config(&missing).unwrap_err().code, "MODEL_UNAVAILABLE");
+    }
+
+    #[test]
+    fn target_order_export_has_a_hashed_sidecar_and_rejects_unknown_versions() {
+        let legacy = json!({});
+        assert_eq!(extra_sidecars(&legacy).unwrap(), EXTRA_SIDECARS);
+        let current = json!({"flow_output_policy":TARGET_POLICY_VERSION});
+        let names = extra_sidecars(&current).unwrap();
+        assert_eq!(names.len(), EXTRA_SIDECARS.len() + 1);
+        assert!(names.contains(&"target-policy.json"));
+        let changed = json!({"flow_output_policy":"unknown"});
+        assert_eq!(extra_sidecars(&changed).unwrap_err().code, "MODEL_UNAVAILABLE");
+    }
+
+    #[test]
+    fn target_order_contract_checks_bytes_and_all_version_bindings() {
+        let directory = std::env::temp_dir().join(format!("som-m3-target-policy-{}", std::process::id()));
+        fs::create_dir(&directory).unwrap();
+        let config = json!({"flow_output_policy":TARGET_POLICY_VERSION});
+        let manifest = json!({"target_policy":TARGET_POLICY_VERSION});
+        let admission = json!({"target_policy":serde_json::from_str::<Value>(TARGET_POLICY_TEXT).unwrap()});
+        fs::write(directory.join("target-policy.json"), TARGET_POLICY_TEXT).unwrap();
+        verify_target_policy(&directory, &config, &manifest, &admission).unwrap();
+        let mut wrong_manifest = manifest.clone();
+        wrong_manifest["target_policy"] = json!("unknown");
+        assert_eq!(verify_target_policy(&directory, &config, &wrong_manifest, &admission).unwrap_err().code, "MODEL_UNAVAILABLE");
+        let mut wrong_admission = admission.clone();
+        wrong_admission["target_policy"]["root_keys"] = json!(["files", "flow", "version"]);
+        assert_eq!(verify_target_policy(&directory, &config, &manifest, &wrong_admission).unwrap_err().code, "MODEL_UNAVAILABLE");
+        fs::write(directory.join("target-policy.json"), "{}").unwrap();
+        assert_eq!(verify_target_policy(&directory, &config, &manifest, &admission).unwrap_err().code, "MODEL_UNAVAILABLE");
+        assert_eq!(verify_target_policy(&directory, &json!({}), &manifest, &admission).unwrap_err().code, "MODEL_UNAVAILABLE");
+        verify_target_policy(&directory, &json!({}), &json!({}), &json!({})).unwrap();
+        fs::remove_dir_all(directory).unwrap();
     }
 
     #[test]

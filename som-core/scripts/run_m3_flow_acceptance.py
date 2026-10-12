@@ -248,7 +248,8 @@ def main() -> None:
                         if mode == "unconstrained":
                             files = flow_compact.assemble(prompt, actual, library,
                                 ROOT / "som-rs/models/composed-quality-candidate/ruff")
-                        artifact = check(prompt, actual, files, directory, fixture, library, assembler, mask)
+                        artifact = check(prompt, actual, files, directory, fixture, library, assembler, mask,
+                            actual_output_ids=generated["output_ids"], actual_input=generated["actual_input"])
                         record.update(artifact)
                         if mode == "constrained":
                             cli(args.binary.resolve(), address, prompt, directory, files)

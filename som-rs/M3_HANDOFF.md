@@ -2,7 +2,7 @@
 
 M2 passed. Issues #4–#6 and milestone 2 are closed on GitHub.
 Read [the M2 closeout](M2_CLOSEOUT.md) before work starts.
-M3 remains open. The active continuation round is `m3-flow-2026-10-12/r1`.
+M3 remains open. The active continuation round is `m3-flow-2026-10-12/r4`.
 The preserved r6 round uses `flow-m3-r10` and v3 input bindings.
 All 2,700 training and development reference products passed admission.
 The controller and trainer stopped after an interruption.
@@ -50,23 +50,52 @@ Read [the current status](M3_STATUS.md) before work starts.
 GitHub #21–#23 have updated results and are closed as completed.
 The 19 child tickets now have five complete and 14 open results.
 The human authorized publication of these documents and the evidence index.
-The human also authorized continued training under #24.
+The human authorized complete M3 work and hourly continuation in this chat.
+All original gates must pass before current switches or M3 closes.
 The recovery diagnosis changed no trainer source, frozen target or weight.
-The continuation round now uses the versioned M3 flow-first target policy.
-No training restart occurred during the diagnosis. M2 remains the default.
-The active controller must pass fresh source sealing and admission before training.
-Read [the continuation index](evidence/m3-2026-10-12-continuation.json).
-Check local `evals/m3-flow-2026-10-12/r1/pipeline-001/result.json`.
-Controller PID 37433 holds the AW write claim while it runs.
-Do not start a second trainer or change its sealed source.
-All 2,700 new targets pass lossless, Rust decode and prefix-set checks.
-M2 protection, new source sealing and full artifact admission still precede training.
-It starts a new seed-17 candidate only after all 2,700 new admission cases pass.
-It keeps the same shared time ledger and stops before formal model acceptance.
+The active round now binds the versioned flow-first policy in the Rust loader.
+It saves the exact emitted output token order and actual input for prefix checks.
+It reads the native refusal code and public formatter health version.
+The final Python source passes 170 tests.
+Rust passes 37 tests, with three local-model tests ignored and still unrun here.
+All earlier rounds and their partial failures remain local.
+Rounds r1, r2 and r3 created no new M3 weights.
+Their results do not count toward the r4 admission.
 
-The human approved landing the exact 602-file source list on main.
-Weights, executables and raw evaluation records remain on this workstation.
-Training continuation does not authorize M3 promotion or a current switch.
+Read [the continuation index](evidence/m3-2026-10-12-continuation.json).
+Check local `evals/m3-flow-2026-10-12/r4/pipeline-001/result.json`.
+Controller PID 50628 holds the AW write claim while it runs.
+It must seal the fresh source and pass all 2,700 complete product checks.
+It then starts a new seed-17 candidate with the same shared time ledger.
+Keep the earliest raw development 300/300 checkpoint rule.
+The selected model must pass 12 frozen native development cases before formal.
+That stage also charges its full checks to the original week-long ledger.
+Then run constrained formal 300, separate raw formal 300 and full protected 544.
+The controller stops at `gates_complete_pending_root_audit`.
+Do not start a second trainer or change the sealed source.
+
+The hourly heartbeat `m3` continues this chat after meaningful stage changes.
+Read each receipt and run this round's `audit_round.py` for the root audit.
+Check #24–#36 against all original acceptance items.
+Report the M2 formal114, development12, supplementary12 and quality218 groups.
+State their overlap. Do not replace them with a partial total.
+Complete README, STATUS, the M3 report, this handoff and the evidence indexes.
+The local `documentation-complete-001.json` must bind the successful root audit
+and every required document hash before `promote_default.py` can run.
+Do not create a passing receipt for an unrun check.
+
+Use this round's `promote_default.py` only after all gates and documents pass.
+It checks a fresh M2 rollback and M3 canary before the current links switch.
+It checks health and complete new/old CLI responses after the switch.
+A failed switch restores M2.
+Update each remaining ticket with the same-round acceptance evidence.
+Close #24–#37 and remaining parents only after their complete checks pass.
+Bind parent #7–#9 acceptance to the same evidence, then close M3 and read it back.
+Push the final documents and indexes to main.
+Save the AW handoff and release the claim when no owned writer remains.
+Keep model, runtime, source archives and raw measurement records local.
+Keep all earlier worktree copies, failures and direct-code measurements.
+
 Check AW ownership before a new session writes.
 The old session verified its AW identity and worktree claim during landing.
 Register the new session's own identity. Do not reuse the old private token.

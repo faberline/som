@@ -1,24 +1,54 @@
 {
   "version": "som.m3-continuation-index.v1",
-  "recorded_at": "2026-10-12T06:48:11.560991+00:00",
-  "base_commit": "1a688c12e8af5edfa531c016debee3bb2a2554cb",
-  "source_round": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1",
-  "candidate": "/Users/chrischeng/faberlines/som/som-rs/models/flow-m3-candidate/flow-first-r10-20261012-001",
-  "status_at_capture": "pretraining-protection",
-  "controller_pid": 37433,
-  "controller_path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/run_round.py",
-  "controller_sha256": "d373e871b478badf6a99d1cb9613f556775d795f63f258b565f522fac3cf5772",
-  "launch": {
-    "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/launch.json",
-    "sha256": "e760066c9fba3c6666d7314c525a9687214e4968516c9d474c4b3defb4a6b7a2"
-  },
   "target_policy": "som.flow.m3-output-order.v1",
   "root_keys": [
     "flow",
     "files",
     "version"
   ],
+  "raw_records_local": true,
+  "paid_agent_runs": 0,
+  "real_cloud_runs": 0,
+  "policy_source_commit": "59dd63396bc2a2f1f3eb60853413029eb7c0e6f2",
+  "recorded_at": "2026-10-12T08:06:15.026730+00:00",
+  "base_commit": "6bffdc53be57fc1dc2ea6490b9d821547acdb03f",
+  "source_round": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4",
+  "candidate": "/Users/chrischeng/faberlines/som/som-rs/models/flow-m3-candidate/flow-first-r10-20261012-004",
+  "status_at_capture": "target-parity",
+  "controller_pid": 50628,
+  "controller_path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/run_round.py",
+  "controller_sha256": "81d2eb8962ddee8161e3210023da4db802cffb43522d19de4ceb6e6222ca4bad",
+  "launch": {
+    "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/launch.json",
+    "sha256": "1c158c3618024f3fe2d6a238f93b30f19e35252f520461ad04d0ac4f90de65f9"
+  },
   "source_changes": {
+    "som-rs/src/flow_m3_model.rs": {
+      "before": "6540b7df80978d2aeddd9f276bd35ffa06651a541b618b530effbb1feeaf227a",
+      "after": "ba7a7cdb44e2f20724877638fc158e6c78b68ac5a2796ab002afdf88b8efdc51"
+    },
+    "som-rs/src/main.rs": {
+      "before": "f9aec3ea068ba584e7023ed46f848985256b1b0018272fd4ceacef9c652ea9ab",
+      "after": "6388014781c7b5c86c255e6525ecb53a3bb47a4d76ea70f4810417814bfd3d80"
+    },
+    "som-core/scripts/m3_artifact_checks.py": {
+      "before": "8fb3ebf683a841ffb5ea2ec11b4cb2b8b5c20e440a325f562b4028aed61f6562",
+      "after": "ba5e40247cd0c2da5d5792b19f367fb2611c4112658423a47ac7543c6b4c697f"
+    },
+    "som-core/scripts/run_m3_flow_acceptance.py": {
+      "before": "d01d538f96f74b377662ee21d56ee9556ef801ef43b7aa5fecd843f0d16e34f7",
+      "after": "c88c8486b6aec11c873f151185e5f1a5ec857754f5c0bc2e778dcfc181736a3f"
+    },
+    "som-core/tests/test_flow_m3_actual_trace.py": {
+      "before": null,
+      "after": "42732279798c95238d998b7e787c41d5c77a5e37eeaac1fa230751197b87c3da"
+    },
+    "som-core/scripts/verify_m3_selected_path.py": {
+      "before": null,
+      "after": "9157563b582d90c546d80764715bdc3df42591994190254604a50166976d2332"
+    }
+  },
+  "prior_target_source_changes": {
     "som-core/src/som_core/flow_m3_target.py": {
       "before": null,
       "after": "94f8b095188f9984f5d48b2c52f5fe1f7682577ca66ffd45fcb3e8018a94cc7a"
@@ -48,46 +78,103 @@
       "after": "bdbbadd7f88815c172e58e90b75889fc897e972b3c5dc33df9ec63ad5aab4eb9"
     }
   },
+  "previous_rounds": [
+    {
+      "round": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1",
+      "status": "failed_or_interrupted",
+      "pipeline_receipt_sha256": "00410cb90655d2023d503d213a7cc4fbe13a47c3ae74c0b686b9604e791932e3",
+      "failure": "KeyboardInterrupt('M3 continuation controller interrupted')",
+      "weights_created": false,
+      "note": "All original records remain local; no partial result is reused as a new admission pass"
+    },
+    {
+      "round": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r2",
+      "status": "failed_or_interrupted",
+      "pipeline_receipt_sha256": "bc660d3f9f4b6a0779ae8101a0f9c9b7719e1e1c745a50758475092862291eed",
+      "failure": "KeyboardInterrupt('M3 continuation controller interrupted')",
+      "weights_created": false,
+      "note": "All original records remain local; no partial result is reused as a new admission pass"
+    },
+    {
+      "round": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r3",
+      "status": "failed_or_interrupted",
+      "pipeline_receipt_sha256": "60cba2c74bd6037df0f31547538c623dc7b19e7e7630205d8b209f6d6ccb5e46",
+      "failure": "KeyboardInterrupt('M3 continuation controller interrupted')",
+      "weights_created": false,
+      "note": "All original records remain local; no partial result is reused as a new admission pass"
+    }
+  ],
   "prerequisites": {
     "python-prerequisites-001.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/python-prerequisites-001.json",
-      "sha256": "c2e8ca0e29d914cc80764088497548e92095de2d9d1134af9091615c948b2bb1",
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/python-prerequisites-001.json",
+      "sha256": "088086dc28d6c3b207a365c0c3fe89b036c7ce1e19815d111ba34782175ee2c7",
+      "passed": true,
+      "exit_code": 0
+    },
+    "repair-rust-tests-001.json": {
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/repair-rust-tests-001.json",
+      "sha256": "3b3480b3391abbe0e72d3774abd4a613c5eb7d004436e9cd864aeaee5d0841eb",
+      "passed": true,
+      "exit_code": 0,
+      "passed_tests": 37,
+      "ignored_tests": 3
+    },
+    "rust-build-001/result.json": {
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/rust-build-001/result.json",
+      "sha256": "1e34ae4bf7ea3faf569a8ee9a3467e73afc980bd4a2cb069b52b55c8a376c247",
+      "passed": true,
+      "exit_code": 0
+    },
+    "runtime-retention-001.json": {
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/runtime-retention-001.json",
+      "sha256": "51ef9325f07afe7825f0d8941d792fe1683e512472bc0cbdd9f934a126e75337",
       "passed": true
     },
+    "loader-error-format-001/result.json": {
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/loader-error-format-001/result.json",
+      "sha256": "efbcde9c789eb6c7294e13085eabe9de670837eb7a83f381d2523a8606c70fd5",
+      "passed": true,
+      "scope": "metadata-only native loader diagnostic; no weights",
+      "exit_code": 1
+    },
     "mask-parity-001/result.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/mask-parity-001/result.json",
-      "sha256": "690a4454e8ddb4862dd3b96523b39983747d530c8ab236a4e11b56d61ba00bdb",
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/mask-parity-001/result.json",
+      "sha256": "4e964d4918b487945429b69c9c25bffd9627d0b1b19408951618ed90550d3476",
       "passed": true
     },
     "native-constrained-smoke-001/result.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/native-constrained-smoke-001/result.json",
-      "sha256": "8bfe27b1d44ac3b8e2618940f4f0c7cbd13051bf5db9eeae9bfa300c9e5b6847",
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/native-constrained-smoke-001/result.json",
+      "sha256": "6061b1be2fc798bdd194a7998de35e1c5b02fae8a280dc34e50dce41a468f2f8",
       "passed": true
     },
     "compact-codec-refusals-001/result.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/compact-codec-refusals-001/result.json",
-      "sha256": "66658b073b24a72f50400bba6d4e0ca7ee24dbe13d5161b006534b7cd1cd21d2",
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/compact-codec-refusals-001/result.json",
+      "sha256": "6c1844848a688b064b4f41ec57ba9247d950d3b3ed4d22f190ad0fbfad83b9c8",
       "passed": true
     },
     "compact-compiler-refusals-001/result.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/compact-compiler-refusals-001/result.json",
-      "sha256": "dcf8ebf4379a1a4763c289eb86293f6abc6ff29ba2177197d9dcace76a20b6b3",
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/compact-compiler-refusals-001/result.json",
+      "sha256": "ec07e91ad94c4c0ed5a474c4c3d03d59996f1386ba91edbac4111468cee15547",
       "passed": true
-    },
-    "new-input-parity-001/result.json": {
-      "path": "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/new-input-parity-001/result.json",
-      "sha256": "fbb4b0180e83d18f7b273a11fff1327fb7e2b25ec0e30a5d5ad8b4edce96744f",
-      "passed": true,
-      "matched": 2700,
-      "target_roundtrips": 2700,
-      "target_native_decodes": 2700,
-      "target_mask_matches": 2700
     }
+  },
+  "python_tests": 170,
+  "rust_tests": {
+    "passed": 37,
+    "ignored": 3,
+    "ignored_scope": "Local Metal model tests require the separate actual-model gates"
+  },
+  "retained_runtime": {
+    "passed": true,
+    "runtime": "som-rs/runtime/versions/ff8e2ca995bd063c3022e72a98bb83dcd39c6e373bffedddb8fecf3d2a9017b5",
+    "runtime_inventory_sha256": "d3c44c4bc50248ed4c2c332f8a8f307d8c8dc3c65c5bd92f42fc48796aa2702c",
+    "build_receipt_sha256": "1e34ae4bf7ea3faf569a8ee9a3467e73afc980bd4a2cb069b52b55c8a376c247",
+    "weights_created": false
   },
   "full_admission": {
     "required": 2700,
     "complete": false,
-    "status": "pending; fresh M2 protection and source sealing precede the complete quality and behavior gate"
+    "status": "Fresh r4 prerequisites and source seal precede complete independent quality and behavior; no previous-round partial passes are counted"
   },
   "training": {
     "started": false,
@@ -97,8 +184,25 @@
     "spent_seconds_before_training": 231398.2452680124,
     "remaining_seconds_before_training": 373401.7547319876,
     "automatic_start_condition": "fresh same-source 2700/2700 admission; no unclosed budget attempt",
-    "stop_after": "earliest raw development 300/300 or remaining shared time exhausted"
+    "stop_after": "earliest raw development 300/300 or remaining shared time exhausted",
+    "shared_budget_sha256": "9bc920678f899c2be2277d9ed4ae0e73c262bd99d0728c18ca513a6a7008414f"
   },
+  "native_development": {
+    "required": 12,
+    "status": "unrun; requires earliest raw development 300/300 checkpoint",
+    "scope": "Selected M3 weights, loader hash/version negative controls, actual input/output trace, complete HTTP and CLI, strict quality and independent behavior",
+    "budget": "Native development inference and its complete quality/behavior probes are conservatively charged to the original shared week-long budget before formal tests"
+  },
+  "post_training_stages": [
+    "selected M3 native development12 and loader controls",
+    "formal constrained300 plus same-checkpoint raw300",
+    "full protected544",
+    "independent root audit",
+    "required documentation and main publication",
+    "fresh M2 rollback and M3 canaries",
+    "current switch and complete new/old CLI checks",
+    "GitHub per-ticket acceptance and M3 closeout readback"
+  ],
   "M2_health_at_capture": {
     "block_count": 357,
     "blocks_loaded": true,
@@ -119,19 +223,21 @@
     "som-rs/models/current": "flow-m2-candidate/smoke-r31-001",
     "som-code-python/data/blocks/current": "flow-v7-compact"
   },
-  "raw_records_local": true,
   "formal_model_evaluation": "unrun",
   "default_promoted": false,
   "M3_state": "open",
-  "paid_agent_runs": 0,
-  "real_cloud_runs": 0,
-  "aw_claim": "retained while the background controller writes; refreshed every 20 seconds; released at controller exit",
-  "policy_source_commit": "59dd63396bc2a2f1f3eb60853413029eb7c0e6f2",
-  "raw_target_proof_sha256": {
-    "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/new-input-parity-001/requests.jsonl": "9b8b95559cae584c435bcd9c7cb946c58d92d3011eec473aff62fa263b0ac953",
-    "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/new-input-parity-001/rust.stdout": "a7f8125ef7660622f8962ba32f855180c5328e8392ddc613a2feb8397c5c7766",
-    "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/new-input-parity-001/rust.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/new-input-parity-001/records.jsonl": "b4e2969b17f488bf4762f662fd9c4ddbe19d0d9b986f89159b49eeca870df93f",
-    "/Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/new-input-parity-001/mask-traces.jsonl.gz": "505f09cc96f62bfeefdb3839865f6112cc826be01f49666431334163a9543d9e"
-  }
+  "closeout_authorization": {
+    "source": "direct human replies in this chat on 2026-10-12",
+    "promotion_and_M3_closure": true,
+    "hourly_unattended_continuation": true,
+    "condition": "Every original M3 acceptance gate, required document and independent root audit passes; rollback and complete CLI checks pass"
+  },
+  "heartbeat": {
+    "id": "m3",
+    "status": "ACTIVE",
+    "interval_minutes": 60,
+    "target_thread_id": "01a12e33-b71a-7390-a32f-398986be50e4",
+    "notify": "meaningful phase completion, failure, all done or human decision only; quiet while unchanged"
+  },
+  "aw_claim": "retained while this background controller writes; refreshed every20 seconds; released on controller exit"
 }

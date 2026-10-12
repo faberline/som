@@ -106,7 +106,7 @@
         "m2_entry_state",
         "development_diagnosis"
       ],
-      "evidence": "新輪次 m3-flow-2026-10-12/r1 已啟動。flow-first 目標政策已有 165 項 Python 測試；完整新入場檢查進行中。全部 2,700 通過後才自動從 seed 17 訓練。共用時間帳上限未變。見 evidence/m3-2026-10-12-continuation.json。",
+      "evidence": "新輪次 m3-flow-2026-10-12/r4 已啟動。修正原生政策載入與實際 token 證據，170 Python 與37 Rust測試通過；3項模型測試未跑。完整2700同來源入場後才訓練。選定原生開發也計入原共用604800秒。全部通過後才允許切換与M3結案。見 evidence/m3-2026-10-12-continuation.json。",
       "acceptance": [
         "訓練前核對同來源 admission。來源改變時使用新封存輪次並重跑受影響的完整 admission。",
         "維持 Python／MLX、兩層、width 64、4 heads、vocab 1,024、context 4,096、seed 17、batch 8、Adam 3e-4 與只算輸出 loss。",
@@ -125,7 +125,7 @@
       "depends_on": [
         "training_checkpoint"
       ],
-      "evidence": "候選有部分 checkpoints，但沒有最早原始開發 300／300 的正式選定權重。",
+      "evidence": "Rust已綁定新target-policy sidecar的清單、版本與內容。實際選定模型尚未產生；完整載入負向檢查在選定模型開發路徑。",
       "acceptance": [
         "保存選定 checkpoint 的 tokenizer、權重、設定、資料、契約、codec、block、Ruff 及封存 legacy 雜湊。",
         "保存最早合格選模證據、訓練步數、共用時間帳本與用途標記。",
@@ -143,7 +143,7 @@
       "depends_on": [
         "data_audit"
       ],
-      "evidence": "目前 reference 合法集合 135／135 相同；201 正反案例通過。這不是正式模型 300 題驗收。",
+      "evidence": "已修正逐token驗收以使用模型实际輸出順序與實際v3輸入。參考與拒絕關卡重新在r4執行；正式實際模型尚未驗收。",
       "acceptance": [
         "逐 token 核對語法、型別、能力、作用域及引用的所有合法下一步。Python／Rust 集合一致。",
         "保留多種合法 block、順序、交易及引用；接受合法替代與不同 JSON key 順序。",
@@ -164,7 +164,7 @@
         "constraint_parity",
         "m2_entry_state"
       ],
-      "evidence": "M2 的 12 個 seen fixture Metal 證據已存在；M3 選定 checkpoint 路徑未跑。",
+      "evidence": "選定M3模型的完整12題開發路徑已加入正式測試前置，尚未執行。原生錯誤碼及formatter健康契約已有測試。",
       "acceptance": [
         "在隔離埠核對 Metal 權重及 tokenizer 載入、約束解碼、DSL 驗證、組裝、格式化及完整 HTTP 回應。",
         "使用封存的開發 smoke，不使用正式題選擇或修正 checkpoint。",
@@ -362,7 +362,7 @@
         "evidence_closeout",
         "m2_entry_state"
       ],
-      "evidence": "尚未執行。M2 current 指標維持原狀。",
+      "evidence": "人類已明確授權：全部驗收通過後切換current並關閉M3。每小時續作排程已啟用。尚無合格候選，不切換或結案。",
       "acceptance": [
         "確認所有 M3 關卡通過，再保存 M2 指標、模型、block、執行檔、啟動記錄與健康資訊。",
         "在測試埠證明 M2 可重新啟動及回復。M3 同時更新模型與 block 指標，不混用版本。",

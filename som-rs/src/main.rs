@@ -116,7 +116,7 @@ fn verify_manifest(model: &Path, blocks: &Path) -> Result<(u64, String), SomErro
             names.push("input-policy.json");
         }
         if m3 {
-            names.extend(som::flow_m3_model::EXTRA_SIDECARS.iter().copied());
+            names.extend(som::flow_m3_model::extra_sidecars(&config)?);
             som::flow_m3_model::verify_sidecars(model, &manifest)?;
         } else { som::flow_model::verify_sidecars(model, &manifest)?; }
         let legacy = model.join("legacy");

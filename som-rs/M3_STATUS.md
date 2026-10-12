@@ -1,9 +1,9 @@
 # M3 status — 2026-10-12
 
 M3 is not complete. The accepted development model remains M2.
-The active continuation round is `m3-flow-2026-10-12/r1`.
+The active continuation round is `m3-flow-2026-10-12/r4`.
 Its dataset remains `som-core/data/flow-m3-r10`.
-Its fresh candidate is `models/flow-m3-candidate/flow-first-r10-20261012-001`.
+Its fresh candidate is `models/flow-m3-candidate/flow-first-r10-20261012-004`.
 The prior r6 round and its step 74,000 checkpoint remain preserved.
 The recovery work for #21, #22 and #23 is complete.
 Their results are saved on GitHub. All three tickets are closed as completed.
@@ -113,40 +113,72 @@ Keep formal cases outside diagnosis and checkpoint selection.
 
 ## Active continuation round
 
-The human authorized continued training on 2026-10-12.
+The human authorized full M3 completion on 2026-10-12.
+All gates must pass before the default changes or M3 closes.
+The human also authorized hourly continuation in this chat.
+The active heartbeat is `m3`. It stays quiet while no action is needed.
+It resumes the root audit and closeout after the background gates finish.
+
 The M3 target policy is `som.flow.m3-output-order.v1`.
-It changes only the root output-key order to `flow`, `files`, `version`.
+Its root output keys are `flow`, `files`, then `version`.
 The model still emits every file, block, transaction and reference.
 The M2 codec, v3 input, architecture, optimizer and seed remain unchanged.
-The trainer, admission and source seal require the same target-policy version.
-The candidate saves that policy as a hashed sidecar.
 
-The focused Python tests pass 165 cases.
-The fresh prefix gate passes 135 cases. The native M2 model path passes 12.
-The existing compact codec and compiler pass all 163 valid and 38 invalid cases.
-All 2,700 new targets pass lossless recovery, Rust decoding and prefix parity.
-The controller is checking M2 protection before new source sealing.
-Complete reference quality and behavior admission follows these prerequisites.
-These partial checks do not admit weights or establish improved model accuracy.
+The first continuation missed two native acceptance requirements.
+Rust must list and verify the new `target-policy.json` file.
+Prefix evidence must use the exact emitted token order and actual model input.
+Both requirements are now checked.
+The loader checks the policy version and its compiled content.
+Older exports keep their own original file inventory.
+The native refusal checker reads the actual error code.
+The health checker uses the public `ruff 0.16.6` formatter version.
+All earlier rounds and partial results remain local.
+Rounds r1, r2 and r3 stopped before new M3 weights were created.
+Their partial checks do not admit the r4 candidate.
 
-The controller PID is 37433. Its local command is:
+The final source passes 170 focused Python tests.
+Rust passes 37 tests. Three local-model tests remain ignored in that command.
+Those ignored tests give no native acceptance credit.
+Eight release executables were rebuilt and retained with source hashes.
+The fresh r4 controller repeats native, codec, mask and M2 protection gates.
+It then seals this source and checks all 2,700 reference products.
+Every product must pass strict quality and independent behavior.
+No M3 training or formal model check has started yet.
+
+The controller PID is 50628. Its local command is:
 
 ```text
-/Users/chrischeng/faberlines/som/som-rs/runtime/acceptance-m3-venv/bin/python /Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r1/run_round.py
+/Users/chrischeng/faberlines/som/som-rs/runtime/acceptance-m3-venv/bin/python /Users/chrischeng/faberlines/som/som-rs/evals/m3-flow-2026-10-12/r4/run_round.py
 ```
 
-It must seal the new source and pass all 2,700 admission products.
-It then starts a fresh candidate from seed 17 with the same shared time ledger.
+After complete admission, it creates a fresh seed-17 candidate.
 Every 1,000 steps, it checks all 300 raw development sequences.
-It stops at the earliest 300/300 checkpoint or the remaining time limit.
-It does not run formal model acceptance or promote the candidate.
+It selects the earliest 300/300 checkpoint.
+The selected checkpoint must pass 12 frozen development prompts through Rust,
+Metal, HTTP and CLI before formal model tests open.
+It also runs loader hash and version rejection controls.
+The 12 products pass complete quality and independent behavior checks.
+This native development stage also uses the original shared time ledger.
+Its quality and behavior time is charged conservatively.
+The one-week limit remains 604,800 seconds.
+The original five attempts remain unchanged.
+
+The same fixed checkpoint then runs 300 constrained formal cases.
+It also runs 300 separate raw formal controls and full protection for 544 products.
+It stops with `gates_complete_pending_root_audit` after these gates pass.
+The root audit checks every receipt and the separate M2 protection groups.
+Required documents and a bound documentation receipt must be complete.
+Fresh M2 rollback and M3 canaries must pass before both current links switch.
+Complete new and old CLI checks must pass after the switch.
+Only then can the remaining tickets and M3 close on GitHub.
+Failed or unrun checks cannot pass. A failed switch restores M2.
+
 The model, runtime, source archive and raw records stay on this workstation.
 See [the continuation index](evidence/m3-2026-10-12-continuation.json).
-
+Read the live `pipeline-001/result.json` before starting any controller.
 The AW claim remains held while this controller writes.
-It refreshes its activity and releases the claim when it exits.
-Read its live `pipeline-001/result.json` before starting another controller.
-Do not change the sealed source during this round.
+It refreshes activity and releases the claim when it exits.
+Do not change its sealed source or start a second trainer.
 
 ## Development service
 
@@ -208,7 +240,7 @@ Each ticket has one bounded scope, dependencies and acceptance checks.
 | [#37](https://github.com/faberline/som/issues/37) | Open | Safe promotion, tracker readback and cleanup |
 
 GitHub readback confirms #21–#23 are closed as completed.
-The human authorized document publication and continued training under #24.
+The human authorized complete M3 work, hourly continuation and gated closeout.
 Work under #24 has started in the new round. Training starts automatically
 only after its complete same-source admission. No optimizer update occurred
 during the recovery diagnosis.
