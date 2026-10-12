@@ -1,0 +1,118 @@
+{
+  "version": "som.flow.acceptance.v1",
+  "checks": {
+    "dataflow": [
+      "observe typed outputs",
+      "reject forward, cross-arm and cyclic references"
+    ],
+    "branches": [
+      "observe both arms and all three nested paths",
+      "accept matching typed joins",
+      "reject leaking results"
+    ],
+    "transactions": [
+      "observe one session and commit per scope",
+      "observe committed writes before later failure",
+      "reject missing and nested transactions"
+    ],
+    "database_reverse": [
+      "reverse committed groups in one transaction",
+      "restore only changed fields",
+      "preserve concurrent revisions",
+      "reject absent or wrong inverses"
+    ],
+    "provider_reverse": [
+      "observe exact S3 versions and GCS generations",
+      "retain preexisting identical objects",
+      "prove lost replies using provider observations",
+      "leave unknown outcomes pending"
+    ],
+    "recovery": [
+      "interrupt and restart a process",
+      "recover only pending reverse work",
+      "observe one concurrent claimant",
+      "fence an expired epoch",
+      "use a new run for a new forward execution"
+    ],
+    "identity": [
+      "owner isolation",
+      "editor before effects",
+      "OAuth CSRF",
+      "expiry, revocation and replay"
+    ],
+    "legacy": [
+      "old 100 tasks",
+      "14 services plus 120 and 80 compositions",
+      "old-format byte identity and rejection classes"
+    ],
+    "artifact": [
+      "Python/Rust final-byte identity",
+      "strict quality tools",
+      "format idempotence",
+      "12 files, 64 blocks, 65536 bytes, 2048 input/output tokens"
+    ],
+    "startup": [
+      "missing settings",
+      "provider failure and recovery",
+      "persistent rows after restart",
+      "migration upgrade, downgrade, upgrade"
+    ],
+    "model": [
+      "Metal test-weight full decode",
+      "preserve every emitted choice",
+      "accept two legal plans",
+      "reject incorrect choices without repair"
+    ]
+  },
+  "behavior_oracle": "public requirement plus database/provider observations; no expected source or unique block sequence",
+  "formal_use": "acceptance only; never training, tuning or checkpoint selection",
+  "test_weights": "development smoke only; not a correctness or generalization claim",
+  "scope": {
+    "database": [
+      "postgresql",
+      "mongodb"
+    ],
+    "auth": [
+      "jwt",
+      "firebase",
+      "google_oauth"
+    ],
+    "storage": [
+      "none",
+      "s3",
+      "gcs"
+    ],
+    "workflow": [
+      "json_export",
+      "gzip_export",
+      "csv",
+      "decimal_summary",
+      "statistics"
+    ]
+  },
+  "exclusions": [
+    "Experiment",
+    "Observation",
+    "Document",
+    "Review"
+  ],
+  "limits": {
+    "actions": 8,
+    "branches": 2,
+    "depth": 2,
+    "transactions": 2,
+    "files": 12,
+    "blocks": 64,
+    "bytes": 65536,
+    "input_tokens": 2048,
+    "output_tokens": 2048
+  },
+  "passed_required": "all applicable checks; no supported rejection counted as success",
+  "pending_later": [
+    "M3 full training",
+    "M5 Claude Experiment gap",
+    "M5 real cloud",
+    "M5 current switch",
+    "M5 token adoption"
+  ]
+}

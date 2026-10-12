@@ -1,0 +1,104 @@
+{
+  "status": "reference-development-not-frozen",
+  "application_count": 14,
+  "cases": [
+    {
+      "index": 0,
+      "app": "app_projects",
+      "files": 12,
+      "bytes": 24144,
+      "paired": true
+    },
+    {
+      "index": 1,
+      "app": "app_catalogs",
+      "files": 12,
+      "bytes": 29271,
+      "paired": true
+    },
+    {
+      "index": 2,
+      "app": "app_collections",
+      "files": 12,
+      "bytes": 30164,
+      "paired": true
+    },
+    {
+      "index": 3,
+      "app": "app_recipes",
+      "files": 12,
+      "bytes": 23458,
+      "paired": true
+    },
+    {
+      "index": 4,
+      "app": "app_customers",
+      "files": 12,
+      "bytes": 30397,
+      "paired": true
+    },
+    {
+      "index": 5,
+      "app": "app_devices",
+      "files": 12,
+      "bytes": 29574,
+      "paired": true
+    },
+    {
+      "index": 6,
+      "app": "app_surveys",
+      "files": 10,
+      "bytes": 24020,
+      "paired": true
+    },
+    {
+      "index": 7,
+      "app": "app_courses",
+      "files": 12,
+      "bytes": 29404,
+      "paired": true
+    },
+    {
+      "index": 8,
+      "app": "app_experiments",
+      "files": 10,
+      "bytes": 23796,
+      "paired": true
+    },
+    {
+      "index": 9,
+      "app": "app_documents",
+      "files": 12,
+      "bytes": 34171,
+      "paired": true
+    },
+    {
+      "index": 10,
+      "app": "app_projects_boundary",
+      "files": 12,
+      "bytes": 27647,
+      "paired": false
+    },
+    {
+      "index": 11,
+      "app": "app_projects_optional",
+      "files": 12,
+      "bytes": 23818,
+      "paired": false
+    },
+    {
+      "index": 12,
+      "app": "app_surveys_boundary",
+      "files": 10,
+      "bytes": 27292,
+      "paired": false
+    },
+    {
+      "index": 13,
+      "app": "app_surveys_optional",
+      "files": 10,
+      "bytes": 24029,
+      "paired": false
+    }
+  ]
+}

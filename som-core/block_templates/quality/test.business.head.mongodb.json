@@ -1,0 +1,4 @@
+{
+  "template": "APPLICATION = \"{{package}}\"\nimport os\nimport unittest\nfrom fastapi.testclient import TestClient\nname = os.environ.get(\"SOM_TEST_DATABASE_NAME\", \"\")\nif not name.startswith(\"som_test_\") or name != os.environ.get(\"MONGODB_DATABASE\"):\n    raise RuntimeError(\"tests require an explicitly named isolated MongoDB database\")\n",
+  "imports": []
+}

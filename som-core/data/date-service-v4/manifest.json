@@ -1,0 +1,12 @@
+{
+  "version": "som.prompt.v4",
+  "train_count": 280,
+  "heldout_count": 50,
+  "rejections_count": 10,
+  "split_rule": "v3 service training tasks versus frozen v3 stress tasks; one Todo example",
+  "train_sha256": "a271e2df1368dea8b38d451ae21bad31087bb2ae95951be55fb7d9f02e231d98",
+  "heldout_sha256": "1995632632138ca0c4a00b2a558ad6e96ca6aa3c33e17522d7167aab1110f8e8",
+  "expected_sha256": "15306e7fbb355d037b32d42d33a0ab440fe078d8620b01d4e598a3d74ab24443",
+  "rejections_sha256": "11d6bf917ccc070a1ff33aad9583e30b26a11fdf73bfd7ddd085608d031e9722",
+  "blocks_sha256": "211e80676e696f269541493735701c799fed732126c19fc5689072f39d84e195"
+}

@@ -1,0 +1,4 @@
+{
+  "template": "    @router.delete({{path}}, status_code=204)\n    async def delete_child(parent_id: int, child_id: int) -> Response:\n        \"\"\"Delete child.\"\"\"\n        async def write(session: AsyncClientSession) -> None:\n            \"\"\"Write.\"\"\"\n            row = await _require_child(parent_id, child_id, session)\n            await row.delete(session=session)\n        await transaction(write)\n        return Response(status_code=204)\n",
+  "imports": []
+}

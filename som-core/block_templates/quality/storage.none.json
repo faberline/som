@@ -1,0 +1,4 @@
+{
+  "template": "object_router = APIRouter()\n",
+  "imports": []
+}

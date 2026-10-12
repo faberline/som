@@ -1,0 +1,4 @@
+{
+  "template": "    @router.get({{path}}, response_model=ParentRead)\n    async def get_parent(parent_id: int) -> Parent:\n        \"\"\"Get parent.\"\"\"\n        session = None\n        return await require_parent(parent_id, session)\n",
+  "imports": []
+}

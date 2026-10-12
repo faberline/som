@@ -1,0 +1,423 @@
+{
+  "version": "som.m3-progress.v1",
+  "recorded_at": "2026-10-11T14:59:17.484442+00:00",
+  "round": "r6",
+  "milestone_complete": false,
+  "data": {
+    "path": "som-core/data/flow-m3-r10",
+    "manifest_sha256": "60f00afd9183e1e6c589e4e89837e2983a0738d2ea00b0ab34e5b3e963c6972f",
+    "counts": {
+      "train": 2400,
+      "dev": 300,
+      "formal": 300
+    },
+    "statistics": {
+      "train": {
+        "examples": 2400,
+        "apps": {
+          "project": 300,
+          "catalog": 300,
+          "bookmarks": 300,
+          "recipe": 300,
+          "customers": 300,
+          "devices": 300,
+          "survey": 300,
+          "courses": 300
+        },
+        "operation_nodes": 22681,
+        "atoms": {
+          "authorize": 2400,
+          "transaction": 3441,
+          "batch.create": 660,
+          "parent.get": 1504,
+          "child.list": 324,
+          "if": 2251,
+          "workflow.run": 4586,
+          "parent.list": 366,
+          "parent.patch": 996,
+          "parent.create": 1254,
+          "child.create": 1824,
+          "child.get": 198,
+          "child.patch": 564,
+          "workflow.import": 111,
+          "object.put": 1600,
+          "object.get": 602
+        },
+        "unique": {
+          "input": 2400,
+          "structure": 2400,
+          "graph": 2400
+        },
+        "capability_tuples": 90,
+        "max_input_tokens": 982,
+        "max_output_tokens": 1680
+      },
+      "dev": {
+        "examples": 300,
+        "apps": {
+          "project": 38,
+          "catalog": 38,
+          "bookmarks": 38,
+          "recipe": 38,
+          "customers": 37,
+          "devices": 37,
+          "survey": 37,
+          "courses": 37
+        },
+        "operation_nodes": 2837,
+        "atoms": {
+          "authorize": 300,
+          "transaction": 433,
+          "parent.create": 168,
+          "child.create": 235,
+          "parent.patch": 86,
+          "child.patch": 73,
+          "if": 312,
+          "workflow.run": 603,
+          "batch.create": 73,
+          "parent.get": 166,
+          "child.list": 44,
+          "workflow.import": 18,
+          "child.get": 27,
+          "object.put": 200,
+          "object.get": 67,
+          "parent.list": 32
+        },
+        "unique": {
+          "input": 300,
+          "structure": 300,
+          "graph": 300
+        },
+        "capability_tuples": 90,
+        "max_input_tokens": 970,
+        "max_output_tokens": 1672
+      },
+      "formal": {
+        "examples": 300,
+        "apps": {
+          "project": 30,
+          "catalog": 30,
+          "bookmarks": 30,
+          "recipe": 30,
+          "customers": 30,
+          "devices": 30,
+          "survey": 30,
+          "courses": 30,
+          "experiment": 30,
+          "documents": 30
+        },
+        "operation_nodes": 2845,
+        "atoms": {
+          "authorize": 300,
+          "transaction": 422,
+          "parent.create": 161,
+          "child.create": 230,
+          "parent.patch": 109,
+          "child.get": 27,
+          "if": 313,
+          "workflow.run": 614,
+          "child.patch": 65,
+          "parent.list": 29,
+          "batch.create": 77,
+          "parent.get": 179,
+          "workflow.import": 13,
+          "child.list": 35,
+          "object.put": 200,
+          "object.get": 71
+        },
+        "unique": {
+          "input": 300,
+          "structure": 300,
+          "graph": 300
+        },
+        "capability_tuples": 90,
+        "max_input_tokens": 970,
+        "max_output_tokens": 1663
+      }
+    },
+    "cross_split_overlap": {
+      "input": 0,
+      "structure": 0,
+      "graph": 0
+    },
+    "training_exclusions": [
+      "Experiment",
+      "Observation",
+      "Document",
+      "Review"
+    ]
+  },
+  "reference_admission": {
+    "path": "som-rs/evals/m3-flow-2026-10-05/r6/training-artifacts-001/admission.json",
+    "sha256": "1973246fd50e79c6c3dd54c452036e4e44985d0cb62008d6bd07ded100a5b885",
+    "required": 2700,
+    "passed": 2700,
+    "quality_behavior_passed": true,
+    "formal_training_examples": 0,
+    "full_report": {
+      "path": "som-rs/evals/m3-flow-2026-10-05/r6/training-artifacts-001/result.json",
+      "sha256": "8fa9332dd2d37720d7ce41c2805923202f0d734d78b7534d9a2cdafb4466e37e"
+    },
+    "source_seal_sha256": "5259ac3439b62c299adccbeafe0d0e72c7b30b3a3a72b3773b1b70b501719d8c"
+  },
+  "training": {
+    "state": "failed_or_interrupted",
+    "pipeline_path": "som-rs/evals/m3-flow-2026-10-05/r6/pipeline-001/result.json",
+    "pipeline_sha256": "34377034a80dbff5acf10ff5d56bbdcf54fada44aa18849231919e0de07bb912",
+    "last_complete_checkpoint": 74000,
+    "checkpoint_manifest": {
+      "path": "som-rs/models/flow-m3-candidate/r6-r10-001/checkpoints/074000/manifest.json",
+      "sha256": "76ad39a0859091d779c104b92dca37461ec6715ee6f63962cd32f061d9d5094c"
+    },
+    "raw_development": {
+      "step": 74000,
+      "correct": 3,
+      "total": 300
+    },
+    "checkpoint_elapsed_seconds": 88507.45208612503,
+    "development_perfect": false,
+    "last_log_step": 75000,
+    "selected_checkpoint": null,
+    "model_parameters": 427776,
+    "training_config": {
+      "layers": 2,
+      "width": 64,
+      "heads": 4,
+      "vocabulary": 1024,
+      "context": 4096,
+      "seed": 17,
+      "batch": 8,
+      "learning_rate": 0.0003,
+      "optimizer": "Adam",
+      "loss": "output tokens only",
+      "evaluation_interval": 1000
+    },
+    "formal_evaluation": "unrun"
+  },
+  "training_budget": {
+    "path": "som-rs/models/flow-m3-candidate/training-budget.json",
+    "sha256": "ea1e7ee9933b58c4b1ab1e5b759689ddb717f383732a62b8210df9bf25b96563",
+    "limit_seconds": 604800,
+    "closed_attempt_elapsed_seconds": [
+      33090.98023574997,
+      40931.66904973984,
+      18142.85340804211
+    ],
+    "unfinished_attempts": 1,
+    "settlement_required": true
+  },
+  "pretraining_evidence": [
+    {
+      "path": "som-rs/evals/m3-flow-2026-10-05/r6/data-audit-001/result.json",
+      "sha256": "513499027f19b5cd740bc7c6b44e8f28244f3421203e6525b2931d3e53491214",
+      "result": {
+        "version": "som.flow.m3-data-audit.v1",
+        "passed": true,
+        "dataset_sha256": "60f00afd9183e1e6c589e4e89837e2983a0738d2ea00b0ab34e5b3e963c6972f",
+        "formal_used_for_accuracy": false,
+        "checkpoint_selected": false
+      }
+    },
+    {
+      "path": "som-rs/evals/m3-flow-2026-10-05/r6/mask-parity-001/result.json",
+      "sha256": "690a4454e8ddb4862dd3b96523b39983747d530c8ab236a4e11b56d61ba00bdb",
+      "result": {
+        "version": "som.flow.mask-parity.v1",
+        "required": 135,
+        "passed": true,
+        "binary_sha256": "c1f4af6c58c7828446115a7eae93116477cd58926c3d9e877b222f4fcf264e1c"
+      }
+    },
+    {
+      "path": "som-rs/evals/m3-flow-2026-10-05/r6/new-input-parity-001/result.json",
+      "sha256": "019a1cecacc6b363fef5c5fbd0b516dd7be9b34c85453278b367ccd28637c587",
+      "result": {
+        "version": "som.flow.m3-new-input-parity.v1",
+        "required": 2700,
+        "matched": 2700,
+        "passed": true,
+        "source_unchanged": true,
+        "dataset_sha256": "60f00afd9183e1e6c589e4e89837e2983a0738d2ea00b0ab34e5b3e963c6972f",
+        "binary_sha256": "ce1756055b1d562bbe9257fd14eb449383533f9ebdace56685503e2785b7020a",
+        "script_sha256": "ff538b14ce0e33f5af44fb03b51c26b2fd51b03455015b00cd7c2c7002c43cea",
+        "predecessor_codec_sha256": "955448fd898e68927f1199d9d9f58d9a3eac5e429fb300d4a01f40e4e92f021c",
+        "records_sha256": "85feca2570027bc7dc11e7d27b7ad8468d423840ed7033d84259160aa28c1866",
+        "input_policy_version": "som.flow.m3-input.v3",
+        "semantic_views_recovered": 2700,
+        "legacy_inputs_and_targets_unchanged": 2700,
+        "formal_opened_for_model_evaluation": false,
+        "optimizer_updates": 0
+      }
+    },
+    {
+      "path": "som-rs/evals/m3-flow-2026-10-05/r6/compact-codec-refusals-001/result.json",
+      "sha256": "66658b073b24a72f50400bba6d4e0ca7ee24dbe13d5161b006534b7cd1cd21d2",
+      "result": {
+        "stage": "compact_codec_only",
+        "product_acceptance": false,
+        "source_unchanged": true,
+        "cases": 201,
+        "valid": 163,
+        "rejected": 38,
+        "passed": true,
+        "inputs_sha256": "37d53282b8047b95c4f774aeae283749925f044cde03d4a3aa362044b447f5ef"
+      }
+    },
+    {
+      "path": "som-rs/evals/m3-flow-2026-10-05/r6/compact-compiler-refusals-001/result.json",
+      "sha256": "dcf8ebf4379a1a4763c289eb86293f6abc6ff29ba2177197d9dcace76a20b6b3",
+      "result": {
+        "stage": "compact_compiler_and_artifact_parity",
+        "behavior_acceptance": false,
+        "source_unchanged": true,
+        "program_cases": 201,
+        "program_passed": 201,
+        "artifact_cases": 0,
+        "artifact_passed": 0,
+        "product_accepted": 0,
+        "passed": true
+      }
+    },
+    {
+      "path": "som-rs/evals/m3-flow-2026-10-05/r6/normal-assembler-refusals-001/result.json",
+      "sha256": "25d5943d8b357d2186bd7c4da0da0a73053918dfb194d515b55496066a25871c",
+      "result": {
+        "purpose": "normal assembler byte and refusal parity",
+        "m3_formal_opened": false,
+        "cases": 201,
+        "accepted": 163,
+        "rejected": 38,
+        "source_unchanged": true,
+        "binary_sha256": "430168f063f78e50a7252b12985a05d65001e4c8bee75f93b12c57e23e200241",
+        "script_sha256": "e74cced445ec1ba7accca4033fc2d960ffb5707fe0b9d797a76230010207bf2a",
+        "passed": true
+      }
+    },
+    {
+      "path": "som-rs/evals/m3-flow-2026-10-05/r6/pretraining-protection-001/result.json",
+      "sha256": "4eb8fd9c87db88599fcd9dd33f8c717a9e1ee45ed77f93b90b3da997369cfef3",
+      "result": {
+        "purpose": "pretraining native and assembler byte protection",
+        "behavior_acceptance": false,
+        "m3_accuracy": null,
+        "source_unchanged": true,
+        "script_sha256": "2530c80e75c6969bd7e91ea36d389e6357ed9c7b17969554f246ac86f286eb1d",
+        "default_unchanged": true,
+        "passed": true
+      }
+    },
+    {
+      "path": "som-rs/evals/m3-flow-2026-10-05/r6/rust-prerequisites-001/result.json",
+      "sha256": "5eb45dbe282db6448cad11f5d45cfd351bdb07368e39e30442bef39fa2c79fbe",
+      "result": {
+        "passed": true,
+        "source_unchanged": true,
+        "metal_path_requires_separate_actual_probe": true
+      }
+    }
+  ],
+  "default": {
+    "model_pointer": "flow-m2-candidate/smoke-r31-001",
+    "blocks_pointer": "flow-v7-compact",
+    "model_manifest_sha256": "24ba15d15ff2dae6f6551c70f1dfc8876526c9f3d80dc4d6581fab6ad065f0b7",
+    "blocks_sha256": "5a75971536ae02f627bb4a4e97737604cefc120e71293b8c10f7dcc442c460ea",
+    "pointers_changed": false,
+    "health_at_handoff": "unavailable"
+  },
+  "limits": {
+    "files": 12,
+    "blocks": 64,
+    "input_tokens": 2048,
+    "output_tokens": 2048,
+    "output_bytes": "observation",
+    "time": "observation",
+    "memory": "observation"
+  },
+  "unrun": [
+    "selected-checkpoint Rust Metal HTTP CLI",
+    "formal constrained 300",
+    "formal independent behavior and quality",
+    "same-checkpoint raw formal 300",
+    "selected-checkpoint final parity and refusals",
+    "full legacy and M2 protection",
+    "M3 promotion and tracker closeout"
+  ],
+  "local_assets": {
+    "raw_evaluations": "som-rs/evals/",
+    "models": "som-rs/models/",
+    "executables_and_environments": "som-rs/runtime/",
+    "large_historical_training_file": "som-core/data/composed/train.jsonl",
+    "deleted": false,
+    "included_in_git": false,
+    "fresh_clone_requires_local_assets_for_historical_and_model_checks": true
+  },
+  "paid_agent_runs": 0,
+  "real_cloud_runs": 0,
+  "landing_checks": {
+    "purpose": "source landing only; not full M3 acceptance",
+    "focused_python": {
+      "interpreter": "som-rs/runtime/acceptance-m3-venv/bin/python",
+      "passed": 162,
+      "seconds": 10.33,
+      "modules": [
+        "test_flow_m3_data",
+        "test_flow_m3_input",
+        "test_flow_m3_semantic_input",
+        "test_flow_m3_acceptance",
+        "test_train_flow_m3",
+        "test_flow_constraints"
+      ]
+    },
+    "rust_prior_gate": {
+      "passed": true,
+      "unchanged_source_hashes": 36,
+      "source_changes": 0
+    },
+    "public_source_scan": {
+      "credential_pattern_hits": 0,
+      "files_above_github_limit": 0
+    },
+    "initial_environment_failure": {
+      "interpreter": "som-core/.venv/bin/python",
+      "python": "3.14",
+      "exit_code": 2,
+      "error": "ModuleNotFoundError: google.auth",
+      "acceptance_credit": 0,
+      "resolved_with_existing_python_3_12_acceptance_environment": true
+    }
+  },
+  "tracker": {
+    "parents": {
+      "7": "closed",
+      "8": "open",
+      "9": "open"
+    },
+    "children": {
+      "completed": [
+        19,
+        20
+      ],
+      "open": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37
+      ]
+    },
+    "milestone_state": "open",
+    "native_subissue_links_verified": true
+  }
+}

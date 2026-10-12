@@ -1,0 +1,6 @@
+{
+  "template": "    class ChildListQuery(BaseModel):\n        \"\"\"Typed service contract.\"\"\"\n        limit: int = Field(20, ge=1, le={{max_limit}})\n        offset: int = Field(0, ge=0)\n        {{filter_field}}: bool | None = None\n        before: date | None = None\n\n    @router.get({{path}}, response_model=list[ChildRead])\n    def list_child(parent_id: int, db: Annotated[Session, Depends(session_provider)], query: Annotated[ChildListQuery, Query()]) -> list[Child]:\n        \"\"\"List child.\"\"\"\n        require_parent(db, parent_id)\n        statement = select(Child).where(Child.{{foreign_key}} == parent_id)\n        if query.{{filter_field}} is not None:\n            statement = statement.where(Child.{{filter_field}} == query.{{filter_field}})\n        if query.before is not None:\n            statement = statement.where(Child.{{date_field}} < query.before)\n        return list(db.scalars(statement.order_by(Child.id).limit(query.limit).offset(query.offset)))\n",
+  "imports": [
+    "from pydantic import BaseModel, Field"
+  ]
+}

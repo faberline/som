@@ -1,0 +1,7 @@
+{
+  "template": "def downgrade() -> None:\n    \"\"\"Downgrade.\"\"\"\n    # pylint: disable-next=no-member\n    op.drop_table({{child_table}})\n    # pylint: disable-next=no-member\n    op.drop_table({{parent_table}})\n",
+  "imports": [
+    "import hashlib",
+    "from sqlalchemy.sql.functions import now as database_now"
+  ]
+}

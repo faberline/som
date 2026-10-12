@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faberlines.local/som/som.prompt.v1.schema.json",
+  "title": "SOM prompt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "package", "resource", "logic", "tests", "migration"],
+  "properties": {
+    "version": {"const": "som.prompt.v1"},
+    "package": {"$ref": "#/$defs/identifier"},
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "table", "path", "fields"],
+      "properties": {
+        "name": {"$ref": "#/$defs/identifier"},
+        "table": {"$ref": "#/$defs/identifier"},
+        "path": {"type": "string", "pattern": "^/[a-z][a-z0-9_/-]*$"},
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "type", "required", "unique"],
+            "properties": {
+              "name": {"$ref": "#/$defs/identifier"},
+              "type": {"enum": ["str", "int", "bool", "float"]},
+              "required": {"type": "boolean"},
+              "unique": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    },
+    "logic": {"type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true, "items": {"enum": [
+      "Create a row. Return 409 for a unique value conflict.",
+      "Get a row by id. Return 404 if it does not exist.",
+      "List rows in id order.",
+      "Update supplied fields. Return 404 if the row does not exist.",
+      "Delete a row. Return 404 if it does not exist."
+    ]}},
+    "tests": {"type": "array", "minItems": 1, "maxItems": 1, "items": {"const": "Check CRUD, missing id, and unique conflict when supported."}},
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revision", "down_revision"],
+      "properties": {
+        "revision": {"$ref": "#/$defs/identifier"},
+        "down_revision": {"oneOf": [{"$ref": "#/$defs/identifier"}, {"type": "null"}]}
+      }
+    }
+  },
+  "$defs": {
+    "identifier": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"}
+  }
+}

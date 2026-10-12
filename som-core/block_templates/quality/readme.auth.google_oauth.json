@@ -1,0 +1,4 @@
+{
+  "template": "## Authentication\n\nSet GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, GOOGLE_EDITOR_SUBJECTS (JSON subject list), REDIS_URL and REDIS_NAMESPACE. Use /auth/google/login. Sessions and one-use login state live in Redis. Use the csrf value from /auth/me as X-CSRF-Token for writes. POST /auth/logout ends the session. Outside tests, HTTPS is required. Only local tests may use SOM_TEST_OIDC_ISSUER with APP_ENV=test.\n",
+  "imports": []
+}

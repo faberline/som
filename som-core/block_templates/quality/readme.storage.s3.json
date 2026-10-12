@@ -1,0 +1,4 @@
+{
+  "template": "## Objects\n\nSet S3_BUCKET and AWS credentials through the SDK environment or credential chain. Local tests may set SOM_TEST_S3_ENDPOINT with APP_ENV=test.\nPUT, GET and DELETE /objects/{key} accept safe keys of 1 to 80 characters. Objects are at most 1 MiB. PUT returns SHA-256. A same-body retry is safe. A different body with the same key returns 409. Object writes and database writes are separate operations.\n",
+  "imports": []
+}

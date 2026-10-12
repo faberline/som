@@ -1,0 +1,7 @@
+/target/
+
+# Local weights, executable environments, and raw evaluation records.
+# Keep these files on disk. Publish their hashes in evidence/.
+/models/
+/runtime/
+/evals/

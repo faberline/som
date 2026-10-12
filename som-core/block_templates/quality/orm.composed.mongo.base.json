@@ -1,0 +1,10 @@
+{
+  "template": "\n\nclass _SomUniqueField(_SomTypedDict):\n    \"\"\"Typed service contract.\"\"\"\n    unique: bool\n    bson_type: str\n\n\ndef encode_date(value: date) -> datetime:\n\n\n    \"\"\"Encode date.\"\"\"\n    if isinstance(value, datetime):\n        return value\n    return datetime.combine(value, time(), UTC)\n\n\ndef _som_query_indexes(fields: list[str | None], prefix: list[str]) -> list[list[str]]:\n\n\n    \"\"\" som query indexes.\"\"\"\n    return [[*prefix, field, \"_id\"] for field in fields if field is not None]\n",
+  "imports": [
+    "from typing import TypedDict as _SomTypedDict",
+    "from datetime import UTC, date, datetime, time",
+    "from typing import ClassVar as _SomClassVar",
+    "from beanie import Document as _SomBeanieDocument",
+    "from pydantic import Field"
+  ]
+}

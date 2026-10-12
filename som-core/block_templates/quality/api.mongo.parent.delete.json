@@ -1,0 +1,4 @@
+{
+  "template": "    @router.delete({{path}}, status_code=204)\n    async def delete_parent(parent_id: int) -> Response:\n        \"\"\"Delete parent.\"\"\"\n        async def write(session: AsyncClientSession) -> None:\n            \"\"\"Write.\"\"\"\n            row = await require_parent(parent_id, session)\n            await require_parent(parent_id, session, touch=True)\n            if await Child.find_one(Child.{{foreign_key}} == parent_id, session=session):\n                raise HTTPException(status_code=409, detail=\"parent has children\")\n            await row.delete(session=session)\n        await transaction(write)\n        return Response(status_code=204)\n",
+  "imports": []
+}

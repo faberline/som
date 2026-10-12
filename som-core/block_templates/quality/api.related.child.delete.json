@@ -1,0 +1,4 @@
+{
+  "template": "    @router.delete({{path}}, status_code=204)\n    def delete_child(parent_id: int, child_id: int, db: Annotated[Session, Depends(session_provider)]) -> Response:\n        \"\"\"Delete child.\"\"\"\n        row = _require_child(db, parent_id, child_id)\n        db.delete(row)\n        try:\n            db.commit()\n        except IntegrityError as exc:\n            integrity_failure(db, exc)\n        return Response(status_code=204)\n",
+  "imports": []
+}

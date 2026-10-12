@@ -1,0 +1,4 @@
+{
+  "template": "    @router.post({{path}}, response_model=ChildRead, status_code=201)\n    def create_child(parent_id: int, data: ChildCreate, db: Annotated[Session, Depends(session_provider)]) -> Child:\n        \"\"\"Create child.\"\"\"\n        require_parent(db, parent_id)\n        row = Child({{foreign_key}}=parent_id, **model_values(data))\n        db.add(row)\n        try:\n            db.commit()\n        except IntegrityError as exc:\n            integrity_failure(db, exc, True)\n        db.refresh(row)\n        return row\n",
+  "imports": []
+}

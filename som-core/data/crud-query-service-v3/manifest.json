@@ -1,0 +1,6 @@
+{
+  "train_count": 840,
+  "heldout_count": 150,
+  "train_sha256": "954bd054cf0c02d64a8e3c62ffa3b56834f9803c4d7bef044805572b5bd2b5ea",
+  "heldout_sha256": "83b2aa1a4aea0b72e35e588e9b4b4a1285bd2a422d5f2eecc3097810605222e4"
+}

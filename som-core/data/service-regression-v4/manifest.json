@@ -1,0 +1,11 @@
+{
+  "purpose": "v4 candidate regression: previous 50 v3 stress tasks plus 50 new v4 date tasks",
+  "count": 100,
+  "previous_count": 50,
+  "new_count": 50,
+  "previous_sha256": "d23c37c77f84ec8dcd7d0076c61e096b2578db790b609554a6884272adda1204",
+  "new_sha256": "1995632632138ca0c4a00b2a558ad6e96ca6aa3c33e17522d7167aab1110f8e8",
+  "heldout_sha256": "d38be64fb194fc7175df8b0d194d6ca232dd505336ca2e9b1c9ca47e1efe5704",
+  "expected_sha256": "6515a42df8645a3c99223a35a257e29051dcec48aaa5071a5d613f6c71c68e6f",
+  "blocks_sha256": "211e80676e696f269541493735701c799fed732126c19fc5689072f39d84e195"
+}

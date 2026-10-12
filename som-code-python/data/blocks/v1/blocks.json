@@ -1,0 +1,193 @@
+[
+  {
+    "id": "orm.base",
+    "version": 1,
+    "imports": [
+      "import sqlalchemy as sa",
+      "from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column"
+    ],
+    "params": {},
+    "template": "class Base(DeclarativeBase):\n    pass"
+  },
+  {
+    "id": "orm.model",
+    "version": 1,
+    "imports": [
+      "import sqlalchemy as sa"
+    ],
+    "params": {
+      "name": "identifier",
+      "table": "string",
+      "fields": "fields"
+    },
+    "template": "class {{name}}(Base):\n    __tablename__ = {{table}}\n\n    id: Mapped[int] = mapped_column(sa.Integer, primary_key=True)\n{{#fields}}    {{name}}: Mapped[{{create_type}}] = mapped_column({{sql_type}}, nullable={{nullable}}, unique={{unique}})\n{{/fields}}"
+  },
+  {
+    "id": "schema.create",
+    "version": 1,
+    "imports": [
+      "from pydantic import BaseModel"
+    ],
+    "params": {
+      "name": "identifier",
+      "fields": "fields"
+    },
+    "template": "class {{name}}Create(BaseModel):\n{{#fields}}    {{name}}: {{create_type}}{{create_default}}\n{{/fields}}"
+  },
+  {
+    "id": "schema.read",
+    "version": 1,
+    "imports": [
+      "from pydantic import ConfigDict"
+    ],
+    "params": {
+      "name": "identifier",
+      "fields": "fields"
+    },
+    "template": "class {{name}}Read(BaseModel):\n    model_config = ConfigDict(from_attributes=True)\n    id: int\n{{#fields}}    {{name}}: {{create_type}}\n{{/fields}}"
+  },
+  {
+    "id": "schema.patch",
+    "version": 1,
+    "imports": [
+      "from pydantic import BaseModel"
+    ],
+    "params": {
+      "name": "identifier",
+      "fields": "fields"
+    },
+    "template": "class {{name}}Patch(BaseModel):\n{{#fields}}    {{name}}: {{patch_type}} = None\n{{/fields}}"
+  },
+  {
+    "id": "api.head",
+    "version": 1,
+    "imports": [
+      "from collections.abc import Callable, Iterator",
+      "from fastapi import APIRouter, Depends, HTTPException",
+      "from sqlalchemy import select",
+      "from sqlalchemy.exc import IntegrityError",
+      "from sqlalchemy.orm import Session",
+      "from . import models, schemas"
+    ],
+    "params": {},
+    "template": "def create_router(get_session: Callable[[], Iterator[Session]]) -> APIRouter:\n    router = APIRouter()"
+  },
+  {
+    "id": "api.create",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "name": "identifier",
+      "path": "string"
+    },
+    "template": "    @router.post({{path}}, response_model=schemas.{{name}}Read, status_code=201)\n    def create(\n        payload: schemas.{{name}}Create, db: Session = Depends(get_session)\n    ) -> models.{{name}}:\n        row = models.{{name}}(**payload.model_dump())\n        db.add(row)\n        try:\n            db.commit()\n        except IntegrityError as exc:\n            db.rollback()\n            raise HTTPException(status_code=409, detail=\"conflict\") from exc\n        db.refresh(row)\n        return row"
+  },
+  {
+    "id": "api.get",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "name": "identifier",
+      "path": "string"
+    },
+    "template": "    @router.get({{path}} + \"/{item_id}\", response_model=schemas.{{name}}Read)\n    def get(item_id: int, db: Session = Depends(get_session)) -> models.{{name}}:\n        row = db.get(models.{{name}}, item_id)\n        if row is None:\n            raise HTTPException(status_code=404, detail=\"not found\")\n        return row"
+  },
+  {
+    "id": "api.list",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "name": "identifier",
+      "path": "string"
+    },
+    "template": "    @router.get({{path}}, response_model=list[schemas.{{name}}Read])\n    def list_items(db: Session = Depends(get_session)) -> list[models.{{name}}]:\n        return list(db.scalars(select(models.{{name}}).order_by(models.{{name}}.id)))"
+  },
+  {
+    "id": "api.list.query",
+    "version": 1,
+    "imports": [
+      "from fastapi import Query"
+    ],
+    "params": {
+      "name": "identifier",
+      "path": "string",
+      "filter_field": "identifier",
+      "max_limit": "integer"
+    },
+    "template": "    @router.get({{path}}, response_model=list[schemas.{{name}}Read])\n    def list_items(\n        filter_value: str | None = None,\n        limit: int = Query(default=20, ge=1, le={{max_limit}}),\n        offset: int = Query(default=0, ge=0),\n        db: Session = Depends(get_session),\n    ) -> list[models.{{name}}]:\n        stmt = select(models.{{name}})\n        if filter_value is not None:\n            stmt = stmt.where(models.{{name}}.{{filter_field}} == filter_value)\n        stmt = stmt.order_by(models.{{name}}.id).limit(limit).offset(offset)\n        return list(db.scalars(stmt))"
+  },
+  {
+    "id": "api.patch",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "name": "identifier",
+      "path": "string"
+    },
+    "template": "    @router.patch({{path}} + \"/{item_id}\", response_model=schemas.{{name}}Read)\n    def patch(\n        item_id: int, payload: schemas.{{name}}Patch, db: Session = Depends(get_session)\n    ) -> models.{{name}}:\n        row = db.get(models.{{name}}, item_id)\n        if row is None:\n            raise HTTPException(status_code=404, detail=\"not found\")\n        for key, value in payload.model_dump(exclude_unset=True).items():\n            setattr(row, key, value)\n        try:\n            db.commit()\n        except IntegrityError as exc:\n            db.rollback()\n            raise HTTPException(status_code=409, detail=\"conflict\") from exc\n        db.refresh(row)\n        return row"
+  },
+  {
+    "id": "api.delete",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "name": "identifier",
+      "path": "string"
+    },
+    "template": "    @router.delete({{path}} + \"/{item_id}\", status_code=204)\n    def delete(item_id: int, db: Session = Depends(get_session)) -> None:\n        row = db.get(models.{{name}}, item_id)\n        if row is None:\n            raise HTTPException(status_code=404, detail=\"not found\")\n        db.delete(row)\n        db.commit()"
+  },
+  {
+    "id": "api.tail",
+    "version": 1,
+    "imports": [],
+    "params": {},
+    "template": "    return router"
+  },
+  {
+    "id": "test.crud",
+    "version": 1,
+    "imports": [
+      "import os",
+      "import unittest",
+      "from fastapi import FastAPI",
+      "from fastapi.testclient import TestClient",
+      "from sqlalchemy import create_engine",
+      "from sqlalchemy.orm import Session",
+      "from {{package}}.api import create_router",
+      "from {{package}}.models import Base"
+    ],
+    "params": {
+      "package": "identifier",
+      "path": "string",
+      "fields": "fields"
+    },
+    "template": "class CrudTest(unittest.TestCase):\n    def setUp(self) -> None:\n        url = os.environ[\"TEST_DATABASE_URL\"]\n        self.engine = create_engine(url)\n        Base.metadata.create_all(self.engine)\n\n        def get_session():\n            with Session(self.engine) as db:\n                yield db\n\n        app = FastAPI()\n        app.include_router(create_router(get_session))\n        self.client = TestClient(app)\n\n    def tearDown(self) -> None:\n        Base.metadata.drop_all(self.engine)\n        self.engine.dispose()\n\n    def test_crud(self) -> None:\n        payload = {\n{{#fields}}            {{name_literal}}: {{sample}},\n{{/fields}}        }\n        created = self.client.post({{path}}, json=payload)\n        self.assertEqual(created.status_code, 201, created.text)\n        item_id = created.json()[\"id\"]\n        self.assertEqual(self.client.get({{path}} + f\"/{item_id}\").status_code, 200)\n        self.assertEqual(len(self.client.get({{path}}).json()), 1)\n        self.assertEqual(\n            self.client.patch({{path}} + f\"/{item_id}\", json={}).status_code, 200\n        )\n        self.assertEqual(self.client.delete({{path}} + f\"/{item_id}\").status_code, 204)\n        self.assertEqual(self.client.get({{path}} + f\"/{item_id}\").status_code, 404)"
+  },
+  {
+    "id": "test.list.query",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "path": "string",
+      "fields": "fields",
+      "filter_field": "string",
+      "max_limit": "integer"
+    },
+    "template": "    def test_query(self) -> None:\n        first = {\n{{#fields}}            {{name_literal}}: {{sample}},\n{{/fields}}        }\n        other = {**first, {{filter_field}}: \"other\"}\n        for payload in (first, first, other):\n            response = self.client.post({{path}}, json=payload)\n            self.assertEqual(response.status_code, 201, response.text)\n        page = self.client.get(\n            {{path}}, params={\"filter_value\": \"sample\", \"limit\": 1, \"offset\": 1}\n        )\n        self.assertEqual(page.status_code, 200, page.text)\n        self.assertEqual(len(page.json()), 1)\n        self.assertEqual(page.json()[0][{{filter_field}}], \"sample\")\n        self.assertEqual(\n            len(self.client.get({{path}}, params={\"filter_value\": \"other\"}).json()),\n            1,\n        )\n        self.assertEqual(\n            self.client.get({{path}}, params={\"limit\": 0}).status_code,\n            422,\n        )\n        self.assertEqual(\n            self.client.get({{path}}, params={\"limit\": {{max_limit}} + 1}).status_code,\n            422,\n        )\n        self.assertEqual(\n            self.client.get({{path}}, params={\"offset\": -1}).status_code,\n            422,\n        )"
+  },
+  {
+    "id": "migration.table",
+    "version": 1,
+    "imports": [
+      "from alembic import op",
+      "import sqlalchemy as sa"
+    ],
+    "params": {
+      "revision": "string",
+      "down_revision": "nullable_string",
+      "table": "string",
+      "fields": "fields"
+    },
+    "template": "revision = {{revision}}\ndown_revision = {{down_revision}}\nbranch_labels = None\ndepends_on = None\n\n\ndef upgrade() -> None:\n    op.create_table(\n        {{table}},\n        sa.Column(\"id\", sa.Integer(), primary_key=True),\n{{#fields}}        sa.Column({{name_literal}}, {{migration_type}}, nullable={{nullable}}, unique={{unique}}),\n{{/fields}}    )\n\n\ndef downgrade() -> None:\n    op.drop_table({{table}})"
+  }
+]

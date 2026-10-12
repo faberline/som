@@ -1,0 +1,78 @@
+{
+  "version": "som.python-quality.v1",
+  "exceptions": [
+    {
+      "symbol": "models.Base and generated SQLAlchemy mapped classes",
+      "rule": "pylint:too-few-public-methods",
+      "reason": "Mapped data classes expose fields rather than application methods.",
+      "verification": "real PostgreSQL CRUD and migration inspection"
+    },
+    {
+      "symbol": "app.create_router",
+      "rule": "pylint:too-many-locals,too-many-statements",
+      "reason": "The composition factory registers the requested routes. Each route receives its own checks.",
+      "verification": "operation subsets, route ordering and independent HTTP behavior"
+    },
+    {
+      "symbol": "alembic.env.context.configure,begin_transaction,run_migrations,is_offline_mode",
+      "rule": "pylint:no-member",
+      "reason": "Alembic installs these proxy symbols dynamically.",
+      "verification": "migration upgrade, downgrade and upgrade again"
+    },
+    {
+      "symbol": "alembic.versions.op.create_table,create_index,drop_table",
+      "rule": "pylint:no-member",
+      "reason": "Alembic installs these operation proxy symbols dynamically.",
+      "verification": "migration upgrade, database constraints and downgrade"
+    },
+    {
+      "symbol": "alembic.versions.revision,down_revision,branch_labels,depends_on",
+      "rule": "pylint:invalid-name",
+      "reason": "Alembic requires these exact lowercase module symbols.",
+      "verification": "Alembic revision graph and upgrade/downgrade"
+    },
+    {
+      "symbol": "integrations.firebase_admin,integrations._fb_auth,integrations._fb_creds,integrations._fb_errors,integrations.gcs_storage",
+      "rule": "mypy:import-untyped",
+      "reason": "Pinned Firebase and GCS distributions do not provide py.typed. Imports are isolated to the SDK boundary. Identity claims and downloaded bytes receive first-party validation.",
+      "verification": "malformed claims, expired and revoked tokens, byte integrity, provider failure and recovery"
+    },
+    {
+      "symbol": "integrations.LocalFirebaseCredential base _fb_creds.Base",
+      "rule": "mypy:misc,no-any-unimported",
+      "reason": "Firebase requires its untyped SDK credential base. The override returns the typed Google Credentials interface.",
+      "verification": "Firebase emulator login with revocation and provider failure checks"
+    },
+    {
+      "symbol": "integrations.LocalFirebaseCredential.get_credential and integrations.local_gcs_credentials AnonymousCredentials constructor",
+      "rule": "mypy:no-untyped-call",
+      "reason": "Google's zero-argument test credential constructor lacks an annotation. Only the constructor call receives this exception.",
+      "verification": "loopback-only configuration and mock authentication/object operations"
+    },
+    {
+      "symbol": "models generated Beanie classes id",
+      "rule": "mypy:assignment",
+      "reason": "Beanie declares ObjectId by default. This contract uses transactional integer counters and aliases the integer to _id.",
+      "verification": "integer ID persistence, restart, concurrent transactions and independent MongoDB inspection"
+    },
+    {
+      "symbol": "models generated Beanie classes",
+      "rule": "pylint:too-many-ancestors",
+      "reason": "The inherited SDK Document implementation has nine ancestors. The generated class adds no new inheritance layers.",
+      "verification": "all MongoDB CRUD, transactions and migration cases"
+    },
+    {
+      "symbol": "models generated Beanie Settings classes",
+      "rule": "pylint:too-few-public-methods",
+      "reason": "Beanie discovers this data-only settings class by name.",
+      "verification": "unique, foreign-key and query index inspection"
+    },
+    {
+      "symbol": "models generated Beanie classes field declarations",
+      "rule": "pylint:duplicate-code",
+      "reason": "The database document and HTTP schema repeat the same contract fields. They have different SDK bases and different managed-field and write-validation rules. The exception applies to data declarations only.",
+      "verification": "matching field types, order, defaults, readonly fields and all partial updates"
+    }
+  ],
+  "review_status": "approved narrow scopes; each candidate must supply verification evidence"
+}

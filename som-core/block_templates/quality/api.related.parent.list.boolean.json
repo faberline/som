@@ -1,0 +1,6 @@
+{
+  "template": "    class ParentListQuery(BaseModel):\n        \"\"\"Typed service contract.\"\"\"\n        limit: int = Field(20, ge=1, le={{max_limit}})\n        offset: int = Field(0, ge=0)\n        {{filter_field}}: bool | None = None\n\n    @router.get({{path}}, response_model=list[ParentRead])\n    def list_parent(db: Annotated[Session, Depends(session_provider)], query: Annotated[ParentListQuery, Query()]) -> list[Parent]:\n        \"\"\"List parent.\"\"\"\n        statement = select(Parent)\n        if query.{{filter_field}} is not None:\n            statement = statement.where(Parent.{{filter_field}} == query.{{filter_field}})\n        return list(db.scalars(statement.order_by(Parent.id).limit(query.limit).offset(query.offset)))\n",
+  "imports": [
+    "from pydantic import BaseModel, Field"
+  ]
+}

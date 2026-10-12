@@ -1,0 +1,4 @@
+{
+  "template": "    @router.post({{path}}, response_model=BatchRead, status_code=201)\n    def create_batch(data: BatchCreate, db: Annotated[Session, Depends(session_provider)]) -> BatchRead:\n        \"\"\"Create batch.\"\"\"\n        parent = Parent(**model_values(data.parent))\n        children = []\n        try:\n            db.add(parent)\n            db.flush()\n            for item in data.children:\n                child = Child({{foreign_key}}=parent.id, **model_values(item))\n                db.add(child)\n                db.flush()\n                children.append(child)\n            db.commit()\n        except IntegrityError as exc:\n            integrity_failure(db, exc)\n        db.refresh(parent)\n        for child in children:\n            db.refresh(child)\n        return BatchRead.model_validate({\"parent\": parent, \"children\": children})\n",
+  "imports": []
+}

@@ -1,5 +1,12 @@
 # SOM code corpus for Python
 
+> The current service library has 34 approved, typed blocks in
+> [blocks.json](data/blocks/current/blocks.json). The older CRUD and query library has
+> 16 blocks in [its registry](data/blocks/v1/blocks.json). Approval covers the tested
+> behavior. It does not claim the fastest code for every workload. The production Rust assembler
+> and HTTP service are in [som-rs](../som-rs/README.md). The older corpus
+> workflow below is research history.
+
 ## Brief
 
 `som-code-python` is the Python corpus project of the Snippet-Oriented

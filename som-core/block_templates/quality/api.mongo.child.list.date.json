@@ -1,0 +1,4 @@
+{
+  "template": "    @router.get({{path}}, response_model=list[ChildRead])\n    async def list_child(parent_id: int, {{filter_field}}: bool | None = None, before: date | None = None, page_size: Annotated[int, Query(alias=\"limit\", ge=1, le={{max_limit}})] = 20, offset: Annotated[int, Query(ge=0)] = 0) -> list[Child]:\n        \"\"\"List child.\"\"\"\n        filters: dict[str, object] = {\"{{foreign_key}}\": parent_id}\n        await require_parent(parent_id)\n        if {{filter_field}} is not None:\n            filters[\"{{filter_field}}\"] = {{filter_field}}\n        if before is not None:\n            filters[\"{{date_field}}\"] = {\"$lt\": datetime.combine(before, time(), UTC), \"$ne\": None}\n        return await Child.find(filters).sort(\"_id\").skip(offset).limit(page_size).to_list()\n",
+  "imports": []
+}

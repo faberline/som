@@ -1,0 +1,2765 @@
+{
+  "blocks": {
+    "api.business.head.mongodb": {
+      "authorization": null,
+      "bindings": {
+        "child_name": {
+          "$ref": "child.name"
+        },
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "parent_name": {
+          "$ref": "parent.name"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": null,
+      "params": {
+        "child_name": "identifier",
+        "foreign_key": "identifier",
+        "parent_name": "identifier"
+      },
+      "provides": "app:head",
+      "query": null,
+      "requires": [
+        "integrations:auth",
+        "models:child",
+        "models:parent",
+        "schemas:batch",
+        "schemas:child",
+        "schemas:parent"
+      ],
+      "routes": [],
+      "slot": "app",
+      "source_sha256": "db0ec78dd6567ae74b737436572f52e08058e7bbf9daba22e1ae5dbdf00dae09",
+      "transaction": null
+    },
+    "api.business.head.postgresql": {
+      "authorization": null,
+      "bindings": {
+        "child_name": {
+          "$ref": "child.name"
+        },
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "parent_name": {
+          "$ref": "parent.name"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "child_name": "identifier",
+        "foreign_key": "identifier",
+        "parent_name": "identifier"
+      },
+      "provides": "app:head",
+      "query": null,
+      "requires": [
+        "integrations:auth",
+        "models:child",
+        "models:parent",
+        "schemas:batch",
+        "schemas:child",
+        "schemas:parent"
+      ],
+      "routes": [],
+      "slot": "app",
+      "source_sha256": "a9976fa42059e8219ecf9443a5dd40cc0aca792ebe011633b4ae55a981687140",
+      "transaction": null
+    },
+    "api.business.workflow.csv": {
+      "authorization": "require_access",
+      "bindings": {
+        "parent_path": {
+          "$ref": "parent.path"
+        }
+      },
+      "capabilities": {
+        "workflow": "csv"
+      },
+      "operation": null,
+      "params": {
+        "parent_path": "string"
+      },
+      "provides": "app:workflow",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "workflow:export",
+        "workflow:import"
+      ],
+      "slot": "app",
+      "source_sha256": "e795cd85d675da7d3118a2e4be5f94a4e71c9625b9261ab7db956a41a79af812",
+      "transaction": "atomic"
+    },
+    "api.business.workflow.decimal_summary": {
+      "authorization": "require_access",
+      "bindings": {
+        "group_field": {
+          "$ref": "capabilities.group_field"
+        },
+        "parent_path": {
+          "$ref": "parent.path"
+        },
+        "value_field": {
+          "$ref": "capabilities.value_field"
+        }
+      },
+      "capabilities": {
+        "workflow": "decimal_summary"
+      },
+      "operation": null,
+      "params": {
+        "group_field": "string",
+        "parent_path": "string",
+        "value_field": "string"
+      },
+      "provides": "app:workflow",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "workflow:export"
+      ],
+      "slot": "app",
+      "source_sha256": "798e3c0a3d25d1b6debd6b7fd1df7c1218567ae83cbe5b5e131feccb6e5049d0",
+      "transaction": null
+    },
+    "api.business.workflow.gzip_export": {
+      "authorization": "require_access",
+      "bindings": {
+        "parent_path": {
+          "$ref": "parent.path"
+        }
+      },
+      "capabilities": {
+        "workflow": "gzip_export"
+      },
+      "operation": null,
+      "params": {
+        "parent_path": "string"
+      },
+      "provides": "app:workflow",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "workflow:export"
+      ],
+      "slot": "app",
+      "source_sha256": "c06faebe11234ade69f1ee496849b886ded489488f355bab8611815b7267cb14",
+      "transaction": null
+    },
+    "api.business.workflow.json_export": {
+      "authorization": "require_access",
+      "bindings": {
+        "parent_path": {
+          "$ref": "parent.path"
+        }
+      },
+      "capabilities": {
+        "workflow": "json_export"
+      },
+      "operation": null,
+      "params": {
+        "parent_path": "string"
+      },
+      "provides": "app:workflow",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "workflow:export"
+      ],
+      "slot": "app",
+      "source_sha256": "5960d8f4405fe7c2fdd71f66db6df536d620e35ccdb358f06857176548e2d049",
+      "transaction": null
+    },
+    "api.business.workflow.statistics": {
+      "authorization": "require_access",
+      "bindings": {
+        "parent_path": {
+          "$ref": "parent.path"
+        },
+        "value_field": {
+          "$ref": "capabilities.value_field"
+        }
+      },
+      "capabilities": {
+        "workflow": "statistics"
+      },
+      "operation": null,
+      "params": {
+        "parent_path": "string",
+        "value_field": "string"
+      },
+      "provides": "app:workflow",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "workflow:export"
+      ],
+      "slot": "app",
+      "source_sha256": "24d7f947a1b04bcab307c583d9486b90cb334d2a5aff3c017debc1616198a27c",
+      "transaction": null
+    },
+    "api.mongo.batch": {
+      "authorization": "require_access",
+      "bindings": {
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "path": {
+          "$ref": "batch.path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "batch",
+        "batch_create"
+      ],
+      "params": {
+        "foreign_key": "identifier",
+        "path": "string"
+      },
+      "provides": "app:batch",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "batch: batch_create"
+      ],
+      "slot": "app",
+      "source_sha256": "07c34ecac0092004893ca2b932e8a6307f4159622f931ceeaa2c9255549fd717",
+      "transaction": "atomic"
+    },
+    "api.mongo.child.create": {
+      "authorization": "require_access",
+      "bindings": {
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "path": {
+          "$ref": "child.path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "child",
+        "create"
+      ],
+      "params": {
+        "foreign_key": "identifier",
+        "path": "string"
+      },
+      "provides": "app:child_create",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "child: create"
+      ],
+      "slot": "app",
+      "source_sha256": "35b7a1d5556d26590c7fbaaa5e984571612caeee655f7a2e411ab6b337bb80ea",
+      "transaction": null
+    },
+    "api.mongo.child.delete": {
+      "authorization": "require_access",
+      "bindings": {
+        "path": {
+          "$ref": "child.item_path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "child",
+        "delete"
+      ],
+      "params": {
+        "path": "string"
+      },
+      "provides": "app:child_delete",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "child: delete"
+      ],
+      "slot": "app",
+      "source_sha256": "211407224c4ecccdc4a01270f6b2cc669ed667241e56aa9394ca675722bc72e9",
+      "transaction": null
+    },
+    "api.mongo.child.get": {
+      "authorization": "require_access",
+      "bindings": {
+        "path": {
+          "$ref": "child.item_path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "child",
+        "get"
+      ],
+      "params": {
+        "path": "string"
+      },
+      "provides": "app:child_get",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "child: get"
+      ],
+      "slot": "app",
+      "source_sha256": "8056c2ce1972955dd3e1dc771eb022b86bc5fff4b794975629cf4f812bcb8459",
+      "transaction": null
+    },
+    "api.mongo.child.list.boolean": {
+      "authorization": "require_access",
+      "bindings": {
+        "filter_field": {
+          "$ref": "child.filter_field"
+        },
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "max_limit": {
+          "$ref": "child.max_limit"
+        },
+        "path": {
+          "$ref": "child.path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "child",
+        "list"
+      ],
+      "params": {
+        "filter_field": "identifier",
+        "foreign_key": "identifier",
+        "max_limit": "integer",
+        "path": "string"
+      },
+      "provides": "app:child_list",
+      "query": [
+        "child",
+        "boolean"
+      ],
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "child: list"
+      ],
+      "slot": "app",
+      "source_sha256": "390affe04aead74b15ac157ca8932953b3e23979ec621e0b2f868310073cd969",
+      "transaction": null
+    },
+    "api.mongo.child.list.date": {
+      "authorization": "require_access",
+      "bindings": {
+        "date_field": {
+          "$ref": "child.date_field"
+        },
+        "filter_field": {
+          "$ref": "child.filter_field"
+        },
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "max_limit": {
+          "$ref": "child.max_limit"
+        },
+        "path": {
+          "$ref": "child.path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "child",
+        "list"
+      ],
+      "params": {
+        "date_field": "identifier",
+        "filter_field": "identifier",
+        "foreign_key": "identifier",
+        "max_limit": "integer",
+        "path": "string"
+      },
+      "provides": "app:child_list",
+      "query": [
+        "child",
+        "date"
+      ],
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "child: list"
+      ],
+      "slot": "app",
+      "source_sha256": "b00af8762dcca2e1b369806f2857dade64ddb645bacbae1800798b9a16912103",
+      "transaction": null
+    },
+    "api.mongo.child.list.plain": {
+      "authorization": "require_access",
+      "bindings": {
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "max_limit": {
+          "$ref": "child.max_limit"
+        },
+        "path": {
+          "$ref": "child.path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "child",
+        "list"
+      ],
+      "params": {
+        "foreign_key": "identifier",
+        "max_limit": "integer",
+        "path": "string"
+      },
+      "provides": "app:child_list",
+      "query": [
+        "child",
+        "plain"
+      ],
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "child: list"
+      ],
+      "slot": "app",
+      "source_sha256": "e9d6433c2b86dcc108e2b9af203ed437cc1c7a46cef5dc606ce3e235bd5fa15c",
+      "transaction": null
+    },
+    "api.mongo.child.patch": {
+      "authorization": "require_access",
+      "bindings": {
+        "path": {
+          "$ref": "child.item_path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "child",
+        "patch"
+      ],
+      "params": {
+        "path": "string"
+      },
+      "provides": "app:child_patch",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "child: patch"
+      ],
+      "slot": "app",
+      "source_sha256": "ce51ff1381b486a29af4a704a987851fed7e7ae2c09c84a2e20b65703910c839",
+      "transaction": null
+    },
+    "api.mongo.parent.create": {
+      "authorization": "require_access",
+      "bindings": {
+        "path": {
+          "$ref": "parent.path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "parent",
+        "create"
+      ],
+      "params": {
+        "path": "string"
+      },
+      "provides": "app:parent_create",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "parent: create"
+      ],
+      "slot": "app",
+      "source_sha256": "3262808822876d222284f865b4bd318b645dfb9b0e030441c0d7ba986cdd6951",
+      "transaction": null
+    },
+    "api.mongo.parent.delete": {
+      "authorization": "require_access",
+      "bindings": {
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "path": {
+          "$ref": "parent.item_path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "parent",
+        "delete"
+      ],
+      "params": {
+        "foreign_key": "identifier",
+        "path": "string"
+      },
+      "provides": "app:parent_delete",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "parent: delete"
+      ],
+      "slot": "app",
+      "source_sha256": "48dbb037e6960172a4b75a03b990cc5cbcde0da1624143b0ca924906618a4575",
+      "transaction": null
+    },
+    "api.mongo.parent.get": {
+      "authorization": "require_access",
+      "bindings": {
+        "path": {
+          "$ref": "parent.item_path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "parent",
+        "get"
+      ],
+      "params": {
+        "path": "string"
+      },
+      "provides": "app:parent_get",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "parent: get"
+      ],
+      "slot": "app",
+      "source_sha256": "7176fc9a34574e13d6701386ba8be1e47521119346502585635685b2a87f21c2",
+      "transaction": null
+    },
+    "api.mongo.parent.list.boolean": {
+      "authorization": "require_access",
+      "bindings": {
+        "filter_field": {
+          "$ref": "parent.filter_field"
+        },
+        "max_limit": {
+          "$ref": "parent.max_limit"
+        },
+        "path": {
+          "$ref": "parent.path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "parent",
+        "list"
+      ],
+      "params": {
+        "filter_field": "identifier",
+        "max_limit": "integer",
+        "path": "string"
+      },
+      "provides": "app:parent_list",
+      "query": [
+        "parent",
+        "boolean"
+      ],
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "parent: list"
+      ],
+      "slot": "app",
+      "source_sha256": "121eceaf467e7685ba7814c43337e9efe2ecd1b6cc0d6449477eeb493afa45ba",
+      "transaction": null
+    },
+    "api.mongo.parent.list.date": {
+      "authorization": "require_access",
+      "bindings": {
+        "date_field": {
+          "$ref": "parent.date_field"
+        },
+        "filter_field": {
+          "$ref": "parent.filter_field"
+        },
+        "max_limit": {
+          "$ref": "parent.max_limit"
+        },
+        "path": {
+          "$ref": "parent.path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "parent",
+        "list"
+      ],
+      "params": {
+        "date_field": "identifier",
+        "filter_field": "identifier",
+        "max_limit": "integer",
+        "path": "string"
+      },
+      "provides": "app:parent_list",
+      "query": [
+        "parent",
+        "date"
+      ],
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "parent: list"
+      ],
+      "slot": "app",
+      "source_sha256": "850dec886fe8fff5b55f152f0967fd92a996e68d26d04b022e7f84e927156898",
+      "transaction": null
+    },
+    "api.mongo.parent.list.plain": {
+      "authorization": "require_access",
+      "bindings": {
+        "max_limit": {
+          "$ref": "parent.max_limit"
+        },
+        "path": {
+          "$ref": "parent.path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "parent",
+        "list"
+      ],
+      "params": {
+        "max_limit": "integer",
+        "path": "string"
+      },
+      "provides": "app:parent_list",
+      "query": [
+        "parent",
+        "plain"
+      ],
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "parent: list"
+      ],
+      "slot": "app",
+      "source_sha256": "fc2346e8e2b693db3a4f9e65875caa7c4932d9bb3c16e850979052751d3e2ca7",
+      "transaction": null
+    },
+    "api.mongo.parent.patch": {
+      "authorization": "require_access",
+      "bindings": {
+        "path": {
+          "$ref": "parent.item_path"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": [
+        "parent",
+        "patch"
+      ],
+      "params": {
+        "path": "string"
+      },
+      "provides": "app:parent_patch",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "parent: patch"
+      ],
+      "slot": "app",
+      "source_sha256": "4856d637706b3ae777103f3d01814d5767598a782ecfccd958c13f5a98d86360",
+      "transaction": null
+    },
+    "api.related.batch": {
+      "authorization": "require_access",
+      "bindings": {
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "path": {
+          "$ref": "batch.path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "batch",
+        "batch_create"
+      ],
+      "params": {
+        "foreign_key": "identifier",
+        "path": "string"
+      },
+      "provides": "app:batch",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "batch: batch_create"
+      ],
+      "slot": "app",
+      "source_sha256": "f0caaf9ebcaa7f4a969e775cda2ca0b850277fd1cc3d3f86a57a018a0b70b2e9",
+      "transaction": "atomic"
+    },
+    "api.related.child.create": {
+      "authorization": "require_access",
+      "bindings": {
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "path": {
+          "$ref": "child.path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "child",
+        "create"
+      ],
+      "params": {
+        "foreign_key": "identifier",
+        "path": "string"
+      },
+      "provides": "app:child_create",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "child: create"
+      ],
+      "slot": "app",
+      "source_sha256": "4b625b59770ebd7ad8cb231be85a9dff94a0a1f5b367c370e13b3e3e783e3087",
+      "transaction": null
+    },
+    "api.related.child.delete": {
+      "authorization": "require_access",
+      "bindings": {
+        "path": {
+          "$ref": "child.item_path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "child",
+        "delete"
+      ],
+      "params": {
+        "path": "string"
+      },
+      "provides": "app:child_delete",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "child: delete"
+      ],
+      "slot": "app",
+      "source_sha256": "1a2dd4ac4a0fb8ce71c898cae053489109aef7a8c34942e36e3920f1a2294781",
+      "transaction": null
+    },
+    "api.related.child.get": {
+      "authorization": "require_access",
+      "bindings": {
+        "path": {
+          "$ref": "child.item_path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "child",
+        "get"
+      ],
+      "params": {
+        "path": "string"
+      },
+      "provides": "app:child_get",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "child: get"
+      ],
+      "slot": "app",
+      "source_sha256": "b6cea8243b27b4a4b7109c30d11bc643cc195be5a607f073dad2d8884a75c5f5",
+      "transaction": null
+    },
+    "api.related.child.list.boolean": {
+      "authorization": "require_access",
+      "bindings": {
+        "filter_field": {
+          "$ref": "child.filter_field"
+        },
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "max_limit": {
+          "$ref": "child.max_limit"
+        },
+        "path": {
+          "$ref": "child.path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "child",
+        "list"
+      ],
+      "params": {
+        "filter_field": "identifier",
+        "foreign_key": "identifier",
+        "max_limit": "integer",
+        "path": "string"
+      },
+      "provides": "app:child_list",
+      "query": [
+        "child",
+        "boolean"
+      ],
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "child: list"
+      ],
+      "slot": "app",
+      "source_sha256": "daef61aed0209bbcdf7623bf3b6026e1b942c4a19e00cfbfaf6b774afe2e7a96",
+      "transaction": null
+    },
+    "api.related.child.list.date": {
+      "authorization": "require_access",
+      "bindings": {
+        "date_field": {
+          "$ref": "child.date_field"
+        },
+        "filter_field": {
+          "$ref": "child.filter_field"
+        },
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "max_limit": {
+          "$ref": "child.max_limit"
+        },
+        "path": {
+          "$ref": "child.path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "child",
+        "list"
+      ],
+      "params": {
+        "date_field": "identifier",
+        "filter_field": "identifier",
+        "foreign_key": "identifier",
+        "max_limit": "integer",
+        "path": "string"
+      },
+      "provides": "app:child_list",
+      "query": [
+        "child",
+        "date"
+      ],
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "child: list"
+      ],
+      "slot": "app",
+      "source_sha256": "cbe508ac6849b3ea41dd96d0a6b19278734f24fcbfc5ec48045e371feb397db9",
+      "transaction": null
+    },
+    "api.related.child.list.plain": {
+      "authorization": "require_access",
+      "bindings": {
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "max_limit": {
+          "$ref": "child.max_limit"
+        },
+        "path": {
+          "$ref": "child.path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "child",
+        "list"
+      ],
+      "params": {
+        "foreign_key": "identifier",
+        "max_limit": "integer",
+        "path": "string"
+      },
+      "provides": "app:child_list",
+      "query": [
+        "child",
+        "plain"
+      ],
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "child: list"
+      ],
+      "slot": "app",
+      "source_sha256": "8238186da6cc6b1c89911dc80581b2e6c61cd3951cd496858e40dc24c3ec8af7",
+      "transaction": null
+    },
+    "api.related.child.patch": {
+      "authorization": "require_access",
+      "bindings": {
+        "path": {
+          "$ref": "child.item_path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "child",
+        "patch"
+      ],
+      "params": {
+        "path": "string"
+      },
+      "provides": "app:child_patch",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "child: patch"
+      ],
+      "slot": "app",
+      "source_sha256": "48e026dd276dd72ddbb3864ac490b7c5851c89c50d8d22203cbbcf737a785335",
+      "transaction": null
+    },
+    "api.related.parent.create": {
+      "authorization": "require_access",
+      "bindings": {
+        "path": {
+          "$ref": "parent.path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "parent",
+        "create"
+      ],
+      "params": {
+        "path": "string"
+      },
+      "provides": "app:parent_create",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "parent: create"
+      ],
+      "slot": "app",
+      "source_sha256": "2f6056513d8fed1de449296e033c52fdba7ba67a106cb573bd005d49443cde34",
+      "transaction": null
+    },
+    "api.related.parent.delete": {
+      "authorization": "require_access",
+      "bindings": {
+        "path": {
+          "$ref": "parent.item_path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "parent",
+        "delete"
+      ],
+      "params": {
+        "path": "string"
+      },
+      "provides": "app:parent_delete",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "parent: delete"
+      ],
+      "slot": "app",
+      "source_sha256": "0a3715f503334626ccce07b2fb6e91d75940248f0891928cbf3a66a46ee36d65",
+      "transaction": null
+    },
+    "api.related.parent.get": {
+      "authorization": "require_access",
+      "bindings": {
+        "path": {
+          "$ref": "parent.item_path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "parent",
+        "get"
+      ],
+      "params": {
+        "path": "string"
+      },
+      "provides": "app:parent_get",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "parent: get"
+      ],
+      "slot": "app",
+      "source_sha256": "e941ec563e9a78194ada37df89e109dd45c4cbd0e111101c532c2b9ae0fe3941",
+      "transaction": null
+    },
+    "api.related.parent.list.boolean": {
+      "authorization": "require_access",
+      "bindings": {
+        "filter_field": {
+          "$ref": "parent.filter_field"
+        },
+        "max_limit": {
+          "$ref": "parent.max_limit"
+        },
+        "path": {
+          "$ref": "parent.path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "parent",
+        "list"
+      ],
+      "params": {
+        "filter_field": "identifier",
+        "max_limit": "integer",
+        "path": "string"
+      },
+      "provides": "app:parent_list",
+      "query": [
+        "parent",
+        "boolean"
+      ],
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "parent: list"
+      ],
+      "slot": "app",
+      "source_sha256": "b824ac7b9811957001b94ef675369bb4fd28b7a697f40aead349a17be7b7e7a5",
+      "transaction": null
+    },
+    "api.related.parent.list.date": {
+      "authorization": "require_access",
+      "bindings": {
+        "date_field": {
+          "$ref": "parent.date_field"
+        },
+        "filter_field": {
+          "$ref": "parent.filter_field"
+        },
+        "max_limit": {
+          "$ref": "parent.max_limit"
+        },
+        "path": {
+          "$ref": "parent.path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "parent",
+        "list"
+      ],
+      "params": {
+        "date_field": "identifier",
+        "filter_field": "identifier",
+        "max_limit": "integer",
+        "path": "string"
+      },
+      "provides": "app:parent_list",
+      "query": [
+        "parent",
+        "date"
+      ],
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "parent: list"
+      ],
+      "slot": "app",
+      "source_sha256": "a834d3e077fac757c94ffda8b4e8fb1db0df2729e9025ec4e520f69e4af6a489",
+      "transaction": null
+    },
+    "api.related.parent.list.plain": {
+      "authorization": "require_access",
+      "bindings": {
+        "max_limit": {
+          "$ref": "parent.max_limit"
+        },
+        "path": {
+          "$ref": "parent.path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "parent",
+        "list"
+      ],
+      "params": {
+        "max_limit": "integer",
+        "path": "string"
+      },
+      "provides": "app:parent_list",
+      "query": [
+        "parent",
+        "plain"
+      ],
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "parent: list"
+      ],
+      "slot": "app",
+      "source_sha256": "3a60a81937edf11d1702e88963dc0d44b81cf4d2a07dbf4ee701075d1e8f1ec7",
+      "transaction": null
+    },
+    "api.related.parent.patch": {
+      "authorization": "require_access",
+      "bindings": {
+        "path": {
+          "$ref": "parent.item_path"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": [
+        "parent",
+        "patch"
+      ],
+      "params": {
+        "path": "string"
+      },
+      "provides": "app:parent_patch",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [
+        "parent: patch"
+      ],
+      "slot": "app",
+      "source_sha256": "364bb9a21b040380d0c3af7d42112f33036bf74a65bd1df5a6663ace90fec236",
+      "transaction": null
+    },
+    "api.tail": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {},
+      "operation": null,
+      "params": {},
+      "provides": "app:tail",
+      "query": null,
+      "requires": [
+        "app:head"
+      ],
+      "routes": [],
+      "slot": "app",
+      "source_sha256": "3b00c3650a0747194c0cd478304bed68911c69e6194ef3e4861e2d9a4de6d7f1",
+      "transaction": null
+    },
+    "auth.common": {
+      "authorization": null,
+      "bindings": {
+        "package": {
+          "$ref": "package"
+        }
+      },
+      "capabilities": {},
+      "operation": null,
+      "params": {
+        "package": "string"
+      },
+      "provides": "integrations:auth_common",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "integrations",
+      "source_sha256": "d619e0c2d4a525f89e327dc9f66e56ec62ea384dea38359d7695afcefc791d51",
+      "transaction": null
+    },
+    "auth.firebase": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "auth": "firebase"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "integrations:auth",
+      "query": null,
+      "requires": [
+        "integrations:auth_common"
+      ],
+      "routes": [],
+      "slot": "integrations",
+      "source_sha256": "4c2be618d36e2640d2a45c5172c490ee4709afcaace18639b818428bc0a36eac",
+      "transaction": null
+    },
+    "auth.google_oauth": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "auth": "google_oauth"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "integrations:auth",
+      "query": null,
+      "requires": [
+        "integrations:auth_common"
+      ],
+      "routes": [],
+      "slot": "integrations",
+      "source_sha256": "41f2fbc91a433b7dbb2415f3618fd79157e7265ff91d57997a3690fcfd244e3b",
+      "transaction": null
+    },
+    "auth.jwt": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "auth": "jwt"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "integrations:auth",
+      "query": null,
+      "requires": [
+        "integrations:auth_common"
+      ],
+      "routes": [],
+      "slot": "integrations",
+      "source_sha256": "7eea29eacad2c48c0b4cb89f84619b3eae689cba7379f34742551cb834bbdea4",
+      "transaction": null
+    },
+    "migration.mongo": {
+      "authorization": null,
+      "bindings": {
+        "child_table": {
+          "$ref": "child.table"
+        },
+        "parent_table": {
+          "$ref": "parent.table"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": null,
+      "params": {
+        "child_table": "string",
+        "parent_table": "string"
+      },
+      "provides": "mongo_migration:migration",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "mongo_migration",
+      "source_sha256": "1fbfb078bc662ed816104904311996904906c29a0943f75263e08493a6537c61",
+      "transaction": null
+    },
+    "migration.related.child.boolean": {
+      "authorization": null,
+      "bindings": {
+        "fields": {
+          "$ref": "child.fields"
+        },
+        "filter_field": {
+          "$ref": "child.filter_field"
+        },
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "table": {
+          "$ref": "child.table"
+        },
+        "target": {
+          "$ref": "relation.target"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "fields": "fields_v4",
+        "filter_field": "string",
+        "foreign_key": "string",
+        "table": "string",
+        "target": "string"
+      },
+      "provides": "migration:child",
+      "query": [
+        "child",
+        "boolean"
+      ],
+      "requires": [
+        "migration:head",
+        "migration:parent"
+      ],
+      "routes": [],
+      "slot": "migration",
+      "source_sha256": "58aa14ed6610446df1d1e763b8738eb43d2ac6bf5bf9e7edbc8c418782df3aaa",
+      "transaction": null
+    },
+    "migration.related.child.date": {
+      "authorization": null,
+      "bindings": {
+        "date_field": {
+          "$ref": "child.date_field"
+        },
+        "fields": {
+          "$ref": "child.fields"
+        },
+        "filter_field": {
+          "$ref": "child.filter_field"
+        },
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "table": {
+          "$ref": "child.table"
+        },
+        "target": {
+          "$ref": "relation.target"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "date_field": "string",
+        "fields": "fields_v4",
+        "filter_field": "string",
+        "foreign_key": "string",
+        "table": "string",
+        "target": "string"
+      },
+      "provides": "migration:child",
+      "query": [
+        "child",
+        "date"
+      ],
+      "requires": [
+        "migration:head",
+        "migration:parent"
+      ],
+      "routes": [],
+      "slot": "migration",
+      "source_sha256": "13f8c437bdce07956ac7a696f36158cde0961efb9dca45d7fa034c3cc22cee01",
+      "transaction": null
+    },
+    "migration.related.child.plain": {
+      "authorization": null,
+      "bindings": {
+        "fields": {
+          "$ref": "child.fields"
+        },
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "table": {
+          "$ref": "child.table"
+        },
+        "target": {
+          "$ref": "relation.target"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "fields": "fields_v4",
+        "foreign_key": "string",
+        "table": "string",
+        "target": "string"
+      },
+      "provides": "migration:child",
+      "query": [
+        "child",
+        "plain"
+      ],
+      "requires": [
+        "migration:head",
+        "migration:parent"
+      ],
+      "routes": [],
+      "slot": "migration",
+      "source_sha256": "9ae3290b347bb9808636a45a7c2b9f95bd0f9b418246e5e3171e25e21edc4c35",
+      "transaction": null
+    },
+    "migration.related.head": {
+      "authorization": null,
+      "bindings": {
+        "revision": {
+          "$ref": "migration.revision"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "revision": "string"
+      },
+      "provides": "migration:head",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "migration",
+      "source_sha256": "448163a7fd07dc432922518eb498c4fcc7eb09dc48b89401919c8e42366a8e9b",
+      "transaction": null
+    },
+    "migration.related.parent.boolean": {
+      "authorization": null,
+      "bindings": {
+        "fields": {
+          "$ref": "parent.fields"
+        },
+        "filter_field": {
+          "$ref": "parent.filter_field"
+        },
+        "table": {
+          "$ref": "parent.table"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "fields": "fields_v4",
+        "filter_field": "string",
+        "table": "string"
+      },
+      "provides": "migration:parent",
+      "query": [
+        "parent",
+        "boolean"
+      ],
+      "requires": [
+        "migration:head"
+      ],
+      "routes": [],
+      "slot": "migration",
+      "source_sha256": "07b60c1903bed994b39656217b729a9fc96b4e110a0554d7ddfabd88023652de",
+      "transaction": null
+    },
+    "migration.related.parent.date": {
+      "authorization": null,
+      "bindings": {
+        "date_field": {
+          "$ref": "parent.date_field"
+        },
+        "fields": {
+          "$ref": "parent.fields"
+        },
+        "filter_field": {
+          "$ref": "parent.filter_field"
+        },
+        "table": {
+          "$ref": "parent.table"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "date_field": "string",
+        "fields": "fields_v4",
+        "filter_field": "string",
+        "table": "string"
+      },
+      "provides": "migration:parent",
+      "query": [
+        "parent",
+        "date"
+      ],
+      "requires": [
+        "migration:head"
+      ],
+      "routes": [],
+      "slot": "migration",
+      "source_sha256": "010251f1f1a47a6e448f6cd1e5b53b0e850d99aaaa69a28cdbb8fa1345e0a868",
+      "transaction": null
+    },
+    "migration.related.parent.plain": {
+      "authorization": null,
+      "bindings": {
+        "fields": {
+          "$ref": "parent.fields"
+        },
+        "table": {
+          "$ref": "parent.table"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "fields": "fields_v4",
+        "table": "string"
+      },
+      "provides": "migration:parent",
+      "query": [
+        "parent",
+        "plain"
+      ],
+      "requires": [
+        "migration:head"
+      ],
+      "routes": [],
+      "slot": "migration",
+      "source_sha256": "2d48a758dd70fb74fd528d5dcddc66c409196211a7471e8ed4f5b44990923ed8",
+      "transaction": null
+    },
+    "migration.related.tail": {
+      "authorization": null,
+      "bindings": {
+        "child_table": {
+          "$ref": "child.table"
+        },
+        "parent_table": {
+          "$ref": "parent.table"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "child_table": "string",
+        "parent_table": "string"
+      },
+      "provides": "migration:tail",
+      "query": null,
+      "requires": [
+        "migration:child",
+        "migration:parent"
+      ],
+      "routes": [],
+      "slot": "migration",
+      "source_sha256": "72ce128c6b4060af0390ab75405490e637aa6e8e265bc2499291b7d59c048cf1",
+      "transaction": null
+    },
+    "orm.base": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "models:base",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "models",
+      "source_sha256": "694c8df43ce6f64e6ebc08c6af878f43cb1cdcb33a5c6701089face0db4bd4a0",
+      "transaction": null
+    },
+    "orm.composed.mongo.base": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "models:base",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "models",
+      "source_sha256": "753277feb94b43371c40d0f1f376bd6701fd244fcb40a2ddc80a62aeada3354f",
+      "transaction": null
+    },
+    "orm.composed.mongo.child": {
+      "authorization": null,
+      "bindings": {
+        "date_field": {
+          "$ref": "child.date_field"
+        },
+        "fields": {
+          "$ref": "child.fields"
+        },
+        "filter_field": {
+          "$ref": "child.filter_field"
+        },
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "name": {
+          "$ref": "child.name"
+        },
+        "table": {
+          "$ref": "child.table"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": null,
+      "params": {
+        "date_field": "nullable_string",
+        "fields": "fields_v4",
+        "filter_field": "nullable_string",
+        "foreign_key": "identifier",
+        "name": "identifier",
+        "table": "string"
+      },
+      "provides": "models:child",
+      "query": null,
+      "requires": [
+        "models:base",
+        "models:parent"
+      ],
+      "routes": [],
+      "slot": "models",
+      "source_sha256": "1af5caad9da44c9961aaabb8215ed7fecb3de8bc1e9eb4e2ec4579b0db9a7058",
+      "transaction": null
+    },
+    "orm.composed.mongo.parent": {
+      "authorization": null,
+      "bindings": {
+        "date_field": {
+          "$ref": "parent.date_field"
+        },
+        "fields": {
+          "$ref": "parent.fields"
+        },
+        "filter_field": {
+          "$ref": "parent.filter_field"
+        },
+        "name": {
+          "$ref": "parent.name"
+        },
+        "table": {
+          "$ref": "parent.table"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": null,
+      "params": {
+        "date_field": "nullable_string",
+        "fields": "fields_v4",
+        "filter_field": "nullable_string",
+        "name": "identifier",
+        "table": "string"
+      },
+      "provides": "models:parent",
+      "query": null,
+      "requires": [
+        "models:base"
+      ],
+      "routes": [],
+      "slot": "models",
+      "source_sha256": "10fc2b3717e35dd95b497c560f611c8dcb4de4f28bd652866cfdd0171e6cc131",
+      "transaction": null
+    },
+    "orm.related.child.boolean": {
+      "authorization": null,
+      "bindings": {
+        "fields": {
+          "$ref": "child.fields"
+        },
+        "filter_field": {
+          "$ref": "child.filter_field"
+        },
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "name": {
+          "$ref": "child.name"
+        },
+        "table": {
+          "$ref": "child.table"
+        },
+        "target": {
+          "$ref": "relation.target"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "fields": "fields_v4",
+        "filter_field": "string",
+        "foreign_key": "identifier",
+        "name": "identifier",
+        "table": "string",
+        "target": "string"
+      },
+      "provides": "models:child",
+      "query": [
+        "child",
+        "boolean"
+      ],
+      "requires": [
+        "models:base",
+        "models:parent"
+      ],
+      "routes": [],
+      "slot": "models",
+      "source_sha256": "57ff870f5f030e6c1cb8d0c2a4efa3c41026ef7eb79e411d2e85136c3da65b70",
+      "transaction": null
+    },
+    "orm.related.child.date": {
+      "authorization": null,
+      "bindings": {
+        "date_field": {
+          "$ref": "child.date_field"
+        },
+        "fields": {
+          "$ref": "child.fields"
+        },
+        "filter_field": {
+          "$ref": "child.filter_field"
+        },
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "name": {
+          "$ref": "child.name"
+        },
+        "table": {
+          "$ref": "child.table"
+        },
+        "target": {
+          "$ref": "relation.target"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "date_field": "string",
+        "fields": "fields_v4",
+        "filter_field": "string",
+        "foreign_key": "identifier",
+        "name": "identifier",
+        "table": "string",
+        "target": "string"
+      },
+      "provides": "models:child",
+      "query": [
+        "child",
+        "date"
+      ],
+      "requires": [
+        "models:base",
+        "models:parent"
+      ],
+      "routes": [],
+      "slot": "models",
+      "source_sha256": "8fc76ab11f2823b601e8a1cc1e6267a1e1c4973a2188281e8623160199dbd9c0",
+      "transaction": null
+    },
+    "orm.related.child.plain": {
+      "authorization": null,
+      "bindings": {
+        "fields": {
+          "$ref": "child.fields"
+        },
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "name": {
+          "$ref": "child.name"
+        },
+        "table": {
+          "$ref": "child.table"
+        },
+        "target": {
+          "$ref": "relation.target"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "fields": "fields_v4",
+        "foreign_key": "identifier",
+        "name": "identifier",
+        "table": "string",
+        "target": "string"
+      },
+      "provides": "models:child",
+      "query": [
+        "child",
+        "plain"
+      ],
+      "requires": [
+        "models:base",
+        "models:parent"
+      ],
+      "routes": [],
+      "slot": "models",
+      "source_sha256": "aa035b07fe91497c456fdcd88953e216f6e09cf013b18805ac52458947851e52",
+      "transaction": null
+    },
+    "orm.related.parent.boolean": {
+      "authorization": null,
+      "bindings": {
+        "fields": {
+          "$ref": "parent.fields"
+        },
+        "filter_field": {
+          "$ref": "parent.filter_field"
+        },
+        "name": {
+          "$ref": "parent.name"
+        },
+        "table": {
+          "$ref": "parent.table"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "fields": "fields_v4",
+        "filter_field": "string",
+        "name": "identifier",
+        "table": "string"
+      },
+      "provides": "models:parent",
+      "query": [
+        "parent",
+        "boolean"
+      ],
+      "requires": [
+        "models:base"
+      ],
+      "routes": [],
+      "slot": "models",
+      "source_sha256": "271517f868c39b9bdab9ab389bce6ee871022715ca0f82cc6f94831999801434",
+      "transaction": null
+    },
+    "orm.related.parent.date": {
+      "authorization": null,
+      "bindings": {
+        "date_field": {
+          "$ref": "parent.date_field"
+        },
+        "fields": {
+          "$ref": "parent.fields"
+        },
+        "filter_field": {
+          "$ref": "parent.filter_field"
+        },
+        "name": {
+          "$ref": "parent.name"
+        },
+        "table": {
+          "$ref": "parent.table"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "date_field": "string",
+        "fields": "fields_v4",
+        "filter_field": "string",
+        "name": "identifier",
+        "table": "string"
+      },
+      "provides": "models:parent",
+      "query": [
+        "parent",
+        "date"
+      ],
+      "requires": [
+        "models:base"
+      ],
+      "routes": [],
+      "slot": "models",
+      "source_sha256": "befb375c06510114b17029bcdaef5c7cc4bb7cbed83decfb55362893e19caea3",
+      "transaction": null
+    },
+    "orm.related.parent.plain": {
+      "authorization": null,
+      "bindings": {
+        "fields": {
+          "$ref": "parent.fields"
+        },
+        "name": {
+          "$ref": "parent.name"
+        },
+        "table": {
+          "$ref": "parent.table"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "fields": "fields_v4",
+        "name": "identifier",
+        "table": "string"
+      },
+      "provides": "models:parent",
+      "query": [
+        "parent",
+        "plain"
+      ],
+      "requires": [
+        "models:base"
+      ],
+      "routes": [],
+      "slot": "models",
+      "source_sha256": "01d32a934f68574218a6bf1c0a158b352323056550aac39c98b5a80fa1a4ff88",
+      "transaction": null
+    },
+    "readme.auth.firebase": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "auth": "firebase"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "readme:auth",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "readme",
+      "source_sha256": "167ade9bf1179dbfc869c1534a99dbce51e9c0db0f41dbdf49bb99bdb5e255e2",
+      "transaction": null
+    },
+    "readme.auth.google_oauth": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "auth": "google_oauth"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "readme:auth",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "readme",
+      "source_sha256": "caa656ce41bbdfddacb0ef2b8f27778a11d7d43821125d270116cdda65f238ed",
+      "transaction": null
+    },
+    "readme.auth.jwt": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "auth": "jwt"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "readme:auth",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "readme",
+      "source_sha256": "532696afccf41794b3281fe7cc393c49b008dc2ca2aa555f7c545131a35b63aa",
+      "transaction": null
+    },
+    "readme.storage.gcs": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "storage": "gcs"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "readme:storage",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "readme",
+      "source_sha256": "a5cc10cbdadc389d38bddd60e5eec3752361e0bae48809fbcfec43b4d0614331",
+      "transaction": null
+    },
+    "readme.storage.none": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "storage": "none"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "readme:storage",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "readme",
+      "source_sha256": "f2e590fd227cc2332d3bd24f318d666afb7fb692037ad1b94281524ac56ab8bb",
+      "transaction": null
+    },
+    "readme.storage.s3": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "storage": "s3"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "readme:storage",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "readme",
+      "source_sha256": "76a945e6d34058397d97885b421b6be85b95a042e0b2b267d21aff7ccc77a57c",
+      "transaction": null
+    },
+    "readme.workflow.csv": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "workflow": "csv"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "readme:workflow",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "readme",
+      "source_sha256": "fd2a4e355d550b5c291c5bedb66b776a01f93bdc38d806dd64d8e149cb8546ba",
+      "transaction": null
+    },
+    "readme.workflow.decimal_summary": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "workflow": "decimal_summary"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "readme:workflow",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "readme",
+      "source_sha256": "ab4e87e1973e3ed88d18169da8842a702c350e809fa29e111f9ca9cc4a8a85a9",
+      "transaction": null
+    },
+    "readme.workflow.gzip_export": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "workflow": "gzip_export"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "readme:workflow",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "readme",
+      "source_sha256": "9020f7565c0b49f57293ec74071cab02c8aaca9d25a57c4c88780ba25ff04731",
+      "transaction": null
+    },
+    "readme.workflow.json_export": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "workflow": "json_export"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "readme:workflow",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "readme",
+      "source_sha256": "d62cd0739adce89b854f9af00044c114d56bdd8645104c8e8fe16ca95962b4e2",
+      "transaction": null
+    },
+    "readme.workflow.statistics": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "workflow": "statistics"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "readme:workflow",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "readme",
+      "source_sha256": "cb51c579c398d757d27205c538a27a42fc503ee2fc0c31c71aec0fa9b0fa1196",
+      "transaction": null
+    },
+    "schema.related.batch": {
+      "authorization": null,
+      "bindings": {
+        "child_name": {
+          "$ref": "child.name"
+        },
+        "parent_name": {
+          "$ref": "parent.name"
+        }
+      },
+      "capabilities": {},
+      "operation": null,
+      "params": {
+        "child_name": "identifier",
+        "parent_name": "identifier"
+      },
+      "provides": "schemas:batch",
+      "query": null,
+      "requires": [
+        "schemas:child",
+        "schemas:parent"
+      ],
+      "routes": [],
+      "slot": "schemas",
+      "source_sha256": "e4359e30f3c1564990ebcd6f408f8b622cd3f9d5b37353b9e6568128caa13d98",
+      "transaction": null
+    },
+    "schema.related.bounds": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {},
+      "operation": null,
+      "params": {},
+      "provides": "schemas:bounds",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "schemas",
+      "source_sha256": "1e99b7f0fe0bd6d5c60a88abbc379115bec9be41317c360241a1142e5e7f31df",
+      "transaction": null
+    },
+    "schema.related.child": {
+      "authorization": null,
+      "bindings": {
+        "fields": {
+          "$ref": "child.fields"
+        },
+        "foreign_key": {
+          "$ref": "relation.foreign_key"
+        },
+        "name": {
+          "$ref": "child.name"
+        }
+      },
+      "capabilities": {},
+      "operation": null,
+      "params": {
+        "fields": "fields_v4",
+        "foreign_key": "identifier",
+        "name": "identifier"
+      },
+      "provides": "schemas:child",
+      "query": null,
+      "requires": [
+        "schemas:bounds"
+      ],
+      "routes": [],
+      "slot": "schemas",
+      "source_sha256": "e7bb6dda879900902e29367619f56a49ecfdc2668f485f3770902ba79b4f7a7b",
+      "transaction": null
+    },
+    "schema.related.parent": {
+      "authorization": null,
+      "bindings": {
+        "fields": {
+          "$ref": "parent.fields"
+        },
+        "name": {
+          "$ref": "parent.name"
+        }
+      },
+      "capabilities": {},
+      "operation": null,
+      "params": {
+        "fields": "fields_v4",
+        "name": "identifier"
+      },
+      "provides": "schemas:parent",
+      "query": null,
+      "requires": [
+        "schemas:bounds"
+      ],
+      "routes": [],
+      "slot": "schemas",
+      "source_sha256": "f3dd3a7d93397afeb1a2be20201c9231977cc696aa641a80dadfb3ca9d1a40ee",
+      "transaction": null
+    },
+    "service.alembic.env": {
+      "authorization": null,
+      "bindings": {
+        "package": {
+          "$ref": "package"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "package": "identifier"
+      },
+      "provides": "alembic_env:env",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "alembic_env",
+      "source_sha256": "f9a4a0b75df057f29b1f0da40f908c0cd89196cfe98ed17ad660e60e8ff8e2e7",
+      "transaction": null
+    },
+    "service.alembic.ini": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "alembic_ini:config",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "alembic_ini",
+      "source_sha256": "4d27980df2d02b544a9602f9f4c2c1b79f5fff955a415e1310ff1dad1f6bbff5",
+      "transaction": null
+    },
+    "service.business.app.mongodb": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "app:app",
+      "query": null,
+      "requires": [
+        "app:tail",
+        "database:database",
+        "integrations:auth",
+        "integrations:storage"
+      ],
+      "routes": [],
+      "slot": "app",
+      "source_sha256": "3220c33e8cb8187953d32ee53b4d2bac6fecd0d43a2fe62dfe3b375cd0b3cde1",
+      "transaction": null
+    },
+    "service.business.app.postgresql": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "app:app",
+      "query": null,
+      "requires": [
+        "app:tail",
+        "database:database",
+        "integrations:auth",
+        "integrations:storage"
+      ],
+      "routes": [],
+      "slot": "app",
+      "source_sha256": "ae2802458f6ac927607051afdd2ecf281a16e35ac500c6ce22397df3cefb7cbf",
+      "transaction": null
+    },
+    "service.business.database.mongodb": {
+      "authorization": null,
+      "bindings": {
+        "child_name": {
+          "$ref": "child.name"
+        },
+        "parent_name": {
+          "$ref": "parent.name"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": null,
+      "params": {
+        "child_name": "identifier",
+        "parent_name": "identifier"
+      },
+      "provides": "database:database",
+      "query": null,
+      "requires": [
+        "models:child",
+        "models:parent"
+      ],
+      "routes": [],
+      "slot": "database",
+      "source_sha256": "9e7fb39f7b488638959842bd7dccdb7983f911f13abba84869642b18d6332096",
+      "transaction": null
+    },
+    "service.business.project": {
+      "authorization": null,
+      "bindings": {
+        "package": {
+          "$ref": "package"
+        }
+      },
+      "capabilities": {},
+      "operation": null,
+      "params": {
+        "package": "identifier"
+      },
+      "provides": "project:project",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "project",
+      "source_sha256": "121f61b7340ed30fec601584732d544c8860c482131124ec233e8fe127e71022",
+      "transaction": null
+    },
+    "service.business.readme.mongodb": {
+      "authorization": null,
+      "bindings": {
+        "package": {
+          "$ref": "package"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": null,
+      "params": {
+        "package": "identifier"
+      },
+      "provides": "readme:readme",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "readme",
+      "source_sha256": "a441e0af77cd4f40643638411b2f9005b2047bb6489d92b98ce7e7831acb4776",
+      "transaction": null
+    },
+    "service.business.readme.postgresql": {
+      "authorization": null,
+      "bindings": {
+        "package": {
+          "$ref": "package"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "package": "identifier"
+      },
+      "provides": "readme:readme",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "readme",
+      "source_sha256": "c26d9baf99221166adea594c20e62d017a68b7a839773e5c195c222c8472adbf",
+      "transaction": null
+    },
+    "service.database": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "database:database",
+      "query": null,
+      "requires": [
+        "models:child",
+        "models:parent"
+      ],
+      "routes": [],
+      "slot": "database",
+      "source_sha256": "bca0f61e7ae348da75a141ff342f87e62519061b2eb14b32febcf4ef1e6654df",
+      "transaction": null
+    },
+    "service.init": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {},
+      "operation": null,
+      "params": {},
+      "provides": "init:init",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "init",
+      "source_sha256": "75177a2810fa5d42b40bdb9a8c07f31ef96d0162af31a351062236fa7865e4db",
+      "transaction": null
+    },
+    "storage.common": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {},
+      "operation": null,
+      "params": {},
+      "provides": "integrations:storage_common",
+      "query": null,
+      "requires": [
+        "integrations:auth"
+      ],
+      "routes": [],
+      "slot": "integrations",
+      "source_sha256": "4695b294f727baaf446aa0b136f6b4106a92e25b40ade97553685f3d57646ef0",
+      "transaction": null
+    },
+    "storage.gcs": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "storage": "gcs"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "integrations:storage",
+      "query": null,
+      "requires": [
+        "integrations:storage_common"
+      ],
+      "routes": [],
+      "slot": "integrations",
+      "source_sha256": "ed3cd0657d7cce3e40e888156eea30f178893c90b49532c84553a1c3e0c8ecb4",
+      "transaction": null
+    },
+    "storage.none": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "storage": "none"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "integrations:storage",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "integrations",
+      "source_sha256": "9d7efefae1a14d2c42b462ace65511a4afc84d5076523af7c624030ad7b229ee",
+      "transaction": null
+    },
+    "storage.s3": {
+      "authorization": null,
+      "bindings": {},
+      "capabilities": {
+        "storage": "s3"
+      },
+      "operation": null,
+      "params": {},
+      "provides": "integrations:storage",
+      "query": null,
+      "requires": [
+        "integrations:storage_common"
+      ],
+      "routes": [],
+      "slot": "integrations",
+      "source_sha256": "907f20e5493292e3b3ca69253d123eed3b296d9798403fd1868ba208bf49b624",
+      "transaction": null
+    },
+    "test.business.head.mongodb": {
+      "authorization": null,
+      "bindings": {
+        "package": {
+          "$ref": "package"
+        }
+      },
+      "capabilities": {
+        "database": "mongodb"
+      },
+      "operation": null,
+      "params": {
+        "package": "identifier"
+      },
+      "provides": "tests:head",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "tests",
+      "source_sha256": "dc3ba6cdc82fac522a6ae5ebcd6940f1d69a58a0804b28511f84c271493b63c8",
+      "transaction": null
+    },
+    "test.business.head.postgresql": {
+      "authorization": null,
+      "bindings": {
+        "package": {
+          "$ref": "package"
+        }
+      },
+      "capabilities": {
+        "database": "postgresql"
+      },
+      "operation": null,
+      "params": {
+        "package": "identifier"
+      },
+      "provides": "tests:head",
+      "query": null,
+      "requires": [],
+      "routes": [],
+      "slot": "tests",
+      "source_sha256": "32f314c877249bb9430ced08ca02fb1e9c0354a61020acb5c3df8c2f0c2ea8fd",
+      "transaction": null
+    },
+    "test.composed.behavior": {
+      "authorization": null,
+      "bindings": {
+        "routes": {
+          "$ref": "contract.routes"
+        }
+      },
+      "capabilities": {},
+      "operation": null,
+      "params": {
+        "routes": "string"
+      },
+      "provides": "tests:test",
+      "query": null,
+      "requires": [
+        "tests:child",
+        "tests:head",
+        "tests:parent"
+      ],
+      "routes": [],
+      "slot": "tests",
+      "source_sha256": "4c16133a008710ad47cd70015d6c6e9b41b3526128676e763acd229ec4a88cd2",
+      "transaction": null
+    },
+    "test.related.payload.child": {
+      "authorization": null,
+      "bindings": {
+        "fields": {
+          "$ref": "child.fields"
+        }
+      },
+      "capabilities": {},
+      "operation": null,
+      "params": {
+        "fields": "fields_v4"
+      },
+      "provides": "tests:child",
+      "query": null,
+      "requires": [
+        "tests:head"
+      ],
+      "routes": [],
+      "slot": "tests",
+      "source_sha256": "c771482071e3ed8f269c8bb855dea910a4e255e9a4ebdd9ed3ddc047d8ffb423",
+      "transaction": null
+    },
+    "test.related.payload.parent": {
+      "authorization": null,
+      "bindings": {
+        "fields": {
+          "$ref": "parent.fields"
+        }
+      },
+      "capabilities": {},
+      "operation": null,
+      "params": {
+        "fields": "fields_v4"
+      },
+      "provides": "tests:parent",
+      "query": null,
+      "requires": [
+        "tests:head"
+      ],
+      "routes": [],
+      "slot": "tests",
+      "source_sha256": "9ea20f6a59c46773424a55f7a76bd0e17e9f798c2f448e91ac39fa9a68e665ec",
+      "transaction": null
+    }
+  },
+  "contract_sha256": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380",
+  "required_common": [
+    "models:base",
+    "models:parent",
+    "models:child",
+    "schemas:bounds",
+    "schemas:parent",
+    "schemas:child",
+    "schemas:batch",
+    "app:head",
+    "app:workflow",
+    "app:tail",
+    "app:app",
+    "tests:head",
+    "tests:parent",
+    "tests:child",
+    "tests:test",
+    "database:database",
+    "init:init",
+    "project:project",
+    "readme:readme",
+    "readme:auth",
+    "readme:storage",
+    "readme:workflow",
+    "integrations:auth_common",
+    "integrations:auth",
+    "integrations:storage"
+  ],
+  "required_database": {
+    "mongodb": [
+      "mongo_migration:migration"
+    ],
+    "postgresql": [
+      "migration:head",
+      "migration:parent",
+      "migration:child",
+      "migration:tail",
+      "alembic_env:env",
+      "alembic_ini:config"
+    ]
+  },
+  "slots": {
+    "alembic_env": "alembic/env.py",
+    "alembic_ini": "alembic.ini",
+    "app": "{package}/app.py",
+    "database": "{package}/database.py",
+    "init": "{package}/__init__.py",
+    "integrations": "{package}/integrations.py",
+    "migration": "alembic/versions/{migration.revision}_{package}.py",
+    "models": "{package}/models.py",
+    "mongo_migration": "{package}/migrate.py",
+    "project": "pyproject.toml",
+    "readme": "README.md",
+    "schemas": "{package}/schemas.py",
+    "tests": "tests/test_{package}.py"
+  },
+  "version": "som.block-contracts.v1"
+}

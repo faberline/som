@@ -1,0 +1,11 @@
+{
+  "template": "ROUTES = {{routes}}\n\n\nclass Route(TypedDict):\n    \"\"\"Typed service contract.\"\"\"\n    method: str\n    path: str\n\n\nclass ComposedServiceTest(unittest.TestCase):\n    \"\"\"Typed service contract.\"\"\"\n    def test_selected_routes_require_identity(self) -> None:\n        \"\"\"Test selected routes require identity.\"\"\"\n        routes = TypeAdapter(list[Route]).validate_json(ROUTES)\n        application: object = importlib.import_module(APPLICATION + \".app\").app\n        self.assertIsInstance(application, FastAPI)\n        if not isinstance(application, FastAPI):\n            raise TypeError(\"service app must be a FastAPI application\")\n        with TestClient(application) as client:\n            for route in routes:\n                path = route[\"path\"].replace(\"{parent_id}\", \"1\").replace(\"{child_id}\", \"1\")\n                response = client.request(route[\"method\"], path, json={})\n                self.assertEqual(response.status_code, 401, response.text)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n",
+  "imports": [
+    "import importlib",
+    "import unittest",
+    "from typing import TypedDict",
+    "from pydantic import TypeAdapter",
+    "from fastapi import FastAPI",
+    "from fastapi.testclient import TestClient"
+  ]
+}

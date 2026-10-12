@@ -1,5 +1,11 @@
 # SOM core product requirements
 
+Read [current training](training.md) for the implemented composed candidate.
+It links the five development milestones and fifteen existing issues.
+The sections and horizon tables below preserve the former layer design.
+Its training requirements are in [the historical guide](training-legacy.md).
+They do not replace the current service contract or measured acceptance record.
+
 SOM core is the engine of the Snippet-Oriented Model: a decompression code
 generator that plans, lays out, optimises, and assembles a program from a
 frozen snippet instruction set. This directory is the product requirements
@@ -59,13 +65,13 @@ Boundaries that every section inherits:
 
 | Horizon | Outcome | Section |
 |---|---|---|
-| H1 | `layer-sft-on-a-real-backbone` | [training.md](training.md) § Layer SFT on a real backbone |
-| H1 | `fixture-pass-rate-evaluation` | [training.md](training.md) § Fixture pass rate |
+| H1 | `layer-sft-on-a-real-backbone` | [training-legacy.md](training-legacy.md) § Layer SFT on a real backbone |
+| H1 | `fixture-pass-rate-evaluation` | [training-legacy.md](training-legacy.md) § Fixture pass rate |
 | H2 | `l1-planner` | [generation.md](generation.md) § L1 Planner |
 | H2 | `l2-component-topology` | [generation.md](generation.md) § L2 Component Topology |
 | H2 | `l3-query-optimizer` | [generation.md](generation.md) § L3 Query Optimizer |
 | H2 | `l4-rust-assembler` | [generation.md](generation.md) § L4 Rust Assembler |
-| H2 | `near-miss-preference-data` | [training.md](training.md) § Near-miss preference data |
+| H2 | `near-miss-preference-data` | [training-legacy.md](training-legacy.md) § Near-miss preference data |
 
 H1 is a loop worth trusting before layers: next-token training on the layer
 records, and an evaluation that runs the assembled program instead of
@@ -77,11 +83,11 @@ preference pass once SFT exists.
 
 | Section | File | Kind | Owner |
 |---|---|---|---|
-| Corpus loader | training.md | shipped, limited | STATUS `corpus-loader` |
-| Layer records | training.md | shipped | STATUS `layer-records` |
-| Layer SFT on a real backbone | training.md | outcome | ROADMAP `layer-sft-on-a-real-backbone` |
-| Fixture pass rate | training.md | outcome | ROADMAP `fixture-pass-rate-evaluation` |
-| Near-miss preference data | training.md | outcome | ROADMAP `near-miss-preference-data` |
+| Corpus loader | training-legacy.md | shipped, limited | STATUS `corpus-loader` |
+| Layer records | training-legacy.md | shipped | STATUS `layer-records` |
+| Layer SFT on a real backbone | training-legacy.md | outcome | ROADMAP `layer-sft-on-a-real-backbone` |
+| Fixture pass rate | training-legacy.md | outcome | ROADMAP `fixture-pass-rate-evaluation` |
+| Near-miss preference data | training-legacy.md | outcome | ROADMAP `near-miss-preference-data` |
 | Reference assembler | generation.md | shipped | STATUS `reference-assembler` |
 | L1 Planner | generation.md | outcome | ROADMAP `l1-planner` |
 | L2 Component Topology | generation.md | outcome | ROADMAP `l2-component-topology` |

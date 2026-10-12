@@ -1,0 +1,25 @@
+{
+  "status": "frozen-before-training",
+  "seed": 17,
+  "new_train": 600,
+  "new_dev": 100,
+  "application_requirements": 14,
+  "old_regression": 100,
+  "total_regression": 114,
+  "heldout_app_names": [
+    "experiments",
+    "documents"
+  ],
+  "split": "disjoint ordered resource roles with name-free unordered typed field structure; old data unchanged",
+  "templates": 819,
+  "blocks_sha256": "9dc292b2ddbeb834e09b7754de4d00a9aca16c25acf06ee9ee8fcc77d39c92c7",
+  "files": {
+    "train.jsonl": "ae23e1831db071f4d6a34125357aa71f76c7d0f6f543d29fad26ea1f05339380",
+    "dev.jsonl": "1939be58cd6a07388c0b71e03219dc179657b04e5ef30e2b0b0872427370a151",
+    "combined-train.jsonl": "206b266ab449e1c77ddcac933171ce246ae1c2917483d0ea660c8f1166fac714",
+    "requirements.jsonl": "59b3dabc6eda09cdd5b5fc31093e8abfdb255555bbad74cc41fcdb6055af5df6",
+    "reference.jsonl": "c868ae607692cb5bec73af3075802d1cc4a76ba44c0cb4aae32d0c092c2260ef",
+    "regression.jsonl": "171a08327df4efd451b533ff136d65117334419e03c5c26795a1f63a440823f6",
+    "templates.json": "0ae87cfcca706fc2e7b085ceedcd58ca78264ce1f3edd970af16d5b778f3fffa"
+  }
+}

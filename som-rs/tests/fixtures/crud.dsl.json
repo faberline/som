@@ -1,0 +1,243 @@
+{
+  "version": "som.dsl.v1",
+  "files": [
+    {
+      "path": "items/models.py",
+      "blocks": [
+        {
+          "name": "base",
+          "id": "orm.base",
+          "params": {},
+          "refs": []
+        },
+        {
+          "name": "model",
+          "id": "orm.model",
+          "params": {
+            "name": "Item",
+            "table": "items",
+            "fields": [
+              {
+                "name": "title",
+                "type": "str",
+                "required": true,
+                "unique": true
+              },
+              {
+                "name": "active",
+                "type": "bool",
+                "required": false,
+                "unique": false
+              }
+            ]
+          },
+          "refs": [
+            "base"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "items/schemas.py",
+      "blocks": [
+        {
+          "name": "create",
+          "id": "schema.create",
+          "params": {
+            "name": "Item",
+            "fields": [
+              {
+                "name": "title",
+                "type": "str",
+                "required": true,
+                "unique": true
+              },
+              {
+                "name": "active",
+                "type": "bool",
+                "required": false,
+                "unique": false
+              }
+            ]
+          },
+          "refs": []
+        },
+        {
+          "name": "read",
+          "id": "schema.read",
+          "params": {
+            "name": "Item",
+            "fields": [
+              {
+                "name": "title",
+                "type": "str",
+                "required": true,
+                "unique": true
+              },
+              {
+                "name": "active",
+                "type": "bool",
+                "required": false,
+                "unique": false
+              }
+            ]
+          },
+          "refs": []
+        },
+        {
+          "name": "patch",
+          "id": "schema.patch",
+          "params": {
+            "name": "Item",
+            "fields": [
+              {
+                "name": "title",
+                "type": "str",
+                "required": true,
+                "unique": true
+              },
+              {
+                "name": "active",
+                "type": "bool",
+                "required": false,
+                "unique": false
+              }
+            ]
+          },
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "items/api.py",
+      "blocks": [
+        {
+          "name": "head",
+          "id": "api.head",
+          "params": {},
+          "refs": []
+        },
+        {
+          "name": "create",
+          "id": "api.create",
+          "params": {
+            "name": "Item",
+            "path": "/items"
+          },
+          "refs": [
+            "head"
+          ]
+        },
+        {
+          "name": "get",
+          "id": "api.get",
+          "params": {
+            "name": "Item",
+            "path": "/items"
+          },
+          "refs": [
+            "head"
+          ]
+        },
+        {
+          "name": "list",
+          "id": "api.list",
+          "params": {
+            "name": "Item",
+            "path": "/items"
+          },
+          "refs": [
+            "head"
+          ]
+        },
+        {
+          "name": "patch",
+          "id": "api.patch",
+          "params": {
+            "name": "Item",
+            "path": "/items"
+          },
+          "refs": [
+            "head"
+          ]
+        },
+        {
+          "name": "delete",
+          "id": "api.delete",
+          "params": {
+            "name": "Item",
+            "path": "/items"
+          },
+          "refs": [
+            "head"
+          ]
+        },
+        {
+          "name": "tail",
+          "id": "api.tail",
+          "params": {},
+          "refs": [
+            "head"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "tests/test_items.py",
+      "blocks": [
+        {
+          "name": "crud",
+          "id": "test.crud",
+          "params": {
+            "package": "items",
+            "path": "/items",
+            "fields": [
+              {
+                "name": "title",
+                "type": "str",
+                "required": true,
+                "unique": true
+              },
+              {
+                "name": "active",
+                "type": "bool",
+                "required": false,
+                "unique": false
+              }
+            ]
+          },
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "alembic/versions/rev1_items.py",
+      "blocks": [
+        {
+          "name": "migration",
+          "id": "migration.table",
+          "params": {
+            "revision": "rev1",
+            "down_revision": null,
+            "table": "items",
+            "fields": [
+              {
+                "name": "title",
+                "type": "str",
+                "required": true,
+                "unique": true
+              },
+              {
+                "name": "active",
+                "type": "bool",
+                "required": false,
+                "unique": false
+              }
+            ]
+          },
+          "refs": []
+        }
+      ]
+    }
+  ]
+}

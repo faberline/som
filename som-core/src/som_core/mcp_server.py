@@ -1,15 +1,8 @@
-"""SOM MCP server: ``som_generate`` (SOM prompt -> module) and ``som_compile`` (DSL -> module).
+"""Legacy research MCP functions. Direct execution is retired in SOM v1.
 
-``som_generate`` is the product path: a flagship model sends a SOM prompt
-(``som_core.prompt``), the SOM model — ``$SOM_BASE`` plus the LoRA adapter at
-``$SOM_ADAPTER``, loaded once per server — writes DSL, and ``compile_dsl``
-finishes it, retrying on rejection (``som_core.generate``). ``som_compile``
-is the older path where the flagship writes the DSL itself; ``som_core.dsl``
-adds imports, layout, and the module docstring, and refuses a near-miss
-before anything is written. ``som_generate`` returns the module it wrote, so the
-flagship can judge it against the requirement and revise the prompt. Either
-way the module lands at ``$SOM_OUT/candidate.py`` (default: the current directory) and every call is
-appended to ``$SOM_OUT/calls.jsonl``. Run with ``python -m som_core.mcp_server``.
+The old tools wrote candidate.py and used Python inference. The production
+path is the Rust HTTP service and CLI. This module remains importable for
+historical research, but it cannot start a server from its module entry point.
 """
 
 from __future__ import annotations
@@ -79,4 +72,4 @@ def som_compile(code: str, exports: list[str], doc: str = "") -> str:
 
 
 if __name__ == "__main__":
-    server.run()
+    raise SystemExit("Legacy Python MCP is retired. Use the Rust `som serve` and `som generate` commands.")

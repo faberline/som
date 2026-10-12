@@ -1,0 +1,13 @@
+{
+  "template": "    @router.get({{parent_path}} + \"/{parent_id}/export\")\n    async def export_rows(parent_id: int) -> Response:\n        \"\"\"Export rows.\"\"\"\n        rows = await workflow_rows(parent_id)\n        content = json.dumps(rows, ensure_ascii=False, allow_nan=False, separators=(\",\", \":\")).encode()\n        return Response(gzip.compress(content, mtime=0), media_type=\"application/gzip\")\n",
+  "imports": [
+    "import csv",
+    "import gzip",
+    "import io",
+    "import json",
+    "import statistics",
+    "from decimal import Decimal",
+    "from fastapi import Body",
+    "from pydantic import ValidationError"
+  ]
+}

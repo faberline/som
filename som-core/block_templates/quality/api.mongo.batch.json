@@ -1,0 +1,4 @@
+{
+  "template": "    @router.post({{path}}, response_model=BatchRead, status_code=201)\n    async def create_batch(data: BatchCreate) -> BatchRead:\n        \"\"\"Create batch.\"\"\"\n        async def write(session: AsyncClientSession) -> BatchRead:\n            \"\"\"Write.\"\"\"\n            parent = await insert(Parent, model_values(data.parent), session)\n            children = [await insert(Child, {\"{{foreign_key}}\": parent.id, **model_values(item)}, session) for item in data.children]\n            return BatchRead.model_validate({\"parent\": parent, \"children\": children})\n        return await transaction(write)\n",
+  "imports": []
+}

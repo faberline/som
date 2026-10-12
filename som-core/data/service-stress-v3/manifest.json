@@ -1,0 +1,20 @@
+{
+  "version": "som.prompt.v3",
+  "purpose": "untrained structural stress evaluation",
+  "count": 50,
+  "seed": 9031,
+  "field_counts": [
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "resource_count": 10,
+  "training_overlap": 0,
+  "training_sha256": "954bd054cf0c02d64a8e3c62ffa3b56834f9803c4d7bef044805572b5bd2b5ea",
+  "prior_heldout_sha256": "83b2aa1a4aea0b72e35e588e9b4b4a1285bd2a422d5f2eecc3097810605222e4",
+  "blocks_sha256": "966dcc3dba921042c80bdda463392491b7c7af4137e54c3a315a584281303b45",
+  "heldout_sha256": "d23c37c77f84ec8dcd7d0076c61e096b2578db790b609554a6884272adda1204",
+  "expected_sha256": "4e015c0494dcebe92171741586f473d1b1581df9f9fce74925dc56a8cd448bbc"
+}

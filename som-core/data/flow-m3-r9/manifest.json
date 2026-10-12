@@ -1,0 +1,174 @@
+{
+  "version": "som.flow.m3-dataset.v1",
+  "seed": 17,
+  "counts": {
+    "train": 2400,
+    "dev": 300,
+    "formal": 300
+  },
+  "statistics": {
+    "train": {
+      "examples": 2400,
+      "apps": {
+        "project": 300,
+        "catalog": 300,
+        "bookmarks": 300,
+        "recipe": 300,
+        "customers": 300,
+        "devices": 300,
+        "survey": 300,
+        "courses": 300
+      },
+      "operation_nodes": 22681,
+      "atoms": {
+        "authorize": 2400,
+        "transaction": 3441,
+        "batch.create": 660,
+        "parent.get": 1504,
+        "child.list": 324,
+        "if": 2251,
+        "workflow.run": 4586,
+        "parent.list": 366,
+        "parent.patch": 996,
+        "parent.create": 1254,
+        "child.create": 1824,
+        "child.get": 198,
+        "child.patch": 564,
+        "workflow.import": 111,
+        "object.put": 1600,
+        "object.get": 602
+      },
+      "unique": {
+        "input": 2400,
+        "structure": 2400,
+        "graph": 2400
+      },
+      "capability_tuples": 90,
+      "max_input_tokens": 982,
+      "max_output_tokens": 1680
+    },
+    "dev": {
+      "examples": 300,
+      "apps": {
+        "project": 38,
+        "catalog": 38,
+        "bookmarks": 38,
+        "recipe": 38,
+        "customers": 37,
+        "devices": 37,
+        "survey": 37,
+        "courses": 37
+      },
+      "operation_nodes": 2837,
+      "atoms": {
+        "authorize": 300,
+        "transaction": 433,
+        "parent.create": 168,
+        "child.create": 235,
+        "parent.patch": 86,
+        "child.patch": 73,
+        "if": 312,
+        "workflow.run": 603,
+        "batch.create": 73,
+        "parent.get": 166,
+        "child.list": 44,
+        "workflow.import": 18,
+        "child.get": 27,
+        "object.put": 200,
+        "object.get": 67,
+        "parent.list": 32
+      },
+      "unique": {
+        "input": 300,
+        "structure": 300,
+        "graph": 300
+      },
+      "capability_tuples": 90,
+      "max_input_tokens": 970,
+      "max_output_tokens": 1672
+    },
+    "formal": {
+      "examples": 300,
+      "apps": {
+        "project": 30,
+        "catalog": 30,
+        "bookmarks": 30,
+        "recipe": 30,
+        "customers": 30,
+        "devices": 30,
+        "survey": 30,
+        "courses": 30,
+        "experiment": 30,
+        "documents": 30
+      },
+      "operation_nodes": 2832,
+      "atoms": {
+        "authorize": 300,
+        "parent.get": 180,
+        "transaction": 421,
+        "child.create": 227,
+        "if": 315,
+        "workflow.run": 615,
+        "parent.create": 155,
+        "parent.patch": 105,
+        "child.patch": 61,
+        "parent.list": 32,
+        "batch.create": 79,
+        "child.list": 32,
+        "object.put": 200,
+        "object.get": 69,
+        "child.get": 23,
+        "workflow.import": 18
+      },
+      "unique": {
+        "input": 300,
+        "structure": 300,
+        "graph": 300
+      },
+      "capability_tuples": 90,
+      "max_input_tokens": 973,
+      "max_output_tokens": 1680
+    }
+  },
+  "files": {
+    "train.jsonl": "73c3864270c3fb8e9887ce1b99571f37c9489459e3fe187ac5cd0cdf890fae0d",
+    "dev.jsonl": "669fc9e1a62d7ffb32dac3d98cbafaebc2c6030710c7f1fa3e3234b24e605d02",
+    "formal.jsonl": "7d5fc9875464e2f39131e4e4a6818423a1629e15295b6e068d8f318b3610a6fe"
+  },
+  "audit": {
+    "rejected_candidates": {
+      "INVALID_VALUE": 37752,
+      "SCOPE_TOO_LARGE": 1723,
+      "previously_seen": 32
+    },
+    "previously_seen_counts": {
+      "input": 8840,
+      "structure": 8840,
+      "graph": 8839
+    }
+  },
+  "cross_split_overlap": {
+    "input": 0,
+    "structure": 0,
+    "graph": 0
+  },
+  "training_exclusions": [
+    "Experiment",
+    "Observation",
+    "Document",
+    "Review"
+  ],
+  "codec_version": "som.flow.compact-codec.v1",
+  "input_policy_version": "som.flow.m3-input.v2",
+  "source_sha256": {
+    "som-core/src/som_core/flow_m3_data.py": "ec1a99990c4faa71793e28bdf461da9f487e25f3253ca1695a45e4326ee2f69f",
+    "som-core/scripts/freeze_m3_flow_data.py": "0d0afb1a95f125a9561a3c7b67966ebe22886cd4dfb7f34ab3b5f1aa5183851a",
+    "som-core/src/som_core/flow_codec.py": "955448fd898e68927f1199d9d9f58d9a3eac5e429fb300d4a01f40e4e92f021c",
+    "som-core/src/som_core/flow.py": "92a7228ed3c96965c8326e70fa9edfec90fe0150e56cbeae7131de1f11f057fe",
+    "som-code-python/data/block-contracts/flow-v7-compact.json": "a2b96804e6f1c52a2ebf9e6310c6624b8b1b33d86b4f4763f07ffbeb645e103a",
+    "som-rs/contracts/m3-input-semantics.v2.json": "6812f446e1fc53f8ee0f0637217b768aa2d21bb316e562f76540d2087b8d70d7"
+  },
+  "frozen_before_training": true,
+  "training_admission": false,
+  "formal_use": "only after earliest perfect development checkpoint is fixed"
+}

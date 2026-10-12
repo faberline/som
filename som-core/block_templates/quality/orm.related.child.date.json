@@ -1,0 +1,9 @@
+{
+  "template": "# pylint: disable-next=too-few-public-methods\nclass {{name}}(Base):\n    \"\"\"Typed service contract.\"\"\"\n    __tablename__ = {{table}}\n    __table_args__ = (\n        sa.Index(\"ix_\" + {{table}} + \"_parent_id\", \"{{foreign_key}}\", \"id\"),\n        sa.Index(\"ix_\" + hashlib.sha256(({{table}} + \":\" + {{filter_field}}).encode()).hexdigest()[:24], \"{{foreign_key}}\", {{filter_field}}, \"id\"),\n        sa.Index(\"ix_\" + hashlib.sha256(({{table}} + \":\" + {{date_field}}).encode()).hexdigest()[:24], \"{{foreign_key}}\", {{date_field}}, \"id\"),\n    )\n\n    id: Mapped[int] = mapped_column(sa.Integer, primary_key=True)\n    {{foreign_key}}: Mapped[int] = mapped_column(sa.ForeignKey({{target}}, ondelete=\"RESTRICT\"), nullable=False)\n{{#fields}}    {{name}}: Mapped[{{read_type}}] = mapped_column(\n        {{sql_type}}, nullable={{nullable}}, unique={{unique}}{{sql_default}}\n    )\n{{/fields}}    created_at: Mapped[datetime] = mapped_column(sa.DateTime(timezone=True), server_default=database_now(), nullable=False)\n    updated_at: Mapped[datetime] = mapped_column(sa.DateTime(timezone=True), server_default=database_now(), onupdate=database_now(), nullable=False)\n",
+  "imports": [
+    "from datetime import date, datetime",
+    "import sqlalchemy as sa",
+    "import hashlib",
+    "from sqlalchemy.sql.functions import now as database_now"
+  ]
+}

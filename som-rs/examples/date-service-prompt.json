@@ -1,0 +1,57 @@
+{
+  "logic": [
+    "Create a row. Return 409 for a unique value conflict.",
+    "Delete a row. Return 404 if it does not exist.",
+    "List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.",
+    "Update supplied fields. Return 404 if the row does not exist.",
+    "Get a row by id. Return 404 if it does not exist."
+  ],
+  "migration": {
+    "down_revision": null,
+    "revision": "service1000"
+  },
+  "package": "todos",
+  "query": {
+    "date_field": "deadline_on",
+    "filter_field": "completed",
+    "max_limit": 100
+  },
+  "resource": {
+    "fields": [
+      {
+        "default": null,
+        "name": "deadline_on",
+        "required": false,
+        "type": "date",
+        "unique": false
+      },
+      {
+        "name": "title",
+        "required": true,
+        "type": "str",
+        "unique": false
+      },
+      {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+      },
+      {
+        "default": false,
+        "name": "completed",
+        "required": false,
+        "type": "bool",
+        "unique": false
+      }
+    ],
+    "name": "Todo",
+    "path": "/todos",
+    "table": "todos"
+  },
+  "tests": [
+    "Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration."
+  ],
+  "version": "som.prompt.v4"
+}

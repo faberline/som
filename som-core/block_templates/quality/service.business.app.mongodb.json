@@ -1,0 +1,14 @@
+{
+  "template": "from fastapi import FastAPI, HTTPException\nfrom pymongo.errors import PyMongoError\nfrom .integrations import auth_router, object_router\nfrom .database import database, get_session, lifespan as database_lifespan\n\n@asynccontextmanager\nasync def lifespan(application: FastAPI) -> AsyncIterator[None]:\n    \"\"\"Lifespan.\"\"\"\n    async with database_lifespan(application):\n        try:\n            yield\n        finally:\n            close_integrations()\n\n\napp = FastAPI(lifespan=lifespan)\napp.include_router(auth_router)\napp.include_router(object_router)\napp.include_router(create_router(get_session))\n\n@app.get(\"/healthz\")\nasync def healthz() -> dict[str, str]:\n    \"\"\"Healthz.\"\"\"\n    try:\n        await database.command(\"ping\")\n    except PyMongoError as exc:\n        raise HTTPException(status_code=503, detail=\"database unavailable\") from exc\n    return {\"status\": \"ok\"}\nJSON_VALUE: TypeAdapter[JsonValue] = TypeAdapter(JsonValue)\n\n\ndef _has_nonfinite(value: JsonValue) -> bool:\n\n\n    \"\"\" has nonfinite.\"\"\"\n    if isinstance(value, float):\n        return not isfinite(value)\n    if isinstance(value, list):\n        return any(_has_nonfinite(item) for item in value)\n    if isinstance(value, dict):\n        return any(_has_nonfinite(item) for item in value.values())\n    return False\n\n\n@app.exception_handler(RequestValidationError)\nasync def validation_error(request: Request, error: RequestValidationError) -> Response:\n    \"\"\"Validation error.\"\"\"\n    try:\n        body = JSON_VALUE.validate_python(error.body, strict=True)\n    except ValidationError:\n        return await request_validation_exception_handler(request, error)\n    if _has_nonfinite(body):\n        return JSONResponse(status_code=422, content={\"detail\": [{\n            \"type\": \"finite_number\", \"loc\": [\"body\"],\n            \"msg\": \"Input must contain finite JSON numbers\",\n        }]})\n    return await request_validation_exception_handler(request, error)\n",
+  "imports": [
+    "from collections.abc import AsyncIterator",
+    "from contextlib import asynccontextmanager",
+    "from .integrations import close_integrations",
+    "from math import isfinite",
+    "from fastapi import Request, Response",
+    "from fastapi.exceptions import RequestValidationError",
+    "from fastapi.exception_handlers import request_validation_exception_handler",
+    "from starlette.responses import JSONResponse",
+    "from pydantic import TypeAdapter, ValidationError"
+  ]
+}

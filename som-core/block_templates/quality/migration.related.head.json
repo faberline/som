@@ -1,0 +1,9 @@
+{
+  "template": "revision = {{revision}}  # pylint: disable=invalid-name\ndown_revision = None  # pylint: disable=invalid-name\nbranch_labels = None  # pylint: disable=invalid-name\ndepends_on = None  # pylint: disable=invalid-name\n\n\ndef upgrade() -> None:\n\n\n    \"\"\"Upgrade.\"\"\"\n",
+  "imports": [
+    "from alembic import op",
+    "import sqlalchemy as sa",
+    "import hashlib",
+    "from sqlalchemy.sql.functions import now as database_now"
+  ]
+}

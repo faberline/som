@@ -1,0 +1,4 @@
+{
+  "template": "# {{package}}\n\nUse Python 3.12. Run uv sync.\nSet MONGODB_URL and MONGODB_DATABASE. MongoDB must be a replica set. Run uv run python -m {{package}}.migrate upgrade.\nRun uv run uvicorn {{package}}.app:app. GET /healthz checks the database.\nAll readers share this app workspace. Editors can change records.\nIDs, timestamps and the child foreign key are read-only.\nUse only synthetic data for evaluation. Tests require their own database.\nSet TEST_AUTH_HEADERS to a JSON object of test client headers.\nSet TEST_AUTH_COOKIES to a JSON object of test client cookies.\nThese are test-client inputs. The application never reads them.\nRun uv run python -m unittest discover -s tests -v.\n",
+  "imports": []
+}

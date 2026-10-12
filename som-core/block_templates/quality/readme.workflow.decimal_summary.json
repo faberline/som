@@ -1,0 +1,4 @@
+{
+  "template": "## Workflow\n\nGET <parent-path>/{parent_id}/export processes up to 1000 children in ID order. The workflow is decimal_summary. Larger results return 413. CSV apps also accept POST <parent-path>/{parent_id}/import with text/csv and 1 to 20 rows. Headers must match custom child fields. \\N means null. CSV import commits once or rolls back all rows.\n",
+  "imports": []
+}

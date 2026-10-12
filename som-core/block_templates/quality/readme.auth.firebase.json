@@ -1,0 +1,4 @@
+{
+  "template": "## Authentication\n\nSet FIREBASE_PROJECT_ID. Use Firebase bearer tokens. Set the trusted custom role claim to editor for writes. Revoked or disabled users are rejected. Local tests may set APP_ENV=test and FIREBASE_AUTH_EMULATOR_HOST to a loopback mock.\n",
+  "imports": []
+}

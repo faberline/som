@@ -1,0 +1,4 @@
+{
+  "template": "    @router.patch({{path}}, response_model=ParentRead)\n    def patch_parent(parent_id: int, data: ParentPatch, db: Annotated[Session, Depends(session_provider)]) -> Parent:\n        \"\"\"Patch parent.\"\"\"\n        row = require_parent(db, parent_id)\n        for name, value in model_values(data, exclude_unset=True).items():\n            setattr(row, name, value)\n        try:\n            db.commit()\n        except IntegrityError as exc:\n            integrity_failure(db, exc)\n        db.refresh(row)\n        return row\n",
+  "imports": []
+}

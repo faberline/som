@@ -1,5 +1,39 @@
 # SOM core
 
+> SOM prompt v1 through v4 use this package for training and the Python correctness reference.
+> The production CLI and HTTP service are in [som-rs](../som-rs/README.md).
+> The older `som` and MCP experiments below are historical. The rest of this
+> file records the former design. It does not describe the current service.
+
+## Current tools
+
+Read [the current training guide](docs/product/training.md) for the composed
+candidate, its input projection, loss, optimizer and acceptance evidence.
+Read [the candidate service guide](../som-rs/COMPOSABLE.md) for prompt v6.
+The [quality candidate](../som-rs/QUALITY.md) reuses those model weights.
+The default v4 model described below remains separate.
+
+`som-train` builds a tokenizer and small model from zero. The current model
+used the validated [combined training corpus](data/crud-query-date-service-v4/manifest.json).
+It includes earlier CRUD, query, and standalone service tasks.
+The original [v1 corpus](data/v1/manifest.json) remains frozen. Training
+exports weights, tokenizer, configuration, and a hash manifest. The time
+limit is 168 hours.
+
+The [date-service corpus](data/date-service-v4/manifest.json) adds an
+optional date field and a `before` list filter. Its combined training set is
+[here](data/crud-query-date-service-v4/manifest.json). The
+[current service record](../som-rs/CURRENT.md) records its separate checks
+and the completed date-task token comparison. Four paired tasks per agent saved
+55.6% for Codex and 75.7% for Claude Code in that measured scope.
+
+`src/som_core/v1.py` validates the versioned DSL and assembles approved
+blocks for correctness comparison. It does not write product files. The
+production Rust implementation and commands are in the
+[service guide](../som-rs/README.md).
+
+## Historical design notes
+
 ## Brief
 
 `som-core` is the engine of the Snippet-Oriented Model (SOM): a

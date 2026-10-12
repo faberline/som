@@ -1,0 +1,27 @@
+{
+  "version": "som.flow.acceptance-seal.v1",
+  "frozen_before_test_weights": true,
+  "counts": {
+    "dev": 12,
+    "formal": 114,
+    "capability_tuples": 90,
+    "semantic_cases": 24
+  },
+  "rejections": 25,
+  "actual_input_overlap": 0,
+  "structural_overlap": 0,
+  "contract_sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091",
+  "files": {
+    "som-core/data/flow-v7-r7/dev.jsonl": "935bf5f5c66a2f4a43633d34e6743743bef25830bd9774e180090076dea614f5",
+    "som-core/data/flow-v7-r7/formal.jsonl": "1c5842a7d2e891aa5ef39714657496c828cac6ee3e6b62af0fa632c1773c3fc8",
+    "som-core/data/flow-v7-r7/manifest.json": "dbb2aba50759dd84335e5110b2f927e4d6451dfa9217477a089077fc795d252f",
+    "som-rs/contracts/related-flow.v1.md": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091",
+    "som-core/src/som_core/flow.py": "049ab30e2458ef2d81da613a693ae9a7bd91803d014425a3b3614ef5e0ecec4a",
+    "som-core/src/som_core/flow_codec.py": "b56629cc7bb4de7fe5433cf5df504d2622bb784272a64903c885e716c85d64ac",
+    "som-core/tests/test_flow_contract.py": "30c9d74f19c1992d2b69b579e93d2cfdbb0489d6bb19f9b507d74b7fb3d79c5e",
+    "som-core/scripts/seal_flow_acceptance.py": "bebc7646c40eefeb1e9cf4e1ef669e7a85447f2bebe00425328e09770b511521",
+    "som-core/data/flow-v7-r7/acceptance-seal-003/rejections.jsonl": "16b78a7c0f42829c20908cc676109f2cb38ab663b3f339c1c06ffb4b1c88a513",
+    "som-core/data/flow-v7-r7/acceptance-seal-003/requirements.json": "fed43bd0527f7e4ad3229dfe76ebd9df85fe26d31b73219debbb05be6f9e779d"
+  },
+  "archive_sha256": "7febfbb75ec99e28b09fd117f6924b2cc43d235611896a962bf05ae0250e71f2"
+}

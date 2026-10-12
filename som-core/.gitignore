@@ -1,2 +1,6 @@
 runs/
 .cache/
+
+# The historical composed training file exceeds GitHub's file limit.
+# Keep the original local file and its manifest.
+/data/composed/train.jsonl

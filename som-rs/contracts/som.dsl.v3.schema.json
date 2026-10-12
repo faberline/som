@@ -1,0 +1,570 @@
+{
+  "$comment": "Structural schema only. The semantic validator also checks types, scopes, dependencies, capabilities, permissions, compensation and total budgets.",
+  "$defs": {
+    "exports": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "else": {
+            "$ref": "#/$defs/runtime_ref"
+          },
+          "then": {
+            "$ref": "#/$defs/runtime_ref"
+          }
+        },
+        "required": [
+          "then",
+          "else"
+        ],
+        "type": "object"
+      },
+      "propertyNames": {
+        "maxLength": 64,
+        "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "node": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "args": {
+              "additionalProperties": {
+                "$ref": "#/$defs/runtime_ref"
+              },
+              "propertyNames": {
+                "maxLength": 64,
+                "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "id": {
+              "enum": [
+                "flow.gcs.object.get",
+                "flow.gcs.object.put",
+                "flow.mongodb.authorize",
+                "flow.mongodb.batch.create",
+                "flow.mongodb.child.create",
+                "flow.mongodb.child.get",
+                "flow.mongodb.child.get.checked",
+                "flow.mongodb.child.list",
+                "flow.mongodb.child.patch",
+                "flow.mongodb.parent.create",
+                "flow.mongodb.parent.get",
+                "flow.mongodb.parent.get.checked",
+                "flow.mongodb.parent.list",
+                "flow.mongodb.parent.patch",
+                "flow.mongodb.workflow.import",
+                "flow.mongodb.workflow.run",
+                "flow.postgresql.authorize",
+                "flow.postgresql.batch.create",
+                "flow.postgresql.child.create",
+                "flow.postgresql.child.get",
+                "flow.postgresql.child.get.checked",
+                "flow.postgresql.child.list",
+                "flow.postgresql.child.patch",
+                "flow.postgresql.parent.create",
+                "flow.postgresql.parent.get",
+                "flow.postgresql.parent.get.checked",
+                "flow.postgresql.parent.list",
+                "flow.postgresql.parent.patch",
+                "flow.postgresql.workflow.import",
+                "flow.postgresql.workflow.run",
+                "flow.s3.object.get",
+                "flow.s3.object.put"
+              ]
+            },
+            "name": {
+              "maxLength": 64,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+              "type": "string"
+            },
+            "undo": {
+              "enum": [
+                null,
+                "flow.gcs.undo.delete_created",
+                "flow.mongodb.undo.delete_created",
+                "flow.mongodb.undo.restore_patch",
+                "flow.postgresql.undo.delete_created",
+                "flow.postgresql.undo.restore_patch",
+                "flow.s3.undo.delete_created"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "id",
+            "args",
+            "undo"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "enum": [
+                "flow.mongodb.transaction",
+                "flow.postgresql.transaction"
+              ]
+            },
+            "name": {
+              "maxLength": 64,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+              "type": "string"
+            },
+            "steps": {
+              "$ref": "#/$defs/nodes"
+            }
+          },
+          "required": [
+            "name",
+            "id",
+            "steps"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "condition": {
+              "$ref": "#/$defs/predicate"
+            },
+            "else": {
+              "$ref": "#/$defs/nodes"
+            },
+            "exports": {
+              "$ref": "#/$defs/exports"
+            },
+            "id": {
+              "enum": [
+                "flow.if"
+              ]
+            },
+            "name": {
+              "maxLength": 64,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+              "type": "string"
+            },
+            "then": {
+              "$ref": "#/$defs/nodes"
+            }
+          },
+          "required": [
+            "name",
+            "id",
+            "condition",
+            "then",
+            "else",
+            "exports"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/node"
+      },
+      "maxItems": 12,
+      "type": "array"
+    },
+    "predicate": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "left": {
+              "$ref": "#/$defs/runtime_ref"
+            },
+            "op": {
+              "const": "is_null"
+            }
+          },
+          "required": [
+            "op",
+            "left"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "left": {
+              "$ref": "#/$defs/runtime_ref"
+            },
+            "op": {
+              "enum": [
+                "eq",
+                "ne",
+                "lt",
+                "le",
+                "gt",
+                "ge"
+              ]
+            },
+            "right": {
+              "$ref": "#/$defs/runtime_ref"
+            }
+          },
+          "required": [
+            "op",
+            "left",
+            "right"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "results": {
+      "additionalProperties": {
+        "$ref": "#/$defs/runtime_ref"
+      },
+      "propertyNames": {
+        "maxLength": 64,
+        "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "runtime_ref": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "input": {
+              "maxLength": 64,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "input"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "field": {
+              "type": "string"
+            },
+            "step": {
+              "maxLength": 64,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "step",
+            "field"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "literal": {},
+            "type": {
+              "enum": [
+                "boolean",
+                "bytes",
+                "date",
+                "float",
+                "integer",
+                "string"
+              ]
+            }
+          },
+          "required": [
+            "literal",
+            "type"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "som.dsl.v3",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "files": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "blocks": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "enum": [
+                    "api.flow.engine.mongodb",
+                    "api.flow.engine.postgresql",
+                    "auth.common",
+                    "auth.firebase",
+                    "auth.google_oauth",
+                    "auth.jwt",
+                    "flow.gcs.object.get",
+                    "flow.gcs.object.put",
+                    "flow.gcs.undo.delete_created",
+                    "flow.if",
+                    "flow.mongodb.authorize",
+                    "flow.mongodb.batch.create",
+                    "flow.mongodb.child.create",
+                    "flow.mongodb.child.get",
+                    "flow.mongodb.child.get.checked",
+                    "flow.mongodb.child.list",
+                    "flow.mongodb.child.patch",
+                    "flow.mongodb.parent.create",
+                    "flow.mongodb.parent.get",
+                    "flow.mongodb.parent.get.checked",
+                    "flow.mongodb.parent.list",
+                    "flow.mongodb.parent.patch",
+                    "flow.mongodb.transaction",
+                    "flow.mongodb.undo.delete_created",
+                    "flow.mongodb.undo.restore_patch",
+                    "flow.mongodb.workflow.import",
+                    "flow.mongodb.workflow.run",
+                    "flow.postgresql.authorize",
+                    "flow.postgresql.batch.create",
+                    "flow.postgresql.child.create",
+                    "flow.postgresql.child.get",
+                    "flow.postgresql.child.get.checked",
+                    "flow.postgresql.child.list",
+                    "flow.postgresql.child.patch",
+                    "flow.postgresql.parent.create",
+                    "flow.postgresql.parent.get",
+                    "flow.postgresql.parent.get.checked",
+                    "flow.postgresql.parent.list",
+                    "flow.postgresql.parent.patch",
+                    "flow.postgresql.transaction",
+                    "flow.postgresql.undo.delete_created",
+                    "flow.postgresql.undo.restore_patch",
+                    "flow.postgresql.workflow.import",
+                    "flow.postgresql.workflow.run",
+                    "flow.s3.object.get",
+                    "flow.s3.object.put",
+                    "flow.s3.undo.delete_created",
+                    "migration.flow.journal",
+                    "migration.related.head",
+                    "orm.base",
+                    "orm.flow.journal",
+                    "readme.auth.firebase",
+                    "readme.auth.google_oauth",
+                    "readme.auth.jwt",
+                    "readme.storage.gcs",
+                    "readme.storage.none",
+                    "readme.storage.s3",
+                    "readme.workflow.csv",
+                    "readme.workflow.decimal_summary",
+                    "readme.workflow.gzip_export",
+                    "readme.workflow.json_export",
+                    "readme.workflow.statistics",
+                    "schema.flow",
+                    "schema.related.batch",
+                    "schema.related.bounds",
+                    "schema.related.child",
+                    "schema.related.parent",
+                    "service.alembic.env",
+                    "service.alembic.ini",
+                    "service.business.readme.mongodb",
+                    "service.business.readme.postgresql",
+                    "service.flow.store.mongodb",
+                    "service.flow.store.postgresql",
+                    "service.init",
+                    "storage.common",
+                    "storage.flow.gcs",
+                    "storage.flow.none",
+                    "storage.flow.s3",
+                    "storage.gcs",
+                    "storage.none",
+                    "storage.s3",
+                    "test.business.head.mongodb",
+                    "test.business.head.postgresql",
+                    "test.related.payload.child",
+                    "test.related.payload.parent",
+                    "v7.api.business.head.mongodb",
+                    "v7.api.business.head.postgresql",
+                    "v7.api.business.workflow.csv",
+                    "v7.api.business.workflow.decimal_summary",
+                    "v7.api.business.workflow.gzip_export",
+                    "v7.api.business.workflow.json_export",
+                    "v7.api.business.workflow.statistics",
+                    "v7.api.mongo.batch",
+                    "v7.api.mongo.child.create",
+                    "v7.api.mongo.child.delete",
+                    "v7.api.mongo.child.get",
+                    "v7.api.mongo.child.list.boolean",
+                    "v7.api.mongo.child.list.date",
+                    "v7.api.mongo.child.list.plain",
+                    "v7.api.mongo.child.patch",
+                    "v7.api.mongo.parent.create",
+                    "v7.api.mongo.parent.delete",
+                    "v7.api.mongo.parent.get",
+                    "v7.api.mongo.parent.list.boolean",
+                    "v7.api.mongo.parent.list.date",
+                    "v7.api.mongo.parent.list.plain",
+                    "v7.api.mongo.parent.patch",
+                    "v7.api.related.batch",
+                    "v7.api.related.child.create",
+                    "v7.api.related.child.delete",
+                    "v7.api.related.child.get",
+                    "v7.api.related.child.list.boolean",
+                    "v7.api.related.child.list.date",
+                    "v7.api.related.child.list.plain",
+                    "v7.api.related.child.patch",
+                    "v7.api.related.parent.create",
+                    "v7.api.related.parent.delete",
+                    "v7.api.related.parent.get",
+                    "v7.api.related.parent.list.boolean",
+                    "v7.api.related.parent.list.date",
+                    "v7.api.related.parent.list.plain",
+                    "v7.api.related.parent.patch",
+                    "v7.api.tail",
+                    "v7.migration.mongo",
+                    "v7.migration.related.child.boolean",
+                    "v7.migration.related.child.date",
+                    "v7.migration.related.child.plain",
+                    "v7.migration.related.parent.boolean",
+                    "v7.migration.related.parent.date",
+                    "v7.migration.related.parent.plain",
+                    "v7.migration.related.tail",
+                    "v7.orm.composed.mongo.base",
+                    "v7.orm.composed.mongo.child",
+                    "v7.orm.composed.mongo.parent",
+                    "v7.orm.related.child.boolean",
+                    "v7.orm.related.child.date",
+                    "v7.orm.related.child.plain",
+                    "v7.orm.related.parent.boolean",
+                    "v7.orm.related.parent.date",
+                    "v7.orm.related.parent.plain",
+                    "v7.service.business.app.mongodb",
+                    "v7.service.business.app.postgresql",
+                    "v7.service.business.database.mongodb",
+                    "v7.service.business.project",
+                    "v7.service.database",
+                    "v7.test.composed.behavior",
+                    "workflow.flow.csv",
+                    "workflow.flow.decimal_summary",
+                    "workflow.flow.gzip_export",
+                    "workflow.flow.json_export",
+                    "workflow.flow.statistics"
+                  ]
+                },
+                "name": {
+                  "maxLength": 64,
+                  "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                  "type": "string"
+                },
+                "params": {
+                  "additionalProperties": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "$ref": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "$ref"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "object"
+                },
+                "refs": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "symbol": {
+                        "maxLength": 64,
+                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "symbol"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "params",
+                "refs"
+              ],
+              "type": "object"
+            },
+            "maxItems": 64,
+            "minItems": 1,
+            "type": "array"
+          },
+          "path": {
+            "enum": [
+              "README.md",
+              "alembic.ini",
+              "alembic/env.py",
+              "alembic/versions/{migration.revision}_{package}.py",
+              "pyproject.toml",
+              "tests/test_{package}.py",
+              "{package}/__init__.py",
+              "{package}/app.py",
+              "{package}/database.py",
+              "{package}/flows.py",
+              "{package}/integrations.py",
+              "{package}/migrate.py",
+              "{package}/models.py",
+              "{package}/schemas.py"
+            ]
+          }
+        },
+        "required": [
+          "path",
+          "blocks"
+        ],
+        "type": "object"
+      },
+      "maxItems": 12,
+      "minItems": 1,
+      "type": "array"
+    },
+    "flow": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 64,
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+          "type": "string"
+        },
+        "result": {
+          "$ref": "#/$defs/results"
+        },
+        "steps": {
+          "$ref": "#/$defs/nodes"
+        }
+      },
+      "required": [
+        "name",
+        "steps",
+        "result"
+      ],
+      "type": "object"
+    },
+    "version": {
+      "const": "som.dsl.v3"
+    }
+  },
+  "required": [
+    "version",
+    "files",
+    "flow"
+  ],
+  "title": "som.dsl.v3",
+  "type": "object"
+}

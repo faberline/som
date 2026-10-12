@@ -1,0 +1,482 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faberlines.local/som/som.prompt.v6.schema.json",
+  "title": "SOM composable related business prompt",
+  "description": "The Rust/Python validator additionally checks typed role bindings, field reservations, query semantics and capability requirements.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "contract",
+    "package",
+    "resources",
+    "relation",
+    "operations",
+    "capabilities",
+    "migration"
+  ],
+  "properties": {
+    "version": {
+      "const": "som.prompt.v6"
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "sha256"
+      ],
+      "properties": {
+        "id": {
+          "const": "related-business.v1"
+        },
+        "sha256": {
+          "const": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380"
+        }
+      }
+    },
+    "package": {
+      "$ref": "#/$defs/identifier"
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parent",
+        "child"
+      ],
+      "properties": {
+        "parent": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "table",
+            "path",
+            "fields",
+            "query"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "table": {
+              "$ref": "#/$defs/identifier"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/[a-z][a-z0-9_/-]*$"
+            },
+            "fields": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "type",
+                  "required",
+                  "unique"
+                ],
+                "properties": {
+                  "name": {
+                    "$ref": "#/$defs/identifier"
+                  },
+                  "type": {
+                    "enum": [
+                      "str",
+                      "int",
+                      "bool",
+                      "float",
+                      "date"
+                    ]
+                  },
+                  "required": {
+                    "type": "boolean"
+                  },
+                  "unique": {
+                    "type": "boolean"
+                  },
+                  "default": {
+                    "enum": [
+                      null,
+                      false
+                    ]
+                  }
+                },
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "required": {
+                          "const": false
+                        }
+                      }
+                    },
+                    "then": {
+                      "required": [
+                        "default"
+                      ]
+                    },
+                    "else": {
+                      "not": {
+                        "required": [
+                          "default"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "default": {
+                          "const": false
+                        }
+                      },
+                      "required": [
+                        "default"
+                      ]
+                    },
+                    "then": {
+                      "properties": {
+                        "type": {
+                          "const": "bool"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "maxItems": 8
+            },
+            "query": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "filter_field",
+                "max_limit",
+                "date_field"
+              ],
+              "properties": {
+                "filter_field": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/identifier"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "max_limit": {
+                  "type": "integer",
+                  "minimum": 20,
+                  "maximum": 100
+                },
+                "date_field": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/identifier"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "description": "filter_field names a non-unique bool with default false. date_field names the sole optional non-unique date with default null. The list before parameter uses YYYY-MM-DD and excludes that day."
+            }
+          }
+        },
+        "child": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "table",
+            "path",
+            "fields",
+            "query"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "table": {
+              "$ref": "#/$defs/identifier"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^/[a-z][a-z0-9_/-]*$"
+            },
+            "fields": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "type",
+                  "required",
+                  "unique"
+                ],
+                "properties": {
+                  "name": {
+                    "$ref": "#/$defs/identifier"
+                  },
+                  "type": {
+                    "enum": [
+                      "str",
+                      "int",
+                      "bool",
+                      "float",
+                      "date"
+                    ]
+                  },
+                  "required": {
+                    "type": "boolean"
+                  },
+                  "unique": {
+                    "type": "boolean"
+                  },
+                  "default": {
+                    "enum": [
+                      null,
+                      false
+                    ]
+                  }
+                },
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "required": {
+                          "const": false
+                        }
+                      }
+                    },
+                    "then": {
+                      "required": [
+                        "default"
+                      ]
+                    },
+                    "else": {
+                      "not": {
+                        "required": [
+                          "default"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "default": {
+                          "const": false
+                        }
+                      },
+                      "required": [
+                        "default"
+                      ]
+                    },
+                    "then": {
+                      "properties": {
+                        "type": {
+                          "const": "bool"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "maxItems": 8
+            },
+            "query": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "filter_field",
+                "max_limit",
+                "date_field"
+              ],
+              "properties": {
+                "filter_field": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/identifier"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "max_limit": {
+                  "type": "integer",
+                  "minimum": 20,
+                  "maximum": 100
+                },
+                "date_field": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/identifier"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "description": "filter_field names a non-unique bool with default false. date_field names the sole optional non-unique date with default null. The list before parameter uses YYYY-MM-DD and excludes that day."
+            }
+          }
+        }
+      }
+    },
+    "relation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "foreign_key",
+        "on_delete"
+      ],
+      "properties": {
+        "foreign_key": {
+          "type": "string"
+        },
+        "on_delete": {
+          "const": "restrict"
+        }
+      }
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 11,
+      "uniqueItems": true,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "scope",
+              "action"
+            ],
+            "properties": {
+              "scope": {
+                "enum": [
+                  "parent",
+                  "child"
+                ]
+              },
+              "action": {
+                "enum": [
+                  "create",
+                  "get",
+                  "list",
+                  "patch",
+                  "delete"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "scope",
+              "action"
+            ],
+            "properties": {
+              "scope": {
+                "const": "batch"
+              },
+              "action": {
+                "const": "batch_create"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "database",
+        "auth",
+        "storage",
+        "workflow",
+        "value_field",
+        "group_field"
+      ],
+      "properties": {
+        "database": {
+          "enum": [
+            "postgresql",
+            "mongodb"
+          ]
+        },
+        "auth": {
+          "enum": [
+            "jwt",
+            "firebase",
+            "google_oauth"
+          ]
+        },
+        "storage": {
+          "enum": [
+            "none",
+            "s3",
+            "gcs"
+          ]
+        },
+        "workflow": {
+          "enum": [
+            "json_export",
+            "csv",
+            "gzip_export",
+            "decimal_summary",
+            "statistics"
+          ]
+        },
+        "value_field": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "group_field": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "down_revision"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/identifier"
+        },
+        "down_revision": {
+          "type": "null"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "template": "class BoundedInput(BaseModel):\n    \"\"\"Typed service contract.\"\"\"\n    model_config: ClassVar[ConfigDict] = ConfigDict(extra=\"forbid\", allow_inf_nan=False)\n\n    @model_validator(mode=\"after\")\n    def bounded_values(self) -> Self:\n        \"\"\"Bounded values.\"\"\"\n        for name in self.model_fields_set:\n            value = getattr(self, name)\n            if isinstance(value, str) and len(value) > 255:\n                raise ValueError(\"strings must have at most 255 characters\")\n            if isinstance(value, int) and not isinstance(value, bool) and not -(2**31) <= value < 2**31:\n                raise ValueError(\"integers must fit signed 32 bits\")\n        return self\n",
+  "imports": [
+    "from pydantic import BaseModel, ConfigDict, model_validator",
+    "from typing import ClassVar, Self"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "train_count": 280,
+  "heldout_count": 50,
+  "split_rule": "disjoint five-operation orders, seed 29",
+  "train_sha256": "8c2d14b9e6566465039c16d44fbc97b0e5b924950c9417dab6e3a3e5de290d19",
+  "heldout_sha256": "69038769c867fcce33b4550cded04915c8c7643efbd4c3577ebeb3dba68df6b3",
+  "expected_sha256": "ce03cda79a4fd57344e48af352d54bbd3f74a28b680ee802b3adaf0dc29f612b"
+}

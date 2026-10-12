@@ -1,0 +1,44 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 79
+indent-width = 4
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RET", "ARG", "C4", "A", "ANN", "RUF", "PGH"]
+
+[tool.ruff.lint.isort]
+known-first-party = []
+known-third-party = ["alembic"]
+combine-as-imports = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+docstring-code-format = true
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+python_version = "3.12"
+strict = true
+disallow_any_unimported = true
+disallow_any_explicit = true
+show_error_codes = true
+pretty = false
+
+[tool.pydantic-mypy]
+init_typed = true
+init_forbid_extra = true
+
+[tool.pylint.format]
+max-line-length = 79
+
+[tool.pylint.imports]
+known-third-party = ["alembic"]
+
+[tool.isort]
+profile = "black"
+line_length = 79
+combine_as_imports = true
+known_third_party = ["alembic"]
+force_sort_within_sections = false

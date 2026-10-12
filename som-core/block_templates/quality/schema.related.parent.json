@@ -1,0 +1,8 @@
+{
+  "template": "class {{name}}Create(BoundedInput):\n    \"\"\"Typed service contract.\"\"\"\n    model_config: ClassVar[ConfigDict] = ConfigDict(extra=\"forbid\")\n{{#fields}}    {{name}}: {{create_type}}{{create_default}}\n{{/fields}}\n\nclass {{name}}Read(BaseModel):\n    \"\"\"Typed service contract.\"\"\"\n    model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)\n\n    id: int\n{{#fields}}    {{name}}: {{read_type}}\n{{/fields}}    created_at: datetime\n    updated_at: datetime\n\n\nclass {{name}}Patch(BoundedInput):\n    \"\"\"Typed service contract.\"\"\"\n    model_config: ClassVar[ConfigDict] = ConfigDict(extra=\"forbid\")\n{{#fields}}    {{name}}: {{patch_type}} = None\n{{/fields}}\n    @model_validator(mode=\"after\")\n    def reject_null_for_required_columns(self) -> Self:\n        \"\"\"Reject null for required columns.\"\"\"\n        nullable: dict[str, bool] = {\n{{#fields}}            \"{{name}}\": {{nullable}},\n{{/fields}}        }\n        for field in self.model_fields_set:\n            if getattr(self, field) is None and not nullable[field]:\n                raise ValueError(f\"{field} cannot be null\")\n        return self\n",
+  "imports": [
+    "from datetime import date, datetime",
+    "from pydantic import BaseModel, ConfigDict, model_validator",
+    "from typing import ClassVar, Self"
+  ]
+}

@@ -12,14 +12,22 @@ dependencies = [
     "mcp>=2.2.0",
     "mlx",
     "mlx-lm",
+    "tokenizers>=0.23",
     "typer",
 ]
 
 [project.scripts]
-som = "som_core.cli:app"
+som-train = "som_core.train_v1:train"
 
 [dependency-groups]
-dev = ["pytest"]
+dev = [
+    "pytest",
+    "boto3==1.43.105",
+    "httpx==0.28.1",
+    "PyJWT==2.15.1",
+    "redis==8.1.0",
+    "SQLAlchemy==2.0.44",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

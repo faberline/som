@@ -1,0 +1,4 @@
+{
+  "template": "import os\nfrom collections.abc import Iterator\n\nfrom sqlalchemy import create_engine\nfrom sqlalchemy.orm import Session\n\n\ndef database_url() -> str:\n\n\n    \"\"\"Database url.\"\"\"\n    value = os.environ.get(\"DATABASE_URL\", \"\")\n    if not value.startswith(\"postgresql+psycopg://\"):\n        raise RuntimeError(\"DATABASE_URL must be a postgresql+psycopg URL\")\n    return value\n\n\nengine = create_engine(database_url(), pool_pre_ping=True)\n\n\ndef get_session() -> Iterator[Session]:\n\n\n    \"\"\"Get session.\"\"\"\n    with Session(engine) as session:\n        yield session\n",
+  "imports": []
+}

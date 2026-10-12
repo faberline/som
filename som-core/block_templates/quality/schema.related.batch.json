@@ -1,0 +1,7 @@
+{
+  "template": "class BatchCreate(BaseModel):\n    \"\"\"Typed service contract.\"\"\"\n    model_config: ClassVar[ConfigDict] = ConfigDict(extra=\"forbid\")\n    parent: {{parent_name}}Create\n    children: list[{{child_name}}Create] = Field(min_length=1, max_length=20)\n\n\nclass BatchRead(BaseModel):\n    \"\"\"Typed service contract.\"\"\"\n    parent: {{parent_name}}Read\n    children: list[{{child_name}}Read]\n",
+  "imports": [
+    "from pydantic import Field",
+    "from typing import ClassVar, Self"
+  ]
+}

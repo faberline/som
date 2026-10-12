@@ -1,0 +1,4 @@
+{
+  "template": "    @router.get({{path}}, response_model=list[ParentRead])\n    async def list_parent(page_size: Annotated[int, Query(alias=\"limit\", ge=1, le={{max_limit}})] = 20, offset: Annotated[int, Query(ge=0)] = 0) -> list[Parent]:\n        \"\"\"List parent.\"\"\"\n        filters: dict[str, object] = {}\n        return await Parent.find(filters).sort(\"_id\").skip(offset).limit(page_size).to_list()\n",
+  "imports": []
+}

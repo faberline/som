@@ -1,5 +1,13 @@
 # SOM code corpus for Python status
 
+> The current M2 flow library has 357 approved blocks at
+> `data/blocks/current/blocks.json`. The earlier CRUD and query library has 16
+> blocks in `data/blocks/v1/blocks.json`. The original 14-block file is preserved in
+> `data/blocks/crud-v1/blocks.json` for historical model checks.
+> Its six date-filter blocks are stored in `data/blocks/v4/blocks.json`.
+> The older corpus status below describes research tooling. The production
+> CLI and HTTP service are in [som-rs](../som-rs/README.md).
+
 ## Scope
 
 This document describes the support contract in the current repository source.

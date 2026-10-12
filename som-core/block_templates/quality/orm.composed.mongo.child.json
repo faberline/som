@@ -1,0 +1,6 @@
+{
+  "template": "# pylint: disable-next=too-many-ancestors\nclass {{name}}(_SomBeanieDocument):\n    \"\"\"Typed service contract.\"\"\"\n    # pylint: disable=duplicate-code\n    id: int = Field(alias=\"_id\")  # type: ignore[assignment]\n    {{foreign_key}}: int\n{{#fields}}    {{name}}: {{create_type}}{{create_default}}\n{{/fields}}    created_at: datetime\n    updated_at: datetime\n    UNIQUE_FIELDS: _SomClassVar[dict[str, _SomUniqueField]] = {\n{{#fields}}        \"{{name}}\": {\"unique\": {{unique}}, \"bson_type\": {\"str\": \"string\", \"int\": \"int\", \"float\": \"double\", \"bool\": \"bool\", \"date\": \"date\"}[\"{{type}}\"]},\n{{/fields}}    }\n    QUERY_INDEXES: _SomClassVar[list[list[str]]] = [[\"{{foreign_key}}\", \"_id\"], *_som_query_indexes([{{filter_field}}, {{date_field}}], [\"{{foreign_key}}\"]) ]\n\n    # pylint: disable-next=too-few-public-methods\n    class Settings:\n        \"\"\"Typed service contract.\"\"\"\n        name: _SomClassVar[str] = {{table}}\n        bson_encoders: _SomClassVar[dict[type[date], _SomCallable[[date], datetime]]] = {datetime: encode_date, date: encode_date}\n",
+  "imports": [
+    "from collections.abc import Callable as _SomCallable"
+  ]
+}

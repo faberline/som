@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faberlines.local/som/som.prompt.v4.schema.json",
+  "title": "SOM prompt v4 date-filter CRUD service",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "package",
+    "resource",
+    "logic",
+    "tests",
+    "migration",
+    "query"
+  ],
+  "properties": {
+    "version": {
+      "const": "som.prompt.v4"
+    },
+    "package": {
+      "$ref": "#/$defs/identifier"
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "table",
+        "path",
+        "fields"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "table": {
+          "$ref": "#/$defs/identifier"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^/[a-z][a-z0-9_/-]*$"
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "type",
+              "required",
+              "unique"
+            ],
+            "properties": {
+              "name": {
+                "$ref": "#/$defs/identifier"
+              },
+              "type": {
+                "enum": [
+                  "str",
+                  "int",
+                  "bool",
+                  "float",
+                  "date"
+                ]
+              },
+              "required": {
+                "type": "boolean"
+              },
+              "unique": {
+                "type": "boolean"
+              },
+              "default": {
+                "enum": [
+                  null,
+                  false
+                ]
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "required": {
+                      "const": false
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "default"
+                  ]
+                },
+                "else": {
+                  "not": {
+                    "required": [
+                      "default"
+                    ]
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "default": {
+                      "const": false
+                    }
+                  },
+                  "required": [
+                    "default"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "type": {
+                      "const": "bool"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "logic": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "Create a row. Return 409 for a unique value conflict.",
+          "Get a row by id. Return 404 if it does not exist.",
+          "List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.",
+          "Update supplied fields. Return 404 if the row does not exist.",
+          "Delete a row. Return 404 if it does not exist."
+        ]
+      }
+    },
+    "tests": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "const": "Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration."
+      }
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "down_revision"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/identifier"
+        },
+        "down_revision": {
+          "type": "null"
+        }
+      }
+    },
+    "query": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "filter_field",
+        "max_limit",
+        "date_field"
+      ],
+      "properties": {
+        "filter_field": {
+          "$ref": "#/$defs/identifier"
+        },
+        "max_limit": {
+          "type": "integer",
+          "minimum": 20,
+          "maximum": 100
+        },
+        "date_field": {
+          "$ref": "#/$defs/identifier"
+        }
+      },
+      "description": "filter_field names a non-unique bool with default false. date_field names the sole optional non-unique date with default null. The list before parameter uses YYYY-MM-DD and excludes that day."
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z_0-9]*$"
+    }
+  }
+}

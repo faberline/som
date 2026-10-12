@@ -1,0 +1,8 @@
+{
+  "template": "# pylint: disable-next=too-few-public-methods\nclass Base(DeclarativeBase):\n    \"\"\"Typed service contract.\"\"\"\n",
+  "imports": [
+    "import sqlalchemy as sa",
+    "from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column",
+    "from sqlalchemy.sql.functions import now as database_now"
+  ]
+}

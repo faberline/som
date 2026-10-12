@@ -1,0 +1,12 @@
+{
+  "version": "som.m2.output-budget.v2",
+  "scope": "som.prompt.v7 compact M2 candidate only",
+  "files": 12,
+  "blocks": 64,
+  "bytes": "observed",
+  "input_tokens": 2048,
+  "output_tokens": 2048,
+  "measurement": "sum of UTF-8 bytes in final formatted file contents",
+  "authorization": "Human approved recording size as an observation on 2026-10-04.",
+  "legacy": "Existing prompt, DSL and quality paths retain their sealed byte limits."
+}

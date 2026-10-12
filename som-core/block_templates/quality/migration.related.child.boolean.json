@@ -1,0 +1,7 @@
+{
+  "template": "    # pylint: disable-next=no-member\n    op.create_table(\n        {{table}},\n        sa.Column(\"id\", sa.Integer(), primary_key=True),\n        sa.Column({{foreign_key}}, sa.Integer(), sa.ForeignKey({{target}}, ondelete=\"RESTRICT\"), nullable=False),\n{{#fields}}        sa.Column({{name_literal}}, {{migration_type}}, nullable={{nullable}}, unique={{unique}}{{migration_default}}),\n{{/fields}}        sa.Column(\"created_at\", sa.DateTime(timezone=True), server_default=database_now(), nullable=False),\n        sa.Column(\"updated_at\", sa.DateTime(timezone=True), server_default=database_now(), nullable=False),\n    )\n    # pylint: disable-next=no-member\n    op.create_index(\"ix_\" + {{table}} + \"_parent_id\", {{table}}, [{{foreign_key}}, \"id\"])\n    # pylint: disable-next=no-member\n    op.create_index(\"ix_\" + hashlib.sha256(({{table}} + \":\" + {{filter_field}}).encode()).hexdigest()[:24], {{table}}, [{{foreign_key}}, {{filter_field}}, \"id\"])\n",
+  "imports": [
+    "import hashlib",
+    "from sqlalchemy.sql.functions import now as database_now"
+  ]
+}

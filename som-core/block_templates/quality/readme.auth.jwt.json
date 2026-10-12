@@ -1,0 +1,4 @@
+{
+  "template": "## Authentication\n\nSet JWT_PUBLIC_KEY_FILE, JWT_ISSUER and JWT_AUDIENCE. Use an RS256 token with sub, iat, exp, iss, aud, and role=editor for writes. Public RSA keys must have at least 2048 bits.\n",
+  "imports": []
+}

@@ -1,0 +1,389 @@
+{
+  "version": "som.m3-work-breakdown.v1",
+  "date": "2026-10-11",
+  "milestone": 3,
+  "parents": [
+    7,
+    8,
+    9
+  ],
+  "status": "incomplete",
+  "first_action": "interruption_budget",
+  "scope": "Preserve the M2 default and all sealed assets. Complete the original M3 goal without relaxing acceptance.",
+  "tasks": [
+    {
+      "key": "data_audit",
+      "parent": 7,
+      "title": "M3：封存 r10 資料分組與零重疊稽核",
+      "status": "complete",
+      "depends_on": [],
+      "evidence": "資料 2,400／300／300；完整輸入、去名結構與引用圖重疊皆為零；data-audit-001 通過。",
+      "acceptance": [
+        "保存來源、seed、實際模型輸入及三種隔離稽核的雜湊。",
+        "報告各分組 App、操作、唯一輸入、唯一結構與圖數量。",
+        "覆蓋 90 種能力配對。實驗紀錄與文件審閱不進入訓練或開發。",
+        "新正式資料排除歷史已見完整組合。"
+      ],
+      "issue": 19,
+      "url": "https://github.com/faberline/som/issues/19"
+    },
+    {
+      "key": "reference_admission",
+      "parent": 7,
+      "title": "M3：封存 2,700 份訓練與開發答案的品質及行為驗證",
+      "status": "complete",
+      "depends_on": [
+        "data_audit"
+      ],
+      "evidence": "2,700／2,700 reference admission 通過。完整 result.json 雜湊已再次核對；這不是模型正式正確率。",
+      "acceptance": [
+        "逐題保存契約、正常 assembler、固定品質工具與獨立 HTTP／資料庫／故障檢查證據。",
+        "訓練 2,400 與開發 300 全過，正式題不參與答案 admission 或 checkpoint 選擇。",
+        "保留原始失敗、同來源重跑、完整結果及來源雜湊；診斷通過不算正式 admission。"
+      ],
+      "issue": 20,
+      "url": "https://github.com/faberline/som/issues/20"
+    },
+    {
+      "key": "interruption_budget",
+      "parent": 8,
+      "title": "M3：封存訓練中斷並結清共用時間帳本",
+      "status": "open",
+      "depends_on": [],
+      "evidence": "控制程序與訓練程序已停止。最後完整 checkpoint 74,000；日誌至 75,000。帳本仍有 elapsed_seconds=null 的未結束 attempt。",
+      "acceptance": [
+        "保存程序消失的證據、控制器 KeyboardInterrupt、日誌、最後完整 checkpoint 與原始啟動參數。",
+        "依現有證據結清未結束 attempt；null 不當成零。保留所有舊 attempts、睡眠與故障時間。",
+        "共用上限仍是 604,800 秒；列出已用與剩餘時間。不得重設或增加。",
+        "核對 optimizer、RNG 與取樣狀態是否可完整恢复。無證據時不得宣稱可精確續訓。"
+      ],
+      "issue": 21,
+      "url": "https://github.com/faberline/som/issues/21"
+    },
+    {
+      "key": "m2_entry_state",
+      "parent": 8,
+      "title": "M3：恢復並核對 M2 本機服務及回復入口",
+      "status": "open",
+      "depends_on": [],
+      "evidence": "兩個 current 指標未變；交接時 GET /healthz 連線失敗。",
+      "acceptance": [
+        "核對 CURRENT.md 所列 M2 model、block、持久化 Rust 執行檔與原始切換／回復紀錄的雜湊。",
+        "確認埠與程序所有者後，以原 M2 設定恢复 loopback 服務。保存命令、PID、日誌及健康回應。",
+        "核對新舊 prompt 的完整 CLI 回應。M2 指標保持不變。",
+        "訓練恢復前提供可用的 M2 回復設定；不以仍存活的舊程序代替可重新啟動證據。"
+      ],
+      "issue": 22,
+      "url": "https://github.com/faberline/som/issues/22"
+    },
+    {
+      "key": "development_diagnosis",
+      "parent": 8,
+      "title": "M3：分析 74,000 步仍只有 3／300 的完整序列錯誤",
+      "status": "open",
+      "depends_on": [
+        "interruption_budget"
+      ],
+      "evidence": "74,000 步原始開發完整序列 3／300；token loss 低不代表完整計畫符合需求。",
+      "acceptance": [
+        "只使用訓練及開發資料。正式測試保持未開啟。",
+        "按 block、順序、交易、引用、結束 token 與長度分類首錯及後續錯誤。",
+        "核對 tokenizer、v3 綁定、teacher forcing、輸出 loss mask、原始 greedy 解碼與答案語意資訊。",
+        "用可重現的小型對照區分編碼、模型學習與評估錯誤。保留原始失敗，不以單 token 正確率代替完整序列。",
+        "提出可驗證的修正；維持兩層、寬度 64、四 heads 及現有門檻。不自行放大模型或使用正式答案。"
+      ],
+      "issue": 23,
+      "url": "https://github.com/faberline/som/issues/23"
+    },
+    {
+      "key": "training_checkpoint",
+      "parent": 8,
+      "title": "M3：在剩餘預算內訓練並選出最早原始 300／300 checkpoint",
+      "status": "open",
+      "depends_on": [
+        "reference_admission",
+        "interruption_budget",
+        "m2_entry_state",
+        "development_diagnosis"
+      ],
+      "evidence": "尚無合格 checkpoint。M2 預設保持原狀。",
+      "acceptance": [
+        "訓練前核對同來源 admission。來源改變時使用新封存輪次並重跑受影響的完整 admission。",
+        "維持 Python／MLX、兩層、width 64、4 heads、vocab 1,024、context 4,096、seed 17、batch 8、Adam 3e-4 與只算輸出 loss。",
+        "每 1,000 步檢查全部原始、不受約束的開發完整序列。選最早 300／300 的 checkpoint。",
+        "所有訓練及開發評估合計仍在一週內；正式資料不進訓練器或 checkpoint 選擇。",
+        "保存全部失敗與帳本。未達門檻時報告差距，不切換 current 或放寬標準。"
+      ],
+      "issue": 24,
+      "url": "https://github.com/faberline/som/issues/24"
+    },
+    {
+      "key": "candidate_manifest",
+      "parent": 8,
+      "title": "M3：封存選定模型的完整 manifest 與可重現載入資料",
+      "status": "open",
+      "depends_on": [
+        "training_checkpoint"
+      ],
+      "evidence": "候選有部分 checkpoints，但沒有最早原始開發 300／300 的正式選定權重。",
+      "acceptance": [
+        "保存選定 checkpoint 的 tokenizer、權重、設定、資料、契約、codec、block、Ruff 及封存 legacy 雜湊。",
+        "保存最早合格選模證據、訓練步數、共用時間帳本與用途標記。",
+        "驗證 loader 拒絕檔案雜湊或版本不符；健康回應顯示 M3 訓練用途及解碼方式。",
+        "保留 M2 及歷史候選。不得把 smoke／seen fixture 權重標成正式組合模型。"
+      ],
+      "issue": 25,
+      "url": "https://github.com/faberline/som/issues/25"
+    },
+    {
+      "key": "constraint_parity",
+      "parent": 9,
+      "title": "M3：完成逐 token 約束、合法替代與 Python／Rust 拒絕對照",
+      "status": "open",
+      "depends_on": [
+        "data_audit"
+      ],
+      "evidence": "目前 reference 合法集合 135／135 相同；201 正反案例通過。這不是正式模型 300 題驗收。",
+      "acceptance": [
+        "逐 token 核對語法、型別、能力、作用域及引用的所有合法下一步。Python／Rust 集合一致。",
+        "保留多種合法 block、順序、交易及引用；接受合法替代與不同 JSON key 順序。",
+        "故意错選、漏選、向前／跨分支引用、超限與無合法 token 時得到相同拒絕類別。",
+        "不讀取答案，不補齊漏選、不替換選擇、不回退 M2、legacy 或 Python 推論。",
+        "保存原始選擇、約束後選擇、允許集合、DSL 及模型／契約強制決策統計。"
+      ],
+      "issue": 26,
+      "url": "https://github.com/faberline/som/issues/26"
+    },
+    {
+      "key": "metal_http_cli",
+      "parent": 9,
+      "title": "M3：驗證選定 checkpoint 的 Rust Metal、HTTP 與 CLI 完整路徑",
+      "status": "open",
+      "depends_on": [
+        "candidate_manifest",
+        "constraint_parity",
+        "m2_entry_state"
+      ],
+      "evidence": "M2 的 12 個 seen fixture Metal 證據已存在；M3 選定 checkpoint 路徑未跑。",
+      "acceptance": [
+        "在隔離埠核對 Metal 權重及 tokenizer 載入、約束解碼、DSL 驗證、組裝、格式化及完整 HTTP 回應。",
+        "使用封存的開發 smoke，不使用正式題選擇或修正 checkpoint。",
+        "som generate 僅發 HTTP 並輸出完整回應。正式請求不啟動 Python，也不寫入專案。",
+        "核對健康用途、解碼方式、model／block／codec／formatter／legacy 雜湊。保留每題完整鏈路。"
+      ],
+      "issue": 27,
+      "url": "https://github.com/faberline/som/issues/27"
+    },
+    {
+      "key": "formal_generation",
+      "parent": 9,
+      "title": "M3：封存未見 300 題的實際 Rust Metal 約束生成",
+      "status": "open",
+      "depends_on": [
+        "metal_http_cli"
+      ],
+      "evidence": "正式模型測試未開啟。門檻仍是 300／300。",
+      "acceptance": [
+        "先固定 checkpoint、來源、解碼器、檢查器及新正式題庫雜湊，再開啟正式模型測試。",
+        "300／300 由實際 Rust Metal 約束生成通過需求與 DSL 契約。支援範圍內拒絕或錯選都算失敗。",
+        "逐題保存 prompt、實際輸入、原始與約束 token、合法集合、實際 DSL 與最終完整檔案。",
+        "合法替代不必等於參考 DSL。不得用參考答案組装或補齊。",
+        "正式失敗若用於修正，整份題庫轉為回歸並封存新的未見題庫。不得拼接輪次最好結果。"
+      ],
+      "issue": 28,
+      "url": "https://github.com/faberline/som/issues/28"
+    },
+    {
+      "key": "formal_behavior_1",
+      "parent": 9,
+      "title": "M3：驗收正式產物第 1–100 題的品質與獨立行為",
+      "status": "open",
+      "depends_on": [
+        "formal_generation"
+      ],
+      "evidence": "未執行。依同一份封存正式檔案的行序，使用索引 0–99。",
+      "acceptance": [
+        "只能用 formal_generation 保存的實際 DSL 與最終程式。綁定同一 checkpoint、來源及檢查器。",
+        "100／100 在空目錄安裝固定依賴、migration、啟動 Uvicorn 並接受真實 HTTP 檢查。",
+        "所有適用的 CRUD、查詢、權限、交易、補償、版本化物件、程序中斷／恢復與並行故障檢查全過。",
+        "固定 Ruff、strict mypy、Pylint、isort 全過且格式化冪等。保存逐題需求、來源、觀測與檢查證據。",
+        "隔離 PostgreSQL、MongoDB replica set、Redis 及本機身份／儲存服務；未跑與環境失敗不得當成通過。"
+      ],
+      "issue": 29,
+      "url": "https://github.com/faberline/som/issues/29"
+    },
+    {
+      "key": "formal_behavior_2",
+      "parent": 9,
+      "title": "M3：驗收正式產物第 101–200 題的品質與獨立行為",
+      "status": "open",
+      "depends_on": [
+        "formal_generation"
+      ],
+      "evidence": "未執行。依同一份封存正式檔案的行序，使用索引 100–199。",
+      "acceptance": [
+        "只能用同輪 formal_generation 的實際 DSL 與程式；checkpoint、來源及檢查器與另外兩批完全相同。",
+        "100／100 在空目錄完成固定依賴、migration、Uvicorn 與全部適用真實 HTTP、DB、權限及故障檢查。",
+        "驗證交易、補償、精確 S3 VersionId／GCS generation、租約、重啟、同時恢復與並行修改。",
+        "固定 Ruff、strict mypy、Pylint、isort 與冪等格式化全過；保存逐題證據。",
+        "只用測試器建立的隔離服務。來源變動時結果作廢並保留，不拼接舊結果。"
+      ],
+      "issue": 30,
+      "url": "https://github.com/faberline/som/issues/30"
+    },
+    {
+      "key": "formal_behavior_3",
+      "parent": 9,
+      "title": "M3：驗收正式產物第 201–300 題的品質與獨立行為",
+      "status": "open",
+      "depends_on": [
+        "formal_generation"
+      ],
+      "evidence": "未執行。依同一份封存正式檔案的行序，使用索引 200–299。",
+      "acceptance": [
+        "只能用同輪 formal_generation 的實際 DSL 與程式；三批合併後須恰好覆蓋 300 題且沒有重疊或缺題。",
+        "100／100 完成空目錄啟動、固定品質及全部適用的獨立 HTTP／DB／provider／故障檢查。",
+        "保留未見 App、全部分支、交易、補償、恢復、身份及資料保存證據。",
+        "品質工具版本固定；最終內容符合 12 檔案、64 blocks 與 2,048／2,048 token。大小、時間與記憶體只觀測。",
+        "明確保存拒絕、失敗與未跑項目。任一必要檢查失敗不得判定批次通過。"
+      ],
+      "issue": 31,
+      "url": "https://github.com/faberline/som/issues/31"
+    },
+    {
+      "key": "raw_comparison",
+      "parent": 9,
+      "title": "M3：完成同 checkpoint 的 300 題原始無約束對照",
+      "status": "open",
+      "depends_on": [
+        "formal_generation"
+      ],
+      "evidence": "未執行。這是另列的觀測報告，不能代替正式 Rust 約束門檻。",
+      "acceptance": [
+        "同一 checkpoint、同一 300 題及固定資料雜湊，不受約束地生成完整序列。",
+        "逐題保存原始輸出、DSL 有效率、需求符合率、可執行結果、拒絕原因與時間。",
+        "可接受產物依相同獨立檢查判定功能；拒絕、錯選及未執行分開記錄。",
+        "和約束路徑分開報告，不拿兩路或多輪的最好結果拼成通過。",
+        "不得用正式結果選 checkpoint 或修模型；要修時將題庫轉為回歸並封存新未見資料。"
+      ],
+      "issue": 32,
+      "url": "https://github.com/faberline/som/issues/32"
+    },
+    {
+      "key": "final_parity_refusals",
+      "parent": 9,
+      "title": "M3：核對實際模型 DSL 的最終字節一致性與拒絕分類",
+      "status": "open",
+      "depends_on": [
+        "formal_generation",
+        "constraint_parity"
+      ],
+      "evidence": "目前前置參考 assembler 有 201／201；選定模型的正式實際 DSL 對照未跑。",
+      "acceptance": [
+        "對 300 份實際模型 DSL，Python／Rust 最終格式化內容逐位元組相同。",
+        "合法替代使用同一實際 DSL 判定；參考標準序列不作為唯一答案。",
+        "固定 codec、block、契約、Ruff 與設定；再次格式化不改任何 bytes。",
+        "完整重跑錯誤 prompt、錯選 block、遺漏權限／交易／補償及錯誤引用，拒絕類別一致。",
+        "保留所有輸入、完整產物及來源雜湊；不得以原始未格式化內容替代最終比較。"
+      ],
+      "issue": 33,
+      "url": "https://github.com/faberline/som/issues/33"
+    },
+    {
+      "key": "legacy_protection",
+      "parent": 9,
+      "title": "M3：重跑舊 100＋214 案例與封存 legacy 輸出",
+      "status": "open",
+      "depends_on": [
+        "candidate_manifest",
+        "metal_http_cli"
+      ],
+      "evidence": "前置 byte protection 已存在；M3 最終完整 legacy 保護未跑。",
+      "acceptance": [
+        "同一選定候選與固定來源，重跑舊 100 題與 214 套服務的適用完整行為、品質及格式相容檢查。",
+        "314 份實際 native legacy 輸出與封存最終檔案逐位元組相同。",
+        "舊 decoder、blocks、prompt 格式及拒絕行為保持不變；v7 失敗不得走舊路徑。",
+        "保存完整鏈路及逐題結果。前置的 544 byte-only 不能代替此完整關卡。"
+      ],
+      "issue": 34,
+      "url": "https://github.com/faberline/som/issues/34"
+    },
+    {
+      "key": "m2_protection",
+      "parent": 9,
+      "title": "M3：重跑 M2 的 114／12／12 與 218 份保護矩陣",
+      "status": "open",
+      "depends_on": [
+        "candidate_manifest",
+        "metal_http_cli"
+      ],
+      "evidence": "M2 原驗收與前置 byte 保護保留；選定 M3 候選的完整保護矩陣未跑。",
+      "acceptance": [
+        "逐組保留原 114 正式、12 開發、12 補充及 218 品質產物的身份與既定檢查範圍。",
+        "適用完整 HTTP、DB、provider、交易、補償、恢復、權限與 migration 檢查全過。",
+        "固定品質工具、最終 byte parity、格式冪等與原拒絕分類全部通過。",
+        "分開報告四組結果，明確說明重疊；不能把部分通過的總數當成整個矩陣通過。",
+        "本機隔離驗收；不啟動真實雲端或付費代理。"
+      ],
+      "issue": 35,
+      "url": "https://github.com/faberline/som/issues/35"
+    },
+    {
+      "key": "evidence_closeout",
+      "parent": 9,
+      "title": "M3：完成全範圍稽核、證據封存與收尾報告",
+      "status": "open",
+      "depends_on": [
+        "formal_behavior_1",
+        "formal_behavior_2",
+        "formal_behavior_3",
+        "raw_comparison",
+        "final_parity_refusals",
+        "legacy_protection",
+        "m2_protection"
+      ],
+      "evidence": "正式與最終保護未跑。M3 尚不能關閉。",
+      "acceptance": [
+        "依原始 M3 目標逐项核對所有門檻、指令、案例、限制、交付及當前證據；未跑、弱證據與缺漏不算完成。",
+        "同輪封存 prompt、實際輸入、原始／約束輸出、DSL、完整程式、所有來源及工具雜湊。",
+        "報告原始與約束正確率、逐題結果、各階段時間、模型大小與最高記憶體。資源只觀測。",
+        "更新 README、STATUS、M3 報告與交接清單。保留所有失敗與直接寫碼數據。",
+        "給出可核對的 promotion 前提。此票完成本身不自動改 current。"
+      ],
+      "issue": 36,
+      "url": "https://github.com/faberline/som/issues/36"
+    },
+    {
+      "key": "safe_promotion",
+      "parent": 9,
+      "title": "M3：安全切換開發預設並核對 GitHub 收尾",
+      "status": "open",
+      "depends_on": [
+        "evidence_closeout",
+        "m2_entry_state"
+      ],
+      "evidence": "尚未執行。M2 current 指標維持原狀。",
+      "acceptance": [
+        "確認所有 M3 關卡通過，再保存 M2 指標、模型、block、執行檔、啟動記錄與健康資訊。",
+        "在測試埠證明 M2 可重新啟動及回復。M3 同時更新模型與 block 指標，不混用版本。",
+        "切換後核對健康用途、雜湊、新舊 CLI 完整回應；失敗時恢復 M2。",
+        "將父票 #7–#9 的驗收逐項連到同輪證據。全部完成後關閉剩餘父票與 M3，再讀取 GitHub 確認。",
+        "只停止本輪已確認的測試程序並清理隔離資料庫。保存 AW 交接並釋放寫入認領。",
+        "不執行付費代理或真實雲端；正式採用與 token 決策仍在 M5。"
+      ],
+      "issue": 37,
+      "url": "https://github.com/faberline/som/issues/37"
+    }
+  ],
+  "tracker_readback": {
+    "children": 19,
+    "completed_children": 2,
+    "open_children": 17,
+    "parent_states": {
+      "7": "closed",
+      "8": "open",
+      "9": "open"
+    },
+    "milestone_state": "open"
+  }
+}

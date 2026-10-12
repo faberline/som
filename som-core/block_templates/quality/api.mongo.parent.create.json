@@ -1,0 +1,4 @@
+{
+  "template": "    @router.post({{path}}, response_model=ParentRead, status_code=201)\n    async def create_parent(data: ParentCreate) -> Parent:\n        \"\"\"Create parent.\"\"\"\n        async def write(session: AsyncClientSession) -> Parent:\n            \"\"\"Write.\"\"\"\n            return await insert(Parent, {**model_values(data)}, session)\n        return await transaction(write)\n",
+  "imports": []
+}

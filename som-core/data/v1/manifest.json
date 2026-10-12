@@ -1,0 +1,10 @@
+{
+  "train_count": 280,
+  "heldout_count": 50,
+  "split_rule": "disjoint permutations of the five CRUD operation blocks, seed 17",
+  "train_sha256": "e9473545137578605fe48a6912c61d9f23a1bf3a1bf558cd77dcca8b87f5e810",
+  "heldout_sha256": "0a424bb21827698f20c436a9ad2a995d786bd6529fd31590903d62c8e0a0bc95",
+  "heldout_expected_sha256": "0d220a7d606d6ef06394baa2fa882f70d49de91a1093e4fbdb4bfc5a9f1a6605",
+  "rejections_count": 12,
+  "rejections_sha256": "0a8fce771952e844b0edca5a96c4d25e8e5bb529aecbeed7dd1a28cead25b544"
+}

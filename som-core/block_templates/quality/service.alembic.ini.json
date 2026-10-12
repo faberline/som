@@ -1,0 +1,4 @@
+{
+  "template": "[alembic]\nscript_location = alembic\nprepend_sys_path = .\n",
+  "imports": []
+}

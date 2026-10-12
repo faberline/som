@@ -1,0 +1,4 @@
+{
+  "template": "## Objects\n\nThis app has no object store.\nPUT, GET and DELETE /objects/{key} accept safe keys of 1 to 80 characters. Objects are at most 1 MiB. PUT returns SHA-256. A same-body retry is safe. A different body with the same key returns 409. Object writes and database writes are separate operations.\n",
+  "imports": []
+}

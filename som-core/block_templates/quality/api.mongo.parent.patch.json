@@ -1,0 +1,4 @@
+{
+  "template": "    @router.patch({{path}}, response_model=ParentRead)\n    async def patch_parent(parent_id: int, data: ParentPatch) -> Parent:\n        \"\"\"Patch parent.\"\"\"\n        async def write(session: AsyncClientSession) -> Parent:\n            \"\"\"Write.\"\"\"\n            row = await require_parent(parent_id, session)\n            changes = _encode(model_values(data, exclude_unset=True))\n            if changes:\n                changes[\"updated_at\"] = datetime.now(UTC)\n                await Parent.get_pymongo_collection().update_one({\"_id\": row.id}, {\"$set\": changes}, session=session)\n            return await require_parent(row.id, session)\n        return await transaction(write)\n",
+  "imports": []
+}

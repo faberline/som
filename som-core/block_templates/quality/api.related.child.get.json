@@ -1,0 +1,4 @@
+{
+  "template": "    @router.get({{path}}, response_model=ChildRead)\n    def get_child(parent_id: int, child_id: int, db: Annotated[Session, Depends(session_provider)]) -> Child:\n        \"\"\"Get child.\"\"\"\n        return _require_child(db, parent_id, child_id)\n",
+  "imports": []
+}

@@ -1,0 +1,404 @@
+[
+  {
+    "id": "orm.base",
+    "version": 1,
+    "imports": [
+      "import sqlalchemy as sa",
+      "from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column"
+    ],
+    "params": {},
+    "template": "class Base(DeclarativeBase):\n    pass"
+  },
+  {
+    "id": "orm.model",
+    "version": 1,
+    "imports": [
+      "import sqlalchemy as sa"
+    ],
+    "params": {
+      "name": "identifier",
+      "table": "string",
+      "fields": "fields"
+    },
+    "template": "class {{name}}(Base):\n    __tablename__ = {{table}}\n\n    id: Mapped[int] = mapped_column(sa.Integer, primary_key=True)\n{{#fields}}    {{name}}: Mapped[{{create_type}}] = mapped_column({{sql_type}}, nullable={{nullable}}, unique={{unique}})\n{{/fields}}"
+  },
+  {
+    "id": "schema.create",
+    "version": 1,
+    "imports": [
+      "from pydantic import BaseModel"
+    ],
+    "params": {
+      "name": "identifier",
+      "fields": "fields"
+    },
+    "template": "class {{name}}Create(BaseModel):\n{{#fields}}    {{name}}: {{create_type}}{{create_default}}\n{{/fields}}"
+  },
+  {
+    "id": "schema.read",
+    "version": 1,
+    "imports": [
+      "from pydantic import ConfigDict"
+    ],
+    "params": {
+      "name": "identifier",
+      "fields": "fields"
+    },
+    "template": "class {{name}}Read(BaseModel):\n    model_config = ConfigDict(from_attributes=True)\n    id: int\n{{#fields}}    {{name}}: {{create_type}}\n{{/fields}}"
+  },
+  {
+    "id": "schema.patch",
+    "version": 1,
+    "imports": [
+      "from pydantic import BaseModel"
+    ],
+    "params": {
+      "name": "identifier",
+      "fields": "fields"
+    },
+    "template": "class {{name}}Patch(BaseModel):\n{{#fields}}    {{name}}: {{patch_type}} = None\n{{/fields}}"
+  },
+  {
+    "id": "api.head",
+    "version": 1,
+    "imports": [
+      "from collections.abc import Callable, Iterator",
+      "from fastapi import APIRouter, Depends, HTTPException",
+      "from sqlalchemy import select",
+      "from sqlalchemy.exc import IntegrityError",
+      "from sqlalchemy.orm import Session",
+      "from . import models, schemas"
+    ],
+    "params": {},
+    "template": "def create_router(get_session: Callable[[], Iterator[Session]]) -> APIRouter:\n    router = APIRouter()"
+  },
+  {
+    "id": "api.create",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "name": "identifier",
+      "path": "string"
+    },
+    "template": "    @router.post({{path}}, response_model=schemas.{{name}}Read, status_code=201)\n    def create(\n        payload: schemas.{{name}}Create, db: Session = Depends(get_session)\n    ) -> models.{{name}}:\n        row = models.{{name}}(**payload.model_dump())\n        db.add(row)\n        try:\n            db.commit()\n        except IntegrityError as exc:\n            db.rollback()\n            raise HTTPException(status_code=409, detail=\"conflict\") from exc\n        db.refresh(row)\n        return row"
+  },
+  {
+    "id": "api.get",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "name": "identifier",
+      "path": "string"
+    },
+    "template": "    @router.get({{path}} + \"/{item_id}\", response_model=schemas.{{name}}Read)\n    def get(item_id: int, db: Session = Depends(get_session)) -> models.{{name}}:\n        row = db.get(models.{{name}}, item_id)\n        if row is None:\n            raise HTTPException(status_code=404, detail=\"not found\")\n        return row"
+  },
+  {
+    "id": "api.list",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "name": "identifier",
+      "path": "string"
+    },
+    "template": "    @router.get({{path}}, response_model=list[schemas.{{name}}Read])\n    def list_items(db: Session = Depends(get_session)) -> list[models.{{name}}]:\n        return list(db.scalars(select(models.{{name}}).order_by(models.{{name}}.id)))"
+  },
+  {
+    "id": "api.list.query",
+    "version": 1,
+    "imports": [
+      "from fastapi import Query"
+    ],
+    "params": {
+      "name": "identifier",
+      "path": "string",
+      "filter_field": "identifier",
+      "max_limit": "integer"
+    },
+    "template": "    @router.get({{path}}, response_model=list[schemas.{{name}}Read])\n    def list_items(\n        filter_value: str | None = None,\n        limit: int = Query(default=20, ge=1, le={{max_limit}}),\n        offset: int = Query(default=0, ge=0),\n        db: Session = Depends(get_session),\n    ) -> list[models.{{name}}]:\n        stmt = select(models.{{name}})\n        if filter_value is not None:\n            stmt = stmt.where(models.{{name}}.{{filter_field}} == filter_value)\n        stmt = stmt.order_by(models.{{name}}.id).limit(limit).offset(offset)\n        return list(db.scalars(stmt))"
+  },
+  {
+    "id": "api.patch",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "name": "identifier",
+      "path": "string"
+    },
+    "template": "    @router.patch({{path}} + \"/{item_id}\", response_model=schemas.{{name}}Read)\n    def patch(\n        item_id: int, payload: schemas.{{name}}Patch, db: Session = Depends(get_session)\n    ) -> models.{{name}}:\n        row = db.get(models.{{name}}, item_id)\n        if row is None:\n            raise HTTPException(status_code=404, detail=\"not found\")\n        for key, value in payload.model_dump(exclude_unset=True).items():\n            setattr(row, key, value)\n        try:\n            db.commit()\n        except IntegrityError as exc:\n            db.rollback()\n            raise HTTPException(status_code=409, detail=\"conflict\") from exc\n        db.refresh(row)\n        return row"
+  },
+  {
+    "id": "api.delete",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "name": "identifier",
+      "path": "string"
+    },
+    "template": "    @router.delete({{path}} + \"/{item_id}\", status_code=204)\n    def delete(item_id: int, db: Session = Depends(get_session)) -> None:\n        row = db.get(models.{{name}}, item_id)\n        if row is None:\n            raise HTTPException(status_code=404, detail=\"not found\")\n        db.delete(row)\n        db.commit()"
+  },
+  {
+    "id": "api.tail",
+    "version": 1,
+    "imports": [],
+    "params": {},
+    "template": "    return router"
+  },
+  {
+    "id": "test.crud",
+    "version": 1,
+    "imports": [
+      "import os",
+      "import unittest",
+      "from fastapi import FastAPI",
+      "from fastapi.testclient import TestClient",
+      "from sqlalchemy import create_engine",
+      "from sqlalchemy.orm import Session",
+      "from {{package}}.api import create_router",
+      "from {{package}}.models import Base"
+    ],
+    "params": {
+      "package": "identifier",
+      "path": "string",
+      "fields": "fields"
+    },
+    "template": "class CrudTest(unittest.TestCase):\n    def setUp(self) -> None:\n        url = os.environ[\"TEST_DATABASE_URL\"]\n        self.engine = create_engine(url)\n        Base.metadata.create_all(self.engine)\n\n        def get_session():\n            with Session(self.engine) as db:\n                yield db\n\n        app = FastAPI()\n        app.include_router(create_router(get_session))\n        self.client = TestClient(app)\n\n    def tearDown(self) -> None:\n        Base.metadata.drop_all(self.engine)\n        self.engine.dispose()\n\n    def test_crud(self) -> None:\n        payload = {\n{{#fields}}            {{name_literal}}: {{sample}},\n{{/fields}}        }\n        created = self.client.post({{path}}, json=payload)\n        self.assertEqual(created.status_code, 201, created.text)\n        item_id = created.json()[\"id\"]\n        self.assertEqual(self.client.get({{path}} + f\"/{item_id}\").status_code, 200)\n        self.assertEqual(len(self.client.get({{path}}).json()), 1)\n        self.assertEqual(\n            self.client.patch({{path}} + f\"/{item_id}\", json={}).status_code, 200\n        )\n        self.assertEqual(self.client.delete({{path}} + f\"/{item_id}\").status_code, 204)\n        self.assertEqual(self.client.get({{path}} + f\"/{item_id}\").status_code, 404)"
+  },
+  {
+    "id": "test.list.query",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "path": "string",
+      "fields": "fields",
+      "filter_field": "string",
+      "max_limit": "integer"
+    },
+    "template": "    def test_query(self) -> None:\n        first = {\n{{#fields}}            {{name_literal}}: {{sample}},\n{{/fields}}        }\n        other = {**first, {{filter_field}}: \"other\"}\n        for payload in (first, first, other):\n            response = self.client.post({{path}}, json=payload)\n            self.assertEqual(response.status_code, 201, response.text)\n        page = self.client.get(\n            {{path}}, params={\"filter_value\": \"sample\", \"limit\": 1, \"offset\": 1}\n        )\n        self.assertEqual(page.status_code, 200, page.text)\n        self.assertEqual(len(page.json()), 1)\n        self.assertEqual(page.json()[0][{{filter_field}}], \"sample\")\n        self.assertEqual(\n            len(self.client.get({{path}}, params={\"filter_value\": \"other\"}).json()),\n            1,\n        )\n        self.assertEqual(\n            self.client.get({{path}}, params={\"limit\": 0}).status_code,\n            422,\n        )\n        self.assertEqual(\n            self.client.get({{path}}, params={\"limit\": {{max_limit}} + 1}).status_code,\n            422,\n        )\n        self.assertEqual(\n            self.client.get({{path}}, params={\"offset\": -1}).status_code,\n            422,\n        )"
+  },
+  {
+    "id": "migration.table",
+    "version": 1,
+    "imports": [
+      "from alembic import op",
+      "import sqlalchemy as sa"
+    ],
+    "params": {
+      "revision": "string",
+      "down_revision": "nullable_string",
+      "table": "string",
+      "fields": "fields"
+    },
+    "template": "revision = {{revision}}\ndown_revision = {{down_revision}}\nbranch_labels = None\ndepends_on = None\n\n\ndef upgrade() -> None:\n    op.create_table(\n        {{table}},\n        sa.Column(\"id\", sa.Integer(), primary_key=True),\n{{#fields}}        sa.Column({{name_literal}}, {{migration_type}}, nullable={{nullable}}, unique={{unique}}),\n{{/fields}}    )\n\n\ndef downgrade() -> None:\n    op.drop_table({{table}})"
+  },
+  {
+    "id": "service.project",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "package": "identifier"
+    },
+    "template": "[project]\nname = \"{{package}}\"\nversion = \"0.1.0\"\nrequires-python = \">=3.12,<3.13\"\ndependencies = [\n    \"fastapi==0.118.0\",\n    \"uvicorn==0.53.0\",\n    \"sqlalchemy==2.0.44\",\n    \"psycopg[binary]==3.3.6\",\n    \"alembic==1.20.0\",\n    \"pydantic==2.11.9\",\n]\n\n[dependency-groups]\ndev = [\"httpx==0.28.1\"]\n\n[tool.uv]\npackage = false"
+  },
+  {
+    "id": "service.readme",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "package": "identifier"
+    },
+    "template": "# {{package}} service\n\nSet DATABASE_URL to an isolated PostgreSQL URL with the postgresql+psycopg scheme.\nThe application does not use a local database fallback.\n\n1. Run uv sync.\n2. Run uv run alembic upgrade head.\n3. Run uv run uvicorn {{package}}.app:app.\n4. Open /docs for the API or /healthz for a database connection check.\n\nSet TEST_DATABASE_URL to a separate PostgreSQL database before running\nuv run python -m unittest discover -s tests -v.\nRun uv run alembic downgrade base to undo the migration."
+  },
+  {
+    "id": "service.alembic.ini",
+    "version": 1,
+    "imports": [],
+    "params": {},
+    "template": "[alembic]\nscript_location = alembic\nprepend_sys_path = ."
+  },
+  {
+    "id": "service.alembic.env",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "package": "identifier"
+    },
+    "template": "from alembic import context\nfrom sqlalchemy import create_engine\n\nfrom {{package}}.database import database_url\nfrom {{package}}.models import Base\n\n\ndef run_migrations_offline() -> None:\n    context.configure(\n        url=database_url(),\n        target_metadata=Base.metadata,\n        literal_binds=True,\n        dialect_opts={\"paramstyle\": \"named\"},\n    )\n    with context.begin_transaction():\n        context.run_migrations()\n\n\ndef run_migrations_online() -> None:\n    engine = create_engine(database_url(), pool_pre_ping=True)\n    try:\n        with engine.connect() as connection:\n            context.configure(connection=connection, target_metadata=Base.metadata)\n            with context.begin_transaction():\n                context.run_migrations()\n    finally:\n        engine.dispose()\n\n\nif context.is_offline_mode():\n    run_migrations_offline()\nelse:\n    run_migrations_online()"
+  },
+  {
+    "id": "service.init",
+    "version": 1,
+    "imports": [],
+    "params": {},
+    "template": "\"\"\"Generated standalone API package.\"\"\""
+  },
+  {
+    "id": "service.database",
+    "version": 1,
+    "imports": [],
+    "params": {},
+    "template": "import os\nfrom collections.abc import Iterator\n\nfrom sqlalchemy import create_engine\nfrom sqlalchemy.orm import Session\n\n\ndef database_url() -> str:\n    value = os.environ.get(\"DATABASE_URL\", \"\")\n    if not value.startswith(\"postgresql+psycopg://\"):\n        raise RuntimeError(\"DATABASE_URL must be a postgresql+psycopg URL\")\n    return value\n\n\nengine = create_engine(database_url(), pool_pre_ping=True)\n\n\ndef get_session() -> Iterator[Session]:\n    with Session(engine) as session:\n        yield session"
+  },
+  {
+    "id": "service.app",
+    "version": 1,
+    "imports": [],
+    "params": {},
+    "template": "from fastapi import FastAPI, HTTPException\nfrom sqlalchemy import text\nfrom sqlalchemy.exc import SQLAlchemyError\n\nfrom .api import create_router\nfrom .database import engine, get_session\n\napp = FastAPI()\napp.include_router(create_router(get_session))\n\n\n@app.get(\"/healthz\")\ndef healthz() -> dict[str, str]:\n    try:\n        with engine.connect() as connection:\n            connection.execute(text(\"SELECT 1\"))\n    except SQLAlchemyError as exc:\n        raise HTTPException(status_code=503, detail=\"database unavailable\") from exc\n    return {\"status\": \"ok\"}"
+  },
+  {
+    "id": "orm.model.service",
+    "version": 1,
+    "imports": [
+      "from datetime import datetime",
+      "import sqlalchemy as sa"
+    ],
+    "params": {
+      "name": "identifier",
+      "table": "identifier",
+      "filter_field": "identifier",
+      "fields": "fields_v3"
+    },
+    "template": "class {{name}}(Base):\n    __tablename__ = \"{{table}}\"\n    __table_args__ = (\n        sa.Index(\"ix_{{table}}_{{filter_field}}_id\", \"{{filter_field}}\", \"id\"),\n    )\n\n    id: Mapped[int] = mapped_column(sa.Integer, primary_key=True)\n{{#fields}}    {{name}}: Mapped[{{read_type}}] = mapped_column(\n        {{sql_type}}, nullable={{nullable}}, unique={{unique}}{{sql_default}}\n    )\n{{/fields}}    created_at: Mapped[datetime] = mapped_column(\n        sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False\n    )\n    updated_at: Mapped[datetime] = mapped_column(\n        sa.DateTime(timezone=True), server_default=sa.func.now(),\n        onupdate=sa.func.now(), nullable=False,\n    )"
+  },
+  {
+    "id": "schema.service",
+    "version": 1,
+    "imports": [
+      "from datetime import datetime",
+      "from pydantic import BaseModel, ConfigDict, model_validator"
+    ],
+    "params": {
+      "name": "identifier",
+      "fields": "fields_v3"
+    },
+    "template": "class {{name}}Create(BaseModel):\n    model_config = ConfigDict(extra=\"forbid\")\n{{#fields}}    {{name}}: {{create_type}}{{create_default}}\n{{/fields}}\n\nclass {{name}}Read(BaseModel):\n    model_config = ConfigDict(from_attributes=True)\n\n    id: int\n{{#fields}}    {{name}}: {{read_type}}\n{{/fields}}    created_at: datetime\n    updated_at: datetime\n\n\nclass {{name}}Patch(BaseModel):\n    model_config = ConfigDict(extra=\"forbid\")\n{{#fields}}    {{name}}: {{patch_type}} = None\n{{/fields}}\n    @model_validator(mode=\"after\")\n    def reject_null_for_required_columns(self) -> \"{{name}}Patch\":\n        nullable = {\n{{#fields}}            \"{{name}}\": {{nullable}},\n{{/fields}}        }\n        for field in self.model_fields_set:\n            if getattr(self, field) is None and not nullable[field]:\n                raise ValueError(f\"{field} cannot be null\")\n        return self"
+  },
+  {
+    "id": "api.list.boolean",
+    "version": 1,
+    "imports": [
+      "from fastapi import Query"
+    ],
+    "params": {
+      "name": "identifier",
+      "path": "string",
+      "filter_field": "identifier",
+      "max_limit": "integer"
+    },
+    "template": "    @router.get({{path}}, response_model=list[schemas.{{name}}Read])\n    def list_items(\n        {{filter_field}}: bool | None = None,\n        limit: int = Query(default=20, ge=1, le={{max_limit}}),\n        offset: int = Query(default=0, ge=0),\n        db: Session = Depends(get_session),\n    ) -> list[models.{{name}}]:\n        stmt = select(models.{{name}})\n        if {{filter_field}} is not None:\n            stmt = stmt.where(models.{{name}}.{{filter_field}} == {{filter_field}})\n        stmt = stmt.order_by(models.{{name}}.id).limit(limit).offset(offset)\n        return list(db.scalars(stmt))"
+  },
+  {
+    "id": "test.service",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "package": "identifier",
+      "path": "string",
+      "filter_field": "identifier",
+      "max_limit": "integer",
+      "fields": "fields_v3"
+    },
+    "template": "import os\nimport unittest\n\nfrom fastapi.testclient import TestClient\n\nos.environ[\"DATABASE_URL\"] = os.environ[\"TEST_DATABASE_URL\"]\n\nfrom {{package}}.app import app\nfrom {{package}}.database import engine\nfrom {{package}}.models import Base\n\n\nclass ServiceTest(unittest.TestCase):\n    def setUp(self) -> None:\n        Base.metadata.create_all(engine)\n        self.client = TestClient(app)\n\n    def tearDown(self) -> None:\n        Base.metadata.drop_all(engine)\n\n    def test_crud_and_database(self) -> None:\n        self.assertEqual(self.client.get(\"/healthz\").status_code, 200)\n        payload = {\n{{#fields}}{{required_entry}}{{/fields}}        }\n        created = self.client.post({{path}}, json=payload)\n        self.assertEqual(created.status_code, 201, created.text)\n        row = created.json()\n        self.assertIs(row[\"{{filter_field}}\"], False)\n        self.assertIsNotNone(row[\"created_at\"])\n        self.assertIsNotNone(row[\"updated_at\"])\n        item_id = row[\"id\"]\n        self.assertEqual(self.client.get({{path}} + f\"/{item_id}\").status_code, 200)\n        self.assertEqual(len(self.client.get({{path}}).json()), 1)\n        updated = self.client.patch(\n            {{path}} + f\"/{item_id}\", json={\"{{filter_field}}\": True}\n        )\n        self.assertEqual(updated.status_code, 200, updated.text)\n        self.assertIs(updated.json()[\"{{filter_field}}\"], True)\n        page = self.client.get(\n            {{path}}, params={\"{{filter_field}}\": True, \"limit\": 1, \"offset\": 0}\n        )\n        self.assertEqual([item[\"id\"] for item in page.json()], [item_id])\n        self.assertEqual(\n            self.client.patch(\n                {{path}} + f\"/{item_id}\", json={\"{{filter_field}}\": None}\n            ).status_code,\n            422,\n        )\n        self.assertEqual(\n            self.client.get({{path}}, params={\"limit\": 0}).status_code, 422\n        )\n        self.assertEqual(\n            self.client.get({{path}}, params={\"limit\": {{max_limit}} + 1}).status_code,\n            422,\n        )\n        self.assertEqual(self.client.delete({{path}} + f\"/{item_id}\").status_code, 204)\n        self.assertEqual(self.client.get({{path}} + f\"/{item_id}\").status_code, 404)"
+  },
+  {
+    "id": "migration.service",
+    "version": 1,
+    "imports": [
+      "from alembic import op",
+      "import sqlalchemy as sa"
+    ],
+    "params": {
+      "revision": "identifier",
+      "down_revision": "nullable_string",
+      "table": "identifier",
+      "filter_field": "identifier",
+      "fields": "fields_v3"
+    },
+    "template": "revision = \"{{revision}}\"\ndown_revision = {{down_revision}}\nbranch_labels = None\ndepends_on = None\n\n\ndef upgrade() -> None:\n    op.create_table(\n        \"{{table}}\",\n        sa.Column(\"id\", sa.Integer(), primary_key=True),\n{{#fields}}        sa.Column(\n            \"{{name}}\", {{migration_type}}, nullable={{nullable}},\n            unique={{unique}}{{migration_default}},\n        ),\n{{/fields}}        sa.Column(\n            \"created_at\", sa.DateTime(timezone=True),\n            server_default=sa.text(\"CURRENT_TIMESTAMP\"), nullable=False,\n        ),\n        sa.Column(\n            \"updated_at\", sa.DateTime(timezone=True),\n            server_default=sa.text(\"CURRENT_TIMESTAMP\"), nullable=False,\n        ),\n    )\n    op.create_index(\"ix_{{table}}_{{filter_field}}_id\", \"{{table}}\", [\"{{filter_field}}\", \"id\"])\n\n\ndef downgrade() -> None:\n    op.drop_index(\"ix_{{table}}_{{filter_field}}_id\", table_name=\"{{table}}\")\n    op.drop_table(\"{{table}}\")"
+  },
+  {
+    "id": "orm.model.service.date",
+    "version": 1,
+    "imports": [
+      "from datetime import date, datetime",
+      "import sqlalchemy as sa"
+    ],
+    "params": {
+      "name": "identifier",
+      "table": "identifier",
+      "filter_field": "identifier",
+      "fields": "fields_v4",
+      "date_field": "identifier"
+    },
+    "template": "class {{name}}(Base):\n    __tablename__ = \"{{table}}\"\n    __table_args__ = (\n        sa.Index(\"ix_{{table}}_{{filter_field}}_id\", \"{{filter_field}}\", \"id\"),\n        sa.Index(\"ix_{{table}}_{{date_field}}_id\", \"{{date_field}}\", \"id\"),\n    )\n\n    id: Mapped[int] = mapped_column(sa.Integer, primary_key=True)\n{{#fields}}    {{name}}: Mapped[{{read_type}}] = mapped_column(\n        {{sql_type}}, nullable={{nullable}}, unique={{unique}}{{sql_default}}\n    )\n{{/fields}}    created_at: Mapped[datetime] = mapped_column(\n        sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False\n    )\n    updated_at: Mapped[datetime] = mapped_column(\n        sa.DateTime(timezone=True), server_default=sa.func.now(),\n        onupdate=sa.func.now(), nullable=False,\n    )"
+  },
+  {
+    "id": "schema.service.date",
+    "version": 1,
+    "imports": [
+      "from datetime import date, datetime",
+      "from pydantic import BaseModel, ConfigDict, model_validator"
+    ],
+    "params": {
+      "name": "identifier",
+      "fields": "fields_v4"
+    },
+    "template": "class {{name}}Create(BaseModel):\n    model_config = ConfigDict(extra=\"forbid\")\n{{#fields}}    {{name}}: {{create_type}}{{create_default}}\n{{/fields}}\n\nclass {{name}}Read(BaseModel):\n    model_config = ConfigDict(from_attributes=True)\n\n    id: int\n{{#fields}}    {{name}}: {{read_type}}\n{{/fields}}    created_at: datetime\n    updated_at: datetime\n\n\nclass {{name}}Patch(BaseModel):\n    model_config = ConfigDict(extra=\"forbid\")\n{{#fields}}    {{name}}: {{patch_type}} = None\n{{/fields}}\n    @model_validator(mode=\"after\")\n    def reject_null_for_required_columns(self) -> \"{{name}}Patch\":\n        nullable = {\n{{#fields}}            \"{{name}}\": {{nullable}},\n{{/fields}}        }\n        for field in self.model_fields_set:\n            if getattr(self, field) is None and not nullable[field]:\n                raise ValueError(f\"{field} cannot be null\")\n        return self"
+  },
+  {
+    "id": "api.list.boolean.date",
+    "version": 1,
+    "imports": [
+      "from datetime import date",
+      "from fastapi import Query"
+    ],
+    "params": {
+      "name": "identifier",
+      "path": "string",
+      "filter_field": "identifier",
+      "date_field": "identifier",
+      "max_limit": "integer"
+    },
+    "template": "    @router.get({{path}}, response_model=list[schemas.{{name}}Read])\n    def list_items(\n        {{filter_field}}: bool | None = None,\n        before: date | None = None,\n        limit: int = Query(default=20, ge=1, le={{max_limit}}),\n        offset: int = Query(default=0, ge=0),\n        db: Session = Depends(get_session),\n    ) -> list[models.{{name}}]:\n        stmt = select(models.{{name}})\n        if {{filter_field}} is not None:\n            stmt = stmt.where(models.{{name}}.{{filter_field}} == {{filter_field}})\n        if before is not None:\n            stmt = stmt.where(models.{{name}}.{{date_field}} < before)\n        stmt = stmt.order_by(models.{{name}}.id).limit(limit).offset(offset)\n        return list(db.scalars(stmt))"
+  },
+  {
+    "id": "test.service.date",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "package": "identifier",
+      "path": "string",
+      "filter_field": "identifier",
+      "max_limit": "integer",
+      "fields": "fields_v4",
+      "date_field": "identifier"
+    },
+    "template": "import os\nimport unittest\n\nfrom fastapi.testclient import TestClient\n\nos.environ[\"DATABASE_URL\"] = os.environ[\"TEST_DATABASE_URL\"]\n\nfrom {{package}}.app import app\nfrom {{package}}.database import engine\nfrom {{package}}.models import Base\n\n\nclass ServiceTest(unittest.TestCase):\n    def setUp(self) -> None:\n        Base.metadata.create_all(engine)\n        self.client = TestClient(app)\n\n    def tearDown(self) -> None:\n        Base.metadata.drop_all(engine)\n\n    def test_crud_and_database(self) -> None:\n        self.assertEqual(self.client.get(\"/healthz\").status_code, 200)\n        payload = {\n{{#fields}}{{required_entry}}{{/fields}}        }\n        created = self.client.post({{path}}, json=payload)\n        self.assertEqual(created.status_code, 201, created.text)\n        row = created.json()\n        self.assertIs(row[\"{{filter_field}}\"], False)\n        self.assertIsNotNone(row[\"created_at\"])\n        self.assertIsNotNone(row[\"updated_at\"])\n        item_id = row[\"id\"]\n        self.assertEqual(self.client.get({{path}} + f\"/{item_id}\").status_code, 200)\n        self.assertEqual(len(self.client.get({{path}}).json()), 1)\n        updated = self.client.patch(\n            {{path}} + f\"/{item_id}\", json={\"{{filter_field}}\": True}\n        )\n        self.assertEqual(updated.status_code, 200, updated.text)\n        self.assertIs(updated.json()[\"{{filter_field}}\"], True)\n        page = self.client.get(\n            {{path}}, params={\"{{filter_field}}\": True, \"limit\": 1, \"offset\": 0}\n        )\n        self.assertEqual([item[\"id\"] for item in page.json()], [item_id])\n        self.assertEqual(\n            self.client.patch(\n                {{path}} + f\"/{item_id}\", json={\"{{filter_field}}\": None}\n            ).status_code,\n            422,\n        )\n        self.assertEqual(\n            self.client.get({{path}}, params={\"limit\": 0}).status_code, 422\n        )\n        self.assertEqual(\n            self.client.get({{path}}, params={\"limit\": {{max_limit}} + 1}).status_code,\n            422,\n        )\n        dated = self.client.patch(\n            {{path}} + f\"/{item_id}\", json={\"{{date_field}}\": \"2030-01-02\"}\n        )\n        self.assertEqual(dated.status_code, 200, dated.text)\n        self.assertEqual(dated.json()[\"{{date_field}}\"], \"2030-01-02\")\n        self.assertEqual(\n            [row[\"id\"] for row in self.client.get(\n                {{path}}, params={\"{{filter_field}}\": True, \"before\": \"2030-01-03\"}\n            ).json()], [item_id]\n        )\n        self.assertEqual(self.client.get(\n            {{path}}, params={\"before\": \"2030-01-02\"}\n        ).json(), [])\n        self.assertEqual(self.client.get(\n            {{path}}, params={\"before\": \"not-a-date\"}\n        ).status_code, 422)\n        self.assertEqual(self.client.delete({{path}} + f\"/{item_id}\").status_code, 204)\n        self.assertEqual(self.client.get({{path}} + f\"/{item_id}\").status_code, 404)"
+  },
+  {
+    "id": "migration.service.date",
+    "version": 1,
+    "imports": [
+      "from alembic import op",
+      "import sqlalchemy as sa"
+    ],
+    "params": {
+      "revision": "identifier",
+      "down_revision": "nullable_string",
+      "table": "identifier",
+      "filter_field": "identifier",
+      "fields": "fields_v4",
+      "date_field": "identifier"
+    },
+    "template": "revision = \"{{revision}}\"\ndown_revision = {{down_revision}}\nbranch_labels = None\ndepends_on = None\n\n\ndef upgrade() -> None:\n    op.create_table(\n        \"{{table}}\",\n        sa.Column(\"id\", sa.Integer(), primary_key=True),\n{{#fields}}        sa.Column(\n            \"{{name}}\", {{migration_type}}, nullable={{nullable}},\n            unique={{unique}}{{migration_default}},\n        ),\n{{/fields}}        sa.Column(\n            \"created_at\", sa.DateTime(timezone=True),\n            server_default=sa.text(\"CURRENT_TIMESTAMP\"), nullable=False,\n        ),\n        sa.Column(\n            \"updated_at\", sa.DateTime(timezone=True),\n            server_default=sa.text(\"CURRENT_TIMESTAMP\"), nullable=False,\n        ),\n    )\n    op.create_index(\"ix_{{table}}_{{filter_field}}_id\", \"{{table}}\", [\"{{filter_field}}\", \"id\"])\n    op.create_index(\"ix_{{table}}_{{date_field}}_id\", \"{{table}}\", [\"{{date_field}}\", \"id\"])\n\n\ndef downgrade() -> None:\n    op.drop_index(\"ix_{{table}}_{{date_field}}_id\", table_name=\"{{table}}\")\n    op.drop_index(\"ix_{{table}}_{{filter_field}}_id\", table_name=\"{{table}}\")\n    op.drop_table(\"{{table}}\")"
+  },
+  {
+    "id": "service.readme.date",
+    "version": 1,
+    "imports": [],
+    "params": {
+      "package": "identifier"
+    },
+    "template": "# {{package}} service\n\nSet DATABASE_URL to an isolated PostgreSQL URL with the postgresql+psycopg scheme.\nThe application does not use a local database fallback.\n\n1. Run uv sync.\n2. Run uv run alembic upgrade head.\n3. Run uv run uvicorn {{package}}.app:app.\n4. Open /docs for the API or /healthz for a database connection check.\n\nSet TEST_DATABASE_URL to a separate PostgreSQL database before running\nuv run python -m unittest discover -s tests -v.\nRun uv run alembic downgrade base to undo the migration.\n\nThe list route accepts before=YYYY-MM-DD. It selects dates strictly before that day. Rows with a null date do not match. Combine it with the boolean filter when needed.\n"
+  }
+]

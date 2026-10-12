@@ -1,0 +1,324 @@
+{
+  "train_count": 600,
+  "dev_count": 100,
+  "heldout_count": 50,
+  "regression_count": 150,
+  "heldout_apps": [
+    "experiments",
+    "documents"
+  ],
+  "cases": [
+    {
+      "index": 0,
+      "app": "projects",
+      "variant": 0,
+      "paired": true
+    },
+    {
+      "index": 1,
+      "app": "projects",
+      "variant": 1,
+      "paired": false
+    },
+    {
+      "index": 2,
+      "app": "projects",
+      "variant": 2,
+      "paired": false
+    },
+    {
+      "index": 3,
+      "app": "projects",
+      "variant": 3,
+      "paired": false
+    },
+    {
+      "index": 4,
+      "app": "projects",
+      "variant": 4,
+      "paired": false
+    },
+    {
+      "index": 5,
+      "app": "catalogs",
+      "variant": 0,
+      "paired": true
+    },
+    {
+      "index": 6,
+      "app": "catalogs",
+      "variant": 1,
+      "paired": false
+    },
+    {
+      "index": 7,
+      "app": "catalogs",
+      "variant": 2,
+      "paired": false
+    },
+    {
+      "index": 8,
+      "app": "catalogs",
+      "variant": 3,
+      "paired": false
+    },
+    {
+      "index": 9,
+      "app": "catalogs",
+      "variant": 4,
+      "paired": false
+    },
+    {
+      "index": 10,
+      "app": "collections",
+      "variant": 0,
+      "paired": true
+    },
+    {
+      "index": 11,
+      "app": "collections",
+      "variant": 1,
+      "paired": false
+    },
+    {
+      "index": 12,
+      "app": "collections",
+      "variant": 2,
+      "paired": false
+    },
+    {
+      "index": 13,
+      "app": "collections",
+      "variant": 3,
+      "paired": false
+    },
+    {
+      "index": 14,
+      "app": "collections",
+      "variant": 4,
+      "paired": false
+    },
+    {
+      "index": 15,
+      "app": "recipes",
+      "variant": 0,
+      "paired": true
+    },
+    {
+      "index": 16,
+      "app": "recipes",
+      "variant": 1,
+      "paired": false
+    },
+    {
+      "index": 17,
+      "app": "recipes",
+      "variant": 2,
+      "paired": false
+    },
+    {
+      "index": 18,
+      "app": "recipes",
+      "variant": 3,
+      "paired": false
+    },
+    {
+      "index": 19,
+      "app": "recipes",
+      "variant": 4,
+      "paired": false
+    },
+    {
+      "index": 20,
+      "app": "customers",
+      "variant": 0,
+      "paired": true
+    },
+    {
+      "index": 21,
+      "app": "customers",
+      "variant": 1,
+      "paired": false
+    },
+    {
+      "index": 22,
+      "app": "customers",
+      "variant": 2,
+      "paired": false
+    },
+    {
+      "index": 23,
+      "app": "customers",
+      "variant": 3,
+      "paired": false
+    },
+    {
+      "index": 24,
+      "app": "customers",
+      "variant": 4,
+      "paired": false
+    },
+    {
+      "index": 25,
+      "app": "devices",
+      "variant": 0,
+      "paired": true
+    },
+    {
+      "index": 26,
+      "app": "devices",
+      "variant": 1,
+      "paired": false
+    },
+    {
+      "index": 27,
+      "app": "devices",
+      "variant": 2,
+      "paired": false
+    },
+    {
+      "index": 28,
+      "app": "devices",
+      "variant": 3,
+      "paired": false
+    },
+    {
+      "index": 29,
+      "app": "devices",
+      "variant": 4,
+      "paired": false
+    },
+    {
+      "index": 30,
+      "app": "surveys",
+      "variant": 0,
+      "paired": true
+    },
+    {
+      "index": 31,
+      "app": "surveys",
+      "variant": 1,
+      "paired": false
+    },
+    {
+      "index": 32,
+      "app": "surveys",
+      "variant": 2,
+      "paired": false
+    },
+    {
+      "index": 33,
+      "app": "surveys",
+      "variant": 3,
+      "paired": false
+    },
+    {
+      "index": 34,
+      "app": "surveys",
+      "variant": 4,
+      "paired": false
+    },
+    {
+      "index": 35,
+      "app": "courses",
+      "variant": 0,
+      "paired": true
+    },
+    {
+      "index": 36,
+      "app": "courses",
+      "variant": 1,
+      "paired": false
+    },
+    {
+      "index": 37,
+      "app": "courses",
+      "variant": 2,
+      "paired": false
+    },
+    {
+      "index": 38,
+      "app": "courses",
+      "variant": 3,
+      "paired": false
+    },
+    {
+      "index": 39,
+      "app": "courses",
+      "variant": 4,
+      "paired": false
+    },
+    {
+      "index": 40,
+      "app": "experiments",
+      "variant": 0,
+      "paired": true
+    },
+    {
+      "index": 41,
+      "app": "experiments",
+      "variant": 1,
+      "paired": false
+    },
+    {
+      "index": 42,
+      "app": "experiments",
+      "variant": 2,
+      "paired": false
+    },
+    {
+      "index": 43,
+      "app": "experiments",
+      "variant": 3,
+      "paired": false
+    },
+    {
+      "index": 44,
+      "app": "experiments",
+      "variant": 4,
+      "paired": false
+    },
+    {
+      "index": 45,
+      "app": "documents",
+      "variant": 0,
+      "paired": true
+    },
+    {
+      "index": 46,
+      "app": "documents",
+      "variant": 1,
+      "paired": false
+    },
+    {
+      "index": 47,
+      "app": "documents",
+      "variant": 2,
+      "paired": false
+    },
+    {
+      "index": 48,
+      "app": "documents",
+      "variant": 3,
+      "paired": false
+    },
+    {
+      "index": 49,
+      "app": "documents",
+      "variant": 4,
+      "paired": false
+    }
+  ],
+  "split": "unique name-free, order-free typed structures across new splits",
+  "blocks_sha256": "9dcaa4e8ff2a98fbc0352f29aa6243771ca1e699f3f8c16924d70f3ae1c5ed5e",
+  "files": {
+    "combined-train.jsonl": "9c4b8b70812bf67c9b10e6a3f072a1635d6d40afbc71bc2bbfdb1376238e121b",
+    "dev.jsonl": "69d45e61de28075a29dd5485ae8e6bdcd04d65765788110bdca17216f3d70768",
+    "heldout.expected.jsonl": "79cae715bb605e0143f3ff006a884de6816d04bcaae1a5f5f89f9c4ec7629f0c",
+    "heldout.jsonl": "df4ebbaa5df5b0701e964f0c61d6283b2e33ef4657cd936deeea72d0540e6930",
+    "regression-heldout.expected.jsonl": "08bc38545a9750374c6ae671f54219eb9a2e4515d458c4fca9d893f991d23856",
+    "regression-heldout.jsonl": "754dc878b5ed3c65dc77380bf4be487eca4b9b1cba433e47322000085f82aa25",
+    "rejections.jsonl": "80eebde9754ab0166b7d5fa9bdaba4432396d78db6fe1661de5a2e879efa0acf",
+    "train.jsonl": "b55268ae0bc2060b37250b30dde98bd19c685aa1f6c96e00c411fba645912dba"
+  }
+}

@@ -1,0 +1,1 @@
+{"version":"som.flow.m3-input.v1","front_keys":["capabilities","operations"],"remaining_keys":"lexicographic","preserve_arrays":true,"preserve_scalar_table":true,"preserve_binding_suffix":true,"output_codec":"som.flow.compact-codec.v1"}
