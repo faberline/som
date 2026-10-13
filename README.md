@@ -1,5 +1,26 @@
 # som
 
+## Current roadmap — 2026-10-13
+
+SOM will use a model-free Rust compiler with two stages:
+**CNL → DSL bundle → existing code generator → Python files**.
+The first stage parses fixed English CNL and selects approved blocks by fixed rules.
+The second stage reuses the current Rust backend.
+Read [the Rust roadmap](som-rs/RUST_ROADMAP.md) and [the handoff](som-rs/RUST_HANDOFF.md).
+
+The two new milestones contain seven open implementation issues, #38–#44.
+The compiler and its new CLI/API commands are planned, not implemented.
+The running service remains the accepted legacy M2 model service.
+Both current pointers are unchanged. The old M3 automation is paused.
+Old model training has ended under the replaced roadmap.
+Its failures, incomplete checks, models and raw records remain preserved.
+
+## Historical model roadmap and current legacy service
+
+The following reports describe the former roadmap and the retained M2 service.
+References to M3 training or old milestone numbers are historical.
+They are not instructions to resume training or claims about the new compiler.
+
 The [M1 closeout](som-rs/M1_CLOSEOUT.md) passed on 2026-10-02.
 The rules and model paths produced the same files on 214 regression cases.
 All 214 services and the old 100 PostgreSQL cases passed.

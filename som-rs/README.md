@@ -1,5 +1,10 @@
 # SOM local service
 
+> Historical model-roadmap document. On 2026-10-13 the human replaced this plan with
+> [the Rust roadmap](RUST_ROADMAP.md). Old milestone records were archived and deleted.
+> Read [the current handoff](RUST_HANDOFF.md). Preserve the results below; do not resume old M3 training.
+> New compiler implementation and acceptance remain pending. The default remains legacy M2.
+
 The development default now uses `flow-m2-candidate/smoke-r31-001` and
 `flow-v7-compact`. See [CURRENT.md](CURRENT.md) for the persistent executable,
 startup record and rollback proof. All twelve seen M2 flow cases and 314

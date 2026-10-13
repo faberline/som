@@ -1,5 +1,10 @@
 # M2 closeout — 2026-10-05
 
+> Historical model-roadmap document. On 2026-10-13 the human replaced this plan with
+> [the Rust roadmap](RUST_ROADMAP.md). Old milestone records were archived and deleted.
+> Read [the current handoff](RUST_HANDOFF.md). Preserve the results below; do not resume old M3 training.
+> New compiler implementation and acceptance remain pending. The default remains legacy M2.
+
 All local acceptance gates pass on one unchanged r31 candidate.
 GitHub issues #4–#6 and milestone 2 are closed.
 The tracker readback is `evals/m2-flow-2026-10-04/r31/tracker-closeout-002/result.json`.

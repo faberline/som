@@ -1,5 +1,10 @@
 # M3 handoff — 2026-10-12
 
+> Historical model-roadmap document. On 2026-10-13 the human replaced this plan with
+> [the Rust roadmap](RUST_ROADMAP.md). Old milestone records were archived and deleted.
+> Read [the current handoff](RUST_HANDOFF.md). Preserve the results below; do not resume old M3 training.
+> New compiler implementation and acceptance remain pending. The default remains legacy M2.
+
 M2 passed. Issues #4–#6 and milestone 2 are closed on GitHub.
 Read [the M2 closeout](M2_CLOSEOUT.md) before work starts.
 M3 remains open. The active continuation round is `m3-flow-2026-10-12/r4`.

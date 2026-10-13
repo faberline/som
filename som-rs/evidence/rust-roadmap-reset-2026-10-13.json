@@ -1,0 +1,228 @@
+{
+  "version": "som.rust-roadmap-reset.v1",
+  "date": "2026-10-13",
+  "timezone": "Asia/Taipei",
+  "scope": "GitHub roadmap and documentation reset only; compiler implementation and new acceptance unrun",
+  "baseline_commit": "8c2ab0b7d4aa83eac8f4a87c2dabfc1b05bbe848",
+  "github_readback_at": "2026-10-13T10:22:08.460763+00:00",
+  "milestones": {
+    "cnl_to_dsl": {
+      "number": 7,
+      "title": "M1 — CNL to DSL：Rust 需求編譯器",
+      "url": "https://github.com/faberline/som/milestone/7"
+    },
+    "dsl_to_code": {
+      "number": 8,
+      "title": "M2 — DSL to Code：既有產碼器整合與擴展",
+      "url": "https://github.com/faberline/som/milestone/8"
+    }
+  },
+  "new_issues": {
+    "contract": {
+      "number": 38,
+      "url": "https://github.com/faberline/som/issues/38",
+      "milestone": 7,
+      "depends_on": []
+    },
+    "parser": {
+      "number": 39,
+      "url": "https://github.com/faberline/som/issues/39",
+      "milestone": 7,
+      "depends_on": [
+        "contract"
+      ]
+    },
+    "planner": {
+      "number": 40,
+      "url": "https://github.com/faberline/som/issues/40",
+      "milestone": 7,
+      "depends_on": [
+        "contract",
+        "parser"
+      ]
+    },
+    "bundle": {
+      "number": 41,
+      "url": "https://github.com/faberline/som/issues/41",
+      "milestone": 8,
+      "depends_on": [
+        "planner"
+      ]
+    },
+    "runtime": {
+      "number": 42,
+      "url": "https://github.com/faberline/som/issues/42",
+      "milestone": 8,
+      "depends_on": [
+        "bundle"
+      ]
+    },
+    "acceptance": {
+      "number": 43,
+      "url": "https://github.com/faberline/som/issues/43",
+      "milestone": 8,
+      "depends_on": [
+        "runtime"
+      ]
+    },
+    "rollout": {
+      "number": 44,
+      "url": "https://github.com/faberline/som/issues/44",
+      "milestone": 8,
+      "depends_on": [
+        "acceptance"
+      ]
+    }
+  },
+  "deleted_legacy_milestones": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "preserved_closed_issues": [
+    23,
+    22,
+    21,
+    20,
+    19,
+    7,
+    6,
+    5,
+    4,
+    3,
+    2,
+    1
+  ],
+  "superseded_not_planned": [
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37
+  ],
+  "new_milestones_open": 2,
+  "new_issues_open": 7,
+  "legacy_open_issues_remaining": 0,
+  "m3_automation_status": "PAUSED",
+  "old_round": {
+    "pipeline_status": "failed_or_interrupted",
+    "admission_exit_code": -2,
+    "signals_sent": [],
+    "verified_absent_pids": [
+      31948,
+      31949,
+      83997,
+      84084,
+      84085,
+      84086,
+      84087
+    ],
+    "admission_record_count": 835,
+    "admission_reported_passed": 835,
+    "admission_reported_failed": 0,
+    "admission_required": 2700,
+    "admission_complete": false,
+    "r6_training_started": false,
+    "formal_model_evaluation": "unrun",
+    "candidate_exists": false
+  },
+  "budget": {
+    "budget_sha256": "9bc920678f899c2be2277d9ed4ae0e73c262bd99d0728c18ca513a6a7008414f",
+    "budget_attempts": 5,
+    "budget_open_attempts": 0,
+    "spent_seconds": 231398.2452680124,
+    "limit_seconds": 604800
+  },
+  "current_pointers": {
+    "som-rs/models/current": "flow-m2-candidate/smoke-r31-001",
+    "som-code-python/data/blocks/current": "flow-v7-compact"
+  },
+  "local_archive": "/Users/chrischeng/faberlines/som/.local/roadmap-reset-2026-10-13",
+  "local_records_sha256": {
+    "github-mutation-journal.json": "ecadb61a2ee15298eb61015ffd5b918e9d5dec935e551dac23da41244b1f01ac",
+    "active-handoff-before.md": "896b92ab0d46a4c2610f033d3ec03a30afbd52fce8d0b8295d78b4e07558b401",
+    "process-cwd-check.json": "6a455b44701c2b3de96e3b61310086ba1570b706a41ad2e2adceae2914e3badd",
+    "review-correction.json": "700c406b31f4c9d15247a644350463cc7506954221156004ac844b1378dd7724",
+    "github-after.json": "29d80859911478acf192aa89629b798ff40dad62b0133abf10750471e919ebca",
+    "training-budget.json": "9bc920678f899c2be2277d9ed4ae0e73c262bd99d0728c18ca513a6a7008414f",
+    "automation-paused.toml": "458b94363d7b05feaae238e094f1c93a2be2c9664156edb4f822dcbfea6e50a4",
+    "active-round-before.json": "4cea20bc4cfd7546afc5f48584a4ba6ea5b489249e9ca60953ecb93e34fa70a9",
+    "preflight.json": "2c3d8f2a535eeeef25e7333831529d30daa291f45bf22ee3cc59104405ba8755",
+    "github-before.json": "c7e70715e962779adebd0edbe831fbd9aaa632bcac03550abbfeb90ec1be760c",
+    "pipeline-result.json": "18d31305efc3569aff6a34fc9fdffa7538d779ca479bf127b88c1115241477e7",
+    "sol-audit.json": "44646e010e20937fd7752fcd27db601c91b30a0c0ca96e54528cde1e79251bcf",
+    "luna-audit.json": "89f9021a0aac13663769446c7a9c12de833ac31028da6fe5ad56e9648512aea0",
+    "review-resolution.json": "31d4ac170912b75e21eb5c2f6c8d3ea82a3c5a865f43c15a93bbffa081d601a4",
+    "reviewed-public-index.json": "181be7350b3d3b9d5eb15325b32531c3e5b5418c6c663ff9d8d737c0b71bb8c6",
+    "github-after-reviewed.json": "7ae6989637e2ea9a9e79f9dedc0d56b90fd9f8cc5ca72f68fac5ce46b08bfcc8",
+    "github-mutation-journal-reviewed.json": "e3177427bb043d8c7711ab6b88ea0f4ce923ea94668e6e9a8ceb8ff86cd9fbf4"
+  },
+  "preserved_worktree": {
+    "path": "/Users/chrischeng/.codex/worktrees/76af/som",
+    "head": "1a688c12e8af5edfa531c016debee3bb2a2554cb",
+    "files_sha256": {
+      "som-core/src/som_core/flow_m3_target.py": "94f8b095188f9984f5d48b2c52f5fe1f7682577ca66ffd45fcb3e8018a94cc7a",
+      "som-core/tests/test_flow_m3_target.py": "af06af866d3cf07a6e0c6659b8e2428a41b6bae72456695cb4c1762d6a88b33d",
+      "som-rs/contracts/m3-output-order.v1.json": "bdbbadd7f88815c172e58e90b75889fc897e972b3c5dc33df9ec63ad5aab4eb9",
+      "som-core/scripts/freeze_m3_source.py": "f2d0203317f06f5d4dfb46e166a6cce43292c5e94822faf69f252d7452b81782",
+      "som-core/scripts/prepare_m3_flow_training.py": "a7b218fc962344b1cd94e7ac65d681ec3c4e3ebc34ec02cf80632c02447f0e84",
+      "som-core/scripts/run_m3_flow_gate.py": "10fee85448bde674ffb11b950ad32ef9acddc893dd1b6a05e20277384e9f8d4f",
+      "som-core/src/som_core/train_flow_m3.py": "dfbf8ca417804e67d7d430b99df2882bdb9df6375f9ba0d6927459fbcca3a334"
+    }
+  },
+  "documents_sha256": {
+    "README.md": "001dabfdada4b38d6cf8940c05d54db334b1963872cd0afa5a4efa8c7a8b2f03",
+    "som-rs/README.md": "66c23ca4d6039acb53f31759da339618d8103831bfc44e799269bffa396fb531",
+    "som-rs/M1_CLOSEOUT.md": "b5635168d0085404266cf0de97d3dda9795d1e142ce31858bd265bf0d9884180",
+    "som-rs/M2_CLOSEOUT.md": "8e48f810f54c1d0762ff6034d0b3762f09780f509cb0e66050426aab170021e7",
+    "som-rs/M3_HANDOFF.md": "372412bfdcb23955268e4e783be0fd4ddcce36ccd16773dc57ba9dbcd823344c",
+    "som-rs/M3_STATUS.md": "866f55c718d13ed7dd0ece16faf1fc2d1983b08a14bc926ac1c942be1ef5514a",
+    "som-rs/M7_CNL_PLAN.md": "62128f311d915ed26b97e41f92f00f6163e0db71776e93298f08ff78bf1cf496",
+    "som-rs/RUST_ROADMAP.md": "fa88de280f8f762cfc0fd89ad84031fa427c7e977f575ff2ea33b50d4b206629",
+    "som-rs/RUST_HANDOFF.md": "b1bae2c2762d74703e7f8393076cfd0a66af2c9b991fc26c5cca639e6aaf5f8d",
+    "som-rs/evidence/legacy-milestones-2026-10-13.md": "7eab80ffe74e9cea22f405248ff7de3d32a2a5acd3e178103f8e4cec1594f870",
+    "som-rs/evidence/rust-roadmap-2026-10-13.json": "f2fa876479361a9597862c572728e3f9205544768ee872881fa059bb761cbbe6"
+  },
+  "new_compiler_tests": "unrun; implementation is future issue work",
+  "old_model_acceptance": "incomplete and superseded; not marked passed",
+  "default_switched": false,
+  "paid_agent_runs": 0,
+  "real_cloud_runs": 0,
+  "review": {
+    "models": [
+      "gpt-6.1-sol",
+      "gpt-6-luna"
+    ],
+    "substantive_checks": "passed",
+    "metadata_finding": "resolved by fresh readback",
+    "reports_local": [
+      "sol-audit.json",
+      "luna-audit.json"
+    ],
+    "resolution_local": "review-resolution.json",
+    "runtime_tests": "unrun; documentation and tracker changes only"
+  }
+}

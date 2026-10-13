@@ -1,5 +1,10 @@
 # M7 — CNL 需求入口與語意一致性
 
+> Historical model-roadmap document. On 2026-10-13 the human replaced this plan with
+> [the Rust roadmap](RUST_ROADMAP.md). Old milestone records were archived and deleted.
+> Read [the current handoff](RUST_HANDOFF.md). Preserve the results below; do not resume old M3 training.
+> New compiler implementation and acceptance remain pending. The default remains legacy M2.
+
 ## 決策與交接
 
 主線在 2026-10-03 收到使用者授權的旁支交接。

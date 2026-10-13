@@ -1,0 +1,426 @@
+{
+  "version": "som.rust-roadmap.v1",
+  "draft_only": false,
+  "scope": "Approved roadmap and seven pending implementation tickets. This reset changes planning documents and GitHub only.",
+  "milestones": [
+    {
+      "key": "cnl_to_dsl",
+      "title": "M1 — CNL to DSL：Rust 需求編譯器",
+      "description": "Build a model-free Rust front end for fixed English CNL. Start with the existing SOM capabilities. The front end validates the complete request and chooses approved blocks by fixed rules. It returns the existing DSL with its full binding context in a versioned bundle. Keep the current DSL-to-code backend. Do not add a new semantic IR or infer missing business choices. Completion requires the contract, parser and planner issues to pass. Model training and model token gates are outside this milestone.",
+      "issue_keys": [
+        "contract",
+        "parser",
+        "planner"
+      ],
+      "number": 7,
+      "url": "https://github.com/faberline/som/milestone/7"
+    },
+    {
+      "key": "dsl_to_code",
+      "title": "M2 — DSL to Code：既有產碼器整合與擴展",
+      "description": "Reuse the existing Rust binding, block expansion and formatting path. Add explicit compile and assemble endpoints and keep JSON generate compatible with prompt v1–v7. Keep Python as the output language and retain the Python checks. Complete independent behavior, quality, refusal and compatibility checks before a fresh canary and rollback test. Keep legacy M2 as current until the new path passes. Expand blocks and capabilities through later bounded issues. Do not rebuild the backend or claim that old model gates passed.",
+      "issue_keys": [
+        "bundle",
+        "runtime",
+        "acceptance",
+        "rollout"
+      ],
+      "number": 8,
+      "url": "https://github.com/faberline/som/milestone/8"
+    }
+  ],
+  "issues": [
+    {
+      "key": "contract",
+      "milestone_key": "cnl_to_dsl",
+      "title": "M1：定義 CNL 與 DSL 套件契約",
+      "depends_on": [],
+      "body": "<!-- som-rust-roadmap-2026-10-13:contract -->\n\nDefine the public contract for CNL to DSL and DSL to actual code. Keep the first release within the existing SOM capabilities.\n\nDependencies: None.\n\nWork\n- Freeze the English grammar, names, literals, statement order and version rules. Define each allowed omission and its one fixed default.\n- Map each CNL form to the existing typed prompt fields. Cover resources, fields, queries, capabilities, operations, inputs, references, branches, exports, transactions, compensation, results and errors.\n- Specify the stage boundary as the existing DSL plus its complete typed binding context. Preserve the existing inner prompt and DSL versions.\n- Specify POST /v1/compile for CNL to a DSL bundle. Specify POST /v1/assemble for a bundle to complete files. Preserve POST /v1/generate and the JSON generate CLI for prompt v1–v7.\n- Reject missing facts, contradictions, ambiguous references, raw source, SQL and unsupported operations. Do not invent a business step.\n- Remove model sequence-token gates from the new compiler path. Retain structural limits. Keep compact output bytes as an observation and retain the existing limits on legacy paths.\n\nAcceptance\n- [ ] A versioned grammar, schemas, examples and negative cases cover every supported field and operation.\n- [ ] Every example has one explicit semantic result. Invalid cases name a stable error class and a source location.\n- [ ] The contract defines supported prompt v1–v7 and DSL versions, exact endpoint bodies, complete responses and compatibility rules.\n- [ ] Record the existing file, block, input and flow-node limits. Distinguish these from retired model token limits.\n- [ ] Freeze the acceptance requirements, compiler case inventory, case selection rules and independent checks before implementation. Mark new capabilities as out of scope.\n\nBoundary\nUse local tools only. No paid agent runs or real cloud runs. Keep old failures and evidence. Do not treat this issue as proof that the old model milestones passed.\n\nRoadmap: https://github.com/faberline/som/blob/main/som-rs/RUST_ROADMAP.md\n\nImplementation is pending. The 2026-10-13 reset only creates the roadmap and tickets.\n",
+      "number": 38,
+      "url": "https://github.com/faberline/som/issues/38",
+      "milestone": 7
+    },
+    {
+      "key": "parser",
+      "milestone_key": "cnl_to_dsl",
+      "title": "M1：實作 Rust CNL 解析器",
+      "depends_on": [
+        "contract"
+      ],
+      "body": "<!-- som-rust-roadmap-2026-10-13:parser -->\n\nAdd a Rust parser for the frozen CNL contract. Produce the existing typed request and preserve every declared business choice.\n\nDependencies: #38\n\nWork\n- Parse the fixed English forms into existing prompt fields. Retain source spans for diagnostics.\n- Preserve exact names, literal types and values, nullability, operation order, scopes, branch exports and compensation.\n- Use the existing semantic validators. Report grammar, missing-field, type, scope and contradiction errors at the source sentence.\n- Keep production parsing local and model-free. Python may remain a checker or fixture tool. Production must not invoke Python parsing or inference.\n\nAcceptance\n- [ ] CNL and equivalent JSON requests have the same semantic fields and the same acceptance or rejection result.\n- [ ] Tests cover each grammar form, each fixed default and each refusal class. Diagnostics include line, column, cause and allowed form.\n- [ ] Forward references, cross-branch reads, wrong literal types, missing authorization and invalid transactions or compensation fail.\n- [ ] Repeated parsing yields the same typed request. Unknown syntax cannot fall back to a model or a guessed interpretation.\n\nBoundary\nUse local tools only. No paid agent runs or real cloud runs. Keep old failures and evidence. Do not treat this issue as proof that the old model milestones passed.\n\nRoadmap: https://github.com/faberline/som/blob/main/som-rs/RUST_ROADMAP.md\n\nImplementation is pending. The 2026-10-13 reset only creates the roadmap and tickets.\n",
+      "number": 39,
+      "url": "https://github.com/faberline/som/issues/39",
+      "milestone": 7
+    },
+    {
+      "key": "planner",
+      "milestone_key": "cnl_to_dsl",
+      "title": "M1：實作 Rust 規則轉換與完整語意驗收",
+      "depends_on": [
+        "contract",
+        "parser"
+      ],
+      "body": "<!-- som-rust-roadmap-2026-10-13:planner -->\n\nReplace prediction with deterministic Rust planning inside stage one. Build the existing DSL from a validated typed request.\n\nDependencies: #38, #39\n\nWork\n- Define fixed rules for file slots, approved block choices, names, bindings, dependencies, operation order, flow nodes and inverse blocks.\n- Port the needed reference logic into a production Rust module. The Python reference code may guide implementation and checks.\n- Support the existing typed JSON prompt versions v1–v7. Reuse the current block catalogs and semantic validators.\n- Choose legal block alternatives through a documented versioned policy. Preserve each business choice supplied by the caller.\n- Read only the request, approved catalog and compiler rules in production. Do not read corpora, gold DSL answers, test expectations, model weights or Python planners.\n\nAcceptance\n- [ ] Emit the versioned DSL bundle defined by the contract. Include the existing DSL, full typed binding context, and grammar, policy and catalog versions and hashes. Equivalent CNL and JSON produce the same canonical bundle.\n- [ ] The same request and versioned catalog produce identical canonical DSL. Each result passes the existing plan validator.\n- [ ] Every emitted file, block, reference and inverse is explicit in the DSL. Stage two does not invent missing plan nodes.\n- [ ] Tests cover all existing capability choices and ordered flow shapes, including branches and compensation.\n- [ ] Negative tests reject incompatible blocks, missing dependencies, duplicate symbols, wrong order and unsupported capabilities.\n- [ ] A packaged production run succeeds without access to training or evaluation corpora, saved answers, weights or a Python planner.\n\nBoundary\nUse local tools only. No paid agent runs or real cloud runs. Keep old failures and evidence. Do not treat this issue as proof that the old model milestones passed.\n\nRoadmap: https://github.com/faberline/som/blob/main/som-rs/RUST_ROADMAP.md\n\nImplementation is pending. The 2026-10-13 reset only creates the roadmap and tickets.\n",
+      "number": 40,
+      "url": "https://github.com/faberline/som/issues/40",
+      "milestone": 7
+    },
+    {
+      "key": "bundle",
+      "milestone_key": "dsl_to_code",
+      "title": "M2：將 DSL 套件接入既有 Rust 產碼器",
+      "depends_on": [
+        "planner"
+      ],
+      "body": "<!-- som-rust-roadmap-2026-10-13:bundle -->\n\nAccept the complete bundle from M1 in the existing Rust code generator. Reuse the current backend. Do not rebuild it.\n\nDependencies: #40\n\nWork\n- Load the bundle schema fixed by the contract issue. Keep its inner prompt and DSL versions.\n- Verify the complete binding context and DSL together. Reject unknown versions, missing context, incompatible catalogs and altered assets before rendering.\n- Reuse block verification, resolve(prompt, dsl), the existing version-specific renderer, and the pinned quality formatter.\n- Keep every selected block, dependency and inverse explicit. Do not add missing business steps or plan nodes.\n- Use only the saved bundle and its declared local compiler assets. Do not read the original CNL or a model directory.\n\nAcceptance\n- [ ] A bundle from M1 produces complete files in a fresh process without the original CNL, weights or training data.\n- [ ] Round-trip serialization preserves the prompt, DSL, typed literals and hashes.\n- [ ] Inconsistent context and plan, missing context, unsupported versions and catalog hash changes fail before rendering.\n- [ ] Equivalent supported input through the old assembler interface and the new bundle interface produces the same complete files.\n- [ ] Compact bytes remain an observation. Structural limits and original legacy byte limits still apply.\n\nBoundary\nUse local tools only. Keep Python as the output language and retain its independent checks. No new backend, paid agent run, real cloud run or default switch.\n\nRoadmap: https://github.com/faberline/som/blob/main/som-rs/RUST_ROADMAP.md\n\nImplementation is pending. The 2026-10-13 reset only creates the roadmap and tickets.\n",
+      "number": 41,
+      "url": "https://github.com/faberline/som/issues/41",
+      "milestone": 8
+    },
+    {
+      "key": "runtime",
+      "milestone_key": "dsl_to_code",
+      "title": "M2：完成無模型的 Rust 服務與 CLI",
+      "depends_on": [
+        "bundle"
+      ],
+      "body": "<!-- som-rust-roadmap-2026-10-13:runtime -->\n\nConnect the new front end to the existing Rust backend. Reuse binding, block expansion and formatting.\n\nDependencies: #41\n\nWork\n- Add POST /v1/compile and POST /v1/assemble with matching som compile <cnl-file> and som assemble <bundle-file> CLI commands. The CLI calls the local HTTP service. CNL uses an explicit format marker; never guess the format.\n- Keep POST /v1/generate and the existing JSON generate CLI. Route validated prompt v1–v7 through deterministic planning and the existing backend.\n- Reuse block verification, resolve(prompt, dsl), render_resolved or the existing version-specific assembler, and the pinned quality formatter.\n- Load compiler, catalog and quality assets without a model directory or weights. Report the compiler purpose and asset hashes in health output.\n- Remove inference and model token codec requirements from the new production path. Keep semantic and structural validation, compact byte observations and legacy byte limits.\n- Return complete files and stable errors. The server must not write generated files into the caller project. Keep the legacy M2 deployment available until rollout acceptance.\n\nAcceptance\n- [ ] HTTP and CLI compile and assemble paths return equivalent bundles and complete file contents.\n- [ ] The existing JSON generate request and response contract works for every supported prompt version v1–v7.\n- [ ] The packaged service starts and generates code without weights, an inference runtime, training data or a Python production process.\n- [ ] Invalid JSON, CNL, bundles, catalogs, paths and references fail with the specified errors and no partial success.\n- [ ] Existing backend behavior remains covered. Measure full response latency, memory and bytes with the new compiler path.\n\nBoundary\nUse local tools only. No paid agent runs or real cloud runs. Keep old failures and evidence. Do not treat this issue as proof that the old model milestones passed.\n\nRoadmap: https://github.com/faberline/som/blob/main/som-rs/RUST_ROADMAP.md\n\nImplementation is pending. The 2026-10-13 reset only creates the roadmap and tickets.\n",
+      "number": 42,
+      "url": "https://github.com/faberline/som/issues/42",
+      "milestone": 8
+    },
+    {
+      "key": "acceptance",
+      "milestone_key": "dsl_to_code",
+      "title": "M2：完成既有能力與產物驗收",
+      "depends_on": [
+        "runtime"
+      ],
+      "body": "<!-- som-rust-roadmap-2026-10-13:acceptance -->\n\nProve the new model-free path against frozen requirements and independent observations. Keep all old evidence and failures.\n\nDependencies: #42\n\nWork\n- Run grammar, semantic, deterministic-plan, bundle, HTTP, CLI, refusal and complete-output checks from the new compiler contract.\n- Keep Python output and the pinned Python quality checks. Run independent API, database, migration, authorization, transaction, compensation, provider-fault and recovery checks where the existing contract requires them.\n- Verify Python/Rust assembly parity using actual new compiler DSL. Byte parity alone does not prove behavior.\n- Run the existing 100 legacy cases and 214 additional cases. Record the 214 as 14 services, 120 compositions and 80 blind cases. Account for 314 distinct legacy cases.\n- Report M2 formal114, development12, supplement12 and quality218 separately. Formal114 and development12 are disjoint subsets of quality218. Supplement12 is separate. Verify the identities and overlaps.\n- The retained M2 inventory has 230 distinct products: 218 plus 12. Full original behavior applies to 126 within quality218 and the 12 supplements. The remaining 92 retain their quality and parity scope; do not label them as new full behavior passes.\n- Use existing seen data as regression evidence. Run the compiler acceptance cases and independent checks already frozen by the contract issue before development. Do not read corpus answers in production or use the compiler output as its own behavior oracle.\n- Preserve failures, skipped checks and missing values. Do not require old training, checkpoint selection, model raw-token accuracy, Metal inference or model token-mask gates.\n\nAcceptance\n- [ ] Every required compiler case has a result tied to the same source, grammar, policy, catalog, tools and bundle hashes.\n- [ ] All required new compiler checks pass. Exact outputs, refusal classes and independent behavior agree with the frozen contract.\n- [ ] The 100+214 legacy inventory and the four M2 scopes are fully accounted for. The baseline inventory is 544 jobs with no double-counted M2 products.\n- [ ] Report bytes and formatting for complete artifacts. Retain structural limits, observe compact bytes and enforce the original legacy limits.\n- [ ] A root review maps each acceptance requirement to raw evidence and states its exact scope. Model-era results do not stand in for this run.\n- [ ] No paid agent comparison, real cloud execution or default switch was used to obtain acceptance.\n\nBoundary\nUse local tools only. No paid agent runs or real cloud runs. Keep old failures and evidence. Do not treat this issue as proof that the old model milestones passed.\n\nRoadmap: https://github.com/faberline/som/blob/main/som-rs/RUST_ROADMAP.md\n\nImplementation is pending. The 2026-10-13 reset only creates the roadmap and tickets.\n",
+      "number": 43,
+      "url": "https://github.com/faberline/som/issues/43",
+      "milestone": 8
+    },
+    {
+      "key": "rollout",
+      "milestone_key": "dsl_to_code",
+      "title": "M2：完成文件、服務切換與收尾",
+      "depends_on": [
+        "acceptance"
+      ],
+      "body": "<!-- som-rust-roadmap-2026-10-13:rollout -->\n\nSwitch the local default only after the new compiler is accepted. Keep legacy M2 available for rollback.\n\nDependencies: #43\n\nWork\n- Prepare the versioned compiler, block and formatter package with its manifest. Keep old model artifacts and raw evidence local.\n- Complete README, status, API/CLI, migration, evidence index and handoff documents. Record the new two-stage scope and the old model roadmap as superseded.\n- Run a fresh legacy M2 restore test and a new compiler canary using complete HTTP and CLI responses.\n- Define the compiler default selector and its asset binding. Do not relabel compiler assets as model weights. Preserve the legacy M2 model and block selectors until the tested switch.\n- Switch only after acceptance, canary and rollback checks pass. Verify health purpose, source and asset hashes, and complete responses. Restore M2 on failure.\n- Publish only approved source, documents and evidence indexes. Keep models, archived sources and raw measurements local.\n- Close the new issues and milestones only after reading back their evidence and final GitHub states. Verify the roadmap-reset mapping. Old #8–#18 and #24–#37 are already superseded with reason not_planned. Preserve their histories and their replacement links.\n\nAcceptance\n- [ ] A successful independent acceptance receipt and all required document hashes are linked before the switch.\n- [ ] Fresh M2 restore and compiler canary receipts prove both complete paths. Failure handling restores the tested M2 default.\n- [ ] The active compiler reports the expected purpose and hashes. New compile/assemble and compatible JSON generate pass through HTTP and CLI.\n- [ ] The final main commit and push are verified. Local-only artifacts remain local. GitHub closure and replacement links are read back.\n- [ ] The final handoff records active assets, rollback commands, checks and remaining capability limits. Any remaining tests or missing evidence remain explicit.\n\nBoundary\nUse local tools only. No paid agent runs or real cloud runs. Keep old failures and evidence. Do not treat this issue as proof that the old model milestones passed.\n\nRoadmap: https://github.com/faberline/som/blob/main/som-rs/RUST_ROADMAP.md\n\nImplementation is pending. The 2026-10-13 reset only creates the roadmap and tickets.\n",
+      "number": 44,
+      "url": "https://github.com/faberline/som/issues/44",
+      "milestone": 8
+    }
+  ],
+  "supersession": [
+    {
+      "old_issue": 8,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "planner"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        40
+      ]
+    },
+    {
+      "old_issue": 9,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "planner",
+        "runtime"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        40,
+        42
+      ]
+    },
+    {
+      "old_issue": 10,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "runtime",
+        "acceptance"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        42,
+        43
+      ]
+    },
+    {
+      "old_issue": 11,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "acceptance"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        43
+      ]
+    },
+    {
+      "old_issue": 12,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "acceptance"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        43
+      ]
+    },
+    {
+      "old_issue": 13,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [],
+      "note": "Retired with the old model roadmap. Paid-agent comparison and raw model accuracy have no replacement gate in this local compiler scope.",
+      "replacement_issues": []
+    },
+    {
+      "old_issue": 14,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [],
+      "note": "Retired with the old model roadmap. Paid-agent comparison and raw model accuracy have no replacement gate in this local compiler scope.",
+      "replacement_issues": []
+    },
+    {
+      "old_issue": 15,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "rollout"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        44
+      ]
+    },
+    {
+      "old_issue": 16,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "contract"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        38
+      ]
+    },
+    {
+      "old_issue": 17,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "parser"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        39
+      ]
+    },
+    {
+      "old_issue": 18,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "acceptance"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        43
+      ]
+    },
+    {
+      "old_issue": 24,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "planner"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        40
+      ]
+    },
+    {
+      "old_issue": 25,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "bundle",
+        "rollout"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        41,
+        44
+      ]
+    },
+    {
+      "old_issue": 26,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "planner",
+        "acceptance"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        40,
+        43
+      ]
+    },
+    {
+      "old_issue": 27,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "runtime",
+        "acceptance"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        42,
+        43
+      ]
+    },
+    {
+      "old_issue": 28,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "acceptance"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        43
+      ]
+    },
+    {
+      "old_issue": 29,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "acceptance"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        43
+      ]
+    },
+    {
+      "old_issue": 30,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "acceptance"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        43
+      ]
+    },
+    {
+      "old_issue": 31,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "acceptance"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        43
+      ]
+    },
+    {
+      "old_issue": 32,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [],
+      "note": "Retired with the old model roadmap. Paid-agent comparison and raw model accuracy have no replacement gate in this local compiler scope.",
+      "replacement_issues": []
+    },
+    {
+      "old_issue": 33,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "acceptance"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        43
+      ]
+    },
+    {
+      "old_issue": 34,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "acceptance"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        43
+      ]
+    },
+    {
+      "old_issue": 35,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "acceptance"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        43
+      ]
+    },
+    {
+      "old_issue": 36,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "acceptance",
+        "rollout"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        43,
+        44
+      ]
+    },
+    {
+      "old_issue": 37,
+      "state": "closed",
+      "state_reason": "not_planned",
+      "replacement_keys": [
+        "rollout"
+      ],
+      "note": "Superseded by the model-free two-stage roadmap. This does not mark old acceptance as passed.",
+      "replacement_issues": [
+        44
+      ]
+    }
+  ],
+  "preserve_completed_history": "Keep completed legacy issues and milestone evidence as history. Do not erase original failures or turn superseded work into successful model acceptance.",
+  "source_notes": [
+    "som-rs/src/main.rs:204-290 has the current JSON generate path.",
+    "som-rs/src/flow_compact.rs:81-195 has resolve, assemble and render_resolved.",
+    "som-rs/contracts/m2-output-budget.v2.json keeps compact bytes observed and legacy limits intact.",
+    "som-rs/evals/m3-flow-2026-10-12/r6/pre-closeout-review-001/m2-protection-scope.json supplies inventory scope and overlap metadata only; it is not a completed acceptance receipt."
+  ]
+}
