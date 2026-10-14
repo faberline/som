@@ -2,19 +2,40 @@
 name = "som"
 version = "0.1.0"
 edition = "2024"
+default-run = "som"
+
+[features]
+default = []
+legacy-model = ["dep:candle-core", "dep:candle-nn", "dep:safetensors", "dep:tokenizers"]
 
 [dependencies]
 axum = "0.8"
 base64 = "0.22"
-candle-core = { version = "0.11", features = ["metal"] }
-candle-nn = "0.11"
+candle-core = { version = "0.11", features = ["metal"], optional = true }
+candle-nn = { version = "0.11", optional = true }
 clap = { version = "4.6", features = ["derive"] }
 regex = "1"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
-safetensors = "0.8"
+safetensors = { version = "0.8", optional = true }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
 thiserror = "2"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "sync"] }
-tokenizers = { version = "0.23", default-features = false, features = ["onig"] }
+tokenizers = { version = "0.23", default-features = false, features = ["onig"], optional = true }
+
+
+[[bin]]
+name = "som-model-legacy"
+path = "src/bin/som-model-legacy.rs"
+required-features = ["legacy-model"]
+
+[[bin]]
+name = "som-flow-model-trace"
+path = "src/bin/som-flow-model-trace.rs"
+required-features = ["legacy-model"]
+
+[[bin]]
+name = "som-legacy-trace"
+path = "src/bin/som-legacy-trace.rs"
+required-features = ["legacy-model"]

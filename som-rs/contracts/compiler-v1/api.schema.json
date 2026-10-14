@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "som.compiler-api.v1",
+  "$defs": {
+    "compile_request": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "format": {
+              "const": "som.cnl.v1"
+            },
+            "source": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "format",
+            "source"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "format": {
+              "const": "som.prompt-json.v1"
+            },
+            "prompt": {
+              "$ref": "compiler-prompt.schema.json"
+            }
+          },
+          "required": [
+            "format",
+            "prompt"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "assemble_request": {
+      "type": "object",
+      "properties": {
+        "bundle": {
+          "$ref": "bundle.schema.json"
+        }
+      },
+      "required": [
+        "bundle"
+      ],
+      "additionalProperties": false
+    },
+    "compile_success": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": "ok"
+        },
+        "bundle": {
+          "$ref": "bundle.schema.json"
+        }
+      },
+      "required": [
+        "status",
+        "bundle"
+      ],
+      "additionalProperties": false
+    },
+    "assemble_success": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": "ok"
+        },
+        "files": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "status",
+        "files"
+      ],
+      "additionalProperties": false
+    },
+    "diagnostic": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "end_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "end_column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte_start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "byte_end": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "prompt_pointer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cause": {
+          "type": "string"
+        },
+        "allowed_form": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "line",
+        "column",
+        "end_line",
+        "end_column",
+        "byte_start",
+        "byte_end",
+        "prompt_pointer",
+        "cause",
+        "allowed_form"
+      ],
+      "additionalProperties": false
+    },
+    "compiler_error": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": "error"
+        },
+        "code": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "status",
+        "code",
+        "detail",
+        "diagnostics"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "x-transport-limits": {
+    "compile": 262144,
+    "generate": 262144,
+    "assemble": 2097152,
+    "canonical_assemble_envelope_preflight": "<=2097152 bytes before compile success; otherwise SCOPE_TOO_LARGE422"
+  }
+}

@@ -44,7 +44,13 @@ pub const LOGIC_STEPS_V4: [&str; 5] = [
 ];
 pub const TEST_CASE_V4: &str = "Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.";
 
+#[cfg(feature = "legacy-model")]
 pub mod model;
+pub mod compiler;
+pub mod cnl;
+pub mod planner;
+pub mod strict_json;
+pub mod json_diagnostics;
 pub mod related;
 pub mod business;
 pub mod composed;
@@ -52,8 +58,10 @@ pub mod quality;
 pub mod flow;
 pub mod flow_codec;
 pub mod flow_constraints;
+#[cfg(feature = "legacy-model")]
 pub mod flow_m3_model;
 pub mod flow_compact;
+#[cfg(feature = "legacy-model")]
 pub mod flow_model;
 
 #[derive(Debug, Clone)]
@@ -429,10 +437,14 @@ pub struct Block {
 }
 
 pub fn load_blocks(path: &Path) -> Result<BTreeMap<String, Block>, SomError> {
-    let text =
-        fs::read_to_string(path).map_err(|e| SomError::new("INVALID_BLOCK", e.to_string()))?;
+    let bytes = fs::read(path).map_err(|e| SomError::new("INVALID_BLOCK", e.to_string()))?;
+    load_blocks_from_bytes(&bytes)
+}
+
+/// Parse the same bytes whose asset digest was verified by the caller.
+pub fn load_blocks_from_bytes(bytes: &[u8]) -> Result<BTreeMap<String, Block>, SomError> {
     let list: Vec<Block> =
-        serde_json::from_str(&text).map_err(|e| SomError::new("INVALID_BLOCK", e.to_string()))?;
+        serde_json::from_slice(bytes).map_err(|e| SomError::new("INVALID_BLOCK", e.to_string()))?;
     let mut out = BTreeMap::new();
     let tag = Regex::new(r"\{\{([A-Za-z_][A-Za-z_0-9]*)\}\}").unwrap();
     let section = Regex::new(r"(?s)\{\{#fields\}\}.*?\{\{/fields\}\}").unwrap();

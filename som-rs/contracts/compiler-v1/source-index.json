@@ -1,0 +1,28 @@
+{
+  "version": "som.cnl-draft-source-index.v1",
+  "files": {
+    "som-rs/RUST_ROADMAP.md": "fa88de280f8f762cfc0fd89ad84031fa427c7e977f575ff2ea33b50d4b206629",
+    "som-rs/src/lib.rs": "e12ad0be7b3c21d214a66c4c1fbc08da8aca61018769a58a8a3822dc16ffa7b6",
+    "som-rs/src/related.rs": "ccc55e6018117a7087685de81da420da911832edaae51532e712be7b1b138dca",
+    "som-rs/src/business.rs": "b880c325a02c9a93a9e1470baa0416db54560b986511a71561583c1468c9df2f",
+    "som-rs/src/composed.rs": "571c04a8e50f9856361dce94ebab813d8a8905aee9e2ea12dbd687f4f32d890c",
+    "som-rs/src/flow.rs": "8df232e307baa785c696869f89f4f44b3a6eec2a621dfea0e5c054165fa483f6",
+    "som-rs/src/flow_compact.rs": "72c53833d186f0b02f7fc21f52bb738bd6b49d42a41681ce97f0c33054527051",
+    "som-rs/src/main.rs": "6388014781c7b5c86c255e6525ecb53a3bb47a4d76ea70f4810417814bfd3d80",
+    "som-rs/src/quality.rs": "ec181b2bd75103eac9c958c7fdbf6bf7dc95af97a071e470e0532254ea283b81",
+    "som-rs/contracts/som.prompt.v7.schema.json": "c805f484d3585928b17bb31a72bba78860a0395c2cb9e5de57f838ae2819607a",
+    "som-rs/contracts/som.dsl.v3.schema.json": "fc9a3998b8f1d4ad913758b0a8141718a94d0ca673f304bc89e410fee61abccf",
+    "som-rs/contracts/related-business.v1.md": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380",
+    "som-rs/contracts/related-flow.v1.md": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091",
+    "som-rs/contracts/m2-output-budget.v2.json": "2ebc663e12408d358b0827fd2dfa6f917fedc4f8e412ce45d17f3c58476d89a5",
+    "som-rs/examples/prompt.json": "8a0269b81d7831c329c04d3114d3feaaa4c2def6df378a76b6569e9bf282463a",
+    "som-rs/examples/query-prompt.json": "a5baf60682bb5096eb44d14932de9ff95390f40e02eb5887dddbe0d96206ab3f",
+    "som-rs/examples/service-prompt.json": "72361df884e7d4bf28b9a71da5c6dd4c119fde0e19aa78dcb5c4d2a2d45668ed",
+    "som-rs/examples/date-service-prompt.json": "6f123ea4ff72b7e0d6cba50278b10a5da1ecc449dd441b2ae0ff480500b8e43a",
+    "som-rs/examples/related-service-prompt.json": "65101209a650e209be40ee35d969c6f6764d471a5ea4d71f4561dc054d8bbc39",
+    "som-rs/examples/composed-prompt.json": "33d902b113a2cf203250cc6b5e6b41cea5b02225890ad53e96019114a2bf3722"
+  },
+  "old_formal_corpora_read": false,
+  "historical_contracts_modified": false,
+  "production_implementation": "unrun; design only"
+}

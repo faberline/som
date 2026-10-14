@@ -1,0 +1,678 @@
+{
+  "version": "som.retired-training-archive-cleanup-evidence.v1",
+  "stage": "training_archive_and_exact_cleanup_complete_compiler_acceptance_pending",
+  "repository": "faberline/som",
+  "archived_git_head": "82f3b87ccad40277713326e42ac35f921ba34663",
+  "archive": {
+    "drive_folder_url": "https://drive.google.com/drive/folders/1gPJIVp3cwNX-cUvBpYglvC3SD2mogT58",
+    "drive_archive_url": "https://drive.google.com/file/d/11-rKdZxV2TI6fCJujVYhsWNDUTDz2vzx/view?usp=drivesdk",
+    "drive_file_id": "11-rKdZxV2TI6fCJujVYhsWNDUTDz2vzx",
+    "sha256": "772c63b573a08ae7c8eca791685a75c044561bdbe482c3b6431ac9fadb674930",
+    "compressed_bytes": 22970184,
+    "original_bytes": 576509094,
+    "original_file_count": 92,
+    "private_owner_only": true,
+    "whole_download_and_all_member_hashes_verified": true,
+    "member_prefix": "files/"
+  },
+  "cleanup": {
+    "started_at": "2026-10-14T09:04:13.348252+00:00",
+    "finished_at": "2026-10-14T09:04:13.752585+00:00",
+    "passed": true,
+    "deleted_file_count": 55,
+    "retained_file_count": 37,
+    "deleted_logical_bytes": 504792344,
+    "free_bytes_delta_observation": 504840192,
+    "free_space_observation_is_not_a_portable_reclamation_guarantee": true,
+    "git_tracked_deletions_added": 54,
+    "git_commit_or_push_claimed": false
+  },
+  "preserved_at_cleanup": {
+    "retained_37_files_hashes_unchanged": true,
+    "protected_source_qa_model_block_runtime_hashes_unchanged": true,
+    "m2_current_pointers_unchanged": true,
+    "pointer_targets": {
+      "som-rs/models/current": "flow-m2-candidate/smoke-r31-001",
+      "som-code-python/data/blocks/current": "flow-v7-compact"
+    },
+    "historical_m3_seals_source_archives_raw_logs_unmodified": true,
+    "model_training_aliases_not_deleted": true
+  },
+  "receipt_bindings": [
+    {
+      "path": ".local/training-data-archive-2026-10-14/MANIFEST.json",
+      "sha256": "57f0a3c25a019cd43cdbd70bd7302facd239fa332e9590391942e38f55b5189d",
+      "scope": "local_receipt_metadata"
+    },
+    {
+      "path": ".local/training-data-archive-2026-10-14/LOCAL_VERIFICATION.json",
+      "sha256": "fe80c57ea46d4615ab900aa9a4862f6f21c584709a6ba1ce3f44e0f3757f2854",
+      "scope": "local_receipt_metadata"
+    },
+    {
+      "path": ".local/training-data-archive-2026-10-14/DRIVE_VERIFICATION.json",
+      "sha256": "299bfdfccc0725ccedf484c203f94d6fd0068acb8637bfc7adc8503382962589",
+      "scope": "local_receipt_metadata"
+    },
+    {
+      "path": ".local/training-data-archive-2026-10-14/CLOUD_READBACK.json",
+      "sha256": "e7bab272e8032d94203633872c23c163647bd3f57862610a49a2675923afdae1",
+      "scope": "local_receipt_metadata"
+    },
+    {
+      "path": ".local/training-data-archive-2026-10-14/FINAL_RECEIPT.json",
+      "sha256": "15daa57df26d836a84fc106ba7dae930769ad2d10e7d1f056b6a5bdd0ca1b85a",
+      "scope": "local_receipt_metadata"
+    },
+    {
+      "path": ".local/training-data-archive-2026-10-14/cleanup-001/fresh-cloud-verification.json",
+      "sha256": "142d92a9d4c855b9eaa18cb2f6987667f93fad4d0be207e6bfa1aebe2b1143fd",
+      "scope": "local_receipt_metadata"
+    },
+    {
+      "path": ".local/training-data-archive-2026-10-14/cleanup-001/reviewed-plan.json",
+      "sha256": "6f0fb64a905064c21c2f0e5cb361bd93a43e79c54157a8d745be7c77fa3a7cec",
+      "scope": "local_receipt_metadata"
+    },
+    {
+      "path": ".local/training-data-archive-2026-10-14/cleanup-001/pre-delete.json",
+      "sha256": "ace0e7bdcc3f1ca70e3c11ba54499adf32257cfe032339034bb3fb8b6a406129",
+      "scope": "local_receipt_metadata"
+    },
+    {
+      "path": ".local/training-data-archive-2026-10-14/cleanup-001/result.json",
+      "sha256": "5321f43c7ff18989befa4b99b3abd871da6492d696cf83102d0170ff247c803a",
+      "scope": "local_receipt_metadata"
+    },
+    {
+      "path": ".local/training-data-archive-2026-10-14/cleanup-001/deleted.jsonl",
+      "sha256": "ba49b6765c5eb770c8ec412cfc1646e2ba54ac274fa764bcc88f9abc07cd0409",
+      "scope": "local_receipt_metadata"
+    }
+  ],
+  "deleted": [
+    {
+      "path": "som-core/data/business-service/combined-train.jsonl",
+      "bytes": 8711197,
+      "sha256": "206b266ab449e1c77ddcac933171ce246ae1c2917483d0ea660c8f1166fac714",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/business-service/coverage.json",
+      "bytes": 1849,
+      "sha256": "4b08857ca862f922796a551723ef748afe3f84b7619926eea629b0c6b92c821e",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/business-service/dev.jsonl",
+      "bytes": 828014,
+      "sha256": "1939be58cd6a07388c0b71e03219dc179657b04e5ef30e2b0b0872427370a151",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/business-service/manifest.json",
+      "bytes": 1116,
+      "sha256": "8cbd5c723d1db3450e82e245ba81881db7b9fa9bf7693017b7b211f86d6561c9",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/composed/blind-manifest.json",
+      "bytes": 741,
+      "sha256": "4366dbf307449581a7a2fb56ee1a280bc1eb1caa03861640808006ca9600c213",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/composed/dev.jsonl",
+      "bytes": 4082542,
+      "sha256": "83374dd2be007c5e19753fb60c743bc75e32ceb80ffd2d717148ccbd06724e3f",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/composed/train.jsonl",
+      "bytes": 135661056,
+      "sha256": "066eec5657f0d86f6f16cec23207efb1e80093008ece144a1285c78e256586c0",
+      "git_tracked": false,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/crud-query-date-service-v4/heldout.expected.jsonl",
+      "bytes": 1879216,
+      "sha256": "e956e62154de6d007a70d4b856e7a4e4cc3633afe9a86e39d9f93f895ad84411",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/crud-query-date-service-v4/heldout.jsonl",
+      "bytes": 674285,
+      "sha256": "0179adf7561ad950e5f63362ddcbb0e9563547050038387ee3918e022449909a",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/crud-query-date-service-v4/manifest.json",
+      "bytes": 311,
+      "sha256": "8a77d81d127f0fc989b0120ab18e41cdd3a00d09b3c59efa32766342b59c1acf",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/crud-query-date-service-v4/train.jsonl",
+      "bytes": 3753260,
+      "sha256": "033f8bc5522472061e877bc3231ea6deb99869a9e9c7c85dcf3d9250fab1b755",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/crud-query-v2/heldout.expected.jsonl",
+      "bytes": 609981,
+      "sha256": "03c145127a1eb54fc74979e98122a49586390672062e1bb5ac7c5edcc6b2a0d5",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/crud-query-v2/train.jsonl",
+      "bytes": 1586620,
+      "sha256": "42dca41f9674e62a5727bedbb50ad75bd7dcaebb8813194bdb3c16c03239c558",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/flow-m3-r1/dev.jsonl",
+      "bytes": 4091492,
+      "sha256": "ffb1647c3402cb4e02f50047ef6e8052c7ec9d4b09b566d22e53f70af03c0e5b",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r1/formal.jsonl",
+      "bytes": 4099329,
+      "sha256": "f085497a6569989bb09b5bf3102b6a017534a6061e0d2c4ff0bf95ede0ce6ff3",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r1/manifest.json",
+      "bytes": 4469,
+      "sha256": "ab8d2bd49bb8c6fd00acd3dfc1ce3fce50d50bf254668e3838799e945b3fc794",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/flow-m3-r1/train.jsonl",
+      "bytes": 32704426,
+      "sha256": "112f0affb544fc95cfa068d0371303e50ef23bdc32d5c19d48248c91a889f319",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r10/formal.jsonl",
+      "bytes": 4111172,
+      "sha256": "d34ef55a2ae56bf64d912d0a3388f2fd76c7d0113e1cfffbb03393dcbdbbe69c",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r10/manifest.json",
+      "bytes": 4699,
+      "sha256": "60f00afd9183e1e6c589e4e89837e2983a0738d2ea00b0ab34e5b3e963c6972f",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r10/train.jsonl",
+      "bytes": 32833985,
+      "sha256": "f752a2af847bddbcef56e1ad6b3bceb1721ffc7b1fd43595d312c01cd2d73276",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r3/dev.jsonl",
+      "bytes": 4097477,
+      "sha256": "8c14216c77db31d560a912e899413106ca346e1528523c685f0344d95722add2",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r3/formal.jsonl",
+      "bytes": 4098271,
+      "sha256": "c2cc425659a662fcbaf9833c038b338204cae82b6a82d8c4d35c71327bd0d5bf",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r3/manifest.json",
+      "bytes": 4500,
+      "sha256": "f88fab201f431b3e42d8d93c640449746150d0ed7e40d307ad9d2db93831cb57",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/flow-m3-r3/train.jsonl",
+      "bytes": 32758518,
+      "sha256": "20b5f917c3cc2326e768070d12bcb7b3c69ff0d6f9475da0e237451c90247ca3",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r4/dev.jsonl",
+      "bytes": 4097477,
+      "sha256": "8c14216c77db31d560a912e899413106ca346e1528523c685f0344d95722add2",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r4/formal.jsonl",
+      "bytes": 4096241,
+      "sha256": "30348a1571d83e9254d7afccac728fd5f2a7bc99c50ed723dea37279ecdc18da",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r4/manifest.json",
+      "bytes": 4531,
+      "sha256": "33b4e989887e390dda3b90f667b04e1c677fdc2742ad5744fabcc3ed70c43bf9",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/flow-m3-r4/train.jsonl",
+      "bytes": 32758518,
+      "sha256": "20b5f917c3cc2326e768070d12bcb7b3c69ff0d6f9475da0e237451c90247ca3",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r5/dev.jsonl",
+      "bytes": 4097981,
+      "sha256": "94cbca0125ab44acc9aef9cb353fce67c89acab21829d3778e014bee521239a3",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r5/formal.jsonl",
+      "bytes": 4110932,
+      "sha256": "1e224fc0c6f8fdec8eed1609cee9deb7c956f3dea8186032705a5c7eba163799",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r5/manifest.json",
+      "bytes": 4501,
+      "sha256": "471000b14900e5b43c8057f535191fc7e35c48e08727cb942c1cb9120061eeaa",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/flow-m3-r5/train.jsonl",
+      "bytes": 32816630,
+      "sha256": "92ef53baeb82adaa82744807a85a8ac2e91b94bce95e54e68bc9363bee3d0e4c",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r6/dev.jsonl",
+      "bytes": 4101023,
+      "sha256": "f65a499cde48623b907cc395a54c598983fd701e39242734ec283ce970ad68a1",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r6/formal.jsonl",
+      "bytes": 4110261,
+      "sha256": "ea7ae2306cc0d612182cd929167c4c5a29beb9efc278044f0887129766bd0bd7",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r6/manifest.json",
+      "bytes": 4530,
+      "sha256": "2dae8b390fcd5fe9d9acd8d5351c948ad36266c6cf854aadb796d1e9fb1710e1",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/flow-m3-r6/train.jsonl",
+      "bytes": 32833985,
+      "sha256": "5a814f990f90c8002df6c5ad89ae9dec4fba68f02c467a3db0b7651f471ea57f",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r7/dev.jsonl",
+      "bytes": 4101023,
+      "sha256": "26a521b616e82ac1e4d90607a48a58d62b713a0dd64b86916b1f8315c001dcb5",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r7/formal.jsonl",
+      "bytes": 4109659,
+      "sha256": "4e5947bd435b33fe2e6d1ca19b97584188a7bf58d057332f9acd97b78e47f541",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r7/manifest.json",
+      "bytes": 4531,
+      "sha256": "7ce43477537b7c5de2816defd9cf44379c67cf655564240d1e8bf4553beec26a",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r7/train.jsonl",
+      "bytes": 32833985,
+      "sha256": "cf8951c2736c37baf44144211810a8524734e47123dbc0a2d6e6ce9eb7b445b4",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r8/dev.jsonl",
+      "bytes": 4101023,
+      "sha256": "0412dd67d961c6a7bce4495ed32009bc5e57b73a3a441f273680d5a3df3289ce",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r8/formal.jsonl",
+      "bytes": 4113913,
+      "sha256": "1865797a6eba7a701ca5211e544636e7cdcb8d5f685ee01ca81835b5199e0948",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r8/manifest.json",
+      "bytes": 4696,
+      "sha256": "ea3f298d3854b649e957423d5bd7e75062e9fc59505e89f0c25a202f1e383cf1",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r8/train.jsonl",
+      "bytes": 32833985,
+      "sha256": "4c7ec4b1eb46f4b769a5ebf05e2ff3d09f19ff4a759f901b8b04887ab0d02298",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r9/dev.jsonl",
+      "bytes": 4101023,
+      "sha256": "669fc9e1a62d7ffb32dac3d98cbafaebc2c6030710c7f1fa3e3234b24e605d02",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r9/formal.jsonl",
+      "bytes": 4102969,
+      "sha256": "7d5fc9875464e2f39131e4e4a6818423a1629e15295b6e068d8f318b3610a6fe",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": true
+    },
+    {
+      "path": "som-core/data/flow-m3-r9/manifest.json",
+      "bytes": 4700,
+      "sha256": "daeb35e654881292f4e1eba2c7a6cd91ed204b27c603c221c0d90518d12924ab",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/query-v2/train.jsonl",
+      "bytes": 855260,
+      "sha256": "8c2d14b9e6566465039c16d44fbc97b0e5b924950c9417dab6e3a3e5de290d19",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/related-service/combined-train.jsonl",
+      "bytes": 8406548,
+      "sha256": "9c4b8b70812bf67c9b10e6a3f072a1635d6d40afbc71bc2bbfdb1376238e121b",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/related-service/dev.jsonl",
+      "bytes": 771470,
+      "sha256": "69d45e61de28075a29dd5485ae8e6bdcd04d65765788110bdca17216f3d70768",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/related-service/manifest.json",
+      "bytes": 6060,
+      "sha256": "98f32c02090cd00fe8ae67a5b80029e44753fa1f90d147d15f0c416e6e54b7d6",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/related-service/regression-heldout.expected.jsonl",
+      "bytes": 2274285,
+      "sha256": "08bc38545a9750374c6ae671f54219eb9a2e4515d458c4fca9d893f991d23856",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/related-service/regression-heldout.jsonl",
+      "bytes": 765208,
+      "sha256": "754dc878b5ed3c65dc77380bf4be487eca4b9b1cba433e47322000085f82aa25",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/service-v3/train.jsonl",
+      "bytes": 1035510,
+      "sha256": "5f6a35fb53b06de861df8a2736f04dbe7d80772d9f066a6016ce119fb4015ea5",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    },
+    {
+      "path": "som-core/data/v1/train.jsonl",
+      "bytes": 731360,
+      "sha256": "e9473545137578605fe48a6912c61d9f23a1bf3a1bf558cd77dcca8b87f5e810",
+      "git_tracked": true,
+      "historical_source_reference_restore_from_drive": false
+    }
+  ],
+  "retained": [
+    {
+      "path": "som-core/data/business-service/reference.jsonl",
+      "bytes": 404003,
+      "sha256": "c868ae607692cb5bec73af3075802d1cc4a76ba44c0cb4aae32d0c092c2260ef"
+    },
+    {
+      "path": "som-core/data/business-service/regression.jsonl",
+      "bytes": 507239,
+      "sha256": "171a08327df4efd451b533ff136d65117334419e03c5c26795a1f63a440823f6"
+    },
+    {
+      "path": "som-core/data/business-service/requirements.jsonl",
+      "bytes": 112205,
+      "sha256": "59b3dabc6eda09cdd5b5fc31093e8abfdb255555bbad74cc41fcdb6055af5df6"
+    },
+    {
+      "path": "som-core/data/business-service/templates.json",
+      "bytes": 4629005,
+      "sha256": "0ae87cfcca706fc2e7b085ceedcd58ca78264ce1f3edd970af16d5b778f3fffa"
+    },
+    {
+      "path": "som-core/data/business-service/train.jsonl",
+      "bytes": 4957937,
+      "sha256": "ae23e1831db071f4d6a34125357aa71f76c7d0f6f543d29fad26ea1f05339380"
+    },
+    {
+      "path": "som-core/data/composed/blind.jsonl",
+      "bytes": 538483,
+      "sha256": "4c51c9cb5554fc9a19399e4a0089c8c2f10250c51918a4eacf6a5626f1cc01fb"
+    },
+    {
+      "path": "som-core/data/composed/heldout.jsonl",
+      "bytes": 840444,
+      "sha256": "9174c88305f275ad2152ea7b5e98d55d5a15c71ed2f3bc960ab20af2e0d37d65"
+    },
+    {
+      "path": "som-core/data/composed/manifest.json",
+      "bytes": 8278912,
+      "sha256": "d170da8e66886c4c9412237a8b092e50e5239936d10e3e92ecdc22a852ca0f78"
+    },
+    {
+      "path": "som-core/data/composed/regression.jsonl",
+      "bytes": 105655,
+      "sha256": "53b7f0443c4363578983fa6d9a3d763d83b896badc16e06c732264b960a2f097"
+    },
+    {
+      "path": "som-core/data/crud-query-service-v3/heldout.expected.jsonl",
+      "bytes": 1190660,
+      "sha256": "8ec49e95eb3d7993c84b1183d8f6d2ab49ec42951b0629d2902f670c43b8dfe1"
+    },
+    {
+      "path": "som-core/data/crud-query-service-v3/heldout.jsonl",
+      "bytes": 468189,
+      "sha256": "83b2aa1a4aea0b72e35e588e9b4b4a1285bd2a422d5f2eecc3097810605222e4"
+    },
+    {
+      "path": "som-core/data/crud-query-service-v3/manifest.json",
+      "bytes": 223,
+      "sha256": "c69f9cc0776d81e9edc834ecfc0c5fed991687e2a4bf463d0dce782d6859ed6f"
+    },
+    {
+      "path": "som-core/data/crud-query-service-v3/train.jsonl",
+      "bytes": 2622130,
+      "sha256": "954bd054cf0c02d64a8e3c62ffa3b56834f9803c4d7bef044805572b5bd2b5ea"
+    },
+    {
+      "path": "som-core/data/crud-query-v2/heldout.jsonl",
+      "bytes": 283266,
+      "sha256": "3100dd7d2ef694b8fa04fd75c3185e66231cde948772d22e470d0eb730857096"
+    },
+    {
+      "path": "som-core/data/crud-query-v2/manifest.json",
+      "bytes": 223,
+      "sha256": "15eb5f15a4db72c76e5177729d9d06ba120110a33333c339802b5faeb1fe69fd"
+    },
+    {
+      "path": "som-core/data/date-service-v4/heldout.expected.jsonl",
+      "bytes": 688556,
+      "sha256": "15306e7fbb355d037b32d42d33a0ab440fe078d8620b01d4e598a3d74ab24443"
+    },
+    {
+      "path": "som-core/data/date-service-v4/heldout.jsonl",
+      "bytes": 206096,
+      "sha256": "1995632632138ca0c4a00b2a558ad6e96ca6aa3c33e17522d7167aab1110f8e8"
+    },
+    {
+      "path": "som-core/data/date-service-v4/manifest.json",
+      "bytes": 638,
+      "sha256": "d6893f87db744c886c417425d8e5bc41cb43985d8c84b2217dabe2431260d6f4"
+    },
+    {
+      "path": "som-core/data/date-service-v4/rejections.jsonl",
+      "bytes": 40724,
+      "sha256": "11d6bf917ccc070a1ff33aad9583e30b26a11fdf73bfd7ddd085608d031e9722"
+    },
+    {
+      "path": "som-core/data/date-service-v4/train.jsonl",
+      "bytes": 1131130,
+      "sha256": "a271e2df1368dea8b38d451ae21bad31087bb2ae95951be55fb7d9f02e231d98"
+    },
+    {
+      "path": "som-core/data/flow-m3-r10/dev.jsonl",
+      "bytes": 4101023,
+      "sha256": "d6aff7a053355b0cee410f495c8a68a0ad9ce7f4b1ba5f6e555272a97bcff41c"
+    },
+    {
+      "path": "som-core/data/flow-m3-r9/train.jsonl",
+      "bytes": 32833985,
+      "sha256": "73c3864270c3fb8e9887ce1b99571f37c9489459e3fe187ac5cd0cdf890fae0d"
+    },
+    {
+      "path": "som-core/data/query-v2/heldout.expected.jsonl",
+      "bytes": 343966,
+      "sha256": "ce03cda79a4fd57344e48af352d54bbd3f74a28b680ee802b3adaf0dc29f612b"
+    },
+    {
+      "path": "som-core/data/query-v2/heldout.jsonl",
+      "bytes": 152696,
+      "sha256": "69038769c867fcce33b4550cded04915c8c7643efbd4c3577ebeb3dba68df6b3"
+    },
+    {
+      "path": "som-core/data/query-v2/manifest.json",
+      "bytes": 370,
+      "sha256": "001c310faba0f4a462e9224968ef89b3c8aabdf42d84377e53a6f24329efdc60"
+    },
+    {
+      "path": "som-core/data/related-service/heldout.expected.jsonl",
+      "bytes": 981394,
+      "sha256": "79cae715bb605e0143f3ff006a884de6816d04bcaae1a5f5f89f9c4ec7629f0c"
+    },
+    {
+      "path": "som-core/data/related-service/heldout.jsonl",
+      "bytes": 370174,
+      "sha256": "df4ebbaa5df5b0701e964f0c61d6283b2e33ef4657cd936deeea72d0540e6930"
+    },
+    {
+      "path": "som-core/data/related-service/rejections.jsonl",
+      "bytes": 25183,
+      "sha256": "80eebde9754ab0166b7d5fa9bdaba4432396d78db6fe1661de5a2e879efa0acf"
+    },
+    {
+      "path": "som-core/data/related-service/train.jsonl",
+      "bytes": 4653288,
+      "sha256": "b55268ae0bc2060b37250b30dde98bd19c685aa1f6c96e00c411fba645912dba"
+    },
+    {
+      "path": "som-core/data/service-v3/heldout.expected.jsonl",
+      "bytes": 580679,
+      "sha256": "7ffecb8bddacbecbef4f5bb37e8023425c5ea687e29dd7653fd5a23ea3d4e4bd"
+    },
+    {
+      "path": "som-core/data/service-v3/heldout.jsonl",
+      "bytes": 184923,
+      "sha256": "a03d95d0e70ce3e98cdbcb0893f11e78c4705f479481d3e0341a85da77cc60d4"
+    },
+    {
+      "path": "som-core/data/service-v3/manifest.json",
+      "bytes": 487,
+      "sha256": "3d63393f2ea6d4dff647becf64cb7ab23cf1b769bd4106b21411837b70ed0cb3"
+    },
+    {
+      "path": "som-core/data/service-v3/rejections.jsonl",
+      "bytes": 53083,
+      "sha256": "f96019e399f2085f1f4882b44b3634dc29c67f34d4de6cba56b8f4b4afab0946"
+    },
+    {
+      "path": "som-core/data/v1/heldout.expected.jsonl",
+      "bytes": 266015,
+      "sha256": "0d220a7d606d6ef06394baa2fa882f70d49de91a1093e4fbdb4bfc5a9f1a6605"
+    },
+    {
+      "path": "som-core/data/v1/heldout.jsonl",
+      "bytes": 130570,
+      "sha256": "0a424bb21827698f20c436a9ad2a995d786bd6529fd31590903d62c8e0a0bc95"
+    },
+    {
+      "path": "som-core/data/v1/manifest.json",
+      "bytes": 520,
+      "sha256": "cb822ccf460d0220a34e3369d4aaec7b46df8c0978b365c237f3fcb599b5efee"
+    },
+    {
+      "path": "som-core/data/v1/rejections.jsonl",
+      "bytes": 32676,
+      "sha256": "0a8fce771952e844b0edca5a96c4d25e8e5bb529aecbeed7dd1a28cead25b544"
+    }
+  ],
+  "scope": "Only the 55 listed exact dataset files were removed. No directory, model weight, model corpus alias, ledger, runtime, virtual environment, cache, seal, source archive, raw log or other data was removed.",
+  "restore": {
+    "archive_sha256": "772c63b573a08ae7c8eca791685a75c044561bdbe482c3b6431ac9fadb674930",
+    "manifest_sha256": "57f0a3c25a019cd43cdbd70bd7302facd239fa332e9590391942e38f55b5189d",
+    "first_destination": "new empty isolated directory, never an active repository",
+    "verify_before_use": "Check the archive SHA256, MANIFEST.json SHA256 and every one of the 92 original member hashes.",
+    "historical_replay": "Before replaying retired training or historical source-seal checks, restore deleted members to their exact original relative paths in an isolated historical checkout. Do not edit historical seals or treat absent old working files as a new compiler failure.",
+    "active_repository_overwrite_authorized": false
+  },
+  "milestone_status": "No Rust compiler milestone completion, final acceptance, default switch, Git landing or issue closure is claimed by this training-data cleanup index.",
+  "privacy": "Contains only paths, hashes, sizes and durable Drive file/folder links. No corpus records, raw data, model weights, temporary download URL or bearer credential."
+}

@@ -1,0 +1,56 @@
+Use SOM CNL version 1.
+Use prompt version 6.
+Use package app_projects.
+Bind contract related-business.v1 with SHA-256 "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380".
+Begin parent resource.
+Use resource name Project.
+Use table projects.
+Use path "/projects".
+Field name is required str and is not unique.
+Field description is optional str and is not unique with default null.
+Begin query.
+Use no exact filter.
+Use no date filter.
+Limit query results to 20.
+End query.
+End parent resource.
+Begin child resource.
+Use resource name Todo.
+Use table todos.
+Use path "/todos".
+Field title is required str and is not unique.
+Field description is optional str and is not unique with default null.
+Field completed is optional bool and is not unique with default false.
+Field due_on is optional date and is not unique with default null.
+Field external_code is required str and is unique.
+Begin query.
+Filter exactly on field completed.
+Filter before date on field due_on.
+Limit query results to 100.
+End query.
+End child resource.
+Relate child to parent with foreign key project_id and restrict deletion.
+Use migration revision related80000.
+Use no previous migration revision.
+Begin capabilities.
+Use database postgresql.
+Use authentication jwt.
+Use object storage none.
+Use workflow json_export.
+Use no workflow value field.
+Use no workflow group field.
+End capabilities.
+Begin routes.
+Allow create on parent.
+Allow get on parent.
+Allow list on parent.
+Allow patch on parent.
+Allow delete on parent.
+Allow create on child.
+Allow get on child.
+Allow list on child.
+Allow patch on child.
+Allow delete on child.
+Allow batch creation.
+End routes.
+End request.

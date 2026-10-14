@@ -1,0 +1,106 @@
+{
+  "version": "som.compiler-model-free-source-review.v1",
+  "scope": "PRIMARY source review; no candidate, build, model, fixture or service run",
+  "baseline": "82f3b87ccad40277713326e42ac35f921ba34663",
+  "compiler_runtime_source_count": 14,
+  "backend_hashed_files": {
+    "src/lib.rs": "5663270f2a6f3efd716e0106d29d01312c6176508ab9af8d392f144fac02c3c3",
+    "src/cnl.rs": "8f14a9c5897b335066a619be907244f38f1ad3947d12ed7e1833fa7e77098789",
+    "src/cnl_semantics.rs": "92c24707afc396ee868b00cee1bb60abc47916ca67ec4b1155803adb429bcd8e",
+    "src/planner.rs": "b0ebf2c694689e553c2b65f025a715680c11a0cf931693a342a3969c97341b6e",
+    "src/compiler.rs": "b82a9b275ee1b5f0eb37e6501bd214233a8b03d4d9cd218be2bc3bf39ced614b",
+    "src/strict_json.rs": "06a8947fcfb9d7ade5afd963f06da72696d3845d64a957f881eded0666f37161",
+    "src/json_diagnostics.rs": "87c38ad0077de8bb5eb1ee9edf5d4ecce7b5fce8fffcb19a4fc190b472d870b6",
+    "src/main.rs": "042c9abb969d17fa3f28dba7dfcec459ee63123da4ba5e3fd1645b1104a454c5",
+    "src/related.rs": "ccc55e6018117a7087685de81da420da911832edaae51532e712be7b1b138dca",
+    "src/business.rs": "b880c325a02c9a93a9e1470baa0416db54560b986511a71561583c1468c9df2f",
+    "src/composed.rs": "571c04a8e50f9856361dce94ebab813d8a8905aee9e2ea12dbd687f4f32d890c",
+    "src/flow.rs": "fc8b7ea7d591026aed9380a07641ca206391555e95df15b317b879e0e9a31b75",
+    "src/flow_compact.rs": "6608224e90a124be126be3c7119a74f826e311e5257105235e0f96905fa4d496",
+    "src/quality.rs": "71f5987b24559cb8507416dea15d6ddd6ac2dd5095c6c4c940b5c3a1328b0d21",
+    "contracts/related-business.v1.md": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380",
+    "contracts/related-flow.v1.md": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091",
+    "contracts/python-literal-encoding.v1.json": "7c25a1f45e54cec45e4053a5ceaf767188641ddde7da34dfce0747dc299dbf16",
+    "contracts/python-quality-v1/pyproject.toml": "4cac7c6758372d4608895c53f1f427992d86988c85ff348c4eed7882efa762b4",
+    "block-contracts/composed.json": "3e58ed5b162cc4297324cc6da15ad9838c2a136d8a91762f63ac8d0c3af0b6b4",
+    "block-contracts/composed-quality.json": "28f9bd134f31eb87fae5a680148447de3aaca9bad78fc10f0ac22b00cc40b0e5",
+    "block-contracts/flow-v7.json": "d0ffbe92abbf8666e5e562022617e6eb81f4ef1c9fcc73b92fca8c718bba3f47",
+    "block-contracts/flow-v7-compact.json": "a2b96804e6f1c52a2ebf9e6310c6624b8b1b33d86b4f4763f07ffbeb645e103a",
+    "flow_compact/forward_support.py.tpl": "45250ff33586c4765733ccd69b8ca1bd52cb34893880bd89fe78d703dc29d557",
+    "flow_compact/engine.py.tpl": "76923c4752bccd850b5fd55ebb77904aa3988170927ba22ee4acef8bbc556d5f",
+    "Cargo.toml": "6c673ba87bf98308042b8229727850956d90c7d24c03c8ea17b042c874d546b1",
+    "Cargo.lock": "c7468fc0e5c51fc9031369b0dc292e47214ca5b7233dfb85216748107cc2493c"
+  },
+  "descriptor_role_raw_files": {
+    "grammar.ebnf": "115f0a2fbac47903fe738a50d30e3982a7c34a5e32cad9ec987cbcb3e133b6f8",
+    "CONTRACT.md": "b846c3e4866a85e70406b3736450495d6e0dd8ba6ae07d0541d64df0ea73ca39",
+    "selection-policy.json": "58508e4e75a05e972b8cd8e114149190d071fc7ac716ee272c2f782d83240a36",
+    "serializer-policy.json": "3704fe8f9a2460d22d1d348f018e62151755b29f0ab194e083f4f2347596ffd1",
+    "literal-policy.json": "32f863c64028dcfa444c7046ada62253ce55d9ea5cf42853f24f003c3d017be1"
+  },
+  "asset_library_raw_files": {
+    "v5": "9dc292b2ddbeb834e09b7754de4d00a9aca16c25acf06ee9ee8fcc77d39c92c7",
+    "composed-quality": "0f491ce07c82920c04ec5cca3377b6c74c25267fee11fd11195ec18bdd7bc048",
+    "flow-v7-compact": "5a75971536ae02f627bb4a4e97737604cefc120e71293b8c10f7dcc442c460ea"
+  },
+  "shared_runtime_and_checkers": {
+    "som-core/block_templates/flow_compact/engine.py.tpl": {
+      "baseline_sha256": "76923c4752bccd850b5fd55ebb77904aa3988170927ba22ee4acef8bbc556d5f",
+      "current_sha256": "76923c4752bccd850b5fd55ebb77904aa3988170927ba22ee4acef8bbc556d5f",
+      "unchanged_from_82f3b87": true
+    },
+    "som-core/block_templates/flow_compact/forward_support.py.tpl": {
+      "baseline_sha256": "45250ff33586c4765733ccd69b8ca1bd52cb34893880bd89fe78d703dc29d557",
+      "current_sha256": "45250ff33586c4765733ccd69b8ca1bd52cb34893880bd89fe78d703dc29d557",
+      "unchanged_from_82f3b87": true
+    },
+    "som-code-python/data/blocks/flow-v7-compact/blocks.json": {
+      "baseline_sha256": "5a75971536ae02f627bb4a4e97737604cefc120e71293b8c10f7dcc442c460ea",
+      "current_sha256": "5a75971536ae02f627bb4a4e97737604cefc120e71293b8c10f7dcc442c460ea",
+      "unchanged_from_82f3b87": true
+    },
+    "som-core/scripts/verify_flow_service.py": {
+      "baseline_sha256": "6cd3b8932d5c9c092f12baeca442814c66cbc3fe22cc10cdee100e126827fbbe",
+      "current_sha256": "6cd3b8932d5c9c092f12baeca442814c66cbc3fe22cc10cdee100e126827fbbe",
+      "unchanged_from_82f3b87": true
+    },
+    "som-core/scripts/flow_fault_checks.py": {
+      "baseline_sha256": "a20be84fb254c52197a673ecc51db15fa05ea8ddbd188f6d1baa3a21f967ea47",
+      "current_sha256": "a20be84fb254c52197a673ecc51db15fa05ea8ddbd188f6d1baa3a21f967ea47",
+      "unchanged_from_82f3b87": true
+    },
+    "som-core/scripts/flow_provider_fault_checks.py": {
+      "baseline_sha256": "27b814508cc3cfc35f5f020fcd02f831f7fcfb40bc20fc4d8c74772993d6a58a",
+      "current_sha256": "27b814508cc3cfc35f5f020fcd02f831f7fcfb40bc20fc4d8c74772993d6a58a",
+      "unchanged_from_82f3b87": true
+    },
+    "som-core/scripts/flow_branch_cases.py": {
+      "baseline_sha256": "52aeb03342c99a985ade2cb833e7a6f0b657bfa3eb6ed603cc74b4ef3a4241ac",
+      "current_sha256": "52aeb03342c99a985ade2cb833e7a6f0b657bfa3eb6ed603cc74b4ef3a4241ac",
+      "unchanged_from_82f3b87": true
+    },
+    "som-core/scripts/flow_row_history.py": {
+      "baseline_sha256": "b626cdbc2a2942a2474cfa8d5a7784e8dc6f35b93298d276932d44cbc331b7ba",
+      "current_sha256": "b626cdbc2a2942a2474cfa8d5a7784e8dc6f35b93298d276932d44cbc331b7ba",
+      "unchanged_from_82f3b87": true
+    },
+    "som-core/scripts/flow_test_backends.py": {
+      "baseline_sha256": "243cff1e3bd4fe37d05fd218abbf0cc50fa9d1aa6d4d5aa8b3416c591e8e6240",
+      "current_sha256": "243cff1e3bd4fe37d05fd218abbf0cc50fa9d1aa6d4d5aa8b3416c591e8e6240",
+      "unchanged_from_82f3b87": true
+    }
+  },
+  "excluded_optional_model_sources": [
+    "model.rs",
+    "flow_model.rs",
+    "flow_m3_model.rs"
+  ],
+  "compiled_but_not_compiler_request_reachable": [
+    "flow_codec.rs",
+    "flow_constraints.rs"
+  ],
+  "legacy_codec_helper": "flow_compact::assemble retains codec gates; Compiler uses resolve/render_resolved directly",
+  "production_child_process": "Only hash-pinned native Ruff via quality::Quality::execute",
+  "build_identity_limit": "Backend source manifest is not a final binary/toolchain/feature-profile receipt. Root must bind final candidate binary and asset receipt.",
+  "production_changes": []
+}

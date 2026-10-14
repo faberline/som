@@ -1,0 +1,376 @@
+{
+  "format": "som.cnl-negative-cases.v1",
+  "status": "frozen expected cases; not executed against a compiler",
+  "base_example": {
+    "path": "som-rs/contracts/compiler-v1/examples/v7.cnl",
+    "sha256": "644149192bc7bc65d7b28100d518fc9cbfa0d2d35a27b022452d02ab6138e262",
+    "mutation_model": "Apply the listed line replacements to the exact v7 example. All line numbers refer to the resulting full source. Byte spans are half-open UTF-8 offsets. Columns are 1-based Unicode scalar positions."
+  },
+  "diagnostic_contract_proposal": {
+    "exactly_one_diagnostic": true,
+    "primary_span": "the smallest offending token or full offending statement",
+    "line_column_units": "1-based Unicode scalar values",
+    "byte_offsets": "0-based half-open UTF-8 byte offsets",
+    "codes_are_proposed": false,
+    "codes_basis": "Use CONTRACT.md section 8; categories and spans here are frozen test expectations, not observations."
+  },
+  "cases": [
+    {
+      "id": "CNL01_BAD_HEADER",
+      "replace_line": 1,
+      "with": "Use SOM CNL version 2.",
+      "category": "syntax",
+      "code": "CNL_SYNTAX",
+      "cause": "Unsupported CNL language version in header.",
+      "allowed_form": "Use SOM CNL version 1.",
+      "expected": {
+        "line": 1,
+        "column": 21,
+        "end_line": 1,
+        "end_column": 22,
+        "prompt_pointer": null,
+        "byte_start": 20,
+        "byte_end": 21
+      },
+      "span_text": "2",
+      "http_status": 400
+    },
+    {
+      "id": "CNL02_UNSUPPORTED_PROMPT_VERSION",
+      "replace_line": 2,
+      "with": "Use prompt version 8.",
+      "category": "semantic",
+      "code": "UNSUPPORTED_VERSION",
+      "cause": "Prompt version is outside the supported set 1 through 7.",
+      "allowed_form": "Use prompt version 1 through 7.",
+      "expected": {
+        "line": 2,
+        "column": 20,
+        "end_line": 2,
+        "end_column": 21,
+        "prompt_pointer": "/version",
+        "byte_start": 42,
+        "byte_end": 43
+      },
+      "span_text": "8",
+      "http_status": 422
+    },
+    {
+      "id": "CNL03_WRONG_FIELD_TYPE",
+      "replace_line": 21,
+      "with": "Field title is required uuid and is not unique.",
+      "category": "syntax",
+      "code": "CNL_SYNTAX",
+      "cause": "Field token uuid is outside the grammar vocabulary.",
+      "allowed_form": "str, int, float, bool, or date when the prompt version allows date.",
+      "expected": {
+        "line": 21,
+        "column": 25,
+        "end_line": 21,
+        "end_column": 29,
+        "prompt_pointer": null,
+        "byte_start": 610,
+        "byte_end": 614
+      },
+      "span_text": "uuid",
+      "http_status": 400
+    },
+    {
+      "id": "CNL04_NULL_AS_STRING_DEFAULT",
+      "replace_line": 22,
+      "with": "Field description is optional str and is not unique with default \"null\".",
+      "category": "semantic",
+      "code": "INVALID_VALUE",
+      "cause": "A string default is not a null default.",
+      "allowed_form": "Use JSON null without quotes for a null default.",
+      "expected": {
+        "line": 22,
+        "column": 66,
+        "end_line": 22,
+        "end_column": 72,
+        "prompt_pointer": "/resources/child/fields/1/default",
+        "byte_start": 698,
+        "byte_end": 704
+      },
+      "span_text": "\"null\"",
+      "http_status": 400
+    },
+    {
+      "id": "CNL05_FLOAT_ZERO_AS_INTEGER",
+      "replace_line": 70,
+      "with": "Set argument parent_id to literal integer -0.0.",
+      "category": "semantic",
+      "code": "INVALID_REF",
+      "cause": "The literal is a float and does not satisfy the integer parent_id argument.",
+      "allowed_form": "Use a typed integer literal or an integer-producing reference.",
+      "expected": {
+        "line": 70,
+        "column": 43,
+        "end_line": 70,
+        "end_column": 47,
+        "prompt_pointer": "/flow/steps/1/steps/1/args/parent_id",
+        "byte_start": 2120,
+        "byte_end": 2124
+      },
+      "span_text": "-0.0",
+      "http_status": 400
+    },
+    {
+      "id": "CNL06_FORWARD_REFERENCE",
+      "replace_line": 70,
+      "with": "Set argument parent_id to step patched field \"id\".",
+      "category": "semantic",
+      "code": "INVALID_REF",
+      "cause": "Step patched is declared after this use.",
+      "allowed_form": "Reference only an earlier visible step or input.",
+      "expected": {
+        "line": 70,
+        "column": 32,
+        "end_line": 70,
+        "end_column": 39,
+        "prompt_pointer": "/flow/steps/1/steps/1/args/parent_id",
+        "byte_start": 2109,
+        "byte_end": 2116
+      },
+      "span_text": "patched",
+      "http_status": 400
+    },
+    {
+      "id": "CNL07_MISSING_MUTATION_UNDO",
+      "replace_line": 78,
+      "with": "On failure, use no undo.",
+      "category": "semantic",
+      "code": "INVALID_COMPENSATION",
+      "cause": "A successful child.patch mutation requires restore_patch compensation.",
+      "allowed_form": "On failure, undo with restore_patch.",
+      "expected": {
+        "line": 78,
+        "column": 17,
+        "end_line": 78,
+        "end_column": 24,
+        "prompt_pointer": "/flow/steps/1/steps/2/undo",
+        "byte_start": 2407,
+        "byte_end": 2414
+      },
+      "span_text": "no undo",
+      "http_status": 400
+    },
+    {
+      "id": "CNL08_MUTATION_OUTSIDE_TRANSACTION",
+      "replace_lines": [
+        {
+          "line": 64,
+          "with": ""
+        },
+        {
+          "line": 80,
+          "with": ""
+        }
+      ],
+      "category": "semantic",
+      "code": "INVALID_TRANSACTION",
+      "cause": "Database mutations are outside a transaction.",
+      "allowed_form": "Place database writes inside a nonnested transaction.",
+      "expected": {
+        "line": 65,
+        "column": 32,
+        "end_line": 65,
+        "end_column": 45,
+        "prompt_pointer": "/flow/steps/1/op",
+        "byte_start": 1905,
+        "byte_end": 1918
+      },
+      "span_text": "parent.create",
+      "http_status": 400
+    },
+    {
+      "id": "CNL09_MISSING_AUTH_FIRST",
+      "replace_lines": [
+        {
+          "line": 61,
+          "with": ""
+        },
+        {
+          "line": 62,
+          "with": ""
+        },
+        {
+          "line": 63,
+          "with": ""
+        },
+        {
+          "line": 64,
+          "with": ""
+        },
+        {
+          "line": 80,
+          "with": ""
+        }
+      ],
+      "category": "semantic",
+      "code": "INVALID_AUTHORIZATION",
+      "cause": "The first flow action is a database mutation and no authorize step precedes it.",
+      "allowed_form": "Place an authorize step first.",
+      "expected": {
+        "line": 65,
+        "column": 32,
+        "end_line": 65,
+        "end_column": 45,
+        "prompt_pointer": "/flow/steps/0/op",
+        "byte_start": 1826,
+        "byte_end": 1839
+      },
+      "span_text": "parent.create",
+      "http_status": 400
+    },
+    {
+      "id": "CNL10_CSV_IMPORT_WITHOUT_CAPABILITY",
+      "replace_lines": [
+        {
+          "line": 74,
+          "with": "Begin step patched with operation workflow.import."
+        },
+        {
+          "line": 76,
+          "with": "Set argument csv to literal string \"id,title\\n1,Example\\n\"."
+        },
+        {
+          "line": 77,
+          "with": ""
+        },
+        {
+          "line": 78,
+          "with": "On failure, undo with delete_created."
+        }
+      ],
+      "category": "semantic",
+      "code": "INVALID_COMPOSITION",
+      "cause": "workflow.import requires the csv workflow capability.",
+      "allowed_form": "Declare csv capability when importing CSV.",
+      "expected": {
+        "line": 74,
+        "column": 35,
+        "end_line": 74,
+        "end_column": 50,
+        "prompt_pointer": "/flow/steps/1/steps/2/op",
+        "byte_start": 2248,
+        "byte_end": 2263
+      },
+      "span_text": "workflow.import",
+      "http_status": 400
+    },
+    {
+      "id": "CNL11_BYTES_RETURNED",
+      "replace_line": 89,
+      "with": "Return signed_zero from literal bytes \"YQ==\".",
+      "category": "semantic",
+      "code": "INVALID_REF",
+      "cause": "The flow result cannot expose bytes.",
+      "allowed_form": "Return a supported non-bytes value.",
+      "expected": {
+        "line": 89,
+        "column": 25,
+        "end_line": 89,
+        "end_column": 45,
+        "prompt_pointer": "/flow/result/signed_zero",
+        "byte_start": 2787,
+        "byte_end": 2807
+      },
+      "span_text": "literal bytes \"YQ==\"",
+      "http_status": 400
+    },
+    {
+      "id": "CNL12_DUPLICATE_NAME",
+      "replace_line": 57,
+      "with": "Input auth has type parent_input.",
+      "category": "semantic",
+      "code": "CNL_DUPLICATE",
+      "cause": "Step name auth conflicts with the earlier input name auth.",
+      "allowed_form": "Use unique names across inputs and nodes.",
+      "expected": {
+        "line": 61,
+        "column": 12,
+        "end_line": 61,
+        "end_column": 16,
+        "prompt_pointer": "/flow/steps/0/name",
+        "byte_start": 1800,
+        "byte_end": 1804
+      },
+      "span_text": "auth",
+      "http_status": 400
+    },
+    {
+      "id": "CNL13_UNSUPPORTED_OPERATION_TOKEN",
+      "replace_line": 61,
+      "with": "Begin step auth with operation oauth.authorize.",
+      "category": "syntax",
+      "code": "CNL_SYNTAX",
+      "cause": "Operation token is not in the CNL operation vocabulary.",
+      "allowed_form": "Use one operation listed by the grammar.",
+      "expected": {
+        "line": 61,
+        "column": 32,
+        "end_line": 61,
+        "end_column": 47,
+        "prompt_pointer": null,
+        "byte_start": 1822,
+        "byte_end": 1837
+      },
+      "span_text": "oauth.authorize",
+      "http_status": 400
+    },
+    {
+      "id": "CNL14_MISSING_QUERY_FILTER_CLAUSE",
+      "replace_line": 12,
+      "with": "",
+      "category": "missing",
+      "code": "CNL_MISSING",
+      "cause": "The query block has no exact-filter selector clause.",
+      "allowed_form": "Use Filter exactly on field IDENT. or Use no exact filter.",
+      "expected": {
+        "line": 15,
+        "column": 1,
+        "end_line": 15,
+        "end_column": 11,
+        "prompt_pointer": "/resources/parent/query/filter_field",
+        "byte_start": 452,
+        "byte_end": 462
+      },
+      "span_text": "End query.",
+      "http_status": 400
+    },
+    {
+      "id": "CNL15_MISSING_AUTH_WITH_TRANSACTION",
+      "replace_lines": [
+        {
+          "line": 61,
+          "with": ""
+        },
+        {
+          "line": 62,
+          "with": ""
+        },
+        {
+          "line": 63,
+          "with": ""
+        }
+      ],
+      "category": "semantic",
+      "code": "INVALID_TRANSACTION",
+      "cause": "A transaction requires prior authorization.",
+      "allowed_form": "Place an authorize step before the transaction.",
+      "expected": {
+        "line": 64,
+        "column": 7,
+        "end_line": 64,
+        "end_column": 18,
+        "prompt_pointer": "/flow/steps/0/op",
+        "byte_start": 1800,
+        "byte_end": 1811
+      },
+      "span_text": "transaction",
+      "http_status": 400
+    }
+  ],
+  "coverage_note": "Cases target syntax, missing clauses, version, field typing, JSON scalar distinction, typed argument mismatch, forward reference, undo, transaction scope, both missing-authorization error orders, capability mismatch, bytes result refusal, duplicate naming, and unsupported operation. Cross-branch visibility, branch export mismatch, nullability, and flow cardinality remain in typed JSON and flow assertion suites; add CNL source cases when exact statement edits are stabilized."
+}

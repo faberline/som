@@ -1,0 +1,979 @@
+{
+  "version": "som.cnl-field-map.v1",
+  "draft": false,
+  "normative": "Current Rust validators plus this grammar. Historical schemas are unchanged.",
+  "mapping": [
+    {
+      "prompt_pointer": "/version",
+      "statement": "Use prompt version N.",
+      "versions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "rule": "explicit; no default",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/package",
+      "statement": "Use package IDENT.",
+      "versions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "rule": "explicit; no default",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/contract/id",
+      "statement": "Bind contract ID with SHA-256 \"HASH\".",
+      "versions": [
+        6,
+        7
+      ],
+      "rule": "v6 related-business.v1; v7 related-flow.v1; exact local public contract hash",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/contract/sha256",
+      "statement": "Bind contract ID with SHA-256 \"HASH\".",
+      "versions": [
+        6,
+        7
+      ],
+      "rule": "explicit; no default",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resource/name",
+      "statement": "Use resource name IDENT.",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "rule": "explicit; no default",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resource/table",
+      "statement": "Use table IDENT.",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "rule": "explicit; no default",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resource/path",
+      "statement": "Use path JSON_STRING.",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "rule": "explicit; no default",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resource/fields/*/name",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/resource/fields/*/type",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/resource/fields/*/required",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/resource/fields/*/unique",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/resource/fields/*/default",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        3,
+        4
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/resources/parent/name",
+      "statement": "Use resource name IDENT.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "explicit; no default",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resources/parent/table",
+      "statement": "Use table IDENT.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "explicit; no default",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resources/parent/path",
+      "statement": "Use path JSON_STRING.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "explicit; no default",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resources/parent/fields/*/name",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/resources/parent/fields/*/type",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/resources/parent/fields/*/required",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/resources/parent/fields/*/unique",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/resources/parent/fields/*/default",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/resources/child/name",
+      "statement": "Use resource name IDENT.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "explicit; no default",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resources/child/table",
+      "statement": "Use table IDENT.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "explicit; no default",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resources/child/path",
+      "statement": "Use path JSON_STRING.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "explicit; no default",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resources/child/fields/*/name",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/resources/child/fields/*/type",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/resources/child/fields/*/required",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/resources/child/fields/*/unique",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/resources/child/fields/*/default",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "default absent for required fields; optional v1/v2 omit default key; optional v3+ absent default clause means null; only explicit false for optional bool",
+      "order": "field lines preserve array order"
+    },
+    {
+      "prompt_pointer": "/query/filter_field",
+      "statement": "Filter exactly on field IDENT. | Use no exact filter.",
+      "versions": [
+        2,
+        3,
+        4
+      ],
+      "rule": "v2 required string nonunique filter; v3/v4 required optional false-default bool nonunique filter; v5+ null or valid optional bool",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/query/date_field",
+      "statement": "Filter before date on field IDENT. | Use no date filter.",
+      "versions": [
+        4
+      ],
+      "rule": "v4 sole optional date field required; v5+ null or sole optional date; date requires bool filter",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/query/max_limit",
+      "statement": "Limit query results to UINT.",
+      "versions": [
+        2,
+        3,
+        4
+      ],
+      "rule": "explicit integer 20..100; no fixed100 schema restriction",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resources/parent/query/filter_field",
+      "statement": "Filter exactly on field IDENT. | Use no exact filter.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "v2 required string nonunique filter; v3/v4 required optional false-default bool nonunique filter; v5+ null or valid optional bool",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resources/parent/query/date_field",
+      "statement": "Filter before date on field IDENT. | Use no date filter.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "v4 sole optional date field required; v5+ null or sole optional date; date requires bool filter",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resources/parent/query/max_limit",
+      "statement": "Limit query results to UINT.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "explicit integer 20..100; no fixed100 schema restriction",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resources/child/query/filter_field",
+      "statement": "Filter exactly on field IDENT. | Use no exact filter.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "v2 required string nonunique filter; v3/v4 required optional false-default bool nonunique filter; v5+ null or valid optional bool",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resources/child/query/date_field",
+      "statement": "Filter before date on field IDENT. | Use no date filter.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "v4 sole optional date field required; v5+ null or sole optional date; date requires bool filter",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/resources/child/query/max_limit",
+      "statement": "Limit query results to UINT.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "explicit integer 20..100; no fixed100 schema restriction",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/relation/foreign_key",
+      "statement": "Relate child to parent with foreign key IDENT and restrict deletion.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "on_delete is exactly restrict",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/relation/on_delete",
+      "statement": "Relate child to parent with foreign key IDENT and restrict deletion.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "on_delete is exactly restrict",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/migration/revision",
+      "statement": "Use migration revision IDENT.",
+      "versions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "rule": "down_revision can be named only for v1/v2; no revision maps to JSON null",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/migration/down_revision",
+      "statement": "Use previous migration revision IDENT. | Use no previous migration revision.",
+      "versions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "rule": "down_revision can be named only for v1/v2; no revision maps to JSON null",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/capabilities/database",
+      "statement": "Use database ENUM.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "capability block explicit; v5 Use no capabilities omits the entire key; v6/v7 require all six choices",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/capabilities/auth",
+      "statement": "Use authentication ENUM.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "capability block explicit; v5 Use no capabilities omits the entire key; v6/v7 require all six choices",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/capabilities/storage",
+      "statement": "Use object storage ENUM.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "capability block explicit; v5 Use no capabilities omits the entire key; v6/v7 require all six choices",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/capabilities/workflow",
+      "statement": "Use workflow ENUM.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "capability block explicit; v5 Use no capabilities omits the entire key; v6/v7 require all six choices",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/capabilities/value_field",
+      "statement": "Use workflow value field IDENT. | Use no workflow value field.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "capability block explicit; v5 Use no capabilities omits the entire key; v6/v7 require all six choices",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/capabilities/group_field",
+      "statement": "Use workflow group field IDENT. | Use no workflow group field.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "rule": "capability block explicit; v5 Use no capabilities omits the entire key; v6/v7 require all six choices",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/logic/*",
+      "statement": "Exact LEGACY_SENTENCE.",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "rule": "all five supported sentences exactly once",
+      "order": "preserve line order"
+    },
+    {
+      "prompt_pointer": "/logic/*/scope",
+      "statement": "For parent|child|batch: RELATED_SENTENCE.",
+      "versions": [
+        5
+      ],
+      "rule": "all eleven scoped pairs exactly once",
+      "order": "preserve line order"
+    },
+    {
+      "prompt_pointer": "/logic/*/step",
+      "statement": "For parent|child|batch: RELATED_SENTENCE.",
+      "versions": [
+        5
+      ],
+      "rule": "text is exact public related sentence",
+      "order": "preserve line order"
+    },
+    {
+      "prompt_pointer": "/tests/0",
+      "statement": "Exact CHECK_SENTENCE.",
+      "versions": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "rule": "one fixed version-specific check sentence",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "/operations/*/scope",
+      "statement": "Allow ACTION on parent|child. | Allow batch creation.",
+      "versions": [
+        6,
+        7
+      ],
+      "rule": "one to eleven unique scope/action pairs",
+      "order": "preserve line order"
+    },
+    {
+      "prompt_pointer": "/operations/*/action",
+      "statement": "Allow ACTION on parent|child. | Allow batch creation.",
+      "versions": [
+        6,
+        7
+      ],
+      "rule": "batch maps to batch_create",
+      "order": "preserve line order"
+    },
+    {
+      "prompt_pointer": "/flow/name",
+      "statement": "Begin flow IDENT.",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/inputs/*/name",
+      "statement": "Input IDENT has type TYPE.",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/inputs/*/type",
+      "statement": "Input IDENT has type TYPE.",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/steps/*/name",
+      "statement": "Begin step|transaction|branch IDENT ...",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/steps/*/op",
+      "statement": "Begin step NAME with operation OP. | Begin transaction NAME. | Begin branch NAME when PREDICATE.",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/steps/*/args/*",
+      "statement": "Set argument IDENT to VALUE.",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/steps/*/undo",
+      "statement": "On failure, undo with ENUM. | On failure, use no undo.",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/steps/*/steps",
+      "statement": "Nodes inside Begin/End transaction.",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/steps/*/condition/op",
+      "statement": "is equal to|is not equal to|is less than|is at most|is greater than|is at least|is null",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/steps/*/condition/left",
+      "statement": "First VALUE in branch condition.",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/steps/*/condition/right",
+      "statement": "Second VALUE; omitted only for is null.",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/steps/*/then",
+      "statement": "Nodes inside Begin/End then.",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/steps/*/else",
+      "statement": "Nodes inside Begin/End else.",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/steps/*/exports/*/then",
+      "statement": "Export IDENT from then VALUE and from else VALUE.",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/steps/*/exports/*/else",
+      "statement": "Export IDENT from then VALUE and from else VALUE.",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "/flow/result/*",
+      "statement": "Return IDENT from VALUE.",
+      "versions": [
+        7
+      ],
+      "rule": "all branch/transaction node fields apply recursively; explicit empty markers produce empty arrays/maps",
+      "order": "inputs and nodes preserve order; object keys canonicalized"
+    },
+    {
+      "prompt_pointer": "runtime_reference/input",
+      "statement": "input IDENT",
+      "versions": [
+        7
+      ],
+      "rule": "runtime refs occur in args, predicate, exports, results; three distinct object shapes; no generation-binding/symbol refs in CNL",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "runtime_reference/step",
+      "statement": "step IDENT field JSON_STRING",
+      "versions": [
+        7
+      ],
+      "rule": "runtime refs occur in args, predicate, exports, results; three distinct object shapes; no generation-binding/symbol refs in CNL",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "runtime_reference/field",
+      "statement": "step IDENT field JSON_STRING",
+      "versions": [
+        7
+      ],
+      "rule": "runtime refs occur in args, predicate, exports, results; three distinct object shapes; no generation-binding/symbol refs in CNL",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "runtime_reference/literal",
+      "statement": "literal TYPE JSON_SCALAR",
+      "versions": [
+        7
+      ],
+      "rule": "runtime refs occur in args, predicate, exports, results; three distinct object shapes; no generation-binding/symbol refs in CNL",
+      "order": "scalar"
+    },
+    {
+      "prompt_pointer": "runtime_reference/type",
+      "statement": "literal TYPE JSON_SCALAR",
+      "versions": [
+        7
+      ],
+      "rule": "runtime refs occur in args, predicate, exports, results; three distinct object shapes; no generation-binding/symbol refs in CNL",
+      "order": "scalar"
+    }
+  ],
+  "legacy_sentences": {
+    "1": [
+      "Create a row. Return 409 for a unique value conflict.",
+      "Get a row by id. Return 404 if it does not exist.",
+      "List rows in id order.",
+      "Update supplied fields. Return 404 if the row does not exist.",
+      "Delete a row. Return 404 if it does not exist."
+    ],
+    "2": [
+      "Create a row. Return 409 for a unique value conflict.",
+      "Get a row by id. Return 404 if it does not exist.",
+      "List rows with an optional exact string filter, limit, and offset in id order.",
+      "Update supplied fields. Return 404 if the row does not exist.",
+      "Delete a row. Return 404 if it does not exist."
+    ],
+    "3": [
+      "Create a row. Return 409 for a unique value conflict.",
+      "Get a row by id. Return 404 if it does not exist.",
+      "List rows with an optional exact boolean filter, limit, and offset in id order.",
+      "Update supplied fields. Return 404 if the row does not exist.",
+      "Delete a row. Return 404 if it does not exist."
+    ],
+    "4": [
+      "Create a row. Return 409 for a unique value conflict.",
+      "Get a row by id. Return 404 if it does not exist.",
+      "List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.",
+      "Update supplied fields. Return 404 if the row does not exist.",
+      "Delete a row. Return 404 if it does not exist."
+    ]
+  },
+  "related_sentences": [
+    "Create a row. Return 409 for a unique value conflict.",
+    "Get a row by id. Return 404 if it does not exist.",
+    "List scoped rows with the configured filters and pagination in id order.",
+    "Update supplied fields. Return 404 if the row does not exist.",
+    "Delete a row. Reject a parent with children with 409."
+  ],
+  "batch_sentence": "Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.",
+  "check_sentences": {
+    "1": "Check CRUD, missing id, and unique conflict when supported.",
+    "2": "Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.",
+    "3": "Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.",
+    "4": "Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.",
+    "5": "Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration."
+  },
+  "flow_operations": {
+    "authorize": {
+      "args": {},
+      "output_type": "identity",
+      "required_undo": null
+    },
+    "parent.create": {
+      "args": {
+        "data": "parent_input"
+      },
+      "output_type": "parent_row",
+      "required_undo": "delete_created"
+    },
+    "parent.get": {
+      "args": {
+        "parent_id": "integer"
+      },
+      "output_type": "parent_row",
+      "required_undo": null
+    },
+    "parent.list": {
+      "args": {},
+      "output_type": "parent_rows",
+      "required_undo": null
+    },
+    "parent.patch": {
+      "args": {
+        "parent_id": "integer",
+        "data": "parent_patch"
+      },
+      "output_type": "parent_row",
+      "required_undo": "restore_patch"
+    },
+    "child.create": {
+      "args": {
+        "parent_id": "integer",
+        "data": "child_input"
+      },
+      "output_type": "child_row",
+      "required_undo": "delete_created"
+    },
+    "child.get": {
+      "args": {
+        "parent_id": "integer",
+        "child_id": "integer"
+      },
+      "output_type": "child_row",
+      "required_undo": null
+    },
+    "child.list": {
+      "args": {
+        "parent_id": "integer"
+      },
+      "output_type": "child_rows",
+      "required_undo": null
+    },
+    "child.patch": {
+      "args": {
+        "parent_id": "integer",
+        "child_id": "integer",
+        "data": "child_patch"
+      },
+      "output_type": "child_row",
+      "required_undo": "restore_patch"
+    },
+    "batch.create": {
+      "args": {
+        "parent": "parent_input",
+        "children": "children_input"
+      },
+      "output_type": "batch",
+      "required_undo": "delete_created"
+    },
+    "workflow.run": {
+      "args": {
+        "parent_id": "integer"
+      },
+      "output_type": "workflow",
+      "required_undo": null
+    },
+    "workflow.import": {
+      "args": {
+        "parent_id": "integer",
+        "csv": "string"
+      },
+      "output_type": "child_rows",
+      "required_undo": "delete_created"
+    },
+    "object.put": {
+      "args": {
+        "key": "string",
+        "body": "bytes"
+      },
+      "output_type": "object",
+      "required_undo": "delete_created"
+    },
+    "object.get": {
+      "args": {
+        "key": "string"
+      },
+      "output_type": "object",
+      "required_undo": null
+    }
+  },
+  "predicates": {
+    "is equal to": "eq",
+    "is not equal to": "ne",
+    "is less than": "lt",
+    "is at most": "le",
+    "is greater than": "gt",
+    "is at least": "ge",
+    "is null": "is_null"
+  },
+  "literal_types": [
+    "string",
+    "integer",
+    "float",
+    "boolean",
+    "date",
+    "bytes"
+  ],
+  "field_types": [
+    "str",
+    "int",
+    "float",
+    "bool",
+    "date"
+  ],
+  "input_types": [
+    "string",
+    "integer",
+    "float",
+    "boolean",
+    "date",
+    "parent_input",
+    "child_input",
+    "parent_patch",
+    "child_patch",
+    "children_input"
+  ]
+}

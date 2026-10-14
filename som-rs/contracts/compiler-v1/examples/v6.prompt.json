@@ -1,0 +1,142 @@
+{
+  "capabilities": {
+    "auth": "jwt",
+    "database": "postgresql",
+    "group_field": null,
+    "storage": "none",
+    "value_field": null,
+    "workflow": "json_export"
+  },
+  "contract": {
+    "id": "related-business.v1",
+    "sha256": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380"
+  },
+  "migration": {
+    "down_revision": null,
+    "revision": "related80000"
+  },
+  "operations": [
+    {
+      "action": "create",
+      "scope": "parent"
+    },
+    {
+      "action": "get",
+      "scope": "parent"
+    },
+    {
+      "action": "list",
+      "scope": "parent"
+    },
+    {
+      "action": "patch",
+      "scope": "parent"
+    },
+    {
+      "action": "delete",
+      "scope": "parent"
+    },
+    {
+      "action": "create",
+      "scope": "child"
+    },
+    {
+      "action": "get",
+      "scope": "child"
+    },
+    {
+      "action": "list",
+      "scope": "child"
+    },
+    {
+      "action": "patch",
+      "scope": "child"
+    },
+    {
+      "action": "delete",
+      "scope": "child"
+    },
+    {
+      "action": "batch_create",
+      "scope": "batch"
+    }
+  ],
+  "package": "app_projects",
+  "relation": {
+    "foreign_key": "project_id",
+    "on_delete": "restrict"
+  },
+  "resources": {
+    "child": {
+      "fields": [
+        {
+          "name": "title",
+          "required": true,
+          "type": "str",
+          "unique": false
+        },
+        {
+          "default": null,
+          "name": "description",
+          "required": false,
+          "type": "str",
+          "unique": false
+        },
+        {
+          "default": false,
+          "name": "completed",
+          "required": false,
+          "type": "bool",
+          "unique": false
+        },
+        {
+          "default": null,
+          "name": "due_on",
+          "required": false,
+          "type": "date",
+          "unique": false
+        },
+        {
+          "name": "external_code",
+          "required": true,
+          "type": "str",
+          "unique": true
+        }
+      ],
+      "name": "Todo",
+      "path": "/todos",
+      "query": {
+        "date_field": "due_on",
+        "filter_field": "completed",
+        "max_limit": 100
+      },
+      "table": "todos"
+    },
+    "parent": {
+      "fields": [
+        {
+          "name": "name",
+          "required": true,
+          "type": "str",
+          "unique": false
+        },
+        {
+          "default": null,
+          "name": "description",
+          "required": false,
+          "type": "str",
+          "unique": false
+        }
+      ],
+      "name": "Project",
+      "path": "/projects",
+      "query": {
+        "date_field": null,
+        "filter_field": null,
+        "max_limit": 20
+      },
+      "table": "projects"
+    }
+  },
+  "version": "som.prompt.v6"
+}

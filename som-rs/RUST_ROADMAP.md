@@ -1,7 +1,10 @@
 # SOM Rust roadmap — 2026-10-13
 
 This is the current development plan. The human approved two stages.
-The compiler is not implemented or accepted by this roadmap reset.
+Candidate003 now implements the compiler. Independent acceptance remains pending.
+The [2026-10-15 progress index](evidence/rust-compiler-progress-2026-10-15.json)
+records the source landing. All seven issues and both milestones remain open.
+Read [the current status](RUST_STATUS.md) and [the compiler guide](RUST_GUIDE.md).
 The running default remains the accepted legacy M2 model service.
 
 `CNL → Rust parser and fixed rules → DSL bundle → existing Rust code generator → Python files`
@@ -50,7 +53,7 @@ Move compiler, catalog and quality asset loading out of the model directory depe
 The backend must not add missing plan nodes or business steps.
 A saved bundle and its declared local assets must be sufficient to generate all files.
 
-These interfaces are planned. They are not available yet:
+These interfaces are implemented in the separate candidate. The legacy M2 default remains unchanged:
 
 | CLI | HTTP | Result |
 |---|---|---|
@@ -67,6 +70,10 @@ New startup and generation must work without model weights or a Python productio
 ## Acceptance and limits
 
 Freeze compiler requirements, case selection and checks before implementation.
+The initial 42-file freeze preceded parser implementation. Amendment 001 records
+a bounded policy correction. Amendment 002 records a fixture correction while
+implementation was in progress. Preserve all receipts and their hash chain.
+Do not describe the final amended set as wholly pre-implementation.
 Cover fields, types, nulls, constants, operations, references, branches, transactions and compensation.
 Verify order, scope, authorization, error behavior, recovery and invalid input.
 The same input and pinned assets must produce the same canonical bundle and complete files.
@@ -86,7 +93,7 @@ Compact output bytes remain an observation. Preserve the original legacy byte li
 Measure time, memory and complete output bytes without inventing acceptance results.
 Missing results, failures and skipped checks remain explicit.
 
-This release connects existing capabilities. Multi-resource, multi-flow and new output languages are outside this scope.
+This release connects existing capabilities, including the existing parent and child resources. New resource shapes, multiple flows and new output languages are outside this scope.
 No paid agent runs, real cloud runs or model-era token comparison gates are required.
 Later capability extensions must add bounded contract, block and behavior tests.
 
@@ -108,4 +115,4 @@ Models, runtimes, source archives and raw measurements remain local.
 Read [the handoff](RUST_HANDOFF.md), [the evidence index](evidence/rust-roadmap-reset-2026-10-13.json),
 [the old milestone archive](evidence/legacy-milestones-2026-10-13.md) and
 [the exact new ticket plan](evidence/rust-roadmap-2026-10-13.json).
-Start implementation with [#38](https://github.com/faberline/som/issues/38). All seven new issues remain open.
+Continue independent acceptance in [#43](https://github.com/faberline/som/issues/43), then the tested switch and closeout in [#44](https://github.com/faberline/som/issues/44). All seven new issues remain open.

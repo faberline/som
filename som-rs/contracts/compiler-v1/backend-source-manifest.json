@@ -1,0 +1,16 @@
+{
+  "id": "som.rust-backend-source.v1",
+  "hash_domain": "raw UTF-8 bytes of this manifest; this manifest is not embedded in its own sources",
+  "sources": {
+    "som-rs/src/lib.rs": "e12ad0be7b3c21d214a66c4c1fbc08da8aca61018769a58a8a3822dc16ffa7b6",
+    "som-rs/src/related.rs": "ccc55e6018117a7087685de81da420da911832edaae51532e712be7b1b138dca",
+    "som-rs/src/business.rs": "b880c325a02c9a93a9e1470baa0416db54560b986511a71561583c1468c9df2f",
+    "som-rs/src/composed.rs": "571c04a8e50f9856361dce94ebab813d8a8905aee9e2ea12dbd687f4f32d890c",
+    "som-rs/src/flow.rs": "8df232e307baa785c696869f89f4f44b3a6eec2a621dfea0e5c054165fa483f6",
+    "som-rs/src/flow_compact.rs": "72c53833d186f0b02f7fc21f52bb738bd6b49d42a41681ce97f0c33054527051",
+    "som-rs/src/quality.rs": "ec181b2bd75103eac9c958c7fdbf6bf7dc95af97a071e470e0532254ea283b81",
+    "som-core/block_templates/flow_compact/forward_support.py.tpl": "45250ff33586c4765733ccd69b8ca1bd52cb34893880bd89fe78d703dc29d557",
+    "som-core/block_templates/flow_compact/engine.py.tpl": "76923c4752bccd850b5fd55ebb77904aa3988170927ba22ee4acef8bbc556d5f"
+  },
+  "runtime_rule": "installed backend group must match; a new implementation/build updates this external manifest before use; never embed its own executable hash in that executable"
+}

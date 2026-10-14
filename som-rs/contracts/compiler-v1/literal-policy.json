@@ -1,0 +1,20 @@
+{
+  "id": "som.compiler-literals.v1",
+  "draft": false,
+  "CNL_data": "JSON scalars only. Never execute source/SQL. Preserve Unicode; no normalization. Reject invalid UTF-8 and unpaired surrogate escapes.",
+  "numeric": "Retain signed64/unsigned64 JSON integer versus finite binary64 numeric category accepted by serde_json. Preserve f64 -0.0. Existing semantic argument validators determine the narrower signed32 runtime integer range. Do not coerce booleans, strings or null.",
+  "types": {
+    "string": "JSON string",
+    "integer": "signed32 JSON integer for runtime scalar constants",
+    "float": "any finite JSON number, retain JSON representation",
+    "boolean": "JSON true/false",
+    "date": "valid YYYY-MM-DD JSON string, years0001..9999",
+    "bytes": "STANDARD Base64 JSON string decoding to1..1048576 bytes"
+  },
+  "defaults": "optional v3+ null unless explicitly false for bool; no other defaults",
+  "python_literal_encoding": {
+    "id": "som.python-literal-encoding.v1",
+    "sha256": "7c25a1f45e54cec45e4053a5ceaf767188641ddde7da34dfce0747dc299dbf16"
+  },
+  "production_python": "output code only; parser/planner/inference do not invoke Python"
+}

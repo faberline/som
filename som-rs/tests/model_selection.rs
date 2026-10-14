@@ -1,3 +1,4 @@
+#![cfg(feature = "legacy-model")]
 use serde_json::Value;
 use som::model::Decoder;
 use std::fs;

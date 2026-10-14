@@ -1,0 +1,3479 @@
+{
+  "source": "historical-compile-reference/inventory.json",
+  "source_sha256": "1648d7406e1e1794c1ae4565a619fc0a1a9b9bfde99157b895f98a83b0608c9a",
+  "flow_full_m2_jobs": 138,
+  "quality218_behavior126": 126,
+  "supplement12_behavior": 12,
+  "scope_note": "544 total products also include 214 composed CRUD jobs and 100 legacy service jobs. Do not count all 544 as full-M2 flow jobs.",
+  "results_claim": "No candidate execution here; unchanged shared gates must pass in Root fresh 544 acceptance run.",
+  "cases": [
+    {
+      "id": "m2-cap-000",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-001",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-002",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-003",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-004",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-005",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-006",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-007",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-008",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-009",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-010",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-011",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-012",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-013",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-014",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-015",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-016",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-017",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-018",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-019",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-020",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-021",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-022",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-023",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-024",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-025",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-026",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-027",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-028",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-029",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-030",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-031",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-032",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-033",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-034",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-035",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-036",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-037",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-038",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-039",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-040",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-041",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-042",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-043",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-044",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-045",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-046",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-047",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-048",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-049",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-050",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-051",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-052",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-053",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-054",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-055",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-056",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-057",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-058",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-059",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-060",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-061",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-062",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-063",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-064",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-065",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-066",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-067",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-068",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-069",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-070",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-071",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-072",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-073",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-074",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-075",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-076",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-077",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-078",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-079",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-080",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-081",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-082",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-083",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-084",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-085",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-086",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-087",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-088",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-cap-089",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-00",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create",
+        "parent.patch"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-01",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "batch.create"
+      ],
+      "resource_reads": [
+        "parent.get",
+        "child.list"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-02",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create",
+        "child.patch"
+      ],
+      "resource_reads": [
+        "child.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-03",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [
+        "parent.list"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-04",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "workflow.import"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-05",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "batch.create"
+      ],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-06",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create",
+        "child.patch"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-07",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-08",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "is_null"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-09",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "lt"
+      },
+      "resource_writes": [
+        "batch.create"
+      ],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-10",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create",
+        "child.patch"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-11",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-12",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-13",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "batch.create"
+      ],
+      "resource_reads": [
+        "parent.get",
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-14",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create",
+        "child.patch"
+      ],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-15",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-16",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-17",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "batch.create"
+      ],
+      "resource_reads": [
+        "parent.get",
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-18",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create",
+        "child.patch"
+      ],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-19",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq",
+        "nested_choice": "gt"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-20",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne",
+        "nested_choice": "gt"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-21",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq",
+        "nested_choice": "gt"
+      },
+      "resource_writes": [
+        "batch.create"
+      ],
+      "resource_reads": [
+        "parent.get",
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-22",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create",
+        "child.patch"
+      ],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-semantic-23",
+      "partition": "formal114",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq",
+        "nested_choice": "gt"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-smoke-00",
+      "partition": "dev12",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-smoke-01",
+      "partition": "dev12",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-smoke-02",
+      "partition": "dev12",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-smoke-03",
+      "partition": "dev12",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-smoke-04",
+      "partition": "dev12",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-smoke-05",
+      "partition": "dev12",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-smoke-06",
+      "partition": "dev12",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get",
+        "child.list"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-smoke-07",
+      "partition": "dev12",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get",
+        "child.list"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-smoke-08",
+      "partition": "dev12",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get",
+        "child.list"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-smoke-09",
+      "partition": "dev12",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get",
+        "child.list"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-smoke-10",
+      "partition": "dev12",
+      "family": "quality218",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get",
+        "child.list"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "m2-smoke-11",
+      "partition": "dev12",
+      "family": "quality218",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get",
+        "child.list"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "supplement-gcs-object-read",
+      "partition": "supplement12",
+      "family": "supplement12",
+      "database": "postgresql",
+      "storage": "gcs",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "batch.create"
+      ],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "supplement-mongodb-batch",
+      "partition": "supplement12",
+      "family": "supplement12",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "batch.create"
+      ],
+      "resource_reads": [
+        "parent.get",
+        "child.list"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "supplement-mongodb-child-patch-read",
+      "partition": "supplement12",
+      "family": "supplement12",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create",
+        "child.patch"
+      ],
+      "resource_reads": [
+        "child.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "supplement-mongodb-child-patch-read-checked",
+      "partition": "supplement12",
+      "family": "supplement12",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create",
+        "child.patch"
+      ],
+      "resource_reads": [
+        "child.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "supplement-mongodb-csv-import",
+      "partition": "supplement12",
+      "family": "supplement12",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "workflow.import"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "supplement-mongodb-parent-list",
+      "partition": "supplement12",
+      "family": "supplement12",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "eq"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create"
+      ],
+      "resource_reads": [
+        "parent.list"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "supplement-mongodb-parent-patch",
+      "partition": "supplement12",
+      "family": "supplement12",
+      "database": "mongodb",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create",
+        "parent.patch"
+      ],
+      "resource_reads": [],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "supplement-mongodb-query-boolean",
+      "partition": "supplement12",
+      "family": "supplement12",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "supplement-mongodb-query-plain",
+      "partition": "supplement12",
+      "family": "supplement12",
+      "database": "mongodb",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "supplement-postgresql-child-read-checked",
+      "partition": "supplement12",
+      "family": "supplement12",
+      "database": "postgresql",
+      "storage": "s3",
+      "branches": {
+        "choice": "ne"
+      },
+      "resource_writes": [
+        "parent.create",
+        "child.create",
+        "child.patch"
+      ],
+      "resource_reads": [
+        "child.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "supplement-postgresql-query-boolean",
+      "partition": "supplement12",
+      "family": "supplement12",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    },
+    {
+      "id": "supplement-postgresql-query-plain",
+      "partition": "supplement12",
+      "family": "supplement12",
+      "database": "postgresql",
+      "storage": "none",
+      "branches": {},
+      "resource_writes": [],
+      "resource_reads": [
+        "parent.get"
+      ],
+      "selected_checker": "verify_flow_service.verify; full_m2_acceptance must be true",
+      "applicable_shared_gates": [
+        "CRUD/auth",
+        "typed result/native row histories",
+        "idempotency/owner routes",
+        "checkpoint compensation/revision conflicts",
+        "heartbeat/stale executor/heartbeat failure",
+        "forward/inverse interruption recovery",
+        "provider fault gates when storage is selected"
+      ]
+    }
+  ]
+}

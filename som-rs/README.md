@@ -1,9 +1,31 @@
 # SOM local service
 
+The model-free Rust compiler candidate is implemented. Full acceptance is
+pending. The accepted legacy M2 model service remains the default.
+The [dated progress index](evidence/rust-compiler-progress-2026-10-15.json)
+records the implementation landing and the checks that remain open.
+
+Read [RUST_GUIDE.md](RUST_GUIDE.md) for current compiler commands and HTTP shapes.
+Read [RUST_STATUS.md](RUST_STATUS.md) for measured results and pending gates.
+[RUST_ROADMAP.md](RUST_ROADMAP.md) defines the two current milestones.
+[RUST_HANDOFF.md](RUST_HANDOFF.md) defines the next controller work.
+
+The compiler parses fixed English CNL or an explicit versioned JSON prompt.
+It emits a complete typed DSL bundle. The existing Rust backend checks that
+bundle and expands approved blocks into Python files. No new Python parser,
+model inference, or Python production process is needed.
+
+## Historical model reports
+
+The following build, training, milestone, and model-budget statements describe
+the previous roadmap. They are not current
+compiler acceptance results or instructions to resume M3 training.
+The retained legacy runtime is still available for rollback.
 > Historical model-roadmap document. On 2026-10-13 the human replaced this plan with
 > [the Rust roadmap](RUST_ROADMAP.md). Old milestone records were archived and deleted.
 > Read [the current handoff](RUST_HANDOFF.md). Preserve the results below; do not resume old M3 training.
-> New compiler implementation and acceptance remain pending. The default remains legacy M2.
+> The Rust compiler candidate is implemented. Independent acceptance remains pending.
+> The default remains legacy M2.
 
 The development default now uses `flow-m2-candidate/smoke-r31-001` and
 `flow-v7-compact`. See [CURRENT.md](CURRENT.md) for the persistent executable,

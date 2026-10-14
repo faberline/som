@@ -1,0 +1,72 @@
+{
+  "passed": true,
+  "source_sha256": "8df232e307baa785c696869f89f4f44b3a6eec2a621dfea0e5c054165fa483f6",
+  "records": [
+    {
+      "id": "integer",
+      "expected": "1",
+      "actual": "1",
+      "passed": true
+    },
+    {
+      "id": "float",
+      "expected": "1.0",
+      "actual": "1.0",
+      "passed": true
+    },
+    {
+      "id": "negative-zero",
+      "expected": "-0.0",
+      "actual": "-0.0",
+      "passed": true
+    },
+    {
+      "id": "null",
+      "expected": "null",
+      "actual": "null",
+      "passed": true
+    },
+    {
+      "id": "bool",
+      "expected": "false",
+      "actual": "false",
+      "passed": true
+    },
+    {
+      "id": "tiny",
+      "expected": "1e-05",
+      "actual": "1e-05",
+      "passed": true
+    },
+    {
+      "id": "negative-tiny",
+      "expected": "-1e-06",
+      "actual": "-1e-06",
+      "passed": true
+    },
+    {
+      "id": "unicode",
+      "expected": "\"台灣\"",
+      "actual": "\"台灣\"",
+      "passed": true
+    },
+    {
+      "id": "escaped",
+      "expected": "\"a\\n\\\"b\"",
+      "actual": "\"a\\n\\\"b\"",
+      "passed": true
+    },
+    {
+      "id": "map-order",
+      "expected": "{\"a\":[2,1],\"z\":2}",
+      "actual": "{\"a\":[2,1],\"z\":2}",
+      "passed": true
+    },
+    {
+      "id": "typed-order",
+      "expected": "[1,1.0,-0.0,null,false]",
+      "actual": "[1,1.0,-0.0,null,false]",
+      "passed": true
+    }
+  ]
+}

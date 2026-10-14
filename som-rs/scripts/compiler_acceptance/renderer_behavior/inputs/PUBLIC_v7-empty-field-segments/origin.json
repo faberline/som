@@ -1,0 +1,19 @@
+{
+  "id": "PUBLIC_v7-empty-field-segments",
+  "source": "som-rs/contracts/compiler-v1/examples/v7.prompt.json",
+  "source_sha256": "2d4a92302f99c30723f49f2ccc642f2c7bf58daf25c8f991002df93746cb5db7",
+  "transform": "flow.result.parent = {step:'made', field:'.id.'}",
+  "source_matches_serializer_bytes": true,
+  "serializer_cnl_sha256": "8c9f6698cbdd163ca1d536b20df9ba9dd30bc20152f3336b4c3f0f996c96d43e",
+  "prompt_path": "inputs/PUBLIC_v7-empty-field-segments/prompt.json",
+  "cnl_path": "inputs/PUBLIC_v7-empty-field-segments/source.cnl",
+  "prompt_sha256": "3e275bc531e57a1c58985f283a8d1eba9dd5c8cda993ba28a293a876c51adce3",
+  "cnl_sha256": "8c9f6698cbdd163ca1d536b20df9ba9dd30bc20152f3336b4c3f0f996c96d43e",
+  "branch_matrix": {
+    "cases": [
+      []
+    ],
+    "unresolved": [],
+    "branches": []
+  }
+}

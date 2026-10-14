@@ -285,6 +285,133 @@ struct Compiler<'a> {
     sequence: usize,
 }
 
+// Python keeps an integer JSON spelling as an int, even for a typed float.
+// Compare that integer exactly before considering an f64 fractional part.
+fn compare_integer_float(integer: i128, float: f64) -> Option<std::cmp::Ordering> {
+    use std::cmp::Ordering;
+    if !float.is_finite() { return None; }
+    // JSON integer spellings are bounded by i64::MIN and u64::MAX. These
+    // powers of two are exact f64 bounds; the cast below cannot saturate.
+    if float < -9_223_372_036_854_775_808.0 { return Some(Ordering::Greater); }
+    if float >= 18_446_744_073_709_551_616.0 { return Some(Ordering::Less); }
+    let whole = float.trunc() as i128;
+    let ordering = integer.cmp(&whole);
+    if ordering != Ordering::Equal { return Some(ordering); }
+    Some(float.fract().partial_cmp(&0.0)?.reverse())
+}
+
+fn compare_literal_numbers(left: &serde_json::Number, right: &serde_json::Number)
+    -> Option<std::cmp::Ordering>
+{
+    let integer = |number: &serde_json::Number| number.as_i64().map(i128::from)
+        .or_else(|| number.as_u64().map(i128::from));
+    match (integer(left), integer(right)) {
+        (Some(a), Some(b)) => Some(a.cmp(&b)),
+        (Some(a), None) => compare_integer_float(a, right.as_f64()?),
+        (None, Some(b)) => compare_integer_float(b, left.as_f64()?).map(std::cmp::Ordering::reverse),
+        (None, None) => left.as_f64()?.partial_cmp(&right.as_f64()?),
+    }
+}
+
+/// Fold only literal references. Admission remains the existing plan validator.
+fn constant_predicate(condition: &Value) -> Option<bool> {
+    use std::cmp::Ordering;
+    let left = condition.get("left")?.get("literal")?;
+    let op = condition.get("op")?.as_str()?;
+    if op == "is_null" { return Some(left.is_null()); }
+    let right = condition.get("right")?.get("literal")?;
+    if condition["left"]["type"] != condition["right"]["type"] { return None; }
+    let ordering = match (left, right) {
+        (Value::Null, Value::Null) if ["eq", "ne"].contains(&op) => Ordering::Equal,
+        (Value::Null, _) | (_, Value::Null) if ["eq", "ne"].contains(&op) =>
+            return Some(op == "ne"),
+        (Value::Bool(a), Value::Bool(b)) if ["eq", "ne"].contains(&op) => a.cmp(b),
+        (Value::Number(a), Value::Number(b)) => compare_literal_numbers(a, b)?,
+        // UTF-8 lexicographic order matches Python Unicode code point order.
+        // Valid ISO date strings have the same order as their date objects.
+        (Value::String(a), Value::String(b))
+            if ["string", "date"].contains(&condition["left"]["type"].as_str()?) => a.cmp(b),
+        _ => return None,
+    };
+    match op {
+        "eq" => Some(ordering == Ordering::Equal),
+        "ne" => Some(ordering != Ordering::Equal),
+        "lt" => Some(ordering == Ordering::Less),
+        "le" => Some(ordering != Ordering::Greater),
+        "gt" => Some(ordering == Ordering::Greater),
+        "ge" => Some(ordering != Ordering::Less),
+        _ => None,
+    }
+}
+
+#[cfg(test)]
+mod constant_predicate_tests {
+    use super::constant_predicate;
+    use serde_json::{Value, json};
+
+    fn reference(source: &str, kind: &str) -> Value {
+        json!({"literal": serde_json::from_str::<Value>(source).unwrap(), "type":kind})
+    }
+
+    #[test]
+    fn exact_python_number_ordering_for_all_six_operators() {
+        let cases = [
+            ("1", "1", 0), ("-2147483648", "2147483647", -1),
+            ("9007199254740993", "9007199254740992.0", 1),
+            ("9007199254740993", "9007199254740994.0", -1),
+            ("18446744073709551615", "18446744073709551616.0", -1),
+            ("18446744073709551615", "18446744073709549568.0", 1),
+            ("-9223372036854775808", "-9223372036854775808.0", 0),
+            ("-9223372036854775807", "-9223372036854775808.0", 1),
+            ("0", "-0.0", 0), ("-0.0", "0.0", 0),
+            ("0", "5e-324", -1), ("0", "-5e-324", 1),
+            ("-2", "-2.5", 1), ("2", "2.5", -1),
+            ("0", "1e308", -1), ("0", "-1e308", 1),
+            ("1.5", "2.5", -1), ("1", "1.0", 0),
+        ];
+        for (a, b, order) in cases {
+            for (left, right, order) in [(a, b, order), (b, a, -order)] {
+                for (op, expected) in [("eq", order == 0), ("ne", order != 0),
+                    ("lt", order < 0), ("le", order <= 0), ("gt", order > 0), ("ge", order >= 0)] {
+                    let condition = json!({"op":op,"left":reference(left,"float"),"right":reference(right,"float")});
+                    assert_eq!(constant_predicate(&condition), Some(expected), "{left} {op} {right}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn boolean_unicode_date_and_null_values_match_python() {
+        for (kind, a, b, equal) in [("boolean", "true", "false", false),
+            ("boolean", "true", "true", true), ("string", "\"é\"", "\"é\"", false),
+            ("string", "\"中\"", "\"中\"", true), ("date", "\"2024-02-29\"", "\"2024-02-29\"", true),
+            ("string?", "null", "null", true), ("string?", "null", "\"x\"", false)] {
+            for (op, expected) in [("eq", equal), ("ne", !equal)] {
+                assert_eq!(constant_predicate(&json!({"op":op,"left":reference(a,kind),"right":reference(b,kind)})), Some(expected));
+            }
+        }
+        for (kind, a, b) in [("string", "\"é\"", "\"中\""),
+            ("string", "\"😀\"", "\"😁\""), ("date", "\"2024-02-29\"", "\"2024-03-01\"")] {
+            assert_eq!(constant_predicate(&json!({"op":"lt","left":reference(a,kind),"right":reference(b,kind)})), Some(true));
+        }
+        assert_eq!(constant_predicate(&json!({"op":"is_null","left":reference("null","string?")})), Some(true));
+        assert_eq!(constant_predicate(&json!({"op":"is_null","left":reference("0","integer")})), Some(false));
+    }
+
+    #[test]
+    fn references_and_unsupported_comparisons_are_not_folded() {
+        let values = [
+            json!({"op":"eq","left":{"input":"a"},"right":reference("1","integer")}),
+            json!({"op":"eq","left":reference("1","integer"),"right":{"step":"made","field":"id"}}),
+            json!({"op":"is_null","left":{"input":"optional"}}),
+            json!({"op":"eq","left":reference("true","boolean"),"right":reference("1","integer")}),
+            json!({"op":"lt","left":reference("null","string?"),"right":reference("null","string?")}),
+            json!({"op":"lt","left":reference("false","boolean"),"right":reference("true","boolean")}),
+        ];
+        for value in values { assert_eq!(constant_predicate(&value), None, "{value}"); }
+    }
+}
+
 impl Compiler<'_> {
     fn expression(&self, reference: &Value) -> String {
         if let Some(input) = reference.get("input") {
@@ -304,7 +431,7 @@ impl Compiler<'_> {
         let mut kind = self.kinds[reference["step"].as_str().unwrap()].clone();
         let field = reference["field"].as_str().unwrap();
         if !field.is_empty() {
-            for item in field.split('.') {
+            for item in field.split('.').filter(|part| !part.is_empty()) {
                 expression = if kind == "identity" {
                     format!("{expression}[{}]", quoted(&json!(item)))
                 } else if ["parent_row", "child_row"].contains(&kind.as_str())
@@ -361,7 +488,9 @@ impl Compiler<'_> {
                 let condition = &node["condition"];
                 let left = self.expression(&condition["left"]);
                 let op = condition["op"].as_str().unwrap();
-                let predicate = match op {
+                let predicate = if let Some(value) = constant_predicate(condition) {
+                    if value { "True".into() } else { "False".into() }
+                } else { match op {
                     "is_null" => format!("{left} is None"),
                     "eq" | "ne" => {
                         let singleton = condition["right"]["literal"].is_boolean();
@@ -377,7 +506,7 @@ impl Compiler<'_> {
                         let operator = match op { "lt" => " < ", "le" => " <= ", "gt" => " > ", _ => " >= " };
                         format!("{left}{operator}{}", self.expression(&condition["right"]))
                     },
-                };
+                }};
                 let branch = format!("_branch{}", self.sequence);
                 self.sequence += 1;
                 self.emit(format!("{branch} = {predicate}"), depth);
@@ -399,6 +528,11 @@ impl Compiler<'_> {
                     .map(|(index, name)| (name.clone(), format!("_value{}", self.sequence + index)))
                     .collect();
                 self.sequence += exports.len();
+                // Empty arms with one export only select a value. A conditional
+                // expression keeps that selection lazy and satisfies SIM108.
+                let conditional_export = exports.len() == 1
+                    && ["then", "else"].iter().all(|arm| node[*arm].as_array().unwrap().is_empty());
+                let mut conditional_values = Vec::new();
                 for arm in ["then", "else"] {
                     self.variables = previous.clone();
                     self.kinds = previous_kinds.clone();
@@ -406,29 +540,38 @@ impl Compiler<'_> {
                         let kind = flow::ref_type(self.prompt, &condition["left"], &self.inputs, &self.kinds).expect("checked null refinement");
                         self.kinds.insert(format!("@{}", flow::canonical(&condition["left"])), kind.trim_end_matches('?').to_owned());
                     }
-                    self.emit(
-                        if arm == "then" {
-                            format!("if {}:", if op == "is_null" { &predicate } else { &branch })
-                        } else {
-                            "else:".into()
-                        },
-                        depth,
-                    );
+                    if !conditional_export {
+                        self.emit(
+                            if arm == "then" {
+                                format!("if {}:", if op == "is_null" { &predicate } else { &branch })
+                            } else {
+                                "else:".into()
+                            },
+                            depth,
+                        );
+                    }
                     let begin = self.lines.len();
                     self.walk(&node[arm], depth + 1, group);
                     for (name, variable) in &exports {
-                        self.emit(
-                            format!(
-                                "{variable} = {}",
-                                self.expression(&node["exports"][name][arm])
-                            ),
-                            depth + 1,
-                        );
+                        let value = self.expression(&node["exports"][name][arm]);
+                        if conditional_export {
+                            conditional_values.push(value);
+                        } else {
+                            self.emit(format!("{variable} = {value}"), depth + 1);
+                        }
                         export_kinds.insert(name.clone(), flow::ref_type(self.prompt, &node["exports"][name][arm], &self.inputs, &self.kinds).expect("checked export type"));
                     }
-                    if self.lines.len() == begin {
+                    if !conditional_export && self.lines.len() == begin {
                         self.emit("pass".into(), depth + 1);
                     }
+                }
+                if conditional_export {
+                    let variable = exports.values().next().unwrap();
+                    let test = if op == "is_null" { &predicate } else { &branch };
+                    self.emit(
+                        format!("{variable} = {} if {test} else {}", conditional_values[0], conditional_values[1]),
+                        depth,
+                    );
                 }
                 self.variables = previous;
                 self.variables.extend(exports.clone());

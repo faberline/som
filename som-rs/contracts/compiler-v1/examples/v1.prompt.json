@@ -1,0 +1,31 @@
+{
+  "logic": [
+    "List rows in id order.",
+    "Create a row. Return 409 for a unique value conflict.",
+    "Update supplied fields. Return 404 if the row does not exist.",
+    "Get a row by id. Return 404 if it does not exist.",
+    "Delete a row. Return 404 if it does not exist."
+  ],
+  "migration": {
+    "down_revision": null,
+    "revision": "rev0000"
+  },
+  "package": "items",
+  "resource": {
+    "fields": [
+      {
+        "name": "title",
+        "required": true,
+        "type": "str",
+        "unique": true
+      }
+    ],
+    "name": "Item",
+    "path": "/items",
+    "table": "items"
+  },
+  "tests": [
+    "Check CRUD, missing id, and unique conflict when supported."
+  ],
+  "version": "som.prompt.v1"
+}

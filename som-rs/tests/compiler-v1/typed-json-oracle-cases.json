@@ -1,0 +1,1155 @@
+{
+  "format": "som-rust-contract-oracle-cases.v1",
+  "case_policy": "Patch is RFC 6902 applied to named fixture; expected codes are asserted against public Python validators; observations and schema differences are in adjacent result files. This is not a future compiler result.",
+  "cases": [
+    {
+      "id": "P1_ACCEPT_CRUD_FIELDS",
+      "fixture": "v1_minimal_crud",
+      "patch": [],
+      "expected": {
+        "status": "accept"
+      },
+      "semantic_expectation": "Preserve package, resource identity/path, declared field order/type/required/unique, five CRUD semantics, migration revision and null down_revision.",
+      "coverage": [
+        "prompt.v1",
+        "crud",
+        "field-types"
+      ],
+      "observed_python_validator": {
+        "status": "accept"
+      }
+    },
+    {
+      "id": "P2_ACCEPT_STRING_FILTER_MAX20",
+      "fixture": "v2_string_filter_max20",
+      "patch": [],
+      "expected": {
+        "status": "accept"
+      },
+      "semantic_expectation": "Exact string filter and limit 20 are accepted; preserve limit and ordering semantics.",
+      "coverage": [
+        "prompt.v2",
+        "string-filter",
+        "max-limit-20"
+      ],
+      "observed_python_validator": {
+        "status": "accept"
+      }
+    },
+    {
+      "id": "P3_ACCEPT_BOOL_DEFAULT_FALSE",
+      "fixture": "v3_bool_default",
+      "patch": [],
+      "expected": {
+        "status": "accept"
+      },
+      "semantic_expectation": "Optional bool uses false default and is the exact non-unique boolean filter.",
+      "coverage": [
+        "prompt.v3",
+        "bool-default",
+        "boolean-filter"
+      ],
+      "observed_python_validator": {
+        "status": "accept"
+      }
+    },
+    {
+      "id": "P4_ACCEPT_EXCLUSIVE_DATE_FILTER",
+      "fixture": "v4_date_before",
+      "patch": [],
+      "expected": {
+        "status": "accept"
+      },
+      "semantic_expectation": "Sole optional non-unique date has null default; date-before excludes the boundary date.",
+      "coverage": [
+        "prompt.v4",
+        "date-null-default",
+        "exclusive-date-before"
+      ],
+      "observed_python_validator": {
+        "status": "accept"
+      }
+    },
+    {
+      "id": "P5_ACCEPT_RELATED_HYPHEN_ROUTES",
+      "fixture": "v5_related_business",
+      "patch": [],
+      "expected": {
+        "status": "accept"
+      },
+      "semantic_expectation": "Parent/child fields and filters are typed; routes with hyphens and max_limit 20 are accepted by current validator; restrict relation, 10 CRUD operations and atomic batch are fixed.",
+      "coverage": [
+        "prompt.v5",
+        "hyphen-route",
+        "max-limit-20",
+        "parent-child",
+        "batch",
+        "date-filter"
+      ],
+      "observed_python_validator": {
+        "status": "accept"
+      }
+    },
+    {
+      "id": "P6_ACCEPT_COMPOSED_CAPABILITIES",
+      "fixture": "v6_composed_operations",
+      "patch": [],
+      "expected": {
+        "status": "accept"
+      },
+      "semantic_expectation": "Pinned related-business contract and selected operations keep their requested order; capabilities and typed fields bind to approved block contracts.",
+      "coverage": [
+        "prompt.v6",
+        "contract-hash",
+        "capabilities",
+        "operation-order"
+      ],
+      "observed_python_validator": {
+        "status": "accept"
+      }
+    },
+    {
+      "id": "P7_ACCEPT_TYPED_FLOW_AND_FLOAT_NEGZERO",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "add",
+          "path": "/flow/result/negative_zero",
+          "value": {
+            "literal": -0.0,
+            "type": "float"
+          }
+        }
+      ],
+      "expected": {
+        "status": "accept"
+      },
+      "semantic_expectation": "Authorization precedes work; create is transactional and compensated; branch arms export same parent_row type; typed float -0.0 is finite and accepted.",
+      "coverage": [
+        "prompt.v7",
+        "auth",
+        "transaction",
+        "undo",
+        "branch-export",
+        "typed-float",
+        "negative-zero"
+      ],
+      "observed_python_validator": {
+        "status": "accept"
+      }
+    },
+    {
+      "id": "R01_UNKNOWN_PROMPT_VERSION",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/version",
+          "value": "som.prompt.v8"
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "UNSUPPORTED_VERSION"
+      },
+      "semantic_expectation": "Unknown prompt version is refused.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "UNSUPPORTED_VERSION",
+        "detail": "prompt.version is not supported"
+      }
+    },
+    {
+      "id": "R02_V4_WRONG_FILTER_TYPE",
+      "fixture": "v4_date_before",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/query/filter_field",
+          "value": "title"
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_VALUE"
+      },
+      "semantic_expectation": "Query filter must name the supported non-unique bool field with false default.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_VALUE",
+        "detail": "prompt.query.filter_field: expected a supported non-unique filter field"
+      }
+    },
+    {
+      "id": "R03_V4_LIMIT_OVER100",
+      "fixture": "v4_date_before",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/query/max_limit",
+          "value": 101
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_VALUE"
+      },
+      "semantic_expectation": "max_limit outside 20..100 is refused.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_VALUE",
+        "detail": "prompt.query.max_limit: expected 20..100"
+      }
+    },
+    {
+      "id": "R04_V4_DATE_FIELD_MISSING",
+      "fixture": "v4_date_before",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/query/date_field",
+          "value": "title"
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_VALUE"
+      },
+      "semantic_expectation": "date_field must name the sole optional non-unique date field with null default.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_VALUE",
+        "detail": "prompt.query.date_field: expected the sole optional non-unique date field with null default"
+      }
+    },
+    {
+      "id": "R05_V5_ROUTE_COLLISION",
+      "fixture": "v5_related_business",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/resources/child/path",
+          "value": "/projects-v2"
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_VALUE"
+      },
+      "semantic_expectation": "Parent and child paths must be distinct.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_VALUE",
+        "detail": "resource names, tables and paths must be distinct"
+      }
+    },
+    {
+      "id": "R06_V5_RESERVED_FOREIGN_KEY",
+      "fixture": "v5_related_business",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/relation/foreign_key",
+          "value": "parent_id"
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_VALUE"
+      },
+      "semantic_expectation": "Relation FK names reserved query/identifier fields are refused.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_VALUE",
+        "detail": "invalid foreign key"
+      }
+    },
+    {
+      "id": "R07_V5_BAD_DATE_DEFAULT",
+      "fixture": "v5_related_business",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/resources/parent/fields/2/default",
+          "value": false
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_VALUE"
+      },
+      "semantic_expectation": "Date field must be optional, non-unique and default null.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_VALUE",
+        "detail": "parent.fields[2].default: expected null or false"
+      }
+    },
+    {
+      "id": "R08_V5_WORKFLOW_VALUE_FIELD_MISSING",
+      "fixture": "v5_related_business",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/capabilities/workflow",
+          "value": "statistics"
+        },
+        {
+          "op": "replace",
+          "path": "/capabilities/value_field",
+          "value": null
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_VALUE"
+      },
+      "semantic_expectation": "Numeric workflows require a numeric child value_field.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_VALUE",
+        "detail": "numeric workflow requires a numeric value_field"
+      }
+    },
+    {
+      "id": "R09_V6_CONTRACT_HASH_DRIFT",
+      "fixture": "v6_composed_operations",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/contract/sha256",
+          "value": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "UNSUPPORTED_CONTRACT"
+      },
+      "semantic_expectation": "Contract id/hash must match the pinned public contract.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "UNSUPPORTED_CONTRACT",
+        "detail": "contract id or hash does not match"
+      }
+    },
+    {
+      "id": "R10_V6_DUPLICATE_OPERATION",
+      "fixture": "v6_composed_operations",
+      "patch": [
+        {
+          "op": "add",
+          "path": "/operations/-",
+          "value": {
+            "scope": "parent",
+            "action": "create"
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "UNSUPPORTED_LOGIC"
+      },
+      "semantic_expectation": "Duplicate scoped operations are refused.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "UNSUPPORTED_LOGIC",
+        "detail": "unsupported or duplicate scoped operation"
+      }
+    },
+    {
+      "id": "R11_V7_UNSUPPORTED_INPUT_TYPE",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/flow/inputs/0/type",
+          "value": "bytes"
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_REF"
+      },
+      "semantic_expectation": "Only declared scalar and structured input kinds are accepted; bytes is not an input kind.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_REF",
+        "detail": "duplicate input or unsupported input type"
+      }
+    },
+    {
+      "id": "R12_V7_MUTATION_OUTSIDE_TRANSACTION",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/flow/steps/1",
+          "value": {
+            "name": "created",
+            "op": "parent.create",
+            "args": {
+              "data": {
+                "input": "parent_data"
+              }
+            },
+            "undo": "delete_created"
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_TRANSACTION"
+      },
+      "semantic_expectation": "Database mutation outside a named transaction is refused.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_TRANSACTION",
+        "detail": "database mutation lacks transaction"
+      }
+    },
+    {
+      "id": "R13_V7_MISSING_UNDO",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/flow/steps/1/steps/0/undo",
+          "value": null
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_COMPENSATION"
+      },
+      "semantic_expectation": "Every mutation declares its exact compensation.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_COMPENSATION",
+        "detail": "missing or incompatible compensation"
+      }
+    },
+    {
+      "id": "R14_V7_WRONG_ARGUMENT_TYPE",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/flow/inputs/1/type",
+          "value": "string"
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_REF"
+      },
+      "semantic_expectation": "parent.get parent_id must be integer; a string input cannot bind there.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_REF",
+        "detail": "wrong argument type"
+      }
+    },
+    {
+      "id": "R15_V7_NULL_AS_STRING_LITERAL",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "add",
+          "path": "/flow/result/null_string",
+          "value": {
+            "literal": null,
+            "type": "string"
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_REF"
+      },
+      "semantic_expectation": "Null does not satisfy a non-null string literal.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_REF",
+        "detail": "literal does not match its declared type"
+      }
+    },
+    {
+      "id": "R16_V7_FLOAT_NEGZERO_AS_INTEGER",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "add",
+          "path": "/flow/result/bad_integer",
+          "value": {
+            "literal": -0.0,
+            "type": "integer"
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_REF"
+      },
+      "semantic_expectation": "JSON -0.0 is a float literal, not an integer literal.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_REF",
+        "detail": "literal does not match its declared type"
+      }
+    },
+    {
+      "id": "R17_V7_FORWARD_STEP_REFERENCE",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/flow/steps/1/steps/0/args/data",
+          "value": {
+            "step": "future_step",
+            "field": ""
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_REF"
+      },
+      "semantic_expectation": "A step result is visible only after its defining step.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_REF",
+        "detail": "step does not dominate this reference"
+      }
+    },
+    {
+      "id": "R18_V7_CROSS_BRANCH_REFERENCE",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/flow/steps/2/then/0/args/parent_id",
+          "value": {
+            "step": "noRead",
+            "field": "id"
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_REF"
+      },
+      "semantic_expectation": "A reference from one branch arm is not visible in the other arm.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_REF",
+        "detail": "step does not dominate this reference"
+      }
+    },
+    {
+      "id": "R19_V7_BRANCH_EXPORT_TYPE_MISMATCH",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/flow/steps/2/exports/selected/else",
+          "value": {
+            "input": "parent_id"
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_REF"
+      },
+      "semantic_expectation": "Both branch arms must export the same type for a name.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_REF",
+        "detail": "branch export mismatch"
+      }
+    },
+    {
+      "id": "R20_V7_NULL_CHECK_NON_NULLABLE",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/flow/steps/2/condition/left",
+          "value": {
+            "input": "parent_id"
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_REF"
+      },
+      "semantic_expectation": "is_null is allowed only for nullable scalar values.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_REF",
+        "detail": "null check requires a nullable scalar"
+      }
+    },
+    {
+      "id": "R21_V7_MISSING_AUTHORIZATION",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/flow/steps/0/op",
+          "value": "parent.list"
+        },
+        {
+          "op": "add",
+          "path": "/flow/steps/0/args",
+          "value": {}
+        },
+        {
+          "op": "add",
+          "path": "/flow/steps/0/undo",
+          "value": null
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_AUTHORIZATION"
+      },
+      "semantic_expectation": "Authorization must precede every flow action and branch.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_AUTHORIZATION",
+        "detail": "missing authorization"
+      }
+    },
+    {
+      "id": "R22_V7_NESTED_TRANSACTION",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "add",
+          "path": "/flow/steps/1/steps/-",
+          "value": {
+            "name": "inner",
+            "op": "transaction",
+            "steps": []
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_TRANSACTION"
+      },
+      "semantic_expectation": "Transactions cannot nest.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_TRANSACTION",
+        "detail": "unauthorized or nested transaction"
+      }
+    },
+    {
+      "id": "R23_V7_PROVIDER_INSIDE_TRANSACTION",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/flow/steps/1/steps/0",
+          "value": {
+            "name": "putObject",
+            "op": "object.put",
+            "args": {
+              "key": {
+                "literal": "k",
+                "type": "string"
+              },
+              "body": {
+                "literal": "YQ==",
+                "type": "bytes"
+              }
+            },
+            "undo": "delete_created"
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_TRANSACTION"
+      },
+      "semantic_expectation": "External provider operations cannot run inside a database transaction.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_TRANSACTION",
+        "detail": "incompatible provider or provider inside transaction"
+      }
+    },
+    {
+      "id": "R24_V7_UNSUPPORTED_DELETE_ACTION",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/flow/steps/2/then/0/op",
+          "value": "child.delete"
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "UNSUPPORTED_LOGIC"
+      },
+      "semantic_expectation": "Flow vocabulary has no delete action.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "UNSUPPORTED_LOGIC",
+        "detail": "unsupported flow action"
+      }
+    },
+    {
+      "id": "R25_V7_IMPORT_WITHOUT_CSV_CAPABILITY",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/flow/steps/1/steps/0",
+          "value": {
+            "name": "importRows",
+            "op": "workflow.import",
+            "args": {
+              "parent_id": {
+                "input": "parent_id"
+              },
+              "csv": {
+                "literal": "id\n1\n",
+                "type": "string"
+              }
+            },
+            "undo": "delete_created"
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_COMPOSITION"
+      },
+      "semantic_expectation": "workflow.import requires workflow=csv.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_COMPOSITION",
+        "detail": "CSV import requires CSV capability"
+      }
+    },
+    {
+      "id": "R26_V7_BYTES_RESULT_EXPOSED",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "add",
+          "path": "/flow/result/raw",
+          "value": {
+            "literal": "YQ==",
+            "type": "bytes"
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_REF"
+      },
+      "semantic_expectation": "Binary result values must be returned through object or workflow metadata.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_REF",
+        "detail": "binary results must use object or workflow metadata"
+      }
+    },
+    {
+      "id": "R27_V7_TOO_MANY_INPUTS",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "add",
+          "path": "/flow/inputs/-",
+          "value": {
+            "name": "extra1",
+            "type": "string"
+          }
+        },
+        {
+          "op": "add",
+          "path": "/flow/inputs/-",
+          "value": {
+            "name": "extra2",
+            "type": "string"
+          }
+        },
+        {
+          "op": "add",
+          "path": "/flow/inputs/-",
+          "value": {
+            "name": "extra3",
+            "type": "string"
+          }
+        },
+        {
+          "op": "add",
+          "path": "/flow/inputs/-",
+          "value": {
+            "name": "extra4",
+            "type": "string"
+          }
+        },
+        {
+          "op": "add",
+          "path": "/flow/inputs/-",
+          "value": {
+            "name": "extra5",
+            "type": "string"
+          }
+        },
+        {
+          "op": "add",
+          "path": "/flow/inputs/-",
+          "value": {
+            "name": "extra6",
+            "type": "string"
+          }
+        },
+        {
+          "op": "add",
+          "path": "/flow/inputs/-",
+          "value": {
+            "name": "extra7",
+            "type": "string"
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "SCOPE_TOO_LARGE"
+      },
+      "semantic_expectation": "More than eight typed inputs is refused; this case checks input count, not action count.",
+      "coverage": [],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "SCOPE_TOO_LARGE",
+        "detail": "at most eight typed flow inputs"
+      }
+    },
+    {
+      "id": "R28_V7_TOO_MANY_ACTIONS",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "add",
+          "path": "/flow/steps/-",
+          "value": {
+            "name": "read3",
+            "op": "parent.get",
+            "args": {
+              "parent_id": {
+                "input": "parent_id"
+              }
+            },
+            "undo": null
+          }
+        },
+        {
+          "op": "add",
+          "path": "/flow/steps/-",
+          "value": {
+            "name": "read4",
+            "op": "parent.get",
+            "args": {
+              "parent_id": {
+                "input": "parent_id"
+              }
+            },
+            "undo": null
+          }
+        },
+        {
+          "op": "add",
+          "path": "/flow/steps/-",
+          "value": {
+            "name": "read5",
+            "op": "parent.get",
+            "args": {
+              "parent_id": {
+                "input": "parent_id"
+              }
+            },
+            "undo": null
+          }
+        },
+        {
+          "op": "add",
+          "path": "/flow/steps/-",
+          "value": {
+            "name": "read6",
+            "op": "parent.get",
+            "args": {
+              "parent_id": {
+                "input": "parent_id"
+              }
+            },
+            "undo": null
+          }
+        },
+        {
+          "op": "add",
+          "path": "/flow/steps/-",
+          "value": {
+            "name": "read7",
+            "op": "parent.get",
+            "args": {
+              "parent_id": {
+                "input": "parent_id"
+              }
+            },
+            "undo": null
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "SCOPE_TOO_LARGE"
+      },
+      "semantic_expectation": "More than eight action nodes is refused.",
+      "coverage": [
+        "prompt.v7",
+        "action-budget"
+      ],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "SCOPE_TOO_LARGE",
+        "detail": "flow node budget exceeded"
+      }
+    },
+    {
+      "id": "R29_V5_UNSUPPORTED_TEST_CONTRACT",
+      "fixture": "v5_related_business",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/tests/0",
+          "value": "Check something else."
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "UNSUPPORTED_TEST"
+      },
+      "semantic_expectation": "Only the pinned related-business test contract is supported.",
+      "coverage": [
+        "prompt.v5",
+        "unsupported-test"
+      ],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "UNSUPPORTED_TEST",
+        "detail": "unsupported related test contract"
+      }
+    },
+    {
+      "id": "R30_V1_UNSUPPORTED_LOGIC",
+      "fixture": "v1_minimal_crud",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/logic/2",
+          "value": "List rows however the model decides."
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "UNSUPPORTED_LOGIC"
+      },
+      "semantic_expectation": "The five exact supported logic steps are required.",
+      "coverage": [
+        "prompt.v1",
+        "unsupported-logic"
+      ],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "UNSUPPORTED_LOGIC",
+        "detail": "prompt.logic: expected each supported step once"
+      }
+    },
+    {
+      "id": "R31_V1_EXTRA_PROPERTY",
+      "fixture": "v1_minimal_crud",
+      "patch": [
+        {
+          "op": "add",
+          "path": "/guess",
+          "value": "x"
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_SCHEMA"
+      },
+      "semantic_expectation": "Unknown top-level fields are refused.",
+      "coverage": [
+        "prompt.v1",
+        "unknown-field"
+      ],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_SCHEMA",
+        "detail": "prompt: expected ['logic', 'migration', 'package', 'resource', 'tests', 'version']"
+      }
+    },
+    {
+      "id": "R32_V7_FLOW_ROUTE_COLLISION",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/resources/parent/path",
+          "value": "/flow-runs"
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_VALUE"
+      },
+      "semantic_expectation": "Parent resource paths cannot occupy reserved /flows or /flow-runs routes.",
+      "coverage": [
+        "prompt.v7",
+        "reserved-route"
+      ],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_VALUE",
+        "detail": "resource route collides with flow routes"
+      }
+    },
+    {
+      "id": "R33_V7_INCOMPATIBLE_COMPARISON",
+      "fixture": "v7_flow_contract",
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/flow/steps/2/condition",
+          "value": {
+            "op": "eq",
+            "left": {
+              "input": "parent_id"
+            },
+            "right": {
+              "literal": "1",
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "status": "reject",
+        "code": "INVALID_REF"
+      },
+      "semantic_expectation": "Comparison operands must have the same allowed scalar type.",
+      "coverage": [
+        "prompt.v7",
+        "comparison-types"
+      ],
+      "observed_python_validator": {
+        "status": "reject",
+        "code": "INVALID_REF",
+        "detail": "incompatible comparison"
+      }
+    }
+  ],
+  "bundle_runtime_invariants": [
+    {
+      "id": "B01_DETERMINISTIC_REPLAY",
+      "expected": "same canonical typed prompt and same pinned catalog/contract hashes produce byte-identical complete DSL v3 bundle",
+      "checks": [
+        "same files and order",
+        "same block IDs, names, params and refs",
+        "same flow tree and literals",
+        "same canonical serialization"
+      ],
+      "expected_validator": "accept"
+    },
+    {
+      "id": "B02_APPROVED_BLOCKS_ONLY",
+      "expected": "every block id is in the pinned catalog and its exact parameter names/types and source hash match",
+      "failure_code": "UNSUPPORTED_BLOCK or INVALID_BLOCK"
+    },
+    {
+      "id": "B03_THREE_REFERENCE_KINDS",
+      "expected": "generation binding {$ref}, runtime input/step/literal refs, and dependency {symbol} remain distinct typed forms",
+      "failure_code": "INVALID_REF"
+    },
+    {
+      "id": "B04_NO_IMPLICIT_COMPLETION",
+      "expected": "missing requested operation, helper, inverse or output file is rejected; validator does not insert it",
+      "failure_code": "INVALID_COMPOSITION"
+    },
+    {
+      "id": "B05_ORDER_AND_SCOPE",
+      "expected": "preserve ordered fields, operations, flow steps and branch scopes; reject forward/cross-branch edges; enforce 12 files, 64 blocks, 8 actions, 2 branches/depth2, 2 nonnested transactions",
+      "failure_code": "INVALID_REF or SCOPE_TOO_LARGE"
+    },
+    {
+      "id": "B06_RUNTIME_EQUIVALENCE",
+      "expected": "CNL-to-typed-prompt semantics and CNL-to-bundle/runtime semantics agree for auth, CRUD, filters, relation, capabilities, flow arguments/results and error outcomes",
+      "expected_validator": "independent behavior evidence required; syntax/type/byte parity alone does not pass"
+    },
+    {
+      "id": "B07_REFUSAL_NO_REPAIR",
+      "expected": "unsupported, missing, conflicting, invalid-typed or out-of-scope requests fail with precise location and code; no model fallback or answer repair",
+      "failure_code": "INVALID_VALUE / UNSUPPORTED_LOGIC / INVALID_REF / INVALID_COMPOSITION"
+    },
+    {
+      "id": "B08_OPERATION_ORDER_MISMATCH",
+      "expected": "Bundle operation order must equal the prompt operation order, with no sorting or insertion.",
+      "failure_code": "INVALID_COMPOSITION",
+      "status": "assertion-only; full catalog-dependent bundle fixture remains deferred"
+    }
+  ],
+  "expected_code_catalog": {
+    "UNSUPPORTED_VERSION": "Unknown prompt version.",
+    "INVALID_SCHEMA": "Missing/extra keys or wrong object shape.",
+    "INVALID_VALUE": "Identifier, path, type, field relation, query or migration value violates contract.",
+    "UNSUPPORTED_LOGIC": "Unsupported, missing, duplicate or malformed operation/logic set.",
+    "UNSUPPORTED_TEST": "Test contract is not the pinned required test contract.",
+    "UNSUPPORTED_CONTRACT": "Pinned contract id/hash mismatch.",
+    "SCOPE_TOO_LARGE": "Input, field, action, branch, transaction, file, block or byte budget exceeded.",
+    "INVALID_REF": "Unknown, mistyped, forward, cross-scope or invalid typed reference; invalid literal or branch export.",
+    "INVALID_AUTHORIZATION": "Authorization missing or out of order.",
+    "INVALID_TRANSACTION": "Mutation/provider use violates transaction and provider boundaries.",
+    "INVALID_COMPENSATION": "Mutation has missing or incompatible undo action.",
+    "INVALID_COMPOSITION": "Prompt capability or planned composition does not meet declared requirements.",
+    "UNSUPPORTED_BLOCK": "Unapproved block identity.",
+    "INVALID_BLOCK": "Block bytes or declared parameter types differ from pinned contract.",
+    "INVALID_DSL": "Malformed/incomplete typed bundle or wrong DSL version.",
+    "INVALID_PATH": "File path is outside the declared slots."
+  }
+}

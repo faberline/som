@@ -1,0 +1,23 @@
+{
+  "id": "REF_COMPARE_GT",
+  "source": "som-rs/tests/compiler-v1/cnl-positive-fixtures.json",
+  "source_sha256": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
+  "transform": null,
+  "source_matches_serializer_bytes": true,
+  "serializer_cnl_sha256": "494e1e2c3f071fa2ac96349f308e05acfba2f2bb05dc9a9e1f0c81990ec1b9ba",
+  "prompt_path": "inputs/REF_COMPARE_GT/prompt.json",
+  "cnl_path": "inputs/REF_COMPARE_GT/source.cnl",
+  "prompt_sha256": "58accdd808bc8dbbc1aab87201ad5283664884eb7f1a3d5f829c6808f37f2cb7",
+  "cnl_sha256": "494e1e2c3f071fa2ac96349f308e05acfba2f2bb05dc9a9e1f0c81990ec1b9ba",
+  "branch_matrix": {
+    "cases": [
+      []
+    ],
+    "unresolved": [
+      "compare"
+    ],
+    "branches": [
+      "compare"
+    ]
+  }
+}

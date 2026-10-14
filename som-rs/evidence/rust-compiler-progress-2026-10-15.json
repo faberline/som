@@ -1,0 +1,247 @@
+{
+  "version": "som.rust-compiler-interim-publication.v1",
+  "snapshot_at": "2026-10-15T00:54:10+08:00",
+  "publication_intent": "Human-requested implementation and progress landing before release acceptance",
+  "accepted_release": false,
+  "default_switched": false,
+  "tickets_closed": false,
+  "milestones_closed": false,
+  "git_baseline": "82f3b87ccad40277713326e42ac35f921ba34663",
+  "candidate": {
+    "binary": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/candidate-003/som",
+      "sha256": "3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02"
+    },
+    "source": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/candidate-003/source.json",
+      "sha256": "1e80e26f0128e99fe7fa3c4fcf6edae354e51bf75b13f3df70833107906d78bd"
+    },
+    "acceptance_tools": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/candidate-003/acceptance-tools.json",
+      "sha256": "a3797384a1010de52ef3b86c5de22d18dd9c062f5aeb60b8282d35b033a23da3"
+    },
+    "model_loaded": false
+  },
+  "saved_gate_receipts": {
+    "public127": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/public-products-003b/result.json",
+      "sha256": "a00324170bcebd84772c5ce482533912e6f4f47eed0b545b6e601d75d1994c75"
+    },
+    "runtime37": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/runtime-003/result.json",
+      "sha256": "550e1d0cde6efb4962e6e0b1a1d624fdd093ce1c9a72eeb371942217fb9ba940"
+    },
+    "gaps31": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/gaps-003/result.json",
+      "sha256": "c115c15cddbdd6bcc49ee97f3e0604f435e2d2ad872f90a96469ef3ff7a664fe"
+    },
+    "diagnostic101": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/diagnostic-003/results.json",
+      "sha256": "49ca7cab7e0771eb9eede1a5fc540e167b49d5a61d1d727134a2f606d09198d9"
+    },
+    "frozen": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/frozen-003b.json",
+      "sha256": "4be531b0f3fe746bef2fe465e98d21dd3b9237c8254080d9f13993894394d4fe"
+    },
+    "renderer11": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/renderer_behavior/run-003/summary.json",
+      "sha256": "722f1ea38b901cf0b0a37ef9e9b2cf114fae34435b60d1275254b5a966848d43"
+    }
+  },
+  "legacy544": {
+    "cohort": "run-005",
+    "status": "running",
+    "required": 544,
+    "completed": 176,
+    "passed": 176,
+    "failed_ids": [],
+    "remaining": 368,
+    "distinct_prompts": 540,
+    "snapshot": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/interim-land-2026-10-15/legacy544-progress.json",
+      "sha256": "49756a337d366a9346721ba182689877f19a28f17ab811f65e0253f3b62adc3c"
+    },
+    "not_final_acceptance": true
+  },
+  "recovery_native002": {
+    "required": 9,
+    "completed": 7,
+    "expected_outcomes_observed": 7,
+    "cases": [
+      {
+        "id": "RESTORE-OK",
+        "variant": "compiler-postcheck-failed-then-M2-restore",
+        "expected_behavior_observed": true,
+        "receipt": {
+          "path": "/private/tmp/som-rust-postcommit-m2-restore-run-002/suite/scenario-00/scenario-result.json",
+          "sha256": "6569338e26a9a3451ac2325d20840468492d781fa629c883990dddd2a1a342a5"
+        }
+      },
+      {
+        "id": "REFUSE-STALE-COMPILER-OWNER",
+        "variant": "listener-owner-mismatch",
+        "expected_behavior_observed": true,
+        "receipt": {
+          "path": "/private/tmp/som-rust-postcommit-m2-restore-run-002/suite/scenario-01/scenario-result.json",
+          "sha256": "6e0b0a6c4401ecfc6c2a6fe9bbae0b06e760c74048d9fae2d3a15a41d92a7f68"
+        }
+      },
+      {
+        "id": "REFUSE-CHANGED-DEFAULT-OR-SELECTOR",
+        "variant": "runtime-selector-changed",
+        "expected_behavior_observed": true,
+        "receipt": {
+          "path": "/private/tmp/som-rust-postcommit-m2-restore-run-002/suite/scenario-02/scenario-result.json",
+          "sha256": "57336b49d5908d01f461e77e4bc6f5d1e397d6954aab0879c99f9e0612232c32"
+        }
+      },
+      {
+        "id": "REFUSE-M2-PREFLIGHT-CANARY",
+        "variant": "http-flow-response-mismatch",
+        "expected_behavior_observed": true,
+        "receipt": {
+          "path": "/private/tmp/som-rust-postcommit-m2-restore-run-002/suite/scenario-03/scenario-result.json",
+          "sha256": "e01a13c7802b3023d2eb50262cb3bdcdc490bb2be7c69efc422816d7348b1da9"
+        }
+      },
+      {
+        "id": "RESTORE-POSTCHECK-FAIL",
+        "variant": "M2-independent-postcheck-fails-after-restore",
+        "expected_behavior_observed": true,
+        "receipt": {
+          "path": "/private/tmp/som-rust-postcommit-m2-restore-run-002/suite/scenario-04/scenario-result.json",
+          "sha256": "ecaf4c430fb4b2fd4173b1c76754e3abc88aa28609a68a1ce1ba08c5e80220cb"
+        }
+      },
+      {
+        "id": "RESTORE-INTERRUPTED-AFTER-COMPILER-STOP",
+        "variant": "SIGINT",
+        "expected_behavior_observed": true,
+        "receipt": {
+          "path": "/private/tmp/som-rust-postcommit-m2-restore-run-002/suite/scenario-05/scenario-result.json",
+          "sha256": "c2af7b9727128576bd1d747051da368f81c15d1ce6f257843ccf3e7833a26d59"
+        }
+      },
+      {
+        "id": "RESTORE-INTERRUPTED-AFTER-COMPILER-STOP",
+        "variant": "SIGTERM",
+        "expected_behavior_observed": true,
+        "receipt": {
+          "path": "/private/tmp/som-rust-postcommit-m2-restore-run-002/suite/scenario-06/scenario-result.json",
+          "sha256": "37acf4bc255cd7d42f5f8ea6e681b6541a3c410675bd21a162885b5ffa8f68a6"
+        }
+      }
+    ],
+    "final_qualification": "failed; independent failure audit pending",
+    "status": "failed",
+    "updated_at": "2026-10-14T16:59:41.818627+00:00",
+    "failed_variants": [
+      {
+        "id": "RESTORE-INTERRUPTED-AFTER-COMPILER-STOP",
+        "variant": "SIGHUP",
+        "reason": "Did not reach the exact post-stop barrier"
+      }
+    ],
+    "unrun_variants": [
+      {
+        "id": "RESTORE-COMPILER-ALREADY-STOPPED",
+        "variant": "absent-owner-free-port"
+      }
+    ],
+    "execution": {
+      "path": "/private/tmp/som-rust-postcommit-m2-restore-run-002/execution.json",
+      "sha256": "b41b1e348a73fd969a9a07fcc9c07536e71f91b9bf4b1847259586e1777788dc"
+    },
+    "actual_tool_wait": {
+      "path": "/private/tmp/som-rust-postcommit-m2-restore-run-002/root-tool-completion.json",
+      "sha256": "868132531ef3327621e89c68eadee0af872f3517a7a70b93c92dda86f1012e29"
+    },
+    "root_native_absence": {
+      "path": "/private/tmp/som-rust-postcommit-m2-restore-run-002/root-native-absence.json",
+      "sha256": "4d856b71b844383989252933ee33bc9573b0a39f4e2c4a16bfcf4ef55c1e4799"
+    }
+  },
+  "preserved_history": {
+    "public003": "125/127; two original failures remain failed",
+    "legacy004": {
+      "passed": 325,
+      "failed": 1,
+      "interrupted": 1,
+      "unrun": 217,
+      "actual_exit_code": 1,
+      "root_cause": "unknown"
+    },
+    "recovery_native001": {
+      "passed": 2,
+      "failed": 1,
+      "interrupted": 1,
+      "unrun": 5,
+      "actual_exit_code": 2,
+      "cause": "Independent observer used its own cwd instead of captured M2 cwd",
+      "receipt": {
+        "path": "/private/tmp/som-rust-postcommit-m2-restore-run-001/root-tool-completion.json",
+        "sha256": "780c973d1292f49cabd8ce5599fedf83ddad34a0a6cfa3ddef5dc4b8813a3eb1"
+      }
+    }
+  },
+  "cleanup": {
+    "receipt": {
+      "path": "/Users/chrischeng/faberlines/som/.local/training-data-archive-2026-10-14/cleanup-001/result.json",
+      "sha256": "5321f43c7ff18989befa4b99b3abd871da6492d696cf83102d0170ff247c803a"
+    },
+    "removed_unused_files": 55,
+    "tracked_deletions": 54,
+    "retained_required_files": 37,
+    "reclaimed_bytes": 504840192,
+    "archive": "https://drive.google.com/file/d/11-rKdZxV2TI6fCJujVYhsWNDUTDz2vzx/view",
+    "models_raw_logs_sealed_sources_and_runtime_retained": true
+  },
+  "default": {
+    "kind": "legacy_M2",
+    "model_selector": "flow-m2-candidate/smoke-r31-001",
+    "block_selector": "flow-v7-compact",
+    "receipt": {
+      "path": "/Users/chrischeng/faberlines/som/som-rs/runtime/default.json",
+      "sha256": "e035e04c5fd8d38e2c26b0664f10fe3becb61c5c3237d0c1c84f2adf689c4698"
+    }
+  },
+  "github": {
+    "issues": [
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44
+    ],
+    "milestones": [
+      7,
+      8
+    ],
+    "state": "open",
+    "old_issues": "Preserved without edits",
+    "progress_readback": {
+      "path": "/private/tmp/som-interim-land-20261015/tracker-readback.json",
+      "sha256": "a7cf3cdccc55f5ecb1feaceada5d371dbebf51866a4698e5ec0de5b5f9f59368"
+    },
+    "recovery_failure_readback": {
+      "path": "/private/tmp/som-interim-land-20261015/tracker-recovery-readback.json",
+      "sha256": "b7c62b14f491297c36d6e30a94a12fc4add05bd295ae1b61129b7bacf1db0c14"
+    }
+  },
+  "remaining": [
+    "Complete all 544 jobs in one cohort and record actual controller/supervisor waits",
+    "Complete all nine recovery variants and independent raw-evidence review",
+    "Run final independent acceptance audit and bind the required documents",
+    "Run fresh canaries, switch default safely, and verify full HTTP/CLI responses",
+    "Publish final release evidence, then close and read back the new tickets and milestones"
+  ],
+  "scope_notes": [
+    "Formal114 and development12 are disjoint subsets of quality218; supplement12 is separate",
+    "Only126 quality products and12 supplements have original full behavior scope;92 quality products retain quality/parity scope",
+    "Renderer11 has11 focused behavior passes; unchanged full-M2 checker has1 pass and10 preserved failures",
+    "The frozen suite retains9 unrun entries; separate gates must prove their required coverage",
+    "Local raw data, runtimes, source archives and models are not included in Git"
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "version": "som.compiler-acceptance-plan.v1",
+  "status": "pre-implementation requirements",
+  "scope": "Existing prompt v1-v7; fixed English CNL; existing typed DSL and Rust backend; Python products",
+  "stages": [
+    {
+      "id": "contract",
+      "required": [
+        "Complete field/sentence map",
+        "Positive v1-v7 CNL and typed JSON pairs",
+        "Independent semantic and syntax refusals",
+        "Versioned block selection policy",
+        "Typed canonical JSON vectors",
+        "Frozen case and checker hashes"
+      ]
+    },
+    {
+      "id": "parser",
+      "required": [
+        "Every frozen CNL pair equals its independently authored typed prompt",
+        "Every syntax refusal has the frozen code and source span",
+        "Every semantic refusal points to its offending clause",
+        "UTF-8 and CRLF byte/character positions",
+        "No duplicate or last-wins clauses",
+        "Retain number category and negative zero",
+        "Input order and branch scope retained"
+      ]
+    },
+    {
+      "id": "planner",
+      "required": [
+        "All seven prompt families compile",
+        "CNL and equivalent JSON produce identical canonical bundles",
+        "Replay in independent processes produces identical bundles",
+        "Selection uses public contracts and fixed policy only",
+        "No corpus/answer/model access",
+        "No model codec or token limits",
+        "Typed prompt and ordered plan remain semantically equivalent"
+      ]
+    },
+    {
+      "id": "bundle",
+      "required": [
+        "Saved bundle alone assembles with approved local assets",
+        "Full file response equals direct JSON generate",
+        "Fresh source process needs no CNL or model directory",
+        "Missing, changed, extra or unknown assets fail",
+        "Tampered prompt, DSL or payload hashes fail",
+        "Rehashed malformed or semantically incomplete plans fail",
+        "Both approved standard and checked flow variants assemble",
+        "Whole-tree file/block/flow limits retained",
+        "No silent plan completion",
+        "No source or path injection",
+        "Duplicate JSON keys rejected by new endpoints"
+      ]
+    },
+    {
+      "id": "runtime",
+      "required": [
+        "Rust-only compiler and generator",
+        "No model dependency in default binary",
+        "No Python production child process",
+        "Native formatter and profile are hash/version checked",
+        "Loopback HTTP and CLI only, redirects refused",
+        "compile/assemble/generate success and refusal envelopes",
+        "CLI status and complete stdout/stderr",
+        "HTTP body limit returns explicit 413",
+        "Health shows compiler purpose, model_loaded=false and real asset hashes"
+      ]
+    },
+    {
+      "id": "baseline",
+      "required": [
+        "544 original jobs retained",
+        "New compile path executes every original prompt",
+        "Independent CNL serialization exercises equivalent CNL for every prompt",
+        "Complete old product comparison records any difference",
+        "Original independent behavior and strict quality scope re-executed",
+        "No skipped, failed or missing item counted as pass"
+      ]
+    },
+    {
+      "id": "release",
+      "required": [
+        "Same-source receipts and per-item hashes",
+        "Root independent audit",
+        "Fresh legacy M2 restore probe",
+        "Fresh compiler canary including full old/new CLI responses",
+        "Current switch only after all acceptance",
+        "Automatic restore on failed switch",
+        "README/status/report/handoff updated",
+        "Main pushed and remote read back",
+        "Seven issues and both milestones closed with proof",
+        "AW final handoff and claim release"
+      ]
+    }
+  ],
+  "baseline_scope": {
+    "legacy100": {
+      "jobs": 100,
+      "behavior": "verify_service_v3.py PostgreSQL service checks",
+      "quality": "preserve original scope"
+    },
+    "services14": {
+      "jobs": 14,
+      "behavior": "verify_composed_services.verify_all standard=true",
+      "quality": "verify_python_quality.verify"
+    },
+    "compositions120": {
+      "jobs": 120,
+      "behavior": "verify_composed_services.verify_all standard=false",
+      "quality": "verify_python_quality.verify"
+    },
+    "blind80": {
+      "jobs": 80,
+      "behavior": "verify_composed_services.verify_all standard=false; historical split now regression",
+      "quality": "verify_python_quality.verify"
+    },
+    "m2_quality218": {
+      "jobs": 218,
+      "behavior_jobs": 126,
+      "quality_only_jobs": 92,
+      "behavior": "verify_flow_service.verify full_m2_acceptance",
+      "quality": "strict quality and formatter idempotence"
+    },
+    "m2_supplement12": {
+      "jobs": 12,
+      "behavior_jobs": 12,
+      "behavior": "verify_flow_service.verify full_m2_acceptance",
+      "quality": "strict quality and formatter idempotence"
+    },
+    "m2_formal114": "Disjoint from dev12; both are within quality218, not extra jobs",
+    "m2_dev12": "Disjoint from formal114; within quality218",
+    "total": 544,
+    "legal_alternatives": "quality218 includes standard and checked DSL for the same prompt. Compile always follows the fixed standard policy. The checked historical bundle is separately assembled and compared to its archived product. Never use case ID to choose compiler output. Record both compile-standard and original-variant assembly outcomes."
+  },
+  "oracle_rules": [
+    "Requirements, hand-authored prompts, public validators and original independent behavior checks define expected behavior before implementation.",
+    "The production compiler cannot read corpora, stored answers or Python reference planners.",
+    "Historical reference plans and receipts are used only for regression comparison and legal alternate bundle intake; they are not new acceptance passes.",
+    "New tests execute CNL/JSON compilation, standalone bundle assembly and complete generated product behavior.",
+    "Fixes keep earlier failed attempts and rerun all impacted scopes on one final source; never splice successful receipts from different builds.",
+    "New missing boundary cases may be added with a written requirement reason; do not weaken frozen expected outcomes to match implementation."
+  ],
+  "excluded": [
+    "Old M3 training/admission/token/raw-sequence gates",
+    "Model weights and training",
+    "Paid agents",
+    "Real cloud",
+    "New resource/flow multiplicity",
+    "New output languages"
+  ],
+  "transport_limits": {
+    "compile": 262144,
+    "generate": 262144,
+    "assemble": 2097152,
+    "compile_output": "canonical assemble envelope must fit the assemble limit"
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "version": "som.compiler-bundle-cases.v1",
+  "fixture_rule": "Use each frozen v1-v7 typed prompt and the exact primary DSL defined by selection-policy.json. Asset descriptors must be independently computed from the final approved local manifest and compiled source. Compute hashes with the frozen canonical vectors. A future compiler output may supply test input, but it cannot define expected plan semantics, asset admission, hashes or behavior.",
+  "cases": [
+    {
+      "id": "bundle_saved_replay",
+      "expected": "accept",
+      "assert": "Assemble saved bundle in a new process with only pinned assets. Original CNL and models are unavailable. Complete files equal direct generate."
+    },
+    {
+      "id": "equivalent_cnl_json",
+      "expected": "accept",
+      "assert": "Canonical full bundles match for both input formats and across independent process replay."
+    },
+    {
+      "id": "all_versions",
+      "expected": "accept",
+      "assert": "Pair prompt v1/v2 with DSL v1; v3-v6 with DSL v2; v7 with DSL v3. Validate all full bindings."
+    },
+    {
+      "id": "checked_variant",
+      "expected": "accept",
+      "assert": "Replace standard get with approved checked variant and its exact selected helpers using the public constructor recipe, update canonical hashes. Semantic validation and independent behavior must pass; assembler must not demand primary-plan equality."
+    },
+    {
+      "id": "extra_bundle_key",
+      "expected": "INVALID_SCHEMA",
+      "change": "Add an unknown root member."
+    },
+    {
+      "id": "missing_prompt",
+      "expected": "INVALID_SCHEMA",
+      "change": "Remove the full typed binding context."
+    },
+    {
+      "id": "duplicate_json_key",
+      "expected": "INVALID_JSON",
+      "change": "Send duplicate version or prompt members in raw compile/assemble JSON."
+    },
+    {
+      "id": "prompt_hash",
+      "expected": "BUNDLE_HASH_MISMATCH",
+      "change": "Change package without updating hashes."
+    },
+    {
+      "id": "dsl_hash",
+      "expected": "BUNDLE_HASH_MISMATCH",
+      "change": "Change a selected block name without updating hashes."
+    },
+    {
+      "id": "payload_hash",
+      "expected": "BUNDLE_HASH_MISMATCH",
+      "change": "Change payload_sha256 only."
+    },
+    {
+      "id": "asset_hash",
+      "expected": "ASSET_HASH_MISMATCH",
+      "change": "Change declared catalog digest and recompute payload hash."
+    },
+    {
+      "id": "unknown_asset_id",
+      "expected": "ASSET_HASH_MISMATCH",
+      "change": "Change declared selection policy ID and recompute payload hash."
+    },
+    {
+      "id": "unsupported_version",
+      "expected": "UNSUPPORTED_VERSION",
+      "change": "Use an unknown bundle version."
+    },
+    {
+      "id": "rehashed_wrong_binding",
+      "expected": "INVALID_REF",
+      "change": "Change a required typed reference to an unknown binding and recompute hashes."
+    },
+    {
+      "id": "rehashed_missing_route",
+      "expected": "INVALID_COMPOSITION",
+      "change": "Remove a requested v6/v7 operation block and its router-close reference, preserving the remaining dependency references; recompute hashes."
+    },
+    {
+      "id": "rehashed_reordered_routes",
+      "expected": "INVALID_COMPOSITION",
+      "change": "Reverse two requested v6/v7 operation blocks and recompute hashes."
+    },
+    {
+      "id": "rehashed_missing_undo",
+      "expected": "INVALID_COMPOSITION or INVALID_COMPENSATION or INVALID_DSL",
+      "change": "Remove a mandatory v7 plan inverse and recompute hashes; existing semantic validator remains the code authority."
+    },
+    {
+      "id": "local_asset_tamper",
+      "expected": "startup refusal",
+      "change": "Change an installed approved block source, formatter binary, formatter profile or manifest while preserving other files."
+    },
+    {
+      "id": "self_signed_asset_tamper",
+      "expected": "startup refusal",
+      "change": "Change an installed block and rehash its local manifest. Compiled admission identities must still reject it."
+    },
+    {
+      "id": "missing_asset",
+      "expected": "ASSET_UNAVAILABLE",
+      "change": "Remove one required local asset in an isolated startup fixture."
+    },
+    {
+      "id": "transport_size",
+      "expected": "413",
+      "change": "Exceed compile 262144 bytes or assemble 2097152 bytes; keep generate its old bound."
+    },
+    {
+      "id": "structural_limits",
+      "expected": "SCOPE_TOO_LARGE",
+      "change": "Exceed the existing family file/block/tree limits without a model token check."
+    },
+    {
+      "id": "large_valid_compact_output",
+      "expected": "accept",
+      "assert": "A valid compact product above65536 bytes remains accepted and its full size is reported."
+    }
+  ],
+  "observations": "No compiler or assembler execution is claimed. Missing, unrun and failed results must be preserved."
+}

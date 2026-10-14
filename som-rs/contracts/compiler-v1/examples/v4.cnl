@@ -1,0 +1,30 @@
+Use SOM CNL version 1.
+Use prompt version 4.
+Use package todos.
+Begin resource.
+Use resource name Todo.
+Use table todos.
+Use path "/todos".
+Field deadline_on is optional date and is not unique with default null.
+Field title is required str and is not unique.
+Field description is optional str and is not unique with default null.
+Field completed is optional bool and is not unique with default false.
+End resource.
+Begin query.
+Filter exactly on field completed.
+Filter before date on field deadline_on.
+Limit query results to 100.
+End query.
+Use migration revision service1000.
+Use no previous migration revision.
+Begin routes.
+Create a row. Return 409 for a unique value conflict.
+Delete a row. Return 404 if it does not exist.
+List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.
+Update supplied fields. Return 404 if the row does not exist.
+Get a row by id. Return 404 if it does not exist.
+End routes.
+Begin checks.
+Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.
+End checks.
+End request.

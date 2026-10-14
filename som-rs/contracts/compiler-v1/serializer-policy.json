@@ -1,0 +1,29 @@
+{
+  "id": "som.canonical-json.v1",
+  "draft": false,
+  "source": {
+    "path": "som-rs/src/flow.rs",
+    "sha256": "8df232e307baa785c696869f89f4f44b3a6eec2a621dfea0e5c054165fa483f6",
+    "function": "canonical"
+  },
+  "keys": "recursive ordered UTF-8 string keys; no whitespace",
+  "arrays": "original order",
+  "strings": "serde_json JSON string bytes; unescaped valid Unicode except required JSON escapes; no normalization",
+  "integers": "retain JSON integer category",
+  "floats": "existing flow::canonical finite f64 shortest round-trip text and negative exponent handling; retain -0.0 and .0 category",
+  "duplicates": "reject in new compile/bundle envelopes; legacy generate parsing unchanged",
+  "hash": "lowercase SHA-256 over canonical UTF-8 bytes, no LF",
+  "bundle_payload_members": [
+    "version",
+    "prompt",
+    "dsl",
+    "assets"
+  ],
+  "hash_fields": [
+    "prompt_sha256",
+    "dsl_sha256",
+    "payload_sha256"
+  ],
+  "source_text": "excluded so CNL and identical JSON compile yield the same whole bundle",
+  "not_JCS": true
+}

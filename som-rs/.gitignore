@@ -5,3 +5,6 @@
 /models/
 /runtime/
 /evals/
+
+# Versioned compiler runtime assets stay local. Publish the manifest hash.
+/compiler-assets/

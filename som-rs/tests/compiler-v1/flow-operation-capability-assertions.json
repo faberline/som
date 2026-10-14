@@ -1,0 +1,1031 @@
+{
+  "format": "som.flow-operation-capability-assertions.v1",
+  "status": "independent semantic assertions derived from Sol's public field map; not compiler results",
+  "operation_source": "som-rs/contracts/compiler-v1/field-statement-map.json#/flow_operations",
+  "valid_case_rule": "For each operation, all listed args have the declared typed value or reference, output type is retained, context preconditions hold, and undo equals required_undo. Reject when any negative assertion applies.",
+  "operations": [
+    {
+      "op": "authorize",
+      "args": {},
+      "output": "identity",
+      "undo": null,
+      "positive": "First action; followed by protected operations.",
+      "negative": "Not first, duplicated when policy allows only first, or malformed args.",
+      "expected_refusal": "INVALID_AUTHORIZATION or INVALID_SCHEMA"
+    },
+    {
+      "op": "parent.create",
+      "args": {
+        "data": "parent_input"
+      },
+      "output": "parent_row",
+      "undo": "delete_created",
+      "positive": "Inside transaction after authorize; data is parent_input.",
+      "negative": "Outside transaction, wrong data input type, or missing delete_created.",
+      "expected_refusal": "INVALID_TRANSACTION / INVALID_REF / INVALID_COMPENSATION"
+    },
+    {
+      "op": "parent.get",
+      "args": {
+        "parent_id": "integer"
+      },
+      "output": "parent_row",
+      "undo": null,
+      "positive": "Integer id from input or earlier visible step.",
+      "negative": "String/null/float id or forward/cross-branch ref.",
+      "expected_refusal": "INVALID_REF"
+    },
+    {
+      "op": "parent.list",
+      "args": {},
+      "output": "parent_rows",
+      "undo": null,
+      "positive": "No arguments; output may be referenced later where visible.",
+      "negative": "Unexpected argument or unknown output field.",
+      "expected_refusal": "INVALID_SCHEMA / INVALID_REF"
+    },
+    {
+      "op": "parent.patch",
+      "args": {
+        "parent_id": "integer",
+        "data": "parent_patch"
+      },
+      "output": "parent_row",
+      "undo": "restore_patch",
+      "positive": "Inside transaction with integer id and parent_patch data.",
+      "negative": "Wrong id/data type, outside transaction, or missing restore_patch.",
+      "expected_refusal": "INVALID_REF / INVALID_TRANSACTION / INVALID_COMPENSATION"
+    },
+    {
+      "op": "child.create",
+      "args": {
+        "parent_id": "integer",
+        "data": "child_input"
+      },
+      "output": "child_row",
+      "undo": "delete_created",
+      "positive": "Inside transaction with integer parent id and child_input.",
+      "negative": "Wrong type, outside transaction, or missing delete_created.",
+      "expected_refusal": "INVALID_REF / INVALID_TRANSACTION / INVALID_COMPENSATION"
+    },
+    {
+      "op": "child.get",
+      "args": {
+        "parent_id": "integer",
+        "child_id": "integer"
+      },
+      "output": "child_row",
+      "undo": null,
+      "positive": "Both ids are integer-typed and visible.",
+      "negative": "Either id has wrong type or is forward/cross-scope.",
+      "expected_refusal": "INVALID_REF"
+    },
+    {
+      "op": "child.list",
+      "args": {
+        "parent_id": "integer"
+      },
+      "output": "child_rows",
+      "undo": null,
+      "positive": "Integer parent id from a visible input/step.",
+      "negative": "Missing/wrong parent id or unknown output field.",
+      "expected_refusal": "INVALID_SCHEMA / INVALID_REF"
+    },
+    {
+      "op": "child.patch",
+      "args": {
+        "parent_id": "integer",
+        "child_id": "integer",
+        "data": "child_patch"
+      },
+      "output": "child_row",
+      "undo": "restore_patch",
+      "positive": "Inside transaction with two integer ids and child_patch data.",
+      "negative": "Wrong type, outside transaction, or missing restore_patch.",
+      "expected_refusal": "INVALID_REF / INVALID_TRANSACTION / INVALID_COMPENSATION"
+    },
+    {
+      "op": "batch.create",
+      "args": {
+        "parent": "parent_input",
+        "children": "children_input"
+      },
+      "output": "batch",
+      "undo": "delete_created",
+      "positive": "Inside transaction; parent/children typed inputs and atomic batch contract applies.",
+      "negative": "Wrong input shape/type, outside transaction, or missing delete_created.",
+      "expected_refusal": "INVALID_REF / INVALID_TRANSACTION / INVALID_COMPENSATION"
+    },
+    {
+      "op": "workflow.run",
+      "args": {
+        "parent_id": "integer"
+      },
+      "output": "workflow",
+      "undo": null,
+      "positive": "Integer parent id; workflow capability is one of the declared allowed workflow values.",
+      "negative": "Wrong/missing parent id, undeclared output, or capability mismatch.",
+      "expected_refusal": "INVALID_REF / INVALID_COMPOSITION"
+    },
+    {
+      "op": "workflow.import",
+      "args": {
+        "parent_id": "integer",
+        "csv": "string"
+      },
+      "output": "child_rows",
+      "undo": "delete_created",
+      "positive": "csv workflow capability; integer parent id; string CSV; inside transaction; delete_created undo.",
+      "negative": "Without csv capability, wrong arg type, outside transaction, or missing undo.",
+      "expected_refusal": "INVALID_COMPOSITION / INVALID_REF / INVALID_TRANSACTION / INVALID_COMPENSATION"
+    },
+    {
+      "op": "object.put",
+      "args": {
+        "key": "string",
+        "body": "bytes"
+      },
+      "output": "object",
+      "undo": "delete_created",
+      "positive": "Storage is s3 or gcs; operation is outside DB transaction; bytes do not flow to public result.",
+      "negative": "Storage none, inside DB transaction, wrong arg type, missing undo, or bytes result exposed.",
+      "expected_refusal": "INVALID_COMPOSITION / INVALID_TRANSACTION / INVALID_REF / INVALID_COMPENSATION"
+    },
+    {
+      "op": "object.get",
+      "args": {
+        "key": "string"
+      },
+      "output": "object",
+      "undo": null,
+      "positive": "Storage is s3 or gcs; outside DB transaction; returned object metadata may be used but body bytes are not exposed.",
+      "negative": "Storage none, inside DB transaction, wrong key type, or public bytes result.",
+      "expected_refusal": "INVALID_COMPOSITION / INVALID_TRANSACTION / INVALID_REF"
+    }
+  ],
+  "capabilities": {
+    "database": {
+      "accepted": [
+        "postgresql",
+        "mongodb"
+      ],
+      "assertions": [
+        "Both explicit values are accepted where v6/v7 requires capabilities.",
+        "Missing, null, or unknown values are rejected.",
+        "Use no capabilities. cannot stand in for required v6/v7 fields."
+      ],
+      "refusal": "INVALID_SCHEMA"
+    },
+    "authentication": {
+      "accepted": [
+        "jwt",
+        "firebase",
+        "google_oauth"
+      ],
+      "assertions": [
+        "Each declared provider is preserved in output semantics.",
+        "Unknown or omitted provider is rejected when the version requires it.",
+        "Authorization action must be first regardless of provider."
+      ],
+      "refusal": "INVALID_SCHEMA / INVALID_AUTHORIZATION"
+    },
+    "storage": {
+      "accepted": [
+        "none",
+        "s3",
+        "gcs"
+      ],
+      "assertions": [
+        "none forbids object.put/get.",
+        "s3 and gcs allow object.put/get subject to argument, transaction, undo, and result rules.",
+        "No implicit provider fallback is allowed."
+      ],
+      "refusal": "INVALID_COMPOSITION / INVALID_TRANSACTION"
+    },
+    "workflow": {
+      "accepted": [
+        "json_export",
+        "csv",
+        "gzip_export",
+        "decimal_summary",
+        "statistics"
+      ],
+      "assertions": [
+        "workflow.import requires csv.",
+        "workflow.run requires a workflow capability compatible with the declared related-business contract.",
+        "Numeric workflows require a numeric child value_field.",
+        "decimal_summary additionally requires a required string group_field.",
+        "For nonnumeric workflows, unused value_field and group_field are null.",
+        "No unlisted workflow capability is inferred."
+      ],
+      "refusal": "INVALID_COMPOSITION"
+    },
+    "value_field": {
+      "accepted": "A child field with numeric type for numeric workflows; null when unused.",
+      "assertions": [
+        "Reject a missing/non-child/non-numeric value field for numeric workflows.",
+        "Reject non-null value_field when not used."
+      ],
+      "refusal": "INVALID_COMPOSITION"
+    },
+    "group_field": {
+      "accepted": "Required string child field for decimal_summary; null when unused.",
+      "assertions": [
+        "decimal_summary requires a required string group field.",
+        "Reject nullable/non-string/missing group field.",
+        "Reject non-null group_field when not used."
+      ],
+      "refusal": "INVALID_COMPOSITION"
+    }
+  },
+  "flow_type_and_scope_assertions": {
+    "input_types": [
+      "string",
+      "integer",
+      "float",
+      "boolean",
+      "date",
+      "parent_input",
+      "child_input",
+      "parent_patch",
+      "child_patch",
+      "children_input"
+    ],
+    "assertions": [
+      "All declared types are accepted; unknown types are refused.",
+      "Inputs, step names, transaction names, branch names, and export names obey unique ASCII Python identifier rules, length <=64, no leading underscore or model_.",
+      "Input, step output, and literal reference forms remain distinct.",
+      "No forward refs; no refs across sibling branch arms; only branch exports become visible after the branch.",
+      "Both branch arms export the same names with matching types.",
+      "Equality/order comparisons require compatible scalar types; is_null requires nullable value and has no right operand.",
+      "Literal null is distinct from string 'null'; bool is distinct from integer; float -0.0 remains float and preserves sign.",
+      "Database writes occur in a transaction; transactions do not nest; no more than two transactions.",
+      "At most eight inputs and eight actions; at most two if nodes and branch depth two.",
+      "No delete action, source text, SQL, loops, parallel nodes, generated block IDs, or public bytes result.",
+      "Preserve ordered inputs/actions/branches/results; canonicalize object keys only where map semantics say so.",
+      "Typed scalar literal null is invalid for the supported literal types; null values enter through nullable references, never by coercing null to an omitted clause.",
+      "Flow object and array input records retain their exact typed schema; unknown fields and missing required fields are refused."
+    ],
+    "expected_refusals": [
+      "INVALID_SCHEMA",
+      "INVALID_VALUE",
+      "INVALID_REF",
+      "INVALID_AUTHORIZATION",
+      "INVALID_TRANSACTION",
+      "INVALID_COMPENSATION",
+      "INVALID_COMPOSITION",
+      "SCOPE_TOO_LARGE",
+      "UNSUPPORTED_LOGIC"
+    ]
+  },
+  "bundle_and_replay_assertions": {
+    "assertions": [
+      "Repeated compile of identical canonical typed input and pinned catalog/contract hashes yields byte-identical complete bundle and files.",
+      "Compile chooses standard expected plan deterministically; it does not select alternate-standard vs alternate-checked variants by case ID.",
+      "Assemble accepts semantically valid alternate approved plans when every block and parameter is pinned and requested operations are covered.",
+      "Assemble rejects omitted requested operations and rejects reordered operations where the prompt contract requires order.",
+      "Both alternative-standard and alternative-checked original variants are checked by valid pinned-bundle assemble and archive byte parity; compile output is checked against standard expected semantics and bytes.",
+      "CNL-to-typed-prompt semantics match typed-JSON-to-bundle semantics for fields, routes, relation, capabilities, flow, and refusals."
+    ],
+    "expected_refusals": [
+      "UNSUPPORTED_BLOCK",
+      "INVALID_BLOCK",
+      "INVALID_DSL",
+      "INVALID_PATH",
+      "INVALID_COMPOSITION",
+      "INVALID_REF"
+    ]
+  },
+  "capability_tuple_matrix": [
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "none",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "none",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "none",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "none",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "none",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "s3",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "s3",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "s3",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "s3",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "s3",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "gcs",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "gcs",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "gcs",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "gcs",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "jwt",
+      "storage": "gcs",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "none",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "none",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "none",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "none",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "none",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "s3",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "s3",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "s3",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "s3",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "s3",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "gcs",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "gcs",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "gcs",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "gcs",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "firebase",
+      "storage": "gcs",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "none",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "none",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "none",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "none",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "none",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "s3",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "s3",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "s3",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "s3",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "s3",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "gcs",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "gcs",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "gcs",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "gcs",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "postgresql",
+      "authentication": "google_oauth",
+      "storage": "gcs",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "none",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "none",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "none",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "none",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "none",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "s3",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "s3",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "s3",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "s3",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "s3",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "gcs",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "gcs",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "gcs",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "gcs",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "jwt",
+      "storage": "gcs",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "none",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "none",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "none",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "none",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "none",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "s3",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "s3",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "s3",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "s3",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "s3",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "gcs",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "gcs",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "gcs",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "gcs",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "firebase",
+      "storage": "gcs",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "none",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "none",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "none",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "none",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "none",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "s3",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "s3",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "s3",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "s3",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "s3",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "gcs",
+      "workflow": "json_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "gcs",
+      "workflow": "csv",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "gcs",
+      "workflow": "gzip_export",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "gcs",
+      "workflow": "decimal_summary",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    },
+    {
+      "database": "mongodb",
+      "authentication": "google_oauth",
+      "storage": "gcs",
+      "workflow": "statistics",
+      "expected": "accepted when workflow-specific value/group field prerequisites are met",
+      "notes": "Independently derived Cartesian tuple from public enums; not copied from historical formal corpus."
+    }
+  ],
+  "capability_tuple_scope": {
+    "count": 90,
+    "basis": "2 database x 3 authentication x 3 storage x 5 workflow public enum values",
+    "conditional_refusals": [
+      "numeric workflow without a numeric child value_field",
+      "decimal_summary without a required string child group_field",
+      "object.put/get while storage=none",
+      "workflow.import unless workflow=csv"
+    ]
+  }
+}

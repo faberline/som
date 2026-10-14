@@ -1,0 +1,61 @@
+{
+  "version": "som.cnl-draft-examples.v1",
+  "cases": [
+    {
+      "id": "v1",
+      "cnl": "v1.cnl",
+      "prompt": "v1.prompt.json",
+      "status": "draft expected mapping; parser unrun",
+      "source": "public som-rs/examples"
+    },
+    {
+      "id": "v2",
+      "cnl": "v2.cnl",
+      "prompt": "v2.prompt.json",
+      "status": "draft expected mapping; parser unrun",
+      "source": "public som-rs/examples"
+    },
+    {
+      "id": "v3",
+      "cnl": "v3.cnl",
+      "prompt": "v3.prompt.json",
+      "status": "draft expected mapping; parser unrun",
+      "source": "public som-rs/examples"
+    },
+    {
+      "id": "v4",
+      "cnl": "v4.cnl",
+      "prompt": "v4.prompt.json",
+      "status": "draft expected mapping; parser unrun",
+      "source": "public som-rs/examples"
+    },
+    {
+      "id": "v5",
+      "cnl": "v5.cnl",
+      "prompt": "v5.prompt.json",
+      "status": "draft expected mapping; parser unrun",
+      "source": "public som-rs/examples"
+    },
+    {
+      "id": "v6",
+      "cnl": "v6.cnl",
+      "prompt": "v6.prompt.json",
+      "status": "draft expected mapping; parser unrun",
+      "source": "public som-rs/examples"
+    },
+    {
+      "id": "v7",
+      "cnl": "v7.cnl",
+      "prompt": "v7.prompt.json",
+      "status": "draft expected mapping; parser unrun",
+      "source": "new synthetic example from public fields"
+    },
+    {
+      "id": "v7-branch-null",
+      "cnl": "v7-branch-null.cnl",
+      "prompt": "v7-branch-null.prompt.json",
+      "status": "draft expected mapping; parser unrun",
+      "source": "new synthetic example from public fields"
+    }
+  ]
+}

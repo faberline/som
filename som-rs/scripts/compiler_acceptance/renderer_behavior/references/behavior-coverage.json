@@ -1,0 +1,531 @@
+{
+  "version": "som.compiler-renderer-behavior-coverage-map.v1",
+  "case_count": 11,
+  "preparation_sha256": "45bdd34264838709ff8e75e145b22b7f71bf7d0e93d530ed12813afe9b0a38e1",
+  "source_review_only": true,
+  "candidate_run": false,
+  "old_checkers_modified": false,
+  "focused_checks_are_old_full_m2_passes": false,
+  "shared544_total_products": 544,
+  "shared544_full_m2_flow_jobs": 138,
+  "shared_gate_case_map": "references/shared-544-flow-map.json",
+  "shared_anchor_ids": {
+    "postgres_write_branch": "m2-cap-000",
+    "postgres_read_only": "m2-smoke-00",
+    "provider_versions": "m2-cap-005"
+  },
+  "remaining_compiler_specific_gap": "No uncovered new renderer requirement identified in the planned11-case scope. All execution evidence is still UNRUN. Shared coverage depends on source identity and Root fresh544 gates; this map is not a behavior pass.",
+  "old_checker_policy": "Record exact old-checker false/error/unavailable outcomes; do not alter checker, fixtures, gates, labels or output into a pass.",
+  "cases": [
+    {
+      "id": "REF_BRANCH_EXPORT_SAME_TYPE",
+      "execution_status": "UNRUN",
+      "source": "som-rs/tests/compiler-v1/cnl-positive-fixtures.json",
+      "source_sha256": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
+      "old_checker_limits": [
+        "Existing branch_inputs requires a literal right operand; choose compares two inputs.",
+        "Existing lease_checks pauses a parent resource read for write-free flows; this flow has no resource read."
+      ],
+      "old_full_m2_expected_availability": "UNSUPPORTED/FAIL until unchanged checker actual result; never counted as a pass",
+      "facets": {
+        "authentication": {
+          "focused": "Valid local JWT login; generated anonymous-route tests; unauthorized flow/status/recovery and other-owner status/recovery checks.",
+          "shared544": "Complete CRUD/JWT permission/error matrix uses unchanged auth blocks and full common behavior checks."
+        },
+        "values_and_types": {
+          "focused": "Selected integer result and exact input/journal types; bool inputs must return422; unused input export is tested with a raising reader.",
+          "shared544": "Original full-M2 typed outcomes and native provider/database observations remain required."
+        },
+        "branch_decisions_and_scope": {
+          "focused": "Both reachable predicate decisions must match the durable branch journal. Exact stored names/values reject extra leaked symbols; empty arms contain no inner declarations.",
+          "scope_applicability": "Named choice export is observed after the branch; no branch-local node exists.",
+          "shared544": "Existing branch input matrix and both reachable-arm coverage gates are unchanged for their admitted historical prompts."
+        },
+        "durable_state_and_row_history": {
+          "focused": "No business writes in this flow; native rows remain unchanged. Typed inputs/values/branches/results and succeeded state are read from the durable journal.",
+          "shared544": "Original row-history and schema/revision observers are unchanged and rerun."
+        },
+        "compensation": {
+          "focused": "Business compensation is not applicable: original flow has no writes/effects. Injected branch checkpoint failure must reach compensated with an empty effect list and unchanged rows.",
+          "shared544": "All applicable inverse/provider compensation gates remain required; storage none makes external provider compensation not applicable in these11 prompts."
+        },
+        "recovery": {
+          "focused": "Both branch decisions get checkpoint failure and owned-process crash probes. Durable expired work is recovered without replay, and repeated recovery leaves state/rows unchanged.",
+          "shared544": "Full original process interruption, inverse interruption, epoch fencing and provider recovery gates rerun."
+        },
+        "idempotency": {
+          "focused": "Same-key same-input retries return the same whole response with no row change; changed inputs produce409. Status and completed recovery return the same success.",
+          "shared544": "Original idempotency/owner-scoped run checks rerun unchanged."
+        },
+        "lease": {
+          "focused": "PARTIAL: expired-lease recovery is observed. Active heartbeat, concurrent stale-executor claim and heartbeat-failure cancellation are not independently rerun on a flow with no resource read/write.",
+          "shared544": "Source hash identity of execution_lease, run_record, FlowStore PG/Mongo blocks plus fresh old full-M2 heartbeat/stale/failure gates. PostgreSQL write anchor m2-cap-000; read-only anchor m2-smoke-00.",
+          "gap_disposition": "Shared-engine requirement, not a new predicate/export behavior claim. It is covered only when Root verifies unchanged source hashes and fresh shared544 gates pass. Otherwise UNKNOWN/UNAVAILABLE."
+        }
+      }
+    },
+    {
+      "id": "PUBLIC_v7-branch-null",
+      "execution_status": "UNRUN",
+      "source": "som-rs/contracts/compiler-v1/examples/v7-branch-null.prompt.json",
+      "source_sha256": "4e3c80e264d13e83c894418f2d011f4dc3b26f94fb5dc094efb719b1b503e522",
+      "old_checker_limits": [],
+      "old_full_m2_expected_availability": "SUPPORTED shape; still UNRUN and must actually pass",
+      "facets": {
+        "authentication": {
+          "focused": "Valid local JWT login; generated anonymous-route tests; unauthorized flow/status/recovery and other-owner status/recovery checks.",
+          "shared544": "Complete CRUD/JWT permission/error matrix uses unchanged auth blocks and full common behavior checks."
+        },
+        "values_and_types": {
+          "focused": "Null, empty, nonempty and Unicode child descriptions; exact native row and stored value types; string export type and lazy access count when an export exists.",
+          "shared544": "Original full-M2 typed outcomes and native provider/database observations remain required."
+        },
+        "branch_decisions_and_scope": {
+          "focused": "Both reachable predicate decisions must match the durable branch journal. Exact stored names/values reject extra leaked symbols; empty arms contain no inner declarations.",
+          "scope_applicability": "Nullable label export is observed after the branch with local null refinement.",
+          "shared544": "Existing branch input matrix and both reachable-arm coverage gates are unchanged for their admitted historical prompts."
+        },
+        "durable_state_and_row_history": {
+          "focused": "Native committed parent/child create/patch row images and transaction IDs must match original arguments, defaults, managed fields and final row state. Journal values/result/state are checked.",
+          "shared544": "Original row-history and schema/revision observers are unchanged and rerun."
+        },
+        "compensation": {
+          "focused": "Reuse unchanged checkpoint_failures: late committed-write compensation and revision-conflict preservation of independent edits.",
+          "shared544": "All applicable inverse/provider compensation gates remain required; storage none makes external provider compensation not applicable in these11 prompts."
+        },
+        "recovery": {
+          "focused": "Completed recovery preserves successful result/rows; unchanged forward and inverse process-interruption checks verify compensation resumes without replay.",
+          "shared544": "Full original process interruption, inverse interruption, epoch fencing and provider recovery gates rerun."
+        },
+        "idempotency": {
+          "focused": "Same-key same-input retries return the same whole response with no row change; changed inputs produce409. Status and completed recovery return the same success.",
+          "shared544": "Original idempotency/owner-scoped run checks rerun unchanged."
+        },
+        "lease": {
+          "focused": "Reuse unchanged lease_checks for heartbeat_transaction, stale_executor and heartbeat_failure on actual business writes.",
+          "shared544": "Source hash identity of execution_lease, run_record, FlowStore PG/Mongo blocks plus fresh old full-M2 heartbeat/stale/failure gates. PostgreSQL write anchor m2-cap-000; read-only anchor m2-smoke-00.",
+          "gap_disposition": "Applicable focused checks remain UNRUN until authorized candidate execution."
+        }
+      }
+    },
+    {
+      "id": "PUBLIC_v7-empty-field-segments",
+      "execution_status": "UNRUN",
+      "source": "som-rs/contracts/compiler-v1/examples/v7.prompt.json",
+      "source_sha256": "2d4a92302f99c30723f49f2ccc642f2c7bf58daf25c8f991002df93746cb5db7",
+      "old_checker_limits": [
+        "Existing expected_run.reference splits .id. without removing empty parts; it indexes an empty key."
+      ],
+      "old_full_m2_expected_availability": "UNSUPPORTED/FAIL until unchanged checker actual result; never counted as a pass",
+      "facets": {
+        "authentication": {
+          "focused": "Valid local JWT login; generated anonymous-route tests; unauthorized flow/status/recovery and other-owner status/recovery checks.",
+          "shared544": "Complete CRUD/JWT permission/error matrix uses unchanged auth blocks and full common behavior checks."
+        },
+        "values_and_types": {
+          "focused": "Original .id. reference resolves to the native created parent integer ID; summary/literals/signed-zero retain their original values and types.",
+          "shared544": "Original full-M2 typed outcomes and native provider/database observations remain required."
+        },
+        "branch_decisions_and_scope": {
+          "focused": "No branch exists in this original prompt. Identity field-path parts are checked independently.",
+          "scope_applicability": "No exported or branch-local declaration exists; broader nested scope obligations stay with unchanged typed validators and frozen119 cases.",
+          "shared544": "Existing branch input matrix and both reachable-arm coverage gates are unchanged for their admitted historical prompts."
+        },
+        "durable_state_and_row_history": {
+          "focused": "Native committed parent/child create/patch row images and transaction IDs must match original arguments, defaults, managed fields and final row state. Journal values/result/state are checked.",
+          "shared544": "Original row-history and schema/revision observers are unchanged and rerun."
+        },
+        "compensation": {
+          "focused": "Reuse unchanged checkpoint_failures: late committed-write compensation and revision-conflict preservation of independent edits.",
+          "shared544": "All applicable inverse/provider compensation gates remain required; storage none makes external provider compensation not applicable in these11 prompts."
+        },
+        "recovery": {
+          "focused": "Completed recovery preserves successful result/rows; unchanged forward and inverse process-interruption checks verify compensation resumes without replay.",
+          "shared544": "Full original process interruption, inverse interruption, epoch fencing and provider recovery gates rerun."
+        },
+        "idempotency": {
+          "focused": "Same-key same-input retries return the same whole response with no row change; changed inputs produce409. Status and completed recovery return the same success.",
+          "shared544": "Original idempotency/owner-scoped run checks rerun unchanged."
+        },
+        "lease": {
+          "focused": "Reuse unchanged lease_checks for heartbeat_transaction, stale_executor and heartbeat_failure on actual business writes.",
+          "shared544": "Source hash identity of execution_lease, run_record, FlowStore PG/Mongo blocks plus fresh old full-M2 heartbeat/stale/failure gates. PostgreSQL write anchor m2-cap-000; read-only anchor m2-smoke-00.",
+          "gap_disposition": "Applicable focused checks remain UNRUN until authorized candidate execution."
+        }
+      }
+    },
+    {
+      "id": "PUBLIC_v7-empty-branch",
+      "execution_status": "UNRUN",
+      "source": ".local/rust-compiler-goal/exploratory-001/http-smoke/empty-branch.json",
+      "source_sha256": "cf30b01dc103652b5f93f88f97ba6a4b25a46520e4c0a469f82f8480ed6c1861",
+      "old_checker_limits": [
+        "Existing branch_inputs marks a literal-only condition unresolved.",
+        "The constant 1==1 branch has no reachable false arm; existing require_branch_coverage demands both arms."
+      ],
+      "old_full_m2_expected_availability": "UNSUPPORTED/FAIL until unchanged checker actual result; never counted as a pass",
+      "facets": {
+        "authentication": {
+          "focused": "Valid local JWT login; generated anonymous-route tests; unauthorized flow/status/recovery and other-owner status/recovery checks.",
+          "shared544": "Complete CRUD/JWT permission/error matrix uses unchanged auth blocks and full common behavior checks."
+        },
+        "values_and_types": {
+          "focused": "Constant empty branch preserves all parent/child/workflow/literal result values and types. Signed zero remains distinct.",
+          "shared544": "Original full-M2 typed outcomes and native provider/database observations remain required."
+        },
+        "branch_decisions_and_scope": {
+          "focused": "The nothing branch records true and has no export or inner symbol. False is unreachable for1==1 and is never counted as covered.",
+          "scope_applicability": "No exported or branch-local declaration exists; broader nested scope obligations stay with unchanged typed validators and frozen119 cases.",
+          "shared544": "Existing branch input matrix and both reachable-arm coverage gates are unchanged for their admitted historical prompts."
+        },
+        "durable_state_and_row_history": {
+          "focused": "Native committed parent/child create/patch row images and transaction IDs must match original arguments, defaults, managed fields and final row state. Journal values/result/state are checked.",
+          "shared544": "Original row-history and schema/revision observers are unchanged and rerun."
+        },
+        "compensation": {
+          "focused": "Reuse unchanged checkpoint_failures: late committed-write compensation and revision-conflict preservation of independent edits.",
+          "shared544": "All applicable inverse/provider compensation gates remain required; storage none makes external provider compensation not applicable in these11 prompts."
+        },
+        "recovery": {
+          "focused": "Completed recovery preserves successful result/rows; unchanged forward and inverse process-interruption checks verify compensation resumes without replay.",
+          "shared544": "Full original process interruption, inverse interruption, epoch fencing and provider recovery gates rerun."
+        },
+        "idempotency": {
+          "focused": "Same-key same-input retries return the same whole response with no row change; changed inputs produce409. Status and completed recovery return the same success.",
+          "shared544": "Original idempotency/owner-scoped run checks rerun unchanged."
+        },
+        "lease": {
+          "focused": "Reuse unchanged lease_checks for heartbeat_transaction, stale_executor and heartbeat_failure on actual business writes.",
+          "shared544": "Source hash identity of execution_lease, run_record, FlowStore PG/Mongo blocks plus fresh old full-M2 heartbeat/stale/failure gates. PostgreSQL write anchor m2-cap-000; read-only anchor m2-smoke-00.",
+          "gap_disposition": "Applicable focused checks remain UNRUN until authorized candidate execution."
+        }
+      }
+    },
+    {
+      "id": "REF_COMPARE_EQ",
+      "execution_status": "UNRUN",
+      "source": "som-rs/tests/compiler-v1/cnl-positive-fixtures.json",
+      "source_sha256": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
+      "old_checker_limits": [
+        "Existing branch_inputs requires a literal right operand; compare uses two integer inputs.",
+        "Existing lease_checks pauses a parent resource read for write-free flows; this flow has no resource read."
+      ],
+      "old_full_m2_expected_availability": "UNSUPPORTED/FAIL until unchanged checker actual result; never counted as a pass",
+      "facets": {
+        "authentication": {
+          "focused": "Valid local JWT login; generated anonymous-route tests; unauthorized flow/status/recovery and other-owner status/recovery checks.",
+          "shared544": "Complete CRUD/JWT permission/error matrix uses unchanged auth blocks and full common behavior checks."
+        },
+        "values_and_types": {
+          "focused": "Integer comparison inputs at less/equal/greater and negative/zero values; bool inputs must return422; exact stored value types.",
+          "shared544": "Original full-M2 typed outcomes and native provider/database observations remain required."
+        },
+        "branch_decisions_and_scope": {
+          "focused": "Both reachable predicate decisions must match the durable branch journal. Exact stored names/values reject extra leaked symbols; empty arms contain no inner declarations.",
+          "scope_applicability": "No exported or branch-local declaration exists; broader nested scope obligations stay with unchanged typed validators and frozen119 cases.",
+          "shared544": "Existing branch input matrix and both reachable-arm coverage gates are unchanged for their admitted historical prompts."
+        },
+        "durable_state_and_row_history": {
+          "focused": "No business writes in this flow; native rows remain unchanged. Typed inputs/values/branches/results and succeeded state are read from the durable journal.",
+          "shared544": "Original row-history and schema/revision observers are unchanged and rerun."
+        },
+        "compensation": {
+          "focused": "Business compensation is not applicable: original flow has no writes/effects. Injected branch checkpoint failure must reach compensated with an empty effect list and unchanged rows.",
+          "shared544": "All applicable inverse/provider compensation gates remain required; storage none makes external provider compensation not applicable in these11 prompts."
+        },
+        "recovery": {
+          "focused": "Both branch decisions get checkpoint failure and owned-process crash probes. Durable expired work is recovered without replay, and repeated recovery leaves state/rows unchanged.",
+          "shared544": "Full original process interruption, inverse interruption, epoch fencing and provider recovery gates rerun."
+        },
+        "idempotency": {
+          "focused": "Same-key same-input retries return the same whole response with no row change; changed inputs produce409. Status and completed recovery return the same success.",
+          "shared544": "Original idempotency/owner-scoped run checks rerun unchanged."
+        },
+        "lease": {
+          "focused": "PARTIAL: expired-lease recovery is observed. Active heartbeat, concurrent stale-executor claim and heartbeat-failure cancellation are not independently rerun on a flow with no resource read/write.",
+          "shared544": "Source hash identity of execution_lease, run_record, FlowStore PG/Mongo blocks plus fresh old full-M2 heartbeat/stale/failure gates. PostgreSQL write anchor m2-cap-000; read-only anchor m2-smoke-00.",
+          "gap_disposition": "Shared-engine requirement, not a new predicate/export behavior claim. It is covered only when Root verifies unchanged source hashes and fresh shared544 gates pass. Otherwise UNKNOWN/UNAVAILABLE."
+        }
+      }
+    },
+    {
+      "id": "REF_COMPARE_NE",
+      "execution_status": "UNRUN",
+      "source": "som-rs/tests/compiler-v1/cnl-positive-fixtures.json",
+      "source_sha256": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
+      "old_checker_limits": [
+        "Existing branch_inputs requires a literal right operand; compare uses two integer inputs.",
+        "Existing lease_checks pauses a parent resource read for write-free flows; this flow has no resource read."
+      ],
+      "old_full_m2_expected_availability": "UNSUPPORTED/FAIL until unchanged checker actual result; never counted as a pass",
+      "facets": {
+        "authentication": {
+          "focused": "Valid local JWT login; generated anonymous-route tests; unauthorized flow/status/recovery and other-owner status/recovery checks.",
+          "shared544": "Complete CRUD/JWT permission/error matrix uses unchanged auth blocks and full common behavior checks."
+        },
+        "values_and_types": {
+          "focused": "Integer comparison inputs at less/equal/greater and negative/zero values; bool inputs must return422; exact stored value types.",
+          "shared544": "Original full-M2 typed outcomes and native provider/database observations remain required."
+        },
+        "branch_decisions_and_scope": {
+          "focused": "Both reachable predicate decisions must match the durable branch journal. Exact stored names/values reject extra leaked symbols; empty arms contain no inner declarations.",
+          "scope_applicability": "No exported or branch-local declaration exists; broader nested scope obligations stay with unchanged typed validators and frozen119 cases.",
+          "shared544": "Existing branch input matrix and both reachable-arm coverage gates are unchanged for their admitted historical prompts."
+        },
+        "durable_state_and_row_history": {
+          "focused": "No business writes in this flow; native rows remain unchanged. Typed inputs/values/branches/results and succeeded state are read from the durable journal.",
+          "shared544": "Original row-history and schema/revision observers are unchanged and rerun."
+        },
+        "compensation": {
+          "focused": "Business compensation is not applicable: original flow has no writes/effects. Injected branch checkpoint failure must reach compensated with an empty effect list and unchanged rows.",
+          "shared544": "All applicable inverse/provider compensation gates remain required; storage none makes external provider compensation not applicable in these11 prompts."
+        },
+        "recovery": {
+          "focused": "Both branch decisions get checkpoint failure and owned-process crash probes. Durable expired work is recovered without replay, and repeated recovery leaves state/rows unchanged.",
+          "shared544": "Full original process interruption, inverse interruption, epoch fencing and provider recovery gates rerun."
+        },
+        "idempotency": {
+          "focused": "Same-key same-input retries return the same whole response with no row change; changed inputs produce409. Status and completed recovery return the same success.",
+          "shared544": "Original idempotency/owner-scoped run checks rerun unchanged."
+        },
+        "lease": {
+          "focused": "PARTIAL: expired-lease recovery is observed. Active heartbeat, concurrent stale-executor claim and heartbeat-failure cancellation are not independently rerun on a flow with no resource read/write.",
+          "shared544": "Source hash identity of execution_lease, run_record, FlowStore PG/Mongo blocks plus fresh old full-M2 heartbeat/stale/failure gates. PostgreSQL write anchor m2-cap-000; read-only anchor m2-smoke-00.",
+          "gap_disposition": "Shared-engine requirement, not a new predicate/export behavior claim. It is covered only when Root verifies unchanged source hashes and fresh shared544 gates pass. Otherwise UNKNOWN/UNAVAILABLE."
+        }
+      }
+    },
+    {
+      "id": "REF_COMPARE_LT",
+      "execution_status": "UNRUN",
+      "source": "som-rs/tests/compiler-v1/cnl-positive-fixtures.json",
+      "source_sha256": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
+      "old_checker_limits": [
+        "Existing branch_inputs requires a literal right operand; compare uses two integer inputs.",
+        "Existing lease_checks pauses a parent resource read for write-free flows; this flow has no resource read."
+      ],
+      "old_full_m2_expected_availability": "UNSUPPORTED/FAIL until unchanged checker actual result; never counted as a pass",
+      "facets": {
+        "authentication": {
+          "focused": "Valid local JWT login; generated anonymous-route tests; unauthorized flow/status/recovery and other-owner status/recovery checks.",
+          "shared544": "Complete CRUD/JWT permission/error matrix uses unchanged auth blocks and full common behavior checks."
+        },
+        "values_and_types": {
+          "focused": "Integer comparison inputs at less/equal/greater and negative/zero values; bool inputs must return422; exact stored value types.",
+          "shared544": "Original full-M2 typed outcomes and native provider/database observations remain required."
+        },
+        "branch_decisions_and_scope": {
+          "focused": "Both reachable predicate decisions must match the durable branch journal. Exact stored names/values reject extra leaked symbols; empty arms contain no inner declarations.",
+          "scope_applicability": "No exported or branch-local declaration exists; broader nested scope obligations stay with unchanged typed validators and frozen119 cases.",
+          "shared544": "Existing branch input matrix and both reachable-arm coverage gates are unchanged for their admitted historical prompts."
+        },
+        "durable_state_and_row_history": {
+          "focused": "No business writes in this flow; native rows remain unchanged. Typed inputs/values/branches/results and succeeded state are read from the durable journal.",
+          "shared544": "Original row-history and schema/revision observers are unchanged and rerun."
+        },
+        "compensation": {
+          "focused": "Business compensation is not applicable: original flow has no writes/effects. Injected branch checkpoint failure must reach compensated with an empty effect list and unchanged rows.",
+          "shared544": "All applicable inverse/provider compensation gates remain required; storage none makes external provider compensation not applicable in these11 prompts."
+        },
+        "recovery": {
+          "focused": "Both branch decisions get checkpoint failure and owned-process crash probes. Durable expired work is recovered without replay, and repeated recovery leaves state/rows unchanged.",
+          "shared544": "Full original process interruption, inverse interruption, epoch fencing and provider recovery gates rerun."
+        },
+        "idempotency": {
+          "focused": "Same-key same-input retries return the same whole response with no row change; changed inputs produce409. Status and completed recovery return the same success.",
+          "shared544": "Original idempotency/owner-scoped run checks rerun unchanged."
+        },
+        "lease": {
+          "focused": "PARTIAL: expired-lease recovery is observed. Active heartbeat, concurrent stale-executor claim and heartbeat-failure cancellation are not independently rerun on a flow with no resource read/write.",
+          "shared544": "Source hash identity of execution_lease, run_record, FlowStore PG/Mongo blocks plus fresh old full-M2 heartbeat/stale/failure gates. PostgreSQL write anchor m2-cap-000; read-only anchor m2-smoke-00.",
+          "gap_disposition": "Shared-engine requirement, not a new predicate/export behavior claim. It is covered only when Root verifies unchanged source hashes and fresh shared544 gates pass. Otherwise UNKNOWN/UNAVAILABLE."
+        }
+      }
+    },
+    {
+      "id": "REF_COMPARE_LE",
+      "execution_status": "UNRUN",
+      "source": "som-rs/tests/compiler-v1/cnl-positive-fixtures.json",
+      "source_sha256": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
+      "old_checker_limits": [
+        "Existing branch_inputs requires a literal right operand; compare uses two integer inputs.",
+        "Existing lease_checks pauses a parent resource read for write-free flows; this flow has no resource read."
+      ],
+      "old_full_m2_expected_availability": "UNSUPPORTED/FAIL until unchanged checker actual result; never counted as a pass",
+      "facets": {
+        "authentication": {
+          "focused": "Valid local JWT login; generated anonymous-route tests; unauthorized flow/status/recovery and other-owner status/recovery checks.",
+          "shared544": "Complete CRUD/JWT permission/error matrix uses unchanged auth blocks and full common behavior checks."
+        },
+        "values_and_types": {
+          "focused": "Integer comparison inputs at less/equal/greater and negative/zero values; bool inputs must return422; exact stored value types.",
+          "shared544": "Original full-M2 typed outcomes and native provider/database observations remain required."
+        },
+        "branch_decisions_and_scope": {
+          "focused": "Both reachable predicate decisions must match the durable branch journal. Exact stored names/values reject extra leaked symbols; empty arms contain no inner declarations.",
+          "scope_applicability": "No exported or branch-local declaration exists; broader nested scope obligations stay with unchanged typed validators and frozen119 cases.",
+          "shared544": "Existing branch input matrix and both reachable-arm coverage gates are unchanged for their admitted historical prompts."
+        },
+        "durable_state_and_row_history": {
+          "focused": "No business writes in this flow; native rows remain unchanged. Typed inputs/values/branches/results and succeeded state are read from the durable journal.",
+          "shared544": "Original row-history and schema/revision observers are unchanged and rerun."
+        },
+        "compensation": {
+          "focused": "Business compensation is not applicable: original flow has no writes/effects. Injected branch checkpoint failure must reach compensated with an empty effect list and unchanged rows.",
+          "shared544": "All applicable inverse/provider compensation gates remain required; storage none makes external provider compensation not applicable in these11 prompts."
+        },
+        "recovery": {
+          "focused": "Both branch decisions get checkpoint failure and owned-process crash probes. Durable expired work is recovered without replay, and repeated recovery leaves state/rows unchanged.",
+          "shared544": "Full original process interruption, inverse interruption, epoch fencing and provider recovery gates rerun."
+        },
+        "idempotency": {
+          "focused": "Same-key same-input retries return the same whole response with no row change; changed inputs produce409. Status and completed recovery return the same success.",
+          "shared544": "Original idempotency/owner-scoped run checks rerun unchanged."
+        },
+        "lease": {
+          "focused": "PARTIAL: expired-lease recovery is observed. Active heartbeat, concurrent stale-executor claim and heartbeat-failure cancellation are not independently rerun on a flow with no resource read/write.",
+          "shared544": "Source hash identity of execution_lease, run_record, FlowStore PG/Mongo blocks plus fresh old full-M2 heartbeat/stale/failure gates. PostgreSQL write anchor m2-cap-000; read-only anchor m2-smoke-00.",
+          "gap_disposition": "Shared-engine requirement, not a new predicate/export behavior claim. It is covered only when Root verifies unchanged source hashes and fresh shared544 gates pass. Otherwise UNKNOWN/UNAVAILABLE."
+        }
+      }
+    },
+    {
+      "id": "REF_COMPARE_GT",
+      "execution_status": "UNRUN",
+      "source": "som-rs/tests/compiler-v1/cnl-positive-fixtures.json",
+      "source_sha256": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
+      "old_checker_limits": [
+        "Existing branch_inputs requires a literal right operand; compare uses two integer inputs.",
+        "Existing lease_checks pauses a parent resource read for write-free flows; this flow has no resource read."
+      ],
+      "old_full_m2_expected_availability": "UNSUPPORTED/FAIL until unchanged checker actual result; never counted as a pass",
+      "facets": {
+        "authentication": {
+          "focused": "Valid local JWT login; generated anonymous-route tests; unauthorized flow/status/recovery and other-owner status/recovery checks.",
+          "shared544": "Complete CRUD/JWT permission/error matrix uses unchanged auth blocks and full common behavior checks."
+        },
+        "values_and_types": {
+          "focused": "Integer comparison inputs at less/equal/greater and negative/zero values; bool inputs must return422; exact stored value types.",
+          "shared544": "Original full-M2 typed outcomes and native provider/database observations remain required."
+        },
+        "branch_decisions_and_scope": {
+          "focused": "Both reachable predicate decisions must match the durable branch journal. Exact stored names/values reject extra leaked symbols; empty arms contain no inner declarations.",
+          "scope_applicability": "No exported or branch-local declaration exists; broader nested scope obligations stay with unchanged typed validators and frozen119 cases.",
+          "shared544": "Existing branch input matrix and both reachable-arm coverage gates are unchanged for their admitted historical prompts."
+        },
+        "durable_state_and_row_history": {
+          "focused": "No business writes in this flow; native rows remain unchanged. Typed inputs/values/branches/results and succeeded state are read from the durable journal.",
+          "shared544": "Original row-history and schema/revision observers are unchanged and rerun."
+        },
+        "compensation": {
+          "focused": "Business compensation is not applicable: original flow has no writes/effects. Injected branch checkpoint failure must reach compensated with an empty effect list and unchanged rows.",
+          "shared544": "All applicable inverse/provider compensation gates remain required; storage none makes external provider compensation not applicable in these11 prompts."
+        },
+        "recovery": {
+          "focused": "Both branch decisions get checkpoint failure and owned-process crash probes. Durable expired work is recovered without replay, and repeated recovery leaves state/rows unchanged.",
+          "shared544": "Full original process interruption, inverse interruption, epoch fencing and provider recovery gates rerun."
+        },
+        "idempotency": {
+          "focused": "Same-key same-input retries return the same whole response with no row change; changed inputs produce409. Status and completed recovery return the same success.",
+          "shared544": "Original idempotency/owner-scoped run checks rerun unchanged."
+        },
+        "lease": {
+          "focused": "PARTIAL: expired-lease recovery is observed. Active heartbeat, concurrent stale-executor claim and heartbeat-failure cancellation are not independently rerun on a flow with no resource read/write.",
+          "shared544": "Source hash identity of execution_lease, run_record, FlowStore PG/Mongo blocks plus fresh old full-M2 heartbeat/stale/failure gates. PostgreSQL write anchor m2-cap-000; read-only anchor m2-smoke-00.",
+          "gap_disposition": "Shared-engine requirement, not a new predicate/export behavior claim. It is covered only when Root verifies unchanged source hashes and fresh shared544 gates pass. Otherwise UNKNOWN/UNAVAILABLE."
+        }
+      }
+    },
+    {
+      "id": "REF_COMPARE_GE",
+      "execution_status": "UNRUN",
+      "source": "som-rs/tests/compiler-v1/cnl-positive-fixtures.json",
+      "source_sha256": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
+      "old_checker_limits": [
+        "Existing branch_inputs requires a literal right operand; compare uses two integer inputs.",
+        "Existing lease_checks pauses a parent resource read for write-free flows; this flow has no resource read."
+      ],
+      "old_full_m2_expected_availability": "UNSUPPORTED/FAIL until unchanged checker actual result; never counted as a pass",
+      "facets": {
+        "authentication": {
+          "focused": "Valid local JWT login; generated anonymous-route tests; unauthorized flow/status/recovery and other-owner status/recovery checks.",
+          "shared544": "Complete CRUD/JWT permission/error matrix uses unchanged auth blocks and full common behavior checks."
+        },
+        "values_and_types": {
+          "focused": "Integer comparison inputs at less/equal/greater and negative/zero values; bool inputs must return422; exact stored value types.",
+          "shared544": "Original full-M2 typed outcomes and native provider/database observations remain required."
+        },
+        "branch_decisions_and_scope": {
+          "focused": "Both reachable predicate decisions must match the durable branch journal. Exact stored names/values reject extra leaked symbols; empty arms contain no inner declarations.",
+          "scope_applicability": "No exported or branch-local declaration exists; broader nested scope obligations stay with unchanged typed validators and frozen119 cases.",
+          "shared544": "Existing branch input matrix and both reachable-arm coverage gates are unchanged for their admitted historical prompts."
+        },
+        "durable_state_and_row_history": {
+          "focused": "No business writes in this flow; native rows remain unchanged. Typed inputs/values/branches/results and succeeded state are read from the durable journal.",
+          "shared544": "Original row-history and schema/revision observers are unchanged and rerun."
+        },
+        "compensation": {
+          "focused": "Business compensation is not applicable: original flow has no writes/effects. Injected branch checkpoint failure must reach compensated with an empty effect list and unchanged rows.",
+          "shared544": "All applicable inverse/provider compensation gates remain required; storage none makes external provider compensation not applicable in these11 prompts."
+        },
+        "recovery": {
+          "focused": "Both branch decisions get checkpoint failure and owned-process crash probes. Durable expired work is recovered without replay, and repeated recovery leaves state/rows unchanged.",
+          "shared544": "Full original process interruption, inverse interruption, epoch fencing and provider recovery gates rerun."
+        },
+        "idempotency": {
+          "focused": "Same-key same-input retries return the same whole response with no row change; changed inputs produce409. Status and completed recovery return the same success.",
+          "shared544": "Original idempotency/owner-scoped run checks rerun unchanged."
+        },
+        "lease": {
+          "focused": "PARTIAL: expired-lease recovery is observed. Active heartbeat, concurrent stale-executor claim and heartbeat-failure cancellation are not independently rerun on a flow with no resource read/write.",
+          "shared544": "Source hash identity of execution_lease, run_record, FlowStore PG/Mongo blocks plus fresh old full-M2 heartbeat/stale/failure gates. PostgreSQL write anchor m2-cap-000; read-only anchor m2-smoke-00.",
+          "gap_disposition": "Shared-engine requirement, not a new predicate/export behavior claim. It is covered only when Root verifies unchanged source hashes and fresh shared544 gates pass. Otherwise UNKNOWN/UNAVAILABLE."
+        }
+      }
+    },
+    {
+      "id": "REF_NULLABLE_OPTIONAL_FIELD",
+      "execution_status": "UNRUN",
+      "source": "som-rs/tests/compiler-v1/cnl-positive-fixtures.json",
+      "source_sha256": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
+      "old_checker_limits": [],
+      "old_full_m2_expected_availability": "SUPPORTED shape; still UNRUN and must actually pass",
+      "facets": {
+        "authentication": {
+          "focused": "Valid local JWT login; generated anonymous-route tests; unauthorized flow/status/recovery and other-owner status/recovery checks.",
+          "shared544": "Complete CRUD/JWT permission/error matrix uses unchanged auth blocks and full common behavior checks."
+        },
+        "values_and_types": {
+          "focused": "Null, empty, nonempty and Unicode child descriptions; exact native row and stored value types; string export type and lazy access count when an export exists.",
+          "shared544": "Original full-M2 typed outcomes and native provider/database observations remain required."
+        },
+        "branch_decisions_and_scope": {
+          "focused": "Both reachable predicate decisions must match the durable branch journal. Exact stored names/values reject extra leaked symbols; empty arms contain no inner declarations.",
+          "scope_applicability": "No exported or branch-local declaration exists; broader nested scope obligations stay with unchanged typed validators and frozen119 cases.",
+          "shared544": "Existing branch input matrix and both reachable-arm coverage gates are unchanged for their admitted historical prompts."
+        },
+        "durable_state_and_row_history": {
+          "focused": "Native committed parent/child create/patch row images and transaction IDs must match original arguments, defaults, managed fields and final row state. Journal values/result/state are checked.",
+          "shared544": "Original row-history and schema/revision observers are unchanged and rerun."
+        },
+        "compensation": {
+          "focused": "Reuse unchanged checkpoint_failures: late committed-write compensation and revision-conflict preservation of independent edits.",
+          "shared544": "All applicable inverse/provider compensation gates remain required; storage none makes external provider compensation not applicable in these11 prompts."
+        },
+        "recovery": {
+          "focused": "Completed recovery preserves successful result/rows; unchanged forward and inverse process-interruption checks verify compensation resumes without replay.",
+          "shared544": "Full original process interruption, inverse interruption, epoch fencing and provider recovery gates rerun."
+        },
+        "idempotency": {
+          "focused": "Same-key same-input retries return the same whole response with no row change; changed inputs produce409. Status and completed recovery return the same success.",
+          "shared544": "Original idempotency/owner-scoped run checks rerun unchanged."
+        },
+        "lease": {
+          "focused": "Reuse unchanged lease_checks for heartbeat_transaction, stale_executor and heartbeat_failure on actual business writes.",
+          "shared544": "Source hash identity of execution_lease, run_record, FlowStore PG/Mongo blocks plus fresh old full-M2 heartbeat/stale/failure gates. PostgreSQL write anchor m2-cap-000; read-only anchor m2-smoke-00.",
+          "gap_disposition": "Applicable focused checks remain UNRUN until authorized candidate execution."
+        }
+      }
+    }
+  ]
+}

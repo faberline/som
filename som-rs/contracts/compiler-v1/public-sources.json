@@ -1,0 +1,117 @@
+{
+  "baseline": "82f3b87ccad40277713326e42ac35f921ba34663",
+  "sources": {
+    "som-core/src/som_core/rule_planner.py": {
+      "pointer": "15-79: catalog solver",
+      "sha256": "2035f0bc6e5762d7149dec11017e11ba5df749d04776e99f2332c0f50c6684f0"
+    },
+    "som-core/src/som_core/related.py": {
+      "pointer": "96-194: query, bindings and v5 layout",
+      "sha256": "3b19fbbfb7026b1e287622c6bf04def69e7080025c2f12c48ce2c1abf6e47dd7"
+    },
+    "som-core/src/som_core/business.py": {
+      "pointer": "42-76: v5 business layout changes",
+      "sha256": "c07af14470c165fb5496d019179ee5c1951a3d2ddfef98354a267062e4747e97"
+    },
+    "som-core/src/som_core/composed.py": {
+      "pointer": "19-28: slot order; 216-285: independent plan checks",
+      "sha256": "a65fd965d1e56b050d900961768176835aba97d994d1793a27f6a66a3e05a58b"
+    },
+    "som-core/src/som_core/flow.py": {
+      "pointer": "263-287: flow lowering; 359-403: helper obligations",
+      "sha256": "92a7228ed3c96965c8326e70fa9edfec90fe0150e56cbeae7131de1f11f057fe"
+    },
+    "som-core/src/som_core/flow_compact.py": {
+      "pointer": "95-110: compact remap convention",
+      "sha256": "6e57b94b5fa5665b819a0e66f25af98e073712736b8c06d229b8b7ccfcd101c1"
+    },
+    "som-core/tests/test_v1.py": {
+      "pointer": "33-95: public fixed dsl helper approved by root",
+      "sha256": "1eb30565de37749776499930c915bcb1ded4ab4c78f587a5624804ecf9313678"
+    },
+    "som-core/scripts/build_v1_corpus.py": {
+      "pointer": "94-109: placeholder bindings",
+      "sha256": "46054abb18db1054d039e8f5b9eab415fb777c6ea320a990a920c373e1e9c435"
+    },
+    "som-core/scripts/build_query_corpus.py": {
+      "pointer": "55-94: v2 layout changes",
+      "sha256": "50a46f6d9ff168065cedfcaf19c9eda334ae4a964c6b33fbf8a54ab9078032d6"
+    },
+    "som-core/scripts/build_service_corpus.py": {
+      "pointer": "116-250: v3 fixed document",
+      "sha256": "ab86757af739fadb20a74d1a30f99fae6863b0ebeb78ad6dae8f0886d6b266d8"
+    },
+    "som-core/scripts/build_date_corpus_v4.py": {
+      "pointer": "30-81: v4 replacement IDs and bindings",
+      "sha256": "1d3b702f0210f173c385b8b79ff20bbe388c90b504fb9de96025f724312376c1"
+    },
+    "som-core/scripts/build_related_blocks.py": {
+      "pointer": "12-14; 282-294: v5 preserves old library",
+      "sha256": "84e88d4e45e06436298ec4b056008a4e79b50c3afbdfb16581665cc6c7ed5348"
+    },
+    "som-core/scripts/build_composed_contracts.py": {
+      "pointer": "55-118: public contract/provider metadata",
+      "sha256": "b37de32df8bda15681d035b1b088c3b8edb0b712c5f308af788d1c95c7f2a816"
+    },
+    "som-core/scripts/build_flow_blocks.py": {
+      "pointer": "17-35: v7 catalog extends quality catalog",
+      "sha256": "bb7889860461186972fa11a001acfcca3884e7e6d4a0ffcbe3f569cfb8a48ab7"
+    },
+    "som-core/scripts/build_flow_compact_blocks.py": {
+      "pointer": "46-62: compact final IDs; 470-477: model slot and retained quality blocks",
+      "sha256": "89bb1443f89df8436123cfc01adddf80b8c1aab26e6c29765cd464d23fb84b9c"
+    },
+    "som-rs/src/lib.rs": {
+      "pointer": "153-173: validation dispatch; 344-420: legacy resolution; 884-915: existing assembly API",
+      "sha256": "e12ad0be7b3c21d214a66c4c1fbc08da8aca61018769a58a8a3822dc16ffa7b6"
+    },
+    "som-rs/src/related.rs": {
+      "pointer": "89-145: query kinds and values",
+      "sha256": "ccc55e6018117a7087685de81da420da911832edaae51532e712be7b1b138dca"
+    },
+    "som-rs/src/composed.rs": {
+      "pointer": "126-188: independent Rust plan checks",
+      "sha256": "571c04a8e50f9856361dce94ebab813d8a8905aee9e2ea12dbd687f4f32d890c"
+    },
+    "som-rs/src/flow.rs": {
+      "pointer": "277-352: independent flow/tree/plan checks",
+      "sha256": "8df232e307baa785c696869f89f4f44b3a6eec2a621dfea0e5c054165fa483f6"
+    },
+    "som-rs/src/flow_compact.rs": {
+      "pointer": "81-198: compact resolve and assembly",
+      "sha256": "72c53833d186f0b02f7fc21f52bb738bd6b49d42a41681ce97f0c33054527051"
+    },
+    "som-code-python/data/block-contracts/composed-quality.json": {
+      "pointer": "public provider metadata",
+      "sha256": "28f9bd134f31eb87fae5a680148447de3aaca9bad78fc10f0ac22b00cc40b0e5"
+    },
+    "som-code-python/data/block-contracts/flow-v7.json": {
+      "pointer": "public v7 provider metadata",
+      "sha256": "d0ffbe92abbf8666e5e562022617e6eb81f4ef1c9fcc73b92fca8c718bba3f47"
+    },
+    "som-code-python/data/block-contracts/flow-v7-compact.json": {
+      "pointer": "public compact provider metadata",
+      "sha256": "a2b96804e6f1c52a2ebf9e6310c6624b8b1b33d86b4f4763f07ffbeb645e103a"
+    },
+    "som-code-python/data/blocks/v5/blocks.json": {
+      "pointer": "approved public block metadata only; legacy type declarations",
+      "sha256": "9dc292b2ddbeb834e09b7754de4d00a9aca16c25acf06ee9ee8fcc77d39c92c7"
+    },
+    "som-rs/examples/composed-prompt.json": {
+      "pointer": "only public prompt seed for design qualification",
+      "sha256": "33d902b113a2cf203250cc6b5e6b41cea5b02225890ad53e96019114a2bf3722"
+    },
+    "som-core/src/som_core/quality.py": {
+      "pointer": "125-129: selected-plan assembly preserves plan",
+      "sha256": "04fcfaf21b564f613c0d3395796bb28ae93601c5d2be1dde988c6f243aa483c4"
+    },
+    "som-core/scripts/build_quality_blocks.py": {
+      "pointer": "16-47: IDs/parameter ABI unchanged",
+      "sha256": "5d8a3241dc649ca6d636b61d1e8e7b83baa53102c9f5a0461d51b59da4a1191f"
+    },
+    "som-code-python/data/blocks/flow-v7-compact/blocks.json": {
+      "pointer": "approved library input to public reference qualification",
+      "sha256": "5a75971536ae02f627bb4a4e97737604cefc120e71293b8c10f7dcc442c460ea"
+    }
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "version": "som.prompt.v7",
+  "package": "inventory_app",
+  "resources": {
+    "parent": {
+      "name": "Project",
+      "table": "projects",
+      "path": "/projects-v2",
+      "fields": [
+        {
+          "name": "title",
+          "type": "str",
+          "required": true,
+          "unique": false
+        },
+        {
+          "name": "active",
+          "type": "bool",
+          "required": false,
+          "unique": false,
+          "default": false
+        },
+        {
+          "name": "due_on",
+          "type": "date",
+          "required": false,
+          "unique": false,
+          "default": null
+        },
+        {
+          "name": "notes",
+          "type": "str",
+          "required": false,
+          "unique": false,
+          "default": null
+        }
+      ],
+      "query": {
+        "filter_field": "active",
+        "date_field": "due_on",
+        "max_limit": 20
+      }
+    },
+    "child": {
+      "name": "Task",
+      "table": "tasks",
+      "path": "/tasks-v2",
+      "fields": [
+        {
+          "name": "label",
+          "type": "str",
+          "required": true,
+          "unique": false
+        },
+        {
+          "name": "active",
+          "type": "bool",
+          "required": false,
+          "unique": false,
+          "default": false
+        },
+        {
+          "name": "score",
+          "type": "int",
+          "required": true,
+          "unique": false
+        },
+        {
+          "name": "description",
+          "type": "str",
+          "required": false,
+          "unique": false,
+          "default": null
+        }
+      ],
+      "query": {
+        "filter_field": "active",
+        "date_field": null,
+        "max_limit": 20
+      }
+    }
+  },
+  "relation": {
+    "foreign_key": "project_ref",
+    "on_delete": "restrict"
+  },
+  "migration": {
+    "revision": "projects_initial",
+    "down_revision": null
+  },
+  "capabilities": {
+    "database": "postgresql",
+    "auth": "jwt",
+    "storage": "none",
+    "workflow": "json_export",
+    "value_field": null,
+    "group_field": null
+  },
+  "contract": {
+    "id": "related-flow.v1",
+    "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+  },
+  "operations": [
+    {
+      "scope": "parent",
+      "action": "create"
+    },
+    {
+      "scope": "parent",
+      "action": "get"
+    },
+    {
+      "scope": "parent",
+      "action": "list"
+    },
+    {
+      "scope": "parent",
+      "action": "patch"
+    },
+    {
+      "scope": "parent",
+      "action": "delete"
+    },
+    {
+      "scope": "child",
+      "action": "create"
+    },
+    {
+      "scope": "child",
+      "action": "get"
+    },
+    {
+      "scope": "child",
+      "action": "list"
+    },
+    {
+      "scope": "child",
+      "action": "patch"
+    },
+    {
+      "scope": "child",
+      "action": "delete"
+    },
+    {
+      "scope": "batch",
+      "action": "batch_create"
+    }
+  ],
+  "flow": {
+    "name": "flowCase",
+    "inputs": [
+      {
+        "name": "left_value",
+        "type": "integer"
+      },
+      {
+        "name": "right_value",
+        "type": "integer"
+      }
+    ],
+    "steps": [
+      {
+        "name": "auth",
+        "op": "authorize",
+        "args": {},
+        "undo": null
+      },
+      {
+        "name": "compare",
+        "op": "if",
+        "condition": {
+          "op": "eq",
+          "left": {
+            "input": "left_value"
+          },
+          "right": {
+            "input": "right_value"
+          }
+        },
+        "then": [],
+        "else": [],
+        "exports": {}
+      }
+    ],
+    "result": {}
+  }
+}

@@ -44,6 +44,7 @@ fn business_reference_compositions_match_python() {
 }
 
 #[test]
+#[cfg(feature = "legacy-model")]
 #[ignore = "requires local Metal and the zero-step business fixture"]
 fn metal_fixture_loads_and_rejects_wrong_operation_selection() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -58,6 +59,7 @@ fn metal_fixture_loads_and_rejects_wrong_operation_selection() {
 }
 
 #[test]
+#[cfg(feature = "legacy-model")]
 #[ignore = "requires local Metal and an accepted candidate checkpoint"]
 fn candidate_model_generates_all_regression_bytes() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));

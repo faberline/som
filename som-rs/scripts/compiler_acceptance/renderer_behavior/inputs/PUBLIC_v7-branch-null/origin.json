@@ -1,0 +1,42 @@
+{
+  "id": "PUBLIC_v7-branch-null",
+  "source": "som-rs/contracts/compiler-v1/examples/v7-branch-null.prompt.json",
+  "source_sha256": "4e3c80e264d13e83c894418f2d011f4dc3b26f94fb5dc094efb719b1b503e522",
+  "transform": null,
+  "source_matches_serializer_bytes": false,
+  "serializer_cnl_sha256": "a8565b3a3f668a713877dde66b537c80477082804b793808fb0f577118250a65",
+  "prompt_path": "inputs/PUBLIC_v7-branch-null/prompt.json",
+  "cnl_path": "inputs/PUBLIC_v7-branch-null/source.cnl",
+  "prompt_sha256": "4e3c80e264d13e83c894418f2d011f4dc3b26f94fb5dc094efb719b1b503e522",
+  "cnl_sha256": "3857714e702c269eb010dfce7a1588f54abb22cd8a1c9913612aad30a877ce41",
+  "branch_matrix": {
+    "cases": [
+      [
+        [
+          [
+            "child",
+            [
+              "description"
+            ]
+          ],
+          null
+        ]
+      ],
+      [
+        [
+          [
+            "child",
+            [
+              "description"
+            ]
+          ],
+          "set"
+        ]
+      ]
+    ],
+    "unresolved": [],
+    "branches": [
+      "choose"
+    ]
+  }
+}

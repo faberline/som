@@ -1,0 +1,74 @@
+Use SOM CNL version 1.
+Use prompt version 7.
+Use package inventory_app.
+Bind contract related-flow.v1 with SHA-256 "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091".
+Begin parent resource.
+Use resource name Project.
+Use table projects.
+Use path "/projects-v2".
+Field title is required str and is not unique.
+Field active is optional bool and is not unique with default false.
+Field due_on is optional date and is not unique with default null.
+Field notes is optional str and is not unique with default null.
+Begin query.
+Filter exactly on field active.
+Filter before date on field due_on.
+Limit query results to 20.
+End query.
+End parent resource.
+Begin child resource.
+Use resource name Task.
+Use table tasks.
+Use path "/tasks-v2".
+Field label is required str and is not unique.
+Field active is optional bool and is not unique with default false.
+Field score is required int and is not unique.
+Field description is optional str and is not unique with default null.
+Begin query.
+Filter exactly on field active.
+Use no date filter.
+Limit query results to 20.
+End query.
+End child resource.
+Relate child to parent with foreign key project_ref and restrict deletion.
+Use migration revision projects_initial.
+Use no previous migration revision.
+Begin capabilities.
+Use database postgresql.
+Use authentication jwt.
+Use object storage none.
+Use workflow json_export.
+Use no workflow value field.
+Use no workflow group field.
+End capabilities.
+Begin routes.
+Allow create on parent.
+Allow get on parent.
+Allow list on parent.
+Allow patch on parent.
+Allow delete on parent.
+Allow create on child.
+Allow get on child.
+Allow list on child.
+Allow patch on child.
+Allow delete on child.
+Allow batch creation.
+End routes.
+Begin flow flowCase.
+Input left_value has type integer.
+Input right_value has type integer.
+Begin steps.
+Begin step auth with operation authorize.
+On failure, use no undo.
+End step auth.
+Begin branch compare when input left_value is less than input right_value.
+Begin then.
+End then.
+Begin else.
+End else.
+Export no values.
+End branch compare.
+End steps.
+Return no values.
+End flow flowCase.
+End request.

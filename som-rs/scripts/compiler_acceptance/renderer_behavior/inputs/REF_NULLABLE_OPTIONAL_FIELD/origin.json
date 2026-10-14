@@ -1,0 +1,42 @@
+{
+  "id": "REF_NULLABLE_OPTIONAL_FIELD",
+  "source": "som-rs/tests/compiler-v1/cnl-positive-fixtures.json",
+  "source_sha256": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
+  "transform": null,
+  "source_matches_serializer_bytes": true,
+  "serializer_cnl_sha256": "e15a9263db8d79aa43d80053e0e496bc09a03ac26b583b5261f048caf8b17bcd",
+  "prompt_path": "inputs/REF_NULLABLE_OPTIONAL_FIELD/prompt.json",
+  "cnl_path": "inputs/REF_NULLABLE_OPTIONAL_FIELD/source.cnl",
+  "prompt_sha256": "21333c6fc21c44aab1bd76e4e7fe5c5f7badd822f42fc0e6fe80a9a00e76c02b",
+  "cnl_sha256": "e15a9263db8d79aa43d80053e0e496bc09a03ac26b583b5261f048caf8b17bcd",
+  "branch_matrix": {
+    "cases": [
+      [
+        [
+          [
+            "child_data",
+            [
+              "description"
+            ]
+          ],
+          null
+        ]
+      ],
+      [
+        [
+          [
+            "child_data",
+            [
+              "description"
+            ]
+          ],
+          "set"
+        ]
+      ]
+    ],
+    "unresolved": [],
+    "branches": [
+      "descBranch"
+    ]
+  }
+}

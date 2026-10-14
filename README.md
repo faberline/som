@@ -1,26 +1,39 @@
 # som
 
-## Current roadmap — 2026-10-13
+SOM has a new Rust compiler candidate. It has two stages:
 
-SOM will use a model-free Rust compiler with two stages:
-**CNL → DSL bundle → existing code generator → Python files**.
-The first stage parses fixed English CNL and selects approved blocks by fixed rules.
-The second stage reuses the current Rust backend.
-Read [the Rust roadmap](som-rs/RUST_ROADMAP.md) and [the handoff](som-rs/RUST_HANDOFF.md).
+`fixed English CNL → typed DSL bundle → existing Rust backend → Python files`
 
-The two new milestones contain seven open implementation issues, #38–#44.
-The compiler and its new CLI/API commands are planned, not implemented.
-The running service remains the accepted legacy M2 model service.
-Both current pointers are unchanged. The old M3 automation is paused.
-Old model training has ended under the replaced roadmap.
-Its failures, incomplete checks, models and raw records remain preserved.
+CNL is controlled natural language. It uses exact English clauses and block
+delimiters. The calling agent supplies the business choices. Rust parses those
+choices and selects approved blocks by fixed rules. The backend returns all
+generated files. It does not write them into the caller's project.
 
-## Historical model roadmap and current legacy service
+The new path needs no model weights or Python production process. Existing
+JSON prompt versions v1–v7 remain supported. Python is still the output language.
+The existing Python quality and behavior checks remain required.
 
-The following reports describe the former roadmap and the retained M2 service.
-References to M3 training or old milestone numbers are historical.
-They are not instructions to resume training or claims about the new compiler.
+Candidate 003 is implemented. Its full independent acceptance is pending.
+The saved runtime and gap checks pass. The fresh public-products run passes 127/127.
+The full 544-job baseline is still running. Recovery run002 ended with a failure.
+Seven recovery scenarios met their expected outcomes; one failed and one is unrun.
+Read the [dated progress index](som-rs/evidence/rust-compiler-progress-2026-10-15.json).
+This source landing does not claim release acceptance.
+The accepted legacy M2 model service remains the default on port 8765.
+No compiler default switch or new milestone closure is claimed.
 
+Read [the current status](som-rs/RUST_STATUS.md),
+[the compiler guide](som-rs/RUST_GUIDE.md),
+[the roadmap](som-rs/RUST_ROADMAP.md), and
+[the handoff](som-rs/RUST_HANDOFF.md).
+
+## Historical model roadmap and retained legacy service
+
+The following reports describe the previous model roadmap and retained M2
+service. They do not instruct new M3 training.
+The old M3 automation remains paused. Old failures and local assets stay saved.
+The model milestone statements below are historical snapshots from before the
+2026-10-13 roadmap reset. All six old milestone records were archived and deleted.
 The [M1 closeout](som-rs/M1_CLOSEOUT.md) passed on 2026-10-02.
 The rules and model paths produced the same files on 214 regression cases.
 All 214 services and the old 100 PostgreSQL cases passed.

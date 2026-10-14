@@ -1,0 +1,76 @@
+(* som.cnl.v1. Every terminal sentence is one logical line. NL is LF or CRLF.
+   Spaces outside JSON strings separate tokens. Indentation is nonsemantic.
+   Empty lines are ignored. No comments, aliases, case folding, or continuation. *)
+document = header, version, package, [contract], resources, [root_query],
+           [relation], migration, [capabilities], routes, [checks], [flow], end_request;
+header = "Use SOM CNL version 1.";
+version = "Use prompt version ", ("1"|"2"|"3"|"4"|"5"|"6"|"7"), ".";
+package = "Use package ", IDENT, ".";
+contract = "Bind contract ", CONTRACT_ID, " with SHA-256 ", JSON_STRING, ".";
+resources = single_resource | parent_resource, child_resource;
+single_resource = "Begin resource.", resource_body, "End resource.";
+parent_resource = "Begin parent resource.", resource_body, query, "End parent resource.";
+child_resource = "Begin child resource.", resource_body, query, "End child resource.";
+resource_body = "Use resource name ", IDENT, ".", "Use table ", IDENT, ".",
+                "Use path ", JSON_STRING, ".", field, {field};
+field = "Field ", IDENT, " is ", ("required"|"optional"), " ", FIELD_TYPE,
+        " and is ", ("unique"|"not unique"), [" with default ", JSON_SCALAR], ".";
+root_query = query;
+query = "Begin query.", ("Filter exactly on field ", IDENT, "."|"Use no exact filter."),
+        [("Filter before date on field ", IDENT, "."|"Use no date filter.")],
+        "Limit query results to ", UINT, ".", "End query.";
+relation = "Relate child to parent with foreign key ", IDENT, " and restrict deletion.";
+migration = "Use migration revision ", IDENT, ".",
+            ("Use previous migration revision ", IDENT, "."|"Use no previous migration revision.");
+capabilities = "Use no capabilities." | "Begin capabilities.",
+  "Use database ", ("postgresql"|"mongodb"), ".",
+  "Use authentication ", ("jwt"|"firebase"|"google_oauth"), ".",
+  "Use object storage ", ("none"|"s3"|"gcs"), ".",
+  "Use workflow ", ("json_export"|"gzip_export"|"csv"|"decimal_summary"|"statistics"), ".",
+  ("Use workflow value field ", IDENT, "."|"Use no workflow value field."), ("Use workflow group field ", IDENT, "."|"Use no workflow group field."),
+  "End capabilities.";
+routes = "Begin routes.", route, {route}, "End routes.";
+route = LEGACY_SENTENCE | "For ", ("parent"|"child"|"batch"), ": ", RELATED_SENTENCE
+      | "Allow ", ("create"|"get"|"list"|"patch"|"delete"), " on ", ("parent"|"child"), "."
+      | "Allow batch creation.";
+checks = "Begin checks.", CHECK_SENTENCE, "End checks.";
+flow = "Begin flow ", IDENT, ".", inputs, "Begin steps.", {node}, "End steps.", results,
+       "End flow ", IDENT, ".";
+inputs = "Use no inputs." | input, {input};
+input = "Input ", IDENT, " has type ", INPUT_TYPE, ".";
+node = action | transaction | branch;
+action = "Begin step ", IDENT, " with operation ", OPERATION, ".", {argument}, undo,
+         "End step ", IDENT, ".";
+argument = "Set argument ", IDENT, " to ", value, ".";
+undo = "On failure, use no undo." | "On failure, undo with ", ("delete_created"|"restore_patch"), ".";
+transaction = "Begin transaction ", IDENT, ".", {node}, "End transaction ", IDENT, ".";
+branch = "Begin branch ", IDENT, " when ", predicate, ".",
+         "Begin then.", {node}, "End then.", "Begin else.", {node}, "End else.",
+         exports, "End branch ", IDENT, ".";
+exports = "Export no values." | export, {export};
+export = "Export ", IDENT, " from then ", value, " and from else ", value, ".";
+predicate = value, " is null" | value, COMPARISON, value;
+COMPARISON = " is equal to " | " is not equal to " | " is less than "
+           | " is at most " | " is greater than " | " is at least ";
+results = "Return no values." | result, {result};
+result = "Return ", IDENT, " from ", value, ".";
+value = "input ", IDENT | "step ", IDENT, " field ", JSON_STRING
+      | "literal ", SCALAR_TYPE, " ", JSON_SCALAR;
+FIELD_TYPE = "str"|"int"|"float"|"bool"|"date";
+SCALAR_TYPE = "string"|"integer"|"float"|"boolean"|"date"|"bytes";
+INPUT_TYPE = "string"|"integer"|"float"|"boolean"|"date"|"parent_input"|"child_input"
+           |"parent_patch"|"child_patch"|"children_input";
+OPERATION = "authorize"|"parent.create"|"parent.get"|"parent.list"|"parent.patch"
+          |"child.create"|"child.get"|"child.list"|"child.patch"|"batch.create"
+          |"workflow.run"|"workflow.import"|"object.put"|"object.get";
+end_request = "End request.";
+(* IDENT has ASCII Python identifier syntax. Apply version/role rules in CONTRACT.md.
+   Selectors use field/no field and revision/no revision to prevent a null-name ambiguity. *)
+IDENT = (ASCII_LETTER|"_"), {ASCII_LETTER|DIGIT|"_"};
+UINT = DIGIT, {DIGIT};
+CONTRACT_ID = "related-business.v1"|"related-flow.v1";
+(* JSON_SCALAR is exactly one JSON string, number, true, false, or null.
+   Objects and arrays are not scalar literals. JSON_STRING follows RFC JSON
+   string escapes; reject unpaired surrogate escapes and invalid UTF-8.
+   All fixed legacy/check sentences are listed in field-statement-map.json.
+   Family cardinality, names, types, limits and scope rules are normative. *)

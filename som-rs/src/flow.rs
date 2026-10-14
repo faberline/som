@@ -88,8 +88,14 @@ fn literal(value: &Value, kind: &str) -> Result<(), SomError> {
     if valid { Ok(()) } else { Err(err("INVALID_REF", "literal type mismatch")) }
 }
 pub(crate) fn member(prompt: &Value, kind: &str, field: &str) -> Result<String, SomError> {
-    if field.is_empty() { return Ok(kind.into()); }
-    if let Some((first,rest))=field.split_once('.') { return member(prompt,&member(prompt,kind,first)?,rest); }
+    let mut current = kind.to_owned();
+    // Preserve the existing empty-segment semantics without input-driven recursion.
+    for part in field.split('.') {
+        if !part.is_empty() { current = member_one(prompt, &current, part)?; }
+    }
+    Ok(current)
+}
+fn member_one(prompt: &Value, kind: &str, field: &str) -> Result<String, SomError> {
     let fixed=match (kind,field) {
         ("identity","sub"|"role")|("object","key"|"sha256")|("workflow","sha256")=>Some("string"),
         ("object"|"workflow","size")=>Some("integer"),

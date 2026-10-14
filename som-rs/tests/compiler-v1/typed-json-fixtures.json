@@ -1,0 +1,589 @@
+{
+  "format": "som-rust-contract-typed-json-fixtures.v1",
+  "purpose": "Hand-authored typed prompt fixtures from public schemas and validators; no CNL syntax; no saved answer DSL.",
+  "fixtures": {
+    "v1_minimal_crud": {
+      "version": "som.prompt.v1",
+      "package": "inventory_app",
+      "resource": {
+        "name": "Item",
+        "table": "items",
+        "path": "/items",
+        "fields": [
+          {
+            "name": "title",
+            "type": "str",
+            "required": true,
+            "unique": true
+          }
+        ]
+      },
+      "logic": [
+        "Create a row. Return 409 for a unique value conflict.",
+        "Get a row by id. Return 404 if it does not exist.",
+        "List rows in id order.",
+        "Update supplied fields. Return 404 if the row does not exist.",
+        "Delete a row. Return 404 if it does not exist."
+      ],
+      "tests": [
+        "Check CRUD, missing id, and unique conflict when supported."
+      ],
+      "migration": {
+        "revision": "items_initial",
+        "down_revision": null
+      }
+    },
+    "v2_string_filter_max20": {
+      "version": "som.prompt.v2",
+      "package": "inventory_app",
+      "resource": {
+        "name": "Item",
+        "table": "items",
+        "path": "/items",
+        "fields": [
+          {
+            "name": "title",
+            "type": "str",
+            "required": true,
+            "unique": true
+          },
+          {
+            "name": "tag",
+            "type": "str",
+            "required": true,
+            "unique": false
+          }
+        ]
+      },
+      "logic": [
+        "Create a row. Return 409 for a unique value conflict.",
+        "Get a row by id. Return 404 if it does not exist.",
+        "List rows with an optional exact string filter, limit, and offset in id order.",
+        "Update supplied fields. Return 404 if the row does not exist.",
+        "Delete a row. Return 404 if it does not exist."
+      ],
+      "tests": [
+        "Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported."
+      ],
+      "migration": {
+        "revision": "items_initial",
+        "down_revision": null
+      },
+      "query": {
+        "filter_field": "tag",
+        "max_limit": 20
+      }
+    },
+    "v3_bool_default": {
+      "version": "som.prompt.v3",
+      "package": "inventory_app",
+      "resource": {
+        "name": "Item",
+        "table": "items",
+        "path": "/items",
+        "fields": [
+          {
+            "name": "title",
+            "type": "str",
+            "required": true,
+            "unique": true
+          },
+          {
+            "name": "active",
+            "type": "bool",
+            "required": false,
+            "unique": false,
+            "default": false
+          }
+        ]
+      },
+      "logic": [
+        "Create a row. Return 409 for a unique value conflict.",
+        "Get a row by id. Return 404 if it does not exist.",
+        "List rows with an optional exact boolean filter, limit, and offset in id order.",
+        "Update supplied fields. Return 404 if the row does not exist.",
+        "Delete a row. Return 404 if it does not exist."
+      ],
+      "tests": [
+        "Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration."
+      ],
+      "migration": {
+        "revision": "items_initial",
+        "down_revision": null
+      },
+      "query": {
+        "filter_field": "active",
+        "max_limit": 20
+      }
+    },
+    "v4_date_before": {
+      "version": "som.prompt.v4",
+      "package": "inventory_app",
+      "resource": {
+        "name": "Item",
+        "table": "items",
+        "path": "/items",
+        "fields": [
+          {
+            "name": "title",
+            "type": "str",
+            "required": true,
+            "unique": true
+          },
+          {
+            "name": "active",
+            "type": "bool",
+            "required": false,
+            "unique": false,
+            "default": false
+          },
+          {
+            "name": "due_on",
+            "type": "date",
+            "required": false,
+            "unique": false,
+            "default": null
+          }
+        ]
+      },
+      "logic": [
+        "Create a row. Return 409 for a unique value conflict.",
+        "Get a row by id. Return 404 if it does not exist.",
+        "List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.",
+        "Update supplied fields. Return 404 if the row does not exist.",
+        "Delete a row. Return 404 if it does not exist."
+      ],
+      "tests": [
+        "Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration."
+      ],
+      "migration": {
+        "revision": "items_initial",
+        "down_revision": null
+      },
+      "query": {
+        "filter_field": "active",
+        "max_limit": 20,
+        "date_field": "due_on"
+      }
+    },
+    "v5_related_business": {
+      "version": "som.prompt.v5",
+      "package": "inventory_app",
+      "resources": {
+        "parent": {
+          "name": "Project",
+          "table": "projects",
+          "path": "/projects-v2",
+          "fields": [
+            {
+              "name": "title",
+              "type": "str",
+              "required": true,
+              "unique": false
+            },
+            {
+              "name": "active",
+              "type": "bool",
+              "required": false,
+              "unique": false,
+              "default": false
+            },
+            {
+              "name": "due_on",
+              "type": "date",
+              "required": false,
+              "unique": false,
+              "default": null
+            }
+          ],
+          "query": {
+            "filter_field": "active",
+            "date_field": "due_on",
+            "max_limit": 20
+          }
+        },
+        "child": {
+          "name": "Task",
+          "table": "tasks",
+          "path": "/tasks-v2",
+          "fields": [
+            {
+              "name": "label",
+              "type": "str",
+              "required": true,
+              "unique": false
+            },
+            {
+              "name": "active",
+              "type": "bool",
+              "required": false,
+              "unique": false,
+              "default": false
+            }
+          ],
+          "query": {
+            "filter_field": "active",
+            "date_field": null,
+            "max_limit": 20
+          }
+        }
+      },
+      "relation": {
+        "foreign_key": "project_ref",
+        "on_delete": "restrict"
+      },
+      "logic": [
+        {
+          "scope": "parent",
+          "step": "Create a row. Return 409 for a unique value conflict."
+        },
+        {
+          "scope": "parent",
+          "step": "Get a row by id. Return 404 if it does not exist."
+        },
+        {
+          "scope": "parent",
+          "step": "List scoped rows with the configured filters and pagination in id order."
+        },
+        {
+          "scope": "parent",
+          "step": "Update supplied fields. Return 404 if the row does not exist."
+        },
+        {
+          "scope": "parent",
+          "step": "Delete a row. Reject a parent with children with 409."
+        },
+        {
+          "scope": "child",
+          "step": "Create a row. Return 409 for a unique value conflict."
+        },
+        {
+          "scope": "child",
+          "step": "Get a row by id. Return 404 if it does not exist."
+        },
+        {
+          "scope": "child",
+          "step": "List scoped rows with the configured filters and pagination in id order."
+        },
+        {
+          "scope": "child",
+          "step": "Update supplied fields. Return 404 if the row does not exist."
+        },
+        {
+          "scope": "child",
+          "step": "Delete a row. Reject a parent with children with 409."
+        },
+        {
+          "scope": "batch",
+          "step": "Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure."
+        }
+      ],
+      "tests": [
+        "Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration."
+      ],
+      "migration": {
+        "revision": "projects_initial",
+        "down_revision": null
+      },
+      "capabilities": {
+        "database": "postgresql",
+        "auth": "jwt",
+        "storage": "none",
+        "workflow": "json_export",
+        "value_field": null,
+        "group_field": null
+      }
+    },
+    "v6_composed_operations": {
+      "version": "som.prompt.v6",
+      "package": "inventory_app",
+      "resources": {
+        "parent": {
+          "name": "Project",
+          "table": "projects",
+          "path": "/projects-v2",
+          "fields": [
+            {
+              "name": "title",
+              "type": "str",
+              "required": true,
+              "unique": false
+            },
+            {
+              "name": "active",
+              "type": "bool",
+              "required": false,
+              "unique": false,
+              "default": false
+            },
+            {
+              "name": "due_on",
+              "type": "date",
+              "required": false,
+              "unique": false,
+              "default": null
+            }
+          ],
+          "query": {
+            "filter_field": "active",
+            "date_field": "due_on",
+            "max_limit": 20
+          }
+        },
+        "child": {
+          "name": "Task",
+          "table": "tasks",
+          "path": "/tasks-v2",
+          "fields": [
+            {
+              "name": "label",
+              "type": "str",
+              "required": true,
+              "unique": false
+            },
+            {
+              "name": "active",
+              "type": "bool",
+              "required": false,
+              "unique": false,
+              "default": false
+            }
+          ],
+          "query": {
+            "filter_field": "active",
+            "date_field": null,
+            "max_limit": 20
+          }
+        }
+      },
+      "relation": {
+        "foreign_key": "project_ref",
+        "on_delete": "restrict"
+      },
+      "migration": {
+        "revision": "projects_initial",
+        "down_revision": null
+      },
+      "capabilities": {
+        "database": "postgresql",
+        "auth": "jwt",
+        "storage": "none",
+        "workflow": "json_export",
+        "value_field": null,
+        "group_field": null
+      },
+      "contract": {
+        "id": "related-business.v1",
+        "sha256": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380"
+      },
+      "operations": [
+        {
+          "scope": "parent",
+          "action": "create"
+        },
+        {
+          "scope": "child",
+          "action": "list"
+        },
+        {
+          "scope": "batch",
+          "action": "batch_create"
+        }
+      ]
+    },
+    "v7_flow_contract": {
+      "version": "som.prompt.v7",
+      "package": "inventory_app",
+      "resources": {
+        "parent": {
+          "name": "Project",
+          "table": "projects",
+          "path": "/projects-v2",
+          "fields": [
+            {
+              "name": "title",
+              "type": "str",
+              "required": true,
+              "unique": false
+            },
+            {
+              "name": "active",
+              "type": "bool",
+              "required": false,
+              "unique": false,
+              "default": false
+            },
+            {
+              "name": "due_on",
+              "type": "date",
+              "required": false,
+              "unique": false,
+              "default": null
+            },
+            {
+              "name": "notes",
+              "type": "str",
+              "required": false,
+              "unique": false,
+              "default": null
+            }
+          ],
+          "query": {
+            "filter_field": "active",
+            "date_field": "due_on",
+            "max_limit": 20
+          }
+        },
+        "child": {
+          "name": "Task",
+          "table": "tasks",
+          "path": "/tasks-v2",
+          "fields": [
+            {
+              "name": "label",
+              "type": "str",
+              "required": true,
+              "unique": false
+            },
+            {
+              "name": "active",
+              "type": "bool",
+              "required": false,
+              "unique": false,
+              "default": false
+            }
+          ],
+          "query": {
+            "filter_field": "active",
+            "date_field": null,
+            "max_limit": 20
+          }
+        }
+      },
+      "relation": {
+        "foreign_key": "project_ref",
+        "on_delete": "restrict"
+      },
+      "migration": {
+        "revision": "projects_initial",
+        "down_revision": null
+      },
+      "capabilities": {
+        "database": "postgresql",
+        "auth": "jwt",
+        "storage": "none",
+        "workflow": "json_export",
+        "value_field": null,
+        "group_field": null
+      },
+      "contract": {
+        "id": "related-flow.v1",
+        "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+      },
+      "operations": [
+        {
+          "scope": "parent",
+          "action": "create"
+        },
+        {
+          "scope": "child",
+          "action": "list"
+        },
+        {
+          "scope": "batch",
+          "action": "batch_create"
+        }
+      ],
+      "flow": {
+        "name": "projectFlow",
+        "inputs": [
+          {
+            "name": "parent_data",
+            "type": "parent_input"
+          },
+          {
+            "name": "parent_id",
+            "type": "integer"
+          }
+        ],
+        "steps": [
+          {
+            "name": "auth",
+            "op": "authorize",
+            "args": {},
+            "undo": null
+          },
+          {
+            "name": "createTxn",
+            "op": "transaction",
+            "steps": [
+              {
+                "name": "created",
+                "op": "parent.create",
+                "args": {
+                  "data": {
+                    "input": "parent_data"
+                  }
+                },
+                "undo": "delete_created"
+              }
+            ]
+          },
+          {
+            "name": "notesBranch",
+            "op": "if",
+            "condition": {
+              "op": "is_null",
+              "left": {
+                "step": "created",
+                "field": "notes"
+              }
+            },
+            "then": [
+              {
+                "name": "yesRead",
+                "op": "parent.get",
+                "args": {
+                  "parent_id": {
+                    "input": "parent_id"
+                  }
+                },
+                "undo": null
+              }
+            ],
+            "else": [
+              {
+                "name": "noRead",
+                "op": "parent.get",
+                "args": {
+                  "parent_id": {
+                    "input": "parent_id"
+                  }
+                },
+                "undo": null
+              }
+            ],
+            "exports": {
+              "selected": {
+                "then": {
+                  "step": "yesRead",
+                  "field": ""
+                },
+                "else": {
+                  "step": "noRead",
+                  "field": ""
+                }
+              }
+            }
+          }
+        ],
+        "result": {
+          "selected_parent": {
+            "step": "selected",
+            "field": ""
+          }
+        }
+      }
+    }
+  }
+}

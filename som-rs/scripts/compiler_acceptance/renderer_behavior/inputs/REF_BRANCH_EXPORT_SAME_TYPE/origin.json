@@ -1,0 +1,23 @@
+{
+  "id": "REF_BRANCH_EXPORT_SAME_TYPE",
+  "source": "som-rs/tests/compiler-v1/cnl-positive-fixtures.json",
+  "source_sha256": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
+  "transform": null,
+  "source_matches_serializer_bytes": true,
+  "serializer_cnl_sha256": "7902d1a16903e4177adcd81c6d78d83b64fd4946d9b633f6c71fd000bde112ea",
+  "prompt_path": "inputs/REF_BRANCH_EXPORT_SAME_TYPE/prompt.json",
+  "cnl_path": "inputs/REF_BRANCH_EXPORT_SAME_TYPE/source.cnl",
+  "prompt_sha256": "41eda60a9de8e21ff8efad0ac975c1f80b4b45bf33475c6eaa134f518544689f",
+  "cnl_sha256": "7902d1a16903e4177adcd81c6d78d83b64fd4946d9b633f6c71fd000bde112ea",
+  "branch_matrix": {
+    "cases": [
+      []
+    ],
+    "unresolved": [
+      "choose"
+    ],
+    "branches": [
+      "choose"
+    ]
+  }
+}
