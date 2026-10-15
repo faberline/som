@@ -515,6 +515,14 @@ fn read_body<T: serde::de::DeserializeOwned>(
     let value: Value = serde_json::from_slice(&bytes).map_err(|error| {
         ApiError::Invalid(vec![problem("json_invalid", json!(["body", error.column()]), "JSON decode error")])
     })?;
+    if !value.is_object() {
+        problems.push(problem(
+            "model_attributes_type",
+            json!(["body"]),
+            "Input should be a valid dictionary or object to extract fields from",
+        ));
+        return Ok(None);
+    }
     match serde_json::from_value::<T>(value) {
         Ok(body) => Ok(Some(body)),
         Err(error) => {
@@ -713,7 +721,7 @@ const API_UPDATE: &str = r#"async fn update(
 const API_DELETE: &str = r#"async fn remove(
     State(pool): State<PgPool>,
     path: Result<Path<String>, PathRejection>,
-) -> Result<StatusCode, ApiError> {
+) -> Result<Response, ApiError> {
     let mut problems = Vec::new();
     let id = item_id(path, &mut problems);
     if !problems.is_empty() {
@@ -721,7 +729,8 @@ const API_DELETE: &str = r#"async fn remove(
     }
     let id = id.ok_or(ApiError::NotFound)?;
     if db::delete(&pool, id).await? {
-        Ok(StatusCode::NO_CONTENT)
+        // As in the Python product, the empty 204 answer keeps the JSON media type.
+        Ok((StatusCode::NO_CONTENT, [(CONTENT_TYPE, "application/json")]).into_response())
     } else {
         Err(ApiError::NotFound)
     }
@@ -1189,9 +1198,11 @@ async fn crud_round_trip() {
     let (status, body) = send(&app, "PATCH", &uri, Some(json!({}))).await;
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body, last);
-    let (status, body) = send(&app, "DELETE", &uri, None).await;
-    assert_eq!(status, StatusCode::NO_CONTENT);
-    assert_eq!(body, Value::Null);
+    let request = Request::builder().method("DELETE").uri(uri.as_str()).body(Body::empty()).expect("request");
+    let response = app.clone().oneshot(request).await.expect("response");
+    assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    assert_eq!(response.headers()["content-type"], "application/json");
+    assert!(response.into_body().collect().await.expect("body").to_bytes().is_empty());
     for (method, payload) in [("GET", None), ("DELETE", None), ("PATCH", Some(json!({})))] {
         let (status, body) = send(&app, method, &uri, payload).await;
         assert_eq!(status, StatusCode::NOT_FOUND, "{method}");
@@ -1240,7 +1251,12 @@ async fn validation_refusals() {
     let (status, body) = send(&app, "POST", PATH, None).await;
     assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(locs(&body), ["body"]);
-    for (content_type, text) in [("application/json", "{".to_owned()), ("text/plain", sample(0).to_string())] {
+    for (content_type, text) in [
+        ("application/json", "{".to_owned()),
+        ("application/json", "[]".to_owned()),
+        ("application/json", "1".to_owned()),
+        ("text/plain", sample(0).to_string()),
+    ] {
         let (status, body) = send_raw(&app, "POST", PATH, content_type, &text).await;
         assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "{content_type}");
         assert_eq!(locs(&body), ["body"]);
@@ -1312,6 +1328,14 @@ async fn validation_refusals() {
     let created = create(&app, 0).await;
     let uri = item(&created);
 "#;
+    let names = fields
+        .iter()
+        .map(|field| format!("{:?}", field.name))
+        .collect::<Vec<_>>()
+        .join(", ");
+    out += &format!(
+        "    // A JSON body that is not an object is refused, also when its items fit the fields in order.\n    let row: Vec<Value> = [{names}].iter().map(|name| sample(0)[*name].clone()).collect();\n    let (status, body) = send(&app, \"POST\", PATH, Some(Value::Array(row))).await;\n    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, \"{{body}}\");\n    assert_eq!(locs(&body), [\"body\"]);\n    for text in [\"[]\", \"1\", \"null\"] {{\n        let (status, body) = send_raw(&app, \"PATCH\", &uri, \"application/json\", text).await;\n        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, \"{{text}}\");\n        assert_eq!(locs(&body), [\"body\"]);\n    }}\n"
+    );
     let patch_refused = |name: &str, value: &str| {
         format!(
             "    let (status, body) = send(&app, \"PATCH\", &uri, Some(json!({{\"{name}\": {value}}}))).await;\n    assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, \"{{body}}\");\n    assert_eq!(locs(&body), [\"body\"]);\n"

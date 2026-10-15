@@ -19,8 +19,11 @@ acceptance case (contracts/rust-output-v1/acceptance-plan.json).
   ignored, and each D1 to D5 marker comment sits in a test and is followed by
   a check. The commands run the toolchain.json binaries after their sha256
   checks.
-- The behavior parity suite is issue #46. It is reported as not run, which
-  blocks acceptance: the script then exits 2 instead of 0.
+- parity: --parity takes report-parity.json from som-rs/behavior/check_behavior.py
+  (issue #46). Each checked case needs a passing parity row with no strict
+  D1 to D5 failure, made from the same Rust files (files_sha256). Without
+  --parity, parity is reported as not run, which blocks acceptance: the script
+  then exits 2 instead of 0.
 
 Run it with a Python that has the pinned alembic, SQLAlchemy, psycopg and
 jsonschema packages. Legacy prompts are named by id and hash only.
@@ -79,8 +82,39 @@ def divergence_markers(prompt: dict) -> list[str]:
     return sorted(markers)
 
 
-PARITY = {"status": "not_run", "blocked_by": "#46",
-          "reason": "The behavior parity suite and harness are issue #46, which is open."}
+PARITY_NOT_RUN = {"status": "not_run",
+                  "reason": "No --parity report from som-rs/behavior/check_behavior.py parity (issue #46)."}
+
+
+def parity(path: pathlib.Path | None, rows: list[dict]) -> tuple[dict, list[str]]:
+    """The parity summary and the failed parity ids; each row gets its own parity status."""
+    if path is None:
+        for row in rows:
+            row["parity"] = {"status": "not_run"}
+        return PARITY_NOT_RUN, []
+    data = path.read_bytes()
+    report = json.loads(data)
+    summary = report["summary"]
+    found = {row["id"]: row for row in report["rows"]}
+    failed = []
+    if summary.get("mode") != "parity" or not summary.get("complete"):
+        failed.append("parity: the report is not a complete parity run")
+    for row in rows:
+        other = found.get(row["id"])
+        problems = []
+        if other is None:
+            problems.append("no parity row")
+        else:
+            if not other.get("passed") or other.get("strict_failures"):
+                problems.append("parity failed")
+            if other.get("rust_files_sha256") != row.get("files_sha256"):
+                problems.append("parity ran other Rust files")
+        row["parity"] = {"status": "failed" if problems else "passed", **({"problems": problems} if problems else {})}
+        if problems:
+            failed.append(f"parity:{row['id']}")
+    return {"status": "failed" if failed else "passed", "issue": 46, "report_sha256": targets.sha(data),
+            "recorded_at": report.get("recorded_at"), "cases": len(rows),
+            "steps": summary.get("steps"), "strict_steps": summary.get("strict_steps")}, failed
 
 
 BIN_DIR = pathlib.Path(TOOLCHAIN["rust"]["bin_dir"])
@@ -423,8 +457,7 @@ def product_gates(qa: str, case: dict, files: dict, work: pathlib.Path, pg: str,
     passed = all(code == 0 for code, _ in gates.values())
     return {"passed": passed, "tests_passed": sum(tested),
             "gates": {name: {"passed": code == 0, **({"log": log[-3000:]} if code else {})}
-                      for name, (code, log) in gates.items()},
-            "parity": PARITY}
+                      for name, (code, log) in gates.items()}}
 
 
 # ---------------------------------------------------------------- main
@@ -455,6 +488,7 @@ def main() -> int:
     parser.add_argument("--out", type=pathlib.Path)
     parser.add_argument("--only", nargs="*", help="case ids to check")
     parser.add_argument("--no-gates", action="store_true", help="bundle checks and refusals only")
+    parser.add_argument("--parity", type=pathlib.Path, help="report-parity.json of som-rs/behavior/check_behavior.py")
     args = parser.parse_args()
     if str(args.qa).rstrip("/").endswith((":8765", ":18765")):
         parser.error("QA checks never use ports 8765 or 18765")
@@ -479,6 +513,9 @@ def main() -> int:
     for case in cases:
         by_version[case["prompt"]["version"]] = by_version.get(case["prompt"]["version"], 0) + 1
     failed = [r["id"] for r in refusals if not r["passed"]] + [r["id"] for r in rows if not r["passed"]]
+    parity_summary, parity_failed = parity(args.parity, rows)
+    failed += parity_failed
+    blocked = [] if args.parity else ["behavior parity: not run, pass --parity with a check_behavior.py report"]
     report = {
         "version": "som.rust-output-product-checks.v1",
         "issue": 48,
@@ -501,9 +538,9 @@ def main() -> int:
             "product_gates": {"passed": sum(r.get("product_gates", {}).get("passed", False) for r in rows),
                               "total": 0 if args.no_gates else len(rows)},
             "distinct_products": len({r.get("files_sha256") for r in rows} - {None}),
-            "parity": PARITY,
+            "parity": parity_summary,
             "failed": failed,
-            "blocked": ["behavior parity: not run, blocked by #46"],
+            "blocked": blocked,
         },
         "assemble_refusals": refusals,
         "cases": rows,
@@ -511,8 +548,8 @@ def main() -> int:
     if args.out:
         args.out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n")
     print(json.dumps(report["summary"], indent=2, ensure_ascii=False))
-    # A failure exits 1. Without one, the unrun parity suite still blocks acceptance: exit 2.
-    return 1 if failed else 2
+    # A failure exits 1. Without one, an unrun parity suite still blocks acceptance: exit 2.
+    return 1 if failed else 2 if blocked else 0
 
 
 if __name__ == "__main__":
