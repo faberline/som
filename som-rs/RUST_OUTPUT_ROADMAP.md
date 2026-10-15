@@ -74,7 +74,8 @@ File, block and plan limits stay in force for each target.
 #46 is implemented: the [behavior suite](behavior/README.md) passes all 115 acceptance cases on Python, catches 25 seeded faults and finds no Python/Rust difference on the 112 v1–v4 cases, with [evidence](evidence/behavior-suite-2026-10-15.json).
 The #48 gates then pass again with that parity report, with [evidence](evidence/rust-output-products-parity-2026-10-15.json).
 #49 is implemented: Rust blocks render v5 parent and child products, all 115 cases pass every gate and parity, with [evidence](evidence/rust-related-2026-10-15.json).
-#46, #48 and #49 stay open for review; #50 and #51 are open.
+#50 is implemented: every check in the [acceptance plan](contracts/rust-output-v1/acceptance-plan.json) passes on one recorded build with vendored crates, the Python regressions replay byte-identically (127 public products, 544 legacy jobs) and an independent audit finds no failed or unrun check, with [evidence](evidence/rust-output-acceptance-2026-10-16.json).
+#46, #48, #49 and #50 stay open for review; #51 is open.
 [Amendment 1](evidence/rust-output-contract-amendment-001.json) sets the timestamp DEFAULT to CURRENT_TIMESTAMP for v3 and v4 and now() for v5, as in the Python migrations.
 
 ### Target-aware service (#47)
@@ -142,4 +143,4 @@ Keep the legacy M2 rollback assets.
 ## Tracking
 
 [Milestone 9](https://github.com/faberline/som/milestone/9) holds issues #45–#51.
-The #45 contract is frozen. Later changes to it are numbered amendments. #47 added target selection and the Rust scope refusals. #48 generates v1–v4 Rust products. #46 runs behavior parity for them. Parent and child output (#49) is open.
+The #45 contract is frozen. Later changes to it are numbered amendments. #47 added target selection and the Rust scope refusals. #48 generates v1–v4 Rust products. #46 runs behavior parity for them. #49 adds parent and child output. #50 records the acceptance run and the Python regressions.
