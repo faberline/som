@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Issue #47 checks for the target-aware compiler on a QA port.
+"""Issue #47 and #48 checks for the target-aware compiler on a QA port.
 
 Gate: target_selection_checks, scope_checks and python_unchanged.
 
 - Every frozen negative case gives exactly its frozen status and diagnostic,
   and its span selects the frozen span_text.
-- Every target example gives its expected reply. A Rust example in phase 1
-  scope may give the temporary NOT_IMPLEMENTED diagnostic until issue #48.
+- Every target example gives its expected reply. A v1 to v4 Rust example gives
+  a som.dsl-bundle.v2 bundle with target rust, and its CNL and JSON forms give
+  the same bytes. A v5 Rust example gives the temporary NOT_IMPLEMENTED
+  diagnostic until issue #49.
 - For every public example, CNL positive fixture, coverage case and legacy job,
   in each available form:
   - the QA reply without target equals the reference reply byte for byte,
@@ -15,7 +17,9 @@ Gate: target_selection_checks, scope_checks and python_unchanged.
   - a request compiler-v1 refuses keeps that exact diagnostic with target rust;
   - the QA reply with target rust gives the refusal the frozen reference
     profile (tests/rust-output-v1/rust_profile.py) computes on the compiler's
-    own compiled prompt, or NOT_IMPLEMENTED when the prompt is in scope.
+    own compiled prompt; an in-scope v1 to v4 prompt gives a Rust bundle whose
+    CNL and JSON forms are byte-identical, and an in-scope v5 prompt gives
+    NOT_IMPLEMENTED.
 - The refusal counts equal the frozen case inventory.
 
 The reference compiler gets read-only compile calls only. Legacy prompts are
@@ -50,9 +54,11 @@ import rust_profile  # type: ignore[import-not-found]  # noqa: E402
 NOT_IMPLEMENTED = {
     "code": "NOT_IMPLEMENTED",
     "prompt_pointer": "/target",
-    "cause": "Rust output planning is not implemented in this build yet. The prompt is in Rust output phase 1 scope.",
-    "allowed_form": "Omit target, or use target python, to generate Python.",
+    "cause": "Rust output for the v5 parent and child resources is not implemented in this build yet. "
+             "The prompt is in Rust output phase 1 scope.",
+    "allowed_form": "Omit target, or use target python, to generate Python. Rust v1 to v4 prompts are available.",
 }
+RUST_BUNDLE = "som.dsl-bundle.v2"
 SPAN_KEYS = ("line", "column", "end_line", "end_column", "byte_start", "byte_end")
 
 
@@ -139,14 +145,39 @@ def target_examples(qa: str) -> list[dict]:
                 problems.append("python reply differs from the reply without target")
             outcome = "python_identical"
         else:
-            # Allowed for in-scope prompts until issue #48 adds Rust planning.
-            problems = one_diagnostic(status, raw, 501, NOT_IMPLEMENTED)
-            if not problems and located(example["body"], "json", json.loads(raw)["diagnostics"][0]) != '"rust"':
-                problems.append("NOT_IMPLEMENTED span is not the target value")
-            outcome = "not_implemented_until_48"
-        rows.append({"id": example["id"], "status": status, "outcome": outcome,
+            plain = json.loads(example["body"])
+            del plain["target"]
+            control_status, control_raw = post(qa, dump(plain))
+            version = json.loads(control_raw)["bundle"]["prompt"]["version"] if control_status == 200 else None
+            problems, outcome = rust_in_scope(status, raw, example["body"], version)
+        rows.append({"id": example["id"], "status": status, "outcome": outcome, "reply_sha256": sha(raw),
                      "passed": not problems, "problems": problems})
+    # The CNL and JSON forms of one source give byte-identical Rust bundles. The v5
+    # diagnostic spans locate each request body, so those replies differ.
+    by_id = {row["id"]: row for row in rows}
+    for row in rows:
+        twin = by_id.get(row["id"].replace("-cnl-rust", "-json-rust"))
+        if (row["id"].endswith("-cnl-rust") and row["outcome"] == "rust_bundle"
+                and (twin is None or twin["reply_sha256"] != row["reply_sha256"])):
+            row["problems"].append("the CNL and JSON forms give different Rust replies")
+            row["passed"] = False
     return rows
+
+
+def rust_in_scope(status: int, raw: bytes, body: str, version: str | None) -> tuple[list[str], str]:
+    """The reply for a prompt in Rust phase 1 scope: a Rust bundle for v1 to v4, NOT_IMPLEMENTED for v5."""
+    if version == "som.prompt.v5":
+        problems = one_diagnostic(status, raw, 501, NOT_IMPLEMENTED)
+        if not problems and located(body, "json" if '"som.prompt-json.v1"' in body else "cnl",
+                                    json.loads(raw)["diagnostics"][0]) != '"rust"':
+            problems.append("NOT_IMPLEMENTED span is not the target value")
+        return problems, "not_implemented_until_49"
+    if status != 200:
+        return [f"Rust compile gave {status}"], "rust_bundle"
+    bundle = json.loads(raw).get("bundle", {})
+    if bundle.get("version") != RUST_BUNDLE or bundle.get("target") != "rust":
+        return ["the reply is not a Rust som.dsl-bundle.v2 bundle"], "rust_bundle"
+    return [], "rust_bundle"
 
 
 # Every source prompt in each form, with and without target.
@@ -238,10 +269,9 @@ def check_form(qa: str, reference: str, case: dict, form: str, request: dict) ->
     found = rust_profile.check(compiled)
     diagnostic = json.loads(rust_raw).get("diagnostics", [{}])[0]
     if found is None:
-        problems += one_diagnostic(rust_status, rust_raw, 501, NOT_IMPLEMENTED)
-        if not problems and located(rust_body, form, diagnostic) != '"rust"':
-            problems.append("NOT_IMPLEMENTED span is not the target value")
-        row["rust"] = "in_scope"
+        more, outcome = rust_in_scope(rust_status, rust_raw, rust_body, compiled["version"])
+        problems += more
+        row.update(rust="in_scope", rust_outcome=outcome, rust_reply_sha256=sha(rust_raw))
     else:
         # JSON pointers name the request member, so they carry the /prompt prefix.
         pointer = found["pointer"] if form == "cnl" else "/prompt" + found["pointer"]
@@ -293,9 +323,14 @@ def inventory_matches(rows: list[dict]) -> list[str]:
         problems.append(f"refusal counts differ: missing {dict(want - got)}, extra {dict(got - want)}")
     # Each CNL form must agree with its JSON form.
     by_json = {r["id"]: r["rust"] for r in json_rows}
+    replies = {r["id"]: r.get("rust_reply_sha256") for r in json_rows}
     for row in rows:
         if row["form"] == "cnl" and row["id"] in by_json and by_json[row["id"]] != row["rust"]:
             problems.append(f"{row['id']}: CNL rule {row['rust']} != JSON rule {by_json.get(row['id'])}")
+        # In-scope Rust replies must be byte-identical across the two forms.
+        if (row["form"] == "cnl" and row.get("rust_outcome") == "rust_bundle" and row["id"] in replies
+                and replies[row["id"]] != row["rust_reply_sha256"]):
+            problems.append(f"{row['id']}: CNL Rust reply differs from the JSON Rust reply")
     return problems
 
 

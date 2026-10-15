@@ -1,0 +1,123 @@
+{
+  "version": "som.rust-output-contract-amendment.v1",
+  "amendment": 1,
+  "frozen_at": "2026-10-15T08:25:31.890135+00:00",
+  "baseline_commit": "d5e00bdfa1d6ade91c583f6f15638408aea018dc",
+  "issue": 48,
+  "target": "rust",
+  "bundle": "som.dsl-bundle.v2",
+  "status": "amendment_sealed_after_independent_review",
+  "implementation_already_in_progress": true,
+  "previous_receipt": "som-rs/evidence/rust-output-contract-freeze-2026-10-15.json",
+  "previous_receipt_sha256": "1f652bd6262c2c927490ef713321a40c2833e1d7ed84363e6e12015ffe8267dd",
+  "reason": "The frozen text gives created_at and updated_at DEFAULT now() for v3 to v5. The Python v3 and v4 migrations use server_default CURRENT_TIMESTAMP and the v5 migration uses now(). behavior-normalization.json schema_equivalence compares column_default, so a Rust v3 or v4 migration that follows the frozen text cannot be schema-equivalent to the Python migration that the same contract requires it to match. The amendment makes the default follow the Python migration for the same version: CURRENT_TIMESTAMP for v3 and v4, now() for v5. Both give the same values; only the recorded column_default differs. No type, nullability, scope rule, refusal, case, count or gate is relaxed.",
+  "evidence": {
+    "python_v3_v4": "server_default=sa.text(\"CURRENT_TIMESTAMP\") in the Python v3 and v4 alembic migrations assembled by the accepted compiler",
+    "python_v5": "server_default=sa.func.now() in the Python v5 alembic migration",
+    "schema_equivalence_rule": "som-rs/contracts/rust-output-v1/behavior-normalization.json schema_equivalence compares column_default"
+  },
+  "changed_paths": [
+    "som-rs/contracts/rust-output-v1/product-layout.json",
+    "som-rs/contracts/rust-output-v1/scope.json"
+  ],
+  "changes": [
+    {
+      "path": "som-rs/contracts/rust-output-v1/product-layout.json",
+      "old_sha256": "372c963a4f934a3e473552505f03e740e0753e38d7907ab5bfcd1994786ad802",
+      "new_sha256": "83e451c4616d6ee94bfbbae074a299072db15df9e93fd78ccb00d047bcbe70ac",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/product-layout-before-amendment-001.json",
+      "archived_copy_sha256": "372c963a4f934a3e473552505f03e740e0753e38d7907ab5bfcd1994786ad802"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/scope.json",
+      "old_sha256": "d6c2eb3921b51c84614dc3545a2ffcbdf674f108750cd6fce25e45a4626baf9f",
+      "new_sha256": "0f31b4c0290afda9b4c4ccf99b575edec81c3361ae31c74b44bc16d5ff20e51d",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/scope-before-amendment-001.json",
+      "archived_copy_sha256": "d6c2eb3921b51c84614dc3545a2ffcbdf674f108750cd6fce25e45a4626baf9f"
+    }
+  ],
+  "unchanged": "Every other path in the previous receipt keeps its hash. The UPDATE rule that a PATCH sets updated_at to now() is unchanged.",
+  "target_contract": {
+    "id": "som.rust-output-contract.v1",
+    "previous_sha256": "6aa7f335487d0698317aeb3c387f63082dc3954a7c464b2d999c02c0578e5a10",
+    "sha256": "93547b49696d151f6537ad834908861f18b265fdfed8fe4ee840359d8a180f98",
+    "rule": "sha256 of the som.canonical-json.v1 bytes of the files map below"
+  },
+  "files": {
+    "som-rs/contracts/rust-output-v1/CONTRACT.md": "1d8ab9fa84d3ae2c9645ddc9993b4d90e4038d14cce24a1ac27796240a19cff9",
+    "som-rs/contracts/rust-output-v1/acceptance-plan.json": "c0ea39c746d74553efcaea70b9a6e3e6b276ba9ff94e66c07b883e72e6da9b5a",
+    "som-rs/contracts/rust-output-v1/api.schema.json": "dbd396f5e395487f05d6ad8c696d307a6641a9af47322e8c78284a47d053fff0",
+    "som-rs/contracts/rust-output-v1/behavior-normalization.json": "c75b29346d605af7e6ec8ad5d856381f4f8e0e0d321f1d236a5d93b545be97bf",
+    "som-rs/contracts/rust-output-v1/bundle.schema.json": "70d5ca48172f9b818352e16e6d193e1c92d3927971d74c6f8b4bd1f1f3529eec",
+    "som-rs/contracts/rust-output-v1/case-inventory.json": "fc6fbec822623cb9bdc0a6e11c2a72b6f0dfac3c41e8b7c1e35830090eb7d2a5",
+    "som-rs/contracts/rust-output-v1/negative-cases.json": "a82736a98e4f8c8650f58ae92fb262c9f98fc4b66c6b9e60aab3512804208c97",
+    "som-rs/contracts/rust-output-v1/product-layout.json": "83e451c4616d6ee94bfbbae074a299072db15df9e93fd78ccb00d047bcbe70ac",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.lock": "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.toml": "8b708c38686b77e6740171e24c28793c4a40b54a8e9807f8e147a9ef3b44591d",
+    "som-rs/contracts/rust-output-v1/scope.json": "0f31b4c0290afda9b4c4ccf99b575edec81c3361ae31c74b44bc16d5ff20e51d",
+    "som-rs/contracts/rust-output-v1/target-examples.json": "4d91b175e9c75cadb61ae335dc1540582b3d89c01815abe651b02d57ac6889ae",
+    "som-rs/contracts/rust-output-v1/toolchain.json": "8aa4f8ab984b1ad138b981461d1f158d749f1e08664a1b01518eb1be9ecd3eda",
+    "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-15.json": "b83e01caf26dbd403d04dac4948a04b97f059accd22edceae78f8c2519438462",
+    "som-rs/tests/rust-output-v1/build_case_inventory.py": "494976a61dd2184d2a9135d297c635fc4b6bd04be4cbb34bd2b7efc00b855874",
+    "som-rs/tests/rust-output-v1/build_cases.py": "13096aacb9ba3eafe84e4389586478622aca5eea8622f6d8774a15bb4da265b3",
+    "som-rs/tests/rust-output-v1/build_negative_cases.py": "fe28674bcf2c7048d0953a14a8405acc185bbf083f8e2d1abbe0c75d523c3689",
+    "som-rs/tests/rust-output-v1/build_target_examples.py": "697ca7c91c2c9f4c3d27985ed0f50ce6c6f2a103ea7ed264ba1915c056d43ab2",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.cnl": "22e6cb0aacd219cb47478dca4ff5f244b63ae605de399f08a16bb62093ec9ce7",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.cnl": "a2512cdbbea998a8f051160166e3c1d2f4b43ae5d7bbcbe5e6a0cd211a9b7c1d",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.cnl": "554eb27bbd5c894fa7ccd473b45734a33753b1ec32395ccb5f73133b0a71a12c",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.cnl": "cb7f5fb994d6c7bfbdff549e71286211cd1d3f7177b91bdbeeb34337229b7724",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.cnl": "97cb49f506fb16fb9da2ea203b5a114ea68766ec46ebb69cdb4d63f012deb16c",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.prompt.json": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.cnl": "627623f91944b13158487086efec5653948be6c2e77a341e0d0ba9410d291e5d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347",
+    "som-rs/tests/rust-output-v1/cases/index.json": "b49af2a7ba842e5dd810d8d010fcf93436474df7f49f1c569367bed1bc94ed1b",
+    "som-rs/tests/rust-output-v1/check_contract.py": "61d1539d0dbf3b9e7cb2b7528acded146bdbb2dcff48aa069fd22ac52a6a59d5",
+    "som-rs/tests/rust-output-v1/check_python_controls.py": "3da613ff3e8553939e1d246cd1b65007e8c088b5f541c5dc1838739903171939",
+    "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513",
+    "som-rs/tests/rust-output-v1/validate_cases.py": "9b9131de7a56a54c6a9f103da170143bc18ec6d113bedb6f79ea0a7f8453d4bb"
+  },
+  "independent_review": {
+    "reviewer": "independent Claude Opus 5.5 subagent, read-only, no calls to 8765",
+    "final_verdict": "APPROVED",
+    "confirmed_without_change": [
+      "behavior-normalization.json schema_equivalence compares column_default",
+      "Python v3 and v4 migrations use server_default CURRENT_TIMESTAMP; v5 uses sa.func.now(); the frozen coverage cases agree",
+      "PostgreSQL 17 information_schema reports CURRENT_TIMESTAMP and now() as different column_default values",
+      "The edit is one line in product-layout.json and two in scope.json; both parse; no other frozen file changed; archived copies equal HEAD",
+      "Old, new and unchanged hashes, previous_receipt_sha256 and target_contract.sha256 verified",
+      "No type, nullability, refusal, case, count or gate is relaxed; the PATCH updated_at = now() rule is unchanged",
+      "som-targets TARGET_CONTRACT_SHA256 equals the new hash and the v3 and v4 migrations emit CURRENT_TIMESTAMP"
+    ],
+    "findings": [
+      {
+        "id": 1,
+        "severity": "minor",
+        "finding": "tests/rust-output-v1/check_contract.py --receipt on this amendment gives 437 passed and 1 failed: the check that the receipt was sealed before implementation, which only the original freeze receipt can satisfy.",
+        "resolution": "Recorded as the expected result in check_contract below. The frozen checker is not changed."
+      },
+      {
+        "id": 2,
+        "severity": "minor",
+        "finding": "The receipt was pending review with no independent_review record.",
+        "resolution": "Sealed with this record. The som-targets unit test requires the latest receipt to carry an APPROVED review."
+      },
+      {
+        "id": 3,
+        "severity": "minor",
+        "finding": "The unit test did not cover v4, and the service migration always emits CURRENT_TIMESTAMP, which v5 must not do.",
+        "resolution": "The unit test covers v1 to v4. v5 is refused with NOT_IMPLEMENTED in this build; issue #49 must emit now() for v5."
+      }
+    ]
+  },
+  "check_contract": {
+    "command": "python3 som-rs/tests/rust-output-v1/check_contract.py --receipt som-rs/evidence/rust-output-contract-amendment-001.json",
+    "passed": 437,
+    "failed": 1,
+    "expected_failure": "receipt was sealed before implementation: true only for the original freeze receipt; this amendment records implementation_already_in_progress true"
+  }
+}

@@ -1,9 +1,10 @@
-//! Target-aware compile requests around the unchanged compiler-v1 library (issue #47).
+//! Target-aware compile requests around the unchanged compiler-v1 library (issues #47 and #48).
 //!
 //! The som library sources stay byte-identical. Its backend descriptor hashes those
 //! sources, so every Python bundle keeps the bytes the accepted compiler-v1 returns.
 //! The check order is the frozen contracts/rust-output-v1/api.schema.json x-check-order.
 pub mod profile;
+pub mod rust;
 
 use serde_json::{Value, json};
 use som::{
@@ -14,8 +15,6 @@ use som::{
 
 pub const TARGET_CAUSE: &str = "Target must be the string python or rust.";
 pub const TARGET_ALLOWED: &str = "Omit target, or use target python or rust.";
-pub const NOT_IMPLEMENTED_CAUSE: &str = "Rust output planning is not implemented in this build yet. The prompt is in Rust output phase 1 scope.";
-pub const NOT_IMPLEMENTED_ALLOWED: &str = "Omit target, or use target python, to generate Python.";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Target {
@@ -44,7 +43,7 @@ pub fn status(code: &str) -> u16 {
     }
 }
 
-fn rejected(error: Value) -> Reply {
+pub(crate) fn rejected(error: Value) -> Reply {
     (
         status(error["code"].as_str().unwrap_or("INVALID_SCHEMA")),
         error,
@@ -111,17 +110,13 @@ enum Origin<'a> {
     Json,
 }
 
-/// Rust planning. Rust blocks and the Rust manifest are added by issue #48.
-fn plan_rust(doc: &Document) -> Reply {
-    rejected(doc.error(
-        "/target",
-        "NOT_IMPLEMENTED",
-        NOT_IMPLEMENTED_CAUSE,
-        NOT_IMPLEMENTED_ALLOWED,
-    ))
-}
-
-fn compile_rust(doc: &Document, prompt: &Value, origin: Origin) -> Reply {
+fn compile_rust(
+    compiler: &Compiler,
+    doc: &Document,
+    prompt: &Value,
+    origin: Origin,
+    pointer: &str,
+) -> Reply {
     // Step 4: compiler-v1 semantic validation, unchanged. CNL parsing already ran it.
     if let Origin::Json = origin
         && let Err(error) = som::validate_prompt(prompt)
@@ -150,7 +145,7 @@ fn compile_rust(doc: &Document, prompt: &Value, origin: Origin) -> Reply {
         return rejected(body);
     }
     // Step 6: planning.
-    plan_rust(doc)
+    rust::compile(compiler, doc, prompt, pointer)
 }
 
 /// One compile request body, in the frozen check order.
@@ -205,7 +200,7 @@ pub fn compile(compiler: &Compiler, source: &str) -> Reply {
     };
     if target == Target::Rust {
         let origin = map.as_ref().map_or(Origin::Json, Origin::Cnl);
-        return compile_rust(&doc, &prompt, origin);
+        return compile_rust(compiler, &doc, &prompt, origin, semantic_pointer);
     }
     match compiler.compile_prompt(&prompt) {
         Ok(bundle) => (200, json!({"status":"ok","bundle":bundle})),

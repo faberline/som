@@ -1,0 +1,1008 @@
+{
+  "version": "som.rust-catalog.v1",
+  "dsl_version": "som.dsl.rust.v1",
+  "rule": "The plan for a prompt keeps, in this order, every file and every block whose versions list the prompt version. A block param {\"$ref\": \"a.b\"} names the prompt value at /a/b. refs name blocks of the same file. A file path names the prompt value in braces. Every block id starts with rust. and is rendered by the Rust block library.",
+  "files": [
+    {
+      "path": "Cargo.toml",
+      "blocks": [
+        {
+          "id": "rust.cargo.manifest",
+          "name": "manifest",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "Cargo.lock",
+      "blocks": [
+        {
+          "id": "rust.cargo.lock",
+          "name": "lock",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/main.rs",
+      "blocks": [
+        {
+          "id": "rust.main.startup",
+          "name": "startup",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/lib.rs",
+      "blocks": [
+        {
+          "id": "rust.lib.modules",
+          "name": "modules",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/models.rs",
+      "blocks": [
+        {
+          "id": "rust.models.row.plain",
+          "name": "row",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.models.row.service",
+          "name": "row",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/schemas.rs",
+      "blocks": [
+        {
+          "id": "rust.schemas.create.plain",
+          "name": "create",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.schemas.create.service",
+          "name": "create",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.schemas.update.plain",
+          "name": "update",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": [
+            "create"
+          ]
+        },
+        {
+          "id": "rust.schemas.update.service",
+          "name": "update",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": [
+            "create"
+          ]
+        },
+        {
+          "id": "rust.schemas.read.plain",
+          "name": "read",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.schemas.read.service",
+          "name": "read",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/api.rs",
+      "blocks": [
+        {
+          "id": "rust.api.support",
+          "name": "support",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        },
+        {
+          "id": "rust.api.health",
+          "name": "health",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "rust.api.list.all",
+          "name": "list",
+          "versions": [
+            "som.prompt.v1"
+          ],
+          "params": {},
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "rust.api.list.text",
+          "name": "list",
+          "versions": [
+            "som.prompt.v2"
+          ],
+          "params": {
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "rust.api.list.boolean",
+          "name": "list",
+          "versions": [
+            "som.prompt.v3"
+          ],
+          "params": {
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "rust.api.list.boolean.date",
+          "name": "list",
+          "versions": [
+            "som.prompt.v4"
+          ],
+          "params": {
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "date_field": {
+              "$ref": "query.date_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "rust.api.create",
+          "name": "create",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "rust.api.get",
+          "name": "get",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "rust.api.update",
+          "name": "update",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "rust.api.delete",
+          "name": "delete",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "rust.api.router",
+          "name": "router",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "path": {
+              "$ref": "resource.path"
+            }
+          },
+          "refs": [
+            "health",
+            "list",
+            "create",
+            "get",
+            "update",
+            "delete"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/db.rs",
+      "blocks": [
+        {
+          "id": "rust.db.ping",
+          "name": "ping",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        },
+        {
+          "id": "rust.db.insert.plain",
+          "name": "insert",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.db.insert.service",
+          "name": "insert",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.db.fetch.plain",
+          "name": "fetch",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.db.fetch.service",
+          "name": "fetch",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.db.list.all",
+          "name": "list",
+          "versions": [
+            "som.prompt.v1"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.db.list.text",
+          "name": "list",
+          "versions": [
+            "som.prompt.v2"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.db.list.boolean",
+          "name": "list",
+          "versions": [
+            "som.prompt.v3"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.db.list.boolean.date",
+          "name": "list",
+          "versions": [
+            "som.prompt.v4"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "date_field": {
+              "$ref": "query.date_field"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.db.update.plain",
+          "name": "update",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.db.update.service",
+          "name": "update",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.db.delete",
+          "name": "delete",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            }
+          },
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "migrations/0001_{migration.revision}.sql",
+      "blocks": [
+        {
+          "id": "rust.migration.table.plain",
+          "name": "table",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.migration.table.service",
+          "name": "table",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.migration.indexes.boolean",
+          "name": "indexes",
+          "versions": [
+            "som.prompt.v3"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            }
+          },
+          "refs": [
+            "table"
+          ]
+        },
+        {
+          "id": "rust.migration.indexes.boolean.date",
+          "name": "indexes",
+          "versions": [
+            "som.prompt.v4"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "date_field": {
+              "$ref": "query.date_field"
+            }
+          },
+          "refs": [
+            "table"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "tests/api.rs",
+      "blocks": [
+        {
+          "id": "rust.tests.harness",
+          "name": "harness",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "path": {
+              "$ref": "resource.path"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.tests.health",
+          "name": "health",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.crud.plain",
+          "name": "crud",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.crud.service",
+          "name": "crud",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.validation.plain",
+          "name": "validation",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.validation.service",
+          "name": "validation",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.unique",
+          "name": "unique",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.list.all",
+          "name": "list",
+          "versions": [
+            "som.prompt.v1"
+          ],
+          "params": {},
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.list.text",
+          "name": "list",
+          "versions": [
+            "som.prompt.v2"
+          ],
+          "params": {
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.list.boolean",
+          "name": "list",
+          "versions": [
+            "som.prompt.v3"
+          ],
+          "params": {
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.list.boolean.date",
+          "name": "list",
+          "versions": [
+            "som.prompt.v4"
+          ],
+          "params": {
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "date_field": {
+              "$ref": "query.date_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.fallback",
+          "name": "fallback",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": [
+            "harness"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "README.md",
+      "blocks": [
+        {
+          "id": "rust.readme.all",
+          "name": "readme",
+          "versions": [
+            "som.prompt.v1"
+          ],
+          "params": {
+            "package": {
+              "$ref": "package"
+            },
+            "version": {
+              "$ref": "version"
+            },
+            "path": {
+              "$ref": "resource.path"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.readme.text",
+          "name": "readme",
+          "versions": [
+            "som.prompt.v2"
+          ],
+          "params": {
+            "package": {
+              "$ref": "package"
+            },
+            "version": {
+              "$ref": "version"
+            },
+            "path": {
+              "$ref": "resource.path"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.readme.boolean",
+          "name": "readme",
+          "versions": [
+            "som.prompt.v3"
+          ],
+          "params": {
+            "package": {
+              "$ref": "package"
+            },
+            "version": {
+              "$ref": "version"
+            },
+            "path": {
+              "$ref": "resource.path"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.readme.boolean.date",
+          "name": "readme",
+          "versions": [
+            "som.prompt.v4"
+          ],
+          "params": {
+            "package": {
+              "$ref": "package"
+            },
+            "version": {
+              "$ref": "version"
+            },
+            "path": {
+              "$ref": "resource.path"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "date_field": {
+              "$ref": "query.date_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": []
+        }
+      ]
+    }
+  ]
+}

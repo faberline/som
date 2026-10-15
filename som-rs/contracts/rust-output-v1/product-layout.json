@@ -67,7 +67,7 @@
     "float": "f64, DOUBLE PRECISION. A JSON number without a fraction is accepted for a float field.",
     "bool": "bool, BOOLEAN",
     "date": "chrono::NaiveDate, DATE, ISO 8601 YYYY-MM-DD on the wire",
-    "timestamps": "chrono::DateTime<chrono::Utc>, TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), for v3 to v5 only. A PATCH that supplies at least one field also sets updated_at to now().",
+    "timestamps": "chrono::DateTime<chrono::Utc>, TIMESTAMP WITH TIME ZONE NOT NULL, for v3 to v5 only. The column DEFAULT is CURRENT_TIMESTAMP for v3 and v4 and now() for v5, as in the Python migration for the same version. A PATCH that supplies at least one field also sets updated_at to now().",
     "optional": "An optional field without a default is Option<T> and a nullable column. An optional field with a default is T in the row, NOT NULL with that column DEFAULT, and the same request default. This matches the Python migration."
   },
   "fixed_routes": {

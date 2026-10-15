@@ -156,6 +156,9 @@ async fn assemble(
             "{bundle: complete DSL bundle}",
         )));
     }
+    if doc.value["bundle"]["version"] == som_targets::rust::BUNDLE_VERSION {
+        return assemble_rust(compiler, doc).await;
+    }
     let bundle = doc.value["bundle"].clone();
     let diagnostic_bundle = bundle.clone();
     let expected_legacy = compiler.diagnostic_legacy_plan(&bundle["prompt"]);
@@ -182,6 +185,33 @@ async fn assemble(
         json!({"stage":"assemble","total_ms":started.elapsed().as_secs_f64()*1000.0,"formatted_bytes":files.values().map(String::len).sum::<usize>()})
     );
     Ok(Json(json!({"status":"ok","files":files})))
+}
+
+/// A som.dsl-bundle.v2 bundle goes to the Rust assembler. Every other bundle keeps the
+/// unchanged compiler-v1 path.
+async fn assemble_rust(compiler: Arc<Compiler>, doc: strict_json::Document) -> Reply {
+    let started = std::time::Instant::now();
+    let (code, reply) =
+        tokio::task::spawn_blocking(move || som_targets::rust::assemble(&compiler, &doc))
+            .await
+            .map_err(|e| {
+                rejected(strict_json::envelope_error(
+                    "OUTPUT_QUALITY_FAILED",
+                    &format!("Assembler worker failed: {e}"),
+                    "An admitted complete bundle.",
+                ))
+            })?;
+    eprintln!(
+        "{}",
+        json!({"stage":"assemble","target":"rust","total_ms":started.elapsed().as_secs_f64()*1000.0,"http_status":code})
+    );
+    if code == 200 {
+        return Ok(Json(reply));
+    }
+    Err((
+        StatusCode::from_u16(code).unwrap_or(StatusCode::BAD_REQUEST),
+        Json(reply),
+    ))
 }
 
 async fn generate(

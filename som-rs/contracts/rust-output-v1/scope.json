@@ -58,8 +58,8 @@
     "float": "DOUBLE PRECISION",
     "bool": "BOOLEAN",
     "date": "DATE",
-    "created_at": "TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now() (v3, v4, v5 only)",
-    "updated_at": "TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now() (v3, v4, v5 only)",
+    "created_at": "TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP for v3 and v4, DEFAULT now() for v5 (v3, v4, v5 only)",
+    "updated_at": "TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP for v3 and v4, DEFAULT now() for v5 (v3, v4, v5 only)",
     "foreign_key": "INTEGER NOT NULL REFERENCES parent(id) ON DELETE RESTRICT (v5 only)"
   },
   "identifiers": {

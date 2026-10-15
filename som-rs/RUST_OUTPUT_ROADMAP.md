@@ -69,7 +69,10 @@ File, block and plan limits stay in force for each target.
 
 [GitHub milestone 9](https://github.com/faberline/som/milestone/9) tracks this work.
 #45 is done: the [Rust output contract](contracts/rust-output-v1/CONTRACT.md) is frozen by the [freeze receipt](evidence/rust-output-contract-freeze-2026-10-15.json).
-#47 is done: target-aware compile requests are in [som-targets](som-targets), with [evidence](evidence/rust-output-target-planning-2026-10-15.json). #46 and #48–#51 are open.
+#47 is done: target-aware compile requests are in [som-targets](som-targets), with [evidence](evidence/rust-output-target-planning-2026-10-15.json).
+#48 is implemented: Rust blocks render v1–v4 one-resource CRUD products, and every recorded gate passes, with [evidence](evidence/rust-output-products-2026-10-15.json).
+Its acceptance stays blocked until the #46 behavior parity suite runs. #46 and #49–#51 are open.
+[Amendment 1](evidence/rust-output-contract-amendment-001.json) sets the timestamp DEFAULT to CURRENT_TIMESTAMP for v3 and v4 and now() for v5, as in the Python migrations.
 
 ### Target-aware service (#47)
 
@@ -79,10 +82,19 @@ Its `som` binary serves the same routes and CLI, plus the optional `target` memb
 
 - Without target, or with target python, the reply is the compiler-v1 reply byte for byte.
 - An out-of-scope Rust request gets UNSUPPORTED_TARGET in the frozen rule order.
-- An in-scope Rust request gets NOT_IMPLEMENTED (501) until #48 adds Rust planning.
-- The assemble dispatch on som.dsl-bundle.v2 and the A1–A9 refusals move to #48, where the first v2 bundle exists.
+- An in-scope v1–v4 Rust request gets a som.dsl-bundle.v2 bundle. A v5 request gets NOT_IMPLEMENTED (501) until #49.
 
 `som-targets/qa/check_targets.py` runs the #47 gate against a QA port and a read-only reference compiler.
+
+### Rust products (#48)
+
+The [Rust catalog](som-targets/catalog/rust-catalog.v1.json) lists the approved blocks: Cargo manifest and lockfile, startup, router, row types, request and response types, handlers, pool setup, migration, product tests and README.
+`/assemble` dispatches on som.dsl-bundle.v2, applies the A1–A9 refusals, renders through the pinned rustfmt and returns files only.
+The service never runs cargo and never writes into the caller project.
+
+`som-targets/qa/check_rust_products.py` runs the #48 gate: bundle_checks, assemble_refusals and product_gates for every v1–v4 acceptance case.
+Each product passes the rustfmt check, `cargo build --locked --offline`, clippy with warnings denied and its own tests on a fresh PostgreSQL database.
+Behavior parity with Python is not run yet. It needs the #46 suite, so the checker reports it as blocked and exits 2.
 
 ## Acceptance
 
@@ -120,4 +132,4 @@ Keep the legacy M2 rollback assets.
 ## Tracking
 
 [Milestone 9](https://github.com/faberline/som/milestone/9) holds issues #45–#51.
-The #45 contract is frozen. Later changes to it are numbered amendments. #47 added target selection and the Rust scope refusals. No Rust files are generated yet.
+The #45 contract is frozen. Later changes to it are numbered amendments. #47 added target selection and the Rust scope refusals. #48 generates v1–v4 Rust products. Parent and child output (#49) and behavior parity (#46) are open.
