@@ -5,6 +5,7 @@ Candidate003 has passed independent acceptance and is the local default. M1 and 
 The [2026-10-15 progress index](evidence/rust-compiler-progress-2026-10-15.json)
 records the source landing. All seven issues and both milestones are now closed.
 Read [the current status](RUST_STATUS.md) and [the compiler guide](RUST_GUIDE.md).
+The next plan adds Rust output beside Python. Read [the Rust output roadmap](RUST_OUTPUT_ROADMAP.md).
 The compiler became the running default at `2026-10-15T03:08:08.737006+00:00`. Legacy M2 remains saved for rollback.
 
 `CNL → Rust parser and fixed rules → DSL bundle → existing Rust code generator → Python files`

@@ -12,6 +12,8 @@ CNL uses fixed English clauses. Data strings can include Chinese.
 The caller supplies each business choice. The compiler does not guess missing facts.
 The new production path does not load models or start Python.
 Python remains the output language and an independent test tool.
+Rust output with axum and sqlx is planned in [milestone 9](https://github.com/faberline/som/milestone/9).
+Read [the Rust output roadmap](som-rs/RUST_OUTPUT_ROADMAP.md).
 
 The fresh complete gates passed 127 public products and 544 historical jobs.
 Read [the guide](som-rs/RUST_GUIDE.md), [the status](som-rs/RUST_STATUS.md),
