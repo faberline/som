@@ -32,7 +32,8 @@ pub const TARGET_CONTRACT_SHA256: &str =
     "93547b49696d151f6537ad834908861f18b265fdfed8fe4ee840359d8a180f98";
 
 pub const CATALOG_TEXT: &str = include_str!("../../catalog/rust-catalog.v1.json");
-const BLOCK_LIBRARY_TEXT: &str = include_str!("render.rs");
+const BLOCK_LIBRARY_TEXT: &str =
+    concat!(include_str!("render.rs"), include_str!("render/related.rs"));
 static CATALOG: LazyLock<Value> =
     LazyLock::new(|| serde_json::from_str(CATALOG_TEXT).expect("Rust catalog JSON"));
 
@@ -66,7 +67,7 @@ const BACKEND_FILES: &[(&str, &str)] = &[
     ),
 ];
 
-/// The product files every phase 1 single-resource plan produces.
+/// The product files every phase 1 plan produces, besides its one migration.
 const LAYOUT: &[&str] = &[
     "Cargo.toml",
     "Cargo.lock",
@@ -79,17 +80,6 @@ const LAYOUT: &[&str] = &[
     "tests/api.rs",
     "README.md",
 ];
-
-const IMPLEMENTED: &[&str] = &[
-    "som.prompt.v1",
-    "som.prompt.v2",
-    "som.prompt.v3",
-    "som.prompt.v4",
-];
-
-pub const PARENT_CHILD_CAUSE: &str = "Rust output for the v5 parent and child resources is not implemented in this build yet. The prompt is in Rust output phase 1 scope.";
-pub const PARENT_CHILD_ALLOWED: &str =
-    "Omit target, or use target python, to generate Python. Rust v1 to v4 prompts are available.";
 
 fn descriptor(id: &str, bytes: &[u8]) -> Value {
     json!({"id": id, "sha256": digest(bytes)})
@@ -189,14 +179,6 @@ fn block_count(dsl: &Value) -> usize {
 
 /// Step 6 of a Rust compile: the bundle for a prompt that passed validation and the profile.
 pub fn compile(compiler: &Compiler, doc: &Document, prompt: &Value, pointer: &str) -> Reply {
-    if !IMPLEMENTED.contains(&prompt["version"].as_str().unwrap_or_default()) {
-        return rejected(doc.error(
-            "/target",
-            "NOT_IMPLEMENTED",
-            PARENT_CHILD_CAUSE,
-            PARENT_CHILD_ALLOWED,
-        ));
-    }
     let dsl = match plan(prompt) {
         Ok(dsl) => dsl,
         Err(cause) => {
@@ -607,14 +589,6 @@ pub fn assemble(compiler: &Compiler, doc: &Document) -> Reply {
             &found.allowed_form,
         ));
     }
-    if !IMPLEMENTED.contains(&prompt["version"].as_str().unwrap_or_default()) {
-        return rejected(doc.error(
-            "/bundle/prompt/version",
-            "NOT_IMPLEMENTED",
-            PARENT_CHILD_CAUSE,
-            PARENT_CHILD_ALLOWED,
-        ));
-    }
     // Step 8: catalog and composition against the frozen plan.
     let expected = match plan(prompt) {
         Ok(expected) => expected,
@@ -711,7 +685,7 @@ mod tests {
 
     #[test]
     fn plans_are_deterministic_and_bounded() {
-        for name in ["v1", "v2", "v3", "v4"] {
+        for name in ["v1", "v2", "v3", "v4", "v5"] {
             let prompt = example(name);
             let dsl = plan(&prompt).expect("plan");
             assert_eq!(plan(&prompt).expect("plan"), dsl, "{name}");
@@ -804,7 +778,7 @@ mod tests {
 
     #[test]
     fn rendering_is_byte_identical_and_complete() {
-        for name in ["v1", "v2", "v3", "v4"] {
+        for name in ["v1", "v2", "v3", "v4", "v5"] {
             let prompt = example(name);
             let dsl = plan(&prompt).expect("plan");
             let first = render_files(&prompt, &dsl).expect("render");
@@ -824,7 +798,8 @@ mod tests {
                 matches!(name, "v3" | "v4"),
                 "{name}"
             );
-            assert!(!migration.contains("DEFAULT now()"), "{name}");
+            // The v5 Python migration uses now(), so the v5 tables do too.
+            assert_eq!(migration.contains("DEFAULT now()"), name == "v5", "{name}");
         }
     }
 

@@ -1,9 +1,9 @@
-"""Run the behavior suite (issue #46).
+"""Run the behavior suite (issues #46 and #49).
 
 usage:
   check_behavior.py python [--only ID ...]   every frozen acceptance case on its Python product
   check_behavior.py faults [--only FAULT ...] seeded faults in Python products must fail the suite
-  check_behavior.py parity [--only ID ...]   v1 to v4 Python against Rust, and D1 to D5 on Rust alone
+  check_behavior.py parity [--only ID ...]   v1 to v5 Python against Rust, and D1 to D5 on Rust alone
 
 The suite owns its PostgreSQL cluster and every product process, on QA ports only (never 8765
 or 18765), and stops them on exit. Bundles come from the QA compiler (--qa). Raw transcripts go
@@ -29,11 +29,9 @@ import faults
 import hosts
 import suite
 
-V5 = "som.prompt.v5"
-
 
 def cases() -> list[dict]:
-    """Every frozen acceptance case: the v1 to v4 cases the Rust profile admits, then v5."""
+    """Every frozen acceptance case: the v1 to v5 cases the Rust profile admits."""
     out = []
     for case in hosts.targets.sources():
         if case.get("rejection") or hosts.targets.rust_profile.check(case["prompt"]) is not None:
@@ -148,9 +146,8 @@ def main() -> int:
         work_items = [f for f in faults.FAULTS if args.only is None or f["id"] in args.only]
         unknown = set(args.only or ()) - {f["id"] for f in faults.FAULTS}
     else:
-        pool = every if args.mode == "python" else [c for c in every if c["version"] != V5]
-        work_items = [c for c in pool if args.only is None or c["id"] in args.only]
-        unknown = set(args.only or ()) - {c["id"] for c in pool}
+        work_items = [c for c in every if args.only is None or c["id"] in args.only]
+        unknown = set(args.only or ()) - {c["id"] for c in every}
     if unknown:
         raise SystemExit(f"unknown ids: {sorted(unknown)}")
     args.out.mkdir(parents=True, exist_ok=True)
@@ -200,9 +197,7 @@ def main() -> int:
         summary["steps"] = sum(r.get("steps", 0) for r in rows)
         summary["strict_steps"] = sum(r.get("strict_steps", 0) for r in rows)
         summary["strict_failed"] = [r["id"] for r in rows if r.get("strict_failures")]
-        summary["v5_python_only"] = sorted(c["id"] for c in every if c["version"] == V5)
-        summary["not_compared"] = ["v5 cases: D2 and D6 are compared for v5 only, and v5 Rust is #49"]
-        summary["complete"] = args.only is None and len(rows) == len(pool)
+        summary["complete"] = args.only is None and len(rows) == len(every)
     if args.mode == "faults":
         caught = {r["category"] for r in rows if r["passed"]}
         summary["categories_without_a_caught_fault"] = sorted(set(suite.CATEGORIES) - caught)

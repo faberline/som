@@ -59,7 +59,8 @@ Only ids and timestamps are normalized. Everything else compares exactly.
 - **other errors.** The whole body is compared, e.g. `{"detail": "not found"}`.
 - **status and media type.** Always compared, also on a 204, which must have no body. v1–v4 Python
   answers its 204 with FastAPI's `JSONResponse`, which keeps `application/json`; v5 Python sends a
-  bare `Response` with no media type. The Rust v1–v4 delete matches the former.
+  bare `Response` with no media type. The Rust v1–v4 delete matches the former, and the Rust v5
+  delete the latter.
 
 ## Divergences
 
@@ -69,8 +70,8 @@ These are the frozen divergences D1 to D6. Parity leaves them out of the shared 
 - D1, lax coercion (`"1"` and `1.0` for an int, `"1.5"` for a float, `"true"` and `1` for a bool):
   Rust answers 422 `body`.
 - D2, strings over 255 or ints outside i32 in v1 to v4: Rust answers 422 `body`. The contract
-  compares D2 for v5, where Python already answers 422. The `bounds` steps check that on v5
-  Python now; they compare the two products once v5 Rust exists (#49).
+  compares D2 for v5, where Python already answers 422, so the `bounds` steps compare the two
+  products.
 - D3, path ids outside i32: Rust answers 404 with the not-found detail.
 - D4, a repeated query parameter: Rust answers 422 `query`.
 - D5, a trailing slash: Rust answers 404 `{"detail": "Not Found"}`.
@@ -109,7 +110,7 @@ default service on 8765.
 ```bash
 python check_behavior.py python --out OUT                  # 115 frozen acceptance cases (112 v1–v4 + 3 v5)
 python check_behavior.py faults --out OUT                  # seeded faults in faults.py
-python check_behavior.py parity --out OUT --target-dir T   # 112 v1–v4 cases, Python against Rust
+python check_behavior.py parity --out OUT --target-dir T   # 115 v1–v5 cases, Python against Rust
 ```
 
 - `--only ID ...` limits the cases or faults. Unknown ids are refused.
@@ -119,9 +120,6 @@ python check_behavior.py parity --out OUT --target-dir T   # 112 v1–v4 cases, 
   report. They stay local.
 - The exit code is 0 only when everything passes. In `faults` mode, every fault must be caught in
   its category, and every category must have a caught fault.
-
-v5 Rust output is issue #49 and answers NOT_IMPLEMENTED, so `parity` covers v1 to v4 and v5 runs
-on Python only. The parity summary lists this under `not_compared`.
 
 ## Known limits
 

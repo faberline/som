@@ -83,7 +83,7 @@ Its `som` binary serves the same routes and CLI, plus the optional `target` memb
 
 - Without target, or with target python, the reply is the compiler-v1 reply byte for byte.
 - An out-of-scope Rust request gets UNSUPPORTED_TARGET in the frozen rule order.
-- An in-scope v1–v4 Rust request gets a som.dsl-bundle.v2 bundle. A v5 request gets NOT_IMPLEMENTED (501) until #49.
+- An in-scope v1–v5 Rust request gets a som.dsl-bundle.v2 bundle.
 
 `som-targets/qa/check_targets.py` runs the #47 gate against a QA port and a read-only reference compiler.
 
@@ -93,9 +93,16 @@ The [Rust catalog](som-targets/catalog/rust-catalog.v1.json) lists the approved 
 `/assemble` dispatches on som.dsl-bundle.v2, applies the A1–A9 refusals, renders through the pinned rustfmt and returns files only.
 The service never runs cargo and never writes into the caller project.
 
-`som-targets/qa/check_rust_products.py` runs the #48 gate: bundle_checks, assemble_refusals and product_gates for every v1–v4 acceptance case.
+`som-targets/qa/check_rust_products.py` runs the #48 and #49 gate: bundle_checks, assemble_refusals and product_gates for every v1–v5 acceptance case.
 Each product passes the rustfmt check, `cargo build --locked --offline`, clippy with warnings denied and its own tests on a fresh PostgreSQL database.
 Without `--parity` the checker reports behavior parity as blocked and exits 2. With `--parity <#46 report>` it requires every case to pass parity with the same Rust files the gates built.
+
+### Parent and child resources (#49)
+
+The v5 blocks render a parent and a child table joined by a foreign key with `ON DELETE RESTRICT`.
+Deleting a parent that still has children answers 409. Child routes are scoped to their parent: a missing parent answers 404, and a child under another parent is not found.
+`POST {parent}/with-children` creates a parent with 1–20 children in one transaction; any failure rolls back the whole batch.
+As in the v5 Python product, the tables default their timestamps to `now()`, `/healthz` answers, and a delete answers 204 with no media type.
 
 ## Acceptance
 

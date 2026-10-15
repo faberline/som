@@ -13,7 +13,8 @@
             "som.prompt.v1",
             "som.prompt.v2",
             "som.prompt.v3",
-            "som.prompt.v4"
+            "som.prompt.v4",
+            "som.prompt.v5"
           ],
           "params": {},
           "refs": []
@@ -30,7 +31,8 @@
             "som.prompt.v1",
             "som.prompt.v2",
             "som.prompt.v3",
-            "som.prompt.v4"
+            "som.prompt.v4",
+            "som.prompt.v5"
           ],
           "params": {},
           "refs": []
@@ -47,7 +49,8 @@
             "som.prompt.v1",
             "som.prompt.v2",
             "som.prompt.v3",
-            "som.prompt.v4"
+            "som.prompt.v4",
+            "som.prompt.v5"
           ],
           "params": {},
           "refs": []
@@ -64,7 +67,8 @@
             "som.prompt.v1",
             "som.prompt.v2",
             "som.prompt.v3",
-            "som.prompt.v4"
+            "som.prompt.v4",
+            "som.prompt.v5"
           ],
           "params": {},
           "refs": []
@@ -98,6 +102,25 @@
           "params": {
             "fields": {
               "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.models.related.rows",
+          "name": "rows",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
             }
           },
           "refs": []
@@ -194,6 +217,67 @@
             }
           },
           "refs": []
+        },
+        {
+          "id": "rust.schemas.related.support",
+          "name": "support",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.schemas.related.parent",
+          "name": "parent",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            }
+          },
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "rust.schemas.related.child",
+          "name": "child",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "rust.schemas.related.batch",
+          "name": "batch",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": [
+            "parent",
+            "child"
+          ]
         }
       ]
     },
@@ -213,13 +297,23 @@
           "refs": []
         },
         {
+          "id": "rust.api.related.support",
+          "name": "support",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": []
+        },
+        {
           "id": "rust.api.health",
           "name": "health",
           "versions": [
             "som.prompt.v1",
             "som.prompt.v2",
             "som.prompt.v3",
-            "som.prompt.v4"
+            "som.prompt.v4",
+            "som.prompt.v5"
           ],
           "params": {},
           "refs": [
@@ -371,6 +465,68 @@
             "get",
             "update",
             "delete"
+          ]
+        },
+        {
+          "id": "rust.api.related.list",
+          "name": "list",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            }
+          },
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "rust.api.related.parent",
+          "name": "parent",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": [
+            "support",
+            "router"
+          ]
+        },
+        {
+          "id": "rust.api.related.child",
+          "name": "child",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "rust.api.related.router",
+          "name": "router",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent_path": {
+              "$ref": "resources.parent.path"
+            },
+            "child_path": {
+              "$ref": "resources.child.path"
+            }
+          },
+          "refs": [
+            "health",
+            "list",
+            "parent",
+            "child"
           ]
         }
       ]
@@ -583,6 +739,48 @@
             }
           },
           "refs": []
+        },
+        {
+          "id": "rust.db.related.ping",
+          "name": "ping",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": []
+        },
+        {
+          "id": "rust.db.related.parent",
+          "name": "parent",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            }
+          },
+          "refs": [
+            "ping"
+          ]
+        },
+        {
+          "id": "rust.db.related.child",
+          "name": "child",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": [
+            "ping"
+          ]
         }
       ]
     },
@@ -673,6 +871,46 @@
           "refs": [
             "table"
           ]
+        },
+        {
+          "id": "rust.migration.related.parent",
+          "name": "parent",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.migration.related.child",
+          "name": "child",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent_table": {
+              "$ref": "resources.parent.table"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": [
+            "parent"
+          ]
         }
       ]
     },
@@ -699,13 +937,33 @@
           "refs": []
         },
         {
+          "id": "rust.tests.related.harness",
+          "name": "harness",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": []
+        },
+        {
           "id": "rust.tests.health",
           "name": "health",
           "versions": [
             "som.prompt.v1",
             "som.prompt.v2",
             "som.prompt.v3",
-            "som.prompt.v4"
+            "som.prompt.v4",
+            "som.prompt.v5"
           ],
           "params": {},
           "refs": [
@@ -875,6 +1133,111 @@
           "refs": [
             "harness"
           ]
+        },
+        {
+          "id": "rust.tests.related.crud",
+          "name": "crud",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.related.validation",
+          "name": "validation",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.related.unique",
+          "name": "unique",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.related.list",
+          "name": "list",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.related.scope",
+          "name": "scope",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.related.batch",
+          "name": "batch",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "rust.tests.related.fallback",
+          "name": "fallback",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": [
+            "harness"
+          ]
         }
       ]
     },
@@ -998,6 +1361,37 @@
             },
             "max_limit": {
               "$ref": "query.max_limit"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.readme.related",
+          "name": "readme",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "package": {
+              "$ref": "package"
+            },
+            "version": {
+              "$ref": "version"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
             }
           },
           "refs": []

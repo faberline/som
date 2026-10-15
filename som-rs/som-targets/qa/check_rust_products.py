@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Issue #48 checks for Rust output phase 1 on a QA port.
+"""Issue #48 and #49 checks for Rust output phase 1 on a QA port.
 
-Gate: bundle_checks, assemble_refusals and product_gates for every v1 to v4
+Gate: bundle_checks, assemble_refusals and product_gates for every v1 to v5
 acceptance case (contracts/rust-output-v1/acceptance-plan.json).
 
 - bundle_checks: the CNL and JSON requests with target rust give byte-identical
@@ -70,8 +70,9 @@ EXCLUDED_TABLES = ("alembic_version", "_sqlx_migrations")
 def divergence_markers(prompt: dict) -> list[str]:
     """The D markers the product tests must carry. D1 needs a field Pydantic can coerce
     (anything but str). D2 needs a str or int field. D4 needs list query parameters,
-    which v1 does not have."""
-    types = {field["type"] for field in prompt["resource"]["fields"]}
+    which v1 does not have. A v5 prompt counts the fields of both resources."""
+    resources = prompt["resources"].values() if "resources" in prompt else [prompt["resource"]]
+    types = {field["type"] for resource in resources for field in resource["fields"]}
     markers = ["D3", "D5"]
     if types & {"str", "int"}:
         markers.append("D2")
@@ -138,17 +139,10 @@ def compile_body(case: dict, form: str) -> str:
     return targets.dump({"format": "som.prompt-json.v1", "prompt": case["prompt"], "target": "rust"})
 
 
-def acceptance_cases() -> tuple[list[dict], int]:
-    """Every v1 to v4 case the frozen Rust profile admits, and the count of v5 cases (#49)."""
-    cases, v5 = [], 0
-    for case in targets.sources():
-        if case.get("rejection") or targets.rust_profile.check(case["prompt"]) is not None:
-            continue
-        if case["prompt"].get("version") == "som.prompt.v5":
-            v5 += 1
-        else:
-            cases.append(case)
-    return cases, v5
+def acceptance_cases() -> list[dict]:
+    """Every v1 to v5 case the frozen Rust profile admits."""
+    return [case for case in targets.sources()
+            if not case.get("rejection") and targets.rust_profile.check(case["prompt"]) is None]
 
 
 # ---------------------------------------------------------------- bundle checks
@@ -220,9 +214,9 @@ def rename_field(value: Any, old: str, new: str) -> Any:
     return new if value == old else value
 
 
-def recipes(qa: str, base: dict) -> dict[str, dict]:
-    """Each recipe's request bundle, built from the example-v1 Rust bundle. A6 uses it as well:
-    its frozen base, example-v5, is NOT_IMPLEMENTED until #49. A3 is rehashed like the others."""
+def recipes(qa: str, base: dict, v5_base: dict) -> dict[str, dict]:
+    """Each recipe's request bundle, built from the example-v1 Rust bundle, and for A6 from the
+    example-v5 Rust bundle, as the plan says. A3 is rehashed like the others."""
     examples = targets.EXAMPLES
     v1 = json.loads((examples / "v1.prompt.json").read_text())
     v6 = json.loads((examples / "v6.prompt.json").read_text())
@@ -244,7 +238,7 @@ def recipes(qa: str, base: dict) -> dict[str, dict]:
     a5 = copy.deepcopy(base)
     a5["dsl"]["files"][0]["blocks"][0]["id"] = "orm.base"
     out["A5"] = rehash(a5)
-    a6 = copy.deepcopy(base)
+    a6 = copy.deepcopy(v5_base)
     a6["prompt"] = v6
     shared = [key for key in v6_python["assets"] if key not in ("catalog", "block_library", "backend", "formatter")]
     for key in shared:
@@ -267,9 +261,9 @@ def recipes(qa: str, base: dict) -> dict[str, dict]:
     return out
 
 
-def assemble_refusals(qa: str, base: dict) -> list[dict]:
+def assemble_refusals(qa: str, base: dict, v5_base: dict) -> list[dict]:
     rows = []
-    built = recipes(qa, base)
+    built = recipes(qa, base, v5_base)
     for recipe in PLAN["assemble_refusals"]["recipes"]:
         body = targets.dump({"bundle": built[recipe["id"]]})
         status, raw = targets.post(qa, body, "/v1/assemble")
@@ -493,18 +487,19 @@ def main() -> int:
     if str(args.qa).rstrip("/").endswith((":8765", ":18765")):
         parser.error("QA checks never use ports 8765 or 18765")
 
-    cases, v5 = acceptance_cases()
-    if len(cases) + v5 != CASE_INVENTORY["counts"]["acceptance_total"]:
-        parser.error(f"{len(cases)} v1 to v4 and {v5} v5 cases differ from the frozen acceptance_total")
+    cases = acceptance_cases()
+    if len(cases) != CASE_INVENTORY["counts"]["acceptance_total"]:
+        parser.error(f"{len(cases)} cases differ from the frozen acceptance_total")
     unknown = sorted(set(args.only or []) - {case["id"] for case in cases})
     if unknown:
         parser.error(f"unknown case ids {unknown}")
     pinned_toolchain()
     selected = [case for case in cases if not args.only or case["id"] in args.only]
     args.work.mkdir(parents=True, exist_ok=False)
-    v1 = next(case for case in cases if case["id"] == "example-v1")
-    base = json.loads(targets.post(args.qa, compile_body(v1, "json"))[1])["bundle"]
-    refusals = assemble_refusals(args.qa, base)
+    base, v5_base = (json.loads(targets.post(args.qa, compile_body(
+        next(case for case in cases if case["id"] == name), "json"))[1])["bundle"]
+        for name in ("example-v1", "example-v5"))
+    refusals = assemble_refusals(args.qa, base, v5_base)
     # cargo serializes on the shared target directory, so products run one at a time.
     with concurrent.futures.ThreadPoolExecutor(1) as pool:
         rows = list(pool.map(lambda case: check_case(args.qa, case, args.work, args.pg, args.target_dir,
@@ -518,7 +513,7 @@ def main() -> int:
     blocked = [] if args.parity else ["behavior parity: not run, pass --parity with a check_behavior.py report"]
     report = {
         "version": "som.rust-output-product-checks.v1",
-        "issue": 48,
+        "issue": 49,
         "qa": args.qa,
         "inputs": {p.relative_to(targets.REPO).as_posix(): targets.sha(p.read_bytes()) for p in
                    [CONTRACT / "acceptance-plan.json", CONTRACT / "case-inventory.json",
@@ -531,7 +526,7 @@ def main() -> int:
                     targets.LEGACY / "inventory-003.json"]},
         "summary": {
             "acceptance_cases": {"total": len(cases), "by_version": dict(sorted(by_version.items())),
-                                 "checked": len(rows), "v5_cases_for_49": v5,
+                                 "checked": len(rows),
                                  "frozen_acceptance_total": CASE_INVENTORY["counts"]["acceptance_total"]},
             "bundle_checks": {"passed": sum(r["bundle_checks"]["passed"] for r in rows), "total": len(rows)},
             "assemble_refusals": {"passed": sum(r["passed"] for r in refusals), "total": len(refusals)},

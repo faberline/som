@@ -5,6 +5,8 @@
 //! fields, SQL identifiers in double quotes, JSON members and string literals.
 use serde_json::Value;
 
+mod related;
+
 const MANIFEST: &str = include_str!("../../../contracts/rust-output-v1/reference/Cargo.toml");
 const LOCK: &str = include_str!("../../../contracts/rust-output-v1/reference/Cargo.lock");
 
@@ -143,6 +145,9 @@ fn limit(params: &Value) -> Result<i64, String> {
 
 /// Render one block from its resolved params.
 pub fn render(id: &str, params: &Value) -> Result<String, String> {
+    if id.contains(".related") {
+        return related::render(id, params);
+    }
     let fields = || parse_fields(&params["fields"]);
     Ok(match id {
         "rust.cargo.manifest" => MANIFEST.to_owned(),
@@ -157,7 +162,7 @@ pub fn render(id: &str, params: &Value) -> Result<String, String> {
         "rust.schemas.update.service" => update(&fields()?, true),
         "rust.schemas.read.plain" => read(&fields()?, false),
         "rust.schemas.read.service" => read(&fields()?, true),
-        "rust.api.support" => API_SUPPORT.to_owned(),
+        "rust.api.support" => [API_USES, API_SUPPORT, API_BODY].concat(),
         "rust.api.health" => API_HEALTH.to_owned(),
         "rust.api.list.all" => API_LIST_ALL.to_owned(),
         "rust.api.list.text" => api_list(params, Filter::Text)?,
@@ -258,9 +263,14 @@ pub static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!();
 // ---------------------------------------------------------------- src/models.rs
 
 fn row(fields: &[Field], service: bool) -> String {
+    row_struct("Row", None, fields, service)
+}
+
+/// A FromRow struct: id, the foreign key if any, the fields, and the timestamps if service.
+fn row_struct(name: &str, key: Option<&Field>, fields: &[Field], service: bool) -> String {
     let mut out =
-        String::from("#[derive(Debug, sqlx::FromRow)]\npub struct Row {\n    pub id: i32,\n");
-    for field in fields {
+        format!("#[derive(Debug, sqlx::FromRow)]\npub struct {name} {{\n    pub id: i32,\n");
+    for field in key.into_iter().chain(fields) {
         if field.raw() {
             out += &format!("    #[sqlx(rename = \"{}\")]\n", field.name);
         }
@@ -289,20 +299,45 @@ fn problems(checks: &[String]) -> String {
     out + "    }\n"
 }
 
-fn create(fields: &[Field], service: bool) -> String {
-    let mut out = String::from("use serde::{Deserialize, Deserializer, Serialize};\n\n");
-    if fields.iter().any(|field| field.kind == Kind::Str) {
-        out += r#"fn too_long(name: &str) -> serde_json::Value {
+const SCHEMA_USES: &str = "use serde::{Deserialize, Deserializer, Serialize};\n\n";
+
+const TOO_LONG: &str = r#"fn too_long(name: &str) -> serde_json::Value {
     serde_json::json!({"type": "string_too_long", "loc": ["body", name], "msg": "String should have at most 255 characters"})
 }
 
 "#;
+
+const NOT_NULL: &str = r#"fn not_null(name: &str) -> serde_json::Value {
+    serde_json::json!({"type": "value_error", "loc": ["body"], "msg": format!("Value error, {name} cannot be null")})
+}
+
+"#;
+
+const PRESENT: &str = r#"/// A present member, including null, is Some. An absent member stays None through default.
+fn present<'de, D, T>(deserializer: D) -> Result<Option<Option<T>>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de>,
+{
+    Option::<T>::deserialize(deserializer).map(Some)
+}
+"#;
+
+fn create(fields: &[Field], service: bool) -> String {
+    let mut out = String::from(SCHEMA_USES);
+    if fields.iter().any(|field| field.kind == Kind::Str) {
+        out += TOO_LONG;
     }
-    out += "#[derive(Debug, Deserialize)]\n";
+    out + &create_struct("Create", fields, service)
+}
+
+/// A create body and its problems(): strings over 255 characters.
+fn create_struct(name: &str, fields: &[Field], service: bool) -> String {
+    let mut out = String::from("#[derive(Debug, Deserialize)]\n");
     if service {
         out += "#[serde(deny_unknown_fields)]\n";
     }
-    out += "pub struct Create {\n";
+    out += &format!("pub struct {name} {{\n");
     let mut checks = Vec::new();
     for field in fields {
         let options = if field.required {
@@ -327,26 +362,28 @@ fn create(fields: &[Field], service: bool) -> String {
             ));
         }
     }
-    out += "}\n\nimpl Create {\n";
+    out += &format!("}}\n\nimpl {name} {{\n");
     out += &problems(&checks);
     out + "}\n"
 }
 
 fn update(fields: &[Field], service: bool) -> String {
     let mut out = String::new();
-    let null_checked = service && fields.iter().any(|field| !field.nullable());
-    if null_checked {
-        out += r#"fn not_null(name: &str) -> serde_json::Value {
-    serde_json::json!({"type": "value_error", "loc": ["body"], "msg": format!("Value error, {name} cannot be null")})
+    if service && fields.iter().any(|field| !field.nullable()) {
+        out += NOT_NULL;
+    }
+    let (shape, checks) = update_struct("Update", fields, service);
+    out + &shape + "\n" + PRESENT + "\n" + &checks
 }
 
-"#;
-    }
-    out += "#[derive(Debug, Deserialize)]\n";
+/// A patch body with present() members, and its impl with problems(): strings over 255
+/// characters and, if service, nulls for NOT NULL columns.
+fn update_struct(name: &str, fields: &[Field], service: bool) -> (String, String) {
+    let mut out = String::from("#[derive(Debug, Deserialize)]\n");
     if service {
         out += "#[serde(deny_unknown_fields)]\n";
     }
-    out += "pub struct Update {\n";
+    out += &format!("pub struct {name} {{\n");
     let mut checks = Vec::new();
     for field in fields {
         out += &field.serde(vec![
@@ -373,28 +410,27 @@ fn update(fields: &[Field], service: bool) -> String {
             ));
         }
     }
-    out += r#"}
-
-/// A present member, including null, is Some. An absent member stays None through default.
-fn present<'de, D, T>(deserializer: D) -> Result<Option<Option<T>>, D::Error>
-where
-    D: Deserializer<'de>,
-    T: Deserialize<'de>,
-{
-    Option::<T>::deserialize(deserializer).map(Some)
-}
-
-impl Update {
-"#;
-    out += &problems(&checks);
-    out + "}\n"
+    (
+        out + "}\n",
+        format!("impl {name} {{\n{}}}\n", problems(&checks)),
+    )
 }
 
 fn read(fields: &[Field], service: bool) -> String {
-    let mut out =
-        String::from("#[derive(Debug, Serialize)]\npub struct Read {\n    pub id: i32,\n");
+    read_struct("Read", "Row", None, fields, service)
+}
+
+/// A response struct and its From for the row struct.
+fn read_struct(
+    name: &str,
+    row: &str,
+    key: Option<&Field>,
+    fields: &[Field],
+    service: bool,
+) -> String {
+    let mut out = format!("#[derive(Debug, Serialize)]\npub struct {name} {{\n    pub id: i32,\n");
     let mut moves = String::from("            id: row.id,\n");
-    for field in fields {
+    for field in key.into_iter().chain(fields) {
         out += &field.serde(Vec::new());
         out += &format!("    pub {}: {},\n", field.ident(), field.stored());
         moves += &format!("            {0}: row.{0},\n", field.ident());
@@ -405,14 +441,17 @@ fn read(fields: &[Field], service: bool) -> String {
         moves +=
             "            created_at: row.created_at,\n            updated_at: row.updated_at,\n";
     }
-    out += "}\n\nimpl From<crate::models::Row> for Read {\n    fn from(row: crate::models::Row) -> Self {\n        Self {\n";
+    out += &format!(
+        "}}\n\nimpl From<crate::models::{row}> for {name} {{\n    fn from(row: crate::models::{row}) -> Self {{\n        Self {{\n"
+    );
     out += &moves;
     out + "        }\n    }\n}\n"
 }
 
 // ---------------------------------------------------------------- src/api.rs
 
-const API_SUPPORT: &str = r#"use axum::{
+/// The uses that the v1 to v4 and the v5 support share.
+const API_USES: &str = r#"use axum::{
     Json, Router,
     body::Bytes,
     extract::{
@@ -427,7 +466,9 @@ use serde_json::{Value, json};
 use sqlx::PgPool;
 
 use crate::db;
-use crate::schemas::{Create, Read, Update};
+"#;
+
+const API_SUPPORT: &str = r#"use crate::schemas::{Create, Read, Update};
 
 const NOT_INTEGER: &str = "Input should be a valid integer, unable to parse string as an integer";
 
@@ -478,7 +519,10 @@ fn item_id(path: Result<Path<String>, PathRejection>, problems: &mut Vec<Value>)
     text.parse().ok()
 }
 
-/// No content type, application/json or application/*+json.
+"#;
+
+/// The body readers that the v1 to v4 and the v5 support share.
+const API_BODY: &str = r#"/// No content type, application/json or application/*+json.
 fn json_type(headers: &HeaderMap) -> bool {
     let Some(value) = headers.get(CONTENT_TYPE) else {
         return true;
@@ -926,19 +970,7 @@ fn migration_table(params: &Value, service: bool) -> Result<String, String> {
     let revision = text(params, "revision")?;
     let down = params["down_revision"].as_str().unwrap_or("none");
     let mut lines = vec!["    \"id\" SERIAL PRIMARY KEY".to_owned()];
-    for field in &fields {
-        let mut line = format!("    {} {}", quoted(&field.name), field.sql());
-        if !field.nullable() {
-            line += " NOT NULL";
-        }
-        if field.unique {
-            line += " UNIQUE";
-        }
-        if field.default_false {
-            line += " DEFAULT false";
-        }
-        lines.push(line);
-    }
+    lines.extend(fields.iter().map(column_line));
     if service {
         // Amendment 1: v3 and v4 use CURRENT_TIMESTAMP; v5 output (#49) must use now().
         for name in ["created_at", "updated_at"] {
@@ -952,6 +984,21 @@ fn migration_table(params: &Value, service: bool) -> Result<String, String> {
         quoted(table),
         lines.join(",\n")
     ))
+}
+
+/// A column definition line of CREATE TABLE.
+fn column_line(field: &Field) -> String {
+    let mut line = format!("    {} {}", quoted(&field.name), field.sql());
+    if !field.nullable() {
+        line += " NOT NULL";
+    }
+    if field.unique {
+        line += " UNIQUE";
+    }
+    if field.default_false {
+        line += " DEFAULT false";
+    }
+    line
 }
 
 fn migration_indexes(params: &Value, date: bool) -> Result<String, String> {
@@ -995,20 +1042,13 @@ fn sample_fn(name: &str, doc: &str, members: &[(String, String)]) -> String {
     )
 }
 
-fn tests_harness(params: &Value) -> Result<String, String> {
-    let fields = parse_fields(&params["fields"])?;
-    let path = text(params, "path")?;
-    let rows = if fields
-        .iter()
-        .any(|field| field.kind == Kind::Bool && field.unique && !field.nullable())
-    {
-        2
+/// The sample, minimal and defaults fns of row k. A role prefixes their names.
+fn sample_fns(role: &str, fields: &[Field]) -> String {
+    let (prefix, row) = if role.is_empty() {
+        (String::new(), "row".to_owned())
     } else {
-        25
+        (format!("{role}_"), format!("{role} row"))
     };
-    let mut out = HARNESS
-        .replace("@PATH@", path)
-        .replace("@ROWS@", &rows.to_string());
     let sample: Vec<(String, String)> = fields
         .iter()
         .enumerate()
@@ -1034,13 +1074,36 @@ fn tests_harness(params: &Value) -> Result<String, String> {
             (field.name.clone(), value)
         })
         .collect();
-    out += &sample_fn("sample", "Valid values for every field of row k.", &sample);
-    out += &sample_fn("minimal", "Only the required fields of row k.", &minimal);
-    out += &sample_fn(
-        "defaults",
-        "The fields that minimal(k) creates, with the null and false defaults.",
+    sample_fn(
+        &format!("{prefix}sample"),
+        &format!("Valid values for every field of {row} k."),
+        &sample,
+    ) + &sample_fn(
+        &format!("{prefix}minimal"),
+        &format!("Only the required fields of {row} k."),
+        &minimal,
+    ) + &sample_fn(
+        &format!("{prefix}defaults"),
+        &format!("The fields that {prefix}minimal(k) creates, with the null and false defaults."),
         &defaults,
+    )
+}
+
+fn tests_harness(params: &Value) -> Result<String, String> {
+    let fields = parse_fields(&params["fields"])?;
+    let path = text(params, "path")?;
+    let rows = if fields
+        .iter()
+        .any(|field| field.kind == Kind::Bool && field.unique && !field.nullable())
+    {
+        2
+    } else {
+        25
+    };
+    let mut out = format!(
+        "{HARNESS_USES}const PATH: &str = \"{path}\";\nconst ROWS: usize = {rows};\n\n{HARNESS_TOOLS}fn item(body: &Value) -> String {{\n    format!(\"{{PATH}}/{{}}\", body[\"id\"])\n}}\n\n"
     );
+    out += &sample_fns("", &fields);
     out += r#"async fn create(app: &Router, k: usize) -> Value {
     let (status, body) = send(app, "POST", PATH, Some(sample(k))).await;
     assert_eq!(status, StatusCode::CREATED, "{body}");
@@ -1050,7 +1113,7 @@ fn tests_harness(params: &Value) -> Result<String, String> {
     Ok(out)
 }
 
-const HARNESS: &str = r#"use axum::{
+const HARNESS_USES: &str = r#"use axum::{
     Router,
     body::Body,
     http::{Request, StatusCode},
@@ -1059,10 +1122,9 @@ use http_body_util::BodyExt;
 use serde_json::{Value, json};
 use tower::ServiceExt;
 
-const PATH: &str = "@PATH@";
-const ROWS: usize = @ROWS@;
+"#;
 
-/// A fresh schema public on TEST_DATABASE_URL. A missing database fails the test.
+const HARNESS_TOOLS: &str = r#"/// A fresh schema public on TEST_DATABASE_URL. A missing database fails the test.
 async fn app() -> Router {
     let url = std::env::var("TEST_DATABASE_URL").expect("TEST_DATABASE_URL is required");
     let pool = sqlx::PgPool::connect(&url).await.expect("connect to TEST_DATABASE_URL");
@@ -1124,10 +1186,6 @@ fn fields(body: &Value) -> Value {
         members.remove("updated_at");
     }
     body
-}
-
-fn item(body: &Value) -> String {
-    format!("{PATH}/{}", body["id"])
 }
 
 "#;
