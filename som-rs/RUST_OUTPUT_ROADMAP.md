@@ -68,7 +68,21 @@ File, block and plan limits stay in force for each target.
 | [#51](https://github.com/faberline/som/issues/51) | Release the new default with canary and rollback checks. Finish the docs and evidence. | [#50](https://github.com/faberline/som/issues/50) |
 
 [GitHub milestone 9](https://github.com/faberline/som/milestone/9) tracks this work.
-#45 is done: the [Rust output contract](contracts/rust-output-v1/CONTRACT.md) is frozen by the [freeze receipt](evidence/rust-output-contract-freeze-2026-10-15.json). #46–#51 are open.
+#45 is done: the [Rust output contract](contracts/rust-output-v1/CONTRACT.md) is frozen by the [freeze receipt](evidence/rust-output-contract-freeze-2026-10-15.json).
+#47 is done: target-aware compile requests are in [som-targets](som-targets), with [evidence](evidence/rust-output-target-planning-2026-10-15.json). #46 and #48–#51 are open.
+
+### Target-aware service (#47)
+
+[som-targets](som-targets) is a separate Cargo package. It uses the som library as an unchanged path dependency.
+The som sources, Cargo.toml and Cargo.lock stay byte-identical, so the backend hash and every Python bundle keep their bytes.
+Its `som` binary serves the same routes and CLI, plus the optional `target` member and `som compile --target`.
+
+- Without target, or with target python, the reply is the compiler-v1 reply byte for byte.
+- An out-of-scope Rust request gets UNSUPPORTED_TARGET in the frozen rule order.
+- An in-scope Rust request gets NOT_IMPLEMENTED (501) until #48 adds Rust planning.
+- The assemble dispatch on som.dsl-bundle.v2 and the A1–A9 refusals move to #48, where the first v2 bundle exists.
+
+`som-targets/qa/check_targets.py` runs the #47 gate against a QA port and a read-only reference compiler.
 
 ## Acceptance
 
@@ -106,4 +120,4 @@ Keep the legacy M2 rollback assets.
 ## Tracking
 
 [Milestone 9](https://github.com/faberline/som/milestone/9) holds issues #45–#51.
-The #45 contract is frozen. Later changes to it are numbered amendments. No Rust output is implemented yet.
+The #45 contract is frozen. Later changes to it are numbered amendments. #47 added target selection and the Rust scope refusals. No Rust files are generated yet.
