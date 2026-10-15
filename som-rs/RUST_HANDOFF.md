@@ -1,95 +1,91 @@
-# Rust compiler handoff — candidate 003
+# Rust compiler handoff — 2026-10-14
 
-The compiler is implemented. Full independent acceptance is pending.
-The default remains the accepted legacy M2 service on 127.0.0.1:8765.
-This is an interim implementation landing at the human request.
-No default switch or milestone closure is claimed.
-Read the [dated progress index](evidence/rust-compiler-progress-2026-10-15.json).
+The new Rust compiler passed independent acceptance and is the local default.
+It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.
+The root post-switch check passed 76/76. Main publication and GitHub closeout are pending.
+The legacy M2 runtime, model and block links remain saved for rollback.
 
-## Current state
+`CNL → Rust parser and fixed rules → complete DSL bundle → existing Rust backend → Python files`
 
-Primary checkout: `/Users/chrischeng/faberlines/som`.
-Preserved worktree: `/Users/chrischeng/.codex/worktrees/76af/som`.
-Do not change its existing work.
+CNL uses fixed English clauses. Data strings can include Chinese.
+The caller supplies each business choice. The compiler does not guess missing facts.
+The new production path does not load models or start Python.
+Python remains the output language and an independent test tool.
 
-Candidate metadata is in `.local/rust-compiler-goal/candidate-003`.
-The candidate launch receipt names port 18765. This is a saved receipt.
-Check the live owner before any service operation.
-Read [RUST_STATUS.md](RUST_STATUS.md) for the saved hashes and actual test scope.
+Candidate binary SHA-256: `3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02`.
+Source receipt SHA-256: `1e80e26f0128e99fe7fa3c4fcf6edae354e51bf75b13f3df70833107906d78bd`.
+Canonical asset manifest SHA-256: `872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e`.
+Raw asset manifest file SHA-256: `d215d30b5ab379c0a7ff2b5191393e39106a722403863181c77d2b5ea2a7c020`.
+Independent audit SHA-256: `071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792`.
+Independent audit completed at `2026-10-15T02:47:46.475001+00:00`.
+The fixed evidence dates identify the cohort, not the acceptance completion date.
+The independent audit passed 1215 checks, with zero failures or unrun checks.
+Its counts include evidence-integrity checks. They are not all product test cases.
+The first final audit run with the original auditor failed because it read newline-terminated raw base64 files strictly.
+That run failed the legacy raw-response check, the discharge check derived from it, and the additive check that requires the original audit to pass.
+That failed output is preserved. The amended auditor ignores ASCII whitespace only and adds negative tests; its qualification is recorded with the audit execution.
 
-The model pointer is `flow-m2-candidate/smoke-r31-001`.
-The block pointer is `flow-v7-compact`.
-The old M3 automation remains paused. Old training objectives are retired.
-Model assets and prior evidence stay local and unchanged.
+## Release work
 
-## Next controller work
+Done: the acceptance receipt sealed the audit and all 11 document hashes.
+Done: switch prerequisites bound those receipts and fresh process identities.
+Done: the qualified switch committed with a new evidence directory.
+Done: the root check verified the live default, both current links, asset hashes, and full HTTP/CLI responses.
 
-Disk capacity has recovered. The original checker package remains frozen.
-All 101 diagnostic checks passed against candidate 003.
-The corrected full public-products cohort passed 127/127.
-The original 125/127 receipt remains failed and unchanged.
-All 11 renderer compile pairs, quality checks, and focused behavior checks passed.
-Run005 is the active full 544-job baseline. At 2026-10-15T00:54:10+08:00,
-176/176 completed jobs pass; 368 jobs remain. Keep the current controller and worker.
-Do not start a duplicate or change the sealed source and checker inputs.
-Six isolated switch rehearsals passed. Recovery run002 ended with actual exit 2.
-Seven scenarios met their expected outcomes. SIGHUP failed before its required
-post-stop barrier; the final already-stopped scenario is unrun. All 88 recorded
-test PIDs were later confirmed absent. Preserve the original cleanup uncertainty.
-Read the independent failure review before preparing any new recovery cohort.
-Do not restart run002 or count its seven passes as full recovery qualification.
-Read `.local/rust-compiler-goal/active-state.json` and the latest local handoff
-for the actual process identities. Verify them before any process action.
-Run004 and recovery run001 remain failed. Do not combine their passed rows
-with the current runs. The live M2 default is unchanged.
-Keep failed and interrupted candidate 002 receipts.
+Remaining:
 
-Use the same frozen source, binary, assets, and checker hashes for every gate.
-The fast runtime 37 and gap 31 receipts are useful evidence. The frozen suite has
-nine cases delegated to separate gates. Require their exact coverage in the
-final acceptance receipt. Do not convert unrun cases into passes.
+1. Publish approved source, documents, and indexes to main.
+2. Close #38–#44 and milestones 7 and 8 after evidence review. Read GitHub back.
+3. Save the AW handoff. Release the claim after all owned test cleanup is verified.
 
-Keep each unchanged verifier outcome separate for the 11 renderer cases.
-Require 11 compile pairs, 11 strict quality passes, and 11 focused passes.
-Require one unchanged full-M2 pass for `REF_NULLABLE_OPTIONAL_FIELD`.
-Require the other 10 exact saved checker failures.
-Record `unchanged_m2_scope_matched` and `scoped_required_passed` separately.
-Do not report 11 unchanged full-M2 passes.
+## Switch and rollback
 
-The branch-null legacy checker inserts `parent.title` into the parent input.
-That parent model accepts `name`.
-That malformed conflict request fails before the expected 409 path.
-The old failure remains saved. Independent focused behavior must pass fresh.
-The literal-only empty branch has no reachable false arm. Do not invent one.
-The signed-zero persistence limit must remain explicit in the runtime evidence.
+The qualified controller is `scripts/compiler_default_switch.py`.
+Its SHA-256 is `289a8470c5de2a183b01c8a138ecb4bc6cfe80a624f0291b32b779cc854bfb12`.
+Use a newly validated prerequisite file and a fresh absolute output directory.
+The controller checks the exact process owner before any signal.
+It tests a fresh M2 restore clone and a fresh compiler canary before changing the default.
+It installs immutable runtime and compiler-asset versions, then changes both current links.
+On an admitted failure, it restores the saved M2 process and selectors and checks full replies.
+The six isolated recovery scenarios qualify this behavior.
 
-After all acceptance passes, freeze the reviewed switch script and prerequisites.
-Record the owner user ID, start time, launch arguments, and loaded executable.
-Record its working directory and sole loopback listener.
-The launch-argument display check rejects whitespace and control characters.
-Do not signal a saved PID without that identity check.
+The active default is the compiler. If a later check fails, restore M2 with the post-commit tool.
+The separate post-commit restore and read-only checker are qualified by the nine-variant evidence in the acceptance index.
+Their exact reviewed source paths and hashes are bound in its `postcommit_m2_restore_qa` graph.
+Create a fresh SHA-bound request from the committed compiler receipt and the saved `0001-prerequisites.json` and `0002-legacy-default.json`.
+Run the reviewed restore tool with `--request PATH --request-sha256 SHA --output FRESH --execute --approval-label LABEL`.
+Run its separate checker with `--request PATH --request-sha256 SHA --restore-output PATH --evidence-sha256 SHA --output FRESH --execute`.
+Verify exact owner and selector state before authorizing either action. Preserve actual waits and complete raw output.
+Expected refusal and signal cases remain failed/nonzero restore results. The QA pass measures their expected outcomes.
 
-Prove a fresh exact M2 restart and full old/new CLI/HTTP compatibility. Prove the
-compiler canary and real failure/signal restore. Preserve the old current model
-and block pointers. A fake-process check is not a live rollback pass.
+The retained M2 launch command is:
 
-Only then switch the default and verify its full health and complete responses.
-Record actual installed paths, owner, measurements, and rollback evidence.
-Update the current docs and final report. Root owns commit/push and GitHub closeout.
-This interim source landing does not authorize closing an incomplete criterion.
-Keep issues #38–#44 and milestones 7/8 open until their final evidence is accepted.
+```sh
+/Users/chrischeng/faberlines/som/som-rs/runtime/versions/14cf0a67fbcc943639c9e0efb661d6aaf0de7b00289c05fc52819f9e97f239d6/som serve --model /Users/chrischeng/faberlines/som/som-rs/models/current --blocks /Users/chrischeng/faberlines/som/som-code-python/data/blocks/current/blocks.json --port 8765
+```
 
-## Evidence rules
+A controller may use this command only after verifying the current compiler owner,
+confirming that it stopped, and proving that port 8765 is free.
+Do not signal a process from an old PID alone.
+There is no `--rollback` flag on the switch tool.
+Do not rerun old pre-switch prerequisites after promotion.
+Preserve the old default snapshot, canary inputs, model and block links for recovery.
 
-The 544 jobs represent 540 distinct prompts with three duplicate groups.
-Keep their assembly plans and historical scopes separate.
-Only 126 quality products and 12 supplements have the original full behavior scope.
-The other 92 quality products keep their quality/parity scope.
+The model link remains `flow-m2-candidate/smoke-r31-001`.
+The block link remains `flow-v7-compact`.
+The new runtime and compiler-asset links are separate from those rollback assets.
 
-Generated literals and bundle values preserve float-zero sign exactly.
-Existing JSONB persisted runtime values may lose that representation.
-Only opposite signed finite float zeros can match in persisted observations.
-All other values and types remain strict.
+## Evidence and retained work
 
-Old reset and model reports remain history. They do not override this handoff.
-Do not publish weights, runtime binaries, source archives, or raw measurements.
+Read [the guide](RUST_GUIDE.md), [the roadmap](RUST_ROADMAP.md),
+[the report](RUST_REPORT.md), and [the handoff](RUST_HANDOFF.md).
+The [acceptance index](evidence/rust-compiler-acceptance-2026-10-14.json)
+binds the candidate, source, tools, raw local receipts, and independent audit.
+The [criterion map](evidence/rust-compiler-criteria-2026-10-14.json)
+links all 77 issue requirements to their evidence.
+Models, source archives, runtime assets, and raw measurements stay local.
+
+The old M3 heartbeat remains paused. Do not resume model training.
+Keep all models, raw records, source archives, and the original seven changes in
+`/Users/chrischeng/.codex/worktrees/76af/som`.
+The controller still owns its claim while acceptance writes are in progress.

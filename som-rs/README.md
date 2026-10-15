@@ -1,19 +1,24 @@
 # SOM local service
 
-The model-free Rust compiler candidate is implemented. Full acceptance is
-pending. The accepted legacy M2 model service remains the default.
-The [dated progress index](evidence/rust-compiler-progress-2026-10-15.json)
-records the implementation landing and the checks that remain open.
+The new Rust compiler passed independent acceptance and is the local default.
+It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.
+The root post-switch check passed 76/76. Main publication and GitHub closeout are pending.
+The legacy M2 runtime, model and block links remain saved for rollback.
 
-Read [RUST_GUIDE.md](RUST_GUIDE.md) for current compiler commands and HTTP shapes.
-Read [RUST_STATUS.md](RUST_STATUS.md) for measured results and pending gates.
-[RUST_ROADMAP.md](RUST_ROADMAP.md) defines the two current milestones.
-[RUST_HANDOFF.md](RUST_HANDOFF.md) defines the next controller work.
+`CNL → Rust parser and fixed rules → complete DSL bundle → existing Rust backend → Python files`
 
-The compiler parses fixed English CNL or an explicit versioned JSON prompt.
-It emits a complete typed DSL bundle. The existing Rust backend checks that
-bundle and expands approved blocks into Python files. No new Python parser,
-model inference, or Python production process is needed.
+CNL uses fixed English clauses. Data strings can include Chinese.
+The caller supplies each business choice. The compiler does not guess missing facts.
+The new production path does not load models or start Python.
+Python remains the output language and an independent test tool.
+
+Read [the guide](RUST_GUIDE.md), [the roadmap](RUST_ROADMAP.md),
+[the report](RUST_REPORT.md), and [the handoff](RUST_HANDOFF.md).
+The [acceptance index](evidence/rust-compiler-acceptance-2026-10-14.json)
+binds the candidate, source, tools, raw local receipts, and independent audit.
+The [criterion map](evidence/rust-compiler-criteria-2026-10-14.json)
+links all 77 issue requirements to their evidence.
+Models, source archives, runtime assets, and raw measurements stay local.
 
 ## Historical model reports
 
@@ -24,8 +29,8 @@ The retained legacy runtime is still available for rollback.
 > Historical model-roadmap document. On 2026-10-13 the human replaced this plan with
 > [the Rust roadmap](RUST_ROADMAP.md). Old milestone records were archived and deleted.
 > Read [the current handoff](RUST_HANDOFF.md). Preserve the results below; do not resume old M3 training.
-> The Rust compiler candidate is implemented. Independent acceptance remains pending.
-> The default remains legacy M2.
+> The Rust compiler passed independent acceptance and is now the local default.
+> The legacy M2 runtime, model and block links remain saved for rollback.
 
 The development default now uses `flow-m2-candidate/smoke-r31-001` and
 `flow-v7-compact`. See [CURRENT.md](CURRENT.md) for the persistent executable,

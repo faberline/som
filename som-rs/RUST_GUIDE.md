@@ -1,19 +1,19 @@
 # Rust compiler guide
 
-This guide describes implemented candidate 003. Final acceptance is pending.
-Legacy M2 remains the default on port 8765. New compiler commands need the
-candidate URL until a verified default switch is complete.
+This guide describes accepted candidate 003. It is the local default on port 8765.
+The switch committed at `2026-10-15T03:08:08.737006+00:00` and the root post-switch check passed 76/76.
+The legacy M2 runtime, model and block links remain saved for rollback.
 
-## Use the candidate CLI
+## Use the installed CLI
 
 Run these commands from `/Users/chrischeng/faberlines/som`.
-The controller owns the candidate server. Do not start a second server on 18765.
-Check its live owner before use. The saved launch receipt names that port.
+The installed CLI is `som-rs/runtime/current/som`. Its default URL is `http://127.0.0.1:8765`.
+Do not start a second server on 8765.
 
 ```sh
-.local/rust-compiler-goal/candidate-003/som compile som-rs/contracts/compiler-v1/examples/v7.cnl --url http://127.0.0.1:18765 > /private/tmp/som-example.bundle.json
-.local/rust-compiler-goal/candidate-003/som assemble /private/tmp/som-example.bundle.json --url http://127.0.0.1:18765 > /private/tmp/som-example.files.json
-.local/rust-compiler-goal/candidate-003/som generate som-rs/contracts/compiler-v1/examples/v7.prompt.json --url http://127.0.0.1:18765
+som-rs/runtime/current/som compile som-rs/contracts/compiler-v1/examples/v7.cnl > /private/tmp/som-example.bundle.json
+som-rs/runtime/current/som assemble /private/tmp/som-example.bundle.json > /private/tmp/som-example.files.json
+som-rs/runtime/current/som generate som-rs/contracts/compiler-v1/examples/v7.prompt.json
 ```
 
 Compile prints the bare bundle on stdout. Assemble prints the complete existing
@@ -24,9 +24,9 @@ Compile and assemble exit 0 on success. Local input/transport errors exit 1.
 HTTP rejection exits 2. Their full error JSON goes to stderr.
 Generate retains its response on stdout and exit 2 on HTTP rejection.
 
-After verified promotion, the installed CLI will be
-`som-rs/runtime/current/som`. Its default URL is `http://127.0.0.1:8765`.
-That installed path and promotion evidence are pending. Do not assume they exist.
+The installed path points to the immutable candidate binary
+`runtime/versions/3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02/som`.
+The legacy M2 binary also accepts the old `generate` command.
 
 ## HTTP requests
 
@@ -115,6 +115,11 @@ the test process and its cleanup. The asset package uses approved current local
 blocks and the pinned native formatter. Production does not start Python.
 Python reference, quality, and behavior tools remain acceptance tools.
 
-Do not start a development binary on 8765. Complete same-source acceptance,
-fresh M2 restore, compiler canary, and failure/signal rollback before promotion.
+Do not start a development binary on 8765. The promoted default owns that port.
+A new build needs its own same-source acceptance, M2 restore, canary, and rollback checks.
 Root owns default switching and closeout. Read [RUST_HANDOFF.md](RUST_HANDOFF.md).
+
+## Recovery command
+
+The exact preserved M2 launch command and owner checks are in
+[RUST_HANDOFF.md](RUST_HANDOFF.md). After promotion, use the qualified post-commit restore there.

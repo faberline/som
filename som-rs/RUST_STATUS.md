@@ -1,98 +1,121 @@
-# Rust compiler status — candidate 003
+# Rust compiler status — 2026-10-14
 
-Status: implemented candidate; final acceptance pending.
-Snapshot: 2026-10-15T00:54:10+08:00.
-The human requested this source and progress landing before release acceptance.
-See the [progress index](evidence/rust-compiler-progress-2026-10-15.json).
-The accepted legacy M2 service remains the default. No switch is claimed.
+The new Rust compiler passed independent acceptance and is the local default.
+It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.
+The root post-switch check passed 76/76. Main publication and GitHub closeout are pending.
+The legacy M2 runtime, model and block links remain saved for rollback.
 
-## Saved candidate identity
+`CNL → Rust parser and fixed rules → complete DSL bundle → existing Rust backend → Python files`
 
-Candidate directory: `.local/rust-compiler-goal/candidate-003`.
-Binary SHA256: `3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02`.
-Source-receipt SHA256: `1e80e26f0128e99fe7fa3c4fcf6edae354e51bf75b13f3df70833107906d78bd`.
-Canonical asset-manifest SHA256: `872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e`.
+CNL uses fixed English clauses. Data strings can include Chinese.
+The caller supplies each business choice. The compiler does not guess missing facts.
+The new production path does not load models or start Python.
+Python remains the output language and an independent test tool.
 
-The saved runtime receipt names port 18765 and reports model_loaded=false.
-This document does not prove that PID is still live. Operator actions require
-a fresh owner check. Final accepted install paths and default PID are pending.
+## Verified checks
 
-## What is implemented
+| Check | Actual result |
+|---|---|
+| Rust build and focused Rust tests | Release build and 37 tests passed |
+| Runtime boundary | 37/37 passed |
+| Structural and refusal gaps | 31/31 passed |
+| HTTP diagnostics | 101/101 passed |
+| Frozen contract sections | 119 CNL/JSON pairs, 40 typed cases, 15 CNL refusals, 11 canonical vectors, 14 bundle cases passed |
+| Complete public products | Fresh 127/127 passed |
+| Historical protection | Fresh 544/544 jobs passed; 540 distinct prompts |
+| Renderer extension | 11/11 compile, strict quality, and focused behavior checks passed |
+| Switch and recovery rehearsals | Six isolated real-binary scenarios passed; 1,206 independent raw checks passed |
+| Post-commit M2 restore | Nine fresh isolated lifecycle variants met their expected outcomes; actual wait and independent raw review passed |
+| Performance observation | 84 successful requests and 84 complete response comparisons |
+| Live default switch | Committed with no rollback; fresh M2 clone and compiler canaries passed before the change; two post-switch canary rounds passed on 8765 |
+| Root post-switch check | 76/76 passed: owner, binary, assets, both current links, health, full HTTP, old/new CLI generate, CNL/JSON compile and saved-bundle assemble |
 
-Rust parses the fixed English grammar and explicit JSON prompt v1–v7.
-It selects approved blocks by fixed rules. It emits full typed bundles.
-Standalone assemble validates saved bundles and their declared local assets.
-The existing Rust renderer and pinned native formatter return all Python files.
-The default build excludes model dependencies. Production does not start Python.
+Candidate binary SHA-256: `3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02`.
+Source receipt SHA-256: `1e80e26f0128e99fe7fa3c4fcf6edae354e51bf75b13f3df70833107906d78bd`.
+Canonical asset manifest SHA-256: `872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e`.
+Raw asset manifest file SHA-256: `d215d30b5ab379c0a7ff2b5191393e39106a722403863181c77d2b5ea2a7c020`.
+Independent audit SHA-256: `071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792`.
+Independent audit completed at `2026-10-15T02:47:46.475001+00:00`.
+Default switch committed at `2026-10-15T03:08:08.737006+00:00`.
+The fixed evidence dates identify the cohort, not the acceptance completion date.
+The independent audit passed 1215 checks, with zero failures or unrun checks.
+Its counts include evidence-integrity checks. They are not all product test cases.
+The first final audit run with the original auditor failed because it read newline-terminated raw base64 files strictly.
+That run failed the legacy raw-response check, the discharge check derived from it, and the additive check that requires the original audit to pass.
+That failed output is preserved. The amended auditor ignores ASCII whitespace only and adds negative tests; its qualification is recorded with the audit execution.
 
-The compiler preserves typed scalar values and exact float-zero signs.
-Pure literal predicates can produce Boolean constants with the same meaning.
-Input and step references remain live expressions. Complete generated products
-still require strict quality and independent behavior tests.
+## Exact scope
 
-## Saved checks
+The 544 jobs comprise legacy100, regression214, quality218, and supplement12.
+Regression214 comprises 14 services, 120 compositions, and 80 former blind cases.
+Formal114 and development12 are disjoint subsets of quality218.
+They are not extra jobs. Supplement12 is a separate group.
+Within quality218, 126 products have original full behavior checks.
+The other 92 have quality and parity checks only.
+The 12 supplements also have full behavior checks.
+The inventory keeps three duplicate prompt groups and their distinct jobs or plans.
+This release does not claim 544 identical behavior scopes.
 
-Candidate 003 build commands exited 0. The source receipt stayed unchanged.
-The saved runtime boundary gate passes 37 required checks with no unrun cases.
-The gap gate passes 31 required checks with no unrun cases.
-The frozen suite passes 119 CNL/JSON pairs, 40 typed cases, 15 CNL refusals,
-11 canonical vectors, and 14 bundle cases. Nine cases remain unrun in that suite.
-Separate runtime/gap receipts must prove their exact coverage before acceptance.
+The original legacy003 runner remains incomplete and failed.
+Its durable receipt has 214 passes and 100 child-import tool failures.
+The first quality case has no durable outcome. It remains one unknown case.
+The other 229 cases remain unrun in that attempt.
+A separate real diagnostic also failed on SQLAlchemy quoted_name keys.
+These observation keys are string subclasses. The first evidence writer rejected them.
+Both failures came from checker launch or evidence handling.
+They do not prove a product failure.
+A bounded additive adapter fixes child imports and typed evidence writes.
+Run004 remains failed and interrupted.
+It records 325 passes, one failure, one interrupted case, and 217 unrun jobs.
+The actual worker and controller exited with code one.
+The blind80-0023 failure has an unknown cause. No cause or fix is inferred.
+A separate same-source v3 diagnostic passed its full quality and behavior checks.
+Its actual worker exited with code zero. Its independent review passed 37 checks.
+It is a historical prerequisite. It does not count toward the 544 gate.
+Its pass does not change the original failure or prove its cause.
+The new run005 executes all 544 jobs again. It does not copy old passing rows.
 
-Candidate 003 passes all 101 diagnostic checks.
-The fresh complete public-products run passes 127/127 after a reviewed checker
-correction. The original 125/127 receipt and its two failures remain unchanged.
-The full baseline run005 is active: 176/176 completed jobs pass, out of 544 required.
-This snapshot has 0 failed jobs and 368 jobs still pending. Partial counts are not acceptance.
-Run004 remains failed: 325 passed, one failed, one interrupted and 217 unrun.
-Its original transport failure has no proven root cause. No rows are reused.
-All 11 renderer compile pairs, strict-quality checks, and focused behavior checks
-passed. The unchanged full-M2 outcomes remain separate below.
-The performance observer completed 84 requests and full-response comparisons.
-Latency and service-only memory are observations, not threshold gates.
-Six isolated switch rehearsals passed. Recovery run002 ended with actual exit 2.
-Seven scenarios met their expected outcomes. The SIGHUP scenario did not reach
-the required post-stop barrier. The final already-stopped scenario is unrun.
-All 88 recorded test PIDs were absent in the later root check. The original
-cleanup uncertainty remains recorded. Independent failure review is pending.
-Recovery run001 remains failed: two expected passes, one observer failure,
-one interrupted case and five unrun cases. The corrected observer starts a new cohort.
-Fresh final acceptance, live rollback/canary, default switch, final paths,
-release publication and tracker closeout remain pending.
-Implementation publication is a separate step and does not close these gates.
-Candidate 002 partial and failed receipts remain history. They are not substitutes.
+The original public run remains 125/127 and failed.
+Its two reference comparisons are preserved.
+A bounded checker correction transforms one raw AST assignment span in each case.
+The proof preserves the rest of the file and the full program meaning.
+The whole 127-case cohort was then run again with the same candidate and assets.
+The new complete result does not combine old passing rows with diagnostic reruns.
 
-## Scope and known limits
+The unchanged full-M2 checker passes one renderer case and fails ten.
+Those exact historical failures remain failures.
+Fresh scoped compile, quality, and focused behavior checks pass all eleven.
+They do not turn the ten old failures into full-M2 passes.
 
-The baseline inventory contains 544 assembly jobs and 540 distinct prompts.
-Three duplicate groups retain different plans or job identities.
-Formal 114 and development 12 are within quality 218. Supplement 12 is separate.
-Original full behavior covers 126 quality products and 12 supplements.
-The remaining 92 quality products retain quality/parity checks only.
+Nine rows remain UNRUN in the original frozen-suite receipt:
+`bundle_saved_replay`, `equivalent_cnl_json`, `all_versions`, `checked_variant`,
+`local_asset_tamper`, `self_signed_asset_tamper`, `missing_asset`,
+`structural_limits`, and `large_valid_compact_output`.
+The final independent audit checks their separate runtime, gap, public,
+and legacy evidence. It does not rewrite the original frozen result.
 
-The 11 renderer cases supplement the historical scope.
-Fresh compile pairs, strict quality, and focused behavior each passed 11 cases.
-The unchanged full-M2 checker passed only `REF_NULLABLE_OPTIONAL_FIELD`.
-The other 10 cases reproduced their exact saved checker failures.
-Independent receipt review confirmed this scoped result.
-It does not claim 11 unchanged full-M2 passes.
+Compiler, bundle, and generated-literal checks preserve float-zero signs.
+PostgreSQL JSONB can store -0.0 as 0.0. Recorded durable-value checks keep
+this representation limit explicit. They do not claim runtime bit preservation.
 
-The saved branch-null and empty-branch failures use a malformed conflict
-request. The old checker inserts `parent.title` into a parent model that
-accepts `name`. The service rejects the extra field before the expected 409.
-Empty-field-segments fails with `KeyError` for an empty member name.
-The branch-export case and six comparison cases fail with unresolved probes.
-These exact failures stay visible. Focused checks do not turn them into passes.
-The empty literal branch also has no reachable false arm.
+No new resource shapes, multiple flows, new output languages, paid agents,
+or real cloud services are part of this release.
+The retired training archive was verified in Drive before exact cleanup.
+The cleanup removed 55 named dataset files and retained 37 files.
+The [cleanup and Drive index](evidence/rust-training-data-archive-cleanup-2026-10-14.json)
+records all 92 member hashes, archive identity, and restore instructions.
+The accepted model and block aliases, source seals, and raw logs remain preserved.
+Restore retired members into an isolated historical checkout before replay.
+Do not overwrite an active checkout from the archive.
 
-PostgreSQL JSONB can normalize durable -0.0 to 0.0. Compiler and generated-literal
-bit checks stay exact. Persisted runtime observations use the existing typed
-numeric meaning for finite float zeros only. Every lost sign is recorded as a
-representation limit. This is not a runtime bit-preservation pass.
+Model token limits are retired only on the new compiler path.
+Existing file, block, flow, and legacy output limits remain.
+Compact output size and measured speed are observations, not acceptance thresholds.
 
-The verified Drive archive permitted removal of 55 unused local files.
-The 37 files required by acceptance or recovery stay local. About 481 MiB was reclaimed.
-Read the [cleanup receipt](evidence/rust-training-data-archive-cleanup-2026-10-14.json).
-
-Retained legacy model and block pointers stay unchanged. Old M3 automation is
-paused. Old reports, raw evidence, models, and the protected worktree are preserved.
+Read [the guide](RUST_GUIDE.md), [the roadmap](RUST_ROADMAP.md),
+[the report](RUST_REPORT.md), and [the handoff](RUST_HANDOFF.md).
+The [acceptance index](evidence/rust-compiler-acceptance-2026-10-14.json)
+binds the candidate, source, tools, raw local receipts, and independent audit.
+The [criterion map](evidence/rust-compiler-criteria-2026-10-14.json)
+links all 77 issue requirements to their evidence.
+Models, source archives, runtime assets, and raw measurements stay local.

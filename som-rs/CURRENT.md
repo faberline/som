@@ -1,3 +1,27 @@
+# Current development state — 2026-10-14
+
+The new Rust compiler passed independent acceptance and is the local default.
+It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.
+The root post-switch check passed 76/76. Main publication and GitHub closeout are pending.
+The legacy M2 runtime, model and block links remain saved for rollback.
+
+`CNL → Rust parser and fixed rules → complete DSL bundle → existing Rust backend → Python files`
+
+CNL uses fixed English clauses. Data strings can include Chinese.
+The caller supplies each business choice. The compiler does not guess missing facts.
+The new production path does not load models or start Python.
+Python remains the output language and an independent test tool.
+
+The installed compiler uses separate `runtime/current` and `compiler-assets/current` links.
+`som-rs/runtime/current` points to `versions/3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02`.
+`som-rs/compiler-assets/current` points to `versions/872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e`.
+The model link `som-rs/models/current` and the block link are unchanged legacy M2 rollback assets.
+Read [the accepted compiler report](RUST_REPORT.md) and [the operator handoff](RUST_HANDOFF.md).
+
+## Preserved earlier default record
+
+The text below is historical. Its state, commands, and measurements retain their original scope.
+
 # Current development state
 
 Recorded on 2026-10-05. SOM has no release in this repository. This document

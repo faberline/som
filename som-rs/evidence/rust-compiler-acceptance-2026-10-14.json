@@ -1,0 +1,779 @@
+{
+  "version": "som.rust-compiler-acceptance-index.v1",
+  "stage": "promoted_publication_and_github_closeout_pending",
+  "at": "2026-10-15T03:05:47.467454+00:00",
+  "root_audit": {
+    "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+    "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+  },
+  "root_audit_execution": {
+    "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-execution-001.json",
+    "sha256": "eb1855fc7ad2e505185cc88cddbfede1bed212f6b817484ff598f1bd0f408421"
+  },
+  "candidate": {
+    "binary_sha256": "3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02",
+    "source_json_sha256": "1e80e26f0128e99fe7fa3c4fcf6edae354e51bf75b13f3df70833107906d78bd",
+    "source_archive_sha256": "1a13d73f499057cc9be00b09af5459a2c97720b54db18d338545d63bb39df575",
+    "asset_manifest_raw_sha256": "d215d30b5ab379c0a7ff2b5191393e39106a722403863181c77d2b5ea2a7c020",
+    "asset_manifest_canonical_sha256": "872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e",
+    "original_qa_receipt_sha256": "a3797384a1010de52ef3b86c5de22d18dd9c062f5aeb60b8282d35b033a23da3",
+    "original_qa_archive_sha256": "5d231204dc5f8b7ee7aec61994d8813fc682d34c8f117d594babb8b05069e854"
+  },
+  "executed_auditor": {
+    "path": "/Users/chrischeng/faberlines/som/som-rs/scripts/compiler_acceptance_audit.py",
+    "sha256": "4c3d6418932aa9de07b350dafab51835f34ef492e4547fdb95ac19dc69bfa6fa",
+    "classification": "local_only",
+    "publication": "reference_only"
+  },
+  "auditor_amendment": {
+    "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-auditor-coordinate-amendment-001/installed.json",
+    "sha256": "c32c5dd868a00a42c890cfc9d8c206831a43ed31497c6c224563ed72edacc627",
+    "classification": "local_only",
+    "publication": "reference_only"
+  },
+  "raw_b64_auditor_amendment": {
+    "summary": "legacy and public raw.b64 reads share decode_raw_b64 (ASCII whitespace ignored, otherwise strict non-empty base64) and exact typed body comparison with reason codes",
+    "original_auditor_commit": "4ffa2a0f34",
+    "original_auditor_sha256": "599d10ba4dcef1b4259cd31070b67dabe11563ac27b83a6d575b68b422e8f8b5",
+    "amended_auditor_sha256": "4c3d6418932aa9de07b350dafab51835f34ef492e4547fdb95ac19dc69bfa6fa",
+    "qualification": {
+      "path": "/private/tmp/som-legacy005-final-audit-sol-v3/qualification-002.json",
+      "sha256": "55f59d7b77b70c5ec7286b1e6d409c017eb49912c1a53278c26f6c12fdb487d9"
+    },
+    "superseded_failed_output": {
+      "path": "/private/tmp/som-rust-final-root-audit/root-final-005-001",
+      "files": {
+        "additive-execution-audit.json": "310e07a7c29bcc534a7750fe9468cdb8311e2e294e1278f58e0a74bf336b496d",
+        "additive.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "additive.stdout": "ff4d15e1d453f289944a2c80aca65ac78e379c4ac8709fe6ac7df705cc70061f",
+        "original-root-audit.json": "17d92c5dad1eee8a98ebf3c68c43a2882496b075e611001ae012e08b662169ed",
+        "original.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "original.stdout": "c8df9ce642a0cb295789f2bb47182dcb87a189fdb798277e97613067ad8f4902",
+        "root-audit-aggregate.json": "67e2c978dd69ca84ec2f280066da7c1aa9c76320d6c9fa988868e58c1b144a51",
+        "root-audit-execution.json": "a48c8202b3e2e8de2a3442328d5b9c7eeb4269a198d7cb5b3581af492129f8ac"
+      },
+      "passed": false
+    }
+  },
+  "legacy_additive_qa": {
+    "legacy_additive_manifest": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy-runner-amendment-005/manifest.json",
+      "sha256": "5f1b0e0f92a338e6c83292323ecf7f2fb1eed76bad4f7846c3f5dd37b0d68f2a",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy_additive_installed": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy-runner-amendment-005/installed.json",
+      "sha256": "807576b8b31ae8c932232a770b022bb0791a6dabce914cb552400ba73b7753b2",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy_additive_archive": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy-runner-amendment-005/additive-source.tar",
+      "sha256": "5fbf1646bfd16ee2bf689db5ad8a070cc92a1b1925cc5ef5b2b357013ea9dad0",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy_additive_descriptor": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy544/run-005/additive-wrapper-execution.json",
+      "sha256": "b8513e18c44e7c2d93f4462c902ce4e5830ccde362aa9ce349424223a38fc84d",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "controller": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/controller-005/result.json",
+      "sha256": "307101a1abdcf3aac104c45d656ac6cdedc3162078901754d37ad42865d0420c",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "controller_execution": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/controller-005-execution.json",
+      "sha256": "34254fc70e6b528a80a93148a029405c867b23ee452989452bbdc0c37ccc53a0",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy_real_diagnostics": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy004-real-diagnostics-002/result.json",
+      "sha256": "90de9eb1c108ce1048140cc3619ef5c66b755e8e934cd2c9c5a0700fb36ce0f1",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy_real_diagnostics_execution": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy004-real-diagnostics-execution-002/result.json",
+      "sha256": "256214c4addc4687150ad00f4872b00d1f5a61556f785a25a0ef72a9f04b9021",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy_real_diagnostics_review": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy-runner-amendment-005/real-diagnostics-independent-review.json",
+      "sha256": "ef89e67ea1f9a8181a2a2249d962514145b3f2a831dbf5940875cbe76211f8c5",
+      "classification": "local_only",
+      "publication": "reference_only"
+    }
+  },
+  "original_failed_root_audit": {
+    "receipt": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-auditor-coordinate-amendment-001/root-public-complete-001.json",
+      "sha256": "373960a2296dfba21939a47ad898d656c47a16b84ff70bac50079ad17637fc23",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "summary": {
+      "pass": 1191,
+      "fail": 3,
+      "unrun": 2
+    },
+    "passed": false
+  },
+  "audit_summary": {
+    "pass": 1215,
+    "fail": 0,
+    "unrun": 0
+  },
+  "gate_receipts": {
+    "runtime37": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/runtime-003/result.json",
+      "sha256": "550e1d0cde6efb4962e6e0b1a1d624fdd093ce1c9a72eeb371942217fb9ba940",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "renderer11": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/renderer_behavior/run-003/summary.json",
+      "sha256": "722f1ea38b901cf0b0a37ef9e9b2cf114fae34435b60d1275254b5a966848d43",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "frozen003b": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/frozen-003b.json",
+      "sha256": "4be531b0f3fe746bef2fe465e98d21dd3b9237c8254080d9f13993894394d4fe",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "frozen_attribution": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/frozen-attribution-003b.json",
+      "sha256": "2e80ac3ab0d3c55134151e160cb2ac0fbc00e37aaa139eceed04ba81099fa330",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy544": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy544/run-005/result.json",
+      "sha256": "445b34112c974b2bcc70472f374b22ac8289e073d12e9c7042c7f8e252e89e56",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "public127": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/public-products-003b/result.json",
+      "sha256": "a00324170bcebd84772c5ce482533912e6f4f47eed0b545b6e601d75d1994c75",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "diagnostics101": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/diagnostic-003/results.json",
+      "sha256": "49ca7cab7e0771eb9eede1a5fc540e167b49d5a61d1d727134a2f606d09198d9",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "gaps31": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/gaps-003/result.json",
+      "sha256": "c115c15cddbdd6bcc49ee97f3e0604f435e2d2ad872f90a96469ef3ff7a664fe",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "performance84": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/performance-003/result.json",
+      "sha256": "8b6b984c625386332d3bd4064e7fdabb6f08ee40a1975e72dbe9b0c92aa618e4",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "asset_index": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/per-version-asset-index-003.json",
+      "sha256": "1f2e28322369082c99a1e7fd12b798d90e772a558621451ceda61d95156e0ca8",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "asset_provenance": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/per-version-asset-index-provenance-003.json",
+      "sha256": "06cc5a92dc67aff24bdb3e6344392a4813f9f2090283ddbbf20fb3db7cc678cd",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy_inventory": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy544/inventory-003.json",
+      "sha256": "c1d4e9bc5bbbee7ad5f5cb238bcf194e258da252bba1f7877169783e6cf46d96",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "contract_freeze": {
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evidence/rust-compiler-contract-freeze-2026-10-13.json",
+      "sha256": "2ce6e7027687c7e06ee92a4d6c326fd5f00b6e17f83d5bd80db4e82ebb8cee79",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "contract_amendment001": {
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evidence/rust-compiler-contract-amendment-001.json",
+      "sha256": "041b33e72d22833091c69ed6407ba979a1b5320e81214aa939e588032af4a797",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "contract_amendment002": {
+      "path": "/Users/chrischeng/faberlines/som/som-rs/evidence/rust-compiler-contract-amendment-002.json",
+      "sha256": "c95b79a89737b2568e7b92529c7b5012c6035bc8e62f830eb010693a4445326d",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "candidate_source": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/candidate-003/source.json",
+      "sha256": "1e80e26f0128e99fe7fa3c4fcf6edae354e51bf75b13f3df70833107906d78bd",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "candidate_build": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/candidate-003/build.json",
+      "sha256": "40c4c3b7e8d35ac1918f785e5221874fb487a757b9893b615f3f14a9bf0a14f3",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "candidate_runtime": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/candidate-003/runtime.json",
+      "sha256": "15c31e2e372caf89d64a2094633eab4e398aa88507f618ca5219eb1ef2dbaf6f",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "original_qa": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/candidate-003/acceptance-tools.json",
+      "sha256": "a3797384a1010de52ef3b86c5de22d18dd9c062f5aeb60b8282d35b033a23da3",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "additive_manifest": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/public-reference-amendment-003/manifest.json",
+      "sha256": "861838ddca903f2c0239bd423402ce6acc3245208146cb1759488b69ba099ba8",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "additive_installed": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/public-reference-amendment-003/installed.json",
+      "sha256": "05427303c89c9184d8d7dc793ab568d0a80f8ae4fd215100a10fd28e04996e40",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "formatter_qualification": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/public-reference-formatter-003/result.json",
+      "sha256": "c53a720b89ec62e63424ba98b78492a4c8a346bf6691c90e0f8e8b3b9d7e54b4",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "controller": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/controller-005/result.json",
+      "sha256": "307101a1abdcf3aac104c45d656ac6cdedc3162078901754d37ad42865d0420c",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "controller_execution": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/controller-005-execution.json",
+      "sha256": "34254fc70e6b528a80a93148a029405c867b23ee452989452bbdc0c37ccc53a0",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy_additive_manifest": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy-runner-amendment-005/manifest.json",
+      "sha256": "5f1b0e0f92a338e6c83292323ecf7f2fb1eed76bad4f7846c3f5dd37b0d68f2a",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy_additive_installed": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy-runner-amendment-005/installed.json",
+      "sha256": "807576b8b31ae8c932232a770b022bb0791a6dabce914cb552400ba73b7753b2",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy_additive_archive": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy-runner-amendment-005/additive-source.tar",
+      "sha256": "5fbf1646bfd16ee2bf689db5ad8a070cc92a1b1925cc5ef5b2b357013ea9dad0",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy_additive_descriptor": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy544/run-005/additive-wrapper-execution.json",
+      "sha256": "b8513e18c44e7c2d93f4462c902ce4e5830ccde362aa9ce349424223a38fc84d",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy_real_diagnostics": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy004-real-diagnostics-002/result.json",
+      "sha256": "90de9eb1c108ce1048140cc3619ef5c66b755e8e934cd2c9c5a0700fb36ce0f1",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy_real_diagnostics_execution": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy004-real-diagnostics-execution-002/result.json",
+      "sha256": "256214c4addc4687150ad00f4872b00d1f5a61556f785a25a0ef72a9f04b9021",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "legacy_real_diagnostics_review": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy-runner-amendment-005/real-diagnostics-independent-review.json",
+      "sha256": "ef89e67ea1f9a8181a2a2249d962514145b3f2a831dbf5940875cbe76211f8c5",
+      "classification": "local_only",
+      "publication": "reference_only"
+    }
+  },
+  "independent_77_review": {
+    "path": "/private/tmp/som-rust-acceptance-coverage-sol-20261014/criterion-review.json",
+    "sha256": "d3dea1b92300f2aa3a7d2224f2022ab505effbfe9e811ef14112b727530a5169",
+    "classification": "local_only",
+    "publication": "reference_only"
+  },
+  "rehearsal005": {
+    "receipt": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/rehearsal-005/result.json",
+      "sha256": "942da8f6735f50b0de89e8b7d60d058af60b7b1d538e5f477bd49bdea080888e",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "independent_raw_review": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/rehearsal-005/independent-raw-audit.json",
+      "sha256": "19152c2fa2d04bbeea951de803b1161e0dc52283a51a8d2507991116ddff7b77",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "completed": 6,
+    "production_acceptance": false
+  },
+  "postcommit_m2_restore_qa": {
+    "passed": true,
+    "result": {
+      "path": "/private/tmp/som-rust-postcommit-m2-restore-run-003/suite/result.json",
+      "sha256": "9ec892e67a1c78a9bac00740a7c02ed95d44518037272fea1d46943d808bcb75"
+    },
+    "execution": {
+      "path": "/private/tmp/som-rust-postcommit-m2-restore-run-003/execution.json",
+      "sha256": "bd2a4767c8a0b87909f8c5a129b8e258125a8b03bf0c82cb75b4f309a51f076e"
+    },
+    "independent_raw_review": {
+      "path": "/private/tmp/som-postcommit-restore-native003-review/review-001.json",
+      "sha256": "227c4a63e1e9aec31aad033cae31b4e584f97631e156258b972892d002721100"
+    }
+  },
+  "historical_scope": {
+    "original_public003": {
+      "receipt": {
+        "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/public-products-003/result.json",
+        "sha256": "215653d30f2430a809b5c7d14e852d563b1328e68b329db61b42be8bd96fbb99",
+        "classification": "local_only",
+        "publication": "reference_only"
+      },
+      "passed": 125,
+      "required": 127,
+      "complete": false,
+      "failures": [
+        {
+          "id": "REF_BRANCH_EXPORT_SAME_TYPE",
+          "reference_formatter_status": "failed",
+          "complete_file_parity": null,
+          "complete_normalized_ast_equal": false
+        },
+        {
+          "id": "PUBLIC_v7-branch-null",
+          "reference_formatter_status": "failed",
+          "complete_file_parity": null,
+          "complete_normalized_ast_equal": false
+        }
+      ]
+    },
+    "fresh_public127": {
+      "passed": 127,
+      "required": 127,
+      "original_reference_failure_count": 2,
+      "corrected_reference_count": 2,
+      "fresh_whole_cohort": true
+    },
+    "original_failed_legacy003": {
+      "pending_receipt": {
+        "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy544/run-003/result.pending.json",
+        "sha256": "557b5ff0e799fa5278baad6a24645b613909d930c2745cd65105c5f1b9ad6218",
+        "classification": "local_only",
+        "publication": "reference_only"
+      },
+      "controller": {
+        "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/controller-003d/result.json",
+        "sha256": "94c76e018ae32d447c386182cd2d3a769d6c23ab7ddac71b71a6e522c52a3341",
+        "classification": "local_only",
+        "publication": "reference_only"
+      },
+      "passed_durable_jobs": 214,
+      "failed_tool_import_jobs": 100,
+      "attempted_without_durable_outcome": 1,
+      "unrun": 229,
+      "classification": "tool failures; no product failure inferred; new run005 never stitches these rows"
+    },
+    "failed_real_diagnostic001": {
+      "receipt": {
+        "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/legacy004-real-diagnostics-001/result.json",
+        "sha256": "388b46e18d562bf3c85cded537c290a81d239b7040bdc8e13c6e0e7c48279192",
+        "classification": "local_only",
+        "publication": "reference_only"
+      },
+      "passed": false,
+      "counts_toward_544": false,
+      "reason": "SQLAlchemy quoted_name string-subclass database observation keys were rejected by the first typed evidence adapter; preserved tool failure"
+    },
+    "failed_legacy004": {
+      "stop_proof": {
+        "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/run004-stop-001/result.json",
+        "sha256": "75060581c797120a95187a0ce0988a9d9b45475eaa8b616d5badef6512e007fb"
+      },
+      "acceptance": false,
+      "passed": 325,
+      "failed": 1,
+      "interrupted": 1,
+      "unrun": 217,
+      "real_worker_exit_code": 1,
+      "real_controller_exit_code": 1,
+      "cause": "UNKNOWN",
+      "classification": "preserved behavior failure and interrupted remainder; no cause or fix inferred",
+      "rows_reused": 0,
+      "independent_proof": {
+        "root_audit": {
+          "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+          "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+        },
+        "json_pointer": "/checks/1213",
+        "check_name": "legacy004.controller004_actual_wait_exit0_and_logs",
+        "prior_review_check_name": "legacy004.controller004_actual_wait_exit0_and_logs",
+        "state": "PASS"
+      }
+    },
+    "single_case_v3_diagnostic": {
+      "result": {
+        "path": "/private/tmp/som-failure0157-diagnostic-run-v3-001/result.json",
+        "sha256": "8159e7b25c05d9697461a2128fb442fed5e942c84bc384b6e1a159643b3bca43"
+      },
+      "execution": {
+        "path": "/private/tmp/som-failure0157-diagnostic-run-v3-001/execution.json",
+        "sha256": "30360b5b741d9ce08351f4916644aa129ede5eb8df92a5ba206c921707f6bfa8"
+      },
+      "independent_review": {
+        "path": "/private/tmp/som-failure0157-diagnostic-v3-audit-sol/review.json",
+        "sha256": "baa8134f6d46e5d157ff9671980e074952244edd28d520d44517c0a5517fc6ed"
+      },
+      "passed": true,
+      "exit_code": 0,
+      "counts_toward_544": false,
+      "acceptance_substitution": false,
+      "original_cause": "UNKNOWN",
+      "original_run004_failure": "unchanged failed",
+      "scope": "historical prerequisite only; cannot replace any job in the fresh full544 run",
+      "independent_proof": {
+        "root_audit": {
+          "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+          "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+        },
+        "json_pointer": "/checks/1213",
+        "check_name": "legacy004.controller004_actual_wait_exit0_and_logs",
+        "prior_review_check_name": "legacy004.controller004_actual_wait_exit0_and_logs",
+        "state": "PASS"
+      }
+    },
+    "controller_nested_prerequisites": {
+      "controller": {
+        "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/controller-005/result.json",
+        "sha256": "307101a1abdcf3aac104c45d656ac6cdedc3162078901754d37ad42865d0420c"
+      },
+      "controller_execution": {
+        "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/controller-005-execution.json",
+        "sha256": "34254fc70e6b528a80a93148a029405c867b23ee452989452bbdc0c37ccc53a0"
+      },
+      "input_count": 1973,
+      "verified_unchanged": true,
+      "independent_proof": {
+        "root_audit": {
+          "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+          "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+        },
+        "json_pointer": "/checks/1213",
+        "check_name": "legacy004.controller004_actual_wait_exit0_and_logs",
+        "prior_review_check_name": "legacy004.controller004_actual_wait_exit0_and_logs",
+        "state": "PASS"
+      }
+    },
+    "training_archive_cleanup": {
+      "public_index": {
+        "path": "/Users/chrischeng/faberlines/som/som-rs/evidence/rust-training-data-archive-cleanup-2026-10-14.json",
+        "sha256": "915b839cfaad5c7b2d94b09f0d991b9f62b2daf7140ab7d17742bdaab974d37a",
+        "classification": "local_only",
+        "publication": "reference_only"
+      },
+      "deleted_files": 55,
+      "retained_files": 37,
+      "archive_members": 92,
+      "drive_archive_url": "https://drive.google.com/file/d/11-rKdZxV2TI6fCJujVYhsWNDUTDz2vzx/view?usp=drivesdk",
+      "drive_folder_url": "https://drive.google.com/drive/folders/1gPJIVp3cwNX-cUvBpYglvC3SD2mogT58",
+      "archive_sha256": "772c63b573a08ae7c8eca791685a75c044561bdbe482c3b6431ac9fadb674930",
+      "scope": "Only the 55 listed exact dataset files were removed. No directory, model weight, model corpus alias, ledger, runtime, virtual environment, cache, seal, source archive, raw log or other data was removed.",
+      "live_cloud_read_performed": false
+    },
+    "fresh_legacy544": {
+      "run": "run-005",
+      "passed_jobs": 544,
+      "unique_prompts": 540,
+      "compile_pairs": 1080,
+      "assemblies": 544,
+      "groups": {
+        "legacy100": 100,
+        "legacy214": 214,
+        "quality218": 218,
+        "supplement12": 12
+      },
+      "legacy214_subgroups": {
+        "services14": 14,
+        "compositions120": 120,
+        "blind80": 80
+      },
+      "quality218_full_behavior": 126,
+      "quality218_quality_parity_only": 92,
+      "supplement12_full_behavior": 12,
+      "original_behavior_jobs_including_legacy": 452,
+      "quality_total_excluding_legacy100": 444,
+      "scope_proofs": [
+        {
+          "root_audit": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+            "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+          },
+          "json_pointer": "/checks/535",
+          "check_name": "legacy.behavior_452",
+          "prior_review_check_name": "legacy.behavior_452",
+          "state": "PASS"
+        },
+        {
+          "root_audit": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+            "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+          },
+          "json_pointer": "/checks/534",
+          "check_name": "legacy.quality_444",
+          "prior_review_check_name": "legacy.quality_444",
+          "state": "PASS"
+        },
+        {
+          "root_audit": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+            "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+          },
+          "json_pointer": "/checks/533",
+          "check_name": "legacy.checked_variant_exact_three",
+          "prior_review_check_name": "legacy.checked_variant_exact_three",
+          "state": "PASS"
+        }
+      ]
+    },
+    "frozen_in_suite": {
+      "completed": false,
+      "unrun_count": 9,
+      "unrun_case_ids": [
+        "bundle_saved_replay",
+        "equivalent_cnl_json",
+        "all_versions",
+        "checked_variant",
+        "local_asset_tamper",
+        "self_signed_asset_tamper",
+        "missing_asset",
+        "structural_limits",
+        "large_valid_compact_output"
+      ],
+      "external_discharge_proofs": [
+        {
+          "root_audit": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+            "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+          },
+          "json_pointer": "/checks/858",
+          "check_name": "discharge.bundle_saved_replay",
+          "prior_review_check_name": "discharge.bundle_saved_replay",
+          "state": "PASS"
+        },
+        {
+          "root_audit": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+            "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+          },
+          "json_pointer": "/checks/859",
+          "check_name": "discharge.equivalent_cnl_json",
+          "prior_review_check_name": "discharge.equivalent_cnl_json",
+          "state": "PASS"
+        },
+        {
+          "root_audit": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+            "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+          },
+          "json_pointer": "/checks/860",
+          "check_name": "discharge.all_versions",
+          "prior_review_check_name": "discharge.all_versions",
+          "state": "PASS"
+        },
+        {
+          "root_audit": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+            "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+          },
+          "json_pointer": "/checks/861",
+          "check_name": "discharge.checked_variant",
+          "prior_review_check_name": "discharge.checked_variant",
+          "state": "PASS"
+        },
+        {
+          "root_audit": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+            "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+          },
+          "json_pointer": "/checks/862",
+          "check_name": "discharge.local_asset_tamper",
+          "prior_review_check_name": "discharge.local_asset_tamper",
+          "state": "PASS"
+        },
+        {
+          "root_audit": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+            "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+          },
+          "json_pointer": "/checks/863",
+          "check_name": "discharge.self_signed_asset_tamper",
+          "prior_review_check_name": "discharge.self_signed_asset_tamper",
+          "state": "PASS"
+        },
+        {
+          "root_audit": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+            "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+          },
+          "json_pointer": "/checks/864",
+          "check_name": "discharge.missing_asset",
+          "prior_review_check_name": "discharge.missing_asset",
+          "state": "PASS"
+        },
+        {
+          "root_audit": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+            "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+          },
+          "json_pointer": "/checks/865",
+          "check_name": "discharge.structural_limits",
+          "prior_review_check_name": "discharge.structural_limits",
+          "state": "PASS"
+        },
+        {
+          "root_audit": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
+            "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
+          },
+          "json_pointer": "/checks/866",
+          "check_name": "discharge.large_valid_compact_output",
+          "prior_review_check_name": "discharge.large_valid_compact_output",
+          "state": "PASS"
+        }
+      ]
+    },
+    "renderer11": {
+      "scoped_compile_quality_focused": 11,
+      "unchanged_full_m2_pass": 1,
+      "expected_historical_full_m2_failures": 10,
+      "full_m2_all11_claimed": false,
+      "source_receipt": {
+        "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/renderer_behavior/run-003/summary.json",
+        "sha256": "722f1ea38b901cf0b0a37ef9e9b2cf114fae34435b60d1275254b5a966848d43",
+        "classification": "local_only",
+        "publication": "reference_only"
+      }
+    },
+    "signed_zero": "Exact compiler/bundle/generated literal bits; persisted finite float-zero representation losses stay in local observations under the historical typed numeric comparison scope."
+  },
+  "performance": {
+    "observations": 84,
+    "kind": "observations_only_no_threshold_or_peak_claim",
+    "receipt": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/performance-003/result.json",
+      "sha256": "8b6b984c625386332d3bd4064e7fdabb6f08ee40a1975e72dbe9b0c92aa618e4",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "summary": {
+      "kind": "observation_only_no_threshold",
+      "median_elapsed_ms": {
+        "assemble-saved-bundle": 13.142,
+        "compile-cnl": 9.553,
+        "compile-json": 7.938,
+        "generate": 17.339
+      },
+      "service_rss_snapshot_mib_range": [
+        54.7,
+        56.56
+      ],
+      "rss_scope": "service PID only, sampled after each full HTTP response; snapshots are not peak/global memory and exclude native Ruff child processes"
+    }
+  },
+  "local_artifacts": {
+    "source_archive": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/candidate-003/source.tar",
+      "sha256": "1a13d73f499057cc9be00b09af5459a2c97720b54db18d338545d63bb39df575",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "original_qa_archive": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/candidate-003/acceptance-tools.tar",
+      "sha256": "5d231204dc5f8b7ee7aec61994d8813fc682d34c8f117d594babb8b05069e854",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "asset_manifest": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/candidate-003/assets/manifest.json",
+      "sha256": "d215d30b5ab379c0a7ff2b5191393e39106a722403863181c77d2b5ea2a7c020",
+      "classification": "local_only",
+      "publication": "reference_only"
+    },
+    "raw_data_copied": false,
+    "models_published": false
+  },
+  "release": {
+    "default_switched": true,
+    "active_default": "Rust compiler candidate003",
+    "rollback_assets": "legacy M2 runtime, model and block links retained",
+    "post_switch_check_verified": true,
+    "criteria44": "publication and GitHub closeout pending",
+    "commit_push_verified": false,
+    "github_closeout_verified": false
+  },
+  "cycle_rule": "No documentation-complete or acceptance-complete binding. Audit -> index -> documentation -> acceptance -> promotion -> post-switch index -> documentation-complete-002.",
+  "criterion_map": {
+    "path": "som-rs/evidence/rust-compiler-criteria-2026-10-14.json",
+    "sha256": "73a8d66c9b6ab50e0c871fceb0cffdee8670569f7eb44950663b8207071e063d",
+    "classification": "approved_evidence_index"
+  },
+  "promotion": {
+    "promotion_complete": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/promotion-complete-001.json",
+      "sha256": "ebd0ffe91674e0c81186180e5a4a92cc3e5f78d7cf847ea5804bb72755b64574"
+    },
+    "operator_execution": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/default-switch-execution-001.json",
+      "sha256": "f93705d40891f06ebb46c539b4443dec485ef941bd39f3e28e325334be3f9e91"
+    },
+    "operator_journal": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/default-switch-001/journal.json",
+      "sha256": "737cbbf7397e947130a736b716de51a5259ea9b8b732c821d2e2d28bdde1883a"
+    },
+    "root_post_switch_execution": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-post-switch-execution-001.json",
+      "sha256": "4a512b7a9aa2d38310267f419f6f3af49e847e8892c8ea7acbc488c0ea6f68ae"
+    },
+    "root_post_switch_result": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-post-switch-001/result.json",
+      "sha256": "f2690122b469a53765a4b5347737e1660a0e1e9eaf5e8681cde33e753f88dde1"
+    },
+    "promoted_at": "2026-10-15T03:08:08.737006+00:00",
+    "post_switch_checks": 76,
+    "classification": "local_raw_receipt",
+    "publication": "hash_only"
+  }
+}

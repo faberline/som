@@ -1,11 +1,11 @@
 # SOM Rust roadmap — 2026-10-13
 
 This is the current development plan. The human approved two stages.
-Candidate003 now implements the compiler. Independent acceptance remains pending.
+Candidate003 has passed independent acceptance and is the local default. Publication and closeout remain pending.
 The [2026-10-15 progress index](evidence/rust-compiler-progress-2026-10-15.json)
 records the source landing. All seven issues and both milestones remain open.
 Read [the current status](RUST_STATUS.md) and [the compiler guide](RUST_GUIDE.md).
-The running default remains the accepted legacy M2 model service.
+The compiler became the running default at `2026-10-15T03:08:08.737006+00:00`. Legacy M2 remains saved for rollback.
 
 `CNL → Rust parser and fixed rules → DSL bundle → existing Rust code generator → Python files`
 
@@ -53,7 +53,7 @@ Move compiler, catalog and quality asset loading out of the model directory depe
 The backend must not add missing plan nodes or business steps.
 A saved bundle and its declared local assets must be sufficient to generate all files.
 
-These interfaces are implemented in the separate candidate. The legacy M2 default remains unchanged:
+These interfaces are implemented and served by the promoted default:
 
 | CLI | HTTP | Result |
 |---|---|---|
@@ -109,10 +109,11 @@ The `m3` hourly automation is paused. Do not restart the retired M3 controller.
 R6 stopped during admission after an AW refresh timeout. Its 835 recorded passes do not complete 2700 admissions.
 R6 training and formal model evaluation did not run. Old M3 acceptance did not pass.
 The five historical training attempts remain closed and unchanged.
-Both current pointers remain legacy M2. The existing `76af/som` worktree changes remain preserved.
+The model and block pointers remain legacy M2. The runtime and compiler-asset pointers now select the compiler.
+The existing `76af/som` worktree changes remain preserved.
 Models, runtimes, source archives and raw measurements remain local.
 
 Read [the handoff](RUST_HANDOFF.md), [the evidence index](evidence/rust-roadmap-reset-2026-10-13.json),
 [the old milestone archive](evidence/legacy-milestones-2026-10-13.md) and
 [the exact new ticket plan](evidence/rust-roadmap-2026-10-13.json).
-Continue independent acceptance in [#43](https://github.com/faberline/som/issues/43), then the tested switch and closeout in [#44](https://github.com/faberline/som/issues/44). All seven new issues remain open.
+Independent acceptance for [#43](https://github.com/faberline/som/issues/43) and the tested switch for [#44](https://github.com/faberline/som/issues/44) passed. Publication and closeout remain. All seven new issues remain open until GitHub readback.

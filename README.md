@@ -1,31 +1,20 @@
 # som
 
-SOM has a new Rust compiler candidate. It has two stages:
+The new Rust compiler passed independent acceptance and is the local default.
+It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.
+The root post-switch check passed 76/76. Main publication and GitHub closeout are pending.
+The legacy M2 runtime, model and block links remain saved for rollback.
 
-`fixed English CNL → typed DSL bundle → existing Rust backend → Python files`
+`CNL → Rust parser and fixed rules → complete DSL bundle → existing Rust backend → Python files`
 
-CNL is controlled natural language. It uses exact English clauses and block
-delimiters. The calling agent supplies the business choices. Rust parses those
-choices and selects approved blocks by fixed rules. The backend returns all
-generated files. It does not write them into the caller's project.
+CNL uses fixed English clauses. Data strings can include Chinese.
+The caller supplies each business choice. The compiler does not guess missing facts.
+The new production path does not load models or start Python.
+Python remains the output language and an independent test tool.
 
-The new path needs no model weights or Python production process. Existing
-JSON prompt versions v1–v7 remain supported. Python is still the output language.
-The existing Python quality and behavior checks remain required.
-
-Candidate 003 is implemented. Its full independent acceptance is pending.
-The saved runtime and gap checks pass. The fresh public-products run passes 127/127.
-The full 544-job baseline is still running. Recovery run002 ended with a failure.
-Seven recovery scenarios met their expected outcomes; one failed and one is unrun.
-Read the [dated progress index](som-rs/evidence/rust-compiler-progress-2026-10-15.json).
-This source landing does not claim release acceptance.
-The accepted legacy M2 model service remains the default on port 8765.
-No compiler default switch or new milestone closure is claimed.
-
-Read [the current status](som-rs/RUST_STATUS.md),
-[the compiler guide](som-rs/RUST_GUIDE.md),
-[the roadmap](som-rs/RUST_ROADMAP.md), and
-[the handoff](som-rs/RUST_HANDOFF.md).
+The fresh complete gates passed 127 public products and 544 historical jobs.
+Read [the guide](som-rs/RUST_GUIDE.md), [the status](som-rs/RUST_STATUS.md),
+[the acceptance report](som-rs/RUST_REPORT.md), and [the roadmap](som-rs/RUST_ROADMAP.md).
 
 ## Historical model roadmap and retained legacy service
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import ast
 import base64
+import collections
 import copy
 import hashlib
 import io
@@ -147,6 +148,55 @@ def exact_equal(left: Any, right: Any) -> bool:
         import math
         return math.copysign(1.0, left) == math.copysign(1.0, right)
     return left == right
+
+
+RAW_B64_WHITESPACE = b' \t\n\r\x0b\x0c'
+
+
+def decode_raw_b64(path: Path) -> bytes:
+    """Decode a saved raw response body.
+
+    Writers may wrap or newline-terminate the base64 text, so ASCII whitespace is
+    ignored; every other byte must be strict base64 of a non-empty body.
+    """
+    compact = path.read_bytes().translate(None, RAW_B64_WHITESPACE)
+    if not compact:
+        raise ValueError(f'empty raw body: {path.name}')
+    return base64.b64decode(compact, validate=True)
+
+
+def saved_exchange_problem(response_path: Path, raw_b64_path: Path,
+                           expected_status: int | None = 200) -> str | None:
+    """Return None when the saved raw body exactly matches the wrapper, else a reason code."""
+    try:
+        wrapper = json.loads(response_path.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return 'wrapper_unreadable'
+    if not isinstance(wrapper, dict):
+        return 'wrapper_unreadable'
+    try:
+        raw = decode_raw_b64(raw_b64_path)
+    except (OSError, ValueError):
+        return 'raw_b64_invalid'
+    try:
+        body = json.loads(raw)
+    except ValueError:
+        return 'raw_not_json'
+    if expected_status is not None and wrapper.get('http_status') != expected_status:
+        return 'http_status'
+    if not exact_equal(body, wrapper.get('body')):
+        return 'body_mismatch'
+    return None
+
+
+def bad_raw_detail(missing: list[str], bad_raw: list[str]) -> str:
+    detail = f'missing={len(missing)} bad_raw={len(bad_raw)}'
+    if bad_raw:
+        reasons = collections.Counter(item.rsplit(':', 1)[-1] for item in bad_raw)
+        detail += f' reasons={dict(sorted(reasons.items()))} first={bad_raw[:5]}'
+    if missing:
+        detail += f' missing_first={missing[:5]}'
+    return detail
 
 
 class Audit:
@@ -436,17 +486,14 @@ def verify_saved_exchange(audit: Audit, label: str, directory: Path, prefix: str
     if not all(path.is_file() for path in (request_path, response_path, raw_b64_path)):
         audit.add(label, 'UNRUN', 'saved request/response wrapper/raw body is incomplete')
         return False
-    try:
-        wrapper = json.loads(response_path.read_text(encoding='utf-8'))
-        raw = base64.b64decode(''.join(raw_b64_path.read_text(encoding='ascii').split()), validate=True)
-        status = wrapper.get('http_status')
-        body = wrapper.get('body')
-        same = json.loads(raw) == body and (expected_status is None or status == expected_status)
-        audit.require(label, same, f'HTTP {status}; raw_bytes={len(raw)}; raw_sha256={hashlib.sha256(raw).hexdigest()}')
-        return same
-    except Exception as error:
-        audit.require(label, False, f'{type(error).__name__}: {error}')
+    problem = saved_exchange_problem(response_path, raw_b64_path, expected_status)
+    if problem is not None:
+        audit.require(label, False, problem)
         return False
+    status = json.loads(response_path.read_text(encoding='utf-8')).get('http_status')
+    raw = decode_raw_b64(raw_b64_path)
+    audit.require(label, True, f'HTTP {status}; raw_bytes={len(raw)}; raw_sha256={hashlib.sha256(raw).hexdigest()}')
+    return True
 
 
 def expected_frozen_argv(repo: Path, candidate: dict[str, Any], acc: Path) -> list[str]:
@@ -1796,26 +1843,15 @@ def verify_legacy_result(audit: Audit, path: Path, inv_path: Path, inventory: di
         if any(not item.is_file() for item in expected_files):
             missing.append(row.get('id', str(index)))
         else:
-            for prefix in ('compile-json', 'compile-cnl'):
-                try:
-                    wrapper = json.loads((cdir / f'{prefix}.response.json').read_text(encoding='utf-8'))
-                    raw = base64.b64decode((cdir / f'{prefix}.response.raw.b64').read_text(encoding='ascii'), validate=True)
-                    if wrapper.get('http_status') != 200 or json.loads(raw) != wrapper.get('body'):
-                        bad_raw.append(f'{row.get("id")}:{prefix}')
-                except Exception:
-                    bad_raw.append(f'{row.get("id")}:{prefix}:decode')
-            try:
-                wrapper = json.loads((directory / 'assemble.response.json').read_text(encoding='utf-8'))
-                raw = base64.b64decode((directory / 'assemble.response.raw.b64').read_text(encoding='ascii'), validate=True)
-                if wrapper.get('http_status') != 200 or json.loads(raw) != wrapper.get('body'):
-                    bad_raw.append(f'{row.get("id")}:assemble')
-            except Exception:
-                bad_raw.append(f'{row.get("id")}:assemble:decode')
+            for base, prefix in ((cdir, 'compile-json'), (cdir, 'compile-cnl'), (directory, 'assemble')):
+                problem = saved_exchange_problem(base / f'{prefix}.response.json', base / f'{prefix}.response.raw.b64')
+                if problem is not None:
+                    bad_raw.append(f'{row.get("id")}:{prefix}:{problem}')
         if row.get('family') == 'legacy100':
             v100_logs &= ((directory / 'legacy100-verifier.stdout.txt').is_file()
                           and (directory / 'legacy100-verifier.stderr.txt').is_file())
     audit.require('legacy.all_544_requests_responses', not missing and not bad_raw,
-                  f'missing={len(missing)} bad_raw={len(bad_raw)}')
+                  bad_raw_detail(missing, bad_raw))
     audit.require('legacy.540_unique_compile_pairs', len(compile_dirs) == 540)
     audit.require('legacy.100_stdout_stderr', sum(row.get('family') == 'legacy100' for row in rows) == 100 and v100_logs)
     audit.require('legacy.checked_variant_exact_three', checked_ids == CHECKED_VARIANTS)
@@ -2105,6 +2141,40 @@ def self_test() -> dict[str, Any]:
         test('legacy_health_rejects_changed_saved_response', not legacy_health_values_ok(
             health, health, health, health, health, before_raw, after_raw,
             dict(binding, health_after_sha256='0' * 64)))
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        body = {'ok': True, 'count': 1, 'items': ['a', 'b']}
+        raw = json.dumps(body).encode()
+        encoded = base64.b64encode(raw)
+
+        def exchange(raw_b64: bytes | None, wrapper: Any = None, name: str = 'x') -> str | None:
+            response, raw_path = root / f'{name}.response.json', root / f'{name}.response.raw.b64'
+            response.write_text(json.dumps({'http_status': 200, 'body': body} if wrapper is None else wrapper))
+            if raw_b64 is None:
+                raw_path.unlink(missing_ok=True)
+            else:
+                raw_path.write_bytes(raw_b64)
+            return saved_exchange_problem(response, raw_path)
+
+        wrapped = b'\r\n'.join(encoded[i:i + 8] for i in range(0, len(encoded), 8))
+        test('raw_b64_accepts_bare', exchange(encoded) is None)
+        test('raw_b64_accepts_trailing_newline', exchange(encoded + b'\n') is None)
+        test('raw_b64_accepts_wrapped_crlf', exchange(wrapped + b'\r\n') is None)
+        test('raw_b64_rejects_invalid_character', exchange(encoded[:4] + b'!' + encoded[5:]) == 'raw_b64_invalid')
+        test('raw_b64_rejects_truncated_padding', exchange(encoded.rstrip(b'=')[:-1]) == 'raw_b64_invalid')
+        test('raw_b64_rejects_empty', exchange(b'') == 'raw_b64_invalid')
+        test('raw_b64_rejects_whitespace_only', exchange(b' \n\t\n') == 'raw_b64_invalid')
+        test('raw_b64_rejects_non_ascii', exchange(encoded + 'é'.encode()) == 'raw_b64_invalid')
+        test('raw_b64_rejects_missing_file', exchange(None) == 'raw_b64_invalid')
+        test('raw_b64_rejects_other_body', exchange(base64.b64encode(json.dumps(dict(body, count=2)).encode()))
+             == 'body_mismatch')
+        test('raw_b64_rejects_type_confusion', exchange(base64.b64encode(json.dumps(dict(body, count=True)).encode()))
+             == 'body_mismatch')
+        test('raw_b64_rejects_non_json_body', exchange(base64.b64encode(b'not json')) == 'raw_not_json')
+        test('raw_b64_rejects_wrong_status', exchange(encoded, {'http_status': 500, 'body': body}) == 'http_status')
+        test('raw_b64_rejects_unreadable_wrapper', exchange(encoded, ['not', 'an', 'object']) == 'wrapper_unreadable')
+        test('raw_b64_detail_names_reasons', bad_raw_detail([], ['id1:assemble:body_mismatch'])
+             == "missing=0 bad_raw=1 reasons={'body_mismatch': 1} first=['id1:assemble:body_mismatch']")
     good_perf = {'observation_count': 84, 'all_requests_completed': True,
                  'rss_samples_complete': True, 'successful_http_responses': 84,
                  'comparison_passed': True, 'performance_thresholds': None}
