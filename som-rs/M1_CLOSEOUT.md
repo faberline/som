@@ -3,7 +3,7 @@
 > Historical model-roadmap document. On 2026-10-13 the human replaced this plan with
 > [the Rust roadmap](RUST_ROADMAP.md). Old milestone records were archived and deleted.
 > Read [the current handoff](RUST_HANDOFF.md). Preserve the results below; do not resume old M3 training.
-> New compiler implementation and acceptance remain pending. The default remains legacy M2.
+> The Rust compiler passed acceptance and became the local default on 2026-10-15. Legacy M2 assets remain saved for rollback.
 
 M1 evidence passed. M2 product acceptance is still open. No model default,
 paid-agent baseline, release or cloud environment changed.
