@@ -1,9 +1,9 @@
 # SOM Rust roadmap — 2026-10-13
 
 This is the current development plan. The human approved two stages.
-Candidate003 has passed independent acceptance and is the local default. Publication and closeout remain pending.
+Candidate003 has passed independent acceptance and is the local default. M1 and M2 are complete and closed on GitHub.
 The [2026-10-15 progress index](evidence/rust-compiler-progress-2026-10-15.json)
-records the source landing. All seven issues and both milestones remain open.
+records the source landing. All seven issues and both milestones are now closed.
 Read [the current status](RUST_STATUS.md) and [the compiler guide](RUST_GUIDE.md).
 The compiler became the running default at `2026-10-15T03:08:08.737006+00:00`. Legacy M2 remains saved for rollback.
 
@@ -17,7 +17,7 @@ Python remains the output language. Existing Python checks remain useful.
 
 ## M1 — CNL to DSL
 
-[GitHub milestone 7](https://github.com/faberline/som/milestone/7) has three open issues.
+[GitHub milestone 7](https://github.com/faberline/som/milestone/7) is closed. Its three issues are closed as completed.
 
 | Issue | Work | Depends on |
 |---|---|---|
@@ -39,7 +39,7 @@ Errors must give a line, column, cause and allowed form.
 
 ## M2 — DSL to Code
 
-[GitHub milestone 8](https://github.com/faberline/som/milestone/8) has four open issues.
+[GitHub milestone 8](https://github.com/faberline/som/milestone/8) is closed. Its four issues are closed as completed.
 
 | Issue | Work | Depends on |
 |---|---|---|
@@ -116,4 +116,4 @@ Models, runtimes, source archives and raw measurements remain local.
 Read [the handoff](RUST_HANDOFF.md), [the evidence index](evidence/rust-roadmap-reset-2026-10-13.json),
 [the old milestone archive](evidence/legacy-milestones-2026-10-13.md) and
 [the exact new ticket plan](evidence/rust-roadmap-2026-10-13.json).
-Independent acceptance for [#43](https://github.com/faberline/som/issues/43) and the tested switch for [#44](https://github.com/faberline/som/issues/44) passed. Publication and closeout remain. All seven new issues remain open until GitHub readback.
+Independent acceptance for [#43](https://github.com/faberline/som/issues/43) and the tested switch for [#44](https://github.com/faberline/som/issues/44) passed. Commit `3ced191137` published the work. All seven issues and milestones 7 and 8 are closed and read back.

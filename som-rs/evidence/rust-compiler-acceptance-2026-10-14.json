@@ -1,6 +1,6 @@
 {
   "version": "som.rust-compiler-acceptance-index.v1",
-  "stage": "promoted_publication_and_github_closeout_pending",
+  "stage": "complete_published_and_closed",
   "at": "2026-10-15T03:05:47.467454+00:00",
   "root_audit": {
     "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
@@ -740,14 +740,15 @@
     "active_default": "Rust compiler candidate003",
     "rollback_assets": "legacy M2 runtime, model and block links retained",
     "post_switch_check_verified": true,
-    "criteria44": "publication and GitHub closeout pending",
-    "commit_push_verified": false,
-    "github_closeout_verified": false
+    "criteria44": "complete",
+    "commit_push_verified": true,
+    "github_closeout_verified": true,
+    "all77_complete": true
   },
-  "cycle_rule": "No documentation-complete or acceptance-complete binding. Audit -> index -> documentation -> acceptance -> promotion -> post-switch index -> documentation-complete-002.",
+  "cycle_rule": "No documentation-complete binding. Audit -> index -> documentation -> acceptance -> promotion -> post-switch index -> documentation-complete-002 -> C1 -> publication-001 -> github-closeout-001 -> final index -> documentation-complete-003 -> C2 -> publication-002 -> final-closeout-001. The final pushed tip is recorded only in the later local closeout receipt.",
   "criterion_map": {
     "path": "som-rs/evidence/rust-compiler-criteria-2026-10-14.json",
-    "sha256": "73a8d66c9b6ab50e0c871fceb0cffdee8670569f7eb44950663b8207071e063d",
+    "sha256": "2e3b3b21aec46796f3393819cbc84ec240dd0074a9a2ab5e47c838ef9bcd3de5",
     "classification": "approved_evidence_index"
   },
   "promotion": {
@@ -775,5 +776,42 @@
     "post_switch_checks": 76,
     "classification": "local_raw_receipt",
     "publication": "hash_only"
+  },
+  "closeout": {
+    "publication": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+      "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+      "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+      "branch": "main"
+    },
+    "github_closeout": {
+      "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+      "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+    },
+    "github_readback_at": "2026-10-15T03:16:50.837095+00:00",
+    "issues_closed_completed": [
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44
+    ],
+    "milestones_closed": {
+      "7": [
+        38,
+        39,
+        40
+      ],
+      "8": [
+        41,
+        42,
+        43,
+        44
+      ]
+    },
+    "classification": "local_raw_receipt",
+    "publication_mode": "hash_only"
   }
 }

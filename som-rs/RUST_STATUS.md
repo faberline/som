@@ -2,7 +2,8 @@
 
 The new Rust compiler passed independent acceptance and is the local default.
 It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.
-The root post-switch check passed 76/76. Main publication and GitHub closeout are pending.
+The root post-switch check passed 76/76. Commit `3ced191137` published it to main.
+Issues #38–#44 are closed as completed, and milestones 7 and 8 are closed.
 The legacy M2 runtime, model and block links remain saved for rollback.
 
 `CNL → Rust parser and fixed rules → complete DSL bundle → existing Rust backend → Python files`
@@ -29,6 +30,8 @@ Python remains the output language and an independent test tool.
 | Performance observation | 84 successful requests and 84 complete response comparisons |
 | Live default switch | Committed with no rollback; fresh M2 clone and compiler canaries passed before the change; two post-switch canary rounds passed on 8765 |
 | Root post-switch check | 76/76 passed: owner, binary, assets, both current links, health, full HTTP, old/new CLI generate, CNL/JSON compile and saved-bundle assemble |
+| Main publication | Commit `3ced191137` pushed to `main`; live remote `main` read back |
+| GitHub closeout | #38–#44 closed as completed with evidence comments; milestones 7 and 8 closed with 0 open issues; read back at `2026-10-15T03:16:50.837095+00:00` |
 
 Candidate binary SHA-256: `3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02`.
 Source receipt SHA-256: `1e80e26f0128e99fe7fa3c4fcf6edae354e51bf75b13f3df70833107906d78bd`.

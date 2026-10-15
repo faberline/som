@@ -2,7 +2,8 @@
 
 The new Rust compiler passed independent acceptance and is the local default.
 It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.
-The root post-switch check passed 76/76. Main publication and GitHub closeout are pending.
+The root post-switch check passed 76/76. Commit `3ced191137` published it to main.
+Issues #38–#44 are closed as completed, and milestones 7 and 8 are closed.
 The legacy M2 runtime, model and block links remain saved for rollback.
 
 `CNL → Rust parser and fixed rules → complete DSL bundle → existing Rust backend → Python files`

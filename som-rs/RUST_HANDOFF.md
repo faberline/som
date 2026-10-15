@@ -2,7 +2,8 @@
 
 The new Rust compiler passed independent acceptance and is the local default.
 It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.
-The root post-switch check passed 76/76. Main publication and GitHub closeout are pending.
+The root post-switch check passed 76/76. Commit `3ced191137` published it to main.
+Issues #38–#44 are closed as completed, and milestones 7 and 8 are closed.
 The legacy M2 runtime, model and block links remain saved for rollback.
 
 `CNL → Rust parser and fixed rules → complete DSL bundle → existing Rust backend → Python files`
@@ -32,11 +33,11 @@ Done: switch prerequisites bound those receipts and fresh process identities.
 Done: the qualified switch committed with a new evidence directory.
 Done: the root check verified the live default, both current links, asset hashes, and full HTTP/CLI responses.
 
-Remaining:
+Done: commit `3ced191137` published approved source, documents, and indexes to main.
+Done: #38–#44 were closed as completed and milestones 7 and 8 were closed. GitHub was read back.
 
-1. Publish approved source, documents, and indexes to main.
-2. Close #38–#44 and milestones 7 and 8 after evidence review. Read GitHub back.
-3. Save the AW handoff. Release the claim after all owned test cleanup is verified.
+After this documentation commit is pushed, root seals the final local closeout receipt.
+Root then saves the AW handoff and releases the claim after owned test cleanup is verified.
 
 ## Switch and rollback
 

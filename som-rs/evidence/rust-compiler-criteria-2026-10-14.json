@@ -1,6 +1,6 @@
 {
   "version": "som.compiler-criterion-map.v1",
-  "stage": "promoted_publication_and_github_closeout_pending",
+  "stage": "complete_published_and_closed",
   "root_audit": {
     "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/root-audit-final-001.json",
     "sha256": "071c5ddc09e6f879ab2079cdcfa6ab6f75a60040efbcb2516568a1431b11b792"
@@ -15,8 +15,8 @@
     {
       "criterion": "38/W1",
       "requirement": "Freeze the English grammar, names, literals, statement order and version rules. Define each allowed omission and its one fixed default.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -127,17 +127,36 @@
           "check_name": "gaps.all_fresh_versions_and_limits",
           "prior_review_check_name": "gaps.all_fresh_versions_and_limits",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 38,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:37Z",
+          "comment_id": 6183577470,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "38/W2",
       "requirement": "Map each CNL form to the existing typed prompt fields. Cover resources, fields, queries, capabilities, operations, inputs, references, branches, exports, transactions, compensation, results and errors.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -248,17 +267,36 @@
           "check_name": "gaps.all_fresh_versions_and_limits",
           "prior_review_check_name": "gaps.all_fresh_versions_and_limits",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 38,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:37Z",
+          "comment_id": 6183577470,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "38/W3",
       "requirement": "Specify the stage boundary as the existing DSL plus its complete typed binding context. Preserve the existing inner prompt and DSL versions.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -369,17 +407,36 @@
           "check_name": "gaps.all_fresh_versions_and_limits",
           "prior_review_check_name": "gaps.all_fresh_versions_and_limits",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 38,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:37Z",
+          "comment_id": 6183577470,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "38/W4",
       "requirement": "Specify POST /v1/compile for CNL to a DSL bundle. Specify POST /v1/assemble for a bundle to complete files. Preserve POST /v1/generate and the JSON generate CLI for prompt v1–v7.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -490,17 +547,36 @@
           "check_name": "gaps.all_fresh_versions_and_limits",
           "prior_review_check_name": "gaps.all_fresh_versions_and_limits",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 38,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:37Z",
+          "comment_id": 6183577470,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "38/W5",
       "requirement": "Reject missing facts, contradictions, ambiguous references, raw source, SQL and unsupported operations. Do not invent a business step.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -611,17 +687,36 @@
           "check_name": "gaps.all_fresh_versions_and_limits",
           "prior_review_check_name": "gaps.all_fresh_versions_and_limits",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 38,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:37Z",
+          "comment_id": 6183577470,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "38/W6",
       "requirement": "Remove model sequence-token gates from the new compiler path. Retain structural limits. Keep compact output bytes as an observation and retain the existing limits on legacy paths.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -732,17 +827,36 @@
           "check_name": "gaps.all_fresh_versions_and_limits",
           "prior_review_check_name": "gaps.all_fresh_versions_and_limits",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 38,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:37Z",
+          "comment_id": 6183577470,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "38/A1",
       "requirement": "[ ] A versioned grammar, schemas, examples and negative cases cover every supported field and operation.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -853,17 +967,36 @@
           "check_name": "gaps.all_fresh_versions_and_limits",
           "prior_review_check_name": "gaps.all_fresh_versions_and_limits",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 38,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:37Z",
+          "comment_id": 6183577470,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "38/A2",
       "requirement": "[ ] Every example has one explicit semantic result. Invalid cases name a stable error class and a source location.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -974,17 +1107,36 @@
           "check_name": "gaps.all_fresh_versions_and_limits",
           "prior_review_check_name": "gaps.all_fresh_versions_and_limits",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 38,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:37Z",
+          "comment_id": 6183577470,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "38/A3",
       "requirement": "[ ] The contract defines supported prompt v1–v7 and DSL versions, exact endpoint bodies, complete responses and compatibility rules.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -1095,17 +1247,36 @@
           "check_name": "gaps.all_fresh_versions_and_limits",
           "prior_review_check_name": "gaps.all_fresh_versions_and_limits",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 38,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:37Z",
+          "comment_id": 6183577470,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "38/A4",
       "requirement": "[ ] Record the existing file, block, input and flow-node limits. Distinguish these from retired model token limits.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -1216,17 +1387,36 @@
           "check_name": "gaps.all_fresh_versions_and_limits",
           "prior_review_check_name": "gaps.all_fresh_versions_and_limits",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 38,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:37Z",
+          "comment_id": 6183577470,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "38/A5",
       "requirement": "[ ] Freeze the acceptance requirements, compiler case inventory, case selection rules and independent checks before implementation. Mark new capabilities as out of scope.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -1337,17 +1527,36 @@
           "check_name": "gaps.all_fresh_versions_and_limits",
           "prior_review_check_name": "gaps.all_fresh_versions_and_limits",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 38,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:37Z",
+          "comment_id": 6183577470,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "39/W1",
       "requirement": "Parse the fixed English forms into existing prompt fields. Retain source spans for diagnostics.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -1448,17 +1657,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 39,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:41Z",
+          "comment_id": 6183578155,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "39/W2",
       "requirement": "Preserve exact names, literal types and values, nullability, operation order, scopes, branch exports and compensation.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -1559,17 +1787,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 39,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:41Z",
+          "comment_id": 6183578155,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "39/W3",
       "requirement": "Use the existing semantic validators. Report grammar, missing-field, type, scope and contradiction errors at the source sentence.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -1670,17 +1917,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 39,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:41Z",
+          "comment_id": 6183578155,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "39/W4",
       "requirement": "Keep production parsing local and model-free. Python may remain a checker or fixture tool. Production must not invoke Python parsing or inference.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -1781,17 +2047,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 39,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:41Z",
+          "comment_id": 6183578155,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "39/A1",
       "requirement": "[ ] CNL and equivalent JSON requests have the same semantic fields and the same acceptance or rejection result.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -1892,17 +2177,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 39,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:41Z",
+          "comment_id": 6183578155,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "39/A2",
       "requirement": "[ ] Tests cover each grammar form, each fixed default and each refusal class. Diagnostics include line, column, cause and allowed form.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -2003,17 +2307,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 39,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:41Z",
+          "comment_id": 6183578155,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "39/A3",
       "requirement": "[ ] Forward references, cross-branch reads, wrong literal types, missing authorization and invalid transactions or compensation fail.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -2114,17 +2437,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 39,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:41Z",
+          "comment_id": 6183578155,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "39/A4",
       "requirement": "[ ] Repeated parsing yields the same typed request. Unknown syntax cannot fall back to a model or a guessed interpretation.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -2225,17 +2567,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 39,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:41Z",
+          "comment_id": 6183578155,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "40/W1",
       "requirement": "Define fixed rules for file slots, approved block choices, names, bindings, dependencies, operation order, flow nodes and inverse blocks.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -2356,17 +2717,36 @@
           "check_name": "runtime.large_compact_exact",
           "prior_review_check_name": "runtime.large_compact_exact",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 40,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:43Z",
+          "comment_id": 6183578683,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "40/W2",
       "requirement": "Port the needed reference logic into a production Rust module. The Python reference code may guide implementation and checks.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -2487,17 +2867,36 @@
           "check_name": "runtime.large_compact_exact",
           "prior_review_check_name": "runtime.large_compact_exact",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 40,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:43Z",
+          "comment_id": 6183578683,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "40/W3",
       "requirement": "Support the existing typed JSON prompt versions v1–v7. Reuse the current block catalogs and semantic validators.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -2618,17 +3017,36 @@
           "check_name": "runtime.large_compact_exact",
           "prior_review_check_name": "runtime.large_compact_exact",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 40,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:43Z",
+          "comment_id": 6183578683,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "40/W4",
       "requirement": "Choose legal block alternatives through a documented versioned policy. Preserve each business choice supplied by the caller.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -2749,17 +3167,36 @@
           "check_name": "runtime.large_compact_exact",
           "prior_review_check_name": "runtime.large_compact_exact",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 40,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:43Z",
+          "comment_id": 6183578683,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "40/W5",
       "requirement": "Read only the request, approved catalog and compiler rules in production. Do not read corpora, gold DSL answers, test expectations, model weights or Python planners.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -2880,17 +3317,36 @@
           "check_name": "runtime.large_compact_exact",
           "prior_review_check_name": "runtime.large_compact_exact",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 40,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:43Z",
+          "comment_id": 6183578683,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "40/A1",
       "requirement": "[ ] Emit the versioned DSL bundle defined by the contract. Include the existing DSL, full typed binding context, and grammar, policy and catalog versions and hashes. Equivalent CNL and JSON produce the same canonical bundle.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -3041,17 +3497,36 @@
           "check_name": "discharge.all_versions",
           "prior_review_check_name": "discharge.all_versions",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 40,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:43Z",
+          "comment_id": 6183578683,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "fixed plan and bundle coverage; complete fresh public cohort still required",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "40/A2",
       "requirement": "[ ] The same request and versioned catalog produce identical canonical DSL. Each result passes the existing plan validator.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -3202,17 +3677,36 @@
           "check_name": "discharge.all_versions",
           "prior_review_check_name": "discharge.all_versions",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 40,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:43Z",
+          "comment_id": 6183578683,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "fixed plan and bundle coverage; complete fresh public cohort still required",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "40/A3",
       "requirement": "[ ] Every emitted file, block, reference and inverse is explicit in the DSL. Stage two does not invent missing plan nodes.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -3363,17 +3857,36 @@
           "check_name": "discharge.all_versions",
           "prior_review_check_name": "discharge.all_versions",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 40,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:43Z",
+          "comment_id": 6183578683,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "fixed plan and bundle coverage; complete fresh public cohort still required",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "40/A4",
       "requirement": "[ ] Tests cover all existing capability choices and ordered flow shapes, including branches and compensation.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -3524,17 +4037,36 @@
           "check_name": "discharge.all_versions",
           "prior_review_check_name": "discharge.all_versions",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 40,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:43Z",
+          "comment_id": 6183578683,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "fixed plan and bundle coverage; complete fresh public cohort still required",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "40/A5",
       "requirement": "[ ] Negative tests reject incompatible blocks, missing dependencies, duplicate symbols, wrong order and unsupported capabilities.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -3655,17 +4187,36 @@
           "check_name": "runtime.large_compact_exact",
           "prior_review_check_name": "runtime.large_compact_exact",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 40,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:43Z",
+          "comment_id": 6183578683,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "40/A6",
       "requirement": "[ ] A packaged production run succeeds without access to training or evaluation corpora, saved answers, weights or a Python planner.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -3816,17 +4367,36 @@
           "check_name": "discharge.all_versions",
           "prior_review_check_name": "discharge.all_versions",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 40,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:43Z",
+          "comment_id": 6183578683,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "fixed plan and bundle coverage; complete fresh public cohort still required",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "41/W1",
       "requirement": "Load the bundle schema fixed by the contract issue. Keep its inner prompt and DSL versions.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -3947,17 +4517,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 41,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:47Z",
+          "comment_id": 6183579236,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "41/W2",
       "requirement": "Verify the complete binding context and DSL together. Reject unknown versions, missing context, incompatible catalogs and altered assets before rendering.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -4078,17 +4667,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 41,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:47Z",
+          "comment_id": 6183579236,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "41/W3",
       "requirement": "Reuse block verification, resolve(prompt, dsl), the existing version-specific renderer, and the pinned quality formatter.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -4209,17 +4817,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 41,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:47Z",
+          "comment_id": 6183579236,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "41/W4",
       "requirement": "Keep every selected block, dependency and inverse explicit. Do not add missing business steps or plan nodes.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -4340,17 +4967,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 41,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:47Z",
+          "comment_id": 6183579236,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "41/W5",
       "requirement": "Use only the saved bundle and its declared local compiler assets. Do not read the original CNL or a model directory.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -4471,17 +5117,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 41,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:47Z",
+          "comment_id": 6183579236,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "41/A1",
       "requirement": "[ ] A bundle from M1 produces complete files in a fresh process without the original CNL, weights or training data.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -4602,17 +5267,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 41,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:47Z",
+          "comment_id": 6183579236,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "41/A2",
       "requirement": "[ ] Round-trip serialization preserves the prompt, DSL, typed literals and hashes.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -4733,17 +5417,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 41,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:47Z",
+          "comment_id": 6183579236,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "41/A3",
       "requirement": "[ ] Inconsistent context and plan, missing context, unsupported versions and catalog hash changes fail before rendering.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -4864,17 +5567,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 41,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:47Z",
+          "comment_id": 6183579236,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "41/A4",
       "requirement": "[ ] Equivalent supported input through the old assembler interface and the new bundle interface produces the same complete files.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -5014,18 +5736,37 @@
           "json_pointer": "/checks/861",
           "check_name": "discharge.checked_variant",
           "prior_review_check_name": "discharge.checked_variant",
+          "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 41,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:47Z",
+          "comment_id": 6183579236,
           "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "standard backend integration exists; all three checked alternate plans still require full archive parity receipts",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "41/A5",
       "requirement": "[ ] Compact bytes remain an observation. Structural limits and original legacy byte limits still apply.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -5146,17 +5887,36 @@
           "check_name": "candidate.build_receipt_bound",
           "prior_review_check_name": "candidate.build_receipt_bound",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 41,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:47Z",
+          "comment_id": 6183579236,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "42/W1",
       "requirement": "Add POST /v1/compile and POST /v1/assemble with matching som compile <cnl-file> and som assemble <bundle-file> CLI commands. The CLI calls the local HTTP service. CNL uses an explicit format marker; never guess the format.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -5327,17 +6087,36 @@
           "check_name": "performance.no_threshold_gate",
           "prior_review_check_name": "performance.no_threshold_gate",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 42,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:50Z",
+          "comment_id": 6183579861,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "42/W2",
       "requirement": "Keep POST /v1/generate and the existing JSON generate CLI. Route validated prompt v1–v7 through deterministic planning and the existing backend.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -5508,17 +6287,36 @@
           "check_name": "performance.no_threshold_gate",
           "prior_review_check_name": "performance.no_threshold_gate",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 42,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:50Z",
+          "comment_id": 6183579861,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "42/W3",
       "requirement": "Reuse block verification, resolve(prompt, dsl), render_resolved or the existing version-specific assembler, and the pinned quality formatter.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -5689,17 +6487,36 @@
           "check_name": "performance.no_threshold_gate",
           "prior_review_check_name": "performance.no_threshold_gate",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 42,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:50Z",
+          "comment_id": 6183579861,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "42/W4",
       "requirement": "Load compiler, catalog and quality assets without a model directory or weights. Report the compiler purpose and asset hashes in health output.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -5870,17 +6687,36 @@
           "check_name": "performance.no_threshold_gate",
           "prior_review_check_name": "performance.no_threshold_gate",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 42,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:50Z",
+          "comment_id": 6183579861,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "42/W5",
       "requirement": "Remove inference and model token codec requirements from the new production path. Keep semantic and structural validation, compact byte observations and legacy byte limits.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -6051,17 +6887,36 @@
           "check_name": "performance.no_threshold_gate",
           "prior_review_check_name": "performance.no_threshold_gate",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 42,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:50Z",
+          "comment_id": 6183579861,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "42/W6",
       "requirement": "Return complete files and stable errors. The server must not write generated files into the caller project. Keep the legacy M2 deployment available until rollout acceptance.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -6232,17 +7087,36 @@
           "check_name": "performance.no_threshold_gate",
           "prior_review_check_name": "performance.no_threshold_gate",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 42,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:50Z",
+          "comment_id": 6183579861,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "42/A1",
       "requirement": "[ ] HTTP and CLI compile and assemble paths return equivalent bundles and complete file contents.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -6413,17 +7287,36 @@
           "check_name": "performance.no_threshold_gate",
           "prior_review_check_name": "performance.no_threshold_gate",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 42,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:50Z",
+          "comment_id": 6183579861,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "42/A2",
       "requirement": "[ ] The existing JSON generate request and response contract works for every supported prompt version v1–v7.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -6594,17 +7487,36 @@
           "check_name": "performance.no_threshold_gate",
           "prior_review_check_name": "performance.no_threshold_gate",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 42,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:50Z",
+          "comment_id": 6183579861,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "42/A3",
       "requirement": "[ ] The packaged service starts and generates code without weights, an inference runtime, training data or a Python production process.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -6775,17 +7687,36 @@
           "check_name": "performance.no_threshold_gate",
           "prior_review_check_name": "performance.no_threshold_gate",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 42,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:50Z",
+          "comment_id": 6183579861,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "42/A4",
       "requirement": "[ ] Invalid JSON, CNL, bundles, catalogs, paths and references fail with the specified errors and no partial success.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -6956,17 +7887,36 @@
           "check_name": "performance.no_threshold_gate",
           "prior_review_check_name": "performance.no_threshold_gate",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 42,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:50Z",
+          "comment_id": 6183579861,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "42/A5",
       "requirement": "[ ] Existing backend behavior remains covered. Measure full response latency, memory and bytes with the new compiler path.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -7137,17 +8087,36 @@
           "check_name": "performance.no_threshold_gate",
           "prior_review_check_name": "performance.no_threshold_gate",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 42,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:50Z",
+          "comment_id": 6183579861,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "43/W1",
       "requirement": "Run grammar, semantic, deterministic-plan, bundle, HTTP, CLI, refusal and complete-output checks from the new compiler contract.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -7378,17 +8347,36 @@
           "check_name": "discharge.checked_variant",
           "prior_review_check_name": "discharge.checked_variant",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 43,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:53Z",
+          "comment_id": 6183580482,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "complete product cohort and exact historical behavior scope still pending; byte parity is not behavior",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "43/W2",
       "requirement": "Keep Python output and the pinned Python quality checks. Run independent API, database, migration, authorization, transaction, compensation, provider-fault and recovery checks where the existing contract requires them.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -7619,17 +8607,36 @@
           "check_name": "discharge.checked_variant",
           "prior_review_check_name": "discharge.checked_variant",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 43,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:53Z",
+          "comment_id": 6183580482,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "complete product cohort and exact historical behavior scope still pending; byte parity is not behavior",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "43/W3",
       "requirement": "Verify Python/Rust assembly parity using actual new compiler DSL. Byte parity alone does not prove behavior.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -7860,17 +8867,36 @@
           "check_name": "discharge.checked_variant",
           "prior_review_check_name": "discharge.checked_variant",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 43,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:53Z",
+          "comment_id": 6183580482,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "complete product cohort and exact historical behavior scope still pending; byte parity is not behavior",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "43/W4",
       "requirement": "Run the existing 100 legacy cases and 214 additional cases. Record the 214 as 14 services, 120 compositions and 80 blind cases. Account for 314 distinct legacy cases.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -8101,17 +9127,36 @@
           "check_name": "discharge.checked_variant",
           "prior_review_check_name": "discharge.checked_variant",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 43,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:53Z",
+          "comment_id": 6183580482,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "complete product cohort and exact historical behavior scope still pending; byte parity is not behavior",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "43/W5",
       "requirement": "Report M2 formal114, development12, supplement12 and quality218 separately. Formal114 and development12 are disjoint subsets of quality218. Supplement12 is separate. Verify the identities and overlaps.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -8342,17 +9387,36 @@
           "check_name": "discharge.checked_variant",
           "prior_review_check_name": "discharge.checked_variant",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 43,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:53Z",
+          "comment_id": 6183580482,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "complete product cohort and exact historical behavior scope still pending; byte parity is not behavior",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "43/W6",
       "requirement": "The retained M2 inventory has 230 distinct products: 218 plus 12. Full original behavior applies to 126 within quality218 and the 12 supplements. The remaining 92 retain their quality and parity scope; do not label them as new full behavior passes.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -8533,17 +9597,36 @@
           "check_name": "performance.no_threshold_gate",
           "prior_review_check_name": "performance.no_threshold_gate",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 43,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:53Z",
+          "comment_id": 6183580482,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "43/W7",
       "requirement": "Use existing seen data as regression evidence. Run the compiler acceptance cases and independent checks already frozen by the contract issue before development. Do not read corpus answers in production or use the compiler output as its own behavior oracle.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -8774,17 +9857,36 @@
           "check_name": "discharge.checked_variant",
           "prior_review_check_name": "discharge.checked_variant",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 43,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:53Z",
+          "comment_id": 6183580482,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "complete product cohort and exact historical behavior scope still pending; byte parity is not behavior",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "43/W8",
       "requirement": "Preserve failures, skipped checks and missing values. Do not require old training, checkpoint selection, model raw-token accuracy, Metal inference or model token-mask gates.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -8965,17 +10067,36 @@
           "check_name": "performance.no_threshold_gate",
           "prior_review_check_name": "performance.no_threshold_gate",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 43,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:53Z",
+          "comment_id": 6183580482,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "43/A1",
       "requirement": "[ ] Every required compiler case has a result tied to the same source, grammar, policy, catalog, tools and bundle hashes.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -9206,17 +10327,36 @@
           "check_name": "discharge.checked_variant",
           "prior_review_check_name": "discharge.checked_variant",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 43,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:53Z",
+          "comment_id": 6183580482,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "complete product cohort and exact historical behavior scope still pending; byte parity is not behavior",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "43/A2",
       "requirement": "[ ] All required new compiler checks pass. Exact outputs, refusal classes and independent behavior agree with the frozen contract.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -9447,17 +10587,36 @@
           "check_name": "discharge.checked_variant",
           "prior_review_check_name": "discharge.checked_variant",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 43,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:53Z",
+          "comment_id": 6183580482,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "complete product cohort and exact historical behavior scope still pending; byte parity is not behavior",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "43/A3",
       "requirement": "[ ] The 100+214 legacy inventory and the four M2 scopes are fully accounted for. The baseline inventory is 544 jobs with no double-counted M2 products.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -9688,17 +10847,36 @@
           "check_name": "discharge.checked_variant",
           "prior_review_check_name": "discharge.checked_variant",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 43,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:53Z",
+          "comment_id": 6183580482,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "complete product cohort and exact historical behavior scope still pending; byte parity is not behavior",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "43/A4",
       "requirement": "[ ] Report bytes and formatting for complete artifacts. Retain structural limits, observe compact bytes and enforce the original legacy limits.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -9929,17 +11107,36 @@
           "check_name": "discharge.checked_variant",
           "prior_review_check_name": "discharge.checked_variant",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 43,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:53Z",
+          "comment_id": 6183580482,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "complete product cohort and exact historical behavior scope still pending; byte parity is not behavior",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "43/A5",
       "requirement": "[ ] A root review maps each acceptance requirement to raw evidence and states its exact scope. Model-era results do not stand in for this run.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -10170,17 +11367,36 @@
           "check_name": "discharge.checked_variant",
           "prior_review_check_name": "discharge.checked_variant",
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 43,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:53Z",
+          "comment_id": 6183580482,
+          "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "complete product cohort and exact historical behavior scope still pending; byte parity is not behavior",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "43/A6",
       "requirement": "[ ] No paid agent comparison, real cloud execution or default switch was used to obtain acceptance.",
-      "status": "candidate_evidence_accepted",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -10360,18 +11576,37 @@
           "json_pointer": "/checks/55",
           "check_name": "performance.no_threshold_gate",
           "prior_review_check_name": "performance.no_threshold_gate",
+          "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 43,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:53Z",
+          "comment_id": 6183580482,
           "state": "PASS"
         }
       ],
       "remaining": [],
       "prior_review_scope": "implemented/contract evidence with recorded bounded checks; no final acceptance inferred",
-      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate."
+      "scope_note": "Candidate evidence is tied to the final complete audit; historical behavior and parity scopes stay separate.",
+      "evidence_status": "candidate_evidence_accepted"
     },
     {
       "criterion": "44/W1",
       "requirement": "Prepare the versioned compiler, block and formatter package with its manifest. Keep old model artifacts and raw evidence local.",
-      "status": "release_pending",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -10413,20 +11648,36 @@
             "sha256": "f2690122b469a53765a4b5347737e1660a0e1e9eaf5e8681cde33e753f88dde1"
           },
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 44,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:56Z",
+          "comment_id": 6183581098,
+          "state": "PASS"
         }
       ],
-      "remaining": [
-        "final release docs and publication",
-        "main commit/push and GitHub issue/milestone readback"
-      ],
+      "remaining": [],
       "prior_review_scope": "release lifecycle; implementation or isolated rehearsal does not prove live default promotion",
-      "scope_note": "Release work remains pending."
+      "scope_note": "Release lifecycle verified by the live switch, root post-switch check, C1 publication and GitHub readback. The final pushed tip is recorded in a later local closeout receipt.",
+      "evidence_status": "release_pending"
     },
     {
       "criterion": "44/W2",
       "requirement": "Complete README, status, API/CLI, migration, evidence index and handoff documents. Record the new two-stage scope and the old model roadmap as superseded.",
-      "status": "release_pending",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -10468,20 +11719,36 @@
             "sha256": "f2690122b469a53765a4b5347737e1660a0e1e9eaf5e8681cde33e753f88dde1"
           },
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 44,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:56Z",
+          "comment_id": 6183581098,
+          "state": "PASS"
         }
       ],
-      "remaining": [
-        "final release docs and publication",
-        "main commit/push and GitHub issue/milestone readback"
-      ],
+      "remaining": [],
       "prior_review_scope": "release lifecycle; implementation or isolated rehearsal does not prove live default promotion",
-      "scope_note": "Release work remains pending."
+      "scope_note": "Release lifecycle verified by the live switch, root post-switch check, C1 publication and GitHub readback. The final pushed tip is recorded in a later local closeout receipt.",
+      "evidence_status": "release_pending"
     },
     {
       "criterion": "44/W3",
       "requirement": "Run a fresh legacy M2 restore test and a new compiler canary using complete HTTP and CLI responses.",
-      "status": "promotion_verified",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -10523,19 +11790,36 @@
             "sha256": "f2690122b469a53765a4b5347737e1660a0e1e9eaf5e8681cde33e753f88dde1"
           },
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 44,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:56Z",
+          "comment_id": 6183581098,
+          "state": "PASS"
         }
       ],
-      "remaining": [
-        "GitHub issue/milestone readback"
-      ],
+      "remaining": [],
       "prior_review_scope": "release lifecycle; implementation or isolated rehearsal does not prove live default promotion",
-      "scope_note": "Release work remains pending."
+      "scope_note": "Release lifecycle verified by the live switch, root post-switch check, C1 publication and GitHub readback. The final pushed tip is recorded in a later local closeout receipt.",
+      "evidence_status": "promotion_verified"
     },
     {
       "criterion": "44/W4",
       "requirement": "Define the compiler default selector and its asset binding. Do not relabel compiler assets as model weights. Preserve the legacy M2 model and block selectors until the tested switch.",
-      "status": "promotion_verified",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -10577,19 +11861,36 @@
             "sha256": "f2690122b469a53765a4b5347737e1660a0e1e9eaf5e8681cde33e753f88dde1"
           },
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 44,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:56Z",
+          "comment_id": 6183581098,
+          "state": "PASS"
         }
       ],
-      "remaining": [
-        "GitHub issue/milestone readback"
-      ],
+      "remaining": [],
       "prior_review_scope": "release lifecycle; implementation or isolated rehearsal does not prove live default promotion",
-      "scope_note": "Release work remains pending."
+      "scope_note": "Release lifecycle verified by the live switch, root post-switch check, C1 publication and GitHub readback. The final pushed tip is recorded in a later local closeout receipt.",
+      "evidence_status": "promotion_verified"
     },
     {
       "criterion": "44/W5",
       "requirement": "Switch only after acceptance, canary and rollback checks pass. Verify health purpose, source and asset hashes, and complete responses. Restore M2 on failure.",
-      "status": "promotion_verified",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -10631,19 +11932,36 @@
             "sha256": "f2690122b469a53765a4b5347737e1660a0e1e9eaf5e8681cde33e753f88dde1"
           },
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 44,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:56Z",
+          "comment_id": 6183581098,
+          "state": "PASS"
         }
       ],
-      "remaining": [
-        "GitHub issue/milestone readback"
-      ],
+      "remaining": [],
       "prior_review_scope": "release lifecycle; implementation or isolated rehearsal does not prove live default promotion",
-      "scope_note": "Release work remains pending."
+      "scope_note": "Release lifecycle verified by the live switch, root post-switch check, C1 publication and GitHub readback. The final pushed tip is recorded in a later local closeout receipt.",
+      "evidence_status": "promotion_verified"
     },
     {
       "criterion": "44/W6",
       "requirement": "Publish only approved source, documents and evidence indexes. Keep models, archived sources and raw measurements local.",
-      "status": "release_pending",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -10685,20 +12003,36 @@
             "sha256": "f2690122b469a53765a4b5347737e1660a0e1e9eaf5e8681cde33e753f88dde1"
           },
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 44,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:56Z",
+          "comment_id": 6183581098,
+          "state": "PASS"
         }
       ],
-      "remaining": [
-        "final release docs and publication",
-        "main commit/push and GitHub issue/milestone readback"
-      ],
+      "remaining": [],
       "prior_review_scope": "release lifecycle; implementation or isolated rehearsal does not prove live default promotion",
-      "scope_note": "Release work remains pending."
+      "scope_note": "Release lifecycle verified by the live switch, root post-switch check, C1 publication and GitHub readback. The final pushed tip is recorded in a later local closeout receipt.",
+      "evidence_status": "release_pending"
     },
     {
       "criterion": "44/W7",
       "requirement": "Close the new issues and milestones only after reading back their evidence and final GitHub states. Verify the roadmap-reset mapping. Old #8–#18 and #24–#37 are already superseded with reason not_planned. Preserve their histories and their replacement links.",
-      "status": "release_pending",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -10740,20 +12074,36 @@
             "sha256": "f2690122b469a53765a4b5347737e1660a0e1e9eaf5e8681cde33e753f88dde1"
           },
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 44,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:56Z",
+          "comment_id": 6183581098,
+          "state": "PASS"
         }
       ],
-      "remaining": [
-        "final release docs and publication",
-        "main commit/push and GitHub issue/milestone readback"
-      ],
+      "remaining": [],
       "prior_review_scope": "release lifecycle; implementation or isolated rehearsal does not prove live default promotion",
-      "scope_note": "Release work remains pending."
+      "scope_note": "Release lifecycle verified by the live switch, root post-switch check, C1 publication and GitHub readback. The final pushed tip is recorded in a later local closeout receipt.",
+      "evidence_status": "release_pending"
     },
     {
       "criterion": "44/A1",
       "requirement": "[ ] A successful independent acceptance receipt and all required document hashes are linked before the switch.",
-      "status": "promotion_verified",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -10795,19 +12145,36 @@
             "sha256": "f2690122b469a53765a4b5347737e1660a0e1e9eaf5e8681cde33e753f88dde1"
           },
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 44,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:56Z",
+          "comment_id": 6183581098,
+          "state": "PASS"
         }
       ],
-      "remaining": [
-        "GitHub issue/milestone readback"
-      ],
+      "remaining": [],
       "prior_review_scope": "release lifecycle; implementation or isolated rehearsal does not prove live default promotion",
-      "scope_note": "Release work remains pending."
+      "scope_note": "Release lifecycle verified by the live switch, root post-switch check, C1 publication and GitHub readback. The final pushed tip is recorded in a later local closeout receipt.",
+      "evidence_status": "promotion_verified"
     },
     {
       "criterion": "44/A2",
       "requirement": "[ ] Fresh M2 restore and compiler canary receipts prove both complete paths. Failure handling restores the tested M2 default.",
-      "status": "promotion_verified",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -10849,19 +12216,36 @@
             "sha256": "f2690122b469a53765a4b5347737e1660a0e1e9eaf5e8681cde33e753f88dde1"
           },
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 44,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:56Z",
+          "comment_id": 6183581098,
+          "state": "PASS"
         }
       ],
-      "remaining": [
-        "GitHub issue/milestone readback"
-      ],
+      "remaining": [],
       "prior_review_scope": "release lifecycle; implementation or isolated rehearsal does not prove live default promotion",
-      "scope_note": "Release work remains pending."
+      "scope_note": "Release lifecycle verified by the live switch, root post-switch check, C1 publication and GitHub readback. The final pushed tip is recorded in a later local closeout receipt.",
+      "evidence_status": "promotion_verified"
     },
     {
       "criterion": "44/A3",
       "requirement": "[ ] The active compiler reports the expected purpose and hashes. New compile/assemble and compatible JSON generate pass through HTTP and CLI.",
-      "status": "promotion_verified",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -10903,19 +12287,36 @@
             "sha256": "f2690122b469a53765a4b5347737e1660a0e1e9eaf5e8681cde33e753f88dde1"
           },
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 44,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:56Z",
+          "comment_id": 6183581098,
+          "state": "PASS"
         }
       ],
-      "remaining": [
-        "GitHub issue/milestone readback"
-      ],
+      "remaining": [],
       "prior_review_scope": "release lifecycle; implementation or isolated rehearsal does not prove live default promotion",
-      "scope_note": "Release work remains pending."
+      "scope_note": "Release lifecycle verified by the live switch, root post-switch check, C1 publication and GitHub readback. The final pushed tip is recorded in a later local closeout receipt.",
+      "evidence_status": "promotion_verified"
     },
     {
       "criterion": "44/A4",
       "requirement": "[ ] The final main commit and push are verified. Local-only artifacts remain local. GitHub closure and replacement links are read back.",
-      "status": "release_pending",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -10957,20 +12358,36 @@
             "sha256": "f2690122b469a53765a4b5347737e1660a0e1e9eaf5e8681cde33e753f88dde1"
           },
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 44,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:56Z",
+          "comment_id": 6183581098,
+          "state": "PASS"
         }
       ],
-      "remaining": [
-        "final release docs and publication",
-        "main commit/push and GitHub issue/milestone readback"
-      ],
+      "remaining": [],
       "prior_review_scope": "release lifecycle; implementation or isolated rehearsal does not prove live default promotion",
-      "scope_note": "Release work remains pending."
+      "scope_note": "Release lifecycle verified by the live switch, root post-switch check, C1 publication and GitHub readback. The final pushed tip is recorded in a later local closeout receipt.",
+      "evidence_status": "release_pending"
     },
     {
       "criterion": "44/A5",
       "requirement": "[ ] The final handoff records active assets, rollback commands, checks and remaining capability limits. Any remaining tests or missing evidence remain explicit.",
-      "status": "release_pending",
-      "issue_closed": false,
+      "status": "complete",
+      "issue_closed": true,
       "proofs": [
         {
           "root_audit": {
@@ -11012,16 +12429,32 @@
             "sha256": "f2690122b469a53765a4b5347737e1660a0e1e9eaf5e8681cde33e753f88dde1"
           },
           "state": "PASS"
+        },
+        {
+          "publication": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/publication-001.json",
+            "sha256": "7942c58bef5d4a6395a567f4cd9078932806b704a16e3c5a7c75eabce8218781",
+            "commit": "3ced191137bb1d65a6cec1247078b41dc4db2967",
+            "branch": "main"
+          },
+          "github_closeout": {
+            "path": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/github-closeout-001.json",
+            "sha256": "8fbd4093f24e3d7ffa210d045c6a42a7f1b8ff8e1f4802d7be97f1f103771595"
+          },
+          "issue": 44,
+          "issue_state": "closed",
+          "state_reason": "completed",
+          "closed_at": "2026-10-15T03:15:56Z",
+          "comment_id": 6183581098,
+          "state": "PASS"
         }
       ],
-      "remaining": [
-        "final release docs and publication",
-        "main commit/push and GitHub issue/milestone readback"
-      ],
+      "remaining": [],
       "prior_review_scope": "release lifecycle; implementation or isolated rehearsal does not prove live default promotion",
-      "scope_note": "Release work remains pending."
+      "scope_note": "Release lifecycle verified by the live switch, root post-switch check, C1 publication and GitHub readback. The final pushed tip is recorded in a later local closeout receipt.",
+      "evidence_status": "release_pending"
     }
   ],
-  "all77_closed": false,
-  "release_criteria_complete": false
+  "all77_closed": true,
+  "release_criteria_complete": true
 }
