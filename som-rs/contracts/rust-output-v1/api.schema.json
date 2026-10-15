@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "som.compiler-api.v1.rust-target",
+  "$comment": "Extends som.compiler-api.v1 with the optional target member. A request without target, or with target python, keeps every byte of the compiler-v1 behavior and response. Diagnostics, transport limits and the error envelope are unchanged from som.compiler-api.v1.",
+  "$defs": {
+    "target": {
+      "enum": [
+        "python",
+        "rust"
+      ]
+    },
+    "compile_request": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "format": {
+              "const": "som.cnl.v1"
+            },
+            "source": {
+              "type": "string"
+            },
+            "target": {
+              "$ref": "#/$defs/target"
+            }
+          },
+          "required": [
+            "format",
+            "source"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "format": {
+              "const": "som.prompt-json.v1"
+            },
+            "prompt": {
+              "$ref": "som.compiler-prompt-family.v1"
+            },
+            "target": {
+              "$ref": "#/$defs/target"
+            }
+          },
+          "required": [
+            "format",
+            "prompt"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "assemble_request": {
+      "type": "object",
+      "properties": {
+        "bundle": {
+          "type": "object",
+          "$comment": "Dispatch on bundle.version before any bundle schema runs. A bundle whose version is som.dsl-bundle.v2 is checked against som.dsl-bundle.v2 in x-assemble-check-order. Every other bundle keeps the compiler-v1 assemble behavior byte for byte, including INVALID_SCHEMA at /bundle/target for a som.dsl-bundle.v1 bundle with a target member."
+        }
+      },
+      "required": [
+        "bundle"
+      ],
+      "additionalProperties": false
+    },
+    "compile_success": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": "ok"
+        },
+        "bundle": {
+          "oneOf": [
+            {
+              "$ref": "som.dsl-bundle.v1"
+            },
+            {
+              "$ref": "som.dsl-bundle.v2"
+            }
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "bundle"
+      ],
+      "additionalProperties": false
+    },
+    "assemble_success": {
+      "$ref": "som.compiler-api.v1#/$defs/assemble_success"
+    },
+    "compiler_error": {
+      "$ref": "som.compiler-api.v1#/$defs/compiler_error"
+    }
+  },
+  "x-target-selection": {
+    "absent": "Python. The response is the som.dsl-bundle.v1 bundle that compiler-v1 returns today, byte for byte.",
+    "python": "The same response as absent.",
+    "rust": "A som.dsl-bundle.v2 bundle with target rust, or one diagnostic.",
+    "invalid": {
+      "code": "INVALID_SCHEMA",
+      "http_status": 400,
+      "prompt_pointer": "/target",
+      "span": "the raw value token of the target member",
+      "cause": "Target must be the string python or rust.",
+      "allowed_form": "Omit target, or use target python or rust."
+    },
+    "duplicate_member": "INVALID_JSON 400 at the second target key token, as for any duplicate member.",
+    "cli": "som compile --target python|rust forwards the string as the target member without checking it. A server refusal exits with status 2."
+  },
+  "x-new-error-codes": {
+    "UNSUPPORTED_TARGET": {
+      "http_status": 422,
+      "use": "A prompt that passes existing validation but is outside Rust output phase 1, or a Rust bundle whose prompt is outside phase 1. Causes and allowed forms are the scope.json refusals."
+    }
+  },
+  "x-check-order": [
+    "transport limit and JSON parse, including duplicate members",
+    "envelope schema, including target",
+    "CNL parse or prompt JSON schema",
+    "existing compiler-v1 semantic validation, unchanged",
+    "Rust profile, only when target is rust, in the scope.json refusal_order",
+    "planning, with SCOPE_TOO_LARGE for a Rust DSL over 12 files or 64 blocks, or an assemble envelope over 2097152 bytes"
+  ],
+  "x-assemble-check-order": [
+    "transport limit, JSON parse and envelope schema",
+    "bundle version dispatch: only a bundle whose version member is the string som.dsl-bundle.v2 continues below; every other bundle, including som.dsl-bundle.v1, keeps the compiler-v1 order and result unchanged",
+    "bundle schema, including target rust (INVALID_SCHEMA at /bundle/target for any other value)",
+    "hashes: prompt_sha256, dsl_sha256, then payload_sha256 = H({version,target,prompt,dsl,assets}) (BUNDLE_HASH_MISMATCH)",
+    "asset descriptors equal the active Rust manifest (ASSET_HASH_MISMATCH at /bundle/assets)",
+    "existing compiler-v1 prompt validation, unchanged",
+    "Rust profile (UNSUPPORTED_TARGET at /bundle/prompt plus the scope.json pointer)",
+    "catalog and composition: every block id is an admitted rust. block in the frozen order for the prompt (INVALID_COMPOSITION at the block id)",
+    "render, rustfmt and output checks"
+  ]
+}

@@ -1,0 +1,1002 @@
+{
+  "version": "som.rust-output-case-inventory.v1",
+  "selection_rules": [
+    "A case is in the Rust acceptance set when its typed prompt passes existing compiler-v1 validation and the frozen Rust profile in scope.json admits it.",
+    "The acceptance set is every in-scope public example, every in-scope version_positive CNL fixture, every coverage case and every in-scope legacy job. Nothing is sampled.",
+    "Each acceptance case compiles from CNL where a CNL source exists and from typed JSON, and the two Rust bundles must be byte-identical.",
+    "Each acceptance case must assemble, build, pass its generated tests and pass clippy with the frozen toolchain, and pass the behavior parity suite against the Python product for the same prompt.",
+    "Every out-of-scope case must give exactly the frozen UNSUPPORTED_TARGET diagnostic with target rust, and an unchanged Python bundle without target.",
+    "Legacy jobs are named by id, inventory position and prompt hash only. Their prompts and gold answers are not copied into this repository."
+  ],
+  "sources": {
+    "examples": {
+      "som-rs/contracts/compiler-v1/examples/index.json": "8a0a26e6d88e1661edd9b6617203c7dcb30d298c257456b3e48ebfca2e0790e1",
+      "som-rs/contracts/compiler-v1/examples/v1.cnl": "bd30aa50074c2bdb447bcb46cc560a994efd312652623b373afcec5127bf30e0",
+      "som-rs/contracts/compiler-v1/examples/v1.prompt.json": "8a0269b81d7831c329c04d3114d3feaaa4c2def6df378a76b6569e9bf282463a",
+      "som-rs/contracts/compiler-v1/examples/v2.cnl": "2780570353b20be98aac50f87e7fee1bb9401a0ba5479167ee9a711d3c03a0c1",
+      "som-rs/contracts/compiler-v1/examples/v2.prompt.json": "a5baf60682bb5096eb44d14932de9ff95390f40e02eb5887dddbe0d96206ab3f",
+      "som-rs/contracts/compiler-v1/examples/v3.cnl": "829198a93e006155cc2a067bccb310b402b1b5e732d44e50c6ae321acb885d60",
+      "som-rs/contracts/compiler-v1/examples/v3.prompt.json": "72361df884e7d4bf28b9a71da5c6dd4c119fde0e19aa78dcb5c4d2a2d45668ed",
+      "som-rs/contracts/compiler-v1/examples/v4.cnl": "1abb4ba198330434bcc9be833e07a87959506e7d17bf94c165478190e6ae6b56",
+      "som-rs/contracts/compiler-v1/examples/v4.prompt.json": "6f123ea4ff72b7e0d6cba50278b10a5da1ecc449dd441b2ae0ff480500b8e43a",
+      "som-rs/contracts/compiler-v1/examples/v5.cnl": "17c364efbd4262aac7543c1771213047b1332bbd8295ed6e69f8fff181e6d454",
+      "som-rs/contracts/compiler-v1/examples/v5.prompt.json": "65101209a650e209be40ee35d969c6f6764d471a5ea4d71f4561dc054d8bbc39",
+      "som-rs/contracts/compiler-v1/examples/v6.cnl": "609f7613f3ee5c73707cfa8d1b21cfdb31b191c20d334ff7c58ed2bacb5116c2",
+      "som-rs/contracts/compiler-v1/examples/v6.prompt.json": "33d902b113a2cf203250cc6b5e6b41cea5b02225890ad53e96019114a2bf3722",
+      "som-rs/contracts/compiler-v1/examples/v7-branch-null.cnl": "3857714e702c269eb010dfce7a1588f54abb22cd8a1c9913612aad30a877ce41",
+      "som-rs/contracts/compiler-v1/examples/v7-branch-null.prompt.json": "4e3c80e264d13e83c894418f2d011f4dc3b26f94fb5dc094efb719b1b503e522",
+      "som-rs/contracts/compiler-v1/examples/v7.cnl": "644149192bc7bc65d7b28100d518fc9cbfa0d2d35a27b022452d02ab6138e262",
+      "som-rs/contracts/compiler-v1/examples/v7.prompt.json": "2d4a92302f99c30723f49f2ccc642f2c7bf58daf25c8f991002df93746cb5db7"
+    },
+    "cnl_positive_fixtures": {
+      "som-rs/tests/compiler-v1/cnl-positive-fixtures.json": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475"
+    },
+    "coverage_index": {
+      "som-rs/tests/rust-output-v1/cases/index.json": "b49af2a7ba842e5dd810d8d010fcf93436474df7f49f1c569367bed1bc94ed1b"
+    },
+    "legacy_inventory": {
+      ".local/rust-compiler-goal/acceptance/legacy544/inventory-003.json": "c1d4e9bc5bbbee7ad5f5cb238bcf194e258da252bba1f7877169783e6cf46d96",
+      "run": ".local/rust-compiler-goal/acceptance/legacy544/run-005",
+      "prompt_location": "run/<inventory_index as 4 digits>/assemble.request.json at /bundle/prompt"
+    }
+  },
+  "counts": {
+    "acceptance_total": 115,
+    "public_examples_in_scope": 5,
+    "version_positive_in_scope": 4,
+    "coverage_cases": 6,
+    "legacy_in_scope": 100,
+    "cnl_positive_fixtures": [
+      {
+        "category": "capability_tuple",
+        "rust": "prompt_version",
+        "count": 90
+      },
+      {
+        "category": "flow_branch_export",
+        "rust": "prompt_version",
+        "count": 1
+      },
+      {
+        "category": "flow_operation",
+        "rust": "prompt_version",
+        "count": 14
+      },
+      {
+        "category": "flow_reference_predicate",
+        "rust": "prompt_version",
+        "count": 7
+      },
+      {
+        "category": "version_positive",
+        "rust": "in_scope",
+        "count": 4
+      },
+      {
+        "category": "version_positive",
+        "rust": "prompt_version",
+        "count": 2
+      },
+      {
+        "category": "version_positive",
+        "rust": "v5_capabilities",
+        "count": 1
+      }
+    ],
+    "legacy": [
+      {
+        "group": "blind80",
+        "prompt_version": "som.prompt.v6",
+        "rust": "prompt_version",
+        "count": 80
+      },
+      {
+        "group": "compositions120",
+        "prompt_version": "som.prompt.v6",
+        "rust": "prompt_version",
+        "count": 120
+      },
+      {
+        "group": "legacy100",
+        "prompt_version": "som.prompt.v3",
+        "rust": "in_scope",
+        "count": 50
+      },
+      {
+        "group": "legacy100",
+        "prompt_version": "som.prompt.v4",
+        "rust": "in_scope",
+        "count": 50
+      },
+      {
+        "group": "m2-quality218",
+        "prompt_version": "som.prompt.v7",
+        "rust": "prompt_version",
+        "count": 218
+      },
+      {
+        "group": "m2-supplement12",
+        "prompt_version": "som.prompt.v7",
+        "rust": "prompt_version",
+        "count": 12
+      },
+      {
+        "group": "services14",
+        "prompt_version": "som.prompt.v6",
+        "rust": "prompt_version",
+        "count": 14
+      }
+    ]
+  },
+  "public_examples": [
+    {
+      "id": "example-v1",
+      "prompt_version": "som.prompt.v1",
+      "rust": "in_scope",
+      "prompt": "som-rs/contracts/compiler-v1/examples/v1.prompt.json",
+      "prompt_file_sha256": "8a0269b81d7831c329c04d3114d3feaaa4c2def6df378a76b6569e9bf282463a",
+      "cnl": "som-rs/contracts/compiler-v1/examples/v1.cnl",
+      "cnl_sha256": "bd30aa50074c2bdb447bcb46cc560a994efd312652623b373afcec5127bf30e0"
+    },
+    {
+      "id": "example-v2",
+      "prompt_version": "som.prompt.v2",
+      "rust": "in_scope",
+      "prompt": "som-rs/contracts/compiler-v1/examples/v2.prompt.json",
+      "prompt_file_sha256": "a5baf60682bb5096eb44d14932de9ff95390f40e02eb5887dddbe0d96206ab3f",
+      "cnl": "som-rs/contracts/compiler-v1/examples/v2.cnl",
+      "cnl_sha256": "2780570353b20be98aac50f87e7fee1bb9401a0ba5479167ee9a711d3c03a0c1"
+    },
+    {
+      "id": "example-v3",
+      "prompt_version": "som.prompt.v3",
+      "rust": "in_scope",
+      "prompt": "som-rs/contracts/compiler-v1/examples/v3.prompt.json",
+      "prompt_file_sha256": "72361df884e7d4bf28b9a71da5c6dd4c119fde0e19aa78dcb5c4d2a2d45668ed",
+      "cnl": "som-rs/contracts/compiler-v1/examples/v3.cnl",
+      "cnl_sha256": "829198a93e006155cc2a067bccb310b402b1b5e732d44e50c6ae321acb885d60"
+    },
+    {
+      "id": "example-v4",
+      "prompt_version": "som.prompt.v4",
+      "rust": "in_scope",
+      "prompt": "som-rs/contracts/compiler-v1/examples/v4.prompt.json",
+      "prompt_file_sha256": "6f123ea4ff72b7e0d6cba50278b10a5da1ecc449dd441b2ae0ff480500b8e43a",
+      "cnl": "som-rs/contracts/compiler-v1/examples/v4.cnl",
+      "cnl_sha256": "1abb4ba198330434bcc9be833e07a87959506e7d17bf94c165478190e6ae6b56"
+    },
+    {
+      "id": "example-v5",
+      "prompt_version": "som.prompt.v5",
+      "rust": "in_scope",
+      "prompt": "som-rs/contracts/compiler-v1/examples/v5.prompt.json",
+      "prompt_file_sha256": "65101209a650e209be40ee35d969c6f6764d471a5ea4d71f4561dc054d8bbc39",
+      "cnl": "som-rs/contracts/compiler-v1/examples/v5.cnl",
+      "cnl_sha256": "17c364efbd4262aac7543c1771213047b1332bbd8295ed6e69f8fff181e6d454"
+    },
+    {
+      "id": "example-v6",
+      "prompt_version": "som.prompt.v6",
+      "rust": "prompt_version",
+      "prompt": "som-rs/contracts/compiler-v1/examples/v6.prompt.json",
+      "prompt_file_sha256": "33d902b113a2cf203250cc6b5e6b41cea5b02225890ad53e96019114a2bf3722",
+      "cnl": "som-rs/contracts/compiler-v1/examples/v6.cnl",
+      "cnl_sha256": "609f7613f3ee5c73707cfa8d1b21cfdb31b191c20d334ff7c58ed2bacb5116c2"
+    },
+    {
+      "id": "example-v7",
+      "prompt_version": "som.prompt.v7",
+      "rust": "prompt_version",
+      "prompt": "som-rs/contracts/compiler-v1/examples/v7.prompt.json",
+      "prompt_file_sha256": "2d4a92302f99c30723f49f2ccc642f2c7bf58daf25c8f991002df93746cb5db7",
+      "cnl": "som-rs/contracts/compiler-v1/examples/v7.cnl",
+      "cnl_sha256": "644149192bc7bc65d7b28100d518fc9cbfa0d2d35a27b022452d02ab6138e262"
+    },
+    {
+      "id": "example-v7-branch-null",
+      "prompt_version": "som.prompt.v7",
+      "rust": "prompt_version",
+      "prompt": "som-rs/contracts/compiler-v1/examples/v7-branch-null.prompt.json",
+      "prompt_file_sha256": "4e3c80e264d13e83c894418f2d011f4dc3b26f94fb5dc094efb719b1b503e522",
+      "cnl": "som-rs/contracts/compiler-v1/examples/v7-branch-null.cnl",
+      "cnl_sha256": "3857714e702c269eb010dfce7a1588f54abb22cd8a1c9913612aad30a877ce41"
+    }
+  ],
+  "version_positive_fixtures": [
+    {
+      "id": "PAIR_V1_MINIMAL_CRUD",
+      "prompt_version": "som.prompt.v1",
+      "rust": "in_scope",
+      "prompt_sha256": "80095715693e142a1a4471adbcacbe25e24147b265d02611bc895ac6b64324e2",
+      "cnl_sha256": "0e311c47b2c4661658cef45ceaadec8999cda91c9a5ae96647a4f1e85e1d3274"
+    },
+    {
+      "id": "PAIR_V2_STRING_FILTER_MAX20",
+      "prompt_version": "som.prompt.v2",
+      "rust": "in_scope",
+      "prompt_sha256": "e3a3aa7ec6bf050361d06612c585b7e85dc3ffb96186695620a3a7609a644a7a",
+      "cnl_sha256": "bd07a14b5c150f3e79bddaf6e93b1f049955be39ed8afb0ab8b087da27e978f2"
+    },
+    {
+      "id": "PAIR_V3_BOOL_DEFAULT",
+      "prompt_version": "som.prompt.v3",
+      "rust": "in_scope",
+      "prompt_sha256": "999077b04b05ac397a9171c399cdf89f880e386175c34514ab3e3c16c5c8b4f1",
+      "cnl_sha256": "6de34b0394754fabf8e99734e9be15f93d3f434fff48a41eb74eb8b503c79ce5"
+    },
+    {
+      "id": "PAIR_V4_DATE_BEFORE",
+      "prompt_version": "som.prompt.v4",
+      "rust": "in_scope",
+      "prompt_sha256": "f5e873ede515a0617bbaa77e3a4af01ad0e4cec0ab296b9a42f15a5aa903f14b",
+      "cnl_sha256": "0c674c90178d0e2bac1c24425357ba00c8b00620b49a237896c67c2f9babb8a0"
+    },
+    {
+      "id": "PAIR_V5_RELATED_BUSINESS",
+      "prompt_version": "som.prompt.v5",
+      "rust": "v5_capabilities",
+      "prompt_sha256": "6ee37c25a0999492aec657cac6ebeb7c5e0c78858c27ee79e1bd79b65e29d7a5",
+      "cnl_sha256": "2b744e8a1a7e69056f4e89453adbfb0fd43afbac318eca5f3137ae6ecb628c16"
+    },
+    {
+      "id": "PAIR_V6_COMPOSED_OPERATIONS",
+      "prompt_version": "som.prompt.v6",
+      "rust": "prompt_version",
+      "prompt_sha256": "45453c83cf9e5085878c0691e629344cae5c00caf0c89e7d617e4f0697198776",
+      "cnl_sha256": "6250fb7452e37297b76dc73b5c33dfe42ef4b1f897c1094d6f1a7004755b07fc"
+    },
+    {
+      "id": "PAIR_V7_FLOW_CONTRACT",
+      "prompt_version": "som.prompt.v7",
+      "rust": "prompt_version",
+      "prompt_sha256": "5b8a1c49fca2b55eae210493600ace79a282bf5d85370b0ea688e1ce26f4ef0e",
+      "cnl_sha256": "c64e9e71d9ce097396d4ca06e5a7cbfc64f70d19d4b8935baff2403208826164"
+    }
+  ],
+  "coverage_cases": [
+    {
+      "id": "cov-v1-types",
+      "prompt_version": "som.prompt.v1",
+      "rust": "in_scope",
+      "prompt_file_sha256": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c",
+      "cnl_sha256": "22e6cb0aacd219cb47478dca4ff5f244b63ae605de399f08a16bb62093ec9ce7"
+    },
+    {
+      "id": "cov-v2-types",
+      "prompt_version": "som.prompt.v2",
+      "rust": "in_scope",
+      "prompt_file_sha256": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53",
+      "cnl_sha256": "a2512cdbbea998a8f051160166e3c1d2f4b43ae5d7bbcbe5e6a0cd211a9b7c1d"
+    },
+    {
+      "id": "cov-v3-types",
+      "prompt_version": "som.prompt.v3",
+      "rust": "in_scope",
+      "prompt_file_sha256": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23",
+      "cnl_sha256": "554eb27bbd5c894fa7ccd473b45734a33753b1ec32395ccb5f73133b0a71a12c"
+    },
+    {
+      "id": "cov-v4-types",
+      "prompt_version": "som.prompt.v4",
+      "rust": "in_scope",
+      "prompt_file_sha256": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e",
+      "cnl_sha256": "cb7f5fb994d6c7bfbdff549e71286211cd1d3f7177b91bdbeeb34337229b7724"
+    },
+    {
+      "id": "cov-v5-min",
+      "prompt_version": "som.prompt.v5",
+      "rust": "in_scope",
+      "prompt_file_sha256": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347",
+      "cnl_sha256": "627623f91944b13158487086efec5653948be6c2e77a341e0d0ba9410d291e5d"
+    },
+    {
+      "id": "cov-v5-max",
+      "prompt_version": "som.prompt.v5",
+      "rust": "in_scope",
+      "prompt_file_sha256": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d",
+      "cnl_sha256": "97cb49f506fb16fb9da2ea203b5a114ea68766ec46ebb69cdb4d63f012deb16c"
+    }
+  ],
+  "legacy_in_scope": [
+    {
+      "id": "legacy100-0000",
+      "group": "legacy100",
+      "inventory_index": 214,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "8216982ea6997727adff082ddd465417aab3c30851c54b6db277b6f99716b19e"
+    },
+    {
+      "id": "legacy100-0001",
+      "group": "legacy100",
+      "inventory_index": 215,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "64dba3b6acca490eb56f265c3fd51c514bfc6c70e090fc64a7b602b2cf3112d5"
+    },
+    {
+      "id": "legacy100-0002",
+      "group": "legacy100",
+      "inventory_index": 216,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "2cb6b2700205b22aac34bc716f6bd0c45b1fdbbd8ae227ee50f2c139628e8f76"
+    },
+    {
+      "id": "legacy100-0003",
+      "group": "legacy100",
+      "inventory_index": 217,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "28ef9af8f157212c6b2b5f14a2b5f15a3bfa72ab2bde6ad800442b13638584e8"
+    },
+    {
+      "id": "legacy100-0004",
+      "group": "legacy100",
+      "inventory_index": 218,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "cd99e77a8afb5c2faf8ce6f3b47161810862f85cae7d7634900a6c962e649d70"
+    },
+    {
+      "id": "legacy100-0005",
+      "group": "legacy100",
+      "inventory_index": 219,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "80ec57ab18b5e240ea54de5ed5dbc05fdc9bd75456bf323ab1f60ef5247ecb4c"
+    },
+    {
+      "id": "legacy100-0006",
+      "group": "legacy100",
+      "inventory_index": 220,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "37d3f23bef1179c3621f2196bfcd8a85088ac9995048b8bf33871682502c2efc"
+    },
+    {
+      "id": "legacy100-0007",
+      "group": "legacy100",
+      "inventory_index": 221,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "2994413ad774ddfafa5acc696641c1f28c87b807d760f52acf0069fdee6590d9"
+    },
+    {
+      "id": "legacy100-0008",
+      "group": "legacy100",
+      "inventory_index": 222,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "d76fb58be6176b7720fa8bb988038596bb4fb774062300035976483ea224d499"
+    },
+    {
+      "id": "legacy100-0009",
+      "group": "legacy100",
+      "inventory_index": 223,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "03c2f675e53e351b3051b0f522c09992b95866bac452aa1d7eb168cbe61eff8a"
+    },
+    {
+      "id": "legacy100-0010",
+      "group": "legacy100",
+      "inventory_index": 224,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "47243ce560df25c4a86af3f220ad60defb0b503ebdadda0d8badcdb5dc501012"
+    },
+    {
+      "id": "legacy100-0011",
+      "group": "legacy100",
+      "inventory_index": 225,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "973f633131c9a5d09c23697f84b5fd6c6504c2a324f0f3a21b3ef55c6d9d26be"
+    },
+    {
+      "id": "legacy100-0012",
+      "group": "legacy100",
+      "inventory_index": 226,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "3c1d09ceeb9a5daab4f005bbe0799aabc3722b1f58409a48448a2678670ddf68"
+    },
+    {
+      "id": "legacy100-0013",
+      "group": "legacy100",
+      "inventory_index": 227,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "173b57c1e06abc16c9d9cc8f58fb15cdfdc67cef88880ed1e92ee6c3d68a0b64"
+    },
+    {
+      "id": "legacy100-0014",
+      "group": "legacy100",
+      "inventory_index": 228,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "bf369dcac3b3b3dab8b815743c900cddc8436b8d345c0074169f2ddf4a324bff"
+    },
+    {
+      "id": "legacy100-0015",
+      "group": "legacy100",
+      "inventory_index": 229,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "4744f664cfd015ed5b54ac2a37aed6be56b2019366902ef79a5a79810ab9d3e7"
+    },
+    {
+      "id": "legacy100-0016",
+      "group": "legacy100",
+      "inventory_index": 230,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "3e92fe8680534449a3dd79c9c8c804748349aec7276d022bb96620ca39a40799"
+    },
+    {
+      "id": "legacy100-0017",
+      "group": "legacy100",
+      "inventory_index": 231,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "46e972669f91e135f62ba559080fe5a7d97904eb6a8b0ddd238e7df2c1e4a246"
+    },
+    {
+      "id": "legacy100-0018",
+      "group": "legacy100",
+      "inventory_index": 232,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "2e53287070db59e0260abc7b7e108ff2d1b026b9c313b2326e552b542a4dcf24"
+    },
+    {
+      "id": "legacy100-0019",
+      "group": "legacy100",
+      "inventory_index": 233,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "95d93259872113a1d7d058d8b2a5179f6deeab982c8663c692f5884f2cd99666"
+    },
+    {
+      "id": "legacy100-0020",
+      "group": "legacy100",
+      "inventory_index": 234,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "188649699662d482e01c91c36b9cb76780037d9cb5b5709f3fe33665a72b2dc9"
+    },
+    {
+      "id": "legacy100-0021",
+      "group": "legacy100",
+      "inventory_index": 235,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "bd539340e9b33c55b19825bbe1023040b1b2e0d3551c2061991504020d55b474"
+    },
+    {
+      "id": "legacy100-0022",
+      "group": "legacy100",
+      "inventory_index": 236,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "cdf1c3786688c5f3b004e63b706952586b2f5acbea40f8b2c48c7430bb3ab2ce"
+    },
+    {
+      "id": "legacy100-0023",
+      "group": "legacy100",
+      "inventory_index": 237,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "f917568de6ceceea7e802bfe50eb27d488b84aae96f08f08ede05156e42a803c"
+    },
+    {
+      "id": "legacy100-0024",
+      "group": "legacy100",
+      "inventory_index": 238,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "a0710d59c67afdf967957ff1bd024f9b57f961cf85b17fd159f7acad9ed34fb0"
+    },
+    {
+      "id": "legacy100-0025",
+      "group": "legacy100",
+      "inventory_index": 239,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "b418eefc0099c5e3b23bff62b77583eb6d26fb8070edf66b1cc2cc712dd614f8"
+    },
+    {
+      "id": "legacy100-0026",
+      "group": "legacy100",
+      "inventory_index": 240,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "81be3efadaf8e58e49d1f4d7b192e5823e1477b1f8d34376951296e232569ee8"
+    },
+    {
+      "id": "legacy100-0027",
+      "group": "legacy100",
+      "inventory_index": 241,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "46638cd5d970a355dd64e17fe7bb2725a6569ba6773d96150f43771ed9acfee6"
+    },
+    {
+      "id": "legacy100-0028",
+      "group": "legacy100",
+      "inventory_index": 242,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "98124a653db08a51d5ec95711e1943c377a71ea49e87bb3353f8d9cf4c155b87"
+    },
+    {
+      "id": "legacy100-0029",
+      "group": "legacy100",
+      "inventory_index": 243,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "58bda74a1cbddd0d14b6240320eaa8fc88a7c074b4afe1a605918079c77302c3"
+    },
+    {
+      "id": "legacy100-0030",
+      "group": "legacy100",
+      "inventory_index": 244,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "530706d58ed78b5be707ca333c993f0415181acdd9f81e1dd57b9765c0c7ea7a"
+    },
+    {
+      "id": "legacy100-0031",
+      "group": "legacy100",
+      "inventory_index": 245,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "f0d7ca327ba9d4aae1274bd94fb521f2b8aaebfaf05e36d56aa3cc42df3d82c0"
+    },
+    {
+      "id": "legacy100-0032",
+      "group": "legacy100",
+      "inventory_index": 246,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "c1065686e96835267c7ba55e45df1a7afd6ef718f9343386b0ead5b878858862"
+    },
+    {
+      "id": "legacy100-0033",
+      "group": "legacy100",
+      "inventory_index": 247,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "b0b688f984771fde95cafa8a63fc0596db75e25e1be0d45418fb01853f8ce67f"
+    },
+    {
+      "id": "legacy100-0034",
+      "group": "legacy100",
+      "inventory_index": 248,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "15e2258afcaa10be4f24c5197f0d779c4a0e136f71b37e68c8fee7e9e11bd56d"
+    },
+    {
+      "id": "legacy100-0035",
+      "group": "legacy100",
+      "inventory_index": 249,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "f1e80a7475fbc3fdc8f73ff0b97a40aed88daa50423d4d853c5644ce3bcc61ea"
+    },
+    {
+      "id": "legacy100-0036",
+      "group": "legacy100",
+      "inventory_index": 250,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "5b4c88a4fd82e88872e69e33741e9ed0dcca154a8f32b717b65fb40afea131f5"
+    },
+    {
+      "id": "legacy100-0037",
+      "group": "legacy100",
+      "inventory_index": 251,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "eb60e6c15bf5aab5c1cef3dc1ece9fbb8c665922fa7e8386916050d137712a9d"
+    },
+    {
+      "id": "legacy100-0038",
+      "group": "legacy100",
+      "inventory_index": 252,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "fbfba42c24920b34bab92e38b98c4ed44590e3b91865a4553dc7307512a9395b"
+    },
+    {
+      "id": "legacy100-0039",
+      "group": "legacy100",
+      "inventory_index": 253,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "fd09c6fc88196b307f16bfd4d71e754528dae334e3bd03f16f3a69ed05624c4e"
+    },
+    {
+      "id": "legacy100-0040",
+      "group": "legacy100",
+      "inventory_index": 254,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "ee6424351b0c525395012f075d2c48801750b97e57edb2a054e8a3cbaf88f479"
+    },
+    {
+      "id": "legacy100-0041",
+      "group": "legacy100",
+      "inventory_index": 255,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "a3f10232943e872ad9df39493b64568c6fb645224eb37ef8a8d65d9cee5f7e15"
+    },
+    {
+      "id": "legacy100-0042",
+      "group": "legacy100",
+      "inventory_index": 256,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "c47bf7436daf0021d9d956a09627d47ca1a94397118af33184bede7c3fcf10b8"
+    },
+    {
+      "id": "legacy100-0043",
+      "group": "legacy100",
+      "inventory_index": 257,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "0cc5f0aeaffba0c0b2ea65b2d53872caa862cee5070e441e5818dd18d2c40e60"
+    },
+    {
+      "id": "legacy100-0044",
+      "group": "legacy100",
+      "inventory_index": 258,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "11e6160aa704aa93fdd6f1b3bc55d40443a3e95737ee7ccfaa8b5aaa8b3c9031"
+    },
+    {
+      "id": "legacy100-0045",
+      "group": "legacy100",
+      "inventory_index": 259,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "7be5fd7b202ffd9999b0a56c360f394770c8c252ffe3acf67576dd40cae7eca5"
+    },
+    {
+      "id": "legacy100-0046",
+      "group": "legacy100",
+      "inventory_index": 260,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "eb27f6afe4905efc232d84ba294cdef787e5b57b8e35411fee01481601347fc6"
+    },
+    {
+      "id": "legacy100-0047",
+      "group": "legacy100",
+      "inventory_index": 261,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "fa584949401db26bbdc5a7d45cd376c87c6e2c19051c0b8ceb4385fc879ad940"
+    },
+    {
+      "id": "legacy100-0048",
+      "group": "legacy100",
+      "inventory_index": 262,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "9efb1f9552f4b857a05e764f74d362eaa29228c8d82174de3c496c4f14427985"
+    },
+    {
+      "id": "legacy100-0049",
+      "group": "legacy100",
+      "inventory_index": 263,
+      "prompt_version": "som.prompt.v3",
+      "prompt_sha256": "14ff3d1b68782b6376d0f976eac7283a6eedcdc2f6267497c374c471d31ef9b4"
+    },
+    {
+      "id": "legacy100-0050",
+      "group": "legacy100",
+      "inventory_index": 264,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "3fc41920b3096ca666c627e86cdafede0c209c03d7b50ec8569762f1311dd29e"
+    },
+    {
+      "id": "legacy100-0051",
+      "group": "legacy100",
+      "inventory_index": 265,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "24ac8862d1362802f45614a0ee271467d9dd423a9a8ac4190f037cd028b34b68"
+    },
+    {
+      "id": "legacy100-0052",
+      "group": "legacy100",
+      "inventory_index": 266,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "f6c883faee0a09e28117ff34d91132928532a88a7fcfd132027e2a8a5a780d0f"
+    },
+    {
+      "id": "legacy100-0053",
+      "group": "legacy100",
+      "inventory_index": 267,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "23da483a87ac064de25e85e0bbffa33e825df9b4404101ece288f7bcc887dd53"
+    },
+    {
+      "id": "legacy100-0054",
+      "group": "legacy100",
+      "inventory_index": 268,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "ff29aad8c34b338bc818f2df68790929db00a71ae09b6952ffb319edec186de8"
+    },
+    {
+      "id": "legacy100-0055",
+      "group": "legacy100",
+      "inventory_index": 269,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "f8bc4f8d18539d43abd93ad63f69c6731f44f54f417b01a672dd130f515a3eb2"
+    },
+    {
+      "id": "legacy100-0056",
+      "group": "legacy100",
+      "inventory_index": 270,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "32c53aa3c6d8015d9c7f00eb02b7288a66802839e4cb4e9763e3a5f229f1999e"
+    },
+    {
+      "id": "legacy100-0057",
+      "group": "legacy100",
+      "inventory_index": 271,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "719d90b93a01a801eb595729f5bd1088cce95f86091e2803ae20e60704ace5bc"
+    },
+    {
+      "id": "legacy100-0058",
+      "group": "legacy100",
+      "inventory_index": 272,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "075cc016b00bad4e6eb683e18a938fd8c26f78ec5e6e0a0034fc16b76cdea55a"
+    },
+    {
+      "id": "legacy100-0059",
+      "group": "legacy100",
+      "inventory_index": 273,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "6025222b44233190b9a4e6b99f8f7e20ff5894475439be3ada0645ade5ed23ba"
+    },
+    {
+      "id": "legacy100-0060",
+      "group": "legacy100",
+      "inventory_index": 274,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "66a21bfb648f6dd3fefc0a5f317b8ebea9c5a248aa7b7670c5f3a77b96bd1496"
+    },
+    {
+      "id": "legacy100-0061",
+      "group": "legacy100",
+      "inventory_index": 275,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "5cb39120d8c848975055b3d0ce2504287c403416c2b4ecea72435f7da082f384"
+    },
+    {
+      "id": "legacy100-0062",
+      "group": "legacy100",
+      "inventory_index": 276,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "8e8ec16d3f9b317dfde37aff7a27a3d75f478410657e8af58e28530aad268061"
+    },
+    {
+      "id": "legacy100-0063",
+      "group": "legacy100",
+      "inventory_index": 277,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "f89129d3592cdfde4c9ecb2dd944d04bc8bd58d4abd2a05f1c7c0e9cabe3a8ff"
+    },
+    {
+      "id": "legacy100-0064",
+      "group": "legacy100",
+      "inventory_index": 278,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "a1494c673c4e016e42bd57f8cffd358c1e6cc42e0b8c130361765fc53833040b"
+    },
+    {
+      "id": "legacy100-0065",
+      "group": "legacy100",
+      "inventory_index": 279,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "02955edb3ac8a7313b9d19f7410b7c5778cec85d38ca10b0893056d3c8b474e1"
+    },
+    {
+      "id": "legacy100-0066",
+      "group": "legacy100",
+      "inventory_index": 280,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "d20ee3ba91f8ea05ffc475b8d05d9fb824c568b85cfd80b9b4a26dd81be5c27e"
+    },
+    {
+      "id": "legacy100-0067",
+      "group": "legacy100",
+      "inventory_index": 281,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "72e819cd2066a139bb80e18b07f00c08e2bf292fa01c9835352308548ce3d7aa"
+    },
+    {
+      "id": "legacy100-0068",
+      "group": "legacy100",
+      "inventory_index": 282,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "409b7bc38c60284f4ce30860e0eae2d8ed1f382dd27a99dd15e9534354bea0b4"
+    },
+    {
+      "id": "legacy100-0069",
+      "group": "legacy100",
+      "inventory_index": 283,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "37fc47156642edd80f848b4b31d8a083f3132f336570ff1537bcad33cfe8d12f"
+    },
+    {
+      "id": "legacy100-0070",
+      "group": "legacy100",
+      "inventory_index": 284,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "523b517d4c89751bd854f2e235216c3e30d42b8bd06317f906adf49986b3f4d4"
+    },
+    {
+      "id": "legacy100-0071",
+      "group": "legacy100",
+      "inventory_index": 285,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "88456d21e3c2605291f1441d98d4b2f78525a49b02dda56d8892d7883ac2ef4b"
+    },
+    {
+      "id": "legacy100-0072",
+      "group": "legacy100",
+      "inventory_index": 286,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "83b7d07adc274987e5a59093c516ec2d87b0b7f112388cc9dc0f63cf517d14c8"
+    },
+    {
+      "id": "legacy100-0073",
+      "group": "legacy100",
+      "inventory_index": 287,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "89cf13462d2f5d567c8542969a71bc07a481dfc78ff69fadd5464bca32dc14bf"
+    },
+    {
+      "id": "legacy100-0074",
+      "group": "legacy100",
+      "inventory_index": 288,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "de890763047d07df2a39cd9ddd6ca93be00247b8c2f2758b6feaca55b0d8d034"
+    },
+    {
+      "id": "legacy100-0075",
+      "group": "legacy100",
+      "inventory_index": 289,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "d68d413e5a0dcdbf57329fe835dd8639e431782f6e165c355815eee565ade230"
+    },
+    {
+      "id": "legacy100-0076",
+      "group": "legacy100",
+      "inventory_index": 290,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "deae5c5c7c682cec77d7f10c5bf8a24df8baff4e53998e1dbd66a578b9999ab8"
+    },
+    {
+      "id": "legacy100-0077",
+      "group": "legacy100",
+      "inventory_index": 291,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "dcf882a6e005294a3730e1497a8e25cc59cd0bdf7dfe91bc2b68698f8f5a1874"
+    },
+    {
+      "id": "legacy100-0078",
+      "group": "legacy100",
+      "inventory_index": 292,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "a958b0b7f688e5fe5785783d308b6ca7d6b380b2a003c16b7774a9430d894d05"
+    },
+    {
+      "id": "legacy100-0079",
+      "group": "legacy100",
+      "inventory_index": 293,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "12e4dd758523ca040326ab4eaef0c2e0b124907e3569ce9fc426b95760aca083"
+    },
+    {
+      "id": "legacy100-0080",
+      "group": "legacy100",
+      "inventory_index": 294,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "9b38651016b1c390a05d600412a0a28a9491e86fe894247df809028a23dcce98"
+    },
+    {
+      "id": "legacy100-0081",
+      "group": "legacy100",
+      "inventory_index": 295,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "7f70588a25965592178a1c11c4aef56f334967f7d95b6cc77ea37d07cf771ac2"
+    },
+    {
+      "id": "legacy100-0082",
+      "group": "legacy100",
+      "inventory_index": 296,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "fc4408deb4c8c779436b43fbfa51e56ed2a0b41b4117410b998dcf1c9fa3cdcc"
+    },
+    {
+      "id": "legacy100-0083",
+      "group": "legacy100",
+      "inventory_index": 297,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "19436d2263f4de9851fd47ac4a994df20ecbbe1033afa3d218c479b15a8681f3"
+    },
+    {
+      "id": "legacy100-0084",
+      "group": "legacy100",
+      "inventory_index": 298,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "52aaef09d3579db8c65950c6a7b32befe51159ca7ec1ea93041ed4d27d731104"
+    },
+    {
+      "id": "legacy100-0085",
+      "group": "legacy100",
+      "inventory_index": 299,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "6504b537eaa9ed0f9f42b6fa775061828152129438ef6d02772c58e5e0cfdbc3"
+    },
+    {
+      "id": "legacy100-0086",
+      "group": "legacy100",
+      "inventory_index": 300,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "16f3351c477fca8878baad0e358547e232677010ed9217bff429e2393c451d95"
+    },
+    {
+      "id": "legacy100-0087",
+      "group": "legacy100",
+      "inventory_index": 301,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "327a814cf27bfaba1099a2e038f7e517672f7805e45d8dda26ab8bbb7f15cc49"
+    },
+    {
+      "id": "legacy100-0088",
+      "group": "legacy100",
+      "inventory_index": 302,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "29cbcd9440847bc06d0508eed19b5b985219ac3f09fd4c09ffd504e7ab4f4655"
+    },
+    {
+      "id": "legacy100-0089",
+      "group": "legacy100",
+      "inventory_index": 303,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "03156d661c24201eb0661b5d3d017c3ef0d8ffe4a01965deaa6dc60b2a370488"
+    },
+    {
+      "id": "legacy100-0090",
+      "group": "legacy100",
+      "inventory_index": 304,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "7173fbe5c1d8c731109febf1ddfd9017857be5eeba17d704142a1ba6d5a80c9d"
+    },
+    {
+      "id": "legacy100-0091",
+      "group": "legacy100",
+      "inventory_index": 305,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "d70ab925b6c6a22455c325399bded0dc2e7e31074478415ed70d0657079b2080"
+    },
+    {
+      "id": "legacy100-0092",
+      "group": "legacy100",
+      "inventory_index": 306,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "a2a98147ceb719766f92bfa343e5159d23f5c661970382b2ec51aa2b5bdda994"
+    },
+    {
+      "id": "legacy100-0093",
+      "group": "legacy100",
+      "inventory_index": 307,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "f5ff21c5091350b874a322f794724f9d27640111a934e37cd5aa4baa1d329b81"
+    },
+    {
+      "id": "legacy100-0094",
+      "group": "legacy100",
+      "inventory_index": 308,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "e28ac071b45ce57445608668dc3f669351beae6bfb3d050314263b930b1c9c36"
+    },
+    {
+      "id": "legacy100-0095",
+      "group": "legacy100",
+      "inventory_index": 309,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "4a016d5ccaa536614ebaff3ae45fd527a5721e97e6081167f11d6e965ff941bc"
+    },
+    {
+      "id": "legacy100-0096",
+      "group": "legacy100",
+      "inventory_index": 310,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "cbe8d5020e292696b7064ccdfc53336cb5bc634fede13c0427cf2016cd000db1"
+    },
+    {
+      "id": "legacy100-0097",
+      "group": "legacy100",
+      "inventory_index": 311,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "7d1d0b58d54bf960f3d5c845916a4e50d9acac1d735dfec3cc66a5884bef1570"
+    },
+    {
+      "id": "legacy100-0098",
+      "group": "legacy100",
+      "inventory_index": 312,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "29ea8b1ba5d030c0b81d0ea3e30b948540447e236eecfa2aa787aef77e1087a2"
+    },
+    {
+      "id": "legacy100-0099",
+      "group": "legacy100",
+      "inventory_index": 313,
+      "prompt_version": "som.prompt.v4",
+      "prompt_sha256": "12069afc87f3f278819d232b21458f07b87adba7265528e6c874ea1d69dc6f7d"
+    }
+  ]
+}

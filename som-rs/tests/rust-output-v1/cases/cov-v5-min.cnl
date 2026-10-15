@@ -1,0 +1,46 @@
+Use SOM CNL version 1.
+Use prompt version 5.
+Use package boards.
+Begin parent resource.
+Use resource name Board.
+Use table boards.
+Use path "/boards".
+Field title is required str and is not unique.
+Begin query.
+Use no exact filter.
+Use no date filter.
+Limit query results to 20.
+End query.
+End parent resource.
+Begin child resource.
+Use resource name Card.
+Use table cards.
+Use path "/cards".
+Field label is required str and is not unique.
+Begin query.
+Use no exact filter.
+Use no date filter.
+Limit query results to 20.
+End query.
+End child resource.
+Relate child to parent with foreign key board_id and restrict deletion.
+Use migration revision cov5000.
+Use no previous migration revision.
+Use no capabilities.
+Begin routes.
+For parent: Create a row. Return 409 for a unique value conflict.
+For parent: Get a row by id. Return 404 if it does not exist.
+For parent: List scoped rows with the configured filters and pagination in id order.
+For parent: Update supplied fields. Return 404 if the row does not exist.
+For parent: Delete a row. Reject a parent with children with 409.
+For child: Create a row. Return 409 for a unique value conflict.
+For child: Get a row by id. Return 404 if it does not exist.
+For child: List scoped rows with the configured filters and pagination in id order.
+For child: Update supplied fields. Return 404 if the row does not exist.
+For child: Delete a row. Reject a parent with children with 409.
+For batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.
+End routes.
+Begin checks.
+Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.
+End checks.
+End request.

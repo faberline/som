@@ -1,0 +1,131 @@
+{
+  "version": "som.rust-output-case-validation.v1",
+  "cases": [
+    {
+      "id": "cov-v1-types",
+      "json_status": 200,
+      "cnl_status": 200,
+      "same_bundle": true,
+      "payload_sha256": "391f9d91653d605bf17cc5773b5f51b36a145d352c71c6c886f38d75859fcebf",
+      "prompt_sha256": "848e0ebefba7e84303f4e01240949f02a357fd952f16f626bd0367da4f1408dc",
+      "assemble_status": 200,
+      "python_files": {
+        "alembic/versions/cov1000_inventory.py": "e9c9b9add07331d7a9bc1d15a795d9dda0193ad9b754e283280085e59c4fa0a9",
+        "inventory/api.py": "b9e60ab61f4bf668d9fda5e76cd33560c3819a8233458ecaa618835e829bacce",
+        "inventory/models.py": "552fb8dbd42c000a46987db46cc67c8824983a8d2e66d73d57f96d68cd3e18e2",
+        "inventory/schemas.py": "db8ea38c9c73f9027b6910c362d65d1490726ca0500f93af4ae6ce6f1c1aeb3a",
+        "tests/test_inventory.py": "994d812383292431d3d6e4099f1f4af9e697ebc086cf177abe9105b718903b07"
+      }
+    },
+    {
+      "id": "cov-v2-types",
+      "json_status": 200,
+      "cnl_status": 200,
+      "same_bundle": true,
+      "payload_sha256": "e128cbe8077cb948dd7bfeeb251a0db45726c43dd632fc8938ff228b69af7200",
+      "prompt_sha256": "5ceb9f06a827f4028c2f2c6fb48c09ee8e646801ceb22a64ee82f472076c1996",
+      "assemble_status": 200,
+      "python_files": {
+        "alembic/versions/cov2000_catalog.py": "c2b25afc32e585c459cae8f285a3892248dabbbadcf73dcaf06bbb985b72f09b",
+        "catalog/api.py": "0f0a83005b7090e44f9dfeb37057c809219542bd502dce52bb1b4b456925ded5",
+        "catalog/models.py": "a6b7cd93319da077667253a9759a2a7194b72b3e28365af2f3486a65f0f5ac60",
+        "catalog/schemas.py": "cead3292dbdc84193f7a50fef71055ed3f6604abb5e38451c7584b4728dbedef",
+        "tests/test_catalog.py": "154d2daeed02490f4a436f3e62d07eea4b928b12ed0b872fad6040b5fcba3a37"
+      }
+    },
+    {
+      "id": "cov-v3-types",
+      "json_status": 200,
+      "cnl_status": 200,
+      "same_bundle": true,
+      "payload_sha256": "9f38b9c7c2d02fde0febf7c570aaa983ea3d2c327bfa4bb07a3c3d207677866e",
+      "prompt_sha256": "41fb163d59bb167b8105a9be4c5fb9ca177c2e590b4bec14172bb998d464bed3",
+      "assemble_status": 200,
+      "python_files": {
+        "README.md": "9d0d9aa5246b1cf3dcd7657504ad8b029792874838eedc71a1ae7376c0331fd1",
+        "alembic.ini": "d94591c0b82a4f66e08e5417f2d6543c2f68eb5ce68e0eb913a02cd3d2e0777b",
+        "alembic/env.py": "5675283a339b1bd6b3f2b25a0893cf1b53cbd26e908278fce9f3ee532791d8d8",
+        "alembic/versions/cov3000_tickets.py": "151f88042910292a8b56b802fdaef4ad560f783b88b92e79f8fb295f5182096c",
+        "pyproject.toml": "dd96069e91cfb93eef7805faba9cf933a6f25c6a529ac800f35b493629944313",
+        "tests/test_tickets.py": "fcc7b6dce7a4e1bb131a9cc2a5dbdb5ccf697bca289c6a23952d5a55bd506fd5",
+        "tickets/__init__.py": "51a55b1662c15238cb072b6f72ce159ed3c03fe01d387da1ddec7dd895854dda",
+        "tickets/api.py": "bef6b592ee9b85a39132f443695d838760309d8746cd6f4f1ea204633f79b80c",
+        "tickets/app.py": "2a5ae85881388032746b8fcbca6674cca1fae4566eb72a732ad61bf02d6adaa4",
+        "tickets/database.py": "f4d6106fb66e330ea4584a64d4aed0679bb33ddebdcd544ad7afde7ad7d6e085",
+        "tickets/models.py": "08f0fcdbc071b6042dc3a20175eef84a3d1098d4dde0436cc7c12dc8b27dfafc",
+        "tickets/schemas.py": "ba97aaa9ccf291192ffde0fe46fb6e6e428063c85db9c981b714f597e6e87ab4"
+      }
+    },
+    {
+      "id": "cov-v4-types",
+      "json_status": 200,
+      "cnl_status": 200,
+      "same_bundle": true,
+      "payload_sha256": "46bee033a0ba446a102a68d3988df5153d58cb1aad87394b7c2a6c9b852e1f1d",
+      "prompt_sha256": "1a4ab1272fc115cae40d0f488c2812640c40bab39ab904776d08a646e52d091e",
+      "assemble_status": 200,
+      "python_files": {
+        "README.md": "6038bf7e4a6a2dc746cb3177911c382a9a1ae66fce4296182de52561566a0648",
+        "alembic.ini": "d94591c0b82a4f66e08e5417f2d6543c2f68eb5ce68e0eb913a02cd3d2e0777b",
+        "alembic/env.py": "9e217868c36af27b6187e58b397a571de59adc53ea45d1d10a2e08189855e83f",
+        "alembic/versions/cov4000_events.py": "1c219ee4da33c023c60dc727b9f528feeac4a19ca1b486915292f99357a9ee3e",
+        "events/__init__.py": "51a55b1662c15238cb072b6f72ce159ed3c03fe01d387da1ddec7dd895854dda",
+        "events/api.py": "b50cc78ac67053b29efcbe93947882b2d6015b213272324b77b2955c72c85564",
+        "events/app.py": "2a5ae85881388032746b8fcbca6674cca1fae4566eb72a732ad61bf02d6adaa4",
+        "events/database.py": "f4d6106fb66e330ea4584a64d4aed0679bb33ddebdcd544ad7afde7ad7d6e085",
+        "events/models.py": "6adb31bf38ed025a5677a7145025246760a0d59cb0e3ff059ec2b1347edc8097",
+        "events/schemas.py": "38ff4847d61d7598c2194069479e8b83ea3cbf78b1536f0788fbc9a8ae49c7fc",
+        "pyproject.toml": "f2177b8883e249917fb11e8dbd3a4b7015b125106435550744ef22d90e48e678",
+        "tests/test_events.py": "73cbde933a639657bbc0f0d91b53f299635026ab8c402cbc4b3ab8cd7d36218f"
+      }
+    },
+    {
+      "id": "cov-v5-min",
+      "json_status": 200,
+      "cnl_status": 200,
+      "same_bundle": true,
+      "payload_sha256": "e5f215025e008c6de55ef036a5e18386b3387f894bff6ecdf3b8b621053b0830",
+      "prompt_sha256": "bfcebf842c839e6cb7c9620e7ce0e9e6e5513a405157b160c5fee100f1e90e4a",
+      "assemble_status": 200,
+      "python_files": {
+        "README.md": "1b2931b7c377fae5e14da91e1518caa2f8703bdcef9a83aeb661c32259e49ab6",
+        "alembic.ini": "d94591c0b82a4f66e08e5417f2d6543c2f68eb5ce68e0eb913a02cd3d2e0777b",
+        "alembic/env.py": "57817dfbbc6e2299b523a67f7c29e80a9207c32eb888e7864dbfd8cfcd066ecf",
+        "alembic/versions/cov5000_boards.py": "73fd1cdfaed9e72173f4dd7f16bd59c448b3570e19b5e606b6263517d9b24472",
+        "boards/__init__.py": "51a55b1662c15238cb072b6f72ce159ed3c03fe01d387da1ddec7dd895854dda",
+        "boards/api.py": "8e54ad9613d51574dd1544dfeda5e94d82437b922f6a66389b8b2c8fd3469e7c",
+        "boards/app.py": "2a5ae85881388032746b8fcbca6674cca1fae4566eb72a732ad61bf02d6adaa4",
+        "boards/database.py": "f4d6106fb66e330ea4584a64d4aed0679bb33ddebdcd544ad7afde7ad7d6e085",
+        "boards/models.py": "0b77f9a5b2e6214ae83d4ba2c758d00a4bdea8e252cace8e519d39c791317623",
+        "boards/schemas.py": "818668fe154fdbbf4a95c05e9b33e96684a9a26c774f3539fa8ad2ed9028c83c",
+        "pyproject.toml": "c4b3ea472cfd9b975005bc39759fa836df77121a4193218fbb892214f41af8ed",
+        "tests/test_boards.py": "c81471e01d321a814d5f1db123deaaf4ed2eaa80e08c04fa536591515f68db91"
+      }
+    },
+    {
+      "id": "cov-v5-max",
+      "json_status": 200,
+      "cnl_status": 200,
+      "same_bundle": true,
+      "payload_sha256": "b323e118aab79eecf44ff1f3a41cd93946c8f16137adccb9b46997673fcefa0a",
+      "prompt_sha256": "aa2749067c9302d47090ce8b17d014e45f1e41898bdfa6bc05eef35c76230538",
+      "assemble_status": 200,
+      "python_files": {
+        "README.md": "c6f62811d415e13d83464f979f25040c8ac719faf8ae7e5df30c0b07bd03da56",
+        "alembic.ini": "d94591c0b82a4f66e08e5417f2d6543c2f68eb5ce68e0eb913a02cd3d2e0777b",
+        "alembic/env.py": "eb1002b74a2cf81cb3dc3e62486d3f828c5b8c64e9fcecde2c1c651645423b42",
+        "alembic/versions/cov5100_billing.py": "6503cdb0fab43b6aa979c37182718e429414fd57bbc5d9ba52c9f9e1bc319e0e",
+        "billing/__init__.py": "51a55b1662c15238cb072b6f72ce159ed3c03fe01d387da1ddec7dd895854dda",
+        "billing/api.py": "449c19b46f19b1b26bf5e2eeefe1435f7f082a9a1e43199a0e8276a5fc777d82",
+        "billing/app.py": "2a5ae85881388032746b8fcbca6674cca1fae4566eb72a732ad61bf02d6adaa4",
+        "billing/database.py": "f4d6106fb66e330ea4584a64d4aed0679bb33ddebdcd544ad7afde7ad7d6e085",
+        "billing/models.py": "98fb3210069ba84b4d8a14eb865512036945f935a2b2b50ce325e1a04e19915c",
+        "billing/schemas.py": "8400204b8f3f1e56dec08cc9e4eee54ed94da804d7c2e1c8c1c153c8c0a5fdf4",
+        "pyproject.toml": "4bba75b50d32648443814cb1720cb3c29d18f26baee57311698b0929dc8fe7b0",
+        "tests/test_billing.py": "a301fd18bf9d17b51fea6fa1e3cf257356d95acfba75ebf810dd278cce2c2254"
+      }
+    }
+  ],
+  "passed": 6,
+  "failed": []
+}

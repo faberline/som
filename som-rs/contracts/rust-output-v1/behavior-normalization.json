@@ -1,0 +1,36 @@
+{
+  "version": "som.rust-output-behavior-normalization.v1",
+  "purpose": "How the parity suite compares the Python product and the Rust product generated from the same prompt.",
+  "hosting": {
+    "python": "v5 products run their own FastAPI app. v1 to v4 products export create_router(get_session); the parity harness mounts it on a plain FastAPI() app with a session factory for the run database, exactly as the generated Python tests do. Both run under uvicorn on a QA port.",
+    "rust": "The debug build of the som_app binary runs with DATABASE_URL and SOM_APP_ADDR on a QA port.",
+    "databases": "Each product gets its own fresh database in the same PostgreSQL 17.7 cluster. The Python database is migrated by the generated Alembic revision through the harness Alembic environment. The Rust database is migrated by the product's MIGRATOR at startup.",
+    "ports": "Never 8765 or 18765."
+  },
+  "schema_equivalence": {
+    "query": "information_schema and pg_catalog for schema public, excluding the alembic_version and _sqlx_migrations tables.",
+    "compared": ["table names", "column names in ordinal order", "data_type and character_maximum_length", "is_nullable", "column_default, with sequence names rewritten to <table>_<column>_seq form", "primary key columns", "unique constraint column sets", "foreign key columns, referenced table and column, and ON DELETE action", "index column lists in order and uniqueness"],
+    "not_compared": ["constraint names", "index names", "migration bookkeeping tables", "sequence ownership names beyond the rewrite above"]
+  },
+  "request_scripts": {
+    "rule": "The parity script for a prompt is derived from the prompt alone: create rows with valid values for every field, list them with every query parameter the version has, get, patch each field, delete, and the refusals each route declares (404, 409, 422 for a missing required field and for a wrong JSON type). v5 adds child routes, the with-children batch with 1 and 20 children, a batch with 21 children, a child under a missing parent, and a parent delete with children.",
+    "excluded_inputs": "The script sends no input listed under divergences."
+  },
+  "normalization": {
+    "ids": "Every id value in a response is replaced by its creation-order token: the first id the product returned for that table is id#1, and so on. Ids in later request paths use the same token mapping.",
+    "timestamps": "created_at and updated_at must be RFC 3339 strings with a UTC offset. Each is replaced by <timestamp>. Values are not compared, except that created_at <= updated_at in each product.",
+    "numbers": "JSON integers and JSON numbers with a fraction are distinct. A float field value is compared as a float; 3 and 3.0 are equal there. An int field value must be a JSON integer in both products.",
+    "member_order": "Object member order is ignored. Array order is compared.",
+    "422": "Both products return 422. Each body is {\"detail\": [items]} with at least one item, and each item has type, loc and msg. The set of loc[0] values is compared. type and msg text are not compared.",
+    "other_errors": "Status and the full JSON body are compared after id normalization. This covers 404 and 409 detail strings and the 404 and 405 fallback bodies.",
+    "headers": "Only status and the content-type media type are compared. 204 responses have no body in both products."
+  },
+  "divergences": [
+    {"id": "D1", "rule": "Pydantic lax coercion. Python accepts a string \"1\" for an int field, \"true\" for a bool field and similar coercions. Rust accepts only the JSON type and returns 422.", "parity": "Excluded from parity inputs. The Rust product tests check the 422."},
+    {"id": "D2", "rule": "v1 to v4 Python products return 500 for a string longer than 255 Unicode scalars or an int outside signed 32 bits, because the database refuses the value. Rust returns 422. v5 Python already returns 422.", "parity": "Excluded for v1 to v4. Compared for v5."},
+    {"id": "D3", "rule": "A path id outside signed 32 bits. Python passes it to the database. Rust returns 404 without a query.", "parity": "Excluded."},
+    {"id": "D4", "rule": "A query parameter given twice. Python uses one of the values. Rust returns 422.", "parity": "Excluded."},
+    {"id": "D5", "rule": "A trailing slash on a route. The Python app redirects with 307. Rust returns 404 {\"detail\":\"Not Found\"}.", "parity": "Excluded."},
+    {"id": "D6", "rule": "/healthz exists in every Rust product but only in the v5 Python product.", "parity": "Compared for v5 only. Rust product tests check it for every version."}
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "version": "som.rust-output-coverage-cases.v1",
+  "cases": [
+    {
+      "id": "cov-v1-types",
+      "purpose": "Every v1 field type with required, optional and unique fields.",
+      "prompt_version": "som.prompt.v1",
+      "prompt": "cov-v1-types.prompt.json",
+      "cnl": "cov-v1-types.cnl",
+      "prompt_file_sha256": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c",
+      "cnl_sha256": "22e6cb0aacd219cb47478dca4ff5f244b63ae605de399f08a16bb62093ec9ce7"
+    },
+    {
+      "id": "cov-v2-types",
+      "purpose": "v2 with the largest page bound and every field type.",
+      "prompt_version": "som.prompt.v2",
+      "prompt": "cov-v2-types.prompt.json",
+      "cnl": "cov-v2-types.cnl",
+      "prompt_file_sha256": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53",
+      "cnl_sha256": "a2512cdbbea998a8f051160166e3c1d2f4b43ae5d7bbcbe5e6a0cd211a9b7c1d"
+    },
+    {
+      "id": "cov-v3-types",
+      "purpose": "v3 with int, float and unique fields beside the bool filter.",
+      "prompt_version": "som.prompt.v3",
+      "prompt": "cov-v3-types.prompt.json",
+      "cnl": "cov-v3-types.cnl",
+      "prompt_file_sha256": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23",
+      "cnl_sha256": "554eb27bbd5c894fa7ccd473b45734a33753b1ec32395ccb5f73133b0a71a12c"
+    },
+    {
+      "id": "cov-v4-types",
+      "purpose": "v4 with int, float and unique fields beside the bool and date filters.",
+      "prompt_version": "som.prompt.v4",
+      "prompt": "cov-v4-types.prompt.json",
+      "cnl": "cov-v4-types.cnl",
+      "prompt_file_sha256": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e",
+      "cnl_sha256": "cb7f5fb994d6c7bfbdff549e71286211cd1d3f7177b91bdbeeb34337229b7724"
+    },
+    {
+      "id": "cov-v5-min",
+      "purpose": "v5 with one field per resource, no filters and another foreign key name.",
+      "prompt_version": "som.prompt.v5",
+      "prompt": "cov-v5-min.prompt.json",
+      "cnl": "cov-v5-min.cnl",
+      "prompt_file_sha256": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347",
+      "cnl_sha256": "627623f91944b13158487086efec5653948be6c2e77a341e0d0ba9410d291e5d"
+    },
+    {
+      "id": "cov-v5-max",
+      "purpose": "v5 with eight fields per resource, every type, unique values and filters on both sides.",
+      "prompt_version": "som.prompt.v5",
+      "prompt": "cov-v5-max.prompt.json",
+      "cnl": "cov-v5-max.cnl",
+      "prompt_file_sha256": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d",
+      "cnl_sha256": "97cb49f506fb16fb9da2ea203b5a114ea68766ec46ebb69cdb4d63f012deb16c"
+    }
+  ]
+}

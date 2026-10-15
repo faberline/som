@@ -1,0 +1,282 @@
+{
+  "version": "som.rust-output-target-examples.v1",
+  "rule": "The target member is the last member of the compile request object. Absent and python both select Python; rust selects Rust. The CNL text and the typed prompt do not change by target.",
+  "coverage": {
+    "som.prompt.v1": {
+      "examples": 2,
+      "field_types": [
+        "bool",
+        "float",
+        "int",
+        "str"
+      ],
+      "field_kinds": [
+        "optional_without_default",
+        "required",
+        "unique"
+      ],
+      "query": [],
+      "routes": "every route in scope.json routes for this version"
+    },
+    "som.prompt.v2": {
+      "examples": 2,
+      "field_types": [
+        "bool",
+        "float",
+        "int",
+        "str"
+      ],
+      "field_kinds": [
+        "optional_without_default",
+        "required",
+        "unique"
+      ],
+      "query": [
+        "filter_field",
+        "max_limit"
+      ],
+      "routes": "every route in scope.json routes for this version"
+    },
+    "som.prompt.v3": {
+      "examples": 2,
+      "field_types": [
+        "bool",
+        "float",
+        "int",
+        "str"
+      ],
+      "field_kinds": [
+        "optional_with_default",
+        "optional_without_default",
+        "required",
+        "unique"
+      ],
+      "query": [
+        "filter_field",
+        "max_limit"
+      ],
+      "routes": "every route in scope.json routes for this version"
+    },
+    "som.prompt.v4": {
+      "examples": 2,
+      "field_types": [
+        "bool",
+        "date",
+        "float",
+        "int",
+        "str"
+      ],
+      "field_kinds": [
+        "optional_with_default",
+        "optional_without_default",
+        "required",
+        "unique"
+      ],
+      "query": [
+        "date_field",
+        "filter_field",
+        "max_limit"
+      ],
+      "routes": "every route in scope.json routes for this version"
+    },
+    "som.prompt.v5": {
+      "examples": 3,
+      "field_types": [
+        "bool",
+        "date",
+        "float",
+        "int",
+        "str"
+      ],
+      "field_kinds": [
+        "optional_with_default",
+        "optional_without_default",
+        "required",
+        "unique"
+      ],
+      "query": [
+        "child date_field set",
+        "child date_field unset",
+        "child filter_field set",
+        "child filter_field unset",
+        "parent date_field set",
+        "parent date_field unset",
+        "parent filter_field set",
+        "parent filter_field unset"
+      ],
+      "routes": "every route in scope.json routes for this version"
+    }
+  },
+  "examples": [
+    {
+      "id": "example-v1-cnl-rust",
+      "source": "som-rs/contracts/compiler-v1/examples/v1.cnl",
+      "target": "rust",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v1-json-rust",
+      "source": "som-rs/contracts/compiler-v1/examples/v1.prompt.json",
+      "target": "rust",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"},\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v1-cnl-python",
+      "source": "som-rs/contracts/compiler-v1/examples/v1.cnl",
+      "target": "python",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"python\"}",
+      "expected": "HTTP 200 with the same response bytes as the same request without target.",
+      "same_as_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}"
+    },
+    {
+      "id": "example-v1-json-python",
+      "source": "som-rs/contracts/compiler-v1/examples/v1.prompt.json",
+      "target": "python",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"},\"target\":\"python\"}",
+      "expected": "HTTP 200 with the same response bytes as the same request without target.",
+      "same_as_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"}}"
+    },
+    {
+      "id": "example-v2-cnl-rust",
+      "source": "som-rs/contracts/compiler-v1/examples/v2.cnl",
+      "target": "rust",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 2.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is not unique.\\nEnd resource.\\nBegin query.\\nFilter exactly on field title.\\nLimit query results to 20.\\nEnd query.\\nUse migration revision rev1000.\\nUse no previous migration revision.\\nBegin routes.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact string filter, limit, and offset in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v2-json-rust",
+      "source": "som-rs/contracts/compiler-v1/examples/v2.prompt.json",
+      "target": "rust",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact string filter, limit, and offset in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev1000\"},\"package\":\"items\",\"query\":{\"filter_field\":\"title\",\"max_limit\":20},\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v2\"},\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v3-cnl-rust",
+      "source": "som-rs/contracts/compiler-v1/examples/v3.cnl",
+      "target": "rust",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 3.\\nUse package todos.\\nBegin resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field completed.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision service1000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact boolean filter, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v3-json-rust",
+      "source": "som-rs/contracts/compiler-v1/examples/v3.prompt.json",
+      "target": "rust",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact boolean filter, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"service1000\"},\"package\":\"todos\",\"query\":{\"filter_field\":\"completed\",\"max_limit\":100},\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"completed\",\"required\":false,\"type\":\"bool\",\"unique\":false}],\"name\":\"Todo\",\"path\":\"/todos\",\"table\":\"todos\"},\"tests\":[\"Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v3\"},\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v4-cnl-rust",
+      "source": "som-rs/contracts/compiler-v1/examples/v4.cnl",
+      "target": "rust",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 4.\\nUse package todos.\\nBegin resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField deadline_on is optional date and is not unique with default null.\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field deadline_on.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision service1000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v4-json-rust",
+      "source": "som-rs/contracts/compiler-v1/examples/v4.prompt.json",
+      "target": "rust",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"service1000\"},\"package\":\"todos\",\"query\":{\"date_field\":\"deadline_on\",\"filter_field\":\"completed\",\"max_limit\":100},\"resource\":{\"fields\":[{\"default\":null,\"name\":\"deadline_on\",\"required\":false,\"type\":\"date\",\"unique\":false},{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"completed\",\"required\":false,\"type\":\"bool\",\"unique\":false}],\"name\":\"Todo\",\"path\":\"/todos\",\"table\":\"todos\"},\"tests\":[\"Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v4\"},\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v5-cnl-rust",
+      "source": "som-rs/contracts/compiler-v1/examples/v5.cnl",
+      "target": "rust",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package app_projects.\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related0.\\nUse no previous migration revision.\\nUse no capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v5-json-rust",
+      "source": "som-rs/contracts/compiler-v1/examples/v5.prompt.json",
+      "target": "rust",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"app_projects\",\"resources\":{\"parent\":{\"name\":\"Project\",\"table\":\"projects\",\"path\":\"/projects\",\"fields\":[{\"name\":\"name\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}},\"child\":{\"name\":\"Todo\",\"table\":\"todos\",\"path\":\"/todos\",\"fields\":[{\"name\":\"title\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"completed\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"due_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"completed\",\"date_field\":\"due_on\",\"max_limit\":100}}},\"relation\":{\"foreign_key\":\"project_id\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"related0\",\"down_revision\":null}},\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v1-types-cnl-rust",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v1-types.cnl",
+      "target": "rust",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package inventory.\\nBegin resource.\\nUse resource name Part.\\nUse table parts.\\nUse path \\\"/parts\\\".\\nField sku is required str and is unique.\\nField bin is required int and is unique.\\nField weight is required float and is not unique.\\nField fragile is required bool and is not unique.\\nField note is optional str and is not unique.\\nField count is optional int and is not unique.\\nField ratio is optional float and is not unique.\\nField checked is optional bool and is not unique.\\nEnd resource.\\nUse migration revision cov1000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v1-types-json-rust",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json",
+      "target": "rust",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov1000\"},\"package\":\"inventory\",\"resource\":{\"fields\":[{\"name\":\"sku\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"bin\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"weight\",\"type\":\"float\",\"required\":true,\"unique\":false},{\"name\":\"fragile\",\"type\":\"bool\",\"required\":true,\"unique\":false},{\"name\":\"note\",\"type\":\"str\",\"required\":false,\"unique\":false},{\"name\":\"count\",\"type\":\"int\",\"required\":false,\"unique\":false},{\"name\":\"ratio\",\"type\":\"float\",\"required\":false,\"unique\":false},{\"name\":\"checked\",\"type\":\"bool\",\"required\":false,\"unique\":false}],\"name\":\"Part\",\"path\":\"/parts\",\"table\":\"parts\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"},\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v2-types-cnl-rust",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v2-types.cnl",
+      "target": "rust",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 2.\\nUse package catalog.\\nBegin resource.\\nUse resource name Product.\\nUse table products.\\nUse path \\\"/products\\\".\\nField category is required str and is not unique.\\nField code is required str and is unique.\\nField price is required float and is not unique.\\nField stock is optional int and is not unique.\\nField active is optional bool and is not unique.\\nEnd resource.\\nBegin query.\\nFilter exactly on field category.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision cov2000.\\nUse no previous migration revision.\\nBegin routes.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact string filter, limit, and offset in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v2-types-json-rust",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json",
+      "target": "rust",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact string filter, limit, and offset in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov2000\"},\"package\":\"catalog\",\"query\":{\"filter_field\":\"category\",\"max_limit\":100},\"resource\":{\"fields\":[{\"name\":\"category\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"code\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"price\",\"type\":\"float\",\"required\":true,\"unique\":false},{\"name\":\"stock\",\"type\":\"int\",\"required\":false,\"unique\":false},{\"name\":\"active\",\"type\":\"bool\",\"required\":false,\"unique\":false}],\"name\":\"Product\",\"path\":\"/products\",\"table\":\"products\"},\"tests\":[\"Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v2\"},\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v3-types-cnl-rust",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v3-types.cnl",
+      "target": "rust",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 3.\\nUse package tickets.\\nBegin resource.\\nUse resource name Ticket.\\nUse table tickets.\\nUse path \\\"/tickets\\\".\\nField subject is required str and is unique.\\nField code is required int and is unique.\\nField priority is required int and is not unique.\\nField estimate is optional float and is not unique with default null.\\nField note is optional str and is not unique with default null.\\nField closed is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field closed.\\nLimit query results to 50.\\nEnd query.\\nUse migration revision cov3000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact boolean filter, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v3-types-json-rust",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json",
+      "target": "rust",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact boolean filter, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov3000\"},\"package\":\"tickets\",\"query\":{\"filter_field\":\"closed\",\"max_limit\":50},\"resource\":{\"fields\":[{\"name\":\"subject\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"code\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"priority\",\"type\":\"int\",\"required\":true,\"unique\":false},{\"name\":\"estimate\",\"type\":\"float\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"note\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"closed\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false}],\"name\":\"Ticket\",\"path\":\"/tickets\",\"table\":\"tickets\"},\"tests\":[\"Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v3\"},\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v4-types-cnl-rust",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v4-types.cnl",
+      "target": "rust",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 4.\\nUse package events.\\nBegin resource.\\nUse resource name Event.\\nUse table events.\\nUse path \\\"/events\\\".\\nField name is required str and is not unique.\\nField capacity is required int and is unique.\\nField price is optional float and is not unique with default null.\\nField public is optional bool and is not unique with default false.\\nField starts_on is optional date and is not unique with default null.\\nEnd resource.\\nBegin query.\\nFilter exactly on field public.\\nFilter before date on field starts_on.\\nLimit query results to 20.\\nEnd query.\\nUse migration revision cov4000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v4-types-json-rust",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json",
+      "target": "rust",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov4000\"},\"package\":\"events\",\"query\":{\"date_field\":\"starts_on\",\"filter_field\":\"public\",\"max_limit\":20},\"resource\":{\"fields\":[{\"name\":\"name\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"capacity\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"price\",\"type\":\"float\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"public\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"starts_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null}],\"name\":\"Event\",\"path\":\"/events\",\"table\":\"events\"},\"tests\":[\"Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v4\"},\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v5-min-cnl-rust",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v5-min.cnl",
+      "target": "rust",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package boards.\\nBegin parent resource.\\nUse resource name Board.\\nUse table boards.\\nUse path \\\"/boards\\\".\\nField title is required str and is not unique.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Card.\\nUse table cards.\\nUse path \\\"/cards\\\".\\nField label is required str and is not unique.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key board_id and restrict deletion.\\nUse migration revision cov5000.\\nUse no previous migration revision.\\nUse no capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v5-min-json-rust",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json",
+      "target": "rust",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"boards\",\"resources\":{\"parent\":{\"name\":\"Board\",\"table\":\"boards\",\"path\":\"/boards\",\"fields\":[{\"name\":\"title\",\"type\":\"str\",\"required\":true,\"unique\":false}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}},\"child\":{\"name\":\"Card\",\"table\":\"cards\",\"path\":\"/cards\",\"fields\":[{\"name\":\"label\",\"type\":\"str\",\"required\":true,\"unique\":false}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}}},\"relation\":{\"foreign_key\":\"board_id\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"cov5000\",\"down_revision\":null}},\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v5-max-cnl-rust",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v5-max.cnl",
+      "target": "rust",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package billing.\\nBegin parent resource.\\nUse resource name Account.\\nUse table accounts.\\nUse path \\\"/accounts\\\".\\nField code is required str and is unique.\\nField name is required str and is not unique.\\nField tier is required int and is not unique.\\nField balance is optional float and is not unique with default null.\\nField active is optional bool and is not unique with default false.\\nField opened_on is optional date and is not unique with default null.\\nField quota is optional int and is not unique with default null.\\nField notes is optional str and is not unique with default null.\\nBegin query.\\nFilter exactly on field active.\\nFilter before date on field opened_on.\\nLimit query results to 100.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Invoice.\\nUse table invoices.\\nUse path \\\"/invoices\\\".\\nField number is required int and is unique.\\nField memo is required str and is not unique.\\nField amount is required float and is not unique.\\nField paid is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nField reference is optional str and is not unique with default null.\\nField discount is optional float and is not unique with default null.\\nField lines is optional int and is not unique with default null.\\nBegin query.\\nFilter exactly on field paid.\\nFilter before date on field due_on.\\nLimit query results to 50.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key account_id and restrict deletion.\\nUse migration revision cov5100.\\nUse no previous migration revision.\\nUse no capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v5-max-json-rust",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v5-max.prompt.json",
+      "target": "rust",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"billing\",\"resources\":{\"parent\":{\"name\":\"Account\",\"table\":\"accounts\",\"path\":\"/accounts\",\"fields\":[{\"name\":\"code\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"name\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"tier\",\"type\":\"int\",\"required\":true,\"unique\":false},{\"name\":\"balance\",\"type\":\"float\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"active\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"opened_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"quota\",\"type\":\"int\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"notes\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"active\",\"date_field\":\"opened_on\",\"max_limit\":100}},\"child\":{\"name\":\"Invoice\",\"table\":\"invoices\",\"path\":\"/invoices\",\"fields\":[{\"name\":\"number\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"memo\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"amount\",\"type\":\"float\",\"required\":true,\"unique\":false},{\"name\":\"paid\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"due_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"reference\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"discount\",\"type\":\"float\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"lines\",\"type\":\"int\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"paid\",\"date_field\":\"due_on\",\"max_limit\":50}}},\"relation\":{\"foreign_key\":\"account_id\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"cov5100\",\"down_revision\":null}},\"target\":\"rust\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target rust. The CNL and JSON forms of the same source give byte-identical bundles."
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+{
+  "version": "som.rust-output-python-controls.v1",
+  "negative_cases_sha256": "a82736a98e4f8c8650f58ae92fb262c9f98fc4b66c6b9e60aab3512804208c97",
+  "base_url": "http://127.0.0.1:8765",
+  "passed": 32,
+  "failed": [],
+  "results": [
+    {
+      "id": "RT01_JSON_TARGET_UNKNOWN",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "653dd8e92fbeb84c8f746113433f27f9a7a7b439d206f5d9849054eff6c714cb"
+    },
+    {
+      "id": "RT02_JSON_TARGET_NULL",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "653dd8e92fbeb84c8f746113433f27f9a7a7b439d206f5d9849054eff6c714cb"
+    },
+    {
+      "id": "RT03_JSON_TARGET_CASE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "653dd8e92fbeb84c8f746113433f27f9a7a7b439d206f5d9849054eff6c714cb"
+    },
+    {
+      "id": "RT04_CNL_TARGET_NUMBER",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "653dd8e92fbeb84c8f746113433f27f9a7a7b439d206f5d9849054eff6c714cb"
+    },
+    {
+      "id": "RT05_CNL_TARGET_EMPTY",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "653dd8e92fbeb84c8f746113433f27f9a7a7b439d206f5d9849054eff6c714cb"
+    },
+    {
+      "id": "RT06_CNL_TARGET_ARRAY",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "653dd8e92fbeb84c8f746113433f27f9a7a7b439d206f5d9849054eff6c714cb"
+    },
+    {
+      "id": "RT07_JSON_TARGET_DUPLICATE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "653dd8e92fbeb84c8f746113433f27f9a7a7b439d206f5d9849054eff6c714cb",
+      "case_body_status": 400,
+      "case_body_matches_today": true
+    },
+    {
+      "id": "RS01_CNL_V6",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "a6d92b5073ef88f5ceb56aa69564b113a1c3b12a80ce7705d917bc978187fd94",
+      "rust_profile_matches": true
+    },
+    {
+      "id": "RS02_CNL_V7",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "1b5d34a40902d9407bb347e3d6a5a1bab74e18cf572f818f0d355f9095244a0c",
+      "rust_profile_matches": true
+    },
+    {
+      "id": "RS03_JSON_V6",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "a6d92b5073ef88f5ceb56aa69564b113a1c3b12a80ce7705d917bc978187fd94"
+    },
+    {
+      "id": "RS04_JSON_V7",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "1b5d34a40902d9407bb347e3d6a5a1bab74e18cf572f818f0d355f9095244a0c"
+    },
+    {
+      "id": "RS05_CNL_FIELD_UPPERCASE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "321eb3af1936671eabd3427fb8bed619b45983274f6c9d8b457afd7629cb9391",
+      "rust_profile_matches": true
+    },
+    {
+      "id": "RS06_JSON_FIELD_UPPERCASE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "321eb3af1936671eabd3427fb8bed619b45983274f6c9d8b457afd7629cb9391"
+    },
+    {
+      "id": "RS07_CNL_FIELD_SELF",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "736cecd6c42a107a72d09a97251cfa89a36087d0a0446ee1617836af60c184b1",
+      "rust_profile_matches": true
+    },
+    {
+      "id": "RS08_JSON_CHILD_FIELD_DOUBLE_UNDERSCORE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "cfcd3c30043309494dc5858583bc24f7ca7c81b21311f782e1a860b1e3313827"
+    },
+    {
+      "id": "RS09_CNL_PATH_TRAILING_SLASH",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "5a385c3916cbe5887094c4808a9db3f93b60f31c2e2b4aa28338c8a49632fd83",
+      "rust_profile_matches": true
+    },
+    {
+      "id": "RS10_JSON_PATH_DOUBLE_SLASH",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "47b774cb5ad73cb0f18a0eb5151603da9f68e1c8bdc9c50f43bd66784328db98"
+    },
+    {
+      "id": "RS11_CNL_PATH_HEALTHZ",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "926f3a0db48e2ba4f0f669aaa1d6c525b338511c749bbbf5c1091ef554b73620",
+      "rust_profile_matches": true
+    },
+    {
+      "id": "RS12_CNL_V3_FILTER_LIMIT",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "b817b4cb8ba24263595cdaceecdf825ca2b329ba64cf90ed0ecbd9c6525c2850",
+      "rust_profile_matches": true
+    },
+    {
+      "id": "RS13_JSON_V3_FILTER_OFFSET",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "76b5f1454952741b8dfe0c86854c99d59c975c49542077aacad760de42860753"
+    },
+    {
+      "id": "RS14_CNL_V5_FOREIGN_KEY_SELF",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "8f1cf879f6e98df08de621e4a2e1df75e84023c19872c47c417f8f6f2875ab86",
+      "rust_profile_matches": true
+    },
+    {
+      "id": "RS15_JSON_V5_FOREIGN_KEY_CRATE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "95b803e03e8679ec42d38801ff8b2b1c89cf41cfb33dda89e0a4af44c1936fca"
+    },
+    {
+      "id": "RS16_CNL_V5_FIRST_REFUSAL",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "32ecff7c45447995827e799baca49b90a642567ba5f3eb8d978faf155e5e3567",
+      "rust_profile_matches": true
+    },
+    {
+      "id": "RS17_CNL_PATH_BEFORE_FIELD",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "53a5fb3e63b210002c6f12cb7096becacf556f19224a739de23a983e46ee3e7d",
+      "rust_profile_matches": true
+    },
+    {
+      "id": "RS18_CNL_V5_CAPABILITIES",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "9ea71a53a03efcb0cf64adbc15b3c5c42300c5245189a07dc74144f471e77c99",
+      "rust_profile_matches": true
+    },
+    {
+      "id": "RS19_JSON_V5_CAPABILITIES",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "9ea71a53a03efcb0cf64adbc15b3c5c42300c5245189a07dc74144f471e77c99"
+    },
+    {
+      "id": "RS20_CNL_V5_CAPABILITIES_FIRST",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "3a29911657e37e353edace8e629b6b715268edcc8ac9b45bcf84cf91cee61d77",
+      "rust_profile_matches": true
+    },
+    {
+      "id": "RS21_CNL_TABLE_SQLX_MIGRATIONS",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "309443658d560bf9227945c1c397f427f6b6bbe6b0dd35aa09d287f5c2e582c1",
+      "rust_profile_matches": true
+    },
+    {
+      "id": "RS22_JSON_TABLE_BEFORE_FIELD",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "5973fc0fc6621d430d77911fb1210fd90a1933e76207cad3a9d2ff16f9474170"
+    },
+    {
+      "id": "RP01_CNL_SYNTAX_BEFORE_TARGET",
+      "control_status": 400,
+      "passed": true
+    },
+    {
+      "id": "RP02_CNL_VERSION_BEFORE_TARGET",
+      "control_status": 422,
+      "passed": true
+    },
+    {
+      "id": "RP03_JSON_V4_RESERVED_FILTER_BEFORE_TARGET",
+      "control_status": 400,
+      "passed": true
+    }
+  ]
+}

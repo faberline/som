@@ -1,0 +1,84 @@
+{
+  "version": "som.rust-output-product-layout.v1",
+  "crate": {
+    "package": "som_app",
+    "lib": "som_app",
+    "bin": "som_app",
+    "rule": "The Cargo package, library and binary name is always som_app. The prompt package name appears only in README.md. So Cargo.toml and Cargo.lock are the same bytes for every product."
+  },
+  "files": [
+    {
+      "path": "Cargo.toml",
+      "rule": "Bytes equal reference/Cargo.toml."
+    },
+    {
+      "path": "Cargo.lock",
+      "rule": "Bytes equal reference/Cargo.lock."
+    },
+    {
+      "path": "src/main.rs",
+      "rule": "Reads DATABASE_URL, which is required, and SOM_APP_ADDR, which defaults to 127.0.0.1:8000. Connects a PgPool, runs som_app::MIGRATOR, then serves som_app::router(pool). A missing DATABASE_URL prints one line to stderr and exits with status 2."
+    },
+    {
+      "path": "src/lib.rs",
+      "rule": "Declares the modules api, db, models and schemas. Exports pub fn router(pool: sqlx::PgPool) -> axum::Router from api, and pub static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!()."
+    },
+    {
+      "path": "src/models.rs",
+      "rule": "Row structs that derive sqlx::FromRow. v1 to v4 use Row. v5 uses ParentRow and ChildRow."
+    },
+    {
+      "path": "src/schemas.rs",
+      "rule": "Request and response structs that derive serde traits. v1 to v4 use Create, Update and Read. v5 uses ParentCreate, ParentUpdate, ParentRead, ChildCreate, ChildUpdate, ChildRead and ParentWithChildrenCreate. ParentWithChildrenCreate has exactly the members parent (a ParentCreate) and children (1 to 20 ChildCreate values), and the batch response has exactly the members parent (a ParentRead) and children (ChildRead values in the same order as the Python product), as in contracts/related-business.v1.md. Prompt field names never become members of these two wrapper objects, so a field named parent or children does not collide. Struct members named by a prompt field keep the field name on the wire, with serde rename where the Rust member is a raw identifier, and sqlx row mapping uses the same column name. Request structs reject unknown members only where the Python product does (v3 to v5)."
+    },
+    {
+      "path": "src/api.rs",
+      "rule": "axum handlers, the router, the /healthz route, the JSON fallback for 404 and 405, and the mapping of every extractor rejection to the frozen 422 body."
+    },
+    {
+      "path": "src/db.rs",
+      "rule": "Every SQL statement, as a string constant with double-quoted identifiers, and the functions that run them with the sqlx runtime API."
+    },
+    {
+      "path": "migrations/0001_<revision>.sql",
+      "rule": "The schema for the prompt. <revision> is migration.revision verbatim. The first line is the comment -- revision: <revision>, down_revision: <down_revision or none>. sqlx needs the integer version prefix 0001."
+    },
+    {
+      "path": "tests/api.rs",
+      "rule": "Product tests. They read TEST_DATABASE_URL. A missing variable fails the test; it is never a skip. Each test drops and recreates schema public, runs MIGRATOR, and drives som_app::router with tower::ServiceExt::oneshot."
+    },
+    {
+      "path": "README.md",
+      "rule": "Names the prompt package, the prompt version, the routes, and the run, test and migration commands from toolchain.json."
+    }
+  ],
+  "file_count": 11,
+  "naming": {
+    "rust_items": "Type, module, function and crate names come from a fixed table by role. No Rust item name comes from the prompt.",
+    "fields": "A struct field uses the prompt field name. A Rust keyword that can be raw is written r#name. serde and sqlx see the plain name, so JSON members and columns use the field name verbatim.",
+    "sql": "Table, column and constraint identifiers are double-quoted verbatim prompt names. Values are always bound parameters. No prompt text is pasted into SQL except quoted identifiers.",
+    "unique_constraints": "Names are not compared. A unique field gets a UNIQUE constraint. The foreign key gets REFERENCES parent(id) ON DELETE RESTRICT.",
+    "indexes": "The migration creates the same indexes as the Python migration for the same prompt: the same tables, columns in the same order, and the same uniqueness. Index names are not compared."
+  },
+  "types": {
+    "id": "i32 in Rust, SERIAL PRIMARY KEY in SQL: INTEGER NOT NULL with a sequence default, as SQLAlchemy creates for an Integer primary key",
+    "str": "String, VARCHAR(255). A request value longer than 255 Unicode scalars is a 422.",
+    "int": "i32, INTEGER. A request value outside i32 is a 422.",
+    "float": "f64, DOUBLE PRECISION. A JSON number without a fraction is accepted for a float field.",
+    "bool": "bool, BOOLEAN",
+    "date": "chrono::NaiveDate, DATE, ISO 8601 YYYY-MM-DD on the wire",
+    "timestamps": "chrono::DateTime<chrono::Utc>, TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), for v3 to v5 only. A PATCH that supplies at least one field also sets updated_at to now().",
+    "optional": "An optional field without a default is Option<T> and a nullable column. An optional field with a default is T in the row, NOT NULL with that column DEFAULT, and the same request default. This matches the Python migration."
+  },
+  "fixed_routes": {
+    "/healthz": "GET returns 200 {\"status\":\"ok\"} after SELECT 1 succeeds, else 503 {\"detail\":\"database unavailable\"}.",
+    "fallback_404": "Any unmatched path returns 404 {\"detail\":\"Not Found\"}.",
+    "fallback_405": "A matched path with another method returns 405 {\"detail\":\"Method Not Allowed\"}, except as below.",
+    "v5_with_children": "{parent_path}/with-children accepts only POST. GET, PATCH and DELETE on it return 422 like the Python product, whose parent id path parameter fails to parse there."
+  },
+  "errors": {
+    "404": "{\"detail\": \"not found\"} for v1 to v4. v5 uses \"parent not found\" or \"child not found\".",
+    "409": "{\"detail\": \"conflict\"} for v1 to v4. v5 uses \"relationship or unique value conflict\".",
+    "422": "{\"detail\": [{\"type\": string, \"loc\": [\"body\" | \"query\" | \"path\", ...], \"msg\": string}, ...]} with at least one item."
+  }
+}

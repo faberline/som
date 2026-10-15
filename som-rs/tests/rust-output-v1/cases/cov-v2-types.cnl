@@ -1,0 +1,30 @@
+Use SOM CNL version 1.
+Use prompt version 2.
+Use package catalog.
+Begin resource.
+Use resource name Product.
+Use table products.
+Use path "/products".
+Field category is required str and is not unique.
+Field code is required str and is unique.
+Field price is required float and is not unique.
+Field stock is optional int and is not unique.
+Field active is optional bool and is not unique.
+End resource.
+Begin query.
+Filter exactly on field category.
+Limit query results to 100.
+End query.
+Use migration revision cov2000.
+Use no previous migration revision.
+Begin routes.
+Delete a row. Return 404 if it does not exist.
+List rows with an optional exact string filter, limit, and offset in id order.
+Create a row. Return 409 for a unique value conflict.
+Update supplied fields. Return 404 if the row does not exist.
+Get a row by id. Return 404 if it does not exist.
+End routes.
+Begin checks.
+Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.
+End checks.
+End request.

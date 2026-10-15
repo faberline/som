@@ -1,0 +1,99 @@
+{
+  "version": "som.prompt.v5",
+  "package": "boards",
+  "resources": {
+    "parent": {
+      "name": "Board",
+      "table": "boards",
+      "path": "/boards",
+      "fields": [
+        {
+          "name": "title",
+          "type": "str",
+          "required": true,
+          "unique": false
+        }
+      ],
+      "query": {
+        "filter_field": null,
+        "date_field": null,
+        "max_limit": 20
+      }
+    },
+    "child": {
+      "name": "Card",
+      "table": "cards",
+      "path": "/cards",
+      "fields": [
+        {
+          "name": "label",
+          "type": "str",
+          "required": true,
+          "unique": false
+        }
+      ],
+      "query": {
+        "filter_field": null,
+        "date_field": null,
+        "max_limit": 20
+      }
+    }
+  },
+  "relation": {
+    "foreign_key": "board_id",
+    "on_delete": "restrict"
+  },
+  "logic": [
+    {
+      "scope": "parent",
+      "step": "Create a row. Return 409 for a unique value conflict."
+    },
+    {
+      "scope": "parent",
+      "step": "Get a row by id. Return 404 if it does not exist."
+    },
+    {
+      "scope": "parent",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+    },
+    {
+      "scope": "parent",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+    },
+    {
+      "scope": "parent",
+      "step": "Delete a row. Reject a parent with children with 409."
+    },
+    {
+      "scope": "child",
+      "step": "Create a row. Return 409 for a unique value conflict."
+    },
+    {
+      "scope": "child",
+      "step": "Get a row by id. Return 404 if it does not exist."
+    },
+    {
+      "scope": "child",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+    },
+    {
+      "scope": "child",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+    },
+    {
+      "scope": "child",
+      "step": "Delete a row. Reject a parent with children with 409."
+    },
+    {
+      "scope": "batch",
+      "step": "Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure."
+    }
+  ],
+  "tests": [
+    "Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration."
+  ],
+  "migration": {
+    "revision": "cov5000",
+    "down_revision": null
+  }
+}

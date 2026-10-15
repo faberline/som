@@ -1,0 +1,31 @@
+Use SOM CNL version 1.
+Use prompt version 3.
+Use package tickets.
+Begin resource.
+Use resource name Ticket.
+Use table tickets.
+Use path "/tickets".
+Field subject is required str and is unique.
+Field code is required int and is unique.
+Field priority is required int and is not unique.
+Field estimate is optional float and is not unique with default null.
+Field note is optional str and is not unique with default null.
+Field closed is optional bool and is not unique with default false.
+End resource.
+Begin query.
+Filter exactly on field closed.
+Limit query results to 50.
+End query.
+Use migration revision cov3000.
+Use no previous migration revision.
+Begin routes.
+Create a row. Return 409 for a unique value conflict.
+Delete a row. Return 404 if it does not exist.
+List rows with an optional exact boolean filter, limit, and offset in id order.
+Update supplied fields. Return 404 if the row does not exist.
+Get a row by id. Return 404 if it does not exist.
+End routes.
+Begin checks.
+Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.
+End checks.
+End request.

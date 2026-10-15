@@ -40,14 +40,14 @@ Each product is one Cargo package. The planned files are:
 | File | Content |
 |---|---|
 | `Cargo.toml` and `Cargo.lock` | Pinned crate versions and features |
-| `src/main.rs` | Server startup from `DATABASE_URL` |
-| `src/lib.rs` | Router assembly and shared state |
+| `src/main.rs` | Server startup from `DATABASE_URL`, then the embedded migrator |
+| `src/lib.rs` | Module declarations, the router and the embedded migrator |
 | `src/models.rs` | Row types |
 | `src/schemas.rs` | Request and response types with field validation |
 | `src/api.rs` | axum handlers and status mapping |
-| `src/db.rs` | sqlx pool setup and migration startup |
-| `migrations/<revision>_<package>.sql` | Schema migration |
-| `tests/` | Product tests |
+| `src/db.rs` | SQL statements and sqlx runtime-API query functions |
+| `migrations/0001_<revision>.sql` | Schema migration |
+| `tests/api.rs` | Product tests against `TEST_DATABASE_URL` |
 | `README.md` | Run and test instructions |
 
 Queries use the sqlx runtime API. Builds do not need a live database or offline query data.
@@ -67,7 +67,8 @@ File, block and plan limits stay in force for each target.
 | [#50](https://github.com/faberline/som/issues/50) | Run the Rust acceptance gates and the unchanged Python regressions. | [#46](https://github.com/faberline/som/issues/46), [#48](https://github.com/faberline/som/issues/48), [#49](https://github.com/faberline/som/issues/49) |
 | [#51](https://github.com/faberline/som/issues/51) | Release the new default with canary and rollback checks. Finish the docs and evidence. | [#50](https://github.com/faberline/som/issues/50) |
 
-[GitHub milestone 9](https://github.com/faberline/som/milestone/9) tracks this work. All seven issues are open.
+[GitHub milestone 9](https://github.com/faberline/som/milestone/9) tracks this work.
+#45 is done: the [Rust output contract](contracts/rust-output-v1/CONTRACT.md) is frozen by the [freeze receipt](evidence/rust-output-contract-freeze-2026-10-15.json). #46–#51 are open.
 
 ## Acceptance
 
@@ -104,4 +105,5 @@ Keep the legacy M2 rollback assets.
 
 ## Tracking
 
-[Milestone 9](https://github.com/faberline/som/milestone/9) holds issues #45–#51. No Rust output is implemented yet.
+[Milestone 9](https://github.com/faberline/som/milestone/9) holds issues #45–#51.
+The #45 contract is frozen. Later changes to it are numbered amendments. No Rust output is implemented yet.

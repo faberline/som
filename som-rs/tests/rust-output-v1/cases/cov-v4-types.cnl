@@ -1,0 +1,31 @@
+Use SOM CNL version 1.
+Use prompt version 4.
+Use package events.
+Begin resource.
+Use resource name Event.
+Use table events.
+Use path "/events".
+Field name is required str and is not unique.
+Field capacity is required int and is unique.
+Field price is optional float and is not unique with default null.
+Field public is optional bool and is not unique with default false.
+Field starts_on is optional date and is not unique with default null.
+End resource.
+Begin query.
+Filter exactly on field public.
+Filter before date on field starts_on.
+Limit query results to 20.
+End query.
+Use migration revision cov4000.
+Use no previous migration revision.
+Begin routes.
+Create a row. Return 409 for a unique value conflict.
+Delete a row. Return 404 if it does not exist.
+List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.
+Update supplied fields. Return 404 if the row does not exist.
+Get a row by id. Return 404 if it does not exist.
+End routes.
+Begin checks.
+Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.
+End checks.
+End request.

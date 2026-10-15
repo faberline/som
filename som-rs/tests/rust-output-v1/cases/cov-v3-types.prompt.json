@@ -1,0 +1,68 @@
+{
+  "logic": [
+    "Create a row. Return 409 for a unique value conflict.",
+    "Delete a row. Return 404 if it does not exist.",
+    "List rows with an optional exact boolean filter, limit, and offset in id order.",
+    "Update supplied fields. Return 404 if the row does not exist.",
+    "Get a row by id. Return 404 if it does not exist."
+  ],
+  "migration": {
+    "down_revision": null,
+    "revision": "cov3000"
+  },
+  "package": "tickets",
+  "query": {
+    "filter_field": "closed",
+    "max_limit": 50
+  },
+  "resource": {
+    "fields": [
+      {
+        "name": "subject",
+        "type": "str",
+        "required": true,
+        "unique": true
+      },
+      {
+        "name": "code",
+        "type": "int",
+        "required": true,
+        "unique": true
+      },
+      {
+        "name": "priority",
+        "type": "int",
+        "required": true,
+        "unique": false
+      },
+      {
+        "name": "estimate",
+        "type": "float",
+        "required": false,
+        "unique": false,
+        "default": null
+      },
+      {
+        "name": "note",
+        "type": "str",
+        "required": false,
+        "unique": false,
+        "default": null
+      },
+      {
+        "name": "closed",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+      }
+    ],
+    "name": "Ticket",
+    "path": "/tickets",
+    "table": "tickets"
+  },
+  "tests": [
+    "Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration."
+  ],
+  "version": "som.prompt.v3"
+}
