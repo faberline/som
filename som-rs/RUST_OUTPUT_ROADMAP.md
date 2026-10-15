@@ -72,7 +72,9 @@ File, block and plan limits stay in force for each target.
 #47 is done: target-aware compile requests are in [som-targets](som-targets), with [evidence](evidence/rust-output-target-planning-2026-10-15.json).
 #48 is implemented: Rust blocks render v1–v4 one-resource CRUD products, and every recorded gate passes, with [evidence](evidence/rust-output-products-2026-10-15.json).
 #46 is implemented: the [behavior suite](behavior/README.md) passes all 115 acceptance cases on Python, catches 25 seeded faults and finds no Python/Rust difference on the 112 v1–v4 cases, with [evidence](evidence/behavior-suite-2026-10-15.json).
-The #48 gates then pass again with that parity report, with [evidence](evidence/rust-output-products-parity-2026-10-15.json). #46 and #48 stay open for review; #49–#51 are open.
+The #48 gates then pass again with that parity report, with [evidence](evidence/rust-output-products-parity-2026-10-15.json).
+#49 is implemented: Rust blocks render v5 parent and child products, all 115 cases pass every gate and parity, with [evidence](evidence/rust-related-2026-10-15.json).
+#46, #48 and #49 stay open for review; #50 and #51 are open.
 [Amendment 1](evidence/rust-output-contract-amendment-001.json) sets the timestamp DEFAULT to CURRENT_TIMESTAMP for v3 and v4 and now() for v5, as in the Python migrations.
 
 ### Target-aware service (#47)
