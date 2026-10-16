@@ -1,0 +1,175 @@
+{
+  "version": "som.rust-output-contract-amendment.v1",
+  "amendment": 2,
+  "frozen_at": "2026-10-16T18:32:10.321605+00:00",
+  "baseline_commit": "6cc45a29b4f41c7f2f07fcebc79961d55b26663f",
+  "issue": 52,
+  "target": "rust",
+  "bundle": "som.dsl-bundle.v2",
+  "status": "amendment_sealed_after_independent_review",
+  "implementation_already_in_progress": true,
+  "phase2_implementation_started_before_freeze": false,
+  "previous_receipt": "som-rs/evidence/rust-output-contract-amendment-001.json",
+  "previous_receipt_sha256": "4a25314bcd15fe04afdb06c8ebc0423ac98c6ac45119a834bed21e72ffedaba1",
+  "reason": "Phase 2 of the Rust output (milestone M4, #52 to #56) widens the Rust scope to every prompt compiler-v1 admits, except query_parameter_collision, which stays refused. CONTRACT.md gets section 10 and the header rows of the phase 2 files; the phase 2 constructs, naming, services, behavior, case inventory and pins are new files under phase2/, with their builders and the phase 2 reference profile under tests/rust-output-v1, and the Python behavior run summary under evidence/rust-output-v1. Phase 1 output (#46 to #51) is already implemented and released; the phase 2 implementation (#53, #54) has not started.",
+  "deviation_from_issue": "Issue #52 lists query_parameter_collision among the refusals to remove. It is kept: a v3 filter field named limit or offset makes the query string ambiguous, the Python product does not start (RS12, RS13), and compiler-v1 refuses the same names in v4 and v5. Decided by the user on 2026-10-16.",
+  "evidence": {
+    "constructs": "phase2/constructs.json: 168 constructs, 0 unassigned (build_phase2_constructs.py --check)",
+    "inventory": "phase2/case-inventory.json: 584 cases, 444 legacy, 115 CNL fixtures, 3 public examples, RS01 to RS22",
+    "python_behavior": "phase2/behavior.json and evidence/rust-output-v1/phase2-python-behavior-2026-10-16.json: run behavior-python-003 passes 579 of 584 cases, every legacy job, CNL fixture and public example; the 5 failures are RS07, RS14 and RS16 (#57) and the kept refusals RS12 and RS13. Runs 001 (suite fix) and 002 (host slept) are recorded as superseded.",
+    "python_defect_issue": "https://github.com/faberline/som/issues/57"
+  },
+  "changed_paths": [
+    "som-rs/contracts/rust-output-v1/CONTRACT.md"
+  ],
+  "added_paths": [
+    "som-rs/contracts/rust-output-v1/phase2/behavior.json",
+    "som-rs/contracts/rust-output-v1/phase2/case-inventory.json",
+    "som-rs/contracts/rust-output-v1/phase2/constructs.json",
+    "som-rs/contracts/rust-output-v1/phase2/naming.json",
+    "som-rs/contracts/rust-output-v1/phase2/pins.json",
+    "som-rs/contracts/rust-output-v1/phase2/services.json",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-16.json",
+    "som-rs/tests/rust-output-v1/build_phase2_behavior.py",
+    "som-rs/tests/rust-output-v1/build_phase2_constructs.py",
+    "som-rs/tests/rust-output-v1/build_phase2_inventory.py",
+    "som-rs/tests/rust-output-v1/build_phase2_pins.py",
+    "som-rs/tests/rust-output-v1/rust_profile_phase2.py"
+  ],
+  "changes": [
+    {
+      "path": "som-rs/contracts/rust-output-v1/CONTRACT.md",
+      "old_sha256": "1d8ab9fa84d3ae2c9645ddc9993b4d90e4038d14cce24a1ac27796240a19cff9",
+      "new_sha256": "4bd99f90dd1fc6970160247df9e39217d9d7b7c37b8a2367de152628eb1aa7f6",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/CONTRACT-before-amendment-002.md",
+      "archived_copy_sha256": "1d8ab9fa84d3ae2c9645ddc9993b4d90e4038d14cce24a1ac27796240a19cff9"
+    }
+  ],
+  "unchanged": "Every other path in the previous receipt keeps its hash. Sections 1 to 9 of CONTRACT.md, scope.json, rust_profile.py and every phase 1 case, refusal, count and gate are unchanged.",
+  "target_contract": {
+    "id": "som.rust-output-contract.v1",
+    "previous_sha256": "93547b49696d151f6537ad834908861f18b265fdfed8fe4ee840359d8a180f98",
+    "sha256": "00edf1f7cba7847ba142b68a97c4956e2ed62a1ed4e821a712122a187992b838",
+    "rule": "sha256 of the som.canonical-json.v1 bytes of the files map below"
+  },
+  "files": {
+    "som-rs/contracts/rust-output-v1/CONTRACT.md": "4bd99f90dd1fc6970160247df9e39217d9d7b7c37b8a2367de152628eb1aa7f6",
+    "som-rs/contracts/rust-output-v1/acceptance-plan.json": "c0ea39c746d74553efcaea70b9a6e3e6b276ba9ff94e66c07b883e72e6da9b5a",
+    "som-rs/contracts/rust-output-v1/api.schema.json": "dbd396f5e395487f05d6ad8c696d307a6641a9af47322e8c78284a47d053fff0",
+    "som-rs/contracts/rust-output-v1/behavior-normalization.json": "c75b29346d605af7e6ec8ad5d856381f4f8e0e0d321f1d236a5d93b545be97bf",
+    "som-rs/contracts/rust-output-v1/bundle.schema.json": "70d5ca48172f9b818352e16e6d193e1c92d3927971d74c6f8b4bd1f1f3529eec",
+    "som-rs/contracts/rust-output-v1/case-inventory.json": "fc6fbec822623cb9bdc0a6e11c2a72b6f0dfac3c41e8b7c1e35830090eb7d2a5",
+    "som-rs/contracts/rust-output-v1/negative-cases.json": "a82736a98e4f8c8650f58ae92fb262c9f98fc4b66c6b9e60aab3512804208c97",
+    "som-rs/contracts/rust-output-v1/phase2/behavior.json": "daa222773b3a65838c7da576e1e645b17a5fc452ef34d7fdbb30c1a3ba19adce",
+    "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "7a07f753dd8b16fb8dc92db9b3ee76f1c38052be520ef81bb7934284dc84594b",
+    "som-rs/contracts/rust-output-v1/phase2/constructs.json": "b50d15e6e2a97a0cefca1a0a63717d9cf57e9315a640295545388d332a2227f9",
+    "som-rs/contracts/rust-output-v1/phase2/naming.json": "495393b9e226f7faac959fe05c00ed584ae92d6817e198247b530862aac0a198",
+    "som-rs/contracts/rust-output-v1/phase2/pins.json": "c4e0de779e5aad147823671a70c8afd7aded5617d2ee305505abbff98010d506",
+    "som-rs/contracts/rust-output-v1/phase2/services.json": "64c7b3ad93ea8359280232b5b6244f21c5bdcf1fb84931711376708b44ed572d",
+    "som-rs/contracts/rust-output-v1/product-layout.json": "83e451c4616d6ee94bfbbae074a299072db15df9e93fd78ccb00d047bcbe70ac",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.lock": "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.toml": "8b708c38686b77e6740171e24c28793c4a40b54a8e9807f8e147a9ef3b44591d",
+    "som-rs/contracts/rust-output-v1/scope.json": "0f31b4c0290afda9b4c4ccf99b575edec81c3361ae31c74b44bc16d5ff20e51d",
+    "som-rs/contracts/rust-output-v1/target-examples.json": "4d91b175e9c75cadb61ae335dc1540582b3d89c01815abe651b02d57ac6889ae",
+    "som-rs/contracts/rust-output-v1/toolchain.json": "8aa4f8ab984b1ad138b981461d1f158d749f1e08664a1b01518eb1be9ecd3eda",
+    "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-15.json": "b83e01caf26dbd403d04dac4948a04b97f059accd22edceae78f8c2519438462",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-16.json": "64eb707bdecdcacb878240ca87094834015cb3dd1a77c2050e852335b18932da",
+    "som-rs/tests/rust-output-v1/build_case_inventory.py": "494976a61dd2184d2a9135d297c635fc4b6bd04be4cbb34bd2b7efc00b855874",
+    "som-rs/tests/rust-output-v1/build_cases.py": "13096aacb9ba3eafe84e4389586478622aca5eea8622f6d8774a15bb4da265b3",
+    "som-rs/tests/rust-output-v1/build_negative_cases.py": "fe28674bcf2c7048d0953a14a8405acc185bbf083f8e2d1abbe0c75d523c3689",
+    "som-rs/tests/rust-output-v1/build_phase2_behavior.py": "5c9fa29f986856340fffa42b4babf14361f2cf120b8e4ec3c59b1b920af16bf4",
+    "som-rs/tests/rust-output-v1/build_phase2_constructs.py": "9e8c8c77edd0ef991e0a30e37a900b4e3f3d2019a725de1fe595ed408d4852f6",
+    "som-rs/tests/rust-output-v1/build_phase2_inventory.py": "2f0dc3701db1a30f8826f51b272369ae97e43e9dfc224f13517e768e8539daaf",
+    "som-rs/tests/rust-output-v1/build_phase2_pins.py": "c004ca12a73730db8710cc0b50573019e79a6bfb5606c93b4f42307a3aa1d504",
+    "som-rs/tests/rust-output-v1/build_target_examples.py": "697ca7c91c2c9f4c3d27985ed0f50ce6c6f2a103ea7ed264ba1915c056d43ab2",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.cnl": "22e6cb0aacd219cb47478dca4ff5f244b63ae605de399f08a16bb62093ec9ce7",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.cnl": "a2512cdbbea998a8f051160166e3c1d2f4b43ae5d7bbcbe5e6a0cd211a9b7c1d",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.cnl": "554eb27bbd5c894fa7ccd473b45734a33753b1ec32395ccb5f73133b0a71a12c",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.cnl": "cb7f5fb994d6c7bfbdff549e71286211cd1d3f7177b91bdbeeb34337229b7724",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.cnl": "97cb49f506fb16fb9da2ea203b5a114ea68766ec46ebb69cdb4d63f012deb16c",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.prompt.json": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.cnl": "627623f91944b13158487086efec5653948be6c2e77a341e0d0ba9410d291e5d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347",
+    "som-rs/tests/rust-output-v1/cases/index.json": "b49af2a7ba842e5dd810d8d010fcf93436474df7f49f1c569367bed1bc94ed1b",
+    "som-rs/tests/rust-output-v1/check_contract.py": "61d1539d0dbf3b9e7cb2b7528acded146bdbb2dcff48aa069fd22ac52a6a59d5",
+    "som-rs/tests/rust-output-v1/check_python_controls.py": "3da613ff3e8553939e1d246cd1b65007e8c088b5f541c5dc1838739903171939",
+    "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513",
+    "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "71de51983273f9313edc139b68c73c9534d2f07c0bc48b0e3788be409b0425df",
+    "som-rs/tests/rust-output-v1/validate_cases.py": "9b9131de7a56a54c6a9f103da170143bc18ec6d113bedb6f79ea0a7f8453d4bb"
+  },
+  "independent_review": {
+    "reviewer": "independent Claude Opus 5.5 subagent, read-only, no calls to 8765",
+    "rounds": "Two rounds. Round 1 approved target d4311685... with findings F1 to F4; F1 to F3 were fixed in the inventory builder, the behavior builder and section 10, the receipt was regenerated, and round 2 approved target 00edf1f7... with F5.",
+    "final_verdict": "APPROVED",
+    "confirmed_without_change": [
+      "Receipt integrity: all 48 files-map hashes match disk; sha256(canonical(files)) is 00edf1f7cba7847ba142b68a97c4956e2ed62a1ed4e821a712122a187992b838 and equals som-targets TARGET_CONTRACT_SHA256; previous_sha256 and previous_receipt_sha256 match amendment 001; the archived CONTRACT-before-amendment-002.md equals HEAD; only CONTRACT.md changed and the 12 added_paths are new",
+      "CONTRACT.md sections 1 to 9 and every phase 1 file keep their amendment-001 hashes; CONTRACT.md diff is 89 added lines and 0 deleted",
+      "build_phase2_constructs, build_phase2_inventory, build_phase2_pins, build_phase2_behavior (run 003, superseded 001 and 002) and adapt.py --check all pass; check_contract.py gives 399 passed, 0 failed",
+      "constructs.json: 168 compiler-v1 constructs, each with a Rust form and one owner (phase1, #53 or #54), 0 unassigned",
+      "case-inventory.json: 584 rows (444 legacy, 115 CNL fixtures, 3 public examples, RS01 to RS22), each by id, group, position and prompt hash; 582 expect a product, RS12 and RS13 expect query_parameter_collision; legacy jobs appear by id, position and hash only",
+      "behavior.json matches run behavior-python-003: 579 of 584 pass, every legacy job, CNL fixture and public example; failures are exactly RS07, RS14, RS16 (#57) and RS12, RS13; flow 257/257, verify_all 112/112, verify_all_subset 200/200, phase1_suite 10/15; runs 001 and 002 are disclosed as superseded, 002's 12 failures confirmed inside the pmset sleep window",
+      "No adaptation turns a failing assertion into a pass; each not-applicable marker is a case without the construct the original check assumes",
+      "Section 10 and the suite cover #52's list: auth accept and reject, PostgreSQL and MongoDB persistence, object put and get, workflow outputs, step results, rollback, branches and undo; the only deviation, query_parameter_collision, is recorded",
+      "naming.json and services.json are consistent with section 10 and the 584 Python products",
+      "pins.json: all 74 hashes match local files (suite files, toolchain.json, mongod 7.0.28, redis-server 8.4.0, moto 5.2.3, PostgreSQL 17.7, uv 0.9.9, Python 3.12.11, the 4 in-repo stand-ins)",
+      "No wording claims that a Rust phase 2 product was built or tested"
+    ],
+    "findings": [
+      {
+        "id": 1,
+        "severity": "minor",
+        "finding": "PUBLIC_v6 has the prompt of legacy services14-0000, so the 584 cases count one prompt twice; the reviewer found 7 shared-prompt groups in all.",
+        "resolution": "Fixed: case-inventory.json records counts.distinct_prompts 573 and shared_prompts (7 groups); selection_rules and section 10 state it."
+      },
+      {
+        "id": 2,
+        "severity": "minor",
+        "finding": "The python_defects status tally came from the first 10 failures but read as a complete count.",
+        "resolution": "Fixed: renamed first_failure_statuses with first_failures_sampled."
+      },
+      {
+        "id": 3,
+        "severity": "minor",
+        "finding": "The EXISTING adaptation note did not say it was changed because of legacy m2-semantic-05 and supplement-gcs-object-read.",
+        "resolution": "Fixed: the note states the run 001 history and that no legacy flow case gets an EXISTING binding (verified: only OP_CHILD_GET, OP_CHILD_PATCH, OP_OBJECT_GET)."
+      },
+      {
+        "id": 4,
+        "severity": "minor",
+        "finding": "adapt.py has a later mtime than adapted/.",
+        "resolution": "No change needed: adapt.py --check passes and pins.json hashes both."
+      },
+      {
+        "id": 5,
+        "severity": "minor",
+        "finding": "Outside the receipt: the draft roadmap said only install, serve, migrate and test steps change, and called run 002's failures timeouts.",
+        "resolution": "Fixed in RUST_OUTPUT_ROADMAP.md before commit."
+      },
+      {
+        "id": 6,
+        "severity": "minor",
+        "finding": "check_contract.py --receipt on this amendment fails exactly one check, the receipt sealed before implementation, which only the original freeze receipt can satisfy.",
+        "resolution": "Recorded as the expected result in check_contract below. The frozen checker is not changed."
+      }
+    ]
+  },
+  "check_contract": {
+    "command": "python3 som-rs/tests/rust-output-v1/check_contract.py --receipt som-rs/evidence/rust-output-contract-amendment-002.json",
+    "passed": 449,
+    "failed": 1,
+    "expected_failure": "receipt was sealed before implementation: true only for the original freeze receipt; this amendment records implementation_already_in_progress true",
+    "also_passed": [
+      "check_contract.py without a receipt: 399 passed, 0 failed",
+      "build_phase2_constructs.py --check",
+      "build_phase2_inventory.py --check",
+      "build_phase2_pins.py --check",
+      "build_phase2_behavior.py --run behavior-python-003 --superseded behavior-python-001 behavior-python-002 --check",
+      "behavior/phase2/adapt.py --check"
+    ]
+  }
+}

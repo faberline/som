@@ -134,6 +134,72 @@ Python stays unchanged:
 Syntax checks, builds and byte equality do not replace behavior checks.
 Missing results, failures and skipped checks remain explicit.
 
+## M4 — Rust output, phase 2
+
+Phase 2 makes the Rust output cover every prompt compiler-v1 admits:
+
+- v5 with capabilities, v6 capabilities and v7 flows;
+- the names that phase 1 refused: crate, self and super, names made only of underscores or not in snake case, a resource path with an empty segment or at /healthz, and the table _sqlx_migrations.
+
+One refusal stays: a v3 filter field named limit or offset (query_parameter_collision).
+Its query string is ambiguous, the Python product for it does not start, and compiler-v1 refuses the same names in v4 and v5.
+This is a recorded deviation from the #52 issue text.
+
+| Issue | Work | Depends on |
+|---|---|---|
+| [#52](https://github.com/faberline/som/issues/52) | Freeze the phase 2 amendment, the naming and service rules, the extended behavior suite and the pins. | None |
+| [#53](https://github.com/faberline/som/issues/53) | Generate MongoDB, authentication, object storage and workflow products. Remove the naming refusals. Pin the crates. | [#52](https://github.com/faberline/som/issues/52) |
+| [#54](https://github.com/faberline/som/issues/54) | Generate v7 flows, transactions, branches and undo. | [#52](https://github.com/faberline/som/issues/52), [#53](https://github.com/faberline/som/issues/53) |
+| [#55](https://github.com/faberline/som/issues/55) | Run the phase 2 acceptance and the Python regressions. | [#53](https://github.com/faberline/som/issues/53), [#54](https://github.com/faberline/som/issues/54) |
+| [#56](https://github.com/faberline/som/issues/56) | Release, docs and evidence. | [#55](https://github.com/faberline/som/issues/55) |
+
+[GitHub milestone 10](https://github.com/faberline/som/milestone/10) tracks this work.
+
+### Phase 2 contract (#52)
+
+[Amendment 2](evidence/rust-output-contract-amendment-002.json) adds [section 10](contracts/rust-output-v1/CONTRACT.md) and the files in [contracts/rust-output-v1/phase2](contracts/rust-output-v1/phase2):
+
+- constructs.json lists all 168 compiler-v1 constructs with their Rust form and owner issue. None is unassigned.
+- naming.json defines two sets of names:
+  - W1 to W6 keep the Python wire names, routes, tables, columns and query parameters.
+  - R1 to R3 fix the Rust-internal names. A field without a usable Rust name gets a fixed name and a serde rename.
+- services.json makes Rust read the same settings and local overrides as Python. It maps each operator command to a `som_app` subcommand.
+- case-inventory.json names all 584 phase 2 cases by id, group and prompt hash:
+  - 444 legacy jobs;
+  - 115 CNL fixtures;
+  - 3 public examples;
+  - RS01 to RS22.
+- pins.json pins mongod, redis, moto, the in-repo GCS, Firebase and OIDC stand-ins, uv, the acceptance venv and every suite file. PostgreSQL and the Rust toolchain keep their toolchain.json pins.
+- behavior.json records the extended suite in [behavior/phase2](behavior/phase2) and its run on the accepted Python products.
+
+The extended suite runs three checkers:
+
+- the phase 1 HTTP suite;
+- the som-core capability verifiers;
+- the flow verifiers.
+
+The verifiers run as adapted copies. Their language-specific steps go through phase2_host. behavior.json records every other adaptation and how many cases it touches.
+Together the checkers cover:
+
+- auth accept and reject;
+- PostgreSQL and MongoDB persistence;
+- object put and get;
+- workflow outputs;
+- step results, rollback, branches, undo, idempotency, leases and provider faults.
+
+The accepted Python run passes 579 of 584 cases, including every legacy job, CNL fixture and public example.
+Two earlier complete runs are recorded as superseded:
+
+- run 001: a suite defect in binding existing objects, fixed before run 002;
+- run 002: the host slept, and 12 lease, journal and heartbeat checks failed.
+
+Five RS cases do not pass:
+
+- RS07, RS14 and RS16: a field or foreign key named self makes the Python product answer 500. Rust follows the suite oracle. [#57](https://github.com/faberline/som/issues/57) tracks the Python fix.
+- RS12 and RS13: the kept refusal. Their Python products do not start.
+
+Until #53 and #54 deliver, a phase 2 construct is not implemented. A Rust request for it keeps the phase 1 refusal.
+
 ## Limits
 
 Use local tools only. No paid agent runs, real cloud runs or model training.
@@ -145,3 +211,5 @@ Keep the legacy M2 rollback assets.
 
 [Milestone 9](https://github.com/faberline/som/milestone/9) holds issues #45–#51.
 The #45 contract is frozen. Later changes to it are numbered amendments. #47 added target selection and the Rust scope refusals. #48 generates v1–v4 Rust products. #46 runs behavior parity for them. #49 adds parent and child output. #50 records the acceptance run and the Python regressions. #51 makes the Rust output build the default.
+
+[Milestone 10](https://github.com/faberline/som/milestone/10) holds issues #52–#56 for phase 2. #52 freezes amendment 2: the phase 2 constructs, naming and service rules, the case inventory, the pins and the extended behavior suite with its Python run. #53 and #54 generate the phase 2 products. #55 runs their acceptance. #56 releases them.

@@ -19,6 +19,12 @@ The compiler-v1 contract in ../compiler-v1 stays in force. This contract only ad
 | [negative-cases.json](negative-cases.json) | Refused requests with exact diagnostics and Python controls |
 | [case-inventory.json](case-inventory.json) | The acceptance cases and the selection rules |
 | [acceptance-plan.json](acceptance-plan.json) | Checks, assemble refusals and gates for #46 to #51 |
+| [phase2/constructs.json](phase2/constructs.json) | Phase 2 (section 10): every compiler-v1 construct, its Rust form and its owner issue |
+| [phase2/naming.json](phase2/naming.json) | Phase 2 wire names (W1 to W6) and Rust-internal names (R1 to R3) |
+| [phase2/services.json](phase2/services.json) | Phase 2 settings, local overrides, operator commands and health |
+| [phase2/behavior.json](phase2/behavior.json) | Phase 2 behavior suite: checkers, adaptations and the Python run |
+| [phase2/case-inventory.json](phase2/case-inventory.json) | Phase 2 cases by id, group and prompt hash, with the expected result |
+| [phase2/pins.json](phase2/pins.json) | Phase 2 emulator, uv, venv and suite file pins |
 
 The scripts in ../../tests/rust-output-v1 build the case files and check the contract.
 `check_contract.py` needs no compiler and no network.
@@ -200,3 +206,86 @@ The freeze receipt records the SHA-256 of every file in this directory, the case
 Rust block implementation starts only after the receipt is sealed.
 A later change to a frozen file is a numbered amendment. It records the reason, the old and new hashes and an independent review.
 It also updates the target_contract asset hash.
+
+## 10. Phase 2 scope (amendment 002, issue #52)
+
+Phase 2 admits every prompt compiler-v1 admits, minus one kept refusal.
+Sections 1 to 9 stay in force. For a prompt that phase 1 already admits, the Rust output is unchanged.
+
+### Scope and the kept refusal
+
+Phase 2 removes these section 4 refusals:
+
+- prompt_version and v5_capabilities: v5 with capabilities, v6 and v7 become products;
+- path_empty_segment and path_reserved (naming.json W2);
+- table_reserved (W3);
+- identifier_not_raw and identifier_not_snake_case (W1 and R2).
+
+query_parameter_collision stays: a v3 filter field named limit or offset is refused with the section 4 diagnostic.
+The query string of such a product is ambiguous: ?limit=5 would be both the filter and the page size.
+The Python product for such a prompt does not start (RS12, RS13 in behavior.json), and compiler-v1 already refuses the same names in v4 and v5.
+Issue #52 listed this refusal for removal. Keeping it is a recorded deviation from the issue text, decided on 2026-10-16.
+[tests/rust-output-v1/rust_profile_phase2.py](../../tests/rust-output-v1/rust_profile_phase2.py) is the reference check. rust_profile.py and scope.json stay the phase 1 record.
+
+### Constructs and owners
+
+[phase2/constructs.json](phase2/constructs.json) lists every prompt pointer and every enum or const value of compiler-v1 as one construct, with its Rust form. None is unassigned.
+Each construct names its owner per prompt version:
+
+- phase1: the delivered output of #46 to #51;
+- #53: capability products (v5 with capabilities, v6, and the non-flow part of v7), the naming refusal removals and the crate pins;
+- #54: v7 flows, transactions, branches and undo.
+
+Until its owner delivers, a construct is NOT_IMPLEMENTED: a target rust request keeps the phase 1 result, the section 4 refusal.
+This is the same rule phase 1 followed between its freeze and #51.
+
+### Names
+
+[phase2/naming.json](phase2/naming.json) fixes two kinds of names.
+W1 to W6 cover what a client, a database or an operator sees: JSON names, error bodies and status codes, routes, tables and columns, query parameters, and package-derived and internal names. Rust uses the Python strings unchanged.
+R1 to R3 cover Rust-internal identifiers. They never change a W string. No Rust item name comes from the prompt.
+A field whose name is not a usable Rust identifier gets a fixed Rust name with a serde rename, and SQL always uses the wire name.
+Where the Python product fails for such a name, the suite oracle is the Rust reference. behavior.json records the Python defect, which #57 tracks.
+
+### Product layout and services
+
+A phase 2 product is one Cargo package named som_app, as in phase 1.
+v1 to v5 products without capabilities keep the phase 1 layout of product-layout.json. Only the W2 and W3 rules change: /healthz, and the migration bookkeeping table.
+For capability and flow products, #53 fixes the file list, the crates and the reference Cargo.toml and Cargo.lock in a later numbered amendment, under the rules of section 6.
+[phase2/services.json](phase2/services.json) fixes the settings, defaults, refusals and messages. They are the accepted Python product's, so one settings file runs either product.
+It also maps each Python operator command to one som_app subcommand (serve, migrate upgrade, migrate downgrade, check-config) and fixes the /healthz answers.
+
+### Behavior
+
+The phase 2 behavior suite is som-rs/behavior/phase2.
+It runs the phase 1 HTTP suite and the som-core verifiers on every phase 2 case. The verifiers are adapted copies (adapt.py) whose language-specific steps go through phase2_host.
+Together they cover:
+
+- auth accept and reject;
+- PostgreSQL and MongoDB persistence and migrations;
+- object put and get;
+- workflow outputs;
+- flow step results, rollback, branches, undo, idempotency, leases and the provider fault matrix.
+
+[phase2/behavior.json](phase2/behavior.json) records:
+
+- the checkers;
+- what each adaptation changes and on how many cases;
+- the run on the accepted Python products;
+- each case that does not pass, with its explanation.
+
+The Rust reference is the checker's oracle. A Rust product passes a case when its checker passes and no assembled file changed.
+
+### Cases and pins
+
+[phase2/case-inventory.json](phase2/case-inventory.json) names every phase 2 case by id, group, position and prompt hash:
+
+- the 444 legacy v6 and v7 jobs of legacy544 run-005;
+- the 115 CNL fixtures and the 3 public examples that phase 1 refuses;
+- RS01 to RS22.
+
+Each row has its checker and its expected phase 2 result: a product, or query_parameter_collision for RS12 and RS13.
+Cases are counted per source, so one prompt can be more than one case: PUBLIC_v6 is the prompt of legacy services14-0000, and the CNL and JSON forms of an RS prompt are one typed prompt. counts.distinct_prompts and shared_prompts record every overlap.
+[phase2/pins.json](phase2/pins.json) pins the emulators (PostgreSQL through toolchain.json, mongod, redis-server, moto and the in-repo GCS, Firebase and OIDC stand-ins), uv, the acceptance venv with every package version, and every suite file by hash.
+A phase 2 run on any other version or hash is not phase 2 evidence. No cloud service is used.
+The builders and their --check modes are tests/rust-output-v1/build_phase2_*.py.

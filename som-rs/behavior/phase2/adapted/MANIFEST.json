@@ -1,0 +1,42 @@
+{
+  "adapted": {
+    "audit_business_transactions.py": "ca0a575a38d8e208fc3fc45d9f65016a3f03f14970b3cefbac3882de976515c7",
+    "flow_branch_cases.py": "6eb98bae26071237a2198159c7faa2d0f0d06a38bffa5d3315936ffb529eccc1",
+    "flow_fault_checks.py": "169aa9f0586adedd046ce07f24dbc0cc98d262c0313f5279dd2491abd22aed05",
+    "flow_provider_fault_checks.py": "0c16601ddc33adc8c27788d192b4b93ed40730b740e7bdb5c2ba2480a4cbc0c7",
+    "verify_business_workflows.py": "d8f206ac3cae7c09df92619bb19ea5c3b8c0889c21d6df4a1edf57d2049e14b0",
+    "verify_composed_journeys.py": "867629d0605fef876e457d0f5378b69304d4a3ac746e34aee4372a50679451ab",
+    "verify_composed_related.py": "439a2bfc0318f3f19818ae1cdc9a3eb8445e993a892a3c55dfa93deb879d86df",
+    "verify_composed_subsets.py": "c8b2ff63c22ac9acebef5be17dbb6fb16b66c03041938cae0576b6bfbe1b8bdb",
+    "verify_composed_transactions.py": "5095a31e0333c0561a14a7073c95acb468b4479b648fcd7200dea5a37be27ea1",
+    "verify_flow_service.py": "c14225c5080021beba6b9b84b49c6ff5653275bcce348d351bee9c4d8964abd5",
+    "verify_related.py": "640be9c12dfd398a877ef7fc3d1660fa41fc5b9f60deec16bfdcb41ca7d533cc"
+  },
+  "originals": {
+    "som-core/scripts/audit_business_transactions.py": "2f8f617bed62963db89066db18772bbd08f9ae31bac54166aee322191eb4122a",
+    "som-core/scripts/flow_branch_cases.py": "52aeb03342c99a985ade2cb833e7a6f0b657bfa3eb6ed603cc74b4ef3a4241ac",
+    "som-core/scripts/flow_fault_checks.py": "a20be84fb254c52197a673ecc51db15fa05ea8ddbd188f6d1baa3a21f967ea47",
+    "som-core/scripts/flow_provider_fault_checks.py": "27b814508cc3cfc35f5f020fcd02f831f7fcfb40bc20fc4d8c74772993d6a58a",
+    "som-core/scripts/verify_business_workflows.py": "45edd24a39ea095212d43285ca57c5e742f7ab4c914b0def3824244ef33d7a48",
+    "som-core/scripts/verify_composed_journeys.py": "b39a29d181d023dd9bf71aed72b8602cb06224b7880159732499cde90f8b286c",
+    "som-core/scripts/verify_composed_related.py": "0b02c9e05b930f300d1168fb292c7fa863826d0be87d8eed70a712bb9a53dc29",
+    "som-core/scripts/verify_composed_subsets.py": "97d33fb63aa061190ede56b4ff2179d28927b2211b3bf46b3e3487a30b8c18ae",
+    "som-core/scripts/verify_composed_transactions.py": "2cc9931592f8bf32a458aee32274125c6ac347b817191375090c011c69d07a85",
+    "som-core/scripts/verify_flow_service.py": "6cd3b8932d5c9c092f12baeca442814c66cbc3fe22cc10cdee100e126827fbbe",
+    "som-core/scripts/verify_related.py": "ec9cc11116c2ceb46dac687da9291faefd7c56aefbb282a5e088e1b5272b1ba1"
+  },
+  "replacements": {
+    "audit_business_transactions": 3,
+    "flow_branch_cases": 1,
+    "flow_fault_checks": 8,
+    "flow_provider_fault_checks": 2,
+    "verify_business_workflows": 1,
+    "verify_composed_journeys": 2,
+    "verify_composed_related": 4,
+    "verify_composed_subsets": 5,
+    "verify_composed_transactions": 3,
+    "verify_flow_service": 13,
+    "verify_related": 1
+  },
+  "version": "som.rust-output-phase2-adapted-verifiers.v1"
+}

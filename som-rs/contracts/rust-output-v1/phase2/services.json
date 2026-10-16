@@ -1,0 +1,180 @@
+{
+  "commands": {
+    "map": [
+      {
+        "python": "uv run uvicorn <package>.app:app",
+        "rust": "som_app serve"
+      },
+      {
+        "note": "PostgreSQL; phase 1 products keep the embedded migrator at startup",
+        "python": "uv run alembic upgrade head",
+        "rust": "som_app migrate upgrade"
+      },
+      {
+        "note": "MongoDB indexes",
+        "python": "uv run python -m <package>.migrate upgrade",
+        "rust": "som_app migrate upgrade"
+      },
+      {
+        "note": "MongoDB, test database only (SOM_TEST_DATABASE_NAME)",
+        "python": "uv run python -m <package>.migrate downgrade",
+        "rust": "som_app migrate downgrade"
+      },
+      {
+        "note": "PostgreSQL",
+        "python": "uv run alembic downgrade base",
+        "rust": "som_app migrate downgrade"
+      },
+      {
+        "note": "reads every setting of the product and exits 0, or exits 1 with the Python startup message",
+        "python": "startup settings checks",
+        "rust": "som_app check-config"
+      }
+    ],
+    "rule": "Each Python operator command has one som_app subcommand with the same effect and the same settings. Running som_app with no subcommand serves, as in phase 1."
+  },
+  "health": "GET /healthz answers as the Python product: 200 when the database answers, 503 'database unavailable' otherwise (naming.json W2).",
+  "issue": 52,
+  "local_override": {
+    "allowed_only_when": [
+      "APP_ENV is test",
+      "the host is 127.0.0.1, localhost or ::1",
+      "no user name or password",
+      "scheme http or https; a value without :// is read as http://"
+    ],
+    "error": "<NAME> is allowed only for local test services",
+    "rule": "local_override"
+  },
+  "rules": [
+    "A phase 2 Rust product reads the same environment settings as the accepted Python product for the same prompt, with the same defaults, the same refusals and the same messages, so one settings file runs either product.",
+    "setting(NAME): a missing or empty value refuses startup with the message '<NAME> is required'.",
+    "local_override(NAME): optional; when set it must pass every allowed_only_when condition, or startup is refused with the message in local_override.error. Overrides exist only for local test services; no override reaches a real cloud endpoint.",
+    "TEST_MODE is APP_ENV == 'test', read once at startup.",
+    "The Rust product never reads TEST_AUTH_HEADERS or TEST_AUTH_COOKIES; they are test-client inputs, as in Python.",
+    "A setting outside this file is not read by a phase 2 product. Adding one is an amendment."
+  ],
+  "settings": {
+    "APP_ENV": {
+      "kind": "optional",
+      "use": "TEST_MODE"
+    },
+    "AWS_REGION": {
+      "capability": "objects s3",
+      "default": "us-east-1",
+      "kind": "optional"
+    },
+    "DATABASE_URL": {
+      "accepts": "postgresql+psycopg://… as the Python product requires (refused otherwise with 'DATABASE_URL must be a postgresql+psycopg URL'); the Rust driver reads the same URL with the +psycopg driver suffix removed. Phase 1 products keep their frozen postgresql:// form.",
+      "capability": "database postgresql",
+      "kind": "required"
+    },
+    "FIREBASE_AUTH_EMULATOR_HOST": {
+      "capability": "auth firebase",
+      "kind": "local_override"
+    },
+    "FIREBASE_PROJECT_ID": {
+      "capability": "auth firebase",
+      "kind": "setting"
+    },
+    "GCS_BUCKET": {
+      "capability": "objects gcs",
+      "kind": "setting"
+    },
+    "GCS_PROJECT": {
+      "capability": "objects gcs",
+      "client": "Google application default credentials",
+      "kind": "setting"
+    },
+    "GOOGLE_CLIENT_ID": {
+      "capability": "auth google_oidc",
+      "kind": "setting"
+    },
+    "GOOGLE_CLIENT_SECRET": {
+      "capability": "auth google_oidc",
+      "kind": "setting"
+    },
+    "GOOGLE_EDITOR_SUBJECTS": {
+      "capability": "auth google_oidc",
+      "kind": "setting",
+      "use": "a JSON list of subjects"
+    },
+    "GOOGLE_REDIRECT_URI": {
+      "capability": "auth google_oidc",
+      "kind": "setting",
+      "use": "must be https outside TEST_MODE"
+    },
+    "JWT_AUDIENCE": {
+      "capability": "auth jwt",
+      "kind": "setting"
+    },
+    "JWT_ISSUER": {
+      "capability": "auth jwt",
+      "kind": "setting"
+    },
+    "JWT_PUBLIC_KEY_FILE": {
+      "capability": "auth jwt",
+      "kind": "setting",
+      "use": "RS256 public key of at least 2048 bits"
+    },
+    "MONGODB_DATABASE": {
+      "capability": "database mongodb",
+      "kind": "required"
+    },
+    "MONGODB_URL": {
+      "accepts": "mongodb:// or mongodb+srv://",
+      "capability": "database mongodb",
+      "client": "server selection timeout 2000 ms, time-zone-aware datetimes; transactions need a replica set or mongos",
+      "error": "MONGODB_URL and MONGODB_DATABASE are required",
+      "kind": "required"
+    },
+    "REDIS_NAMESPACE": {
+      "capability": "auth google_oidc",
+      "kind": "setting",
+      "use": "REDIS_PREFIX <REDIS_NAMESPACE>:<package>: (naming.json W5)"
+    },
+    "REDIS_URL": {
+      "capability": "auth google_oidc",
+      "client": "connect and socket timeouts 2 s",
+      "kind": "setting"
+    },
+    "S3_BUCKET": {
+      "capability": "objects s3",
+      "client": "SDK credential chain; connect timeout 2 s, read timeout 5 s, one attempt",
+      "kind": "setting"
+    },
+    "SOM_APP_ADDR": {
+      "default": "127.0.0.1:8000",
+      "kind": "optional",
+      "use": "Rust only, the listen address, as in phase 1; the Python product is addressed by its uvicorn command"
+    },
+    "SOM_TEST_DATABASE_NAME": {
+      "capability": "database mongodb",
+      "kind": "tests and migrate downgrade",
+      "use": "downgrade runs only with APP_ENV=test and a database named som_test_* equal to this value; it drops the prompt collections and _som_counters"
+    },
+    "SOM_TEST_OIDC_ISSUER": {
+      "capability": "auth google_oidc",
+      "effect": "issuer endpoints <issuer>/authorize, <issuer>/token and <issuer>/jwks instead of the Google endpoints",
+      "kind": "local_override"
+    },
+    "SOM_TEST_S3_ENDPOINT": {
+      "capability": "objects s3",
+      "effect": "path-style addressing and the static credentials local-test/local-test",
+      "kind": "local_override"
+    },
+    "STORAGE_EMULATOR_HOST": {
+      "capability": "objects gcs",
+      "kind": "local_override"
+    },
+    "TEST_DATABASE_URL": {
+      "capability": "database postgresql",
+      "kind": "tests only",
+      "use": "the product tests; a missing value fails the tests and never skips them"
+    }
+  },
+  "test_only_inputs": [
+    "TEST_AUTH_HEADERS",
+    "TEST_AUTH_COOKIES"
+  ],
+  "version": "som.rust-output-phase2-services.v1"
+}

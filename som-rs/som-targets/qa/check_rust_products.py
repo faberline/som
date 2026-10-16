@@ -520,7 +520,7 @@ def main() -> int:
                     CONTRACT / "bundle.schema.json", CONTRACT / "product-layout.json",
                     CONTRACT / "behavior-normalization.json", CONTRACT / "scope.json",
                     CONTRACT / "toolchain.json",
-                    targets.SOM_RS / "evidence" / "rust-output-contract-amendment-001.json",
+                    targets.SOM_RS / "evidence" / "rust-output-contract-amendment-002.json",
                     REFERENCE / "Cargo.toml", REFERENCE / "Cargo.lock",
                     targets.TESTS / "rust_profile.py", targets.FIXTURES, targets.COVERAGE,
                     targets.LEGACY / "inventory-003.json"]},
