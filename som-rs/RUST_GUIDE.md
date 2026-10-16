@@ -1,7 +1,8 @@
 # Rust compiler guide
 
-This guide describes accepted candidate 003. It is the local default on port 8765.
-The switch committed at `2026-10-15T03:08:08.737006+00:00` and the root post-switch check passed 76/76.
+This guide describes the local default on port 8765: rust-output-candidate-003, switched on `2026-10-16T05:54:52.297481+00:00` (#51).
+It serves the Python target and the Rust target. The independent post-switch check passed.
+The previous compiler default (candidate 003 of #38–#44) was switched in at `2026-10-15T03:08:08.737006+00:00`.
 The legacy M2 runtime, model and block links remain saved for rollback.
 
 ## Use the installed CLI
@@ -25,8 +26,26 @@ HTTP rejection exits 2. Their full error JSON goes to stderr.
 Generate retains its response on stdout and exit 2 on HTTP rejection.
 
 The installed path points to the immutable candidate binary
-`runtime/versions/3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02/som`.
+`runtime/versions/05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c/som`.
+The previous binary `runtime/versions/3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02/som` is kept for recovery.
 The legacy M2 binary also accepts the old `generate` command.
+
+## Rust output
+
+Add `--target rust` to compile, or `"target": "rust"` to the `/v1/compile` body. Without it the target is Python.
+Assemble reads the target from the bundle and returns the files of a complete Cargo product.
+The Rust target admits the one-resource CRUD (v1–v4) and parent and child (v5) scope of the
+[Rust output contract](contracts/rust-output-v1/CONTRACT.md); other prompts are refused with a diagnostic.
+Valid sources are in [target-examples.json](contracts/rust-output-v1/target-examples.json).
+
+```sh
+som-rs/runtime/current/som compile SOURCE.cnl --target rust > /private/tmp/som-rust.bundle.json
+som-rs/runtime/current/som assemble /private/tmp/som-rust.bundle.json > /private/tmp/som-rust.files.json
+```
+
+`GET /healthz` lists `targets` and, under `rust_target`, the Rust asset hashes and the pinned rustfmt identity and SHA-256.
+Rust assemble needs the rustfmt in `contracts/rust-output-v1/toolchain.json` (`/opt/homebrew/Cellar/rust/1.96.1`).
+If that file is gone or changed, Rust assemble answers ASSET_UNAVAILABLE and Python is not affected.
 
 ## HTTP requests
 
@@ -121,5 +140,5 @@ Root owns default switching and closeout. Read [RUST_HANDOFF.md](RUST_HANDOFF.md
 
 ## Recovery command
 
-The exact preserved M2 launch command and owner checks are in
-[RUST_HANDOFF.md](RUST_HANDOFF.md). After promotion, use the qualified post-commit restore there.
+To return to the previous compiler default, use the #51 restore command in
+[RUST_HANDOFF.md](RUST_HANDOFF.md#recovery-command). The exact preserved M2 launch command and owner checks are there too.

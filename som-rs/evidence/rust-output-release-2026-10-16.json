@@ -1,0 +1,413 @@
+{
+ "version": "som.rust-output-release.v1",
+ "issue": 51,
+ "recorded_at": "2026-10-16T05:56:25.545240+00:00",
+ "status": "passed",
+ "status_note": "Candidate rust-output-candidate-003 passed the full #50 acceptance plan again and an independent audit, a sandbox rehearsal of the switch, every injected failure and the restore, then the approved live switch on 127.0.0.1:8765 and an independent post-switch check. Python output stays byte-identical. Raw outputs stay local; this file holds summaries and hashes only.",
+ "blockers": [],
+ "tools_commit": "6e91e94b34",
+ "tool_files": {
+  "som-rs/scripts/rust_output_release/check_default.py": "0f096528b623b552c606133a458ae0c052171687aeff563b470690c7dea7426d",
+  "som-rs/scripts/rust_output_release/prepare_inputs.py": "f4375754969c8576e81643beb3e7e5ffb1c49774ee9b2767af87b891f84360b0",
+  "som-rs/scripts/rust_output_release/rehearse.py": "3239cec6649c90fdb2c4eee20534be71deed74df36ce44e7763c9a4fb66b0a1d",
+  "som-rs/scripts/rust_output_release/release_common.py": "d944326d16a54bc13cea305f8349a8c7ad60b7c23ec1b8128cd60708fceabb97",
+  "som-rs/scripts/rust_output_release/switch.py": "e2f08841433a7aaf3aa3723befe97d8dec2f4eb096f8ec5e1d56f96bc69d1eb4",
+  "som-rs/scripts/compiler_default_switch.py": "289a8470c5de2a183b01c8a138ecb4bc6cfe80a624f0291b32b779cc854bfb12"
+ },
+ "candidate": {
+  "directory": ".local/rust-compiler-goal/rust-output-candidate-003",
+  "build_commit": "24c0466eb7a0d7f471551f3845afe5f301babeda",
+  "binary_sha256": "05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c",
+  "source_sha256": "214cbee478e42a7b780647b263194d3f086d4977c9b8796e6dbcaea0f9b61528",
+  "runtime_receipt_sha256": "7ae1c2b9fc9be7a73d4abf58a6799598f9ac19bdd1a0b6c6e4e0731c0854af58",
+  "build_receipt_sha256": "7cae67f31b09c6a101f26df6004121c255f4a81a704a21afb3ce8a408d068b7d",
+  "health_sha256": "63eb8c139d887aa5c424c157412a2d14a9c06fa8f73cb91fdb8dd4e64e03e71b",
+  "asset_manifest_sha256": "872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e",
+  "targets": [
+   "python",
+   "rust"
+  ],
+  "rust_target": {
+   "assets": {
+    "backend": {
+     "id": "som.rust-backend.v1",
+     "sha256": "faaf104595e188489e37a7dd037d818233c0bea2bc99b68314e089878336dec9"
+    },
+    "block_library": {
+     "id": "som.rust-block-library.v1",
+     "sha256": "69c00640ef787208357d12c01ac4654f2266eb288fd121992b794c8d9c8cab7c"
+    },
+    "catalog": {
+     "id": "som.rust-catalog.v1",
+     "sha256": "43a30105f2f95be7ea5ffa54bf519cb59d213cf90c6ff8525378826e876b0322"
+    },
+    "formatter": {
+     "id": "som.rust-formatter.rustfmt-1.9.0.v1",
+     "sha256": "2c56fd066853c80c786a8a3a0e5434b7f808ace8b2cf66ae6e1a13566aa2815f"
+    },
+    "target_contract": {
+     "id": "som.rust-output-contract.v1",
+     "sha256": "93547b49696d151f6537ad834908861f18b265fdfed8fe4ee840359d8a180f98"
+    }
+   },
+   "bundle_version": "som.dsl-bundle.v2",
+   "dsl_version": "som.dsl.rust.v1",
+   "formatter_sha256": "2c56fd066853c80c786a8a3a0e5434b7f808ace8b2cf66ae6e1a13566aa2815f",
+   "formatter_version": "som.rust-formatter.rustfmt-1.9.0.v1"
+  }
+ },
+ "acceptance": {
+  "run": ".local/rust-compiler-goal/acceptance/rust-output-051/run-001",
+  "summary_sha256": "12d49d12f90e51c2969ed838b57a95e5112592e30d4720ac871d8e54ae00d276",
+  "header_sha256": "52dc1f9b31d80c41b08bd90af956417551f415a7841a010e145c16b29b8dc9df",
+  "plan_sha256": "c0ea39c746d74553efcaea70b9a6e3e6b276ba9ff94e66c07b883e72e6da9b5a",
+  "status": "passed",
+  "blockers": [],
+  "vendor": ".local/rust-compiler-goal/acceptance/rust-output-050/crates-001",
+  "steps": [
+   {
+    "step": "contract",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 1.2,
+    "receipt_sha256": "8353b7d56741122a66ee15d0c9e2c9341f9fdbadd029a42a2b1a7d2d0ab9165f"
+   },
+   {
+    "step": "python-controls",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 0.4,
+    "receipt_sha256": "c3f555c6a63b4537458c0912043dc99fa1c943cab79beadeea1a6ebe9a2a0380"
+   },
+   {
+    "step": "validate-cases",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 0.4,
+    "receipt_sha256": "34d292d30a759c2e7c7495d1696db04cef1e6a1af3feaa001477606f0805f0f4"
+   },
+   {
+    "step": "targets",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 91.7,
+    "receipt_sha256": "246e641479bd0c68148449e3802348de6e65f9e528523b8db35d24148a05c68f"
+   },
+   {
+    "step": "cli",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 0.7,
+    "receipt_sha256": "1f2137c16304be3f577f1cda1f24acbf8b13cee44d1e0bc8a19f899bc9b49def"
+   },
+   {
+    "step": "python-replay",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 210.3,
+    "receipt_sha256": "7d8f0d3af2058f2e41e244770e4de5e9357b3839e6d93db7840dd8ebce6ebe82"
+   },
+   {
+    "step": "asset-index",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 0.2,
+    "receipt_sha256": "b267c448c9dfb6c5a8ce6df95dd15772e2b50c5be9a45d83a13b097b4141b7bc"
+   },
+   {
+    "step": "runtime-acceptance",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 21.0,
+    "receipt_sha256": "58e1c3362542049fab3e45ecdb8a429659522e440ff3bc405c3d5d1540189076"
+   },
+   {
+    "step": "behavior-python",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 74.7,
+    "receipt_sha256": "5a566de7fc9f6e98adf0b20253f31edb91a7e56dc1f5f38d9ed34983014c9b2e"
+   },
+   {
+    "step": "behavior-faults",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 24.4,
+    "receipt_sha256": "192b6a70f3104810c09c85b30cb6ad789d43604a0dca29cb4ff889496aaf6b8a"
+   },
+   {
+    "step": "behavior-parity",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 351.5,
+    "receipt_sha256": "0529805aeb22ba5d10cae021f23c487abeecf0b39c5be2f9d4086aaa0e1d5ebc"
+   },
+   {
+    "step": "rust-products",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 1007.1,
+    "receipt_sha256": "8790a2d794039cab15ad593ddeae43964fa973bea890014b5134779452eb7aed"
+   },
+   {
+    "step": "perf",
+    "passed": true,
+    "exit_code": 0,
+    "seconds": 400.3,
+    "receipt_sha256": "9b29160fc0e15d28d8e8c337da4d1b7e473ac00a4d7343245f1c2ab3c81c1819"
+   }
+  ],
+  "started_at": "2026-10-16T02:43:46.094664+00:00",
+  "ended_at": "2026-10-16T03:20:11.481665+00:00"
+ },
+ "audit": {
+  "output": ".local/rust-compiler-goal/acceptance/rust-output-051/audit-001",
+  "audit_sha256": "5c33de602df3191d6f188b9d2cbf06eacf3353b3c736afd684debc1650e5ddf2",
+  "status": "passed",
+  "counts": {
+   "checks": {
+    "passed": 10
+   },
+   "subchecks": {
+    "passed": 97
+   }
+  },
+  "auditor_script_sha256": "71c23b6a179b4bed5f87387486cd845bcf16ea3f9d8b60bcd9a59bfa8d10eb2c",
+  "derived_from": {
+   "path": ".local/rust-compiler-goal/acceptance/rust-output-050/audit-001/audit050.py",
+   "sha256": "e09373e630c712256de6186bda753d612b3f9dc7464de99ba307cee17da636d2"
+  },
+  "diff_sha256": "cd1a32662ce544c4d84f1277dcc56f8c824a83f64751c0f3d057fb8f4beb9c28",
+  "diff_scope": "constants and labels only: run, output, candidate directory, tools commit, binary, pid, port, script name, report version and issue"
+ },
+ "prerequisites": {
+  "path": ".local/rust-compiler-goal/acceptance/rust-output-051/inputs-001/prerequisites.json",
+  "file_sha256": "236d14f49d7dd89242212b42d44cd6cb6ca48c4030d1fd894d6f7fa1b68d5964",
+  "receipt_sha256": "e91fb281ac413e8587d58e21d20f5c841fee2b37713f8287ad69070dd110046d",
+  "python_canaries": [
+   {
+    "name": "post-switch-smoke12",
+    "family": "flow",
+    "steps": [
+     "generate",
+     "compile-cnl",
+     "compile-json",
+     "assemble",
+     "cli-generate",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "post-switch-legacy100",
+    "family": "legacy",
+    "steps": [
+     "generate",
+     "compile-cnl",
+     "compile-json",
+     "assemble",
+     "cli-generate",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   }
+  ],
+  "rust_canaries": [
+   {
+    "name": "example-v1",
+    "files": 11,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "example-v5",
+    "files": 11,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   }
+  ],
+  "m2_canaries": [
+   "post-switch-smoke12",
+   "post-switch-legacy100"
+  ],
+  "python_pin_source": "Responses and CLI stdout pinned from the previous default on 8765; the previous and the new CLI printed the same bytes."
+ },
+ "rehearsal": {
+  "output": ".local/rust-compiler-goal/acceptance/rust-output-051/rehearsal-001",
+  "report_sha256": "d0709c58899f532788111da15d451cdcb380beba50441e3e566b0d5cd6aabecc",
+  "passed": true,
+  "live_default_unchanged": true,
+  "scenarios": [
+   {
+    "name": "switch",
+    "passed": true,
+    "switch_last_stage": "committed",
+    "calls": {
+     "switch": 0,
+     "check": 0,
+     "restore": 0,
+     "check-restored": 0
+    }
+   },
+   {
+    "name": "after_stop",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   },
+   {
+    "name": "after_start",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   },
+   {
+    "name": "after_pointer",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   },
+   {
+    "name": "after_commit",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   }
+  ]
+ },
+ "approval": {
+  "path": ".local/rust-compiler-goal/acceptance/rust-output-051/approval-001.json",
+  "sha256": "b78667199903754a664cea35383a6f2532e3e16e80efc0b8792678f891954bab",
+  "quote": "同意：把 8765 default 從 pid 76618 切到 rust-output-candidate-003（binary 05f1bfe6…），用 switch.py --execute 並跑 check_default.py。",
+  "bound": {
+   "candidate_binary_sha256": "05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c",
+   "script_sha256": "e2f08841433a7aaf3aa3723befe97d8dec2f4eb096f8ec5e1d56f96bc69d1eb4",
+   "common_sha256": "d944326d16a54bc13cea305f8349a8c7ad60b7c23ec1b8128cd60708fceabb97",
+   "prerequisites_sha256": "e91fb281ac413e8587d58e21d20f5c841fee2b37713f8287ad69070dd110046d",
+   "default_sha256": "f7833c26ee108736bca5566d33cbf20b28fe3299230a8b195af7058d0f655ed4"
+  }
+ },
+ "switch": {
+  "output": ".local/rust-compiler-goal/acceptance/rust-output-051/switch-001",
+  "journal_sha256": "05f09bdb1685dd8e60ff79459a83ddc9c88f4b5c84930565a35d98138de640b0",
+  "stages": [
+   "pointers",
+   "canary_passed",
+   "canary_passed",
+   "started",
+   "m2_canary_passed",
+   "m2_canary_passed",
+   "stopped",
+   "started",
+   "canary_passed",
+   "canary_passed",
+   "stopped",
+   "started",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "stopped",
+   "immutable_install_verified",
+   "stop_intent",
+   "started",
+   "new_default_owner",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "pointer_set",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "committed"
+  ],
+  "rollback": false,
+  "stop_intent_at": "2026-10-16T05:54:44.082221+00:00",
+  "committed_at": "2026-10-16T05:54:52.297481+00:00",
+  "previous_owner": {
+   "pid": 76618,
+   "start": "Thu Oct 15 11:08:03 2026",
+   "binary_sha256": "3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02"
+  },
+  "new_owner": {
+   "pid": 96083,
+   "start": "Fri Oct 16 13:54:44 2026",
+   "binary_sha256": "05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c"
+  },
+  "previous_default_sha256": "f7833c26ee108736bca5566d33cbf20b28fe3299230a8b195af7058d0f655ed4",
+  "previous_default_snapshot": ".local/rust-compiler-goal/acceptance/rust-output-051/switch-001/0002-previous-default.json",
+  "default_receipt_sha256": "c315c2794ca1f959db1711285f24f252aba9dd853291d9328ab07bdf33148aa4"
+ },
+ "post_switch_check": {
+  "output": ".local/rust-compiler-goal/acceptance/rust-output-051/check-001",
+  "result_sha256": "6a3927b1e79b88d76e7f10bc96c7070d455b86d99ffc7a12c03ebb54def2df6d",
+  "passed": true,
+  "checks": {
+   "owner": true,
+   "health": true,
+   "pointers": true,
+   "legacy_rollback_assets": true,
+   "canaries": true,
+   "owner_after": true
+  },
+  "cases": [
+   "post-switch-smoke12",
+   "post-switch-legacy100",
+   "example-v1",
+   "example-v5"
+  ]
+ },
+ "pointers_after": {
+  "som-rs/runtime/current": "som-rs/runtime/versions/05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c",
+  "som-rs/compiler-assets/current": "som-rs/compiler-assets/versions/872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e"
+ },
+ "rollback_assets": {
+  "previous_compiler_binary_sha256": "3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02",
+  "legacy_m2_binary_sha256": "14cf0a67fbcc943639c9e0efb661d6aaf0de7b00289c05fc52819f9e97f239d6",
+  "legacy_default_sha256": "e035e04c5fd8d38e2c26b0664f10fe3becb61c5c3237d0c1c84f2adf689c4698",
+  "som-rs/models/current": "flow-m2-candidate/smoke-r31-001",
+  "som-code-python/data/blocks/current": "flow-v7-compact"
+ },
+ "recovery": {
+  "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/rust_output_release/switch.py --prerequisites .local/rust-compiler-goal/acceptance/rust-output-051/inputs-001/prerequisites.json --restore .local/rust-compiler-goal/acceptance/rust-output-051/switch-001 --approval FRESH_APPROVAL.json --output FRESH_ABSOLUTE_DIR",
+  "approval_action": "restore-default-8765-rust-output",
+  "qualified_by": "rehearsal scenario switch: restore exit 0, restore_verified, check-restored exit 0"
+ },
+ "risks": [
+  "Rust assemble uses rustfmt from /opt/homebrew/Cellar/rust/1.96.1. Health reports its sha256. A Homebrew upgrade that removes that version makes Rust assemble answer ASSET_UNAVAILABLE; Python output is not affected.",
+  "The M2 check before the switch is a fresh legacy M2 clone on a harness port with full generate and CLI canaries. The #44 post-commit M2 restore tool is bound to the default-switch-001 lineage and was not rerun."
+ ],
+ "python_versions": {
+  "fastapi": "0.118.0",
+  "uvicorn": "0.53.0",
+  "sqlalchemy": "2.0.44",
+  "psycopg[binary]": "3.3.6",
+  "alembic": "1.20.0",
+  "pydantic": "2.11.9"
+ },
+ "not_published": "binaries, raw request and response bytes, process logs and vendored crates stay local"
+}

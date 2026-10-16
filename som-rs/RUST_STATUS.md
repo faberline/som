@@ -1,4 +1,15 @@
-# Rust compiler status — 2026-10-14
+# Rust compiler status — 2026-10-16
+
+## Rust output release (#51) — 2026-10-16
+
+Since `2026-10-16T05:54:52.297481+00:00` the default on `127.0.0.1:8765` is rust-output-candidate-003.
+It serves the Python and Rust targets. The independent post-switch check passed 6/6 checks with every Python and Rust canary.
+Binary SHA-256: `05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c`, built from commit `24c0466eb7`.
+The asset manifest is unchanged: `872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e`.
+Python output is byte-identical: the pinned replies of the previous default replay exactly on the new one.
+The previous compiler default (`3fad3cb7…`) and the legacy M2 rollback assets are kept. See the [release evidence](evidence/rust-output-release-2026-10-16.json).
+
+## Compiler release (#38–#44) — 2026-10-14
 
 The new Rust compiler passed independent acceptance and is the local default.
 It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.

@@ -1,4 +1,24 @@
-# Rust compiler acceptance report — 2026-10-14
+# Rust compiler acceptance report — 2026-10-16
+
+## Rust output release (#51) — 2026-10-16
+
+Since `2026-10-16T05:54:52.297481+00:00` the default on `127.0.0.1:8765` is rust-output-candidate-003.
+It serves the Python and Rust targets. The independent post-switch check passed 6/6 checks with every Python and Rust canary.
+Binary SHA-256: `05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c`, built from commit `24c0466eb7`.
+The asset manifest is unchanged: `872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e`.
+Python output is byte-identical: the pinned replies of the previous default replay exactly on the new one.
+The previous compiler default (`3fad3cb7…`) and the legacy M2 rollback assets are kept. See the [release evidence](evidence/rust-output-release-2026-10-16.json).
+
+| #51 check | Actual result |
+|---|---|
+| Acceptance plan on candidate 003 | 13/13 steps passed, no blockers ([run summary in the evidence](evidence/rust-output-release-2026-10-16.json)) |
+| Independent audit | 10/10 checks, 97/97 subchecks passed; the auditor is the #50 auditor with constants changed only |
+| Canary inputs | 2 Python cases (14 steps), 2 Rust cases (10 steps), 2 M2 cases |
+| Rehearsal | switch, restore and the 4 injected failures (after stop, start, pointer, commit) all passed; 8765 unchanged |
+| Live switch | committed with no rollback after the user's approval |
+| Post-switch check | owner, health, pointers, legacy rollback assets, canaries, owner after: all passed |
+
+## Compiler acceptance (#38–#44) — 2026-10-14
 
 The new Rust compiler passed independent acceptance and is the local default.
 It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.

@@ -1,4 +1,37 @@
-# Rust compiler handoff — 2026-10-14
+# Rust compiler handoff — 2026-10-16
+
+## Current default: Rust output (#51)
+
+The default on `127.0.0.1:8765` is rust-output-candidate-003 since `2026-10-16T05:54:52.297481+00:00`.
+It serves the Python and Rust targets. Binary SHA-256: `05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c`.
+`som-rs/runtime/current` points to `runtime/versions/05f1bfe6…`. `compiler-assets/current` is unchanged (`872eb4dc…`).
+The [release evidence](evidence/rust-output-release-2026-10-16.json) binds the acceptance run, audit, canaries, rehearsal, approval, switch journal and post-switch check.
+
+The switch tools are in `scripts/rust_output_release/`. They load `scripts/compiler_default_switch.py` by its SHA-256 and do not change it.
+The live switch needs an approval file that binds the candidate, the script hashes, the prerequisites and the current `default.json`.
+
+### Recovery command
+
+To put the previous compiler default (`3fad3cb7…`) back, write a fresh approval with action `restore-default-8765-rust-output`
+bound to the current `default.json`, then run from the repository root:
+
+```sh
+som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/rust_output_release/switch.py --prerequisites .local/rust-compiler-goal/acceptance/rust-output-051/inputs-001/prerequisites.json --restore $PWD/.local/rust-compiler-goal/acceptance/rust-output-051/switch-001 --approval FRESH_APPROVAL.json --output FRESH_ABSOLUTE_DIR
+```
+
+It checks the exact owner before the signal, restores `runtime/current`, starts the saved previous command,
+runs the Python canaries and writes a restored receipt. The rehearsal qualified it on a harness port.
+Then run `scripts/rust_output_release/check_default.py` with `--expect-binary-sha256 3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02`.
+The legacy M2 rollback assets below stay in place. Their #44 post-commit restore is bound to the default-switch-001 lineage;
+before #51 the switch proved a fresh legacy M2 clone on a harness port instead.
+
+### Known risk
+
+Rust assemble runs rustfmt from `/opt/homebrew/Cellar/rust/1.96.1` (see `contracts/rust-output-v1/toolchain.json`).
+Health reports its SHA-256 under `rust_target`. If a Homebrew upgrade removes that version, Rust assemble answers ASSET_UNAVAILABLE.
+Python output is not affected. Pin or reinstall that toolchain before upgrading.
+
+## Compiler release (#38–#44) — 2026-10-14
 
 The new Rust compiler passed independent acceptance and is the local default.
 It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.
