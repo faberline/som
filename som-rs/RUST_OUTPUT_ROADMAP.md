@@ -76,7 +76,7 @@ The #48 gates then pass again with that parity report, with [evidence](evidence/
 #49 is implemented: Rust blocks render v5 parent and child products, all 115 cases pass every gate and parity, with [evidence](evidence/rust-related-2026-10-15.json).
 #50 is implemented: every check in the [acceptance plan](contracts/rust-output-v1/acceptance-plan.json) passes on one recorded build with vendored crates, the Python regressions replay byte-identically (127 public products, 544 legacy jobs) and an independent audit finds no failed or unrun check, with [evidence](evidence/rust-output-acceptance-2026-10-16.json).
 #51 is implemented: rust-output-candidate-003 passed the acceptance plan again with an independent audit, a rehearsal of the switch, every injected failure and the restore, and the approved switch on 8765; the post-switch check passed, with [evidence](evidence/rust-output-release-2026-10-16.json).
-#46, #48, #49, #50 and #51 stay open for review.
+#45–#51 are closed as completed and [milestone 9](https://github.com/faberline/som/milestone/9) is closed, read back at 2026-10-16T06:02:20Z.
 [Amendment 1](evidence/rust-output-contract-amendment-001.json) sets the timestamp DEFAULT to CURRENT_TIMESTAMP for v3 and v4 and now() for v5, as in the Python migrations.
 
 ### Target-aware service (#47)
