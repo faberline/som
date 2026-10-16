@@ -110,7 +110,10 @@ fn exact(value: &Value, keys: &[&str]) -> bool {
 }
 
 async fn health(State(compiler): State<Arc<Compiler>>) -> Json<Value> {
-    Json(compiler.health())
+    let mut value = compiler.health();
+    value["targets"] = json!(["python", som_targets::rust::TARGET]);
+    value["rust_target"] = som_targets::rust::health();
+    Json(value)
 }
 
 async fn compile(

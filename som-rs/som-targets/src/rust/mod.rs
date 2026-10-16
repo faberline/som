@@ -94,16 +94,52 @@ fn described(id: &str, value: &Value) -> Value {
 /// backend and formatter, and target_contract is added.
 pub fn descriptors(compiler: &Compiler, prompt: &Value) -> Value {
     let mut assets = compiler.descriptors(prompt);
+    for (name, value) in rust_descriptors() {
+        assets[name] = value;
+    }
+    assets
+}
+
+/// The Rust descriptors that do not depend on the prompt.
+fn rust_descriptors() -> [(&'static str, Value); 5] {
     let files: Map<String, Value> = BACKEND_FILES
         .iter()
         .map(|(path, text)| ((*path).to_owned(), json!(digest(text.as_bytes()))))
         .collect();
-    assets["catalog"] = descriptor(CATALOG_ID, CATALOG_TEXT.as_bytes());
-    assets["block_library"] = descriptor(BLOCK_LIBRARY_ID, BLOCK_LIBRARY_TEXT.as_bytes());
-    assets["backend"] = described(BACKEND_ID, &json!({"version": BACKEND_ID, "files": files}));
-    assets["formatter"] = json!({"id": format::FORMATTER_ID, "sha256": format::RUSTFMT_SHA256});
-    assets["target_contract"] = json!({"id": TARGET_CONTRACT_ID, "sha256": TARGET_CONTRACT_SHA256});
-    assets
+    [
+        ("catalog", descriptor(CATALOG_ID, CATALOG_TEXT.as_bytes())),
+        (
+            "block_library",
+            descriptor(BLOCK_LIBRARY_ID, BLOCK_LIBRARY_TEXT.as_bytes()),
+        ),
+        (
+            "backend",
+            described(BACKEND_ID, &json!({"version": BACKEND_ID, "files": files})),
+        ),
+        (
+            "formatter",
+            json!({"id": format::FORMATTER_ID, "sha256": format::RUSTFMT_SHA256}),
+        ),
+        (
+            "target_contract",
+            json!({"id": TARGET_CONTRACT_ID, "sha256": TARGET_CONTRACT_SHA256}),
+        ),
+    ]
+}
+
+/// The Rust target section of the service health: versions and the fixed asset descriptors,
+/// including the pinned rustfmt hash. It reads no file, so health stays the same while the
+/// service runs.
+pub fn health() -> Value {
+    let mut value = json!({"bundle_version": BUNDLE_VERSION, "dsl_version": DSL_VERSION,
+        "formatter_version": format::FORMATTER_ID, "formatter_sha256": format::RUSTFMT_SHA256});
+    value["assets"] = Value::Object(
+        rust_descriptors()
+            .into_iter()
+            .map(|(name, item)| (name.to_owned(), item))
+            .collect(),
+    );
+    value
 }
 
 /// The prompt value a dotted catalog name points at.
@@ -680,6 +716,21 @@ mod tests {
         for (path, sha) in receipt["files"].as_object().expect("files") {
             let bytes = std::fs::read(som_rs().join("..").join(path)).expect("contract file");
             assert_eq!(digest(&bytes), sha.as_str().expect("sha"), "{path}");
+        }
+    }
+
+    #[test]
+    fn health_reports_the_bundle_descriptors() {
+        let value = health();
+        assert_eq!(value["formatter_sha256"], format::RUSTFMT_SHA256);
+        assert_eq!(
+            value["assets"]["formatter"]["sha256"],
+            format::RUSTFMT_SHA256
+        );
+        let assets = value["assets"].as_object().expect("assets");
+        assert_eq!(assets.len(), 5);
+        for (name, item) in rust_descriptors() {
+            assert_eq!(assets[name], item, "{name}");
         }
     }
 
