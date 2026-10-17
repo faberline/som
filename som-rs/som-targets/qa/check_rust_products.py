@@ -64,7 +64,11 @@ PLAN = json.loads((CONTRACT / "acceptance-plan.json").read_text())
 PROMPT_SCHEMA = json.loads((targets.SOM_RS / "contracts" / "compiler-v1" / "compiler-prompt.schema.json").read_text())
 VALIDATOR = jsonschema.Draft202012Validator(SCHEMA, registry=referencing.Registry().with_resource(
     PROMPT_SCHEMA["$id"], referencing.Resource.from_contents(PROMPT_SCHEMA)))
-EXCLUDED_TABLES = ("alembic_version", "_sqlx_migrations")
+# Migration records: the Python product's, the sqlx migrator's (phase 1) and the hand-written
+# migrator's (phase 2, naming.json W3). Each side ignores only its own, so a prompt table with
+# one of these names is still compared.
+PYTHON_RECORDS = ("alembic_version",)
+RUST_RECORDS = {True: ("_som_rust_migrations",), False: ("_sqlx_migrations",)}
 
 
 def divergence_markers(prompt: dict) -> list[str]:
@@ -352,13 +356,13 @@ def write(root: pathlib.Path, files: dict[str, str]) -> None:
         (root / path).write_text(text)
 
 
-def schema(url: str) -> dict:
+def schema(url: str, excluded: tuple[str, ...]) -> dict:
     """The compared parts of schema public (behavior-normalization.json schema_equivalence)."""
     out: dict[str, Any] = {}
     with psycopg.connect(url) as connection:
         tables = [row[0] for row in connection.execute(
             "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' "
-            "AND table_type = 'BASE TABLE' ORDER BY table_name") if row[0] not in EXCLUDED_TABLES]
+            "AND table_type = 'BASE TABLE' ORDER BY table_name") if row[0] not in excluded]
         for table in tables:
             columns = []
             for name, data_type, length, nullable, default in connection.execute(
@@ -411,7 +415,7 @@ def python_schema(qa: str, case: dict, pg: str, name: str) -> dict:
                 module.upgrade()
     finally:
         engine.dispose()
-    return schema(url)
+    return schema(url, PYTHON_RECORDS)
 
 
 def product_gates(qa: str, case: dict, files: dict, work: pathlib.Path, pg: str, target_dir: str) -> dict:
@@ -441,7 +445,7 @@ def product_gates(qa: str, case: dict, files: dict, work: pathlib.Path, pg: str,
     missing = marker_problems((root / "tests" / "api.rs").read_text(), divergence_markers(case["prompt"]))
     gates["divergences_d1_d5"] = (1 if missing else 0, "; ".join(missing))
     try:
-        rust = schema(url)
+        rust = schema(url, RUST_RECORDS["_som_rust_migrations" in files["src/lib.rs"]])
         python = python_schema(qa, case, pg, f"p48_{key}_{stamp}")
         equal = rust == python
         gates["schema_equivalence"] = (0 if equal else 1,
@@ -520,7 +524,7 @@ def main() -> int:
                     CONTRACT / "bundle.schema.json", CONTRACT / "product-layout.json",
                     CONTRACT / "behavior-normalization.json", CONTRACT / "scope.json",
                     CONTRACT / "toolchain.json",
-                    targets.SOM_RS / "evidence" / "rust-output-contract-amendment-002.json",
+                    targets.SOM_RS / "evidence" / "rust-output-contract-amendment-003.json",
                     REFERENCE / "Cargo.toml", REFERENCE / "Cargo.lock",
                     targets.TESTS / "rust_profile.py", targets.FIXTURES, targets.COVERAGE,
                     targets.LEGACY / "inventory-003.json"]},

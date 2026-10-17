@@ -6,8 +6,9 @@ use serde_json::Value;
 
 use super::{
     API_BODY, API_DAY, API_FLAG, API_LIST_HELPERS, API_USES, Field, HARNESS_TOOLS, HARNESS_USES,
-    Kind, NOT_NULL, PRESENT, SCHEMA_USES, STAMPS, TOO_LONG, column_line, create_struct,
-    parse_fields, quoted, read_struct, row_struct, sample_fns, sql_const, text, update_struct,
+    HEALTH_LINE, HEALTH_ROUTE, Kind, NOT_NULL, PRESENT, SCHEMA_USES, STAMPS, TOO_LONG, column_line,
+    create_struct, parse_fields, quoted, read_struct, row_struct, sample_fns, sql_const, text,
+    update_struct,
 };
 
 /// One side of the relation, read from its resources.parent or resources.child param.
@@ -65,8 +66,11 @@ impl Resource {
 
 /// The foreign key column of the child: a required INTEGER.
 fn foreign_key(params: &Value) -> Result<Field, String> {
+    let name = text(params, "foreign_key")?.to_owned();
     Ok(Field {
-        name: text(params, "foreign_key")?.to_owned(),
+        rust: name.clone(),
+        name,
+        fallback: "foreign_key".to_owned(),
         kind: Kind::Int,
         required: true,
         unique: false,
@@ -89,6 +93,10 @@ pub fn render(id: &str, params: &Value) -> Result<String, String> {
         "rust.api.related.parent" => API_PARENT.to_owned(),
         "rust.api.related.child" => API_CHILD.to_owned(),
         "rust.api.related.router" => API_ROUTER
+            .replace("@PARENTS@", text(params, "parent_path")?)
+            .replace("@CHILDREN@", text(params, "child_path")?),
+        "rust.api.related.router.owned" => API_ROUTER
+            .replace(HEALTH_ROUTE, "")
             .replace("@PARENTS@", text(params, "parent_path")?)
             .replace("@CHILDREN@", text(params, "child_path")?),
         "rust.db.related.ping" => DB_PING.to_owned(),
@@ -1619,6 +1627,11 @@ fn readme(params: &Value, parent: &Resource, child: &Resource) -> Result<String,
     let revision = text(params, "revision")?;
     let down = params["down_revision"].as_str().unwrap_or("none");
     let (parents, children) = (&parent.path, &child.path);
+    let health = if parents == "/healthz" {
+        ""
+    } else {
+        HEALTH_LINE
+    };
     let item = format!("{parents}/{{parent_id}}");
     let list = format!("{item}{children}");
     Ok(format!(
@@ -1632,8 +1645,7 @@ through `{key}`, which is `ON DELETE RESTRICT`.
 
 ## Routes
 
-- `GET /healthz`: `{{"status": "ok"}}`, or 503 when the database is unavailable.
-- `GET {parents}`: list parents. {}
+{health}- `GET {parents}`: list parents. {}
 - `POST {parents}`: create a parent. 201, or 409 for a unique value conflict.
 - `GET {item}`: get a parent. 404 `parent not found` if it does not exist.
 - `PATCH {item}`: update the supplied fields of a parent.

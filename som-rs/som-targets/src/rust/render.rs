@@ -10,7 +10,7 @@ mod related;
 const MANIFEST: &str = include_str!("../../../contracts/rust-output-v1/reference/Cargo.toml");
 const LOCK: &str = include_str!("../../../contracts/rust-output-v1/reference/Cargo.lock");
 
-/// Rust keywords that a raw identifier can spell. The profile refuses the ones it cannot.
+/// Rust keywords that a raw identifier can spell. The ones it cannot spell get an R2 name.
 const KEYWORDS: &[&str] = &[
     "abstract", "as", "async", "await", "become", "box", "break", "const", "continue", "do", "dyn",
     "else", "enum", "extern", "false", "final", "fn", "for", "gen", "if", "impl", "in", "let",
@@ -28,8 +28,13 @@ enum Kind {
     Date,
 }
 
+#[derive(Clone)]
 struct Field {
     name: String,
+    /// The Rust struct member name (naming.json R2).
+    rust: String,
+    /// The R2 (c) name: field_<k>, or foreign_key for a relation foreign key.
+    fallback: String,
     kind: Kind,
     required: bool,
     unique: bool,
@@ -41,15 +46,12 @@ impl Field {
     fn nullable(&self) -> bool {
         !self.required && !self.default_false
     }
+    /// The Rust name differs from the wire name, so serde and sqlx rename it.
     fn raw(&self) -> bool {
-        KEYWORDS.contains(&self.name.as_str())
+        self.rust != self.name
     }
     fn ident(&self) -> String {
-        if self.raw() {
-            format!("r#{}", self.name)
-        } else {
-            self.name.clone()
-        }
+        self.rust.clone()
     }
     fn rust(&self) -> &'static str {
         match self.kind {
@@ -106,10 +108,52 @@ impl Field {
     }
 }
 
+/// naming.json R2 for the members of one struct, in order: every (a) name and every (b) r#name
+/// first, then each (c) fallback with trailing underscores until it is unique.
+fn named(members: Vec<Field>) -> Vec<Field> {
+    let direct = |name: &str| {
+        if KEYWORDS.contains(&name) {
+            Some(format!("r#{name}"))
+        } else if crate::profile::is_rust_snake_case(name)
+            && !["crate", "self", "super"].contains(&name)
+        {
+            Some(name.to_owned())
+        } else {
+            None
+        }
+    };
+    let mut taken: Vec<String> = members
+        .iter()
+        .filter(|field| direct(&field.name).is_some())
+        .map(|field| field.name.clone())
+        .collect();
+    members
+        .into_iter()
+        .map(|mut field| {
+            field.rust = direct(&field.name).unwrap_or_else(|| {
+                let mut name = field.fallback.clone();
+                while taken.contains(&name) {
+                    name.push('_');
+                }
+                taken.push(name.clone());
+                name
+            });
+            field
+        })
+        .collect()
+}
+
+/// The members of a struct that carries a foreign key before the fields, named together.
+fn with_key(key: Option<&Field>, fields: &[Field]) -> Vec<Field> {
+    named(key.into_iter().chain(fields).cloned().collect())
+}
+
 fn parse_fields(value: &Value) -> Result<Vec<Field>, String> {
     let rows = value.as_array().ok_or("fields param is not an array")?;
-    rows.iter()
-        .map(|row| {
+    let fields: Result<Vec<Field>, String> = rows
+        .iter()
+        .enumerate()
+        .map(|(index, row)| {
             let name = row["name"].as_str().ok_or("field name is not a string")?;
             let kind = match row["type"].as_str() {
                 Some("str") => Kind::Str,
@@ -121,6 +165,8 @@ fn parse_fields(value: &Value) -> Result<Vec<Field>, String> {
             };
             Ok(Field {
                 name: name.to_owned(),
+                rust: String::new(),
+                fallback: format!("field_{}", index + 1),
                 kind,
                 required: row["required"] == true,
                 unique: row["unique"] == true,
@@ -128,7 +174,8 @@ fn parse_fields(value: &Value) -> Result<Vec<Field>, String> {
                     && row.get("default") == Some(&Value::Bool(false)),
             })
         })
-        .collect()
+        .collect();
+    Ok(named(fields?))
 }
 
 fn text<'a>(params: &'a Value, key: &str) -> Result<&'a str, String> {
@@ -154,6 +201,7 @@ pub fn render(id: &str, params: &Value) -> Result<String, String> {
         "rust.cargo.lock" => LOCK.to_owned(),
         "rust.main.startup" => MAIN.to_owned(),
         "rust.lib.modules" => LIB.to_owned(),
+        "rust.lib.migrator" => LIB_MIGRATOR.replace("@REVISION@", text(params, "revision")?),
         "rust.models.row.plain" => row(&fields()?, false),
         "rust.models.row.service" => row(&fields()?, true),
         "rust.schemas.create.plain" => create(&fields()?, false),
@@ -173,6 +221,9 @@ pub fn render(id: &str, params: &Value) -> Result<String, String> {
         "rust.api.update" => API_UPDATE.to_owned(),
         "rust.api.delete" => API_DELETE.to_owned(),
         "rust.api.router" => API_ROUTER.replace("@PATH@", text(params, "path")?),
+        "rust.api.router.owned" => API_ROUTER
+            .replace(HEALTH_ROUTE, "")
+            .replace("@PATH@", text(params, "path")?),
         "rust.db.ping" => DB_PING.to_owned(),
         "rust.db.insert.plain" => db_insert(params, false)?,
         "rust.db.insert.service" => db_insert(params, true)?,
@@ -260,6 +311,49 @@ pub use api::router;
 pub static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!();
 "#;
 
+/// src/lib.rs for a prompt the phase 1 profile refuses: the hand-written migrator records the
+/// migration in _som_rust_migrations (naming.json W3), so a prompt table may be _sqlx_migrations.
+const LIB_MIGRATOR: &str = r#"pub mod api;
+pub mod db;
+pub mod models;
+pub mod schemas;
+
+pub use api::router;
+
+pub static MIGRATOR: Migrator = Migrator;
+
+const REVISION: &str = "@REVISION@";
+const UPGRADE: &str = include_str!("../migrations/0001_@REVISION@.sql");
+
+/// Applies the one migration once, in a transaction, and records it in _som_rust_migrations.
+pub struct Migrator;
+
+impl Migrator {
+    pub async fn run(&self, pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
+        let mut tx = pool.begin().await?;
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS \"_som_rust_migrations\" (\"version\" BIGINT PRIMARY KEY, \"revision\" TEXT NOT NULL, \"applied_at\" TIMESTAMPTZ NOT NULL DEFAULT now())",
+        )
+        .execute(&mut *tx)
+        .await?;
+        let applied: Option<i64> =
+            sqlx::query_scalar("SELECT \"version\" FROM \"_som_rust_migrations\" WHERE \"version\" = 1")
+                .fetch_optional(&mut *tx)
+                .await?;
+        if applied.is_none() {
+            for statement in UPGRADE.split(";\n").filter(|statement| !statement.trim().is_empty()) {
+                sqlx::query(statement).execute(&mut *tx).await?;
+            }
+            sqlx::query("INSERT INTO \"_som_rust_migrations\" (\"version\", \"revision\") VALUES (1, $1)")
+                .bind(REVISION)
+                .execute(&mut *tx)
+                .await?;
+        }
+        tx.commit().await
+    }
+}
+"#;
+
 // ---------------------------------------------------------------- src/models.rs
 
 fn row(fields: &[Field], service: bool) -> String {
@@ -270,7 +364,7 @@ fn row(fields: &[Field], service: bool) -> String {
 fn row_struct(name: &str, key: Option<&Field>, fields: &[Field], service: bool) -> String {
     let mut out =
         format!("#[derive(Debug, sqlx::FromRow)]\npub struct {name} {{\n    pub id: i32,\n");
-    for field in key.into_iter().chain(fields) {
+    for field in &with_key(key, fields) {
         if field.raw() {
             out += &format!("    #[sqlx(rename = \"{}\")]\n", field.name);
         }
@@ -430,7 +524,7 @@ fn read_struct(
 ) -> String {
     let mut out = format!("#[derive(Debug, Serialize)]\npub struct {name} {{\n    pub id: i32,\n");
     let mut moves = String::from("            id: row.id,\n");
-    for field in key.into_iter().chain(fields) {
+    for field in &with_key(key, fields) {
         out += &field.serde(Vec::new());
         out += &format!("    pub {}: {},\n", field.ident(), field.stored());
         moves += &format!("            {0}: row.{0},\n", field.ident());
@@ -780,6 +874,9 @@ const API_DELETE: &str = r#"async fn remove(
     }
 }
 "#;
+
+/// The fixed health route. A resource whose path is /healthz owns that path (naming.json W2).
+pub(super) const HEALTH_ROUTE: &str = "        .route(\"/healthz\", get(health))\n";
 
 const API_ROUTER: &str = r#"pub fn router(pool: PgPool) -> Router {
     Router::new()
@@ -1604,12 +1701,17 @@ async fn fallback_routes() {
 
 // ---------------------------------------------------------------- README.md
 
+/// The README health route line, absent when a resource owns /healthz.
+pub(super) const HEALTH_LINE: &str =
+    "- `GET /healthz`: `{\"status\": \"ok\"}`, or 503 when the database is unavailable.\n";
+
 fn readme(params: &Value, filter: Filter) -> Result<String, String> {
     let package = text(params, "package")?;
     let version = text(params, "version")?;
     let path = text(params, "path")?;
     let revision = text(params, "revision")?;
     let down = params["down_revision"].as_str().unwrap_or("none");
+    let health = if path == "/healthz" { "" } else { HEALTH_LINE };
     let query = match filter {
         Filter::All => "No query parameters. All rows in id order.".to_owned(),
         _ => {
@@ -1639,8 +1741,7 @@ The Cargo package, library and binary are `som_app`. It uses axum, sqlx and toki
 
 ## Routes
 
-- `GET /healthz`: `{{"status": "ok"}}`, or 503 when the database is unavailable.
-- `GET {path}`: list rows. {query}
+{health}- `GET {path}`: list rows. {query}
 - `POST {path}`: create a row. 201, or 409 for a unique value conflict.
 - `GET {path}/{{id}}`: get a row. 404 if it does not exist.
 - `PATCH {path}/{{id}}`: update the supplied fields. 404 if the row does not exist.

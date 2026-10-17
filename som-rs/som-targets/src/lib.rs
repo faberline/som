@@ -126,7 +126,7 @@ fn compile_rust(
         ));
     }
     // Step 5: the Rust profile.
-    if let Some(found) = profile::check(prompt) {
+    if let Some(found) = profile::active(prompt) {
         let body = match origin {
             Origin::Cnl(map) => cnl_diagnostic(
                 map,

@@ -1,6 +1,8 @@
-//! Rust output phase 1 profile (som.rust-output-scope.v1).
-//! It runs on a typed prompt that already passed compiler-v1 validation.
-//! The order and the texts follow the frozen scope.json and tests/rust-output-v1/rust_profile.py.
+//! Rust output profiles (som.rust-output-scope.v1).
+//! They run on a typed prompt that already passed compiler-v1 validation.
+//! `phase1` is the phase 1 record, in the order and with the texts of the frozen scope.json and
+//! tests/rust-output-v1/rust_profile.py. `check` is the phase 2 profile of
+//! tests/rust-output-v1/rust_profile_phase2.py: only query_parameter_collision stays.
 use serde_json::Value;
 use std::sync::LazyLock;
 
@@ -96,8 +98,58 @@ fn resource(resource: &Value, base: &str, top_level: bool) -> Option<Refusal> {
         })
 }
 
-/// The first refusal in the frozen order, or None when the prompt is in phase 1 scope.
+/// The v3 filter field named like a fixed list parameter (naming.json W4).
+fn query_parameter_collision(prompt: &Value, version: &str) -> Option<Refusal> {
+    let query = prompt.get("query").filter(|query| !query.is_null())?;
+    let parameters = SCOPE["query_parameters"].get(version)?;
+    let filter = text(&query["filter_field"]);
+    (parameters["filter_parameter"] == "field_name" && listed(&parameters["fixed"], &filter)).then(
+        || {
+            refusal(
+                "query_parameter_collision",
+                "/query/filter_field",
+                &[("name", &filter)],
+            )
+        },
+    )
+}
+
+/// The phase 2 refusal, or None when Rust output covers the prompt.
 pub fn check(prompt: &Value) -> Option<Refusal> {
+    query_parameter_collision(prompt, &text(&prompt["version"]))
+}
+
+/// The product-layout.json phase2 shape the prompt selects.
+pub fn shape(prompt: &Value) -> String {
+    let version = text(&prompt["version"]);
+    let database = text(&prompt["capabilities"]["database"]);
+    match version.as_str() {
+        "som.prompt.v7" => format!("flow_{database}"),
+        "som.prompt.v6" => format!("capability_{database}"),
+        "som.prompt.v5" if prompt.get("capabilities").is_some() => {
+            format!("capability_{database}")
+        }
+        _ => "resource".to_owned(),
+    }
+}
+
+/// The shapes whose owners have delivered. Until then a construct is NOT_IMPLEMENTED and keeps
+/// the phase 1 result (CONTRACT.md section 11).
+const DELIVERED: &[&str] = &["resource"];
+
+/// The refusal a target rust request gets: the phase 2 profile for a delivered shape, else the
+/// phase 1 profile.
+pub fn active(prompt: &Value) -> Option<Refusal> {
+    if DELIVERED.contains(&shape(prompt).as_str()) {
+        check(prompt)
+    } else {
+        phase1(prompt)
+    }
+}
+
+/// The first phase 1 refusal in the frozen order, or None when the prompt is in phase 1 scope.
+/// A prompt it admits keeps its phase 1 files byte for byte.
+pub fn phase1(prompt: &Value) -> Option<Refusal> {
     let version = text(&prompt["version"]);
     if !listed(&SCOPE["prompt_versions"]["in_scope"], &version) {
         let family = text(&SCOPE["prompt_versions"]["out_of_scope"][&version]);
@@ -128,18 +180,7 @@ pub fn check(prompt: &Value) -> Option<Refusal> {
     if let Some(found) = resource(&prompt["resource"], "/resource", true) {
         return Some(found);
     }
-    let query = prompt.get("query").filter(|query| !query.is_null())?;
-    let parameters = SCOPE["query_parameters"].get(&version)?;
-    let filter = text(&query["filter_field"]);
-    (parameters["filter_parameter"] == "field_name" && listed(&parameters["fixed"], &filter)).then(
-        || {
-            refusal(
-                "query_parameter_collision",
-                "/query/filter_field",
-                &[("name", &filter)],
-            )
-        },
-    )
+    query_parameter_collision(prompt, &version)
 }
 
 #[cfg(test)]
@@ -159,7 +200,7 @@ mod tests {
 
     #[test]
     fn version_refusal_fills_the_frozen_text() {
-        let found = check(&json!({"version":"som.prompt.v6"})).unwrap();
+        let found = phase1(&json!({"version":"som.prompt.v6"})).unwrap();
         assert_eq!(found.rule, "prompt_version");
         assert_eq!(found.code, "UNSUPPORTED_TARGET");
         assert_eq!(found.pointer, "/version");
@@ -173,6 +214,18 @@ mod tests {
     fn path_comes_before_table_and_fields() {
         let prompt = json!({"version":"som.prompt.v1","resource":{"path":"/items/","table":"_sqlx_migrations",
             "fields":[{"name":"Title"}]}});
-        assert_eq!(check(&prompt).unwrap().rule, "path_empty_segment");
+        assert_eq!(phase1(&prompt).unwrap().rule, "path_empty_segment");
+        assert_eq!(check(&prompt), None);
+    }
+
+    #[test]
+    fn phase2_keeps_only_the_query_parameter_collision() {
+        let prompt = json!({"version":"som.prompt.v3","resource":{"path":"/items","table":"items",
+            "fields":[{"name":"limit"}]},"query":{"filter_field":"limit"}});
+        let found = check(&prompt).unwrap();
+        assert_eq!(found.rule, "query_parameter_collision");
+        assert_eq!(found.pointer, "/query/filter_field");
+        assert_eq!(Some(found), phase1(&prompt));
+        assert_eq!(check(&json!({"version":"som.prompt.v7"})), None);
     }
 }

@@ -27,9 +27,9 @@ pub const CATALOG_ID: &str = "som.rust-catalog.v1";
 pub const BLOCK_LIBRARY_ID: &str = "som.rust-block-library.v1";
 pub const BACKEND_ID: &str = "som.rust-backend.v1";
 pub const TARGET_CONTRACT_ID: &str = "som.rust-output-contract.v1";
-/// H(files map) of the latest sealed receipt for contracts/rust-output-v1: amendment 2.
+/// H(files map) of the latest sealed receipt for contracts/rust-output-v1: amendment 3.
 pub const TARGET_CONTRACT_SHA256: &str =
-    "00edf1f7cba7847ba142b68a97c4956e2ed62a1ed4e821a712122a187992b838";
+    "893746988ef2062ff51cd6b6fc2941a31a1a2cff885a73600aa1abce2e872c10";
 
 pub const CATALOG_TEXT: &str = include_str!("../../catalog/rust-catalog.v1.json");
 const BLOCK_LIBRARY_TEXT: &str =
@@ -147,17 +147,40 @@ fn lookup<'a>(prompt: &'a Value, dotted: &str) -> Option<&'a Value> {
     prompt.pointer(&format!("/{}", dotted.replace('.', "/")))
 }
 
+/// The prompt facts a catalog when condition names.
+fn facts(prompt: &Value) -> Value {
+    let healthz = [
+        &prompt["resource"]["path"],
+        &prompt["resources"]["parent"]["path"],
+    ]
+    .iter()
+    .any(|path| *path == "/healthz");
+    json!({
+        "shape": profile::shape(prompt),
+        "healthz": healthz,
+    })
+}
+
 /// The frozen Rust DSL for a prompt that passed validation and the profile.
 /// Block params keep their {"$ref": name} form. The assembler resolves them from the prompt.
 pub fn plan(prompt: &Value) -> Result<Value, String> {
     let version = prompt["version"].as_str().unwrap_or_default();
+    let facts = facts(prompt);
+    let holds = |block: &Value| {
+        block["versions"]
+            .as_array()
+            .is_some_and(|rows| rows.iter().any(|row| row == version))
+            && block["when"]
+                .as_object()
+                .is_none_or(|when| when.iter().all(|(fact, value)| facts[fact] == *value))
+    };
     let mut files = Vec::new();
     for file in CATALOG["files"].as_array().expect("catalog files") {
         let blocks: Vec<Value> = file["blocks"]
             .as_array()
             .expect("catalog blocks")
             .iter()
-            .filter(|block| block["versions"].as_array().is_some_and(|rows| rows.iter().any(|row| row == version)))
+            .filter(|block| holds(block))
             .map(|block| {
                 json!({"id": block["id"], "name": block["name"], "params": block["params"], "refs": block["refs"]})
             })
@@ -529,8 +552,15 @@ fn render_files(
         let path = file["path"].as_str().unwrap_or_default().to_owned();
         let mut parts = Vec::new();
         for block in file["blocks"].as_array().into_iter().flatten() {
-            let id = block["id"].as_str().unwrap_or_default();
-            let params = resolve(&block["params"], prompt);
+            let mut id = block["id"].as_str().unwrap_or_default();
+            let mut params = resolve(&block["params"], prompt);
+            // A prompt the phase 1 profile refuses keeps the plan of its version, so a bundle
+            // renamed into one (acceptance-plan.json A8) assembles to the files of its own compile.
+            // Its lib.rs exports the hand-written migrator (naming.json W3).
+            if id == "rust.lib.modules" && profile::phase1(prompt).is_some() {
+                id = "rust.lib.migrator";
+                params = json!({"revision": prompt["migration"]["revision"]});
+            }
             parts.push(
                 render::render(id, &params).map_err(|cause| ("OUTPUT_QUALITY_FAILED", cause))?,
             );
@@ -617,7 +647,7 @@ pub fn assemble(compiler: &Compiler, doc: &Document) -> Reply {
         ));
     }
     // Step 7: the Rust profile.
-    if let Some(found) = profile::check(prompt) {
+    if let Some(found) = profile::active(prompt) {
         return rejected(doc.error(
             &format!("/bundle/prompt{}", found.pointer),
             &found.code,
@@ -862,5 +892,50 @@ mod tests {
         assert!(check_output(&files).is_err());
         files.remove("README.md");
         assert!(check_output(&files).is_err());
+    }
+
+    #[test]
+    fn a_renamed_field_keeps_the_plan_and_gets_the_migrator() {
+        let prompt = example("v1");
+        let mut renamed = prompt.clone();
+        renamed["resource"]["fields"][0]["name"] = json!("Title");
+        let dsl = plan(&prompt).expect("plan");
+        assert_eq!(dsl, plan(&renamed).expect("plan"));
+        let files = render_files(&renamed, &dsl).expect("render");
+        check_output(&files).expect("layout");
+        assert!(files["src/lib.rs"].contains("_som_rust_migrations"));
+        assert!(!render_files(&prompt, &dsl).expect("render")["src/lib.rs"].contains("_som_rust_migrations"));
+    }
+
+    #[test]
+    fn a_phase2_prompt_gets_the_migrator_and_may_own_healthz() {
+        for (name, resource) in [("v1", "/resource"), ("v5", "/resources/parent")] {
+            let mut prompt = example(name);
+            *prompt
+                .pointer_mut(&format!("{resource}/path"))
+                .expect("path") = json!("/healthz");
+            let dsl = plan(&prompt).expect("plan");
+            let ids: Vec<&str> = dsl["files"]
+                .as_array()
+                .expect("files")
+                .iter()
+                .flat_map(|file| file["blocks"].as_array().expect("blocks"))
+                .map(|block| block["id"].as_str().expect("id"))
+                .collect();
+            assert!(ids.contains(&"rust.lib.modules"), "{name}");
+            assert!(!ids.contains(&"rust.api.health"), "{name}");
+            let files = render_files(&prompt, &dsl).expect("render");
+            check_output(&files).expect("layout");
+            assert!(
+                files["src/lib.rs"].contains("_som_rust_migrations"),
+                "{name}"
+            );
+            assert_eq!(
+                files["src/api.rs"].matches("\"/healthz\"").count(),
+                1,
+                "{name}"
+            );
+            assert!(!files["README.md"].contains(render::HEALTH_LINE), "{name}");
+        }
     }
 }

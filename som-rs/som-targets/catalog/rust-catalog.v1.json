@@ -1,7 +1,7 @@
 {
   "version": "som.rust-catalog.v1",
   "dsl_version": "som.dsl.rust.v1",
-  "rule": "The plan for a prompt keeps, in this order, every file and every block whose versions list the prompt version. A block param {\"$ref\": \"a.b\"} names the prompt value at /a/b. refs name blocks of the same file. A file path names the prompt value in braces. Every block id starts with rust. and is rendered by the Rust block library.",
+  "rule": "The plan for a prompt keeps, in this order, every file and every block whose versions list the prompt version and whose when conditions all hold for the prompt. A when condition names a prompt fact and its required value: shape, the product-layout.json phase2 shape the prompt selects; healthz, whether the resource or parent path is /healthz (naming.json W2). when stays in the catalog: a DSL block has only id, name, params and refs. A block param {\"$ref\": \"a.b\"} names the prompt value at /a/b. refs name blocks of the same file. A file path names the prompt value in braces. Every block id starts with rust. and is rendered by the Rust block library. A prompt outside the phase 1 profile keeps the plan of its version: rust.lib.modules renders the hand-written migrator (naming.json W3) when the phase 1 profile refuses the prompt it renders for.",
   "files": [
     {
       "path": "Cargo.toml",
@@ -16,6 +16,9 @@
             "som.prompt.v4",
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": []
         }
@@ -34,6 +37,9 @@
             "som.prompt.v4",
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": []
         }
@@ -52,6 +58,9 @@
             "som.prompt.v4",
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": []
         }
@@ -70,6 +79,9 @@
             "som.prompt.v4",
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": []
         }
@@ -85,6 +97,9 @@
             "som.prompt.v1",
             "som.prompt.v2"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "fields": {
               "$ref": "resource.fields"
@@ -99,6 +114,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "fields": {
               "$ref": "resource.fields"
@@ -112,6 +130,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "parent": {
               "$ref": "resources.parent"
@@ -137,6 +158,9 @@
             "som.prompt.v1",
             "som.prompt.v2"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "fields": {
               "$ref": "resource.fields"
@@ -151,6 +175,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "fields": {
               "$ref": "resource.fields"
@@ -165,6 +192,9 @@
             "som.prompt.v1",
             "som.prompt.v2"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "fields": {
               "$ref": "resource.fields"
@@ -181,6 +211,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "fields": {
               "$ref": "resource.fields"
@@ -197,6 +230,9 @@
             "som.prompt.v1",
             "som.prompt.v2"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "fields": {
               "$ref": "resource.fields"
@@ -211,6 +247,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "fields": {
               "$ref": "resource.fields"
@@ -224,6 +263,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "parent": {
               "$ref": "resources.parent"
@@ -240,6 +282,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "parent": {
               "$ref": "resources.parent"
@@ -255,6 +300,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "child": {
               "$ref": "resources.child"
@@ -273,6 +321,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": [
             "parent",
@@ -293,6 +344,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": []
         },
@@ -302,6 +356,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": []
         },
@@ -315,6 +372,10 @@
             "som.prompt.v4",
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource",
+            "healthz": false
+          },
           "params": {},
           "refs": [
             "support"
@@ -326,6 +387,9 @@
           "versions": [
             "som.prompt.v1"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": [
             "support"
@@ -337,6 +401,9 @@
           "versions": [
             "som.prompt.v2"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "filter_field": {
               "$ref": "query.filter_field"
@@ -355,6 +422,9 @@
           "versions": [
             "som.prompt.v3"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "filter_field": {
               "$ref": "query.filter_field"
@@ -373,6 +443,9 @@
           "versions": [
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "filter_field": {
               "$ref": "query.filter_field"
@@ -397,6 +470,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": [
             "support"
@@ -411,6 +487,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": [
             "support"
@@ -425,6 +504,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": [
             "support"
@@ -439,6 +521,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": [
             "support"
@@ -453,6 +538,10 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource",
+            "healthz": false
+          },
           "params": {
             "path": {
               "$ref": "resource.path"
@@ -468,11 +557,40 @@
           ]
         },
         {
+          "id": "rust.api.router.owned",
+          "name": "router",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "when": {
+            "shape": "resource",
+            "healthz": true
+          },
+          "params": {
+            "path": {
+              "$ref": "resource.path"
+            }
+          },
+          "refs": [
+            "list",
+            "create",
+            "get",
+            "update",
+            "delete"
+          ]
+        },
+        {
           "id": "rust.api.related.list",
           "name": "list",
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "parent": {
               "$ref": "resources.parent"
@@ -491,6 +609,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": [
             "support",
@@ -503,6 +624,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": [
             "support"
@@ -514,6 +638,10 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource",
+            "healthz": false
+          },
           "params": {
             "parent_path": {
               "$ref": "resources.parent.path"
@@ -524,6 +652,30 @@
           },
           "refs": [
             "health",
+            "list",
+            "parent",
+            "child"
+          ]
+        },
+        {
+          "id": "rust.api.related.router.owned",
+          "name": "router",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "when": {
+            "shape": "resource",
+            "healthz": true
+          },
+          "params": {
+            "parent_path": {
+              "$ref": "resources.parent.path"
+            },
+            "child_path": {
+              "$ref": "resources.child.path"
+            }
+          },
+          "refs": [
             "list",
             "parent",
             "child"
@@ -543,6 +695,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": []
         },
@@ -553,6 +708,9 @@
             "som.prompt.v1",
             "som.prompt.v2"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -570,6 +728,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -587,6 +748,9 @@
             "som.prompt.v1",
             "som.prompt.v2"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -604,6 +768,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -620,6 +787,9 @@
           "versions": [
             "som.prompt.v1"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -636,6 +806,9 @@
           "versions": [
             "som.prompt.v2"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -655,6 +828,9 @@
           "versions": [
             "som.prompt.v3"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -674,6 +850,9 @@
           "versions": [
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -697,6 +876,9 @@
             "som.prompt.v1",
             "som.prompt.v2"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -714,6 +896,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -733,6 +918,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -746,6 +934,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": []
         },
@@ -755,6 +946,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "parent": {
               "$ref": "resources.parent"
@@ -770,6 +964,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "child": {
               "$ref": "resources.child"
@@ -794,6 +991,9 @@
             "som.prompt.v1",
             "som.prompt.v2"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -817,6 +1017,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -839,6 +1042,9 @@
           "versions": [
             "som.prompt.v3"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -857,6 +1063,9 @@
           "versions": [
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "table": {
               "$ref": "resource.table"
@@ -878,6 +1087,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "parent": {
               "$ref": "resources.parent"
@@ -897,6 +1109,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "parent_table": {
               "$ref": "resources.parent.table"
@@ -926,6 +1141,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "path": {
               "$ref": "resource.path"
@@ -942,6 +1160,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "parent": {
               "$ref": "resources.parent"
@@ -965,6 +1186,10 @@
             "som.prompt.v4",
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource",
+            "healthz": false
+          },
           "params": {},
           "refs": [
             "harness"
@@ -977,6 +1202,9 @@
             "som.prompt.v1",
             "som.prompt.v2"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "fields": {
               "$ref": "resource.fields"
@@ -993,6 +1221,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "fields": {
               "$ref": "resource.fields"
@@ -1009,6 +1240,9 @@
             "som.prompt.v1",
             "som.prompt.v2"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "fields": {
               "$ref": "resource.fields"
@@ -1025,6 +1259,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "fields": {
               "$ref": "resource.fields"
@@ -1043,6 +1280,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "fields": {
               "$ref": "resource.fields"
@@ -1058,6 +1298,9 @@
           "versions": [
             "som.prompt.v1"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": [
             "harness"
@@ -1069,6 +1312,9 @@
           "versions": [
             "som.prompt.v2"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "filter_field": {
               "$ref": "query.filter_field"
@@ -1087,6 +1333,9 @@
           "versions": [
             "som.prompt.v3"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "filter_field": {
               "$ref": "query.filter_field"
@@ -1105,6 +1354,9 @@
           "versions": [
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "filter_field": {
               "$ref": "query.filter_field"
@@ -1129,6 +1381,9 @@
             "som.prompt.v3",
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": [
             "harness"
@@ -1140,6 +1395,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": [
             "harness"
@@ -1151,6 +1409,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "parent": {
               "$ref": "resources.parent"
@@ -1169,6 +1430,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "parent": {
               "$ref": "resources.parent"
@@ -1187,6 +1451,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "parent": {
               "$ref": "resources.parent"
@@ -1205,6 +1472,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": [
             "harness"
@@ -1216,6 +1486,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "parent": {
               "$ref": "resources.parent"
@@ -1234,6 +1507,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {},
           "refs": [
             "harness"
@@ -1250,6 +1526,9 @@
           "versions": [
             "som.prompt.v1"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "package": {
               "$ref": "package"
@@ -1275,6 +1554,9 @@
           "versions": [
             "som.prompt.v2"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "package": {
               "$ref": "package"
@@ -1306,6 +1588,9 @@
           "versions": [
             "som.prompt.v3"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "package": {
               "$ref": "package"
@@ -1337,6 +1622,9 @@
           "versions": [
             "som.prompt.v4"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "package": {
               "$ref": "package"
@@ -1371,6 +1659,9 @@
           "versions": [
             "som.prompt.v5"
           ],
+          "when": {
+            "shape": "resource"
+          },
           "params": {
             "package": {
               "$ref": "package"
