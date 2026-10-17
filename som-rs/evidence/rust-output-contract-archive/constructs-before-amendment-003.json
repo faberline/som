@@ -1,0 +1,3228 @@
+{
+  "version": "som.rust-output-phase2-constructs.v1",
+  "rules": [
+    "Every prompt pointer of field-statement-map.json and every enum or const value of compiler-prompt.schema.json is one construct below. The builder fails if any construct has no Rust form, if a pointer matches several forms, or if a form matches no construct.",
+    "owner names the issue that delivers the Rust form for each prompt version: phase1 is the delivered phase 1 output (#46 to #51); #53 owns capability products (v5 with capabilities, v6, and the non-flow part of v7); #54 owns v7 flows. A v5 construct outside the capabilities block belongs to phase 1 for a product without capabilities and to #53 for a product with capabilities.",
+    "A Rust form that says 'as Python' or 'the Python ...' means the same observable result as the accepted Python product for the same prompt under the phase 2 behavior suite (behavior.json).",
+    "The crates and their versions and features for MongoDB, authentication, object storage, workflows and flows are fixed by #53 in a later numbered amendment, under the toolchain rules of toolchain.json."
+  ],
+  "sources": {
+    "som-rs/contracts/compiler-v1/field-statement-map.json": "76744262ece22db17c61683b206beaab67105245888719f9e86c2c84e8283be2",
+    "som-rs/contracts/compiler-v1/compiler-prompt.schema.json": "aa9e6300668181beab47643b6748b72a0942499e454b290f3c6c45053524be73"
+  },
+  "counts": {
+    "constructs": 168,
+    "pointers": 74,
+    "values": 94,
+    "unassigned": 0,
+    "owner_rows": {
+      "#53": 199,
+      "#54": 63,
+      "phase1": 156
+    }
+  },
+  "constructs": [
+    {
+      "id": "pointer:/version",
+      "pointer": "/version",
+      "statement": "Use prompt version N.",
+      "versions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ],
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "Selects the product shape and is never a Rust identifier. v1 to v5 without capabilities keep the phase 1 layout of product-layout.json; v5 with capabilities, v6 and v7 use the phase 2 layout of CONTRACT.md section 10."
+    },
+    {
+      "id": "pointer:/package",
+      "pointer": "/package",
+      "statement": "Use package IDENT.",
+      "versions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ],
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "Never a Rust identifier: the Cargo package and the binary stay som_app. Every string the Python product derives from the package is the same in Rust (naming.json W5): README.md, the session cookie som_<package>, the login cookie som_<package>_login and the Redis key prefix <REDIS_NAMESPACE>:<package>:."
+    },
+    {
+      "id": "pointer:/contract/id",
+      "pointer": "/contract/id",
+      "statement": "Bind contract ID with SHA-256 \"HASH\".",
+      "versions": [
+        6,
+        7
+      ],
+      "owner": {
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "Checked by compiler-v1 only. It selects the v6 or v7 product shape and adds nothing else to the product."
+    },
+    {
+      "id": "pointer:/contract/sha256",
+      "pointer": "/contract/sha256",
+      "statement": "Bind contract ID with SHA-256 \"HASH\".",
+      "versions": [
+        6,
+        7
+      ],
+      "owner": {
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "Checked by compiler-v1 only. It selects the v6 or v7 product shape and adds nothing else to the product."
+    },
+    {
+      "id": "pointer:/resource/name",
+      "pointer": "/resource/name",
+      "statement": "Use resource name IDENT.",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "Never a Rust identifier (naming.json R1). Every wire string the Python product derives from it is the same in Rust."
+    },
+    {
+      "id": "pointer:/resource/table",
+      "pointer": "/resource/table",
+      "statement": "Use table IDENT.",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The PostgreSQL table, verbatim and double-quoted in SQL (naming.json W3)."
+    },
+    {
+      "id": "pointer:/resource/path",
+      "pointer": "/resource/path",
+      "statement": "Use path JSON_STRING.",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The route prefix, verbatim (naming.json W2)."
+    },
+    {
+      "id": "pointer:/resource/fields/*/name",
+      "pointer": "/resource/fields/*/name",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The JSON member and the SQL column, verbatim; the Rust field follows naming.json R2."
+    },
+    {
+      "id": "pointer:/resource/fields/*/type",
+      "pointer": "/resource/fields/*/type",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The field_type construct of the same value."
+    },
+    {
+      "id": "pointer:/resource/fields/*/required",
+      "pointer": "/resource/fields/*/required",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "Required in create bodies, NOT NULL, and Option<T> when optional, with the Python validation errors."
+    },
+    {
+      "id": "pointer:/resource/fields/*/unique",
+      "pointer": "/resource/fields/*/unique",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "A unique constraint with the Python name and the Python 409 on conflict."
+    },
+    {
+      "id": "pointer:/resource/fields/*/default",
+      "pointer": "/resource/fields/*/default",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        3,
+        4
+      ],
+      "owner": {
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The field_default construct of the same value."
+    },
+    {
+      "id": "pointer:/resources/parent/name",
+      "pointer": "/resources/parent/name",
+      "statement": "Use resource name IDENT.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "Never a Rust identifier (naming.json R1). Every wire string the Python product derives from it is the same in Rust."
+    },
+    {
+      "id": "pointer:/resources/parent/table",
+      "pointer": "/resources/parent/table",
+      "statement": "Use table IDENT.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The PostgreSQL table or the MongoDB collection, verbatim (naming.json W3)."
+    },
+    {
+      "id": "pointer:/resources/parent/path",
+      "pointer": "/resources/parent/path",
+      "statement": "Use path JSON_STRING.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The route prefix, verbatim; the child routes nest under <parent path>/{parent_id} as in Python (naming.json W2)."
+    },
+    {
+      "id": "pointer:/resources/parent/fields/*/name",
+      "pointer": "/resources/parent/fields/*/name",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The JSON member, the SQL column and the MongoDB document field, verbatim; the Rust field follows naming.json R2."
+    },
+    {
+      "id": "pointer:/resources/parent/fields/*/type",
+      "pointer": "/resources/parent/fields/*/type",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The field_type construct of the same value."
+    },
+    {
+      "id": "pointer:/resources/parent/fields/*/required",
+      "pointer": "/resources/parent/fields/*/required",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "Required in create bodies, NOT NULL (PostgreSQL) or always present (MongoDB), and Option<T> when optional, with the Python validation errors."
+    },
+    {
+      "id": "pointer:/resources/parent/fields/*/unique",
+      "pointer": "/resources/parent/fields/*/unique",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "A unique constraint with the Python name (PostgreSQL) or the Python partial unique index on the field's BSON type (MongoDB), and the Python 409 on conflict."
+    },
+    {
+      "id": "pointer:/resources/parent/fields/*/default",
+      "pointer": "/resources/parent/fields/*/default",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The field_default construct of the same value."
+    },
+    {
+      "id": "pointer:/resources/child/name",
+      "pointer": "/resources/child/name",
+      "statement": "Use resource name IDENT.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "Never a Rust identifier (naming.json R1). Every wire string the Python product derives from it is the same in Rust."
+    },
+    {
+      "id": "pointer:/resources/child/table",
+      "pointer": "/resources/child/table",
+      "statement": "Use table IDENT.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The PostgreSQL table or the MongoDB collection, verbatim (naming.json W3)."
+    },
+    {
+      "id": "pointer:/resources/child/path",
+      "pointer": "/resources/child/path",
+      "statement": "Use path JSON_STRING.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The route prefix, verbatim; the child routes nest under <parent path>/{parent_id} as in Python (naming.json W2)."
+    },
+    {
+      "id": "pointer:/resources/child/fields/*/name",
+      "pointer": "/resources/child/fields/*/name",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The JSON member, the SQL column and the MongoDB document field, verbatim; the Rust field follows naming.json R2."
+    },
+    {
+      "id": "pointer:/resources/child/fields/*/type",
+      "pointer": "/resources/child/fields/*/type",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The field_type construct of the same value."
+    },
+    {
+      "id": "pointer:/resources/child/fields/*/required",
+      "pointer": "/resources/child/fields/*/required",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "Required in create bodies, NOT NULL (PostgreSQL) or always present (MongoDB), and Option<T> when optional, with the Python validation errors."
+    },
+    {
+      "id": "pointer:/resources/child/fields/*/unique",
+      "pointer": "/resources/child/fields/*/unique",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "A unique constraint with the Python name (PostgreSQL) or the Python partial unique index on the field's BSON type (MongoDB), and the Python 409 on conflict."
+    },
+    {
+      "id": "pointer:/resources/child/fields/*/default",
+      "pointer": "/resources/child/fields/*/default",
+      "statement": "Field IDENT is required|optional TYPE and is unique|not unique [with default JSON_SCALAR].",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The field_default construct of the same value."
+    },
+    {
+      "id": "pointer:/query/filter_field",
+      "pointer": "/query/filter_field",
+      "statement": "Filter exactly on field IDENT. | Use no exact filter.",
+      "versions": [
+        2,
+        3,
+        4
+      ],
+      "owner": {
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (naming.json W4). A v3 filter field named like a fixed list parameter stays refused (query_parameter_collision, CONTRACT.md section 10)."
+    },
+    {
+      "id": "pointer:/query/date_field",
+      "pointer": "/query/date_field",
+      "statement": "Filter before date on field IDENT. | Use no date filter.",
+      "versions": [
+        4
+      ],
+      "owner": {
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (naming.json W4). A v3 filter field named like a fixed list parameter stays refused (query_parameter_collision, CONTRACT.md section 10)."
+    },
+    {
+      "id": "pointer:/query/max_limit",
+      "pointer": "/query/max_limit",
+      "statement": "Limit query results to UINT.",
+      "versions": [
+        2,
+        3,
+        4
+      ],
+      "owner": {
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (naming.json W4). A v3 filter field named like a fixed list parameter stays refused (query_parameter_collision, CONTRACT.md section 10)."
+    },
+    {
+      "id": "pointer:/resources/parent/query/filter_field",
+      "pointer": "/resources/parent/query/filter_field",
+      "statement": "Filter exactly on field IDENT. | Use no exact filter.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (PostgreSQL index or MongoDB query index) (naming.json W4)."
+    },
+    {
+      "id": "pointer:/resources/parent/query/date_field",
+      "pointer": "/resources/parent/query/date_field",
+      "statement": "Filter before date on field IDENT. | Use no date filter.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (PostgreSQL index or MongoDB query index) (naming.json W4)."
+    },
+    {
+      "id": "pointer:/resources/parent/query/max_limit",
+      "pointer": "/resources/parent/query/max_limit",
+      "statement": "Limit query results to UINT.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (PostgreSQL index or MongoDB query index) (naming.json W4)."
+    },
+    {
+      "id": "pointer:/resources/child/query/filter_field",
+      "pointer": "/resources/child/query/filter_field",
+      "statement": "Filter exactly on field IDENT. | Use no exact filter.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (PostgreSQL index or MongoDB query index) (naming.json W4)."
+    },
+    {
+      "id": "pointer:/resources/child/query/date_field",
+      "pointer": "/resources/child/query/date_field",
+      "statement": "Filter before date on field IDENT. | Use no date filter.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (PostgreSQL index or MongoDB query index) (naming.json W4)."
+    },
+    {
+      "id": "pointer:/resources/child/query/max_limit",
+      "pointer": "/resources/child/query/max_limit",
+      "statement": "Limit query results to UINT.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (PostgreSQL index or MongoDB query index) (naming.json W4)."
+    },
+    {
+      "id": "pointer:/relation/foreign_key",
+      "pointer": "/relation/foreign_key",
+      "statement": "Relate child to parent with foreign key IDENT and restrict deletion.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The child column or document field, verbatim; the Rust field follows naming.json R2."
+    },
+    {
+      "id": "pointer:/relation/on_delete",
+      "pointer": "/relation/on_delete",
+      "statement": "Relate child to parent with foreign key IDENT and restrict deletion.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "Restrict: deleting a parent that has children gives the Python status and detail. PostgreSQL uses the Python foreign key; MongoDB checks inside the Python transaction."
+    },
+    {
+      "id": "pointer:/migration/revision",
+      "pointer": "/migration/revision",
+      "statement": "Use migration revision IDENT.",
+      "versions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ],
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "PostgreSQL: the schema of the Python migration (tables, columns, defaults, indexes and constraints; migration bookkeeping tables are not compared). MongoDB: the Python migrate upgrade (indexes) and downgrade (drops the same collections, only on the isolated test database). `som_app migrate upgrade|downgrade` runs them (services.json)."
+    },
+    {
+      "id": "pointer:/migration/down_revision",
+      "pointer": "/migration/down_revision",
+      "statement": "Use previous migration revision IDENT. | Use no previous migration revision.",
+      "versions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ],
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "PostgreSQL: the schema of the Python migration (tables, columns, defaults, indexes and constraints; migration bookkeeping tables are not compared). MongoDB: the Python migrate upgrade (indexes) and downgrade (drops the same collections, only on the isolated test database). `som_app migrate upgrade|downgrade` runs them (services.json)."
+    },
+    {
+      "id": "pointer:/capabilities/database",
+      "pointer": "/capabilities/database",
+      "statement": "Use database ENUM.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The capability_database construct of the same value."
+    },
+    {
+      "id": "pointer:/capabilities/auth",
+      "pointer": "/capabilities/auth",
+      "statement": "Use authentication ENUM.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The capability_auth construct of the same value."
+    },
+    {
+      "id": "pointer:/capabilities/storage",
+      "pointer": "/capabilities/storage",
+      "statement": "Use object storage ENUM.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The capability_storage construct of the same value."
+    },
+    {
+      "id": "pointer:/capabilities/workflow",
+      "pointer": "/capabilities/workflow",
+      "statement": "Use workflow ENUM.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The capability_workflow construct of the same value."
+    },
+    {
+      "id": "pointer:/capabilities/value_field",
+      "pointer": "/capabilities/value_field",
+      "statement": "Use workflow value field IDENT. | Use no workflow value field.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The workflow reads this field by its wire name, as the Python product does."
+    },
+    {
+      "id": "pointer:/capabilities/group_field",
+      "pointer": "/capabilities/group_field",
+      "statement": "Use workflow group field IDENT. | Use no workflow group field.",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The workflow groups by this field by its wire name, as the Python product does."
+    },
+    {
+      "id": "pointer:/logic/*",
+      "pointer": "/logic/*",
+      "statement": "Exact LEGACY_SENTENCE.",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The legacy_logic construct of the same sentence."
+    },
+    {
+      "id": "pointer:/logic/*/scope",
+      "pointer": "/logic/*/scope",
+      "statement": "For parent|child|batch: RELATED_SENTENCE.",
+      "versions": [
+        5
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The related_logic construct of the same scope and sentence."
+    },
+    {
+      "id": "pointer:/logic/*/step",
+      "pointer": "/logic/*/step",
+      "statement": "For parent|child|batch: RELATED_SENTENCE.",
+      "versions": [
+        5
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The related_logic construct of the same scope and sentence."
+    },
+    {
+      "id": "pointer:/tests/0",
+      "pointer": "/tests/0",
+      "statement": "Exact CHECK_SENTENCE.",
+      "versions": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ],
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The check_sentence construct of the same version."
+    },
+    {
+      "id": "pointer:/operations/*/scope",
+      "pointer": "/operations/*/scope",
+      "statement": "Allow ACTION on parent|child. | Allow batch creation.",
+      "versions": [
+        6,
+        7
+      ],
+      "owner": {
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The resource of the operation construct: the parent or child routes, or the batch route."
+    },
+    {
+      "id": "pointer:/operations/*/action",
+      "pointer": "/operations/*/action",
+      "statement": "Allow ACTION on parent|child. | Allow batch creation.",
+      "versions": [
+        6,
+        7
+      ],
+      "owner": {
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The operation construct of the same action on the resource of its scope."
+    },
+    {
+      "id": "pointer:/flow/name",
+      "pointer": "/flow/name",
+      "statement": "Begin flow IDENT.",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The route segment of POST /flows/{name}/runs, verbatim; never a Rust identifier (naming.json R3)."
+    },
+    {
+      "id": "pointer:/flow/inputs/*/name",
+      "pointer": "/flow/inputs/*/name",
+      "statement": "Input IDENT has type TYPE.",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The JSON member of the run body, verbatim (naming.json W1)."
+    },
+    {
+      "id": "pointer:/flow/inputs/*/type",
+      "pointer": "/flow/inputs/*/type",
+      "statement": "Input IDENT has type TYPE.",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The flow_input_type construct of the same value."
+    },
+    {
+      "id": "pointer:/flow/steps/*/name",
+      "pointer": "/flow/steps/*/name",
+      "statement": "Begin step|transaction|branch IDENT ...",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The step key in the run record and the journal, verbatim; never a Rust identifier (naming.json R3)."
+    },
+    {
+      "id": "pointer:/flow/steps/*/op",
+      "pointer": "/flow/steps/*/op",
+      "statement": "Begin step NAME with operation OP. | Begin transaction NAME. | Begin branch NAME when PREDICATE.",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The flow_operation or flow_node construct of the same value."
+    },
+    {
+      "id": "pointer:/flow/steps/*/args/*",
+      "pointer": "/flow/steps/*/args/*",
+      "statement": "Set argument IDENT to VALUE.",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The argument value of the operation, resolved from the runtime reference at run time as Python resolves it."
+    },
+    {
+      "id": "pointer:/flow/steps/*/undo",
+      "pointer": "/flow/steps/*/undo",
+      "statement": "On failure, undo with ENUM. | On failure, use no undo.",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The flow_undo construct of the same value."
+    },
+    {
+      "id": "pointer:/flow/steps/*/steps",
+      "pointer": "/flow/steps/*/steps",
+      "statement": "Nodes inside Begin/End transaction.",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The transaction body: the flow_node transaction construct."
+    },
+    {
+      "id": "pointer:/flow/steps/*/condition/op",
+      "pointer": "/flow/steps/*/condition/op",
+      "statement": "is equal to|is not equal to|is less than|is at most|is greater than|is at least|is null",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The predicate construct and its operands, compared with the Python value semantics (types, null and float sign)."
+    },
+    {
+      "id": "pointer:/flow/steps/*/condition/left",
+      "pointer": "/flow/steps/*/condition/left",
+      "statement": "First VALUE in branch condition.",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The predicate construct and its operands, compared with the Python value semantics (types, null and float sign)."
+    },
+    {
+      "id": "pointer:/flow/steps/*/condition/right",
+      "pointer": "/flow/steps/*/condition/right",
+      "statement": "Second VALUE; omitted only for is null.",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The predicate construct and its operands, compared with the Python value semantics (types, null and float sign)."
+    },
+    {
+      "id": "pointer:/flow/steps/*/then",
+      "pointer": "/flow/steps/*/then",
+      "statement": "Nodes inside Begin/End then.",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The then arm: the flow_node if construct."
+    },
+    {
+      "id": "pointer:/flow/steps/*/else",
+      "pointer": "/flow/steps/*/else",
+      "statement": "Nodes inside Begin/End else.",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The else arm: the flow_node if construct."
+    },
+    {
+      "id": "pointer:/flow/steps/*/exports/*/then",
+      "pointer": "/flow/steps/*/exports/*/then",
+      "statement": "Export IDENT from then VALUE and from else VALUE.",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The branch export: the value of the taken arm, recorded under the export name as Python records it."
+    },
+    {
+      "id": "pointer:/flow/steps/*/exports/*/else",
+      "pointer": "/flow/steps/*/exports/*/else",
+      "statement": "Export IDENT from then VALUE and from else VALUE.",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The branch export: the value of the taken arm, recorded under the export name as Python records it."
+    },
+    {
+      "id": "pointer:/flow/result/*",
+      "pointer": "/flow/result/*",
+      "statement": "Return IDENT from VALUE.",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A member of the run result, verbatim name, with the Python value encoding."
+    },
+    {
+      "id": "pointer:runtime_reference/input",
+      "pointer": "runtime_reference/input",
+      "statement": "input IDENT",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A run-time value: input, step field or literal, with the Python resolution, type and encoding (literal_type)."
+    },
+    {
+      "id": "pointer:runtime_reference/step",
+      "pointer": "runtime_reference/step",
+      "statement": "step IDENT field JSON_STRING",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A run-time value: input, step field or literal, with the Python resolution, type and encoding (literal_type)."
+    },
+    {
+      "id": "pointer:runtime_reference/field",
+      "pointer": "runtime_reference/field",
+      "statement": "step IDENT field JSON_STRING",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A run-time value: input, step field or literal, with the Python resolution, type and encoding (literal_type)."
+    },
+    {
+      "id": "pointer:runtime_reference/literal",
+      "pointer": "runtime_reference/literal",
+      "statement": "literal TYPE JSON_SCALAR",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A run-time value: input, step field or literal, with the Python resolution, type and encoding (literal_type)."
+    },
+    {
+      "id": "pointer:runtime_reference/type",
+      "pointer": "runtime_reference/type",
+      "statement": "literal TYPE JSON_SCALAR",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A run-time value: input, step field or literal, with the Python resolution, type and encoding (literal_type)."
+    },
+    {
+      "id": "capability_auth:firebase",
+      "family": "capability_auth",
+      "value": "firebase",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "Firebase ID tokens for FIREBASE_PROJECT_ID, with FIREBASE_AUTH_EMULATOR_HOST as a test-only loopback override; revoked or disabled users are rejected; the custom role claim editor allows writes; the Python 401 and 403 answers."
+    },
+    {
+      "id": "capability_auth:google_oauth",
+      "family": "capability_auth",
+      "value": "google_oauth",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The Python OIDC code flow: /auth/google/login, /auth/google/callback, /auth/me and POST /auth/logout; sessions and one-use login state in Redis under the Python key prefix; the Python cookie names; X-CSRF-Token from /auth/me for writes; GOOGLE_EDITOR_SUBJECTS lists editors; HTTPS redirect outside tests; SOM_TEST_OIDC_ISSUER as a test-only loopback override."
+    },
+    {
+      "id": "capability_auth:jwt",
+      "family": "capability_auth",
+      "value": "jwt",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "RS256 bearer tokens checked with JWT_PUBLIC_KEY_FILE, JWT_ISSUER and JWT_AUDIENCE; RSA keys of at least 2048 bits; claims sub, iat, exp, iss and aud; role=editor for writes; the Python 401 and 403 answers."
+    },
+    {
+      "id": "capability_database:mongodb",
+      "family": "capability_database",
+      "value": "mongodb",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "MongoDB with the driver chosen by #53. Requires a replica set or mongos as Python does. Collections are the prompt tables; integer ids come from _som_counters and revisions from _som_revision as in Python (naming.json W6). Unique and query indexes, transactions, and errors as Python."
+    },
+    {
+      "id": "capability_database:postgresql",
+      "family": "capability_database",
+      "value": "postgresql",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "PostgreSQL through sqlx as in phase 1, with the capability product tables of the Python migration (for v7 also _som_flow_runs and _som_flow_leases with the Python columns, naming.json W6)."
+    },
+    {
+      "id": "capability_storage:gcs",
+      "family": "capability_storage",
+      "value": "gcs",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "GCS objects in GCS_BUCKET of GCS_PROJECT with application default credentials; STORAGE_EMULATOR_HOST as a test-only loopback override. The same /objects rules as s3."
+    },
+    {
+      "id": "capability_storage:none",
+      "family": "capability_storage",
+      "value": "none",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The /objects routes and answers of the Python product without an object store."
+    },
+    {
+      "id": "capability_storage:s3",
+      "family": "capability_storage",
+      "value": "s3",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "S3 objects in S3_BUCKET with the SDK credential chain and AWS_REGION (default us-east-1); SOM_TEST_S3_ENDPOINT as a test-only loopback override with path-style addressing. PUT, GET and DELETE /objects/{key}: safe keys of 1 to 80 characters, at most 1 MiB, SHA-256 on PUT, same-body retry safe, a different body gives 409."
+    },
+    {
+      "id": "capability_workflow:csv",
+      "family": "capability_workflow",
+      "value": "csv",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The CSV export with the Python bytes, and POST <parent path>/{parent_id}/import with text/csv: 1 to 20 rows, headers equal to the custom child fields, \\N for null, all rows or none."
+    },
+    {
+      "id": "capability_workflow:decimal_summary",
+      "family": "capability_workflow",
+      "value": "decimal_summary",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The Python decimal summary of value_field (grouped by group_field when set), with the Python decimal encoding."
+    },
+    {
+      "id": "capability_workflow:gzip_export",
+      "family": "capability_workflow",
+      "value": "gzip_export",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The json_export rules, gzip-encoded with the Python bytes."
+    },
+    {
+      "id": "capability_workflow:json_export",
+      "family": "capability_workflow",
+      "value": "json_export",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "GET <parent path>/{parent_id}/export: up to 1000 children in id order, 413 above; the Python media type, headers and bytes."
+    },
+    {
+      "id": "capability_workflow:statistics",
+      "family": "capability_workflow",
+      "value": "statistics",
+      "versions": [
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v5": [
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The Python statistics of value_field (grouped by group_field when set), with the Python float encoding."
+    },
+    {
+      "id": "check_sentence:Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.",
+      "family": "check_sentence",
+      "value": "Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.",
+      "versions": [
+        2
+      ],
+      "owner": {
+        "v2": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The generated tests in tests/ cover these checks; `cargo test` runs them against TEST_DATABASE_URL and a missing service fails them."
+    },
+    {
+      "id": "check_sentence:Check CRUD, missing id, and unique conflict when supported.",
+      "family": "check_sentence",
+      "value": "Check CRUD, missing id, and unique conflict when supported.",
+      "versions": [
+        1
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The generated tests in tests/ cover these checks; `cargo test` runs them against TEST_DATABASE_URL and a missing service fails them."
+    },
+    {
+      "id": "check_sentence:Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.",
+      "family": "check_sentence",
+      "value": "Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.",
+      "versions": [
+        5
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The generated tests in tests/ cover these checks; `cargo test` runs them against TEST_DATABASE_URL and a missing service fails them."
+    },
+    {
+      "id": "check_sentence:Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.",
+      "family": "check_sentence",
+      "value": "Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.",
+      "versions": [
+        4
+      ],
+      "owner": {
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The generated tests in tests/ cover these checks; `cargo test` runs them against TEST_DATABASE_URL and a missing service fails them."
+    },
+    {
+      "id": "check_sentence:Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.",
+      "family": "check_sentence",
+      "value": "Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.",
+      "versions": [
+        3
+      ],
+      "owner": {
+        "v3": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The generated tests in tests/ cover these checks; `cargo test` runs them against TEST_DATABASE_URL and a missing service fails them."
+    },
+    {
+      "id": "contract:related-business.v1",
+      "family": "contract",
+      "value": "related-business.v1",
+      "versions": [
+        6
+      ],
+      "owner": {
+        "v6": [
+          "#53"
+        ]
+      },
+      "rust_form": "The v6 product shape: the operations construct selects the routes."
+    },
+    {
+      "id": "contract:related-flow.v1",
+      "family": "contract",
+      "value": "related-flow.v1",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "The v7 product shape: the v6 shape plus the flow routes POST /flows/{name}/runs (with Idempotency-Key), GET /flow-runs/{run_id} and POST /flow-runs/{run_id}/recover."
+    },
+    {
+      "id": "field_default:false",
+      "family": "field_default",
+      "value": "false",
+      "versions": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ],
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "DEFAULT false for the bool field, applied when absent, as in Python."
+    },
+    {
+      "id": "field_default:null",
+      "family": "field_default",
+      "value": "null",
+      "versions": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ],
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "No default: optional fields are null when absent, as in Python."
+    },
+    {
+      "id": "field_type:bool",
+      "family": "field_type",
+      "value": "bool",
+      "versions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ],
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "bool; BOOLEAN in PostgreSQL; the Python BSON bool in MongoDB."
+    },
+    {
+      "id": "field_type:date",
+      "family": "field_type",
+      "value": "date",
+      "versions": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v4": [
+          "phase1"
+        ],
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "chrono::NaiveDate; DATE in PostgreSQL; the Python stored form in MongoDB; ISO 8601 on the wire."
+    },
+    {
+      "id": "field_type:float",
+      "family": "field_type",
+      "value": "float",
+      "versions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ],
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "f64; DOUBLE PRECISION in PostgreSQL; the Python BSON double in MongoDB; the float-zero sign as Python keeps it."
+    },
+    {
+      "id": "field_type:int",
+      "family": "field_type",
+      "value": "int",
+      "versions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ],
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "i32 in PostgreSQL products (INTEGER) and the Python integer range in MongoDB products, with the Python bounds errors."
+    },
+    {
+      "id": "field_type:str",
+      "family": "field_type",
+      "value": "str",
+      "versions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ],
+        "v5": [
+          "phase1",
+          "#53"
+        ],
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "String; VARCHAR(255) in PostgreSQL; the Python BSON string in MongoDB; the Python length limit."
+    },
+    {
+      "id": "flow_input_type:boolean",
+      "family": "flow_input_type",
+      "value": "boolean",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A JSON boolean member of the run body."
+    },
+    {
+      "id": "flow_input_type:child_input",
+      "family": "flow_input_type",
+      "value": "child_input",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "An object with the child create fields and the Python validation."
+    },
+    {
+      "id": "flow_input_type:child_patch",
+      "family": "flow_input_type",
+      "value": "child_patch",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "An object with the child patch fields and the Python validation."
+    },
+    {
+      "id": "flow_input_type:children_input",
+      "family": "flow_input_type",
+      "value": "children_input",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "An array of 1 to 20 child create objects."
+    },
+    {
+      "id": "flow_input_type:date",
+      "family": "flow_input_type",
+      "value": "date",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "An ISO 8601 date member."
+    },
+    {
+      "id": "flow_input_type:float",
+      "family": "flow_input_type",
+      "value": "float",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A JSON number member with the Python float rules."
+    },
+    {
+      "id": "flow_input_type:integer",
+      "family": "flow_input_type",
+      "value": "integer",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A JSON integer member with the Python range."
+    },
+    {
+      "id": "flow_input_type:parent_input",
+      "family": "flow_input_type",
+      "value": "parent_input",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "An object with the parent create fields and the Python validation."
+    },
+    {
+      "id": "flow_input_type:parent_patch",
+      "family": "flow_input_type",
+      "value": "parent_patch",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "An object with the parent patch fields and the Python validation."
+    },
+    {
+      "id": "flow_input_type:string",
+      "family": "flow_input_type",
+      "value": "string",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A JSON string member."
+    },
+    {
+      "id": "flow_node:if",
+      "family": "flow_node",
+      "value": "if",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A branch: the predicate picks the then or else arm at run time, pure literal comparisons stay folded as compiler-v1 folds them, and exports take the value of the taken arm."
+    },
+    {
+      "id": "flow_node:transaction",
+      "family": "flow_node",
+      "value": "transaction",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A database transaction around its steps with the Python commit and rollback boundaries; at most 2, not nested, as compiler-v1 admits."
+    },
+    {
+      "id": "flow_operation:authorize",
+      "family": "flow_operation",
+      "value": "authorize",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The Python operation authorize (no arguments) giving identity, through the same route logic, authorization and errors as the HTTP route; required undo: none."
+    },
+    {
+      "id": "flow_operation:batch.create",
+      "family": "flow_operation",
+      "value": "batch.create",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The Python operation batch.create (parent: parent_input, children: children_input) giving batch, through the same route logic, authorization and errors as the HTTP route; required undo: delete_created."
+    },
+    {
+      "id": "flow_operation:child.create",
+      "family": "flow_operation",
+      "value": "child.create",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The Python operation child.create (parent_id: integer, data: child_input) giving child_row, through the same route logic, authorization and errors as the HTTP route; required undo: delete_created."
+    },
+    {
+      "id": "flow_operation:child.get",
+      "family": "flow_operation",
+      "value": "child.get",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The Python operation child.get (parent_id: integer, child_id: integer) giving child_row, through the same route logic, authorization and errors as the HTTP route; required undo: none."
+    },
+    {
+      "id": "flow_operation:child.list",
+      "family": "flow_operation",
+      "value": "child.list",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The Python operation child.list (parent_id: integer) giving child_rows, through the same route logic, authorization and errors as the HTTP route; required undo: none."
+    },
+    {
+      "id": "flow_operation:child.patch",
+      "family": "flow_operation",
+      "value": "child.patch",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The Python operation child.patch (parent_id: integer, child_id: integer, data: child_patch) giving child_row, through the same route logic, authorization and errors as the HTTP route; required undo: restore_patch."
+    },
+    {
+      "id": "flow_operation:object.get",
+      "family": "flow_operation",
+      "value": "object.get",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The Python operation object.get (key: string) giving object, through the same route logic, authorization and errors as the HTTP route; required undo: none."
+    },
+    {
+      "id": "flow_operation:object.put",
+      "family": "flow_operation",
+      "value": "object.put",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The Python operation object.put (key: string, body: bytes) giving object, through the same route logic, authorization and errors as the HTTP route; required undo: delete_created."
+    },
+    {
+      "id": "flow_operation:parent.create",
+      "family": "flow_operation",
+      "value": "parent.create",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The Python operation parent.create (data: parent_input) giving parent_row, through the same route logic, authorization and errors as the HTTP route; required undo: delete_created."
+    },
+    {
+      "id": "flow_operation:parent.get",
+      "family": "flow_operation",
+      "value": "parent.get",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The Python operation parent.get (parent_id: integer) giving parent_row, through the same route logic, authorization and errors as the HTTP route; required undo: none."
+    },
+    {
+      "id": "flow_operation:parent.list",
+      "family": "flow_operation",
+      "value": "parent.list",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The Python operation parent.list (no arguments) giving parent_rows, through the same route logic, authorization and errors as the HTTP route; required undo: none."
+    },
+    {
+      "id": "flow_operation:parent.patch",
+      "family": "flow_operation",
+      "value": "parent.patch",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The Python operation parent.patch (parent_id: integer, data: parent_patch) giving parent_row, through the same route logic, authorization and errors as the HTTP route; required undo: restore_patch."
+    },
+    {
+      "id": "flow_operation:workflow.import",
+      "family": "flow_operation",
+      "value": "workflow.import",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The Python operation workflow.import (parent_id: integer, csv: string) giving child_rows, through the same route logic, authorization and errors as the HTTP route; required undo: delete_created."
+    },
+    {
+      "id": "flow_operation:workflow.run",
+      "family": "flow_operation",
+      "value": "workflow.run",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "The Python operation workflow.run (parent_id: integer) giving workflow, through the same route logic, authorization and errors as the HTTP route; required undo: none."
+    },
+    {
+      "id": "flow_undo:delete_created",
+      "family": "flow_undo",
+      "value": "delete_created",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "After a later failure, delete what the step created, in the Python journal order, to the Python final state."
+    },
+    {
+      "id": "flow_undo:null",
+      "family": "flow_undo",
+      "value": "null",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "No undo for the step."
+    },
+    {
+      "id": "flow_undo:restore_patch",
+      "family": "flow_undo",
+      "value": "restore_patch",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "After a later failure, restore the fields the step patched, in the Python journal order, to the Python final state."
+    },
+    {
+      "id": "legacy_logic:Create a row. Return 409 for a unique value conflict.",
+      "family": "legacy_logic",
+      "value": "Create a row. Return 409 for a unique value conflict.",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python product for this sentence (phase 1 for PostgreSQL)."
+    },
+    {
+      "id": "legacy_logic:Delete a row. Return 404 if it does not exist.",
+      "family": "legacy_logic",
+      "value": "Delete a row. Return 404 if it does not exist.",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python product for this sentence (phase 1 for PostgreSQL)."
+    },
+    {
+      "id": "legacy_logic:Get a row by id. Return 404 if it does not exist.",
+      "family": "legacy_logic",
+      "value": "Get a row by id. Return 404 if it does not exist.",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python product for this sentence (phase 1 for PostgreSQL)."
+    },
+    {
+      "id": "legacy_logic:List rows in id order.",
+      "family": "legacy_logic",
+      "value": "List rows in id order.",
+      "versions": [
+        1
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python product for this sentence (phase 1 for PostgreSQL)."
+    },
+    {
+      "id": "legacy_logic:List rows with an optional exact boolean filter, limit, and offset in id order.",
+      "family": "legacy_logic",
+      "value": "List rows with an optional exact boolean filter, limit, and offset in id order.",
+      "versions": [
+        3
+      ],
+      "owner": {
+        "v3": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python product for this sentence (phase 1 for PostgreSQL)."
+    },
+    {
+      "id": "legacy_logic:List rows with an optional exact string filter, limit, and offset in id order.",
+      "family": "legacy_logic",
+      "value": "List rows with an optional exact string filter, limit, and offset in id order.",
+      "versions": [
+        2
+      ],
+      "owner": {
+        "v2": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python product for this sentence (phase 1 for PostgreSQL)."
+    },
+    {
+      "id": "legacy_logic:List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.",
+      "family": "legacy_logic",
+      "value": "List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.",
+      "versions": [
+        4
+      ],
+      "owner": {
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python product for this sentence (phase 1 for PostgreSQL)."
+    },
+    {
+      "id": "legacy_logic:Update supplied fields. Return 404 if the row does not exist.",
+      "family": "legacy_logic",
+      "value": "Update supplied fields. Return 404 if the row does not exist.",
+      "versions": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "owner": {
+        "v1": [
+          "phase1"
+        ],
+        "v2": [
+          "phase1"
+        ],
+        "v3": [
+          "phase1"
+        ],
+        "v4": [
+          "phase1"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python product for this sentence (phase 1 for PostgreSQL)."
+    },
+    {
+      "id": "literal_type:boolean",
+      "family": "literal_type",
+      "value": "boolean",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A boolean literal."
+    },
+    {
+      "id": "literal_type:bytes",
+      "family": "literal_type",
+      "value": "bytes",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A bytes literal with the Python encoding."
+    },
+    {
+      "id": "literal_type:date",
+      "family": "literal_type",
+      "value": "date",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A date literal."
+    },
+    {
+      "id": "literal_type:float",
+      "family": "literal_type",
+      "value": "float",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A float literal; the bundle and the generated literal keep the sign of zero, and the PostgreSQL JSONB limit on -0.0 stays recorded."
+    },
+    {
+      "id": "literal_type:integer",
+      "family": "literal_type",
+      "value": "integer",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "An integer literal."
+    },
+    {
+      "id": "literal_type:string",
+      "family": "literal_type",
+      "value": "string",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "A string literal, escaped as a Rust string literal."
+    },
+    {
+      "id": "operation:batch_create",
+      "family": "operation",
+      "value": "batch_create",
+      "versions": [
+        6,
+        7
+      ],
+      "owner": {
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "POST <parent path>/with-children: a parent and 1 to 20 children in one transaction, the {parent, children} wrappers, rollback on any failure."
+    },
+    {
+      "id": "operation:create",
+      "family": "operation",
+      "value": "create",
+      "versions": [
+        6,
+        7
+      ],
+      "owner": {
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "POST on the collection route with the Python body, status and errors."
+    },
+    {
+      "id": "operation:delete",
+      "family": "operation",
+      "value": "delete",
+      "versions": [
+        6,
+        7
+      ],
+      "owner": {
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "DELETE on the item route with the Python status, 404 and restrict rule."
+    },
+    {
+      "id": "operation:get",
+      "family": "operation",
+      "value": "get",
+      "versions": [
+        6,
+        7
+      ],
+      "owner": {
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "GET on the item route with the Python 404."
+    },
+    {
+      "id": "operation:list",
+      "family": "operation",
+      "value": "list",
+      "versions": [
+        6,
+        7
+      ],
+      "owner": {
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "GET on the collection route with the Python query parameters and order."
+    },
+    {
+      "id": "operation:patch",
+      "family": "operation",
+      "value": "patch",
+      "versions": [
+        6,
+        7
+      ],
+      "owner": {
+        "v6": [
+          "#53"
+        ],
+        "v7": [
+          "#53"
+        ]
+      },
+      "rust_form": "PATCH on the item route with the Python partial update and updated_at rule."
+    },
+    {
+      "id": "predicate:eq",
+      "family": "predicate",
+      "value": "eq",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "Equality with the Python type and float-zero rules."
+    },
+    {
+      "id": "predicate:ge",
+      "family": "predicate",
+      "value": "ge",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "At least, on the types compiler-v1 admits."
+    },
+    {
+      "id": "predicate:gt",
+      "family": "predicate",
+      "value": "gt",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "Greater than, on the types compiler-v1 admits."
+    },
+    {
+      "id": "predicate:is_null",
+      "family": "predicate",
+      "value": "is_null",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "True when the left value is null."
+    },
+    {
+      "id": "predicate:le",
+      "family": "predicate",
+      "value": "le",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "At most, on the types compiler-v1 admits."
+    },
+    {
+      "id": "predicate:lt",
+      "family": "predicate",
+      "value": "lt",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "Less than, on the types compiler-v1 admits."
+    },
+    {
+      "id": "predicate:ne",
+      "family": "predicate",
+      "value": "ne",
+      "versions": [
+        7
+      ],
+      "owner": {
+        "v7": [
+          "#54"
+        ]
+      },
+      "rust_form": "Inequality with the Python type and float-zero rules."
+    },
+    {
+      "id": "related_logic:{\"scope\": \"batch\", \"step\": \"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}",
+      "family": "related_logic",
+      "value": "{\"scope\": \"batch\", \"step\": \"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}",
+      "versions": [
+        5
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python v5 product for this scoped sentence."
+    },
+    {
+      "id": "related_logic:{\"scope\": \"child\", \"step\": \"Create a row. Return 409 for a unique value conflict.\"}",
+      "family": "related_logic",
+      "value": "{\"scope\": \"child\", \"step\": \"Create a row. Return 409 for a unique value conflict.\"}",
+      "versions": [
+        5
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python v5 product for this scoped sentence."
+    },
+    {
+      "id": "related_logic:{\"scope\": \"child\", \"step\": \"Delete a row. Reject a parent with children with 409.\"}",
+      "family": "related_logic",
+      "value": "{\"scope\": \"child\", \"step\": \"Delete a row. Reject a parent with children with 409.\"}",
+      "versions": [
+        5
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python v5 product for this scoped sentence."
+    },
+    {
+      "id": "related_logic:{\"scope\": \"child\", \"step\": \"Get a row by id. Return 404 if it does not exist.\"}",
+      "family": "related_logic",
+      "value": "{\"scope\": \"child\", \"step\": \"Get a row by id. Return 404 if it does not exist.\"}",
+      "versions": [
+        5
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python v5 product for this scoped sentence."
+    },
+    {
+      "id": "related_logic:{\"scope\": \"child\", \"step\": \"List scoped rows with the configured filters and pagination in id order.\"}",
+      "family": "related_logic",
+      "value": "{\"scope\": \"child\", \"step\": \"List scoped rows with the configured filters and pagination in id order.\"}",
+      "versions": [
+        5
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python v5 product for this scoped sentence."
+    },
+    {
+      "id": "related_logic:{\"scope\": \"child\", \"step\": \"Update supplied fields. Return 404 if the row does not exist.\"}",
+      "family": "related_logic",
+      "value": "{\"scope\": \"child\", \"step\": \"Update supplied fields. Return 404 if the row does not exist.\"}",
+      "versions": [
+        5
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python v5 product for this scoped sentence."
+    },
+    {
+      "id": "related_logic:{\"scope\": \"parent\", \"step\": \"Create a row. Return 409 for a unique value conflict.\"}",
+      "family": "related_logic",
+      "value": "{\"scope\": \"parent\", \"step\": \"Create a row. Return 409 for a unique value conflict.\"}",
+      "versions": [
+        5
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python v5 product for this scoped sentence."
+    },
+    {
+      "id": "related_logic:{\"scope\": \"parent\", \"step\": \"Delete a row. Reject a parent with children with 409.\"}",
+      "family": "related_logic",
+      "value": "{\"scope\": \"parent\", \"step\": \"Delete a row. Reject a parent with children with 409.\"}",
+      "versions": [
+        5
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python v5 product for this scoped sentence."
+    },
+    {
+      "id": "related_logic:{\"scope\": \"parent\", \"step\": \"Get a row by id. Return 404 if it does not exist.\"}",
+      "family": "related_logic",
+      "value": "{\"scope\": \"parent\", \"step\": \"Get a row by id. Return 404 if it does not exist.\"}",
+      "versions": [
+        5
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python v5 product for this scoped sentence."
+    },
+    {
+      "id": "related_logic:{\"scope\": \"parent\", \"step\": \"List scoped rows with the configured filters and pagination in id order.\"}",
+      "family": "related_logic",
+      "value": "{\"scope\": \"parent\", \"step\": \"List scoped rows with the configured filters and pagination in id order.\"}",
+      "versions": [
+        5
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python v5 product for this scoped sentence."
+    },
+    {
+      "id": "related_logic:{\"scope\": \"parent\", \"step\": \"Update supplied fields. Return 404 if the row does not exist.\"}",
+      "family": "related_logic",
+      "value": "{\"scope\": \"parent\", \"step\": \"Update supplied fields. Return 404 if the row does not exist.\"}",
+      "versions": [
+        5
+      ],
+      "owner": {
+        "v5": [
+          "phase1",
+          "#53"
+        ]
+      },
+      "rust_form": "The route and behavior of the Python v5 product for this scoped sentence."
+    }
+  ]
+}

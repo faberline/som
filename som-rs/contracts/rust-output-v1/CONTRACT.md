@@ -289,3 +289,60 @@ Cases are counted per source, so one prompt can be more than one case: PUBLIC_v6
 [phase2/pins.json](phase2/pins.json) pins the emulators (PostgreSQL through toolchain.json, mongod, redis-server, moto and the in-repo GCS, Firebase and OIDC stand-ins), uv, the acceptance venv with every package version, and every suite file by hash.
 A phase 2 run on any other version or hash is not phase 2 evidence. No cloud service is used.
 The builders and their --check modes are tests/rust-output-v1/build_phase2_*.py.
+
+## 11. Phase 2 layout, crates and harness (amendment 003, issue #53)
+
+This amendment fixes what section 10 left to #53: the files, the crates and the Rust mode of the behavior suite.
+Sections 1 to 10 stay in force, and the phase 1 layout, crates and plan are unchanged.
+
+### Shapes
+
+[product-layout.json](product-layout.json) phase2 gives five shapes. The prompt alone selects one:
+
+| Shape | Prompts | Files |
+|---|---|---|
+| resource | v1 to v5 without capabilities | the phase 1 files (11) |
+| capability_postgresql | v5 with capabilities, v6; database postgresql | adds src/integrations.rs (12) |
+| capability_mongodb | the same; database mongodb | no migration (11) |
+| flow_postgresql | v7; database postgresql | models in src/schemas.rs, adds src/integrations.rs and src/flows.rs (12) |
+| flow_mongodb | v7; database mongodb | the same, no migration (11) |
+
+A prompt that the phase 1 profile admits gives its phase 1 files byte for byte.
+A resource prompt that only phase 2 admits keeps the phase 1 files and crates. Its migrator is the hand-written one below, so a prompt table may be named _sqlx_migrations, and a resource may own /healthz.
+Capability and flow products have the som_app subcommands of [phase2/services.json](phase2/services.json). serve does not migrate, as the Python product does not.
+PostgreSQL products record their one migration in _som_rust_migrations (naming.json W3). Schema comparison ignores that table.
+The bundle limits stay 12 files and 64 blocks per file. bundle.schema.json admits the two new paths.
+
+### Crates
+
+Capability and flow products use [reference-phase2/Cargo.toml](reference-phase2/Cargo.toml) and [Cargo.lock](reference-phase2/Cargo.lock), 335 packages. toolchain.json phase2_crates lists every crate and gives the role of each new one.
+They add these crates to the phase 1 set:
+
+- mongodb (with bson);
+- flate2 on the system zlib through libz-sys, so gzip bytes equal Python's;
+- hyper, hyper-util, hyper-rustls and http-body-util for JWKS, OIDC, S3 and GCS;
+- ring, sha2, hmac and base64.
+
+JWT, JWKS, Redis RESP2, CSV, Decimal, statistics and Python-compatible JSON are hand-written.
+mongodb, bson and libz-sys and their dependencies were fetched from crates.io once, on 2026-10-17. Every build after that is offline.
+scripts/rust_output_acceptance/vendor_crates.py vendors the union of both locks into one directory source. A package that the cache no longer holds may come from an earlier vendor directory (--base) when its files match their checksum list. The receipt records both locks and every such package.
+
+### Harness
+
+Two harness changes let the suite run Rust products. The pins of phase2/pins.json move with them:
+
+- phase2_host.RustProduct starts som_app with SOM_APP_ADDR, the listen setting of services.json;
+- check_phase2.py run --language rust --qa URL compiles each typed prompt with target rust on a candidate, assembles it and runs the same checker on the Rust product. RS12 and RS13 pass only with their exact refusal.
+
+The Python baseline was run again with the pinned harness, as behavior.json records. Its result is unchanged: 579 of 584 cases pass, and the five that do not are the explained RS07, RS14, RS16, RS12 and RS13.
+
+### Acceptance
+
+[acceptance-plan.json](acceptance-plan.json) phase2 is the plan for #53 to #56. Its main rules:
+
+- every phase 2 case runs every phase 2 gate, and every phase 1 acceptance case runs phase1_unchanged and the phase 1 gates;
+- RS12 and RS13 are the only UNSUPPORTED_TARGET results;
+- phase 1 files stay byte-identical;
+- A6 and A8 change, because phase 2 admits their prompts;
+- an independent audit closes #55;
+- 8765 changes only with the user's approval (#56).

@@ -10,7 +10,8 @@ summarized with check_phase2.py summarize. The record names the checker of every
 adaptation of adapt.py changes and on how many cases, the run result and every case that did not
 pass with its explanation. A failed case without an explanation below stops the build. An earlier
 complete run that a suite fix superseded is recorded with its failures and the fix; a complete run the host
-slept through is recorded with the sleep window and the flow failures inside it.
+slept through is recorded with the sleep window and the flow failures inside it; a complete run that a
+harness change superseded is recorded with that change.
 
 The phase 2 Rust reference is the suite oracle of each checker, not a Python product: a Rust
 product passes a case when the same checker passes on it. Python products that fail their own
@@ -67,6 +68,13 @@ HOST_SLEEPS = {
         "explanation": "the lease, journal and five-second heartbeat checks time out when the host sleeps "
                        "between two observations",
     },
+}
+
+# Complete runs whose harness a later amendment changed. Their failures must still be explained; the
+# record accepts the run on the pinned harness.
+HARNESS_CHANGES = {
+    "behavior-python-003": "amendment 003 changed the pinned harness: phase2_host.RustProduct reads SOM_APP_ADDR "
+                           "and check_phase2.py gained --language rust; the Python baseline ran again on it",
 }
 
 CHECKERS = {
@@ -173,6 +181,8 @@ def superseded_run(old: pathlib.Path) -> dict[str, Any]:
               "suite_fixes": {i: SUITE_FIXES[i] for i in summary["failed"] if i in SUITE_FIXES}}
     if sleep:
         result["host_sleep"] = {**sleep, "failed_while_asleep": slept}
+    if old.name in HARNESS_CHANGES:
+        result["harness_change"] = HARNESS_CHANGES[old.name]
     return result
 
 

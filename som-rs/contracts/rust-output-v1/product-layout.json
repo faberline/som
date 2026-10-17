@@ -80,5 +80,124 @@
     "404": "{\"detail\": \"not found\"} for v1 to v4. v5 uses \"parent not found\" or \"child not found\".",
     "409": "{\"detail\": \"conflict\"} for v1 to v4. v5 uses \"relationship or unique value conflict\".",
     "422": "{\"detail\": [{\"type\": string, \"loc\": [\"body\" | \"query\" | \"path\", ...], \"msg\": string}, ...]} with at least one item."
+  },
+  "phase2": {
+    "amendment": 3,
+    "issue": 53,
+    "rule": "The files list above stays the phase 1 layout. A phase 2 product (contracts/rust-output-v1/phase2) has exactly the files of one shape below, chosen by the prompt alone. No shape has more than 12 files, the bundle limit, and every file keeps at most 64 blocks.",
+    "shapes": {
+      "resource": {
+        "applies": "Every v1 to v5 prompt without a capabilities block. A prompt the phase 1 profile (tests/rust-output-v1/rust_profile.py) admits gives its phase 1 files byte for byte.",
+        "files": [
+          "Cargo.toml",
+          "Cargo.lock",
+          "src/main.rs",
+          "src/lib.rs",
+          "src/models.rs",
+          "src/schemas.rs",
+          "src/api.rs",
+          "src/db.rs",
+          "migrations/0001_<revision>.sql",
+          "tests/api.rs",
+          "README.md"
+        ],
+        "cargo": "reference/Cargo.toml and reference/Cargo.lock, the phase 1 crates",
+        "changes": "Only for a prompt the phase 1 profile refuses: src/lib.rs exports the hand-written migrator of migrations below instead of sqlx::migrate!(), and a resource may own /healthz (naming.json W2). main.rs still runs the migrator at startup and reads the phase 1 postgresql:// DATABASE_URL.",
+        "file_count": 11
+      },
+      "capability_postgresql": {
+        "applies": "A v5 prompt with capabilities or a v6 prompt, whose capabilities.database is postgresql.",
+        "files": [
+          "Cargo.toml",
+          "Cargo.lock",
+          "src/main.rs",
+          "src/lib.rs",
+          "src/models.rs",
+          "src/schemas.rs",
+          "src/api.rs",
+          "src/db.rs",
+          "src/integrations.rs",
+          "migrations/0001_<revision>.sql",
+          "tests/api.rs",
+          "README.md"
+        ],
+        "cargo": "reference-phase2/Cargo.toml and reference-phase2/Cargo.lock",
+        "file_count": 12
+      },
+      "capability_mongodb": {
+        "applies": "A v5 prompt with capabilities or a v6 prompt, whose capabilities.database is mongodb.",
+        "files": [
+          "Cargo.toml",
+          "Cargo.lock",
+          "src/main.rs",
+          "src/lib.rs",
+          "src/models.rs",
+          "src/schemas.rs",
+          "src/api.rs",
+          "src/db.rs",
+          "src/integrations.rs",
+          "tests/api.rs",
+          "README.md"
+        ],
+        "cargo": "reference-phase2/Cargo.toml and reference-phase2/Cargo.lock",
+        "file_count": 11
+      },
+      "flow_postgresql": {
+        "applies": "A v7 prompt (every v7 prompt has a flow), whose capabilities.database is postgresql.",
+        "files": [
+          "Cargo.toml",
+          "Cargo.lock",
+          "src/main.rs",
+          "src/lib.rs",
+          "src/schemas.rs",
+          "src/api.rs",
+          "src/db.rs",
+          "src/integrations.rs",
+          "src/flows.rs",
+          "migrations/0001_<revision>.sql",
+          "tests/api.rs",
+          "README.md"
+        ],
+        "cargo": "reference-phase2/Cargo.toml and reference-phase2/Cargo.lock",
+        "file_count": 12
+      },
+      "flow_mongodb": {
+        "applies": "A v7 prompt (every v7 prompt has a flow), whose capabilities.database is mongodb.",
+        "files": [
+          "Cargo.toml",
+          "Cargo.lock",
+          "src/main.rs",
+          "src/lib.rs",
+          "src/schemas.rs",
+          "src/api.rs",
+          "src/db.rs",
+          "src/integrations.rs",
+          "src/flows.rs",
+          "tests/api.rs",
+          "README.md"
+        ],
+        "cargo": "reference-phase2/Cargo.toml and reference-phase2/Cargo.lock",
+        "file_count": 11
+      }
+    },
+    "files": {
+      "Cargo.toml": "Bytes equal the reference Cargo.toml of the shape.",
+      "Cargo.lock": "Bytes equal the reference Cargo.lock of the shape.",
+      "src/main.rs": "Capability and flow shapes: the subcommands of phase2/services.json commands (serve, migrate upgrade, migrate downgrade, check-config); no subcommand serves. Settings are read and refused as phase2/services.json says, before any connection. serve does not migrate, as the Python product does not; it listens on SOM_APP_ADDR. A refused setting prints the Python startup message as one line on stderr and exits with status 1; an unknown subcommand exits with status 2.",
+      "src/lib.rs": "Declares the modules of the shape. Exports pub fn router(state: AppState) -> axum::Router, AppState, the settings module of integrations, and for PostgreSQL the migrator: upgrade and downgrade of the one migration, recorded in _som_rust_migrations (naming.json W3).",
+      "src/models.rs": "Capability shapes only: the row or document structs. The flow shapes keep them in src/schemas.rs, so a flow product fits the 12-file limit.",
+      "src/schemas.rs": "Request and response structs as in phase 1, with naming.json R2 for every member; the flow shapes also hold the row or document structs, and the flow input and run structs.",
+      "src/api.rs": "axum handlers and the router: the resource routes, /healthz (W2), and the auth, object, workflow, export and import routes of the prompt, with the Python statuses and bodies.",
+      "src/db.rs": "PostgreSQL: every SQL statement as a string constant with double-quoted identifiers, run with the sqlx runtime API, and the downgrade statements. MongoDB: every collection, filter, update and index, built with bson, and the _som_counters and _som_revision documents (W6).",
+      "src/integrations.rs": "Settings (phase2/services.json), authentication (jwt, firebase, google_oidc with its Redis session store), object storage (s3, gcs), workflows and exports, the HTTP client, and the Python-compatible JSON, number and CSV formatting they need.",
+      "src/flows.rs": "The flow runtime: _som_flow_runs and _som_flow_leases (W6), runs, idempotency, leases, transactions, branches and undo. Flow and step names are data in a fixed table (naming.json R3); no Rust item is named by the prompt.",
+      "migrations/0001_<revision>.sql": "PostgreSQL shapes only. The upgrade schema as in phase 1, with the first-line revision comment. The migrator records the revision in _som_rust_migrations, so a prompt table may be named _sqlx_migrations.",
+      "tests/api.rs": "Product tests. PostgreSQL shapes read TEST_DATABASE_URL; MongoDB shapes read MONGODB_URL and SOM_TEST_DATABASE_NAME. A missing setting fails the test; it is never a skip.",
+      "README.md": "Names the prompt package, the prompt version, the shape, the routes, every setting the product reads, and the som_app subcommands."
+    },
+    "migrations": {
+      "table": "_som_rust_migrations",
+      "rule": "The hand-written migrator creates _som_rust_migrations (version BIGINT PRIMARY KEY, revision TEXT NOT NULL, applied_at TIMESTAMPTZ NOT NULL DEFAULT now()) if missing, and applies or reverts the one migration in a transaction. Schema comparison ignores _som_rust_migrations as phase 1 ignores _sqlx_migrations and the Python product's alembic_version."
+    }
   }
 }

@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
-"""Build the vendored crate set for the frozen reference lock, offline.
+"""Build the vendored crate set for the frozen reference locks, offline.
 
-Every crates.io package in reference/Cargo.lock that the local cargo cache
-holds is unpacked after its .crate sha256 matches the lock checksum, with a
-file checksum list like cargo vendor writes. A package the cache lacks is only
-needed on another platform (Windows, Redox, WASM, Android, Haiku). It becomes a
-stub with the manifest the cached crates.io index records for that exact
-version, so resolution and the lock stay unchanged. A host build that compiled
-a stub would fail, so stubs cannot hide a missing crate.
+The set is the union of the packages of every reference lock: reference/ (phase 1) and
+reference-phase2/ (amendment 003) unless --reference names others. One cargo directory source holds
+every version, so phase 1 and phase 2 products build from the same CARGO_HOME.
+
+Every crates.io package that the local cargo cache holds is unpacked after its .crate sha256 matches
+the lock checksum, with a file checksum list like cargo vendor writes. A package the cache lacks is
+taken from a --base vendor directory when one holds it unpacked, with the lock checksum as its
+package checksum and every file matching its .cargo-checksum.json. Any other package is only needed
+on another platform (Windows, Redox, WASM, Android, Haiku). It becomes a stub with the manifest the
+cached crates.io index records for that exact version, so resolution and the lock stay unchanged. A
+host build that compiled a stub would fail, so stubs cannot hide a missing crate.
 
 The script writes a new directory with vendor/, cargo-home/config.toml and
 vendor.json, which hashes the whole tree. It needs no network.
 
-usage: vendor_crates.py --out <new directory>
+usage: vendor_crates.py --out <new directory> [--reference DIR ...] [--base VENDOR_DIR ...]
 """
 from __future__ import annotations
 
@@ -20,15 +24,18 @@ import argparse
 import hashlib
 import json
 import pathlib
+import shutil
 import sys
 import tarfile
 import tomllib
 
 REPO = pathlib.Path(__file__).resolve().parents[3]
-REFERENCE = REPO / "som-rs/contracts/rust-output-v1/reference"
+CONTRACT = REPO / "som-rs/contracts/rust-output-v1"
+REFERENCES = [CONTRACT / "reference", CONTRACT / "reference-phase2"]
 REGISTRY = pathlib.Path.home() / ".cargo/registry"
 INDEX = "index.crates.io-1949cf8c6b5b557f"
 CRATES_IO = "registry+https://github.com/rust-lang/crates.io-index"
+STUB = 'compile_error!("vendored stub: this crate is only for another platform");\n'
 
 
 def sha_bytes(data: bytes) -> str:
@@ -101,6 +108,28 @@ def unpack(crate: pathlib.Path, destination: pathlib.Path) -> None:
             target.write_bytes(source.read())
 
 
+def from_base(bases: list[pathlib.Path], name: str, version: str, checksum: str,
+              destination: pathlib.Path) -> bool:
+    """Copy an unpacked crate of a --base vendor directory; it must be the locked package."""
+    for base in bases:
+        source = base / f"{name}-{version}"
+        listing = source / ".cargo-checksum.json"
+        stub = source / "lib.rs"
+        if not listing.is_file() or (stub.is_file() and stub.read_text().startswith(STUB)):
+            continue
+        recorded = json.loads(listing.read_text())
+        if recorded.get("package") != checksum:
+            continue
+        files = {str(path.relative_to(source)): sha_bytes(path.read_bytes())
+                 for path in sorted(source.rglob("*")) if path.is_file() and path != listing}
+        if files != recorded["files"]:
+            raise SystemExit(f"{source} differs from its .cargo-checksum.json")
+        shutil.copytree(source, destination, symlinks=False)
+        (destination / ".cargo-checksum.json").unlink()
+        return True
+    return False
+
+
 def tree_sha(root: pathlib.Path) -> str:
     digest = hashlib.sha256()
     for path in sorted(root.rglob("*")):
@@ -112,18 +141,26 @@ def tree_sha(root: pathlib.Path) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=pathlib.Path, required=True)
-    out = parser.parse_args().out.resolve()
+    parser.add_argument("--reference", type=pathlib.Path, action="append")
+    parser.add_argument("--base", type=pathlib.Path, action="append", default=[])
+    args = parser.parse_args()
+    out = args.out.resolve()
     if out.exists():
         raise SystemExit(f"preserve existing output: {out}")
-    lock = tomllib.loads((REFERENCE / "Cargo.lock").read_text())
+    references = [path.resolve() for path in args.reference or REFERENCES]
+    bases = [path.resolve() for path in args.base]
+    locked: dict[tuple[str, str], str] = {}
+    for reference in references:
+        for package in tomllib.loads((reference / "Cargo.lock").read_text())["package"]:
+            if package.get("source") is None:
+                continue
+            if package["source"] != CRATES_IO:
+                raise SystemExit(f"unexpected source for {package['name']}")
+            if locked.setdefault((package["name"], package["version"]), package["checksum"]) != package["checksum"]:
+                raise SystemExit(f"the locks disagree on {package['name']} {package['version']}")
     vendor = out / "vendor"
     rows = []
-    for package in lock["package"]:
-        if package.get("source") is None:
-            continue
-        if package["source"] != CRATES_IO:
-            raise SystemExit(f"unexpected source for {package['name']}")
-        name, version, checksum = package["name"], package["version"], package["checksum"]
+    for (name, version), checksum in sorted(locked.items()):
         directory = vendor / f"{name}-{version}"
         crate = REGISTRY / "cache" / INDEX / f"{name}-{version}.crate"
         if crate.is_file():
@@ -131,13 +168,15 @@ def main() -> int:
                 raise SystemExit(f"{crate.name} differs from the lock checksum")
             unpack(crate, directory)
             kind = "crate"
+        elif from_base(bases, name, version, checksum, directory):
+            kind = "base"
         else:
             entry = index_entry(name, version)
             if entry["cksum"] != checksum:
                 raise SystemExit(f"index checksum for {name} {version} differs from the lock")
             directory.mkdir(parents=True)
             (directory / "Cargo.toml").write_text(stub_manifest(entry))
-            (directory / "lib.rs").write_text('compile_error!("vendored stub: this crate is only for another platform");\n')
+            (directory / "lib.rs").write_text(STUB)
             kind = "stub"
         write_checksum(directory, checksum)
         rows.append({"name": name, "version": version, "checksum": checksum, "kind": kind,
@@ -147,11 +186,16 @@ def main() -> int:
     (home / "config.toml").write_text(
         '[source.crates-io]\nreplace-with = "vendored-sources"\n\n'
         f'[source.vendored-sources]\ndirectory = {json.dumps(str(vendor))}\n\n[net]\noffline = true\n')
-    receipt = {"version": "som.rust-output-vendor.v1",
-               "lock_sha256": sha_bytes((REFERENCE / "Cargo.lock").read_bytes()),
-               "manifest_sha256": sha_bytes((REFERENCE / "Cargo.toml").read_bytes()),
-               "lock_packages": len(lock["package"]), "packages": rows,
+    receipt = {"version": "som.rust-output-vendor.v2",
+               "references": [{"path": str(reference.relative_to(REPO)) if reference.is_relative_to(REPO)
+                               else str(reference),
+                               "lock_sha256": sha_bytes((reference / "Cargo.lock").read_bytes()),
+                               "manifest_sha256": sha_bytes((reference / "Cargo.toml").read_bytes())}
+                              for reference in references],
+               "bases": [str(base) for base in bases],
+               "lock_packages": len(rows), "packages": rows,
                "crates": sum(row["kind"] == "crate" for row in rows),
+               "from_base": [f"{row['name']} {row['version']}" for row in rows if row["kind"] == "base"],
                "stubs": [f"{row['name']} {row['version']}" for row in rows if row["kind"] == "stub"],
                "vendor_tree_sha256": tree_sha(vendor),
                "cargo_config_sha256": sha_bytes((home / "config.toml").read_bytes())}

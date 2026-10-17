@@ -67,5 +67,45 @@
     "#50": "Every check in this plan passes on one recorded build, with the evidence hashed.",
     "#51": "A qualified switch on a QA port, a canary and a rollback check pass before the default on 8765 changes."
   },
+  "phase2": {
+    "amendment": 3,
+    "rule": "The sections above stay the phase 1 plan and gates (#46 to #51). This section is the phase 2 plan (#53 to #56). python_unchanged and target_selection_checks apply unchanged. For phase 2, refusals replaces the phase 1 scope_checks and the expected UNSUPPORTED_TARGET results of the RS rows of negative-cases.json, which stay the phase 1 record. RP01 to RP03 still run and keep their compiler-v1 diagnostics. Every phase 2 check runs on every case it names: there is no sampling, and a missing result, a failure and a skipped check each block acceptance.",
+    "cases": {
+      "phase1": "Every acceptance case of case-inventory.json (115).",
+      "phase2": "Every row of phase2/case-inventory.json (584): 444 legacy v6 and v7 jobs, 115 CNL positive fixtures, 3 public examples and RS01 to RS22.",
+      "legacy": "The 544 legacy jobs of legacy544 run-005: the 100 of case-inventory.json and the 444 of phase2/case-inventory.json."
+    },
+    "refusals": "With target rust, the only UNSUPPORTED_TARGET results for these cases are RS12 (its CNL form) and RS13 (its JSON form), with exactly the query_parameter_collision diagnostic tests/rust-output-v1/rust_profile_phase2.py gives for the typed prompt. Any other UNSUPPORTED_TARGET, and any NOT_IMPLEMENTED or OUTPUT_QUALITY_FAILED result, fails acceptance.",
+    "phase1_unchanged": "For every phase 1 acceptance case, the Rust bundle differs from the accepted phase 1 bundle (rust-output-050) only in the Rust asset descriptors and the hashes over them, and the assembled files are byte-identical.",
+    "bundle_checks": [
+      "For every phase 2 product case, the CNL and typed JSON requests with target rust return byte-identical som.dsl-bundle.v2 bundles; a case with one form runs that form.",
+      "Every Rust bundle validates against bundle.schema.json, has at most 12 files and 64 blocks per file, and every block id starts with rust.",
+      "Two compiles and two assembles of the same request give the same bytes.",
+      "The assembled files are exactly the file set of the product-layout.json phase2 shape the prompt selects, and Cargo.toml and Cargo.lock equal the reference files of that shape."
+    ],
+    "assemble_refusals": {
+      "rule": "assemble_refusals above run unchanged on the example-v1 base, except A6 and A8, which phase 2 replaces as below. A1, A2, A4, A5, A7 and A9 also run on the PUBLIC_v6 Rust bundle as base, with the same code, status and pointer.",
+      "A6": "Replace the prompt with the RS12 typed prompt. Recompute the shared compiler-v1 descriptors for it, keep the Rust descriptors and the Rust DSL, and rehash. Result: UNSUPPORTED_TARGET 422, with the prompt_pointer of rust_profile_phase2.py under /bundle/prompt.",
+      "A8": "The A8 change gives 200, and the files equal the compile and assemble of the renamed prompt with target rust: Title is a field with an R2 Rust name and the wire name Title."
+    },
+    "product_gates": [
+      "rustfmt --edition 2024 --check accepts every .rs file unchanged",
+      "cargo build --locked --offline, with CARGO_HOME holding only the vendored union of toolchain.json phase2_crates vendor",
+      "cargo clippy --locked --offline --all-targets -- -D warnings",
+      "cargo test --locked --offline -- --test-threads=1 on a fresh database: TEST_DATABASE_URL for PostgreSQL shapes, MONGODB_URL with SOM_TEST_DATABASE_NAME for MongoDB shapes; a missing setting is a failure",
+      "Cargo.lock unchanged after the commands",
+      "PostgreSQL shapes: schema equivalence with the Python migration for the same prompt, as phase 1, ignoring _som_rust_migrations and alembic_version",
+      "MongoDB shapes: after som_app migrate upgrade, the collections and indexes (keys, order and uniqueness; names not compared) equal the Python product's after its migrate upgrade",
+      "the phase 2 behavior suite: som-rs/behavior/phase2/check_phase2.py run --language rust passes the case's checker (phase2/case-inventory.json) with no assembled file changed",
+      "the same case passes check_phase2.py --language python, or is a Python defect or phase 2 refusal that phase2/behavior.json explains"
+    ],
+    "legacy_gate": "Every one of the 544 legacy jobs gives a Rust product that passes product_gates (phase 1 jobs: the phase 1 product_gates and parity), and its Python result stays the accepted one.",
+    "issue_gates": {
+      "#53": "bundle_checks, product_gates and refusals pass for every case whose constructs.json owner is #53: v5 with capabilities, v6, and the naming refusal removals (RS cases). phase1_unchanged passes.",
+      "#54": "bundle_checks and product_gates pass for every v7 case, with flow_fault_checks and flow_provider_fault_checks and a fault injected at every step that has undo.",
+      "#55": "Every check of this section and python_unchanged passes on one recorded candidate build, with every case receipt kept, and an independent audit (som-rs/scripts/rust_output_acceptance/audit/audit055.py), written from this plan and the raw outputs only, reports no failure and nothing unrun.",
+      "#56": "A qualified switch on a QA port, Rust canaries on the local emulators (example-v1, example-v5, a v6 PostgreSQL product, a v6 MongoDB product, a v7 flow with undo), the Python canaries and a rollback to the phase 1 default pass before the default on 8765 changes, and the change has the user's explicit approval."
+    }
+  },
   "amendments": "After the freeze receipt is sealed, a change to any frozen file is a numbered amendment with its reason, the old and new hashes, and an independent review."
 }

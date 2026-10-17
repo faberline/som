@@ -1,0 +1,67 @@
+{
+  "version": "som.rust-output-toolchain.v1",
+  "host": "aarch64-apple-darwin",
+  "rust": {
+    "source": "Homebrew rust 1.96.1",
+    "bin_dir": "/opt/homebrew/Cellar/rust/1.96.1/bin",
+    "rustc": {"version": "rustc 1.96.1 (31fca3adb 2026-06-26) (Homebrew)", "commit_hash": "31fca3adb283cc9dfd56b49cdee9a96eb9c96ffd", "llvm": "22.1.8", "sha256": "76e1a89c22e63fafd1e10063dc4c6cea1f51f6f8093b4a8f3cf0931c6d840471"},
+    "cargo": {"version": "cargo 1.96.1", "sha256": "681a8388691e83a749a39a0044bb2b49f7d2b61d7722d2ebbc58dba6f9f7a6d1"},
+    "rustfmt": {"version": "rustfmt 1.9.0", "sha256": "2c56fd066853c80c786a8a3a0e5434b7f808ace8b2cf66ae6e1a13566aa2815f"},
+    "cargo-fmt": {"sha256": "2cb29d5f8d82881b5b4435d196d7053df0172950dfbe0a07db326ea13c076ee4"},
+    "cargo-clippy": {"version": "clippy 0.1.96", "sha256": "7995811d04fad0799eb854a8279601a82bb3b85aa120059a189cc4d7ed2b053b"},
+    "clippy-driver": {"sha256": "9606d825ec4128617fcc0aea025c30831e59339f038d25b926ae68b2bee1ee43"},
+    "edition": "2024"
+  },
+  "formatter": {
+    "binary": "rustfmt",
+    "sha256": "2c56fd066853c80c786a8a3a0e5434b7f808ace8b2cf66ae6e1a13566aa2815f",
+    "invocation": "rustfmt --edition 2024 --emit stdout, reading one generated .rs file on stdin",
+    "configuration": "rustfmt defaults. Products contain no rustfmt.toml or .rustfmt.toml.",
+    "rule": "Every generated .rs file is the formatter output for itself, so rustfmt --edition 2024 --check accepts it unchanged. The formatter hash is the Rust bundle formatter asset."
+  },
+  "crates": {
+    "registry": "crates.io sparse index, cached at ~/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f",
+    "manifest": "reference/Cargo.toml",
+    "lock": "reference/Cargo.lock",
+    "lock_packages": 204,
+    "dependencies": {
+      "axum": {"version": "=0.8.9", "default_features": false, "features": ["http1", "json", "query", "tokio"]},
+      "chrono": {"version": "=0.4.44", "default_features": false, "features": ["clock", "serde", "std"]},
+      "serde": {"version": "=1.0.229", "features": ["derive"]},
+      "serde_json": {"version": "=1.0.154"},
+      "sqlx": {"version": "=0.8.6", "default_features": false, "features": ["chrono", "derive", "macros", "migrate", "postgres", "runtime-tokio"]},
+      "tokio": {"version": "=1.53.3", "features": ["macros", "net", "rt-multi-thread"]}
+    },
+    "dev_dependencies": {
+      "http-body-util": {"version": "=0.1.5"},
+      "tower": {"version": "=0.5.3", "default_features": false, "features": ["util"]}
+    },
+    "sqlx_api": "Runtime API only: sqlx::query, sqlx::query_as, sqlx::query_scalar with .bind, FromRow derive, Transaction, and sqlx::migrate! for the embedded migrator. The checked macros sqlx::query! and sqlx::query_as! are not used, so a build needs no database and no .sqlx offline data.",
+    "no_other_crates": "A product depends on exactly these crates. A change to a crate, version or feature is a contract amendment."
+  },
+  "commands": {
+    "environment": "CARGO_NET_OFFLINE=true. A shared CARGO_TARGET_DIR is allowed. No network access.",
+    "build": "cargo build --locked --offline",
+    "test": "cargo test --locked --offline -- --test-threads=1",
+    "clippy": "cargo clippy --locked --offline --all-targets -- -D warnings",
+    "format_check": "rustfmt --edition 2024 --check <every .rs file>",
+    "lock_unchanged": "Cargo.lock bytes after the commands equal the generated Cargo.lock."
+  },
+  "postgresql": {
+    "version": "17.7",
+    "bin_dir": "/opt/homebrew/opt/postgresql@17/bin",
+    "postgres": {"sha256": "bfd0a301d544b9d3cb98083edc045dc87f49847ff708f79b2f04c045dcd3c528"},
+    "initdb": {"sha256": "ab9f3bcc7fcc8dbb7f49f520d0426af28e9fa57b3ccfb4c646a00338f720a5fb"},
+    "pg_ctl": {"sha256": "4ffcfe64fa1605aa7ca9f93fb00616cbbb392c95557c8219d98da3b8689b53ac"},
+    "cluster": "A fresh initdb cluster per acceptance run, on a QA port other than 8765 and 18765, with UTF8 encoding and UTC time zone."
+  },
+  "python": {
+    "version": "3.12.11",
+    "use": "Python products, the parity harness and the contract scripts. The Python product dependency set is the one compiler-v1 already freezes."
+  },
+  "reference_verification": {
+    "date": "2026-10-15",
+    "crate": "som_app with an axum router test and an sqlx runtime API probe",
+    "results": ["cargo test --locked --offline passed", "cargo clippy --locked --offline --all-targets -- -D warnings passed", "Cargo.lock unchanged, sha256 c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20"]
+  }
+}

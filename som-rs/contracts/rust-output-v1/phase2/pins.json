@@ -204,7 +204,7 @@
     "version": "Python 3.12.11"
   },
   "rules": [
-    "The Rust toolchain, rustfmt, the crate registry rules and PostgreSQL 17.7 are the phase 1 pins of toolchain.json, unchanged; crate pins for the phase 2 capabilities belong to #53.",
+    "The Rust toolchain, rustfmt, the crate registry rules and PostgreSQL 17.7 are the phase 1 pins of toolchain.json, unchanged. The crates of capability and flow products are toolchain.json phase2_crates and reference-phase2/ (amendment 003).",
     "A phase 2 acceptance run uses exactly these binaries, packages and repository files. A run on any other version or hash is not phase 2 evidence.",
     "No cloud service is used: S3 is moto, GCS, Firebase and OIDC are the in-repo stand-ins, MongoDB and Redis are local processes on loopback QA ports other than 8765 and 18765.",
     "Python products install their locked dependencies with uv sync --python 3.12 under UV_OFFLINE=1."
@@ -265,17 +265,18 @@
     "som-rs/behavior/phase2/adapted/verify_composed_transactions.py": "5095a31e0333c0561a14a7073c95acb468b4479b648fcd7200dea5a37be27ea1",
     "som-rs/behavior/phase2/adapted/verify_flow_service.py": "c14225c5080021beba6b9b84b49c6ff5653275bcce348d351bee9c4d8964abd5",
     "som-rs/behavior/phase2/adapted/verify_related.py": "640be9c12dfd398a877ef7fc3d1660fa41fc5b9f60deec16bfdcb41ca7d533cc",
-    "som-rs/behavior/phase2/check_phase2.py": "a6bb5a0439a5d35b14b971f754b71810be6ff97484a865a34eac060524b23b9b",
+    "som-rs/behavior/phase2/check_phase2.py": "3ac72c1ec42adf74f112c45f395ee57166f8843a5bc7d14eeca8e41c1ea07ade",
     "som-rs/behavior/phase2/make_rs_products.py": "0f4097f289efdf2a734130816caa8bfe3d6299c4a71ffb1cc5d46a036a0b9dbd",
-    "som-rs/behavior/phase2/phase2_host.py": "fd2d30318aca71a45274fdf7b6b00b67f709f469a80b0af92d4601ae46f1b460",
+    "som-rs/behavior/phase2/phase2_host.py": "ca46edc076e51d43711223f70b97af0c35fbb4bf413c66da374aca72562d4449",
     "som-rs/behavior/suite.py": "1f7fbd9bbd340aa4457fdbbbc256ebcc5add742bdf86cd1f390c28329a0c7d83",
     "som-rs/scripts/compiler_acceptance/paths.py": "7fdee8d1a58559d72c05fc9bc4e956d694764c0ab83a7ad7ba7178c0de7dd91f",
     "som-rs/scripts/compiler_acceptance/qa_harness.py": "f0c1cf96e1cf60ee692c7e9c3272757efef92498b52f4ac426e40b54142851a2",
-    "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513"
+    "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513",
+    "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "71de51983273f9313edc139b68c73c9534d2f07c0bc48b0e3788be409b0425df"
   },
   "toolchain": {
     "path": "som-rs/contracts/rust-output-v1/toolchain.json",
-    "sha256": "8aa4f8ab984b1ad138b981461d1f158d749f1e08664a1b01518eb1be9ecd3eda"
+    "sha256": "9a05dd1953defc89c4a44eada333cbfc41570e4728295ab1a2be060c76b7029d"
   },
   "uv": {
     "path": "/opt/homebrew/Cellar/uv/0.9.9/bin/uv",

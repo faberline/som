@@ -5,10 +5,10 @@ usage:
   build_phase2_pins.py           write contracts/rust-output-v1/phase2/pins.json
   build_phase2_pins.py --check   fail unless the committed pins are exactly what this host has
 
-The Rust toolchain, the crates and PostgreSQL stay the phase 1 pins of toolchain.json; this file
-only names that file by hash. Phase 2 adds the services the behavior suite runs: mongod, redis,
-moto (S3), the in-repo GCS, Firebase and OIDC stand-ins, uv, the acceptance venv and its packages,
-and every repository file the suite imports. A binary is pinned by its resolved path, its version
+The Rust toolchain, the crates (phase 1 and phase2_crates) and PostgreSQL are the pins of
+toolchain.json; this file only names that file by hash. Phase 2 adds the services the behavior
+suite runs: mongod, redis, moto (S3), the in-repo GCS, Firebase and OIDC stand-ins, uv, the
+acceptance venv and its packages, and every repository file the suite imports. A binary is pinned by its resolved path, its version
 output and its sha256; a repository file by its sha256.
 """
 from __future__ import annotations
@@ -39,7 +39,8 @@ SUITE_FILES = (
                                                 "make_rs_products.py")]
     + [BEHAVIOR / "phase2" / "adapted" / "MANIFEST.json"]
     + sorted((BEHAVIOR / "phase2" / "adapted").glob("*.py"))
-    + [HERE / "rust_profile.py", SOM_RS / "scripts" / "compiler_acceptance" / "qa_harness.py",
+    + [HERE / "rust_profile.py", HERE / "rust_profile_phase2.py",
+       SOM_RS / "scripts" / "compiler_acceptance" / "qa_harness.py",
        SOM_RS / "scripts" / "compiler_acceptance" / "paths.py"]
     + sorted((REPO / "som-core" / "src" / "som_core").glob("*.py"))
 )
@@ -108,7 +109,8 @@ def build() -> dict[str, Any]:
         "host": toolchain["host"],
         "rules": [
             "The Rust toolchain, rustfmt, the crate registry rules and PostgreSQL 17.7 are the phase 1 pins of "
-            "toolchain.json, unchanged; crate pins for the phase 2 capabilities belong to #53.",
+            "toolchain.json, unchanged. The crates of capability and flow products are toolchain.json "
+            "phase2_crates and reference-phase2/ (amendment 003).",
             "A phase 2 acceptance run uses exactly these binaries, packages and repository files. A run on any "
             "other version or hash is not phase 2 evidence.",
             "No cloud service is used: S3 is moto, GCS, Firebase and OIDC are the in-repo stand-ins, MongoDB "

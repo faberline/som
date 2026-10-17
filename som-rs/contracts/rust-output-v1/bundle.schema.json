@@ -58,7 +58,8 @@
             "properties": {
               "path": {"anyOf": [
                 {"enum": ["Cargo.toml", "Cargo.lock", "src/main.rs", "src/lib.rs", "src/models.rs", "src/schemas.rs", "src/api.rs", "src/db.rs", "tests/api.rs", "README.md"]},
-                {"type": "string", "pattern": "^migrations/0001_[A-Za-z_][A-Za-z0-9_]*\\.sql$"}
+                {"type": "string", "pattern": "^migrations/0001_[A-Za-z_][A-Za-z0-9_]*\\.sql$"},
+                {"enum": ["src/integrations.rs", "src/flows.rs"], "$comment": "Phase 2 capability and flow shapes, product-layout.json phase2 (amendment 003)."}
               ]},
               "blocks": {
                 "type": "array",

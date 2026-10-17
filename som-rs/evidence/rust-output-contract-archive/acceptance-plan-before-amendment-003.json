@@ -1,0 +1,71 @@
+{
+  "version": "som.rust-output-acceptance-plan.v1",
+  "case_inventory": "case-inventory.json",
+  "negative_cases": "negative-cases.json",
+  "target_examples": "target-examples.json",
+  "python_unchanged": {
+    "rule": "A request without target, or with target python, returns the same bytes as the accepted compiler-v1 default for the same request. No existing CNL text, typed prompt, bundle, asset or Python output changes.",
+    "checks": [
+      "All 127 public Python products are byte-identical to their accepted outputs.",
+      "All 544 historical jobs keep their accepted results.",
+      "The legacy 100 and 214 case sets keep their scope.",
+      "Every negative case python_control_body gives its python_control_expected result (tests/rust-output-v1/check_python_controls.py).",
+      "Every coverage case gives the same Python bundle payload_sha256 and Python file hashes as the frozen evidence (tests/rust-output-v1/validate_cases.py)."
+    ]
+  },
+  "target_selection_checks": [
+    "Every target-examples.json body gives its expected result.",
+    "Every RT case gives exactly its expected diagnostic, located in the raw request body.",
+    "A target python request gives the same bytes as the request without target, for every acceptance case and every CNL positive fixture.",
+    "The CLI forwards --target unchanged and exits with status 2 on a refusal."
+  ],
+  "scope_checks": [
+    "Every RS and RP case gives exactly its expected diagnostic with target rust.",
+    "Every out-of-scope public example, CNL positive fixture and legacy job gives UNSUPPORTED_TARGET with the refusal case-inventory.json records for it, with target rust.",
+    "The compiler refusal for each case equals tests/rust-output-v1/rust_profile.py on the typed prompt."
+  ],
+  "bundle_checks": [
+    "For every acceptance case, the CNL and typed JSON requests with target rust return byte-identical som.dsl-bundle.v2 bundles.",
+    "Every Rust bundle validates against bundle.schema.json, has at most 12 files and 64 blocks, and every block id starts with rust.",
+    "Two compiles and two assembles of the same request give the same bytes.",
+    "The assembled files are exactly the product-layout.json file set, and Cargo.toml and Cargo.lock equal the reference files."
+  ],
+  "assemble_refusals": {
+    "base": "A valid Rust bundle for the acceptance case example-v1, and for A6 the bundle for example-v5.",
+    "rehash": "Unless a recipe says otherwise, recompute prompt_sha256, dsl_sha256 and payload_sha256 with the frozen formulas after the change, so the hash check passes and the named check is reached.",
+    "span": "Line, column and byte spans locate the pointer target in the canonical assemble request body, computed at test time.",
+    "recipes": [
+      {"id": "A1", "change": "Replace assets.formatter.sha256 with the hash of a different rustfmt binary.", "code": "ASSET_HASH_MISMATCH", "http_status": 400, "prompt_pointer": "/bundle/assets"},
+      {"id": "A2", "change": "Replace catalog, block_library, backend and formatter with the Python descriptors from the compiler-v1 manifest.", "code": "ASSET_HASH_MISMATCH", "http_status": 400, "prompt_pointer": "/bundle/assets"},
+      {"id": "A3", "change": "Add target rust to a valid som.dsl-bundle.v1 Python bundle.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/target", "note": "The accepted default already gives this result."},
+      {"id": "A4", "change": "Set target to python in a Rust bundle.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/target"},
+      {"id": "A5", "change": "Replace the first block id with the Python block id orm.base.", "code": "INVALID_COMPOSITION", "http_status": 400, "prompt_pointer": "/bundle/dsl/files/0/blocks/0/id"},
+      {"id": "A6", "change": "Replace the prompt with the public v6 example prompt. Recompute the shared compiler-v1 descriptors for the v6 prompt, keep the Rust descriptors and the Rust DSL, and rehash.", "code": "UNSUPPORTED_TARGET", "http_status": 422, "prompt_pointer": "/bundle/prompt/version"},
+      {"id": "A7", "change": "Change one hex digit of payload_sha256. Do not rehash.", "code": "BUNDLE_HASH_MISMATCH", "http_status": 400, "prompt_pointer": "/bundle/hashes/payload_sha256"},
+      {"id": "A8", "change": "Rename the first prompt field to Title in the prompt and in every DSL param that names it.", "code": "UNSUPPORTED_TARGET", "http_status": 422, "prompt_pointer": "/bundle/prompt/resource/fields/0/name"},
+      {"id": "A9", "change": "Add a 13th file entry by copying the last file with path README.md.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/dsl/files"}
+    ]
+  },
+  "product_gates": {
+    "each_acceptance_case": [
+      "rustfmt --edition 2024 --check accepts every .rs file unchanged",
+      "cargo build --locked --offline",
+      "cargo clippy --locked --offline --all-targets -- -D warnings",
+      "cargo test --locked --offline -- --test-threads=1 with TEST_DATABASE_URL on a fresh database; a missing database is a failure",
+      "Cargo.lock unchanged after the commands",
+      "schema equivalence with the Python migration for the same prompt (behavior-normalization.json)",
+      "the behavior parity suite against the Python product for the same prompt, after the frozen normalization",
+      "the strict refusals in behavior-normalization.json divergences D1 to D5 checked on the Rust product alone"
+    ],
+    "no_sampling": "Every acceptance case runs every gate. A missing result, a failure and a skipped check are each reported as such and block acceptance."
+  },
+  "issue_gates": {
+    "#46": "The behavior suite and harness pass on the current Python products for every acceptance case before any Rust product exists.",
+    "#47": "target_selection_checks, scope_checks and python_unchanged pass. Rust compiles may still return a not-yet-implemented diagnostic for in-scope prompts only until #48.",
+    "#48": "bundle_checks, assemble_refusals and product_gates pass for every v1 to v4 acceptance case.",
+    "#49": "bundle_checks, assemble_refusals and product_gates pass for every v5 acceptance case.",
+    "#50": "Every check in this plan passes on one recorded build, with the evidence hashed.",
+    "#51": "A qualified switch on a QA port, a canary and a rollback check pass before the default on 8765 changes."
+  },
+  "amendments": "After the freeze receipt is sealed, a change to any frozen file is a numbered amendment with its reason, the old and new hashes, and an independent review."
+}

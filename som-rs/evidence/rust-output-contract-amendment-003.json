@@ -1,0 +1,352 @@
+{
+  "version": "som.rust-output-contract-amendment.v1",
+  "amendment": 3,
+  "frozen_at": "2026-10-17T11:20:13.672853+00:00",
+  "baseline_commit": "1e34209e0819f0cb58ff9f2f85fe39e3d8364360",
+  "issue": 53,
+  "target": "rust",
+  "bundle": "som.dsl-bundle.v2",
+  "status": "amendment_sealed_after_independent_review",
+  "implementation_already_in_progress": true,
+  "phase2_implementation_started_before_freeze": false,
+  "phase2_implementation_started_before_freeze_refers_to": "the amendment 002 freeze; resource-shape implementation (#53 B) is in progress, and no capability or flow product was generated before this freeze",
+  "previous_receipt": "som-rs/evidence/rust-output-contract-amendment-002.json",
+  "previous_receipt_sha256": "91314216f629d802a19c9232aa33223d3c456a2f04e86e17b8e351650c21bd1f",
+  "reason": "Issue #53 needs the phase 2 product layout, crates and harness fixed before any capability or flow Rust product exists. Resource-shape products, which amendment 002 section 10 lets keep the phase 1 layout, were already generated from the uncommitted som-targets work. product-layout.json gains phase2: five shapes chosen by the prompt (resource, capability and flow for PostgreSQL and MongoDB), each at most 12 files, with the hand-written _som_rust_migrations migrator. bundle.schema.json admits src/integrations.rs and src/flows.rs. toolchain.json gains phase2_crates (reference-phase2/Cargo.toml and Cargo.lock, 335 packages, mongodb, bson and libz-sys fetched once from crates.io on 2026-10-17 as the user approved) and the phase 2 reference verification. The pinned harness changes: phase2_host.RustProduct reads SOM_APP_ADDR as phase2/services.json says, check_phase2.py gains --language rust, and the Python baseline runs again on it (behavior-python-004). acceptance-plan.json gains the phase 2 plan and gates for #53 to #56, and CONTRACT.md section 11 describes them. The phase 1 sections, files, reference crates and gates are unchanged.",
+  "evidence": {
+    "reference_verification": "a v6 PostgreSQL jwt prototype (.local proto-002) built, tested and passed clippy offline from the union vendor directory with the reference-phase2 Cargo.lock; its own Cargo.toml has loose requirements, so the reviewer rebuilt the same sources with reference-phase2/Cargo.toml: build, clippy -D warnings and the test compile passed offline and the lock did not change",
+    "python_behavior": "phase2/behavior.json and evidence/rust-output-v1/phase2-python-behavior-2026-10-17.json: run behavior-python-004 on the amended harness passes 579 of 584 cases, every legacy job, CNL fixture and public example; the 5 failures are RS07, RS14 and RS16 (#57) and the kept refusals RS12 and RS13, the same as run 003, which is recorded as superseded by the harness change",
+    "pins": "phase2/pins.json, case-inventory.json and constructs.json rebuilt; every builder --check is current",
+    "user_decisions": "2026-10-17: fetch mongodb, bson and libz-sys from crates.io; #57 after #56; the v3 limit and offset refusal moves to compiler-v1 amendment 003 with #57"
+  },
+  "changed_paths": [
+    "som-rs/contracts/rust-output-v1/CONTRACT.md",
+    "som-rs/contracts/rust-output-v1/acceptance-plan.json",
+    "som-rs/contracts/rust-output-v1/bundle.schema.json",
+    "som-rs/contracts/rust-output-v1/phase2/behavior.json",
+    "som-rs/contracts/rust-output-v1/phase2/case-inventory.json",
+    "som-rs/contracts/rust-output-v1/phase2/constructs.json",
+    "som-rs/contracts/rust-output-v1/phase2/pins.json",
+    "som-rs/contracts/rust-output-v1/product-layout.json",
+    "som-rs/contracts/rust-output-v1/toolchain.json",
+    "som-rs/tests/rust-output-v1/build_phase2_behavior.py",
+    "som-rs/tests/rust-output-v1/build_phase2_constructs.py",
+    "som-rs/tests/rust-output-v1/build_phase2_pins.py"
+  ],
+  "added_paths": [
+    "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.lock",
+    "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.toml",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-17.json"
+  ],
+  "changes": [
+    {
+      "path": "som-rs/contracts/rust-output-v1/CONTRACT.md",
+      "old_sha256": "4bd99f90dd1fc6970160247df9e39217d9d7b7c37b8a2367de152628eb1aa7f6",
+      "new_sha256": "7a52f6e63ac687b67cf58cf4928693b6e4891ecc28b158ffa333a6f72486fbfe",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/CONTRACT-before-amendment-003.md",
+      "archived_copy_sha256": "4bd99f90dd1fc6970160247df9e39217d9d7b7c37b8a2367de152628eb1aa7f6"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/acceptance-plan.json",
+      "old_sha256": "c0ea39c746d74553efcaea70b9a6e3e6b276ba9ff94e66c07b883e72e6da9b5a",
+      "new_sha256": "0f6f24fd9f6a909ecf17717f750a43bb0bc07457eb69e73792bdba2524182b16",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/acceptance-plan-before-amendment-003.json",
+      "archived_copy_sha256": "c0ea39c746d74553efcaea70b9a6e3e6b276ba9ff94e66c07b883e72e6da9b5a"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/bundle.schema.json",
+      "old_sha256": "70d5ca48172f9b818352e16e6d193e1c92d3927971d74c6f8b4bd1f1f3529eec",
+      "new_sha256": "0d9e9db5495c0d9121b3213ed0eb15b18af6de462ee16ef3e91561414f4547bd",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/bundle.schema-before-amendment-003.json",
+      "archived_copy_sha256": "70d5ca48172f9b818352e16e6d193e1c92d3927971d74c6f8b4bd1f1f3529eec"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/phase2/behavior.json",
+      "old_sha256": "daa222773b3a65838c7da576e1e645b17a5fc452ef34d7fdbb30c1a3ba19adce",
+      "new_sha256": "c1277fcacab1169ce4a782c5141142a3c2862223fea6ff390ddb774be23059ce",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/behavior-before-amendment-003.json",
+      "archived_copy_sha256": "daa222773b3a65838c7da576e1e645b17a5fc452ef34d7fdbb30c1a3ba19adce"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/phase2/case-inventory.json",
+      "old_sha256": "7a07f753dd8b16fb8dc92db9b3ee76f1c38052be520ef81bb7934284dc84594b",
+      "new_sha256": "150a2bebcd4554d00b3409ea15b43a6a159a3bc05e81549eeadb858bd2220b8d",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/case-inventory-before-amendment-003.json",
+      "archived_copy_sha256": "7a07f753dd8b16fb8dc92db9b3ee76f1c38052be520ef81bb7934284dc84594b"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/phase2/constructs.json",
+      "old_sha256": "b50d15e6e2a97a0cefca1a0a63717d9cf57e9315a640295545388d332a2227f9",
+      "new_sha256": "16210a3b421de69759a33c169b6925a7bbff38e33268bbaa0df787941b857b8c",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/constructs-before-amendment-003.json",
+      "archived_copy_sha256": "b50d15e6e2a97a0cefca1a0a63717d9cf57e9315a640295545388d332a2227f9"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/phase2/pins.json",
+      "old_sha256": "c4e0de779e5aad147823671a70c8afd7aded5617d2ee305505abbff98010d506",
+      "new_sha256": "c55a62bdb0c580d077f9ffbb4cf8de0ba68df4be66e1f312844910dad342fe9b",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/pins-before-amendment-003.json",
+      "archived_copy_sha256": "c4e0de779e5aad147823671a70c8afd7aded5617d2ee305505abbff98010d506"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/product-layout.json",
+      "old_sha256": "83e451c4616d6ee94bfbbae074a299072db15df9e93fd78ccb00d047bcbe70ac",
+      "new_sha256": "d2d781f31d959fb913b1182a481e44bc4520e6157ef80de1e7e2fcec46be0b8f",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/product-layout-before-amendment-003.json",
+      "archived_copy_sha256": "83e451c4616d6ee94bfbbae074a299072db15df9e93fd78ccb00d047bcbe70ac"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/toolchain.json",
+      "old_sha256": "8aa4f8ab984b1ad138b981461d1f158d749f1e08664a1b01518eb1be9ecd3eda",
+      "new_sha256": "9a05dd1953defc89c4a44eada333cbfc41570e4728295ab1a2be060c76b7029d",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/toolchain-before-amendment-003.json",
+      "archived_copy_sha256": "8aa4f8ab984b1ad138b981461d1f158d749f1e08664a1b01518eb1be9ecd3eda"
+    },
+    {
+      "path": "som-rs/tests/rust-output-v1/build_phase2_behavior.py",
+      "old_sha256": "5c9fa29f986856340fffa42b4babf14361f2cf120b8e4ec3c59b1b920af16bf4",
+      "new_sha256": "604c620b595e721607f29da9a1456a4803f6b879a21e300787acc8520d859851",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/build_phase2_behavior-before-amendment-003.py",
+      "archived_copy_sha256": "5c9fa29f986856340fffa42b4babf14361f2cf120b8e4ec3c59b1b920af16bf4"
+    },
+    {
+      "path": "som-rs/tests/rust-output-v1/build_phase2_constructs.py",
+      "old_sha256": "9e8c8c77edd0ef991e0a30e37a900b4e3f3d2019a725de1fe595ed408d4852f6",
+      "new_sha256": "89fd4e351dc2a696778ec00c651f22c8c9dbbd5700401bfcdf3444d8aaad253d",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/build_phase2_constructs-before-amendment-003.py",
+      "archived_copy_sha256": "9e8c8c77edd0ef991e0a30e37a900b4e3f3d2019a725de1fe595ed408d4852f6"
+    },
+    {
+      "path": "som-rs/tests/rust-output-v1/build_phase2_pins.py",
+      "old_sha256": "c004ca12a73730db8710cc0b50573019e79a6bfb5606c93b4f42307a3aa1d504",
+      "new_sha256": "7476958452c998972074a9b9e4ae3ee56d5598617ad4f1d4b3cf41b6d9c31c61",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/build_phase2_pins-before-amendment-003.py",
+      "archived_copy_sha256": "c004ca12a73730db8710cc0b50573019e79a6bfb5606c93b4f42307a3aa1d504"
+    }
+  ],
+  "unchanged": "Every other path in the previous receipt keeps its hash. Sections 1 to 10 of CONTRACT.md, scope.json, rust_profile.py, rust_profile_phase2.py, reference/, and every phase 1 case, refusal, count and gate are unchanged.",
+  "target_contract": {
+    "id": "som.rust-output-contract.v1",
+    "previous_sha256": "00edf1f7cba7847ba142b68a97c4956e2ed62a1ed4e821a712122a187992b838",
+    "sha256": "893746988ef2062ff51cd6b6fc2941a31a1a2cff885a73600aa1abce2e872c10",
+    "rule": "sha256 of the som.canonical-json.v1 bytes of the files map below"
+  },
+  "files": {
+    "som-rs/contracts/rust-output-v1/CONTRACT.md": "7a52f6e63ac687b67cf58cf4928693b6e4891ecc28b158ffa333a6f72486fbfe",
+    "som-rs/contracts/rust-output-v1/acceptance-plan.json": "0f6f24fd9f6a909ecf17717f750a43bb0bc07457eb69e73792bdba2524182b16",
+    "som-rs/contracts/rust-output-v1/api.schema.json": "dbd396f5e395487f05d6ad8c696d307a6641a9af47322e8c78284a47d053fff0",
+    "som-rs/contracts/rust-output-v1/behavior-normalization.json": "c75b29346d605af7e6ec8ad5d856381f4f8e0e0d321f1d236a5d93b545be97bf",
+    "som-rs/contracts/rust-output-v1/bundle.schema.json": "0d9e9db5495c0d9121b3213ed0eb15b18af6de462ee16ef3e91561414f4547bd",
+    "som-rs/contracts/rust-output-v1/case-inventory.json": "fc6fbec822623cb9bdc0a6e11c2a72b6f0dfac3c41e8b7c1e35830090eb7d2a5",
+    "som-rs/contracts/rust-output-v1/negative-cases.json": "a82736a98e4f8c8650f58ae92fb262c9f98fc4b66c6b9e60aab3512804208c97",
+    "som-rs/contracts/rust-output-v1/phase2/behavior.json": "c1277fcacab1169ce4a782c5141142a3c2862223fea6ff390ddb774be23059ce",
+    "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "150a2bebcd4554d00b3409ea15b43a6a159a3bc05e81549eeadb858bd2220b8d",
+    "som-rs/contracts/rust-output-v1/phase2/constructs.json": "16210a3b421de69759a33c169b6925a7bbff38e33268bbaa0df787941b857b8c",
+    "som-rs/contracts/rust-output-v1/phase2/naming.json": "495393b9e226f7faac959fe05c00ed584ae92d6817e198247b530862aac0a198",
+    "som-rs/contracts/rust-output-v1/phase2/pins.json": "c55a62bdb0c580d077f9ffbb4cf8de0ba68df4be66e1f312844910dad342fe9b",
+    "som-rs/contracts/rust-output-v1/phase2/services.json": "64c7b3ad93ea8359280232b5b6244f21c5bdcf1fb84931711376708b44ed572d",
+    "som-rs/contracts/rust-output-v1/product-layout.json": "d2d781f31d959fb913b1182a481e44bc4520e6157ef80de1e7e2fcec46be0b8f",
+    "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.lock": "0483374722515e3daa7f8509708abb9c551f1bc1815f9110e6662b893db443ad",
+    "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.toml": "d06a474e62ab474465c73f4ad99ddcf5d0e33a750684e3a8cfa83714949cd430",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.lock": "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.toml": "8b708c38686b77e6740171e24c28793c4a40b54a8e9807f8e147a9ef3b44591d",
+    "som-rs/contracts/rust-output-v1/scope.json": "0f31b4c0290afda9b4c4ccf99b575edec81c3361ae31c74b44bc16d5ff20e51d",
+    "som-rs/contracts/rust-output-v1/target-examples.json": "4d91b175e9c75cadb61ae335dc1540582b3d89c01815abe651b02d57ac6889ae",
+    "som-rs/contracts/rust-output-v1/toolchain.json": "9a05dd1953defc89c4a44eada333cbfc41570e4728295ab1a2be060c76b7029d",
+    "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-15.json": "b83e01caf26dbd403d04dac4948a04b97f059accd22edceae78f8c2519438462",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-16.json": "64eb707bdecdcacb878240ca87094834015cb3dd1a77c2050e852335b18932da",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-17.json": "24cee7a81cf46379c318efd9271dfb18b15acddbde03e549208df162b538f383",
+    "som-rs/tests/rust-output-v1/build_case_inventory.py": "494976a61dd2184d2a9135d297c635fc4b6bd04be4cbb34bd2b7efc00b855874",
+    "som-rs/tests/rust-output-v1/build_cases.py": "13096aacb9ba3eafe84e4389586478622aca5eea8622f6d8774a15bb4da265b3",
+    "som-rs/tests/rust-output-v1/build_negative_cases.py": "fe28674bcf2c7048d0953a14a8405acc185bbf083f8e2d1abbe0c75d523c3689",
+    "som-rs/tests/rust-output-v1/build_phase2_behavior.py": "604c620b595e721607f29da9a1456a4803f6b879a21e300787acc8520d859851",
+    "som-rs/tests/rust-output-v1/build_phase2_constructs.py": "89fd4e351dc2a696778ec00c651f22c8c9dbbd5700401bfcdf3444d8aaad253d",
+    "som-rs/tests/rust-output-v1/build_phase2_inventory.py": "2f0dc3701db1a30f8826f51b272369ae97e43e9dfc224f13517e768e8539daaf",
+    "som-rs/tests/rust-output-v1/build_phase2_pins.py": "7476958452c998972074a9b9e4ae3ee56d5598617ad4f1d4b3cf41b6d9c31c61",
+    "som-rs/tests/rust-output-v1/build_target_examples.py": "697ca7c91c2c9f4c3d27985ed0f50ce6c6f2a103ea7ed264ba1915c056d43ab2",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.cnl": "22e6cb0aacd219cb47478dca4ff5f244b63ae605de399f08a16bb62093ec9ce7",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.cnl": "a2512cdbbea998a8f051160166e3c1d2f4b43ae5d7bbcbe5e6a0cd211a9b7c1d",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.cnl": "554eb27bbd5c894fa7ccd473b45734a33753b1ec32395ccb5f73133b0a71a12c",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.cnl": "cb7f5fb994d6c7bfbdff549e71286211cd1d3f7177b91bdbeeb34337229b7724",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.cnl": "97cb49f506fb16fb9da2ea203b5a114ea68766ec46ebb69cdb4d63f012deb16c",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.prompt.json": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.cnl": "627623f91944b13158487086efec5653948be6c2e77a341e0d0ba9410d291e5d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347",
+    "som-rs/tests/rust-output-v1/cases/index.json": "b49af2a7ba842e5dd810d8d010fcf93436474df7f49f1c569367bed1bc94ed1b",
+    "som-rs/tests/rust-output-v1/check_contract.py": "61d1539d0dbf3b9e7cb2b7528acded146bdbb2dcff48aa069fd22ac52a6a59d5",
+    "som-rs/tests/rust-output-v1/check_python_controls.py": "3da613ff3e8553939e1d246cd1b65007e8c088b5f541c5dc1838739903171939",
+    "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513",
+    "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "71de51983273f9313edc139b68c73c9534d2f07c0bc48b0e3788be409b0425df",
+    "som-rs/tests/rust-output-v1/validate_cases.py": "9b9131de7a56a54c6a9f103da170143bc18ec6d113bedb6f79ea0a7f8453d4bb"
+  },
+  "related_tools": {
+    "som-rs/scripts/rust_output_acceptance/vendor_crates.py": {
+      "sha256": "10931d7ad4413da206ed1c80f47781195429b19320553e8ba032130ce33ede69",
+      "role": "vendors the union of reference/Cargo.lock and reference-phase2/Cargo.lock, with --base for packages the cache no longer holds; committed with this amendment, outside the contract files"
+    }
+  },
+  "vendor": {
+    "run": ".local/rust-output-phase2/vendor-002/vendor.json",
+    "run_sha256": "b58c92e6d7837a64b884e9fbd27babba3b67af87f273280d410bb8577a23512b",
+    "version": "som.rust-output-vendor.v2",
+    "references": [
+      {
+        "lock_sha256": "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20",
+        "manifest_sha256": "8b708c38686b77e6740171e24c28793c4a40b54a8e9807f8e147a9ef3b44591d",
+        "path": "som-rs/contracts/rust-output-v1/reference"
+      },
+      {
+        "lock_sha256": "0483374722515e3daa7f8509708abb9c551f1bc1815f9110e6662b893db443ad",
+        "manifest_sha256": "d06a474e62ab474465c73f4ad99ddcf5d0e33a750684e3a8cfa83714949cd430",
+        "path": "som-rs/contracts/rust-output-v1/reference-phase2"
+      }
+    ],
+    "lock_packages": 352,
+    "crates": 298,
+    "bases": [
+      ".local/rust-compiler-goal/acceptance/rust-output-050/crates-001/vendor"
+    ],
+    "from_base": [
+      "libc 0.2.190"
+    ],
+    "vendor_tree_sha256": "bac8fee5432143cc4768d3f294e5f3b0a0a75c563e90aec4f4c88c5b641e9df6",
+    "note": "every package not in the local cargo cache came from the base directory and was checked against the checksum in its lock; the lock checksums, not the base, fix each crate's bytes"
+  },
+  "independent_review": {
+    "reviewer": "independent Claude Opus 5.5 subagent, read-only, no calls to 8765",
+    "target_sha256": "893746988ef2062ff51cd6b6fc2941a31a1a2cff885a73600aa1abce2e872c10",
+    "final_verdict": "APPROVED",
+    "confirmed_without_change": [
+      "Round 2 receipt integrity: all 51 files hashes match disk; sha256(canonical(files)) = 89374698...2e872c10 = target_contract.sha256; previous_sha256 00edf1f7... and previous_receipt_sha256 91314216... still equal amendment 002; changed_paths (12), added_paths (3), removed (none) still equal the computed diff; all 12 changes entries still have old = archive = git show HEAD = amendment 002 hash and new = files hash.",
+      "Relative to round 1 (target 275b9363...), the files map differs only in CONTRACT.md (was 58744478...) and acceptance-plan.json (was b8141c07...); the other 49 hashes are identical. The receipt itself was regenerated (new keys related_tools and phase2_implementation_started_before_freeze_refers_to, new reason and evidence text, status still pending_independent_review).",
+      "CONTRACT.md: git diff HEAD is still a pure 57-line insertion after line 291 (section 11); sections 1-10 byte-unchanged.",
+      "acceptance-plan.json: only the phase2 key is added; every phase 1 key is equal to HEAD.",
+      "Builders and checks re-run on the round 2 tree: build_phase2_constructs, build_phase2_inventory, build_phase2_pins --check current; build_phase2_behavior --run behavior-python-004 --superseded 001 002 003 --check current; check_contract.py 399/0; check_contract.py --receipt amendment-003 452 passed with the single expected failure 'receipt was sealed before implementation'.",
+      "No capability or flow product was generated before the freeze: the only integrations.rs files under .local/rust-output-phase2 are the hand-written proto-002, its byte-identical copy in proto-verify-001/work/PUBLIC_v6/product, and proto-002-ref; there is no flows.rs. So the F1 reworded claim holds.",
+      "Unchanged from round 1 (files hashes identical): behavior.json and the 2026-10-17 evidence (579/584, failures RS07 RS12 RS13 RS14 RS16), pins.json (63 hashes), harness diff, reference-phase2 Cargo.toml/Cargo.lock (335 packages, all '=' pins), toolchain.json, product-layout.json, bundle.schema.json; the round 1 independent offline rebuild of proto-002 with the reference manifest remains valid for these hashes.",
+      "The files map still holds no som-targets source and no vendor_crates.py."
+    ],
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "minor",
+        "text": "Receipt reason says the layout, crates and harness are fixed 'before any phase 2 Rust product exists', but generated phase 2 Rust products of the resource shape already existed before frozen_at (11:03:58Z): .local/rust-output-phase2/behavior-rust-smoke-001 (run.json language rust, ~09:23Z, 3 run, 2 passed) and behavior-rust-b-001 (~10:04Z, 15/15 phase1_suite cases), plus dev-b-001/rs-gates.json (~10:03Z), produced from the uncommitted som-targets changes. This is permitted by amendment 002 section 10 (resource products keep the phase 1 layout), and no capability or flow product was generated (proto-002 is hand-written), so it is wording, not a contract defect. Suggest: 'before any capability or flow Rust product exists', and state that phase2_implementation_started_before_freeze refers to the amendment 002 freeze (resource-shape implementation is in progress).",
+        "resolution": "Resolved. reason now says 'before any capability or flow Rust product exists' and says resource-shape products were already generated from the uncommitted som-targets work under amendment 002 section 10; phase2_implementation_started_before_freeze_refers_to says the flag refers to the amendment 002 freeze and that no capability or flow product was generated, which the .local scan confirms.",
+        "status": "resolved"
+      },
+      {
+        "id": "F2",
+        "severity": "minor",
+        "text": "scripts/rust_output_acceptance/vendor_crates.py is modified in the working tree (+67/-23; adds the union vendoring and --base fallback, which HEAD lacks) and is described normatively by CONTRACT.md section 11, toolchain.json phase2_crates.vendor and the phase 2 product_gates, but it is neither in the receipt files map nor in phase2/pins.json. Cargo's lock and vendor checksums still protect crate integrity, but the script should be committed with this amendment (and ideally pinned) so the described behaviour exists at the sealed commit.",
+        "resolution": "Resolved. related_tools records scripts/rust_output_acceptance/vendor_crates.py with sha256 10931d7a...e33ede69, which equals the working-tree file, says it is committed with this amendment and is outside the contract files. Not pinned in pins.json, which is acceptable given that Cargo checksums guard the crates.",
+        "status": "resolved"
+      },
+      {
+        "id": "F3",
+        "severity": "minor",
+        "text": "The phase 2 plan replaces A6 and A8 and says python_unchanged and target_selection_checks apply unchanged, but is silent on phase 1 scope_checks and on negative-cases.json RS01-RS22 (all expected UNSUPPORTED_TARGET; 20 of them become products in phase 2) and RP01-RP03 (precedence). The phase2.refusals rule implies the override, but one sentence stating that scope_checks and the RS rows of negative-cases.json are the phase 1 record superseded by phase2.refusals, and whether RP01-RP03 still run, would close the gap.",
+        "resolution": "Resolved. phase2.rule now says refusals replace the phase 1 scope_checks and the expected UNSUPPORTED_TARGET results of the RS rows of negative-cases.json (which stay the phase 1 record), and that RP01 to RP03 still run with their compiler-v1 diagnostics.",
+        "status": "resolved"
+      },
+      {
+        "id": "F4",
+        "severity": "minor",
+        "text": "Wording: (a) acceptance-plan phase2.refusals says 'RS12 and RS13, each in its CNL and JSON form', but RS12 is a CNL case and RS13 a JSON case (one row each; bundle_checks already says 'a case with one form runs that form'); (b) CONTRACT.md section 11 'every phase 2 case and every phase 1 acceptance case runs every gate' is broader than the plan, where phase 1 cases run phase1_unchanged and the phase 1 gates; (c) 'toolchain.json phase2_crates lists every crate with its role' - roles are given only for the new crates.",
+        "resolution": "Resolved. (a) refusals reads 'RS12 (its CNL form) and RS13 (its JSON form)'; (b) CONTRACT.md section 11 says every phase 2 case runs every phase 2 gate and every phase 1 acceptance case runs phase1_unchanged and the phase 1 gates; (c) 'lists every crate and gives the role of each new one'.",
+        "status": "resolved"
+      },
+      {
+        "id": "F5",
+        "severity": "minor",
+        "text": "evidence.reference_verification says the v6 prototype was built 'with reference-phase2/Cargo.toml', but the retained prototype .local/rust-output-phase2/proto-002/Cargo.toml (sha 188719b6...) uses loose requirements ('3', '1', '0.17', ...) rather than the '=' pins; the lock is identical (04833747...). I reproduced build, clippy and test compile with the reference Cargo.toml substituted, so the claim holds in substance; the receipt could name the directory actually used or keep the reference Cargo.toml in it.",
+        "resolution": "Resolved. reference_verification states proto-002's own Cargo.toml has loose requirements and records the reviewer's rebuild with reference-phase2/Cargo.toml (build, clippy -D warnings, test compile offline, lock unchanged), which matches what I ran in round 1.",
+        "status": "resolved"
+      },
+      {
+        "id": "F6",
+        "severity": "minor",
+        "status": "open (new in round 2; the text was already present in round 1 and I missed it)",
+        "text": "CONTRACT.md section 11 (Crates) says a package the cache no longer holds may come from an earlier vendor directory (--base) and 'The receipt records both locks and every such package.' The receipt records both locks in files, but lists no --base package: it has no from_base entry and does not mention libc. The vendor run the reference verification used, .local/rust-output-phase2/vendor-002/vendor.json, lists from_base ['libc 0.2.190'] taken from .local/rust-compiler-goal/acceptance/rust-output-050/crates-001/vendor. vendor-001 had 26 from_base packages. Fix in the receipt only, for example a related_tools vendor entry with the base directory, the from_base list (libc 0.2.190) and vendor_tree_sha256 bac8fee5.... This does not change files or the target sha. Another option is to soften the contract sentence, which would change the target.",
+        "resolution": "Not blocking: crate integrity is still enforced by the lock checksums, and vendor_crates.py checks base packages against their checksum list. Fix it before sealing, preferably in the receipt so the target stays 89374698..."
+      }
+    ],
+    "commands_run": [
+      {
+        "command": "python check1.py round1_files.json (scratchpad): integrity of the regenerated receipt plus diff of the files map against round 1",
+        "result": "51/51 hashes match; target 89374698... reproduced; previous sha and receipt sha match amendment 002; changed 12/added 3/removed 0 correct; 12/12 archives equal HEAD; vs round 1 only CONTRACT.md and acceptance-plan.json differ"
+      },
+      {
+        "command": "git diff HEAD --stat / -U0 -- contracts/rust-output-v1/CONTRACT.md; sed section 11",
+        "result": "57 insertions, one hunk @@ -291,0 +292,57 @@; sections 1-10 unchanged; F4(b), F4(c) wording present"
+      },
+      {
+        "command": "python plan2.py: acceptance-plan.json vs git show HEAD, phase2.rule and refusal strings, receipt keys",
+        "result": "only phase2 added, phase 1 keys equal; F3 and F4(a) wording present; receipt has no from_base/libc record (F6)"
+      },
+      {
+        "command": "shasum -a 256 scripts/rust_output_acceptance/vendor_crates.py",
+        "result": "10931d7a...e33ede69 = receipt related_tools sha"
+      },
+      {
+        "command": "read .local/rust-output-phase2/vendor-001/vendor.json and vendor-002/vendor.json",
+        "result": "vendor-002 from_base [libc 0.2.190]; vendor-001 from_base 26; both reference the two lock/manifest shas of the receipt (basis of F6)"
+      },
+      {
+        "command": "python cf.py: walk .local/rust-output-phase2 for integrations.rs and flows.rs",
+        "result": "only proto-002, proto-verify-001 copy (cmp identical) and proto-002-ref; no flows.rs"
+      },
+      {
+        "command": "tests/rust-output-v1/build_phase2_constructs.py --check",
+        "result": "exit 0, checked"
+      },
+      {
+        "command": "tests/rust-output-v1/build_phase2_inventory.py --check",
+        "result": "exit 0, current"
+      },
+      {
+        "command": "tests/rust-output-v1/build_phase2_pins.py --check",
+        "result": "exit 0, current"
+      },
+      {
+        "command": "tests/rust-output-v1/build_phase2_behavior.py --run <abs>/behavior-python-004 --superseded <abs>/behavior-python-001 002 003 --check",
+        "result": "exit 0, current (a run without --superseded reports a difference, as expected, since behavior.json lists the superseded runs)"
+      },
+      {
+        "command": "tests/rust-output-v1/check_contract.py",
+        "result": "passed 399, failed []"
+      },
+      {
+        "command": "tests/rust-output-v1/check_contract.py --receipt <abs>/evidence/rust-output-contract-amendment-003.json",
+        "result": "passed 452, failed ['receipt was sealed before implementation'] (expected only)"
+      }
+    ],
+    "rounds": 2,
+    "round1_target_sha256": "275b936379d9d9836a812625bb33af072e3343846c2389c25b0e44f606574723",
+    "round1_commands_note": "Round 1 commands (adapt.py --check, pins/hash recomputation, tomllib crate checks, offline cargo build/clippy/test --no-run of proto-002, shape classification) were not repeated because their inputs keep round 1 hashes."
+  },
+  "post_review_fixes": [
+    {
+      "finding": "F6",
+      "fix": "added the vendor record above (base directory, from_base libc 0.2.190, vendor_tree_sha256), as the reviewer proposed; files and the target sha are unchanged"
+    }
+  ],
+  "check_contract": {
+    "command": "python3 som-rs/tests/rust-output-v1/check_contract.py --receipt som-rs/evidence/rust-output-contract-amendment-003.json",
+    "passed": 452,
+    "failed": 1,
+    "expected_failure": "receipt was sealed before implementation: true only for the original freeze receipt; this amendment records implementation_already_in_progress true",
+    "also_passed": [
+      "check_contract.py without a receipt: 399 passed, 0 failed",
+      "build_phase2_constructs.py --check",
+      "build_phase2_inventory.py --check",
+      "build_phase2_pins.py --check",
+      "build_phase2_behavior.py --run behavior-python-004 --superseded behavior-python-001 behavior-python-002 behavior-python-003 --check",
+      "behavior/phase2/adapt.py --check"
+    ]
+  }
+}

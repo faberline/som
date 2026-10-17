@@ -1,0 +1,455 @@
+{
+  "acceptance": {
+    "passed": 579,
+    "phase2_products": 582,
+    "python_defects": [
+      "RS07_CNL_FIELD_SELF",
+      "RS14_CNL_V5_FOREIGN_KEY_SELF",
+      "RS16_CNL_V5_FIRST_REFUSAL"
+    ],
+    "statement": "The phase 2 suite passes on 579 of the 584 phase 2 cases. The 3 python_defects fail their oracle on the Python product and are tracked in #57; the 2 phase2_refusals are refused prompts whose Python product does not start. Every legacy job, CNL fixture and public example passes."
+  },
+  "adaptations": {
+    "coverage": {
+      "CONFLICT": {
+        "flow_cases_beyond_original": 5,
+        "flow_cases_without_inputs": 3,
+        "replacements": [
+          "CONFLICT"
+        ],
+        "what": "The idempotency conflict body covers every first input type; a flow without inputs has no conflict body."
+      },
+      "CSV_INPUT": {
+        "flow_cases": 1,
+        "replacements": [
+          "CSV_INPUT_IMPORT",
+          "CSV_INPUT"
+        ],
+        "what": "The csv argument of workflow.import gets CSV text under any input name."
+      },
+      "DATABASE_ONLY": {
+        "flow_cases": 1,
+        "replacements": [
+          "DATABASE_ONLY"
+        ],
+        "what": "A flow whose only writes are object puts has no database write to compensate."
+      },
+      "EXISTING": {
+        "flow_cases": 3,
+        "replacements": [
+          "EXISTING_SEED",
+          "EXISTING_DEF",
+          "EXISTING_RETURN",
+          "EXISTING_MAIN",
+          "EXISTING_FAULTS"
+        ],
+        "what": "An input naming an existing child or object is bound to one seeded through the HTTP API. An object key input the flow puts itself is left as the original verifier binds it; that rule was added after run 001, where binding such a key failed the legacy m2-semantic-05 and supplement-gcs-object-read (superseded_runs). With it, no legacy flow case gets an EXISTING binding."
+      },
+      "PIVOT": {
+        "replacements": [
+          "PIVOT"
+        ],
+        "what": "The branch probes also cover a comparison of two public inputs."
+      },
+      "SUBSET": {
+        "flow_cases": 1,
+        "replacements": [
+          "SUBSET"
+        ],
+        "what": "A flow prompt that lists an operation subset is checked by the subset verifier."
+      }
+    },
+    "host_steps": "Install, server command, migrations, the start without database configuration, the product's own tests, the owned-process check and the route surface go through phase2_host.host_for(root); PythonProduct runs the original commands.",
+    "modules": {
+      "audit_business_transactions": {
+        "adapted_sha256": "ca0a575a38d8e208fc3fc45d9f65016a3f03f14970b3cefbac3882de976515c7",
+        "original_sha256": "2f8f617bed62963db89066db18772bbd08f9ae31bac54166aee322191eb4122a",
+        "replacements": 3
+      },
+      "flow_branch_cases": {
+        "adapted_sha256": "6eb98bae26071237a2198159c7faa2d0f0d06a38bffa5d3315936ffb529eccc1",
+        "original_sha256": "52aeb03342c99a985ade2cb833e7a6f0b657bfa3eb6ed603cc74b4ef3a4241ac",
+        "replacements": 1
+      },
+      "flow_fault_checks": {
+        "adapted_sha256": "169aa9f0586adedd046ce07f24dbc0cc98d262c0313f5279dd2491abd22aed05",
+        "original_sha256": "a20be84fb254c52197a673ecc51db15fa05ea8ddbd188f6d1baa3a21f967ea47",
+        "replacements": 8
+      },
+      "flow_provider_fault_checks": {
+        "adapted_sha256": "0c16601ddc33adc8c27788d192b4b93ed40730b740e7bdb5c2ba2480a4cbc0c7",
+        "original_sha256": "27b814508cc3cfc35f5f020fcd02f831f7fcfb40bc20fc4d8c74772993d6a58a",
+        "replacements": 2
+      },
+      "verify_business_workflows": {
+        "adapted_sha256": "d8f206ac3cae7c09df92619bb19ea5c3b8c0889c21d6df4a1edf57d2049e14b0",
+        "original_sha256": "45edd24a39ea095212d43285ca57c5e742f7ab4c914b0def3824244ef33d7a48",
+        "replacements": 1
+      },
+      "verify_composed_journeys": {
+        "adapted_sha256": "867629d0605fef876e457d0f5378b69304d4a3ac746e34aee4372a50679451ab",
+        "original_sha256": "b39a29d181d023dd9bf71aed72b8602cb06224b7880159732499cde90f8b286c",
+        "replacements": 2
+      },
+      "verify_composed_related": {
+        "adapted_sha256": "439a2bfc0318f3f19818ae1cdc9a3eb8445e993a892a3c55dfa93deb879d86df",
+        "original_sha256": "0b02c9e05b930f300d1168fb292c7fa863826d0be87d8eed70a712bb9a53dc29",
+        "replacements": 4
+      },
+      "verify_composed_subsets": {
+        "adapted_sha256": "c8b2ff63c22ac9acebef5be17dbb6fb16b66c03041938cae0576b6bfbe1b8bdb",
+        "original_sha256": "97d33fb63aa061190ede56b4ff2179d28927b2211b3bf46b3e3487a30b8c18ae",
+        "replacements": 5
+      },
+      "verify_composed_transactions": {
+        "adapted_sha256": "5095a31e0333c0561a14a7073c95acb468b4479b648fcd7200dea5a37be27ea1",
+        "original_sha256": "2cc9931592f8bf32a458aee32274125c6ac347b817191375090c011c69d07a85",
+        "replacements": 3
+      },
+      "verify_flow_service": {
+        "adapted_sha256": "c14225c5080021beba6b9b84b49c6ff5653275bcce348d351bee9c4d8964abd5",
+        "original_sha256": "6cd3b8932d5c9c092f12baeca442814c66cbc3fe22cc10cdee100e126827fbbe",
+        "replacements": 13
+      },
+      "verify_related": {
+        "adapted_sha256": "640be9c12dfd398a877ef7fc3d1660fa41fc5b9f60deec16bfdcb41ca7d533cc",
+        "original_sha256": "ec9cc11116c2ceb46dac687da9291faefd7c56aefbb282a5e088e1b5272b1ba1",
+        "replacements": 1
+      }
+    },
+    "not_applicable": {
+      "CSV_UNIQUE": {
+        "marker": "csv_import_late_conflict_not_applicable_without_unique_child_field",
+        "observed_cases": 1,
+        "replacements": [
+          "CSV_UNIQUE"
+        ],
+        "what": "The late conflict of a CSV import needs a unique child field."
+      },
+      "LEASE": {
+        "marker": "the flow has no database operation that a gate can hold",
+        "observed_cases": 10,
+        "replacements": [
+          "LEASE_READ",
+          "LEASE_ROLE",
+          "LEASE_GATE",
+          "READ_GATE",
+          "FIRST_READ"
+        ],
+        "what": "A read-only flow is held at the table it reads; a flow without a database operation records its lease checks as not applicable."
+      },
+      "PROVIDER_SHAPE": {
+        "marker": "the flow puts no object after a database write",
+        "observed_cases": 2,
+        "replacements": [
+          "PROVIDER_SHAPE"
+        ],
+        "what": "The provider fault matrix needs an object put after a database write."
+      },
+      "REVISION_ROUTE": {
+        "marker": "the product has no PATCH route for the independent edit",
+        "observed_cases": 1,
+        "replacements": [
+          "REVISION_ROUTE"
+        ],
+        "what": "The revision_conflict phase needs a PATCH route for every written resource."
+      }
+    }
+  },
+  "checkers": {
+    "flow": {
+      "covers": "verify_flow_service.verify, passing on full_m2_acceptance: workflow outputs, step results, rollback, branches, undo, idempotency, leases, revision conflicts and the provider fault matrix.",
+      "passed": 257,
+      "run": 257,
+      "total": 257
+    },
+    "phase1_suite": {
+      "covers": "The phase 1 HTTP suite (som-rs/behavior/suite.py) for v1 to v5 without capabilities: CRUD, nulls, validation, pagination, filters, ordering, revisions, relations and the error bodies, against its oracle.",
+      "passed": 10,
+      "run": 15,
+      "total": 15
+    },
+    "verify_all": {
+      "covers": "verify_composed_services.verify_all, standard: auth accept and reject, PostgreSQL and MongoDB persistence and migrations, object put and get, cache, workflow outputs and transactions, the start without database configuration and the product's own tests.",
+      "passed": 112,
+      "run": 112,
+      "total": 112
+    },
+    "verify_all_subset": {
+      "covers": "verify_all with standard false, as the accepted legacy214 run checked every group but services14.",
+      "passed": 200,
+      "run": 200,
+      "total": 200
+    }
+  },
+  "issue": 52,
+  "phase2_refusals": {
+    "RS12_CNL_V3_FILTER_LIMIT": {
+      "python_product": "does not start: SyntaxError, duplicate argument",
+      "rule": "query_parameter_collision",
+      "rust": "refused at compile (rust_profile_phase2.py); not a behavior case"
+    },
+    "RS13_JSON_V3_FILTER_OFFSET": {
+      "python_product": "does not start: SyntaxError, duplicate argument",
+      "rule": "query_parameter_collision",
+      "rust": "refused at compile (rust_profile_phase2.py); not a behavior case"
+    }
+  },
+  "python_defects": {
+    "RS07_CNL_FIELD_SELF": {
+      "cause": "a field named self",
+      "checker": "phase1_suite",
+      "first_failure_statuses": {
+        "status 500, expected 201": 10
+      },
+      "first_failures_sampled": 10,
+      "issue": 57,
+      "oracle_mismatches": 73,
+      "rust_reference": "the suite oracle (naming.json W1, R2)"
+    },
+    "RS14_CNL_V5_FOREIGN_KEY_SELF": {
+      "cause": "a relation whose foreign key field is self",
+      "checker": "phase1_suite",
+      "first_failure_statuses": {
+        "status 500, expected 201": 10
+      },
+      "first_failures_sampled": 10,
+      "issue": 57,
+      "oracle_mismatches": 106,
+      "rust_reference": "the suite oracle (naming.json W1, R2)"
+    },
+    "RS16_CNL_V5_FIRST_REFUSAL": {
+      "cause": "a relation whose foreign key field is self, with a field a__b",
+      "checker": "phase1_suite",
+      "first_failure_statuses": {
+        "status 500, expected 201": 10
+      },
+      "first_failures_sampled": 10,
+      "issue": 57,
+      "oracle_mismatches": 106,
+      "rust_reference": "the suite oracle (naming.json W1, R2)"
+    }
+  },
+  "python_run": {
+    "by_source": {
+      "legacy544/run-005": {
+        "passed": 444,
+        "run": 444,
+        "total": 444
+      },
+      "public-products-003b": {
+        "passed": 118,
+        "run": 118,
+        "total": 118
+      },
+      "rust-output-phase2/rs-products-001": {
+        "passed": 17,
+        "run": 22,
+        "total": 22
+      }
+    },
+    "by_version": {
+      "som.prompt.v1": {
+        "passed": 6,
+        "run": 6,
+        "total": 6
+      },
+      "som.prompt.v2": {
+        "passed": 1,
+        "run": 1,
+        "total": 1
+      },
+      "som.prompt.v3": {
+        "passed": 0,
+        "run": 3,
+        "total": 3
+      },
+      "som.prompt.v4": {
+        "passed": 1,
+        "run": 1,
+        "total": 1
+      },
+      "som.prompt.v5": {
+        "passed": 6,
+        "run": 8,
+        "total": 8
+      },
+      "som.prompt.v6": {
+        "passed": 308,
+        "run": 308,
+        "total": 308
+      },
+      "som.prompt.v7": {
+        "passed": 257,
+        "run": 257,
+        "total": 257
+      }
+    },
+    "failed": [
+      "RS07_CNL_FIELD_SELF",
+      "RS12_CNL_V3_FILTER_LIMIT",
+      "RS13_JSON_V3_FILTER_OFFSET",
+      "RS14_CNL_V5_FOREIGN_KEY_SELF",
+      "RS16_CNL_V5_FIRST_REFUSAL"
+    ],
+    "out": ".local/rust-output-phase2/behavior-python-003",
+    "passed": 579,
+    "run": 584,
+    "summary_sha256": "64eb707bdecdcacb878240ca87094834015cb3dd1a77c2050e852335b18932da",
+    "total": 584
+  },
+  "rules": [
+    "A phase 2 case is checked by the checker its inventory row names, with the adapted verifiers of som-rs/behavior/phase2/adapted (adapt.py) and the phase2_host language steps.",
+    "The Rust reference is the checker's oracle. A Rust product passes a case when its checker passes and no assembled file changed during the run.",
+    "A Python product that fails its own oracle is a python_defect: Rust is still checked against the oracle and the Python output stays byte-identical.",
+    "A case the phase 2 profile refuses is not a behavior case for Rust; Rust refuses its prompt.",
+    "Not-applicable records are counted from the outcomes of the Python run; a Rust run must record the same cases as not applicable."
+  ],
+  "sources": {
+    "som-rs/behavior/phase2/adapt.py": "ffe4d965331ccc4127e02b3fd83a626b5569660e00393f7b6e22f9d0ea7b62f0",
+    "som-rs/behavior/phase2/adapted/MANIFEST.json": "b679187b5c6cb120aa6a98c6164c63b7be75fd198cdfb7fb10b6b3b22511304b",
+    "som-rs/behavior/phase2/check_phase2.py": "a6bb5a0439a5d35b14b971f754b71810be6ff97484a865a34eac060524b23b9b",
+    "som-rs/behavior/phase2/phase2_host.py": "fd2d30318aca71a45274fdf7b6b00b67f709f469a80b0af92d4601ae46f1b460",
+    "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "7a07f753dd8b16fb8dc92db9b3ee76f1c38052be520ef81bb7934284dc84594b"
+  },
+  "superseded_runs": [
+    {
+      "failed": [
+        "RS07_CNL_FIELD_SELF",
+        "RS12_CNL_V3_FILTER_LIMIT",
+        "RS13_JSON_V3_FILTER_OFFSET",
+        "RS14_CNL_V5_FOREIGN_KEY_SELF",
+        "RS16_CNL_V5_FIRST_REFUSAL",
+        "m2-semantic-05",
+        "supplement-gcs-object-read"
+      ],
+      "out": ".local/rust-output-phase2/behavior-python-001",
+      "passed": 577,
+      "suite_fixes": {
+        "m2-semantic-05": "EXISTING bound an object key input to the seeded object although the flow puts that key itself; phase2_host.existing_bindings now skips keys the flow puts",
+        "supplement-gcs-object-read": "the same EXISTING defect"
+      },
+      "summary_sha256": "ee371103c0467a24bb8634b41fe6aff534f88e5b1aa0817f23ec4bd71da12727",
+      "total": 584
+    },
+    {
+      "failed": [
+        "RS07_CNL_FIELD_SELF",
+        "RS12_CNL_V3_FILTER_LIMIT",
+        "RS13_JSON_V3_FILTER_OFFSET",
+        "RS14_CNL_V5_FOREIGN_KEY_SELF",
+        "RS16_CNL_V5_FIRST_REFUSAL",
+        "m2-semantic-20",
+        "m2-semantic-21",
+        "m2-semantic-22",
+        "m2-semantic-23",
+        "m2-smoke-00",
+        "m2-smoke-03",
+        "m2-smoke-04",
+        "m2-smoke-05",
+        "m2-smoke-06",
+        "m2-smoke-07",
+        "m2-smoke-08",
+        "m2-smoke-09"
+      ],
+      "host_sleep": {
+        "awake_at": "2026-10-16T15:29:07+00:00",
+        "evidence": "pmset -g log: 'Entering Sleep state due to Clamshell Sleep' at 2026-10-16 19:33:24 +0800, then only DarkWake maintenance windows until 'DarkWake to FullWake' at 23:29:07 +0800",
+        "explanation": "the lease, journal and five-second heartbeat checks time out when the host sleeps between two observations",
+        "failed_while_asleep": [
+          {
+            "finished_at": "2026-10-16T11:38:56.185046+00:00",
+            "id": "m2-semantic-20",
+            "problems": [
+              "AssertionError: {\"run_id\":\"fd5dad4e59eb42e0adab6c01c34458bf\",\"state\":\"compensating\"}"
+            ]
+          },
+          {
+            "finished_at": "2026-10-16T12:19:03.170808+00:00",
+            "id": "m2-semantic-21",
+            "problems": [
+              "AssertionError: {\"detail\":{\"run_id\":\"e49add30836544f18b325cda5d578683\",\"message\":\"execution journal or lease unavailable\"}}"
+            ]
+          },
+          {
+            "finished_at": "2026-10-16T13:27:43.977889+00:00",
+            "id": "m2-semantic-22",
+            "problems": [
+              "AssertionError: missing observation: independent five-second heartbeat"
+            ]
+          },
+          {
+            "finished_at": "2026-10-16T13:27:25.494548+00:00",
+            "id": "m2-semantic-23",
+            "problems": [
+              "AssertionError: {\"detail\":{\"run_id\":\"617e60acf7fc4ad39c35d4b3b3492a98\",\"message\":\"execution journal or lease unavailable\"}}"
+            ]
+          },
+          {
+            "finished_at": "2026-10-16T13:27:43.981619+00:00",
+            "id": "m2-smoke-00",
+            "problems": [
+              "AssertionError: missing observation: independent five-second heartbeat"
+            ]
+          },
+          {
+            "finished_at": "2026-10-16T13:32:37.850922+00:00",
+            "id": "m2-smoke-03",
+            "problems": [
+              "AssertionError: missing observation: independent five-second heartbeat"
+            ]
+          },
+          {
+            "finished_at": "2026-10-16T14:07:11.477652+00:00",
+            "id": "m2-smoke-04",
+            "problems": [
+              "AssertionError: missing observation: independent five-second heartbeat"
+            ]
+          },
+          {
+            "finished_at": "2026-10-16T13:51:44.886255+00:00",
+            "id": "m2-smoke-05",
+            "problems": [
+              "AssertionError: {\"detail\":{\"run_id\":\"03ac609ad252413a9341c7dd12ba68af\",\"message\":\"execution journal or lease unavailable\"}}"
+            ]
+          },
+          {
+            "finished_at": "2026-10-16T14:07:11.596701+00:00",
+            "id": "m2-smoke-06",
+            "problems": [
+              "AssertionError: missing observation: independent five-second heartbeat"
+            ]
+          },
+          {
+            "finished_at": "2026-10-16T14:35:21.746736+00:00",
+            "id": "m2-smoke-07",
+            "problems": [
+              "AssertionError: {\"detail\":{\"run_id\":\"d022294d42c3408c8421cecf0399b592\",\"message\":\"execution journal or lease unavailable\"}}"
+            ]
+          },
+          {
+            "finished_at": "2026-10-16T15:24:14.363389+00:00",
+            "id": "m2-smoke-08",
+            "problems": [
+              "AssertionError: missing observation: independent five-second heartbeat"
+            ]
+          },
+          {
+            "finished_at": "2026-10-16T14:52:01.412099+00:00",
+            "id": "m2-smoke-09",
+            "problems": [
+              "AssertionError: {\"detail\":{\"run_id\":\"d84fd695bacd4cf8b44ddbbe72eece94\",\"message\":\"execution journal or lease unavailable\"}}"
+            ]
+          }
+        ],
+        "slept_at": "2026-10-16T11:33:24+00:00"
+      },
+      "out": ".local/rust-output-phase2/behavior-python-002",
+      "passed": 567,
+      "suite_fixes": {},
+      "summary_sha256": "5babd5a11b286d7a3e650b4b5eabbe5440e8a4e139347dd0d4b82ffe7c594e57",
+      "total": 584
+    }
+  ],
+  "version": "som.rust-output-phase2-behavior.v1"
+}

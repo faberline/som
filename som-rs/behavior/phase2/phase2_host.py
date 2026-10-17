@@ -8,8 +8,8 @@ HTTP, database, provider and fault check stays the original language-neutral cod
 - PythonProduct runs exactly the commands of the original verifiers, so a Python product is
   checked as the accepted runs checked it. Its route surface is probed and also compared with
   /openapi.json, which records that the probe and the original check agree.
-- RustProduct follows the phase 2 services contract. It is unexercised until #53 produces Rust
-  products for these cases.
+- RustProduct follows the phase 2 services contract: the som_app subcommands, with the listen
+  address in SOM_APP_ADDR (amendment 003).
 
 A product directory is registered before a verifier runs and unregistered after it.
 """
@@ -277,7 +277,7 @@ class PythonProduct:
 
 
 class RustProduct:
-    """A generated Rust product under the phase 2 services contract. Unexercised until #53."""
+    """A generated Rust product under the phase 2 services contract (services.json)."""
 
     kind = "rust"
 
@@ -303,10 +303,10 @@ class RustProduct:
 
     def serve_command(self, package: str, port: int) -> list[str]:
         assert port not in FORBIDDEN_PORTS
-        return [self.binary, "serve", "--host", "127.0.0.1", "--port", str(port)]
+        return ["/usr/bin/env", f"SOM_APP_ADDR=127.0.0.1:{port}", self.binary, "serve"]
 
     def is_product_process(self, process: subprocess.Popen, package: str) -> bool:
-        return process.args[0] == self.binary and process.args[1] == "serve"
+        return process.args[2] == self.binary and process.args[3] == "serve"
 
     def migration_command(self, backend, up: bool) -> list[str]:
         return [self.binary, "migrate", "upgrade" if up else "downgrade"]

@@ -39,6 +39,47 @@
     "sqlx_api": "Runtime API only: sqlx::query, sqlx::query_as, sqlx::query_scalar with .bind, FromRow derive, Transaction, and sqlx::migrate! for the embedded migrator. The checked macros sqlx::query! and sqlx::query_as! are not used, so a build needs no database and no .sqlx offline data.",
     "no_other_crates": "A product depends on exactly these crates. A change to a crate, version or feature is a contract amendment."
   },
+  "phase2_crates": {
+    "amendment": 3,
+    "applies": "The capability and flow shapes of product-layout.json phase2. The resource shape keeps crates above.",
+    "registry": "crates.io sparse index, cached at ~/.cargo/registry/cache/index.crates.io-1949cf8c6b5b557f. mongodb, bson and libz-sys and their dependencies were fetched from crates.io once, on 2026-10-17; every build after that is offline.",
+    "manifest": "reference-phase2/Cargo.toml",
+    "lock": "reference-phase2/Cargo.lock",
+    "lock_packages": 335,
+    "dependencies": {
+      "axum": {"version": "=0.8.9", "default_features": false, "features": ["http1", "json", "query", "tokio"]},
+      "base64": {"version": "=0.22.1"},
+      "chrono": {"version": "=0.4.44", "default_features": false, "features": ["clock", "serde", "std"]},
+      "flate2": {"version": "=1.1.10", "default_features": false, "features": ["zlib"]},
+      "hmac": {"version": "=0.12.1"},
+      "http-body-util": {"version": "=0.1.5"},
+      "hyper": {"version": "=1.12.0", "default_features": false, "features": ["client", "http1"]},
+      "hyper-rustls": {"version": "=0.27.10", "default_features": false, "features": ["http1", "ring", "tls12", "webpki-roots"]},
+      "hyper-util": {"version": "=0.1.21", "default_features": false, "features": ["client-legacy", "http1", "tokio"]},
+      "mongodb": {"version": "=3.9.1", "default_features": false, "features": ["compat-3-0-0", "dns-resolver", "rustls-tls"]},
+      "ring": {"version": "=0.17.14"},
+      "serde": {"version": "=1.0.229", "features": ["derive"]},
+      "serde_json": {"version": "=1.0.154", "features": ["float_roundtrip", "preserve_order"]},
+      "sha2": {"version": "=0.10.9"},
+      "sqlx": {"version": "=0.8.6", "default_features": false, "features": ["chrono", "derive", "json", "macros", "migrate", "postgres", "runtime-tokio"]},
+      "tokio": {"version": "=1.53.3", "features": ["io-util", "macros", "net", "rt-multi-thread", "sync", "time"]}
+    },
+    "dev_dependencies": {
+      "tower": {"version": "=0.5.3", "default_features": false, "features": ["util"]}
+    },
+    "roles": {
+      "mongodb": "MongoDB driver; bson comes with it. Transactions on a replica set or mongos.",
+      "flate2": "gzip exports through libz-sys and the system zlib, so the compressed bytes equal the Python product's zlib output.",
+      "hyper, hyper-util, hyper-rustls, http-body-util": "the HTTP client for JWKS, OIDC, S3 and GCS, with rustls on the ring provider and the webpki roots.",
+      "ring": "RS256 verification, randomness and SHA-256.",
+      "sha2, hmac": "S3 Signature Version 4.",
+      "base64": "JWT, PEM and cookie encoding.",
+      "hand-written": "JWT and JWKS parsing, the Redis RESP2 client, CSV, Decimal and statistics, and Python-compatible JSON and float formatting. No other crate implements them."
+    },
+    "sqlx_api": "As crates.sqlx_api, without sqlx::migrate!: the hand-written migrator of product-layout.json phase2 records migrations in _som_rust_migrations.",
+    "vendor": "scripts/rust_output_acceptance/vendor_crates.py builds one vendored directory source that is the union of reference/Cargo.lock and reference-phase2/Cargo.lock. A package that both locks hold has the same checksum in both.",
+    "no_other_crates": "A capability or flow product depends on exactly these crates. A change to a crate, version or feature is a contract amendment."
+  },
   "commands": {
     "environment": "CARGO_NET_OFFLINE=true. A shared CARGO_TARGET_DIR is allowed. No network access.",
     "build": "cargo build --locked --offline",
@@ -63,5 +104,10 @@
     "date": "2026-10-15",
     "crate": "som_app with an axum router test and an sqlx runtime API probe",
     "results": ["cargo test --locked --offline passed", "cargo clippy --locked --offline --all-targets -- -D warnings passed", "Cargo.lock unchanged, sha256 c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20"]
+  },
+  "phase2_reference_verification": {
+    "date": "2026-10-17",
+    "crate": "som_app prototype of a v6 PostgreSQL product with jwt auth (axum router tests, sqlx runtime API, RS256 through ring), with reference-phase2/Cargo.toml and Cargo.lock, built offline from the union vendor directory",
+    "results": ["cargo build --locked --offline passed", "cargo test --locked --offline -- --test-threads=1 passed", "cargo clippy --locked --offline --all-targets -- -D warnings passed", "Cargo.lock unchanged, sha256 0483374722515e3daa7f8509708abb9c551f1bc1815f9110e6662b893db443ad"]
   }
 }

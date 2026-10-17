@@ -4,7 +4,7 @@
     "Every prompt pointer of field-statement-map.json and every enum or const value of compiler-prompt.schema.json is one construct below. The builder fails if any construct has no Rust form, if a pointer matches several forms, or if a form matches no construct.",
     "owner names the issue that delivers the Rust form for each prompt version: phase1 is the delivered phase 1 output (#46 to #51); #53 owns capability products (v5 with capabilities, v6, and the non-flow part of v7); #54 owns v7 flows. A v5 construct outside the capabilities block belongs to phase 1 for a product without capabilities and to #53 for a product with capabilities.",
     "A Rust form that says 'as Python' or 'the Python ...' means the same observable result as the accepted Python product for the same prompt under the phase 2 behavior suite (behavior.json).",
-    "The crates and their versions and features for MongoDB, authentication, object storage, workflows and flows are fixed by #53 in a later numbered amendment, under the toolchain rules of toolchain.json."
+    "The crates and their versions and features for MongoDB, authentication, object storage, workflows and flows are fixed by #53 in amendment 003: toolchain.json phase2_crates and reference-phase2/."
   ],
   "sources": {
     "som-rs/contracts/compiler-v1/field-statement-map.json": "76744262ece22db17c61683b206beaab67105245888719f9e86c2c84e8283be2",
