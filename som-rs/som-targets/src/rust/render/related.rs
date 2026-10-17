@@ -12,17 +12,17 @@ use super::{
 };
 
 /// One side of the relation, read from its resources.parent or resources.child param.
-struct Resource {
-    table: String,
-    path: String,
-    fields: Vec<Field>,
-    filter: Option<String>,
-    date: Option<String>,
-    max_limit: i64,
+pub(super) struct Resource {
+    pub(super) table: String,
+    pub(super) path: String,
+    pub(super) fields: Vec<Field>,
+    pub(super) filter: Option<String>,
+    pub(super) date: Option<String>,
+    pub(super) max_limit: i64,
 }
 
 impl Resource {
-    fn read(params: &Value, key: &str) -> Result<Self, String> {
+    pub(super) fn read(params: &Value, key: &str) -> Result<Self, String> {
         let value = &params[key];
         let named = |name: &str| {
             value[name]
@@ -65,7 +65,7 @@ impl Resource {
 }
 
 /// The foreign key column of the child: a required INTEGER.
-fn foreign_key(params: &Value) -> Result<Field, String> {
+pub(super) fn foreign_key(params: &Value) -> Result<Field, String> {
     let name = text(params, "foreign_key")?.to_owned();
     Ok(Field {
         rust: name.clone(),
@@ -264,7 +264,7 @@ async fn known_parent(pool: &PgPool, id: Option<i32>) -> Result<i32, ApiError> {
 "#;
 
 /// The query lines of one list handler and the db call arguments they give.
-fn query_lines(resource: &Resource, max: &str) -> (String, String) {
+pub(super) fn query_lines(resource: &Resource, max: &str) -> (String, String) {
     let mut out = String::new();
     let mut args = String::new();
     if let Some(name) = &resource.filter {
@@ -563,7 +563,7 @@ async fn not_allowed() -> Response {
 
 // ---------------------------------------------------------------- src/db.rs
 
-const DB_PING: &str = r#"use sqlx::PgPool;
+pub(super) const DB_PING: &str = r#"use sqlx::PgPool;
 
 use crate::models::{ChildRow, ParentRow};
 use crate::schemas::{ChildCreate, ChildUpdate, ParentCreate, ParentUpdate};
@@ -574,7 +574,7 @@ pub async fn ping(pool: &PgPool) -> Result<(), sqlx::Error> {
 "#;
 
 /// id, the foreign key if any, the fields and the timestamps, quoted.
-fn selected(key: Option<&Field>, fields: &[Field]) -> String {
+pub(super) fn selected(key: Option<&Field>, fields: &[Field]) -> String {
     let mut names = vec![quoted("id")];
     names.extend(
         key.into_iter()
@@ -648,7 +648,7 @@ fn field_binds(fields: &[Field], update: bool) -> String {
         .collect()
 }
 
-fn db_parent(parent: &Resource) -> String {
+pub(super) fn db_parent(parent: &Resource) -> String {
     let table = quoted(&parent.table);
     let columns = selected(None, &parent.fields);
     let names: Vec<String> = parent
@@ -713,7 +713,7 @@ fn db_parent(parent: &Resource) -> String {
     out + "pub async fn delete_parent(pool: &PgPool, id: i32) -> Result<bool, sqlx::Error> {\n    let done = sqlx::query(PARENT_DELETE).bind(id).execute(pool).await?;\n    Ok(done.rows_affected() > 0)\n}\n"
 }
 
-fn db_child(child: &Resource, key: &Field) -> String {
+pub(super) fn db_child(child: &Resource, key: &Field) -> String {
     let table = quoted(&child.table);
     let fk = quoted(&key.name);
     let columns = selected(Some(key), &child.fields);
@@ -809,7 +809,7 @@ fn query_indexes(resource: &Resource, lead: Option<&str>) -> String {
         .collect()
 }
 
-fn migration_parent(params: &Value, parent: &Resource) -> Result<String, String> {
+pub(super) fn migration_parent(params: &Value, parent: &Resource) -> Result<String, String> {
     let revision = text(params, "revision")?;
     let down = params["down_revision"].as_str().unwrap_or("none");
     Ok(format!(
@@ -819,7 +819,11 @@ fn migration_parent(params: &Value, parent: &Resource) -> Result<String, String>
     ))
 }
 
-fn migration_child(params: &Value, child: &Resource, key: &Field) -> Result<String, String> {
+pub(super) fn migration_child(
+    params: &Value,
+    child: &Resource,
+    key: &Field,
+) -> Result<String, String> {
     let parent_table = text(params, "parent_table")?;
     let fk = quoted(&key.name);
     let reference = format!(

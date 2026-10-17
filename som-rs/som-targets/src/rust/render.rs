@@ -5,6 +5,7 @@
 //! fields, SQL identifiers in double quotes, JSON members and string literals.
 use serde_json::Value;
 
+mod capability;
 mod related;
 
 const MANIFEST: &str = include_str!("../../../contracts/rust-output-v1/reference/Cargo.toml");
@@ -192,6 +193,9 @@ fn limit(params: &Value) -> Result<i64, String> {
 
 /// Render one block from its resolved params.
 pub fn render(id: &str, params: &Value) -> Result<String, String> {
+    if id.contains(".capability") {
+        return capability::render(id, params);
+    }
     if id.contains(".related") {
         return related::render(id, params);
     }

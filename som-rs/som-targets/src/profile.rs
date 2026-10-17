@@ -133,14 +133,27 @@ pub fn shape(prompt: &Value) -> String {
     }
 }
 
-/// The shapes whose owners have delivered. Until then a construct is NOT_IMPLEMENTED and keeps
-/// the phase 1 result (CONTRACT.md section 11).
-const DELIVERED: &[&str] = &["resource"];
+/// Whether the owners of the prompt's shape and capabilities have delivered. Until then a
+/// construct is NOT_IMPLEMENTED and keeps the phase 1 result (CONTRACT.md section 11). The
+/// capability_postgresql shape is delivered for jwt auth, no storage and the json_export workflow
+/// (issue #53 D).
+pub fn delivered(prompt: &Value) -> bool {
+    let capabilities = &prompt["capabilities"];
+    match shape(prompt).as_str() {
+        "resource" => true,
+        "capability_postgresql" => {
+            capabilities["auth"] == "jwt"
+                && capabilities["storage"] == "none"
+                && capabilities["workflow"] == "json_export"
+        }
+        _ => false,
+    }
+}
 
 /// The refusal a target rust request gets: the phase 2 profile for a delivered shape, else the
 /// phase 1 profile.
 pub fn active(prompt: &Value) -> Option<Refusal> {
-    if DELIVERED.contains(&shape(prompt).as_str()) {
+    if delivered(prompt) {
         check(prompt)
     } else {
         phase1(prompt)
@@ -227,5 +240,29 @@ mod tests {
         assert_eq!(found.pointer, "/query/filter_field");
         assert_eq!(Some(found), phase1(&prompt));
         assert_eq!(check(&json!({"version":"som.prompt.v7"})), None);
+    }
+
+    #[test]
+    fn only_the_delivered_capabilities_leave_phase_1() {
+        let capabilities = json!({"database":"postgresql","auth":"jwt","storage":"none",
+            "workflow":"json_export"});
+        let v6 = json!({"version":"som.prompt.v6","capabilities":capabilities});
+        assert!(delivered(&v6));
+        assert_eq!(active(&v6), None);
+        let mut v5 = v6.clone();
+        v5["version"] = json!("som.prompt.v5");
+        assert!(delivered(&v5));
+        for (name, other) in [
+            ("database", "mongodb"),
+            ("auth", "firebase"),
+            ("storage", "s3"),
+            ("workflow", "csv_import"),
+        ] {
+            let mut prompt = v6.clone();
+            prompt["capabilities"][name] = json!(other);
+            assert!(!delivered(&prompt), "{name}");
+            assert!(active(&prompt).is_some(), "{name}");
+        }
+        assert!(delivered(&json!({"version":"som.prompt.v5"})));
     }
 }

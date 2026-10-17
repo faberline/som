@@ -32,8 +32,11 @@ pub const TARGET_CONTRACT_SHA256: &str =
     "893746988ef2062ff51cd6b6fc2941a31a1a2cff885a73600aa1abce2e872c10";
 
 pub const CATALOG_TEXT: &str = include_str!("../../catalog/rust-catalog.v1.json");
-const BLOCK_LIBRARY_TEXT: &str =
-    concat!(include_str!("render.rs"), include_str!("render/related.rs"));
+const BLOCK_LIBRARY_TEXT: &str = concat!(
+    include_str!("render.rs"),
+    include_str!("render/related.rs"),
+    include_str!("render/capability.rs")
+);
 static CATALOG: LazyLock<Value> =
     LazyLock::new(|| serde_json::from_str(CATALOG_TEXT).expect("Rust catalog JSON"));
 
@@ -65,6 +68,14 @@ const BACKEND_FILES: &[(&str, &str)] = &[
         "contracts/rust-output-v1/reference/Cargo.lock",
         include_str!("../../../contracts/rust-output-v1/reference/Cargo.lock"),
     ),
+    (
+        "contracts/rust-output-v1/reference-phase2/Cargo.toml",
+        include_str!("../../../contracts/rust-output-v1/reference-phase2/Cargo.toml"),
+    ),
+    (
+        "contracts/rust-output-v1/reference-phase2/Cargo.lock",
+        include_str!("../../../contracts/rust-output-v1/reference-phase2/Cargo.lock"),
+    ),
 ];
 
 /// The product files every phase 1 plan produces, besides its one migration.
@@ -77,6 +88,21 @@ const LAYOUT: &[&str] = &[
     "src/schemas.rs",
     "src/api.rs",
     "src/db.rs",
+    "tests/api.rs",
+    "README.md",
+];
+
+/// The product files of the capability_postgresql shape, besides its one migration.
+const CAPABILITY_LAYOUT: &[&str] = &[
+    "Cargo.toml",
+    "Cargo.lock",
+    "src/main.rs",
+    "src/lib.rs",
+    "src/models.rs",
+    "src/schemas.rs",
+    "src/api.rs",
+    "src/db.rs",
+    "src/integrations.rs",
     "tests/api.rs",
     "README.md",
 ];
@@ -155,9 +181,13 @@ fn facts(prompt: &Value) -> Value {
     ]
     .iter()
     .any(|path| *path == "/healthz");
+    let capability = |name: &str| prompt["capabilities"][name].clone();
     json!({
         "shape": profile::shape(prompt),
         "healthz": healthz,
+        "auth": capability("auth"),
+        "storage": capability("storage"),
+        "workflow": capability("workflow"),
     })
 }
 
@@ -335,7 +365,7 @@ fn identifier(text: &str) -> bool {
 }
 
 fn layout_path(path: &str) -> bool {
-    LAYOUT.contains(&path)
+    CAPABILITY_LAYOUT.contains(&path)
         || path
             .strip_prefix("migrations/0001_")
             .and_then(|rest| rest.strip_suffix(".sql"))
@@ -575,15 +605,21 @@ fn render_files(
     Ok(files)
 }
 
-/// Output checks: exactly the 11 layout files, Rust files formatted and non-empty.
+/// Output checks: exactly the layout files of the shape (11 for resource, 12 for
+/// capability_postgresql), Rust files formatted and non-empty.
 fn check_output(files: &BTreeMap<String, String>) -> Result<(), String> {
     let migrations = files
         .keys()
         .filter(|path| path.starts_with("migrations/"))
         .count();
-    if files.len() != LAYOUT.len() + 1
+    let layout = if files.contains_key("src/integrations.rs") {
+        CAPABILITY_LAYOUT
+    } else {
+        LAYOUT
+    };
+    if files.len() != layout.len() + 1
         || migrations != 1
-        || LAYOUT.iter().any(|path| !files.contains_key(*path))
+        || layout.iter().any(|path| !files.contains_key(*path))
     {
         return Err("The rendered file set is not the Rust product layout.".to_owned());
     }
@@ -904,7 +940,10 @@ mod tests {
         let files = render_files(&renamed, &dsl).expect("render");
         check_output(&files).expect("layout");
         assert!(files["src/lib.rs"].contains("_som_rust_migrations"));
-        assert!(!render_files(&prompt, &dsl).expect("render")["src/lib.rs"].contains("_som_rust_migrations"));
+        assert!(
+            !render_files(&prompt, &dsl).expect("render")["src/lib.rs"]
+                .contains("_som_rust_migrations")
+        );
     }
 
     #[test]
@@ -936,6 +975,44 @@ mod tests {
                 "{name}"
             );
             assert!(!files["README.md"].contains(render::HEALTH_LINE), "{name}");
+        }
+    }
+
+    /// Issue #53 D: a v6 prompt, and a v5 prompt with capabilities, plan the 12 capability files.
+    #[test]
+    fn a_capability_prompt_renders_the_capability_layout() {
+        let mut v5 = example("v5");
+        v5["capabilities"] = example("v6")["capabilities"].clone();
+        let mut fewer = example("v6");
+        fewer["operations"] = json!([{"scope": "parent", "action": "create"}, {"scope": "child", "action": "list"}, {"scope": "batch", "action": "batch_create"}]);
+        for (name, prompt) in [("v6", example("v6")), ("v5", v5), ("v6 fewer", fewer)] {
+            let dsl = plan(&prompt).expect("plan");
+            for file in dsl["files"].as_array().expect("files") {
+                assert!(layout_path(file["path"].as_str().expect("path")), "{name}");
+                for block in file["blocks"].as_array().expect("blocks") {
+                    assert!(identifier(block["name"].as_str().expect("name")), "{name}");
+                }
+            }
+            let first = render_files(&prompt, &dsl).expect("render");
+            assert_eq!(
+                render_files(&prompt, &dsl).expect("render"),
+                first,
+                "{name}"
+            );
+            check_output(&first).expect("layout");
+            assert_eq!(first.len(), 12, "{name}");
+            assert!(first.contains_key("src/integrations.rs"), "{name}");
+            assert!(
+                first["src/lib.rs"].contains("_som_rust_migrations")
+                    || first["src/db.rs"].contains("_som_rust_migrations"),
+                "{name}"
+            );
+            assert!(first["src/api.rs"].contains("/export"), "{name}");
+            assert_eq!(
+                first["src/integrations.rs"].contains("pub role: Value,"),
+                name == "v5",
+                "{name}"
+            );
         }
     }
 }

@@ -1,7 +1,7 @@
 {
   "version": "som.rust-catalog.v1",
   "dsl_version": "som.dsl.rust.v1",
-  "rule": "The plan for a prompt keeps, in this order, every file and every block whose versions list the prompt version and whose when conditions all hold for the prompt. A when condition names a prompt fact and its required value: shape, the product-layout.json phase2 shape the prompt selects; healthz, whether the resource or parent path is /healthz (naming.json W2). when stays in the catalog: a DSL block has only id, name, params and refs. A block param {\"$ref\": \"a.b\"} names the prompt value at /a/b. refs name blocks of the same file. A file path names the prompt value in braces. Every block id starts with rust. and is rendered by the Rust block library. A prompt outside the phase 1 profile keeps the plan of its version: rust.lib.modules renders the hand-written migrator (naming.json W3) when the phase 1 profile refuses the prompt it renders for.",
+  "rule": "The plan for a prompt keeps, in this order, every file and every block whose versions list the prompt version and whose when conditions all hold for the prompt. A when condition names a prompt fact and its required value: shape, the product-layout.json phase2 shape the prompt selects; healthz, whether the resource or parent path is /healthz (naming.json W2); auth, storage and workflow, the prompt capabilities of those names. when stays in the catalog: a DSL block has only id, name, params and refs. A block param {\"$ref\": \"a.b\"} names the prompt value at /a/b. refs name blocks of the same file. A file path names the prompt value in braces. Every block id starts with rust. and is rendered by the Rust block library. A prompt outside the phase 1 profile keeps the plan of its version: rust.lib.modules renders the hand-written migrator (naming.json W3) when the phase 1 profile refuses the prompt it renders for.",
   "files": [
     {
       "path": "Cargo.toml",
@@ -18,6 +18,22 @@
           ],
           "when": {
             "shape": "resource"
+          },
+          "params": {},
+          "refs": []
+        },
+        {
+          "id": "rust.cargo.capability.manifest",
+          "name": "capability_manifest",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_postgresql",
+            "auth": "jwt",
+            "storage": "none",
+            "workflow": "json_export"
           },
           "params": {},
           "refs": []
@@ -42,6 +58,22 @@
           },
           "params": {},
           "refs": []
+        },
+        {
+          "id": "rust.cargo.capability.lock",
+          "name": "capability_lock",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_postgresql",
+            "auth": "jwt",
+            "storage": "none",
+            "workflow": "json_export"
+          },
+          "params": {},
+          "refs": []
         }
       ]
     },
@@ -60,6 +92,22 @@
           ],
           "when": {
             "shape": "resource"
+          },
+          "params": {},
+          "refs": []
+        },
+        {
+          "id": "rust.main.capability",
+          "name": "capability_startup",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_postgresql",
+            "auth": "jwt",
+            "storage": "none",
+            "workflow": "json_export"
           },
           "params": {},
           "refs": []
@@ -83,6 +131,26 @@
             "shape": "resource"
           },
           "params": {},
+          "refs": []
+        },
+        {
+          "id": "rust.lib.capability",
+          "name": "capability_migrator",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_postgresql",
+            "auth": "jwt",
+            "storage": "none",
+            "workflow": "json_export"
+          },
+          "params": {
+            "revision": {
+              "$ref": "migration.revision"
+            }
+          },
           "refs": []
         }
       ]
@@ -134,6 +202,38 @@
             "shape": "resource"
           },
           "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.models.capability",
+          "name": "capability_rows",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_postgresql",
+            "auth": "jwt",
+            "storage": "none",
+            "workflow": "json_export"
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
             "parent": {
               "$ref": "resources.parent"
             },
@@ -329,6 +429,38 @@
             "parent",
             "child"
           ]
+        },
+        {
+          "id": "rust.schemas.capability",
+          "name": "capability_schemas",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_postgresql",
+            "auth": "jwt",
+            "storage": "none",
+            "workflow": "json_export"
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": []
         }
       ]
     },
@@ -680,6 +812,38 @@
             "parent",
             "child"
           ]
+        },
+        {
+          "id": "rust.api.capability",
+          "name": "capability_routes",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_postgresql",
+            "auth": "jwt",
+            "storage": "none",
+            "workflow": "json_export"
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": []
         }
       ]
     },
@@ -978,6 +1142,63 @@
           "refs": [
             "ping"
           ]
+        },
+        {
+          "id": "rust.db.capability",
+          "name": "capability_queries",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_postgresql",
+            "auth": "jwt",
+            "storage": "none",
+            "workflow": "json_export"
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/integrations.rs",
+      "blocks": [
+        {
+          "id": "rust.integrations.capability",
+          "name": "capability_integrations",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_postgresql",
+            "auth": "jwt",
+            "storage": "none",
+            "workflow": "json_export"
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            }
+          },
+          "refs": []
         }
       ]
     },
@@ -1126,6 +1347,47 @@
           "refs": [
             "parent"
           ]
+        },
+        {
+          "id": "rust.migration.capability",
+          "name": "capability_migration",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_postgresql",
+            "auth": "jwt",
+            "storage": "none",
+            "workflow": "json_export"
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            },
+            "parent_table": {
+              "$ref": "resources.parent.table"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            }
+          },
+          "refs": []
         }
       ]
     },
@@ -1514,6 +1776,38 @@
           "refs": [
             "harness"
           ]
+        },
+        {
+          "id": "rust.tests.capability",
+          "name": "capability_tests",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_postgresql",
+            "auth": "jwt",
+            "storage": "none",
+            "workflow": "json_export"
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": []
         }
       ]
     },
@@ -1677,6 +1971,47 @@
             },
             "foreign_key": {
               "$ref": "relation.foreign_key"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.readme.capability",
+          "name": "capability_readme",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_postgresql",
+            "auth": "jwt",
+            "storage": "none",
+            "workflow": "json_export"
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            },
+            "package": {
+              "$ref": "package"
             },
             "revision": {
               "$ref": "migration.revision"
