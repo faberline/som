@@ -1,7 +1,7 @@
 {
   "version": "som.rust-catalog.v1",
   "dsl_version": "som.dsl.rust.v1",
-  "rule": "The plan for a prompt keeps, in this order, every file and every block whose versions list the prompt version and whose when conditions all hold for the prompt. A when condition names a prompt fact and its required value: shape, the product-layout.json phase2 shape the prompt selects; healthz, whether the resource or parent path is /healthz (naming.json W2); auth, storage and workflow, the prompt capabilities of those names. when stays in the catalog: a DSL block has only id, name, params and refs. A block param {\"$ref\": \"a.b\"} names the prompt value at /a/b. refs name blocks of the same file. A file path names the prompt value in braces. Every block id starts with rust. and is rendered by the Rust block library. A prompt outside the phase 1 profile keeps the plan of its version: rust.lib.modules renders the hand-written migrator (naming.json W3) when the phase 1 profile refuses the prompt it renders for.",
+  "rule": "The plan for a prompt keeps, in this order, every file and every block whose versions list the prompt version and whose when conditions all hold for the prompt. A when condition names a prompt fact and its required value: shape, the product-layout.json phase2 shape the prompt selects; healthz, whether the resource or parent path is /healthz (naming.json W2); auth, storage and workflow, the prompt capabilities of those names. A when value that is an array lists the values the fact may take. when stays in the catalog: a DSL block has only id, name, params and refs. A block param {\"$ref\": \"a.b\"} names the prompt value at /a/b. refs name blocks of the same file. A file path names the prompt value in braces. Every block id starts with rust. and is rendered by the Rust block library. A prompt outside the phase 1 profile keeps the plan of its version: rust.lib.modules renders the hand-written migrator (naming.json W3) when the phase 1 profile refuses the prompt it renders for.",
   "files": [
     {
       "path": "Cargo.toml",
@@ -33,7 +33,13 @@
             "shape": "capability_postgresql",
             "auth": "jwt",
             "storage": "none",
-            "workflow": "json_export"
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
           },
           "params": {},
           "refs": []
@@ -70,7 +76,13 @@
             "shape": "capability_postgresql",
             "auth": "jwt",
             "storage": "none",
-            "workflow": "json_export"
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
           },
           "params": {},
           "refs": []
@@ -107,7 +119,13 @@
             "shape": "capability_postgresql",
             "auth": "jwt",
             "storage": "none",
-            "workflow": "json_export"
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
           },
           "params": {},
           "refs": []
@@ -144,7 +162,13 @@
             "shape": "capability_postgresql",
             "auth": "jwt",
             "storage": "none",
-            "workflow": "json_export"
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
           },
           "params": {
             "revision": {
@@ -225,7 +249,13 @@
             "shape": "capability_postgresql",
             "auth": "jwt",
             "storage": "none",
-            "workflow": "json_export"
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
           },
           "params": {
             "version": {
@@ -441,7 +471,13 @@
             "shape": "capability_postgresql",
             "auth": "jwt",
             "storage": "none",
-            "workflow": "json_export"
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
           },
           "params": {
             "version": {
@@ -824,7 +860,13 @@
             "shape": "capability_postgresql",
             "auth": "jwt",
             "storage": "none",
-            "workflow": "json_export"
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
           },
           "params": {
             "version": {
@@ -841,6 +883,15 @@
             },
             "foreign_key": {
               "$ref": "relation.foreign_key"
+            },
+            "workflow": {
+              "$ref": "capabilities.workflow"
+            },
+            "group_field": {
+              "$ref": "capabilities.group_field"
+            },
+            "value_field": {
+              "$ref": "capabilities.value_field"
             }
           },
           "refs": []
@@ -1154,7 +1205,13 @@
             "shape": "capability_postgresql",
             "auth": "jwt",
             "storage": "none",
-            "workflow": "json_export"
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
           },
           "params": {
             "version": {
@@ -1191,7 +1248,13 @@
             "shape": "capability_postgresql",
             "auth": "jwt",
             "storage": "none",
-            "workflow": "json_export"
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
           },
           "params": {
             "version": {
@@ -1359,7 +1422,13 @@
             "shape": "capability_postgresql",
             "auth": "jwt",
             "storage": "none",
-            "workflow": "json_export"
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
           },
           "params": {
             "version": {
@@ -1788,7 +1857,13 @@
             "shape": "capability_postgresql",
             "auth": "jwt",
             "storage": "none",
-            "workflow": "json_export"
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
           },
           "params": {
             "version": {
@@ -1805,6 +1880,9 @@
             },
             "foreign_key": {
               "$ref": "relation.foreign_key"
+            },
+            "workflow": {
+              "$ref": "capabilities.workflow"
             }
           },
           "refs": []
@@ -1992,7 +2070,13 @@
             "shape": "capability_postgresql",
             "auth": "jwt",
             "storage": "none",
-            "workflow": "json_export"
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
           },
           "params": {
             "version": {
@@ -2018,6 +2102,15 @@
             },
             "down_revision": {
               "$ref": "migration.down_revision"
+            },
+            "workflow": {
+              "$ref": "capabilities.workflow"
+            },
+            "group_field": {
+              "$ref": "capabilities.group_field"
+            },
+            "value_field": {
+              "$ref": "capabilities.value_field"
             }
           },
           "refs": []

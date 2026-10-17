@@ -200,9 +200,12 @@ pub fn plan(prompt: &Value) -> Result<Value, String> {
         block["versions"]
             .as_array()
             .is_some_and(|rows| rows.iter().any(|row| row == version))
-            && block["when"]
-                .as_object()
-                .is_none_or(|when| when.iter().all(|(fact, value)| facts[fact] == *value))
+            && block["when"].as_object().is_none_or(|when| {
+                when.iter().all(|(fact, value)| match value.as_array() {
+                    Some(values) => values.contains(&facts[fact]),
+                    None => facts[fact] == *value,
+                })
+            })
     };
     let mut files = Vec::new();
     for file in CATALOG["files"].as_array().expect("catalog files") {
@@ -985,7 +988,29 @@ mod tests {
         v5["capabilities"] = example("v6")["capabilities"].clone();
         let mut fewer = example("v6");
         fewer["operations"] = json!([{"scope": "parent", "action": "create"}, {"scope": "child", "action": "list"}, {"scope": "batch", "action": "batch_create"}]);
-        for (name, prompt) in [("v6", example("v6")), ("v5", v5), ("v6 fewer", fewer)] {
+        let mut prompts = vec![
+            ("v6".to_owned(), example("v6")),
+            ("v5".to_owned(), v5),
+            ("v6 fewer".to_owned(), fewer),
+        ];
+        // Issue #53 E: every workflow, with a nullable float to summarize.
+        for workflow in crate::profile::WORKFLOWS {
+            let mut prompt = example("v6");
+            prompt["capabilities"]["workflow"] = json!(workflow);
+            if ["decimal_summary", "statistics"].contains(&workflow) {
+                prompt["resources"]["child"]["fields"]
+                    .as_array_mut()
+                    .expect("fields")
+                    .push(json!({"name": "amount", "type": "float", "required": false, "default": null, "unique": false}));
+                prompt["capabilities"]["value_field"] = json!("amount");
+            }
+            if workflow == "decimal_summary" {
+                prompt["capabilities"]["group_field"] = json!("title");
+            }
+            prompts.push((format!("v6 {workflow}"), prompt));
+        }
+        for (name, prompt) in prompts {
+            let name = name.as_str();
             let dsl = plan(&prompt).expect("plan");
             for file in dsl["files"].as_array().expect("files") {
                 assert!(layout_path(file["path"].as_str().expect("path")), "{name}");
@@ -1008,6 +1033,11 @@ mod tests {
                 "{name}"
             );
             assert!(first["src/api.rs"].contains("/export"), "{name}");
+            assert_eq!(
+                first["src/api.rs"].contains("/import"),
+                name == "v6 csv",
+                "{name}"
+            );
             assert_eq!(
                 first["src/integrations.rs"].contains("pub role: Value,"),
                 name == "v5",

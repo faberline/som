@@ -1,5 +1,6 @@
-//! The capability_postgresql blocks (issue #53 D): the v5 relation of a parent and its children
-//! behind RS256 bearer tokens, no object storage, and the JSON export of a parent's children.
+//! The capability_postgresql blocks (issues #53 D and E): the v5 relation of a parent and its
+//! children behind RS256 bearer tokens, no object storage, and one workflow over a parent's
+//! children (workflow.rs).
 //!
 //! The product has the som_app subcommands of phase2/services.json. serve does not migrate; the
 //! one migration is recorded in _som_rust_migrations (naming.json W3). The Rust item names come
@@ -11,6 +12,10 @@ use super::{
     API_DAY, API_FLAG, API_LIST_HELPERS, Field, HEALTH_LINE, Kind, PRESENT, quoted, read_struct,
     row_struct, sql_const, text,
 };
+
+mod workflow;
+
+use workflow::{Flow, Workflow};
 
 const MANIFEST: &str =
     include_str!("../../../../contracts/rust-output-v1/reference-phase2/Cargo.toml");
@@ -119,7 +124,7 @@ pub fn render(id: &str, params: &Value) -> Result<String, String> {
         "rust.lib.capability" => LIB.replace("@REVISION@", text(params, "revision")?),
         "rust.models.capability" => models(&product()?),
         "rust.schemas.capability" => schemas(&product()?),
-        "rust.api.capability" => api(&product()?),
+        "rust.api.capability" => api(params, &product()?)?,
         "rust.db.capability" => db(&product()?),
         "rust.integrations.capability" => integrations(params["version"] == "som.prompt.v5"),
         "rust.migration.capability" => {
@@ -127,7 +132,7 @@ pub fn render(id: &str, params: &Value) -> Result<String, String> {
             related::migration_parent(params, &product.parent)?
                 + &related::migration_child(params, &product.child, &product.key)?
         }
-        "rust.tests.capability" => tests(&product()?),
+        "rust.tests.capability" => tests(Flow::read(params)?, &product()?),
         "rust.readme.capability" => readme(params, &product()?)?,
         _ => return Err(format!("no renderer for block {id}")),
     })
@@ -404,25 +409,55 @@ fn schemas(product: &Product) -> String {
     out += &create_struct("Parent", &product.parent.fields);
     out += &update_struct("Parent", &product.parent.fields);
     out += "\n";
-    out += &read_struct(
+    out += PY_DATETIME;
+    out += &timestamps(read_struct(
         "ParentRead",
         "ParentRow",
         None,
         &product.parent.fields,
         true,
-    );
+    ));
     out += &create_struct("Child", &product.child.fields);
     out += &update_struct("Child", &product.child.fields);
     out += "\n";
-    out += &read_struct(
+    out += &timestamps(read_struct(
         "ChildRead",
         "ChildRow",
         Some(&product.key),
         &product.child.fields,
         true,
-    );
+    ));
     out + SCHEMAS_BATCH
 }
+
+/// A response struct whose timestamps serialize through py_datetime.
+fn timestamps(read: String) -> String {
+    ["created_at", "updated_at"].iter().fold(read, |out, name| {
+        out.replace(
+            &format!("    pub {name}: chrono::DateTime<chrono::Utc>,\n"),
+            &format!(
+                "    #[serde(serialize_with = \"py_datetime\")]\n    pub {name}: chrono::DateTime<chrono::Utc>,\n"
+            ),
+        )
+    })
+}
+
+/// The Python product reads a timestamp from a UTC session and pydantic writes it with Z and
+/// with six fraction digits, or none for a whole second. chrono would write 3, 6 or 9 digits.
+const PY_DATETIME: &str = r#"/// A timestamp as pydantic writes a UTC datetime: six fraction digits unless zero, then Z.
+fn py_datetime<S: serde::Serializer>(
+    value: &chrono::DateTime<chrono::Utc>,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    let format = if value.timestamp_subsec_micros() == 0 {
+        "%Y-%m-%dT%H:%M:%SZ"
+    } else {
+        "%Y-%m-%dT%H:%M:%S%.6fZ"
+    };
+    serializer.collect_str(&value.format(format))
+}
+
+"#;
 
 const SCHEMAS_BATCH: &str = r#"
 /// One parent and its children, created in one transaction.
@@ -458,16 +493,28 @@ pub struct ParentWithChildrenRead {
 
 // ---------------------------------------------------------------- src/api.rs
 
-fn api(product: &Product) -> String {
+fn api(params: &Value, product: &Product) -> Result<String, String> {
     let ops = &product.ops;
+    let workflow = Workflow::read(params, &product.child)?;
+    let flow = workflow.flow;
+    let csv = flow == Flow::Csv;
     let bodies = ops.bodies();
-    let routes = routes(product);
+    let routes = routes(product, flow);
     let mut free: Vec<&str> = routes.iter().map(|(_, methods)| methods[0].0).collect();
     free.sort_unstable();
     free.dedup();
-    let mut schemas = vec!["ChildRead"];
+    // The json_export product always names ChildRead, as it did before the other workflows.
+    let reads = flow == Flow::Json
+        || ops.child_list
+        || ops.child_create
+        || ops.child_get
+        || ops.child_patch
+        || ops.batch
+        || matches!(flow, Flow::Gzip | Flow::Csv);
+    let mut schemas = Vec::new();
     for (selected, name) in [
-        (ops.child_create, "ChildCreate"),
+        (reads, "ChildRead"),
+        (ops.child_create || csv, "ChildCreate"),
         (ops.child_patch, "ChildUpdate"),
         (ops.parent_create, "ParentCreate"),
         (ops.parent_read(), "ParentRead"),
@@ -480,7 +527,7 @@ fn api(product: &Product) -> String {
         }
     }
     let mut out = String::from("use std::sync::Arc;\n\nuse axum::{\n    Json, Router,\n");
-    if bodies {
+    if bodies || csv {
         out += "    body::Bytes,\n    extract::{Path, State, rejection::{BytesRejection, PathRejection}},\n    http::{HeaderMap, StatusCode, header::{CONTENT_TYPE, WWW_AUTHENTICATE}},\n";
     } else {
         out += "    extract::{Path, State, rejection::PathRejection},\n    http::{StatusCode, header::{CONTENT_TYPE, WWW_AUTHENTICATE}},\n";
@@ -489,17 +536,29 @@ fn api(product: &Product) -> String {
         "    response::{{IntoResponse, Response}},\n    routing::{{{}}},\n}};\nuse serde_json::{{Value, json}};\nuse sqlx::PgPool;\n\nuse crate::db;\n",
         free.join(", ")
     );
-    out += if bodies {
+    out += if bodies || csv {
         "use crate::integrations::{Access, Identity, Jwt, python_json_detail};\n"
     } else {
         "use crate::integrations::{Access, Identity, Jwt};\n"
     };
     out += &format!("use crate::schemas::{{{}}};\n\n", schemas.join(", "));
-    out += API_ERRORS;
-    if ops.child_create {
+    out += &if csv {
+        API_ERRORS
+            .replace("    TooMany,\n", "    TooMany,\n    Csv,\n")
+            .replace(
+                "            Self::Internal =>",
+                "            Self::Csv => (StatusCode::UNPROCESSABLE_ENTITY, json!({\"detail\": \"invalid CSV input\"})),\n            Self::Internal =>",
+            )
+    } else {
+        API_ERRORS.to_owned()
+    };
+    if ops.child_create || csv {
         out += API_MISSING_PARENT;
     }
     out += API_PATH;
+    if bodies || csv {
+        out += API_JSON_TYPE;
+    }
     if bodies {
         out += API_BODY;
     }
@@ -510,13 +569,18 @@ fn api(product: &Product) -> String {
     out += API_LIMITS;
     out += &api_parent(product);
     out += &api_child(ops);
-    out += API_EXPORT;
+    if flow == Flow::Json {
+        out += API_EXPORT;
+    } else {
+        out += &workflow.handlers(&product.child);
+    }
+    out += API_WHO_AM_I;
     out += &router(&routes);
-    out + API_FALLBACKS
+    Ok(out + API_FALLBACKS)
 }
 
 /// The routes of the selected operations, each with its methods and handlers in method order.
-fn routes(product: &Product) -> Vec<(String, Vec<(&'static str, &'static str)>)> {
+fn routes(product: &Product, flow: Flow) -> Vec<(String, Vec<(&'static str, &'static str)>)> {
     let ops = &product.ops;
     let parents = &product.parent.path;
     let children = format!("{parents}/{{parent_id}}{}", product.child.path);
@@ -560,6 +624,10 @@ fn routes(product: &Product) -> Vec<(String, Vec<(&'static str, &'static str)>)>
         &[(true, "get", "export_children")],
     );
     add(
+        format!("{parents}/{{parent_id}}/import"),
+        &[(flow == Flow::Csv, "post", "import_children")],
+    );
+    add(
         children.clone(),
         &[
             (ops.child_list, "get", "list_children"),
@@ -584,7 +652,10 @@ fn router(routes: &[(String, Vec<(&str, &str)>)]) -> String {
             .iter()
             .enumerate()
             .map(|(index, (method, handler))| {
-                if index == 0 {
+                if *handler == "import_children" {
+                    // The import reads its own length limit, past axum's default.
+                    format!("{method}({handler}).layer(axum::extract::DefaultBodyLimit::max(IMPORT_MAX_BYTES))")
+                } else if index == 0 {
                     format!("{method}({handler})")
                 } else {
                     format!(".{method}({handler})")
@@ -687,7 +758,7 @@ async fn known_parent(pool: &PgPool, id: Option<i32>) -> Result<i32, ApiError> {
 }
 "#;
 
-const API_BODY: &str = r#"
+const API_JSON_TYPE: &str = r#"
 /// No content type, application/json or application/*+json.
 fn json_type(headers: &HeaderMap) -> bool {
     let Some(value) = headers.get(CONTENT_TYPE) else {
@@ -699,7 +770,9 @@ fn json_type(headers: &HeaderMap) -> bool {
     let media = text.split(';').next().unwrap_or_default().trim().to_ascii_lowercase();
     media == "application/json" || (media.starts_with("application/") && media.ends_with("+json"))
 }
+"#;
 
+const API_BODY: &str = r#"
 /// A read body: the model when it validates, and whether the JSON held a non-finite number.
 struct Body<T> {
     model: Option<T>,
@@ -1106,7 +1179,9 @@ async fn export_children(
     let content = serde_json::to_vec(&rows).map_err(|_| ApiError::Internal)?;
     Ok(([(CONTENT_TYPE, "application/json")], content).into_response())
 }
+"#;
 
+const API_WHO_AM_I: &str = r#"
 async fn who_am_i(identity: Result<Identity, ApiError>) -> Result<Json<Identity>, ApiError> {
     Ok(Json(identity?))
 }
@@ -1653,7 +1728,7 @@ impl FromRequestParts<AppState> for Identity {
 
 // ---------------------------------------------------------------- tests/api.rs
 
-fn tests(product: &Product) -> String {
+fn tests(flow: Flow, product: &Product) -> String {
     let ops = &product.ops;
     let parents = &product.parent.path;
     let children = format!("{parents}/1{}", product.child.path);
@@ -1671,6 +1746,7 @@ fn tests(product: &Product) -> String {
         (ops.child_delete, "DELETE", format!("{children}/1")),
         (ops.batch, "POST", format!("{parents}/with-children")),
         (true, "GET", format!("{parents}/1/export")),
+        (flow == Flow::Csv, "POST", format!("{parents}/1/import")),
     ] {
         if selected {
             routes.push((method, path));
@@ -1766,6 +1842,7 @@ fn readme(params: &Value, product: &Product) -> Result<String, String> {
     let down = params["down_revision"].as_str().unwrap_or("none");
     let ops = &product.ops;
     let (parent, child) = (&product.parent, &product.child);
+    let workflow = Workflow::read(params, child)?;
     let parents = &parent.path;
     let children = format!("{parents}/{{parent_id}}{}", child.path);
     let query = |resource: &Resource| {
@@ -1844,12 +1921,7 @@ fn readme(params: &Value, product: &Product) -> Result<String, String> {
                 "- `POST {parents}/with-children`: create a parent and 1 to 20 children in one transaction.\n  A failing child leaves no parent and no child.\n"
             ),
         ),
-        (
-            true,
-            format!(
-                "- `GET {parents}/{{parent_id}}/export`: every child of the parent as JSON, in id order. 413 above 1000 rows.\n"
-            ),
-        ),
+        (true, workflow.routes(parents, child)),
     ] {
         if selected {
             routes += &line;
@@ -1861,7 +1933,7 @@ fn readme(params: &Value, product: &Product) -> Result<String, String> {
 A Rust service generated by SOM from a `{version}` prompt for the package `{package}`.
 The Cargo package, library and binary are `som_app`. It uses axum, sqlx and tokio on PostgreSQL.
 Its shape is `capability_postgresql`: RS256 bearer tokens (`auth: jwt`), no object storage
-(`storage: none`) and the JSON export workflow (`workflow: json_export`).
+(`storage: none`) and {}.
 
 Table `{}` holds the parents and table `{}` the children. A child row belongs to one parent
 through `{}`, which is `ON DELETE RESTRICT`.
@@ -1916,6 +1988,9 @@ The tests read the token settings above. `TEST_AUTH_HEADERS` holds the test clie
 both tables, the foreign key and the list indexes. `som_app migrate upgrade` applies it once and
 records it in `_som_rust_migrations`; `som_app migrate downgrade` drops both tables.
 "#,
-        parent.table, child.table, product.key.name
+        workflow.title(),
+        parent.table,
+        child.table,
+        product.key.name
     ))
 }
