@@ -62,11 +62,7 @@ pub(super) fn integrations(auth: Auth, v5: bool, package: &str) -> String {
     out += &if auth == Auth::Google {
         LOCAL.to_owned()
     } else {
-        // Only the Redis URL of google_oauth reads the path and the query.
-        LOCAL
-            .replace("    path: String,\n    query: String,\n", "")
-            .replace("        rest = after[end..].to_owned();\n", "")
-            .replace(URL_TAIL, "    Ok(Url { scheme, netloc })\n")
+        local()
     };
     let identity = slice(
         "/// One authenticated caller.",
@@ -126,6 +122,44 @@ pub(super) fn integrations(auth: Auth, v5: bool, package: &str) -> String {
             "(Some(Value::String(sub)), Value::String(role)) if !sub.is_empty()",
             "(Some(Value::String(sub)), role) if !sub.is_empty()",
         )
+}
+
+/// APP_ENV, local_override and the urlsplit they read, without the path and the query: only the
+/// Redis URL of google_oauth reads them.
+pub(super) fn local() -> String {
+    LOCAL
+        .replace("    path: String,\n    query: String,\n", "")
+        .replace("        rest = after[end..].to_owned();\n", "")
+        .replace(URL_TAIL, "    Ok(Url { scheme, netloc })\n")
+}
+
+/// pem_block of the jwt integrations, which the service account assertion reads.
+pub(super) fn pem_block() -> &'static str {
+    slice("fn pem_block(", "fn rsa_components(")
+}
+
+/// time.time() of KEYS.
+pub(super) fn now() -> &'static str {
+    &KEYS[KEYS.find("/// time.time().").expect("now")..]
+}
+
+/// The application default credentials of ADC as their own type, for the object store: an Adc
+/// keeps the access token and its calls take the HTTP client.
+pub(super) fn adc() -> String {
+    ADC.replace(
+        "impl Firebase {\n",
+        "/// The application default credentials and the access token they last gave.\nstruct Adc {\n    token: Mutex<Option<(String, Instant)>>,\n}\n\nimpl Adc {\n    fn new() -> Self {\n        Self {\n            token: Mutex::new(None),\n        }\n    }\n\n",
+    )
+    .replace(
+        "async fn access_token(&self) -> Option<String>",
+        "async fn access_token(&self, client: &HttpClient) -> Option<String>",
+    )
+    .replace("self.fetch_token().await?", "Self::fetch_token(client).await?")
+    .replace(
+        "async fn fetch_token(&self) -> Option<(String, u64)>",
+        "async fn fetch_token(client: &HttpClient) -> Option<(String, u64)>",
+    )
+    .replace("send(&self.client, request)", "send(client, request)")
 }
 
 /// The api.rs import of the integrations a provider needs.
@@ -686,7 +720,7 @@ impl Firebase {
 "##;
 
 /// The application default credentials of the production account lookup.
-const ADC: &str = r##"const SCOPES: [&str; 6] = [
+pub(super) const ADC: &str = r##"const SCOPES: [&str; 6] = [
     "https://www.googleapis.com/auth/cloud-platform",
     "https://www.googleapis.com/auth/datastore",
     "https://www.googleapis.com/auth/devstorage.read_write",
@@ -1649,7 +1683,7 @@ fn now() -> f64 {
 "##;
 
 /// The HTTP client of the provider calls.
-const HTTP: &str = r##"/// HTTPS with the webpki roots (rustls and ring), or plain HTTP to a local test service.
+pub(super) const HTTP: &str = r##"/// HTTPS with the webpki roots (rustls and ring), or plain HTTP to a local test service.
 type HttpClient = Client<HttpsConnector<HttpConnector>, Full<Bytes>>;
 
 fn http_client() -> HttpClient {

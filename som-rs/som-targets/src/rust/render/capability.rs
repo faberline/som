@@ -14,9 +14,11 @@ use super::{
 };
 
 mod auth;
+mod storage;
 mod workflow;
 
 use auth::Auth;
+use storage::Storage;
 use workflow::{Flow, Workflow};
 
 const MANIFEST: &str =
@@ -122,7 +124,7 @@ pub fn render(id: &str, params: &Value) -> Result<String, String> {
     Ok(match id {
         "rust.cargo.capability.manifest" => MANIFEST.to_owned(),
         "rust.cargo.capability.lock" => LOCK.to_owned(),
-        "rust.main.capability" => MAIN.to_owned(),
+        "rust.main.capability" => storage::main(Storage::read(params)?, MAIN.to_owned()),
         "rust.lib.capability" => LIB.replace("@REVISION@", text(params, "revision")?),
         "rust.models.capability" => models(&product()?),
         "rust.schemas.capability" => schemas(&product()?),
@@ -130,10 +132,12 @@ pub fn render(id: &str, params: &Value) -> Result<String, String> {
         "rust.db.capability" => db(&product()?),
         "rust.integrations.capability" => {
             let v5 = params["version"] == "som.prompt.v5";
-            match Auth::read(params)? {
+            let auth = Auth::read(params)?;
+            let text = match auth {
                 Auth::Jwt => integrations(v5),
                 other => auth::integrations(other, v5, text(params, "package")?),
-            }
+            };
+            storage::integrations(Storage::read(params)?, auth, text)
         }
         "rust.migration.capability" => {
             let product = product()?;
@@ -141,13 +145,15 @@ pub fn render(id: &str, params: &Value) -> Result<String, String> {
                 + &related::migration_child(params, &product.child, &product.key)?
         }
         "rust.tests.capability" => {
-            auth::tests(Auth::read(params)?, tests(Flow::read(params)?, &product()?))
+            let storage = Storage::read(params)?;
+            let tests = tests(Flow::read(params)?, storage, &product()?);
+            storage::tests(storage, auth::tests(Auth::read(params)?, tests))
         }
-        "rust.readme.capability" => auth::readme(
-            Auth::read(params)?,
-            text(params, "package")?,
-            readme(params, &product()?)?,
-        ),
+        "rust.readme.capability" => {
+            let auth = Auth::read(params)?;
+            let readme = auth::readme(auth, text(params, "package")?, readme(params, &product()?)?);
+            storage::readme(Storage::read(params)?, auth, readme)
+        }
         _ => return Err(format!("no renderer for block {id}")),
     })
 }
@@ -514,7 +520,8 @@ fn api(params: &Value, product: &Product) -> Result<String, String> {
     let csv = flow == Flow::Csv;
     let bodies = ops.bodies();
     let auth = Auth::read(params)?;
-    let routes = routes(product, flow, auth);
+    let storage = Storage::read(params)?;
+    let routes = routes(product, flow, auth, storage);
     let mut free: Vec<&str> = routes.iter().map(|(_, methods)| methods[0].0).collect();
     free.sort_unstable();
     free.dedup();
@@ -544,6 +551,8 @@ fn api(params: &Value, product: &Product) -> Result<String, String> {
     let mut out = String::from("use std::sync::Arc;\n\nuse axum::{\n    Json, Router,\n");
     if bodies || csv {
         out += "    body::Bytes,\n    extract::{Path, State, rejection::{BytesRejection, PathRejection}},\n    http::{HeaderMap, StatusCode, header::{CONTENT_TYPE, WWW_AUTHENTICATE}},\n";
+    } else if storage != Storage::None {
+        out += "    body::Bytes,\n    extract::{Path, State, rejection::{BytesRejection, PathRejection}},\n    http::{StatusCode, header::{CONTENT_TYPE, WWW_AUTHENTICATE}},\n";
     } else {
         out += "    extract::{Path, State, rejection::PathRejection},\n    http::{StatusCode, header::{CONTENT_TYPE, WWW_AUTHENTICATE}},\n";
     }
@@ -552,6 +561,7 @@ fn api(params: &Value, product: &Product) -> Result<String, String> {
         free.join(", ")
     );
     out += &auth::api_imports(auth, bodies || csv);
+    out += &storage::api_imports(storage);
     out += &format!("use crate::schemas::{{{}}};\n\n", schemas.join(", "));
     let errors = if csv {
         API_ERRORS
@@ -563,7 +573,7 @@ fn api(params: &Value, product: &Product) -> Result<String, String> {
     } else {
         API_ERRORS.to_owned()
     };
-    out += &auth::api_errors(auth, errors);
+    out += &storage::api_errors(storage, auth, auth::api_errors(auth, errors));
     if ops.child_create || csv {
         out += API_MISSING_PARENT;
     }
@@ -586,6 +596,7 @@ fn api(params: &Value, product: &Product) -> Result<String, String> {
     } else {
         out += &workflow.handlers(&product.child);
     }
+    out += storage::api_handlers(storage);
     out += API_WHO_AM_I;
     out += &router(&routes);
     Ok(out + API_FALLBACKS)
@@ -596,6 +607,7 @@ fn routes(
     product: &Product,
     flow: Flow,
     auth: Auth,
+    storage: Storage,
 ) -> Vec<(String, Vec<(&'static str, &'static str)>)> {
     let ops = &product.ops;
     let parents = &product.parent.path;
@@ -612,6 +624,16 @@ fn routes(
             vec![("get", "google_callback")],
         ));
         routes.push(("/auth/logout".to_owned(), vec![("post", "logout")]));
+    }
+    if storage != Storage::None {
+        routes.push((
+            "/objects/{key}".to_owned(),
+            vec![
+                ("put", "upload_object"),
+                ("get", "download_object"),
+                ("delete", "remove_object"),
+            ],
+        ));
     }
     if !product.owned() {
         routes.push(("/healthz".to_owned(), vec![("get", "health")]));
@@ -1755,7 +1777,7 @@ impl FromRequestParts<AppState> for Identity {
 
 // ---------------------------------------------------------------- tests/api.rs
 
-fn tests(flow: Flow, product: &Product) -> String {
+fn tests(flow: Flow, storage: Storage, product: &Product) -> String {
     let ops = &product.ops;
     let parents = &product.parent.path;
     let children = format!("{parents}/1{}", product.child.path);
@@ -1774,6 +1796,21 @@ fn tests(flow: Flow, product: &Product) -> String {
         (ops.batch, "POST", format!("{parents}/with-children")),
         (true, "GET", format!("{parents}/1/export")),
         (flow == Flow::Csv, "POST", format!("{parents}/1/import")),
+        (
+            storage != Storage::None,
+            "PUT",
+            "/objects/example".to_owned(),
+        ),
+        (
+            storage != Storage::None,
+            "GET",
+            "/objects/example".to_owned(),
+        ),
+        (
+            storage != Storage::None,
+            "DELETE",
+            "/objects/example".to_owned(),
+        ),
     ] {
         if selected {
             routes.push((method, path));

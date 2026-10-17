@@ -37,7 +37,8 @@ const BLOCK_LIBRARY_TEXT: &str = concat!(
     include_str!("render/related.rs"),
     include_str!("render/capability.rs"),
     include_str!("render/capability/workflow.rs"),
-    include_str!("render/capability/auth.rs")
+    include_str!("render/capability/auth.rs"),
+    include_str!("render/capability/storage.rs")
 );
 static CATALOG: LazyLock<Value> =
     LazyLock::new(|| serde_json::from_str(CATALOG_TEXT).expect("Rust catalog JSON"));
@@ -1020,6 +1021,15 @@ mod tests {
                 prompts.push((format!("{version} {auth}"), prompt));
             }
         }
+        // Issue #53 G: s3 and gcs storage with every provider.
+        for storage in ["s3", "gcs"] {
+            for auth in crate::profile::AUTHS {
+                let mut prompt = example("v6");
+                prompt["capabilities"]["auth"] = json!(auth);
+                prompt["capabilities"]["storage"] = json!(storage);
+                prompts.push((format!("{storage} v6 {auth}"), prompt));
+            }
+        }
         for (name, prompt) in prompts {
             let name = name.as_str();
             let dsl = plan(&prompt).expect("plan");
@@ -1067,6 +1077,27 @@ mod tests {
             assert_eq!(
                 first["tests/api.rs"].contains("TEST_AUTH_COOKIES"),
                 name.ends_with("firebase") || name.ends_with("google_oauth"),
+                "{name}"
+            );
+            let storage = name.starts_with("s3") || name.starts_with("gcs");
+            assert_eq!(
+                first["src/api.rs"].contains("/objects/{key}"),
+                storage,
+                "{name}"
+            );
+            assert_eq!(
+                first["src/integrations.rs"].contains("pub struct S3"),
+                name.starts_with("s3"),
+                "{name}"
+            );
+            assert_eq!(
+                first["src/integrations.rs"].contains("pub struct Gcs"),
+                name.starts_with("gcs"),
+                "{name}"
+            );
+            assert_eq!(
+                first["README.md"].contains("`PUT /objects/{key}`"),
+                storage,
                 "{name}"
             );
         }

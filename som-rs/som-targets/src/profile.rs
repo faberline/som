@@ -145,18 +145,23 @@ pub const WORKFLOWS: [&str; 5] = [
 /// The delivered auth providers of the capability_postgresql shape.
 pub const AUTHS: [&str; 3] = ["jwt", "firebase", "google_oauth"];
 
+/// The delivered object storage of the capability_postgresql shape.
+pub const STORAGES: [&str; 3] = ["none", "s3", "gcs"];
+
 /// Whether the owners of the prompt's shape and capabilities have delivered. Until then a
 /// construct is NOT_IMPLEMENTED and keeps the phase 1 result (CONTRACT.md section 11). The
 /// capability_postgresql shape is delivered for jwt auth and no storage (issue #53 D) with the
-/// json_export, csv, gzip_export, decimal_summary and statistics workflows (issue #53 E), and for
-/// firebase and google_oauth auth too (issue #53 F).
+/// json_export, csv, gzip_export, decimal_summary and statistics workflows (issue #53 E), for
+/// firebase and google_oauth auth too (issue #53 F), and for s3 and gcs storage too (issue #53 G).
 pub fn delivered(prompt: &Value) -> bool {
     let capabilities = &prompt["capabilities"];
     match shape(prompt).as_str() {
         "resource" => true,
         "capability_postgresql" => {
             AUTHS.iter().any(|auth| capabilities["auth"] == *auth)
-                && capabilities["storage"] == "none"
+                && STORAGES
+                    .iter()
+                    .any(|storage| capabilities["storage"] == *storage)
                 && WORKFLOWS
                     .iter()
                     .any(|workflow| capabilities["workflow"] == *workflow)
@@ -279,10 +284,16 @@ mod tests {
             assert!(delivered(&prompt), "{auth}");
             assert_eq!(active(&prompt), None, "{auth}");
         }
+        for storage in STORAGES {
+            let mut prompt = v6.clone();
+            prompt["capabilities"]["storage"] = json!(storage);
+            assert!(delivered(&prompt), "{storage}");
+            assert_eq!(active(&prompt), None, "{storage}");
+        }
         for (name, other) in [
             ("database", "mongodb"),
             ("auth", "other"),
-            ("storage", "s3"),
+            ("storage", "azure"),
             ("workflow", "csv_import"),
         ] {
             let mut prompt = v6.clone();

@@ -36,7 +36,11 @@
               "firebase",
               "google_oauth"
             ],
-            "storage": "none",
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
             "workflow": [
               "json_export",
               "csv",
@@ -83,7 +87,11 @@
               "firebase",
               "google_oauth"
             ],
-            "storage": "none",
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
             "workflow": [
               "json_export",
               "csv",
@@ -130,7 +138,11 @@
               "firebase",
               "google_oauth"
             ],
-            "storage": "none",
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
             "workflow": [
               "json_export",
               "csv",
@@ -139,7 +151,11 @@
               "statistics"
             ]
           },
-          "params": {},
+          "params": {
+            "storage": {
+              "$ref": "capabilities.storage"
+            }
+          },
           "refs": []
         }
       ]
@@ -177,7 +193,11 @@
               "firebase",
               "google_oauth"
             ],
-            "storage": "none",
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
             "workflow": [
               "json_export",
               "csv",
@@ -268,7 +288,11 @@
               "firebase",
               "google_oauth"
             ],
-            "storage": "none",
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
             "workflow": [
               "json_export",
               "csv",
@@ -494,7 +518,11 @@
               "firebase",
               "google_oauth"
             ],
-            "storage": "none",
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
             "workflow": [
               "json_export",
               "csv",
@@ -887,7 +915,11 @@
               "firebase",
               "google_oauth"
             ],
-            "storage": "none",
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
             "workflow": [
               "json_export",
               "csv",
@@ -926,6 +958,9 @@
             },
             "package": {
               "$ref": "package"
+            },
+            "storage": {
+              "$ref": "capabilities.storage"
             }
           },
           "refs": []
@@ -1242,7 +1277,11 @@
               "firebase",
               "google_oauth"
             ],
-            "storage": "none",
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
             "workflow": [
               "json_export",
               "csv",
@@ -1289,7 +1328,11 @@
               "firebase",
               "google_oauth"
             ],
-            "storage": "none",
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
             "workflow": [
               "json_export",
               "csv",
@@ -1307,6 +1350,9 @@
             },
             "package": {
               "$ref": "package"
+            },
+            "storage": {
+              "$ref": "capabilities.storage"
             }
           },
           "refs": []
@@ -1473,7 +1519,11 @@
               "firebase",
               "google_oauth"
             ],
-            "storage": "none",
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
             "workflow": [
               "json_export",
               "csv",
@@ -1912,7 +1962,11 @@
               "firebase",
               "google_oauth"
             ],
-            "storage": "none",
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
             "workflow": [
               "json_export",
               "csv",
@@ -1942,6 +1996,9 @@
             },
             "auth": {
               "$ref": "capabilities.auth"
+            },
+            "storage": {
+              "$ref": "capabilities.storage"
             }
           },
           "refs": []
@@ -2132,7 +2189,11 @@
               "firebase",
               "google_oauth"
             ],
-            "storage": "none",
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
             "workflow": [
               "json_export",
               "csv",
@@ -2177,6 +2238,9 @@
             },
             "auth": {
               "$ref": "capabilities.auth"
+            },
+            "storage": {
+              "$ref": "capabilities.storage"
             }
           },
           "refs": []
