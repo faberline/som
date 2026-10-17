@@ -31,7 +31,11 @@
           ],
           "when": {
             "shape": "capability_postgresql",
-            "auth": "jwt",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
             "storage": "none",
             "workflow": [
               "json_export",
@@ -74,7 +78,11 @@
           ],
           "when": {
             "shape": "capability_postgresql",
-            "auth": "jwt",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
             "storage": "none",
             "workflow": [
               "json_export",
@@ -117,7 +125,11 @@
           ],
           "when": {
             "shape": "capability_postgresql",
-            "auth": "jwt",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
             "storage": "none",
             "workflow": [
               "json_export",
@@ -160,7 +172,11 @@
           ],
           "when": {
             "shape": "capability_postgresql",
-            "auth": "jwt",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
             "storage": "none",
             "workflow": [
               "json_export",
@@ -247,7 +263,11 @@
           ],
           "when": {
             "shape": "capability_postgresql",
-            "auth": "jwt",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
             "storage": "none",
             "workflow": [
               "json_export",
@@ -469,7 +489,11 @@
           ],
           "when": {
             "shape": "capability_postgresql",
-            "auth": "jwt",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
             "storage": "none",
             "workflow": [
               "json_export",
@@ -858,7 +882,11 @@
           ],
           "when": {
             "shape": "capability_postgresql",
-            "auth": "jwt",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
             "storage": "none",
             "workflow": [
               "json_export",
@@ -892,6 +920,12 @@
             },
             "value_field": {
               "$ref": "capabilities.value_field"
+            },
+            "auth": {
+              "$ref": "capabilities.auth"
+            },
+            "package": {
+              "$ref": "package"
             }
           },
           "refs": []
@@ -1203,7 +1237,11 @@
           ],
           "when": {
             "shape": "capability_postgresql",
-            "auth": "jwt",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
             "storage": "none",
             "workflow": [
               "json_export",
@@ -1246,7 +1284,11 @@
           ],
           "when": {
             "shape": "capability_postgresql",
-            "auth": "jwt",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
             "storage": "none",
             "workflow": [
               "json_export",
@@ -1259,6 +1301,12 @@
           "params": {
             "version": {
               "$ref": "version"
+            },
+            "auth": {
+              "$ref": "capabilities.auth"
+            },
+            "package": {
+              "$ref": "package"
             }
           },
           "refs": []
@@ -1420,7 +1468,11 @@
           ],
           "when": {
             "shape": "capability_postgresql",
-            "auth": "jwt",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
             "storage": "none",
             "workflow": [
               "json_export",
@@ -1855,7 +1907,11 @@
           ],
           "when": {
             "shape": "capability_postgresql",
-            "auth": "jwt",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
             "storage": "none",
             "workflow": [
               "json_export",
@@ -1883,6 +1939,9 @@
             },
             "workflow": {
               "$ref": "capabilities.workflow"
+            },
+            "auth": {
+              "$ref": "capabilities.auth"
             }
           },
           "refs": []
@@ -2068,7 +2127,11 @@
           ],
           "when": {
             "shape": "capability_postgresql",
-            "auth": "jwt",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
             "storage": "none",
             "workflow": [
               "json_export",
@@ -2111,6 +2174,9 @@
             },
             "value_field": {
               "$ref": "capabilities.value_field"
+            },
+            "auth": {
+              "$ref": "capabilities.auth"
             }
           },
           "refs": []

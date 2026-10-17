@@ -142,16 +142,20 @@ pub const WORKFLOWS: [&str; 5] = [
     "statistics",
 ];
 
+/// The delivered auth providers of the capability_postgresql shape.
+pub const AUTHS: [&str; 3] = ["jwt", "firebase", "google_oauth"];
+
 /// Whether the owners of the prompt's shape and capabilities have delivered. Until then a
 /// construct is NOT_IMPLEMENTED and keeps the phase 1 result (CONTRACT.md section 11). The
 /// capability_postgresql shape is delivered for jwt auth and no storage (issue #53 D) with the
-/// json_export, csv, gzip_export, decimal_summary and statistics workflows (issue #53 E).
+/// json_export, csv, gzip_export, decimal_summary and statistics workflows (issue #53 E), and for
+/// firebase and google_oauth auth too (issue #53 F).
 pub fn delivered(prompt: &Value) -> bool {
     let capabilities = &prompt["capabilities"];
     match shape(prompt).as_str() {
         "resource" => true,
         "capability_postgresql" => {
-            capabilities["auth"] == "jwt"
+            AUTHS.iter().any(|auth| capabilities["auth"] == *auth)
                 && capabilities["storage"] == "none"
                 && WORKFLOWS
                     .iter()
@@ -269,9 +273,15 @@ mod tests {
             assert!(delivered(&prompt), "{workflow}");
             assert_eq!(active(&prompt), None, "{workflow}");
         }
+        for auth in AUTHS {
+            let mut prompt = v6.clone();
+            prompt["capabilities"]["auth"] = json!(auth);
+            assert!(delivered(&prompt), "{auth}");
+            assert_eq!(active(&prompt), None, "{auth}");
+        }
         for (name, other) in [
             ("database", "mongodb"),
-            ("auth", "firebase"),
+            ("auth", "other"),
             ("storage", "s3"),
             ("workflow", "csv_import"),
         ] {

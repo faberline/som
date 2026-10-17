@@ -13,8 +13,10 @@ use super::{
     row_struct, sql_const, text,
 };
 
+mod auth;
 mod workflow;
 
+use auth::Auth;
 use workflow::{Flow, Workflow};
 
 const MANIFEST: &str =
@@ -126,14 +128,26 @@ pub fn render(id: &str, params: &Value) -> Result<String, String> {
         "rust.schemas.capability" => schemas(&product()?),
         "rust.api.capability" => api(params, &product()?)?,
         "rust.db.capability" => db(&product()?),
-        "rust.integrations.capability" => integrations(params["version"] == "som.prompt.v5"),
+        "rust.integrations.capability" => {
+            let v5 = params["version"] == "som.prompt.v5";
+            match Auth::read(params)? {
+                Auth::Jwt => integrations(v5),
+                other => auth::integrations(other, v5, text(params, "package")?),
+            }
+        }
         "rust.migration.capability" => {
             let product = product()?;
             related::migration_parent(params, &product.parent)?
                 + &related::migration_child(params, &product.child, &product.key)?
         }
-        "rust.tests.capability" => tests(Flow::read(params)?, &product()?),
-        "rust.readme.capability" => readme(params, &product()?)?,
+        "rust.tests.capability" => {
+            auth::tests(Auth::read(params)?, tests(Flow::read(params)?, &product()?))
+        }
+        "rust.readme.capability" => auth::readme(
+            Auth::read(params)?,
+            text(params, "package")?,
+            readme(params, &product()?)?,
+        ),
         _ => return Err(format!("no renderer for block {id}")),
     })
 }
@@ -499,7 +513,8 @@ fn api(params: &Value, product: &Product) -> Result<String, String> {
     let flow = workflow.flow;
     let csv = flow == Flow::Csv;
     let bodies = ops.bodies();
-    let routes = routes(product, flow);
+    let auth = Auth::read(params)?;
+    let routes = routes(product, flow, auth);
     let mut free: Vec<&str> = routes.iter().map(|(_, methods)| methods[0].0).collect();
     free.sort_unstable();
     free.dedup();
@@ -536,13 +551,9 @@ fn api(params: &Value, product: &Product) -> Result<String, String> {
         "    response::{{IntoResponse, Response}},\n    routing::{{{}}},\n}};\nuse serde_json::{{Value, json}};\nuse sqlx::PgPool;\n\nuse crate::db;\n",
         free.join(", ")
     );
-    out += if bodies || csv {
-        "use crate::integrations::{Access, Identity, Jwt, python_json_detail};\n"
-    } else {
-        "use crate::integrations::{Access, Identity, Jwt};\n"
-    };
+    out += &auth::api_imports(auth, bodies || csv);
     out += &format!("use crate::schemas::{{{}}};\n\n", schemas.join(", "));
-    out += &if csv {
+    let errors = if csv {
         API_ERRORS
             .replace("    TooMany,\n", "    TooMany,\n    Csv,\n")
             .replace(
@@ -552,6 +563,7 @@ fn api(params: &Value, product: &Product) -> Result<String, String> {
     } else {
         API_ERRORS.to_owned()
     };
+    out += &auth::api_errors(auth, errors);
     if ops.child_create || csv {
         out += API_MISSING_PARENT;
     }
@@ -580,12 +592,27 @@ fn api(params: &Value, product: &Product) -> Result<String, String> {
 }
 
 /// The routes of the selected operations, each with its methods and handlers in method order.
-fn routes(product: &Product, flow: Flow) -> Vec<(String, Vec<(&'static str, &'static str)>)> {
+fn routes(
+    product: &Product,
+    flow: Flow,
+    auth: Auth,
+) -> Vec<(String, Vec<(&'static str, &'static str)>)> {
     let ops = &product.ops;
     let parents = &product.parent.path;
     let children = format!("{parents}/{{parent_id}}{}", product.child.path);
     let shared_batch = ops.batch && ops.parent_item();
     let mut routes = vec![("/auth/me".to_owned(), vec![("get", "who_am_i")])];
+    if auth == Auth::Google {
+        routes.push((
+            "/auth/google/login".to_owned(),
+            vec![("get", "google_login")],
+        ));
+        routes.push((
+            "/auth/google/callback".to_owned(),
+            vec![("get", "google_callback")],
+        ));
+        routes.push(("/auth/logout".to_owned(), vec![("post", "logout")]));
+    }
     if !product.owned() {
         routes.push(("/healthz".to_owned(), vec![("get", "health")]));
     }

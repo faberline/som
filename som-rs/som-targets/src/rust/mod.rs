@@ -35,7 +35,9 @@ pub const CATALOG_TEXT: &str = include_str!("../../catalog/rust-catalog.v1.json"
 const BLOCK_LIBRARY_TEXT: &str = concat!(
     include_str!("render.rs"),
     include_str!("render/related.rs"),
-    include_str!("render/capability.rs")
+    include_str!("render/capability.rs"),
+    include_str!("render/capability/workflow.rs"),
+    include_str!("render/capability/auth.rs")
 );
 static CATALOG: LazyLock<Value> =
     LazyLock::new(|| serde_json::from_str(CATALOG_TEXT).expect("Rust catalog JSON"));
@@ -1009,6 +1011,15 @@ mod tests {
             }
             prompts.push((format!("v6 {workflow}"), prompt));
         }
+        // Issue #53 F: the firebase and google_oauth providers, in v6 and v5.
+        for auth in ["firebase", "google_oauth"] {
+            for version in ["v6", "v5"] {
+                let mut prompt = example(version);
+                prompt["capabilities"] = example("v6")["capabilities"].clone();
+                prompt["capabilities"]["auth"] = json!(auth);
+                prompts.push((format!("{version} {auth}"), prompt));
+            }
+        }
         for (name, prompt) in prompts {
             let name = name.as_str();
             let dsl = plan(&prompt).expect("plan");
@@ -1040,7 +1051,22 @@ mod tests {
             );
             assert_eq!(
                 first["src/integrations.rs"].contains("pub role: Value,"),
-                name == "v5",
+                name == "v5" || name == "v5 firebase",
+                "{name}"
+            );
+            assert_eq!(
+                first["src/api.rs"].contains("/auth/google/login"),
+                name.ends_with("google_oauth"),
+                "{name}"
+            );
+            assert_eq!(
+                first["src/integrations.rs"].contains("pub struct Firebase"),
+                name.ends_with("firebase"),
+                "{name}"
+            );
+            assert_eq!(
+                first["tests/api.rs"].contains("TEST_AUTH_COOKIES"),
+                name.ends_with("firebase") || name.ends_with("google_oauth"),
                 "{name}"
             );
         }
