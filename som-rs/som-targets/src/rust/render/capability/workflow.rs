@@ -1002,13 +1002,13 @@ fn fsum(values: &[f64]) -> Option<f64> {
             break;
         }
     }
-    if let Some(&next) = partials.last() {
-        if (lo < 0.0 && next < 0.0) || (lo > 0.0 && next > 0.0) {
-            let y = lo * 2.0;
-            let x = hi + y;
-            if y == x - hi {
-                hi = x;
-            }
+    if let Some(&next) = partials.last()
+        && ((lo < 0.0 && next < 0.0) || (lo > 0.0 && next > 0.0))
+    {
+        let y = lo * 2.0;
+        let x = hi + y;
+        if y == x - hi {
+            hi = x;
         }
     }
     Some(hi)
