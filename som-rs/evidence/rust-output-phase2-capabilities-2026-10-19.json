@@ -1,0 +1,3455 @@
+{
+ "version": "som.rust-output-phase2-rust-capabilities.v1",
+ "issue": 53,
+ "date": "2026-10-19",
+ "generator": {
+  "commit": "20fc0076da",
+  "commits": [
+   "f95c7fdeed amendment 3",
+   "da243b1c36 B",
+   "027a24bcac D",
+   "78447b606e E",
+   "20cdce3012 F",
+   "ad857e54b9 G",
+   "2e54cd8016 G clippy",
+   "a3d9cc0132 H1",
+   "20fc0076da H2"
+  ],
+  "binary": ".local/rust-output-phase2/som-targets-target-006/release/som",
+  "binary_sha256": "a1187695178d73aee9df8c865856c4dbc126cbd56ee42020d10c69a2b2f1b692",
+  "assets": ".local/rust-compiler-goal/rust-output-candidate-003/assets",
+  "python_backend_sha256": "1c18257000d2519e85c644d5bb243d5ec7251878efadf4cf27f3bc5b26a2e92b",
+  "asset_manifest_sha256": "872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e",
+  "target_contract_sha256_prefix": "893746988ef2"
+ },
+ "scope": "Every phase 2 case below prompt version 7 (327 of 584). The 257 v7 cases are flows and belong to #54. A case counts only when a check_phase2.py --language rust run passed on the product the current binary compiles and assembles (same rust.files_sha256); RS12 and RS13 count when the run gave the inventory refusal.",
+ "behavior": {
+  "method": "collect53.py compiled and assembled each case on a dev server of the binary above (port 18955, dev-h-verify-004) and took the latest Rust run with the same product.",
+  "total": 327,
+  "passed": 327,
+  "not_passed": [],
+  "capability_tuples": {
+   "total": 90,
+   "passed": 90
+  },
+  "refusals": [
+   "RS12_CNL_V3_FILTER_LIMIT",
+   "RS13_JSON_V3_FILTER_OFFSET"
+  ],
+  "by_version": {
+   "som.prompt.v1": {
+    "total": 6,
+    "passed": 6
+   },
+   "som.prompt.v2": {
+    "total": 1,
+    "passed": 1
+   },
+   "som.prompt.v3": {
+    "total": 3,
+    "passed": 3
+   },
+   "som.prompt.v4": {
+    "total": 1,
+    "passed": 1
+   },
+   "som.prompt.v5": {
+    "total": 8,
+    "passed": 8
+   },
+   "som.prompt.v6": {
+    "total": 308,
+    "passed": 308
+   }
+  },
+  "by_checker": {
+   "phase1_suite": {
+    "total": 15,
+    "passed": 15
+   },
+   "verify_all": {
+    "total": 312,
+    "passed": 312
+   }
+  },
+  "by_family": {
+   "legacy214": {
+    "total": 214,
+    "passed": 214
+   },
+   "public": {
+    "total": 93,
+    "passed": 93
+   },
+   "rs": {
+    "total": 20,
+    "passed": 20
+   }
+  },
+  "by_run": {
+   "c-rs-001": {
+    "total": 15,
+    "passed": 15
+   },
+   "cap-g-001": {
+    "total": 72,
+    "passed": 72
+   },
+   "cap-g-002": {
+    "total": 45,
+    "passed": 45
+   },
+   "cap-g-004": {
+    "total": 24,
+    "passed": 24
+   },
+   "cap-h-004": {
+    "total": 20,
+    "passed": 20
+   },
+   "cap-h-005": {
+    "total": 3,
+    "passed": 3
+   },
+   "cap-h-006": {
+    "total": 8,
+    "passed": 8
+   },
+   "cap-h-007": {
+    "total": 67,
+    "passed": 67
+   },
+   "cap-h-008": {
+    "total": 67,
+    "passed": 67
+   },
+   "cap-h-009": {
+    "total": 6,
+    "passed": 6
+   }
+  },
+  "runs": {
+   "c-rs-001": {
+    "out": ".local/rust-output-phase2/c-rs-001",
+    "qa": "http://127.0.0.1:18935",
+    "run": 15,
+    "passed": 15,
+    "failed": [],
+    "summary_sha256": "6c6d3c8837d6a8296364bf2d6861533ca7b7a08cb6c2c2f3fd17659de41380d5"
+   },
+   "cap-g-001": {
+    "out": ".local/rust-output-phase2/cap-g-001",
+    "qa": "http://127.0.0.1:18945",
+    "run": 92,
+    "passed": 92,
+    "failed": [],
+    "summary_sha256": "7fb07bec25c96b9c8b693ce678957aa012524fe7b13029a86ef0d6a9064ccb31"
+   },
+   "cap-g-002": {
+    "out": ".local/rust-output-phase2/cap-g-002",
+    "qa": "http://127.0.0.1:18945",
+    "run": 58,
+    "passed": 58,
+    "failed": [],
+    "summary_sha256": "71a1bb4b0fd377822da6c534e1d278bed2622c162440661e10f601708bb4d836"
+   },
+   "cap-g-004": {
+    "out": ".local/rust-output-phase2/cap-g-004",
+    "qa": "http://127.0.0.1:18947",
+    "run": 44,
+    "passed": 26,
+    "failed": [
+     "m2-cap-004",
+     "m2-cap-009",
+     "m2-cap-014",
+     "m2-cap-019",
+     "m2-cap-024",
+     "m2-cap-029",
+     "m2-cap-034",
+     "m2-cap-039",
+     "m2-cap-044",
+     "m2-maximum-postgresql-firebase-gcs-statistics",
+     "m2-maximum-postgresql-firebase-none-statistics",
+     "m2-maximum-postgresql-firebase-s3-statistics",
+     "m2-maximum-postgresql-google_oauth-gcs-statistics",
+     "m2-maximum-postgresql-google_oauth-none-statistics",
+     "m2-maximum-postgresql-google_oauth-s3-statistics",
+     "m2-maximum-postgresql-jwt-gcs-statistics",
+     "m2-maximum-postgresql-jwt-none-statistics",
+     "m2-maximum-postgresql-jwt-s3-statistics"
+    ],
+    "summary_sha256": "29ec499a1bd10b195be53050d1010599985f183292654f00dbd48cc44947beba"
+   },
+   "cap-h-004": {
+    "out": ".local/rust-output-phase2/cap-h-004",
+    "qa": "http://127.0.0.1:18950",
+    "run": 20,
+    "passed": 20,
+    "failed": [],
+    "summary_sha256": "8de188add0a5ec54b62b5fa4c5b8679e53720d862f3631a2da8f6da95d46e2a9"
+   },
+   "cap-h-005": {
+    "out": ".local/rust-output-phase2/cap-h-005",
+    "qa": "http://127.0.0.1:18950",
+    "run": 4,
+    "passed": 4,
+    "failed": [],
+    "summary_sha256": "ae1cae8f7cfb4a4cf7679047d36f204649f56e5fbe94703d1e11b58ae7202669"
+   },
+   "cap-h-006": {
+    "out": ".local/rust-output-phase2/cap-h-006",
+    "qa": "http://127.0.0.1:18952",
+    "run": 8,
+    "passed": 8,
+    "failed": [],
+    "summary_sha256": "66b14567ed7bcc941813d124e03bbb674109bb5881dc7a6f7c2a7a5b48a1c73e"
+   },
+   "cap-h-007": {
+    "out": ".local/rust-output-phase2/cap-h-007",
+    "qa": "http://127.0.0.1:18952",
+    "run": 67,
+    "passed": 67,
+    "failed": [],
+    "summary_sha256": "ebd029bc20e52bbcf0f09d1bef889c5627a48bc38d2e2c8949f9d8a9826fa9f1"
+   },
+   "cap-h-008": {
+    "out": ".local/rust-output-phase2/cap-h-008",
+    "qa": "http://127.0.0.1:18952",
+    "run": 67,
+    "passed": 67,
+    "failed": [],
+    "summary_sha256": "b11f0def2cec726164a70a7e0b80bc9cb71a5acace1f2055f7072d70b04bfa56"
+   },
+   "cap-h-009": {
+    "out": ".local/rust-output-phase2/cap-h-009",
+    "qa": "http://127.0.0.1:18952",
+    "run": 6,
+    "passed": 6,
+    "failed": [],
+    "summary_sha256": "4f15ec9e6a5119a8e4352721358d58dd884f188f157e3fda796b1f29895feb2c"
+   }
+  },
+  "other_runs": {
+   "cap-g-003": "Stopped partway (9 case files, one empty). Two cases, compositions120-0003 and compositions120-0061, failed there on their current product when cargo exited 101 during dependency compilation with no compile error in the log; both passed on the same product in cap-g-004.",
+   "cap-g-004": "44 run, 26 passed: the 18 failures are v7 cases whose ids matched the selection and were refused with UNSUPPORTED_TARGET at the time; v7 is #54."
+  },
+  "cases": [
+   {
+    "id": "services14-0000",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "758d6a9f7aedeb40d39551e5897c748f39081fd20372e7004ce9ee27e3405777",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "services14-0001",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "be41636882f8ed9395902af17df76f78f9e4d54fa11292b94cbe03bb5761443b",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "services14-0002",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "65c15012c449964fd205673ba62620448d902e428e6e03cddfbebf01ef085be4",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "services14-0003",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "59c791557e31306fc1c2d940b33accfdc215e30fb6e522273d9269915425b86e",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "services14-0004",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "db690fab70c393f0d89dd546df35ed97b0c48b103a40652a9f34bba2d76519fe",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "services14-0005",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "1b0cceaf1d74d4c848085c1a99562a8752706e26234cba7a7b233a597d3e33bc",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "services14-0006",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "afe9a44caa3caf2d8031ea39cb3c4baa2138b3e5b357eb8ea4de582c9f6b19da",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "services14-0007",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e7857820beede97ae248f482faec6bc6b3c266fdcfb0bb8dae790e9cb1946ae0",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "services14-0008",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "f38b94e5a989b58f305b68c04bfe846fb2f92a6dd3f2713406264d64accab2a1",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "services14-0009",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "c27baca06a338950ff612e02d6affd6922be85bf68b0d9ceda5d6899540bd362",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "services14-0010",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6ff3b62b3c1485a411aa2f0b747dd08ecde671ddb992363e8150d1da11680cad",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "services14-0011",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "d94c9706fa291d76564919e6b21722dfc2c7444eb1e6142b78c044f6f1989b34",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "services14-0012",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "26b042f25f78f85c3031902ae9fbfbb494e676bb1f3676029522f079dbd603cd",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "services14-0013",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "2280f37087d583a74f4aa380f8649d4420e0b244465833078aa3422f55504b3c",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0000",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "ca1c03630c2b5816795ffaa42a114ce29e8328f038af95084950d11f43b6d9a5",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0001",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "cb164e33aa1aefece75cf2926d9e15a0f016c21b50f35a1d5d94a5bab2e4530a",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0002",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "06e432997f3c854efb508c093b5b1bdb70c6b61ab73c5269e442f4affde258d5",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0003",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "2d5c69270c4f38474954fa80bfecbf15869bd18493532c7fc7ba1a7e74e59427",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0004",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "68f2f74c04bed3fbea7bee970d2f3e77cec7b461e278283737f9b2400664e3d1",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0005",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e2afd91ba7a1d330c42c831ea9f3796c90c419b4e9a6663e52e3d133cb96bb6f",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0006",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "de0a44e905739f3045482b798beef65f6a9e51954279945660c675e009896954",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0007",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "948221192dfd2e517b175223a336e6f7702eade4b2a8d8a435be5ee64464effb",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0008",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6ae3b1ae41948cc321984833686b2d8aa055d46e028ea8f0b6882380dbcaf482",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0009",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6aa92fa38171416a61530da5fd2d791404f9910c9721daaf604ced0e5ddef4ee",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0010",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "60ca0d121db716c1b9d4a4b8c3d9052e9d2905727700495a4f3d96bb86c37fab",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0011",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "84e75534646008e909bd679fcfeb52728175be9d4c92a2a6f9ccef2fdbf5f214",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0012",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "ee3c9d3036bbdec1f70f826d12a1d91dc4044811a71aabdeaf157bedd350677a",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0013",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "79383c477d45190a091860c15ac7a988e05d93b1baef0bea28298e598632299d",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0014",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "fde9feaf3921dd9885100e501568d55d46b3f801af967424e1456910a9eeb3bd",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0015",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "dd7e269127b2f584a8cb5844e7823038f9741f748b194c31b890e2283e86bbb1",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0016",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "ccbe958ada7d191a9382182b22dfa39c92c38f1b437bd07d7707cf95b69866ac",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0017",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "510a394e139a505f0f60103344ce0995189db3a4b3d794ead11d7146655780d9",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0018",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "46a86d0673339b19b548be7a6c1f6c6a1b3a300faa9c18e1908648cd373112ab",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0019",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "149d2cbdc5132ab329c7b5d13641e62b911257222b704f7f9f7beafd580c815c",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0020",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "5aac127eca49b890ae0160d8f1cf8f7ab7fe3bfc951203e5363e4b1e067a1003",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0021",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "46ecf59f40032efef0b7c0dd11a5a50fcc51f31bc5a21c63bf395350268905d6",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0022",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "0b49c03c690e1356aa9425991bc1c545f3b596a7e5097ee79d8de05365707606",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0023",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "5d1c7f73c27b6367633bc4e841207e95bcc46a5fbdec500bf20eca3fa05ea8fd",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0024",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "8c87a3ef55caac3cf5af9852c0706598672235ce26b0fa2213ff1ddb968b0d55",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0025",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "19084c8bb036a552827719d1a98f6f0dfb4cc491b25288e34a9a327e33c389de",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0026",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "2dc1d049d29dc6441d300e9f120f39a324f9297489fbaff9f0321ecc4f3fdee5",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0027",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "36e3dd0327ed5b50077cff322b6000e7492a3fef1df9230f1926f8eebe7f6dac",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0028",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6ab99bc8febb002986e56d96597c925c319c415de273164fe6adf8cfc30b596d",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0029",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "203ffa144636b1810f609a7c9f49cd9c3e323770d3c65c690effe1ceb74273b0",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0030",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "631e875a11bbe551dd52a631eaef7c201a31752fd130067a8f66c702878d642c",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0031",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "fb6aad0eae9c62882ad53e4b2ed1c8011847e6ef7f95454aaa30f508e14a48de",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0032",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "1c9838f9bea9098a9ae04cd8386d4fce5727147377943b7137e74ca2729fe0ce",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0033",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "3bd7ff6a5385b11c29d88b39f3cfc854ca75c7972ccc7340117c755af3da1b82",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0034",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "403991756186cf5ff193ab5136f0eced2b38989bd2cd0a1a5eaf5e044eedbd8a",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0035",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "9b54d5e6fe090f793b84b52e7015e1c7e1aef407fde96e4caf6880398fad0aa7",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0036",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "47a7407bb608b920c0c701ac95094dacf99b4f2723b76dd9663d6f98ee969542",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0037",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "abc16962cf9a062b97b033d6c272f3fc28ad9713557b95371994851e13fc3248",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0038",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "8718be499c7d6630ef5e3bbd8df308001944292e418db4ab70285b33a49c35ea",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0039",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "63d6c181ea16f23aa58f5b9256498cc58666016f7d6784a3576116dff2ba49b6",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0040",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "bf214daa0ea55670fe264351ee288ef128a8d48dd97417d26466857ad2c419db",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0041",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e99a7d819954719e7061031409bfd3adebd329e426ec92a20153269f0a8d000f",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0042",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "9813bdd78692cbeb09ff6820bfe28d82cbc481f0aed46be1fb3501eface8c358",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0043",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "02d5ab60615732e797e899f6b7a1c5a1dd72efbd27a1fadfb6e5d1182f66f8f1",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0044",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "90eb8536ecb95d8a16b453205f8241d97241f1aecf22edc6fd38995dd7af5d22",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0045",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "8d618f2e13ab6e97cfe92b1bc9f695f67898c3e048d9f0728ccfd21ae4eee59f",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0046",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "fc2ae0cdccb1a6e7e1213f485c1493afce90e526adad2690c363b8bbc99ef93e",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0047",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "a83ef05ab5fd5249de4e909d50186aef6b43e2b614fc33e04060a7d9ca81e0a6",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0048",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "64dbc865290d4d3e10c9479b4b679202c7d9533b8a050c48fde5fb3f49bea63b",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0049",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "d7e4c0d2895003a131a06dca5dbce96404e5853343478576a6d19a44f6beabf5",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0050",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "4ab9180c8acdeff05b54a488ede7178fe525b1eef86da4a8b04c4c8de03e4456",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0051",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "5217e16d09fa3f576e9e7f98b46a38e4c984e944c114a0823990bdee41edb299",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0052",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "723e9031ad2aad8fa05a2dc97adb106fbd5d443b76d42230f681ef1cf02ac2b4",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0053",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e8c15d11ceecc67df7d2dbbca846d44f0a5bfca70f9031f7945509a090310879",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0054",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "1c4332af46b4f3904082a3f4cc1c3932f5d20a2c33eb9ca24180bde4d5435578",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0055",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "36b41f75e80dd124300fdbae2a727a1d3d0980b52380c7eb78075f6adef1f888",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0056",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "158a868e41e2ecbdd95a31b2be9f0a329e825795f51f282e557eb21441f623e0",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0057",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "4b7bab28858e153a56248de169210def7e6eb14223297a94cc2134845eff7b22",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0058",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "fc2d9cfe50827c928a2dbcc69bcd86c31dd64643dc84f21073238ad305c67c3d",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0059",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "b63b70d59dc41dcabbd9143618466fa9fe69a88616b892b6f3170c596e3462f5",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0060",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "7d2883b837c221894e9546adbdd559964fef666407013d6b24ac03b3049200b1",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0061",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "447e5f733b95897eb71eda2d18ebd4789928c7c2aa7a9052d938290d5690358b",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0062",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "2552081b859c523dc40e22cca880f689fdc07be6e350a611a9de18bc3596e4da",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0063",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "f4a3807d5da96edd9230f4b5395319af2f3620458bb47d36795d7c9cd18a9d91",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0064",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "df7e8dc7fe540be4e5d23b725a653b8f7f44da6d9545d0c608b56d7480a1ad4f",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0065",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "f854a275af64c5b25c58b52560cafa08095caa0db941d464236b7c3bbb95da69",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0066",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "9762b6f6e0fc9b33e80da21867cdf8c9076d3feba797d715c313ca6e87053d21",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0067",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "d4af2cf2bf2ae81cb1c9acb09798cf49fe613257b65b7b2acb3bdef36cc7c503",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0068",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "4b838780a4ba85853cea3bc8f7fec0172d326d0d0b688ca38fbad709b7a8f739",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0069",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "223f228922ccabbe5a1a92130224e9e6650bff26c3acaf850b1c235cfa484c20",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0070",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "b9bc817057bbd3189b14cc559026a583b5eb6bc2255ab0fa6aa67f3c4d2c8bc7",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0071",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "81fe199533c79a99a8b3fd433a8483a272b3833afe0faa1ed347528747c896d8",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0072",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "7068378b3f5cd9db3683384fe36804c0eaa0164e56e3b4c5e83121c011a3a7e3",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0073",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "fb8dcefb9bf795ad255a1d689496d3c045db1734e74b2bc5f69d5bbbd33ec843",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0074",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "96bff59d2010eff619f975317fa91b6c6b4d73549b0e5349fe074c3ca4d4157b",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0075",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "dd98b62b54224ba86658da6184fca460cf53a71db2fa67fb6655bb1c4a434b16",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0076",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "1b3eeeaf58b303ba80bf8d95075d39a18281ae249f5d4b9648cb2ae99fd131af",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0077",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "bb9dfad2099523db83cc0560b25cda808f40daf81726d580a351028ee4e2fc2e",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0078",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "b070ba9634986d9303c46928a7e30838dd410ccdbf4521502891c033c937c23f",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0079",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e333c01e48fd328be197de5ca4266a3ce80334accaeb0aae05b6a811964628df",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0080",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "0882157f7de8a11d64ef72ebf67da3618087f6063650ac67a57da64375b2c148",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0081",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "175379e995a353edef4e9e3f7647a0a7401cd70fe4143cd6ecf4ffd8ced71849",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0082",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "f21de68dca94049247a3661838fa3e06418a37c6d23d8cb9678091cc9a46fcf9",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0083",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "210f74f4432099f00239c8ffde3f93ba031687f0185ab289e86ea3dfc5974f9e",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0084",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "38b9994486b95b7888ca2302abfe5f71a8ce7d92325f9da4bf8ecb5ac5d6ef9a",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0085",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "62c88fdf6e5ef74754a8f42aefba613560cbd7c923a7512da749df361e016ff5",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0086",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "0f6452c6f4bf8db1e73765062083047e086ec524f74580da36bf066b5dac8875",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0087",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6cfa8bf0f9f3bef18019f3c8935510d3cd07a6bf698864c74753c4d5caa8999c",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0088",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "1daa8b9c1e0f32811d45aba25fa596ad63a1371e0144c940ab40bef34e7c1ae9",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0089",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "f258283065eb2659336ad7cb8c74650512d4e0ebbfceb1e6e4f3c24b270dfc37",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0090",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "1c4cf6a7aaaf0ef974531414734823e996742e4e5158aad00be25c01e38766ba",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0091",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "b13703f1122f2b81f4af2fd4602766c8973b24749039eb2d39c32ce32213f597",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0092",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "a24c2df54bed5d568a6dba31204539481a8296387a0db12d8ead3a6a90202e5e",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0093",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "5cbf4ff4ee04347be381fcde58f73e0e6f8c8ffcdc7532e0b2cb0d48bef85ddc",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0094",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6829c63b9e561e10d3496c9f186e0d35ba0b1e108fe96137fb8546efbd870473",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0095",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "8e3d7167f0809446c90ccba0cf616eaa6a8f3007598fdf8814a4db2e262af1e7",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0096",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "885665df75df43b5977af33a085aa79d9e677b4ca851f04578142ed432cc7af5",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0097",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "4f7a1b220ec406bbe4d5405d4a935a13e8a499e05f1f670064f7432d512aa979",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0098",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "3026ee3e16417ff932da4d59fcdfba3496d517ecf4d54ab83d46a9cb82f883dc",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0099",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "70b31d6660baff93aa1320dd8d5ce06e39b5397457ba4bdb724286a354871777",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0100",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "8917725161f5581b4e15eb7e9a550f4388fd7841d5da5c8e7ff6969b022379f1",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0101",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "a7477f6e899844a1bb4288796a6c510389fcdf141a3a513602a7d05fe62133c6",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0102",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "9bfc0c49181b9c1eac8d37b2a4efb16ced04c0afc9c6e99b37472cadfc38b432",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0103",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "47911d9f63cd82e458094985c2e243bdd940eee589b6eacaf0fa89316d9438a2",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0104",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "139175dbca085d7676bfa621224a8a86ce015ea4d38890d146eb0289b1b6f20e",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0105",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "f2067d87b9a8d275f4ef951005890baad184e1fa42125ff8af89230e5cdd8d7f",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0106",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "2385983856fdcd43797370dc5ce77733b7f557e251a9cfc77424d762b177bc1a",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0107",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "dc99ddfe967dd51e040175ff99a2e1f9de2d7f577b2081b3476f6b6d5de8d3f6",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0108",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "a805fbd14b7a3e3a6300f51a10bc1766d4fcf0e87e98908ccca74fe2dbc4f1cc",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0109",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "53817f0d5538593e6fcb3857fd7ce8322d441ac77477c51167078be6140948c3",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0110",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "876eb3ddbda5512e32f86deb2a7095843c49f6b44b0230c4e5871ea7feb887ac",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0111",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6838b23b4423ef4ac6c7a982a0c097e9d65dcf22a550a7812ab7fb3cc6049331",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0112",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "f0e59c809ce0fbff7b144c733ace61883ad2437ae16a4406e7074d6454ef268a",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0113",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "fb0e09ad3ea721a81a054574fb785d947f957e74d30001536bdcb7fb1aa623c5",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0114",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "3e5bcd64e11c280abe2004d732297d3134559376e109e70d389cd23be088bb78",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0115",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "0abd486ef4e2133c546af69d3bf84262c063b158849ce7d6e138917635cfbd38",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0116",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6ec8916b8c923ff4e5a59febc4844e0158c4df50e4404ba939403360aa174bb2",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0117",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "ef13a27c55c952b787ad80f5a3467a42930b54378d99e6ccef37d285ad426322",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0118",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "20a150e9fa03f28a58153131068d0d175967289e2277d8cc0de3cd3a4e4a0713",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "compositions120-0119",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "450d8f4f13addd3d6335fd4ae2ca1b13e841365e0cb869cb438c0fac9b000515",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0000",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "633c7aceb2d5a9851434b75dc0820ee5699c6fb723299c2aadeef2bc0c352ffd",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0001",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "86e59be475afa20b520d61b1086ed70e1bb4df262b489d6c7e8f0370f53fb16d",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0002",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "75708e4ad707b1d4ad7797c0f3400d5f2763a9790015b6cf73b91a84a518d392",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0003",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "f286305ed59855dd7c9a0f849db3816af577f6be0ad280d41df40193d765d32c",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0004",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "ad50854f97f982ff1588bbd27d09118b13ea876cd26d7032ac802bd313bffaf9",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0005",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "8d652f9d6000e7453a390a4eaa0c916fdfebe05e056d3d73ebb24235fc78be43",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0006",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "a4e28d7dbcc4e8b71e90de653bc25fc7b45071c75a28ea4a078e7ae805dc0444",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0007",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "9ddb65c2d760344eea46884e74dea779ccc1e69aeef79e682113c66b2fee1102",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "blind80-0008",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "49b9a5cc3a3defd859a881770ac023d0b19a3dfc46121bdceeb40f8308f83f8a",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "blind80-0009",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "dd72458ff4ac4611e3bc9c08581e51d86ace395e3b979bc12ce53e9066605fff",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "blind80-0010",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "f4c8d7351517cbdc838cd6d2a65b8de2e4ab46ba3aea8daf10099281c90bf3c3",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "blind80-0011",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "4180fb422790eb329f6aaacc23238aaac378fe64afe660080d7b65f2945a7055",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0012",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "d07f94918d95e9ae24aa0187e5b4cc98538ef9d52b9f03b4ed93bcc067ebe866",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0013",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "1dc501e05aa40f98c30bb9e67bee64d4d8b7371eff99831cf494afd8b7824b27",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0014",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "7fca911ca743501163180822186f32127725eb189edc62f98b26f457fb8c1fa3",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0015",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "a50ca3978c01cd46f2d2f493b49e6442a0951d29ab986c1dfbd3cdc264027de0",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "blind80-0016",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "d1414427b197738faa85f71932a1925add52b34cd0ae0b86151fd24b016f857f",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0017",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "dea51b650da5d670f7dbd448cd879187b02cbe24fe6359287e623f3e03265b70",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0018",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e3ec9e05b8244cb70abd8d6cdfe8658dc6a31106cbc68862991382ecf8a56623",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0019",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "fe95c04428db269aa7a5c575e1aba0eb6b32b54b36afdfc763e51aad9dd16cc5",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "blind80-0020",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "5b9ad437d0b6339dcaa34db051111c240908c714477772888f820d8d5bdb4c5d",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "blind80-0021",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "a917b64346fcf3b9abc9c0b74c7d826ab07296804241b3a04e4b70d75cb11fa0",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "blind80-0022",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "cdb95684a006c80543623eb71bd83ef73b76f4263893172c70c80a3a17a7b609",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "blind80-0023",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "036b94894b049b5bb46c0eb34e06ec544949b25103b39a9bf9cd8a94cac0b000",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "blind80-0024",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "9d8a65a33e2c8c10fed61e8aca786b60ddfaf289c5dddba7b12bc0f4eb3b10ab",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "blind80-0025",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "32c9765d58894f018f5bf3bff84c223f26c081e4f6a536e77fa1aa2c27786568",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0026",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "a58cc452edec5261bf93a2d81a547dfffaa74989e82b4a466445ff300f05d0e8",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0027",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "79c597c7ecd1b4a339618dd14c2a9aa273a2f9c962c1493a9dc6198a33e3bd2a",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0028",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "ebe14fb20dc6d7e7653017fe8b8ebd8ff5197546c0ed311eeeb8648028e2d711",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0029",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "4430973f30dbb70a8260c93f926f169474956f3015cb00041863b4bc39744e12",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "blind80-0030",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "39ad93500c45ca60126a8ac9ed40a29eda3ef94da33d4ff1b43eb1f7a9508a51",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0031",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "22772d98b058043bf730749ae07790d09af6b01f750ca0f006ee5b0444a45883",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0032",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "efa39d88e3beed9ba1e689429be8c2becad5dbe338c9747cdf1e226bc947f7af",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0033",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "1c98fd07590297bed3dcd5eea3f18a87236de96dd703c5826161459050608845",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "blind80-0034",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "8002230075866f1d148dc56556aa2516b82c17c30a6796ddab1aa2d43312180d",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "blind80-0035",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "f5a5102c62d63101ae4b40a65f43cf585e2d661b72c99cfa7f61070a042491d6",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "blind80-0036",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "39372d34619e0ebff9f7f258baa00a257235615d1926ce9f915f3c810aac7d88",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "blind80-0037",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "2c1724305222e6e14482064abf314173f84568b000a7008d4e2c1e11d48452ba",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "blind80-0038",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6e9bcddfd5c087b4252b8c05004b858d41490e634966681f0e7e29fbd9ec8f9c",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0039",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6d16cf87b90bb294139de75f381e0f634c69696a56119c8d0d63c2da5e5dd644",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0040",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e1f60d02ad338bbfc965ff997840c4df723b6f52ee33bb890c55a2dc716f4653",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0041",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "1d63a55fa49499ec3386186ecc2a743f0379c0aa8f2ee7a98c55b07f8dd20be0",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "blind80-0042",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "f528cef28ef2b27c1cd043285656d37703e46b3279eea9ae678a7128424533d3",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0043",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "9917eb37998b0ac8f43aae837a5a9fe2bcd0cd8869314fcdec8e99bc380ff19e",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0044",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6333703fa2524b2eeb1e88124ff17b435d72bd79ee5d8c41550d71c170d98ce6",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0045",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "1c55e6e51687713ef9af1f72d0b7a75a721ebb17f3cc9737dc1ca01474a5bb90",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "blind80-0046",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6f24787c282e9766da06153bd732378c8a3248966c24f85fc6a581cb28d98dfb",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "blind80-0047",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "27ee40e86fb1d2c3335dc48806246574c367ebd67815840aa324dca9f1f769c0",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "blind80-0048",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "bd3f9b3f3fbd29d9bfd5ed65e5e261e653d1fcda9efa8d89b63eb9f8bf096b24",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "blind80-0049",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "7645feef43526d2cca8a02e037ec9a77eac34640c82f07091652142456cc0cea",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "blind80-0050",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "eba9ae5a408672f7dec059ca273efca7141a2482fe3b379c93d3212181201d17",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0051",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "1d7377e8cf7f61584bc1bf44a32e33c1ba3145be364d191bc7b12377f716c7cd",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0052",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "4e313b9099818f904287f8873bd0ffc4a464d28ad59fa695233c408989472eeb",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0053",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "be75840f2734119d91716fbea6e7bdab88045fc3591ea12ea4135ee76e37380d",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0054",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "a34112efd68a857b825693663dd83ae5bbab8458a90871ad52978783f4880b07",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0055",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "2fa52463d47252fa3078892cf1e7a8080b00a91fd08e63fed7a11de83123bbbc",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0056",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "b42402db25a0bde1becd54515557a8552e00e149d4bf02f7211118b391ece57e",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0057",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "a889b967bcaff253573efef1db241790202cccaf82ecc20cd1ff95c984172c81",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0058",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "c7f099f794c4632fe42c1f214956ec0480c066759517695eb2ab32b9698ee202",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0059",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "faf6ae910d0dd6140a9aee74b1593092aa3424e6446312e6b4967c94a9e114bf",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0060",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "efb6e1a5c8862aaae6c5f711d9558997ab91f0c8dfce7362b9b2164b726a6e3a",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0061",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "3af944dbf3cb418fe8aa90b3c6f34522801d78a16018d78609dc7857f6c7766e",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0062",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e94835a53b0e457ca3229e0e05cc3def7b2f3a33b9a6a67f25f8b94c8a34f7dc",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0063",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "463c5cc86ba387abc9a05b01fc59c32547603871de4b9245ade5979aa13dd37f",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0064",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "b86c4db6a0d763b16cfb6b7686d6c1f82a0bb8ffcd9a01b8f945cbadd2e9d7b6",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0065",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "f2cd0de8bcafb9b60ab5de741c55d5e11f8be0a152d950973f29a4976928a9a0",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0066",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "89d86092fdbc818450eed419bac1a8c8699b60411e36fbfbedb8dc429463b9dd",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0067",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e63eb63933b82bfd5a04bc8bfcf7f28573be89b91e0d5e47ffe27f292b19ab55",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0068",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "470715617ac08a02336dc8092b8e35a55f785b0a539fd3c3b918121b1e87a611",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0069",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "db1f24958c687bb6b7d0171762ae576d38b2fa738fe5aede271131e02f4d3889",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0070",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "3fe57d676201664ac57195630b53bd7ea98ab2fa2007afcd7df73e94762068b0",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0071",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "99eb5d1926342ce5a092329b401dbc9c50da02616b5f0279156e6eed1dd8723b",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0072",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "4be7f35c79c55984ffaf26afd3e745d711107a0f4a6d79d1ef58656a319f39a0",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0073",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "9d34b00ea204b3279c23e8c64042190c202f5e483af9ba11d04955ac4c138978",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0074",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "aaa343e0aa130e0bd4b3383f97671d9e8635bbcf2828369196cb40395ed17371",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0075",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "ca2a9e604b4bbf008e1900edae45f0553be4f1259eba51739f54a2225ea147e8",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0076",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6a4ca2def23d496bc70bb22cdb28d2c8f59bbf4c3c3f9bace4382a1235c8bd29",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0077",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "37dc6cab11f27df63698d200621718b127934f75ef865ed8ec1fc966ec732097",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "blind80-0078",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "84c3788b15fb1ece897af358418767ee04d23244dac8a0a84eae01e4d10ded11",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "blind80-0079",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "dd4849d48ec0b0da3323a6718528e55626bff4c1bced1ebba8453cb615532214",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "PAIR_V5_RELATED_BUSINESS",
+    "prompt_version": "som.prompt.v5",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e19da464d8f9bad84fbef941b4831c6274c2a0402d95161e57a69f8b90751687",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "PAIR_V6_COMPOSED_OPERATIONS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "0bf75671da70d25f59e08a5dc213ea21583e867a58e0a885e29314fc653efa43",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_NONE_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "39f4b51d6aca8776491fdeb48d5fcc1f8d9453bc36df43d8daebe70c2b1093fb",
+    "run": "cap-h-009",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_NONE_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "968cd071038e944de08cf8aaffb9a8180484aab5a3b336705a977d72588717ad",
+    "run": "cap-h-005",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_NONE_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e2b4b4e85e6ab048572132b71da1840e2f4f9485054164df26a1a50ae3c3d2c4",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_NONE_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "364b134330a3ad4d9336ca862a2fe65f3081fd912aaeefb6b6b91466cb999400",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_NONE_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6ec063394c5640b75a4e2242246f0a58f3fff9e56fbbb8cdf32170e1c4de3874",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_S3_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "0c8e3fd3d3dfa760208ac6b075d3fde4da0625e0c25c01d2f4c53546e019b13c",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_S3_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "4943ea2c4277645d8e1e12f492c8c460f4f3ea267ba3703ea5fe4b1c90c5833c",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_S3_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "ad2248a771168df7d3230fbd8cec3358146e5c928ac4fa0a563b069764129c78",
+    "run": "cap-h-009",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_S3_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "56a2af95a1eb10cfa58e4f9c8f332248c35234d8e2484d08cbba28c832116ebe",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_S3_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "5f04ef43280f3591440000f98ea404a602e651deb95a24281d8407dc71ddb3aa",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_GCS_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "014ff92b34f12735024df6bef55b3b6c515a1173513d4daf86aedb3258d64c9a",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_GCS_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "63c92f7726f593e40dbf27432c0bb8675321b61a12b9c1f4d8245f9c93c65e62",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_GCS_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "0d7b73f825379d754a3ea6f207fc58d78b2f1b6d533b3dda362c10199390fd30",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_GCS_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e112e9156cb3f5f0f3a03bedbd434590e38a5eb5a96fffcf93e194015a335a60",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_JWT_GCS_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "f698a56f38f2aabba6462b873799cfbb38eb5570c97e4c54b79cb3991c88db07",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_NONE_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "36f5bd9856427a7b0c6f552c8ea018c95649e3bd0a2dcd67a286055fa1f53a6a",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_NONE_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "888a98377af34e80e3292d32f8f2f9fcd5e71709419d3b30157fe08dbd90c55e",
+    "run": "cap-h-009",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_NONE_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "47bade52e77188e6361d8d38029e353a0bf45fbeb52307346d84e63452df0623",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_NONE_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "c0b188bf9a3f3a18892ec706d91bc513cc6ec447a04e851f03bf4dd7655a736b",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_NONE_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "5178c89de708ebac3d044ff67190045b34b9a8bc015c55669747fff4d6d6f676",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_S3_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "c0801258884605e023ff7e7ca76068864c2690ae19d60105e1b9083297c464a4",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_S3_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "858a954892fb2e20655eac3994ac8a2289b55ea2645b9717eea1ced464ceb909",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_S3_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6a429df387d4713f7ef4a1c930b719d56f5a358d87aa6b3e2faa0f159a904338",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_S3_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "87cf927859285a68c4cd30d06b93bdbcf626c9b0a058c060214fd1fd936b3202",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_S3_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "eae63cd9891d909d95a01a04465770f2ae4816d22966b0308c0d1fca3ff72956",
+    "run": "cap-h-005",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_GCS_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "a3bba3d8c7b71ad565a2b5f09ee50e38d26ba95a3560fa28b8f2cc8250be02cb",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_GCS_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e522cf51753d35bf2aa8f68f5bd7ea2ce15e2258fc4de1ec15f309c10954ddb6",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_GCS_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "583fb69a1e482d595c8c0e9c7185fd5953f5e3cba04c18f2ca2a462d71eeb5ac",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_GCS_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6e2258cd56fa3c13d399544410a28ba442f0b0978712f9339a18397fc5364805",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_FIREBASE_GCS_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6bf6219ed3affe331a82fbc028bca80167cf8777922881dbd4ffa6fa57142eaa",
+    "run": "cap-h-009",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_NONE_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "d57f008aeab99ea4470c9d5abeb18905fb8044c36295c5774b23add476f02698",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_NONE_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "f525bb6c426facf7fdca61c810e188b1ef36fba02b899f6d9c45b3682f81125c",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_NONE_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "32fb9ed284b580ff9176871bb7be738161132b980e7365593f0b18ab007f145b",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_NONE_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "b5d2deb7af43184412e8bd22f04ef772918a729cc4bf6a85c350c9ae90a28785",
+    "run": "cap-h-009",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_NONE_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "a3ec58f93f698d91a29fd698e3a8ebe10efdee3681ca3dd27dc729dbbb517eb2",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_S3_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6a1ac1f06f3798e5ea3e4abad80acb71d0666fd6060f9d6186b28968997da506",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_S3_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "5d69431a5450bfbb4e2abe8ac213ca22e5e062fbcbdcd8bfbb997a42c53ef0a5",
+    "run": "cap-h-009",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_S3_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6bdde741fd63ff87174b6fc5a269c28b4d81477318143938d513b053b6d92f97",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_S3_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "8067bf030593fd62115711c03cc11af46678a8203a42c80f88c5df67b16863e0",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_S3_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "4abcccb6da90a7de0c4ee16ac2e09065c7121a8fcf4c13a0bd9f3a2e50a76f1c",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_GCS_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "105b6c85b6b4faed211d3e9e13e5c99bcaef031156c373b83a81c3e65160c493",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_GCS_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "af94ebd6a693cf2dc4f4461e04a6e94b4a107742a81bf798242c88e34ab8f2df",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_GCS_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "bc906fc8043e59897ba45c4bfbcc39a6ab054c91a0c87cf2cba4c8f23a1b5717",
+    "run": "cap-h-005",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_GCS_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "2c837fa288658bef01829e2dbfe64b5c3487bd4e960c6e3a521452c70f4fa17b",
+    "run": "cap-g-001",
+    "passed": true
+   },
+   {
+    "id": "CAP_POSTGRESQL_GOOGLE_OAUTH_GCS_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "63dee3b359968cbd98f476b04413d50b7a750b2fbe258057f5986d80ccf03276",
+    "run": "cap-g-004",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_NONE_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "38ae064a6d870883db0045aec14f389961354451cc641d046b7c6404e5605ee3",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_NONE_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "2e6956f565276193f64769bab6c76e2b3ddb497c569d37da107b4ccef70e7184",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_NONE_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "5b2d1ce274eb619bbb29ee152c5b37d9cc935810734c67e9e7fa9d6de72d6f0b",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_NONE_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "d11ec1c01ba75d846b4745dfecb0f344f234aab3b32b2b3cb25d9b58450091c5",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_NONE_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6ee252e0d6dee69049d67c060b61d026b673bc9cf91ab59d8822615fd4448a84",
+    "run": "cap-h-004",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_S3_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "d381cdd512319d9c424f152d00538ab5355c65af4c315937476d1b1db1d1d21c",
+    "run": "cap-h-006",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_S3_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "b1574afc1d73ea5e7943d2483af8b515863e45be5d64e1c90a57855effcb334a",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_S3_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "c09f7fadbd9eeec827148d9f5342bd4382e5751e4595578fbef9342ce8b86948",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_S3_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "40e079b7bebdff86688ba87c8156281ec9adb486d4b1cf1e89425dee4538a2cc",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_S3_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "30ad87475a7a06d21d44a151c01cbed970a3636b1310c243c02c7341f7b8e1e2",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_GCS_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "54dc7f65988f0d338960dd8eef32c13be6a5bc76fa7eb4d6e74408e36f30823f",
+    "run": "cap-h-006",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_GCS_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "5eaa995c4bfb4bb3ab1668e28096289d3b7dd46b78e03b601de22594656bc757",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_GCS_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "7f5bded2443a709624e7f22b8dafe690f8a113d3a2f527b8b9fa9f1037bb532a",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_GCS_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6d9dd5e56e923d3e9fb3f37d491c0f545c14a41e3521ef94f1531c2658d2eb69",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_JWT_GCS_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "cfe50356f57071619b9e76fefce8cb6ead1ed30401364e81e0635994f17322f3",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_NONE_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "ab9109c95cedc844be2e799d39b8b9d422ecba135a7106797225c3b75694c712",
+    "run": "cap-h-006",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_NONE_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "48a53eb6bb8130254e7d6016b7a5572c32a5e0efc839681c8a8ba7f32dbba03d",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_NONE_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "c4c46231cab90d75c9008d8d451ed40cea1378a3385b8b85d9eb86455ceaaea7",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_NONE_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6338feeab6360f4498f2e251747c5882984a4246aa9dd259b5a4622f978ef6e9",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_NONE_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "fa15d4dec0d8dbd1005956ba9558bce7edae9f22d93af6f5cddde8818bfc4845",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_S3_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e49901424bc8ea9e232d51f0c987d5c5ce59258687e78335d99cf550dec97a42",
+    "run": "cap-h-006",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_S3_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "a944bca05ac3bad96df2389362757da7f574defe0d781fce8af01efe8db19250",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_S3_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "69b797f7d72f5acc515eddc8648603fcafa4d88ba021a963c67e003f3767edee",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_S3_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "20d7a8c4487f56f69ab26dfa805be94d26fa042d9ece9747bbf826013e8e4582",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_S3_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "244f310f1ce284d8853d55d2a407f4c359ca8f6379b44b6e7337992fd24c6df3",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_GCS_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "ccfe8f85d10cea10f83cd85f7c8d09db38e1643f5e0dc76663f75a8575c728b3",
+    "run": "cap-h-006",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_GCS_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "7736b2d41ed81f0a5e42834ff62d4229d8acc0c3aee98685f3a7d39208d72667",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_GCS_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "418ad81913a537628480448ee0e7653bedb18260a10766c229edeba8b6a988be",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_GCS_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "344d802e03fd1832e05ed3411f1debdb22c257d8fd660b7055cca1692e2a81f4",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_FIREBASE_GCS_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "ca4d8e7a3cd0db34028961bdfe69a69993e9274920673731b3ec25dfc6d20f42",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_NONE_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "4a5a7873e208639a22b77f07bf25fc61d326010b02071b424e6a0ef349440d4e",
+    "run": "cap-h-006",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_NONE_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "6df76ebfe4ad1cb37f0374800fc190a6b580378a287bb25fef949089fe620f5c",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_NONE_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "816954b486fcbffcc48edcceb4ea5b79a88caa9598f324c4c6853086e4fa073a",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_NONE_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "50166dac0ede5ea7a32f8c10c9ae3ca9703862d0817f53b0ef0cb2a2a1f3e3ea",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_NONE_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "b85aa35a4972b0c282be7e99c4f1724412b6f270d82f3f77f2cad06135a119f8",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_S3_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "4e370482f8446d564ca3780bc920dd5af31fe116dbc8c4ec5915e9e418f00b75",
+    "run": "cap-h-006",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_S3_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "e3145d82c50b31b179451273ac695cbf123713ea9b5caa7464f95faa41ff7586",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_S3_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "1aae193305201c1a494f56993fc8aade9acb57af438ee9f85f6da49d460a0960",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_S3_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "7c85798ec31a9a0713a118202d609a9f7ef239bed6f1a54441ea707a45221670",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_S3_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "704d792f7f58d9132e19317599375f075b20f550c1cdcb27fd21ec236cbeb5dd",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_GCS_JSON_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "ae7b85d58344a1c6e2a75ee7bb24b098eb7078c366900a75051a17b15a3e676e",
+    "run": "cap-h-006",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_GCS_CSV",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "5151358c110801b07a90c36738061174a686d5fef4256c50c8cc76063045d3e2",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_GCS_GZIP_EXPORT",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "41aa3cbf399c3fcac3623a769714b5a70b32bce9fc7d52df0be9b4601d2c79cf",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_GCS_DECIMAL_SUMMARY",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "81de873f6a8b838a1c3eeacdc62778a5171470e8ad6d67ace1cf5a008066f415",
+    "run": "cap-h-007",
+    "passed": true
+   },
+   {
+    "id": "CAP_MONGODB_GOOGLE_OAUTH_GCS_STATISTICS",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "b14bad4b075b978ac9080c0b9b81d13cff3e5931cf5709c9053665560a044d1c",
+    "run": "cap-h-008",
+    "passed": true
+   },
+   {
+    "id": "PUBLIC_v6",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "758d6a9f7aedeb40d39551e5897c748f39081fd20372e7004ce9ee27e3405777",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "RS01_CNL_V6",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "758d6a9f7aedeb40d39551e5897c748f39081fd20372e7004ce9ee27e3405777",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "RS03_JSON_V6",
+    "prompt_version": "som.prompt.v6",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "758d6a9f7aedeb40d39551e5897c748f39081fd20372e7004ce9ee27e3405777",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "RS05_CNL_FIELD_UPPERCASE",
+    "prompt_version": "som.prompt.v1",
+    "checker": "phase1_suite",
+    "expected": "product",
+    "files_sha256": "da5093b414381fc9977cf09b66b51fcc39998b030ea6d9513dfa6c636f742f65",
+    "run": "c-rs-001",
+    "passed": true
+   },
+   {
+    "id": "RS06_JSON_FIELD_UPPERCASE",
+    "prompt_version": "som.prompt.v1",
+    "checker": "phase1_suite",
+    "expected": "product",
+    "files_sha256": "da5093b414381fc9977cf09b66b51fcc39998b030ea6d9513dfa6c636f742f65",
+    "run": "c-rs-001",
+    "passed": true
+   },
+   {
+    "id": "RS07_CNL_FIELD_SELF",
+    "prompt_version": "som.prompt.v3",
+    "checker": "phase1_suite",
+    "expected": "product",
+    "files_sha256": "b64edfc22526079e95f0c8d8406c4305d88bd6f844f02b168c95f3975eab5c4b",
+    "run": "c-rs-001",
+    "passed": true
+   },
+   {
+    "id": "RS08_JSON_CHILD_FIELD_DOUBLE_UNDERSCORE",
+    "prompt_version": "som.prompt.v5",
+    "checker": "phase1_suite",
+    "expected": "product",
+    "files_sha256": "8c8e55017cfa0ee04beef749bc77f62f70d8c2272ae659feb68608003ecc91d4",
+    "run": "c-rs-001",
+    "passed": true
+   },
+   {
+    "id": "RS09_CNL_PATH_TRAILING_SLASH",
+    "prompt_version": "som.prompt.v1",
+    "checker": "phase1_suite",
+    "expected": "product",
+    "files_sha256": "de9c17d872481aa485f0ae2b63f3348c1c3f477ff51f74530a7f4fc350d3cdef",
+    "run": "c-rs-001",
+    "passed": true
+   },
+   {
+    "id": "RS10_JSON_PATH_DOUBLE_SLASH",
+    "prompt_version": "som.prompt.v2",
+    "checker": "phase1_suite",
+    "expected": "product",
+    "files_sha256": "6babf66adc4765855eb661ab75b7a820ceb99337724af142e5fdc85912e27fe4",
+    "run": "c-rs-001",
+    "passed": true
+   },
+   {
+    "id": "RS11_CNL_PATH_HEALTHZ",
+    "prompt_version": "som.prompt.v4",
+    "checker": "phase1_suite",
+    "expected": "product",
+    "files_sha256": "7c679c575aeb174fa691dce6cea707ee4bef1bf9126f60c3334219a57481550e",
+    "run": "c-rs-001",
+    "passed": true
+   },
+   {
+    "id": "RS12_CNL_V3_FILTER_LIMIT",
+    "prompt_version": "som.prompt.v3",
+    "checker": "phase1_suite",
+    "expected": "refusal",
+    "files_sha256": null,
+    "run": "c-rs-001",
+    "passed": true
+   },
+   {
+    "id": "RS13_JSON_V3_FILTER_OFFSET",
+    "prompt_version": "som.prompt.v3",
+    "checker": "phase1_suite",
+    "expected": "refusal",
+    "files_sha256": null,
+    "run": "c-rs-001",
+    "passed": true
+   },
+   {
+    "id": "RS14_CNL_V5_FOREIGN_KEY_SELF",
+    "prompt_version": "som.prompt.v5",
+    "checker": "phase1_suite",
+    "expected": "product",
+    "files_sha256": "2b2704f9f93613b43af629cb132437702c94ff8c7e5a0f7ec4e21fe58d2e7fa6",
+    "run": "c-rs-001",
+    "passed": true
+   },
+   {
+    "id": "RS15_JSON_V5_FOREIGN_KEY_CRATE",
+    "prompt_version": "som.prompt.v5",
+    "checker": "phase1_suite",
+    "expected": "product",
+    "files_sha256": "f1297edafa37c5aa41d0bac58c7b8fd56a921d3419d65ca920e308873af37dd2",
+    "run": "c-rs-001",
+    "passed": true
+   },
+   {
+    "id": "RS16_CNL_V5_FIRST_REFUSAL",
+    "prompt_version": "som.prompt.v5",
+    "checker": "phase1_suite",
+    "expected": "product",
+    "files_sha256": "8a0848294c954ba32ee1d3145599a4e9ae7ac40fb1f4e1566599019fc651204e",
+    "run": "c-rs-001",
+    "passed": true
+   },
+   {
+    "id": "RS17_CNL_PATH_BEFORE_FIELD",
+    "prompt_version": "som.prompt.v1",
+    "checker": "phase1_suite",
+    "expected": "product",
+    "files_sha256": "acc1c4065b7ef6b1c2a8df94834e9a7ddf754afb12e7c97f2d7cd867cf5386d8",
+    "run": "c-rs-001",
+    "passed": true
+   },
+   {
+    "id": "RS18_CNL_V5_CAPABILITIES",
+    "prompt_version": "som.prompt.v5",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "ee5bf2044715d8589b1d694a8a6c762e233de6cbddb88c8151df9d6567d4b99f",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "RS19_JSON_V5_CAPABILITIES",
+    "prompt_version": "som.prompt.v5",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "ee5bf2044715d8589b1d694a8a6c762e233de6cbddb88c8151df9d6567d4b99f",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "RS20_CNL_V5_CAPABILITIES_FIRST",
+    "prompt_version": "som.prompt.v5",
+    "checker": "verify_all",
+    "expected": "product",
+    "files_sha256": "964c07ef852dfdc939db4cf6ed7960c45d41473291a54bc28da0a3d704089535",
+    "run": "cap-g-002",
+    "passed": true
+   },
+   {
+    "id": "RS21_CNL_TABLE_SQLX_MIGRATIONS",
+    "prompt_version": "som.prompt.v1",
+    "checker": "phase1_suite",
+    "expected": "product",
+    "files_sha256": "6310b64c2c831ec2739eb46c3a67bc97ee531a4011f0cb9dc87115a488b780da",
+    "run": "c-rs-001",
+    "passed": true
+   },
+   {
+    "id": "RS22_JSON_TABLE_BEFORE_FIELD",
+    "prompt_version": "som.prompt.v1",
+    "checker": "phase1_suite",
+    "expected": "product",
+    "files_sha256": "be4c69ec080e21ecce44c29a38ad19f4a0aa852fd1fa92caa4c62f57dd86dbe8",
+    "run": "c-rs-001",
+    "passed": true
+   }
+  ]
+ },
+ "product_checks": {
+  "clippy_sweep": {
+   "out": ".local/rust-output-phase2/clippy-sweep-003",
+   "toolchain": "Homebrew rust 1.96.1",
+   "commands": [
+    "cargo fmt --check",
+    "cargo clippy --locked --offline -q --all-targets -- -D warnings",
+    "cargo test --locked --offline -q --no-run"
+   ],
+   "products": 308,
+   "passed": 308,
+   "failed": [],
+   "hash_changed_statistics": [
+    "CAP_POSTGRESQL_JWT_NONE_STATISTICS",
+    "blind80-0010",
+    "compositions120-0051",
+    "CAP_POSTGRESQL_FIREBASE_NONE_STATISTICS",
+    "CAP_POSTGRESQL_GOOGLE_OAUTH_NONE_STATISTICS",
+    "blind80-0024",
+    "blind80-0037",
+    "compositions120-0066",
+    "compositions120-0080",
+    "CAP_POSTGRESQL_FIREBASE_GCS_STATISTICS",
+    "CAP_POSTGRESQL_FIREBASE_S3_STATISTICS",
+    "CAP_POSTGRESQL_GOOGLE_OAUTH_GCS_STATISTICS",
+    "CAP_POSTGRESQL_GOOGLE_OAUTH_S3_STATISTICS",
+    "CAP_POSTGRESQL_JWT_GCS_STATISTICS",
+    "CAP_POSTGRESQL_JWT_S3_STATISTICS",
+    "blind80-0015",
+    "blind80-0019",
+    "blind80-0029",
+    "blind80-0041",
+    "compositions120-0003",
+    "compositions120-0056",
+    "compositions120-0061",
+    "compositions120-0071",
+    "compositions120-0075",
+    "compositions120-0085",
+    "compositions120-0090"
+   ],
+   "non_statistics_changed": [],
+   "summary_sha256": "e04e6a8f2ec7df1711031e93c0d2f0972b702e127a299aac355809045b7a817b"
+  },
+  "phase1_products": {
+   "out": ".local/rust-output-phase2/phase1-h-002/bfix-check.json",
+   "same": 115,
+   "differ_count": 0,
+   "total": 115,
+   "a8_phase2": {
+    "status": 200,
+    "files_equal_own_compile": true,
+    "lib_has_migrator": true
+   },
+   "note": "All 115 phase 1 products are byte-identical to the b-gates-001 products."
+  },
+  "som_targets": "cargo fmt --check, cargo clippy -D warnings and cargo test (18 passed) on som-rs/som-targets at 20fc0076da, run before that commit. The mod.rs test renders 17 capability prompts, including v5 with capability_mongodb.",
+  "not_run": [
+   "check_rust_products.py product_gates over the phase 2 inventory (#55)",
+   "behavior parity report (#55)"
+  ]
+ },
+ "assemble_refusals": {
+  "tool": "som-rs/som-targets/qa/check_rust_products.py --refusals phase2 (this change)",
+  "rule": "acceptance-plan.json phase2.assemble_refusals (amendment 3); no contract change",
+  "phase2": {
+   "out": ".local/rust-output-phase2/refusals-p2-001.json",
+   "passed": 15,
+   "total": 15,
+   "rows": [
+    {
+     "id": "A1",
+     "status": 400,
+     "code": "ASSET_HASH_MISMATCH",
+     "passed": true
+    },
+    {
+     "id": "A2",
+     "status": 400,
+     "code": "ASSET_HASH_MISMATCH",
+     "passed": true
+    },
+    {
+     "id": "A3",
+     "status": 400,
+     "code": "INVALID_SCHEMA",
+     "passed": true
+    },
+    {
+     "id": "A4",
+     "status": 400,
+     "code": "INVALID_SCHEMA",
+     "passed": true
+    },
+    {
+     "id": "A5",
+     "status": 400,
+     "code": "INVALID_COMPOSITION",
+     "passed": true
+    },
+    {
+     "id": "A7",
+     "status": 400,
+     "code": "BUNDLE_HASH_MISMATCH",
+     "passed": true
+    },
+    {
+     "id": "A9",
+     "status": 400,
+     "code": "INVALID_SCHEMA",
+     "passed": true
+    },
+    {
+     "id": "A6",
+     "status": 422,
+     "code": "UNSUPPORTED_TARGET",
+     "passed": true
+    },
+    {
+     "id": "A8",
+     "status": 200,
+     "code": null,
+     "passed": true
+    },
+    {
+     "id": "A1_PUBLIC_v6",
+     "status": 400,
+     "code": "ASSET_HASH_MISMATCH",
+     "passed": true
+    },
+    {
+     "id": "A2_PUBLIC_v6",
+     "status": 400,
+     "code": "ASSET_HASH_MISMATCH",
+     "passed": true
+    },
+    {
+     "id": "A4_PUBLIC_v6",
+     "status": 400,
+     "code": "INVALID_SCHEMA",
+     "passed": true
+    },
+    {
+     "id": "A5_PUBLIC_v6",
+     "status": 400,
+     "code": "INVALID_COMPOSITION",
+     "passed": true
+    },
+    {
+     "id": "A7_PUBLIC_v6",
+     "status": 400,
+     "code": "BUNDLE_HASH_MISMATCH",
+     "passed": true
+    },
+    {
+     "id": "A9_PUBLIC_v6",
+     "status": 400,
+     "code": "INVALID_SCHEMA",
+     "passed": true
+    }
+   ]
+  },
+  "phase1_plan_now": {
+   "out": ".local/rust-output-phase2/refusals-p1-001.json",
+   "failed": [
+    {
+     "id": "A6",
+     "status": 400,
+     "code": "INVALID_COMPOSITION",
+     "problems": [
+      "status 400 != 422",
+      "code INVALID_COMPOSITION with 1 diagnostics"
+     ]
+    },
+    {
+     "id": "A8",
+     "status": 200,
+     "code": null,
+     "problems": [
+      "status 200 != 422",
+      "code None with 0 diagnostics"
+     ]
+    }
+   ],
+   "note": "The phase 1 A6 (v6 prompt on the v5 base) and A8 (Title rename) refusals no longer hold, because phase 2 admits both prompts; phase 2 replaces them as CONTRACT.md says."
+  }
+ },
+ "python_unchanged": {
+  "python_replay": {
+   "out": ".local/rust-output-phase2/h-controls-001/python-replay.json",
+   "passed": true,
+   "exchanges": {
+    "passed": 2005,
+    "total": 2005
+   },
+   "public": {
+    "accepted": {
+     "accepted_complete": true,
+     "accepted_passed": 127,
+     "accepted_required": 127,
+     "case_directories": 127
+    },
+    "failed": [],
+    "passed": 127,
+    "required": 127,
+    "total": 127
+   },
+   "legacy": {
+    "accepted": {
+     "accepted_compile_prompts": 540,
+     "accepted_passed": 544,
+     "accepted_required": 544,
+     "accepted_status": "passed"
+    },
+    "compile_prompts": 540,
+    "compile_prompts_passed": 540,
+    "failed": [],
+    "families": {
+     "legacy100": {
+      "passed": 100,
+      "total": 100
+     },
+     "legacy214": {
+      "passed": 214,
+      "total": 214
+     },
+     "quality218": {
+      "passed": 218,
+      "total": 218
+     },
+     "supplement12": {
+      "passed": 12,
+      "total": 12
+     }
+    },
+    "passed": 544,
+    "required": 544,
+    "total": 544
+   },
+   "sha256": "e3edc82df4eaf83ba19dcd70420989230cb4ef5b13a142a2784f15b2456bb7c4"
+  },
+  "python_controls": {
+   "out": ".local/rust-output-phase2/h-controls-001/python-controls.json",
+   "passed": 32,
+   "sha256": "67dc10a8be93e058b62b4218c8e0fcdc94c80f300bb02846be648300175b57c6"
+  },
+  "python_behavior_baseline": {
+   "out": ".local/rust-output-phase2/behavior-python-004",
+   "qa": null,
+   "run": 584,
+   "passed": 579,
+   "failed": [
+    "RS07_CNL_FIELD_SELF",
+    "RS12_CNL_V3_FILTER_LIMIT",
+    "RS13_JSON_V3_FILTER_OFFSET",
+    "RS14_CNL_V5_FOREIGN_KEY_SELF",
+    "RS16_CNL_V5_FIRST_REFUSAL"
+   ],
+   "summary_sha256": "24cee7a81cf46379c318efd9271dfb18b15acddbde03e549208df162b538f383",
+   "note": "Python defects RS07, RS14, RS16 and refusals RS12, RS13; #57."
+  }
+ },
+ "decisions": {
+  "timestamps": "Rust read models print timestamps as pydantic does: six fraction digits and Z for UTC. The Python fixture run behavior-python-004 used the host zone Asia/Taipei (+08:00); behavior-python-utc-001 (TZ=UTC, 5 cases, 5 passed) prints the same Z form as Rust, so the offset difference comes from the environment, not the product. Rust runs use a UTC cluster."
+ },
+ "known_differences": [
+  "422 bodies omit pydantic input and ctx members.",
+  "Some Python 500 responses are 401 or 503 in Rust.",
+  "rediss:// is not supported; of the Redis URL query options only db is read.",
+  "GCS application default credentials resolve lazily: service_account and authorized_user files and the metadata server, not CLOUDSDK_CONFIG.",
+  "Firebase production verifies through the securetoken JWKS URL, not the x509 cert endpoint.",
+  "README line widths differ from the Python README.",
+  "v5 with capability_mongodb has no behavior case in the inventory; it is covered by the som-targets unit test and compile checks only."
+ ]
+}

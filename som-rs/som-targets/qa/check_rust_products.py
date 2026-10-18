@@ -12,6 +12,10 @@ acceptance case (contracts/rust-output-v1/acceptance-plan.json).
   reference files.
 - assemble_refusals: recipes A1 to A9 give their frozen code, status and
   pointer, and the span selects the pointer target in the canonical request.
+  With --refusals phase2 (the default), acceptance-plan.json phase2 applies:
+  A6 uses the RS12 typed prompt and expects the rust_profile_phase2.py
+  pointer, A8 expects 200 with the files of the renamed prompt's own compile
+  and assemble, and A1, A2, A4, A5, A7 and A9 also run on the PUBLIC_v6 base.
 - product_gates: rustfmt --check, cargo build, clippy with warnings denied and
   the product tests on a fresh database, with Cargo.lock unchanged; schema
   equivalence with the Python migration for the same prompt
@@ -53,6 +57,7 @@ from sqlalchemy import create_engine
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import check_targets as targets  # noqa: E402
+import rust_profile_phase2 as PROFILE_PHASE2  # type: ignore[import-not-found]  # noqa: E402
 
 CONTRACT = targets.CONTRACT
 REFERENCE = CONTRACT / "reference"
@@ -218,46 +223,45 @@ def rename_field(value: Any, old: str, new: str) -> Any:
     return new if value == old else value
 
 
-def recipes(qa: str, base: dict, v5_base: dict) -> dict[str, dict]:
-    """Each recipe's request bundle, built from the example-v1 Rust bundle, and for A6 from the
-    example-v5 Rust bundle, as the plan says. A3 is rehashed like the others."""
-    examples = targets.EXAMPLES
-    v1 = json.loads((examples / "v1.prompt.json").read_text())
-    v6 = json.loads((examples / "v6.prompt.json").read_text())
-    python = json.loads(targets.post(qa, targets.dump({"format": "som.prompt-json.v1", "prompt": v1}))[1])["bundle"]
-    v6_python = json.loads(targets.post(qa, targets.dump({"format": "som.prompt-json.v1", "prompt": v6}))[1])["bundle"]
-    out: dict[str, dict] = {}
+RUST_ASSETS = ("catalog", "block_library", "backend", "formatter")
 
+
+def python_compile(qa: str, prompt: dict) -> dict:
+    return json.loads(targets.post(qa, targets.dump({"format": "som.prompt-json.v1", "prompt": prompt}))[1])["bundle"]
+
+
+def with_shared(bundle: dict, prompt: dict, python: dict) -> dict:
+    """The bundle with another prompt and that prompt's shared compiler-v1 descriptors, keeping
+    the Rust descriptors and the Rust DSL, rehashed."""
+    bundle = copy.deepcopy(bundle)
+    bundle["prompt"] = prompt
+    for key in python["assets"]:
+        if key not in RUST_ASSETS:
+            bundle["assets"][key] = python["assets"][key]
+    return rehash(bundle)
+
+
+def base_recipes(base: dict, python: dict) -> dict[str, dict]:
+    """A1, A2, A4, A5, A7 and A9 on a Rust bundle, with python the Python bundle of its prompt."""
+    out: dict[str, dict] = {}
     a1 = copy.deepcopy(base)
     a1["assets"]["formatter"]["sha256"] = targets.sha(b"a different rustfmt binary")
     out["A1"] = rehash(a1)
     a2 = copy.deepcopy(base)
-    for key in ("catalog", "block_library", "backend", "formatter"):
+    for key in RUST_ASSETS:
         a2["assets"][key] = python["assets"][key]
     out["A2"] = rehash(a2)
-    out["A3"] = rehash({**python, "target": "rust"})
     a4 = copy.deepcopy(base)
     a4["target"] = "python"
     out["A4"] = rehash(a4)
     a5 = copy.deepcopy(base)
     a5["dsl"]["files"][0]["blocks"][0]["id"] = "orm.base"
     out["A5"] = rehash(a5)
-    a6 = copy.deepcopy(v5_base)
-    a6["prompt"] = v6
-    shared = [key for key in v6_python["assets"] if key not in ("catalog", "block_library", "backend", "formatter")]
-    for key in shared:
-        a6["assets"][key] = v6_python["assets"][key]
-    out["A6"] = rehash(a6)
     a7 = copy.deepcopy(base)
     digest = a7["hashes"]["payload_sha256"]
     a7["hashes"]["payload_sha256"] = ("0" if digest[0] != "0" else "1") + digest[1:]
     out["A7"] = a7
-    old = base["prompt"]["resource"]["fields"][0]["name"]
-    a8 = copy.deepcopy(base)
-    a8["prompt"] = rename_field(a8["prompt"], old, "Title")
-    a8["dsl"] = rename_field(a8["dsl"], old, "Title")
-    out["A8"] = rehash(a8)
-    # The phase 1 plan has 11 files, so README.md copies are added until there are 13.
+    # README.md copies are added until there are 13 files, one more than any layout allows.
     a9 = copy.deepcopy(base)
     while len(a9["dsl"]["files"]) < 13:
         a9["dsl"]["files"].append({**copy.deepcopy(a9["dsl"]["files"][-1]), "path": "README.md"})
@@ -265,29 +269,97 @@ def recipes(qa: str, base: dict, v5_base: dict) -> dict[str, dict]:
     return out
 
 
+def renamed(base: dict) -> tuple[dict, dict]:
+    """The A8 bundle and the prompt it renames: the first field becomes Title."""
+    old = base["prompt"]["resource"]["fields"][0]["name"]
+    a8 = copy.deepcopy(base)
+    a8["prompt"] = rename_field(a8["prompt"], old, "Title")
+    a8["dsl"] = rename_field(a8["dsl"], old, "Title")
+    return rehash(a8), a8["prompt"]
+
+
+def recipes(qa: str, base: dict, v5_base: dict) -> dict[str, dict]:
+    """Phase 1: each recipe's request bundle, built from the example-v1 Rust bundle, and for A6
+    from the example-v5 Rust bundle, as the plan says. A3 is rehashed like the others."""
+    v1 = json.loads((targets.EXAMPLES / "v1.prompt.json").read_text())
+    v6 = json.loads((targets.EXAMPLES / "v6.prompt.json").read_text())
+    python = python_compile(qa, v1)
+    out = base_recipes(base, python)
+    out["A3"] = rehash({**python, "target": "rust"})
+    out["A6"] = with_shared(v5_base, v6, python_compile(qa, v6))
+    out["A8"] = renamed(base)[0]
+    return out
+
+
+def refusal_row(qa: str, label: str, bundle: dict, code: str, http_status: int, pointer: str) -> dict:
+    body = targets.dump({"bundle": bundle})
+    status, raw = targets.post(qa, body, "/v1/assemble")
+    reply = json.loads(raw)
+    problems = []
+    if status != http_status:
+        problems.append(f"status {status} != {http_status}")
+    diagnostics = reply.get("diagnostics", [])
+    if reply.get("code") != code or len(diagnostics) != 1:
+        problems.append(f"code {reply.get('code')} with {len(diagnostics)} diagnostics")
+    else:
+        diagnostic = diagnostics[0]
+        if diagnostic.get("prompt_pointer") != pointer:
+            problems.append(f"pointer {diagnostic.get('prompt_pointer')}")
+        span = body.encode()[diagnostic["byte_start"]:diagnostic["byte_end"]].decode()
+        if span != targets.dump(targets.resolve(json.loads(body), pointer)):
+            problems.append("span is not the pointer target")
+    return {"id": label, "status": status, "code": reply.get("code"), "passed": not problems, "problems": problems}
+
+
 def assemble_refusals(qa: str, base: dict, v5_base: dict) -> list[dict]:
-    rows = []
+    """The phase 1 plan's recipes A1 to A9 on their phase 1 bases."""
     built = recipes(qa, base, v5_base)
-    for recipe in PLAN["assemble_refusals"]["recipes"]:
-        body = targets.dump({"bundle": built[recipe["id"]]})
-        status, raw = targets.post(qa, body, "/v1/assemble")
-        reply = json.loads(raw)
-        problems = []
-        if status != recipe["http_status"]:
-            problems.append(f"status {status} != {recipe['http_status']}")
-        diagnostics = reply.get("diagnostics", [])
-        if reply.get("code") != recipe["code"] or len(diagnostics) != 1:
-            problems.append(f"code {reply.get('code')} with {len(diagnostics)} diagnostics")
-        else:
-            diagnostic = diagnostics[0]
-            if diagnostic.get("prompt_pointer") != recipe["prompt_pointer"]:
-                problems.append(f"pointer {diagnostic.get('prompt_pointer')}")
-            span = body.encode()[diagnostic["byte_start"]:diagnostic["byte_end"]].decode()
-            target = targets.resolve(json.loads(body), recipe["prompt_pointer"])
-            if span != targets.dump(target):
-                problems.append("span is not the pointer target")
-        rows.append({"id": recipe["id"], "status": status, "code": reply.get("code"),
-                     "passed": not problems, "problems": problems})
+    return [refusal_row(qa, recipe["id"], built[recipe["id"]], recipe["code"], recipe["http_status"],
+                        recipe["prompt_pointer"]) for recipe in PLAN["assemble_refusals"]["recipes"]]
+
+
+def phase2_refusals(qa: str, base: dict) -> list[dict]:
+    """acceptance-plan.json phase2.assemble_refusals: the phase 1 recipes on the example-v1 base
+    except A6 and A8, which phase 2 replaces, and A1, A2, A4, A5, A7 and A9 again on the
+    PUBLIC_v6 Rust bundle as base with the same code, status and pointer."""
+    frozen = {recipe["id"]: recipe for recipe in PLAN["assemble_refusals"]["recipes"]}
+    v1 = json.loads((targets.EXAMPLES / "v1.prompt.json").read_text())
+    v6 = json.loads((targets.EXAMPLES / "v6.prompt.json").read_text())
+    python = python_compile(qa, v1)
+    built = base_recipes(base, python)
+    built["A3"] = rehash({**python, "target": "rust"})
+    rows = [refusal_row(qa, key, built[key], frozen[key]["code"], frozen[key]["http_status"],
+                        frozen[key]["prompt_pointer"]) for key in sorted(built)]
+
+    # A6: the RS12 typed prompt, as compiler-v1 types the RS12 CNL source.
+    rs12 = next(case for case in json.loads((CONTRACT / "negative-cases.json").read_text())["cases"]
+                if case["id"].startswith("RS12"))
+    rs12_python = json.loads(targets.post(qa, rs12["python_control_body"])[1])["bundle"]
+    refusal = PROFILE_PHASE2.check(rs12_python["prompt"])
+    if refusal is None:
+        rows.append({"id": "A6", "passed": False, "problems": ["rust_profile_phase2.py admits the RS12 prompt"]})
+    else:
+        rows.append(refusal_row(qa, "A6", with_shared(base, rs12_python["prompt"], rs12_python),
+                                refusal["code"], 422, "/bundle/prompt" + refusal["pointer"]))
+
+    # A8: 200, and the files equal the compile and assemble of the renamed prompt with target rust.
+    a8, prompt = renamed(base)
+    status, raw = targets.post(qa, targets.dump({"bundle": a8}), "/v1/assemble")
+    problems = [] if status == 200 else [f"status {status}"]
+    compiled = targets.post(qa, targets.dump({"format": "som.prompt-json.v1", "prompt": prompt, "target": "rust"}))
+    if compiled[0] != 200:
+        problems.append(f"compile of the renamed prompt gave {compiled[0]}")
+    elif status == 200:
+        expected = targets.post(qa, targets.dump({"bundle": json.loads(compiled[1])["bundle"]}), "/v1/assemble")
+        if expected != (status, raw):
+            problems.append("the files differ from the compile and assemble of the renamed prompt")
+    rows.append({"id": "A8", "status": status, "passed": not problems, "problems": problems})
+
+    v6_base = json.loads(targets.post(qa, targets.dump(
+        {"format": "som.prompt-json.v1", "prompt": v6, "target": "rust"}))[1])["bundle"]
+    for key, bundle in sorted(base_recipes(v6_base, python_compile(qa, v6)).items()):
+        rows.append(refusal_row(qa, f"{key}_PUBLIC_v6", bundle, frozen[key]["code"], frozen[key]["http_status"],
+                                frozen[key]["prompt_pointer"]))
     return rows
 
 
@@ -486,6 +558,8 @@ def main() -> int:
     parser.add_argument("--out", type=pathlib.Path)
     parser.add_argument("--only", nargs="*", help="case ids to check")
     parser.add_argument("--no-gates", action="store_true", help="bundle checks and refusals only")
+    parser.add_argument("--refusals", choices=("phase1", "phase2"), default="phase2",
+                        help="phase2 replaces A6 and A8 and adds the PUBLIC_v6 base (acceptance-plan.json phase2)")
     parser.add_argument("--parity", type=pathlib.Path, help="report-parity.json of som-rs/behavior/check_behavior.py")
     args = parser.parse_args()
     if str(args.qa).rstrip("/").endswith((":8765", ":18765")):
@@ -503,7 +577,7 @@ def main() -> int:
     base, v5_base = (json.loads(targets.post(args.qa, compile_body(
         next(case for case in cases if case["id"] == name), "json"))[1])["bundle"]
         for name in ("example-v1", "example-v5"))
-    refusals = assemble_refusals(args.qa, base, v5_base)
+    refusals = phase2_refusals(args.qa, base) if args.refusals == "phase2" else assemble_refusals(args.qa, base, v5_base)
     # cargo serializes on the shared target directory, so products run one at a time.
     with concurrent.futures.ThreadPoolExecutor(1) as pool:
         rows = list(pool.map(lambda case: check_case(args.qa, case, args.work, args.pg, args.target_dir,
@@ -519,6 +593,7 @@ def main() -> int:
         "version": "som.rust-output-product-checks.v1",
         "issue": 49,
         "qa": args.qa,
+        "refusal_plan": args.refusals,
         "inputs": {p.relative_to(targets.REPO).as_posix(): targets.sha(p.read_bytes()) for p in
                    [CONTRACT / "acceptance-plan.json", CONTRACT / "case-inventory.json",
                     CONTRACT / "bundle.schema.json", CONTRACT / "product-layout.json",
@@ -526,7 +601,8 @@ def main() -> int:
                     CONTRACT / "toolchain.json",
                     targets.SOM_RS / "evidence" / "rust-output-contract-amendment-003.json",
                     REFERENCE / "Cargo.toml", REFERENCE / "Cargo.lock",
-                    targets.TESTS / "rust_profile.py", targets.FIXTURES, targets.COVERAGE,
+                    targets.TESTS / "rust_profile.py", targets.TESTS / "rust_profile_phase2.py",
+                    CONTRACT / "negative-cases.json", targets.FIXTURES, targets.COVERAGE,
                     targets.LEGACY / "inventory-003.json"]},
         "summary": {
             "acceptance_cases": {"total": len(cases), "by_version": dict(sorted(by_version.items())),
