@@ -153,10 +153,19 @@ pub const STORAGES: [&str; 3] = ["none", "s3", "gcs"];
 /// capability_postgresql shape is delivered for jwt auth and no storage (issue #53 D) with the
 /// json_export, csv, gzip_export, decimal_summary and statistics workflows (issue #53 E), for
 /// firebase and google_oauth auth too (issue #53 F), and for s3 and gcs storage too (issue #53 G).
+/// The capability_mongodb shape is delivered for jwt auth and no storage with the same workflows
+/// (issue #53 H1).
 pub fn delivered(prompt: &Value) -> bool {
     let capabilities = &prompt["capabilities"];
     match shape(prompt).as_str() {
         "resource" => true,
+        "capability_mongodb" => {
+            capabilities["auth"] == "jwt"
+                && capabilities["storage"] == "none"
+                && WORKFLOWS
+                    .iter()
+                    .any(|workflow| capabilities["workflow"] == *workflow)
+        }
         "capability_postgresql" => {
             AUTHS.iter().any(|auth| capabilities["auth"] == *auth)
                 && STORAGES
@@ -290,8 +299,25 @@ mod tests {
             assert!(delivered(&prompt), "{storage}");
             assert_eq!(active(&prompt), None, "{storage}");
         }
+        let mut mongo = v6.clone();
+        mongo["capabilities"]["database"] = json!("mongodb");
+        assert!(delivered(&mongo));
+        assert_eq!(active(&mongo), None);
+        let mut mongo_v5 = mongo.clone();
+        mongo_v5["version"] = json!("som.prompt.v5");
+        assert!(delivered(&mongo_v5));
+        for workflow in WORKFLOWS {
+            let mut prompt = mongo.clone();
+            prompt["capabilities"]["workflow"] = json!(workflow);
+            assert!(delivered(&prompt), "mongodb {workflow}");
+        }
+        for (name, other) in [("auth", "firebase"), ("storage", "s3")] {
+            let mut prompt = mongo.clone();
+            prompt["capabilities"][name] = json!(other);
+            assert!(!delivered(&prompt), "mongodb {name}");
+        }
         for (name, other) in [
-            ("database", "mongodb"),
+            ("database", "mysql"),
             ("auth", "other"),
             ("storage", "azure"),
             ("workflow", "csv_import"),

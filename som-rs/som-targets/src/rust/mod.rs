@@ -38,7 +38,8 @@ const BLOCK_LIBRARY_TEXT: &str = concat!(
     include_str!("render/capability.rs"),
     include_str!("render/capability/workflow.rs"),
     include_str!("render/capability/auth.rs"),
-    include_str!("render/capability/storage.rs")
+    include_str!("render/capability/storage.rs"),
+    include_str!("render/capability/mongo.rs")
 );
 static CATALOG: LazyLock<Value> =
     LazyLock::new(|| serde_json::from_str(CATALOG_TEXT).expect("Rust catalog JSON"));
@@ -612,7 +613,8 @@ fn render_files(
 }
 
 /// Output checks: exactly the layout files of the shape (11 for resource, 12 for
-/// capability_postgresql), Rust files formatted and non-empty.
+/// capability_postgresql, 11 without a migration for capability_mongodb), Rust files formatted
+/// and non-empty.
 fn check_output(files: &BTreeMap<String, String>) -> Result<(), String> {
     let migrations = files
         .keys()
@@ -623,8 +625,13 @@ fn check_output(files: &BTreeMap<String, String>) -> Result<(), String> {
     } else {
         LAYOUT
     };
-    if files.len() != layout.len() + 1
-        || migrations != 1
+    // capability_mongodb has no migration file: serve and migrate upgrade create its indexes.
+    let mongo = files
+        .get("src/db.rs")
+        .is_some_and(|text| text.contains("use mongodb::"));
+    let expected = usize::from(!mongo);
+    if files.len() != layout.len() + expected
+        || migrations != expected
         || layout.iter().any(|path| !files.contains_key(*path))
     {
         return Err("The rendered file set is not the Rust product layout.".to_owned());
@@ -1100,6 +1107,91 @@ mod tests {
                 storage,
                 "{name}"
             );
+        }
+    }
+
+    /// Issue #53 H1: capability_mongodb renders 11 files without a migration, for every workflow
+    /// with jwt and no storage, in v6 and v5.
+    #[test]
+    fn a_mongodb_prompt_renders_the_capability_layout_without_a_migration() {
+        let mut prompts = Vec::new();
+        for workflow in crate::profile::WORKFLOWS {
+            let mut prompt = example("v6");
+            prompt["capabilities"]["database"] = json!("mongodb");
+            prompt["capabilities"]["workflow"] = json!(workflow);
+            if ["decimal_summary", "statistics"].contains(&workflow) {
+                prompt["resources"]["child"]["fields"]
+                    .as_array_mut()
+                    .expect("fields")
+                    .push(json!({"name": "amount", "type": "float", "required": false, "default": null, "unique": false}));
+                prompt["capabilities"]["value_field"] = json!("amount");
+            }
+            if workflow == "decimal_summary" {
+                prompt["capabilities"]["group_field"] = json!("title");
+            }
+            prompts.push((format!("v6 {workflow}"), prompt));
+        }
+        let mut v5 = example("v5");
+        v5["capabilities"] = example("v6")["capabilities"].clone();
+        v5["capabilities"]["database"] = json!("mongodb");
+        prompts.push(("v5".to_owned(), v5));
+        let mut plain = example("v6");
+        plain["capabilities"]["database"] = json!("mongodb");
+        plain["capabilities"]["workflow"] = json!("csv");
+        for role in ["parent", "child"] {
+            for field in plain["resources"][role]["fields"]
+                .as_array_mut()
+                .expect("fields")
+            {
+                field["unique"] = json!(false);
+            }
+        }
+        prompts.push(("v6 csv without unique fields".to_owned(), plain));
+        for (name, prompt) in prompts {
+            let name = name.as_str();
+            let dsl = plan(&prompt).expect("plan");
+            let first = render_files(&prompt, &dsl).expect("render");
+            assert_eq!(
+                render_files(&prompt, &dsl).expect("render"),
+                first,
+                "{name}"
+            );
+            check_output(&first).expect("layout");
+            assert_eq!(first.len(), 11, "{name}");
+            assert!(
+                !first.keys().any(|path| path.starts_with("migrations/")),
+                "{name}"
+            );
+            for text in first.values() {
+                assert!(!text.contains("sqlx::"), "{name}");
+                assert!(!text.contains("PgPool"), "{name}");
+            }
+            assert!(first["src/db.rs"].contains("_som_counters"), "{name}");
+            assert!(
+                first["src/db.rs"].contains("pub async fn insert_children("),
+                "{name}"
+            );
+            assert_eq!(
+                first["src/db.rs"].contains("IndexOptions"),
+                first["src/db.rs"].contains("self.unique("),
+                "{name}"
+            );
+            assert!(
+                first["src/api.rs"].contains("database unavailable"),
+                "{name}"
+            );
+            assert_eq!(
+                first["src/api.rs"].contains("/import"),
+                name.starts_with("v6 csv"),
+                "{name}"
+            );
+            if let Some(out) = std::env::var_os("SOM_MONGO_DUMP") {
+                for (path, text) in &first {
+                    let path = Path::new(&out).join(name.replace(' ', "_")).join(path);
+                    std::fs::create_dir_all(path.parent().expect("parent")).expect("dir");
+                    std::fs::write(path, text).expect("write");
+                }
+            }
         }
     }
 }

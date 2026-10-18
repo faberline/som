@@ -51,6 +51,36 @@
           },
           "params": {},
           "refs": []
+        },
+        {
+          "id": "rust.cargo.capability_mongodb.manifest",
+          "name": "capability_mongodb_manifest",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_mongodb",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {},
+          "refs": []
         }
       ]
     },
@@ -82,6 +112,36 @@
           ],
           "when": {
             "shape": "capability_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {},
+          "refs": []
+        },
+        {
+          "id": "rust.cargo.capability_mongodb.lock",
+          "name": "capability_mongodb_lock",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_mongodb",
             "auth": [
               "jwt",
               "firebase",
@@ -157,6 +217,43 @@
             }
           },
           "refs": []
+        },
+        {
+          "id": "rust.main.capability_mongodb",
+          "name": "capability_mongodb_startup",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_mongodb",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "storage": {
+              "$ref": "capabilities.storage"
+            },
+            "package": {
+              "$ref": "package"
+            }
+          },
+          "refs": []
         }
       ]
     },
@@ -211,6 +308,36 @@
               "$ref": "migration.revision"
             }
           },
+          "refs": []
+        },
+        {
+          "id": "rust.lib.capability_mongodb",
+          "name": "capability_mongodb_modules",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_mongodb",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {},
           "refs": []
         }
       ]
@@ -283,6 +410,52 @@
           ],
           "when": {
             "shape": "capability_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.models.capability_mongodb",
+          "name": "capability_mongodb_rows",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_mongodb",
             "auth": [
               "jwt",
               "firebase",
@@ -513,6 +686,52 @@
           ],
           "when": {
             "shape": "capability_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.schemas.capability_mongodb",
+          "name": "capability_mongodb_schemas",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_mongodb",
             "auth": [
               "jwt",
               "firebase",
@@ -964,6 +1183,70 @@
             }
           },
           "refs": []
+        },
+        {
+          "id": "rust.api.capability_mongodb",
+          "name": "capability_mongodb_routes",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_mongodb",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            },
+            "workflow": {
+              "$ref": "capabilities.workflow"
+            },
+            "group_field": {
+              "$ref": "capabilities.group_field"
+            },
+            "value_field": {
+              "$ref": "capabilities.value_field"
+            },
+            "auth": {
+              "$ref": "capabilities.auth"
+            },
+            "package": {
+              "$ref": "package"
+            },
+            "storage": {
+              "$ref": "capabilities.storage"
+            }
+          },
+          "refs": []
         }
       ]
     },
@@ -1308,6 +1591,52 @@
             }
           },
           "refs": []
+        },
+        {
+          "id": "rust.db.capability_mongodb",
+          "name": "capability_mongodb_queries",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_mongodb",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": []
         }
       ]
     },
@@ -1323,6 +1652,49 @@
           ],
           "when": {
             "shape": "capability_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "auth": {
+              "$ref": "capabilities.auth"
+            },
+            "package": {
+              "$ref": "package"
+            },
+            "storage": {
+              "$ref": "capabilities.storage"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.integrations.capability_mongodb",
+          "name": "capability_mongodb_integrations",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_mongodb",
             "auth": [
               "jwt",
               "firebase",
@@ -2002,6 +2374,61 @@
             }
           },
           "refs": []
+        },
+        {
+          "id": "rust.tests.capability_mongodb",
+          "name": "capability_mongodb_tests",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_mongodb",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            },
+            "workflow": {
+              "$ref": "capabilities.workflow"
+            },
+            "auth": {
+              "$ref": "capabilities.auth"
+            },
+            "storage": {
+              "$ref": "capabilities.storage"
+            }
+          },
+          "refs": []
         }
       ]
     },
@@ -2226,6 +2653,70 @@
             },
             "down_revision": {
               "$ref": "migration.down_revision"
+            },
+            "workflow": {
+              "$ref": "capabilities.workflow"
+            },
+            "group_field": {
+              "$ref": "capabilities.group_field"
+            },
+            "value_field": {
+              "$ref": "capabilities.value_field"
+            },
+            "auth": {
+              "$ref": "capabilities.auth"
+            },
+            "storage": {
+              "$ref": "capabilities.storage"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.readme.capability_mongodb",
+          "name": "capability_mongodb_readme",
+          "versions": [
+            "som.prompt.v5",
+            "som.prompt.v6"
+          ],
+          "when": {
+            "shape": "capability_mongodb",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            },
+            "package": {
+              "$ref": "package"
             },
             "workflow": {
               "$ref": "capabilities.workflow"

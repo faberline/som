@@ -14,6 +14,7 @@ use super::{
 };
 
 mod auth;
+mod mongo;
 mod storage;
 mod workflow;
 
@@ -120,6 +121,9 @@ impl Product {
 
 /// Render one capability_postgresql block from its resolved params.
 pub fn render(id: &str, params: &Value) -> Result<String, String> {
+    if id.contains("capability_mongodb") {
+        return mongo::render(id, params);
+    }
     let product = || Product::read(params);
     Ok(match id {
         "rust.cargo.capability.manifest" => MANIFEST.to_owned(),
