@@ -1,6 +1,6 @@
-//! The capability_mongodb blocks (issue #53 H1): the capability product of capability.rs on
-//! MongoDB. The product keeps the routes, schemas, token checks and workflows of the PostgreSQL
-//! product and replaces its database: ids from `_som_counters`, every write in one transaction,
+//! The capability_mongodb blocks (issue #53 H1 and H2): the capability product of capability.rs
+//! on MongoDB. The product keeps the routes, schemas, auth providers, object storage and workflows
+//! of the PostgreSQL product and replaces its database: ids from `_som_counters`, every write in one transaction,
 //! and the indexes that the Python product's initialize() creates, which `serve` and
 //! `migrate upgrade` both create.
 use serde_json::Value;
@@ -34,16 +34,21 @@ pub(super) fn render(id: &str, params: &Value) -> Result<String, String> {
         "rust.tests.capability_mongodb" => {
             let storage = Storage::read(params)?;
             let tests = super::tests(Flow::read(params)?, storage, &product()?);
-            tests_on_mongo(storage::tests(
+            // The identity test of a provider calls app() too; the object store joins the
+            // Mongo state.
+            storage::tests(
                 storage,
-                auth::tests(Auth::read(params)?, tests),
-            ))?
+                tests_on_mongo(auth::tests(Auth::read(params)?, tests))?,
+            )
         }
         "rust.readme.capability_mongodb" => {
             let auth = Auth::read(params)?;
             let readme = readme(params, &product()?)?;
             let readme = auth::readme(auth, text(params, "package")?, readme);
-            storage::readme(Storage::read(params)?, auth, readme)
+            database(
+                storage::readme(Storage::read(params)?, auth, readme),
+                &product()?,
+            )?
         }
         _ => return Err(format!("no renderer for block {id}")),
     })
@@ -226,12 +231,8 @@ fn api(text: String) -> Result<String, String> {
     let text = swap(&text, API_IMPORT_SQL, API_IMPORT_STORE, import)?;
     let text = text.replace(API_MISSING_PARENT, "");
     let text = swap(&text, "use sqlx::PgPool;\n", "", 1)?;
-    let text = swap(
-        &text,
-        "/// The pool and the token checks every handler shares.\n",
-        "/// The MongoDB store and the token checks every handler shares.\n",
-        1,
-    )?;
+    // The pool and the token checks, the caller checks, or the object store and either.
+    let text = swap(&text, "/// The pool", "/// The MongoDB store", 1)?;
     let text = swap(
         &text,
         "    pub pool: PgPool,\n",
@@ -1126,7 +1127,14 @@ pub fn database_named(url: &str, name: &str) -> Result<Mongo, String> {
 "#;
 
 fn integrations(text: String) -> Result<String, String> {
-    let text = swap(&text, "use std::str::FromStr;\n\n", "", 1)?;
+    // FromStr parsed the PostgreSQL URL only. Alone among the std imports it leaves a blank line.
+    let alone = "use std::str::FromStr;\n\n";
+    let from_str = if text.contains(alone) {
+        alone
+    } else {
+        "use std::str::FromStr;\n"
+    };
+    let text = swap(&text, from_str, "", 1)?;
     let text = swap(&text, "use sqlx::postgres::PgConnectOptions;\n", "", 1)?;
     let text = swap(
         &text,
@@ -1257,6 +1265,13 @@ transaction, so MongoDB must be a replica set or mongos.
         "MONGODB_URL=mongodb://127.0.0.1:27017/?replicaSet=rs0 SOM_TEST_DATABASE_NAME=som_test_app ",
         1,
     )?;
+    Ok(text)
+}
+
+/// The Database section of the README in place of the Migration section, once the auth and
+/// storage text is in.
+fn database(text: String, product: &Product) -> Result<String, String> {
+    let (parent, child) = (&product.parent, &product.child);
     let migration = text
         .find("\n## Migration\n")
         .ok_or("capability_mongodb: README has no migration")?;

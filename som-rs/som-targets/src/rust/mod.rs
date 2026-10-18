@@ -1110,15 +1110,30 @@ mod tests {
         }
     }
 
-    /// Issue #53 H1: capability_mongodb renders 11 files without a migration, for every workflow
-    /// with jwt and no storage, in v6 and v5.
+    /// Issue #53 H1 and H2: capability_mongodb renders 11 files without a migration, for every
+    /// workflow, auth and storage, in v6 and v5.
     #[test]
     fn a_mongodb_prompt_renders_the_capability_layout_without_a_migration() {
         let mut prompts = Vec::new();
-        for workflow in crate::profile::WORKFLOWS {
+        let combinations = crate::profile::WORKFLOWS
+            .iter()
+            .map(|workflow| (*workflow, "jwt", "none"));
+        let others = [
+            ("csv", "firebase", "s3"),
+            ("json_export", "google_oauth", "gcs"),
+            ("gzip_export", "firebase", "gcs"),
+            ("statistics", "google_oauth", "s3"),
+            ("decimal_summary", "jwt", "s3"),
+            ("json_export", "jwt", "gcs"),
+            ("csv", "google_oauth", "none"),
+            ("json_export", "firebase", "none"),
+        ];
+        for (workflow, auth, storage) in combinations.chain(others) {
             let mut prompt = example("v6");
             prompt["capabilities"]["database"] = json!("mongodb");
             prompt["capabilities"]["workflow"] = json!(workflow);
+            prompt["capabilities"]["auth"] = json!(auth);
+            prompt["capabilities"]["storage"] = json!(storage);
             if ["decimal_summary", "statistics"].contains(&workflow) {
                 prompt["resources"]["child"]["fields"]
                     .as_array_mut()
@@ -1129,12 +1144,16 @@ mod tests {
             if workflow == "decimal_summary" {
                 prompt["capabilities"]["group_field"] = json!("title");
             }
-            prompts.push((format!("v6 {workflow}"), prompt));
+            prompts.push((format!("v6 {workflow} {auth} {storage}"), prompt));
         }
-        let mut v5 = example("v5");
-        v5["capabilities"] = example("v6")["capabilities"].clone();
-        v5["capabilities"]["database"] = json!("mongodb");
-        prompts.push(("v5".to_owned(), v5));
+        for (auth, storage) in [("jwt", "none"), ("firebase", "s3"), ("google_oauth", "gcs")] {
+            let mut v5 = example("v5");
+            v5["capabilities"] = example("v6")["capabilities"].clone();
+            v5["capabilities"]["database"] = json!("mongodb");
+            v5["capabilities"]["auth"] = json!(auth);
+            v5["capabilities"]["storage"] = json!(storage);
+            prompts.push((format!("v5 {auth} {storage}"), v5));
+        }
         let mut plain = example("v6");
         plain["capabilities"]["database"] = json!("mongodb");
         plain["capabilities"]["workflow"] = json!("csv");
@@ -1146,7 +1165,7 @@ mod tests {
                 field["unique"] = json!(false);
             }
         }
-        prompts.push(("v6 csv without unique fields".to_owned(), plain));
+        prompts.push(("v6 csv jwt none without unique fields".to_owned(), plain));
         for (name, prompt) in prompts {
             let name = name.as_str();
             let dsl = plan(&prompt).expect("plan");
@@ -1183,6 +1202,52 @@ mod tests {
             assert_eq!(
                 first["src/api.rs"].contains("/import"),
                 name.starts_with("v6 csv"),
+                "{name}"
+            );
+            let words: Vec<&str> = name.split(' ').collect();
+            assert_eq!(
+                first["src/integrations.rs"].contains("pub struct Firebase"),
+                words.contains(&"firebase"),
+                "{name}"
+            );
+            assert_eq!(
+                first["src/integrations.rs"].contains("pub struct Google"),
+                words.contains(&"google_oauth"),
+                "{name}"
+            );
+            assert_eq!(
+                first["tests/api.rs"].contains("TEST_AUTH_COOKIES"),
+                !words.contains(&"jwt"),
+                "{name}"
+            );
+            assert!(first["tests/api.rs"].contains("MONGODB_URL"), "{name}");
+            let storage = !words.contains(&"none");
+            for (path, needle) in [
+                ("src/api.rs", "/objects/{key}"),
+                ("README.md", "`PUT /objects/{key}`"),
+                ("src/main.rs", "storage: Arc::new(settings.storage)"),
+                ("tests/api.rs", "storage: Arc::new(settings.storage)"),
+            ] {
+                assert_eq!(first[path].contains(needle), storage, "{name} {path}");
+            }
+            assert_eq!(
+                first["src/integrations.rs"].contains("pub struct S3"),
+                words.contains(&"s3"),
+                "{name}"
+            );
+            assert_eq!(
+                first["src/integrations.rs"].contains("pub struct Gcs"),
+                words.contains(&"gcs"),
+                "{name}"
+            );
+            let readme = &first["README.md"];
+            assert!(readme.contains("`capability_mongodb`"), "{name}");
+            assert!(readme.contains("## Database"), "{name}");
+            assert!(!readme.contains("## Migration"), "{name}");
+            assert!(!readme.contains("TEST_DATABASE_URL"), "{name}");
+            assert_eq!(
+                readme.contains("The tests also read the"),
+                storage,
                 "{name}"
             );
             if let Some(out) = std::env::var_os("SOM_MONGO_DUMP") {

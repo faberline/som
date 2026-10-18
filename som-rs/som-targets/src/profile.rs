@@ -154,19 +154,12 @@ pub const STORAGES: [&str; 3] = ["none", "s3", "gcs"];
 /// json_export, csv, gzip_export, decimal_summary and statistics workflows (issue #53 E), for
 /// firebase and google_oauth auth too (issue #53 F), and for s3 and gcs storage too (issue #53 G).
 /// The capability_mongodb shape is delivered for jwt auth and no storage with the same workflows
-/// (issue #53 H1).
+/// (issue #53 H1), and for the same auths and storages too (issue #53 H2).
 pub fn delivered(prompt: &Value) -> bool {
     let capabilities = &prompt["capabilities"];
     match shape(prompt).as_str() {
         "resource" => true,
-        "capability_mongodb" => {
-            capabilities["auth"] == "jwt"
-                && capabilities["storage"] == "none"
-                && WORKFLOWS
-                    .iter()
-                    .any(|workflow| capabilities["workflow"] == *workflow)
-        }
-        "capability_postgresql" => {
+        "capability_postgresql" | "capability_mongodb" => {
             AUTHS.iter().any(|auth| capabilities["auth"] == *auth)
                 && STORAGES
                     .iter()
@@ -311,7 +304,29 @@ mod tests {
             prompt["capabilities"]["workflow"] = json!(workflow);
             assert!(delivered(&prompt), "mongodb {workflow}");
         }
-        for (name, other) in [("auth", "firebase"), ("storage", "s3")] {
+        for auth in AUTHS {
+            for storage in STORAGES {
+                for workflow in WORKFLOWS {
+                    for version in ["som.prompt.v6", "som.prompt.v5"] {
+                        let mut prompt = mongo.clone();
+                        prompt["version"] = json!(version);
+                        prompt["capabilities"]["auth"] = json!(auth);
+                        prompt["capabilities"]["storage"] = json!(storage);
+                        prompt["capabilities"]["workflow"] = json!(workflow);
+                        assert!(
+                            delivered(&prompt),
+                            "mongodb {version} {auth} {storage} {workflow}"
+                        );
+                        assert_eq!(active(&prompt), None, "mongodb {auth} {storage} {workflow}");
+                    }
+                }
+            }
+        }
+        for (name, other) in [
+            ("auth", "other"),
+            ("storage", "azure"),
+            ("workflow", "csv_import"),
+        ] {
             let mut prompt = mongo.clone();
             prompt["capabilities"][name] = json!(other);
             assert!(!delivered(&prompt), "mongodb {name}");
