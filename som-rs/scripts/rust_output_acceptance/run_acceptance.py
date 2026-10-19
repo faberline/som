@@ -287,7 +287,7 @@ def judge_products(step: dict, run: pathlib.Path, phase: int = 1) -> tuple[bool,
 
 def judge_phase1_unchanged(step: dict, run: pathlib.Path) -> tuple[bool, dict]:
     report = load(run / "phase1-unchanged.json")
-    total = len(load(CONTRACT / "case-inventory.json")["acceptance_cases"])
+    total = load(CONTRACT / "case-inventory.json")["counts"]["acceptance_total"]
     summary = {k: report[k] for k in ("total", "passed", "failed", "baseline", "record")}
     return step["exit_code"] == 0 and not report["failed"] and report["passed"] == report["total"] == total, summary
 
