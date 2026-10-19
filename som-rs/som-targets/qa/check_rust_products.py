@@ -291,10 +291,13 @@ def recipes(qa: str, base: dict, v5_base: dict) -> dict[str, dict]:
     return out
 
 
-def refusal_row(qa: str, label: str, bundle: dict, code: str, http_status: int, pointer: str) -> dict:
+def refusal_row(qa: str, label: str, bundle: dict, code: str, http_status: int, pointer: str,
+                base: str | None = None) -> dict:
     body = targets.dump({"bundle": bundle})
     status, raw = targets.post(qa, body, "/v1/assemble")
     reply = json.loads(raw)
+    row: dict[str, Any] = {"id": label, **({"base": base} if base else {}), "status": status,
+                           "code": reply.get("code")}
     problems = []
     if status != http_status:
         problems.append(f"status {status} != {http_status}")
@@ -303,12 +306,13 @@ def refusal_row(qa: str, label: str, bundle: dict, code: str, http_status: int, 
         problems.append(f"code {reply.get('code')} with {len(diagnostics)} diagnostics")
     else:
         diagnostic = diagnostics[0]
+        row["prompt_pointer"] = diagnostic.get("prompt_pointer")
         if diagnostic.get("prompt_pointer") != pointer:
             problems.append(f"pointer {diagnostic.get('prompt_pointer')}")
         span = body.encode()[diagnostic["byte_start"]:diagnostic["byte_end"]].decode()
         if span != targets.dump(targets.resolve(json.loads(body), pointer)):
             problems.append("span is not the pointer target")
-    return {"id": label, "status": status, "code": reply.get("code"), "passed": not problems, "problems": problems}
+    return {**row, "passed": not problems, "problems": problems}
 
 
 def assemble_refusals(qa: str, base: dict, v5_base: dict) -> list[dict]:
@@ -329,7 +333,7 @@ def phase2_refusals(qa: str, base: dict) -> list[dict]:
     built = base_recipes(base, python)
     built["A3"] = rehash({**python, "target": "rust"})
     rows = [refusal_row(qa, key, built[key], frozen[key]["code"], frozen[key]["http_status"],
-                        frozen[key]["prompt_pointer"]) for key in sorted(built)]
+                        frozen[key]["prompt_pointer"], "example-v1") for key in sorted(built)]
 
     # A6: the RS12 typed prompt, as compiler-v1 types the RS12 CNL source.
     rs12 = next(case for case in json.loads((CONTRACT / "negative-cases.json").read_text())["cases"]
@@ -340,26 +344,31 @@ def phase2_refusals(qa: str, base: dict) -> list[dict]:
         rows.append({"id": "A6", "passed": False, "problems": ["rust_profile_phase2.py admits the RS12 prompt"]})
     else:
         rows.append(refusal_row(qa, "A6", with_shared(base, rs12_python["prompt"], rs12_python),
-                                refusal["code"], 422, "/bundle/prompt" + refusal["pointer"]))
+                                refusal["code"], 422, "/bundle/prompt" + refusal["pointer"], "example-v1"))
 
     # A8: 200, and the files equal the compile and assemble of the renamed prompt with target rust.
     a8, prompt = renamed(base)
     status, raw = targets.post(qa, targets.dump({"bundle": a8}), "/v1/assemble")
     problems = [] if status == 200 else [f"status {status}"]
+    a8_row: dict[str, Any] = {"id": "A8", "base": "example-v1", "status": status}
+    if status == 200:
+        a8_row["files_sha256"] = targets.sha(targets.dump(json.loads(raw)["files"]).encode())
     compiled = targets.post(qa, targets.dump({"format": "som.prompt-json.v1", "prompt": prompt, "target": "rust"}))
     if compiled[0] != 200:
         problems.append(f"compile of the renamed prompt gave {compiled[0]}")
     elif status == 200:
         expected = targets.post(qa, targets.dump({"bundle": json.loads(compiled[1])["bundle"]}), "/v1/assemble")
+        if expected[0] == 200:
+            a8_row["renamed_files_sha256"] = targets.sha(targets.dump(json.loads(expected[1])["files"]).encode())
         if expected != (status, raw):
             problems.append("the files differ from the compile and assemble of the renamed prompt")
-    rows.append({"id": "A8", "status": status, "passed": not problems, "problems": problems})
+    rows.append({**a8_row, "passed": not problems, "problems": problems})
 
     v6_base = json.loads(targets.post(qa, targets.dump(
         {"format": "som.prompt-json.v1", "prompt": v6, "target": "rust"}))[1])["bundle"]
     for key, bundle in sorted(base_recipes(v6_base, python_compile(qa, v6)).items()):
         rows.append(refusal_row(qa, f"{key}_PUBLIC_v6", bundle, frozen[key]["code"], frozen[key]["http_status"],
-                                frozen[key]["prompt_pointer"]))
+                                frozen[key]["prompt_pointer"], "PUBLIC_v6"))
     return rows
 
 
