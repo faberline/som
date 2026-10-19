@@ -32,7 +32,7 @@ impl Storage {
     }
 
     /// The Rust type of the object store in the product.
-    fn name(self) -> &'static str {
+    pub(super) fn name(self) -> &'static str {
         match self {
             Self::None => "",
             Self::S3 => "S3",

@@ -15,6 +15,7 @@ use super::{
 
 mod auth;
 mod flow;
+mod flow_object;
 mod mongo;
 mod storage;
 mod workflow;

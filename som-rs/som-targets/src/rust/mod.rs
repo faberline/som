@@ -41,6 +41,7 @@ const BLOCK_LIBRARY_TEXT: &str = concat!(
     include_str!("render/capability/storage.rs"),
     include_str!("render/capability/mongo.rs"),
     include_str!("render/capability/flow.rs"),
+    include_str!("render/capability/flow_object.rs"),
     include_str!("render/capability/flow_runtime.rs.txt"),
     include_str!("render/capability/flow_runtime_mongo.rs.txt")
 );
@@ -1323,6 +1324,26 @@ mod tests {
         prompt
     }
 
+    /// A flow that stores an object and reads it back.
+    fn object_flow(database: &str, auth: &str, storage: &str) -> Value {
+        let mut prompt = example("v7");
+        prompt["capabilities"]["database"] = json!(database);
+        prompt["capabilities"]["auth"] = json!(auth);
+        prompt["capabilities"]["storage"] = json!(storage);
+        prompt["flow"] = json!({
+            "name": "stash_object",
+            "inputs": [{"name": "key", "type": "string"}, {"name": "data", "type": "bytes"}],
+            "steps": [
+                {"name": "auth", "op": "authorize", "args": {}, "undo": null},
+                {"name": "stash", "op": "object.put", "undo": "delete_created",
+                    "args": {"key": {"input": "key"}, "body": {"input": "data"}}},
+                {"name": "fetched", "op": "object.get", "undo": null, "args": {"key": {"input": "key"}}},
+            ],
+            "result": {"sha": {"step": "fetched", "field": "sha256"}},
+        });
+        prompt
+    }
+
     /// Issue #54 I: flow_postgresql renders 12 files with the runtime in src/flows.rs, and
     /// flow_mongodb the same 11 files without a migration. Issue #54 J: a batch, a csv import
     /// and a run of every workflow.
@@ -1341,6 +1362,10 @@ mod tests {
                 prompts.push((name, batch_flow(database, workflow)));
             }
         }
+        prompts.push(("obj-s3-jwt-pg".to_owned(), object_flow("postgresql", "jwt", "s3")));
+        prompts.push(("obj-gcs-firebase-mongo".to_owned(), object_flow("mongodb", "firebase", "gcs")));
+        prompts.push(("obj-s3-google-mongo".to_owned(), object_flow("mongodb", "google_oauth", "s3")));
+        prompts.push(("obj-gcs-jwt-pg".to_owned(), object_flow("postgresql", "jwt", "gcs")));
         for (name, prompt) in prompts {
             let name = name.as_str();
             let dsl = plan(&prompt).expect("plan");
@@ -1368,6 +1393,11 @@ mod tests {
                 first["src/flows.rs"].contains("/flows/{FLOW_NAME}/runs"),
                 "{name}"
             );
+            if name.starts_with("obj-") {
+                assert!(first["src/flows.rs"].contains("fn object_put"), "{name}");
+                assert!(first["src/integrations.rs"].contains("pub async fn object_reverse"), "{name}");
+                continue;
+            }
             assert!(first["src/flows.rs"].contains("\"make_family\""), "{name}");
             assert!(first["src/db.rs"].contains("_som_revision"), "{name}");
             assert!(!first["src/lib.rs"].contains("pub mod models;"), "{name}");

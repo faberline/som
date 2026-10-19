@@ -181,8 +181,8 @@ fn capable(capabilities: &Value) -> bool {
 
 /// The flow operations delivered so far: authorize, transaction, the parent and child create,
 /// get, list and patch (issue #54 I), and batch.create, workflow.run and workflow.import
-/// (issue #54 J).
-const FLOW_OPS: [&str; 13] = [
+/// and object.put and object.get (issue #54 J).
+const FLOW_OPS: [&str; 15] = [
     "authorize",
     "transaction",
     "parent.create",
@@ -196,6 +196,8 @@ const FLOW_OPS: [&str; 13] = [
     "batch.create",
     "workflow.run",
     "workflow.import",
+    "object.put",
+    "object.get",
 ];
 
 pub(crate) fn flow_delivered(steps: &Value) -> bool {
@@ -401,7 +403,10 @@ mod tests {
             "steps": [step("batch.create"), step("workflow.import")]}]));
         import["capabilities"]["workflow"] = json!("csv");
         assert!(delivered(&import));
-        for op in ["if", "object.put", "object.get"] {
+        let mut objects = flow(json!([step("object.put"), step("object.get")]));
+        objects["capabilities"]["storage"] = json!("s3");
+        assert!(delivered(&objects));
+        for op in ["if", "branch"] {
             let nested = json!([{"name": "t", "op": "transaction", "steps": [step(op)]}]);
             assert!(!delivered(&flow(nested)), "{op}");
         }
@@ -410,7 +415,7 @@ mod tests {
         assert!(delivered(&mongo));
         assert_eq!(active(&mongo), None);
         let mut nested = flow(json!([{"name": "t", "op": "transaction",
-            "steps": [step("object.put")]}]));
+            "steps": [step("branch")]}]));
         nested["capabilities"]["database"] = json!("mongodb");
         assert!(!delivered(&nested));
     }

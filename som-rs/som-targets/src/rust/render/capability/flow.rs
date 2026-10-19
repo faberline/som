@@ -6,6 +6,7 @@ use serde_json::Value;
 
 use super::super::{Field, Kind};
 use super::Product;
+use super::flow_object;
 use super::workflow::Flow;
 
 pub fn render(id: &str, params: &Value) -> Result<String, String> {
@@ -14,14 +15,17 @@ pub fn render(id: &str, params: &Value) -> Result<String, String> {
     }
     let base = || super::render(&id.replace("capability_flow", "capability"), params);
     Ok(match id {
-        "rust.flows.capability_flow" => flows(params, FLOWS)?,
+        "rust.flows.capability_flow" => flow_object::runtime(params, flows(params, FLOWS)?)?,
+        "rust.integrations.capability_flow" => flow_object::integrations(params, base()?)?,
+        "rust.main.capability_flow" => flow_object::main(params, base()?)?,
+        "rust.readme.capability_flow" => flow_object::readme(params, base()?)?,
         "rust.lib.capability_flow" => lib(base()?)?,
         "rust.schemas.capability_flow" => {
             let product = Product::read(params)?;
             base()? + "\n" + &super::models(&product)
         }
         "rust.db.capability_flow" => db(base()?)?,
-        "rust.api.capability_flow" => api(base()?, params)?,
+        "rust.api.capability_flow" => flow_object::api(params, api(base()?, params)?)?,
         "rust.migration.capability_flow" => migration(base()?)?,
         "rust.tests.capability_flow" => tests(base()?, flow_name(params)?)?,
         _ => base()?,
@@ -42,13 +46,16 @@ fn mongo(id: &str, params: &Value) -> Result<String, String> {
             .ok_or_else(|| "param package is not text".to_owned())
     };
     Ok(match id {
-        "rust.flows.capability_flow_mongodb" => flows(params, FLOWS_MONGO)?,
+        "rust.flows.capability_flow_mongodb" => flow_object::runtime(params, flows(params, FLOWS_MONGO)?)?,
+        "rust.integrations.capability_flow_mongodb" => flow_object::integrations(params, base()?)?,
+        "rust.main.capability_flow_mongodb" => flow_object::main(params, base()?)?,
+        "rust.readme.capability_flow_mongodb" => flow_object::readme(params, base()?)?,
         "rust.lib.capability_flow_mongodb" => lib(base()?)?,
         "rust.schemas.capability_flow_mongodb" => {
             base()? + "\n" + &super::mongo::render("rust.models.capability_mongodb", params)?
         }
         "rust.db.capability_flow_mongodb" => mongo_db(base()?, package()?)?,
-        "rust.api.capability_flow_mongodb" => api(base()?, params)?,
+        "rust.api.capability_flow_mongodb" => flow_object::api(params, api(base()?, params)?)?,
         "rust.tests.capability_flow_mongodb" => tests(base()?, flow_name(params)?)?,
         _ => base()?,
     })
@@ -115,7 +122,7 @@ fn mongo_db(text: String, package: &str) -> Result<String, String> {
 }
 
 /// Replace the one anchor, or refuse the block: a capability block lost a line the flow needs.
-fn once(text: &str, anchor: &str, with: &str) -> Result<String, String> {
+pub(super) fn once(text: &str, anchor: &str, with: &str) -> Result<String, String> {
     if text.matches(anchor).count() != 1 {
         return Err(format!("flow anchor {anchor:?} is not unique"));
     }
