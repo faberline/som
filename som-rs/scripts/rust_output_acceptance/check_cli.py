@@ -13,7 +13,11 @@ Inputs: every coverage case CNL without a target, with target python and with
 target rust (python must print the same bytes as no target); every CNL negative
 case whose target is a string; and a few unknown target strings.
 
-usage: check_cli.py --binary SOM --base-url http://127.0.0.1:PORT --out NEW.json
+With --refusals phase2 (acceptance-plan.json phase2.refusals), an RS negative case
+expects UNSUPPORTED_TARGET only where tests/rust-output-v1/rust_profile_phase2.py
+refuses its compiled prompt (RS12), and a bundle otherwise.
+
+usage: check_cli.py --binary SOM --base-url http://127.0.0.1:PORT --out NEW.json [--refusals phase2]
 """
 from __future__ import annotations
 
@@ -31,6 +35,9 @@ import urllib.request
 REPO = pathlib.Path(__file__).resolve().parents[3]
 CONTRACT = REPO / "som-rs/contracts/rust-output-v1"
 CASES = REPO / "som-rs/tests/rust-output-v1/cases"
+sys.path.insert(0, str(REPO / "som-rs/tests/rust-output-v1"))
+import rust_profile_phase2  # type: ignore[import-not-found]  # noqa: E402
+
 FORBIDDEN_PORTS = {8765, 18765}
 UNKNOWN_TARGETS = ["RUST", "", "go", " rust", "python3"]
 
@@ -90,11 +97,21 @@ def check(binary: str, base_url: str, scratch: pathlib.Path, label: str, source:
     return row
 
 
+def phase2_code(base_url: str, body: dict) -> str | None:
+    """UNSUPPORTED_TARGET where the phase 2 profile refuses the compiled prompt, None for a bundle."""
+    plain = {k: v for k, v in body.items() if k != "target"}
+    status, raw = post(base_url, json.dumps(plain).encode())
+    if status != 200:
+        return f"compile without target gave {status}"
+    return "UNSUPPORTED_TARGET" if rust_profile_phase2.check(json.loads(raw)["bundle"]["prompt"]) else None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--binary", required=True)
     parser.add_argument("--base-url", required=True)
     parser.add_argument("--out", type=pathlib.Path, required=True)
+    parser.add_argument("--refusals", choices=["phase1", "phase2"], default="phase1")
     args = parser.parse_args()
     split = urllib.parse.urlsplit(args.base_url)
     if split.hostname not in {"127.0.0.1", "localhost", "::1"} or split.port in FORBIDDEN_PORTS:
@@ -118,8 +135,14 @@ def main() -> int:
             body = json.loads(case["body"])
             if case["form"] != "cnl" or not isinstance(body.get("target"), str) or not isinstance(body.get("source"), str):
                 continue
-            rows.append(check(args.binary, base_url, scratch, case["id"], body["source"], body["target"],
-                              case["expected"]["code"]))
+            expect = case["expected"]["code"]
+            if args.refusals == "phase2" and case["id"].startswith("RS"):
+                expect = phase2_code(base_url, body)
+            row = check(args.binary, base_url, scratch, case["id"], body["source"], body["target"], expect)
+            if expect is None and row["http_status"] != 200:
+                row["problems"].append(f"expected a bundle, got {row['http_status']}")
+                row["passed"] = False
+            rows.append(row)
         first = json.loads((CASES / "index.json").read_text())["cases"][0]
         source = (CASES / first["cnl"]).read_text(encoding="utf-8")
         for target in UNKNOWN_TARGETS:
@@ -127,7 +150,7 @@ def main() -> int:
     for row in rows:
         row.pop("_stdout")
     refusals = [r for r in rows if r["http_status"] != 200]
-    report = {"version": "som.rust-output-cli-target.v1", "base_url": base_url,
+    report = {"version": "som.rust-output-cli-target.v1", "base_url": base_url, "refusals_profile": args.refusals,
               "binary_sha256": sha(pathlib.Path(args.binary).read_bytes()),
               "inputs": {"negative_cases_sha256": sha((CONTRACT / "negative-cases.json").read_bytes()),
                          "coverage_index_sha256": sha((CASES / "index.json").read_bytes())},

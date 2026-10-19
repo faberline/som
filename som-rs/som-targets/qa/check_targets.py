@@ -20,6 +20,12 @@ Gate: target_selection_checks, scope_checks and python_unchanged.
     CNL and JSON forms are byte-identical.
 - The refusal counts equal the frozen case inventory.
 
+With --refusals phase2 (acceptance-plan.json phase2.rule), the refusal profile is
+tests/rust-output-v1/rust_profile_phase2.py: the RS rows of negative-cases.json
+give the refusal it computes on the compiled prompt (RS12 and RS13) or a Rust
+bundle, every source form outside them gives a Rust bundle, and the phase 1
+refusal counts are not checked (they stay the phase 1 record).
+
 The reference compiler gets read-only compile calls only. Legacy prompts are
 read from the local acceptance tree. The report names them by id and hash only.
 """
@@ -48,6 +54,10 @@ LEGACY = REPO / ".local" / "rust-compiler-goal" / "acceptance" / "legacy544"
 
 sys.path.insert(0, str(TESTS))
 import rust_profile  # type: ignore[import-not-found]  # noqa: E402
+import rust_profile_phase2  # type: ignore[import-not-found]  # noqa: E402
+
+PROFILES = {"phase1": rust_profile, "phase2": rust_profile_phase2}
+PROFILE = rust_profile
 
 RUST_BUNDLE = "som.dsl-bundle.v2"
 SPAN_KEYS = ("line", "column", "end_line", "end_column", "byte_start", "byte_end")
@@ -114,6 +124,9 @@ def negative_cases(qa: str) -> list[dict]:
     rows = []
     for case in json.loads((CONTRACT / "negative-cases.json").read_text())["cases"]:
         status, raw = post(qa, case["body"])
+        if PROFILE is rust_profile_phase2 and case["id"].startswith("RS"):
+            rows.append(phase2_scope_case(qa, case, status, raw))
+            continue
         problems = one_diagnostic(status, raw, case["http_status"], case["expected"])
         if not problems:
             span = located(case["body"], case["form"], json.loads(raw)["diagnostics"][0])
@@ -121,6 +134,32 @@ def negative_cases(qa: str) -> list[dict]:
                 problems.append("span_text differs")
         rows.append({"id": case["id"], "status": status, "passed": not problems, "problems": problems})
     return rows
+
+
+def phase2_scope_case(qa: str, case: dict, status: int, raw: bytes) -> dict:
+    """An RS row under the phase 2 profile: the frozen refusal where the profile still
+    refuses the compiled prompt, a Rust bundle otherwise."""
+    plain = json.loads(case["body"])
+    del plain["target"]
+    plain_status, plain_raw = post(qa, dump(plain))
+    if plain_status != 200:
+        return {"id": case["id"], "status": status, "passed": False,
+                "problems": [f"compile without target gave {plain_status}"]}
+    found = rust_profile_phase2.check(json.loads(plain_raw)["bundle"]["prompt"])
+    if found is None:
+        problems, outcome = rust_in_scope(status, raw)
+    else:
+        outcome = found["rule"]
+        pointer = found["pointer"] if case["form"] == "cnl" else "/prompt" + found["pointer"]
+        expected = {"code": "UNSUPPORTED_TARGET", "prompt_pointer": pointer,
+                    "cause": found["cause"], "allowed_form": found["allowed_form"]}
+        same = all(case["expected"].get(k) == v for k, v in expected.items())
+        problems = [] if same else ["the phase 2 refusal differs from the frozen one"]
+        problems += one_diagnostic(status, raw, case["http_status"], case["expected"])
+        if not problems and located(case["body"], case["form"], json.loads(raw)["diagnostics"][0]) != case["span_text"]:
+            problems.append("span_text differs")
+    return {"id": case["id"], "status": status, "phase2": outcome, "reply_sha256": sha(raw),
+            "passed": not problems, "problems": problems}
 
 
 def target_examples(qa: str) -> list[dict]:
@@ -246,7 +285,7 @@ def check_form(qa: str, reference: str, case: dict, form: str, request: dict) ->
     compiled = json.loads(raw)["bundle"]["prompt"]
     if form == "json" and compiled != case["prompt"]:
         problems.append("compiled prompt differs from the request prompt")
-    found = rust_profile.check(compiled)
+    found = PROFILE.check(compiled)
     diagnostic = json.loads(rust_raw).get("diagnostics", [{}])[0]
     if found is None:
         more, outcome = rust_in_scope(rust_status, rust_raw)
@@ -288,6 +327,12 @@ def inventory_matches(rows: list[dict]) -> list[str]:
     """The JSON-form refusal counts must equal the frozen case inventory."""
     inventory = json.loads((CONTRACT / "case-inventory.json").read_text())
     problems = []
+    if PROFILE is rust_profile_phase2:
+        # Phase 2 refuses none of these sources: every form must be in scope.
+        refused = [f"{r['id']}:{r['form']}" for r in rows
+                   if r["group"] != "compiler_v1_rejections" and r["rust"] != "in_scope"]
+        if refused:
+            problems.append(f"phase 2 refusals outside RS12 and RS13: {refused}")
     json_rows = [r for r in rows if r["form"] == "json" and r["group"] != "compiler_v1_rejections"]
     want: collections.Counter[tuple[str, str]] = collections.Counter()
     for c in inventory["counts"]["cnl_positive_fixtures"]:
@@ -299,7 +344,7 @@ def inventory_matches(rows: list[dict]) -> list[str]:
     for row in inventory["coverage_cases"]:
         want[("coverage_cases", row["rust"])] += 1
     got = collections.Counter((r["group"], r["rust"]) for r in json_rows)
-    if got != want:
+    if PROFILE is rust_profile and got != want:
         problems.append(f"refusal counts differ: missing {dict(want - got)}, extra {dict(got - want)}")
     # Each CNL form must agree with its JSON form.
     by_json = {r["id"]: r["rust"] for r in json_rows}
@@ -320,7 +365,11 @@ def main() -> int:
     parser.add_argument("--reference", required=True, help="reference compiler base URL, read-only")
     parser.add_argument("--out", type=pathlib.Path)
     parser.add_argument("--workers", type=int, default=8)
+    parser.add_argument("--refusals", choices=sorted(PROFILES), default="phase1",
+                        help="refusal profile: phase1 (#47 to #51) or phase2 (#53 to #56)")
     args = parser.parse_args()
+    global PROFILE
+    PROFILE = PROFILES[args.refusals]
 
     negatives = negative_cases(args.qa)
     examples = target_examples(args.qa)
@@ -336,9 +385,11 @@ def main() -> int:
         "issue": 47,
         "qa": args.qa,
         "reference": args.reference,
+        "refusals": args.refusals,
         "inputs": {p.relative_to(REPO).as_posix(): sha(p.read_bytes()) for p in
                    [CONTRACT / "negative-cases.json", CONTRACT / "target-examples.json",
                     CONTRACT / "case-inventory.json", CONTRACT / "scope.json", TESTS / "rust_profile.py",
+                    TESTS / "rust_profile_phase2.py",
                     FIXTURES, COVERAGE, LEGACY / "inventory-003.json"]},
         "summary": {
             "negative_cases": {"total": len(negatives), "passed": sum(r["passed"] for r in negatives)},

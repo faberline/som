@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run every check of the Rust output acceptance plan on one recorded candidate (#50).
+"""Run every check of the Rust output acceptance plan on one recorded candidate (#50, #55).
 
 The candidate comes from prepare_candidate.py and serves on a QA port. Every step
 runs in order as its own process, with the vendored crate set as CARGO_HOME and
@@ -12,7 +12,15 @@ The candidate identity, the default compiler on 8765 (read-only) and the tool
 files are recorded before and after. The tools must be committed and the
 candidate source must equal the current tree.
 
-usage: run_acceptance.py --candidate DIR --vendor DIR --out NEW_DIR
+With --phase 2 (#55) the run checks acceptance-plan.json phase2 on the same candidate:
+targets and cli use the phase 2 refusal profile, the phase 1 steps stay for
+python_unchanged, target_selection_checks and the phase 1 legacy jobs, and three
+steps follow: phase1-unchanged (the bundles against the rust-output-050
+candidate), phase2-products (bundle_checks and product_gates for all 584 cases
+of phase2/case-inventory.json) and phase2-summary (with the Python gate read
+from the recorded --python-run). The perf step is phase 1 only.
+
+usage: run_acceptance.py --candidate DIR --vendor DIR --out NEW_DIR [--phase 2 ...]
        run_acceptance.py cluster-gates <check_rust_products.py arguments without --pg>
 """
 from __future__ import annotations
@@ -41,6 +49,10 @@ VENV_PYTHON = SOM_RS / "runtime/acceptance-m3-venv/bin/python"
 LOCAL = REPO / ".local/rust-compiler-goal/acceptance"
 PUBLIC_RUN = LOCAL / "public-products-003b"
 LEGACY_RUN = LOCAL / "legacy544/run-005"
+PHASE2_LOCAL = REPO / ".local/rust-output-phase2"
+PHASE1_BASELINE = REPO / ".local/rust-compiler-goal/rust-output-candidate-002"
+PHASE1_RECORD = LOCAL / "rust-output-050/run-001/rust-products.json"
+PYTHON_RUN = PHASE2_LOCAL / "behavior-python-004"
 ASSET_INDEX = LOCAL / "per-version-asset-index-003.json"
 DEFAULT = "http://127.0.0.1:8765"
 FORBIDDEN_PORTS = {8765, 18765}
@@ -240,7 +252,16 @@ def judge_behavior(mode: str):
     return judge
 
 
-def judge_products(step: dict, run: pathlib.Path) -> tuple[bool, dict]:
+# acceptance-plan.json phase2.assemble_refusals: these recipes also run on the PUBLIC_v6 base.
+PHASE2_V6_RECIPES = ["A1", "A2", "A4", "A5", "A7", "A9"]
+
+
+def refusal_rows(phase: int) -> int:
+    recipes = len(load(CONTRACT / "acceptance-plan.json")["assemble_refusals"]["recipes"])
+    return recipes + (len(PHASE2_V6_RECIPES) if phase == 2 else 0)
+
+
+def judge_products(step: dict, run: pathlib.Path, phase: int = 1) -> tuple[bool, dict]:
     report = load(run / "rust-products.json")
     summary = report["summary"]
     total = summary["acceptance_cases"]["frozen_acceptance_total"]
@@ -255,12 +276,36 @@ def judge_products(step: dict, run: pathlib.Path) -> tuple[bool, dict]:
     ok = (step["exit_code"] == 0 and not summary["failed"] and not summary["blocked"]
           and summary["acceptance_cases"]["checked"] == summary["acceptance_cases"]["total"] == total
           and summary["bundle_checks"]["passed"] == summary["bundle_checks"]["total"] == total
-          and summary["assemble_refusals"]["passed"] == summary["assemble_refusals"]["total"]
-          == len(load(CONTRACT / "acceptance-plan.json")["assemble_refusals"]["recipes"])
+          and summary["assemble_refusals"]["passed"] == summary["assemble_refusals"]["total"] == refusal_rows(phase)
+          and report.get("refusal_plan", "phase1") == f"phase{phase}"
           and summary["product_gates"]["passed"] == summary["product_gates"]["total"] == total
           and summary["parity"].get("status") == "passed"
           and summary["parity"].get("report_sha256") == summary["parity_report_sha256_expected"]
           and all(p == t == total for p, t in gates.values()))
+    return ok, summary
+
+
+def judge_phase1_unchanged(step: dict, run: pathlib.Path) -> tuple[bool, dict]:
+    report = load(run / "phase1-unchanged.json")
+    total = len(load(CONTRACT / "case-inventory.json")["acceptance_cases"])
+    summary = {k: report[k] for k in ("total", "passed", "failed", "baseline", "record")}
+    return step["exit_code"] == 0 and not report["failed"] and report["passed"] == report["total"] == total, summary
+
+
+def judge_phase2_run(step: dict, run: pathlib.Path) -> tuple[bool, dict]:
+    summary = load(run / "phase2/summary.json")
+    return step["exit_code"] == 0, {k: v for k, v in summary.items() if not isinstance(v, (dict, list))}
+
+
+def judge_phase2_summary(step: dict, run: pathlib.Path) -> tuple[bool, dict]:
+    report = load(run / "phase2/products-summary.json")
+    total = len(load(CONTRACT / "phase2/case-inventory.json")["rows"])
+    summary = {k: report[k] for k in ("total", "run", "passed", "failed", "missing", "refusals", "gates",
+                                      "by_shape", "distinct_products", "python", "accepted")}
+    ok = (step["exit_code"] == 0 and report["accepted"] is True and report["complete"] is True
+          and report["total"] == report["run"] == report["passed"] == total and not report["failed"]
+          and report["refusals"]["passed"] is True and not report["python"]["problems"]
+          and all(g["passed"] == g["total"] > 0 for g in report["gates"].values()))
     return ok, summary
 
 
@@ -273,15 +318,17 @@ def judge_perf(step: dict, run: pathlib.Path) -> tuple[bool, dict]:
 
 # ---------------------------------------------------------------- steps
 
-def steps(candidate: pathlib.Path, run: pathlib.Path, qa: str) -> list[dict]:
+def steps(candidate: pathlib.Path, run: pathlib.Path, qa: str, phase: int = 1, workers: int = 4,
+          baseline_port: int = 18957) -> list[dict]:
     py = str(VENV_PYTHON)
+    refusals = ["--refusals", f"phase{phase}"]
     target = str(run / "target")
     behavior = [{"name": f"behavior-{mode}", "cwd": BEHAVIOR,
                  "argv": [py, "check_behavior.py", mode, "--qa", qa, "--out", str(run / "behavior" / mode),
                           "--target-dir", target, "--python", py],
                  "outputs": [f"behavior/{mode}"], "judge": judge_behavior(mode)}
                 for mode in ("python", "faults", "parity")]
-    return [
+    common = [
         {"name": "contract", "cwd": REPO, "argv": [py, str(TESTS / "check_contract.py"), "--host"],
          "outputs": [], "judge": judge_contract},
         {"name": "python-controls", "cwd": REPO,
@@ -291,11 +338,12 @@ def steps(candidate: pathlib.Path, run: pathlib.Path, qa: str) -> list[dict]:
          "argv": [py, str(TESTS / "validate_cases.py"), "--base-url", qa, "--out", str(run / "validate-cases.json")],
          "outputs": ["validate-cases.json"], "judge": judge_validate},
         {"name": "targets", "cwd": QA_DIR,
-         "argv": [py, "check_targets.py", "--qa", qa, "--reference", DEFAULT, "--out", str(run / "targets.json")],
+         "argv": [py, "check_targets.py", "--qa", qa, "--reference", DEFAULT, "--out", str(run / "targets.json"),
+                  *refusals],
          "outputs": ["targets.json"], "judge": judge_targets},
         {"name": "cli", "cwd": REPO,
          "argv": [py, str(HERE / "check_cli.py"), "--binary", str(candidate / "som"), "--base-url", qa,
-                  "--out", str(run / "cli.json")],
+                  "--out", str(run / "cli.json"), *refusals],
          "outputs": ["cli.json"], "judge": judge_cli},
         {"name": "python-replay", "cwd": REPO,
          "argv": [py, str(HERE / "python_replay.py"), "--base-url", qa, "--public-run", str(PUBLIC_RUN),
@@ -315,13 +363,28 @@ def steps(candidate: pathlib.Path, run: pathlib.Path, qa: str) -> list[dict]:
         {"name": "rust-products", "cwd": QA_DIR,
          "argv": [py, str(HERE / "run_acceptance.py"), "cluster-gates", "--qa", qa, "--work", str(run / "products"),
                   "--target-dir", target, "--out", str(run / "rust-products.json"),
-                  "--parity", str(run / "behavior/parity/report-parity.json")],
-         "outputs": ["rust-products.json"], "judge": judge_products},
-        {"name": "perf", "cwd": REPO,
-         "argv": [py, str(HERE / "perf_observe.py"), "--base-url", qa, "--products", str(run / "products"),
-                  "--target-dir", target, "--candidate", str(candidate), "--out", str(run / "perf")],
-         "outputs": ["perf"], "judge": judge_perf},
+                  "--parity", str(run / "behavior/parity/report-parity.json"), *refusals],
+         "outputs": ["rust-products.json"], "judge": lambda step, run: judge_products(step, run, phase)},
     ]
+    phase2 = str(QA_DIR / "check_phase2_products.py")
+    if phase == 1:
+        return [*common,
+                {"name": "perf", "cwd": REPO,
+                 "argv": [py, str(HERE / "perf_observe.py"), "--base-url", qa, "--products", str(run / "products"),
+                          "--target-dir", target, "--candidate", str(candidate), "--out", str(run / "perf")],
+                 "outputs": ["perf"], "judge": judge_perf}]
+    return [*common,
+            {"name": "phase1-unchanged", "cwd": REPO,
+             "argv": [py, phase2, "phase1", "--qa", qa, "--baseline", str(PHASE1_BASELINE),
+                      "--record", str(PHASE1_RECORD), "--port", str(baseline_port),
+                      "--out", str(run / "phase1-unchanged.json")],
+             "outputs": ["phase1-unchanged.json"], "judge": judge_phase1_unchanged},
+            {"name": "phase2-products", "cwd": REPO,
+             "argv": [py, phase2, "run", "--qa", qa, "--out", str(run / "phase2"), "--workers", str(workers)],
+             "outputs": ["phase2/summary.json", "phase2/gates", "phase2/cases"], "judge": judge_phase2_run},
+            {"name": "phase2-summary", "cwd": REPO,
+             "argv": [py, phase2, "summarize", "--out", str(run / "phase2"), "--python-run", str(PYTHON_RUN)],
+             "outputs": ["phase2/products-summary.json"], "judge": judge_phase2_summary}]
 
 
 # Each acceptance-plan.json check and the steps whose judgments prove it.
@@ -336,16 +399,38 @@ PLAN = {
 }
 
 
-def plan_coverage(results: dict[str, bool]) -> tuple[list[dict], list[str]]:
+# acceptance-plan.json phase2 (#55): python_unchanged and target_selection_checks as phase 1,
+# the phase2 sections in their place.
+PLAN2 = {
+    "python_unchanged": PLAN["python_unchanged"],
+    "target_selection_checks": PLAN["target_selection_checks"],
+    "phase2.refusals": [["targets", "cli", "phase2-summary"]],
+    "phase2.phase1_unchanged": [["phase1-unchanged"]],
+    "phase2.bundle_checks": [["phase2-summary"]] * 4,
+    "phase2.assemble_refusals": [["rust-products"]] * 3,
+    "phase2.product_gates": [["phase2-summary"]] * 9,
+    "phase2.legacy_gate": [["rust-products", "behavior-parity", "python-replay", "phase2-summary"]],
+}
+
+
+def plan_coverage(results: dict[str, bool], phase: int = 1) -> tuple[list[dict], list[str]]:
     plan = load(CONTRACT / "acceptance-plan.json")
     texts = {"python_unchanged": plan["python_unchanged"]["checks"],
              "target_selection_checks": plan["target_selection_checks"],
              "scope_checks": plan["scope_checks"], "bundle_checks": plan["bundle_checks"],
              "assemble_refusals": [r["id"] for r in plan["assemble_refusals"]["recipes"]],
              "product_gates": plan["product_gates"]["each_acceptance_case"]}
+    if phase == 2:
+        two = plan["phase2"]
+        texts = {"python_unchanged": texts["python_unchanged"],
+                 "target_selection_checks": texts["target_selection_checks"],
+                 "phase2.refusals": [two["refusals"]], "phase2.phase1_unchanged": [two["phase1_unchanged"]],
+                 "phase2.bundle_checks": two["bundle_checks"],
+                 "phase2.assemble_refusals": [two["assemble_refusals"][k] for k in ("rule", "A6", "A8")],
+                 "phase2.product_gates": two["product_gates"], "phase2.legacy_gate": [two["legacy_gate"]]}
     rows, problems = [], []
     for section, items in texts.items():
-        mapped = PLAN[section]
+        mapped = (PLAN2 if phase == 2 else PLAN)[section]
         if len(mapped) != len(items):
             problems.append(f"{section}: {len(items)} plan checks, {len(mapped)} mapped")
         for index, text in enumerate(items):
@@ -393,7 +478,13 @@ def main() -> int:
     parser.add_argument("--candidate", type=pathlib.Path, required=True)
     parser.add_argument("--vendor", type=pathlib.Path, required=True)
     parser.add_argument("--out", type=pathlib.Path, required=True)
+    parser.add_argument("--phase", type=int, choices=(1, 2), default=1)
+    parser.add_argument("--workers", type=int, default=4, help="phase 2: check_phase2_products.py run workers")
+    parser.add_argument("--baseline-port", type=int, default=18957,
+                        help="phase 2: port for the rust-output-050 baseline server of phase1-unchanged")
     args = parser.parse_args()
+    if args.baseline_port in FORBIDDEN_PORTS:
+        raise SystemExit(f"--baseline-port must not be {args.baseline_port}")
     candidate, vendor, run = args.candidate.resolve(), args.vendor.resolve(), args.out.resolve()
     if run.exists():
         raise SystemExit(f"preserve existing output: {run}")
@@ -405,6 +496,8 @@ def main() -> int:
     before = candidate_identity(candidate)
     if before["problems"]:
         raise SystemExit(f"candidate identity problems: {before['problems']}")
+    if args.phase == 2 and (listener(args.baseline_port) or args.baseline_port == before["port"]):
+        raise SystemExit(f"--baseline-port {args.baseline_port} is in use")
     vendor_receipt = load(vendor / "vendor.json")
     vendor_tree = tree_sha(vendor / "vendor")
     if vendor_tree != vendor_receipt["vendor_tree_sha256"]:
@@ -420,14 +513,16 @@ def main() -> int:
                                          "vendor_tree_sha256": vendor_tree, "crates": vendor_receipt["crates"],
                                          "stubs": len(vendor_receipt["stubs"]),
                                          "cargo_config_sha256": sha_file(vendor / "cargo-home/config.toml")},
-              "venv": venv_packages(), "env_delta": env_delta}
+              "venv": venv_packages(), "env_delta": env_delta,
+              "phase": args.phase, "workers": args.workers, "baseline_port": args.baseline_port}
     (run / "header.json").write_text(json.dumps(header, indent=1, sort_keys=True) + "\n")
 
-    receipts = [run_step(index, step, run, env_delta) for index, step in enumerate(steps(candidate, run, qa), 1)]
+    receipts = [run_step(index, step, run, env_delta) for index, step in enumerate(
+        steps(candidate, run, qa, args.phase, args.workers, args.baseline_port), 1)]
     after = candidate_identity(candidate)
     default_after = default_state()
     results = {r["step"]: r["passed"] for r in receipts}
-    coverage, coverage_problems = plan_coverage(results)
+    coverage, coverage_problems = plan_coverage(results, args.phase)
     blockers = ([f"step {r['step']} failed" for r in receipts if not r["passed"]]
                 + [f"plan check {c['section']}[{c['index']}] {c['state']}" for c in coverage if c["state"] != "passed"]
                 + coverage_problems
@@ -439,7 +534,8 @@ def main() -> int:
                 + (["tools changed during the run"] if tools_state() != tools else []))
     summary = {
         "version": "som.rust-output-acceptance-run.v1",
-        "issue": 50,
+        "issue": 55 if args.phase == 2 else 50,
+        "phase": args.phase,
         "started_at": started_at, "ended_at": now(),
         "status": "passed" if not blockers else "failed",
         "blockers": blockers,
