@@ -155,13 +155,14 @@ pub const STORAGES: [&str; 3] = ["none", "s3", "gcs"];
 /// firebase and google_oauth auth too (issue #53 F), and for s3 and gcs storage too (issue #53 G).
 /// The capability_mongodb shape is delivered for jwt auth and no storage with the same workflows
 /// (issue #53 H1), and for the same auths and storages too (issue #53 H2). The flow_postgresql
-/// shape is delivered for the same capabilities when every flow step is a delivered operation.
+/// shape is delivered for the same capabilities when every flow step is a delivered operation,
+/// and the flow_mongodb shape is delivered on the same terms.
 pub fn delivered(prompt: &Value) -> bool {
     let capabilities = &prompt["capabilities"];
     match shape(prompt).as_str() {
         "resource" => true,
         "capability_postgresql" | "capability_mongodb" => capable(capabilities),
-        "flow_postgresql" => {
+        "flow_postgresql" | "flow_mongodb" => {
             capable(capabilities)
                 && flow_delivered(&prompt["flow"]["steps"], &capabilities["workflow"])
         }
@@ -409,6 +410,11 @@ mod tests {
         }
         let mut mongo = flow(json!([step("authorize")]));
         mongo["capabilities"]["database"] = json!("mongodb");
-        assert!(!delivered(&mongo));
+        assert!(delivered(&mongo));
+        assert_eq!(active(&mongo), None);
+        let mut nested = flow(json!([{"name": "t", "op": "transaction",
+            "steps": [step("object.put")]}]));
+        nested["capabilities"]["database"] = json!("mongodb");
+        assert!(!delivered(&nested));
     }
 }

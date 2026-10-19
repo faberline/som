@@ -1,4 +1,4 @@
-//! Issue #54: the flow_postgresql blocks. Each one is its capability block with the changes the
+//! Issue #54: the flow_postgresql and flow_mongodb blocks. Each one is its capability block with the changes the
 //! flow runtime needs: a revision column per row, the run journal, and the src/flows.rs routes.
 //! The capability products themselves do not change.
 
@@ -8,9 +8,12 @@ use super::super::{Field, Kind};
 use super::Product;
 
 pub fn render(id: &str, params: &Value) -> Result<String, String> {
+    if id.contains("capability_flow_mongodb") {
+        return mongo(id, params);
+    }
     let base = || super::render(&id.replace("capability_flow", "capability"), params);
     Ok(match id {
-        "rust.flows.capability_flow" => flows(params)?,
+        "rust.flows.capability_flow" => flows(params, FLOWS)?,
         "rust.lib.capability_flow" => lib(base()?)?,
         "rust.schemas.capability_flow" => {
             let product = Product::read(params)?;
@@ -22,6 +25,92 @@ pub fn render(id: &str, params: &Value) -> Result<String, String> {
         "rust.tests.capability_flow" => tests(base()?, flow_name(params)?)?,
         _ => base()?,
     })
+}
+
+/// The flow_mongodb blocks: the capability_mongodb blocks with the same changes on MongoDB.
+fn mongo(id: &str, params: &Value) -> Result<String, String> {
+    let base = || {
+        super::render(
+            &id.replace("capability_flow_mongodb", "capability_mongodb"),
+            params,
+        )
+    };
+    let package = || {
+        params["package"]
+            .as_str()
+            .ok_or_else(|| "param package is not text".to_owned())
+    };
+    Ok(match id {
+        "rust.flows.capability_flow_mongodb" => flows(params, FLOWS_MONGO)?,
+        "rust.lib.capability_flow_mongodb" => lib(base()?)?,
+        "rust.schemas.capability_flow_mongodb" => {
+            base()? + "\n" + &super::mongo::render("rust.models.capability_mongodb", params)?
+        }
+        "rust.db.capability_flow_mongodb" => mongo_db(base()?, package()?)?,
+        "rust.api.capability_flow_mongodb" => api(base()?)?,
+        "rust.tests.capability_flow_mongodb" => tests(base()?, flow_name(params)?)?,
+        _ => base()?,
+    })
+}
+
+/// Every document carries the revision a compensation checks and the guard a child write
+/// raises. The journal collections drop first, and the runs keep one key per owner and flow.
+fn mongo_db(text: String, package: &str) -> Result<String, String> {
+    let mut text = once(
+        &text,
+        "pub struct Store {\n    client: Client,\n    database: Database,\n}",
+        "pub struct Store {\n    pub(crate) client: Client,\n    pub(crate) database: Database,\n}",
+    )?;
+    let edits = [
+        (
+            "    fn collection(&self, name: &str) -> Collection<Document> {",
+            "    pub(crate) fn collection(&self, name: &str) -> Collection<Document> {".to_owned(),
+        ),
+        (
+            "        options.server_selection_timeout = Some(Duration::from_secs(2));\n",
+            format!(
+                "        options.server_selection_timeout = Some(Duration::from_secs(2));\n        options.app_name = Some({package:?}.to_owned());\n"
+            ),
+        ),
+        (
+            "            return Err(\"MongoDB transactions require a replica set or mongos\".to_owned());\n        }\n",
+            "            return Err(\"MongoDB transactions require a replica set or mongos\".to_owned());\n        }\n        let runs = IndexModel::builder()\n            .keys(doc! {\"owner\": 1, \"flow\": 1, \"key\": 1})\n            .options(mongodb::options::IndexOptions::builder().unique(true).build())\n            .build();\n        self.collection(\"_som_flow_runs\")\n            .create_index(runs)\n            .await\n            .map_err(failed)?;\n".to_owned(),
+        ),
+        (
+            "for collection in [CHILDREN, PARENTS, COUNTERS]",
+            "for collection in [\"_som_flow_leases\", \"_som_flow_runs\", CHILDREN, PARENTS, COUNTERS]".to_owned(),
+        ),
+        (
+            "    document.insert(\"created_at\", now.clone());\n",
+            "    document.insert(\"_som_revision\", 0);\n    document.insert(\"_som_guard\", 0);\n    document.insert(\"created_at\", now.clone());\n".to_owned(),
+        ),
+        (
+            "doc! {\"$inc\": {\"_som_revision\": 1}}",
+            "doc! {\"$inc\": {\"_som_guard\": 1}}".to_owned(),
+        ),
+        (
+            "doc! {\"$set\": changes}",
+            "doc! {\"$set\": changes, \"$inc\": {\"_som_revision\": 1}}".to_owned(),
+        ),
+    ];
+    for (anchor, with) in edits {
+        text = once(&text, anchor, &with)?;
+    }
+    for name in [
+        "parent_fields",
+        "child_fields",
+        "parent_changes",
+        "child_changes",
+        "parent_row",
+        "child_row",
+    ] {
+        text = once(
+            &text,
+            &format!("\nfn {name}("),
+            &format!("\npub(crate) fn {name}("),
+        )?;
+    }
+    Ok(text)
 }
 
 /// Replace the one anchor, or refuse the block: a capability block lost a line the flow needs.
@@ -184,7 +273,7 @@ fn role(name: &str, table: &str, parent: &str, key: &str, fields: &[Field]) -> S
     )
 }
 
-fn flows(params: &Value) -> Result<String, String> {
+fn flows(params: &Value, template: &str) -> Result<String, String> {
     let flow = &params["flow"];
     // The runtime interprets the steps the target profile delivers, and no other.
     if !crate::profile::flow_delivered(&flow["steps"], &params["workflow"]) {
@@ -206,10 +295,11 @@ fn flows(params: &Value) -> Result<String, String> {
             &product.key.name,
             &product.child.fields,
         );
-    Ok(FLOWS
+    Ok(template
         .replace("@FLOW_TEXT@", &format!("{flow_text:?}"))
         .replace("@FLOW_NAME@", &format!("{:?}", flow_name(params)?))
         .replace("@ROLES@", &roles))
 }
 
 const FLOWS: &str = include_str!("flow_runtime.rs.txt");
+const FLOWS_MONGO: &str = include_str!("flow_runtime_mongo.rs.txt");

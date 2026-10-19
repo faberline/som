@@ -41,7 +41,8 @@ const BLOCK_LIBRARY_TEXT: &str = concat!(
     include_str!("render/capability/storage.rs"),
     include_str!("render/capability/mongo.rs"),
     include_str!("render/capability/flow.rs"),
-    include_str!("render/capability/flow_runtime.rs.txt")
+    include_str!("render/capability/flow_runtime.rs.txt"),
+    include_str!("render/capability/flow_runtime_mongo.rs.txt")
 );
 static CATALOG: LazyLock<Value> =
     LazyLock::new(|| serde_json::from_str(CATALOG_TEXT).expect("Rust catalog JSON"));
@@ -1281,10 +1282,16 @@ mod tests {
         }
     }
 
-    /// Issue #54 I: flow_postgresql renders 12 files with the runtime in src/flows.rs.
+    /// Issue #54 I: flow_postgresql renders 12 files with the runtime in src/flows.rs, and
+    /// flow_mongodb the same 11 files without a migration.
     #[test]
     fn a_flow_prompt_renders_the_flow_layout() {
-        let prompts = vec![("v7".to_owned(), example("v7"))];
+        let mut mongo = example("v7");
+        mongo["capabilities"]["database"] = json!("mongodb");
+        let prompts = vec![
+            ("v7".to_owned(), example("v7")),
+            ("v7-mongo".to_owned(), mongo),
+        ];
         for (name, prompt) in prompts {
             let name = name.as_str();
             let dsl = plan(&prompt).expect("plan");
@@ -1302,7 +1309,12 @@ mod tests {
                 }
             }
             check_output(&first).expect("layout");
-            assert_eq!(first.len(), 12, "{name}");
+            let on_mongo = name.ends_with("mongo");
+            assert_eq!(first.len(), if on_mongo { 11 } else { 12 }, "{name}");
+            if on_mongo {
+                assert!(first["src/db.rs"].contains("_som_flow_runs"), "{name}");
+                assert!(first["src/db.rs"].contains("options.app_name"), "{name}");
+            }
             assert!(
                 first["src/flows.rs"].contains("/flows/{FLOW_NAME}/runs"),
                 "{name}"

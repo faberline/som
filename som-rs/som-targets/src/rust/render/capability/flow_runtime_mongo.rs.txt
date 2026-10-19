@@ -1,0 +1,1210 @@
+//! The declared flow, run as data against a fenced journal: one run per owner and key, a lease
+//! that a heartbeat renews, and compensation that undoes committed groups in reverse order.
+
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::LazyLock;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+use axum::{
+    Json, Router,
+    body::Bytes,
+    extract::{Path, State, rejection::BytesRejection},
+    http::{HeaderMap, StatusCode},
+    response::{IntoResponse, Response},
+    routing::{get, post},
+};
+use base64::Engine;
+use mongodb::ClientSession;
+use mongodb::bson::{Bson, Document, doc};
+use mongodb::error::{ErrorKind, TRANSIENT_TRANSACTION_ERROR, WriteFailure};
+use mongodb::options::ReturnDocument;
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use serde_json::{Map, Value, json};
+use sha2::{Digest, Sha256};
+
+use crate::api::{AppState, problem, read_body};
+use crate::db::Store;
+use crate::integrations::Access;
+use crate::schemas::{
+    ChildCreate, ChildRead, ChildUpdate, ParentCreate, ParentRead, ParentUpdate,
+};
+
+const FLOW_TEXT: &str = @FLOW_TEXT@;
+const FLOW_NAME: &str = @FLOW_NAME@;
+
+static FLOW: LazyLock<Value> =
+    LazyLock::new(|| serde_json::from_str(FLOW_TEXT).expect("the embedded flow is JSON"));
+static PLAN: LazyLock<String> =
+    LazyLock::new(|| format!("{:x}", Sha256::digest(FLOW_TEXT.as_bytes())));
+
+const LEASE: f64 = 30.0;
+const HEARTBEAT: Duration = Duration::from_secs(5);
+const MISSING: &str = "resource missing";
+const CONFLICT: &str = "revision conflict";
+const LOST: &str = "claim lost";
+const BAD_INPUT: &str = "invalid resource input";
+const RUNS: &str = "_som_flow_runs";
+const LEASES: &str = "_som_flow_leases";
+const COUNTERS: &str = "_som_counters";
+
+/// A resource collection: its fields in model order, and for the child its parent scope.
+struct Role {
+    child: bool,
+    table: &'static str,
+    parent: &'static str,
+    key: &'static str,
+    columns: &'static [(&'static str, &'static str)],
+}
+
+@ROLES@
+#[derive(Clone, Serialize, Deserialize)]
+struct Effect {
+    group: String,
+    step: String,
+    undo: String,
+    role: String,
+    row_id: i64,
+    revision: i64,
+    before: Map<String, Value>,
+    key: String,
+    version: Option<String>,
+    owned: bool,
+    uncertain: bool,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+struct Run {
+    run_id: String,
+    owner: String,
+    flow: String,
+    key: String,
+    request_hash: String,
+    epoch: i32,
+    state: String,
+    inputs: Map<String, Value>,
+    values: Map<String, Value>,
+    branches: Map<String, Value>,
+    effects: Vec<Effect>,
+    result: Map<String, Value>,
+    error_status: u16,
+    error_detail: String,
+}
+
+/// A failure: a business status, a provider error, an invalid value, a broken invariant, or a
+/// journal that can no longer say what happened.
+enum Fail {
+    Http(u16, String),
+    Database(mongodb::error::Error),
+    Invalid,
+    Runtime(String),
+    Journal(String),
+}
+
+impl From<mongodb::error::Error> for Fail {
+    fn from(error: mongodb::error::Error) -> Self {
+        Self::Database(error)
+    }
+}
+
+/// The code of a command or write error.
+fn code(error: &mongodb::error::Error) -> Option<i32> {
+    match &*error.kind {
+        ErrorKind::Command(found) => Some(found.code),
+        ErrorKind::Write(WriteFailure::WriteError(found)) => Some(found.code),
+        _ => None,
+    }
+}
+
+/// A duplicate key error, as pymongo raises DuplicateKeyError.
+fn duplicate(error: &mongodb::error::Error) -> bool {
+    matches!(code(error), Some(11000 | 11001 | 12582))
+}
+
+impl Fail {
+    fn http(status: u16, detail: &str) -> Self {
+        Self::Http(status, detail.to_owned())
+    }
+
+    /// The failures a run turns into compensation. Others answer 500 at once.
+    fn caught(&self) -> bool {
+        !matches!(self, Self::Runtime(_))
+    }
+
+    /// The status and detail a compensated run keeps, without provider secrets.
+    fn business(&self) -> (u16, String) {
+        match self {
+            Self::Http(status, detail) => (*status, detail.clone()),
+            Self::Invalid => (422, "invalid flow input or result".to_owned()),
+            Self::Database(error) if duplicate(error) => (409, "resource conflict".to_owned()),
+            _ => (503, "provider unavailable".to_owned()),
+        }
+    }
+
+    /// A provider error while reading the journal hides the outcome.
+    fn journal(self, run_id: &str) -> Self {
+        match self {
+            Self::Database(_) => Self::Journal(run_id.to_owned()),
+            other => other,
+        }
+    }
+}
+
+impl IntoResponse for Fail {
+    fn into_response(self) -> Response {
+        let (status, body) = match self {
+            Self::Http(status, detail) => (status, json!({"detail": detail})),
+            Self::Journal(run_id) => (
+                503,
+                json!({"detail": {"run_id": run_id, "message": "execution journal or lease unavailable"}}),
+            ),
+            Self::Runtime(message) => {
+                eprintln!("flow runtime error: {message}");
+                (500, json!({"detail": "Internal Server Error"}))
+            }
+            Self::Database(_) | Self::Invalid => (500, json!({"detail": "Internal Server Error"})),
+        };
+        let status = StatusCode::from_u16(status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+        (status, Json(body)).into_response()
+    }
+}
+
+fn now() -> f64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|elapsed| elapsed.as_secs_f64())
+        .unwrap_or_default()
+}
+
+/// An integer as pymongo writes it: int32 when it fits, else int64.
+fn int(value: i64) -> Bson {
+    i32::try_from(value).map_or(Bson::Int64(value), Bson::Int32)
+}
+
+fn read_i64(document: &Document, name: &str) -> Result<i64, Fail> {
+    match document.get(name) {
+        Some(Bson::Int32(found)) => Ok(i64::from(*found)),
+        Some(Bson::Int64(found)) => Ok(*found),
+        _ => Err(Fail::Invalid),
+    }
+}
+
+/// The journal record as an embedded document.
+fn record_doc(record: &Run) -> Result<Document, Fail> {
+    mongodb::bson::to_document(record).map_err(|_| Fail::Invalid)
+}
+
+fn record_from(document: &Document) -> Result<Run, Fail> {
+    let record = document.get_document("record").map_err(|_| Fail::Invalid)?;
+    mongodb::bson::from_document(record.clone()).map_err(|_| Fail::Invalid)
+}
+
+/// One document, in the session when there is one.
+async fn one(
+    store: &Store,
+    table: &str,
+    filter: Document,
+    session: &mut Option<ClientSession>,
+) -> Result<Option<Document>, Fail> {
+    let documents = store.collection(table);
+    let find = documents.find_one(filter);
+    Ok(match session {
+        Some(session) => find.session(session).await?,
+        None => find.await?,
+    })
+}
+
+/// find_one_and_update with the document after the update, in the session when there is one.
+async fn change(
+    store: &Store,
+    table: &str,
+    filter: Document,
+    update: Document,
+    upsert: bool,
+    session: &mut Option<ClientSession>,
+) -> Result<Option<Document>, Fail> {
+    let documents = store.collection(table);
+    let action = documents
+        .find_one_and_update(filter, update)
+        .upsert(upsert)
+        .return_document(ReturnDocument::After);
+    Ok(match session {
+        Some(session) => action.session(session).await?,
+        None => action.await?,
+    })
+}
+
+// ---------------------------------------------------------------- the journal
+
+/// Create the run and its lease at once, or return the run that already holds the key.
+async fn start(store: &Store, record: Run) -> Result<(Run, bool), Fail> {
+    let mut session = store.client.start_session().await?;
+    session.start_transaction().await?;
+    let run = doc! {
+        "owner": record.owner.as_str(),
+        "flow": record.flow.as_str(),
+        "key": record.key.as_str(),
+        "_id": record.run_id.as_str(),
+        "epoch": record.epoch,
+        "record": record_doc(&record)?,
+    };
+    let lease = doc! {"_id": record.run_id.as_str(), "epoch": record.epoch, "until": now() + LEASE};
+    let outcome = async {
+        store.collection(RUNS).insert_one(run).session(&mut session).await?;
+        store.collection(LEASES).insert_one(lease).session(&mut session).await?;
+        session.commit_transaction().await
+    }
+    .await;
+    let Err(error) = outcome else {
+        return Ok((record, true));
+    };
+    let _ = session.abort_transaction().await;
+    if !duplicate(&error) {
+        return Err(error.into());
+    }
+    let keys = doc! {
+        "owner": record.owner.as_str(),
+        "flow": record.flow.as_str(),
+        "key": record.key.as_str(),
+    };
+    let found = one(store, RUNS, keys, &mut None)
+        .await?
+        .ok_or_else(|| Fail::http(404, MISSING))?;
+    let previous = record_from(&found)?;
+    if previous.request_hash != record.request_hash {
+        return Err(Fail::http(409, "idempotency content changed"));
+    }
+    Ok((previous, false))
+}
+
+async fn load(
+    store: &Store,
+    run_id: &str,
+    owner: &str,
+    session: &mut Option<ClientSession>,
+) -> Result<Run, Fail> {
+    let found = one(store, RUNS, doc! {"_id": run_id, "owner": owner}, session)
+        .await?
+        .ok_or_else(|| Fail::http(404, MISSING))?;
+    record_from(&found)
+}
+
+/// Write the record only while this epoch still holds an unexpired lease.
+async fn save(store: &Store, session: &mut Option<ClientSession>, record: &Run) -> Result<(), Fail> {
+    let held = doc! {"_id": record.run_id.as_str(), "epoch": record.epoch, "until": {"$gt": now()}};
+    one(store, LEASES, held, &mut None)
+        .await?
+        .ok_or_else(|| Fail::http(503, LOST))?;
+    let run = doc! {"_id": record.run_id.as_str(), "epoch": record.epoch};
+    let update = doc! {"$set": {"record": record_doc(record)?}};
+    change(store, RUNS, run, update, false, session)
+        .await?
+        .map(drop)
+        .ok_or_else(|| Fail::http(503, LOST))
+}
+
+/// Extend the lease, or release it, outside any business transaction.
+async fn renew(store: &Store, record: &Run, release: bool) -> Result<(), Fail> {
+    let at = now();
+    let mut query = doc! {"_id": record.run_id.as_str(), "epoch": record.epoch};
+    let until = if release {
+        Bson::Int32(0)
+    } else {
+        query.insert("until", doc! {"$gt": at});
+        Bson::Double(at + LEASE)
+    };
+    change(store, LEASES, query, doc! {"$set": {"until": until}}, false, &mut None)
+        .await?
+        .map(drop)
+        .ok_or_else(|| Fail::http(503, LOST))
+}
+
+/// A write conflict that aborted the claim's transaction: another claim won.
+fn lost_race(error: &mongodb::error::Error) -> bool {
+    code(error) == Some(112) && error.contains_label(TRANSIENT_TRANSACTION_ERROR)
+}
+
+/// Take an expired lease with the next epoch, and mark the run compensating.
+async fn claim(store: &Store, record: &Run) -> Result<Option<Run>, Fail> {
+    let mut started = store.client.start_session().await?;
+    started.start_transaction().await?;
+    let mut session = Some(started);
+    let outcome = claimed(store, record, &mut session).await;
+    let mut session = session.ok_or_else(|| Fail::Runtime("transaction required".to_owned()))?;
+    let outcome = match outcome {
+        Ok((found, true)) => session
+            .commit_transaction()
+            .await
+            .map(|()| found)
+            .map_err(Fail::from),
+        Ok((found, false)) => {
+            let _ = session.abort_transaction().await;
+            Ok(found)
+        }
+        Err(error) => {
+            let _ = session.abort_transaction().await;
+            Err(error)
+        }
+    };
+    match outcome {
+        Err(Fail::Database(error)) if lost_race(&error) => Ok(None),
+        other => other,
+    }
+}
+
+/// The claim's writes, and whether they commit.
+async fn claimed(
+    store: &Store,
+    record: &Run,
+    session: &mut Option<ClientSession>,
+) -> Result<(Option<Run>, bool), Fail> {
+    let at = now();
+    let expired = doc! {"_id": record.run_id.as_str(), "until": {"$lt": at}};
+    let next = doc! {"$inc": {"epoch": 1}, "$set": {"until": at + LEASE}};
+    let Some(lease) = change(store, LEASES, expired, next, false, session).await? else {
+        return Ok((None, true));
+    };
+    let mut found = load(store, &record.run_id, &record.owner, session).await?;
+    if ["succeeded", "compensated"].contains(&found.state.as_str()) {
+        return Ok((Some(found), false));
+    }
+    found.epoch = i32::try_from(read_i64(&lease, "epoch")?).map_err(|_| Fail::Invalid)?;
+    found.state = "compensating".to_owned();
+    let update = doc! {"$set": {"epoch": found.epoch, "record": record_doc(&found)?}};
+    change(store, RUNS, doc! {"_id": found.run_id.as_str()}, update, false, session)
+        .await?
+        .ok_or_else(|| Fail::http(503, LOST))?;
+    Ok((Some(found), true))
+}
+
+// ---------------------------------------------------------------- resources
+
+fn role(name: &str) -> &'static Role {
+    if name.starts_with("child") { &CHILD } else { &PARENT }
+}
+
+fn model<T: DeserializeOwned>(data: &Map<String, Value>) -> Result<T, Fail> {
+    serde_json::from_value(Value::Object(data.clone())).map_err(|_| Fail::http(422, BAD_INPUT))
+}
+
+fn checked(problems: Vec<Value>) -> Result<(), Fail> {
+    if problems.is_empty() { Ok(()) } else { Err(Fail::http(422, BAD_INPUT)) }
+}
+
+fn read_json(role: &Role, document: &Document) -> Result<Value, Fail> {
+    let read = if role.child {
+        crate::db::child_row(document).map(|row| serde_json::to_value(ChildRead::from(row)))
+    } else {
+        crate::db::parent_row(document).map(|row| serde_json::to_value(ParentRead::from(row)))
+    };
+    read.map_err(|_| Fail::Invalid)?.map_err(|_| Fail::Invalid)
+}
+
+fn parent_key(parent_id: Option<i64>) -> Bson {
+    parent_id.map_or(Bson::Null, int)
+}
+
+/// A child's parent must exist. The scope filter of the role.
+async fn scope(
+    store: &Store,
+    role: &Role,
+    parent_id: Option<i64>,
+    session: &mut Option<ClientSession>,
+) -> Result<Document, Fail> {
+    let mut filter = Document::new();
+    if role.child {
+        one(store, role.parent, doc! {"_id": parent_key(parent_id)}, session)
+            .await?
+            .ok_or_else(|| Fail::http(404, MISSING))?;
+        filter.insert(role.key, parent_key(parent_id));
+    }
+    Ok(filter)
+}
+
+/// A child write raises its parent's guard, so a concurrent parent delete conflicts.
+async fn guard(
+    store: &Store,
+    role: &Role,
+    parent_id: Option<i64>,
+    session: &mut Option<ClientSession>,
+) -> Result<(), Fail> {
+    if !role.child {
+        return Ok(());
+    }
+    let filter = doc! {"_id": parent_key(parent_id)};
+    let update = doc! {"$inc": {"_som_guard": 1}};
+    change(store, role.parent, filter, update, false, session)
+        .await?
+        .map(drop)
+        .ok_or_else(|| Fail::http(404, "parent missing"))
+}
+
+async fn row(
+    store: &Store,
+    role: &Role,
+    parent_id: Option<i64>,
+    row_id: i64,
+    session: &mut Option<ClientSession>,
+) -> Result<Document, Fail> {
+    let mut filter = scope(store, role, parent_id, session).await?;
+    filter.insert("_id", int(row_id));
+    one(store, role.table, filter, session)
+        .await?
+        .ok_or_else(|| Fail::http(404, MISSING))
+}
+
+async fn rows(
+    store: &Store,
+    role: &Role,
+    parent_id: Option<i64>,
+    limit: i64,
+    session: &mut Option<ClientSession>,
+) -> Result<Vec<Document>, Fail> {
+    let filter = scope(store, role, parent_id, session).await?;
+    let documents = store.collection(role.table);
+    let find = documents
+        .find(filter)
+        .sort(doc! {"_id": 1})
+        .limit(limit);
+    let mut found = Vec::new();
+    match session {
+        Some(session) => {
+            let mut cursor = find.session(&mut *session).await?;
+            while cursor.advance(&mut *session).await? {
+                found.push(cursor.deserialize_current()?);
+            }
+        }
+        None => {
+            let mut cursor = find.await?;
+            while cursor.advance().await? {
+                found.push(cursor.deserialize_current()?);
+            }
+        }
+    }
+    Ok(found)
+}
+
+/// A parent with children cannot go.
+async fn unreferenced(
+    store: &Store,
+    role: &Role,
+    row_id: i64,
+    session: &mut Option<ClientSession>,
+) -> Result<(), Fail> {
+    if role.child {
+        return Ok(());
+    }
+    let mut filter = Document::new();
+    filter.insert(CHILD.key, int(row_id));
+    if one(store, CHILD.table, filter, session).await?.is_some() {
+        return Err(Fail::http(409, "parent has children"));
+    }
+    Ok(())
+}
+
+/// The present members of a patch as a $set, with updated_at and the next revision.
+fn patch_update(role: &Role, values: &Map<String, Value>) -> Result<Document, Fail> {
+    let mut changes = if role.child {
+        crate::db::child_changes(model::<ChildUpdate>(values)?)
+    } else {
+        crate::db::parent_changes(model::<ParentUpdate>(values)?)
+    };
+    changes.insert("updated_at", mongodb::bson::DateTime::now());
+    Ok(doc! {"$set": changes, "$inc": {"_som_revision": 1}})
+}
+
+/// Undo one owned effect, fenced by its revision. A restore returns the next revision.
+async fn reverse_effect(
+    store: &Store,
+    session: &mut Option<ClientSession>,
+    effect: &Effect,
+) -> Result<Option<i64>, Fail> {
+    let role = role(&effect.role);
+    let query = doc! {"_id": int(effect.row_id), "_som_revision": int(effect.revision)};
+    if effect.undo == "restore_patch" {
+        let update = patch_update(role, &effect.before)?;
+        change(store, role.table, query, update, false, session)
+            .await?
+            .ok_or_else(|| Fail::http(409, CONFLICT))?;
+        return Ok(Some(effect.revision + 1));
+    }
+    unreferenced(store, role, effect.row_id, session).await?;
+    let active = session
+        .as_mut()
+        .ok_or_else(|| Fail::Runtime("transaction required".to_owned()))?;
+    let done = store
+        .collection(role.table)
+        .delete_one(query)
+        .session(active)
+        .await?;
+    if done.deleted_count != 1 {
+        return Err(Fail::http(409, CONFLICT));
+    }
+    Ok(None)
+}
+
+// ---------------------------------------------------------------- the interpreter
+
+fn integer(value: &Value) -> Result<i64, Fail> {
+    value.as_i64().ok_or_else(|| Fail::http(422, "integer required"))
+}
+
+fn object(value: Value) -> Result<Map<String, Value>, Fail> {
+    match value {
+        Value::Object(map) => Ok(map),
+        _ => Err(Fail::Invalid),
+    }
+}
+
+fn receipt(data: Value) -> Result<Value, Fail> {
+    let body = serde_json::to_vec(&data).map_err(|_| Fail::Invalid)?;
+    Ok(json!({
+        "body": base64::engine::general_purpose::STANDARD.encode(&body),
+        "size": body.len(),
+        "sha256": format!("{:x}", Sha256::digest(&body)),
+        "data": data,
+    }))
+}
+
+/// One run's journal and its open transaction.
+struct Ctx {
+    store: Store,
+    record: Run,
+    session: Option<ClientSession>,
+}
+
+impl Ctx {
+    fn new(store: Store, record: Run) -> Self {
+        Self {
+            store,
+            record,
+            session: None,
+        }
+    }
+
+    /// Open the transaction, and keep the record to restore after a rollback.
+    async fn begin(&mut self) -> Result<Run, Fail> {
+        let mut session = self.store.client.start_session().await?;
+        session.start_transaction().await?;
+        self.session = Some(session);
+        Ok(self.record.clone())
+    }
+
+    /// Journal the record inside the transaction, then commit both.
+    async fn commit(&mut self) -> Result<(), Fail> {
+        if self.session.is_none() {
+            return Err(Fail::Runtime("transaction required".to_owned()));
+        }
+        let saved = save(&self.store, &mut self.session, &self.record).await;
+        let mut session = self
+            .session
+            .take()
+            .ok_or_else(|| Fail::Runtime("transaction required".to_owned()))?;
+        match saved {
+            Ok(()) => session.commit_transaction().await.map_err(Fail::from),
+            Err(error) => {
+                let _ = session.abort_transaction().await;
+                Err(error)
+            }
+        }
+    }
+
+    async fn abort(&mut self, snapshot: Run) {
+        if let Some(mut session) = self.session.take() {
+            let _ = session.abort_transaction().await;
+        }
+        self.record = snapshot;
+    }
+
+    /// A fenced checkpoint: an empty transaction that journals the record.
+    async fn persist(&mut self) -> Result<(), Fail> {
+        let snapshot = self.begin().await?;
+        let outcome = self.commit().await;
+        if outcome.is_err() {
+            self.abort(snapshot).await;
+        }
+        outcome
+    }
+
+    fn resolve(&self, reference: &Value) -> Result<Value, Fail> {
+        if let Some(name) = reference["input"].as_str() {
+            return Ok(self.record.inputs.get(name).cloned().unwrap_or(Value::Null));
+        }
+        if let Some(step) = reference["step"].as_str() {
+            let value = self.record.values.get(step).cloned().unwrap_or(Value::Null);
+            let field = reference["field"].as_str().unwrap_or_default();
+            return Ok(if field.is_empty() { value } else { value[field].clone() });
+        }
+        if reference.get("literal").is_some() {
+            return Ok(reference["literal"].clone());
+        }
+        Err(Fail::Runtime("unknown flow reference".to_owned()))
+    }
+
+    fn parent_id(&self, args: &Value) -> Result<Option<i64>, Fail> {
+        if args.get("parent_id").is_some() {
+            Ok(Some(integer(&self.resolve(&args["parent_id"])?)?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// One step: its value goes into the journal under its name. The open transaction stays
+    /// with the context whatever the step returns.
+    async fn step(&mut self, step: &Value, group: &str) -> Result<(), Fail> {
+        let mut session = self.session.take();
+        let outcome = self.apply(step, group, &mut session).await;
+        self.session = session;
+        outcome
+    }
+
+    async fn apply(
+        &mut self,
+        step: &Value,
+        group: &str,
+        session: &mut Option<ClientSession>,
+    ) -> Result<(), Fail> {
+        let name = step["name"].as_str().unwrap_or_default().to_owned();
+        let op = step["op"].as_str().unwrap_or_default();
+        let args = &step["args"];
+        let (scope_name, action) = op.split_once('.').unwrap_or((op, ""));
+        let role = role(scope_name);
+        let parent_id = self.parent_id(args)?;
+        let store = self.store.clone();
+        let store = &store;
+        let value = match (op, action) {
+            ("authorize", _) => json!({"sub": self.record.owner, "role": "editor"}),
+            ("workflow.run", _) => {
+                let found = rows(store, &CHILD, parent_id, 1001, session).await?;
+                if found.len() > 1000 {
+                    return Err(Fail::http(413, "workflow exceeds 1000 rows"));
+                }
+                let data = found
+                    .iter()
+                    .map(|row| read_json(&CHILD, row))
+                    .collect::<Result<Vec<_>, _>>()?;
+                receipt(Value::Array(data))?
+            }
+            (_, "get") => {
+                let id = if role.child { &args["child_id"] } else { &args["parent_id"] };
+                let row_id = integer(&self.resolve(id)?)?;
+                let parent_id = if role.child { parent_id } else { None };
+                read_json(role, &row(store, role, parent_id, row_id, session).await?)?
+            }
+            (_, "list") => Value::Array(
+                rows(store, role, parent_id, 20, session)
+                    .await?
+                    .iter()
+                    .map(|row| read_json(role, row))
+                    .collect::<Result<Vec<_>, _>>()?,
+            ),
+            (_, "create" | "patch") if session.is_none() => {
+                return Err(Fail::Runtime("transaction required".to_owned()));
+            }
+            (_, "create") => {
+                let data = object(self.resolve(&args["data"])?)?;
+                guard(store, role, parent_id, session).await?;
+                let counter = change(
+                    store,
+                    COUNTERS,
+                    doc! {"_id": role.table},
+                    doc! {"$inc": {"value": 1}},
+                    true,
+                    session,
+                )
+                .await?
+                .ok_or_else(|| Fail::Runtime("counter missing".to_owned()))?;
+                let id = read_i64(&counter, "value")?;
+                let fields = if role.child {
+                    let body: ChildCreate = model(&data)?;
+                    checked(body.problems())?;
+                    crate::db::child_fields(body)
+                } else {
+                    let body: ParentCreate = model(&data)?;
+                    checked(body.problems())?;
+                    crate::db::parent_fields(body)
+                };
+                let mut document = doc! {"_id": int(id)};
+                if role.child {
+                    document.insert(role.key, parent_key(parent_id));
+                }
+                document.extend(fields);
+                let at = Bson::DateTime(mongodb::bson::DateTime::now());
+                document.insert("_som_revision", 0);
+                document.insert("_som_guard", 0);
+                document.insert("created_at", at.clone());
+                document.insert("updated_at", at);
+                let active = session
+                    .as_mut()
+                    .ok_or_else(|| Fail::Runtime("transaction required".to_owned()))?;
+                store
+                    .collection(role.table)
+                    .insert_one(document)
+                    .session(active)
+                    .await?;
+                let found = one(store, role.table, doc! {"_id": int(id)}, session)
+                    .await?
+                    .ok_or_else(|| Fail::http(404, MISSING))?;
+                self.record.effects.push(self.effect(step, group, &name, id, 0, Map::new()));
+                read_json(role, &found)?
+            }
+            (_, "patch") => {
+                let row_id = integer(&self.resolve(if role.child { &args["child_id"] } else { &args["parent_id"] })?)?;
+                guard(store, role, parent_id, session).await?;
+                let parent_id = if role.child { parent_id } else { None };
+                let previous = row(store, role, parent_id, row_id, session).await?;
+                let revision = read_i64(&previous, "_som_revision")?;
+                let previous = read_json(role, &previous)?;
+                let data = object(self.resolve(&args["data"])?)?;
+                let changes = if role.child {
+                    let body: ChildUpdate = model(&data)?;
+                    checked(body.problems())?;
+                    crate::db::child_changes(body)
+                } else {
+                    let body: ParentUpdate = model(&data)?;
+                    checked(body.problems())?;
+                    crate::db::parent_changes(body)
+                };
+                if changes.is_empty() {
+                    previous
+                } else {
+                    let before = role
+                        .columns
+                        .iter()
+                        .filter(|(column, _)| changes.contains_key(*column))
+                        .map(|(column, _)| ((*column).to_owned(), previous[*column].clone()))
+                        .collect();
+                    let query = doc! {"_id": int(row_id), "_som_revision": int(revision)};
+                    let found = change(store, role.table, query, patch_update(role, &data)?, false, session)
+                        .await?
+                        .ok_or_else(|| Fail::http(409, CONFLICT))?;
+                    let revision = read_i64(&found, "_som_revision")?;
+                    let read = read_json(role, &found)?;
+                    self.record.effects.push(self.effect(step, group, &name, row_id, revision, before));
+                    read
+                }
+            }
+            _ => return Err(Fail::Runtime(format!("unsupported flow step {op}"))),
+        };
+        self.record.values.insert(name, value);
+        Ok(())
+    }
+
+    fn effect(
+        &self,
+        step: &Value,
+        group: &str,
+        name: &str,
+        row_id: i64,
+        revision: i64,
+        before: Map<String, Value>,
+    ) -> Effect {
+        let op = step["op"].as_str().unwrap_or_default();
+        Effect {
+            group: group.to_owned(),
+            step: name.to_owned(),
+            undo: step["undo"].as_str().unwrap_or_default().to_owned(),
+            role: if op.starts_with("child") { "child" } else { "parent" }.to_owned(),
+            row_id,
+            revision,
+            before,
+            key: String::new(),
+            version: None,
+            owned: true,
+            uncertain: false,
+        }
+    }
+
+    /// The declared steps once, then the declared result.
+    async fn forward(&mut self) -> Result<Map<String, Value>, Fail> {
+        for node in FLOW["steps"].as_array().into_iter().flatten() {
+            if node["op"] == "transaction" {
+                let group = node["name"].as_str().unwrap_or_default();
+                let snapshot = self.begin().await?;
+                let outcome = async {
+                    for step in node["steps"].as_array().into_iter().flatten() {
+                        self.step(step, group).await?;
+                    }
+                    self.commit().await
+                }
+                .await;
+                if outcome.is_err() {
+                    self.abort(snapshot).await;
+                }
+                outcome?;
+            } else {
+                self.step(node, "").await?;
+                self.persist().await?;
+            }
+        }
+        let mut result = Map::new();
+        let mut names: Vec<&String> = FLOW["result"].as_object().into_iter().flatten().map(|(name, _)| name).collect();
+        names.sort();
+        for name in names {
+            result.insert(name.clone(), self.resolve(&FLOW["result"][name.as_str()])?);
+        }
+        Ok(result)
+    }
+
+    /// Undo committed groups from the last, each in one transaction, without replay.
+    async fn reverse(&mut self) -> Result<(), Fail> {
+        self.record.state = "compensating".to_owned();
+        self.persist().await?;
+        while let Some(last) = self.record.effects.last().cloned() {
+            if !last.key.is_empty() {
+                if last.undo != "delete_created" {
+                    return Err(Fail::Runtime("invalid object inverse".to_owned()));
+                }
+                return Err(Fail::http(503, "invalid external journal"));
+            }
+            let snapshot = self.begin().await?;
+            let outcome = async {
+                while let Some(effect) = self.record.effects.last().cloned() {
+                    if effect.group != last.group {
+                        break;
+                    }
+                    if effect.before.is_empty() == (effect.undo == "restore_patch") {
+                        return Err(Fail::Runtime("invalid resource inverse".to_owned()));
+                    }
+                    let revision = if effect.owned {
+                        reverse_effect(&self.store, &mut self.session, &effect).await?
+                    } else {
+                        None
+                    };
+                    self.record.effects.pop();
+                    if let Some(revision) = revision {
+                        for prior in &mut self.record.effects {
+                            if prior.role == effect.role && prior.row_id == effect.row_id {
+                                prior.revision = revision;
+                            }
+                        }
+                    }
+                }
+                self.commit().await
+            }
+            .await;
+            if outcome.is_err() {
+                self.abort(snapshot).await;
+            }
+            outcome?;
+        }
+        self.record.state = "compensated".to_owned();
+        self.persist().await
+    }
+}
+
+// ---------------------------------------------------------------- runs
+
+type Boxed<T> = Pin<Box<dyn Future<Output = Result<T, Fail>> + Send>>;
+
+/// Run the work while a heartbeat renews the lease. A failed renewal drops the work, whose
+/// session aborts its transaction, and the run answers 503 lease lost.
+async fn leased<T>(
+    store: &Store,
+    record: &Run,
+    work: impl Future<Output = Result<T, Fail>>,
+) -> Result<T, Fail> {
+    let (lost, gone) = tokio::sync::oneshot::channel::<()>();
+    let beat_store = store.clone();
+    let beat = record.clone();
+    let heartbeat = tokio::spawn(async move {
+        loop {
+            tokio::time::sleep(HEARTBEAT).await;
+            if renew(&beat_store, &beat, false).await.is_err() {
+                let _ = lost.send(());
+                return;
+            }
+        }
+    });
+    let outcome = tokio::select! {
+        biased;
+        _ = gone => Err(Fail::http(503, "lease lost")),
+        outcome = work => outcome,
+    };
+    heartbeat.abort();
+    outcome
+}
+
+/// Run forward once, or resume a fenced compensation.
+fn run_record(store: Store, record: Run, inverse: bool) -> Boxed<Run> {
+    Box::pin(async move {
+        let mut ctx = Ctx::new(store.clone(), record.clone());
+        let outcome = leased(&store, &record, async {
+            if inverse {
+                ctx.reverse().await
+            } else {
+                ctx.record.result = ctx.forward().await?;
+                ctx.record.state = "succeeded".to_owned();
+                ctx.persist().await
+            }
+        })
+        .await;
+        if let Some(mut session) = ctx.session.take() {
+            let _ = session.abort_transaction().await;
+        }
+        drop(ctx);
+        let early = match outcome {
+            Ok(()) => Ok(None),
+            Err(error) if error.caught() => failed(&store, &record, inverse, error).await,
+            Err(error) => Err(error),
+        };
+        let _ = renew(&store, &record, true).await;
+        match early {
+            Ok(Some(found)) => Ok(found),
+            Ok(None) => load(&store, &record.run_id, &record.owner, &mut None)
+                .await
+                .map_err(|error| error.journal(&record.run_id)),
+            Err(error) => Err(error),
+        }
+    })
+}
+
+/// After a failure: keep a newer epoch's outcome, or journal this failure and compensate.
+async fn failed(store: &Store, record: &Run, inverse: bool, error: Fail) -> Result<Option<Run>, Fail> {
+    let mut latest = load(store, &record.run_id, &record.owner, &mut None)
+        .await
+        .map_err(|error| error.journal(&record.run_id))?;
+    if latest.epoch != record.epoch {
+        return Ok(Some(latest));
+    }
+    if inverse {
+        latest.state = "recovery_required".to_owned();
+        let _ = Ctx::new(store.clone(), latest).persist().await;
+        return Ok(None);
+    }
+    (latest.error_status, latest.error_detail) = error.business();
+    let mut journal = Ctx::new(store.clone(), latest);
+    if let Err(Fail::Http(..) | Fail::Database(_)) = journal.persist().await {
+        return Err(Fail::Journal(record.run_id.clone()));
+    }
+    let latest = journal.record;
+    renew(store, &latest, true).await?;
+    recover_record(store.clone(), latest).await.map(Some)
+}
+
+/// Claim expired work and finish only its compensation.
+fn recover_record(store: Store, record: Run) -> Boxed<Run> {
+    Box::pin(async move {
+        let claimed = claim(&store, &record)
+            .await
+            .map_err(|error| error.journal(&record.run_id))?;
+        match claimed {
+            Some(claimed) if !["succeeded", "compensated"].contains(&claimed.state.as_str()) => {
+                run_record(store, claimed, true).await
+            }
+            _ => load(&store, &record.run_id, &record.owner, &mut None)
+                .await
+                .map_err(|error| error.journal(&record.run_id)),
+        }
+    })
+}
+
+fn reply(record: &Run, status_only: bool) -> Response {
+    let mut content = json!({"run_id": record.run_id, "state": record.state});
+    let status = match record.state.as_str() {
+        "succeeded" => {
+            content["result"] = Value::Object(record.result.clone());
+            200
+        }
+        "compensated" => {
+            content["detail"] = json!(record.error_detail);
+            record.error_status
+        }
+        "recovery_required" => {
+            content["detail"] = json!(record.error_detail);
+            503
+        }
+        _ => 202,
+    };
+    let status = if status_only { 200 } else { status };
+    let status = StatusCode::from_u16(status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+    (status, Json(content)).into_response()
+}
+
+// ---------------------------------------------------------------- routes
+
+fn check_model<T: DeserializeOwned>(
+    value: &Value,
+    loc: &Value,
+    problems: impl Fn(&T) -> Vec<Value>,
+) -> Vec<Value> {
+    match serde_json::from_value::<T>(value.clone()) {
+        Ok(found) => problems(&found),
+        Err(error) => vec![problem("value_error", loc.clone(), &error.to_string())],
+    }
+}
+
+fn check_input(kind: &str, value: &Value, loc: &Value) -> Vec<Value> {
+    let scalar = |valid: bool, kind: &str, message: &str| {
+        if valid { Vec::new() } else { vec![problem(kind, loc.clone(), message)] }
+    };
+    match kind {
+        "parent_input" => check_model(value, loc, |found: &ParentCreate| found.problems_at(loc)),
+        "child_input" => check_model(value, loc, |found: &ChildCreate| found.problems_at(loc)),
+        "parent_patch" => check_model(value, loc, ParentUpdate::problems),
+        "child_patch" => check_model(value, loc, ChildUpdate::problems),
+        "integer" => scalar(value.is_i64(), "int_type", "Input should be a valid integer"),
+        "float" => scalar(value.is_number(), "float_type", "Input should be a valid number"),
+        "boolean" => scalar(value.is_boolean(), "bool_type", "Input should be a valid boolean"),
+        "date" => scalar(
+            value.as_str().is_some_and(|day| chrono::NaiveDate::parse_from_str(day, "%Y-%m-%d").is_ok()),
+            "date_from_datetime_parsing",
+            "Input should be a valid date",
+        ),
+        _ => scalar(value.is_string(), "string_type", "Input should be a valid string"),
+    }
+}
+
+/// The declared inputs: each one present and valid, and no other member.
+fn check_inputs(body: &Map<String, Value>) -> Vec<Value> {
+    let mut found = Vec::new();
+    let declared = FLOW["inputs"].as_array().cloned().unwrap_or_default();
+    for input in &declared {
+        let name = input["name"].as_str().unwrap_or_default();
+        let loc = json!(["body", name]);
+        match body.get(name) {
+            None => found.push(problem("missing", loc, "Field required")),
+            Some(value) => found.extend(check_input(input["type"].as_str().unwrap_or_default(), value, &loc)),
+        }
+    }
+    for name in body.keys() {
+        if !declared.iter().any(|input| input["name"] == name.as_str()) {
+            found.push(problem("extra_forbidden", json!(["body", name]), "Extra inputs are not permitted"));
+        }
+    }
+    found
+}
+
+fn idempotency_key(headers: &HeaderMap, problems: &mut Vec<Value>) -> String {
+    let loc = json!(["header", "idempotency-key"]);
+    let Some(value) = headers.get("idempotency-key") else {
+        problems.push(problem("missing", loc, "Field required"));
+        return String::new();
+    };
+    let key = String::from_utf8_lossy(value.as_bytes()).into_owned();
+    match key.chars().count() {
+        0 => problems.push(problem("string_too_short", loc, "String should have at least 1 character")),
+        129.. => problems.push(problem("string_too_long", loc, "String should have at most 128 characters")),
+        _ => {}
+    }
+    key
+}
+
+/// JSON with every object's keys sorted, as json.dumps(sort_keys=True) orders them.
+fn sorted(value: &Value) -> Value {
+    match value {
+        Value::Object(map) => {
+            let mut keys: Vec<&String> = map.keys().collect();
+            keys.sort();
+            Value::Object(keys.into_iter().map(|key| (key.clone(), sorted(&map[key]))).collect())
+        }
+        Value::Array(items) => Value::Array(items.iter().map(sorted).collect()),
+        other => other.clone(),
+    }
+}
+
+fn run_id() -> Result<String, Fail> {
+    use ring::rand::SecureRandom;
+    let mut bytes = [0u8; 16];
+    ring::rand::SystemRandom::new()
+        .fill(&mut bytes)
+        .map_err(|_| Fail::Runtime("no randomness".to_owned()))?;
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    Ok(bytes.iter().map(|byte| format!("{byte:02x}")).collect())
+}
+
+async fn execute(
+    State(state): State<AppState>,
+    access: Result<Access, crate::api::ApiError>,
+    headers: HeaderMap,
+    payload: Result<Bytes, BytesRejection>,
+) -> Response {
+    let mut problems = Vec::new();
+    let key = idempotency_key(&headers, &mut problems);
+    let body = match read_body(&headers, payload, &mut problems, check_inputs) {
+        Ok(body) => body,
+        Err(error) => return error.into_response(),
+    };
+    let identity = match access {
+        Ok(Access(identity)) => identity,
+        Err(error) => return error.into_response(),
+    };
+    let inputs = match body.finish(problems) {
+        Ok(inputs) => inputs,
+        Err(error) => return error.into_response(),
+    };
+    let digest = format!(
+        "{:x}",
+        Sha256::digest(sorted(&json!({"plan": *PLAN, "input": inputs})).to_string().as_bytes())
+    );
+    let outcome = async {
+        let record = Run {
+            run_id: run_id()?,
+            owner: identity.sub,
+            flow: FLOW_NAME.to_owned(),
+            key,
+            request_hash: digest,
+            epoch: 1,
+            state: "running".to_owned(),
+            inputs,
+            values: Map::new(),
+            branches: Map::new(),
+            effects: Vec::new(),
+            result: Map::new(),
+            error_status: 503,
+            error_detail: "execution interrupted".to_owned(),
+        };
+        let (record, created) = start(&state.store, record).await?;
+        if created {
+            run_record(state.store.clone(), record, false).await
+        } else {
+            Ok(record)
+        }
+    };
+    match outcome.await {
+        Ok(record) => reply(&record, false),
+        Err(error) => error.into_response(),
+    }
+}
+
+async fn status(
+    State(state): State<AppState>,
+    access: Result<Access, crate::api::ApiError>,
+    Path(run_id): Path<String>,
+) -> Response {
+    let identity = match access {
+        Ok(Access(identity)) => identity,
+        Err(error) => return error.into_response(),
+    };
+    match load(&state.store, &run_id, &identity.sub, &mut None).await {
+        Ok(record) => reply(&record, true),
+        Err(error) => error.into_response(),
+    }
+}
+
+async fn recover(
+    State(state): State<AppState>,
+    access: Result<Access, crate::api::ApiError>,
+    Path(run_id): Path<String>,
+) -> Response {
+    let identity = match access {
+        Ok(Access(identity)) => identity,
+        Err(error) => return error.into_response(),
+    };
+    let outcome = async {
+        let record = load(&state.store, &run_id, &identity.sub, &mut None).await?;
+        recover_record(state.store.clone(), record).await
+    };
+    match outcome.await {
+        Ok(record) => reply(&record, false),
+        Err(error) => error.into_response(),
+    }
+}
+
+pub fn routes() -> Router<AppState> {
+    Router::new()
+        .route(&format!("/flows/{FLOW_NAME}/runs"), post(execute))
+        .route("/flow-runs/{run_id}", get(status))
+        .route("/flow-runs/{run_id}/recover", post(recover))
+}
