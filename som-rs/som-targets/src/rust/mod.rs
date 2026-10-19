@@ -1300,15 +1300,19 @@ mod tests {
             prompt["capabilities"]["group_field"] = json!("title");
         }
         let made = json!({"step": "made", "field": "parent.id"});
-        let mut writes = vec![json!({"name": "made", "op": "batch.create", "undo": "delete_created",
-            "args": {"parent": {"input": "parent"}, "children": {"input": "kids"}}})];
+        let mut writes = vec![
+            json!({"name": "made", "op": "batch.create", "undo": "delete_created",
+            "args": {"parent": {"input": "parent"}, "children": {"input": "kids"}}}),
+        ];
         let mut inputs = vec![
             json!({"name": "parent", "type": "parent_input"}),
             json!({"name": "kids", "type": "children_input"}),
         ];
         if workflow == "csv" {
-            writes.push(json!({"name": "imported", "op": "workflow.import", "undo": "delete_created",
-                "args": {"parent_id": made, "csv": {"input": "csv"}}}));
+            writes.push(
+                json!({"name": "imported", "op": "workflow.import", "undo": "delete_created",
+                "args": {"parent_id": made, "csv": {"input": "csv"}}}),
+            );
             inputs.push(json!({"name": "csv", "type": "string"}));
         }
         prompt["flow"] = json!({
@@ -1358,14 +1362,30 @@ mod tests {
         for workflow in ["csv", "gzip_export", "decimal_summary", "statistics"] {
             for database in ["postgresql", "mongodb"] {
                 let name = format!("{workflow}-{database}").replace("postgresql", "pg");
-                let name = if database == "mongodb" { name.replace("mongodb", "mongo") } else { name };
+                let name = if database == "mongodb" {
+                    name.replace("mongodb", "mongo")
+                } else {
+                    name
+                };
                 prompts.push((name, batch_flow(database, workflow)));
             }
         }
-        prompts.push(("obj-s3-jwt-pg".to_owned(), object_flow("postgresql", "jwt", "s3")));
-        prompts.push(("obj-gcs-firebase-mongo".to_owned(), object_flow("mongodb", "firebase", "gcs")));
-        prompts.push(("obj-s3-google-mongo".to_owned(), object_flow("mongodb", "google_oauth", "s3")));
-        prompts.push(("obj-gcs-jwt-pg".to_owned(), object_flow("postgresql", "jwt", "gcs")));
+        prompts.push((
+            "obj-s3-jwt-pg".to_owned(),
+            object_flow("postgresql", "jwt", "s3"),
+        ));
+        prompts.push((
+            "obj-gcs-firebase-mongo".to_owned(),
+            object_flow("mongodb", "firebase", "gcs"),
+        ));
+        prompts.push((
+            "obj-s3-google-mongo".to_owned(),
+            object_flow("mongodb", "google_oauth", "s3"),
+        ));
+        prompts.push((
+            "obj-gcs-jwt-pg".to_owned(),
+            object_flow("postgresql", "jwt", "gcs"),
+        ));
         for (name, prompt) in prompts {
             let name = name.as_str();
             let dsl = plan(&prompt).expect("plan");
@@ -1395,7 +1415,10 @@ mod tests {
             );
             if name.starts_with("obj-") {
                 assert!(first["src/flows.rs"].contains("fn object_put"), "{name}");
-                assert!(first["src/integrations.rs"].contains("pub async fn object_reverse"), "{name}");
+                assert!(
+                    first["src/integrations.rs"].contains("pub async fn object_reverse"),
+                    "{name}"
+                );
                 continue;
             }
             assert!(first["src/flows.rs"].contains("\"make_family\""), "{name}");

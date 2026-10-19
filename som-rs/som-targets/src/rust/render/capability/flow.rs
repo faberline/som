@@ -46,7 +46,9 @@ fn mongo(id: &str, params: &Value) -> Result<String, String> {
             .ok_or_else(|| "param package is not text".to_owned())
     };
     Ok(match id {
-        "rust.flows.capability_flow_mongodb" => flow_object::runtime(params, flows(params, FLOWS_MONGO)?)?,
+        "rust.flows.capability_flow_mongodb" => {
+            flow_object::runtime(params, flows(params, FLOWS_MONGO)?)?
+        }
         "rust.integrations.capability_flow_mongodb" => flow_object::integrations(params, base()?)?,
         "rust.main.capability_flow_mongodb" => flow_object::main(params, base()?)?,
         "rust.readme.capability_flow_mongodb" => flow_object::readme(params, base()?)?,
@@ -232,7 +234,10 @@ fn api(text: String, params: &Value) -> Result<String, String> {
             other => other,
         })
         .collect();
-    let mut out = format!("{text}{}", FLOW_CSV.replace("@READERS@", &readers.join(", ")));
+    let mut out = format!(
+        "{text}{}",
+        FLOW_CSV.replace("@READERS@", &readers.join(", "))
+    );
     for (name, code) in [
         ("flow_int", FLOW_INT),
         ("flow_float", FLOW_FLOAT),
@@ -247,12 +252,16 @@ fn api(text: String, params: &Value) -> Result<String, String> {
 
 /// The export route answers through export_rows, which a flow's workflow.run calls on its rows.
 fn export_rows(text: &str) -> Result<String, String> {
-    let anchor = "    if rows.len() > EXPORT_MAX_ROWS {\n        return Err(ApiError::TooMany);\n    }\n";
+    let anchor =
+        "    if rows.len() > EXPORT_MAX_ROWS {\n        return Err(ApiError::TooMany);\n    }\n";
     if text.matches(anchor).count() != 1 {
         return Err("flow export has no one row limit".to_owned());
     }
     let start = text.find(anchor).ok_or("flow export")? + anchor.len();
-    let length = text[start..].find("\n}\n").ok_or("flow export has no end")? + 1;
+    let length = text[start..]
+        .find("\n}\n")
+        .ok_or("flow export has no end")?
+        + 1;
     let body = &text[start..start + length];
     Ok(format!(
         "{}    export_rows(rows)\n}}\n\n/// The export bytes of rows, as the export route answers them. A flow's workflow.run reads them.\npub(crate) fn export_rows(rows: Vec<crate::schemas::ChildRow>) -> Result<Response, ApiError> {{\n{body}}}\n{}",
@@ -409,10 +418,54 @@ fn migration(text: String) -> Result<String, String> {
     if text.matches(id).count() != 2 {
         return Err("flow migration has no two tables".to_owned());
     }
-    Ok(text.replace(
+    let text = text.replace(
         id,
         &format!("{id}    \"_som_revision\" INTEGER NOT NULL DEFAULT 0,\n"),
-    ) + JOURNAL_DDL)
+    );
+    Ok(python_column_order(&text)? + JOURNAL_DDL)
+}
+
+/// The Python flow model's column order: id, the revision and the timestamps, the fields, then the
+/// parent key. Table constraints stay last.
+fn python_column_order(text: &str) -> Result<String, String> {
+    const HEAD: [&str; 4] = ["id", "_som_revision", "created_at", "updated_at"];
+    let (mut out, mut rest) = (String::new(), text);
+    while let Some(start) = rest.find("CREATE TABLE ") {
+        let open = start
+            + rest[start..]
+                .find("(\n")
+                .ok_or("flow table has no columns")?
+            + 2;
+        let close = open
+            + rest[open..]
+                .find("\n);")
+                .ok_or("flow table is not closed")?;
+        let mut parts: [Vec<&str>; 4] = Default::default();
+        for line in rest[open..close]
+            .split('\n')
+            .map(|line| line.trim_end_matches(','))
+        {
+            let name = line
+                .strip_prefix("    \"")
+                .and_then(|line| line.split('"').next());
+            let part = match name {
+                Some(name) if HEAD.contains(&name) => 0,
+                Some(_) if line.contains(" REFERENCES ") => 2,
+                Some(_) => 1,
+                None => 3,
+            };
+            parts[part].push(line);
+        }
+        parts[0].sort_by_key(|line| {
+            HEAD.iter()
+                .position(|name| line.starts_with(&format!("    \"{name}\"")))
+        });
+        out.push_str(&rest[..open]);
+        out.push_str(&parts.concat().join(",\n"));
+        rest = &rest[close..];
+    }
+    out.push_str(rest);
+    Ok(out)
 }
 
 const JOURNAL_DDL: &str = r#"
