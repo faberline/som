@@ -53,6 +53,35 @@
           "refs": []
         },
         {
+          "id": "rust.cargo.capability_flow.manifest",
+          "name": "flow_manifest",
+          "versions": [
+            "som.prompt.v7"
+          ],
+          "when": {
+            "shape": "flow_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {},
+          "refs": []
+        },
+        {
           "id": "rust.cargo.capability_mongodb.manifest",
           "name": "capability_mongodb_manifest",
           "versions": [
@@ -112,6 +141,35 @@
           ],
           "when": {
             "shape": "capability_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {},
+          "refs": []
+        },
+        {
+          "id": "rust.cargo.capability_flow.lock",
+          "name": "flow_lock",
+          "versions": [
+            "som.prompt.v7"
+          ],
+          "when": {
+            "shape": "flow_postgresql",
             "auth": [
               "jwt",
               "firebase",
@@ -219,6 +277,39 @@
           "refs": []
         },
         {
+          "id": "rust.main.capability_flow",
+          "name": "flow_startup",
+          "versions": [
+            "som.prompt.v7"
+          ],
+          "when": {
+            "shape": "flow_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "storage": {
+              "$ref": "capabilities.storage"
+            }
+          },
+          "refs": []
+        },
+        {
           "id": "rust.main.capability_mongodb",
           "name": "capability_mongodb_startup",
           "versions": [
@@ -285,6 +376,39 @@
           ],
           "when": {
             "shape": "capability_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "revision": {
+              "$ref": "migration.revision"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.lib.capability_flow",
+          "name": "flow_migrator",
+          "versions": [
+            "som.prompt.v7"
+          ],
+          "when": {
+            "shape": "flow_postgresql",
             "auth": [
               "jwt",
               "firebase",
@@ -686,6 +810,51 @@
           ],
           "when": {
             "shape": "capability_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.schemas.capability_flow",
+          "name": "flow_schemas",
+          "versions": [
+            "som.prompt.v7"
+          ],
+          "when": {
+            "shape": "flow_postgresql",
             "auth": [
               "jwt",
               "firebase",
@@ -1185,6 +1354,69 @@
           "refs": []
         },
         {
+          "id": "rust.api.capability_flow",
+          "name": "flow_routes",
+          "versions": [
+            "som.prompt.v7"
+          ],
+          "when": {
+            "shape": "flow_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            },
+            "workflow": {
+              "$ref": "capabilities.workflow"
+            },
+            "group_field": {
+              "$ref": "capabilities.group_field"
+            },
+            "value_field": {
+              "$ref": "capabilities.value_field"
+            },
+            "auth": {
+              "$ref": "capabilities.auth"
+            },
+            "package": {
+              "$ref": "package"
+            },
+            "storage": {
+              "$ref": "capabilities.storage"
+            }
+          },
+          "refs": []
+        },
+        {
           "id": "rust.api.capability_mongodb",
           "name": "capability_mongodb_routes",
           "versions": [
@@ -1593,6 +1825,51 @@
           "refs": []
         },
         {
+          "id": "rust.db.capability_flow",
+          "name": "flow_queries",
+          "versions": [
+            "som.prompt.v7"
+          ],
+          "when": {
+            "shape": "flow_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": []
+        },
+        {
           "id": "rust.db.capability_mongodb",
           "name": "capability_mongodb_queries",
           "versions": [
@@ -1687,6 +1964,48 @@
           "refs": []
         },
         {
+          "id": "rust.integrations.capability_flow",
+          "name": "flow_integrations",
+          "versions": [
+            "som.prompt.v7"
+          ],
+          "when": {
+            "shape": "flow_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "auth": {
+              "$ref": "capabilities.auth"
+            },
+            "package": {
+              "$ref": "package"
+            },
+            "storage": {
+              "$ref": "capabilities.storage"
+            }
+          },
+          "refs": []
+        },
+        {
           "id": "rust.integrations.capability_mongodb",
           "name": "capability_mongodb_integrations",
           "versions": [
@@ -1725,6 +2044,71 @@
             },
             "storage": {
               "$ref": "capabilities.storage"
+            }
+          },
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/flows.rs",
+      "blocks": [
+        {
+          "id": "rust.flows.capability_flow",
+          "name": "flow_runtime",
+          "versions": [
+            "som.prompt.v7"
+          ],
+          "when": {
+            "shape": "flow_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            },
+            "flow": {
+              "$ref": "flow"
+            },
+            "package": {
+              "$ref": "package"
+            },
+            "auth": {
+              "$ref": "capabilities.auth"
+            },
+            "storage": {
+              "$ref": "capabilities.storage"
+            },
+            "workflow": {
+              "$ref": "capabilities.workflow"
             }
           },
           "refs": []
@@ -1886,6 +2270,60 @@
           ],
           "when": {
             "shape": "capability_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            },
+            "parent_table": {
+              "$ref": "resources.parent.table"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.migration.capability_flow",
+          "name": "flow_migration",
+          "versions": [
+            "som.prompt.v7"
+          ],
+          "when": {
+            "shape": "flow_postgresql",
             "auth": [
               "jwt",
               "firebase",
@@ -2376,6 +2814,63 @@
           "refs": []
         },
         {
+          "id": "rust.tests.capability_flow",
+          "name": "flow_tests",
+          "versions": [
+            "som.prompt.v7"
+          ],
+          "when": {
+            "shape": "flow_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            },
+            "workflow": {
+              "$ref": "capabilities.workflow"
+            },
+            "auth": {
+              "$ref": "capabilities.auth"
+            },
+            "storage": {
+              "$ref": "capabilities.storage"
+            },
+            "flow": {
+              "$ref": "flow"
+            }
+          },
+          "refs": []
+        },
+        {
           "id": "rust.tests.capability_mongodb",
           "name": "capability_mongodb_tests",
           "versions": [
@@ -2611,6 +3106,75 @@
           ],
           "when": {
             "shape": "capability_postgresql",
+            "auth": [
+              "jwt",
+              "firebase",
+              "google_oauth"
+            ],
+            "storage": [
+              "none",
+              "s3",
+              "gcs"
+            ],
+            "workflow": [
+              "json_export",
+              "csv",
+              "gzip_export",
+              "decimal_summary",
+              "statistics"
+            ]
+          },
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "operations": {
+              "$ref": "operations"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            },
+            "package": {
+              "$ref": "package"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            },
+            "workflow": {
+              "$ref": "capabilities.workflow"
+            },
+            "group_field": {
+              "$ref": "capabilities.group_field"
+            },
+            "value_field": {
+              "$ref": "capabilities.value_field"
+            },
+            "auth": {
+              "$ref": "capabilities.auth"
+            },
+            "storage": {
+              "$ref": "capabilities.storage"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "rust.readme.capability_flow",
+          "name": "flow_readme",
+          "versions": [
+            "som.prompt.v7"
+          ],
+          "when": {
+            "shape": "flow_postgresql",
             "auth": [
               "jwt",
               "firebase",

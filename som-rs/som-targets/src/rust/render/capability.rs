@@ -14,6 +14,7 @@ use super::{
 };
 
 mod auth;
+mod flow;
 mod mongo;
 mod storage;
 mod workflow;
@@ -123,6 +124,9 @@ impl Product {
 pub fn render(id: &str, params: &Value) -> Result<String, String> {
     if id.contains("capability_mongodb") {
         return mongo::render(id, params);
+    }
+    if id.contains("capability_flow") {
+        return flow::render(id, params);
     }
     let product = || Product::read(params);
     Ok(match id {

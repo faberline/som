@@ -39,7 +39,9 @@ const BLOCK_LIBRARY_TEXT: &str = concat!(
     include_str!("render/capability/workflow.rs"),
     include_str!("render/capability/auth.rs"),
     include_str!("render/capability/storage.rs"),
-    include_str!("render/capability/mongo.rs")
+    include_str!("render/capability/mongo.rs"),
+    include_str!("render/capability/flow.rs"),
+    include_str!("render/capability/flow_runtime.rs.txt")
 );
 static CATALOG: LazyLock<Value> =
     LazyLock::new(|| serde_json::from_str(CATALOG_TEXT).expect("Rust catalog JSON"));
@@ -107,6 +109,22 @@ const CAPABILITY_LAYOUT: &[&str] = &[
     "src/api.rs",
     "src/db.rs",
     "src/integrations.rs",
+    "tests/api.rs",
+    "README.md",
+];
+
+/// The product files of the flow_postgresql shape, besides its one migration: the rows live in
+/// src/schemas.rs and the runtime in src/flows.rs.
+const FLOW_LAYOUT: &[&str] = &[
+    "Cargo.toml",
+    "Cargo.lock",
+    "src/main.rs",
+    "src/lib.rs",
+    "src/schemas.rs",
+    "src/api.rs",
+    "src/db.rs",
+    "src/integrations.rs",
+    "src/flows.rs",
     "tests/api.rs",
     "README.md",
 ];
@@ -373,6 +391,7 @@ fn identifier(text: &str) -> bool {
 
 fn layout_path(path: &str) -> bool {
     CAPABILITY_LAYOUT.contains(&path)
+        || FLOW_LAYOUT.contains(&path)
         || path
             .strip_prefix("migrations/0001_")
             .and_then(|rest| rest.strip_suffix(".sql"))
@@ -613,14 +632,16 @@ fn render_files(
 }
 
 /// Output checks: exactly the layout files of the shape (11 for resource, 12 for
-/// capability_postgresql, 11 without a migration for capability_mongodb), Rust files formatted
-/// and non-empty.
+/// capability_postgresql and flow_postgresql, 11 without a migration for capability_mongodb),
+/// Rust files formatted and non-empty.
 fn check_output(files: &BTreeMap<String, String>) -> Result<(), String> {
     let migrations = files
         .keys()
         .filter(|path| path.starts_with("migrations/"))
         .count();
-    let layout = if files.contains_key("src/integrations.rs") {
+    let layout = if files.contains_key("src/flows.rs") {
+        FLOW_LAYOUT
+    } else if files.contains_key("src/integrations.rs") {
         CAPABILITY_LAYOUT
     } else {
         LAYOUT
@@ -1257,6 +1278,38 @@ mod tests {
                     std::fs::write(path, text).expect("write");
                 }
             }
+        }
+    }
+
+    /// Issue #54 I: flow_postgresql renders 12 files with the runtime in src/flows.rs.
+    #[test]
+    fn a_flow_prompt_renders_the_flow_layout() {
+        let prompts = vec![("v7".to_owned(), example("v7"))];
+        for (name, prompt) in prompts {
+            let name = name.as_str();
+            let dsl = plan(&prompt).expect("plan");
+            let first = render_files(&prompt, &dsl).expect("render");
+            assert_eq!(
+                render_files(&prompt, &dsl).expect("render"),
+                first,
+                "{name}"
+            );
+            if let Some(out) = std::env::var_os("SOM_FLOW_DUMP") {
+                for (path, text) in &first {
+                    let path = Path::new(&out).join(name.replace(' ', "_")).join(path);
+                    std::fs::create_dir_all(path.parent().expect("parent")).expect("dir");
+                    std::fs::write(path, text).expect("write");
+                }
+            }
+            check_output(&first).expect("layout");
+            assert_eq!(first.len(), 12, "{name}");
+            assert!(
+                first["src/flows.rs"].contains("/flows/{FLOW_NAME}/runs"),
+                "{name}"
+            );
+            assert!(first["src/flows.rs"].contains("\"make_family\""), "{name}");
+            assert!(first["src/db.rs"].contains("_som_revision"), "{name}");
+            assert!(!first["src/lib.rs"].contains("pub mod models;"), "{name}");
         }
     }
 }

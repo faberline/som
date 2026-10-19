@@ -1,0 +1,1122 @@
+//! The declared flow, run as data against a fenced journal: one run per owner and key, a lease
+//! that a heartbeat renews, and compensation that undoes committed groups in reverse order.
+
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::{Arc, LazyLock, Mutex};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+use axum::{
+    Json, Router,
+    body::Bytes,
+    extract::{Path, State, rejection::BytesRejection},
+    http::{HeaderMap, StatusCode},
+    response::{IntoResponse, Response},
+    routing::{get, post},
+};
+use base64::Engine;
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use serde_json::{Map, Value, json};
+use sha2::{Digest, Sha256};
+use sqlx::postgres::PgRow;
+use sqlx::{FromRow, PgConnection, PgPool, Postgres, QueryBuilder, Row, Transaction};
+
+use crate::api::{AppState, problem, read_body};
+use crate::integrations::Access;
+use crate::schemas::{
+    ChildCreate, ChildRead, ChildRow, ChildUpdate, ParentCreate, ParentRead, ParentRow,
+    ParentUpdate,
+};
+
+const FLOW_TEXT: &str = @FLOW_TEXT@;
+const FLOW_NAME: &str = @FLOW_NAME@;
+
+static FLOW: LazyLock<Value> =
+    LazyLock::new(|| serde_json::from_str(FLOW_TEXT).expect("the embedded flow is JSON"));
+static PLAN: LazyLock<String> =
+    LazyLock::new(|| format!("{:x}", Sha256::digest(FLOW_TEXT.as_bytes())));
+
+const LEASE: f64 = 30.0;
+const HEARTBEAT: Duration = Duration::from_secs(5);
+const MISSING: &str = "resource or claim missing";
+const BAD_INPUT: &str = "invalid resource input";
+
+/// A resource table: its columns in model order, and for the child its parent scope.
+struct Role {
+    child: bool,
+    table: &'static str,
+    parent: &'static str,
+    key: &'static str,
+    columns: &'static [(&'static str, &'static str)],
+}
+
+@ROLES@
+fn quoted(name: &str) -> String {
+    format!("\"{name}\"")
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+struct Effect {
+    group: String,
+    step: String,
+    undo: String,
+    role: String,
+    row_id: i64,
+    revision: i64,
+    before: Map<String, Value>,
+    key: String,
+    version: Option<String>,
+    owned: bool,
+    uncertain: bool,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+struct Run {
+    run_id: String,
+    owner: String,
+    flow: String,
+    key: String,
+    request_hash: String,
+    epoch: i32,
+    state: String,
+    inputs: Map<String, Value>,
+    values: Map<String, Value>,
+    branches: Map<String, Value>,
+    effects: Vec<Effect>,
+    result: Map<String, Value>,
+    error_status: u16,
+    error_detail: String,
+}
+
+/// A failure: a business status, a provider error, an invalid value, a broken invariant, or a
+/// journal that can no longer say what happened.
+enum Fail {
+    Http(u16, String),
+    Database(sqlx::Error),
+    Invalid,
+    Runtime(String),
+    Journal(String),
+}
+
+impl From<sqlx::Error> for Fail {
+    fn from(error: sqlx::Error) -> Self {
+        Self::Database(error)
+    }
+}
+
+impl Fail {
+    fn http(status: u16, detail: &str) -> Self {
+        Self::Http(status, detail.to_owned())
+    }
+
+    /// The failures a run turns into compensation. Others answer 500 at once.
+    fn caught(&self) -> bool {
+        !matches!(self, Self::Runtime(_))
+    }
+
+    /// The status and detail a compensated run keeps, without provider secrets.
+    fn business(&self) -> (u16, String) {
+        match self {
+            Self::Http(status, detail) => (*status, detail.clone()),
+            Self::Invalid => (422, "invalid flow input or result".to_owned()),
+            Self::Database(error)
+                if error
+                    .as_database_error()
+                    .and_then(|found| found.code())
+                    .is_some_and(|code| code.starts_with("23")) =>
+            {
+                (409, "resource conflict".to_owned())
+            }
+            _ => (503, "provider unavailable".to_owned()),
+        }
+    }
+
+    /// A provider error while reading the journal hides the outcome.
+    fn journal(self, run_id: &str) -> Self {
+        match self {
+            Self::Database(_) => Self::Journal(run_id.to_owned()),
+            other => other,
+        }
+    }
+}
+
+impl IntoResponse for Fail {
+    fn into_response(self) -> Response {
+        let (status, body) = match self {
+            Self::Http(status, detail) => (status, json!({"detail": detail})),
+            Self::Journal(run_id) => (
+                503,
+                json!({"detail": {"run_id": run_id, "message": "execution journal or lease unavailable"}}),
+            ),
+            Self::Runtime(message) => {
+                eprintln!("flow runtime error: {message}");
+                (500, json!({"detail": "Internal Server Error"}))
+            }
+            Self::Database(_) | Self::Invalid => (500, json!({"detail": "Internal Server Error"})),
+        };
+        let status = StatusCode::from_u16(status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+        (status, Json(body)).into_response()
+    }
+}
+
+fn now() -> f64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|elapsed| elapsed.as_secs_f64())
+        .unwrap_or_default()
+}
+
+fn record_text(record: &Run) -> Result<String, Fail> {
+    serde_json::to_string(record).map_err(|_| Fail::Invalid)
+}
+
+fn record_from(text: &str) -> Result<Run, Fail> {
+    serde_json::from_str(text).map_err(|_| Fail::Invalid)
+}
+
+// ---------------------------------------------------------------- the journal
+
+const RUN_INSERT: &str = r#"INSERT INTO "_som_flow_runs" ("run_id", "owner", "flow", "key", "request_hash", "epoch", "record") VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb) ON CONFLICT ("owner", "flow", "key") DO NOTHING RETURNING "run_id""#;
+const LEASE_INSERT: &str = r#"INSERT INTO "_som_flow_leases" ("run_id", "epoch", "until") VALUES ($1, $2, $3) RETURNING "run_id""#;
+const RUN_BY_KEY: &str = r#"SELECT "record"::text FROM "_som_flow_runs" WHERE "owner" = $1 AND "flow" = $2 AND "key" = $3"#;
+const RUN_LOAD: &str =
+    r#"SELECT "record"::text FROM "_som_flow_runs" WHERE "run_id" = $1 AND "owner" = $2"#;
+const LEASE_HELD: &str = r#"SELECT "run_id" FROM "_som_flow_leases" WHERE "run_id" = $1 AND "epoch" = $2 AND "until" > $3 FOR UPDATE"#;
+const RUN_SAVE: &str = r#"UPDATE "_som_flow_runs" SET "record" = $3::jsonb WHERE "run_id" = $1 AND "epoch" = $2 RETURNING "run_id""#;
+const LEASE_RENEW: &str = r#"UPDATE "_som_flow_leases" SET "until" = $3 WHERE "run_id" = $1 AND "epoch" = $2 AND "until" > $4 RETURNING "run_id""#;
+const LEASE_RELEASE: &str = r#"UPDATE "_som_flow_leases" SET "until" = 0 WHERE "run_id" = $1 AND "epoch" = $2 RETURNING "run_id""#;
+const LEASE_CLAIM: &str = r#"UPDATE "_som_flow_leases" SET "epoch" = "epoch" + 1, "until" = $2 WHERE "run_id" = $1 AND "until" < $3 RETURNING "epoch""#;
+const RUN_CLAIM: &str = r#"UPDATE "_som_flow_runs" SET "epoch" = $2, "record" = $3::jsonb WHERE "run_id" = $1 RETURNING "run_id""#;
+
+/// Create the run and its lease at once, or return the run that already holds the key.
+async fn start(pool: &PgPool, record: Run) -> Result<(Run, bool), Fail> {
+    let mut transaction = pool.begin().await?;
+    let inserted: Option<String> = sqlx::query_scalar(RUN_INSERT)
+        .bind(&record.run_id)
+        .bind(&record.owner)
+        .bind(&record.flow)
+        .bind(&record.key)
+        .bind(&record.request_hash)
+        .bind(record.epoch)
+        .bind(record_text(&record)?)
+        .fetch_optional(&mut *transaction)
+        .await?;
+    if inserted.is_some() {
+        let leased: Option<String> = sqlx::query_scalar(LEASE_INSERT)
+            .bind(&record.run_id)
+            .bind(record.epoch)
+            .bind(now() + LEASE)
+            .fetch_optional(&mut *transaction)
+            .await?;
+        leased.ok_or_else(|| Fail::http(409, MISSING))?;
+        transaction.commit().await?;
+        return Ok((record, true));
+    }
+    let found: Option<String> = sqlx::query_scalar(RUN_BY_KEY)
+        .bind(&record.owner)
+        .bind(&record.flow)
+        .bind(&record.key)
+        .fetch_optional(&mut *transaction)
+        .await?;
+    let previous = record_from(&found.ok_or_else(|| Fail::http(409, MISSING))?)?;
+    if previous.request_hash != record.request_hash {
+        return Err(Fail::http(409, "idempotency content changed"));
+    }
+    transaction.commit().await?;
+    Ok((previous, false))
+}
+
+async fn load<'e>(
+    executor: impl sqlx::PgExecutor<'e>,
+    run_id: &str,
+    owner: &str,
+) -> Result<Run, Fail> {
+    let found: Option<String> = sqlx::query_scalar(RUN_LOAD)
+        .bind(run_id)
+        .bind(owner)
+        .fetch_optional(executor)
+        .await?;
+    record_from(&found.ok_or_else(|| Fail::http(404, MISSING))?)
+}
+
+/// Write the record only while this epoch still holds an unexpired lease.
+async fn save(connection: &mut PgConnection, record: &Run) -> Result<(), Fail> {
+    let held: Option<String> = sqlx::query_scalar(LEASE_HELD)
+        .bind(&record.run_id)
+        .bind(record.epoch)
+        .bind(now())
+        .fetch_optional(&mut *connection)
+        .await?;
+    held.ok_or_else(|| Fail::http(503, MISSING))?;
+    let saved: Option<String> = sqlx::query_scalar(RUN_SAVE)
+        .bind(&record.run_id)
+        .bind(record.epoch)
+        .bind(record_text(record)?)
+        .fetch_optional(&mut *connection)
+        .await?;
+    saved.map(|_| ()).ok_or_else(|| Fail::http(503, MISSING))
+}
+
+/// Extend the lease, or release it, outside any business transaction.
+async fn renew(pool: &PgPool, record: &Run, release: bool) -> Result<(), Fail> {
+    let query = if release {
+        sqlx::query_scalar(LEASE_RELEASE)
+            .bind(&record.run_id)
+            .bind(record.epoch)
+    } else {
+        let at = now();
+        sqlx::query_scalar(LEASE_RENEW)
+            .bind(&record.run_id)
+            .bind(record.epoch)
+            .bind(at + LEASE)
+            .bind(at)
+    };
+    let renewed: Option<String> = query.fetch_optional(pool).await?;
+    renewed.map(|_| ()).ok_or_else(|| Fail::http(503, MISSING))
+}
+
+/// Take an expired lease with the next epoch, and mark the run compensating.
+async fn claim(pool: &PgPool, record: &Run) -> Result<Option<Run>, Fail> {
+    let mut transaction = pool.begin().await?;
+    let at = now();
+    let epoch: Option<i32> = sqlx::query_scalar(LEASE_CLAIM)
+        .bind(&record.run_id)
+        .bind(at + LEASE)
+        .bind(at)
+        .fetch_optional(&mut *transaction)
+        .await?;
+    let Some(epoch) = epoch else {
+        transaction.rollback().await?;
+        return Ok(None);
+    };
+    let mut found = load(&mut *transaction, &record.run_id, &record.owner).await?;
+    if ["succeeded", "compensated"].contains(&found.state.as_str()) {
+        transaction.rollback().await?;
+        return Ok(Some(found));
+    }
+    found.epoch = epoch;
+    found.state = "compensating".to_owned();
+    let claimed: Option<String> = sqlx::query_scalar(RUN_CLAIM)
+        .bind(&found.run_id)
+        .bind(epoch)
+        .bind(record_text(&found)?)
+        .fetch_optional(&mut *transaction)
+        .await?;
+    claimed.ok_or_else(|| Fail::http(409, MISSING))?;
+    transaction.commit().await?;
+    Ok(Some(found))
+}
+
+// ---------------------------------------------------------------- resources
+
+fn role(name: &str) -> &'static Role {
+    if name.starts_with("child") { &CHILD } else { &PARENT }
+}
+
+fn model<T: DeserializeOwned>(data: &Map<String, Value>) -> Result<T, Fail> {
+    serde_json::from_value(Value::Object(data.clone())).map_err(|_| Fail::http(422, BAD_INPUT))
+}
+
+fn checked(problems: Vec<Value>) -> Result<(), Fail> {
+    if problems.is_empty() { Ok(()) } else { Err(Fail::http(422, BAD_INPUT)) }
+}
+
+fn read_json(role: &Role, row: &PgRow) -> Result<Value, Fail> {
+    let read = if role.child {
+        serde_json::to_value(ChildRead::from(ChildRow::from_row(row)?))
+    } else {
+        serde_json::to_value(ParentRead::from(ParentRow::from_row(row)?))
+    };
+    read.map_err(|_| Fail::Invalid)
+}
+
+/// A child's parent must exist, and stays until the transaction ends.
+async fn scope(
+    connection: &mut PgConnection,
+    role: &Role,
+    parent_id: Option<i64>,
+    locked: bool,
+) -> Result<(), Fail> {
+    if !role.child {
+        return Ok(());
+    }
+    let lock = if locked { " FOR KEY SHARE" } else { "" };
+    let sql = format!(r#"SELECT "id" FROM {} WHERE "id" = $1{lock}"#, quoted(role.parent));
+    let found: Option<i32> = sqlx::query_scalar(&sql)
+        .bind(parent_id)
+        .fetch_optional(connection)
+        .await?;
+    found.map(|_| ()).ok_or_else(|| Fail::http(404, MISSING))
+}
+
+fn scope_clause(role: &Role) -> String {
+    if role.child {
+        format!("{} = $2 AND ", quoted(role.key))
+    } else {
+        String::new()
+    }
+}
+
+async fn row(
+    connection: &mut PgConnection,
+    role: &Role,
+    parent_id: Option<i64>,
+    row_id: i64,
+    locked: bool,
+) -> Result<PgRow, Fail> {
+    scope(&mut *connection, role, parent_id, locked).await?;
+    let sql = format!(
+        r#"SELECT * FROM {} WHERE {}"id" = $1"#,
+        quoted(role.table),
+        scope_clause(role)
+    );
+    let mut query = sqlx::query(&sql).bind(row_id);
+    if role.child {
+        query = query.bind(parent_id);
+    }
+    let found = query.fetch_optional(connection).await?;
+    found.ok_or_else(|| Fail::http(404, MISSING))
+}
+
+async fn rows(
+    connection: &mut PgConnection,
+    role: &Role,
+    parent_id: Option<i64>,
+    limit: i64,
+    locked: bool,
+) -> Result<Vec<PgRow>, Fail> {
+    scope(&mut *connection, role, parent_id, locked).await?;
+    let filter = if role.child {
+        format!("WHERE {} = $2 ", quoted(role.key))
+    } else {
+        String::new()
+    };
+    let sql = format!(
+        r#"SELECT * FROM {} {filter}ORDER BY "id" LIMIT $1 OFFSET 0"#,
+        quoted(role.table)
+    );
+    let mut query = sqlx::query(&sql).bind(limit);
+    if role.child {
+        query = query.bind(parent_id);
+    }
+    Ok(query.fetch_all(connection).await?)
+}
+
+/// Bind one column value by its kind. The value has passed its model already.
+fn bind_value(query: &mut QueryBuilder<'_, Postgres>, kind: &str, value: &Value) -> Result<(), Fail> {
+    match kind {
+        "str" => query.push_bind(value.as_str().map(str::to_owned)),
+        "int" => query.push_bind(value.as_i64().map(i32::try_from).transpose().map_err(|_| Fail::Invalid)?),
+        "float" => query.push_bind(value.as_f64()),
+        "bool" => query.push_bind(value.as_bool()),
+        _ => query.push_bind(
+            value
+                .as_str()
+                .map(|day| chrono::NaiveDate::parse_from_str(day, "%Y-%m-%d"))
+                .transpose()
+                .map_err(|_| Fail::Invalid)?,
+        ),
+    };
+    Ok(())
+}
+
+/// The fields of a patch, with the revision moving by one, fenced by the revision read before.
+fn patch_query<'a>(
+    role: &Role,
+    values: &Map<String, Value>,
+    row_id: i64,
+    revision: i64,
+    returning: &str,
+) -> Result<QueryBuilder<'a, Postgres>, Fail> {
+    let mut query = QueryBuilder::new(format!("UPDATE {} SET ", quoted(role.table)));
+    for (column, kind) in role.columns {
+        if let Some(value) = values.get(*column) {
+            query.push(format!("{} = ", quoted(column)));
+            bind_value(&mut query, kind, value)?;
+            query.push(", ");
+        }
+    }
+    query.push(r#""updated_at" = now(), "_som_revision" = "_som_revision" + 1 WHERE "id" = "#);
+    query.push_bind(row_id);
+    query.push(r#" AND "_som_revision" = "#);
+    query.push_bind(revision);
+    query.push(format!(" RETURNING {returning}"));
+    Ok(query)
+}
+
+/// Undo one owned effect, fenced by its revision. A restore returns the next revision.
+async fn reverse_effect(connection: &mut PgConnection, effect: &Effect) -> Result<Option<i64>, Fail> {
+    let role = role(&effect.role);
+    let restore = effect.undo == "restore_patch";
+    let found: Option<i32> = if restore {
+        patch_query(role, &effect.before, effect.row_id, effect.revision, r#""id""#)?
+            .build_query_scalar()
+            .fetch_optional(connection)
+            .await?
+    } else {
+        let sql = format!(
+            r#"DELETE FROM {} WHERE "id" = $1 AND "_som_revision" = $2 RETURNING "id""#,
+            quoted(role.table)
+        );
+        sqlx::query_scalar(&sql)
+            .bind(effect.row_id)
+            .bind(effect.revision)
+            .fetch_optional(connection)
+            .await?
+    };
+    found.ok_or_else(|| Fail::http(409, MISSING))?;
+    Ok(restore.then_some(effect.revision + 1))
+}
+
+// ---------------------------------------------------------------- the interpreter
+
+fn integer(value: &Value) -> Result<i64, Fail> {
+    value.as_i64().ok_or_else(|| Fail::http(422, "integer required"))
+}
+
+fn object(value: Value) -> Result<Map<String, Value>, Fail> {
+    match value {
+        Value::Object(map) => Ok(map),
+        _ => Err(Fail::Invalid),
+    }
+}
+
+fn receipt(data: Value) -> Result<Value, Fail> {
+    let body = serde_json::to_vec(&data).map_err(|_| Fail::Invalid)?;
+    Ok(json!({
+        "body": base64::engine::general_purpose::STANDARD.encode(&body),
+        "size": body.len(),
+        "sha256": format!("{:x}", Sha256::digest(&body)),
+        "data": data,
+    }))
+}
+
+/// One run's journal, its open transaction, and the backend a lost lease cancels.
+struct Ctx {
+    pool: PgPool,
+    record: Run,
+    transaction: Option<Transaction<'static, Postgres>>,
+    backend: Arc<Mutex<Option<i32>>>,
+}
+
+impl Ctx {
+    fn new(pool: PgPool, record: Run) -> Self {
+        Self {
+            pool,
+            record,
+            transaction: None,
+            backend: Arc::new(Mutex::new(None)),
+        }
+    }
+
+    fn mark(&self, backend: Option<i32>) {
+        if let Ok(mut held) = self.backend.lock() {
+            *held = backend;
+        }
+    }
+
+    /// Open the transaction, and keep the record to restore after a rollback.
+    async fn begin(&mut self) -> Result<Run, Fail> {
+        let mut transaction = self.pool.begin().await?;
+        let backend: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
+            .fetch_one(&mut *transaction)
+            .await?;
+        self.mark(Some(backend));
+        self.transaction = Some(transaction);
+        Ok(self.record.clone())
+    }
+
+    /// Journal the record inside the transaction, then commit both.
+    async fn commit(&mut self) -> Result<(), Fail> {
+        let mut transaction = self
+            .transaction
+            .take()
+            .ok_or_else(|| Fail::Runtime("transaction required".to_owned()))?;
+        let saved = save(&mut transaction, &self.record).await;
+        let outcome = match saved {
+            Ok(()) => transaction.commit().await.map_err(Fail::from),
+            Err(error) => Err(error),
+        };
+        self.mark(None);
+        outcome
+    }
+
+    fn abort(&mut self, snapshot: Run) {
+        self.transaction = None;
+        self.mark(None);
+        self.record = snapshot;
+    }
+
+    /// A fenced checkpoint: an empty transaction that journals the record.
+    async fn persist(&mut self) -> Result<(), Fail> {
+        let snapshot = self.begin().await?;
+        let outcome = self.commit().await;
+        if outcome.is_err() {
+            self.abort(snapshot);
+        }
+        outcome
+    }
+
+    fn resolve(&self, reference: &Value) -> Result<Value, Fail> {
+        if let Some(name) = reference["input"].as_str() {
+            return Ok(self.record.inputs.get(name).cloned().unwrap_or(Value::Null));
+        }
+        if let Some(step) = reference["step"].as_str() {
+            let value = self.record.values.get(step).cloned().unwrap_or(Value::Null);
+            let field = reference["field"].as_str().unwrap_or_default();
+            return Ok(if field.is_empty() { value } else { value[field].clone() });
+        }
+        if reference.get("literal").is_some() {
+            return Ok(reference["literal"].clone());
+        }
+        Err(Fail::Runtime("unknown flow reference".to_owned()))
+    }
+
+    fn parent_id(&self, args: &Value) -> Result<Option<i64>, Fail> {
+        if args.get("parent_id").is_some() {
+            Ok(Some(integer(&self.resolve(&args["parent_id"])?)?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// One step: its value goes into the journal under its name. The open transaction stays
+    /// with the context whatever the step returns.
+    async fn step(&mut self, step: &Value, group: &str) -> Result<(), Fail> {
+        let mut transaction = self.transaction.take();
+        let outcome = self.apply(step, group, &mut transaction).await;
+        self.transaction = transaction;
+        outcome
+    }
+
+    async fn apply(
+        &mut self,
+        step: &Value,
+        group: &str,
+        transaction: &mut Option<Transaction<'static, Postgres>>,
+    ) -> Result<(), Fail> {
+        let name = step["name"].as_str().unwrap_or_default().to_owned();
+        let op = step["op"].as_str().unwrap_or_default();
+        let args = &step["args"];
+        let (scope_name, action) = op.split_once('.').unwrap_or((op, ""));
+        let role = role(scope_name);
+        let locked = transaction.is_some();
+        let parent_id = self.parent_id(args)?;
+        let mut own: Option<sqlx::pool::PoolConnection<Postgres>> = None;
+        let connection: &mut PgConnection = match transaction.as_mut() {
+            Some(transaction) => transaction,
+            None => own.insert(self.pool.acquire().await?),
+        };
+        let value = match (op, action) {
+            ("authorize", _) => json!({"sub": self.record.owner, "role": "editor"}),
+            ("workflow.run", _) => {
+                let found = rows(connection, &CHILD, parent_id, 1001, locked).await?;
+                if found.len() > 1000 {
+                    return Err(Fail::http(413, "workflow exceeds 1000 rows"));
+                }
+                let data = found
+                    .iter()
+                    .map(|row| read_json(&CHILD, row))
+                    .collect::<Result<Vec<_>, _>>()?;
+                receipt(Value::Array(data))?
+            }
+            (_, "get") => {
+                let id = if role.child { &args["child_id"] } else { &args["parent_id"] };
+                let row_id = integer(&self.resolve(id)?)?;
+                let parent_id = if role.child { parent_id } else { None };
+                read_json(role, &row(connection, role, parent_id, row_id, locked).await?)?
+            }
+            (_, "list") => Value::Array(
+                rows(connection, role, parent_id, 20, locked)
+                    .await?
+                    .iter()
+                    .map(|row| read_json(role, row))
+                    .collect::<Result<Vec<_>, _>>()?,
+            ),
+            (_, "create" | "patch") if !locked => {
+                return Err(Fail::Runtime("transaction required".to_owned()));
+            }
+            (_, "create") => {
+                let data = object(self.resolve(&args["data"])?)?;
+                scope(&mut *connection, role, parent_id, true).await?;
+                let (read, id) = if role.child {
+                    let body: ChildCreate = model(&data)?;
+                    checked(body.problems())?;
+                    let parent = parent_id.and_then(|id| i32::try_from(id).ok()).unwrap_or_default();
+                    let row = crate::db::insert_child(&mut *connection, parent, body).await?;
+                    let id = row.id;
+                    (serde_json::to_value(ChildRead::from(row)), id)
+                } else {
+                    let body: ParentCreate = model(&data)?;
+                    checked(body.problems())?;
+                    let row = crate::db::insert_parent(&mut *connection, body).await?;
+                    let id = row.id;
+                    (serde_json::to_value(ParentRead::from(row)), id)
+                };
+                self.record.effects.push(self.effect(step, group, &name, i64::from(id), 0, Map::new()));
+                read.map_err(|_| Fail::Invalid)?
+            }
+            (_, "patch") => {
+                let row_id = integer(&self.resolve(if role.child { &args["child_id"] } else { &args["parent_id"] })?)?;
+                let parent_id = if role.child { parent_id } else { None };
+                let previous = row(&mut *connection, role, parent_id, row_id, true).await?;
+                let revision = i64::from(previous.try_get::<i32, _>("_som_revision")?);
+                let previous = read_json(role, &previous)?;
+                let data = object(self.resolve(&args["data"])?)?;
+                if role.child {
+                    checked(model::<ChildUpdate>(&data)?.problems())?;
+                } else {
+                    checked(model::<ParentUpdate>(&data)?.problems())?;
+                }
+                if data.is_empty() {
+                    previous
+                } else {
+                    let before = role
+                        .columns
+                        .iter()
+                        .filter(|(column, _)| data.contains_key(*column))
+                        .map(|(column, _)| ((*column).to_owned(), previous[*column].clone()))
+                        .collect();
+                    let found = patch_query(role, &data, row_id, revision, "*")?
+                        .build()
+                        .fetch_optional(&mut *connection)
+                        .await?
+                        .ok_or_else(|| Fail::http(409, MISSING))?;
+                    let revision = i64::from(found.try_get::<i32, _>("_som_revision")?);
+                    let read = read_json(role, &found)?;
+                    self.record.effects.push(self.effect(step, group, &name, row_id, revision, before));
+                    read
+                }
+            }
+            _ => return Err(Fail::Runtime(format!("unsupported flow step {op}"))),
+        };
+        self.record.values.insert(name, value);
+        Ok(())
+    }
+
+    fn effect(
+        &self,
+        step: &Value,
+        group: &str,
+        name: &str,
+        row_id: i64,
+        revision: i64,
+        before: Map<String, Value>,
+    ) -> Effect {
+        let op = step["op"].as_str().unwrap_or_default();
+        Effect {
+            group: group.to_owned(),
+            step: name.to_owned(),
+            undo: step["undo"].as_str().unwrap_or_default().to_owned(),
+            role: if op.starts_with("child") { "child" } else { "parent" }.to_owned(),
+            row_id,
+            revision,
+            before,
+            key: String::new(),
+            version: None,
+            owned: true,
+            uncertain: false,
+        }
+    }
+
+    /// The declared steps once, then the declared result.
+    async fn forward(&mut self) -> Result<Map<String, Value>, Fail> {
+        for node in FLOW["steps"].as_array().into_iter().flatten() {
+            if node["op"] == "transaction" {
+                let group = node["name"].as_str().unwrap_or_default();
+                let snapshot = self.begin().await?;
+                let outcome = async {
+                    for step in node["steps"].as_array().into_iter().flatten() {
+                        self.step(step, group).await?;
+                    }
+                    self.commit().await
+                }
+                .await;
+                if outcome.is_err() {
+                    self.abort(snapshot);
+                }
+                outcome?;
+            } else {
+                self.step(node, "").await?;
+                self.persist().await?;
+            }
+        }
+        let mut result = Map::new();
+        let mut names: Vec<&String> = FLOW["result"].as_object().into_iter().flatten().map(|(name, _)| name).collect();
+        names.sort();
+        for name in names {
+            result.insert(name.clone(), self.resolve(&FLOW["result"][name.as_str()])?);
+        }
+        Ok(result)
+    }
+
+    /// Undo committed groups from the last, each in one transaction, without replay.
+    async fn reverse(&mut self) -> Result<(), Fail> {
+        self.record.state = "compensating".to_owned();
+        self.persist().await?;
+        while let Some(last) = self.record.effects.last().cloned() {
+            if !last.key.is_empty() {
+                if last.undo != "delete_created" {
+                    return Err(Fail::Runtime("invalid object inverse".to_owned()));
+                }
+                return Err(Fail::http(503, "invalid external journal"));
+            }
+            let snapshot = self.begin().await?;
+            let outcome = async {
+                while let Some(effect) = self.record.effects.last().cloned() {
+                    if effect.group != last.group {
+                        break;
+                    }
+                    if effect.before.is_empty() == (effect.undo == "restore_patch") {
+                        return Err(Fail::Runtime("invalid resource inverse".to_owned()));
+                    }
+                    let revision = match (effect.owned, self.transaction.as_mut()) {
+                        (true, Some(transaction)) => reverse_effect(transaction, &effect).await?,
+                        _ => None,
+                    };
+                    self.record.effects.pop();
+                    if let Some(revision) = revision {
+                        for prior in &mut self.record.effects {
+                            if prior.role == effect.role && prior.row_id == effect.row_id {
+                                prior.revision = revision;
+                            }
+                        }
+                    }
+                }
+                self.commit().await
+            }
+            .await;
+            if outcome.is_err() {
+                self.abort(snapshot);
+            }
+            outcome?;
+        }
+        self.record.state = "compensated".to_owned();
+        self.persist().await
+    }
+}
+
+// ---------------------------------------------------------------- runs
+
+type Boxed<T> = Pin<Box<dyn Future<Output = Result<T, Fail>> + Send>>;
+
+/// Run the work while a heartbeat renews the lease. A failed renewal cancels the work and its
+/// backend statement, and the run answers 503 lease lost.
+async fn leased<T>(
+    pool: &PgPool,
+    record: &Run,
+    backend: Arc<Mutex<Option<i32>>>,
+    work: impl Future<Output = Result<T, Fail>>,
+) -> Result<T, Fail> {
+    let (lost, gone) = tokio::sync::oneshot::channel::<()>();
+    let beat_pool = pool.clone();
+    let beat = record.clone();
+    let heartbeat = tokio::spawn(async move {
+        loop {
+            tokio::time::sleep(HEARTBEAT).await;
+            if renew(&beat_pool, &beat, false).await.is_err() {
+                let _ = lost.send(());
+                let held = backend.lock().ok().and_then(|held| *held);
+                if let Some(held) = held {
+                    let _ = sqlx::query("SELECT pg_cancel_backend($1)")
+                        .bind(held)
+                        .execute(&beat_pool)
+                        .await;
+                }
+                return;
+            }
+        }
+    });
+    let outcome = tokio::select! {
+        biased;
+        _ = gone => Err(Fail::http(503, "lease lost")),
+        outcome = work => outcome,
+    };
+    heartbeat.abort();
+    outcome
+}
+
+/// Run forward once, or resume a fenced compensation.
+fn run_record(pool: PgPool, record: Run, inverse: bool) -> Boxed<Run> {
+    Box::pin(async move {
+        let mut ctx = Ctx::new(pool.clone(), record.clone());
+        let backend = ctx.backend.clone();
+        let outcome = leased(&pool, &record, backend, async {
+            if inverse {
+                ctx.reverse().await
+            } else {
+                ctx.record.result = ctx.forward().await?;
+                ctx.record.state = "succeeded".to_owned();
+                ctx.persist().await
+            }
+        })
+        .await;
+        if let Some(transaction) = ctx.transaction.take() {
+            let _ = transaction.rollback().await;
+        }
+        drop(ctx);
+        let early = match outcome {
+            Ok(()) => Ok(None),
+            Err(error) if error.caught() => failed(&pool, &record, inverse, error).await,
+            Err(error) => Err(error),
+        };
+        let _ = renew(&pool, &record, true).await;
+        match early {
+            Ok(Some(found)) => Ok(found),
+            Ok(None) => load(&pool, &record.run_id, &record.owner)
+                .await
+                .map_err(|error| error.journal(&record.run_id)),
+            Err(error) => Err(error),
+        }
+    })
+}
+
+/// After a failure: keep a newer epoch's outcome, or journal this failure and compensate.
+async fn failed(pool: &PgPool, record: &Run, inverse: bool, error: Fail) -> Result<Option<Run>, Fail> {
+    let mut latest = load(pool, &record.run_id, &record.owner)
+        .await
+        .map_err(|error| error.journal(&record.run_id))?;
+    if latest.epoch != record.epoch {
+        return Ok(Some(latest));
+    }
+    if inverse {
+        latest.state = "recovery_required".to_owned();
+        let _ = Ctx::new(pool.clone(), latest).persist().await;
+        return Ok(None);
+    }
+    (latest.error_status, latest.error_detail) = error.business();
+    let mut journal = Ctx::new(pool.clone(), latest);
+    if let Err(Fail::Http(..) | Fail::Database(_)) = journal.persist().await {
+        return Err(Fail::Journal(record.run_id.clone()));
+    }
+    let latest = journal.record;
+    renew(pool, &latest, true).await?;
+    recover_record(pool.clone(), latest).await.map(Some)
+}
+
+/// Claim expired work and finish only its compensation.
+fn recover_record(pool: PgPool, record: Run) -> Boxed<Run> {
+    Box::pin(async move {
+        let claimed = claim(&pool, &record)
+            .await
+            .map_err(|error| error.journal(&record.run_id))?;
+        match claimed {
+            Some(claimed) if !["succeeded", "compensated"].contains(&claimed.state.as_str()) => {
+                run_record(pool, claimed, true).await
+            }
+            _ => load(&pool, &record.run_id, &record.owner)
+                .await
+                .map_err(|error| error.journal(&record.run_id)),
+        }
+    })
+}
+
+fn reply(record: &Run, status_only: bool) -> Response {
+    let mut content = json!({"run_id": record.run_id, "state": record.state});
+    let status = match record.state.as_str() {
+        "succeeded" => {
+            content["result"] = Value::Object(record.result.clone());
+            200
+        }
+        "compensated" => {
+            content["detail"] = json!(record.error_detail);
+            record.error_status
+        }
+        "recovery_required" => {
+            content["detail"] = json!(record.error_detail);
+            503
+        }
+        _ => 202,
+    };
+    let status = if status_only { 200 } else { status };
+    let status = StatusCode::from_u16(status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+    (status, Json(content)).into_response()
+}
+
+// ---------------------------------------------------------------- routes
+
+fn check_model<T: DeserializeOwned>(
+    value: &Value,
+    loc: &Value,
+    problems: impl Fn(&T) -> Vec<Value>,
+) -> Vec<Value> {
+    match serde_json::from_value::<T>(value.clone()) {
+        Ok(found) => problems(&found),
+        Err(error) => vec![problem("value_error", loc.clone(), &error.to_string())],
+    }
+}
+
+fn check_input(kind: &str, value: &Value, loc: &Value) -> Vec<Value> {
+    let scalar = |valid: bool, kind: &str, message: &str| {
+        if valid { Vec::new() } else { vec![problem(kind, loc.clone(), message)] }
+    };
+    match kind {
+        "parent_input" => check_model(value, loc, |found: &ParentCreate| found.problems_at(loc)),
+        "child_input" => check_model(value, loc, |found: &ChildCreate| found.problems_at(loc)),
+        "parent_patch" => check_model(value, loc, ParentUpdate::problems),
+        "child_patch" => check_model(value, loc, ChildUpdate::problems),
+        "integer" => scalar(value.is_i64(), "int_type", "Input should be a valid integer"),
+        "float" => scalar(value.is_number(), "float_type", "Input should be a valid number"),
+        "boolean" => scalar(value.is_boolean(), "bool_type", "Input should be a valid boolean"),
+        "date" => scalar(
+            value.as_str().is_some_and(|day| chrono::NaiveDate::parse_from_str(day, "%Y-%m-%d").is_ok()),
+            "date_from_datetime_parsing",
+            "Input should be a valid date",
+        ),
+        _ => scalar(value.is_string(), "string_type", "Input should be a valid string"),
+    }
+}
+
+/// The declared inputs: each one present and valid, and no other member.
+fn check_inputs(body: &Map<String, Value>) -> Vec<Value> {
+    let mut found = Vec::new();
+    let declared = FLOW["inputs"].as_array().cloned().unwrap_or_default();
+    for input in &declared {
+        let name = input["name"].as_str().unwrap_or_default();
+        let loc = json!(["body", name]);
+        match body.get(name) {
+            None => found.push(problem("missing", loc, "Field required")),
+            Some(value) => found.extend(check_input(input["type"].as_str().unwrap_or_default(), value, &loc)),
+        }
+    }
+    for name in body.keys() {
+        if !declared.iter().any(|input| input["name"] == name.as_str()) {
+            found.push(problem("extra_forbidden", json!(["body", name]), "Extra inputs are not permitted"));
+        }
+    }
+    found
+}
+
+fn idempotency_key(headers: &HeaderMap, problems: &mut Vec<Value>) -> String {
+    let loc = json!(["header", "idempotency-key"]);
+    let Some(value) = headers.get("idempotency-key") else {
+        problems.push(problem("missing", loc, "Field required"));
+        return String::new();
+    };
+    let key = String::from_utf8_lossy(value.as_bytes()).into_owned();
+    match key.chars().count() {
+        0 => problems.push(problem("string_too_short", loc, "String should have at least 1 character")),
+        129.. => problems.push(problem("string_too_long", loc, "String should have at most 128 characters")),
+        _ => {}
+    }
+    key
+}
+
+/// JSON with every object's keys sorted, as json.dumps(sort_keys=True) orders them.
+fn sorted(value: &Value) -> Value {
+    match value {
+        Value::Object(map) => {
+            let mut keys: Vec<&String> = map.keys().collect();
+            keys.sort();
+            Value::Object(keys.into_iter().map(|key| (key.clone(), sorted(&map[key]))).collect())
+        }
+        Value::Array(items) => Value::Array(items.iter().map(sorted).collect()),
+        other => other.clone(),
+    }
+}
+
+fn run_id() -> Result<String, Fail> {
+    use ring::rand::SecureRandom;
+    let mut bytes = [0u8; 16];
+    ring::rand::SystemRandom::new()
+        .fill(&mut bytes)
+        .map_err(|_| Fail::Runtime("no randomness".to_owned()))?;
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    Ok(bytes.iter().map(|byte| format!("{byte:02x}")).collect())
+}
+
+async fn execute(
+    State(state): State<AppState>,
+    access: Result<Access, crate::api::ApiError>,
+    headers: HeaderMap,
+    payload: Result<Bytes, BytesRejection>,
+) -> Response {
+    let mut problems = Vec::new();
+    let key = idempotency_key(&headers, &mut problems);
+    let body = match read_body(&headers, payload, &mut problems, check_inputs) {
+        Ok(body) => body,
+        Err(error) => return error.into_response(),
+    };
+    let identity = match access {
+        Ok(Access(identity)) => identity,
+        Err(error) => return error.into_response(),
+    };
+    let inputs = match body.finish(problems) {
+        Ok(inputs) => inputs,
+        Err(error) => return error.into_response(),
+    };
+    let digest = format!(
+        "{:x}",
+        Sha256::digest(sorted(&json!({"plan": *PLAN, "input": inputs})).to_string().as_bytes())
+    );
+    let outcome = async {
+        let record = Run {
+            run_id: run_id()?,
+            owner: identity.sub,
+            flow: FLOW_NAME.to_owned(),
+            key,
+            request_hash: digest,
+            epoch: 1,
+            state: "running".to_owned(),
+            inputs,
+            values: Map::new(),
+            branches: Map::new(),
+            effects: Vec::new(),
+            result: Map::new(),
+            error_status: 503,
+            error_detail: "execution interrupted".to_owned(),
+        };
+        let (record, created) = start(&state.pool, record).await?;
+        if created {
+            run_record(state.pool.clone(), record, false).await
+        } else {
+            Ok(record)
+        }
+    };
+    match outcome.await {
+        Ok(record) => reply(&record, false),
+        Err(error) => error.into_response(),
+    }
+}
+
+async fn status(
+    State(state): State<AppState>,
+    access: Result<Access, crate::api::ApiError>,
+    Path(run_id): Path<String>,
+) -> Response {
+    let identity = match access {
+        Ok(Access(identity)) => identity,
+        Err(error) => return error.into_response(),
+    };
+    match load(&state.pool, &run_id, &identity.sub).await {
+        Ok(record) => reply(&record, true),
+        Err(error) => error.into_response(),
+    }
+}
+
+async fn recover(
+    State(state): State<AppState>,
+    access: Result<Access, crate::api::ApiError>,
+    Path(run_id): Path<String>,
+) -> Response {
+    let identity = match access {
+        Ok(Access(identity)) => identity,
+        Err(error) => return error.into_response(),
+    };
+    let outcome = async {
+        let record = load(&state.pool, &run_id, &identity.sub).await?;
+        recover_record(state.pool.clone(), record).await
+    };
+    match outcome.await {
+        Ok(record) => reply(&record, false),
+        Err(error) => error.into_response(),
+    }
+}
+
+pub fn routes() -> Router<AppState> {
+    Router::new()
+        .route(&format!("/flows/{FLOW_NAME}/runs"), post(execute))
+        .route("/flow-runs/{run_id}", get(status))
+        .route("/flow-runs/{run_id}/recover", post(recover))
+}

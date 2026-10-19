@@ -154,22 +154,56 @@ pub const STORAGES: [&str; 3] = ["none", "s3", "gcs"];
 /// json_export, csv, gzip_export, decimal_summary and statistics workflows (issue #53 E), for
 /// firebase and google_oauth auth too (issue #53 F), and for s3 and gcs storage too (issue #53 G).
 /// The capability_mongodb shape is delivered for jwt auth and no storage with the same workflows
-/// (issue #53 H1), and for the same auths and storages too (issue #53 H2).
+/// (issue #53 H1), and for the same auths and storages too (issue #53 H2). The flow_postgresql
+/// shape is delivered for the same capabilities when every flow step is a delivered operation.
 pub fn delivered(prompt: &Value) -> bool {
     let capabilities = &prompt["capabilities"];
     match shape(prompt).as_str() {
         "resource" => true,
-        "capability_postgresql" | "capability_mongodb" => {
-            AUTHS.iter().any(|auth| capabilities["auth"] == *auth)
-                && STORAGES
-                    .iter()
-                    .any(|storage| capabilities["storage"] == *storage)
-                && WORKFLOWS
-                    .iter()
-                    .any(|workflow| capabilities["workflow"] == *workflow)
+        "capability_postgresql" | "capability_mongodb" => capable(capabilities),
+        "flow_postgresql" => {
+            capable(capabilities)
+                && flow_delivered(&prompt["flow"]["steps"], &capabilities["workflow"])
         }
         _ => false,
     }
+}
+
+fn capable(capabilities: &Value) -> bool {
+    AUTHS.iter().any(|auth| capabilities["auth"] == *auth)
+        && STORAGES
+            .iter()
+            .any(|storage| capabilities["storage"] == *storage)
+        && WORKFLOWS
+            .iter()
+            .any(|workflow| capabilities["workflow"] == *workflow)
+}
+
+/// The flow operations delivered so far (issue #54 I): authorize, transaction, the parent
+/// and child create, get, list and patch, and workflow.run of json_export.
+const FLOW_OPS: [&str; 10] = [
+    "authorize",
+    "transaction",
+    "parent.create",
+    "parent.get",
+    "parent.list",
+    "parent.patch",
+    "child.create",
+    "child.get",
+    "child.list",
+    "child.patch",
+];
+
+pub(crate) fn flow_delivered(steps: &Value, workflow: &Value) -> bool {
+    steps.as_array().is_some_and(|steps| {
+        steps.iter().all(|step| {
+            let op = text(&step["op"]);
+            (FLOW_OPS.contains(&op.as_str()) || (op == "workflow.run" && workflow == "json_export"))
+                && ["steps", "then", "else"]
+                    .iter()
+                    .all(|arm| step[*arm].is_null() || flow_delivered(&step[*arm], workflow))
+        })
+    })
 }
 
 /// The refusal a target rust request gets: the phase 2 profile for a delivered shape, else the
@@ -343,5 +377,38 @@ mod tests {
             assert!(active(&prompt).is_some(), "{name}");
         }
         assert!(delivered(&json!({"version":"som.prompt.v5"})));
+    }
+
+    #[test]
+    fn a_flow_leaves_phase_1_when_every_step_is_delivered() {
+        let step = |op: &str| json!({"name": "s", "op": op, "args": {}, "undo": null});
+        let flow = |steps: Value| {
+            json!({"version":"som.prompt.v7","capabilities":{"database":"postgresql",
+                "auth":"jwt","storage":"none","workflow":"json_export"},
+                "flow":{"name":"f","inputs":[],"result":{},"steps":steps}})
+        };
+        let steps = json!([step("authorize"), {"name": "t", "op": "transaction",
+            "steps": [step("parent.create"), step("child.patch")]}, step("workflow.run")]);
+        assert!(delivered(&flow(steps.clone())));
+        assert_eq!(active(&flow(steps.clone())), None);
+        let mut csv = flow(steps);
+        csv["capabilities"]["workflow"] = json!("csv");
+        assert!(!delivered(&csv));
+        let mut plain = flow(json!([step("authorize"), step("child.list")]));
+        plain["capabilities"]["workflow"] = json!("csv");
+        assert!(delivered(&plain));
+        for op in [
+            "if",
+            "batch.create",
+            "workflow.import",
+            "object.put",
+            "object.get",
+        ] {
+            let nested = json!([{"name": "t", "op": "transaction", "steps": [step(op)]}]);
+            assert!(!delivered(&flow(nested)), "{op}");
+        }
+        let mut mongo = flow(json!([step("authorize")]));
+        mongo["capabilities"]["database"] = json!("mongodb");
+        assert!(!delivered(&mongo));
     }
 }
