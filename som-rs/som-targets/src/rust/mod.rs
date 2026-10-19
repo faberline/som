@@ -1282,16 +1282,65 @@ mod tests {
         }
     }
 
+    /// The v7 example with a batch, a csv import on csv, and a workflow run, on a database and
+    /// a workflow.
+    fn batch_flow(database: &str, workflow: &str) -> Value {
+        let mut prompt = example("v7");
+        prompt["capabilities"]["database"] = json!(database);
+        prompt["capabilities"]["workflow"] = json!(workflow);
+        if matches!(workflow, "decimal_summary" | "statistics") {
+            prompt["resources"]["child"]["fields"]
+                .as_array_mut()
+                .expect("fields")
+                .push(json!({"default": null, "name": "amount", "required": false, "type": "float", "unique": false}));
+            prompt["capabilities"]["value_field"] = json!("amount");
+        }
+        if workflow == "decimal_summary" {
+            prompt["capabilities"]["group_field"] = json!("title");
+        }
+        let made = json!({"step": "made", "field": "parent.id"});
+        let mut writes = vec![json!({"name": "made", "op": "batch.create", "undo": "delete_created",
+            "args": {"parent": {"input": "parent"}, "children": {"input": "kids"}}})];
+        let mut inputs = vec![
+            json!({"name": "parent", "type": "parent_input"}),
+            json!({"name": "kids", "type": "children_input"}),
+        ];
+        if workflow == "csv" {
+            writes.push(json!({"name": "imported", "op": "workflow.import", "undo": "delete_created",
+                "args": {"parent_id": made, "csv": {"input": "csv"}}}));
+            inputs.push(json!({"name": "csv", "type": "string"}));
+        }
+        prompt["flow"] = json!({
+            "name": "make_family",
+            "inputs": inputs,
+            "steps": [
+                {"name": "auth", "op": "authorize", "args": {}, "undo": null},
+                {"name": "write", "op": "transaction", "steps": writes},
+                {"name": "summary", "op": "workflow.run", "args": {"parent_id": made}, "undo": null},
+            ],
+            "result": {"sha": {"step": "summary", "field": "sha256"}},
+        });
+        prompt
+    }
+
     /// Issue #54 I: flow_postgresql renders 12 files with the runtime in src/flows.rs, and
-    /// flow_mongodb the same 11 files without a migration.
+    /// flow_mongodb the same 11 files without a migration. Issue #54 J: a batch, a csv import
+    /// and a run of every workflow.
     #[test]
     fn a_flow_prompt_renders_the_flow_layout() {
         let mut mongo = example("v7");
         mongo["capabilities"]["database"] = json!("mongodb");
-        let prompts = vec![
+        let mut prompts = vec![
             ("v7".to_owned(), example("v7")),
             ("v7-mongo".to_owned(), mongo),
         ];
+        for workflow in ["csv", "gzip_export", "decimal_summary", "statistics"] {
+            for database in ["postgresql", "mongodb"] {
+                let name = format!("{workflow}-{database}").replace("postgresql", "pg");
+                let name = if database == "mongodb" { name.replace("mongodb", "mongo") } else { name };
+                prompts.push((name, batch_flow(database, workflow)));
+            }
+        }
         for (name, prompt) in prompts {
             let name = name.as_str();
             let dsl = plan(&prompt).expect("plan");

@@ -163,8 +163,7 @@ pub fn delivered(prompt: &Value) -> bool {
         "resource" => true,
         "capability_postgresql" | "capability_mongodb" => capable(capabilities),
         "flow_postgresql" | "flow_mongodb" => {
-            capable(capabilities)
-                && flow_delivered(&prompt["flow"]["steps"], &capabilities["workflow"])
+            capable(capabilities) && flow_delivered(&prompt["flow"]["steps"])
         }
         _ => false,
     }
@@ -180,9 +179,10 @@ fn capable(capabilities: &Value) -> bool {
             .any(|workflow| capabilities["workflow"] == *workflow)
 }
 
-/// The flow operations delivered so far (issue #54 I): authorize, transaction, the parent
-/// and child create, get, list and patch, and workflow.run of json_export.
-const FLOW_OPS: [&str; 10] = [
+/// The flow operations delivered so far: authorize, transaction, the parent and child create,
+/// get, list and patch (issue #54 I), and batch.create, workflow.run and workflow.import
+/// (issue #54 J).
+const FLOW_OPS: [&str; 13] = [
     "authorize",
     "transaction",
     "parent.create",
@@ -193,16 +193,18 @@ const FLOW_OPS: [&str; 10] = [
     "child.get",
     "child.list",
     "child.patch",
+    "batch.create",
+    "workflow.run",
+    "workflow.import",
 ];
 
-pub(crate) fn flow_delivered(steps: &Value, workflow: &Value) -> bool {
+pub(crate) fn flow_delivered(steps: &Value) -> bool {
     steps.as_array().is_some_and(|steps| {
         steps.iter().all(|step| {
-            let op = text(&step["op"]);
-            (FLOW_OPS.contains(&op.as_str()) || (op == "workflow.run" && workflow == "json_export"))
+            FLOW_OPS.contains(&text(&step["op"]).as_str())
                 && ["steps", "then", "else"]
                     .iter()
-                    .all(|arm| step[*arm].is_null() || flow_delivered(&step[*arm], workflow))
+                    .all(|arm| step[*arm].is_null() || flow_delivered(&step[*arm]))
         })
     })
 }
@@ -394,17 +396,12 @@ mod tests {
         assert_eq!(active(&flow(steps.clone())), None);
         let mut csv = flow(steps);
         csv["capabilities"]["workflow"] = json!("csv");
-        assert!(!delivered(&csv));
-        let mut plain = flow(json!([step("authorize"), step("child.list")]));
-        plain["capabilities"]["workflow"] = json!("csv");
-        assert!(delivered(&plain));
-        for op in [
-            "if",
-            "batch.create",
-            "workflow.import",
-            "object.put",
-            "object.get",
-        ] {
+        assert!(delivered(&csv));
+        let mut import = flow(json!([{"name": "t", "op": "transaction",
+            "steps": [step("batch.create"), step("workflow.import")]}]));
+        import["capabilities"]["workflow"] = json!("csv");
+        assert!(delivered(&import));
+        for op in ["if", "object.put", "object.get"] {
             let nested = json!([{"name": "t", "op": "transaction", "steps": [step(op)]}]);
             assert!(!delivered(&flow(nested)), "{op}");
         }

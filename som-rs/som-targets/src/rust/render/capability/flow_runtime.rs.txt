@@ -30,6 +30,7 @@ use crate::schemas::{
 
 const FLOW_TEXT: &str = @FLOW_TEXT@;
 const FLOW_NAME: &str = @FLOW_NAME@;
+const WORKFLOW: &str = @WORKFLOW@;
 
 static FLOW: LazyLock<Value> =
     LazyLock::new(|| serde_json::from_str(FLOW_TEXT).expect("the embedded flow is JSON"));
@@ -330,6 +331,25 @@ fn read_json(role: &Role, row: &PgRow) -> Result<Value, Fail> {
     read.map_err(|_| Fail::Invalid)
 }
 
+/// Insert one parent in the open transaction: its read and its id.
+async fn create_parent(connection: &mut PgConnection, body: ParentCreate) -> Result<(Value, i64), Fail> {
+    let row = crate::db::insert_parent(connection, body).await?;
+    let id = i64::from(row.id);
+    Ok((serde_json::to_value(ParentRead::from(row)).map_err(|_| Fail::Invalid)?, id))
+}
+
+/// Insert one child of a parent the transaction holds: its read and its id.
+async fn create_child(
+    connection: &mut PgConnection,
+    parent_id: Option<i64>,
+    body: ChildCreate,
+) -> Result<(Value, i64), Fail> {
+    let parent = parent_id.and_then(|id| i32::try_from(id).ok()).unwrap_or_default();
+    let row = crate::db::insert_child(connection, parent, body).await?;
+    let id = i64::from(row.id);
+    Ok((serde_json::to_value(ChildRead::from(row)).map_err(|_| Fail::Invalid)?, id))
+}
+
 /// A child's parent must exist, and stays until the transaction ends.
 async fn scope(
     connection: &mut PgConnection,
@@ -481,8 +501,18 @@ fn object(value: Value) -> Result<Map<String, Value>, Fail> {
     }
 }
 
-fn receipt(data: Value) -> Result<Value, Fail> {
-    let body = serde_json::to_vec(&data).map_err(|_| Fail::Invalid)?;
+/// The export bytes of the rows as the product answers them. The data is the rows, or the
+/// summary a decimal_summary or statistics workflow answers.
+async fn workflow_receipt(rows: Vec<ChildRow>, data: Value) -> Result<Value, Fail> {
+    let response = crate::api::export_rows(rows)
+        .map_err(|_| Fail::Runtime("workflow export failed".to_owned()))?;
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .map_err(|_| Fail::Invalid)?;
+    let data = match WORKFLOW {
+        "decimal_summary" | "statistics" => serde_json::from_slice(&body).map_err(|_| Fail::Invalid)?,
+        _ => data,
+    };
     Ok(json!({
         "body": base64::engine::general_purpose::STANDARD.encode(&body),
         "size": body.len(),
@@ -564,7 +594,10 @@ impl Ctx {
         if let Some(step) = reference["step"].as_str() {
             let value = self.record.values.get(step).cloned().unwrap_or(Value::Null);
             let field = reference["field"].as_str().unwrap_or_default();
-            return Ok(if field.is_empty() { value } else { value[field].clone() });
+            return Ok(field
+                .split('.')
+                .filter(|segment| !segment.is_empty())
+                .fold(value, |value, segment| value.get(segment).cloned().unwrap_or(Value::Null)));
         }
         if reference.get("literal").is_some() {
             return Ok(reference["literal"].clone());
@@ -618,7 +651,8 @@ impl Ctx {
                     .iter()
                     .map(|row| read_json(&CHILD, row))
                     .collect::<Result<Vec<_>, _>>()?;
-                receipt(Value::Array(data))?
+                let found = found.iter().map(ChildRow::from_row).collect::<Result<Vec<_>, _>>()?;
+                workflow_receipt(found, Value::Array(data)).await?
             }
             (_, "get") => {
                 let id = if role.child { &args["child_id"] } else { &args["parent_id"] };
@@ -633,28 +667,57 @@ impl Ctx {
                     .map(|row| read_json(role, row))
                     .collect::<Result<Vec<_>, _>>()?,
             ),
-            (_, "create" | "patch") if !locked => {
+            ("batch.create" | "workflow.import", _) | (_, "create" | "patch") if !locked => {
                 return Err(Fail::Runtime("transaction required".to_owned()));
+            }
+            ("batch.create", _) => {
+                let parent = object(self.resolve(&args["parent"])?)?;
+                let children = match self.resolve(&args["children"])? {
+                    Value::Array(children) if (1..=20).contains(&children.len()) => children,
+                    _ => return Err(Fail::http(422, "expected 1..20 children")),
+                };
+                let body: ParentCreate = model(&parent)?;
+                checked(body.problems())?;
+                let (parent, id) = create_parent(&mut *connection, body).await?;
+                self.record.effects.push(self.effect(step, group, &name, &PARENT, id, 0, Map::new()));
+                let mut created = Vec::new();
+                for child in children {
+                    let body: ChildCreate = model(&object(child)?)?;
+                    checked(body.problems())?;
+                    scope(&mut *connection, &CHILD, Some(id), true).await?;
+                    let (child, child_id) = create_child(&mut *connection, Some(id), body).await?;
+                    self.record.effects.push(self.effect(step, group, &name, &CHILD, child_id, 0, Map::new()));
+                    created.push(child);
+                }
+                json!({"parent": parent, "children": created})
+            }
+            ("workflow.import", _) => {
+                let text = self.resolve(&args["csv"])?;
+                let children = crate::api::flow_csv(text.as_str().unwrap_or_default())
+                    .map_err(|detail| Fail::http(422, detail))?;
+                let mut created = Vec::new();
+                for body in children {
+                    scope(&mut *connection, &CHILD, parent_id, true).await?;
+                    let (child, id) = create_child(&mut *connection, parent_id, body).await?;
+                    self.record.effects.push(self.effect(step, group, &name, &CHILD, id, 0, Map::new()));
+                    created.push(child);
+                }
+                Value::Array(created)
             }
             (_, "create") => {
                 let data = object(self.resolve(&args["data"])?)?;
-                scope(&mut *connection, role, parent_id, true).await?;
                 let (read, id) = if role.child {
+                    scope(&mut *connection, role, parent_id, true).await?;
                     let body: ChildCreate = model(&data)?;
                     checked(body.problems())?;
-                    let parent = parent_id.and_then(|id| i32::try_from(id).ok()).unwrap_or_default();
-                    let row = crate::db::insert_child(&mut *connection, parent, body).await?;
-                    let id = row.id;
-                    (serde_json::to_value(ChildRead::from(row)), id)
+                    create_child(&mut *connection, parent_id, body).await?
                 } else {
                     let body: ParentCreate = model(&data)?;
                     checked(body.problems())?;
-                    let row = crate::db::insert_parent(&mut *connection, body).await?;
-                    let id = row.id;
-                    (serde_json::to_value(ParentRead::from(row)), id)
+                    create_parent(&mut *connection, body).await?
                 };
-                self.record.effects.push(self.effect(step, group, &name, i64::from(id), 0, Map::new()));
-                read.map_err(|_| Fail::Invalid)?
+                self.record.effects.push(self.effect(step, group, &name, role, id, 0, Map::new()));
+                read
             }
             (_, "patch") => {
                 let row_id = integer(&self.resolve(if role.child { &args["child_id"] } else { &args["parent_id"] })?)?;
@@ -684,7 +747,7 @@ impl Ctx {
                         .ok_or_else(|| Fail::http(409, MISSING))?;
                     let revision = i64::from(found.try_get::<i32, _>("_som_revision")?);
                     let read = read_json(role, &found)?;
-                    self.record.effects.push(self.effect(step, group, &name, row_id, revision, before));
+                    self.record.effects.push(self.effect(step, group, &name, role, row_id, revision, before));
                     read
                 }
             }
@@ -694,21 +757,22 @@ impl Ctx {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn effect(
         &self,
         step: &Value,
         group: &str,
         name: &str,
+        role: &Role,
         row_id: i64,
         revision: i64,
         before: Map<String, Value>,
     ) -> Effect {
-        let op = step["op"].as_str().unwrap_or_default();
         Effect {
             group: group.to_owned(),
             step: name.to_owned(),
             undo: step["undo"].as_str().unwrap_or_default().to_owned(),
-            role: if op.starts_with("child") { "child" } else { "parent" }.to_owned(),
+            role: if role.child { "child" } else { "parent" }.to_owned(),
             row_id,
             revision,
             before,
@@ -946,11 +1010,34 @@ fn check_model<T: DeserializeOwned>(
     }
 }
 
+/// A list of 1 to 20 children. Past 20 the length is the only problem.
+fn check_children(value: &Value, loc: &Value) -> Vec<Value> {
+    let Some(children) = value.as_array() else {
+        return vec![problem("list_type", loc.clone(), "Input should be a valid list")];
+    };
+    if children.len() > 20 {
+        let message = format!("List should have at most 20 items after validation, not {}", children.len());
+        return vec![problem("too_long", loc.clone(), &message)];
+    }
+    let mut found = Vec::new();
+    for (index, child) in children.iter().enumerate() {
+        let mut at = loc.as_array().cloned().unwrap_or_default();
+        at.push(json!(index));
+        let at = Value::Array(at);
+        found.extend(check_model(child, &at, |found: &ChildCreate| found.problems_at(&at)));
+    }
+    if found.is_empty() && children.is_empty() {
+        found.push(problem("too_short", loc.clone(), "List should have at least 1 item after validation, not 0"));
+    }
+    found
+}
+
 fn check_input(kind: &str, value: &Value, loc: &Value) -> Vec<Value> {
     let scalar = |valid: bool, kind: &str, message: &str| {
         if valid { Vec::new() } else { vec![problem(kind, loc.clone(), message)] }
     };
     match kind {
+        "children_input" => check_children(value, loc),
         "parent_input" => check_model(value, loc, |found: &ParentCreate| found.problems_at(loc)),
         "child_input" => check_model(value, loc, |found: &ChildCreate| found.problems_at(loc)),
         "parent_patch" => check_model(value, loc, ParentUpdate::problems),
@@ -963,7 +1050,14 @@ fn check_input(kind: &str, value: &Value, loc: &Value) -> Vec<Value> {
             "date_from_datetime_parsing",
             "Input should be a valid date",
         ),
-        _ => scalar(value.is_string(), "string_type", "Input should be a valid string"),
+        _ => match value.as_str() {
+            Some(text) => scalar(
+                text.chars().count() <= 1_048_576,
+                "string_too_long",
+                "String should have at most 1048576 characters",
+            ),
+            None => scalar(false, "string_type", "Input should be a valid string"),
+        },
     }
 }
 
