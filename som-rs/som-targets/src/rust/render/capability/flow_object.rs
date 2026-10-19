@@ -650,8 +650,8 @@ const RUNTIME_EDITS: [(&str, &str); 5] = [
         "    async fn step(&mut self, step: &Value, group: &str) -> Result<(), Fail> {\n        if let Some(done) = self.object_step(step).await {\n            return done;\n        }\n",
     ),
     (
-        "                self.step(node, \"\").await?;\n                self.persist().await?;\n",
-        "                self.step(node, \"\").await?;\n                if node[\"op\"] != \"object.put\" {\n                    self.persist().await?;\n                }\n",
+        "                    self.step(node, \"\").await?;\n                    self.persist().await?;\n",
+        "                    self.step(node, \"\").await?;\n                    if node[\"op\"] != \"object.put\" {\n                        self.persist().await?;\n                    }\n",
     ),
     (
         "                return Err(Fail::http(503, \"invalid external journal\"));\n",

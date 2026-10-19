@@ -1,6 +1,7 @@
 //! The declared flow, run as data against a fenced journal: one run per owner and key, a lease
 //! that a heartbeat renews, and compensation that undoes committed groups in reverse order.
 
+use std::cmp::Ordering;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::LazyLock;
@@ -884,28 +885,74 @@ impl Ctx {
         }
     }
 
-    /// The declared steps once, then the declared result.
-    async fn forward(&mut self) -> Result<Map<String, Value>, Fail> {
-        for node in FLOW["steps"].as_array().into_iter().flatten() {
-            if node["op"] == "transaction" {
-                let group = node["name"].as_str().unwrap_or_default();
-                let snapshot = self.begin().await?;
-                let outcome = async {
-                    for step in node["steps"].as_array().into_iter().flatten() {
-                        self.step(step, group).await?;
+    /// The nodes in order. A transaction commits its steps with the journal; a branch
+    /// journals its decision (a checkpoint outside a transaction), runs one arm and binds its
+    /// exports; a step outside a transaction is a checkpoint.
+    fn walk<'a>(
+        &'a mut self,
+        nodes: &'a Value,
+        group: &'a str,
+    ) -> Pin<Box<dyn Future<Output = Result<(), Fail>> + Send + 'a>> {
+        Box::pin(async move {
+            for node in nodes.as_array().into_iter().flatten() {
+                let name = node["name"].as_str().unwrap_or_default();
+                if node["op"] == "transaction" {
+                    let snapshot = self.begin().await?;
+                    let outcome = async {
+                        self.walk(&node["steps"], name).await?;
+                        self.commit().await
                     }
-                    self.commit().await
+                    .await;
+                    if outcome.is_err() {
+                        self.abort(snapshot).await;
+                    }
+                    outcome?;
+                } else if node["op"] == "if" {
+                    let taken = self.holds(&node["condition"])?;
+                    self.record.branches.insert(name.to_owned(), Value::Bool(taken));
+                    if group.is_empty() {
+                        self.persist().await?;
+                    }
+                    let arm = if taken { "then" } else { "else" };
+                    self.walk(&node[arm], group).await?;
+                    for (export, binding) in node["exports"].as_object().into_iter().flatten() {
+                        let value = self.resolve(&binding[arm])?;
+                        self.record.values.insert(export.clone(), value);
+                    }
+                } else if group.is_empty() {
+                    self.step(node, "").await?;
+                    self.persist().await?;
+                } else {
+                    self.step(node, group).await?;
                 }
-                .await;
-                if outcome.is_err() {
-                    self.abort(snapshot).await;
-                }
-                outcome?;
-            } else {
-                self.step(node, "").await?;
-                self.persist().await?;
             }
+            Ok(())
+        })
+    }
+
+    /// A branch predicate, compared as the Python flow compares the typed values.
+    fn holds(&self, condition: &Value) -> Result<bool, Fail> {
+        let left = self.resolve(&condition["left"])?;
+        let op = condition["op"].as_str().unwrap_or_default();
+        if op == "is_null" {
+            return Ok(left.is_null());
         }
+        let order = compare(&left, &self.resolve(&condition["right"])?);
+        let ordered = || order.ok_or_else(|| Fail::Runtime("incomparable branch values".to_owned()));
+        Ok(match op {
+            "eq" => order == Some(Ordering::Equal),
+            "ne" => order != Some(Ordering::Equal),
+            "lt" => ordered()?.is_lt(),
+            "le" => ordered()?.is_le(),
+            "gt" => ordered()?.is_gt(),
+            "ge" => ordered()?.is_ge(),
+            _ => return Err(Fail::Runtime(format!("unsupported branch predicate {op}"))),
+        })
+    }
+
+    /// The declared nodes once, then the declared result.
+    async fn forward(&mut self) -> Result<Map<String, Value>, Fail> {
+        self.walk(&FLOW["steps"], "").await?;
         let mut result = Map::new();
         let mut names: Vec<&String> = FLOW["result"].as_object().into_iter().flatten().map(|(name, _)| name).collect();
         names.sort();
@@ -963,6 +1010,21 @@ impl Ctx {
 }
 
 // ---------------------------------------------------------------- runs
+
+/// Two scalars of one type: numbers by value, strings and ISO dates by code point, booleans,
+/// and null equal only to null.
+fn compare(left: &Value, right: &Value) -> Option<Ordering> {
+    match (left, right) {
+        (Value::Number(a), Value::Number(b)) => match (a.as_i64(), b.as_i64()) {
+            (Some(a), Some(b)) => Some(a.cmp(&b)),
+            _ => a.as_f64()?.partial_cmp(&b.as_f64()?),
+        },
+        (Value::String(a), Value::String(b)) => Some(a.cmp(b)),
+        (Value::Bool(a), Value::Bool(b)) => Some(a.cmp(b)),
+        (Value::Null, Value::Null) => Some(Ordering::Equal),
+        _ => None,
+    }
+}
 
 type Boxed<T> = Pin<Box<dyn Future<Output = Result<T, Fail>> + Send>>;
 
