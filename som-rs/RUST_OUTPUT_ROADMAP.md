@@ -141,9 +141,10 @@ Phase 2 makes the Rust output cover every prompt compiler-v1 admits:
 - v5 with capabilities, v6 capabilities and v7 flows;
 - the names that phase 1 refused: crate, self and super, names made only of underscores or not in snake case, a resource path with an empty segment or at /healthz, and the table _sqlx_migrations.
 
-One refusal stays: a v3 filter field named limit or offset (query_parameter_collision).
+Phase 2 kept one refusal: a v3 filter field named limit or offset (query_parameter_collision).
 Its query string is ambiguous, the Python product for it does not start, and compiler-v1 refuses the same names in v4 and v5.
-This is a recorded deviation from the #52 issue text.
+This is a recorded deviation from the #52 issue text. Since #58, compiler-v1 refuses those names, and every other name
+that collides with a generated Python identifier, with INVALID_VALUE, so the Rust target refuses nothing compiler-v1 admits.
 
 | Issue | Work | Depends on |
 |---|---|---|
@@ -195,8 +196,8 @@ Two earlier complete runs are recorded as superseded:
 
 Five RS cases do not pass:
 
-- RS07, RS14 and RS16: a field or foreign key named self makes the Python product answer 500. Rust follows the suite oracle. [#57](https://github.com/faberline/som/issues/57) tracks the Python fix.
-- RS12 and RS13: the kept refusal. Their Python products do not start.
+- RS07, RS14 and RS16: a field or foreign key named self made the Python product answer 500. Rust follows the suite oracle. [#57](https://github.com/faberline/som/issues/57) fixed the Python products.
+- RS12 and RS13: the kept refusal. Their Python products do not start. [#58](https://github.com/faberline/som/issues/58) moved the refusal to compiler-v1.
 
 ### Phase 2 progress (#53–#56)
 
@@ -205,13 +206,15 @@ Five RS cases do not pass:
 - #55 is implemented: rust-output-candidate-004 passes every phase 2 check of the acceptance plan on one build (584/584, phase 1 115/115 unchanged), the Python regressions replay byte-identically (2005 exchanges, 127 public products, 544 legacy jobs) and an independent audit finds 35 passed, 0 failed, 0 unrun ([evidence](evidence/rust-output-acceptance-2026-10-20-phase2.json)).
 - #56 is implemented: after a rehearsal of the switch, every injected failure and the restore, and the user's approval, candidate 004 became the default on 8765 on 2026-10-20; the post-switch check passed ([evidence](evidence/rust-output-release-2026-10-20.json)).
 
-#53, #54, #55 and #56 stay open for review. [#57](https://github.com/faberline/som/issues/57) fixes the Python self defect after #56, with its own candidate, acceptance and release.
+- #57 and #58 are implemented: compiler-v1 amendments 003 and 004 select a `self` variant block for a field or foreign key named self and refuse names that collide with generated Python identifiers with INVALID_VALUE; rust-output-v1 amendment 004 admits the changed bundle asset descriptors while every Python product file stays byte-identical. Candidate 006 passed the issue57 acceptance and an independent audit (16 passed, 0 failed, 0 unrun) ([evidence](evidence/rust-output-acceptance-2026-10-20-issue57.json)) and became the default on 8765 on 2026-10-20 after a rehearsal; the post-switch check passed ([evidence](evidence/rust-output-release-2026-10-20-issue57.json)).
+
+#52–#58 are closed.
 
 ## Limits
 
 Use local tools only. No paid agent runs, real cloud runs or model training.
 Do not publish weights, binaries or raw measurements.
-Keep the current default on 8765 until a qualified switch passes. #51 switched it on 2026-10-16 and #56 on 2026-10-20.
+Keep the current default on 8765 until a qualified switch passes. #51 switched it on 2026-10-16, and #56 and #57 on 2026-10-20.
 Python output stays byte-identical through M4.
 Keep the legacy M2 rollback assets.
 
@@ -220,4 +223,4 @@ Keep the legacy M2 rollback assets.
 [Milestone 9](https://github.com/faberline/som/milestone/9) holds issues #45–#51.
 The #45 contract is frozen. Later changes to it are numbered amendments. #47 added target selection and the Rust scope refusals. #48 generates v1–v4 Rust products. #46 runs behavior parity for them. #49 adds parent and child output. #50 records the acceptance run and the Python regressions. #51 makes the Rust output build the default.
 
-[Milestone 10](https://github.com/faberline/som/milestone/10) holds issues #52–#56 for phase 2. #52 freezes amendment 2: the phase 2 constructs, naming and service rules, the case inventory, the pins and the extended behavior suite with its Python run. #53 and #54 generate the phase 2 products. #55 runs their acceptance. #56 makes the phase 2 build the default. #57 follows for the Python self defect.
+[Milestone 10](https://github.com/faberline/som/milestone/10) holds issues #52–#56 for phase 2. #52 freezes amendment 2: the phase 2 constructs, naming and service rules, the case inventory, the pins and the extended behavior suite with its Python run. #53 and #54 generate the phase 2 products. #55 runs their acceptance. #56 makes the phase 2 build the default. #57 fixes the Python self defect and #58 the Python name collisions.

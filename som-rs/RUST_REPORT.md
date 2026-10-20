@@ -1,8 +1,39 @@
 # Rust compiler acceptance report — 2026-10-20
 
+## Python self-name fix release (#57, #58) — 2026-10-20
+
+Since `2026-10-20T08:39:04.671848+00:00` the default on `127.0.0.1:8765` is rust-output-candidate-006.
+A Python resource field or foreign key named `self` now builds and runs (#57).
+compiler-v1 refuses a name that collides with a generated Python identifier with INVALID_VALUE, for example a v3 filter
+field named limit or offset (#58), so the Rust target refuses nothing that compiler-v1 admits.
+The post-switch check passed 6/6 checks with all 10 canary cases.
+Binary SHA-256: `52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2`, built from commit `6116fed549`.
+Asset manifest `d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa`, Python backend `581ce38f…`.
+Python product files are byte-identical; only the bundle asset descriptors and payload hash changed
+(rust-output-v1 amendment 004). Bundles assembled by an earlier default get ASSET_HASH_MISMATCH: compile them again.
+The contract changes are compiler-v1 amendments 003 and 004 and rust-output-v1 amendment 004, each sealed after an independent review.
+See the [acceptance evidence](evidence/rust-output-acceptance-2026-10-20-issue57.json) and the
+[release evidence](evidence/rust-output-release-2026-10-20-issue57.json).
+
+| #57/#58 check | Actual result |
+|---|---|
+| Python replay on candidate 006 | 2005/2005 exchanges; product files of 127/127 public products and 544/544 legacy jobs (legacy100 100, legacy214 214, quality218 218, supplement12 12) unchanged; 671 bundles assembled again after the expected asset break |
+| `self` cases | 18 positive cases (v1 to v7, PostgreSQL and MongoDB, fields, filter fields and foreign keys) passed in Python and passed their Rust gates; 48/48 negative cases passed |
+| Name collisions (#58) | refused with INVALID_VALUE; no admitted example (16), CNL fixture (238), typed fixture (7), public product (127) or legacy job (544) is affected |
+| Rust target unchanged | phase 2 584/584, 582 product file sets equal; RS12 and RS13 now refused by compiler-v1 |
+| Other gates | Python controls 32 passed, validate cases 6, CLI 39/39, target negatives 32/32, target examples 24/24, source forms 817/817 |
+| Independent audit | 16 passed, 0 failed, 0 unrun |
+| Canary inputs | 5 Python cases (29 steps: smoke12, legacy100 and 3 `self` cases), 5 Rust cases (25 steps), 2 M2 cases |
+| Rust canaries on the local emulators | example-v1 and example-v5: product gates 2/2; RS03_JSON_V6, RS04_JSON_V7 and CAP_MONGODB_FIREBASE_GCS_CSV: behavior 3/3 |
+| Rehearsal | switch, restore to the #56 default and the 4 injected failures (after stop, start, pointer, commit) all passed; 8765 unchanged |
+| Live switch | committed with no rollback under the user's standing instruction; previous owner pid 507 stopped, new owner pid 61463 |
+| Post-switch check | owner, health, pointers, legacy rollback assets, canaries, owner after: all passed |
+
+Not run: the som-core tests that need fastapi (the local venv lacks it and PyPI is not approved); compiler-v1 amendment 004 records them.
+
 ## Rust output phase 2 release (#56) — 2026-10-20
 
-Since `2026-10-20T03:14:10.975162+00:00` the default on `127.0.0.1:8765` is rust-output-candidate-004.
+From `2026-10-20T03:14:10.975162+00:00` to the #57 switch, the default on `127.0.0.1:8765` was rust-output-candidate-004.
 It serves the Python target and the phase 2 Rust target: every prompt compiler-v1 admits, except a v3 filter field named limit or offset.
 The post-switch check passed 6/6 checks with all 7 canary cases.
 Binary SHA-256: `d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b`, built from commit `69bb1fe682`.
@@ -21,7 +52,7 @@ See the [release evidence](evidence/rust-output-release-2026-10-20.json).
 | Live switch | committed with no rollback after the user's approval; previous owner pid 96083 stopped, new owner pid 507 |
 | Post-switch check | owner, health, pointers, legacy rollback assets, canaries, owner after: all passed |
 
-Not done: [#57](https://github.com/faberline/som/issues/57), the Python 500 on a field or foreign key named self.
+Not done in #56: [#57](https://github.com/faberline/som/issues/57), the Python 500 on a field or foreign key named self (fixed in the section above).
 
 ## Rust output release (#51) — 2026-10-16
 

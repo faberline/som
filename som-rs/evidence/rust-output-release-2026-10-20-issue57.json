@@ -1,0 +1,474 @@
+{
+ "version": "som.rust-output-release.v1",
+ "issues": [
+  57,
+  58
+ ],
+ "phase": 2,
+ "recorded_at": "2026-10-20T08:39:04.671848+00:00",
+ "status": "passed",
+ "status_note": "Candidate rust-output-candidate-006 (the #57 self-name fix: compiler-v1 amendments 003 and 004, rust-output-v1 amendment 004) passed the issue57 acceptance plan with an independent audit (16 passed, 0 failed, 0 unrun). Its Python, self-name and Rust canaries ran, the Rust ones on the local emulators; a sandbox rehearsal passed the switch, every injected failure and the restore to the #56 default, then the switch on 127.0.0.1:8765 and a post-switch check passed. Python product files stay byte-identical; only bundle asset descriptors and payload_sha256 differ, as amendment 004 admits. Raw outputs stay local; this file holds summaries and hashes only.",
+ "blockers": [],
+ "tools_commit": "7a31bc0a86",
+ "tool_files": {
+  "som-rs/scripts/rust_output_release/check_default.py": "e9b3d0bf793479cfd0039b78638e9cf4edd965001bbc851f1bc6ffd16cbb962a",
+  "som-rs/scripts/rust_output_release/prepare_inputs.py": "c5dfa3aee2f219eac19339592ae6542538fa00cf28ecc47c40c2a08124652aa2",
+  "som-rs/scripts/rust_output_release/rehearse.py": "3239cec6649c90fdb2c4eee20534be71deed74df36ce44e7763c9a4fb66b0a1d",
+  "som-rs/scripts/rust_output_release/release_common.py": "7f51f6238a02089c036ccb87d1fcae4d4b78a542078c9b54a6927012cb0a8b33",
+  "som-rs/scripts/rust_output_release/switch.py": "a857d3eb9d903fe7f7c76adfc1c34a3ed073389a63d32b619b15bd203ce6a725",
+  "som-rs/scripts/compiler_default_switch.py": "289a8470c5de2a183b01c8a138ecb4bc6cfe80a624f0291b32b779cc854bfb12"
+ },
+ "candidate": {
+  "directory": ".local/rust-compiler-goal/rust-output-candidate-006",
+  "build_commit": "6116fed549d458f6ac06f51541c93c5de6514385",
+  "binary_sha256": "52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2",
+  "binary_bytes": 13411904,
+  "source_json_sha256": "9562fe147c650067a554ac20ba91cdc9bff8cf7ee8442037339fad20d06565bd",
+  "runtime_receipt_sha256": "3507428497455fece30e757f0b3f08ece520a142103398e926f4736cc0d3634a",
+  "build_receipt_sha256": "fc7ec5aaeafeca607d1cf179e9b3fdb7261014fa9e47776e563f49bf12213be6",
+  "build_binary_sha256": "52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2",
+  "qa_port": 18970,
+  "health": {
+   "backend_sha256": "581ce38f29702c300342cdefe8fe5f1735cefcd1869d6485b44f30063a866711",
+   "asset_manifest_sha256": "d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa"
+  }
+ },
+ "acceptance": {
+  "evidence": "som-rs/evidence/rust-output-acceptance-2026-10-20-issue57.json",
+  "evidence_sha256": "d2fdfbf2297d4ae16433544c7a641893c3823624a77b9d8bfb02dc0bc3e4ed3e",
+  "status": "passed",
+  "run": ".local/rust-compiler-goal/acceptance/issue57/run-004",
+  "summary_sha256": "513e9e10f769b376d4956f1d957cd0508f00961cc0a6d88ad76b67a2696262ad",
+  "header_sha256": "48fa6a5e8348e4911b3b618b1a4488a2547b34519fb67d4db2949004bb3c7f49",
+  "plan_sha256": "6077e6e16218c00fd65d69830cdb9a7dff57d6b08a8fb2adbd39752d4abcd887",
+  "audit": ".local/rust-compiler-goal/acceptance/issue57/audit-004.json",
+  "audit_sha256": "2c6a9abecc486bd8b20ae845fc5f130abf08c151b9f9a3b44ec87fe8de2c0f43",
+  "audit_counts": {
+   "passed": 16,
+   "failed": 0,
+   "unrun": 0
+  }
+ },
+ "prerequisites": {
+  "path": ".local/rust-compiler-goal/acceptance/rust-output-057/inputs-002/prerequisites.json",
+  "file_sha256": "d5fff412f7b38e2825d9eb99c597c34073db316abf3ad997197977d2efa37fe9",
+  "receipt_sha256": "e82701de249652d9043a58fd57a8758e50420f89f695880ab731fce2e3ebcb24",
+  "gates": {
+   "acceptance": {
+    "/passed": true,
+    "/blockers": [],
+    "/candidate_after/binary_sha256": "52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2"
+   },
+   "audit": {
+    "/status": "passed",
+    "/run": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/issue57/run-004"
+   }
+  },
+  "python_canary_source": {
+   "kind": "stand-in",
+   "port": 18919,
+   "binary_sha256": "d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b",
+   "note": "A fresh process of the #56 default's command (same binary and assets) on a harness port served the previous Python canary exchanges, so 8765 got no request while the inputs were pinned. The candidate brings its own assets, so its Python canaries were pinned again from the candidate; each compile reply differs from the default's only in the admitted asset descriptors, and generate and assemble give the same bytes."
+  },
+  "previous_python_canaries": [
+   "post-switch-smoke12",
+   "post-switch-legacy100"
+  ],
+  "python_canaries": [
+   {
+    "name": "post-switch-smoke12",
+    "family": "flow",
+    "steps": [
+     "generate",
+     "compile-cnl",
+     "compile-json",
+     "assemble",
+     "cli-generate",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "post-switch-legacy100",
+    "family": "legacy",
+    "steps": [
+     "generate",
+     "compile-cnl",
+     "compile-json",
+     "assemble",
+     "cli-generate",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "SELF_V5_PARENT_FIELD",
+    "family": "self_name",
+    "steps": [
+     "compile-cnl",
+     "compile-json",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "SELF_V6_MONGODB_FOREIGN_KEY",
+    "family": "self_name",
+    "steps": [
+     "compile-cnl",
+     "compile-json",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "SELF_V7_PG_FOREIGN_KEY",
+    "family": "self_name",
+    "steps": [
+     "compile-cnl",
+     "compile-json",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   }
+  ],
+  "rust_products_run": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003",
+  "rust_canaries": [
+   {
+    "name": "example-v1",
+    "prompt_version": "som.prompt.v1",
+    "phase2_id": null,
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/products/example_v1",
+    "files": 11,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "example-v5",
+    "prompt_version": "som.prompt.v5",
+    "phase2_id": null,
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/products/example_v5",
+    "files": 11,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "example-v6",
+    "prompt_version": "som.prompt.v6",
+    "phase2_id": "RS03_JSON_V6",
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/work/RS03_JSON_V6/product",
+    "files": 12,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "example-v7",
+    "prompt_version": "som.prompt.v7",
+    "phase2_id": "RS04_JSON_V7",
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/work/RS04_JSON_V7/product",
+    "files": 12,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "CAP_MONGODB_FIREBASE_GCS_CSV",
+    "prompt_version": "som.prompt.v6",
+    "phase2_id": "CAP_MONGODB_FIREBASE_GCS_CSV",
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/work/CAP_MONGODB_FIREBASE_GCS_CSV/product",
+    "files": 11,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   }
+  ],
+  "rust_canary_shapes": {
+   "example-v1": "v1, phase 1",
+   "example-v5": "v5, phase 1",
+   "example-v6": "v6 capability product on PostgreSQL",
+   "CAP_MONGODB_FIREBASE_GCS_CSV": "v6 capability product on MongoDB with firebase auth, GCS storage and CSV",
+   "example-v7": "v7 flow with delete_created and restore_patch undo"
+  },
+  "emulators": {
+   "phase1_product_gates": {
+    "ids": [
+     "example-v1",
+     "example-v5"
+    ],
+    "product_gates": {
+     "passed": 2,
+     "total": 2
+    },
+    "exit_code": 2,
+    "exit_code_note": "2: only the parity input of the full run is absent",
+    "report_sha256": "ad2344975aaff5618260fcd6bb410b1a8f07199171997fc5d9f8a3fcad0d0316"
+   },
+   "phase2_behavior": {
+    "ids": [
+     "RS03_JSON_V6",
+     "RS04_JSON_V7",
+     "CAP_MONGODB_FIREBASE_GCS_CSV"
+    ],
+    "run": 3,
+    "passed": 3,
+    "exit_code": 1,
+    "exit_code_note": "1: a subset run is not complete over all 584 cases",
+    "summary_sha256": "b8eea168883108716937ea7c875b44d892fa78b22c27343154026be1233a781d"
+   }
+  },
+  "m2_canaries": [
+   "post-switch-smoke12",
+   "post-switch-legacy100"
+  ],
+  "previous_default": {
+   "receipt_sha256": "9f6018a18737267a7ed9a6b312aa9fe0838d8afd6e6ede5fba90a8da82f77cf7",
+   "binary_sha256": "d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b",
+   "previous_defaults": [
+    {
+     "path": ".local/rust-compiler-goal/acceptance/rust-output-056/switch-001/0002-previous-default.json",
+     "sha256": "c315c2794ca1f959db1711285f24f252aba9dd853291d9328ab07bdf33148aa4"
+    },
+    {
+     "path": ".local/rust-compiler-goal/acceptance/rust-output-051/switch-001/0002-previous-default.json",
+     "sha256": "f7833c26ee108736bca5566d33cbf20b28fe3299230a8b195af7058d0f655ed4"
+    }
+   ]
+  },
+  "earlier_attempt": "inputs-001 (candidate-005) stopped before writing prerequisites: compiler-v1 amendment 003 had changed the retained M2 block library, so the legacy health check refused it. Amendment 004 restored that library and candidate-006 was built and accepted again."
+ },
+ "rehearsal": {
+  "output": ".local/rust-compiler-goal/acceptance/rust-output-057/rehearsal-001",
+  "report_sha256": "7df6f0d749270e36a0a94159faa134cfb497ffbfad2e1d2d36f28fadd30e9ca5",
+  "passed": true,
+  "live_default_unchanged": true,
+  "scenarios": [
+   {
+    "name": "switch",
+    "passed": true,
+    "switch_last_stage": "committed",
+    "calls": {
+     "switch": 0,
+     "check": 0,
+     "restore": 0,
+     "check-restored": 0
+    }
+   },
+   {
+    "name": "after_stop",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   },
+   {
+    "name": "after_start",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   },
+   {
+    "name": "after_pointer",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   },
+   {
+    "name": "after_commit",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   }
+  ]
+ },
+ "approval_plan": {
+  "path": ".local/rust-compiler-goal/acceptance/rust-output-057/plan-001.json",
+  "sha256": "482b6465e2717d7b9c79b5bd482f9bfb4779bb1aa0ee8bccf32ae843866170a4",
+  "mutations": 0,
+  "service_calls": 0
+ },
+ "approval": {
+  "path": ".local/rust-compiler-goal/acceptance/rust-output-057/approval-001.json",
+  "sha256": "df4fde8ad62559fe39d545c74311f38bdf833b9c4fb2038e73f55d0cfcfbdc95",
+  "quote": "直到所有issue都解決，不用再問我了",
+  "bound": {
+   "candidate_binary_sha256": "52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2",
+   "script_sha256": "a857d3eb9d903fe7f7c76adfc1c34a3ed073389a63d32b619b15bd203ce6a725",
+   "common_sha256": "7f51f6238a02089c036ccb87d1fcae4d4b78a542078c9b54a6927012cb0a8b33",
+   "prerequisites_sha256": "e82701de249652d9043a58fd57a8758e50420f89f695880ab731fce2e3ebcb24",
+   "default_sha256": "9f6018a18737267a7ed9a6b312aa9fe0838d8afd6e6ede5fba90a8da82f77cf7"
+  }
+ },
+ "switch": {
+  "output": ".local/rust-compiler-goal/acceptance/rust-output-057/switch-001",
+  "journal_sha256": "ecab4dee2b0b35d40e683faee76179b3fe57d22046b80a928a336294dd228928",
+  "stages": [
+   "pointers",
+   "canary_passed",
+   "canary_passed",
+   "started",
+   "m2_canary_passed",
+   "m2_canary_passed",
+   "stopped",
+   "started",
+   "canary_passed",
+   "canary_passed",
+   "stopped",
+   "started",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "stopped",
+   "immutable_install_verified",
+   "stop_intent",
+   "started",
+   "new_default_owner",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "pointer_set",
+   "pointer_set",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "committed"
+  ],
+  "rollback": false,
+  "stop_intent_at": "2026-10-20T08:38:51.454727+00:00",
+  "committed_at": "2026-10-20T08:39:04.671848+00:00",
+  "previous_owner": {
+   "pid": 507,
+   "start": "Tue Oct 20 11:14:01 2026",
+   "binary_sha256": "d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b"
+  },
+  "new_owner": {
+   "pid": 61463,
+   "start": "Tue Oct 20 16:38:51 2026",
+   "binary_sha256": "52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2"
+  },
+  "previous_default_sha256": "9f6018a18737267a7ed9a6b312aa9fe0838d8afd6e6ede5fba90a8da82f77cf7",
+  "previous_default_snapshot": ".local/rust-compiler-goal/acceptance/rust-output-057/switch-001/0002-previous-default.json",
+  "default_receipt_sha256": "65cd0f1e9fba7095254952ee7145a430bf6ae2394185b02740faf7713dcab6f4"
+ },
+ "post_switch_check": {
+  "output": ".local/rust-compiler-goal/acceptance/rust-output-057/check-001",
+  "result_sha256": "e048a43af141978bd12b56c22582844a19f9d267bd193d87b6c489b78d76ba13",
+  "passed": true,
+  "checks": {
+   "owner": true,
+   "health": true,
+   "pointers": true,
+   "legacy_rollback_assets": true,
+   "canaries": true,
+   "owner_after": true
+  },
+  "cases": [
+   "post-switch-smoke12",
+   "post-switch-legacy100",
+   "SELF_V5_PARENT_FIELD",
+   "SELF_V6_MONGODB_FOREIGN_KEY",
+   "SELF_V7_PG_FOREIGN_KEY",
+   "example-v1",
+   "example-v5",
+   "example-v6",
+   "example-v7",
+   "CAP_MONGODB_FIREBASE_GCS_CSV"
+  ]
+ },
+ "pointers_after": {
+  "som-rs/runtime/current": "som-rs/runtime/versions/52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2",
+  "som-rs/compiler-assets/current": "som-rs/compiler-assets/versions/d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa"
+ },
+ "rollback_assets": {
+  "previous_default_binary_sha256": "d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b",
+  "previous_default_receipt_sha256": "9f6018a18737267a7ed9a6b312aa9fe0838d8afd6e6ede5fba90a8da82f77cf7",
+  "older_defaults": [
+   "05f1bfe6… (phase 1)",
+   "3fad3cb7… (#51 compiler)"
+  ],
+  "legacy_m2_binary_sha256": "14cf0a67fbcc943639c9e0efb661d6aaf0de7b00289c05fc52819f9e97f239d6",
+  "legacy_default_sha256": "e035e04c5fd8d38e2c26b0664f10fe3becb61c5c3237d0c1c84f2adf689c4698",
+  "asset_manifest_sha256": "872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e"
+ },
+ "recovery": {
+  "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/rust_output_release/switch.py --prerequisites .local/rust-compiler-goal/acceptance/rust-output-057/inputs-002/prerequisites.json --restore $PWD/.local/rust-compiler-goal/acceptance/rust-output-057/switch-001 --approval FRESH_APPROVAL.json --output FRESH_ABSOLUTE_DIR",
+  "then": "som-rs/scripts/rust_output_release/check_default.py with --expect-binary-sha256 d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b",
+  "approval_action": "restore-default-8765-rust-output",
+  "restores_to": "the #56 default (binary d2de7522…, receipt 9f6018a1…)",
+  "qualified_by": "rehearsal scenario switch: restore exit 0, check-restored exit 0"
+ },
+ "boundary": {
+  "default_8765_before_approval": "No HTTP request or signal reached 8765 before the approval: the inputs used a stand-in on a harness port, the rehearsal used sandbox roots on harness ports and observed the live default by ps and lsof only, and the plan printed 0 mutations and 0 service calls.",
+  "local_tools_only": true,
+  "paid_or_cloud_runs": false,
+  "training": false,
+  "python_output_byte_identical": true
+ },
+ "risks": [
+  "Rust assemble uses rustfmt from /opt/homebrew/Cellar/rust/1.96.1. Health reports its sha256. A Homebrew upgrade that removes that version makes Rust assemble answer ASSET_UNAVAILABLE; Python output is not affected.",
+  "Phase 2 Rust products build offline only with the vendored crates (.local/rust-output-phase2/vendor-002); a fresh machine needs that vendor directory or network access to crates.io.",
+  "Bundles assembled before this release carry the old asset descriptors and get ASSET_HASH_MISMATCH from the new default (rust-output-v1 amendment 004): recompile them.",
+  "The M2 check before the switch is a fresh legacy M2 clone on a harness port with full generate and CLI canaries. The #44 post-commit M2 restore tool is bound to the default-switch-001 lineage and was not rerun."
+ ],
+ "not_done": [
+  "som-core tests that need fastapi were not run (compiler-v1 amendment 004 records them as not run)."
+ ],
+ "not_published": "binaries, raw request and response bytes, process logs and vendored crates stay local"
+}

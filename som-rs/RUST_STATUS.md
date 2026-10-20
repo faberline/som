@@ -1,14 +1,31 @@
 # Rust compiler status — 2026-10-20
 
+## Python self-name fix release (#57, #58) — 2026-10-20
+
+Since `2026-10-20T08:39:04.671848+00:00` the default on `127.0.0.1:8765` is rust-output-candidate-006.
+A Python resource field or foreign key named `self` now builds and runs (#57): compiler-v1 selects a `self` variant block
+only for those prompts, so every other Python product keeps its files.
+compiler-v1 now refuses a name that collides with a generated Python identifier with INVALID_VALUE
+(`prompt.<path>: name collides with a generated Python identifier`), for example a v3 filter field named limit or offset (#58).
+The Rust target therefore has no remaining UNSUPPORTED_TARGET refusal.
+The post-switch check passed 6/6 checks with all 10 canary cases (2 Python, 3 Python `self` cases, 5 Rust).
+Binary SHA-256: `52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2`, built from commit `6116fed549`.
+Asset manifest `d95d93c7…`, Python backend `581ce38f…`. The 127 public products and 544 legacy jobs keep byte-identical
+product files; only the bundle asset descriptors and payload hash changed (rust-output-v1 amendment 004).
+Bundles assembled by an earlier default get ASSET_HASH_MISMATCH and must be compiled again.
+The #56 default (`d2de7522…`), the earlier defaults and the legacy M2 rollback assets are kept.
+See the [acceptance evidence](evidence/rust-output-acceptance-2026-10-20-issue57.json) and the
+[release evidence](evidence/rust-output-release-2026-10-20-issue57.json).
+
 ## Rust output phase 2 release (#56) — 2026-10-20
 
-Since `2026-10-20T03:14:10.975162+00:00` the default on `127.0.0.1:8765` is rust-output-candidate-004.
+From `2026-10-20T03:14:10.975162+00:00` to the #57 switch, the default on `127.0.0.1:8765` was rust-output-candidate-004.
 It serves the Python target and the phase 2 Rust target: v1 to v7, with capabilities and flows. Only a v3 filter field named limit or offset is refused.
 The post-switch check passed 6/6 checks with all 7 canary cases (2 Python, 5 Rust).
 Binary SHA-256: `d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b`, built from commit `69bb1fe682`.
 The asset manifest (`872eb4dc…`) and the Python backend (`1c182570…`) are unchanged. Python output is byte-identical (#55: 2005/2005 replayed exchanges).
 The phase 1 default (`05f1bfe6…`), the compiler default before it (`3fad3cb7…`) and the legacy M2 rollback assets are kept.
-See the [release evidence](evidence/rust-output-release-2026-10-20.json). #57 (Python 500 on a field named self) is open.
+See the [release evidence](evidence/rust-output-release-2026-10-20.json). #57 (Python 500 on a field named self) was open then.
 
 ## Rust output release (#51) — 2026-10-16
 

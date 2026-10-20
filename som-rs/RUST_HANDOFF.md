@@ -1,16 +1,68 @@
 # Rust compiler handoff — 2026-10-20
 
-## Current default: Rust output phase 2 (#56)
+## Current default: Python self-name fix (#57, #58)
 
-The default on `127.0.0.1:8765` is rust-output-candidate-004 since `2026-10-20T03:14:10.975162+00:00`.
-It serves the Python target and the phase 2 Rust target. Binary SHA-256: `d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b`, built from commit `69bb1fe682`.
-`som-rs/runtime/current` points to `runtime/versions/d2de7522…`. `compiler-assets/current` is unchanged (`872eb4dc…`).
-The Python backend is unchanged (`1c182570…`), and Python output is byte-identical (#55: 2005/2005 replayed exchanges).
+The default on `127.0.0.1:8765` is rust-output-candidate-006 since `2026-10-20T08:39:04.671848+00:00`.
+It serves the Python target and the phase 2 Rust target. Binary SHA-256: `52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2`, built from commit `6116fed549`.
+`som-rs/runtime/current` points to `runtime/versions/52658e13…`. `compiler-assets/current` points to `compiler-assets/versions/d95d93c7…`.
+The Python backend is `581ce38f…`; its compiler embeds `som-code-python/data/blocks/flow-v7-compact-self/blocks.json` (358 blocks).
+The M2 library `flow-v7-compact/blocks.json` keeps the accepted M2 bytes (`5a759715…`), so the M2 rollback health still matches (compiler-v1 amendment 004).
+The [release evidence](evidence/rust-output-release-2026-10-20-issue57.json) binds the issue57 acceptance and audit, the canaries, the rehearsal, the approval, the switch journal and the post-switch check.
+
+What changed for callers:
+
+- A Python resource field or foreign key named `self` now builds and runs (#57). compiler-v1 selects a `self` variant block only for those prompts.
+- compiler-v1 refuses a name that collides with a generated Python identifier with INVALID_VALUE (HTTP 400,
+  `prompt.<path>: name collides with a generated Python identifier`); `selection-policy.json` `python_name_collisions` lists the names (#58).
+  A v3 filter field named limit or offset is one of them, so the Rust target no longer answers UNSUPPORTED_TARGET.
+- Product files of every other prompt are byte-identical. The bundle asset descriptors and payload hash changed
+  (rust-output-v1 amendment 004), so a bundle compiled by an earlier default gets ASSET_HASH_MISMATCH: compile it again.
+
+The #57 canaries:
+
+- Python: post-switch-smoke12 and post-switch-legacy100, 7 steps each, and SELF_V5_PARENT_FIELD, SELF_V6_MONGODB_FOREIGN_KEY and SELF_V7_PG_FOREIGN_KEY, 5 steps each;
+- Rust: example-v1, example-v5, example-v6, CAP_MONGODB_FIREBASE_GCS_CSV and example-v7, 5 steps each;
+- M2: the two Python flow and legacy cases on a fresh legacy M2 clone on a harness port.
+
+### Recovery command
+
+To put the #56 default (`d2de7522…`) back, write a fresh approval with action `restore-default-8765-rust-output`
+bound to the current `default.json`, then run from the repository root:
+
+```sh
+som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/rust_output_release/switch.py --prerequisites .local/rust-compiler-goal/acceptance/rust-output-057/inputs-002/prerequisites.json --restore $PWD/.local/rust-compiler-goal/acceptance/rust-output-057/switch-001 --approval FRESH_APPROVAL.json --output FRESH_ABSOLUTE_DIR
+```
+
+It checks the exact owner before the signal, restores `runtime/current`, starts the saved previous command,
+runs the Python canaries and writes a restored receipt. The #57 rehearsal qualified it on a harness port.
+Then run `scripts/rust_output_release/check_default.py` with `--expect-binary-sha256 d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b`.
+After that restore, prompts with a `self` field answer 500 again and bundles from candidate 006 get ASSET_HASH_MISMATCH.
+Going back further to `05f1bfe6…` after a #57 restore needs its own rehearsal first; it has not been rehearsed.
+
+### Known risks
+
+- Rust assemble runs rustfmt from `/opt/homebrew/Cellar/rust/1.96.1` (see `contracts/rust-output-v1/toolchain.json`).
+  Health reports its SHA-256 under `rust_target`. If a Homebrew upgrade removes that version, Rust assemble answers ASSET_UNAVAILABLE.
+  Python output is not affected. Pin or reinstall that toolchain before upgrading.
+- Phase 2 products build offline only with vendored crates. The #55 and #57 runs used `.local/rust-output-phase2/vendor-002`.
+  A fresh machine needs that directory or network access to crates.io.
+- The M2 check before the switch is a fresh legacy M2 clone on a harness port. The #44 post-commit M2 restore tool is bound to the default-switch-001 lineage and was not rerun.
+
+### Not run
+
+The som-core tests that need fastapi (for example `tests/test_flow_compact_storage.py`): the local venv lacks fastapi and PyPI is not approved.
+The M2 library they read is restored to the bytes they were written against.
+
+## Rust output phase 2 default (#56) — 2026-10-20
+
+From `2026-10-20T03:14:10.975162+00:00` to the #57 switch, the default on `127.0.0.1:8765` was rust-output-candidate-004.
+It served the Python target and the phase 2 Rust target. Binary SHA-256: `d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b`, built from commit `69bb1fe682`.
+Its assets were `872eb4dc…` and its Python backend `1c182570…`.
 The [release evidence](evidence/rust-output-release-2026-10-20.json) binds the #55 acceptance and audit, the canaries, the rehearsal, the approval, the switch journal and the post-switch check.
 
 The switch tools are in `scripts/rust_output_release/`. They load `scripts/compiler_default_switch.py` by its SHA-256 and do not change it.
 The live switch needs an approval file that binds the candidate, the script hashes, the prerequisites and the current `default.json`.
-`prepare_inputs.py` now takes the Rust canaries by name (`--rust-cases`), builds and runs the phase 2 ones on the local emulators, and can pin the Python canaries from a stand-in of the current default on a harness port (`--stand-in`), so 8765 gets no request before the approval.
+`prepare_inputs.py` takes the Rust canaries by name (`--rust-cases`), builds and runs the phase 2 ones on the local emulators, and can pin the Python canaries from a stand-in of the current default on a harness port (`--stand-in`), so 8765 gets no request before the approval.
 
 The #56 canaries:
 
@@ -18,9 +70,9 @@ The #56 canaries:
 - Rust: example-v1, example-v5, example-v6 (v6 capabilities on PostgreSQL), CAP_MONGODB_FIREBASE_GCS_CSV (v6 capabilities on MongoDB) and example-v7 (v7 flow with undo), 5 steps each;
 - M2: the same two Python cases on a fresh legacy M2 clone on a harness port.
 
-### Recovery command
+### Recovery command for #56
 
-To put the phase 1 Rust output default (`05f1bfe6…`, #51) back, write a fresh approval with action `restore-default-8765-rust-output`
+To put the phase 1 Rust output default (`05f1bfe6…`, #51) back while `d2de7522…` is the default, write a fresh approval with action `restore-default-8765-rust-output`
 bound to the current `default.json`, then run from the repository root:
 
 ```sh
@@ -34,18 +86,8 @@ The #51 command below was qualified while `c315c279…` was `default.json`. Goin
 after a #56 restore needs its own rehearsal first; it has not been rehearsed.
 The legacy M2 rollback assets below stay in place. Before #56 the switch proved a fresh legacy M2 clone on a harness port again.
 
-### Known risks
-
-- Rust assemble runs rustfmt from `/opt/homebrew/Cellar/rust/1.96.1` (see `contracts/rust-output-v1/toolchain.json`).
-  Health reports its SHA-256 under `rust_target`. If a Homebrew upgrade removes that version, Rust assemble answers ASSET_UNAVAILABLE.
-  Python output is not affected. Pin or reinstall that toolchain before upgrading.
-- Phase 2 products build offline only with vendored crates. The #55 run used `.local/rust-output-phase2/vendor-002`.
-  A fresh machine needs that directory or network access to crates.io.
-
-### Not done
-
-[#57](https://github.com/faberline/som/issues/57): a field or foreign key named self makes the Python product answer 500.
-It gets its own candidate, acceptance and release. The Rust product already follows the suite oracle.
+The rustfmt and vendored crate risks of #56 still apply; see [Known risks](#known-risks).
+#57 was not done in #56; the section above records its fix.
 
 ## Rust output phase 1 default (#51) — 2026-10-16
 

@@ -1,7 +1,8 @@
 # Rust compiler guide
 
-This guide describes the local default on port 8765: rust-output-candidate-004, switched on `2026-10-20T03:14:10.975162+00:00` (#56).
+This guide describes the local default on port 8765: rust-output-candidate-006, switched on `2026-10-20T08:39:04.671848+00:00` (#57, #58).
 It serves the Python target and the phase 2 Rust target. The post-switch check passed.
+The #56 default (rust-output-candidate-004) was switched in at `2026-10-20T03:14:10.975162+00:00`.
 The phase 1 Rust output default (rust-output-candidate-003 of #51) was switched in at `2026-10-16T05:54:52.297481+00:00`.
 The compiler default before it (candidate 003 of #38–#44) was switched in at `2026-10-15T03:08:08.737006+00:00`.
 The legacy M2 runtime, model and block links remain saved for rollback.
@@ -27,10 +28,23 @@ HTTP rejection exits 2. Their full error JSON goes to stderr.
 Generate retains its response on stdout and exit 2 on HTTP rejection.
 
 The installed path points to the immutable candidate binary
-`runtime/versions/d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b/som`.
-The previous binaries `runtime/versions/05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c/som` (#51)
+`runtime/versions/52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2/som`.
+The previous binaries `runtime/versions/d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b/som` (#56),
+`runtime/versions/05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c/som` (#51)
 and `runtime/versions/3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02/som` (#38–#44) are kept for recovery.
 The legacy M2 binary also accepts the old `generate` command.
+
+## Names that collide with generated Python
+
+compiler-v1 refuses a resource, field or filter name that collides with an identifier the generated Python product
+already uses (#58). The answer is INVALID_VALUE, HTTP 400, with the detail
+`prompt.<path>: name collides with a generated Python identifier`, for the Python and the Rust target alike.
+[selection-policy.json](contracts/compiler-v1/selection-policy.json) `python_name_collisions` lists the names per
+version and database; a v3 filter field named limit or offset is one of them. Rename the field and compile again.
+A field or foreign key named `self` is valid (#57).
+
+Bundles carry the hashes of the assets that compiled them. A bundle compiled by an earlier default answers
+ASSET_HASH_MISMATCH on assemble; compile its source again.
 
 ## Rust output
 
@@ -39,7 +53,7 @@ Assemble reads the target from the bundle and returns the files of a complete Ca
 The Rust target admits every prompt that compiler-v1 admits, v1 to v7: one-resource CRUD, parent and child,
 v5 and v6 capabilities (PostgreSQL or MongoDB, authentication, object storage, workflows) and v7 flows
 with transactions, branches and undo. See sections 10 and 11 of the [Rust output contract](contracts/rust-output-v1/CONTRACT.md).
-One refusal stays: a v3 filter field named limit or offset answers UNSUPPORTED_TARGET (query_parameter_collision).
+The Rust target refuses nothing that compiler-v1 admits.
 Valid sources are in [target-examples.json](contracts/rust-output-v1/target-examples.json) and the phase 2
 [case inventory](contracts/rust-output-v1/phase2/case-inventory.json).
 
@@ -171,5 +185,5 @@ Root owns default switching and closeout. Read [RUST_HANDOFF.md](RUST_HANDOFF.md
 
 ## Recovery command
 
-To return to the phase 1 Rust output default (#51), use the #56 restore command in
+To return to the #56 default (`d2de7522…`), use the #57 restore command in
 [RUST_HANDOFF.md](RUST_HANDOFF.md#recovery-command). The exact preserved M2 launch command and owner checks are there too.
