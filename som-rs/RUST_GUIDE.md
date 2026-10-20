@@ -1,8 +1,9 @@
 # Rust compiler guide
 
-This guide describes the local default on port 8765: rust-output-candidate-003, switched on `2026-10-16T05:54:52.297481+00:00` (#51).
-It serves the Python target and the Rust target. The independent post-switch check passed.
-The previous compiler default (candidate 003 of #38–#44) was switched in at `2026-10-15T03:08:08.737006+00:00`.
+This guide describes the local default on port 8765: rust-output-candidate-004, switched on `2026-10-20T03:14:10.975162+00:00` (#56).
+It serves the Python target and the phase 2 Rust target. The post-switch check passed.
+The phase 1 Rust output default (rust-output-candidate-003 of #51) was switched in at `2026-10-16T05:54:52.297481+00:00`.
+The compiler default before it (candidate 003 of #38–#44) was switched in at `2026-10-15T03:08:08.737006+00:00`.
 The legacy M2 runtime, model and block links remain saved for rollback.
 
 ## Use the installed CLI
@@ -26,17 +27,21 @@ HTTP rejection exits 2. Their full error JSON goes to stderr.
 Generate retains its response on stdout and exit 2 on HTTP rejection.
 
 The installed path points to the immutable candidate binary
-`runtime/versions/05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c/som`.
-The previous binary `runtime/versions/3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02/som` is kept for recovery.
+`runtime/versions/d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b/som`.
+The previous binaries `runtime/versions/05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c/som` (#51)
+and `runtime/versions/3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02/som` (#38–#44) are kept for recovery.
 The legacy M2 binary also accepts the old `generate` command.
 
 ## Rust output
 
 Add `--target rust` to compile, or `"target": "rust"` to the `/v1/compile` body. Without it the target is Python.
 Assemble reads the target from the bundle and returns the files of a complete Cargo product.
-The Rust target admits the one-resource CRUD (v1–v4) and parent and child (v5) scope of the
-[Rust output contract](contracts/rust-output-v1/CONTRACT.md); other prompts are refused with a diagnostic.
-Valid sources are in [target-examples.json](contracts/rust-output-v1/target-examples.json).
+The Rust target admits every prompt that compiler-v1 admits, v1 to v7: one-resource CRUD, parent and child,
+v5 and v6 capabilities (PostgreSQL or MongoDB, authentication, object storage, workflows) and v7 flows
+with transactions, branches and undo. See sections 10 and 11 of the [Rust output contract](contracts/rust-output-v1/CONTRACT.md).
+One refusal stays: a v3 filter field named limit or offset answers UNSUPPORTED_TARGET (query_parameter_collision).
+Valid sources are in [target-examples.json](contracts/rust-output-v1/target-examples.json) and the phase 2
+[case inventory](contracts/rust-output-v1/phase2/case-inventory.json).
 
 ```sh
 som-rs/runtime/current/som compile SOURCE.cnl --target rust > /private/tmp/som-rust.bundle.json
@@ -46,6 +51,32 @@ som-rs/runtime/current/som assemble /private/tmp/som-rust.bundle.json > /private
 `GET /healthz` lists `targets` and, under `rust_target`, the Rust asset hashes and the pinned rustfmt identity and SHA-256.
 Rust assemble needs the rustfmt in `contracts/rust-output-v1/toolchain.json` (`/opt/homebrew/Cellar/rust/1.96.1`).
 If that file is gone or changed, Rust assemble answers ASSET_UNAVAILABLE and Python is not affected.
+
+### Rust products
+
+Each product is one Cargo package named som_app. Its shape and file list follow
+[product-layout.json](contracts/rust-output-v1/product-layout.json): 11 or 12 files.
+Capability and flow products lock 335 crates in
+[reference-phase2/Cargo.lock](contracts/rust-output-v1/reference-phase2/Cargo.lock).
+Build them with that lock and the pinned toolchain. Offline builds need a vendored crate directory
+(`scripts/rust_output_acceptance/vendor_crates.py`); otherwise cargo fetches from crates.io.
+
+They read the same settings as the Python product
+([services.json](contracts/rust-output-v1/phase2/services.json)), and `SOM_APP_ADDR` sets the listen address.
+Subcommands: `serve`, `migrate upgrade`, `migrate downgrade` and `check-config`. `serve` does not migrate.
+PostgreSQL products record their migration in `_som_rust_migrations`.
+
+Known differences from the Python product:
+
+- 422 bodies omit pydantic `input` and `ctx` members. Some Python 500 responses are 401 or 503.
+- `rediss://` is not supported. Of the Redis URL query options only `db` is read.
+- S3 credentials come from `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN`, or from the shared
+  credentials file (`AWS_SHARED_CREDENTIALS_FILE` or `~/.aws/credentials`, profile `AWS_PROFILE`).
+  GCS credentials come from `GOOGLE_APPLICATION_CREDENTIALS` (service account or authorized user) or the metadata server, not `CLOUDSDK_CONFIG`.
+- Firebase production tokens are verified with the securetoken JWKS URL, not the x509 cert endpoint.
+- Timestamps print six fraction digits and `Z` for UTC, as pydantic does on a UTC host.
+- A PostgreSQL flow journal stores JSONB, which drops the sign of `-0.0`, as the Python flow product does.
+- README line widths differ from the Python README.
 
 ## HTTP requests
 
@@ -140,5 +171,5 @@ Root owns default switching and closeout. Read [RUST_HANDOFF.md](RUST_HANDOFF.md
 
 ## Recovery command
 
-To return to the previous compiler default, use the #51 restore command in
+To return to the phase 1 Rust output default (#51), use the #56 restore command in
 [RUST_HANDOFF.md](RUST_HANDOFF.md#recovery-command). The exact preserved M2 launch command and owner checks are there too.

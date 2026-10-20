@@ -1,18 +1,61 @@
-# Rust compiler handoff — 2026-10-16
+# Rust compiler handoff — 2026-10-20
 
-## Current default: Rust output (#51)
+## Current default: Rust output phase 2 (#56)
 
-The default on `127.0.0.1:8765` is rust-output-candidate-003 since `2026-10-16T05:54:52.297481+00:00`.
-It serves the Python and Rust targets. Binary SHA-256: `05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c`.
-`som-rs/runtime/current` points to `runtime/versions/05f1bfe6…`. `compiler-assets/current` is unchanged (`872eb4dc…`).
-The [release evidence](evidence/rust-output-release-2026-10-16.json) binds the acceptance run, audit, canaries, rehearsal, approval, switch journal and post-switch check.
+The default on `127.0.0.1:8765` is rust-output-candidate-004 since `2026-10-20T03:14:10.975162+00:00`.
+It serves the Python target and the phase 2 Rust target. Binary SHA-256: `d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b`, built from commit `69bb1fe682`.
+`som-rs/runtime/current` points to `runtime/versions/d2de7522…`. `compiler-assets/current` is unchanged (`872eb4dc…`).
+The Python backend is unchanged (`1c182570…`), and Python output is byte-identical (#55: 2005/2005 replayed exchanges).
+The [release evidence](evidence/rust-output-release-2026-10-20.json) binds the #55 acceptance and audit, the canaries, the rehearsal, the approval, the switch journal and the post-switch check.
 
 The switch tools are in `scripts/rust_output_release/`. They load `scripts/compiler_default_switch.py` by its SHA-256 and do not change it.
 The live switch needs an approval file that binds the candidate, the script hashes, the prerequisites and the current `default.json`.
+`prepare_inputs.py` now takes the Rust canaries by name (`--rust-cases`), builds and runs the phase 2 ones on the local emulators, and can pin the Python canaries from a stand-in of the current default on a harness port (`--stand-in`), so 8765 gets no request before the approval.
+
+The #56 canaries:
+
+- Python: post-switch-smoke12 (flow) and post-switch-legacy100 (legacy), 7 steps each;
+- Rust: example-v1, example-v5, example-v6 (v6 capabilities on PostgreSQL), CAP_MONGODB_FIREBASE_GCS_CSV (v6 capabilities on MongoDB) and example-v7 (v7 flow with undo), 5 steps each;
+- M2: the same two Python cases on a fresh legacy M2 clone on a harness port.
 
 ### Recovery command
 
-To put the previous compiler default (`3fad3cb7…`) back, write a fresh approval with action `restore-default-8765-rust-output`
+To put the phase 1 Rust output default (`05f1bfe6…`, #51) back, write a fresh approval with action `restore-default-8765-rust-output`
+bound to the current `default.json`, then run from the repository root:
+
+```sh
+som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/rust_output_release/switch.py --prerequisites .local/rust-compiler-goal/acceptance/rust-output-056/inputs-002/prerequisites.json --restore $PWD/.local/rust-compiler-goal/acceptance/rust-output-056/switch-001 --approval FRESH_APPROVAL.json --output FRESH_ABSOLUTE_DIR
+```
+
+It checks the exact owner before the signal, restores `runtime/current`, starts the saved previous command,
+runs the Python canaries and writes a restored receipt. The #56 rehearsal qualified it on a harness port.
+Then run `scripts/rust_output_release/check_default.py` with `--expect-binary-sha256 05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c`.
+The #51 command below was qualified while `c315c279…` was `default.json`. Going back further to `3fad3cb7…`
+after a #56 restore needs its own rehearsal first; it has not been rehearsed.
+The legacy M2 rollback assets below stay in place. Before #56 the switch proved a fresh legacy M2 clone on a harness port again.
+
+### Known risks
+
+- Rust assemble runs rustfmt from `/opt/homebrew/Cellar/rust/1.96.1` (see `contracts/rust-output-v1/toolchain.json`).
+  Health reports its SHA-256 under `rust_target`. If a Homebrew upgrade removes that version, Rust assemble answers ASSET_UNAVAILABLE.
+  Python output is not affected. Pin or reinstall that toolchain before upgrading.
+- Phase 2 products build offline only with vendored crates. The #55 run used `.local/rust-output-phase2/vendor-002`.
+  A fresh machine needs that directory or network access to crates.io.
+
+### Not done
+
+[#57](https://github.com/faberline/som/issues/57): a field or foreign key named self makes the Python product answer 500.
+It gets its own candidate, acceptance and release. The Rust product already follows the suite oracle.
+
+## Rust output phase 1 default (#51) — 2026-10-16
+
+From `2026-10-16T05:54:52.297481+00:00` to the #56 switch, the default on `127.0.0.1:8765` was rust-output-candidate-003.
+It served the Python and phase 1 Rust targets. Binary SHA-256: `05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c`.
+The [release evidence](evidence/rust-output-release-2026-10-16.json) binds the acceptance run, audit, canaries, rehearsal, approval, switch journal and post-switch check.
+
+### Recovery command for #51
+
+To put the compiler default before it (`3fad3cb7…`) back while `05f1bfe6…` is the default, write a fresh approval with action `restore-default-8765-rust-output`
 bound to the current `default.json`, then run from the repository root:
 
 ```sh
@@ -25,11 +68,7 @@ Then run `scripts/rust_output_release/check_default.py` with `--expect-binary-sh
 The legacy M2 rollback assets below stay in place. Their #44 post-commit restore is bound to the default-switch-001 lineage;
 before #51 the switch proved a fresh legacy M2 clone on a harness port instead.
 
-### Known risk
-
-Rust assemble runs rustfmt from `/opt/homebrew/Cellar/rust/1.96.1` (see `contracts/rust-output-v1/toolchain.json`).
-Health reports its SHA-256 under `rust_target`. If a Homebrew upgrade removes that version, Rust assemble answers ASSET_UNAVAILABLE.
-Python output is not affected. Pin or reinstall that toolchain before upgrading.
+The rustfmt pin risk of #51 still applies; see [Known risks](#known-risks).
 
 ## Compiler release (#38–#44) — 2026-10-14
 

@@ -1,0 +1,415 @@
+{
+ "version": "som.rust-output-release.v1",
+ "issue": 56,
+ "phase": 2,
+ "recorded_at": "2026-10-20T03:14:10.975162+00:00",
+ "status": "passed",
+ "status_note": "Candidate rust-output-candidate-004 (phase 2: v5 capabilities, v6 and v7 flows) passed the #55 acceptance plan with an independent audit (35 passed, 0 failed, 0 unrun). Its canaries ran on the local emulators, a sandbox rehearsal passed the switch, every injected failure and the restore to the phase 1 default, then the approved switch on 127.0.0.1:8765 and a post-switch check passed. Python output stays byte-identical. Raw outputs stay local; this file holds summaries and hashes only.",
+ "blockers": [],
+ "tools_commit": "9cbf215faf",
+ "tool_files": {
+  "som-rs/scripts/rust_output_release/check_default.py": "0f096528b623b552c606133a458ae0c052171687aeff563b470690c7dea7426d",
+  "som-rs/scripts/rust_output_release/prepare_inputs.py": "b34220615e0c5e22658f05babad8a60149d523fbfb5cf9f3756567916d5bfee4",
+  "som-rs/scripts/rust_output_release/rehearse.py": "3239cec6649c90fdb2c4eee20534be71deed74df36ce44e7763c9a4fb66b0a1d",
+  "som-rs/scripts/rust_output_release/release_common.py": "d944326d16a54bc13cea305f8349a8c7ad60b7c23ec1b8128cd60708fceabb97",
+  "som-rs/scripts/rust_output_release/switch.py": "e2f08841433a7aaf3aa3723befe97d8dec2f4eb096f8ec5e1d56f96bc69d1eb4",
+  "som-rs/scripts/compiler_default_switch.py": "289a8470c5de2a183b01c8a138ecb4bc6cfe80a624f0291b32b779cc854bfb12"
+ },
+ "candidate": {
+  "directory": ".local/rust-compiler-goal/rust-output-candidate-004",
+  "build_commit": "69bb1fe682f5998e551ca397426acceea0d67945",
+  "binary_sha256": "d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b",
+  "binary_bytes": 13252960,
+  "source_json_sha256": "4753991ec5908a24228eefb9b3a4a801c61906aa8823f77c2daa593e7884ca19",
+  "runtime_receipt_sha256": "ea9e64ecce4f338feb742c65cf038de8ee425f89f955a3fae3e039694fa4a4b6",
+  "build_receipt_sha256": "396b84edd6fa101cd3abb30f7263e11440a672fc11468fc8c6e9be005b4fceae",
+  "build_binary_sha256": "d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b",
+  "qa_port": 18959,
+  "health": {
+   "backend_sha256": "1c18257000d2519e85c644d5bb243d5ec7251878efadf4cf27f3bc5b26a2e92b",
+   "asset_manifest_sha256": "872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e"
+  }
+ },
+ "acceptance": {
+  "evidence": "som-rs/evidence/rust-output-acceptance-2026-10-20-phase2.json",
+  "evidence_sha256": "7074cabf98f12f259046440dd8f591118f02e6d52acf7985c8cca047f9acbe63",
+  "status": "passed",
+  "run": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003",
+  "summary_sha256": "08ddc854f234f39f7c36401a6ae4c626efdaf296609b33d21985d0762e17fd17",
+  "header_sha256": "e0af0254c3c69110494f2e04190f5dd7fdec86c79e99a5955529b4c9b1dca8da",
+  "plan_sha256": "0f6f24fd9f6a909ecf17717f750a43bb0bc07457eb69e73792bdba2524182b16",
+  "audit": ".local/rust-compiler-goal/acceptance/rust-output-055/audit-002.json",
+  "audit_sha256": "2db53b45f9d2f17493052b17ba4d7daea2e949d5202336d4ed6d2e4114d6d7bb",
+  "audit_counts": {
+   "passed": 35,
+   "failed": 0,
+   "unrun": 0
+  }
+ },
+ "prerequisites": {
+  "path": ".local/rust-compiler-goal/acceptance/rust-output-056/inputs-002/prerequisites.json",
+  "file_sha256": "3706fb712e2b31153d7da66557ff972e1d29c4207925df6a5b57a09978bfe9e6",
+  "receipt_sha256": "d27ab4669ad192be90a66146a2f2a3bc5d793c508d93583364cddb8dfb6fc8be",
+  "gates": {
+   "acceptance": {
+    "/status": "passed",
+    "/blockers": [],
+    "/candidate_after/binary_sha256": "d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b"
+   },
+   "audit": {
+    "/totals": {
+     "failed": 0,
+     "unrun": 0
+    },
+    "/run": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/rust-output-055/run-003"
+   }
+  },
+  "python_canary_source": {
+   "kind": "stand-in",
+   "port": 18919,
+   "binary_sha256": "05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c",
+   "note": "A fresh process of the phase 1 default's command (same binary and assets) on a harness port served the Python canary exchanges, so 8765 got no request while the inputs were pinned. The previous and the new CLI printed the same bytes. The #44 canary files were read from their #51 pinned copies after their #44 hashes matched."
+  },
+  "python_canaries": [
+   {
+    "name": "post-switch-smoke12",
+    "family": "flow",
+    "steps": [
+     "generate",
+     "compile-cnl",
+     "compile-json",
+     "assemble",
+     "cli-generate",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "post-switch-legacy100",
+    "family": "legacy",
+    "steps": [
+     "generate",
+     "compile-cnl",
+     "compile-json",
+     "assemble",
+     "cli-generate",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   }
+  ],
+  "rust_canaries": [
+   {
+    "name": "example-v1",
+    "prompt_version": "som.prompt.v1",
+    "phase2_id": null,
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/products/example_v1",
+    "files": 11,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "example-v5",
+    "prompt_version": "som.prompt.v5",
+    "phase2_id": null,
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/products/example_v5",
+    "files": 11,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "example-v6",
+    "prompt_version": "som.prompt.v6",
+    "phase2_id": "RS03_JSON_V6",
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/work/RS03_JSON_V6/product",
+    "files": 12,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "CAP_MONGODB_FIREBASE_GCS_CSV",
+    "prompt_version": "som.prompt.v6",
+    "phase2_id": "CAP_MONGODB_FIREBASE_GCS_CSV",
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/work/CAP_MONGODB_FIREBASE_GCS_CSV/product",
+    "files": 11,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "example-v7",
+    "prompt_version": "som.prompt.v7",
+    "phase2_id": "RS04_JSON_V7",
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/work/RS04_JSON_V7/product",
+    "files": 12,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   }
+  ],
+  "rust_canary_shapes": {
+   "example-v1": "v1, phase 1",
+   "example-v5": "v5, phase 1",
+   "example-v6": "v6 capability product on PostgreSQL",
+   "CAP_MONGODB_FIREBASE_GCS_CSV": "v6 capability product on MongoDB with firebase auth, GCS storage and CSV",
+   "example-v7": "v7 flow with delete_created and restore_patch undo"
+  },
+  "emulators": {
+   "phase1_product_gates": {
+    "ids": [
+     "example-v1",
+     "example-v5"
+    ],
+    "product_gates": {
+     "passed": 2,
+     "total": 2
+    },
+    "exit_code": 2,
+    "exit_code_note": "2: only the parity input of the full run is absent",
+    "report_sha256": "c50d8755440c12283f5fd494a49093d1751f2b89e8057751d511efcbbc32f446"
+   },
+   "phase2_behavior": {
+    "ids": [
+     "RS03_JSON_V6",
+     "CAP_MONGODB_FIREBASE_GCS_CSV",
+     "RS04_JSON_V7"
+    ],
+    "run": 3,
+    "passed": 3,
+    "exit_code": 1,
+    "exit_code_note": "1: a subset run is not complete over all 584 cases",
+    "summary_sha256": "0de97713cb625754ba3990a89982c7f664e5bed5c96a443f832ada69fba2f150"
+   }
+  },
+  "m2_canaries": [
+   "post-switch-smoke12",
+   "post-switch-legacy100"
+  ],
+  "phase1_default": {
+   "receipt_sha256": "c315c2794ca1f959db1711285f24f252aba9dd853291d9328ab07bdf33148aa4",
+   "binary_sha256": "05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c",
+   "previous_defaults": [
+    {
+     "path": ".local/rust-compiler-goal/acceptance/rust-output-051/switch-001/0002-previous-default.json",
+     "sha256": "f7833c26ee108736bca5566d33cbf20b28fe3299230a8b195af7058d0f655ed4"
+    }
+   ]
+  },
+  "earlier_attempt": "inputs-001 stopped before writing prerequisites (the #44 canary files under /private/tmp were gone); it holds only a stand-in log and is not used."
+ },
+ "rehearsal": {
+  "output": ".local/rust-compiler-goal/acceptance/rust-output-056/rehearsal-001",
+  "report_sha256": "dc814f5a57055d9519f58d3db8bcef50819e76e46a69700b45e21b618a9a5c87",
+  "passed": true,
+  "live_default_unchanged": true,
+  "scenarios": [
+   {
+    "name": "switch",
+    "passed": true,
+    "switch_last_stage": "committed",
+    "calls": {
+     "switch": 0,
+     "check": 0,
+     "restore": 0,
+     "check-restored": 0
+    }
+   },
+   {
+    "name": "after_stop",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   },
+   {
+    "name": "after_start",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   },
+   {
+    "name": "after_pointer",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   },
+   {
+    "name": "after_commit",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   }
+  ]
+ },
+ "approval_plan": {
+  "path": ".local/rust-compiler-goal/acceptance/rust-output-056/plan-001.json",
+  "sha256": "3eb149d818d5ecf6cbf1ffc4f13f46665b513551603d1e90ef69460167aae245",
+  "mutations": 0,
+  "service_calls": 0
+ },
+ "approval": {
+  "path": ".local/rust-compiler-goal/acceptance/rust-output-056/approval-001.json",
+  "sha256": "cf92a5e40d1d62cb1e84e39eaa43efee4c842b21f3f884030efd0dcf2a56b6af",
+  "quote": "核准：用 plan-001.json 這組 hash（candidate d2de7522…、switch.py e2f08841…、release_common.py d944326d…、prerequisites d27ab466…、default c315c279…）切換 8765 到 Rust 輸出候選。",
+  "bound": {
+   "candidate_binary_sha256": "d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b",
+   "script_sha256": "e2f08841433a7aaf3aa3723befe97d8dec2f4eb096f8ec5e1d56f96bc69d1eb4",
+   "common_sha256": "d944326d16a54bc13cea305f8349a8c7ad60b7c23ec1b8128cd60708fceabb97",
+   "prerequisites_sha256": "d27ab4669ad192be90a66146a2f2a3bc5d793c508d93583364cddb8dfb6fc8be",
+   "default_sha256": "c315c2794ca1f959db1711285f24f252aba9dd853291d9328ab07bdf33148aa4"
+  }
+ },
+ "switch": {
+  "output": ".local/rust-compiler-goal/acceptance/rust-output-056/switch-001",
+  "journal_sha256": "4d5ea8801af1b445c11834c25f250b4d35ecca470c4bb8503ecdd1b8c5f814b3",
+  "stages": [
+   "pointers",
+   "canary_passed",
+   "canary_passed",
+   "started",
+   "m2_canary_passed",
+   "m2_canary_passed",
+   "stopped",
+   "started",
+   "canary_passed",
+   "canary_passed",
+   "stopped",
+   "started",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "stopped",
+   "immutable_install_verified",
+   "stop_intent",
+   "started",
+   "new_default_owner",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "pointer_set",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "committed"
+  ],
+  "rollback": false,
+  "stop_intent_at": "2026-10-20T03:14:00.866320+00:00",
+  "committed_at": "2026-10-20T03:14:10.975162+00:00",
+  "previous_owner": {
+   "pid": 96083,
+   "start": "Fri Oct 16 13:54:44 2026",
+   "binary_sha256": "05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c"
+  },
+  "new_owner": {
+   "pid": 507,
+   "start": "Tue Oct 20 11:14:01 2026",
+   "binary_sha256": "d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b"
+  },
+  "previous_default_sha256": "c315c2794ca1f959db1711285f24f252aba9dd853291d9328ab07bdf33148aa4",
+  "previous_default_snapshot": ".local/rust-compiler-goal/acceptance/rust-output-056/switch-001/0002-previous-default.json",
+  "default_receipt_sha256": "9f6018a18737267a7ed9a6b312aa9fe0838d8afd6e6ede5fba90a8da82f77cf7"
+ },
+ "post_switch_check": {
+  "output": ".local/rust-compiler-goal/acceptance/rust-output-056/check-001",
+  "result_sha256": "edd2d78db5d51f77854b3fb258bead80c5fab441bbcbdd8a1202a97d86d7422e",
+  "passed": true,
+  "checks": {
+   "owner": true,
+   "health": true,
+   "pointers": true,
+   "legacy_rollback_assets": true,
+   "canaries": true,
+   "owner_after": true
+  },
+  "cases": [
+   "post-switch-smoke12",
+   "post-switch-legacy100",
+   "example-v1",
+   "example-v5",
+   "example-v6",
+   "CAP_MONGODB_FIREBASE_GCS_CSV",
+   "example-v7"
+  ]
+ },
+ "pointers_after": {
+  "som-rs/runtime/current": "som-rs/runtime/versions/d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b",
+  "som-rs/compiler-assets/current": "som-rs/compiler-assets/versions/872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e"
+ },
+ "rollback_assets": {
+  "phase1_default_binary_sha256": "05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c",
+  "phase1_default_receipt_sha256": "c315c2794ca1f959db1711285f24f252aba9dd853291d9328ab07bdf33148aa4",
+  "previous_compiler_binary_sha256": "3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02",
+  "legacy_m2_binary_sha256": "14cf0a67fbcc943639c9e0efb661d6aaf0de7b00289c05fc52819f9e97f239d6",
+  "legacy_default_sha256": "e035e04c5fd8d38e2c26b0664f10fe3becb61c5c3237d0c1c84f2adf689c4698",
+  "asset_manifest_sha256": "872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e"
+ },
+ "recovery": {
+  "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/rust_output_release/switch.py --prerequisites .local/rust-compiler-goal/acceptance/rust-output-056/inputs-002/prerequisites.json --restore $PWD/.local/rust-compiler-goal/acceptance/rust-output-056/switch-001 --approval FRESH_APPROVAL.json --output FRESH_ABSOLUTE_DIR",
+  "then": "som-rs/scripts/rust_output_release/check_default.py with --expect-binary-sha256 05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c",
+  "approval_action": "restore-default-8765-rust-output",
+  "restores_to": "the phase 1 default (binary 05f1bfe6…, receipt c315c279…)",
+  "qualified_by": "rehearsal scenario switch: restore exit 0, check-restored exit 0"
+ },
+ "boundary": {
+  "default_8765_before_approval": "No HTTP request or signal reached 8765 before the approval: the inputs used a stand-in on a harness port, the rehearsal used sandbox roots on harness ports and observed the live default by ps and lsof only, and the plan printed 0 mutations and 0 service calls.",
+  "local_tools_only": true,
+  "paid_or_cloud_runs": false,
+  "training": false,
+  "python_output_byte_identical": true
+ },
+ "risks": [
+  "Rust assemble uses rustfmt from /opt/homebrew/Cellar/rust/1.96.1. Health reports its sha256. A Homebrew upgrade that removes that version makes Rust assemble answer ASSET_UNAVAILABLE; Python output is not affected.",
+  "Phase 2 Rust products build offline only with the vendored crates (.local/rust-output-phase2/vendor-002); a fresh machine needs that vendor directory or network access to crates.io.",
+  "The M2 check before the switch is a fresh legacy M2 clone on a harness port with full generate and CLI canaries. The #44 post-commit M2 restore tool is bound to the default-switch-001 lineage and was not rerun."
+ ],
+ "not_done": [
+  "#57: the Python 500 on a field named self, with its own candidate, acceptance and release."
+ ],
+ "not_published": "binaries, raw request and response bytes, process logs and vendored crates stay local"
+}

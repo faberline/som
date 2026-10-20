@@ -1,23 +1,28 @@
-# Current development state — 2026-10-14
+# Current development state — 2026-10-20
 
-The new Rust compiler passed independent acceptance and is the local default.
-It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.
-The root post-switch check passed 76/76. Commit `3ced191137` published it to main.
-Issues #38–#44 are closed as completed, and milestones 7 and 8 are closed.
-The legacy M2 runtime, model and block links remain saved for rollback.
+The local default on `127.0.0.1:8765` is rust-output-candidate-004 since `2026-10-20T03:14:10.975162+00:00` (#56).
+It serves the Python target and the phase 2 Rust target without loading a model. The post-switch check passed.
+The Rust target covers every prompt compiler-v1 admits, v1 to v7, except a v3 filter field named limit or offset.
+Python output is byte-identical to the earlier defaults. See the [release evidence](evidence/rust-output-release-2026-10-20.json).
 
-`CNL → Rust parser and fixed rules → complete DSL bundle → existing Rust backend → Python files`
+Earlier defaults, all kept for rollback:
+
+- rust-output-candidate-003 (#51), binary `05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c`, from `2026-10-16T05:54:52.297481+00:00`;
+- the Rust compiler (#38–#44), binary `3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02`, from `2026-10-15T03:08:08.737006+00:00`. Issues #38–#44 and milestones 7 and 8 are closed;
+- the legacy M2 runtime, model and block links.
+
+`CNL → Rust parser and fixed rules → complete DSL bundle → existing Rust backend → Python or Rust files`
 
 CNL uses fixed English clauses. Data strings can include Chinese.
 The caller supplies each business choice. The compiler does not guess missing facts.
 The new production path does not load models or start Python.
-Python remains the output language and an independent test tool.
+Python remains the default output language and an independent test tool. Add `--target rust` for a Cargo product.
 
 The installed compiler uses separate `runtime/current` and `compiler-assets/current` links.
-`som-rs/runtime/current` points to `versions/3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02`.
+`som-rs/runtime/current` points to `versions/d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b`.
 `som-rs/compiler-assets/current` points to `versions/872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e`.
 The model link `som-rs/models/current` and the block link are unchanged legacy M2 rollback assets.
-Read [the accepted compiler report](RUST_REPORT.md) and [the operator handoff](RUST_HANDOFF.md).
+Read [the acceptance report](RUST_REPORT.md), [the guide](RUST_GUIDE.md) and [the operator handoff](RUST_HANDOFF.md).
 
 ## Preserved earlier default record
 

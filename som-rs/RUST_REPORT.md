@@ -1,9 +1,32 @@
-# Rust compiler acceptance report — 2026-10-16
+# Rust compiler acceptance report — 2026-10-20
+
+## Rust output phase 2 release (#56) — 2026-10-20
+
+Since `2026-10-20T03:14:10.975162+00:00` the default on `127.0.0.1:8765` is rust-output-candidate-004.
+It serves the Python target and the phase 2 Rust target: every prompt compiler-v1 admits, except a v3 filter field named limit or offset.
+The post-switch check passed 6/6 checks with all 7 canary cases.
+Binary SHA-256: `d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b`, built from commit `69bb1fe682`.
+The asset manifest (`872eb4dc…`) and the Python backend (`1c182570…`) are unchanged, and Python output is byte-identical.
+The phase 1 default (`05f1bfe6…`), the compiler default before it (`3fad3cb7…`) and the legacy M2 rollback assets are kept.
+See the [release evidence](evidence/rust-output-release-2026-10-20.json).
+
+| #56 check | Actual result |
+|---|---|
+| Phase 2 acceptance (#55) on candidate 004 | 584/584 phase 2 cases, only RS12 and RS13 refused; 115/115 phase 1 cases unchanged ([evidence](evidence/rust-output-acceptance-2026-10-20-phase2.json)) |
+| Python regressions (#55) | 2005/2005 replayed exchanges, 127/127 public products, 544/544 legacy jobs |
+| Independent audit (#55) | 35 passed, 0 failed, 0 unrun |
+| Canary inputs | 2 Python cases (14 steps) from a stand-in on a harness port, 5 Rust cases (25 steps), 2 M2 cases |
+| Rust canaries on the local emulators | example-v1 and example-v5: product gates 2/2; RS03_JSON_V6, CAP_MONGODB_FIREBASE_GCS_CSV and RS04_JSON_V7: behavior 3/3 |
+| Rehearsal | switch, restore to the phase 1 default and the 4 injected failures (after stop, start, pointer, commit) all passed; 8765 unchanged |
+| Live switch | committed with no rollback after the user's approval; previous owner pid 96083 stopped, new owner pid 507 |
+| Post-switch check | owner, health, pointers, legacy rollback assets, canaries, owner after: all passed |
+
+Not done: [#57](https://github.com/faberline/som/issues/57), the Python 500 on a field or foreign key named self.
 
 ## Rust output release (#51) — 2026-10-16
 
-Since `2026-10-16T05:54:52.297481+00:00` the default on `127.0.0.1:8765` is rust-output-candidate-003.
-It serves the Python and Rust targets. The independent post-switch check passed 6/6 checks with every Python and Rust canary.
+From `2026-10-16T05:54:52.297481+00:00` to the #56 switch, the default on `127.0.0.1:8765` was rust-output-candidate-003.
+It served the Python and Rust targets. The independent post-switch check passed 6/6 checks with every Python and Rust canary.
 Binary SHA-256: `05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c`, built from commit `24c0466eb7`.
 The asset manifest is unchanged: `872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e`.
 Python output is byte-identical: the pinned replies of the previous default replay exactly on the new one.
