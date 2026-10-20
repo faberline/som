@@ -148,6 +148,8 @@ def main() -> int:
     summary = {"version": "som.rust-output-issue57-run.v1", "issues": [57, 58], "ended_at": ra.now(),
                "steps": passed, "plan_coverage": coverage, "candidate_after": after, "default_after": default_after,
                "blockers": blockers, "passed": not blockers,
+               "header_sha256": ra.sha_file(run / "header.json"),
+               "receipts_sha256": {p.name: ra.sha_file(p) for p in sorted((run / "receipts").glob("*.json"))},
                "audit": "not run: the independent audit reads this run's raw outputs"}
     (run / "summary.json").write_text(json.dumps(summary, indent=1, sort_keys=True) + "\n")
     print(json.dumps({"passed": summary["passed"], "steps": passed, "blockers": blockers}))

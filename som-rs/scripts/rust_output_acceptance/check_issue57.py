@@ -15,8 +15,14 @@ runs on the phase 2 checker that check_phase2.checker picks for the prompt: the 
 (check_phase2.suite_case) or verify_all / verify_flow_service (check_phase2.fixture_case), with
 check_phase2's own rows written under DIR/cases. A case passes when its row passes.
 
+Each Rust product is also written under DIR/gates and built with the pinned toolchain: cargo build,
+cargo clippy --all-targets with warnings denied and, for a phase 1 suite product, cargo test on a
+fresh database (the fixture checker runs the other products' tests). Each gate keeps its exit
+code and whole log in DIR/gates/<case>.json; a Rust case passes when its row and its gates pass.
+
 The fixture prompts are also compiled as CNL: a positive or accepted CNL source gives the same
-bundle as its typed prompt. Each negative case, as typed JSON (Python and Rust target) and as
+bundle as its typed prompt. RS07, RS14 and RS16 use their CNL source in
+contracts/rust-output-v1/negative-cases.json. Each negative case, as typed JSON (Python and Rust target) and as
 CNL, must give exactly the recorded status, code, detail, diagnostic pointer and CNL allowed form.
 Accepted cases compile with status 200 for both targets.
 """
@@ -42,6 +48,7 @@ import check_phase2 as cp  # noqa: E402
 
 FIXTURES = SOM_RS / "tests" / "compiler-v1" / "self-name-fixtures.json"
 BEHAVIOR = SOM_RS / "contracts" / "rust-output-v1" / "phase2" / "behavior.json"
+NEGATIVE = SOM_RS / "contracts" / "rust-output-v1" / "negative-cases.json"
 FORBIDDEN = (":8765", ":18765")
 
 
@@ -63,12 +70,16 @@ def positive_cases() -> list[dict]:
     rows = [{"id": c["id"], "source": "self-name-fixtures", "prompt": c["prompt"], "cnl": c["cnl"],
              "variants": c["python_variants"]} for c in cp.read(FIXTURES)["positive"]]
     record = {r["id"]: r for r in cp.read(cp.RS / "result.json")["cases"]}
+    sources = {c["id"]: c for c in cp.read(NEGATIVE)["cases"]}
     for case_id in sorted(cp.read(BEHAVIOR)["python_defects"]):
         prompt = cp.read(cp.RS / case_id / "prompt.json")
         if cp.qa.sha(prompt) != record[case_id]["prompt_sha256"]:
             raise SystemExit(f"{case_id}: prompt hash differs from rs-products-001")
+        bodies = [json.loads(sources[case_id][name]) for name in ("body", "python_control_body")]
+        if any(b["format"] != "som.cnl.v1" for b in bodies) or bodies[0]["source"] != bodies[1]["source"]:
+            raise SystemExit(f"{case_id}: negative-cases.json has no single CNL source")
         rows.append({"id": case_id, "source": "rust-output-phase2/rs-products-001", "prompt": prompt,
-                     "cnl": None, "variants": None})
+                     "cnl": bodies[0]["source"], "variants": None})
     for row in rows:
         prompt = row["prompt"]
         row.update(family="issue57", group="self", prompt_version=prompt["version"],
@@ -133,9 +144,63 @@ def prepared(qa: str, row: dict, language: str, out: pathlib.Path) -> dict | Non
     return as_case(row, files, record)
 
 
+def gate(row: dict, files: dict[str, str], record: dict, out: pathlib.Path, pg: str) -> dict:
+    """cargo build, clippy with warnings denied and, for a phase 1 suite product, cargo test (the
+    fixture checker runs the tests of the other products), each with its exit code and whole log."""
+    import hosts
+    products = hosts.products
+    key = cp.key(row["id"])
+    root = out / "gates" / key
+    products.write(root, files)
+    target = out / "target-gates"
+    env = {**os.environ, **products.pinned_toolchain(), "CARGO_TARGET_DIR": str(target)}
+    cargo = str(products.BIN_DIR / "cargo")
+    commands = {"cargo_build": [cargo, "build", "--locked", "--offline"],
+                "cargo_clippy": [cargo, "clippy", "--locked", "--offline", "--all-targets", "--", "-D", "warnings"]}
+    url = ""
+    if row["checker"] == "phase1_suite":
+        url = hosts.database(pg, f"i57_{key.lower()}")
+        commands["cargo_test"] = [cargo, "test", "--locked", "--offline", "--", "--test-threads=1"]
+    lock = (root / "Cargo.lock").read_bytes()
+    gates: dict[str, Any] = {}
+    hosts.force_rebuild(target)
+    for name, command in commands.items():
+        run_env = {**env, "TEST_DATABASE_URL": url} if name == "cargo_test" else env
+        code, output = products.run(command, root, run_env)
+        log = out / "gates" / f"{key}.{name}.log"
+        log.write_text(output)
+        gates[name] = {"argv": command[1:], "exit_code": code, "log": log.name,
+                       "log_sha256": hashlib.sha256(log.read_bytes()).hexdigest()}
+    if "cargo_test" in gates:
+        code, problem = products.test_count(root, (out / "gates" / gates["cargo_test"]["log"]).read_text())
+        gates["test_count"] = {"exit_code": code, "problem": problem}
+    gates["lock_unchanged"] = {"exit_code": 0 if (root / "Cargo.lock").read_bytes() == lock else 1}
+    row_out = {"id": row["id"], "checker": row["checker"], "issue57": record, "gates": gates,
+               "passed": all(g["exit_code"] == 0 for g in gates.values())}
+    (out / "gates" / f"{key}.json").write_text(json.dumps(row_out, indent=1) + "\n")
+    print(f"{row['id']} gates: {'ok' if row_out['passed'] else 'FAIL'}", file=sys.stderr, flush=True)
+    return row_out
+
+
 def worker(args: argparse.Namespace) -> int:
     out, qa, language = args.out, args.qa, args.language
     install()
+    if args.part == "gates":
+        sys.path.insert(0, str(SOM_RS / "behavior"))
+        import hosts
+        (out / "gates").mkdir()
+        with tempfile.TemporaryDirectory(prefix="som-issue57-", dir=out / "fixtures",
+                                         ignore_cleanup_errors=True) as scratch:
+            with hosts.cluster(pathlib.Path(scratch), hosts.Ports().take()) as pg:
+                for row in positive_cases():
+                    try:
+                        files, record = product(qa, row, language)
+                        gate(row, files, record, out, pg)
+                    except Exception as error:  # noqa: BLE001
+                        failed = {"id": row["id"], "passed": False, "problems": [f"{type(error).__name__}: {error}"[:3000]]}
+                        (out / "gates" / f"{cp.key(row['id'])}.json").write_text(json.dumps(failed, indent=1) + "\n")
+                        print(f"{row['id']} gates: FAIL {failed['problems'][0][:200]}", file=sys.stderr, flush=True)
+        return 0
     rows = [r for r in positive_cases() if (r["checker"] == "phase1_suite") == (args.part == "suite")]
     if args.part == "suite":
         sys.path.insert(0, str(SOM_RS / "behavior"))
@@ -204,7 +269,7 @@ def run(args: argparse.Namespace) -> int:
         (lane / "fixtures").mkdir()
         (lane / "target").mkdir()
         codes = []
-        for part in ("suite", "fixture"):
+        for part in ("suite", "fixture", "gates")[:3 if language == "rust" else 2]:
             with (lane / f"worker-{part}.log").open("w") as log:
                 codes.append(subprocess.run(
                     [sys.executable, str(pathlib.Path(__file__).resolve()), "worker", "--qa", args.qa,
@@ -215,8 +280,15 @@ def run(args: argparse.Namespace) -> int:
             path = lane / "cases" / f"{cp.key(row['id'])}.json"
             rows[row["id"]] = cp.read(path)["passed"] if path.exists() else "not run"
         summary["positive"][language] = {"worker_exit_codes": codes, "cases": rows}
+        if language == "rust":
+            gates = {}
+            for row in positive_cases():
+                path = lane / "gates" / f"{cp.key(row['id'])}.json"
+                gates[row["id"]] = cp.read(path)["passed"] if path.exists() else "not run"
+            summary["positive"][language]["gates"] = gates
     passed = (all(r["passed"] for r in summary["negative"])
               and all(v is True for lane in summary["positive"].values() for v in lane["cases"].values())
+              and all(v is True for lane in summary["positive"].values() for v in lane.get("gates", {}).values())
               and all(c == 0 for lane in summary["positive"].values() for c in lane["worker_exit_codes"]))
     summary["passed"] = passed
     (out / "summary.json").write_text(json.dumps(summary, indent=1, sort_keys=True) + "\n")
@@ -235,7 +307,7 @@ def main() -> int:
         p.add_argument("--out", type=pathlib.Path, required=True)
     sub.choices["run"].add_argument("--language", nargs="+", choices=("python", "rust"), default=["python", "rust"])
     sub.choices["worker"].add_argument("--language", choices=("python", "rust"), required=True)
-    sub.choices["worker"].add_argument("--part", choices=("suite", "fixture"), required=True)
+    sub.choices["worker"].add_argument("--part", choices=("suite", "fixture", "gates"), required=True)
     args = parser.parse_args()
     if args.qa.rstrip("/").endswith(FORBIDDEN):
         raise SystemExit("QA ports only")
