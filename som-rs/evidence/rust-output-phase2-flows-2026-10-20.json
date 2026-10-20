@@ -1,0 +1,4593 @@
+{
+ "version": "som.rust-output-phase2-rust-flows.v1",
+ "issue": 54,
+ "date": "2026-10-20",
+ "generator": {
+  "commit": "9e3df2e119",
+  "commits": [
+   "1344536faa I PostgreSQL",
+   "ae9422509c I MongoDB",
+   "37b3920ba9 J1",
+   "0947a44265 J2",
+   "9e3df2e119 K"
+  ],
+  "binary": ".local/rust-output-phase2/dev-k-001/som",
+  "binary_sha256": "e9da8449d92f6608b4682d4d0dcd533286560ddfce757f85845ee220174fdee8",
+  "assets": ".local/rust-compiler-goal/rust-output-candidate-003/assets",
+  "python_backend_sha256": "1c18257000d2519e85c644d5bb243d5ec7251878efadf4cf27f3bc5b26a2e92b",
+  "asset_manifest_sha256": "872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e",
+  "target_contract_sha256_prefix": "893746988ef2"
+ },
+ "scope": "Every phase 2 case with prompt version 7 (257 of 584): the flow operation, reference, predicate and branch export fixtures, the public v7 examples and the 230 v7 legacy jobs. All 257 ran in one check_phase2.py --language rust run on the binary above.",
+ "behavior": {
+  "method": "check_phase2.py run --language rust --qa http://127.0.0.1:18956 --only <257 v7 ids> on a dev server of the binary above (dev-k-001). Each case compiles the typed JSON prompt with target rust, assembles, builds the product with the pinned toolchain and runs the flow checker: core flow, generated tests, branch coverage, owner checks, database and provider fault injection on every step with undo, lease and restart checks.",
+  "run": {
+   "out": ".local/rust-output-phase2/flow-full-001",
+   "qa": "http://127.0.0.1:18956",
+   "run": 257,
+   "passed": 257,
+   "failed": [],
+   "by_source": {
+    "legacy544/run-005": {
+     "total": 444,
+     "run": 230,
+     "passed": 230
+    },
+    "public-products-003b": {
+     "total": 118,
+     "run": 25,
+     "passed": 25
+    },
+    "rust-output-phase2/rs-products-001": {
+     "total": 22,
+     "run": 2,
+     "passed": 2
+    }
+   },
+   "summary_sha256": "3ee641da325f64aa1378df46ef5e53783d2b461cd2263484431358015a99939b"
+  },
+  "total": 257,
+  "passed": 257,
+  "not_passed": [],
+  "full_fault_matrix_passed": 257,
+  "full_m2_acceptance": 257,
+  "pending": 0,
+  "flow_checks": {
+   "database_fault_checks": 547,
+   "provider_fault_checks": 773,
+   "lease_checks": 534,
+   "restart_checks": 3459,
+   "owner_checks": 514,
+   "branch_coverage": 514
+  },
+  "by_source": {
+   "legacy544/run-005": {
+    "total": 230,
+    "passed": 230
+   },
+   "public-products-003b": {
+    "total": 25,
+    "passed": 25
+   },
+   "rust-output-phase2/rs-products-001": {
+    "total": 2,
+    "passed": 2
+   }
+  },
+  "by_group": {
+   "cnl": {
+    "total": 1,
+    "passed": 1
+   },
+   "flow_branch_export": {
+    "total": 1,
+    "passed": 1
+   },
+   "flow_operation": {
+    "total": 14,
+    "passed": 14
+   },
+   "flow_reference_predicate": {
+    "total": 7,
+    "passed": 7
+   },
+   "json": {
+    "total": 1,
+    "passed": 1
+   },
+   "m2-quality218": {
+    "total": 218,
+    "passed": 218
+   },
+   "m2-supplement12": {
+    "total": 12,
+    "passed": 12
+   },
+   "public_example": {
+    "total": 2,
+    "passed": 2
+   },
+   "version_positive": {
+    "total": 1,
+    "passed": 1
+   }
+  },
+  "by_family": {
+   "public": {
+    "total": 25,
+    "passed": 25
+   },
+   "quality218": {
+    "total": 218,
+    "passed": 218
+   },
+   "rs": {
+    "total": 2,
+    "passed": 2
+   },
+   "supplement12": {
+    "total": 12,
+    "passed": 12
+   }
+  },
+  "cases": [
+   {
+    "id": "OP_AUTHORIZE",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_operation",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "2b938ca86dd1555a1f933b5039ad2f71d24ee0e06795d9077d03be4c254cc7a8",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "OP_BATCH_CREATE",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_operation",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "f8e882d10d457b64add6eb69d50bb2d6b00d925b535b9436c751443807cf7891",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "OP_CHILD_CREATE",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_operation",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "4e6b2350e6a1a068db60cde80c46779ed75707c629461847c9438b4fa66b7d1b",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "OP_CHILD_GET",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_operation",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "b817326d5f6a9cbf6fd5176bb7b42898e676252410fa6dfc27e1432553b14b12",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "OP_CHILD_LIST",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_operation",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "1a9c2348a8d54d8a948a6a7990f40185c5ad07ea4ac22027f72acbd1c2cdb9bf",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "OP_CHILD_PATCH",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_operation",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "68a809d662e0f4b4550e5a00d4a87ae3601ad84157d4e5859e82df77094bb366",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "OP_OBJECT_GET",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_operation",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "01c459337b83d779284b1f7b3daafddf2109692de289958df0e0c7950984e1c1",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "OP_OBJECT_PUT",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_operation",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "aa54833407d044a49f6a977bc0c9264e0b37229126e58187939f3b5bcaced213",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "OP_PARENT_CREATE",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_operation",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "8d24d6b17a08cfca36309c442d800cb5159358a2a2e0851d0332699bb9833b7c",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "OP_PARENT_GET",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_operation",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "71492052d8875b472c714b2025227912d984110d93a519a8e54969cc1fb2300b",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "OP_PARENT_LIST",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_operation",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "04f1c34d1f7bfea9557495e218cbd262a5c529f97a41729ceba5098095ebab05",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "OP_PARENT_PATCH",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_operation",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "618782ce43e00524cc67c45cd965fccafb014a344d9058e8ac17592a2381075d",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "OP_WORKFLOW_IMPORT",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_operation",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "3ef73bf521cd18dd1dd94295dd684e54ace0d99ff265640fe73e1c38cb642f1b",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "OP_WORKFLOW_RUN",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_operation",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "1794810ebec26288b64ffa8a4ccbb4b8cd9492efc6dfe65e6c9d4c67cf48cb0c",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "PAIR_V7_FLOW_CONTRACT",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "version_positive",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "dc9e8016e74b091633434078cb1fe4167b3ccf3c7e40960aa4f4f190a5e9b2be",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "PUBLIC_v7",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "public_example",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "932f958d5b24f572d9be0f091bf6a5b8939935c7099a9e35c0cb7962bf7b856e",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "PUBLIC_v7-branch-null",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "public_example",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "9572b8cfa1a6d33d8933b957ee481cd8960cdfe39f30c19727c1e5b6885391d1",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "REF_BRANCH_EXPORT_SAME_TYPE",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_branch_export",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "0bd92ebe0842b5fca3583000aef7bb665a5c5c669f1433339d46135a7e889db5",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "REF_COMPARE_EQ",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_reference_predicate",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "59fa6ca3d86f873f7fc92b437f372cdf8592b8644fcbea045ff0cca4fdaeaa89",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "REF_COMPARE_GE",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_reference_predicate",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "9a2b3270d3b828c646dceefece90b5a390b45a64a802bb55a8f35ae7c0cea805",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "REF_COMPARE_GT",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_reference_predicate",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "bb1eb003c68e627f18e01a5714d3fb23b7903d619b38b07f6b7e8ffdd3213710",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "REF_COMPARE_LE",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_reference_predicate",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "bbc1da0b923c3d57f336b93ac8dcbe565e77f0adcbd2deb57b95d1e439c8fcfd",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "REF_COMPARE_LT",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_reference_predicate",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "1de0916526384bbd3ecec2a91bad5a5679074e9544c29569f21553c1276bd472",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "REF_COMPARE_NE",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_reference_predicate",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "bfac4a5615bc9be774e76e50586be53906fdec6ad7acdde4287e931a1db78ed5",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "REF_NULLABLE_OPTIONAL_FIELD",
+    "source": "public-products-003b",
+    "family": "public",
+    "group": "flow_reference_predicate",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "3648711711008fa33d239d8208b60a7c52a71af9905dcd66b62de0978d4d517a",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "RS02_CNL_V7",
+    "source": "rust-output-phase2/rs-products-001",
+    "family": "rs",
+    "group": "cnl",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "932f958d5b24f572d9be0f091bf6a5b8939935c7099a9e35c0cb7962bf7b856e",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "RS04_JSON_V7",
+    "source": "rust-output-phase2/rs-products-001",
+    "family": "rs",
+    "group": "json",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "932f958d5b24f572d9be0f091bf6a5b8939935c7099a9e35c0cb7962bf7b856e",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-alternative-checked",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "62f0609934eb16af1e6f1a319c40b141884e7ae5b97628d239a6893177631d02",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-alternative-standard",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "62f0609934eb16af1e6f1a319c40b141884e7ae5b97628d239a6893177631d02",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-000",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "dad4ab7f590c84c4649a6e228a00863f57d35d0f7f78dc2f4db90a3b55793fef",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-001",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "633b30494e19bc86510133b2b81176bb1786f7f91da8339f7e6bc459890a9ae5",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-002",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "814c0504b80a5c0d3a699c012fdce563756bb22c3423fb4f4bff0d60e0c06fce",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-003",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "6a0e770e75c3ba7800ce9a3d04631951b6249cbc9f9b330275c2bf6e74c12d5b",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-004",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "99283644bff9cf845d2407e35349dbbcaf79bddb5f3e8ec85ecdce04b7ab6f70",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-005",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "2ab11aecd9a0e2935f295fcbc0d37a6055671867492540388e58ed628d5262a6",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-006",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "69a5cb908e562f39b091c7921ad89f74fd0a114a7933e086da81bef65352d515",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-007",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "457dce06f9269be161c792bffa9ac924bbaae4cb6d00b3029ce434537a6997a0",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-008",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "7c4cd213d59429f8a9f22c9048091c0ae598b9c098dfd769c4dfa3e53836d3f5",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-009",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "241aee34e7cda97f85fc3a7c8d0b946c7eb84875da962b3e9964b0fce05a1254",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-010",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "4f6a0e68ca39a4e5256c06f9d1fac212733a7a7bcd5bef699ab0e50f073a56d8",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-011",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "c2b576270054e64eb408cc0f02611a43d47829fe4dd034a811f8a3c694f688ec",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-012",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "184d598e97b77d2a3405cae69079e73b304ca96bb3d66ed7f64a0c1d66a8cb9d",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-013",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "3002ae00f315a15745c6d8cf0badc8689954d8df0d4ef80ee692147370f14fca",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-014",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "f0ce1c792c65360b0b2cbd891821bcd9299dd9da5ccb926e6ffb80df003ee4b8",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-015",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "e045316cee63c424f50ad647347e594b85b7cbca261607183fa7a537f7abb49c",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-016",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "7565b2c2fd604d5f70dbb17a50346fd5c9a43f96fce1a93db95a904d39c417cb",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-017",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "0c98d65a07c206978a3ddcb04cb17fd97926c7b4a54bfa8d3649a72ce1f41494",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-018",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "d4d4c8e1b3d8d844d6e297f939fd7f274f42dabda2086e88eea8c7b85e4c1000",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-019",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "07396fbc1ddc425cb42473bcea9c654a1ea5f5061ffd3925aac0aceb32246204",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-020",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "d20e91c8c8e14621688297e4f4a6b16f9d71ada006b45f26c626099684cbe48c",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-021",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "e962128ebb558f9e57d84eab6b67bb541570d36916d6431b6a84650f2790f2d3",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-022",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "21be69faab70cb7a9dab046d0a08d8d34bb85e800279e07c57c6dcc1989f4b25",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-023",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "50dfe65440c9e82c9a78d6fcf0e86085d640a7bb60d0e1426d6d342118608dd9",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-024",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "3cf315965b9d65474c552f9b7686591dabda70482b3d8ed4c175d80de00ae7b7",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-025",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "e69c20ca98d937a8f5d23b1f79ddc24ea34154313bf782f0ae98c87416caf80d",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-026",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "094f0d42e4234bae10564078ab7a58a2fdb298d9308e8cd46020bb746f042596",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-027",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "1d897b63b71e348831c35d5ed3b26c2325b1c561b6752d4390028929f45adc9f",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-028",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "dd11d9b55b21d2c45c4f406f714bb617f705a0963542c1eba0d6fda22bd8acb4",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-029",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "4ca243429dc874ea9aa81dc1be3eeec9b92bbaa018ad414967ab27c3aafc547f",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-030",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "9203d9e0b0f389ea9153973f735399477fc6d3ddec8d9ab3c94439e006d170c3",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-031",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "d12b175d203a36d41d1a844c31a11a3d03e5d8a7fbf9b39e85f908521eac01a1",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-032",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "7c4bddfdf34b7176bd3872ff9484be83555c3c6777873e9c07cbd2806525a885",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-033",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "ec942788010dfbca261b02119fcff6585061cabc7fd01c3ce333252b6cd3dd24",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-034",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "41c5076739e0f1e748815800e52f82b971e1781afdbddfd0bf63db0c0b1a282c",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-035",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "9ef83e9d2d825ed82311eb58e53a18f1522ffac09d7c8cc2b311a3e8cf5083b7",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-036",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "d1d1c67f14fce60f3c34a61ee396f5a0b9c2a166dda63f80f5a10887bf853729",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-037",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "2dbbf6ead1f1b7d98401e7bb0151f90bc1511fa15c73441f1963a1caf32a3ba1",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-038",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "32269ffe71692a07fe56d87ddb65021e37b1bb67d6700364553de317e9c64150",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-039",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "c53866ffdb42044025b50390d716b09eaa990cc303aaebfe2294626a5f361a05",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-040",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "9ba17b17077f5f2ac2a0e85506d48fdec37d22aff5859d337538be694d502e3a",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-041",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "c2086c5e7a863cbc8478614167a1d50f0a05cbf87bd14c7d440342fdb5964957",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-042",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "7dfad553aca04dc732623459b47b6e098eba6e1cad8664ed545aeb684b5c0330",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-043",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "d7ae103b0764d47d684aa6730feb14e5bdae3a521e37b7500b521a1b2773030b",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-044",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "218c69ef7dca19dc9a45b76e3c6be0e3b5c256b560d112a1e99cc13775a0da74",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-045",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "1f03c5985f482b20df2755ba940b2a24bc90a7ad68aa9d9f5a92a4c5cd5f5908",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-046",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "58bd0955cfb499691677546aedbe360538c2884f96e4e840fbe8398fcbd96f58",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-047",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "adf8e599218bb37e592090abfee93ffcf61c2697228983b4bbcc5fec2eda117e",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-048",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "316a4339568c5b7c433651c4cb8fd0e69f91b3ca36343b0a69c23d01c0106bf4",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-049",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "c2f6ea581e179d23457655c079b66f2c40b24d1a58ee2547ab2cd3abc527431e",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-050",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "f167ccb00a0663aa31a5d3476646770d187638ce2f44e3e39770c5b29fbabff4",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-051",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "f5c8e575cce2f01e06e408bacefc8e401c5e30005bb06275603305beaf6f28f7",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-052",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "e68895fd7fa50942d597e2bad00794564fbce815f6e2efcdecc87d907d6bd352",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-053",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "01a6b3f2791fc37a2d680c30f403839e2a1f3a5d8128dc7fe6a4e2edc015a25f",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-054",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "03586acb89067d571704150ca13aa973e0ef77652994ba70435285f73f603200",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-055",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "cb1a8f5567d99b4039271e90f90f03e0774c987d61e12494b581c905ba1c6db4",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-056",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "e95eb4a2f963bf030bf56eb57a9d0bf2026cd2627af76f8d2e34cb2d9685efa2",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-057",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "3528aae5c4e291a207c1723206939fdfdec577a6a23ad145db979dd49682ccfa",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-058",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "f14a12ea1124bad0fc8891a644b202e95019a724e4de85c14523180a6d2e65df",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-059",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "bfb99a5f55bfbb82d1b3f90294c29b30e9706e05f16a5cf97e896d81d24eb11a",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-060",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "9d1c1724f2cf37ab7e6d6fdaf6455fc254605d69284ba7f1b263aa230f443294",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-061",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "7c7ef568333ab7fe2f41185c06618f05b2a498dbf7071d070275c9b5261623aa",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-062",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "394e18efaf0b15914d7169df173826bb7b14d91a394c85f477471dda3dbada0e",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-063",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "b2cb7dcfcb9b0768bc3b9c9d3f82262ab90eab660c4da15ec52efda4dbe7ea1d",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-064",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "e9fce54cc52aacf0ca2b4a5253e0839972517466eb96315db4fedb85bf3a9ac3",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-065",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "43dffed6a59f3e6369adb37acbb6227cebbdc56db865f467f8f3d80ae11b1630",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-066",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "f31e9c468fce01fdc0ae62ef23e10b1691f78e5e353b7bb0a078f5fb88ad6db4",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-067",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "59c8ed5dc93f5e6e1ecaf3021b51d0bb530cedef35c1b1376b3c60b08c78bc56",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-068",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "2419110555539ce9423e66e4d7b6f16a48f48bec094ce88417c501120f6ca636",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-069",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "1eda77b285fc04f88271f6ed665bbec1ad85fa262af39756fe73a0311e390e75",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-070",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "d0db5d4d9194f7b1502748dbfa88db40237572b90fa9d40bed6fe3a767d58edf",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-071",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "71dfcfed9f0277033b70f5212e595da098bc88a72486f8a06d6511a0d73c7d7f",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-072",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "a05e67fc7f0506dd854b0a551b8162418cb44950b66f605f4bc1fe94da145a46",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-073",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "60a55d1ca181ce0c52c5122e3a6aa742e661daa6f99b12c8ded68a39c7fed076",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-074",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "dded58dbe10072bc7ab38fa2154c8cda161b3e31abd12ef20040b2a61be0d62b",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-075",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "07c93fac0c15fff0b5e70747612d447b2a36ac54b4634cc593540478a4e027f8",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-076",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "5902050b1d4541acad10bc301d210e6bd564499f1e981da30e2922fde1d07310",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-077",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "a1d87827b611086c815ac679bbf781d9ab0af6eb2606f718757b52ae49b0200a",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-078",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "7b574e9bad74433c24f9c6306bb2776a3538b343fb785c634bd9c81f76be7316",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-079",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "07a0b7cbf815b5475c4b5b819071582c851a3133cf1d0b36ec3b6df8302b3816",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-080",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "19e32cd3c613c9755adede0b1870cc1d52572142828d0a74bf02bd3b319ea2d6",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-081",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "1794ffdc6351ed5e2ae23cf7514a75cdcea7e6eae47a3ce622ca5f4b971726f9",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-082",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "16ecdb5030f329332b5efd97ea87ffb5fe32320ac925cea51bb2849044b40aea",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-083",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "b31407edbdef97703b3ee1731ecf09b36dc2b1f6ce236a620b7eecab621c5eeb",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-084",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "1fe9d8b61fe71f396caf4cafd580bc1c18ccb921a04dde5117a5ddcce1ed4f46",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-085",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "7010d621b27ccf17a142a0281a841b1e84bdb16f1f9ccdf5e78da45f6b11f6d3",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-086",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "bc80f50d777aac0fed5ca23fd3dd47436c7c547871391f87cf7e6c64cf9bef70",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-087",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "358132e5e49f1036674796b96859c74f63e0466362ce45454668397a762105a4",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-088",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "42404bb93603ec79afac5a027f77aafbb251e8c485ce55aebde1980851521529",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-cap-089",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "bca6fd912b282d3be59086c6ef6c6082f78c136de7fb015c73a56c7fa0c8b0e7",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-gcs-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "4f49a494e3c473267b7714bb66eaf158a48075d55495f92cdc0df2294fa34d45",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-gcs-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "0659b8b48a8742baf3af327bf7eec52c6b9f2409f04b3e17c64f0ca0da0faf09",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-gcs-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "8d652c33fbca3d79564a98eda0ff2c0d021271282f2855b58f4bed911459b066",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-gcs-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "1bd1dcc3fd593f85c267824b522d81f7b179502193bd0f9eef5110153dbbb278",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-gcs-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "885a560b6d4ec1ea21dcbdacd3da93852c41e54b17ac9ef329e0500b12d6e418",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-none-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "5652f779d1740923897c9bf90ac167a61a8c00da296e9dc559400fb64db57d75",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-none-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "e2b9c266d2bb2dfe9964aad700c66cfb980cd5897feff77adfa398dc9dc1dc9e",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-none-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "dc430565b5c962982f6fd147c814ee6a2d794c2b2e92c68f16bd332451d289c5",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-none-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "613e63c1e9b9e5561622a91ffce2f9677dd1b4d74ea6b1f399bd94590ae3079f",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-none-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "8f9d65c665634aa5376769b6e7c3619462f57f9c5fa18d63d7ca4df5d8c5226d",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-s3-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "3ebb0383d0e587f93e178ef294972825001bdffa032b45eb527b4d302173c075",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-s3-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "5ede890d724d34cf6cb14b29da486aa027460449e78fe8b61c7990676798e039",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-s3-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "bf50ce0a2fbe3eb85e2ed054b0dc064b1b5da1778d57d3735f790f89577b0b2d",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-s3-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "4bac75410a2582cf70ffc97dc19cf40702a0bcea48835d5af6f438d298c53a7b",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-firebase-s3-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "bb4869040c3615326f7032c9079c0c5e8f8d80b2cc49786fa084e8f803d2ae41",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-gcs-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "e18a3f8fa1cbd7bcd65e3c5438d920fc2815dc7771abcadd9cdd98ffd29c1a09",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-gcs-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "f2652b991b16b1ccc4dfb9817a11e432810b7f61369978a217e3b01eb407e31f",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-gcs-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "25a55592255c47f0ffe53aa9c4bc7b043622ebd3369d1a3e467cd46e8f252fd8",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-gcs-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "c3fbbd3e40bd8b3eecf02f4f07e5956151c0912ceb883f9c3e38802cac609b99",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-gcs-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "18e50ff5ebf97ba0fc28c152691d60038a151b38f157804092160ff98be2213c",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-none-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "f03cd7009a79f6a94b119f0c775ec0414d021d2386ad3155075dcb0c3602f5b3",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-none-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "acf375aa103ea14010c4964523aa67466f85922026f88f672c36c7caaff884c0",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-none-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "924fc57b59617c3dc8fb7f6b6d717bc1f8374fea4c06dbc27a7f53e092dc1950",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-none-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "6c61280c50fb4bbb1ae69446584015deec6a142c089e03ebe70fc5a72e7a67ce",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-none-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "b9f58601f07f524253b74613e6d00f8513652f1987861d097dbed6314789af76",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-s3-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "b145e4f9f94af936174638a5d1f1800a520d81855bbd7c6eac7d4558424281e0",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-s3-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "013ba7c0e1ce9cca7212f7251602fe28927c525d7ff5c3687a255ca4bc0307f6",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-s3-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "ef2b29bc81a80bef626eebb1e4e539052f713035e516c8c0443f5244a1e580a0",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-s3-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "feac5b92f12e024e30e7c5e987d5b34fb47973e329b07f3c91ed9aa7d333533e",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-google_oauth-s3-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "d3f361a84e5e6f1fb660b294ebe3fe0bbe3ef6b2374603400269ac166a967488",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-gcs-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "9c39ddda94d1acf1d96beb8866576f25ce9e407a1260293aabe412b9fa15ccc1",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-gcs-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "d4c2d83c93033f26665b703f53f15388e811fa0f42721d312031ebbb5474664e",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-gcs-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "2fcf58d032a5b6e28eb1b7b7100db5d1991b2c8f38f28d9fe37d26ec1f53a058",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-gcs-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "30efff8a06d4a9b785dbd3545cb6cf98de47b26c28a641df465008a272773218",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-gcs-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "0f4fa0f3652bdecfcf7bf75f871c9cbbefbae42d5cb367ea4278bbb0f7a18e0d",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-none-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "6be83168b3a1b75a3dc6de0a91ea0e2ff2b3b82463913f8ef4f839f562a00578",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-none-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "e20dcef0fd89c4e08ea46f41810a451b78d232ad710ec6c391a99330fefb4c84",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-none-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "b461afcdda377fae1fd0584d185a039b1ab3e0438a7e4791fba4f01d3f702d16",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-none-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "6c6a21b9fa1031056860098381841119129083a049c8fc50ead572d157c61915",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-none-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "949b9b4e9f7da7eff61995c833d6ca182797c7647a1d469e6579f786774601e3",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-s3-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "dbac9dbc24897526d9ddef7c86bb10fdaa85faf9b83c03cca0566031a36131cd",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-s3-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "707a0c192765785bf3a88afd8bba296ccea7cdd311a66d82c18632470a8a9d43",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-s3-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "743e57c3b3f5e6cad901a1d370866cfad8159dac8f2eed096259841f4cd2d1c8",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-s3-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "52559acb301777f3a27c80d7b4dd5d6d1bbc44aa61dca3c9f93e0d75a9844def",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-mongodb-jwt-s3-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "821f81624a5176362279842d442946c0cdae61d87d631f6e52244783db994a8c",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-gcs-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "b96f64b846e1ae6e3a639165ad3b4cf8c9219c26fd6e1d27761cd3e60c2a99b0",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-gcs-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "a8fb3c67c90ed77b7128c67effbb19af668acde21d8189f056eb662b447aa5c2",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-gcs-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "760af75c9cfe7cd51672fd9476256be7330f6ae70511280f4b8857f1c2945da3",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-gcs-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "40b4e796230d667460205c68a0fe25cddf2454f470a93343fd78eaf5a1aa31de",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-gcs-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "0b4647c5dab3da2a0aa712ab076f45622b5a74a822981b4775c563f061b1c25c",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-none-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "0564370d7c4051fe9cff43f1af024b6e7863ff861cc2637b6de5bcbfaa3db5fa",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-none-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "b01e9201e82f63aaa1c766c3043ab205641805d10f442ecac00540b7d4b96f31",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-none-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "0299f5328b5139f31fe23f3f79f3315816fcfd8e0b94b031633dc0e48418956c",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-none-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "f8646c408d964f4099323c3f3163a281f80963355200836129b64eb943b8d599",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-none-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "c3f2db43d15a19214b86162f6298715bfead059b30863529fddb5d91180f8009",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-s3-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "c3ee63729b887cffade975ea4e666212523e9fe3c454d8ffbc0ccf50d094aec1",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-s3-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "761a0020a8588c2e54d7cb6428cb4e84a42a6586563b282e6be38d8bea7fe1ac",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-s3-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "364ca50e5dfbfa8082dc3576453eea82e1188ed22e1b6070a64b7e7149e701df",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-s3-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "d23f16d2ee19df72758271929dc7e1da2d789782c73d33bbec25d0b83d3b1456",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-firebase-s3-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "2a1327ed2a8c1bfe2b2a5696d290cbbf69fa3fb34fd076379f63c50243459437",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-gcs-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "c47436a5978a3d43636fae05c72a33fd798e17961b356fff0daa9cedd30e51fa",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-gcs-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "7d123920712bde95fd92eb8af12b6267dbeae57b5648be15454d4de42f304628",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-gcs-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "ae32b19e7c46726d45803a005ae41ffdd2b4058a5ef2678936bf8528e7ad0375",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-gcs-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "192f80688353d233d51115d2e426b6abc2b00dafce48676792ff8d4ab87b399b",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-gcs-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "853efda83a87f310f238c45fb8372a95aca704f243efbeb237a177df3fe083d6",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-none-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "b0fda4ab772fdc65ae4634236fa55f1f39490ce670391cdaf56f949910ece403",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-none-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "9cab67f3c2b68d8a62cceeb1e2efe322a27d374b672d4e83996dbaf88374101a",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-none-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "70ff7886e1e02ead3ffc1266b17312d87b62992a65da87c1ce542248e2f1165e",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-none-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "377b38a9cb48fe94571e21fee9e275472ce1a375ac110b3cfcff604fe542befc",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-none-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "0a2ac10d4913c2971b1f59d7b4e91313ff2c0b5ad1a6c8326ef70d2593411951",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-s3-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "76a19685ec4d8d7896c69a128350e99fce8fe6935189ac6c80c8f3f469c54254",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-s3-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "68135a44d13debc43a48e16415864c9f2178c780cef430836b6724b3137d995d",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-s3-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "bb6e4c9bd5ba5f92009a312ceb425fa898dbf3669d455e709b710ae19dd73ba6",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-s3-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "4d8aa030bde23de5356769a91e9413765d5eef52d1b0de00bc59b08e24316bfd",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-google_oauth-s3-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "dd86bee53eca687af00503bb2bd9c2305fa7bb01d23377b006199c73897e2080",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-gcs-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "d0e823d772d3f3ae18497f68dfeed40bc3ea85698946532c0fa4c4155997e492",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-gcs-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "3a9e8a1c860b1d4910c341722dcf9846a8f7caa0dd9dbe444c1678db25d35d25",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-gcs-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "f6e52462e24fa08e08aa3272a32de7e96b1f5a85c99cd8e7e2ee787262afbb88",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-gcs-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "5793831cdee20be0d9aed2a225adf7530637e5870d114549df39c52b1cf0f31d",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-gcs-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "8ac10fb23b32973774bbe0ba05e1ff8cd67dc5f079ffecbf28374afe8132e59e",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-none-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "4d702154a52e31486aa1d2995c3992479349398e8bd64b29115f08699ccfe953",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-none-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "6723051e9cd1b816d6c1299d4be34942319e2ce649d37ff2e37882600bf2fde9",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-none-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "ce24bd86534950928b5f61308464f69ed77408066219d8bb2a16dbbcf19629fc",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-none-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "767214d2d196d48334a584f7243ccfa84b97585537e79b3e704ab42997807b7d",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-none-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "8cedbbc3f61d33ff4f41975064445bd1417c783238d66d22a50fe163ee778284",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-s3-csv",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "8e91dce25caff4f4cd3bf16c1b7fac746e635d5d3b9e8d3153e5a91af65fd0fa",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-s3-decimal_summary",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "9b206cdc29cbf9326353c30ed8cb370e038daba2807b9ab9ebb9340694e26e35",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-s3-gzip_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "e31de39bbeb911debcf4c1ed5a6e75e7a0b896feb9a2dbb004074f2c6178c5bb",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-s3-json_export",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "ef846b435307ccf20f6e8e23f97ef4fe0bcffc3d2c37406dba0b36f295a932b3",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-maximum-postgresql-jwt-s3-statistics",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "090f1f9c881e489e758393c95ffe6f82c51fde64e60d4bcb99361c331ddf660f",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-00",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "29f74a1e4a48f93a2ab0ec95bcb3a94f6dba605a10b0002907bbae541d9bba47",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-01",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "862de5aaa346cdc6674fd8b7b446626d5b8d76e01dde2f14d877011e18a7f771",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-02",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "6736a225f8a9f598a5b162f65a609bf4c483637cc0e0fd43159448692658e3c4",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-03",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "99e39183102fec5f0ef6200d23c025ed8700528c2715a8df0922cebe63405d08",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-04",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "c89a8ef4d6c76bd386d7e0d7fb73b0fe43478ed9cd03d669acbd3cfcb46d72dd",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-05",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "c34b35625461b33ea5462f1df761005fb784df44021486bafbec9e51ed493e6e",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-06",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "d648e9255d41b8c28209bae53afb1bda5959a848b964aa7b60ae4d915d509e8c",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-07",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "a4e1268aabccc62b0ea4953ad6c334668a758ffcb487bdde212fb32b59e95b09",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-08",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "deb26dec4f0e14e9cf8d8d83ac7a1ca074b8944ff2de94720ea071c7fd44fb70",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-09",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "c1c37f66a880038af3827c7134d43befe9394af08df62992bb4291d08d1f056d",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-10",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "b3b0c0331c0e9ce585a1671b55b4a273760db7b24cb8c4619b2483d3671f1502",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-11",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "413629512cdab9c6b46b15119f61272736185feec7ea2338bc85132b096e65db",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-12",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "2c8a4ee97e3842b3aea38d81159c19d906d6ef497812e9628ae28ffab8ff4d3b",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-13",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "719667ab6e23cd4398831d6a2eeeead4d3d0a6063de7f584960c0511f2dca6db",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-14",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "ec89614a8f31c55905f0af12591253746d5319cb6ec8f29ba04013e969cd4b25",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-15",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "833f399514890cd76dd817da4d24b1aaf95291ba6c089b51da85a325d19aa9e5",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-16",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "9a68fde2566040b17a358df456331c3247e8e4b9f8e8473e0980db21d5f981e7",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-17",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "641f5837c6e1114e0957d85d7e0c266c317416b54e7e315f66365f64f7dfa306",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-18",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "2c7458e45177277ca15245c27ae22f98427b705b59764772ed966eb0f2601c4d",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-19",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "6baf570ea286d33acc9332e98b1bc9a0c7b7c5398fc9fbde68617677d3b4635d",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-20",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "8d377519ae66be50f19fd3512636d187640402bb7cc3e90c9984dc40821cfa36",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-21",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "e565189db6c2d5c8a4c5dc9d41bd64bf01b63fbf75b58f28a0df3aab6ef64204",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-22",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "46e0cd225b80baba17073c566f977ae0baa85d82505a868402bbe9c8bcf63f63",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-semantic-23",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "8d7dbce58c7b42037689466a85369e7739efec9e1423e394e8ea774a4222f16c",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-smoke-00",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "62f0609934eb16af1e6f1a319c40b141884e7ae5b97628d239a6893177631d02",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-smoke-01",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "5210f592643d48bc9174e0e8adbfa299913a3a97595935e99142b82fb93960b5",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-smoke-02",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "8a105c88ddc293fc53c9602bf68683ecaa2ec1375b9ced8584b6c4ec57533c75",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-smoke-03",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "99c469834a574ab478216c941837b98b5040ab17841651a644d6dee182c59835",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-smoke-04",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "818213e19354964759caf90baede8678339412617b7220d4e295672a1011dcda",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-smoke-05",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "3eec98b8263e47f6674e6c6cb46286efab3bb5ac7b4974b705c30b1d27a50b38",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-smoke-06",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "0804fa397ed9aa82b62ace7651cc9442339eba1a36d747cf3454874363c2b6ec",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-smoke-07",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "9415b7ded36b97d7b19a1ac8ffcc5dd5b0e35153e17383ce6ee76762d6012ec5",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-smoke-08",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "0aa091a2dc637e416664d353008c63ab0d4de2655a50775f9e150c465cbf3281",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-smoke-09",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "0e2b0acf8d97168023c1850243fa5d8ab1e4193b2eac1e65fbb5f67736ea7252",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-smoke-10",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "a8bdc293b63229649c855409addb99ee3f3ff40ec9a072434f3ca3c9d3899459",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "m2-smoke-11",
+    "source": "legacy544/run-005",
+    "family": "quality218",
+    "group": "m2-quality218",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "6eb25f0bcf77ae0702a8eab9de0ea2eb3bf173da1960a0ea4736b243cf358c95",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "supplement-gcs-object-read",
+    "source": "legacy544/run-005",
+    "family": "supplement12",
+    "group": "m2-supplement12",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "079f3db7af97cca9d2add5d8ff25e02777aec811cf9c739163939d17697c4fac",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "supplement-mongodb-batch",
+    "source": "legacy544/run-005",
+    "family": "supplement12",
+    "group": "m2-supplement12",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "39489b6d34992b0c6db8b8140b34a5e2e5996486c04f7d11650f46f82df9e2b7",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "supplement-mongodb-child-patch-read",
+    "source": "legacy544/run-005",
+    "family": "supplement12",
+    "group": "m2-supplement12",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "928d897087f7386e944d757d20d16a0017425f47464278b9acd2fdd2281ade75",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "supplement-mongodb-child-patch-read-checked",
+    "source": "legacy544/run-005",
+    "family": "supplement12",
+    "group": "m2-supplement12",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "928d897087f7386e944d757d20d16a0017425f47464278b9acd2fdd2281ade75",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "supplement-mongodb-csv-import",
+    "source": "legacy544/run-005",
+    "family": "supplement12",
+    "group": "m2-supplement12",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "aa6574ec89e531b7bec7780f81aa2d8f7bd1a8a48ce13eeb11c83f2f51c8e7da",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "supplement-mongodb-parent-list",
+    "source": "legacy544/run-005",
+    "family": "supplement12",
+    "group": "m2-supplement12",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "a583fb99474b94ea8ff3cd738df9e5460bfe10571d29d827178edcfd4599c717",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "supplement-mongodb-parent-patch",
+    "source": "legacy544/run-005",
+    "family": "supplement12",
+    "group": "m2-supplement12",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "52991ed31eae4b2dc641e0cff5555773d945f1f9bdd64f5edecab7a16b3d9fed",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "supplement-mongodb-query-boolean",
+    "source": "legacy544/run-005",
+    "family": "supplement12",
+    "group": "m2-supplement12",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "03c6dc004c5f9d3016012f36a5721fcb727dce2338aeb590b79c02f51e002a2a",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "supplement-mongodb-query-plain",
+    "source": "legacy544/run-005",
+    "family": "supplement12",
+    "group": "m2-supplement12",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "285273e425b835917dd67888193170a786f554b2a2129d6d467edf4a27fad93d",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "supplement-postgresql-child-read-checked",
+    "source": "legacy544/run-005",
+    "family": "supplement12",
+    "group": "m2-supplement12",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "6736a225f8a9f598a5b162f65a609bf4c483637cc0e0fd43159448692658e3c4",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "supplement-postgresql-query-boolean",
+    "source": "legacy544/run-005",
+    "family": "supplement12",
+    "group": "m2-supplement12",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "b2c8d062fc9798f1d1958c913459932deac2adca0102fd7a0e56e5eb849d337b",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   },
+   {
+    "id": "supplement-postgresql-query-plain",
+    "source": "legacy544/run-005",
+    "family": "supplement12",
+    "group": "m2-supplement12",
+    "prompt_version": "som.prompt.v7",
+    "checker": "flow",
+    "expected": {
+     "result": "product"
+    },
+    "files_sha256": "91b03f235bcc59d068e50d325c625bc024f55c65e17c9069d4a66d188344ad89",
+    "passed": true,
+    "core_flow_passed": true,
+    "full_fault_matrix_passed": true,
+    "full_m2_acceptance": true,
+    "pending": 0
+   }
+  ]
+ },
+ "product_checks": {
+  "clippy_sweep": {
+   "out": ".local/rust-output-phase2/flow-sweep-001",
+   "toolchain": "Homebrew rust 1.96.1",
+   "commands": [
+    "cargo fmt --check",
+    "cargo clippy --locked --offline -q --all-targets -- -D warnings",
+    "cargo test --locked --offline -q --no-run"
+   ],
+   "products": 251,
+   "passed": 251,
+   "failed": [],
+   "hash_changed": [],
+   "note": "One product per distinct rust.files_sha256 of flow-full-001.",
+   "summary_sha256": "9475ce7f186276a32b92eea8b03fc81b625e06c85fcc2336179fe5613a93985b"
+  },
+  "som_targets": "cargo clippy -D warnings and cargo test (20 passed) passed on som-rs/som-targets at 9e3df2e119. cargo fmt --check did not pass at 9e3df2e119 (src/rust/mod.rs tests and render/capability/flow.rs were not formatted; an earlier check filtered its output). The next commit formats them and passes cargo fmt --check, clippy and cargo test.",
+  "follow_up": "A #55 dry run found that the PostgreSQL flow migrations put the columns in another order than the Python flow model (schema_equivalence compares ordinal order). The next commit orders them as Python (id, _som_revision, created_at, updated_at, fields, foreign key); the products decode rows by name, so behavior does not depend on it. The #55 run checks every flow product with the fixed binary.",
+  "not_run": [
+   "phase 2 bundle_checks: CNL and JSON byte-identical bundles, determinism, layout and reference Cargo files (#55)",
+   "phase 2 product_gates: cargo test on a fresh database, Cargo.lock unchanged, schema and index equivalence with the Python product (#55)",
+   "behavior parity report (#55)",
+   "each product's own cargo test (the sweep compiles the tests with --no-run)"
+  ]
+ },
+ "python_unchanged": {
+  "python_replay": {
+   "out": ".local/rust-output-phase2/k-python-replay-001.json",
+   "passed": true,
+   "exchanges": {
+    "passed": 2005,
+    "total": 2005
+   },
+   "public": {
+    "accepted": {
+     "accepted_complete": true,
+     "accepted_passed": 127,
+     "accepted_required": 127,
+     "case_directories": 127
+    },
+    "failed": [],
+    "passed": 127,
+    "required": 127,
+    "total": 127
+   },
+   "legacy": {
+    "accepted": {
+     "accepted_compile_prompts": 540,
+     "accepted_passed": 544,
+     "accepted_required": 544,
+     "accepted_status": "passed"
+    },
+    "compile_prompts": 540,
+    "compile_prompts_passed": 540,
+    "failed": [],
+    "families": {
+     "legacy100": {
+      "passed": 100,
+      "total": 100
+     },
+     "legacy214": {
+      "passed": 214,
+      "total": 214
+     },
+     "quality218": {
+      "passed": 218,
+      "total": 218
+     },
+     "supplement12": {
+      "passed": 12,
+      "total": 12
+     }
+    },
+    "passed": 544,
+    "required": 544,
+    "total": 544
+   },
+   "sha256": "96248ba5bdc8207d3c26c2bc395d3eb62346e43ae2963d03fa8d74eb028f323f"
+  },
+  "python_controls": {
+   "out": ".local/rust-output-phase2/python-controls-k-001.json",
+   "passed": 32,
+   "sha256": "bef821bd03372cc4e3fa0880bdb6c169516aa7308ae554e2f3abe1a19da11302"
+  }
+ },
+ "known_differences": [
+  "-0.0: the bundle and the generated FLOW literal keep the sign of zero; the PostgreSQL journal stores JSONB, which drops the sign, as the Python flow product does."
+ ]
+}
