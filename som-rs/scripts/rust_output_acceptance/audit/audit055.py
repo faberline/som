@@ -22,6 +22,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -394,6 +395,52 @@ def tie_to_receipt(ctx: Ctx, row: Row, name: str) -> bool:
     return True
 
 
+def git(ctx: Ctx, *args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", "-C", str(ctx.repo), *args], capture_output=True)
+
+
+def check_candidate_source(ctx: Ctx, row: Row, cand: Path, cb: dict):
+    """The tools ran at a later commit than the candidate only if that commit builds the same candidate:
+    the candidate commit is an ancestor of the tools head, no path under the candidate's source roots
+    changed between them, and every file the candidate recorded in source.json hashes the same at the head."""
+    head = (ctx.header.get("tools") or {}).get("head")
+    commit = cb.get("commit")
+    src, err = load_json(cand / "source.json")
+    if not head or not commit:
+        row.unrun("header records no tools head or candidate commit")
+        return
+    if err or not isinstance(src, dict) or not isinstance(src.get("files"), dict) or not src.get("roots"):
+        row.unrun("candidate source.json with files and roots missing")
+        return
+    if src.get("commit") != commit:
+        row.fail("candidate source.json commit differs from candidate_before commit")
+    if commit == head:
+        row.ev(f"candidate commit equals the tools head {head}")
+    elif git(ctx, "merge-base", "--is-ancestor", commit, head).returncode != 0:
+        row.fail(f"candidate commit {commit[:12]} is not an ancestor of the tools head {head[:12]}")
+        return
+    else:
+        diff = git(ctx, "diff", "--name-only", commit, head, "--", *src["roots"])
+        changed = diff.stdout.decode().split()
+        if diff.returncode != 0:
+            row.unrun("git diff between the candidate commit and the tools head failed")
+        elif changed:
+            row.fail(f"candidate source roots changed between the candidate commit and the tools head: "
+                     f"{first(changed)}")
+        else:
+            row.ev(f"candidate commit {commit[:12]} is an ancestor of the tools head {head[:12]} and no path "
+                   f"under its {len(src['roots'])} source roots changed between them")
+    bad = []
+    for rel, want in sorted(src["files"].items()):
+        blob = git(ctx, "show", f"{head}:{rel}")
+        if blob.returncode != 0 or sha_bytes(blob.stdout) != want:
+            bad.append(rel)
+    if bad:
+        row.fail(f"candidate source files differ at the tools head: {first(bad)}")
+    else:
+        row.ev(f"all {len(src['files'])} files of candidate source.json hash the same at the tools head")
+
+
 # ----------------------------------------------------------- run integrity
 
 def check_one_candidate(ctx: Ctx) -> Row:
@@ -461,8 +508,7 @@ def check_one_candidate(ctx: Ctx) -> Row:
                 row.fail("candidate assets/manifest.json differs from asset_manifest_sha256")
         else:
             row.fail("candidate assets directory missing")
-        if ctx.header.get("tools", {}).get("head") and cb.get("commit") != ctx.header["tools"]["head"]:
-            row.fail("candidate commit differs from the tools head")
+        check_candidate_source(ctx, row, cand, cb)
 
     # Every service the run used is the candidate (or the read-only reference / baseline).
     url = f"http://127.0.0.1:{port}"
@@ -476,9 +522,10 @@ def check_one_candidate(ctx: Ctx) -> Row:
     for p, obj in ctx.products_checks + ctx.phase1_unchanged:
         uses.append((p.name, "qa", obj.get("qa")))
     for d in ctx.p2["dirs"] + ctx.py2_run["dirs"]:
-        rj, _ = load_json(d / "run.json")
-        if isinstance(rj, dict) and "qa" in rj:
-            uses.append((f"{d.name}/run.json", "qa", rj.get("qa")))
+        for fname in ("run.json", "summary.json"):
+            rj, _ = load_json(d / fname)
+            if isinstance(rj, dict) and "qa" in rj:
+                uses.append((f"{d.name}/{fname}", "qa", rj.get("qa")))
     wrong = [f"{n}:{k}={v}" for n, k, v in uses if v is not None and v != url]
     if wrong:
         row.fail(f"artifacts used another service than the candidate {url}: {wrong}")
@@ -1320,8 +1367,34 @@ def check_refusals(ctx: Ctx) -> Row:
                 if r.get("status") != 422 or r.get("phase2") != REFUSAL_RULE:
                     row.fail(f"targets.json {cid} is not the query_parameter_collision refusal")
                 g = p2["gates"].get(cid)
-                if g and r.get("reply_sha256") not in ((g[1].get("bundle_checks") or {}).get("compile_sha256") or []):
-                    row.fail(f"targets.json {cid} reply differs from the phase 2 compile of its form")
+                pc = p2["cases"].get(cid)
+                if g and r.get("reply_sha256") in ((g[1].get("bundle_checks") or {}).get("compile_sha256") or []):
+                    row.ev(f"targets.json {cid} reply bytes equal the phase 2 compile of its form")
+                elif g and pc:
+                    # targets.json posts the frozen contract body; phase 2 posts its own serialization of the
+                    # same typed prompt, so diagnostic spans and the reply bytes may differ. The prompt itself
+                    # must be the same, and phase 2 must refuse it with the same code and rule.
+                    try:
+                        body = json.loads(case.get("body") or "")
+                    except ValueError:
+                        body = None
+                    prompt = body.get("prompt") if isinstance(body, dict) else None
+                    psha = sha_bytes(json.dumps(prompt, sort_keys=True, separators=(",", ":"),
+                                                ensure_ascii=False).encode()) if prompt is not None else None
+                    pref = (pc[1].get("rust") or {}).get("refusal") or {}
+                    if psha is None or psha != pc[1].get("prompt_sha256"):
+                        row.fail(f"targets.json {cid} reply differs from phase 2 and its frozen prompt is not the "
+                                 "phase 2 prompt")
+                    elif pref.get("code") != "UNSUPPORTED_TARGET" or \
+                            (pc[1].get("rust") or {}).get("compile_status") != 422:
+                        row.fail(f"targets.json {cid} reply differs from phase 2, which did not refuse it with 422 "
+                                 "UNSUPPORTED_TARGET")
+                    else:
+                        row.ev(f"targets.json {cid}: the frozen body carries the phase 2 prompt (sha256 {psha[:16]}); "
+                               "both give 422 UNSUPPORTED_TARGET with rule query_parameter_collision; the reply bytes "
+                               "differ with the request serialization")
+                else:
+                    row.unrun(f"phase 2 has no gate and case row for {cid}")
             elif cid.startswith("RS"):
                 if r.get("status") != 200 or r.get("phase2") != "rust_bundle":
                     row.fail(f"targets.json {cid} is not a Rust bundle")
@@ -1355,10 +1428,12 @@ def product_dir(ctx: Ctx, cid: str):
         return p
     gw = d / "gates-work"
     if gw.is_dir():
-        for suite in sorted(gw.glob("suite-*")):
-            q = suite / norm_lower(cid)
-            if q.is_dir():
-                return q
+        # The phase 1 suite keeps each product under its lower-case id cut to 24 characters.
+        names = {norm_lower(cid), norm_lower(cid)[:24]}
+        found = [suite / n for suite in sorted(gw.glob("suite-*")) for n in sorted(names) if (suite / n).is_dir()]
+        clash = [o for o in ctx.ids2 if o != cid and norm_lower(o)[:24] == norm_lower(cid)[:24]]
+        if len(found) == 1 and not clash:
+            return found[0]
     return None
 
 
@@ -1737,16 +1812,23 @@ def p2_tied(ctx: Ctx, row: Row):
         return
     cache = ctx.__dict__.setdefault("_p2_tie", {})
     for d in ctx.p2["dirs"]:
+        rel = str(d.relative_to(ctx.run)) if d != ctx.run else "."
         if d not in cache:
             cache[d] = covering_receipt(ctx, d)
         p, out, ok = cache[d]
-        rel = str(d.relative_to(ctx.run)) if d != ctx.run else "."
-        if p is None:
-            row.unrun(f"phase 2 directory {rel} is not the recorded output of any receipt")
-        elif not ok:
-            row.fail(f"phase 2 directory {rel} differs from the tree hash in receipt {p.name} ({out})")
-        else:
-            row.ev(f"phase 2 directory {rel} tree hash equals receipt {p.name} output {out}")
+        if p is not None:
+            if not ok:
+                row.fail(f"phase 2 directory {rel} differs from the tree hash in receipt {p.name} ({out})")
+            else:
+                row.ev(f"phase 2 directory {rel} tree hash equals receipt {p.name} output {out}")
+            continue
+        # No receipt seals the whole directory: each file the audit reads from it (summary.json, cases/,
+        # gates/) must then be a sealed output itself. Products on disk are tied through files_sha256.
+        for part in ("summary.json", "cases", "gates"):
+            if not (d / part).exists():
+                row.unrun(f"phase 2 directory {rel} has no {part}")
+            else:
+                tie_any(ctx, row, d / part)
 
 
 def check_cargo_home(ctx: Ctx, row: Row):
