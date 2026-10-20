@@ -1,0 +1,1114 @@
+{
+ "version": "som.rust-output-acceptance.v1",
+ "issue": 55,
+ "phase": 2,
+ "recorded_at": "2026-10-20T01:41:53.434135+00:00",
+ "status": "passed",
+ "status_note": "Every check in contracts/rust-output-v1/acceptance-plan.json (amendment 3, phase 2) passed on one recorded build (rust-output-candidate-004), with every receipt hashed. An independent auditor, written without the run's tool code, recomputed the raw results, hashes and coverage: 35 passed, 0 failed, 0 unrun (audit-002).",
+ "blockers": [],
+ "run": {
+  "started_at": "2026-10-19T21:41:05.838447+00:00",
+  "ended_at": "2026-10-20T01:41:53.434135+00:00",
+  "workers": 3,
+  "baseline_port": 18957
+ },
+ "tools_commit": "f01dd26c51",
+ "tool_files": {
+  "som-rs/behavior/README.md": "5c7ba7dc23011323ad076d361ebd55545c0eb6585a13b569002b57a94265cd08",
+  "som-rs/behavior/check_behavior.py": "01d0fcc87ab326f00525f478e5f15eabe3275e69837c17841b55f196845db7df",
+  "som-rs/behavior/faults.py": "db7adef4a6f0f19f2f6301ed4d70ccddf6921cca6a9abc564c936fc2f8ee8a7b",
+  "som-rs/behavior/hosts.py": "2e350522225e10087737ddfd2824e84508e8c295662eb6805a607fdd27f3f69b",
+  "som-rs/behavior/phase2/adapt.py": "ffe4d965331ccc4127e02b3fd83a626b5569660e00393f7b6e22f9d0ea7b62f0",
+  "som-rs/behavior/phase2/adapted/MANIFEST.json": "b679187b5c6cb120aa6a98c6164c63b7be75fd198cdfb7fb10b6b3b22511304b",
+  "som-rs/behavior/phase2/adapted/audit_business_transactions.py": "ca0a575a38d8e208fc3fc45d9f65016a3f03f14970b3cefbac3882de976515c7",
+  "som-rs/behavior/phase2/adapted/flow_branch_cases.py": "6eb98bae26071237a2198159c7faa2d0f0d06a38bffa5d3315936ffb529eccc1",
+  "som-rs/behavior/phase2/adapted/flow_fault_checks.py": "169aa9f0586adedd046ce07f24dbc0cc98d262c0313f5279dd2491abd22aed05",
+  "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py": "0c16601ddc33adc8c27788d192b4b93ed40730b740e7bdb5c2ba2480a4cbc0c7",
+  "som-rs/behavior/phase2/adapted/verify_business_workflows.py": "d8f206ac3cae7c09df92619bb19ea5c3b8c0889c21d6df4a1edf57d2049e14b0",
+  "som-rs/behavior/phase2/adapted/verify_composed_journeys.py": "867629d0605fef876e457d0f5378b69304d4a3ac746e34aee4372a50679451ab",
+  "som-rs/behavior/phase2/adapted/verify_composed_related.py": "439a2bfc0318f3f19818ae1cdc9a3eb8445e993a892a3c55dfa93deb879d86df",
+  "som-rs/behavior/phase2/adapted/verify_composed_subsets.py": "c8b2ff63c22ac9acebef5be17dbb6fb16b66c03041938cae0576b6bfbe1b8bdb",
+  "som-rs/behavior/phase2/adapted/verify_composed_transactions.py": "5095a31e0333c0561a14a7073c95acb468b4479b648fcd7200dea5a37be27ea1",
+  "som-rs/behavior/phase2/adapted/verify_flow_service.py": "c14225c5080021beba6b9b84b49c6ff5653275bcce348d351bee9c4d8964abd5",
+  "som-rs/behavior/phase2/adapted/verify_related.py": "640be9c12dfd398a877ef7fc3d1660fa41fc5b9f60deec16bfdcb41ca7d533cc",
+  "som-rs/behavior/phase2/check_phase2.py": "3ac72c1ec42adf74f112c45f395ee57166f8843a5bc7d14eeca8e41c1ea07ade",
+  "som-rs/behavior/phase2/make_rs_products.py": "0f4097f289efdf2a734130816caa8bfe3d6299c4a71ffb1cc5d46a036a0b9dbd",
+  "som-rs/behavior/phase2/phase2_host.py": "ca46edc076e51d43711223f70b97af0c35fbb4bf413c66da374aca72562d4449",
+  "som-rs/behavior/suite.py": "1f7fbd9bbd340aa4457fdbbbc256ebcc5add742bdf86cd1f390c28329a0c7d83",
+  "som-rs/contracts/rust-output-v1/CONTRACT.md": "7a52f6e63ac687b67cf58cf4928693b6e4891ecc28b158ffa333a6f72486fbfe",
+  "som-rs/contracts/rust-output-v1/acceptance-plan.json": "0f6f24fd9f6a909ecf17717f750a43bb0bc07457eb69e73792bdba2524182b16",
+  "som-rs/contracts/rust-output-v1/api.schema.json": "dbd396f5e395487f05d6ad8c696d307a6641a9af47322e8c78284a47d053fff0",
+  "som-rs/contracts/rust-output-v1/behavior-normalization.json": "c75b29346d605af7e6ec8ad5d856381f4f8e0e0d321f1d236a5d93b545be97bf",
+  "som-rs/contracts/rust-output-v1/bundle.schema.json": "0d9e9db5495c0d9121b3213ed0eb15b18af6de462ee16ef3e91561414f4547bd",
+  "som-rs/contracts/rust-output-v1/case-inventory.json": "fc6fbec822623cb9bdc0a6e11c2a72b6f0dfac3c41e8b7c1e35830090eb7d2a5",
+  "som-rs/contracts/rust-output-v1/negative-cases.json": "a82736a98e4f8c8650f58ae92fb262c9f98fc4b66c6b9e60aab3512804208c97",
+  "som-rs/contracts/rust-output-v1/phase2/behavior.json": "c1277fcacab1169ce4a782c5141142a3c2862223fea6ff390ddb774be23059ce",
+  "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "150a2bebcd4554d00b3409ea15b43a6a159a3bc05e81549eeadb858bd2220b8d",
+  "som-rs/contracts/rust-output-v1/phase2/constructs.json": "16210a3b421de69759a33c169b6925a7bbff38e33268bbaa0df787941b857b8c",
+  "som-rs/contracts/rust-output-v1/phase2/naming.json": "495393b9e226f7faac959fe05c00ed584ae92d6817e198247b530862aac0a198",
+  "som-rs/contracts/rust-output-v1/phase2/pins.json": "c55a62bdb0c580d077f9ffbb4cf8de0ba68df4be66e1f312844910dad342fe9b",
+  "som-rs/contracts/rust-output-v1/phase2/services.json": "64c7b3ad93ea8359280232b5b6244f21c5bdcf1fb84931711376708b44ed572d",
+  "som-rs/contracts/rust-output-v1/product-layout.json": "d2d781f31d959fb913b1182a481e44bc4520e6157ef80de1e7e2fcec46be0b8f",
+  "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.lock": "0483374722515e3daa7f8509708abb9c551f1bc1815f9110e6662b893db443ad",
+  "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.toml": "d06a474e62ab474465c73f4ad99ddcf5d0e33a750684e3a8cfa83714949cd430",
+  "som-rs/contracts/rust-output-v1/reference/Cargo.lock": "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20",
+  "som-rs/contracts/rust-output-v1/reference/Cargo.toml": "8b708c38686b77e6740171e24c28793c4a40b54a8e9807f8e147a9ef3b44591d",
+  "som-rs/contracts/rust-output-v1/scope.json": "0f31b4c0290afda9b4c4ccf99b575edec81c3361ae31c74b44bc16d5ff20e51d",
+  "som-rs/contracts/rust-output-v1/target-examples.json": "4d91b175e9c75cadb61ae335dc1540582b3d89c01815abe651b02d57ac6889ae",
+  "som-rs/contracts/rust-output-v1/toolchain.json": "9a05dd1953defc89c4a44eada333cbfc41570e4728295ab1a2be060c76b7029d",
+  "som-rs/scripts/compiler_acceptance/README.md": "840debcb1798b89420f2e4b870d4fbd42efb9b9c063a8cfcb9e95a0acfd8e200",
+  "som-rs/scripts/compiler_acceptance/__init__.py": "0fb73e3944e254e23aaa2cf4d908132e2187d65b7c60128f70b4065d1122e0d1",
+  "som-rs/scripts/compiler_acceptance/acceptance_cleanup.py": "895c8ce8384007a4288b877e9871694722281ca7c28c3b9ee82813e4007837d6",
+  "som-rs/scripts/compiler_acceptance/asset_index_generator.py": "e1b92def07a334e960a186d07ab59f3f469045c7a5254e2405699f04a37df88e",
+  "som-rs/scripts/compiler_acceptance/diagnostic_http_acceptance.py": "a359e73dad9d30ff9a55c048028cb02fa7c80034ce7b27faa11536c1769c08cf",
+  "som-rs/scripts/compiler_acceptance/extra-http-cases.json": "73228231f4226fe6d562829b88eed413a57648eb50bcb2057c1e2b45f0724ce6",
+  "som-rs/scripts/compiler_acceptance/gap_acceptance.py": "9796c44f1a2d2fa8d8133f28387bda78a8f3bb8997d284f51ec8ebba60d65e64",
+  "som-rs/scripts/compiler_acceptance/legacy544/runner.py": "35df9239135bddce5e50e6068b62f8b7d34c66301d0359c8e1f083d046eca3a0",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment/QUALIFICATION.md": "89e1e0967e4c4937b1962a0416c2da605658b633347a1cce1a698cae23fb4a9b",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment/legacy544_corrected.py": "b40002126761fd23ae2fc50927e0e8d09c4f81f173076a159c0ce57828203113",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment/native_evidence.py": "9d7ce418008d0ffd40a92aa017a49510e857e2c9871b244998910f2785feb25c",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment/qualify.py": "7c5b0552cabe3488a7de31ab91f119b6f576a3dab0bf7a885ef16965e6239b0c",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment_v2/QUALIFICATION.md": "43450191a02166dbbe60c8ed301841a8a443a27a16b5d16a6c80cb3833ebc1a6",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment_v2/legacy544_corrected.py": "44639cd5c8858c7066e6adcd30c4bce78072406d951d3f9a480a13b1f22df6a9",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment_v2/native_evidence.py": "c392e99c8712de5c8e08dc1ef9131ee826d1b2090668c62e6929563ab82818f5",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment_v2/qualify.py": "c75e6c3625d006535d8cdd18496497bf32375e38356d17af5bbaf64de9b948cb",
+  "som-rs/scripts/compiler_acceptance/paths.py": "7fdee8d1a58559d72c05fc9bc4e956d694764c0ab83a7ad7ba7178c0de7dd91f",
+  "som-rs/scripts/compiler_acceptance/performance_observation.py": "ca8bbff2475d5cb468f6c43774e0e7602444bb52ba538e7bbdc3b82464d46622",
+  "som-rs/scripts/compiler_acceptance/prepare_amendment.py": "e9a582ee1aabfbe2b0ba6768f2a2ac244df7dc5c10666530809a257d3615c0f2",
+  "som-rs/scripts/compiler_acceptance/public_products.py": "087d485489561b79e0d211e59a56c45b2c46789bc9d96332b22802f7f7b98fd2",
+  "som-rs/scripts/compiler_acceptance/public_products_corrected.py": "ceb678b420c3f5d3c8642b08d7aef0cb531265171e6946be28782caa02c41687",
+  "som-rs/scripts/compiler_acceptance/public_reference.py": "1598b8279cd85d15d5749bb6ba1e6ef51d31345444f7ebdb18c7ff45485409ae",
+  "som-rs/scripts/compiler_acceptance/qa_harness.py": "f0c1cf96e1cf60ee692c7e9c3272757efef92498b52f4ac426e40b54142851a2",
+  "som-rs/scripts/compiler_acceptance/qualify_formatted_reference.py": "c256acbe2950f518861d859a612fdd7f375b3460355303b989b0b07a25d12ae2",
+  "som-rs/scripts/compiler_acceptance/qualify_prepass.py": "16deb689b2eca793c614bb6b91b5726e30e0e2d0b51ab41f91d06fc0f1d16667",
+  "som-rs/scripts/compiler_acceptance/qualify_runner_bindings.py": "9949ed6c6cc5e1263cde148ff13467d083626a1cbf7b92c280e7d86690d52ae0",
+  "som-rs/scripts/compiler_acceptance/reference_span_prepass.py": "e10bb83c95f9498bf64697506671eec05749bcc52b672bd68c349dbe73fe5ae7",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/README.md": "6e16848bf238521129f83ec049e443bbf3b9db450a6aa3481f27bf9743cba157",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/__init__.py": "deba5e11ceabc4179757acf11fcab4d23c9b8c636d294d7e0647f639705334e4",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/behavior_support.py": "330de567a5cef56735ab3bb5776fcf843c48b53a135cafedc68455be897ebed2",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-branch-null/origin.json": "49cc2a29b23e843bf54f7843f8b8fbab0ce83a095710c0b0e7ee06995c842086",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-branch-null/prompt.json": "4e3c80e264d13e83c894418f2d011f4dc3b26f94fb5dc094efb719b1b503e522",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-branch-null/source.cnl": "3857714e702c269eb010dfce7a1588f54abb22cd8a1c9913612aad30a877ce41",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-empty-branch/origin.json": "5c00912a53da4a8f5800191b7dd327205445f2d527419f2585aa60230d9d7c50",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-empty-branch/prompt.json": "a052d6985c006d994abadb2acb23d0db70f4d5c503da406ad9f8e4c939ea51a7",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-empty-branch/source.cnl": "369c9b11138632eb96a3f537ede080ac33457e3fc5fd2f94406ac2e65eb096a0",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-empty-field-segments/origin.json": "0e74f8336b93ed5fa385e5be856baa4322e21e11ae6a9ee6541711e9b0e5e57f",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-empty-field-segments/prompt.json": "3e275bc531e57a1c58985f283a8d1eba9dd5c8cda993ba28a293a876c51adce3",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-empty-field-segments/source.cnl": "8c9f6698cbdd163ca1d536b20df9ba9dd30bc20152f3336b4c3f0f996c96d43e",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_BRANCH_EXPORT_SAME_TYPE/origin.json": "bb06fc2829c1f36450de3d88d290bfe2d78c1cd537bf041dea37cf24af575fcf",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_BRANCH_EXPORT_SAME_TYPE/prompt.json": "41eda60a9de8e21ff8efad0ac975c1f80b4b45bf33475c6eaa134f518544689f",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_BRANCH_EXPORT_SAME_TYPE/source.cnl": "7902d1a16903e4177adcd81c6d78d83b64fd4946d9b633f6c71fd000bde112ea",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_EQ/origin.json": "555c82c7c1dc5d76a3c7cbb7e719657f96fb47e9479910ad2132b0affa438050",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_EQ/prompt.json": "491e57510330cf193d6d99f8c6eaa938cfaf111d9dff35b1cd37617e4d8b373c",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_EQ/source.cnl": "061b24a147715905e399dc5392ed5ae11412b233d7d3a9e0e15a4f7d9d36ad9a",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_GE/origin.json": "2618364b213471d5a4530d35baa2e8fbc1724fb86a6e37f001945e0848001757",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_GE/prompt.json": "f172ecb1de407255bc148b4b3d6b688e8d1195e8576a11a85bbf7203f3f020f7",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_GE/source.cnl": "64b4c766a5970052ffb772fa29100d8b5332d56cec3bb1d20f35e30c907cc738",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_GT/origin.json": "2cbc05621dc31a0fe45bf9b0ce66f873d44e522897bd9b68fb08763fb0451c03",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_GT/prompt.json": "58accdd808bc8dbbc1aab87201ad5283664884eb7f1a3d5f829c6808f37f2cb7",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_GT/source.cnl": "494e1e2c3f071fa2ac96349f308e05acfba2f2bb05dc9a9e1f0c81990ec1b9ba",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_LE/origin.json": "f42b1f1f41859a5ffc93ef630b44065fee2c23178b00e24bf29858ab0456a4d1",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_LE/prompt.json": "27dc9d1c3a87fc6df7931dab778c74c7c38ebbf76b4f38754cfd5f55eb323bc3",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_LE/source.cnl": "37cb40e986a3603d033e1226993dfe866aa9fdba67a106f4b1310ec8f50df150",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_LT/origin.json": "2c018cb348828ef7938bbe1335bc22dae408efa59f0064b9a966031c9371f89b",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_LT/prompt.json": "33e97252777ba63edad05045cc970f22573b2c6a804faaa553e923ac4ef1d1d0",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_LT/source.cnl": "c2462ba3a1ca65012b5df06df074d7e8b4bbd4eed539c9dba92ef67088a10b2d",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_NE/origin.json": "ef24c3a635862692983bd6127e359e8cc510d38630b5a3de63d725245c388504",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_NE/prompt.json": "51b0cac774d9b749d9fac9bb7d82f47c03e469f2496116a7341b1fc5a9b8ea62",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_NE/source.cnl": "ffa64dfb5c8ef4a5588464bf60160966ec624c645a584f9ae013db28b3b4d331",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_NULLABLE_OPTIONAL_FIELD/origin.json": "48872207f4c3aafdbac5ff62172c7c6f0d9c23117384a5ee4f8a3bef8d15e72d",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_NULLABLE_OPTIONAL_FIELD/prompt.json": "21333c6fc21c44aab1bd76e4e7fe5c5f7badd822f42fc0e6fe80a9a00e76c02b",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_NULLABLE_OPTIONAL_FIELD/source.cnl": "e15a9263db8d79aa43d80053e0e496bc09a03ac26b583b5261f048caf8b17bcd",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/index.json": "5cf4952dc3062a49286b6d972e46819439ddaaee13e65a51610919753024b9cf",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/prepare.py": "ed7358dc94905e434aca0b602d18f8a84916022d2e42b9accf21bc301d0f34d7",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/references/REVIEW.md": "7d5517b0c8078fbc9f4d23b718c725aec9027e2c06810c455f4eb61d17458be6",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/references/behavior-coverage.json": "903ffb808ac75c8e97c59d8af588682e60c238a718097418265d6e2be0fc5808",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/references/boundary-receipt.json": "776f4ea5fe323be99155af7bf64e585edfbea3d4ceebfdac1a99011b18ec37b4",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/references/shared-544-flow-map.json": "5edf190f6037c383f9e3d76db8871ad0c5bd2946a7ec82911b4c4a4940531eed",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/run.py": "f2135447f87081735dbf49bad03eaa2aae9deb21fbf5ba5bf99719d135d50511",
+  "som-rs/scripts/compiler_acceptance/runtime_acceptance.py": "e9ff762ab2ee43f099497b23869bf5eff7d8ab9dc49e309be320cac937631c93",
+  "som-rs/scripts/rust_output_acceptance/README.md": "391a674ae4648a99bf4c787e3b584f754450fd4d6e404da4db7e1b59fe8cf89e",
+  "som-rs/scripts/rust_output_acceptance/audit/audit055.py": "c6a49edb23d6dd847f21c6ce640733d1b5c1532f294fca7df9af50ef940c759e",
+  "som-rs/scripts/rust_output_acceptance/check_cli.py": "59e06710b760fea52959c29342faba015e358a85fdc2f463881ca2388cf93aab",
+  "som-rs/scripts/rust_output_acceptance/perf_observe.py": "1596b8a5b2cc6e72d2fe033c67f7b1d9cf91695290b8f8377508a10811acaddb",
+  "som-rs/scripts/rust_output_acceptance/prepare_candidate.py": "681dbdf765bcf6be1f3a02305894ffdb5a5ad6eaeb6d9f700b90e4edbcee9ad2",
+  "som-rs/scripts/rust_output_acceptance/python_replay.py": "893bfe06ebd749302a4ad96289d3f489b3f20588d01ef90530c051d92da4c31f",
+  "som-rs/scripts/rust_output_acceptance/run_acceptance.py": "b7299cac90fd19c711abfd2a62bd49a96ccaeccd84a07b07d06e0b42ecbdb42f",
+  "som-rs/scripts/rust_output_acceptance/vendor_crates.py": "10931d7ad4413da206ed1c80f47781195429b19320553e8ba032130ce33ede69",
+  "som-rs/som-targets/qa/check_phase2_products.py": "095460149f6434359ead48e6480fdc556c23ecf8f8e7f55422dee2da9801587f",
+  "som-rs/som-targets/qa/check_rust_products.py": "87ac0827d7cb4b780fe2e898aa540ab08294011ff260a6ec118963a8206510f8",
+  "som-rs/som-targets/qa/check_targets.py": "2772391ab4252400da117be074b082c86d7dd88b6661f9c108a9d39511ac344f",
+  "som-rs/tests/rust-output-v1/build_case_inventory.py": "494976a61dd2184d2a9135d297c635fc4b6bd04be4cbb34bd2b7efc00b855874",
+  "som-rs/tests/rust-output-v1/build_cases.py": "13096aacb9ba3eafe84e4389586478622aca5eea8622f6d8774a15bb4da265b3",
+  "som-rs/tests/rust-output-v1/build_negative_cases.py": "fe28674bcf2c7048d0953a14a8405acc185bbf083f8e2d1abbe0c75d523c3689",
+  "som-rs/tests/rust-output-v1/build_phase2_behavior.py": "604c620b595e721607f29da9a1456a4803f6b879a21e300787acc8520d859851",
+  "som-rs/tests/rust-output-v1/build_phase2_constructs.py": "89fd4e351dc2a696778ec00c651f22c8c9dbbd5700401bfcdf3444d8aaad253d",
+  "som-rs/tests/rust-output-v1/build_phase2_inventory.py": "2f0dc3701db1a30f8826f51b272369ae97e43e9dfc224f13517e768e8539daaf",
+  "som-rs/tests/rust-output-v1/build_phase2_pins.py": "7476958452c998972074a9b9e4ae3ee56d5598617ad4f1d4b3cf41b6d9c31c61",
+  "som-rs/tests/rust-output-v1/build_target_examples.py": "697ca7c91c2c9f4c3d27985ed0f50ce6c6f2a103ea7ed264ba1915c056d43ab2",
+  "som-rs/tests/rust-output-v1/cases/cov-v1-types.cnl": "22e6cb0aacd219cb47478dca4ff5f244b63ae605de399f08a16bb62093ec9ce7",
+  "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c",
+  "som-rs/tests/rust-output-v1/cases/cov-v2-types.cnl": "a2512cdbbea998a8f051160166e3c1d2f4b43ae5d7bbcbe5e6a0cd211a9b7c1d",
+  "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53",
+  "som-rs/tests/rust-output-v1/cases/cov-v3-types.cnl": "554eb27bbd5c894fa7ccd473b45734a33753b1ec32395ccb5f73133b0a71a12c",
+  "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23",
+  "som-rs/tests/rust-output-v1/cases/cov-v4-types.cnl": "cb7f5fb994d6c7bfbdff549e71286211cd1d3f7177b91bdbeeb34337229b7724",
+  "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e",
+  "som-rs/tests/rust-output-v1/cases/cov-v5-max.cnl": "97cb49f506fb16fb9da2ea203b5a114ea68766ec46ebb69cdb4d63f012deb16c",
+  "som-rs/tests/rust-output-v1/cases/cov-v5-max.prompt.json": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d",
+  "som-rs/tests/rust-output-v1/cases/cov-v5-min.cnl": "627623f91944b13158487086efec5653948be6c2e77a341e0d0ba9410d291e5d",
+  "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347",
+  "som-rs/tests/rust-output-v1/cases/index.json": "b49af2a7ba842e5dd810d8d010fcf93436474df7f49f1c569367bed1bc94ed1b",
+  "som-rs/tests/rust-output-v1/check_contract.py": "61d1539d0dbf3b9e7cb2b7528acded146bdbb2dcff48aa069fd22ac52a6a59d5",
+  "som-rs/tests/rust-output-v1/check_python_controls.py": "3da613ff3e8553939e1d246cd1b65007e8c088b5f541c5dc1838739903171939",
+  "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513",
+  "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "71de51983273f9313edc139b68c73c9534d2f07c0bc48b0e3788be409b0425df",
+  "som-rs/tests/rust-output-v1/validate_cases.py": "9b9131de7a56a54c6a9f103da170143bc18ec6d113bedb6f79ea0a7f8453d4bb"
+ },
+ "candidate_commit_note": "The candidate was built at 69bb1fe682; the tools ran at f01dd26c51, a descendant whose diff touches only acceptance tools (som-rs/scripts/rust_output_acceptance/audit/audit055.py, som-rs/scripts/rust_output_acceptance/run_acceptance.py, som-rs/som-targets/qa/check_rust_products.py). No path under the candidate's source roots changed, and all files in its source.json hash the same at the tools head (audit-002 run[0]).",
+ "plan": {
+  "path": "som-rs/contracts/rust-output-v1/acceptance-plan.json",
+  "sha256": "0f6f24fd9f6a909ecf17717f750a43bb0bc07457eb69e73792bdba2524182b16",
+  "items": 28,
+  "states": {
+   "passed": 28,
+   "failed": 0,
+   "unrun": 0
+  },
+  "checks": [
+   {
+    "section": "python_unchanged",
+    "index": 0,
+    "state": "passed",
+    "steps": [
+     "python-replay"
+    ]
+   },
+   {
+    "section": "python_unchanged",
+    "index": 1,
+    "state": "passed",
+    "steps": [
+     "python-replay"
+    ]
+   },
+   {
+    "section": "python_unchanged",
+    "index": 2,
+    "state": "passed",
+    "steps": [
+     "python-replay",
+     "targets"
+    ]
+   },
+   {
+    "section": "python_unchanged",
+    "index": 3,
+    "state": "passed",
+    "steps": [
+     "python-controls"
+    ]
+   },
+   {
+    "section": "python_unchanged",
+    "index": 4,
+    "state": "passed",
+    "steps": [
+     "validate-cases"
+    ]
+   },
+   {
+    "section": "target_selection_checks",
+    "index": 0,
+    "state": "passed",
+    "steps": [
+     "targets"
+    ]
+   },
+   {
+    "section": "target_selection_checks",
+    "index": 1,
+    "state": "passed",
+    "steps": [
+     "targets"
+    ]
+   },
+   {
+    "section": "target_selection_checks",
+    "index": 2,
+    "state": "passed",
+    "steps": [
+     "targets"
+    ]
+   },
+   {
+    "section": "target_selection_checks",
+    "index": 3,
+    "state": "passed",
+    "steps": [
+     "cli"
+    ]
+   },
+   {
+    "section": "phase2.refusals",
+    "index": 0,
+    "state": "passed",
+    "steps": [
+     "targets",
+     "cli",
+     "phase2-summary"
+    ]
+   },
+   {
+    "section": "phase2.phase1_unchanged",
+    "index": 0,
+    "state": "passed",
+    "steps": [
+     "phase1-unchanged"
+    ]
+   },
+   {
+    "section": "phase2.bundle_checks",
+    "index": 0,
+    "state": "passed",
+    "steps": [
+     "phase2-summary"
+    ]
+   },
+   {
+    "section": "phase2.bundle_checks",
+    "index": 1,
+    "state": "passed",
+    "steps": [
+     "phase2-summary"
+    ]
+   },
+   {
+    "section": "phase2.bundle_checks",
+    "index": 2,
+    "state": "passed",
+    "steps": [
+     "phase2-summary"
+    ]
+   },
+   {
+    "section": "phase2.bundle_checks",
+    "index": 3,
+    "state": "passed",
+    "steps": [
+     "phase2-summary"
+    ]
+   },
+   {
+    "section": "phase2.assemble_refusals",
+    "index": 0,
+    "state": "passed",
+    "steps": [
+     "rust-products"
+    ]
+   },
+   {
+    "section": "phase2.assemble_refusals",
+    "index": 1,
+    "state": "passed",
+    "steps": [
+     "rust-products"
+    ]
+   },
+   {
+    "section": "phase2.assemble_refusals",
+    "index": 2,
+    "state": "passed",
+    "steps": [
+     "rust-products"
+    ]
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 0,
+    "state": "passed",
+    "steps": [
+     "phase2-summary"
+    ]
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 1,
+    "state": "passed",
+    "steps": [
+     "phase2-summary"
+    ]
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 2,
+    "state": "passed",
+    "steps": [
+     "phase2-summary"
+    ]
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 3,
+    "state": "passed",
+    "steps": [
+     "phase2-summary"
+    ]
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 4,
+    "state": "passed",
+    "steps": [
+     "phase2-summary"
+    ]
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 5,
+    "state": "passed",
+    "steps": [
+     "phase2-summary"
+    ]
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 6,
+    "state": "passed",
+    "steps": [
+     "phase2-summary"
+    ]
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 7,
+    "state": "passed",
+    "steps": [
+     "phase2-summary"
+    ]
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 8,
+    "state": "passed",
+    "steps": [
+     "phase2-summary"
+    ]
+   },
+   {
+    "section": "phase2.legacy_gate",
+    "index": 0,
+    "state": "passed",
+    "steps": [
+     "rust-products",
+     "behavior-parity",
+     "python-replay",
+     "phase2-summary"
+    ]
+   }
+  ]
+ },
+ "candidate": {
+  "path": ".local/rust-compiler-goal/rust-output-candidate-004",
+  "source_commit": "69bb1fe682f5998e551ca397426acceea0d67945",
+  "binary_sha256": "d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b",
+  "binary_bytes": 13252960,
+  "source_json_sha256": "4753991ec5908a24228eefb9b3a4a801c61906aa8823f77c2daa593e7884ca19",
+  "source_tar_sha256": "5104ea22dff1023be4c41855692a81b315388c2d8462eec511d83bc8081177ce",
+  "build_json_sha256": "396b84edd6fa101cd3abb30f7263e11440a672fc11468fc8c6e9be005b4fceae",
+  "runtime_json_sha256": "ea9e64ecce4f338feb742c65cf038de8ee425f89f955a3fae3e039694fa4a4b6",
+  "assets_tree_sha256": "adda028fd6be9fa1d12641427ec887ce94a30fdd73c4e4adb5f79f6b7dc5a95a",
+  "asset_manifest_sha256": "d215d30b5ab379c0a7ff2b5191393e39106a722403863181c77d2b5ea2a7c020",
+  "port": 18959,
+  "health": {
+   "backend_sha256": "1c18257000d2519e85c644d5bb243d5ec7251878efadf4cf27f3bc5b26a2e92b",
+   "asset_manifest_sha256": "872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e"
+  },
+  "checks_before": {
+   "assets_match_build": true,
+   "binary_matches_build": true,
+   "build_complete": true,
+   "build_source_unchanged": true,
+   "health_matches_runtime": true,
+   "process_is_the_binary": true,
+   "process_listens_on_port": true,
+   "qa_port": true,
+   "source_archive_matches": true,
+   "source_equals_current_tree": true,
+   "source_matches_build": true
+  },
+  "checks_after": {
+   "assets_match_build": true,
+   "binary_matches_build": true,
+   "build_complete": true,
+   "build_source_unchanged": true,
+   "health_matches_runtime": true,
+   "process_is_the_binary": true,
+   "process_listens_on_port": true,
+   "qa_port": true,
+   "source_archive_matches": true,
+   "source_equals_current_tree": true,
+   "source_matches_build": true
+  },
+  "unchanged": true
+ },
+ "default_8765": {
+  "before": {
+   "healthz_sha256": "63eb8c139d887aa5c424c157412a2d14a9c06fa8f73cb91fdb8dd4e64e03e71b",
+   "healthz_status": 200,
+   "listeners": [
+    "96083"
+   ]
+  },
+  "after": {
+   "healthz_sha256": "63eb8c139d887aa5c424c157412a2d14a9c06fa8f73cb91fdb8dd4e64e03e71b",
+   "healthz_status": 200,
+   "listeners": [
+    "96083"
+   ]
+  },
+  "unchanged": true
+ },
+ "toolchain": "pinned per contracts/rust-output-v1 (reference/ and reference-phase2/); offline with vendored crates",
+ "vendored_crates": {
+  "cargo_config_sha256": "b8e204fc96c0e68b00d99587a5d7ed1b983765fc90321abe2a017a5c899b6b86",
+  "crates": 298,
+  "stubs": 53,
+  "vendor_json_sha256": "b58c92e6d7837a64b884e9fbd27babba3b67af87f273280d410bb8577a23512b",
+  "vendor_tree_sha256": "bac8fee5432143cc4768d3f294e5f3b0a0a75c563e90aec4f4c88c5b641e9df6"
+ },
+ "env_delta": {
+  "CARGO_HOME": ".local/rust-output-phase2/vendor-002/cargo-home",
+  "CARGO_NET_OFFLINE": "true",
+  "PYTHONDONTWRITEBYTECODE": "1"
+ },
+ "python_venv": {
+  "pypi": {
+   "alembic": "1.20.0",
+   "fastapi": "0.118.0",
+   "httpx": "0.28.1",
+   "jsonschema": "4.26.0",
+   "psycopg": "3.3.6",
+   "psycopg-binary": "3.3.6",
+   "pydantic": "2.11.9",
+   "sqlalchemy": "2.0.44",
+   "uvicorn": "0.53.0"
+  },
+  "python": "3.12.11"
+ },
+ "steps": [
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "e267863d7e91f2c615a69eb07e2813816847182f83316ee3db5b171ba9221772",
+   "seconds": 0.5944818339776248,
+   "step": "contract"
+  },
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "1d7125ba6954e3a7d9209e2bf45482a58b64a3fcd8d2ab98e830ae4b93601869",
+   "seconds": 0.3366864169947803,
+   "step": "python-controls"
+  },
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "a3366fec3407d15b72bae3c086356dc091f8d5d88315a7b7de97a4227ebb916d",
+   "seconds": 0.2957042909692973,
+   "step": "validate-cases"
+  },
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "2381ab1bd65a7bda6a94106e3329fb37e24b63dfb6f95414e8617caa67499d4f",
+   "seconds": 95.59094300004654,
+   "step": "targets"
+  },
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "4e80fac2cfc75f6a1dc7f29537ef42f3523a1f9f4a8b9991e332753e84635e40",
+   "seconds": 2.120845041004941,
+   "step": "cli"
+  },
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "9832e3925a0bbf519ce567ff8da88c47c84a418ab3f6a10d5777ac2d77b8c26f",
+   "seconds": 241.76389616692904,
+   "step": "python-replay"
+  },
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "6d49f16a46fe8f3ecfba3e1dd6563b7532d67a2a8a59120c8b37e72a5e335700",
+   "seconds": 0.1773865829454735,
+   "step": "asset-index"
+  },
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "15871b38ca70f385bfb979e53a17571d27728918fcd3625236576282b805ec7b",
+   "seconds": 20.851650582975708,
+   "step": "runtime-acceptance"
+  },
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "fd617ec0e9f43f0518d028b2c4a5b1c585b11f1adb3a7e62359f7cdf1f0f61fe",
+   "seconds": 103.72478483291343,
+   "step": "behavior-python"
+  },
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "56e5f2cd83b1c9a610e7434a2c716b32dfab4d6f89708e9d1ccc2efae0b22094",
+   "seconds": 28.88319441699423,
+   "step": "behavior-faults"
+  },
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "24f8e6f4438797ba37df6c5114611337d05b8eba8146811c786dec6d27cac2a3",
+   "seconds": 413.92474795901217,
+   "step": "behavior-parity"
+  },
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "debce0784b814d36190354b2ae12968f36102a4a45907b207f96f06bd099542f",
+   "seconds": 1080.529471791,
+   "step": "rust-products"
+  },
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "fbadb292eeab01fbf87c5de1dc52a6a0a12acf509242cb8c089a15306a4273d0",
+   "seconds": 54.62842779199127,
+   "step": "phase1-unchanged"
+  },
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "13bba907f0ee317804beb032f636393d757cff1b7d930354a3fecdf305457b0c",
+   "seconds": 12401.467623666977,
+   "step": "phase2-products"
+  },
+  {
+   "exit_code": 0,
+   "passed": true,
+   "receipt_sha256": "0da3e81861d612124b0564695d004528cbdd4c199948ccf4b0163aaec75bbca3",
+   "seconds": 1.2848413749597967,
+   "step": "phase2-summary"
+  }
+ ],
+ "results": {
+  "python_controls": {
+   "passed": 32,
+   "failed": []
+  },
+  "validate_cases": {
+   "passed": 6,
+   "failed": []
+  },
+  "targets": {
+   "negative_cases": {
+    "total": 32,
+    "passed": 32
+   },
+   "target_examples": {
+    "total": 24,
+    "passed": 24
+   },
+   "source_forms": {
+    "total": 817,
+    "passed": 817
+   },
+   "python_products": {
+    "assembled": 810,
+    "distinct_file_sets": 671
+   },
+   "compiler_v1_precedence": {
+    "total": 7,
+    "passed": 7
+   },
+   "inventory_problems": [],
+   "failed": []
+  },
+  "cli": {
+   "total": 39,
+   "passed": 39,
+   "refusals": 9,
+   "refusals_exit_2": 9,
+   "failed": []
+  },
+  "python_replay": {
+   "passed": true,
+   "exchanges": {
+    "passed": 2005,
+    "total": 2005
+   },
+   "public": {
+    "passed": 127,
+    "required": 127,
+    "total": 127,
+    "failed": []
+   },
+   "legacy": {
+    "passed": 544,
+    "required": 544,
+    "total": 544,
+    "families": {
+     "legacy100": {
+      "passed": 100,
+      "total": 100
+     },
+     "legacy214": {
+      "passed": 214,
+      "total": 214
+     },
+     "quality218": {
+      "passed": 218,
+      "total": 218
+     },
+     "supplement12": {
+      "passed": 12,
+      "total": 12
+     }
+    },
+    "failed": []
+   }
+  },
+  "rust_products_phase1": {
+   "acceptance_cases": {
+    "total": 115,
+    "by_version": {
+     "som.prompt.v1": 3,
+     "som.prompt.v2": 3,
+     "som.prompt.v3": 53,
+     "som.prompt.v4": 53,
+     "som.prompt.v5": 3
+    },
+    "checked": 115,
+    "frozen_acceptance_total": 115
+   },
+   "bundle_checks": {
+    "passed": 115,
+    "total": 115
+   },
+   "assemble_refusals": {
+    "passed": 15,
+    "total": 15
+   },
+   "product_gates": {
+    "passed": 115,
+    "total": 115
+   },
+   "distinct_products": 114,
+   "parity": {
+    "status": "passed",
+    "issue": 46,
+    "report_sha256": "db0f8bafa27f39acd6a8a98994110706142e124278c86e2ad87e8a56e18beca6",
+    "recorded_at": "2026-10-19T21:56:14.528769+00:00",
+    "cases": 115,
+    "steps": 16716,
+    "strict_steps": 3990
+   },
+   "failed": [],
+   "blocked": []
+  },
+  "phase1_unchanged": {
+   "total": 115,
+   "passed": 115,
+   "failed": []
+  },
+  "phase2": {
+   "total": 584,
+   "run": 584,
+   "passed": 584,
+   "complete": true,
+   "failed": [],
+   "missing": [],
+   "accepted": true,
+   "distinct_products": 571,
+   "refusals": {
+    "found": [
+     "RS12_CNL_V3_FILTER_LIMIT",
+     "RS13_JSON_V3_FILTER_OFFSET"
+    ],
+    "expected": [
+     "RS12_CNL_V3_FILTER_LIMIT",
+     "RS13_JSON_V3_FILTER_OFFSET"
+    ],
+    "passed": true
+   },
+   "gates": {
+    "behavior": {
+     "passed": 584,
+     "total": 584
+    },
+    "bundle_checks": {
+     "passed": 584,
+     "total": 584
+    },
+    "cargo_build": {
+     "passed": 582,
+     "total": 582
+    },
+    "cargo_clippy": {
+     "passed": 582,
+     "total": 582
+    },
+    "cargo_test": {
+     "passed": 582,
+     "total": 582
+    },
+    "divergences_d1_d5": {
+     "passed": 13,
+     "total": 13
+    },
+    "index_equivalence": {
+     "passed": 266,
+     "total": 266
+    },
+    "lock_unchanged": {
+     "passed": 582,
+     "total": 582
+    },
+    "missing_setting": {
+     "passed": 582,
+     "total": 582
+    },
+    "python": {
+     "passed": 584,
+     "total": 584
+    },
+    "rustfmt_check": {
+     "passed": 582,
+     "total": 582
+    },
+    "schema_equivalence": {
+     "passed": 316,
+     "total": 316
+    },
+    "test_count": {
+     "passed": 13,
+     "total": 13
+    }
+   },
+   "by_shape": {
+    "capability_postgresql": {
+     "total": 150,
+     "passed": 150
+    },
+    "capability_mongodb": {
+     "total": 162,
+     "passed": 162
+    },
+    "flow_postgresql": {
+     "total": 153,
+     "passed": 153
+    },
+    "flow_mongodb": {
+     "total": 104,
+     "passed": 104
+    },
+    "resource": {
+     "total": 15,
+     "passed": 15
+    }
+   },
+   "by_version": {
+    "som.prompt.v6": {
+     "total": 308,
+     "run": 308,
+     "passed": 308
+    },
+    "som.prompt.v7": {
+     "total": 257,
+     "run": 257,
+     "passed": 257
+    },
+    "som.prompt.v5": {
+     "total": 8,
+     "run": 8,
+     "passed": 8
+    },
+    "som.prompt.v1": {
+     "total": 6,
+     "run": 6,
+     "passed": 6
+    },
+    "som.prompt.v3": {
+     "total": 3,
+     "run": 3,
+     "passed": 3
+    },
+    "som.prompt.v2": {
+     "total": 1,
+     "run": 1,
+     "passed": 1
+    },
+    "som.prompt.v4": {
+     "total": 1,
+     "run": 1,
+     "passed": 1
+    }
+   },
+   "by_source": {
+    "legacy544/run-005": {
+     "total": 444,
+     "run": 444,
+     "passed": 444
+    },
+    "public-products-003b": {
+     "total": 118,
+     "run": 118,
+     "passed": 118
+    },
+    "rust-output-phase2/rs-products-001": {
+     "total": 22,
+     "run": 22,
+     "passed": 22
+    }
+   },
+   "python": {
+    "passed": 584,
+    "total": 584,
+    "explained": [
+     "RS07_CNL_FIELD_SELF",
+     "RS12_CNL_V3_FILTER_LIMIT",
+     "RS13_JSON_V3_FILTER_OFFSET",
+     "RS14_CNL_V5_FOREIGN_KEY_SELF",
+     "RS16_CNL_V5_FIRST_REFUSAL"
+    ],
+    "problems": [],
+    "summary_sha256": "24cee7a81cf46379c318efd9271dfb18b15acddbde03e549208df162b538f383"
+   },
+   "behavior_summary_sha256": "01cdabce0d3b9ca8d0611bb90682ddf8f0f01a102e76acb38136df7b56299a4f"
+  }
+ },
+ "independent_audit": {
+  "status": "passed",
+  "script": "som-rs/scripts/rust_output_acceptance/audit/audit055.py",
+  "script_commit": "ff80f3f0e2",
+  "script_sha256": "3a28bf17bfd77296cae5e07788081fd839e7e89abfc00b108feef1bdb5f2e602",
+  "out": ".local/rust-compiler-goal/acceptance/rust-output-055/audit-002.json",
+  "sha256": "2db53b45f9d2f17493052b17ba4d7daea2e949d5202336d4ed6d2e4114d6d7bb",
+  "plan_sha256": "0f6f24fd9f6a909ecf17717f750a43bb0bc07457eb69e73792bdba2524182b16",
+  "counts": {
+   "passed": 35,
+   "failed": 0,
+   "unrun": 0
+  },
+  "totals": {
+   "failed": 0,
+   "unrun": 0
+  },
+  "rows": [
+   {
+    "section": "run",
+    "index": 0,
+    "state": "passed"
+   },
+   {
+    "section": "run",
+    "index": 1,
+    "state": "passed"
+   },
+   {
+    "section": "run",
+    "index": 2,
+    "state": "passed"
+   },
+   {
+    "section": "run",
+    "index": 3,
+    "state": "passed"
+   },
+   {
+    "section": "run",
+    "index": 4,
+    "state": "passed"
+   },
+   {
+    "section": "run",
+    "index": 5,
+    "state": "passed"
+   },
+   {
+    "section": "run",
+    "index": 6,
+    "state": "passed"
+   },
+   {
+    "section": "python_unchanged",
+    "index": 0,
+    "state": "passed"
+   },
+   {
+    "section": "python_unchanged",
+    "index": 1,
+    "state": "passed"
+   },
+   {
+    "section": "python_unchanged",
+    "index": 2,
+    "state": "passed"
+   },
+   {
+    "section": "python_unchanged",
+    "index": 3,
+    "state": "passed"
+   },
+   {
+    "section": "python_unchanged",
+    "index": 4,
+    "state": "passed"
+   },
+   {
+    "section": "target_selection_checks",
+    "index": 0,
+    "state": "passed"
+   },
+   {
+    "section": "target_selection_checks",
+    "index": 1,
+    "state": "passed"
+   },
+   {
+    "section": "target_selection_checks",
+    "index": 2,
+    "state": "passed"
+   },
+   {
+    "section": "target_selection_checks",
+    "index": 3,
+    "state": "passed"
+   },
+   {
+    "section": "phase2",
+    "index": "refusals",
+    "state": "passed"
+   },
+   {
+    "section": "phase2",
+    "index": "phase1_unchanged",
+    "state": "passed"
+   },
+   {
+    "section": "phase2.bundle_checks",
+    "index": 0,
+    "state": "passed"
+   },
+   {
+    "section": "phase2.bundle_checks",
+    "index": 1,
+    "state": "passed"
+   },
+   {
+    "section": "phase2.bundle_checks",
+    "index": 2,
+    "state": "passed"
+   },
+   {
+    "section": "phase2.bundle_checks",
+    "index": 3,
+    "state": "passed"
+   },
+   {
+    "section": "phase2.assemble_refusals",
+    "index": "rule",
+    "state": "passed"
+   },
+   {
+    "section": "phase2.assemble_refusals",
+    "index": "A6",
+    "state": "passed"
+   },
+   {
+    "section": "phase2.assemble_refusals",
+    "index": "A8",
+    "state": "passed"
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 0,
+    "state": "passed"
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 1,
+    "state": "passed"
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 2,
+    "state": "passed"
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 3,
+    "state": "passed"
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 4,
+    "state": "passed"
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 5,
+    "state": "passed"
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 6,
+    "state": "passed"
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 7,
+    "state": "passed"
+   },
+   {
+    "section": "phase2.product_gates",
+    "index": 8,
+    "state": "passed"
+   },
+   {
+    "section": "phase2",
+    "index": "legacy_gate",
+    "state": "passed"
+   }
+  ],
+  "earlier_audit": {
+   "out": ".local/rust-compiler-goal/acceptance/rust-output-055/audit-001.json",
+   "sha256": "838c61d3aea836ba049906ba3e63bbff33bc44b51ada9b172d1b09a2e5072879",
+   "totals": {
+    "failed": 2,
+    "unrun": 14
+   },
+   "note": "audit-001 (same run-003) reported 2 failed and 14 unrun. Each came from the auditor reading the run another way than the run writes it, not from a product: it required the candidate commit to equal the tools head; it required one receipt to seal the whole phase2 directory, while receipt 14 seals phase2/summary.json, phase2/cases and phase2/gates separately; it did not find the 10 phase 1 suite products kept under ids cut to 24 characters; and it compared the RS13 targets.json reply bytes with the phase 2 reply, although targets.json posts the frozen contract body and phase 2 posts its own serialization of the same prompt (the replies differ only in diagnostic spans). Commit ff80f3f0e2 replaced each with a check of the same claim against the sealed outputs (candidate source files at the head, per-part receipt hashes, unique cut ids with files_sha256, prompt_sha256 and 422 UNSUPPORTED_TARGET in phase 2)."
+  }
+ },
+ "local_only": {
+  "run": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003",
+  "header_sha256": "e0af0254c3c69110494f2e04190f5dd7fdec86c79e99a5955529b4c9b1dca8da",
+  "summary_sha256": "08ddc854f234f39f7c36401a6ae4c626efdaf296609b33d21985d0762e17fd17",
+  "audit": ".local/rust-compiler-goal/acceptance/rust-output-055/audit-002.json",
+  "candidate": ".local/rust-compiler-goal/rust-output-candidate-004",
+  "vendor": ".local/rust-output-phase2/vendor-002"
+ },
+ "boundary": {
+  "local_tools_only": true,
+  "paid_or_cloud_runs": false,
+  "training": false,
+  "default_8765_kept": true,
+  "python_output_byte_identical": true
+ },
+ "not_done": [
+  "#56: release and the 8765 default switch need explicit approval and have not started."
+ ]
+}
