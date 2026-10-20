@@ -19,11 +19,23 @@
   on a fresh QA PostgreSQL cluster, phase 2 cases through check_phase2.py.
 - M2 rollback inputs: the #44 legacy default receipt, binary, model manifest
   and blocks.
+- A candidate whose health names other assets than the current default (#57,
+  rust-output-v1 amendment 004) brings its own asset directory: the Python
+  canaries are then pinned twice, from the current default (or its stand-in)
+  as previous_python_canaries and from the candidate as python_canaries. Each
+  candidate compile reply may differ from the default's only in the admitted
+  asset descriptors; generate and assemble give the same bytes. --self-cases
+  adds self-name canaries (tests/compiler-v1/self-name-fixtures.json) compiled
+  and assembled by the candidate.
+- --products-run names the run whose accepted Rust products the Rust canaries
+  must equal (default: the acceptance run). An issue57 acceptance run proves
+  that the Rust products are unchanged from its rust-output-055 run.
 
 Nothing outside the new output directory is written.
 
 usage: prepare_inputs.py --candidate DIR --acceptance RUN_DIR --audit AUDIT_JSON --out NEW_DIR
                          [--rust-cases ID ...] [--stand-in] [--cargo-home DIR]
+                         [--products-run RUN_DIR] [--self-cases ID ...]
 """
 from __future__ import annotations
 
@@ -44,12 +56,15 @@ QA = rc.REPO / 'som-rs/som-targets/qa'
 sys.path.insert(0, str(QA))
 import check_rust_products as products  # type: ignore[import-not-found]  # noqa: E402
 import check_targets as targets  # type: ignore[import-not-found]  # noqa: E402
+import python_replay  # type: ignore[import-not-found]  # noqa: E402  (imported by check_targets)
 
 SWITCH_001 = rc.REPO / '.local/rust-compiler-goal/acceptance/default-switch-001'
 PINNED_051 = rc.REPO / '.local/rust-compiler-goal/acceptance/rust-output-051/inputs-001/inputs/python'
 RUST_CASES = ('example-v1', 'example-v5')
 PHASE2 = rc.REPO / 'som-rs/behavior/phase2/check_phase2.py'
 CLUSTER_GATES = rc.REPO / 'som-rs/scripts/rust_output_acceptance/run_acceptance.py'
+SELF_FIXTURES = rc.REPO / 'som-rs/tests/compiler-v1/self-name-fixtures.json'
+ISSUE57_RUN = 'som.rust-output-issue57-run.v1'
 
 
 def binding(path):
@@ -87,8 +102,8 @@ class Pinner:
                             'binaries': sorted(binaries), 'response': response}
 
 
-def python_case(pin, case, previous, new, port):
-    relative = f'python/{case["name"]}'
+def python_case(pin, case, previous, new, port, prefix='python'):
+    relative = f'{prefix}/{case["name"]}'
     files = {}
     for name in ('prompt', 'cnl', 'expected_response'):
         source = Path(case[name]['path'])
@@ -133,9 +148,59 @@ def python_case(pin, case, previous, new, port):
     rc.require(json.loads(stdout) == expected, 'CLI assemble differs')
     steps.append(step)
     pinned = {'name': case['name'], 'family': case['family'], 'steps': steps}
+    if prefix != 'python':
+        return pinned, None
     m2 = {'name': case['name'], 'prompt': binding(files['prompt']),
           'expected_response': binding(files['expected_response'])}
     return pinned, m2
+
+
+def same_python_canary(previous, new):
+    """The candidate's pinned replies of one Python canary against the previous default's."""
+    rc.require([s['name'] for s in previous['steps']] == [s['name'] for s in new['steps']], 'canary steps differ')
+    for old, step in zip(previous['steps'], new['steps']):
+        if step['kind'] == 'http' and step['name'] != 'assemble':
+            rc.require(rc.bound(old['request']).read_bytes() == rc.bound(step['request']).read_bytes(),
+                       f'{new["name"]} {step["name"]} requests differ')
+        before, after = rc.bound(old['response']).read_bytes(), rc.bound(step['response']).read_bytes()
+        if step['name'] in ('compile-cnl', 'compile-json', 'cli-compile'):
+            if step['name'] == 'cli-compile':
+                before, after = (rc.canon({'bundle': json.loads(b)}).encode() for b in (before, after))
+            problem = python_replay.asset_only_difference(before, after)
+            rc.require(problem is None, f'{new["name"]} {step["name"]}: {problem}')
+        else:
+            rc.require(before == after, f'{new["name"]} {step["name"]} differs from the previous default')
+
+
+def self_case(pin, case, port, binaries):
+    """A self-name prompt (#57): CNL and prompt JSON compile alike and the bundle assembles."""
+    relative = f'python-self/{case["id"]}'
+    cnl = pin.write(f'{relative}/source.cnl', case['cnl'].encode())
+    prompt = pin.write(f'{relative}/prompt.json', rc.canon(case['prompt']).encode())
+    steps = []
+    raw, step = pin.http(port, 'compile-cnl', relative, '/v1/compile',
+                         rc.canon({'format': 'som.cnl.v1', 'source': case['cnl']}).encode())
+    compiled = json.loads(raw)
+    steps.append(step)
+    raw, step = pin.http(port, 'compile-json', relative, '/v1/compile',
+                         rc.canon({'format': 'som.prompt-json.v1', 'prompt': case['prompt']}).encode())
+    rc.require(rc.exact_json(json.loads(raw), compiled), f'{case["id"]}: CNL and prompt JSON compile differ')
+    steps.append(step)
+    bundle = compiled['bundle']
+    blocks = {block['id'] for item in bundle['dsl']['files'] for block in item['blocks']}
+    rc.require(set(case['python_variants']) <= blocks, f'{case["id"]}: the self variants are not selected')
+    raw, step = pin.http(port, 'assemble', relative, '/v1/assemble', rc.canon({'bundle': bundle}).encode())
+    files = json.loads(raw)['files']
+    steps.append(step)
+    saved = pin.write(f'{relative}/bundle.json', rc.canon(bundle).encode())
+    stdout, step = pin.cli(binaries, port, 'cli-compile', relative, ['compile', cnl['path']], [cnl])
+    rc.require(rc.exact_json(json.loads(stdout), bundle), f'{case["id"]}: CLI bundle differs')
+    steps.append(step)
+    stdout, step = pin.cli(binaries, port, 'cli-assemble', relative, ['assemble', saved['path']], [saved])
+    rc.require(json.loads(stdout) == json.loads(raw), f'{case["id"]}: CLI assemble differs')
+    steps.append(step)
+    return {'name': case['id'], 'family': 'self_name', 'prompt': prompt, 'prompt_version': case['prompt']['version'],
+            'python_variants': case['python_variants'], 'files': len(files), 'steps': steps}
 
 
 def rust_case(pin, case, port, new):
@@ -269,11 +334,16 @@ def main():
     parser.add_argument('--rust-cases', nargs='+', default=list(RUST_CASES))
     parser.add_argument('--stand-in', action='store_true')
     parser.add_argument('--cargo-home', type=Path)
+    parser.add_argument('--products-run', type=Path)
+    parser.add_argument('--self-cases', nargs='*', default=[])
     args = parser.parse_args()
     candidate, run, audit, out = (p.resolve() for p in (args.candidate, args.acceptance, args.audit, args.out))
+    products_run = args.products_run.resolve() if args.products_run else run
     rc.require(not out.exists(), f'preserve existing output: {out}')
     rc.require(len(set(args.rust_cases)) == len(args.rust_cases), 'repeated Rust canary')
-    sources = rust_sources(run, args.rust_cases)
+    sources = rust_sources(products_run, args.rust_cases)
+    fixtures = {case['id']: case for case in rc.load(SELF_FIXTURES)['positive']}
+    rc.require(set(args.self_cases) <= set(fixtures), 'unknown self-name case')
     runtime = rc.load(candidate / 'runtime.json')
     port = runtime['port']
     rc.harness_port(port)
@@ -286,9 +356,13 @@ def main():
     legacy_path = SWITCH_001 / '0002-legacy-default.json'
     chain = default_chain(current, rc.digest(legacy_path))
     legacy = rc.load(legacy_path)
+    own_assets = runtime['health']['asset_manifest_sha256'] != current['health']['asset_manifest_sha256']
+    rc.require(own_assets or not args.self_cases, 'self-name canaries need a #57 candidate')
+    if own_assets:
+        rc.assets_match(candidate / 'assets', runtime['health'])
     out.mkdir(parents=True)
     pin = Pinner(out / 'inputs')
-    python, m2 = [], []
+    python, m2, previous_python = [], [], []
     if args.stand_in:
         owner = stand_in(out, current, {port})
         source = {'kind': 'stand-in', 'argv': owner['argv'], 'port': owner['port'],
@@ -298,15 +372,29 @@ def main():
         owner, source = None, {'kind': 'default', 'port': 8765}
     try:
         for case in switch['canaries']:
-            pinned, clone = python_case(pin, case, previous, new, source['port'])
-            python.append(pinned)
+            pinned, clone = python_case(pin, case, previous, new, source['port'],
+                                        'python-previous' if own_assets else 'python')
+            (previous_python if own_assets else python).append(pinned)
+            if own_assets:
+                pinned, clone = python_case(pin, case, previous, new, port)
+                same_python_canary(previous_python[-1], pinned)
+                python.append(pinned)
             m2.append(clone)
     finally:
         if owner is not None:
             rc.terminate(rc.identity(owner['pid'], owner['argv'], owner['port']))
+    python += [self_case(pin, fixtures[name], port, {'previous': previous, 'new': new}) for name in args.self_cases]
     rust = [rust_case(pin, case, port, new) for case in sources]
     emulators = emulator_runs(out, sources, port, args.cargo_home.resolve()) if args.cargo_home else None
     summary = rc.load(run / 'summary.json')
+    if summary.get('version') == ISSUE57_RUN:
+        acceptance_assertions = {'/passed': True, '/blockers': [],
+                                 '/candidate_after/binary_sha256': runtime['binary_sha256']}
+        header_sha256 = rc.digest(run / 'header.json')
+    else:
+        acceptance_assertions = {'/status': 'passed', '/blockers': [],
+                                 '/candidate_after/binary_sha256': runtime['binary_sha256']}
+        header_sha256 = summary['header_sha256']
     audit_receipt = rc.load(audit)
     if audit_receipt.get('version') == 'som.rust-output-audit-055.v1':
         audit_assertions = {'/totals': {'failed': 0, 'unrun': 0}, '/run': str(run)}
@@ -317,25 +405,28 @@ def main():
         'repo': str(rc.REPO),
         'base_controller': {'path': str(rc.BASE_PATH), 'sha256': rc.BASE_SHA256},
         'candidate': {'binary': binding(new), 'runtime': binding(candidate / 'runtime.json'),
-                      'build': binding(candidate / 'build.json'), 'source': binding(candidate / 'source.json')},
+                      'build': binding(candidate / 'build.json'), 'source': binding(candidate / 'source.json'),
+                      **({'assets': {'path': str(candidate / 'assets'),
+                                     'manifest_sha256': runtime['health']['asset_manifest_sha256']}}
+                         if own_assets else {})},
         'gates': {
-            'acceptance': {**binding(run / 'summary.json'),
-                           'assertions': {'/status': 'passed', '/blockers': [],
-                                          '/candidate_after/binary_sha256': runtime['binary_sha256']}},
+            'acceptance': {**binding(run / 'summary.json'), 'assertions': acceptance_assertions},
             'audit': {**binding(audit), 'assertions': audit_assertions},
         },
         'phase1_default': {'receipt': binding(rc.REPO / 'som-rs/runtime/default.json'), 'binary': binding(previous),
                            'previous_defaults': chain},
         'python_canary_source': source,
+        'rust_products_run': str(products_run),
         'rust_emulators': emulators,
         'legacy_default': binding(legacy_path),
         'legacy_binary': binding(Path(legacy['command'][0])),
         'legacy_model_manifest': binding(rc.REPO / 'som-rs/models/current/manifest.json'),
         'legacy_blocks': binding(Path(legacy['command'][5])),
         'python_canaries': python,
+        **({'previous_python_canaries': previous_python} if own_assets else {}),
         'rust_canaries': rust,
         'm2_canaries': m2,
-        'acceptance_summary_header_sha256': summary['header_sha256'],
+        'acceptance_summary_header_sha256': header_sha256,
     }
     rc.require(rc.digest(Path(config['legacy_model_manifest']['path'])) == legacy['health']['model_manifest_sha256'],
                'model manifest differs from the legacy health')

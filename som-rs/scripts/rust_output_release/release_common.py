@@ -10,7 +10,9 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
+import shutil
 import subprocess
 import urllib.error
 import urllib.request
@@ -151,7 +153,7 @@ def check_prerequisites(config):
     legacy = load(bound(config['legacy_default']))
     for name in ('legacy_binary', 'legacy_model_manifest', 'legacy_blocks'):
         bound(config[name])
-    for case in config['python_canaries'] + config['rust_canaries']:
+    for case in config['python_canaries'] + previous_python(config) + config['rust_canaries']:
         for step in case['steps']:
             bound(step['response'])
             if step['kind'] == 'http':
@@ -163,7 +165,39 @@ def check_prerequisites(config):
         bound(case['expected_response'])
     require({c['family'] for c in config['python_canaries']} >= {'flow', 'legacy'}, 'missing python canary family')
     require(len(config['rust_canaries']) >= 2, 'need two Rust canaries')
+    if 'assets' in config['candidate']:
+        assets_match(Path(config['candidate']['assets']['path']), runtime['health'])
+        require({c['family'] for c in previous_python(config)} >= {'flow', 'legacy'},
+                'missing previous python canary family')
     return runtime, legacy
+
+
+def previous_python(config):
+    """The Python canaries of the previous default. A candidate with its own assets (#57)
+    answers compile with other asset descriptors, so the previous default has its own set."""
+    return config.get('previous_python_canaries', config['python_canaries'])
+
+
+def candidate_assets(config, current):
+    """The asset directory the candidate serves: its own (#57) or the current default's."""
+    if 'assets' in config['candidate']:
+        return Path(config['candidate']['assets']['path'])
+    return Path(current['command'][3])
+
+
+def install_assets(assets, root, health):
+    """Copy an asset directory to ROOT/som-rs/compiler-assets/versions/<manifest sha> once."""
+    destination = root / 'som-rs/compiler-assets/versions' / health['asset_manifest_sha256']
+    require(not destination.is_symlink(), 'asset destination must not be a symlink')
+    if not destination.exists():
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        stage = destination.with_name(destination.name + f'.stage-{os.getpid()}')
+        stage.mkdir()
+        for name in ['manifest.json', *load(assets / 'manifest.json')['files']]:
+            shutil.copy2(assets / name, stage / name)
+        os.rename(stage, destination)
+    assets_match(destination, health)
+    return destination
 
 
 def assets_match(assets, health):

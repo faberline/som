@@ -7,13 +7,15 @@ PORT to the prerequisites candidate:
 1. The current owner must equal the receipt identity and health.
 2. Python canaries on the current default (read-only).
 3. A fresh legacy M2 clone on a harness port: full health and generate canaries.
-4. A fresh clone of the current command on a harness port: health and Python canaries.
+4. A fresh clone of the current command on a harness port: health and the
+   previous-default Python canaries.
 5. A fresh candidate on a harness port: health, Python and Rust canaries.
-6. Install the binary by hash, stop the verified owner (SIGTERM only), start the
-   installed binary on PORT, run every canary, set runtime/current, check again
-   and write the v2 default receipt.
-7. Any failure after the stop intent restores the previous command, pointer and
-   receipt and runs the Python canaries on it.
+6. Install the binary by hash (and the candidate assets by manifest hash when the
+   candidate has its own, #57), stop the verified owner (SIGTERM only), start the
+   installed binary on PORT, run every canary, set runtime/current (and
+   compiler-assets/current), check again and write the v2 default receipt.
+7. Any failure after the stop intent restores the previous command, pointers and
+   receipt and runs the previous-default Python canaries on it.
 
 --restore EVIDENCE is the recovery command after a committed switch: it puts
 the previous default of that switch back the same way.
@@ -107,8 +109,7 @@ def bring_back(run, root, port, previous, pointers, stop, binaries, python):
             else:
                 rc.finish_stop(owner)
     rc.atomic_link(root / 'som-rs/runtime/current', pointers['runtime'])
-    rc.require(rc.link_state(root / 'som-rs/compiler-assets/current') == pointers['assets'],
-               'compiler-assets/current changed externally')
+    rc.atomic_link(root / 'som-rs/compiler-assets/current', pointers['assets'])
     restored = run.start(previous['command'], previous['health'])
     run.health(port, previous['health'])
     run.canary(port, binaries, python, 'restored-default')
@@ -122,10 +123,10 @@ def execute(config, root, port, output, approval, rehearsal, selected):
         approval = check_approval(approval, 'switch-default-8765-rust-output', config, snapshot)
     candidate = Path(config['candidate']['binary']['path'])
     previous_binary = Path(current['command'][0])
-    assets = Path(current['command'][3])
-    rc.assets_match(assets, current['health'])
+    assets = rc.candidate_assets(config, current)
+    rc.assets_match(Path(current['command'][3]), current['health'])
     rc.assets_match(assets, runtime['health'])
-    python, rust = config['python_canaries'], config['rust_canaries']
+    python, rust, previous_python = config['python_canaries'], config['rust_canaries'], rc.previous_python(config)
     output.mkdir(parents=True, exist_ok=False)
     run = rc.Release(output, current['identity']['cwd'])
     run.save('prerequisites.json', rc.canon(config).encode())
@@ -138,11 +139,11 @@ def execute(config, root, port, output, approval, rehearsal, selected):
         rc.require(owner == current['identity'], 'live owner differs from the receipt')
         run.health(port, current['health'])
         clients = {'previous': previous_binary, 'new': candidate, 'legacy': Path(config['legacy_binary']['path'])}
-        run.canary(port, clients, python, 'current-default')
+        run.canary(port, clients, previous_python, 'current-default')
         harness = set() if not rehearsal else {port}
         for argv, health, cases in [
                 (legacy['command'][:-1], legacy['health'], None),
-                (current['command'][:-1], current['health'], python),
+                (current['command'][:-1], current['health'], previous_python),
                 ([str(candidate), 'serve', '--assets', str(assets), '--port'], runtime['health'], python + rust)]:
             clone = run.start(argv + [str(rc.free_harness_port(harness))], health)
             try:
@@ -153,8 +154,9 @@ def execute(config, root, port, output, approval, rehearsal, selected):
             finally:
                 run.stop_child(clone)
         installed = install(candidate, root)
-        run.event('immutable_install_verified', binary=str(installed))
-        argv = [str(installed), 'serve', '--assets', str(assets), '--port', str(port)]
+        new_assets = rc.install_assets(assets, root, runtime['health']) if assets != Path(current['command'][3]) else assets
+        run.event('immutable_install_verified', binary=str(installed), assets=str(new_assets))
+        argv = [str(installed), 'serve', '--assets', str(new_assets), '--port', str(port)]
         served = {'previous': previous_binary, 'new': installed}
         changed, new_owner, committed = False, None, None
         try:
@@ -171,6 +173,11 @@ def execute(config, root, port, output, approval, rehearsal, selected):
             rc.require(rc.link_state(root / 'som-rs/runtime/current') == pointers['runtime'], 'pointer changed externally')
             rc.atomic_link(root / 'som-rs/runtime/current', {'kind': 'symlink', 'target': str(installed.parent)})
             run.event('pointer_set', name='runtime', target=str(installed.parent))
+            if str(new_assets) != current['command'][3]:
+                rc.require(rc.link_state(root / 'som-rs/compiler-assets/current') == pointers['assets'],
+                           'compiler-assets pointer changed externally')
+                rc.atomic_link(root / 'som-rs/compiler-assets/current', {'kind': 'symlink', 'target': str(new_assets)})
+                run.event('pointer_set', name='compiler-assets', target=str(new_assets))
             inject(selected, 'after_pointer')
             run.health(port, runtime['health'])
             run.canary(port, served, python + rust, 'new-default-after-pointer')
@@ -199,7 +206,7 @@ def execute(config, root, port, output, approval, rehearsal, selected):
                 try:
                     admitted = [o for o in run.owners.values() if o['port'] == port and o['argv'][0] == str(installed)]
                     restored = bring_back(run, root, port, current, pointers, admitted + [owner],
-                                          {'previous': previous_binary, 'new': candidate}, python)
+                                          {'previous': previous_binary, 'new': candidate}, previous_python)
                     rc.require(default_path.read_bytes() in (snapshot, committed), 'default receipt changed externally')
                     rollback = {**current, 'pid': restored['pid'], 'identity': restored,
                                 'process_logs': str(output / 'process-*.log'), 'rollback_evidence': str(output),
@@ -243,7 +250,7 @@ def restore(config, root, port, output, approval, rehearsal, evidence):
         run.recovering = True
         restored = bring_back(run, root, port, previous, previous_pointers, [owner],
                               {'previous': Path(previous['command'][0]), 'new': Path(current['command'][0])},
-                              config['python_canaries'])
+                              rc.previous_python(config))
         rc.require(default_path.read_bytes() == snapshot, 'default receipt changed externally')
         receipt = {**previous, 'pid': restored['pid'], 'identity': restored,
                    'process_logs': str(output / 'process-*.log'), 'restore_evidence': str(output),

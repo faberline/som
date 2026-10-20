@@ -11,8 +11,10 @@ It sends no signal and writes nothing outside its fresh --output. It checks:
 - runtime/current and compiler-assets/current name the served binary and
   assets, and the assets match their manifest;
 - on the repository: the legacy M2 binary, model and block pointers are kept;
-- every pinned Python canary, and the Rust canaries when the default serves
-  rust, byte for byte over HTTP and the default's own CLI.
+- every pinned Python canary of the expected default (the candidate set, or the
+  previous-default set when a #57 candidate brings its own assets), and the Rust
+  canaries when the default is the candidate, byte for byte over HTTP and the
+  default's own CLI.
 
 usage: check_default.py --prerequisites FILE --root DIR --port N --expect-binary-sha256 SHA --output NEW_DIR
 """
@@ -91,7 +93,7 @@ def main():
         return None
 
     def canaries():
-        cases = config['python_canaries'] + (config['rust_canaries'] if candidate else [])
+        cases = (config['python_canaries'] + config['rust_canaries']) if candidate else rc.previous_python(config)
         run.canary(args.port, {'previous': Path(command[0]), 'new': Path(command[0])}, cases, 'post-check')
         return {'cases': [c['name'] for c in cases]}
 
