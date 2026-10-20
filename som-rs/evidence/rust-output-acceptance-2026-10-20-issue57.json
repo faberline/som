@@ -1,0 +1,724 @@
+{
+ "version": "som.rust-output-acceptance.v1",
+ "issues": [
+  57,
+  58
+ ],
+ "phase": 2,
+ "recorded_at": "2026-10-20T08:28:46.442685+00:00",
+ "status": "passed",
+ "status_note": "Every check of acceptance-plan.json issue57 (compiler-v1 amendments 003 and 004, rust-output-v1 amendment 004) passed on one recorded build (rust-output-candidate-006), with every receipt hashed. An independent auditor, written from the plan and the raw outputs only, reported 16 passed, 0 failed, 0 unrun. Python product files of the 127 public products and 544 legacy jobs stay byte-identical; only the bundle asset descriptors and payload hash changed, as amendment 004 admits. Raw outputs stay local; this file holds summaries and hashes only.",
+ "blockers": [],
+ "run": {
+  "started_at": "2026-10-20T08:03:55.697365+00:00",
+  "ended_at": "2026-10-20T08:28:46.442685+00:00",
+  "qa_port": 18970
+ },
+ "tools_commit": "c4779b53d7",
+ "tool_files": {
+  "som-rs/behavior/README.md": "5c7ba7dc23011323ad076d361ebd55545c0eb6585a13b569002b57a94265cd08",
+  "som-rs/behavior/check_behavior.py": "01d0fcc87ab326f00525f478e5f15eabe3275e69837c17841b55f196845db7df",
+  "som-rs/behavior/faults.py": "db7adef4a6f0f19f2f6301ed4d70ccddf6921cca6a9abc564c936fc2f8ee8a7b",
+  "som-rs/behavior/hosts.py": "2e350522225e10087737ddfd2824e84508e8c295662eb6805a607fdd27f3f69b",
+  "som-rs/behavior/phase2/adapt.py": "ffe4d965331ccc4127e02b3fd83a626b5569660e00393f7b6e22f9d0ea7b62f0",
+  "som-rs/behavior/phase2/adapted/MANIFEST.json": "b679187b5c6cb120aa6a98c6164c63b7be75fd198cdfb7fb10b6b3b22511304b",
+  "som-rs/behavior/phase2/adapted/audit_business_transactions.py": "ca0a575a38d8e208fc3fc45d9f65016a3f03f14970b3cefbac3882de976515c7",
+  "som-rs/behavior/phase2/adapted/flow_branch_cases.py": "6eb98bae26071237a2198159c7faa2d0f0d06a38bffa5d3315936ffb529eccc1",
+  "som-rs/behavior/phase2/adapted/flow_fault_checks.py": "169aa9f0586adedd046ce07f24dbc0cc98d262c0313f5279dd2491abd22aed05",
+  "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py": "0c16601ddc33adc8c27788d192b4b93ed40730b740e7bdb5c2ba2480a4cbc0c7",
+  "som-rs/behavior/phase2/adapted/verify_business_workflows.py": "d8f206ac3cae7c09df92619bb19ea5c3b8c0889c21d6df4a1edf57d2049e14b0",
+  "som-rs/behavior/phase2/adapted/verify_composed_journeys.py": "867629d0605fef876e457d0f5378b69304d4a3ac746e34aee4372a50679451ab",
+  "som-rs/behavior/phase2/adapted/verify_composed_related.py": "439a2bfc0318f3f19818ae1cdc9a3eb8445e993a892a3c55dfa93deb879d86df",
+  "som-rs/behavior/phase2/adapted/verify_composed_subsets.py": "c8b2ff63c22ac9acebef5be17dbb6fb16b66c03041938cae0576b6bfbe1b8bdb",
+  "som-rs/behavior/phase2/adapted/verify_composed_transactions.py": "5095a31e0333c0561a14a7073c95acb468b4479b648fcd7200dea5a37be27ea1",
+  "som-rs/behavior/phase2/adapted/verify_flow_service.py": "c14225c5080021beba6b9b84b49c6ff5653275bcce348d351bee9c4d8964abd5",
+  "som-rs/behavior/phase2/adapted/verify_related.py": "640be9c12dfd398a877ef7fc3d1660fa41fc5b9f60deec16bfdcb41ca7d533cc",
+  "som-rs/behavior/phase2/check_phase2.py": "7c37aa4cc6f40c988eb48da92873ffbdf8fab76a2faf8d953107c2fd1d6ff1b9",
+  "som-rs/behavior/phase2/make_rs_products.py": "0f4097f289efdf2a734130816caa8bfe3d6299c4a71ffb1cc5d46a036a0b9dbd",
+  "som-rs/behavior/phase2/phase2_host.py": "ca46edc076e51d43711223f70b97af0c35fbb4bf413c66da374aca72562d4449",
+  "som-rs/behavior/suite.py": "1f7fbd9bbd340aa4457fdbbbc256ebcc5add742bdf86cd1f390c28329a0c7d83",
+  "som-rs/contracts/rust-output-v1/CONTRACT.md": "9df4f816a1d3508a45a3deb4db4d70ddb10171ece76c2ef0f00643bf0db84f5f",
+  "som-rs/contracts/rust-output-v1/acceptance-plan.json": "6077e6e16218c00fd65d69830cdb9a7dff57d6b08a8fb2adbd39752d4abcd887",
+  "som-rs/contracts/rust-output-v1/api.schema.json": "dbd396f5e395487f05d6ad8c696d307a6641a9af47322e8c78284a47d053fff0",
+  "som-rs/contracts/rust-output-v1/behavior-normalization.json": "c75b29346d605af7e6ec8ad5d856381f4f8e0e0d321f1d236a5d93b545be97bf",
+  "som-rs/contracts/rust-output-v1/bundle.schema.json": "0d9e9db5495c0d9121b3213ed0eb15b18af6de462ee16ef3e91561414f4547bd",
+  "som-rs/contracts/rust-output-v1/case-inventory.json": "fc6fbec822623cb9bdc0a6e11c2a72b6f0dfac3c41e8b7c1e35830090eb7d2a5",
+  "som-rs/contracts/rust-output-v1/negative-cases.json": "74b36cb9ba0e61e639193f5a55f5e9e9c1924c730e502dd2de300b88c9dbbc1d",
+  "som-rs/contracts/rust-output-v1/phase2/behavior.json": "d2007cc091a5f3ff22a2d0aeeef2c6cfe0e8f620caa255b5dc14c06efdf82ece",
+  "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6",
+  "som-rs/contracts/rust-output-v1/phase2/constructs.json": "6ef923690ce209795141076aec0d76d67d702d0fa35831324da136dd83e463dd",
+  "som-rs/contracts/rust-output-v1/phase2/naming.json": "cf9e2b70608f8ba7bd65710e901c99682bb4478562377ae3d1457abbc1e54de2",
+  "som-rs/contracts/rust-output-v1/phase2/pins.json": "76fa9338f987211dfc4cd1ff01f2b812855c131da7e58f5de3bdac117826e5f1",
+  "som-rs/contracts/rust-output-v1/phase2/services.json": "64c7b3ad93ea8359280232b5b6244f21c5bdcf1fb84931711376708b44ed572d",
+  "som-rs/contracts/rust-output-v1/product-layout.json": "d2d781f31d959fb913b1182a481e44bc4520e6157ef80de1e7e2fcec46be0b8f",
+  "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.lock": "0483374722515e3daa7f8509708abb9c551f1bc1815f9110e6662b893db443ad",
+  "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.toml": "d06a474e62ab474465c73f4ad99ddcf5d0e33a750684e3a8cfa83714949cd430",
+  "som-rs/contracts/rust-output-v1/reference/Cargo.lock": "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20",
+  "som-rs/contracts/rust-output-v1/reference/Cargo.toml": "8b708c38686b77e6740171e24c28793c4a40b54a8e9807f8e147a9ef3b44591d",
+  "som-rs/contracts/rust-output-v1/scope.json": "0f31b4c0290afda9b4c4ccf99b575edec81c3361ae31c74b44bc16d5ff20e51d",
+  "som-rs/contracts/rust-output-v1/target-examples.json": "4d91b175e9c75cadb61ae335dc1540582b3d89c01815abe651b02d57ac6889ae",
+  "som-rs/contracts/rust-output-v1/toolchain.json": "9a05dd1953defc89c4a44eada333cbfc41570e4728295ab1a2be060c76b7029d",
+  "som-rs/scripts/compiler_acceptance/README.md": "840debcb1798b89420f2e4b870d4fbd42efb9b9c063a8cfcb9e95a0acfd8e200",
+  "som-rs/scripts/compiler_acceptance/__init__.py": "0fb73e3944e254e23aaa2cf4d908132e2187d65b7c60128f70b4065d1122e0d1",
+  "som-rs/scripts/compiler_acceptance/acceptance_cleanup.py": "895c8ce8384007a4288b877e9871694722281ca7c28c3b9ee82813e4007837d6",
+  "som-rs/scripts/compiler_acceptance/asset_index_generator.py": "5d1a1d84117f8938237aafa547702adb33d910fc54155c4ddda935f1943cb17d",
+  "som-rs/scripts/compiler_acceptance/diagnostic_http_acceptance.py": "6e9ab32be5857f5a539858da253f6054765c0a0134a0dca9ec84a2f791f94864",
+  "som-rs/scripts/compiler_acceptance/extra-http-cases.json": "73228231f4226fe6d562829b88eed413a57648eb50bcb2057c1e2b45f0724ce6",
+  "som-rs/scripts/compiler_acceptance/gap_acceptance.py": "9796c44f1a2d2fa8d8133f28387bda78a8f3bb8997d284f51ec8ebba60d65e64",
+  "som-rs/scripts/compiler_acceptance/legacy544/runner.py": "e29002a568435d8f9f6af310ce78dfd6e62a1dd2b30e462130319b4a8297923a",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment/QUALIFICATION.md": "89e1e0967e4c4937b1962a0416c2da605658b633347a1cce1a698cae23fb4a9b",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment/legacy544_corrected.py": "b40002126761fd23ae2fc50927e0e8d09c4f81f173076a159c0ce57828203113",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment/native_evidence.py": "9d7ce418008d0ffd40a92aa017a49510e857e2c9871b244998910f2785feb25c",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment/qualify.py": "7c5b0552cabe3488a7de31ab91f119b6f576a3dab0bf7a885ef16965e6239b0c",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment_v2/QUALIFICATION.md": "43450191a02166dbbe60c8ed301841a8a443a27a16b5d16a6c80cb3833ebc1a6",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment_v2/legacy544_corrected.py": "44639cd5c8858c7066e6adcd30c4bce78072406d951d3f9a480a13b1f22df6a9",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment_v2/native_evidence.py": "c392e99c8712de5c8e08dc1ef9131ee826d1b2090668c62e6929563ab82818f5",
+  "som-rs/scripts/compiler_acceptance/legacy544_amendment_v2/qualify.py": "c75e6c3625d006535d8cdd18496497bf32375e38356d17af5bbaf64de9b948cb",
+  "som-rs/scripts/compiler_acceptance/paths.py": "7fdee8d1a58559d72c05fc9bc4e956d694764c0ab83a7ad7ba7178c0de7dd91f",
+  "som-rs/scripts/compiler_acceptance/performance_observation.py": "ca8bbff2475d5cb468f6c43774e0e7602444bb52ba538e7bbdc3b82464d46622",
+  "som-rs/scripts/compiler_acceptance/prepare_amendment.py": "e9a582ee1aabfbe2b0ba6768f2a2ac244df7dc5c10666530809a257d3615c0f2",
+  "som-rs/scripts/compiler_acceptance/public_products.py": "087d485489561b79e0d211e59a56c45b2c46789bc9d96332b22802f7f7b98fd2",
+  "som-rs/scripts/compiler_acceptance/public_products_corrected.py": "ceb678b420c3f5d3c8642b08d7aef0cb531265171e6946be28782caa02c41687",
+  "som-rs/scripts/compiler_acceptance/public_reference.py": "e94c996cfe612f30acd06e311e1817ed7c3228bcc6d54646b3b45c4001d78a06",
+  "som-rs/scripts/compiler_acceptance/qa_harness.py": "f0c1cf96e1cf60ee692c7e9c3272757efef92498b52f4ac426e40b54142851a2",
+  "som-rs/scripts/compiler_acceptance/qualify_formatted_reference.py": "c256acbe2950f518861d859a612fdd7f375b3460355303b989b0b07a25d12ae2",
+  "som-rs/scripts/compiler_acceptance/qualify_prepass.py": "16deb689b2eca793c614bb6b91b5726e30e0e2d0b51ab41f91d06fc0f1d16667",
+  "som-rs/scripts/compiler_acceptance/qualify_runner_bindings.py": "9949ed6c6cc5e1263cde148ff13467d083626a1cbf7b92c280e7d86690d52ae0",
+  "som-rs/scripts/compiler_acceptance/reference_span_prepass.py": "e10bb83c95f9498bf64697506671eec05749bcc52b672bd68c349dbe73fe5ae7",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/README.md": "6e16848bf238521129f83ec049e443bbf3b9db450a6aa3481f27bf9743cba157",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/__init__.py": "deba5e11ceabc4179757acf11fcab4d23c9b8c636d294d7e0647f639705334e4",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/behavior_support.py": "330de567a5cef56735ab3bb5776fcf843c48b53a135cafedc68455be897ebed2",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-branch-null/origin.json": "49cc2a29b23e843bf54f7843f8b8fbab0ce83a095710c0b0e7ee06995c842086",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-branch-null/prompt.json": "4e3c80e264d13e83c894418f2d011f4dc3b26f94fb5dc094efb719b1b503e522",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-branch-null/source.cnl": "3857714e702c269eb010dfce7a1588f54abb22cd8a1c9913612aad30a877ce41",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-empty-branch/origin.json": "5c00912a53da4a8f5800191b7dd327205445f2d527419f2585aa60230d9d7c50",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-empty-branch/prompt.json": "a052d6985c006d994abadb2acb23d0db70f4d5c503da406ad9f8e4c939ea51a7",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-empty-branch/source.cnl": "369c9b11138632eb96a3f537ede080ac33457e3fc5fd2f94406ac2e65eb096a0",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-empty-field-segments/origin.json": "0e74f8336b93ed5fa385e5be856baa4322e21e11ae6a9ee6541711e9b0e5e57f",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-empty-field-segments/prompt.json": "3e275bc531e57a1c58985f283a8d1eba9dd5c8cda993ba28a293a876c51adce3",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/PUBLIC_v7-empty-field-segments/source.cnl": "8c9f6698cbdd163ca1d536b20df9ba9dd30bc20152f3336b4c3f0f996c96d43e",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_BRANCH_EXPORT_SAME_TYPE/origin.json": "bb06fc2829c1f36450de3d88d290bfe2d78c1cd537bf041dea37cf24af575fcf",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_BRANCH_EXPORT_SAME_TYPE/prompt.json": "41eda60a9de8e21ff8efad0ac975c1f80b4b45bf33475c6eaa134f518544689f",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_BRANCH_EXPORT_SAME_TYPE/source.cnl": "7902d1a16903e4177adcd81c6d78d83b64fd4946d9b633f6c71fd000bde112ea",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_EQ/origin.json": "555c82c7c1dc5d76a3c7cbb7e719657f96fb47e9479910ad2132b0affa438050",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_EQ/prompt.json": "491e57510330cf193d6d99f8c6eaa938cfaf111d9dff35b1cd37617e4d8b373c",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_EQ/source.cnl": "061b24a147715905e399dc5392ed5ae11412b233d7d3a9e0e15a4f7d9d36ad9a",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_GE/origin.json": "2618364b213471d5a4530d35baa2e8fbc1724fb86a6e37f001945e0848001757",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_GE/prompt.json": "f172ecb1de407255bc148b4b3d6b688e8d1195e8576a11a85bbf7203f3f020f7",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_GE/source.cnl": "64b4c766a5970052ffb772fa29100d8b5332d56cec3bb1d20f35e30c907cc738",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_GT/origin.json": "2cbc05621dc31a0fe45bf9b0ce66f873d44e522897bd9b68fb08763fb0451c03",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_GT/prompt.json": "58accdd808bc8dbbc1aab87201ad5283664884eb7f1a3d5f829c6808f37f2cb7",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_GT/source.cnl": "494e1e2c3f071fa2ac96349f308e05acfba2f2bb05dc9a9e1f0c81990ec1b9ba",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_LE/origin.json": "f42b1f1f41859a5ffc93ef630b44065fee2c23178b00e24bf29858ab0456a4d1",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_LE/prompt.json": "27dc9d1c3a87fc6df7931dab778c74c7c38ebbf76b4f38754cfd5f55eb323bc3",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_LE/source.cnl": "37cb40e986a3603d033e1226993dfe866aa9fdba67a106f4b1310ec8f50df150",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_LT/origin.json": "2c018cb348828ef7938bbe1335bc22dae408efa59f0064b9a966031c9371f89b",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_LT/prompt.json": "33e97252777ba63edad05045cc970f22573b2c6a804faaa553e923ac4ef1d1d0",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_LT/source.cnl": "c2462ba3a1ca65012b5df06df074d7e8b4bbd4eed539c9dba92ef67088a10b2d",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_NE/origin.json": "ef24c3a635862692983bd6127e359e8cc510d38630b5a3de63d725245c388504",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_NE/prompt.json": "51b0cac774d9b749d9fac9bb7d82f47c03e469f2496116a7341b1fc5a9b8ea62",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_COMPARE_NE/source.cnl": "ffa64dfb5c8ef4a5588464bf60160966ec624c645a584f9ae013db28b3b4d331",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_NULLABLE_OPTIONAL_FIELD/origin.json": "48872207f4c3aafdbac5ff62172c7c6f0d9c23117384a5ee4f8a3bef8d15e72d",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_NULLABLE_OPTIONAL_FIELD/prompt.json": "21333c6fc21c44aab1bd76e4e7fe5c5f7badd822f42fc0e6fe80a9a00e76c02b",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/REF_NULLABLE_OPTIONAL_FIELD/source.cnl": "e15a9263db8d79aa43d80053e0e496bc09a03ac26b583b5261f048caf8b17bcd",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/inputs/index.json": "5cf4952dc3062a49286b6d972e46819439ddaaee13e65a51610919753024b9cf",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/prepare.py": "ed7358dc94905e434aca0b602d18f8a84916022d2e42b9accf21bc301d0f34d7",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/references/REVIEW.md": "7d5517b0c8078fbc9f4d23b718c725aec9027e2c06810c455f4eb61d17458be6",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/references/behavior-coverage.json": "903ffb808ac75c8e97c59d8af588682e60c238a718097418265d6e2be0fc5808",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/references/boundary-receipt.json": "776f4ea5fe323be99155af7bf64e585edfbea3d4ceebfdac1a99011b18ec37b4",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/references/shared-544-flow-map.json": "5edf190f6037c383f9e3d76db8871ad0c5bd2946a7ec82911b4c4a4940531eed",
+  "som-rs/scripts/compiler_acceptance/renderer_behavior/run.py": "f2135447f87081735dbf49bad03eaa2aae9deb21fbf5ba5bf99719d135d50511",
+  "som-rs/scripts/compiler_acceptance/runtime_acceptance.py": "e9ff762ab2ee43f099497b23869bf5eff7d8ab9dc49e309be320cac937631c93",
+  "som-rs/scripts/rust_output_acceptance/README.md": "804badaca831b92d81876001013dd806353a25203755f671b1aed51a683729ff",
+  "som-rs/scripts/rust_output_acceptance/audit/audit055.py": "3a28bf17bfd77296cae5e07788081fd839e7e89abfc00b108feef1bdb5f2e602",
+  "som-rs/scripts/rust_output_acceptance/audit/audit057.py": "910368ceac07c6f47bb06c3ce81df876fc130e060fae3319ad9cf15db8bec503",
+  "som-rs/scripts/rust_output_acceptance/check_cli.py": "87cf90e865057dfb72b3e050e553790865472967f2307dc2040d701ced8d0b30",
+  "som-rs/scripts/rust_output_acceptance/check_issue57.py": "0ee6fee3b5f1e4635e0a9b0e7b65f1a0a8163310b7824bc6c27e6e92a31e80d9",
+  "som-rs/scripts/rust_output_acceptance/check_name_collisions.py": "101b36e382e51b92b4d26c3b0a4b5edbd06a3585ef6c1de325764ebb09a73f27",
+  "som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py": "7f9155b6cea577ff06e424d6ec43d6d2dc33262c586fef066f9e6004fd30864d",
+  "som-rs/scripts/rust_output_acceptance/perf_observe.py": "1596b8a5b2cc6e72d2fe033c67f7b1d9cf91695290b8f8377508a10811acaddb",
+  "som-rs/scripts/rust_output_acceptance/prepare_candidate.py": "c15082b15812ae146c63a684b77f41bc280ca58657b5ebc585e5ce6027cfbf39",
+  "som-rs/scripts/rust_output_acceptance/python_replay.py": "069736b5956a6deeb5ce75ba5b5ee454b592bbc6ab8dc9ec285448d06c300d9c",
+  "som-rs/scripts/rust_output_acceptance/run_acceptance.py": "b7299cac90fd19c711abfd2a62bd49a96ccaeccd84a07b07d06e0b42ecbdb42f",
+  "som-rs/scripts/rust_output_acceptance/run_issue57.py": "af2fe40df34d49cba6c71c2b29a16fc7c5b0d183cebd5f37e72d4943ebfcf0ff",
+  "som-rs/scripts/rust_output_acceptance/vendor_crates.py": "10931d7ad4413da206ed1c80f47781195429b19320553e8ba032130ce33ede69",
+  "som-rs/som-targets/qa/check_phase2_products.py": "1f747112bad2cf0f146ab478d858eac2337e3e51b2d526380e9a09dca7fe8c48",
+  "som-rs/som-targets/qa/check_rust_products.py": "cdbabb78dd71649d71349dca420994d73c77d99b09a1d4263666eccf05729c6f",
+  "som-rs/som-targets/qa/check_targets.py": "59057734e5085cb8b78f62e63c607bd7da5da84e9e1c3334dc580e3ccaf236d2",
+  "som-rs/tests/rust-output-v1/build_case_inventory.py": "494976a61dd2184d2a9135d297c635fc4b6bd04be4cbb34bd2b7efc00b855874",
+  "som-rs/tests/rust-output-v1/build_cases.py": "13096aacb9ba3eafe84e4389586478622aca5eea8622f6d8774a15bb4da265b3",
+  "som-rs/tests/rust-output-v1/build_negative_cases.py": "fe97797483e8f34ee12297c2c48412adcf4bc6baedbe0833adf769cc7683f15a",
+  "som-rs/tests/rust-output-v1/build_phase2_behavior.py": "7d58af568f093cff9caaae0bff83dba2bac5ba9dbe8e2fc27ad029bbb8d22d9b",
+  "som-rs/tests/rust-output-v1/build_phase2_constructs.py": "a1c2b3ff09644ef246580a2afec062c78299e9cace169d4e750d11313f1e80ee",
+  "som-rs/tests/rust-output-v1/build_phase2_inventory.py": "60328ce9c02446891a5aff86a1681ce103b895a58b25cd970a0529625b44c994",
+  "som-rs/tests/rust-output-v1/build_phase2_pins.py": "7476958452c998972074a9b9e4ae3ee56d5598617ad4f1d4b3cf41b6d9c31c61",
+  "som-rs/tests/rust-output-v1/build_target_examples.py": "697ca7c91c2c9f4c3d27985ed0f50ce6c6f2a103ea7ed264ba1915c056d43ab2",
+  "som-rs/tests/rust-output-v1/cases/cov-v1-types.cnl": "22e6cb0aacd219cb47478dca4ff5f244b63ae605de399f08a16bb62093ec9ce7",
+  "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c",
+  "som-rs/tests/rust-output-v1/cases/cov-v2-types.cnl": "a2512cdbbea998a8f051160166e3c1d2f4b43ae5d7bbcbe5e6a0cd211a9b7c1d",
+  "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53",
+  "som-rs/tests/rust-output-v1/cases/cov-v3-types.cnl": "554eb27bbd5c894fa7ccd473b45734a33753b1ec32395ccb5f73133b0a71a12c",
+  "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23",
+  "som-rs/tests/rust-output-v1/cases/cov-v4-types.cnl": "cb7f5fb994d6c7bfbdff549e71286211cd1d3f7177b91bdbeeb34337229b7724",
+  "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e",
+  "som-rs/tests/rust-output-v1/cases/cov-v5-max.cnl": "97cb49f506fb16fb9da2ea203b5a114ea68766ec46ebb69cdb4d63f012deb16c",
+  "som-rs/tests/rust-output-v1/cases/cov-v5-max.prompt.json": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d",
+  "som-rs/tests/rust-output-v1/cases/cov-v5-min.cnl": "627623f91944b13158487086efec5653948be6c2e77a341e0d0ba9410d291e5d",
+  "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347",
+  "som-rs/tests/rust-output-v1/cases/index.json": "b49af2a7ba842e5dd810d8d010fcf93436474df7f49f1c569367bed1bc94ed1b",
+  "som-rs/tests/rust-output-v1/check_contract.py": "958aacace4f99badd190715140665bb3bf9f08ec0e88c8557b6d24f87a069b15",
+  "som-rs/tests/rust-output-v1/check_python_controls.py": "50e081a6a10cdbb7db8e84e094854ef8833f25d3cfa0857cc98e9cb4e9ccd047",
+  "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513",
+  "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "66361c04b8c7069868aa03205dbb33f9d28ede06e55ea262326671b91108316b",
+  "som-rs/tests/rust-output-v1/validate_cases.py": "9b9131de7a56a54c6a9f103da170143bc18ec6d113bedb6f79ea0a7f8453d4bb"
+ },
+ "candidate": {
+  "path": ".local/rust-compiler-goal/rust-output-candidate-006",
+  "source_commit": "6116fed549d458f6ac06f51541c93c5de6514385",
+  "binary_sha256": "52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2",
+  "binary_bytes": 13411904,
+  "source_json_sha256": "9562fe147c650067a554ac20ba91cdc9bff8cf7ee8442037339fad20d06565bd",
+  "source_tar_sha256": "c47ed4d425bdb4638056894e4af3fe84c2caa575ad8789354d5ac6960f7474fd",
+  "build_json_sha256": "fc7ec5aaeafeca607d1cf179e9b3fdb7261014fa9e47776e563f49bf12213be6",
+  "runtime_json_sha256": "3507428497455fece30e757f0b3f08ece520a142103398e926f4736cc0d3634a",
+  "assets_tree_sha256": "05d10a4f59c5946f1edb9fdd8d226a1c599fe5f6f2cff861e61a3fde80a7cf04",
+  "asset_manifest_sha256": "c406d03c0edd98ab703a616c1c2be5d81f001966ac9c84280edce5765f91a138",
+  "health": {
+   "backend_sha256": "581ce38f29702c300342cdefe8fe5f1735cefcd1869d6485b44f30063a866711",
+   "asset_manifest_sha256": "d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa"
+  }
+ },
+ "amendments": {
+  "som-rs/evidence/rust-compiler-contract-amendment-003.json": {
+   "sha256": "bcdd59eda51d4b2a21c855f0186432ed7f9bc301331892ac35fb8e623120ae81",
+   "status": "amendment_sealed_after_independent_review",
+   "target_sha256": "5ca3d37a629f0ba75331f69e487ef000359c3e2160031ff4d5f8e6fa13807ce2",
+   "review_verdict": "APPROVED"
+  },
+  "som-rs/evidence/rust-compiler-contract-amendment-004.json": {
+   "sha256": "2f0c12e6fed43b8364649a0afff207e72b15738179cf56a8ff69036e4534f42c",
+   "status": "amendment_sealed_after_independent_review",
+   "target_sha256": "30bf9d7c746a8e72c9d001a8040d790b5a552f183761dc3bdd7313a3d511eb43",
+   "review_verdict": "APPROVED"
+  },
+  "som-rs/evidence/rust-output-contract-amendment-004.json": {
+   "sha256": "f425bf95dfde2f6ae3bfdc30ab9aced8a6e45955ca15543a0662cb8a9416c537",
+   "status": "amendment_sealed_after_independent_review",
+   "target_sha256": "4aa0e4afc0f17def6a3342ab445d69488a437f68b8b7ac9a2e2f7cf8c6a1622c",
+   "review_verdict": "APPROVED"
+  }
+ },
+ "plan": {
+  "path": "som-rs/contracts/rust-output-v1/acceptance-plan.json",
+  "sha256": "6077e6e16218c00fd65d69830cdb9a7dff57d6b08a8fb2adbd39752d4abcd887",
+  "section": "issue57",
+  "checks": [
+   {
+    "index": 0,
+    "state": "passed",
+    "steps": [
+     "python-replay"
+    ]
+   },
+   {
+    "index": 1,
+    "state": "passed",
+    "steps": [
+     "python-controls"
+    ]
+   },
+   {
+    "index": 2,
+    "state": "passed",
+    "steps": [
+     "validate-cases"
+    ]
+   },
+   {
+    "index": 3,
+    "state": "passed",
+    "steps": [
+     "targets",
+     "cli"
+    ]
+   },
+   {
+    "index": 4,
+    "state": "passed",
+    "steps": [
+     "rust-products"
+    ]
+   },
+   {
+    "index": 5,
+    "state": "passed",
+    "steps": [
+     "targets",
+     "rust-unchanged"
+    ]
+   },
+   {
+    "index": 6,
+    "state": "passed",
+    "steps": [
+     "rust-unchanged"
+    ]
+   },
+   {
+    "index": 7,
+    "state": "passed",
+    "steps": [
+     "issue57"
+    ]
+   },
+   {
+    "index": 8,
+    "state": "passed",
+    "steps": [
+     "name-collisions"
+    ]
+   },
+   {
+    "index": 9,
+    "state": "not run",
+    "steps": null
+   }
+  ],
+  "note": "check 9 (independent audit) is not run by the runner by design; audit-004 covers it"
+ },
+ "default_8765": {
+  "before": {
+   "healthz_sha256": "6caecc9ccda19b743ae26776dea1af062ae3c5a21a489fd591c60de370b915e4",
+   "healthz_status": 200,
+   "listeners": [
+    "507"
+   ]
+  },
+  "after": {
+   "healthz_sha256": "6caecc9ccda19b743ae26776dea1af062ae3c5a21a489fd591c60de370b915e4",
+   "healthz_status": 200,
+   "listeners": [
+    "507"
+   ]
+  },
+  "unchanged": true
+ },
+ "env_delta": {
+  "CARGO_HOME": ".local/rust-output-phase2/vendor-002/cargo-home",
+  "CARGO_NET_OFFLINE": "true",
+  "PYTHONDONTWRITEBYTECODE": "1"
+ },
+ "vendored_crates": {
+  "vendor_json_sha256": "b58c92e6d7837a64b884e9fbd27babba3b67af87f273280d410bb8577a23512b",
+  "vendor_tree_sha256": "bac8fee5432143cc4768d3f294e5f3b0a0a75c563e90aec4f4c88c5b641e9df6"
+ },
+ "python_venv": {
+  "pypi": {
+   "alembic": "1.20.0",
+   "fastapi": "0.118.0",
+   "httpx": "0.28.1",
+   "jsonschema": "4.26.0",
+   "psycopg": "3.3.6",
+   "psycopg-binary": "3.3.6",
+   "pydantic": "2.11.9",
+   "sqlalchemy": "2.0.44",
+   "uvicorn": "0.53.0"
+  },
+  "python": "3.12.11"
+ },
+ "steps": [
+  {
+   "step": "contract",
+   "exit_code": 0,
+   "passed": true,
+   "seconds": 0.661381584010087,
+   "receipt_sha256": "47705d532678ef24db768e34d9ef5f8deff17561ab09a62cbbd368df86acb904"
+  },
+  {
+   "step": "python-replay",
+   "exit_code": 0,
+   "passed": true,
+   "seconds": 162.10536199994385,
+   "receipt_sha256": "2776b8aae35b20a845a713f8903d05f5bf18777d5395aa6090ca8955d37faa22"
+  },
+  {
+   "step": "python-controls",
+   "exit_code": 0,
+   "passed": true,
+   "seconds": 0.33320250001270324,
+   "receipt_sha256": "264d0a684d8860c59685a9b76f24e1b23728019085562eeb08206bc42113ac8e"
+  },
+  {
+   "step": "validate-cases",
+   "exit_code": 0,
+   "passed": true,
+   "seconds": 0.24227058293763548,
+   "receipt_sha256": "063694d123dc773c5576e2927fb6b2366b28cf3bef4056281e435c03d4ef3e0e"
+  },
+  {
+   "step": "targets",
+   "exit_code": 0,
+   "passed": true,
+   "seconds": 56.24994150002021,
+   "receipt_sha256": "ef85e2afa866e6020a2054d617db43ba5de55ddc7bc5f82afc9948d94e450850"
+  },
+  {
+   "step": "cli",
+   "exit_code": 0,
+   "passed": true,
+   "seconds": 0.9972715409239754,
+   "receipt_sha256": "0763ef68ad1a0eaba917b58570921b4bf339b96fa8113339abb00670290ea474"
+  },
+  {
+   "step": "rust-products",
+   "exit_code": 2,
+   "passed": true,
+   "seconds": 37.706018208060414,
+   "receipt_sha256": "32a2c4ef435e69c345977724a229596603d502d09cf9e076a3815a4cbd2a71e8"
+  },
+  {
+   "step": "rust-unchanged",
+   "exit_code": 0,
+   "passed": true,
+   "seconds": 31.255245625041425,
+   "receipt_sha256": "6845530e5fd1d22de7d5c3f9202d4a1f1539dc25dd98b26d8a9863442b94c8a8"
+  },
+  {
+   "step": "issue57",
+   "exit_code": 0,
+   "passed": true,
+   "seconds": 1198.118446999928,
+   "receipt_sha256": "6d18b4691f6f28092874fe20e253f5d0cbdec3c08cf5d8ec7a84a7ca0dd742f3"
+  },
+  {
+   "step": "name-collisions",
+   "exit_code": 0,
+   "passed": true,
+   "seconds": 2.4436145829968154,
+   "receipt_sha256": "c68282038fe8e9db940e42c8e1668b325a7e48c6a9c5ad86e62f95bb4109a419"
+  }
+ ],
+ "results": {
+  "python_replay": {
+   "mode": {
+    "admitted_descriptors": [
+     "backend",
+     "block_library",
+     "catalog",
+     "compiler_contract",
+     "selection_policy"
+    ],
+    "asset_break": true,
+    "rebased_assembles": 671,
+    "recorded_bundles_refused": 671
+   },
+   "public": {
+    "passed": 127,
+    "total": 127
+   },
+   "legacy": {
+    "passed": 544,
+    "total": 544,
+    "families": {
+     "legacy100": {
+      "passed": 100,
+      "total": 100
+     },
+     "legacy214": {
+      "passed": 214,
+      "total": 214
+     },
+     "quality218": {
+      "passed": 218,
+      "total": 218
+     },
+     "supplement12": {
+      "passed": 12,
+      "total": 12
+     }
+    }
+   },
+   "exchanges": {
+    "passed": 2005,
+    "total": 2005
+   }
+  },
+  "python_controls": {
+   "passed": 32,
+   "failed": []
+  },
+  "validate_cases": {
+   "passed": 6,
+   "failed": []
+  },
+  "targets": {
+   "negative_cases": {
+    "total": 32,
+    "passed": 32
+   },
+   "target_examples": {
+    "total": 24,
+    "passed": 24
+   },
+   "source_forms": {
+    "total": 817,
+    "passed": 817
+   },
+   "python_products": {
+    "assembled": 810,
+    "distinct_file_sets": 671
+   },
+   "compiler_v1_precedence": {
+    "total": 7,
+    "passed": 7
+   },
+   "inventory_problems": [],
+   "failed": []
+  },
+  "cli": {
+   "passed": 39,
+   "total": 39,
+   "failed": []
+  },
+  "rust_products": {
+   "exit_code": 2,
+   "bundle_checks": {
+    "passed": 115,
+    "total": 115
+   },
+   "assemble_refusals": {
+    "passed": 15,
+    "total": 15
+   },
+   "blocked": [
+    "behavior parity: not run, pass --parity with a check_behavior.py report"
+   ],
+   "refusal_plan": "phase2"
+  },
+  "rust_unchanged": {
+   "passed": true,
+   "phase2": {
+    "total": 584,
+    "passed": 584,
+    "files_equal": 582,
+    "refusals": [
+     "RS12_CNL_V3_FILTER_LIMIT",
+     "RS13_JSON_V3_FILTER_OFFSET"
+    ]
+   }
+  },
+  "issue57": {
+   "passed": true,
+   "fixtures_sha256": "821b4ef626e42805dc96537dda1ac7cf6ba3de85d7a67f1ca04cdc8cc37f46ed",
+   "positive_cases": [
+    "RS07_CNL_FIELD_SELF",
+    "RS14_CNL_V5_FOREIGN_KEY_SELF",
+    "RS16_CNL_V5_FIRST_REFUSAL",
+    "SELF_V1_FIELD",
+    "SELF_V3_FILTER_FIELD",
+    "SELF_V5_CAPS_MONGODB_CHILD_FIELD",
+    "SELF_V5_CAPS_MONGODB_FOREIGN_KEY",
+    "SELF_V5_CAPS_PG_CHILD_FIELD",
+    "SELF_V5_CHILD_FOREIGN_KEY",
+    "SELF_V5_PARENT_FIELD",
+    "SELF_V6_MONGODB_CHILD_FIELD",
+    "SELF_V6_MONGODB_FOREIGN_KEY",
+    "SELF_V6_PG_FOREIGN_KEY",
+    "SELF_V6_PG_PARENT_FIELD",
+    "SELF_V7_MONGODB_CHILD_FIELD",
+    "SELF_V7_MONGODB_FOREIGN_KEY",
+    "SELF_V7_PG_FILTER_FIELD",
+    "SELF_V7_PG_FOREIGN_KEY"
+   ],
+   "python_worker_exit_codes": [
+    0,
+    0
+   ],
+   "rust_worker_exit_codes": [
+    0,
+    0,
+    0
+   ],
+   "rust_gates": {
+    "RS07_CNL_FIELD_SELF": true,
+    "RS14_CNL_V5_FOREIGN_KEY_SELF": true,
+    "RS16_CNL_V5_FIRST_REFUSAL": true,
+    "SELF_V1_FIELD": true,
+    "SELF_V3_FILTER_FIELD": true,
+    "SELF_V5_CAPS_MONGODB_CHILD_FIELD": true,
+    "SELF_V5_CAPS_MONGODB_FOREIGN_KEY": true,
+    "SELF_V5_CAPS_PG_CHILD_FIELD": true,
+    "SELF_V5_CHILD_FOREIGN_KEY": true,
+    "SELF_V5_PARENT_FIELD": true,
+    "SELF_V6_MONGODB_CHILD_FIELD": true,
+    "SELF_V6_MONGODB_FOREIGN_KEY": true,
+    "SELF_V6_PG_FOREIGN_KEY": true,
+    "SELF_V6_PG_PARENT_FIELD": true,
+    "SELF_V7_MONGODB_CHILD_FIELD": true,
+    "SELF_V7_MONGODB_FOREIGN_KEY": true,
+    "SELF_V7_PG_FILTER_FIELD": true,
+    "SELF_V7_PG_FOREIGN_KEY": true
+   },
+   "negative": {
+    "total": 48,
+    "passed": 48
+   }
+  },
+  "name_collisions": {
+   "passed": true,
+   "failed": [],
+   "groups": {
+    "example": {
+     "total": 16,
+     "compiled": 16,
+     "other_status": []
+    },
+    "cnl_fixture": {
+     "total": 238,
+     "compiled": 238,
+     "other_status": []
+    },
+    "typed_fixture": {
+     "total": 7,
+     "compiled": 7,
+     "other_status": []
+    },
+    "public": {
+     "total": 127,
+     "compiled": 127,
+     "other_status": []
+    },
+    "legacy": {
+     "total": 544,
+     "compiled": 544,
+     "other_status": []
+    }
+   }
+  }
+ },
+ "independent_audit": {
+  "status": "passed",
+  "script": "som-rs/scripts/rust_output_acceptance/audit/audit057.py",
+  "script_commit": "c4779b53d7",
+  "script_sha256": "910368ceac07c6f47bb06c3ce81df876fc130e060fae3319ad9cf15db8bec503",
+  "out": ".local/rust-compiler-goal/acceptance/issue57/audit-004.json",
+  "sha256": "2c6a9abecc486bd8b20ae845fc5f130abf08c151b9f9a3b44ec87fe8de2c0f43",
+  "counts": {
+   "passed": 16,
+   "failed": 0,
+   "unrun": 0
+  },
+  "plan_sha256": "6077e6e16218c00fd65d69830cdb9a7dff57d6b08a8fb2adbd39752d4abcd887",
+  "accepted_run_055": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003",
+  "rows": [
+   {
+    "index": 0,
+    "section": "run",
+    "state": "passed"
+   },
+   {
+    "index": 1,
+    "section": "run",
+    "state": "passed"
+   },
+   {
+    "index": 2,
+    "section": "run",
+    "state": "passed"
+   },
+   {
+    "index": 3,
+    "section": "run",
+    "state": "passed"
+   },
+   {
+    "index": 4,
+    "section": "run",
+    "state": "passed"
+   },
+   {
+    "index": 5,
+    "section": "run",
+    "state": "passed"
+   },
+   {
+    "index": 0,
+    "section": "plan",
+    "state": "passed"
+   },
+   {
+    "index": 1,
+    "section": "plan",
+    "state": "passed"
+   },
+   {
+    "index": 2,
+    "section": "plan",
+    "state": "passed"
+   },
+   {
+    "index": 3,
+    "section": "plan",
+    "state": "passed"
+   },
+   {
+    "index": 4,
+    "section": "plan",
+    "state": "passed"
+   },
+   {
+    "index": 5,
+    "section": "plan",
+    "state": "passed"
+   },
+   {
+    "index": 6,
+    "section": "plan",
+    "state": "passed"
+   },
+   {
+    "index": 7,
+    "section": "plan",
+    "state": "passed"
+   },
+   {
+    "index": 8,
+    "section": "plan",
+    "state": "passed"
+   },
+   {
+    "index": 9,
+    "section": "plan",
+    "state": "passed"
+   }
+  ],
+  "weak_evidence": [
+   "check 0: compile-response equivalence except the admitted descriptors is attested by python_replay rows (new compile responses are not kept); corroborated by one-to-one hash mapping, byte-identical assemble responses and targets.json Python file hashes",
+   "check 4: A8's renamed_files_sha256 is computed by the tool; it is corroborated only by equality with the #55 A8 files",
+   "check 4: per-case bundle_checks are attested booleans of check_rust_products",
+   "check 6: current phase 2 Rust file hashes are reported by check_rust_unchanged (products not kept in the run); phase 1 current hashes come from rust-products.json",
+   "check 7: cargo test of phase1_suite products ran on a fresh database by the gate record's account; the logs show the tests passed but not which database they used",
+   "check 7: the selected variant blocks of RS07 and RS16 are recorded by check_issue57 only (no contract records them; RS14 is compared with the fixture of the same prompt); typed JSON vs CNL same-bundle is a per-case boolean (cnl_same_bundle)",
+   "check 8: name-collisions.json records names and statuses only (no prompt hashes or reply hashes), so which prompt bytes were sent is attested by the tool",
+   "rust-products step exits 2: behavior parity not run (by plan design); product gates 0/0 (--no-gates)"
+  ]
+ },
+ "local_only": {
+  "run": ".local/rust-compiler-goal/acceptance/issue57/run-004",
+  "header_sha256": "48fa6a5e8348e4911b3b618b1a4488a2547b34519fb67d4db2949004bb3c7f49",
+  "summary_sha256": "513e9e10f769b376d4956f1d957cd0508f00961cc0a6d88ad76b67a2696262ad",
+  "audit": ".local/rust-compiler-goal/acceptance/issue57/audit-004.json"
+ },
+ "earlier_runs": "run-001 failed only by the old exit-0 judge of rust-products (fixed by judge_rust_products); run-002 passed but audit-002 left plan check 7 unrun (no RS CNL forms, no Rust build, clippy and test record); check_issue57 then gained the gates and RS CNL forms and run-003 passed (audit-003 16/0/0) on candidate-005. The #57 release inputs then refused that candidate: amendment 003 had changed the retained M2 block library. compiler-v1 amendment 004 restored it and moved the amended library to flow-v7-compact-self; candidate-006 and run-004 repeat the acceptance on that source.",
+ "boundary": {
+  "local_tools_only": true,
+  "paid_or_cloud_runs": false,
+  "training": false,
+  "default_8765_kept": true,
+  "python_product_files_byte_identical": true,
+  "python_bundle_change": "asset descriptors and payload_sha256 only (amendment 004)"
+ },
+ "not_done": [
+  "Release of candidate-006 to 8765 is recorded in rust-output-release-2026-10-20-issue57.json."
+ ]
+}
