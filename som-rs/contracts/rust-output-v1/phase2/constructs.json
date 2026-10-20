@@ -724,7 +724,7 @@
           "phase1"
         ]
       },
-      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (naming.json W4). A v3 filter field named like a fixed list parameter stays refused (query_parameter_collision, CONTRACT.md section 10)."
+      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (naming.json W4). A v3 filter field named like a fixed list parameter is refused by compiler-v1 for every target (python_name_collisions, CONTRACT.md section 12)."
     },
     {
       "id": "pointer:/query/date_field",
@@ -738,7 +738,7 @@
           "phase1"
         ]
       },
-      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (naming.json W4). A v3 filter field named like a fixed list parameter stays refused (query_parameter_collision, CONTRACT.md section 10)."
+      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (naming.json W4). A v3 filter field named like a fixed list parameter is refused by compiler-v1 for every target (python_name_collisions, CONTRACT.md section 12)."
     },
     {
       "id": "pointer:/query/max_limit",
@@ -760,7 +760,7 @@
           "phase1"
         ]
       },
-      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (naming.json W4). A v3 filter field named like a fixed list parameter stays refused (query_parameter_collision, CONTRACT.md section 10)."
+      "rust_form": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (naming.json W4). A v3 filter field named like a fixed list parameter is refused by compiler-v1 for every target (python_name_collisions, CONTRACT.md section 12)."
     },
     {
       "id": "pointer:/resources/parent/query/filter_field",

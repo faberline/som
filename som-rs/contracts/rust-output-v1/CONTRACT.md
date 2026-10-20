@@ -36,6 +36,7 @@ The CNL grammar, the typed prompt schema, the v1 bundle, every Python asset, eve
 No existing case, example, fixture, receipt or snapshot changes.
 A som.dsl-bundle.v1 bundle never has a `target` member. The assembler keeps refusing one with INVALID_SCHEMA at /bundle/target.
 Python acceptance keeps its scope: 127 public products, 544 historical jobs, and the legacy 100 and 214 case sets.
+Amendment 004 (section 12) records the one exception, compiler-v1 amendment 003: the Python asset descriptors change, and every Python product file stays byte-identical.
 
 ## 2. Target selection
 
@@ -226,6 +227,7 @@ The query string of such a product is ambiguous: ?limit=5 would be both the filt
 The Python product for such a prompt does not start (RS12, RS13 in behavior.json), and compiler-v1 already refuses the same names in v4 and v5.
 Issue #52 listed this refusal for removal. Keeping it is a recorded deviation from the issue text, decided on 2026-10-16.
 [tests/rust-output-v1/rust_profile_phase2.py](../../tests/rust-output-v1/rust_profile_phase2.py) is the reference check. rust_profile.py and scope.json stay the phase 1 record.
+Amendment 004 (section 12) moved this refusal to compiler-v1, for every target. The phase 2 profile now refuses nothing.
 
 ### Constructs and owners
 
@@ -335,6 +337,7 @@ Two harness changes let the suite run Rust products. The pins of phase2/pins.jso
 - check_phase2.py run --language rust --qa URL compiles each typed prompt with target rust on a candidate, assembles it and runs the same checker on the Rust product. RS12 and RS13 pass only with their exact refusal.
 
 The Python baseline was run again with the pinned harness, as behavior.json records. Its result is unchanged: 579 of 584 cases pass, and the five that do not are the explained RS07, RS14, RS16, RS12 and RS13.
+Section 12 fixes RS07, RS14 and RS16 in Python, and compiler-v1 now refuses RS12 and RS13.
 
 ### Acceptance
 
@@ -346,3 +349,61 @@ The Python baseline was run again with the pinned harness, as behavior.json reco
 - A6 and A8 change, because phase 2 admits their prompts;
 - an independent audit closes #55;
 - 8765 changes only with the user's approval (#56).
+
+## 12. Python names: `self` and collisions (amendment 004, issues #57 and #58)
+
+compiler-v1 amendment 003 (../../evidence/rust-compiler-contract-amendment-003.json) adds two rules to the compiler:
+
+- `self_name_variants`: a prompt with a resource field or relation.foreign_key named `self` selects variant blocks. Its Python product then works.
+- `python_name_collisions`: a name that shares a Python scope with an identifier of the generated code is refused with INVALID_VALUE, for every target.
+
+This amendment records what those rules change in this contract. Sections 1 to 11 stay in force otherwise.
+
+### Python
+
+Section 1 gets one exception. compiler-v1 amendment 003 changes the backend, the block libraries, the catalogs, the compiler contract and the selection policy, so their asset descriptors change.
+For every prompt that compiler-v1 still admits, a Python compile response equals the accepted one except bundle.assets and hashes.payload_sha256.
+Only the descriptors backend, block_library, catalog, compiler_contract and selection_policy may differ.
+The prompt, the DSL and every assembled product file stay byte-identical.
+That holds for the 127 public products and the 544 historical jobs.
+A bundle compiled before this amendment is refused at assemble with ASSET_HASH_MISMATCH. That is a recorded compatibility break; compile the prompt again.
+No CNL text, typed prompt, existing block or existing Python output changes. The variants are new block ids.
+
+Some prompts change result:
+
+- RS07, RS14 and RS16 have a field or foreign key named `self`. Their Python products now pass the phase 2 checker, and behavior.json issue57 records that.
+- RS12 and RS13 have a v3 filter field named limit or offset. They are refused at compile with INVALID_VALUE and HTTP 400, for every target.
+  - negative-cases.json records the new diagnostic: the code, detail, pointer and span of compiler-v1, with the CNL allowed form of compiler-v1 amendment 003.
+  - Their Python controls give the same diagnostic. The JSON control lacks the target member, so its location is checked in the control body.
+
+### Rust
+
+The phase 2 profile (rust_profile_phase2.py, profile.rs) refuses nothing.
+query_parameter_collision stays only in the phase 1 record. naming.json lists it under phase1_refusals_moved_to_compiler_v1.
+The Rust bundle carries the same shared compiler-v1 descriptors, so they change as in Python.
+Its Rust backend descriptor changes because profile.rs and rust/mod.rs change, and its target_contract descriptor changes as section 4 says for every amendment.
+Its DSL and its files change only where the next item says.
+
+#57 also fixes one Rust defect. In a MongoDB capability or flow product, the row reader named a foreign key called `self` apart from the fields, unlike the row struct, so the product did not compile.
+The reader now names the foreign key together with the fields, as the row struct does.
+Only MongoDB products whose foreign key is not a plain Rust identifier change: `self`, `crate`, `super`, a Rust keyword (written `r#name`) or a name that falls back to `foreign_key`.
+Before the fix, each of those products failed to compile, so no accepted product changes. No phase 2 case has such a foreign key, so every phase 2 Rust product stays byte-identical.
+
+### Cases and acceptance
+
+../../tests/compiler-v1/self-name-fixtures.json holds the cases of both rules:
+
+- 15 `self` prompts, with the variant ids they select;
+- 13 refused names, with their typed JSON and CNL diagnostics;
+- 3 accepted controls.
+
+[acceptance-plan.json](acceptance-plan.json) issue57 is the acceptance plan for this amendment. It runs on one candidate:
+
+- python_replay.py --asset-break: the rule above, with every recorded assemble bundle refused and the same bundle rebased on the new descriptors giving the recorded bytes;
+- check_python_controls.py, validate_cases.py (Python files equal to the frozen evidence) and the phase 1 target and CLI checks;
+- the phase 2 refusals, with A6 rebuilt on RS13 (below);
+- every phase 1 and phase 2 Rust product byte-identical to the accepted #55 run (rust-output-055 run-003);
+- check_issue57.py: every positive fixture and RS07, RS14 and RS16 compile from typed JSON and CNL to the same bundle and pass the phase 2 checker in Python and in Rust. Every negative and accepted fixture gives its recorded result in typed JSON, typed JSON with target rust, and CNL.
+
+A6 needs a prompt that compiler-v1 admits and Rust does not. Phase 2 has none left.
+A6 now uses the RS13 typed prompt, which compiler-v1 refuses. Assemble validates the prompt first, so the result is INVALID_VALUE 400 at /bundle/prompt/query/filter_field.

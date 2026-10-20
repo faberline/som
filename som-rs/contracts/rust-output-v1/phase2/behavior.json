@@ -183,16 +183,22 @@
     }
   },
   "issue": 52,
+  "issue57": {
+    "issue": 57,
+    "other_cases": "every other Python product of this run is byte-identical after #57, so this run stays its behavior record",
+    "phase2_refusals": "the phase 1 profile refused these prompts for Rust only (query_parameter_collision); compiler-v1 now refuses them for every target with INVALID_VALUE, so no Python product is generated for them either",
+    "python_defects": "fixed: the Python product of each python_defects case selects the self_name_variants blocks (compiler-v1 amendment 003); som-rs/scripts/rust_output_acceptance/check_issue57.py runs it on the same checker and requires it to pass, in Python and Rust"
+  },
   "phase2_refusals": {
     "RS12_CNL_V3_FILTER_LIMIT": {
       "python_product": "does not start: SyntaxError, duplicate argument",
-      "rule": "query_parameter_collision",
-      "rust": "refused at compile (rust_profile_phase2.py); not a behavior case"
+      "rule": "python_name_collisions",
+      "rust": "refused at compile by compiler-v1 for every target; not a behavior case"
     },
     "RS13_JSON_V3_FILTER_OFFSET": {
       "python_product": "does not start: SyntaxError, duplicate argument",
-      "rule": "query_parameter_collision",
-      "rust": "refused at compile (rust_profile_phase2.py); not a behavior case"
+      "rule": "python_name_collisions",
+      "rust": "refused at compile by compiler-v1 for every target; not a behavior case"
     }
   },
   "python_defects": {
@@ -302,15 +308,15 @@
     "A phase 2 case is checked by the checker its inventory row names, with the adapted verifiers of som-rs/behavior/phase2/adapted (adapt.py) and the phase2_host language steps.",
     "The Rust reference is the checker's oracle. A Rust product passes a case when its checker passes and no assembled file changed during the run.",
     "A Python product that fails its own oracle is a python_defect: Rust is still checked against the oracle and the Python output stays byte-identical.",
-    "A case the phase 2 profile refuses is not a behavior case for Rust; Rust refuses its prompt.",
+    "A case compiler-v1 refuses is not a behavior case; the compile refuses its prompt for every target.",
     "Not-applicable records are counted from the outcomes of the Python run; a Rust run must record the same cases as not applicable."
   ],
   "sources": {
     "som-rs/behavior/phase2/adapt.py": "ffe4d965331ccc4127e02b3fd83a626b5569660e00393f7b6e22f9d0ea7b62f0",
     "som-rs/behavior/phase2/adapted/MANIFEST.json": "b679187b5c6cb120aa6a98c6164c63b7be75fd198cdfb7fb10b6b3b22511304b",
-    "som-rs/behavior/phase2/check_phase2.py": "3ac72c1ec42adf74f112c45f395ee57166f8843a5bc7d14eeca8e41c1ea07ade",
+    "som-rs/behavior/phase2/check_phase2.py": "7c37aa4cc6f40c988eb48da92873ffbdf8fab76a2faf8d953107c2fd1d6ff1b9",
     "som-rs/behavior/phase2/phase2_host.py": "ca46edc076e51d43711223f70b97af0c35fbb4bf413c66da374aca72562d4449",
-    "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "150a2bebcd4554d00b3409ea15b43a6a159a3bc05e81549eeadb858bd2220b8d"
+    "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6"
   },
   "superseded_runs": [
     {

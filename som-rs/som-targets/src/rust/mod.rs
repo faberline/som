@@ -27,9 +27,9 @@ pub const CATALOG_ID: &str = "som.rust-catalog.v1";
 pub const BLOCK_LIBRARY_ID: &str = "som.rust-block-library.v1";
 pub const BACKEND_ID: &str = "som.rust-backend.v1";
 pub const TARGET_CONTRACT_ID: &str = "som.rust-output-contract.v1";
-/// H(files map) of the latest sealed receipt for contracts/rust-output-v1: amendment 3.
+/// H(files map) of the latest sealed receipt for contracts/rust-output-v1: amendment 4.
 pub const TARGET_CONTRACT_SHA256: &str =
-    "893746988ef2062ff51cd6b6fc2941a31a1a2cff885a73600aa1abce2e872c10";
+    "4aa0e4afc0f17def6a3342ab445d69488a437f68b8b7ac9a2e2f7cf8c6a1622c";
 
 pub const CATALOG_TEXT: &str = include_str!("../../catalog/rust-catalog.v1.json");
 const BLOCK_LIBRARY_TEXT: &str = concat!(
@@ -1279,6 +1279,26 @@ mod tests {
                     std::fs::create_dir_all(path.parent().expect("parent")).expect("dir");
                     std::fs::write(path, text).expect("write");
                 }
+            }
+        }
+    }
+
+    #[test]
+    fn a_mongodb_foreign_key_that_is_not_a_plain_identifier_reads_into_its_member() {
+        // The row reader names the foreign key as the row struct does (#57).
+        for (key, member) in [("self", "foreign_key"), ("type", "r#type")] {
+            for name in ["v5", "v6", "v7"] {
+                let mut prompt = example(name);
+                if name == "v5" {
+                    prompt["capabilities"] = example("v6")["capabilities"].clone();
+                }
+                prompt["capabilities"]["database"] = json!("mongodb");
+                prompt["relation"]["foreign_key"] = json!(key);
+                let dsl = plan(&prompt).expect("plan");
+                let files = render_files(&prompt, &dsl).expect("render");
+                check_output(&files).expect("layout");
+                let read = format!("{member}: read_int(document.get(\"{key}\"))?,");
+                assert!(files["src/db.rs"].contains(&read), "{name} {key}");
             }
         }
     }

@@ -16,8 +16,9 @@ fixture_case and suite_case, so check_phase2.py summarize --out DIR reads them.
   at most 12 files and 64 blocks per file, every block id starts with rust.; two assembles give the
   same bytes; the files are exactly the product-layout.json phase2 shape the prompt selects, and
   Cargo.toml and Cargo.lock equal the reference files of that shape. A case whose
-  phase2/case-inventory.json result is a refusal (RS12, RS13) passes when every reply is a 422
-  UNSUPPORTED_TARGET; any other non-200 compile fails.
+  phase2/case-inventory.json result is a refusal (RS12, RS13) passes when every reply has the
+  inventory status and code: since amendment 004 the compiler-v1 python_name_collisions refusal,
+  400 INVALID_VALUE, else 422 UNSUPPORTED_TARGET; any other non-200 compile fails.
 - product_gates, capability and flow shapes: the case runs on check_phase2.fixture_case with
   phase2_host.RustProduct replaced by GatedRustProduct. Before the checker's first build it runs
   rustfmt --check, cargo build and cargo clippy -D warnings; after it, som_app migrate upgrade on a
@@ -151,7 +152,9 @@ def bundle_checks(qa: str, case: dict, prompt: dict) -> tuple[dict, dict | None]
             if replies[index][1:] != replies[index + 1][1:]:
                 problems.append(f"two {replies[index][0]} compiles differ in bytes")
         codes = [json.loads(raw).get("code") for _, _, raw in replies]
-        if any(status != 422 for _, status, _ in replies) or set(codes) != {"UNSUPPORTED_TARGET"}:
+        wanted = INVENTORY[case["id"]]
+        wanted_status, wanted_code = wanted.get("http_status", 422), wanted.get("code", "UNSUPPORTED_TARGET")
+        if any(status != wanted_status for _, status, _ in replies) or set(codes) != {wanted_code}:
             problems.append(f"refusal compiles gave {record['compile_status']} {sorted(set(map(str, codes)))}")
         record.update(passed=not problems, problems=problems, refusal=True)
         return record, None

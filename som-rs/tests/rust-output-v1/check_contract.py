@@ -148,7 +148,13 @@ def check_negative_cases(report: Report, schema: Callable[[str], Draft202012Vali
     report.check("negative case ids are unique", len(ids) == len(set(ids)))
     forms = {rule: entry["allowed_form"] for rule, entry in scope["refusals"].items()}
     report.check("refusal allowed forms are distinct", len(set(forms.values())) == len(forms))
+    # Amendment 004: these phase 1 refusals moved to compiler-v1 python_name_collisions, for every target.
+    moved = load(CONTRACT / "phase2" / "naming.json")["phase1_refusals_moved_to_compiler_v1"]
     for rule, form in forms.items():
+        if rule in moved:
+            report.check(f"refusal {rule} moved to compiler-v1 has no Rust RS case",
+                         not any(c["id"].startswith("RS") and c["expected"]["allowed_form"] == form for c in cases))
+            continue
         report.check(f"refusal {rule} has an RS case",
                      any(c["id"].startswith("RS") and c["expected"]["allowed_form"] == form for c in cases))
     for case in cases:
@@ -176,6 +182,18 @@ def check_negative_cases(report: Report, schema: Callable[[str], Draft202012Vali
             continue
         report.check(f"{cid} body has target rust", body.get("target") == "rust")
         report.check(f"{cid} body passes the Rust-target schema", rust_request.is_valid(body))
+        if cid.startswith("RS") and expected["code"] == "INVALID_VALUE":
+            # Amendment 004: compiler-v1 refuses the prompt for every target; the phase 1 profile still names
+            # it with a moved rule, and the control gives the same diagnostic.
+            report.check(f"{cid} is a compiler-v1 name collision refusal",
+                         case["http_status"] == 400 and expected["cause"].endswith(
+                             ": name collides with a generated Python identifier")
+                         and case["python_control_expected"].startswith("the same diagnostic"))
+            if body["format"] == "som.prompt-json.v1":
+                got = rust_profile.check(body["prompt"])
+                report.check(f"{cid} is a moved phase 1 refusal", got is not None and got["rule"] in moved
+                             and "/prompt" + got["pointer"] == expected["prompt_pointer"], json.dumps(got))
+            continue
         if cid.startswith("RS"):
             report.check(f"{cid} code is a scope refusal", expected["code"] in known and case["http_status"] == 422)
             if body["format"] == "som.prompt-json.v1":
@@ -293,12 +311,13 @@ def check_plan(report: Report) -> None:
 
 
 def check_evidence(report: Report) -> None:
-    controls = load(EVIDENCE / "negative-python-controls-2026-10-15.json")
+    # The latest controls run: amendment 004 changed negative-cases.json after the 2026-10-15 run.
+    controls = load(sorted(EVIDENCE.glob("negative-python-controls-*.json"))[-1])
     report.check("Python controls ran on the current negative cases",
                  controls["negative_cases_sha256"] == sha(CONTRACT / "negative-cases.json"))
     report.check("Python controls all passed", controls["failed"] == [] and controls["passed"] == 32)
     cnl_scope = [c["id"] for c in load(CONTRACT / "negative-cases.json")["cases"]
-                 if c["id"].startswith("RS") and c["form"] == "cnl"]
+                 if c["id"].startswith("RS") and c["form"] == "cnl" and c["expected"]["code"] != "INVALID_VALUE"]
     rows = {r["id"]: r for r in controls["results"]}
     report.check("every CNL scope case's compiled prompt gives its frozen refusal",
                  all(rows[cid].get("rust_profile_matches") is True for cid in cnl_scope), json.dumps(cnl_scope))

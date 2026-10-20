@@ -79,7 +79,12 @@ pub fn compile_engine(value: &Value) -> Result<String, SomError> {
 }
 
 pub fn resolve(prompt: &Value, dsl: &Value) -> Result<Value, SomError> {
-    flow::validate_plan_with(prompt, dsl, &flow::COMPACT_CATALOG)?;
+    // Catalog checks see base ids; the lowered files keep the selected self variant ids.
+    flow::validate_plan_with(
+        prompt,
+        &crate::python_names::base_plan(prompt, dsl)?,
+        &flow::COMPACT_CATALOG,
+    )?;
     let mut values = composed::values(&flow::base(prompt))?;
     values.insert("flow.inputs".into(), prompt["flow"]["inputs"].clone());
     values.insert("flow.name".into(), prompt["flow"]["name"].clone());
@@ -172,7 +177,11 @@ pub fn assemble(
 ) -> Result<BTreeMap<String, String>, SomError> {
     composed::verify_blocks_with(blocks, &flow::COMPACT_CATALOG)?;
     flow_codec::features_with(prompt, &flow::COMPACT_CATALOG)?;
-    flow_codec::encode_with(prompt, dsl, &flow::COMPACT_CATALOG)?;
+    flow_codec::encode_with(
+        prompt,
+        &crate::python_names::base_plan(prompt, dsl)?,
+        &flow::COMPACT_CATALOG,
+    )?;
     let lowered = resolve(prompt, dsl)?;
     quality.finalize_with_byte_limit(render_resolved(&lowered, blocks)?, None)
 }

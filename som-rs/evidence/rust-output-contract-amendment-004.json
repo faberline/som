@@ -1,0 +1,566 @@
+{
+  "version": "som.rust-output-contract-amendment.v1",
+  "amendment": 4,
+  "frozen_at": "2026-10-20T06:08:11.246844+00:00",
+  "baseline_commit": "87e3f62e5eab56ce2a6708e28ccc52528fa4f911",
+  "issue": [
+    57,
+    58
+  ],
+  "target": "rust",
+  "bundle": "som.dsl-bundle.v2",
+  "status": "amendment_sealed_after_independent_review",
+  "implementation_already_in_progress": true,
+  "implementation_already_in_progress_refers_to": "a QA spike (.local/rust-output-phase2/self-spike-001, qa-005 on a QA port) built the compiler-v1 and som-targets changes before this freeze to probe them; no candidate, acceptance run or default switch used them",
+  "previous_receipt": "som-rs/evidence/rust-output-contract-amendment-003.json",
+  "previous_receipt_sha256": "147a3bf8885e64fb511f9d6973d9b42f608ceda80b13d9fcac504582fdde1b21",
+  "compiler_amendment": {
+    "receipt": "som-rs/evidence/rust-compiler-contract-amendment-003.json",
+    "receipt_sha256": "bcdd59eda51d4b2a21c855f0186432ed7f9bc301331892ac35fb8e623120ae81",
+    "status": "amendment_sealed_after_independent_review"
+  },
+  "reason": "compiler-v1 amendment 003 (issues #57 and #58) adds self_name_variants and python_name_collisions. This contract records what that changes: CONTRACT.md section 12 and notes in sections 1, 10 and 11. python_unchanged gains one exception (acceptance-plan.json python_unchanged.amendment_004): the Python asset descriptors change, the prompt, DSL and every product file stay byte-identical, and a recorded bundle gives ASSET_HASH_MISMATCH. RS12 and RS13 are refused by compiler-v1 with INVALID_VALUE 400 for every target (negative-cases.json, the user's 2026-10-17 decision), so the phase 2 profile refuses nothing (rust_profile_phase2.py, naming.json, constructs.json, phase2/case-inventory.json), A6 moves to the RS13 typed prompt, and check_contract.py treats the moved refusal as compiler-v1's. RS07, RS14 and RS16 work in Python (phase2/behavior.json issue57). check_phase2.py changes with the refusal, so phase2/pins.json is pinned again. acceptance-plan.json gains issue57, the acceptance for #57 and #58. The Python controls ran again on the amended negative cases (negative-python-controls-2026-10-20.json).",
+  "changed_paths": [
+    "som-rs/contracts/rust-output-v1/CONTRACT.md",
+    "som-rs/contracts/rust-output-v1/acceptance-plan.json",
+    "som-rs/contracts/rust-output-v1/negative-cases.json",
+    "som-rs/contracts/rust-output-v1/phase2/behavior.json",
+    "som-rs/contracts/rust-output-v1/phase2/case-inventory.json",
+    "som-rs/contracts/rust-output-v1/phase2/constructs.json",
+    "som-rs/contracts/rust-output-v1/phase2/naming.json",
+    "som-rs/contracts/rust-output-v1/phase2/pins.json",
+    "som-rs/tests/rust-output-v1/build_negative_cases.py",
+    "som-rs/tests/rust-output-v1/build_phase2_behavior.py",
+    "som-rs/tests/rust-output-v1/build_phase2_constructs.py",
+    "som-rs/tests/rust-output-v1/build_phase2_inventory.py",
+    "som-rs/tests/rust-output-v1/check_contract.py",
+    "som-rs/tests/rust-output-v1/check_python_controls.py",
+    "som-rs/tests/rust-output-v1/rust_profile_phase2.py"
+  ],
+  "added_paths": [
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-20.json"
+  ],
+  "changes": [
+    {
+      "path": "som-rs/contracts/rust-output-v1/CONTRACT.md",
+      "old_sha256": "7a52f6e63ac687b67cf58cf4928693b6e4891ecc28b158ffa333a6f72486fbfe",
+      "new_sha256": "9df4f816a1d3508a45a3deb4db4d70ddb10171ece76c2ef0f00643bf0db84f5f",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/CONTRACT-before-amendment-004.md",
+      "archived_copy_sha256": "7a52f6e63ac687b67cf58cf4928693b6e4891ecc28b158ffa333a6f72486fbfe"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/acceptance-plan.json",
+      "old_sha256": "0f6f24fd9f6a909ecf17717f750a43bb0bc07457eb69e73792bdba2524182b16",
+      "new_sha256": "6077e6e16218c00fd65d69830cdb9a7dff57d6b08a8fb2adbd39752d4abcd887",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/acceptance-plan-before-amendment-004.json",
+      "archived_copy_sha256": "0f6f24fd9f6a909ecf17717f750a43bb0bc07457eb69e73792bdba2524182b16"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/negative-cases.json",
+      "old_sha256": "a82736a98e4f8c8650f58ae92fb262c9f98fc4b66c6b9e60aab3512804208c97",
+      "new_sha256": "74b36cb9ba0e61e639193f5a55f5e9e9c1924c730e502dd2de300b88c9dbbc1d",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/negative-cases-before-amendment-004.json",
+      "archived_copy_sha256": "a82736a98e4f8c8650f58ae92fb262c9f98fc4b66c6b9e60aab3512804208c97"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/phase2/behavior.json",
+      "old_sha256": "c1277fcacab1169ce4a782c5141142a3c2862223fea6ff390ddb774be23059ce",
+      "new_sha256": "d2007cc091a5f3ff22a2d0aeeef2c6cfe0e8f620caa255b5dc14c06efdf82ece",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/behavior-before-amendment-004.json",
+      "archived_copy_sha256": "c1277fcacab1169ce4a782c5141142a3c2862223fea6ff390ddb774be23059ce"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/phase2/case-inventory.json",
+      "old_sha256": "150a2bebcd4554d00b3409ea15b43a6a159a3bc05e81549eeadb858bd2220b8d",
+      "new_sha256": "b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/case-inventory-before-amendment-004.json",
+      "archived_copy_sha256": "150a2bebcd4554d00b3409ea15b43a6a159a3bc05e81549eeadb858bd2220b8d"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/phase2/constructs.json",
+      "old_sha256": "16210a3b421de69759a33c169b6925a7bbff38e33268bbaa0df787941b857b8c",
+      "new_sha256": "6ef923690ce209795141076aec0d76d67d702d0fa35831324da136dd83e463dd",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/constructs-before-amendment-004.json",
+      "archived_copy_sha256": "16210a3b421de69759a33c169b6925a7bbff38e33268bbaa0df787941b857b8c"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/phase2/naming.json",
+      "old_sha256": "495393b9e226f7faac959fe05c00ed584ae92d6817e198247b530862aac0a198",
+      "new_sha256": "cf9e2b70608f8ba7bd65710e901c99682bb4478562377ae3d1457abbc1e54de2",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/naming-before-amendment-004.json",
+      "archived_copy_sha256": "495393b9e226f7faac959fe05c00ed584ae92d6817e198247b530862aac0a198"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/phase2/pins.json",
+      "old_sha256": "c55a62bdb0c580d077f9ffbb4cf8de0ba68df4be66e1f312844910dad342fe9b",
+      "new_sha256": "76fa9338f987211dfc4cd1ff01f2b812855c131da7e58f5de3bdac117826e5f1",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/pins-before-amendment-004.json",
+      "archived_copy_sha256": "c55a62bdb0c580d077f9ffbb4cf8de0ba68df4be66e1f312844910dad342fe9b"
+    },
+    {
+      "path": "som-rs/tests/rust-output-v1/build_negative_cases.py",
+      "old_sha256": "fe28674bcf2c7048d0953a14a8405acc185bbf083f8e2d1abbe0c75d523c3689",
+      "new_sha256": "fe97797483e8f34ee12297c2c48412adcf4bc6baedbe0833adf769cc7683f15a",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/build_negative_cases-before-amendment-004.py",
+      "archived_copy_sha256": "fe28674bcf2c7048d0953a14a8405acc185bbf083f8e2d1abbe0c75d523c3689"
+    },
+    {
+      "path": "som-rs/tests/rust-output-v1/build_phase2_behavior.py",
+      "old_sha256": "604c620b595e721607f29da9a1456a4803f6b879a21e300787acc8520d859851",
+      "new_sha256": "7d58af568f093cff9caaae0bff83dba2bac5ba9dbe8e2fc27ad029bbb8d22d9b",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/build_phase2_behavior-before-amendment-004.py",
+      "archived_copy_sha256": "604c620b595e721607f29da9a1456a4803f6b879a21e300787acc8520d859851"
+    },
+    {
+      "path": "som-rs/tests/rust-output-v1/build_phase2_constructs.py",
+      "old_sha256": "89fd4e351dc2a696778ec00c651f22c8c9dbbd5700401bfcdf3444d8aaad253d",
+      "new_sha256": "a1c2b3ff09644ef246580a2afec062c78299e9cace169d4e750d11313f1e80ee",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/build_phase2_constructs-before-amendment-004.py",
+      "archived_copy_sha256": "89fd4e351dc2a696778ec00c651f22c8c9dbbd5700401bfcdf3444d8aaad253d"
+    },
+    {
+      "path": "som-rs/tests/rust-output-v1/build_phase2_inventory.py",
+      "old_sha256": "2f0dc3701db1a30f8826f51b272369ae97e43e9dfc224f13517e768e8539daaf",
+      "new_sha256": "60328ce9c02446891a5aff86a1681ce103b895a58b25cd970a0529625b44c994",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/build_phase2_inventory-before-amendment-004.py",
+      "archived_copy_sha256": "2f0dc3701db1a30f8826f51b272369ae97e43e9dfc224f13517e768e8539daaf"
+    },
+    {
+      "path": "som-rs/tests/rust-output-v1/check_contract.py",
+      "old_sha256": "61d1539d0dbf3b9e7cb2b7528acded146bdbb2dcff48aa069fd22ac52a6a59d5",
+      "new_sha256": "958aacace4f99badd190715140665bb3bf9f08ec0e88c8557b6d24f87a069b15",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/check_contract-before-amendment-004.py",
+      "archived_copy_sha256": "61d1539d0dbf3b9e7cb2b7528acded146bdbb2dcff48aa069fd22ac52a6a59d5"
+    },
+    {
+      "path": "som-rs/tests/rust-output-v1/check_python_controls.py",
+      "old_sha256": "3da613ff3e8553939e1d246cd1b65007e8c088b5f541c5dc1838739903171939",
+      "new_sha256": "50e081a6a10cdbb7db8e84e094854ef8833f25d3cfa0857cc98e9cb4e9ccd047",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/check_python_controls-before-amendment-004.py",
+      "archived_copy_sha256": "3da613ff3e8553939e1d246cd1b65007e8c088b5f541c5dc1838739903171939"
+    },
+    {
+      "path": "som-rs/tests/rust-output-v1/rust_profile_phase2.py",
+      "old_sha256": "71de51983273f9313edc139b68c73c9534d2f07c0bc48b0e3788be409b0425df",
+      "new_sha256": "66361c04b8c7069868aa03205dbb33f9d28ede06e55ea262326671b91108316b",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/rust_profile_phase2-before-amendment-004.py",
+      "archived_copy_sha256": "71de51983273f9313edc139b68c73c9534d2f07c0bc48b0e3788be409b0425df"
+    }
+  ],
+  "unchanged": "Every other path of the previous receipt keeps its hash: scope.json, rust_profile.py, the bundle schema, product layout, toolchain, reference crates, cases and every phase 1 gate. Sections 1 to 11 of CONTRACT.md change only by the notes that point to section 12.",
+  "target_contract": {
+    "id": "som.rust-output-contract.v1",
+    "previous_sha256": "893746988ef2062ff51cd6b6fc2941a31a1a2cff885a73600aa1abce2e872c10",
+    "sha256": "4aa0e4afc0f17def6a3342ab445d69488a437f68b8b7ac9a2e2f7cf8c6a1622c",
+    "rule": "sha256 of the som.canonical-json.v1 bytes of the files map below"
+  },
+  "files": {
+    "som-rs/contracts/rust-output-v1/CONTRACT.md": "9df4f816a1d3508a45a3deb4db4d70ddb10171ece76c2ef0f00643bf0db84f5f",
+    "som-rs/contracts/rust-output-v1/acceptance-plan.json": "6077e6e16218c00fd65d69830cdb9a7dff57d6b08a8fb2adbd39752d4abcd887",
+    "som-rs/contracts/rust-output-v1/api.schema.json": "dbd396f5e395487f05d6ad8c696d307a6641a9af47322e8c78284a47d053fff0",
+    "som-rs/contracts/rust-output-v1/behavior-normalization.json": "c75b29346d605af7e6ec8ad5d856381f4f8e0e0d321f1d236a5d93b545be97bf",
+    "som-rs/contracts/rust-output-v1/bundle.schema.json": "0d9e9db5495c0d9121b3213ed0eb15b18af6de462ee16ef3e91561414f4547bd",
+    "som-rs/contracts/rust-output-v1/case-inventory.json": "fc6fbec822623cb9bdc0a6e11c2a72b6f0dfac3c41e8b7c1e35830090eb7d2a5",
+    "som-rs/contracts/rust-output-v1/negative-cases.json": "74b36cb9ba0e61e639193f5a55f5e9e9c1924c730e502dd2de300b88c9dbbc1d",
+    "som-rs/contracts/rust-output-v1/phase2/behavior.json": "d2007cc091a5f3ff22a2d0aeeef2c6cfe0e8f620caa255b5dc14c06efdf82ece",
+    "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6",
+    "som-rs/contracts/rust-output-v1/phase2/constructs.json": "6ef923690ce209795141076aec0d76d67d702d0fa35831324da136dd83e463dd",
+    "som-rs/contracts/rust-output-v1/phase2/naming.json": "cf9e2b70608f8ba7bd65710e901c99682bb4478562377ae3d1457abbc1e54de2",
+    "som-rs/contracts/rust-output-v1/phase2/pins.json": "76fa9338f987211dfc4cd1ff01f2b812855c131da7e58f5de3bdac117826e5f1",
+    "som-rs/contracts/rust-output-v1/phase2/services.json": "64c7b3ad93ea8359280232b5b6244f21c5bdcf1fb84931711376708b44ed572d",
+    "som-rs/contracts/rust-output-v1/product-layout.json": "d2d781f31d959fb913b1182a481e44bc4520e6157ef80de1e7e2fcec46be0b8f",
+    "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.lock": "0483374722515e3daa7f8509708abb9c551f1bc1815f9110e6662b893db443ad",
+    "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.toml": "d06a474e62ab474465c73f4ad99ddcf5d0e33a750684e3a8cfa83714949cd430",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.lock": "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.toml": "8b708c38686b77e6740171e24c28793c4a40b54a8e9807f8e147a9ef3b44591d",
+    "som-rs/contracts/rust-output-v1/scope.json": "0f31b4c0290afda9b4c4ccf99b575edec81c3361ae31c74b44bc16d5ff20e51d",
+    "som-rs/contracts/rust-output-v1/target-examples.json": "4d91b175e9c75cadb61ae335dc1540582b3d89c01815abe651b02d57ac6889ae",
+    "som-rs/contracts/rust-output-v1/toolchain.json": "9a05dd1953defc89c4a44eada333cbfc41570e4728295ab1a2be060c76b7029d",
+    "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-15.json": "b83e01caf26dbd403d04dac4948a04b97f059accd22edceae78f8c2519438462",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-20.json": "2398079609c673ff8086dff85f0fc27c51a66b5b087a09b2622d6913d81fcfdf",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-16.json": "64eb707bdecdcacb878240ca87094834015cb3dd1a77c2050e852335b18932da",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-17.json": "24cee7a81cf46379c318efd9271dfb18b15acddbde03e549208df162b538f383",
+    "som-rs/tests/rust-output-v1/build_case_inventory.py": "494976a61dd2184d2a9135d297c635fc4b6bd04be4cbb34bd2b7efc00b855874",
+    "som-rs/tests/rust-output-v1/build_cases.py": "13096aacb9ba3eafe84e4389586478622aca5eea8622f6d8774a15bb4da265b3",
+    "som-rs/tests/rust-output-v1/build_negative_cases.py": "fe97797483e8f34ee12297c2c48412adcf4bc6baedbe0833adf769cc7683f15a",
+    "som-rs/tests/rust-output-v1/build_phase2_behavior.py": "7d58af568f093cff9caaae0bff83dba2bac5ba9dbe8e2fc27ad029bbb8d22d9b",
+    "som-rs/tests/rust-output-v1/build_phase2_constructs.py": "a1c2b3ff09644ef246580a2afec062c78299e9cace169d4e750d11313f1e80ee",
+    "som-rs/tests/rust-output-v1/build_phase2_inventory.py": "60328ce9c02446891a5aff86a1681ce103b895a58b25cd970a0529625b44c994",
+    "som-rs/tests/rust-output-v1/build_phase2_pins.py": "7476958452c998972074a9b9e4ae3ee56d5598617ad4f1d4b3cf41b6d9c31c61",
+    "som-rs/tests/rust-output-v1/build_target_examples.py": "697ca7c91c2c9f4c3d27985ed0f50ce6c6f2a103ea7ed264ba1915c056d43ab2",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.cnl": "22e6cb0aacd219cb47478dca4ff5f244b63ae605de399f08a16bb62093ec9ce7",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.cnl": "a2512cdbbea998a8f051160166e3c1d2f4b43ae5d7bbcbe5e6a0cd211a9b7c1d",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.cnl": "554eb27bbd5c894fa7ccd473b45734a33753b1ec32395ccb5f73133b0a71a12c",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.cnl": "cb7f5fb994d6c7bfbdff549e71286211cd1d3f7177b91bdbeeb34337229b7724",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.cnl": "97cb49f506fb16fb9da2ea203b5a114ea68766ec46ebb69cdb4d63f012deb16c",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.prompt.json": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.cnl": "627623f91944b13158487086efec5653948be6c2e77a341e0d0ba9410d291e5d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347",
+    "som-rs/tests/rust-output-v1/cases/index.json": "b49af2a7ba842e5dd810d8d010fcf93436474df7f49f1c569367bed1bc94ed1b",
+    "som-rs/tests/rust-output-v1/check_contract.py": "958aacace4f99badd190715140665bb3bf9f08ec0e88c8557b6d24f87a069b15",
+    "som-rs/tests/rust-output-v1/check_python_controls.py": "50e081a6a10cdbb7db8e84e094854ef8833f25d3cfa0857cc98e9cb4e9ccd047",
+    "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513",
+    "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "66361c04b8c7069868aa03205dbb33f9d28ede06e55ea262326671b91108316b",
+    "som-rs/tests/rust-output-v1/validate_cases.py": "9b9131de7a56a54c6a9f103da170143bc18ec6d113bedb6f79ea0a7f8453d4bb"
+  },
+  "related_tools": {
+    "som-rs/som-targets/src/profile.rs": {
+      "sha256": "193f2efd0c5c1dcc276a4b2bdd0c3dd8a0dbab7033b26cc2d7fa5ac930ff1082",
+      "role": "the phase 2 profile refuses nothing; query_parameter_collision stays in the phase 1 profile"
+    },
+    "som-rs/som-targets/src/rust/mod.rs": {
+      "sha256": "179e4c6318f29279043987b77b8026b0d124c29734be614d06ca5c5892a9bf15",
+      "role": "TARGET_CONTRACT_SHA256 is this receipt's target sha"
+    },
+    "som-rs/som-targets/src/rust/render/capability/mongo.rs": {
+      "sha256": "847b42004599a91ea4eaa95e0fa9c51bd2920734bc60714ef752b3cf5fcddc82",
+      "role": "the MongoDB row reader names a foreign key called self with the fields, as the row struct does"
+    },
+    "som-rs/som-targets/qa/check_targets.py": {
+      "sha256": "443130cccdd4a78fe9cf537ac261f8ea25730e89c79357ec431d3434ecdede02",
+      "role": "phase 2 refusals: none with target rust; RS12 and RS13 are compiler-v1 refusals"
+    },
+    "som-rs/som-targets/qa/check_rust_products.py": {
+      "sha256": "cdbabb78dd71649d71349dca420994d73c77d99b09a1d4263666eccf05729c6f",
+      "role": "A6_amendment_004 and this receipt in the report inputs"
+    },
+    "som-rs/som-targets/qa/check_phase2_products.py": {
+      "sha256": "1f747112bad2cf0f146ab478d858eac2337e3e51b2d526380e9a09dca7fe8c48",
+      "role": "a refusal case passes with the compiler-v1 code and status"
+    },
+    "som-rs/behavior/phase2/check_phase2.py": {
+      "sha256": "7c37aa4cc6f40c988eb48da92873ffbdf8fab76a2faf8d953107c2fd1d6ff1b9",
+      "role": "a refusal case passes with the compiler-v1 refusal for every target (pinned in phase2/pins.json)"
+    },
+    "som-rs/scripts/rust_output_acceptance/python_replay.py": {
+      "sha256": "069736b5956a6deeb5ce75ba5b5ee454b592bbc6ab8dc9ec285448d06c300d9c",
+      "role": "--asset-break: the python_unchanged amendment_004 rule"
+    },
+    "som-rs/scripts/rust_output_acceptance/check_cli.py": {
+      "sha256": "87cf90e865057dfb72b3e050e553790865472967f2307dc2040d701ced8d0b30",
+      "role": "the CLI expects the compiler-v1 refusal for RS12 and RS13"
+    },
+    "som-rs/scripts/rust_output_acceptance/check_issue57.py": {
+      "sha256": "1d8fcc376534b6fd9ea9d1632c883ce9e132204dfa26d28b478b735b46d971ee",
+      "role": "the issue57 self-name and collision checks in Python and Rust"
+    },
+    "som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py": {
+      "sha256": "7f9155b6cea577ff06e424d6ec43d6d2dc33262c586fef066f9e6004fd30864d",
+      "role": "issue57 check 7: every #55 run-003 phase 1 and phase 2 Rust product assembles to the same files"
+    },
+    "som-rs/scripts/rust_output_acceptance/check_name_collisions.py": {
+      "sha256": "101b36e382e51b92b4d26c3b0a4b5edbd06a3585ef6c1de325764ebb09a73f27",
+      "role": "issue57 check 9: python_name_collisions refuses no public, legacy, fixture or example prompt"
+    }
+  },
+  "qa_probe": {
+    "coverage_cases": {
+      "failed": 0,
+      "note": "differs from the 2026-10-15 coverage evidence only in payload_sha256",
+      "output": ".local/rust-output-phase2/self-spike-001/coverage-qa005.json",
+      "output_sha256": "eacd6f6c794dabbc068dd2a0caed6d8fb4239b7a33d0cd83ccf19ce8fd3f24d2",
+      "passed": 6
+    },
+    "issue57_behavior": {
+      "negative": {
+        "passed": 48,
+        "rows": 48
+      },
+      "output": ".local/rust-output-phase2/self-spike-001/issue57-002/summary.json",
+      "output_sha256": "2f6bb246260b65ea878f33fa2d4b2fe485b28228e42e22c9f3798d27b958db5a",
+      "passed": true,
+      "positive": {
+        "python": {
+          "cases": 18,
+          "passed": 18,
+          "worker_exit_codes": [
+            0,
+            0
+          ]
+        },
+        "rust": {
+          "cases": 18,
+          "passed": 18,
+          "worker_exit_codes": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "name_collisions": {
+      "groups": {
+        "cnl_fixture": {
+          "compiled": 238,
+          "other_status": [],
+          "total": 238
+        },
+        "example": {
+          "compiled": 16,
+          "other_status": [],
+          "total": 16
+        },
+        "legacy": {
+          "compiled": 544,
+          "other_status": [],
+          "total": 544
+        },
+        "public": {
+          "compiled": 127,
+          "other_status": [],
+          "total": 127
+        },
+        "typed_fixture": {
+          "compiled": 7,
+          "other_status": [],
+          "total": 7
+        }
+      },
+      "output": ".local/rust-output-phase2/self-spike-001/name-collisions-probe-001.json",
+      "output_sha256": "23f0537aa8a9f4c2d9a443472124e9794cd511a8814a0d07d5a5741ed4dadfa9",
+      "passed": true,
+      "tool": "som-rs/scripts/rust_output_acceptance/check_name_collisions.py"
+    },
+    "not_run": [
+      "historical compiler acceptance tools that call qa_harness.verify_freeze (their receipt chain ends at amendment 002): not run"
+    ],
+    "passed": true,
+    "previous_summaries": [
+      {
+        "path": ".local/rust-output-phase2/self-spike-001/probe-summary-001.json",
+        "sha256": "12ee68f5f42bac30f7ae4d3198734ac9d6940e142a8516a4f7c8825647d18260"
+      },
+      {
+        "path": ".local/rust-output-phase2/self-spike-001/probe-summary-002.json",
+        "sha256": "d13d2f171c1dd9d5b11a1bde8cf33ea9b19cbcf0d857660a498f76aff7d577df"
+      }
+    ],
+    "provenance": "qa-005 was built from the working tree before the receipts were sealed. Later edits changed only TARGET_CONTRACT_SHA256 and tests in som-targets/src/rust/mod.rs and added som-rs/tests/self_names.rs; the probe is evidence for the design, not for a candidate. The #57 acceptance runs on a candidate built from committed source.",
+    "python_controls": {
+      "failed": 0,
+      "negative_cases_sha256": "74b36cb9ba0e61e639193f5a55f5e9e9c1924c730e502dd2de300b88c9dbbc1d",
+      "output": ".local/rust-output-phase2/self-spike-001/python-controls-qa005.json",
+      "output_sha256": "2398079609c673ff8086dff85f0fc27c51a66b5b087a09b2622d6913d81fcfdf",
+      "passed": 32
+    },
+    "python_replay_asset_break": {
+      "exchanges": {
+        "passed": 2005,
+        "total": 2005
+      },
+      "legacy": {
+        "accepted": {
+          "accepted_compile_prompts": 540,
+          "accepted_passed": 544,
+          "accepted_required": 544,
+          "accepted_status": "passed"
+        },
+        "compile_prompts": 540,
+        "compile_prompts_passed": 540,
+        "failed": [],
+        "families": {
+          "legacy100": {
+            "passed": 100,
+            "total": 100
+          },
+          "legacy214": {
+            "passed": 214,
+            "total": 214
+          },
+          "quality218": {
+            "passed": 218,
+            "total": 218
+          },
+          "supplement12": {
+            "passed": 12,
+            "total": 12
+          }
+        },
+        "passed": 544,
+        "required": 544,
+        "total": 544
+      },
+      "output": ".local/rust-output-phase2/self-spike-001/python-replay-asset-break-001.json",
+      "output_sha256": "ec768f21541608b84c9291fb53df7901ddabb71f5f45589ca518f90a6c71b777",
+      "passed": true,
+      "public": {
+        "accepted": {
+          "accepted_complete": true,
+          "accepted_passed": 127,
+          "accepted_required": 127,
+          "case_directories": 127
+        },
+        "failed": [],
+        "passed": 127,
+        "required": 127,
+        "total": 127
+      }
+    },
+    "qa": "qa-005 on QA port 18966 (.local/rust-output-phase2/self-spike-001/qa-005), built from the working tree",
+    "rust_unchanged": {
+      "output": ".local/rust-output-phase2/self-spike-001/unchanged-probe-002.json",
+      "output_sha256": "5a2e83f435e4f22aa07f1f3b752d9b8bdb3da8d0dee635451c1839e484aff0d6",
+      "passed": true,
+      "phase1": {
+        "failed": [],
+        "passed": 115,
+        "report": {
+          "command": "check_rust_products.py --no-gates on qa-005",
+          "path": ".local/rust-output-phase2/self-spike-001/phase1-nogates-001.json",
+          "sha256": "a23bde8fc40ee1575effcb0d2afecfb3a2bb95487557440d947f7f8645a3d5c2"
+        },
+        "total": 115
+      },
+      "phase2": {
+        "failed": [],
+        "files_equal": 582,
+        "passed": 584,
+        "refusals": [
+          "RS12_CNL_V3_FILTER_LIMIT",
+          "RS13_JSON_V3_FILTER_OFFSET"
+        ],
+        "total": 584
+      },
+      "tool": "som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py"
+    },
+    "som_rs_cargo_test": {
+      "command": "cargo test --locked --offline (som-rs, pinned toolchain), including tests/self_names.rs",
+      "exit": true,
+      "failed": 0,
+      "groups": 14,
+      "log": ".local/rust-output-phase2/self-spike-001/somrs-cargo-test-002.log",
+      "log_sha256": "42c130abeff9a385e295c0d6329ac9e493537095b7614f2a8ec4830fca0ac029",
+      "passed": 45
+    },
+    "som_sha256": "295b497624b064188f8343fc09a9a35eedce1617209882cc7894188ed15c9eb7",
+    "supersedes": "probe-summary-002.json: its rust_unchanged phase 1 compared run-003 rust-products.json with itself. This summary cites unchanged-probe-002.json, whose phase 1 compares run-003 with phase1-nogates-001.json, a check_rust_products.py --no-gates report made on qa-005.",
+    "version": "som.issue57-qa-probe.v1"
+  },
+  "independent_review": {
+    "reviewer": "independent Claude Opus 5.5 subagent, read-only, no calls to 8765",
+    "target_sha256": "4aa0e4afc0f17def6a3342ab445d69488a437f68b8b7ac9a2e2f7cf8c6a1622c",
+    "final_verdict": "APPROVED",
+    "confirmed_without_change": [
+      "Re-review of the regenerated receipt, file sha256 029e54597524b117b31dfa9aabca7408921442ec62f97630632edb3208930040, status pending_independent_review. The files map covers exactly the 52 files under som-rs/{contracts,tests,evidence}/rust-output-v1, excluding __pycache__, and every hash matches disk. sha256(check_contract.canonical(files)) = 4aa0e4af\u2026622c = target_contract.sha256 = mod.rs TARGET_CONTRACT_SHA256. previous_sha256 = 893746988e\u202610 (amendment 003, sealed). previous_receipt_sha256 matches.",
+      "compiler_amendment.receipt_sha256 = bcdd59eda51d\u2026ae81, which matches disk, and that receipt's status is amendment_sealed_after_independent_review.",
+      "changed_paths and added_paths equal the diff of the amendment 003 and 004 files maps; nothing was removed. For each change, old = amendment 003 = git show HEAD = archived copy, and new = disk.",
+      "All 12 related_tools sha256 values match disk, including the new check_rust_unchanged.py (7f9155\u2026) and check_name_collisions.py (101b36\u2026).",
+      "Finding 1 is resolved. CONTRACT.md section 12 (Rust) now says the Rust backend descriptor changes because of profile.rs and rust/mod.rs. It says target_contract changes per section 4. It limits the MongoDB change to foreign keys that are not plain Rust identifiers: self, crate, super, a keyword written r#name, or a name that falls back to foreign_key. It notes that all of these previously failed to compile. The new test a_mongodb_foreign_key_that_is_not_a_plain_identifier_reads_into_its_member covers self (foreign_key) and type (r#type) on v5, v6 and v7. CONTRACT.md is still purely additive: 61 insertions, 0 deletions.",
+      "Finding 2 is resolved. acceptance-plan.json issue57 now names check_rust_unchanged.py for check 7, against rust-output-055 run-003, with the phase 1 comparison made from a check_rust_products.py --no-gates report on the candidate. The --no-gates flag exists in check_rust_products.py. Check 9 names check_name_collisions.py, which covers 16 examples, 238 CNL fixture forms, 7 typed fixtures, 127 public and 544 legacy prompts, and enforces those counts. The JSON-level diff against HEAD is still additions only (python_unchanged.amendment_004, phase2.refusals_amendment_004, phase2.assemble_refusals.A6_amendment_004, issue57). The 3 removed text lines are layout lines only.",
+      "Finding 3 is resolved. The receipt's check_contract block records 453 passed, 1 expected failure ('receipt was sealed before implementation'), 399/0 without a receipt, and the builder and adapt checks. It also marks the cargo test of som-targets as not run.",
+      "Finding 4 is resolved. qa_probe.not_run is now in English.",
+      "qa_probe equals probe-summary-003.json exactly. Every output_sha256 and report sha256 it cites matches disk: coverage-qa005, issue57-002/summary, name-collisions-probe-001, python-controls-qa005, python-replay-asset-break-001, unchanged-probe-002, phase1-nogates-001, and probe-summary-001 and 002. python-controls-qa005.json is byte-identical to evidence negative-python-controls-2026-10-20.json.",
+      "Recounting the probe outputs agrees with the summary. unchanged-probe-002 used run-003. Phase 1: 115 of 115. Phase 2: 584 of 584, with 582 files equal and RS12/RS13 as moved refusals. name-collisions-probe-001: 932 rows, all HTTP 200, 0 refused by python_name_collisions, and the group counts equal the summary's. Coverage: 6 passed, 0 failed. Replay: 2005 of 2005, with 671 recorded bundles refused with ASSET_HASH_MISMATCH. Issue57: 18 of 18 per language and 48 of 48 negative.",
+      "Items confirmed in the first round and unchanged: RS12/RS13 match the compiler-v1 python_name_collisions code, status, detail and pointer. The phase 2 profile (py and rs) refuses nothing, while phase 1 rust_profile.py and scope.json are unchanged. The QA script diffs match the plan. The mongo.rs change is confined to row_reader."
+    ],
+    "findings": [
+      {
+        "severity": "note",
+        "item": "wording residue",
+        "detail": "Section 12's first Rust sentence still says the reader named 'a foreign key called `self`' apart from the fields, while the next lines give the broader set. The related_tools role for mongo.rs also still says 'a foreign key called self'. Both are accurate as the #57 trigger and do not contradict the scoped statement. Optional polish."
+      },
+      {
+        "severity": "note",
+        "item": "check_name_collisions.py judgement scope",
+        "detail": "It fails only on replies whose detail is the collision detail. Other non-200 outcomes are recorded but not judged; the plan and docstring say so, and python_replay judges public and legacy. In the probe all 932 replies were 200."
+      },
+      {
+        "severity": "note",
+        "item": "probe provenance",
+        "detail": "qa-005 predates the final mod.rs (TARGET_CONTRACT_SHA256 and tests) and som-rs/tests/self_names.rs. The receipt's provenance field states this. The probe supports the design, and acceptance must run on a committed candidate."
+      },
+      {
+        "severity": "note",
+        "item": "not run",
+        "detail": "These were not run in this review: the cargo test of som-targets/som-rs (the receipt also records it as not run until after sealing), every networked QA script (no QA server was contacted), and the historical compiler acceptance tools. The receipt, archives, new evidence and new scripts are still untracked and must be committed with the sealed receipt."
+      }
+    ],
+    "commands_run": [
+      "python3 scratchpad/review-r004/integrity.py (files-map walk and hashes, canonical() from check_contract.py, previous target and receipt, changed/added diff, git show HEAD and archive hashes, related_tools hashes, mod.rs TARGET_CONTRACT_SHA256, compiler receipt sha), run twice",
+      "shasum -a 256 on the amendment-004 and compiler amendment-003 receipts",
+      "git diff HEAD --stat and -U0 of CONTRACT.md and acceptance-plan.json, and a JSON structural diff of acceptance-plan.json against HEAD",
+      "git diff HEAD -- som-targets/src/rust/mod.rs (new test)",
+      "reads of check_name_collisions.py, check_rust_unchanged.py, and the --no-gates flag in check_rust_products.py",
+      "python3 hash and recount checks of probe-summary-003.json and every output it cites",
+      "python3 som-rs/tests/rust-output-v1/check_contract.py -> 399 passed, 0 failed",
+      "python3 som-rs/tests/rust-output-v1/check_contract.py --receipt som-rs/evidence/rust-output-contract-amendment-004.json -> 453 passed, 1 expected failure",
+      "venv python build_phase2_constructs / build_phase2_inventory / build_phase2_pins / build_negative_cases --check -> exit 0 each",
+      "venv python build_phase2_behavior.py --run .local/rust-output-phase2/behavior-python-004 --superseded .local/rust-output-phase2/behavior-python-001 .local/rust-output-phase2/behavior-python-002 .local/rust-output-phase2/behavior-python-003 --check -> exit 0",
+      "venv python som-rs/behavior/phase2/adapt.py --check -> exit 0",
+      "not run: cargo test, every QA-port script, historical compiler acceptance tools"
+    ],
+    "rounds": [
+      {
+        "round": 1,
+        "final_verdict": "APPROVED",
+        "target_sha256": "e5dcbdde284ff425da59ab432698f3277d5db4414e46ad5a2a0b12ad958b18c0",
+        "findings": [
+          {
+            "severity": "minor",
+            "item": "CONTRACT.md section 12, Rust: scope of the mongo.rs change",
+            "detail": "Section 12 says 'Only MongoDB products whose foreign key is `self` change.' The fix applies the joint naming (render.rs named()) to the foreign key. Before the fix, the reader used the raw foreign-key name while the struct used the joint name. So every MongoDB child-row reader changes whenever the joint name of the foreign key differs from its raw name. That covers self, but also crate, super, any Rust keyword in render.rs KEYWORDS (type, match, ref, move and so on, which becomes r#name), names containing '__' (which fall back to foreign_key), and fields whose fallback collides with the foreign key name. compiler-v1 admits these: the schema pattern is ^[a-z][a-z0-9_]{0,39}$, and python_name_collisions refuses none of them as a v5-v7 MongoDB foreign key. All of these products previously failed to compile, because the struct and reader members differed. So no accepted product changes, and the statement that every phase 2 product stays byte-identical still holds. Suggest rewording to 'MongoDB products whose foreign key is not a plain Rust identifier (self, crate, super, a keyword, or a non-snake name); all previously failed to compile'. Optionally add a keyword case such as `type` to the mod.rs test."
+          },
+          {
+            "severity": "minor",
+            "item": "CONTRACT.md section 12, Rust: descriptor statement",
+            "detail": "'Its Rust descriptors, its DSL and its files change only where the next item says' does not mention that the Rust backend descriptor and the target_contract descriptor change for every Rust bundle. The backend descriptor hashes BACKEND_FILES, which include profile.rs and rust/mod.rs, both changed. The target_contract descriptor changes because TARGET_CONTRACT_SHA256 is now e5dc\u2026. Section 4 already says every amendment updates target_contract, and old Rust bundles fail ASSET_HASH_MISMATCH anyway. Still, the sentence should say that the Rust backend and target_contract descriptors also change."
+          },
+          {
+            "severity": "minor",
+            "item": "acceptance-plan.json issue57: checks with no named tool",
+            "detail": "Check 7 (every #55 run-003 Rust product byte-identical) names no script. The script that implements it, som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py, is untracked, was written at 05:55:25Z (after frozen_at 05:54:15Z), and is not pinned in related_tools. Check 9 (no public, legacy, fixture or example prompt refused by python_name_collisions) also names no tool. The replay covers public and legacy, but the compiler-v1 positive fixtures and examples need a named runner. Recommend adding check_rust_unchanged.py to related_tools with its hash, and naming the tool for checks 7 and 9, before the acceptance run."
+          },
+          {
+            "severity": "minor",
+            "item": "receipt: no check_contract record yet",
+            "detail": "Amendment 003 recorded a check_contract block: command, passed/failed, expected_failure 'receipt was sealed before implementation', and also_passed builder checks. Amendment 004 has none yet. My run gives 453 passed and that single failure, plus 399/0 without a receipt. Record these at sealing."
+          },
+          {
+            "severity": "note",
+            "item": "qa_probe provenance",
+            "detail": "The probe ran on qa-005, built from the working tree before the final receipt. mod.rs has since changed twice (TARGET_CONTRACT_SHA256), so the probe is evidence for the design, not for the candidate. The receipt already says no candidate or acceptance run used it. Its coverage_cases (6/6) and som_rs_cargo_test (42 passed) entries cite no output file. The qa_probe.not_run text contains a non-English word (\u672a\u8dd1); consider 'not run' for consistency."
+          },
+          {
+            "severity": "note",
+            "item": "python_replay.py --asset-break",
+            "detail": "rebased_assemble requires the ASSET_HASH_MISMATCH code but does not check the HTTP status of the refused recorded bundle. The probe recorded 400 for all 671. mode.rebased_assembles counts only rows where recorded_bundle_code is set. Both are harmless for the recorded run."
+          },
+          {
+            "severity": "note",
+            "item": "untracked files",
+            "detail": "The receipt, the 15 archived copies, negative-python-controls-2026-10-20.json, check_issue57.py and check_rust_unchanged.py are untracked. They must all be committed together with the sealed receipt."
+          }
+        ]
+      },
+      {
+        "round": 2,
+        "final_verdict": "APPROVED",
+        "target_sha256": "4aa0e4afc0f17def6a3342ab445d69488a437f68b8b7ac9a2e2f7cf8c6a1622c",
+        "resolution": "Round 1 minors: CONTRACT.md section 12 reworded (descriptors and the MongoDB foreign key scope); check_rust_unchanged.py and check_name_collisions.py named in issue57 and listed in related_tools; check_contract block added; qa_probe moved to probe-summary-003.json with not run in English; acceptance-plan.json restored to the HEAD layout; the compiler-v1 amendment 003 receipt sealed first."
+      }
+    ]
+  },
+  "check_contract": {
+    "command": "python3 som-rs/tests/rust-output-v1/check_contract.py --receipt som-rs/evidence/rust-output-contract-amendment-004.json",
+    "passed": 453,
+    "failed": 1,
+    "expected_failure": "receipt was sealed before implementation: true only for the original freeze receipt; this amendment records implementation_already_in_progress true",
+    "also_passed": [
+      "check_contract.py without a receipt: 399 passed, 0 failed",
+      "build_negative_cases.py --check",
+      "build_phase2_constructs.py --check",
+      "build_phase2_inventory.py --check",
+      "build_phase2_pins.py --check",
+      "build_phase2_behavior.py --run .local/rust-output-phase2/behavior-python-004 --superseded behavior-python-001 behavior-python-002 behavior-python-003 --check",
+      "behavior/phase2/adapt.py --check"
+    ],
+    "not_run": [
+      "cargo test of som-targets with this receipt: not run before the review; run after sealing, because target_contract_is_the_latest_receipt needs final_verdict APPROVED"
+    ]
+  }
+}

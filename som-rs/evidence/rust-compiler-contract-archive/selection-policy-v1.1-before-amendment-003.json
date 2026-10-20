@@ -1,0 +1,4451 @@
+{
+  "asset_families": {
+    "v1-v5": "approved v5 legacy block library",
+    "v6": "approved composed-quality catalog and preserved composed-quality blocks from approved current library",
+    "v7": "approved flow-v7-compact catalog and blocks from approved current library"
+  },
+  "baseline": "82f3b87ccad40277713326e42ac35f921ba34663",
+  "catalog_rules": {
+    "dependency_closure": "All selected metadata.requires must be provided. Missing or ambiguous providers fail. Never repair or reorder the frozen recipe.",
+    "node_params": "Legacy typed bindings for v1-v5; constructor bindings for v6; final compact metadata bindings for v7. Compare loaded param declarations with approved metadata.",
+    "ordered_refs": "Constructor refs retain their stored order. Catalog requires arrays express semantic requirements and never replace constructor refs. Preserve parent,child for schema batch and migration tail; head,parent,child for tests test.",
+    "post_validation": "v6 composed::validate_plan_with(prompt,dsl,quality_catalog); v7 flow::validate_plan_with(prompt,dsl,compact_catalog). Assemble uses independent semantic admission, not reference equality.",
+    "provider_match": "Match full provides symbol, all declared capability constraints and declared role/query kind to exactly one primary. Never use first-match.",
+    "required_symbols": "Provide catalog required_common and chosen required_database symbols, all supplied app operation symbols, storage_common when selected storage != none, and each selected flow helper symbol exactly once.",
+    "selection_only": "Primary tables select IDs and check closure. They do not set emitted names/refs/order. Emission follows composed/compact_flow emission_recipe."
+  },
+  "compact_flow": {
+    "catalog": "flow-v7-compact",
+    "catalog_raw_sha256": "a2b96804e6f1c52a2ebf9e6310c6624b8b1b33d86b4f4763f07ffbeb645e103a",
+    "emission_recipe": {
+      "added_node_fields": "Name is suffix of standard metadata provides; params are standard metadata bindings; refs are same-slot requirements in metadata array order. Preserve existing node refs.",
+      "app_tail_refs": "Every current app node name in current order except tail and app. Includes head, supplied routes, workflow.",
+      "base": "Start with composed.emission_recipe for flow::base(prompt). Do not emit catalog topological order. Set DSL version som.dsl.v3 and the standard lowered flow tree.",
+      "base_id_to_final_compact_id": {
+        "api.business.head.mongodb": "compact.v7.api.business.head.mongodb",
+        "api.business.head.postgresql": "compact.v7.api.business.head.postgresql",
+        "api.business.workflow.csv": "compact.v7.api.business.workflow.csv",
+        "api.business.workflow.decimal_summary": "compact.v7.api.business.workflow.decimal_summary",
+        "api.business.workflow.gzip_export": "compact.v7.api.business.workflow.gzip_export",
+        "api.business.workflow.json_export": "compact.v7.api.business.workflow.json_export",
+        "api.business.workflow.statistics": "compact.v7.api.business.workflow.statistics",
+        "api.mongo.batch": "compact.v7.api.mongo.batch",
+        "api.mongo.child.create": "compact.v7.api.mongo.child.create",
+        "api.mongo.child.delete": "compact.v7.api.mongo.child.delete",
+        "api.mongo.child.get": "compact.v7.api.mongo.child.get",
+        "api.mongo.child.list.boolean": "compact.v7.api.mongo.child.list.boolean",
+        "api.mongo.child.list.date": "compact.v7.api.mongo.child.list.date",
+        "api.mongo.child.list.plain": "compact.v7.api.mongo.child.list.plain",
+        "api.mongo.child.patch": "compact.v7.api.mongo.child.patch",
+        "api.mongo.parent.create": "compact.v7.api.mongo.parent.create",
+        "api.mongo.parent.delete": "compact.v7.api.mongo.parent.delete",
+        "api.mongo.parent.get": "compact.v7.api.mongo.parent.get",
+        "api.mongo.parent.list.boolean": "compact.v7.api.mongo.parent.list.boolean",
+        "api.mongo.parent.list.date": "compact.v7.api.mongo.parent.list.date",
+        "api.mongo.parent.list.plain": "compact.v7.api.mongo.parent.list.plain",
+        "api.mongo.parent.patch": "compact.v7.api.mongo.parent.patch",
+        "api.related.batch": "compact.v7.api.related.batch",
+        "api.related.child.create": "compact.v7.api.related.child.create",
+        "api.related.child.delete": "compact.v7.api.related.child.delete",
+        "api.related.child.get": "compact.v7.api.related.child.get",
+        "api.related.child.list.boolean": "compact.v7.api.related.child.list.boolean",
+        "api.related.child.list.date": "compact.v7.api.related.child.list.date",
+        "api.related.child.list.plain": "compact.v7.api.related.child.list.plain",
+        "api.related.child.patch": "compact.v7.api.related.child.patch",
+        "api.related.parent.create": "compact.v7.api.related.parent.create",
+        "api.related.parent.delete": "compact.v7.api.related.parent.delete",
+        "api.related.parent.get": "compact.v7.api.related.parent.get",
+        "api.related.parent.list.boolean": "compact.v7.api.related.parent.list.boolean",
+        "api.related.parent.list.date": "compact.v7.api.related.parent.list.date",
+        "api.related.parent.list.plain": "compact.v7.api.related.parent.list.plain",
+        "api.related.parent.patch": "compact.v7.api.related.parent.patch",
+        "api.tail": "compact.v7.api.tail",
+        "auth.common": "compact.auth.common",
+        "auth.firebase": "compact.auth.firebase",
+        "auth.google_oauth": "compact.auth.google_oauth",
+        "auth.jwt": "compact.auth.jwt",
+        "migration.mongo": "compact.v7.migration.mongo",
+        "migration.related.child.boolean": "compact.v7.migration.related.child.boolean",
+        "migration.related.child.date": "compact.v7.migration.related.child.date",
+        "migration.related.child.plain": "compact.v7.migration.related.child.plain",
+        "migration.related.head": "compact.migration.related.head",
+        "migration.related.parent.boolean": "compact.v7.migration.related.parent.boolean",
+        "migration.related.parent.date": "compact.v7.migration.related.parent.date",
+        "migration.related.parent.plain": "compact.v7.migration.related.parent.plain",
+        "migration.related.tail": "compact.v7.migration.related.tail",
+        "orm.base": "compact.orm.base",
+        "orm.composed.mongo.base": "compact.v7.orm.composed.mongo.base",
+        "orm.composed.mongo.child": "compact.v7.orm.composed.mongo.child",
+        "orm.composed.mongo.parent": "compact.v7.orm.composed.mongo.parent",
+        "orm.related.child.boolean": "compact.v7.orm.related.child.boolean",
+        "orm.related.child.date": "compact.v7.orm.related.child.date",
+        "orm.related.child.plain": "compact.v7.orm.related.child.plain",
+        "orm.related.parent.boolean": "compact.v7.orm.related.parent.boolean",
+        "orm.related.parent.date": "compact.v7.orm.related.parent.date",
+        "orm.related.parent.plain": "compact.v7.orm.related.parent.plain",
+        "readme.auth.firebase": "compact.readme.auth.firebase",
+        "readme.auth.google_oauth": "compact.readme.auth.google_oauth",
+        "readme.auth.jwt": "compact.readme.auth.jwt",
+        "readme.storage.gcs": "compact.readme.storage.gcs",
+        "readme.storage.none": "compact.readme.storage.none",
+        "readme.storage.s3": "compact.readme.storage.s3",
+        "readme.workflow.csv": "compact.readme.workflow.csv",
+        "readme.workflow.decimal_summary": "compact.readme.workflow.decimal_summary",
+        "readme.workflow.gzip_export": "compact.readme.workflow.gzip_export",
+        "readme.workflow.json_export": "compact.readme.workflow.json_export",
+        "readme.workflow.statistics": "compact.readme.workflow.statistics",
+        "schema.related.batch": "compact.schema.related.batch",
+        "schema.related.bounds": "compact.schema.related.bounds",
+        "schema.related.child": "compact.schema.related.child",
+        "schema.related.parent": "compact.schema.related.parent",
+        "service.alembic.env": "compact.service.alembic.env",
+        "service.alembic.ini": "compact.service.alembic.ini",
+        "service.business.app.mongodb": "compact.v7.service.business.app.mongodb",
+        "service.business.app.postgresql": "compact.v7.service.business.app.postgresql",
+        "service.business.database.mongodb": "compact.v7.service.business.database.mongodb",
+        "service.business.project": "compact.v7.service.business.project",
+        "service.business.readme.mongodb": "compact.service.business.readme.mongodb",
+        "service.business.readme.postgresql": "compact.service.business.readme.postgresql",
+        "service.database": "compact.v7.service.database",
+        "service.init": "compact.service.init",
+        "storage.common": "compact.storage.common",
+        "storage.gcs": "compact.storage.gcs",
+        "storage.none": "compact.storage.none",
+        "storage.s3": "compact.storage.s3",
+        "test.business.head.mongodb": "compact.test.business.head.mongodb",
+        "test.business.head.postgresql": "compact.test.business.head.postgresql",
+        "test.composed.behavior": "compact.v7.test.composed.behavior",
+        "test.related.payload.child": "compact.test.related.payload.child",
+        "test.related.payload.parent": "compact.test.related.payload.parent"
+      },
+      "compact_final_mapping": "Map each original composed/standard slot to compact catalog slots. Keep flow.* IDs; otherwise prefix compact. exactly once. Replace all block params with final compact metadata bindings. Preserve file positions, block positions, block names and refs arrays.",
+      "direct_compact_implementation": "The exact base_id_to_final_compact_id table replaces standard prefix checks in Rust. Added node IDs are compact-prefixed as final mapping states. Read final compact provides/refs/bindings directly: public catalog comparison proves slot/provides/requires/capabilities/query/operation/routes/authorization/transaction unchanged by compact conversion. Do not read standard templates or builders at runtime.",
+      "final_slot_paths": {
+        "alembic_env": "alembic/env.py",
+        "alembic_ini": "alembic.ini",
+        "app": "{package}/app.py",
+        "database": "{package}/database.py",
+        "flow_helpers": "{package}/flows.py",
+        "init": "{package}/__init__.py",
+        "integrations": "{package}/integrations.py",
+        "migration": "alembic/versions/{migration.revision}_{package}.py",
+        "models": "{package}/schema_v001.py",
+        "mongo_migration": "{package}/migrate.py",
+        "project": "pyproject.toml",
+        "readme": "README.md",
+        "schemas": "{package}/schemas.py",
+        "tests": "tests/test_{package}.py"
+      },
+      "helper_file_position": "Append one flow_helpers file after all inherited files, after integrations. Mongo migrate.py remains at old migration position.",
+      "helper_ids_order": [
+        "workflow.flow.SELECTED_WORKFLOW",
+        "api.flow.engine.SELECTED_DATABASE",
+        "deduplicated selected standard flow and undo IDs in first-encounter order: preorder node, transaction children, if then followed by else, and action inverse immediately after action; retain first occurrence of each ID"
+      ],
+      "helper_node_fields": "For each ID in the exact helper order, name is suffix of standard metadata provides, params are standard metadata bindings, refs are same-flow_helpers requirements in metadata array order.",
+      "omitted_files": [
+        "alembic.ini"
+      ],
+      "ordered_additions": [
+        {
+          "id": "schema.flow",
+          "position": "append",
+          "slot": "schemas"
+        },
+        {
+          "id_by_database": {
+            "mongodb": "service.flow.store.mongodb",
+            "postgresql": "service.flow.store.postgresql"
+          },
+          "position": "append",
+          "slot": "database"
+        },
+        {
+          "id_by_storage": {
+            "gcs": "storage.flow.gcs",
+            "none": "storage.flow.none",
+            "s3": "storage.flow.s3"
+          },
+          "position": "append",
+          "slot": "integrations"
+        },
+        {
+          "id": "orm.flow.journal",
+          "position": "append",
+          "slot": "models",
+          "when_database": "postgresql"
+        },
+        {
+          "id": "migration.flow.journal",
+          "position": "insert immediately before final tail block",
+          "slot": "migration",
+          "tail_ref_action": "append journal after existing parent,child refs"
+        }
+      ],
+      "source": [
+        "som-core/src/som_core/flow.py::reference",
+        "som-core/src/som_core/flow_compact.py::reference"
+      ],
+      "standard_id_revision": "For each existing block ID i in its current file/node position, use v7.i iff that exact ID exists in the approved standard flow-v7 catalog. A replaced block gets standard metadata bindings. Otherwise preserve ID/params. This occurs before compact mapping.",
+      "symbol_refs": "After all standard edits, replace each refs string NAME with exactly {symbol:NAME}; preserve array order.",
+      "version": "som.flow-compact-reference-layout.v1"
+    },
+    "excluded_compile_flow_ids": [
+      "flow.mongodb.child.get.checked",
+      "flow.mongodb.parent.get.checked",
+      "flow.postgresql.child.get.checked",
+      "flow.postgresql.parent.get.checked"
+    ],
+    "flow_primary_providers": [
+      {
+        "capabilities": {
+          "storage": "gcs"
+        },
+        "id": "flow.gcs.object.get",
+        "inverse": null,
+        "operation": "object.get",
+        "provider_choice": "gcs",
+        "provider_family": "storage"
+      },
+      {
+        "capabilities": {
+          "storage": "gcs"
+        },
+        "id": "flow.gcs.object.put",
+        "inverse": null,
+        "operation": "object.put",
+        "provider_choice": "gcs",
+        "provider_family": "storage"
+      },
+      {
+        "capabilities": {
+          "storage": "gcs"
+        },
+        "id": "flow.gcs.undo.delete_created",
+        "inverse": "delete_created",
+        "operation": "undo",
+        "provider_choice": "gcs",
+        "provider_family": "storage"
+      },
+      {
+        "capabilities": {},
+        "id": "flow.if",
+        "inverse": null,
+        "operation": "if",
+        "provider_choice": null,
+        "provider_family": "neutral"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.authorize",
+        "inverse": null,
+        "operation": "authorize",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.batch.create",
+        "inverse": null,
+        "operation": "batch.create",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.child.create",
+        "inverse": null,
+        "operation": "child.create",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.child.get",
+        "inverse": null,
+        "operation": "child.get",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.child.list",
+        "inverse": null,
+        "operation": "child.list",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.child.patch",
+        "inverse": null,
+        "operation": "child.patch",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.parent.create",
+        "inverse": null,
+        "operation": "parent.create",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.parent.get",
+        "inverse": null,
+        "operation": "parent.get",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.parent.list",
+        "inverse": null,
+        "operation": "parent.list",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.parent.patch",
+        "inverse": null,
+        "operation": "parent.patch",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.transaction",
+        "inverse": null,
+        "operation": "transaction",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.undo.delete_created",
+        "inverse": "delete_created",
+        "operation": "undo",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.undo.restore_patch",
+        "inverse": "restore_patch",
+        "operation": "undo",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.workflow.import",
+        "inverse": null,
+        "operation": "workflow.import",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.workflow.run",
+        "inverse": null,
+        "operation": "workflow.run",
+        "provider_choice": "mongodb",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.authorize",
+        "inverse": null,
+        "operation": "authorize",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.batch.create",
+        "inverse": null,
+        "operation": "batch.create",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.child.create",
+        "inverse": null,
+        "operation": "child.create",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.child.get",
+        "inverse": null,
+        "operation": "child.get",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.child.list",
+        "inverse": null,
+        "operation": "child.list",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.child.patch",
+        "inverse": null,
+        "operation": "child.patch",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.parent.create",
+        "inverse": null,
+        "operation": "parent.create",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.parent.get",
+        "inverse": null,
+        "operation": "parent.get",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.parent.list",
+        "inverse": null,
+        "operation": "parent.list",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.parent.patch",
+        "inverse": null,
+        "operation": "parent.patch",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.transaction",
+        "inverse": null,
+        "operation": "transaction",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.undo.delete_created",
+        "inverse": "delete_created",
+        "operation": "undo",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.undo.restore_patch",
+        "inverse": "restore_patch",
+        "operation": "undo",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.workflow.import",
+        "inverse": null,
+        "operation": "workflow.import",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.workflow.run",
+        "inverse": null,
+        "operation": "workflow.run",
+        "provider_choice": "postgresql",
+        "provider_family": "database"
+      },
+      {
+        "capabilities": {
+          "storage": "s3"
+        },
+        "id": "flow.s3.object.get",
+        "inverse": null,
+        "operation": "object.get",
+        "provider_choice": "s3",
+        "provider_family": "storage"
+      },
+      {
+        "capabilities": {
+          "storage": "s3"
+        },
+        "id": "flow.s3.object.put",
+        "inverse": null,
+        "operation": "object.put",
+        "provider_choice": "s3",
+        "provider_family": "storage"
+      },
+      {
+        "capabilities": {
+          "storage": "s3"
+        },
+        "id": "flow.s3.undo.delete_created",
+        "inverse": "delete_created",
+        "operation": "undo",
+        "provider_choice": "s3",
+        "provider_family": "storage"
+      }
+    ],
+    "primary_providers": [
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.api.flow.engine.mongodb",
+        "query": null,
+        "symbol": "flow_helpers:engine"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.api.flow.engine.postgresql",
+        "query": null,
+        "symbol": "flow_helpers:engine"
+      },
+      {
+        "capabilities": {},
+        "id": "compact.auth.common",
+        "query": null,
+        "symbol": "integrations:auth_common"
+      },
+      {
+        "capabilities": {
+          "auth": "firebase"
+        },
+        "id": "compact.auth.firebase",
+        "query": null,
+        "symbol": "integrations:auth"
+      },
+      {
+        "capabilities": {
+          "auth": "google_oauth"
+        },
+        "id": "compact.auth.google_oauth",
+        "query": null,
+        "symbol": "integrations:auth"
+      },
+      {
+        "capabilities": {
+          "auth": "jwt"
+        },
+        "id": "compact.auth.jwt",
+        "query": null,
+        "symbol": "integrations:auth"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.migration.flow.journal",
+        "query": null,
+        "symbol": "migration:journal"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.migration.related.head",
+        "query": null,
+        "symbol": "migration:head"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.orm.base",
+        "query": null,
+        "symbol": "models:base"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.orm.flow.journal",
+        "query": null,
+        "symbol": "models:journal"
+      },
+      {
+        "capabilities": {
+          "auth": "firebase"
+        },
+        "id": "compact.readme.auth.firebase",
+        "query": null,
+        "symbol": "readme:auth"
+      },
+      {
+        "capabilities": {
+          "auth": "google_oauth"
+        },
+        "id": "compact.readme.auth.google_oauth",
+        "query": null,
+        "symbol": "readme:auth"
+      },
+      {
+        "capabilities": {
+          "auth": "jwt"
+        },
+        "id": "compact.readme.auth.jwt",
+        "query": null,
+        "symbol": "readme:auth"
+      },
+      {
+        "capabilities": {
+          "storage": "gcs"
+        },
+        "id": "compact.readme.storage.gcs",
+        "query": null,
+        "symbol": "readme:storage"
+      },
+      {
+        "capabilities": {
+          "storage": "none"
+        },
+        "id": "compact.readme.storage.none",
+        "query": null,
+        "symbol": "readme:storage"
+      },
+      {
+        "capabilities": {
+          "storage": "s3"
+        },
+        "id": "compact.readme.storage.s3",
+        "query": null,
+        "symbol": "readme:storage"
+      },
+      {
+        "capabilities": {
+          "workflow": "csv"
+        },
+        "id": "compact.readme.workflow.csv",
+        "query": null,
+        "symbol": "readme:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "decimal_summary"
+        },
+        "id": "compact.readme.workflow.decimal_summary",
+        "query": null,
+        "symbol": "readme:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "gzip_export"
+        },
+        "id": "compact.readme.workflow.gzip_export",
+        "query": null,
+        "symbol": "readme:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "json_export"
+        },
+        "id": "compact.readme.workflow.json_export",
+        "query": null,
+        "symbol": "readme:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "statistics"
+        },
+        "id": "compact.readme.workflow.statistics",
+        "query": null,
+        "symbol": "readme:workflow"
+      },
+      {
+        "capabilities": {},
+        "id": "compact.schema.flow",
+        "query": null,
+        "symbol": "schemas:flow"
+      },
+      {
+        "capabilities": {},
+        "id": "compact.schema.related.batch",
+        "query": null,
+        "symbol": "schemas:batch"
+      },
+      {
+        "capabilities": {},
+        "id": "compact.schema.related.bounds",
+        "query": null,
+        "symbol": "schemas:bounds"
+      },
+      {
+        "capabilities": {},
+        "id": "compact.schema.related.child",
+        "query": null,
+        "symbol": "schemas:child"
+      },
+      {
+        "capabilities": {},
+        "id": "compact.schema.related.parent",
+        "query": null,
+        "symbol": "schemas:parent"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.service.alembic.env",
+        "query": null,
+        "symbol": "alembic_env:env"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.service.alembic.ini",
+        "query": null,
+        "symbol": "alembic_ini:config"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.service.business.readme.mongodb",
+        "query": null,
+        "symbol": "readme:readme"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.service.business.readme.postgresql",
+        "query": null,
+        "symbol": "readme:readme"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.service.flow.store.mongodb",
+        "query": null,
+        "symbol": "database:store"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.service.flow.store.postgresql",
+        "query": null,
+        "symbol": "database:store"
+      },
+      {
+        "capabilities": {},
+        "id": "compact.service.init",
+        "query": null,
+        "symbol": "init:init"
+      },
+      {
+        "capabilities": {},
+        "id": "compact.storage.common",
+        "query": null,
+        "symbol": "integrations:storage_common"
+      },
+      {
+        "capabilities": {
+          "storage": "gcs"
+        },
+        "id": "compact.storage.flow.gcs",
+        "query": null,
+        "symbol": "integrations:flow_storage"
+      },
+      {
+        "capabilities": {
+          "storage": "none"
+        },
+        "id": "compact.storage.flow.none",
+        "query": null,
+        "symbol": "integrations:flow_storage"
+      },
+      {
+        "capabilities": {
+          "storage": "s3"
+        },
+        "id": "compact.storage.flow.s3",
+        "query": null,
+        "symbol": "integrations:flow_storage"
+      },
+      {
+        "capabilities": {
+          "storage": "gcs"
+        },
+        "id": "compact.storage.gcs",
+        "query": null,
+        "symbol": "integrations:storage"
+      },
+      {
+        "capabilities": {
+          "storage": "none"
+        },
+        "id": "compact.storage.none",
+        "query": null,
+        "symbol": "integrations:storage"
+      },
+      {
+        "capabilities": {
+          "storage": "s3"
+        },
+        "id": "compact.storage.s3",
+        "query": null,
+        "symbol": "integrations:storage"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.test.business.head.mongodb",
+        "query": null,
+        "symbol": "tests:head"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.test.business.head.postgresql",
+        "query": null,
+        "symbol": "tests:head"
+      },
+      {
+        "capabilities": {},
+        "id": "compact.test.related.payload.child",
+        "query": null,
+        "symbol": "tests:child"
+      },
+      {
+        "capabilities": {},
+        "id": "compact.test.related.payload.parent",
+        "query": null,
+        "symbol": "tests:parent"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.business.head.mongodb",
+        "query": null,
+        "symbol": "app:head"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.business.head.postgresql",
+        "query": null,
+        "symbol": "app:head"
+      },
+      {
+        "capabilities": {
+          "workflow": "csv"
+        },
+        "id": "compact.v7.api.business.workflow.csv",
+        "query": null,
+        "symbol": "app:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "decimal_summary"
+        },
+        "id": "compact.v7.api.business.workflow.decimal_summary",
+        "query": null,
+        "symbol": "app:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "gzip_export"
+        },
+        "id": "compact.v7.api.business.workflow.gzip_export",
+        "query": null,
+        "symbol": "app:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "json_export"
+        },
+        "id": "compact.v7.api.business.workflow.json_export",
+        "query": null,
+        "symbol": "app:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "statistics"
+        },
+        "id": "compact.v7.api.business.workflow.statistics",
+        "query": null,
+        "symbol": "app:workflow"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.batch",
+        "query": null,
+        "symbol": "app:batch"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.child.create",
+        "query": null,
+        "symbol": "app:child_create"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.child.delete",
+        "query": null,
+        "symbol": "app:child_delete"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.child.get",
+        "query": null,
+        "symbol": "app:child_get"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.child.list.boolean",
+        "query": [
+          "child",
+          "boolean"
+        ],
+        "symbol": "app:child_list"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.child.list.date",
+        "query": [
+          "child",
+          "date"
+        ],
+        "symbol": "app:child_list"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.child.list.plain",
+        "query": [
+          "child",
+          "plain"
+        ],
+        "symbol": "app:child_list"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.child.patch",
+        "query": null,
+        "symbol": "app:child_patch"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.parent.create",
+        "query": null,
+        "symbol": "app:parent_create"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.parent.delete",
+        "query": null,
+        "symbol": "app:parent_delete"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.parent.get",
+        "query": null,
+        "symbol": "app:parent_get"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.parent.list.boolean",
+        "query": [
+          "parent",
+          "boolean"
+        ],
+        "symbol": "app:parent_list"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.parent.list.date",
+        "query": [
+          "parent",
+          "date"
+        ],
+        "symbol": "app:parent_list"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.parent.list.plain",
+        "query": [
+          "parent",
+          "plain"
+        ],
+        "symbol": "app:parent_list"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.api.mongo.parent.patch",
+        "query": null,
+        "symbol": "app:parent_patch"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.batch",
+        "query": null,
+        "symbol": "app:batch"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.child.create",
+        "query": null,
+        "symbol": "app:child_create"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.child.delete",
+        "query": null,
+        "symbol": "app:child_delete"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.child.get",
+        "query": null,
+        "symbol": "app:child_get"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.child.list.boolean",
+        "query": [
+          "child",
+          "boolean"
+        ],
+        "symbol": "app:child_list"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.child.list.date",
+        "query": [
+          "child",
+          "date"
+        ],
+        "symbol": "app:child_list"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.child.list.plain",
+        "query": [
+          "child",
+          "plain"
+        ],
+        "symbol": "app:child_list"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.child.patch",
+        "query": null,
+        "symbol": "app:child_patch"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.parent.create",
+        "query": null,
+        "symbol": "app:parent_create"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.parent.delete",
+        "query": null,
+        "symbol": "app:parent_delete"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.parent.get",
+        "query": null,
+        "symbol": "app:parent_get"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.parent.list.boolean",
+        "query": [
+          "parent",
+          "boolean"
+        ],
+        "symbol": "app:parent_list"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.parent.list.date",
+        "query": [
+          "parent",
+          "date"
+        ],
+        "symbol": "app:parent_list"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.parent.list.plain",
+        "query": [
+          "parent",
+          "plain"
+        ],
+        "symbol": "app:parent_list"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.api.related.parent.patch",
+        "query": null,
+        "symbol": "app:parent_patch"
+      },
+      {
+        "capabilities": {},
+        "id": "compact.v7.api.tail",
+        "query": null,
+        "symbol": "app:tail"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.migration.mongo",
+        "query": null,
+        "symbol": "mongo_migration:migration"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.migration.related.child.boolean",
+        "query": [
+          "child",
+          "boolean"
+        ],
+        "symbol": "migration:child"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.migration.related.child.date",
+        "query": [
+          "child",
+          "date"
+        ],
+        "symbol": "migration:child"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.migration.related.child.plain",
+        "query": [
+          "child",
+          "plain"
+        ],
+        "symbol": "migration:child"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.migration.related.parent.boolean",
+        "query": [
+          "parent",
+          "boolean"
+        ],
+        "symbol": "migration:parent"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.migration.related.parent.date",
+        "query": [
+          "parent",
+          "date"
+        ],
+        "symbol": "migration:parent"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.migration.related.parent.plain",
+        "query": [
+          "parent",
+          "plain"
+        ],
+        "symbol": "migration:parent"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.migration.related.tail",
+        "query": null,
+        "symbol": "migration:tail"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.orm.composed.mongo.base",
+        "query": null,
+        "symbol": "models:base"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.orm.composed.mongo.child",
+        "query": null,
+        "symbol": "models:child"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.orm.composed.mongo.parent",
+        "query": null,
+        "symbol": "models:parent"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.orm.related.child.boolean",
+        "query": [
+          "child",
+          "boolean"
+        ],
+        "symbol": "models:child"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.orm.related.child.date",
+        "query": [
+          "child",
+          "date"
+        ],
+        "symbol": "models:child"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.orm.related.child.plain",
+        "query": [
+          "child",
+          "plain"
+        ],
+        "symbol": "models:child"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.orm.related.parent.boolean",
+        "query": [
+          "parent",
+          "boolean"
+        ],
+        "symbol": "models:parent"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.orm.related.parent.date",
+        "query": [
+          "parent",
+          "date"
+        ],
+        "symbol": "models:parent"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.orm.related.parent.plain",
+        "query": [
+          "parent",
+          "plain"
+        ],
+        "symbol": "models:parent"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.service.business.app.mongodb",
+        "query": null,
+        "symbol": "app:app"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.service.business.app.postgresql",
+        "query": null,
+        "symbol": "app:app"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "compact.v7.service.business.database.mongodb",
+        "query": null,
+        "symbol": "database:database"
+      },
+      {
+        "capabilities": {},
+        "id": "compact.v7.service.business.project",
+        "query": null,
+        "symbol": "project:project"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "compact.v7.service.database",
+        "query": null,
+        "symbol": "database:database"
+      },
+      {
+        "capabilities": {},
+        "id": "compact.v7.test.composed.behavior",
+        "query": null,
+        "symbol": "tests:test"
+      },
+      {
+        "capabilities": {
+          "workflow": "csv"
+        },
+        "id": "compact.workflow.flow.csv",
+        "query": null,
+        "symbol": "flow_helpers:workflow_helper"
+      },
+      {
+        "capabilities": {
+          "workflow": "decimal_summary"
+        },
+        "id": "compact.workflow.flow.decimal_summary",
+        "query": null,
+        "symbol": "flow_helpers:workflow_helper"
+      },
+      {
+        "capabilities": {
+          "workflow": "gzip_export"
+        },
+        "id": "compact.workflow.flow.gzip_export",
+        "query": null,
+        "symbol": "flow_helpers:workflow_helper"
+      },
+      {
+        "capabilities": {
+          "workflow": "json_export"
+        },
+        "id": "compact.workflow.flow.json_export",
+        "query": null,
+        "symbol": "flow_helpers:workflow_helper"
+      },
+      {
+        "capabilities": {
+          "workflow": "statistics"
+        },
+        "id": "compact.workflow.flow.statistics",
+        "query": null,
+        "symbol": "flow_helpers:workflow_helper"
+      },
+      {
+        "capabilities": {
+          "storage": "gcs"
+        },
+        "id": "flow.gcs.object.get",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_gcs_object_get"
+      },
+      {
+        "capabilities": {
+          "storage": "gcs"
+        },
+        "id": "flow.gcs.object.put",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_gcs_object_put"
+      },
+      {
+        "capabilities": {
+          "storage": "gcs"
+        },
+        "id": "flow.gcs.undo.delete_created",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_gcs_undo_delete_created"
+      },
+      {
+        "capabilities": {},
+        "id": "flow.if",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_if"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.authorize",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_authorize"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.batch.create",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_batch_create"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.child.create",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_child_create"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.child.get",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_child_get"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.child.get.checked",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_child_get_checked"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.child.list",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_child_list"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.child.patch",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_child_patch"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.parent.create",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_parent_create"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.parent.get",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_parent_get"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.parent.get.checked",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_parent_get_checked"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.parent.list",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_parent_list"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.parent.patch",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_parent_patch"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.transaction",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_transaction"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.undo.delete_created",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_undo_delete_created"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.undo.restore_patch",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_undo_restore_patch"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.workflow.import",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_workflow_import"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "flow.mongodb.workflow.run",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_mongodb_workflow_run"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.authorize",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_authorize"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.batch.create",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_batch_create"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.child.create",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_child_create"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.child.get",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_child_get"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.child.get.checked",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_child_get_checked"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.child.list",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_child_list"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.child.patch",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_child_patch"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.parent.create",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_parent_create"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.parent.get",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_parent_get"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.parent.get.checked",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_parent_get_checked"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.parent.list",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_parent_list"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.parent.patch",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_parent_patch"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.transaction",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_transaction"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.undo.delete_created",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_undo_delete_created"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.undo.restore_patch",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_undo_restore_patch"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.workflow.import",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_workflow_import"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "flow.postgresql.workflow.run",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_postgresql_workflow_run"
+      },
+      {
+        "capabilities": {
+          "storage": "s3"
+        },
+        "id": "flow.s3.object.get",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_s3_object_get"
+      },
+      {
+        "capabilities": {
+          "storage": "s3"
+        },
+        "id": "flow.s3.object.put",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_s3_object_put"
+      },
+      {
+        "capabilities": {
+          "storage": "s3"
+        },
+        "id": "flow.s3.undo.delete_created",
+        "query": null,
+        "symbol": "flow_helpers:reg_flow_s3_undo_delete_created"
+      }
+    ],
+    "slots": {
+      "alembic_env": "alembic/env.py",
+      "alembic_ini": "alembic.ini",
+      "app": "{package}/app.py",
+      "database": "{package}/database.py",
+      "flow_helpers": "{package}/flows.py",
+      "init": "{package}/__init__.py",
+      "integrations": "{package}/integrations.py",
+      "migration": "alembic/versions/{migration.revision}_{package}.py",
+      "models": "{package}/schema_v001.py",
+      "mongo_migration": "{package}/migrate.py",
+      "project": "pyproject.toml",
+      "readme": "README.md",
+      "schemas": "{package}/schemas.py",
+      "tests": "tests/test_{package}.py"
+    }
+  },
+  "composed": {
+    "catalog": "composed-quality",
+    "catalog_raw_sha256": "28f9bd134f31eb87fae5a680148447de3aaca9bad78fc10f0ac22b00cc40b0e5",
+    "emission_recipe": {
+      "api_blocks_order": [
+        "head",
+        "supplied route names in supplied order",
+        "workflow",
+        "tail",
+        "app"
+      ],
+      "base": "Use legacy v5 related and business constructors with unchanged package/resources/relation/capabilities/migration. Route entries come from supplied v6 operations only, in supplied order. Preserve v5 file positions, including Mongo migrate.py at the old migration position.",
+      "mongo_model_id_aliases": {
+        "orm.mongo.base": "orm.composed.mongo.base",
+        "orm.mongo.child": "orm.composed.mongo.child",
+        "orm.mongo.parent": "orm.composed.mongo.parent"
+      },
+      "ordered_ref_overrides": [
+        {
+          "name": "child",
+          "operation": "append",
+          "refs": [
+            "parent"
+          ],
+          "slot": "models"
+        },
+        {
+          "name": "child",
+          "operation": "append",
+          "refs": [
+            "parent"
+          ],
+          "slot": "migration"
+        },
+        {
+          "name": "tail",
+          "operation": "replace",
+          "refs_rule": "head; supplied route names in supplied order; workflow",
+          "slot": "app"
+        },
+        {
+          "name": "app",
+          "operation": "replace",
+          "refs": [
+            "tail"
+          ],
+          "slot": "app"
+        },
+        {
+          "name": "parent",
+          "operation": "replace",
+          "refs": [
+            "head"
+          ],
+          "slot": "tests"
+        },
+        {
+          "name": "child",
+          "operation": "replace",
+          "refs": [
+            "head"
+          ],
+          "slot": "tests"
+        }
+      ],
+      "refs_preserved_from_v5": {
+        "migration.child": [
+          "head",
+          "parent"
+        ],
+        "migration.parent": [
+          "head"
+        ],
+        "migration.tail": [
+          "parent",
+          "child"
+        ],
+        "models.child": [
+          "base",
+          "parent"
+        ],
+        "models.parent": [
+          "base"
+        ],
+        "schemas.batch": [
+          "parent",
+          "child"
+        ]
+      },
+      "source": "som-core/src/som_core/composed.py::reference",
+      "test_override": {
+        "id": "test.composed.behavior",
+        "name": "test",
+        "params": {
+          "routes": {
+            "$ref": "contract.routes"
+          }
+        },
+        "refs": [
+          "head",
+          "parent",
+          "child"
+        ],
+        "slot": "tests"
+      },
+      "version": "som.composed-reference-layout.v1"
+    },
+    "primary_providers": [
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.business.head.mongodb",
+        "query": null,
+        "symbol": "app:head"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.business.head.postgresql",
+        "query": null,
+        "symbol": "app:head"
+      },
+      {
+        "capabilities": {
+          "workflow": "csv"
+        },
+        "id": "api.business.workflow.csv",
+        "query": null,
+        "symbol": "app:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "decimal_summary"
+        },
+        "id": "api.business.workflow.decimal_summary",
+        "query": null,
+        "symbol": "app:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "gzip_export"
+        },
+        "id": "api.business.workflow.gzip_export",
+        "query": null,
+        "symbol": "app:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "json_export"
+        },
+        "id": "api.business.workflow.json_export",
+        "query": null,
+        "symbol": "app:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "statistics"
+        },
+        "id": "api.business.workflow.statistics",
+        "query": null,
+        "symbol": "app:workflow"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.batch",
+        "query": null,
+        "symbol": "app:batch"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.child.create",
+        "query": null,
+        "symbol": "app:child_create"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.child.delete",
+        "query": null,
+        "symbol": "app:child_delete"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.child.get",
+        "query": null,
+        "symbol": "app:child_get"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.child.list.boolean",
+        "query": [
+          "child",
+          "boolean"
+        ],
+        "symbol": "app:child_list"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.child.list.date",
+        "query": [
+          "child",
+          "date"
+        ],
+        "symbol": "app:child_list"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.child.list.plain",
+        "query": [
+          "child",
+          "plain"
+        ],
+        "symbol": "app:child_list"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.child.patch",
+        "query": null,
+        "symbol": "app:child_patch"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.parent.create",
+        "query": null,
+        "symbol": "app:parent_create"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.parent.delete",
+        "query": null,
+        "symbol": "app:parent_delete"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.parent.get",
+        "query": null,
+        "symbol": "app:parent_get"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.parent.list.boolean",
+        "query": [
+          "parent",
+          "boolean"
+        ],
+        "symbol": "app:parent_list"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.parent.list.date",
+        "query": [
+          "parent",
+          "date"
+        ],
+        "symbol": "app:parent_list"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.parent.list.plain",
+        "query": [
+          "parent",
+          "plain"
+        ],
+        "symbol": "app:parent_list"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "api.mongo.parent.patch",
+        "query": null,
+        "symbol": "app:parent_patch"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.batch",
+        "query": null,
+        "symbol": "app:batch"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.child.create",
+        "query": null,
+        "symbol": "app:child_create"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.child.delete",
+        "query": null,
+        "symbol": "app:child_delete"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.child.get",
+        "query": null,
+        "symbol": "app:child_get"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.child.list.boolean",
+        "query": [
+          "child",
+          "boolean"
+        ],
+        "symbol": "app:child_list"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.child.list.date",
+        "query": [
+          "child",
+          "date"
+        ],
+        "symbol": "app:child_list"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.child.list.plain",
+        "query": [
+          "child",
+          "plain"
+        ],
+        "symbol": "app:child_list"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.child.patch",
+        "query": null,
+        "symbol": "app:child_patch"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.parent.create",
+        "query": null,
+        "symbol": "app:parent_create"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.parent.delete",
+        "query": null,
+        "symbol": "app:parent_delete"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.parent.get",
+        "query": null,
+        "symbol": "app:parent_get"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.parent.list.boolean",
+        "query": [
+          "parent",
+          "boolean"
+        ],
+        "symbol": "app:parent_list"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.parent.list.date",
+        "query": [
+          "parent",
+          "date"
+        ],
+        "symbol": "app:parent_list"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.parent.list.plain",
+        "query": [
+          "parent",
+          "plain"
+        ],
+        "symbol": "app:parent_list"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "api.related.parent.patch",
+        "query": null,
+        "symbol": "app:parent_patch"
+      },
+      {
+        "capabilities": {},
+        "id": "api.tail",
+        "query": null,
+        "symbol": "app:tail"
+      },
+      {
+        "capabilities": {},
+        "id": "auth.common",
+        "query": null,
+        "symbol": "integrations:auth_common"
+      },
+      {
+        "capabilities": {
+          "auth": "firebase"
+        },
+        "id": "auth.firebase",
+        "query": null,
+        "symbol": "integrations:auth"
+      },
+      {
+        "capabilities": {
+          "auth": "google_oauth"
+        },
+        "id": "auth.google_oauth",
+        "query": null,
+        "symbol": "integrations:auth"
+      },
+      {
+        "capabilities": {
+          "auth": "jwt"
+        },
+        "id": "auth.jwt",
+        "query": null,
+        "symbol": "integrations:auth"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "migration.mongo",
+        "query": null,
+        "symbol": "mongo_migration:migration"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "migration.related.child.boolean",
+        "query": [
+          "child",
+          "boolean"
+        ],
+        "symbol": "migration:child"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "migration.related.child.date",
+        "query": [
+          "child",
+          "date"
+        ],
+        "symbol": "migration:child"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "migration.related.child.plain",
+        "query": [
+          "child",
+          "plain"
+        ],
+        "symbol": "migration:child"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "migration.related.head",
+        "query": null,
+        "symbol": "migration:head"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "migration.related.parent.boolean",
+        "query": [
+          "parent",
+          "boolean"
+        ],
+        "symbol": "migration:parent"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "migration.related.parent.date",
+        "query": [
+          "parent",
+          "date"
+        ],
+        "symbol": "migration:parent"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "migration.related.parent.plain",
+        "query": [
+          "parent",
+          "plain"
+        ],
+        "symbol": "migration:parent"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "migration.related.tail",
+        "query": null,
+        "symbol": "migration:tail"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "orm.base",
+        "query": null,
+        "symbol": "models:base"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "orm.composed.mongo.base",
+        "query": null,
+        "symbol": "models:base"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "orm.composed.mongo.child",
+        "query": null,
+        "symbol": "models:child"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "orm.composed.mongo.parent",
+        "query": null,
+        "symbol": "models:parent"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "orm.related.child.boolean",
+        "query": [
+          "child",
+          "boolean"
+        ],
+        "symbol": "models:child"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "orm.related.child.date",
+        "query": [
+          "child",
+          "date"
+        ],
+        "symbol": "models:child"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "orm.related.child.plain",
+        "query": [
+          "child",
+          "plain"
+        ],
+        "symbol": "models:child"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "orm.related.parent.boolean",
+        "query": [
+          "parent",
+          "boolean"
+        ],
+        "symbol": "models:parent"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "orm.related.parent.date",
+        "query": [
+          "parent",
+          "date"
+        ],
+        "symbol": "models:parent"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "orm.related.parent.plain",
+        "query": [
+          "parent",
+          "plain"
+        ],
+        "symbol": "models:parent"
+      },
+      {
+        "capabilities": {
+          "auth": "firebase"
+        },
+        "id": "readme.auth.firebase",
+        "query": null,
+        "symbol": "readme:auth"
+      },
+      {
+        "capabilities": {
+          "auth": "google_oauth"
+        },
+        "id": "readme.auth.google_oauth",
+        "query": null,
+        "symbol": "readme:auth"
+      },
+      {
+        "capabilities": {
+          "auth": "jwt"
+        },
+        "id": "readme.auth.jwt",
+        "query": null,
+        "symbol": "readme:auth"
+      },
+      {
+        "capabilities": {
+          "storage": "gcs"
+        },
+        "id": "readme.storage.gcs",
+        "query": null,
+        "symbol": "readme:storage"
+      },
+      {
+        "capabilities": {
+          "storage": "none"
+        },
+        "id": "readme.storage.none",
+        "query": null,
+        "symbol": "readme:storage"
+      },
+      {
+        "capabilities": {
+          "storage": "s3"
+        },
+        "id": "readme.storage.s3",
+        "query": null,
+        "symbol": "readme:storage"
+      },
+      {
+        "capabilities": {
+          "workflow": "csv"
+        },
+        "id": "readme.workflow.csv",
+        "query": null,
+        "symbol": "readme:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "decimal_summary"
+        },
+        "id": "readme.workflow.decimal_summary",
+        "query": null,
+        "symbol": "readme:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "gzip_export"
+        },
+        "id": "readme.workflow.gzip_export",
+        "query": null,
+        "symbol": "readme:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "json_export"
+        },
+        "id": "readme.workflow.json_export",
+        "query": null,
+        "symbol": "readme:workflow"
+      },
+      {
+        "capabilities": {
+          "workflow": "statistics"
+        },
+        "id": "readme.workflow.statistics",
+        "query": null,
+        "symbol": "readme:workflow"
+      },
+      {
+        "capabilities": {},
+        "id": "schema.related.batch",
+        "query": null,
+        "symbol": "schemas:batch"
+      },
+      {
+        "capabilities": {},
+        "id": "schema.related.bounds",
+        "query": null,
+        "symbol": "schemas:bounds"
+      },
+      {
+        "capabilities": {},
+        "id": "schema.related.child",
+        "query": null,
+        "symbol": "schemas:child"
+      },
+      {
+        "capabilities": {},
+        "id": "schema.related.parent",
+        "query": null,
+        "symbol": "schemas:parent"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "service.alembic.env",
+        "query": null,
+        "symbol": "alembic_env:env"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "service.alembic.ini",
+        "query": null,
+        "symbol": "alembic_ini:config"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "service.business.app.mongodb",
+        "query": null,
+        "symbol": "app:app"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "service.business.app.postgresql",
+        "query": null,
+        "symbol": "app:app"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "service.business.database.mongodb",
+        "query": null,
+        "symbol": "database:database"
+      },
+      {
+        "capabilities": {},
+        "id": "service.business.project",
+        "query": null,
+        "symbol": "project:project"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "service.business.readme.mongodb",
+        "query": null,
+        "symbol": "readme:readme"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "service.business.readme.postgresql",
+        "query": null,
+        "symbol": "readme:readme"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "service.database",
+        "query": null,
+        "symbol": "database:database"
+      },
+      {
+        "capabilities": {},
+        "id": "service.init",
+        "query": null,
+        "symbol": "init:init"
+      },
+      {
+        "capabilities": {},
+        "id": "storage.common",
+        "query": null,
+        "symbol": "integrations:storage_common"
+      },
+      {
+        "capabilities": {
+          "storage": "gcs"
+        },
+        "id": "storage.gcs",
+        "query": null,
+        "symbol": "integrations:storage"
+      },
+      {
+        "capabilities": {
+          "storage": "none"
+        },
+        "id": "storage.none",
+        "query": null,
+        "symbol": "integrations:storage"
+      },
+      {
+        "capabilities": {
+          "storage": "s3"
+        },
+        "id": "storage.s3",
+        "query": null,
+        "symbol": "integrations:storage"
+      },
+      {
+        "capabilities": {
+          "database": "mongodb"
+        },
+        "id": "test.business.head.mongodb",
+        "query": null,
+        "symbol": "tests:head"
+      },
+      {
+        "capabilities": {
+          "database": "postgresql"
+        },
+        "id": "test.business.head.postgresql",
+        "query": null,
+        "symbol": "tests:head"
+      },
+      {
+        "capabilities": {},
+        "id": "test.composed.behavior",
+        "query": null,
+        "symbol": "tests:test"
+      },
+      {
+        "capabilities": {},
+        "id": "test.related.payload.child",
+        "query": null,
+        "symbol": "tests:child"
+      },
+      {
+        "capabilities": {},
+        "id": "test.related.payload.parent",
+        "query": null,
+        "symbol": "tests:parent"
+      }
+    ]
+  },
+  "failure_rules": {
+    "catalog_block_param_mismatch": "INVALID_BLOCK",
+    "cyclic_local_requirements": "INVALID_REF",
+    "missing_or_ambiguous_provider": "INVALID_COMPOSITION",
+    "missing_selected_block": "UNSUPPORTED_BLOCK",
+    "unmapped_legacy_parameter": "INVALID_REF"
+  },
+  "flow_rules": {
+    "byte_preservation": "Preserve all scalar representation and literals, typed runtime refs, errors, predicates, exports, results and names. No business operation repair.",
+    "compile_variant": "standard",
+    "helper_set": "Exact selected provider/undo IDs from all supplied nodes. Emit in compact_flow.emission_recipe helper order, not generic topological order.",
+    "inverse_provider": "Object put uses selected storage. Database mutations use selected database. flow.if has no provider capability.",
+    "node_transform": "Clone supplied node, remove op, insert selected id. Recursively transform transaction steps and if then/else. Replace nonnull undo name with matching inverse primary ID. Preserve all other members and every supplied array order.",
+    "primary_selection": "Match operation, inverse/null, provider_family, provider_choice and all declared capability constraints to exactly one compact_flow.flow_primary_providers row. Object operations use storage family and prompt.storage choice; other operations use database family and prompt.database choice; if uses neutral/null. Undo inherits storage family for object.put and database family for other mutations. This prevents delete_created inverse ambiguity when both database and storage are present.",
+    "tree_shape": "name, steps, result from prompt.flow; inputs remains in original prompt.",
+    "v7_resolution": "Root uses existing flow_compact::resolve/assemble with the compact catalog. Generic resolve_prompt_refs dispatch selects standard flow::resolve and is not appropriate for compact plans."
+  },
+  "legacy_node_rule": "declared_params records approved parameter types only. Emitted DSL params are typed $ref bindings from the version binding map, never these type strings or copied prompt values.",
+  "legacy_versions": {
+    "1": {
+      "api_block_order": "head; logic array mapped by this version canonical sentence table; tail",
+      "binding_map": {
+        "down_revision": "migration.down_revision",
+        "fields": "resource.fields",
+        "name": "resource.name",
+        "package": "package",
+        "path": "resource.path",
+        "revision": "migration.revision",
+        "table": "resource.table"
+      },
+      "block_family": "v5",
+      "canonical_sentences": [
+        {
+          "action": "create",
+          "step": "Create a row. Return 409 for a unique value conflict."
+        },
+        {
+          "action": "get",
+          "step": "Get a row by id. Return 404 if it does not exist."
+        },
+        {
+          "action": "list",
+          "step": "List rows in id order."
+        },
+        {
+          "action": "patch",
+          "step": "Update supplied fields. Return 404 if the row does not exist."
+        },
+        {
+          "action": "delete",
+          "step": "Delete a row. Return 404 if it does not exist."
+        }
+      ],
+      "dsl_version": "som.dsl.v1",
+      "files": [
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "orm.base",
+              "name": "base",
+              "refs": []
+            },
+            {
+              "declared_params": {
+                "fields": "fields",
+                "name": "identifier",
+                "table": "string"
+              },
+              "id": "orm.model",
+              "name": "model",
+              "refs": [
+                "base"
+              ]
+            }
+          ],
+          "path": "{package}/models.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "fields": "fields",
+                "name": "identifier"
+              },
+              "id": "schema.create",
+              "name": "create",
+              "refs": []
+            },
+            {
+              "declared_params": {
+                "fields": "fields",
+                "name": "identifier"
+              },
+              "id": "schema.read",
+              "name": "read",
+              "refs": []
+            },
+            {
+              "declared_params": {
+                "fields": "fields",
+                "name": "identifier"
+              },
+              "id": "schema.patch",
+              "name": "patch",
+              "refs": []
+            }
+          ],
+          "path": "{package}/schemas.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "api.head",
+              "name": "head",
+              "refs": []
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.create",
+              "name": "create",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.get",
+              "name": "get",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.list",
+              "name": "list",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.patch",
+              "name": "patch",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.delete",
+              "name": "delete",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {},
+              "id": "api.tail",
+              "name": "tail",
+              "refs": [
+                "head"
+              ]
+            }
+          ],
+          "path": "{package}/api.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "fields": "fields",
+                "package": "identifier",
+                "path": "string"
+              },
+              "id": "test.crud",
+              "name": "crud",
+              "refs": []
+            }
+          ],
+          "path": "tests/test_{package}.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "down_revision": "nullable_string",
+                "fields": "fields",
+                "revision": "string",
+                "table": "string"
+              },
+              "id": "migration.table",
+              "name": "migration",
+              "refs": []
+            }
+          ],
+          "path": "alembic/versions/{migration.revision}_{package}.py"
+        }
+      ],
+      "prompt_version": "som.prompt.v1"
+    },
+    "2": {
+      "api_block_order": "head; logic array mapped by this version canonical sentence table; tail",
+      "binding_map": {
+        "down_revision": "migration.down_revision",
+        "fields": "resource.fields",
+        "filter_field": "query.filter_field",
+        "max_limit": "query.max_limit",
+        "name": "resource.name",
+        "package": "package",
+        "path": "resource.path",
+        "revision": "migration.revision",
+        "table": "resource.table"
+      },
+      "block_family": "v5",
+      "canonical_sentences": [
+        {
+          "action": "create",
+          "step": "Create a row. Return 409 for a unique value conflict."
+        },
+        {
+          "action": "get",
+          "step": "Get a row by id. Return 404 if it does not exist."
+        },
+        {
+          "action": "list",
+          "step": "List rows with an optional exact string filter, limit, and offset in id order."
+        },
+        {
+          "action": "patch",
+          "step": "Update supplied fields. Return 404 if the row does not exist."
+        },
+        {
+          "action": "delete",
+          "step": "Delete a row. Return 404 if it does not exist."
+        }
+      ],
+      "dsl_version": "som.dsl.v1",
+      "files": [
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "orm.base",
+              "name": "base",
+              "refs": []
+            },
+            {
+              "declared_params": {
+                "fields": "fields",
+                "name": "identifier",
+                "table": "string"
+              },
+              "id": "orm.model",
+              "name": "model",
+              "refs": [
+                "base"
+              ]
+            }
+          ],
+          "path": "{package}/models.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "fields": "fields",
+                "name": "identifier"
+              },
+              "id": "schema.create",
+              "name": "create",
+              "refs": []
+            },
+            {
+              "declared_params": {
+                "fields": "fields",
+                "name": "identifier"
+              },
+              "id": "schema.read",
+              "name": "read",
+              "refs": []
+            },
+            {
+              "declared_params": {
+                "fields": "fields",
+                "name": "identifier"
+              },
+              "id": "schema.patch",
+              "name": "patch",
+              "refs": []
+            }
+          ],
+          "path": "{package}/schemas.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "api.head",
+              "name": "head",
+              "refs": []
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.create",
+              "name": "create",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.get",
+              "name": "get",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "filter_field": "identifier",
+                "max_limit": "integer",
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.list.query",
+              "name": "list",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.patch",
+              "name": "patch",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.delete",
+              "name": "delete",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {},
+              "id": "api.tail",
+              "name": "tail",
+              "refs": [
+                "head"
+              ]
+            }
+          ],
+          "path": "{package}/api.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "fields": "fields",
+                "package": "identifier",
+                "path": "string"
+              },
+              "id": "test.crud",
+              "name": "crud",
+              "refs": []
+            },
+            {
+              "declared_params": {
+                "fields": "fields",
+                "filter_field": "string",
+                "max_limit": "integer",
+                "path": "string"
+              },
+              "id": "test.list.query",
+              "name": "query",
+              "refs": [
+                "crud"
+              ]
+            }
+          ],
+          "path": "tests/test_{package}.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "down_revision": "nullable_string",
+                "fields": "fields",
+                "revision": "string",
+                "table": "string"
+              },
+              "id": "migration.table",
+              "name": "migration",
+              "refs": []
+            }
+          ],
+          "path": "alembic/versions/{migration.revision}_{package}.py"
+        }
+      ],
+      "prompt_version": "som.prompt.v2"
+    },
+    "3": {
+      "api_block_order": "head; logic array mapped by this version canonical sentence table; tail",
+      "binding_map": {
+        "down_revision": "migration.down_revision",
+        "fields": "resource.fields",
+        "filter_field": "query.filter_field",
+        "max_limit": "query.max_limit",
+        "name": "resource.name",
+        "package": "package",
+        "path": "resource.path",
+        "revision": "migration.revision",
+        "table": "resource.table"
+      },
+      "block_family": "v5",
+      "canonical_sentences": [
+        {
+          "action": "create",
+          "step": "Create a row. Return 409 for a unique value conflict."
+        },
+        {
+          "action": "get",
+          "step": "Get a row by id. Return 404 if it does not exist."
+        },
+        {
+          "action": "list",
+          "step": "List rows with an optional exact boolean filter, limit, and offset in id order."
+        },
+        {
+          "action": "patch",
+          "step": "Update supplied fields. Return 404 if the row does not exist."
+        },
+        {
+          "action": "delete",
+          "step": "Delete a row. Return 404 if it does not exist."
+        }
+      ],
+      "dsl_version": "som.dsl.v2",
+      "files": [
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "orm.base",
+              "name": "base",
+              "refs": []
+            },
+            {
+              "declared_params": {
+                "fields": "fields_v3",
+                "filter_field": "identifier",
+                "name": "identifier",
+                "table": "identifier"
+              },
+              "id": "orm.model.service",
+              "name": "model",
+              "refs": [
+                "base"
+              ]
+            }
+          ],
+          "path": "{package}/models.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "fields": "fields_v3",
+                "name": "identifier"
+              },
+              "id": "schema.service",
+              "name": "schemas",
+              "refs": []
+            }
+          ],
+          "path": "{package}/schemas.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "api.head",
+              "name": "head",
+              "refs": []
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.create",
+              "name": "create",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.get",
+              "name": "get",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "filter_field": "identifier",
+                "max_limit": "integer",
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.list.boolean",
+              "name": "list",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.patch",
+              "name": "patch",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.delete",
+              "name": "delete",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {},
+              "id": "api.tail",
+              "name": "tail",
+              "refs": [
+                "head"
+              ]
+            }
+          ],
+          "path": "{package}/api.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "fields": "fields_v3",
+                "filter_field": "identifier",
+                "max_limit": "integer",
+                "package": "identifier",
+                "path": "string"
+              },
+              "id": "test.service",
+              "name": "test",
+              "refs": []
+            }
+          ],
+          "path": "tests/test_{package}.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "down_revision": "nullable_string",
+                "fields": "fields_v3",
+                "filter_field": "identifier",
+                "revision": "identifier",
+                "table": "identifier"
+              },
+              "id": "migration.service",
+              "name": "migration",
+              "refs": []
+            }
+          ],
+          "path": "alembic/versions/{migration.revision}_{package}.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "service.app",
+              "name": "app",
+              "refs": []
+            }
+          ],
+          "path": "{package}/app.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "service.database",
+              "name": "database",
+              "refs": []
+            }
+          ],
+          "path": "{package}/database.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "service.init",
+              "name": "init",
+              "refs": []
+            }
+          ],
+          "path": "{package}/__init__.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "package": "identifier"
+              },
+              "id": "service.alembic.env",
+              "name": "env",
+              "refs": []
+            }
+          ],
+          "path": "alembic/env.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "service.alembic.ini",
+              "name": "config",
+              "refs": []
+            }
+          ],
+          "path": "alembic.ini"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "package": "identifier"
+              },
+              "id": "service.project",
+              "name": "project",
+              "refs": []
+            }
+          ],
+          "path": "pyproject.toml"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "package": "identifier"
+              },
+              "id": "service.readme",
+              "name": "readme",
+              "refs": []
+            }
+          ],
+          "path": "README.md"
+        }
+      ],
+      "prompt_version": "som.prompt.v3"
+    },
+    "4": {
+      "api_block_order": "head; logic array mapped by this version canonical sentence table; tail",
+      "binding_map": {
+        "date_field": "query.date_field",
+        "down_revision": "migration.down_revision",
+        "fields": "resource.fields",
+        "filter_field": "query.filter_field",
+        "max_limit": "query.max_limit",
+        "name": "resource.name",
+        "package": "package",
+        "path": "resource.path",
+        "revision": "migration.revision",
+        "table": "resource.table"
+      },
+      "block_family": "v5",
+      "canonical_sentences": [
+        {
+          "action": "create",
+          "step": "Create a row. Return 409 for a unique value conflict."
+        },
+        {
+          "action": "get",
+          "step": "Get a row by id. Return 404 if it does not exist."
+        },
+        {
+          "action": "list",
+          "step": "List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order."
+        },
+        {
+          "action": "patch",
+          "step": "Update supplied fields. Return 404 if the row does not exist."
+        },
+        {
+          "action": "delete",
+          "step": "Delete a row. Return 404 if it does not exist."
+        }
+      ],
+      "dsl_version": "som.dsl.v2",
+      "files": [
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "orm.base",
+              "name": "base",
+              "refs": []
+            },
+            {
+              "declared_params": {
+                "date_field": "identifier",
+                "fields": "fields_v4",
+                "filter_field": "identifier",
+                "name": "identifier",
+                "table": "identifier"
+              },
+              "id": "orm.model.service.date",
+              "name": "model",
+              "refs": [
+                "base"
+              ]
+            }
+          ],
+          "path": "{package}/models.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "fields": "fields_v4",
+                "name": "identifier"
+              },
+              "id": "schema.service.date",
+              "name": "schemas",
+              "refs": []
+            }
+          ],
+          "path": "{package}/schemas.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "api.head",
+              "name": "head",
+              "refs": []
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.create",
+              "name": "create",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.get",
+              "name": "get",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "date_field": "identifier",
+                "filter_field": "identifier",
+                "max_limit": "integer",
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.list.boolean.date",
+              "name": "list",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.patch",
+              "name": "patch",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {
+                "name": "identifier",
+                "path": "string"
+              },
+              "id": "api.delete",
+              "name": "delete",
+              "refs": [
+                "head"
+              ]
+            },
+            {
+              "declared_params": {},
+              "id": "api.tail",
+              "name": "tail",
+              "refs": [
+                "head"
+              ]
+            }
+          ],
+          "path": "{package}/api.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "date_field": "identifier",
+                "fields": "fields_v4",
+                "filter_field": "identifier",
+                "max_limit": "integer",
+                "package": "identifier",
+                "path": "string"
+              },
+              "id": "test.service.date",
+              "name": "test",
+              "refs": []
+            }
+          ],
+          "path": "tests/test_{package}.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "date_field": "identifier",
+                "down_revision": "nullable_string",
+                "fields": "fields_v4",
+                "filter_field": "identifier",
+                "revision": "identifier",
+                "table": "identifier"
+              },
+              "id": "migration.service.date",
+              "name": "migration",
+              "refs": []
+            }
+          ],
+          "path": "alembic/versions/{migration.revision}_{package}.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "service.app",
+              "name": "app",
+              "refs": []
+            }
+          ],
+          "path": "{package}/app.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "service.database",
+              "name": "database",
+              "refs": []
+            }
+          ],
+          "path": "{package}/database.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "service.init",
+              "name": "init",
+              "refs": []
+            }
+          ],
+          "path": "{package}/__init__.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "package": "identifier"
+              },
+              "id": "service.alembic.env",
+              "name": "env",
+              "refs": []
+            }
+          ],
+          "path": "alembic/env.py"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {},
+              "id": "service.alembic.ini",
+              "name": "config",
+              "refs": []
+            }
+          ],
+          "path": "alembic.ini"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "package": "identifier"
+              },
+              "id": "service.project",
+              "name": "project",
+              "refs": []
+            }
+          ],
+          "path": "pyproject.toml"
+        },
+        {
+          "blocks": [
+            {
+              "declared_params": {
+                "package": "identifier"
+              },
+              "id": "service.readme.date",
+              "name": "readme",
+              "refs": []
+            }
+          ],
+          "path": "README.md"
+        }
+      ],
+      "prompt_version": "som.prompt.v4"
+    },
+    "5": {
+      "block_family": "v5",
+      "block_param_types_source": "som-code-python/data/blocks/v5/blocks.json",
+      "business_overlay": {
+        "api_path": "{package}/app.py",
+        "append_to_api": {
+          "id_by_database": {
+            "mongodb": "service.business.app.mongodb",
+            "postgresql": "service.business.app.postgresql"
+          },
+          "name": "app",
+          "refs": []
+        },
+        "head_id_by_database": {
+          "mongodb": "api.business.head.mongodb",
+          "postgresql": "api.business.head.postgresql"
+        },
+        "insert_before_api_tail": {
+          "id_by_workflow": {
+            "csv": "api.business.workflow.csv",
+            "decimal_summary": "api.business.workflow.decimal_summary",
+            "gzip_export": "api.business.workflow.gzip_export",
+            "json_export": "api.business.workflow.json_export",
+            "statistics": "api.business.workflow.statistics"
+          },
+          "name": "workflow",
+          "refs": [
+            "head"
+          ]
+        },
+        "integrations_append_file": {
+          "path": "{package}/integrations.py",
+          "prefix": [
+            {
+              "id": "auth.common",
+              "name": "auth_common",
+              "refs": []
+            },
+            {
+              "id_by_auth": {
+                "firebase": "auth.firebase",
+                "google_oauth": "auth.google_oauth",
+                "jwt": "auth.jwt"
+              },
+              "name": "auth",
+              "refs": [
+                "auth_common"
+              ]
+            }
+          ],
+          "storage_none": [
+            {
+              "id": "storage.none",
+              "name": "storage",
+              "refs": []
+            }
+          ],
+          "storage_present": [
+            {
+              "id": "storage.common",
+              "name": "storage_common",
+              "refs": [
+                "auth"
+              ]
+            },
+            {
+              "id_by_storage": {
+                "gcs": "storage.gcs",
+                "s3": "storage.s3"
+              },
+              "name": "storage",
+              "refs": [
+                "storage_common"
+              ]
+            }
+          ]
+        },
+        "mongodb": {
+          "database_nodes": [
+            {
+              "id": "service.business.database.mongodb",
+              "name": "database",
+              "refs": []
+            }
+          ],
+          "migration_nodes": [
+            {
+              "id": "migration.mongo",
+              "name": "migration",
+              "refs": []
+            }
+          ],
+          "migration_path": "{package}/migrate.py",
+          "models_nodes": [
+            {
+              "id": "orm.mongo.base",
+              "name": "base",
+              "refs": []
+            },
+            {
+              "id": "orm.mongo.parent",
+              "name": "parent",
+              "refs": [
+                "base"
+              ],
+              "role": "parent"
+            },
+            {
+              "id": "orm.mongo.child",
+              "name": "child",
+              "refs": [
+                "base"
+              ],
+              "role": "child"
+            }
+          ],
+          "omit_paths": [
+            "alembic/env.py",
+            "alembic.ini"
+          ]
+        },
+        "project_id": "service.business.project",
+        "readme_nodes": [
+          {
+            "id_by_database": {
+              "mongodb": "service.business.readme.mongodb",
+              "postgresql": "service.business.readme.postgresql"
+            },
+            "name": "readme",
+            "refs": []
+          },
+          {
+            "id_by_auth": {
+              "firebase": "readme.auth.firebase",
+              "google_oauth": "readme.auth.google_oauth",
+              "jwt": "readme.auth.jwt"
+            },
+            "name": "auth",
+            "refs": []
+          },
+          {
+            "id_by_storage": {
+              "gcs": "readme.storage.gcs",
+              "none": "readme.storage.none",
+              "s3": "readme.storage.s3"
+            },
+            "name": "storage",
+            "refs": []
+          },
+          {
+            "id_by_workflow": {
+              "csv": "readme.workflow.csv",
+              "decimal_summary": "readme.workflow.decimal_summary",
+              "gzip_export": "readme.workflow.gzip_export",
+              "json_export": "readme.workflow.json_export",
+              "statistics": "readme.workflow.statistics"
+            },
+            "name": "workflow",
+            "refs": []
+          }
+        ],
+        "remove_original_standalone_app_file": true,
+        "replace_test_behavior": {
+          "id": "test.business.behavior",
+          "name": "test",
+          "refs": [
+            "head",
+            "parent",
+            "child"
+          ]
+        },
+        "replace_test_head": {
+          "id_by_database": {
+            "mongodb": "test.business.head.mongodb",
+            "postgresql": "test.business.head.postgresql"
+          },
+          "name": "head",
+          "refs": []
+        },
+        "when": "capabilities key exists"
+      },
+      "canonical_sentences": [
+        {
+          "action": "create",
+          "step": "Create a row. Return 409 for a unique value conflict."
+        },
+        {
+          "action": "get",
+          "step": "Get a row by id. Return 404 if it does not exist."
+        },
+        {
+          "action": "list",
+          "step": "List scoped rows with the configured filters and pagination in id order."
+        },
+        {
+          "action": "patch",
+          "step": "Update supplied fields. Return 404 if the row does not exist."
+        },
+        {
+          "action": "delete",
+          "step": "Delete a row. Reject a parent with children with 409."
+        },
+        {
+          "action": "batch_create",
+          "step": "Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure."
+        }
+      ],
+      "common_binding_map": {
+        "child_name": "child.name",
+        "child_suffix": "child.suffix",
+        "child_table": "child.table",
+        "foreign_key": "relation.foreign_key",
+        "group_field": "capabilities.group_field",
+        "package": "package",
+        "parent_name": "parent.name",
+        "parent_path": "parent.path",
+        "parent_table": "parent.table",
+        "revision": "migration.revision",
+        "target": "relation.target",
+        "value_field": "capabilities.value_field",
+        "workflow": "capabilities.workflow"
+      },
+      "database_without_capabilities": "postgresql",
+      "dsl_version": "som.dsl.v2",
+      "files": [
+        {
+          "nodes": [
+            {
+              "id": "orm.base",
+              "name": "base",
+              "refs": []
+            },
+            {
+              "id_by_query": {
+                "boolean": "orm.related.parent.boolean",
+                "date": "orm.related.parent.date",
+                "plain": "orm.related.parent.plain"
+              },
+              "name": "parent",
+              "refs": [
+                "base"
+              ],
+              "role": "parent"
+            },
+            {
+              "id_by_query": {
+                "boolean": "orm.related.child.boolean",
+                "date": "orm.related.child.date",
+                "plain": "orm.related.child.plain"
+              },
+              "name": "child",
+              "refs": [
+                "base"
+              ],
+              "role": "child"
+            }
+          ],
+          "path": "{package}/models.py"
+        },
+        {
+          "nodes": [
+            {
+              "id": "schema.related.bounds",
+              "name": "bounds",
+              "refs": []
+            },
+            {
+              "id": "schema.related.parent",
+              "name": "parent",
+              "refs": [
+                "bounds"
+              ],
+              "role": "parent"
+            },
+            {
+              "id": "schema.related.child",
+              "name": "child",
+              "refs": [
+                "bounds"
+              ],
+              "role": "child"
+            },
+            {
+              "id": "schema.related.batch",
+              "name": "batch",
+              "refs": [
+                "parent",
+                "child"
+              ]
+            }
+          ],
+          "path": "{package}/schemas.py"
+        },
+        {
+          "nodes": [
+            {
+              "id": "api.related.head",
+              "name": "head",
+              "refs": []
+            },
+            {
+              "id_rule": "legacy_api_selection_table",
+              "name": "batch for batch, otherwise scope_action",
+              "path_binding": "batch.path for batch; scope.item_path for get/patch/delete; scope.path for create/list",
+              "refs": [
+                "head"
+              ],
+              "repeat": "prompt.logic in supplied order",
+              "role": "scope unless batch"
+            },
+            {
+              "id": "api.tail",
+              "name": "tail",
+              "refs": [
+                "head"
+              ]
+            }
+          ],
+          "path": "{package}/api.py"
+        },
+        {
+          "nodes": [
+            {
+              "id": "test.related.head",
+              "name": "head",
+              "refs": []
+            },
+            {
+              "id": "test.related.payload.parent",
+              "name": "parent",
+              "refs": [],
+              "role": "parent"
+            },
+            {
+              "id": "test.related.payload.child",
+              "name": "child",
+              "refs": [],
+              "role": "child"
+            },
+            {
+              "id": "test.related.behavior",
+              "name": "test",
+              "refs": [
+                "head",
+                "parent",
+                "child"
+              ]
+            }
+          ],
+          "path": "tests/test_{package}.py"
+        },
+        {
+          "nodes": [
+            {
+              "id": "migration.related.head",
+              "name": "head",
+              "refs": []
+            },
+            {
+              "id_by_query": {
+                "boolean": "migration.related.parent.boolean",
+                "date": "migration.related.parent.date",
+                "plain": "migration.related.parent.plain"
+              },
+              "name": "parent",
+              "refs": [
+                "head"
+              ],
+              "role": "parent"
+            },
+            {
+              "id_by_query": {
+                "boolean": "migration.related.child.boolean",
+                "date": "migration.related.child.date",
+                "plain": "migration.related.child.plain"
+              },
+              "name": "child",
+              "refs": [
+                "head"
+              ],
+              "role": "child"
+            },
+            {
+              "id": "migration.related.tail",
+              "name": "tail",
+              "refs": [
+                "parent",
+                "child"
+              ]
+            }
+          ],
+          "path": "alembic/versions/{migration.revision}_{package}.py"
+        },
+        {
+          "nodes": [
+            {
+              "id": "service.app",
+              "name": "app",
+              "refs": []
+            }
+          ],
+          "path": "{package}/app.py"
+        },
+        {
+          "nodes": [
+            {
+              "id": "service.database",
+              "name": "database",
+              "refs": []
+            }
+          ],
+          "path": "{package}/database.py"
+        },
+        {
+          "nodes": [
+            {
+              "id": "service.init",
+              "name": "init",
+              "refs": []
+            }
+          ],
+          "path": "{package}/__init__.py"
+        },
+        {
+          "nodes": [
+            {
+              "id": "service.alembic.env",
+              "name": "env",
+              "refs": []
+            }
+          ],
+          "path": "alembic/env.py"
+        },
+        {
+          "nodes": [
+            {
+              "id": "service.alembic.ini",
+              "name": "config",
+              "refs": []
+            }
+          ],
+          "path": "alembic.ini"
+        },
+        {
+          "nodes": [
+            {
+              "id": "service.project",
+              "name": "project",
+              "refs": []
+            }
+          ],
+          "path": "pyproject.toml"
+        },
+        {
+          "nodes": [
+            {
+              "id": "service.readme",
+              "name": "readme",
+              "refs": []
+            }
+          ],
+          "path": "README.md"
+        }
+      ],
+      "legacy_api_selection_table": [
+        {
+          "action": "create",
+          "database": "postgresql",
+          "id": "api.related.parent.create",
+          "query": null,
+          "scope": "parent"
+        },
+        {
+          "action": "get",
+          "database": "postgresql",
+          "id": "api.related.parent.get",
+          "query": null,
+          "scope": "parent"
+        },
+        {
+          "action": "list",
+          "database": "postgresql",
+          "id": "api.related.parent.list.plain",
+          "query": "plain",
+          "scope": "parent"
+        },
+        {
+          "action": "list",
+          "database": "postgresql",
+          "id": "api.related.parent.list.boolean",
+          "query": "boolean",
+          "scope": "parent"
+        },
+        {
+          "action": "list",
+          "database": "postgresql",
+          "id": "api.related.parent.list.date",
+          "query": "date",
+          "scope": "parent"
+        },
+        {
+          "action": "patch",
+          "database": "postgresql",
+          "id": "api.related.parent.patch",
+          "query": null,
+          "scope": "parent"
+        },
+        {
+          "action": "delete",
+          "database": "postgresql",
+          "id": "api.related.parent.delete",
+          "query": null,
+          "scope": "parent"
+        },
+        {
+          "action": "create",
+          "database": "postgresql",
+          "id": "api.related.child.create",
+          "query": null,
+          "scope": "child"
+        },
+        {
+          "action": "get",
+          "database": "postgresql",
+          "id": "api.related.child.get",
+          "query": null,
+          "scope": "child"
+        },
+        {
+          "action": "list",
+          "database": "postgresql",
+          "id": "api.related.child.list.plain",
+          "query": "plain",
+          "scope": "child"
+        },
+        {
+          "action": "list",
+          "database": "postgresql",
+          "id": "api.related.child.list.boolean",
+          "query": "boolean",
+          "scope": "child"
+        },
+        {
+          "action": "list",
+          "database": "postgresql",
+          "id": "api.related.child.list.date",
+          "query": "date",
+          "scope": "child"
+        },
+        {
+          "action": "patch",
+          "database": "postgresql",
+          "id": "api.related.child.patch",
+          "query": null,
+          "scope": "child"
+        },
+        {
+          "action": "delete",
+          "database": "postgresql",
+          "id": "api.related.child.delete",
+          "query": null,
+          "scope": "child"
+        },
+        {
+          "action": "batch_create",
+          "database": "postgresql",
+          "id": "api.related.batch",
+          "query": null,
+          "scope": "batch"
+        },
+        {
+          "action": "create",
+          "database": "mongodb",
+          "id": "api.mongo.parent.create",
+          "query": null,
+          "scope": "parent"
+        },
+        {
+          "action": "get",
+          "database": "mongodb",
+          "id": "api.mongo.parent.get",
+          "query": null,
+          "scope": "parent"
+        },
+        {
+          "action": "list",
+          "database": "mongodb",
+          "id": "api.mongo.parent.list.plain",
+          "query": "plain",
+          "scope": "parent"
+        },
+        {
+          "action": "list",
+          "database": "mongodb",
+          "id": "api.mongo.parent.list.boolean",
+          "query": "boolean",
+          "scope": "parent"
+        },
+        {
+          "action": "list",
+          "database": "mongodb",
+          "id": "api.mongo.parent.list.date",
+          "query": "date",
+          "scope": "parent"
+        },
+        {
+          "action": "patch",
+          "database": "mongodb",
+          "id": "api.mongo.parent.patch",
+          "query": null,
+          "scope": "parent"
+        },
+        {
+          "action": "delete",
+          "database": "mongodb",
+          "id": "api.mongo.parent.delete",
+          "query": null,
+          "scope": "parent"
+        },
+        {
+          "action": "create",
+          "database": "mongodb",
+          "id": "api.mongo.child.create",
+          "query": null,
+          "scope": "child"
+        },
+        {
+          "action": "get",
+          "database": "mongodb",
+          "id": "api.mongo.child.get",
+          "query": null,
+          "scope": "child"
+        },
+        {
+          "action": "list",
+          "database": "mongodb",
+          "id": "api.mongo.child.list.plain",
+          "query": "plain",
+          "scope": "child"
+        },
+        {
+          "action": "list",
+          "database": "mongodb",
+          "id": "api.mongo.child.list.boolean",
+          "query": "boolean",
+          "scope": "child"
+        },
+        {
+          "action": "list",
+          "database": "mongodb",
+          "id": "api.mongo.child.list.date",
+          "query": "date",
+          "scope": "child"
+        },
+        {
+          "action": "patch",
+          "database": "mongodb",
+          "id": "api.mongo.child.patch",
+          "query": null,
+          "scope": "child"
+        },
+        {
+          "action": "delete",
+          "database": "mongodb",
+          "id": "api.mongo.child.delete",
+          "query": null,
+          "scope": "child"
+        },
+        {
+          "action": "batch_create",
+          "database": "mongodb",
+          "id": "api.mongo.batch",
+          "query": null,
+          "scope": "batch"
+        }
+      ],
+      "param_rule": "For each selected block, emit exactly its declared params with common bindings then role bindings then route-path override. Fail if any declared key has no binding.",
+      "prompt_version": "som.prompt.v5",
+      "query_kind_precedence": [
+        "date_field nonnull -> date",
+        "filter_field nonnull -> boolean",
+        "otherwise plain"
+      ],
+      "role_binding_map": {
+        "date_field": "{role}.date_field",
+        "fields": "{role}.fields",
+        "filter_field": "{role}.filter_field",
+        "max_limit": "{role}.max_limit",
+        "name": "{role}.name",
+        "path": "{role}.path",
+        "table": "{role}.table"
+      }
+    }
+  },
+  "purpose": "Compile primary selection only. Assembly admits any independently valid supported alternative, including checked flow IDs. No equality to this primary plan is required for assembly.",
+  "qualification": {
+    "all_standard_to_compact_semantic_metadata_equal": true,
+    "artifact": "public-qualification.json",
+    "no_runtime_reference_call": true,
+    "scope": "Only public som-rs/examples/composed-prompt.json and explicit design variations of database, read flow, transaction plus object put. No model/corpus rows.",
+    "v6_public_example_unformatted_source_equality": "true for both databases; no general or formatted output claim",
+    "v6_solver_structural_equality": false,
+    "v7_standard_to_compact_reference_exact": "true on four public-example design variants; public constructor recipe frozen above"
+  },
+  "runtime_inputs": "Validated prompt and installed approved loaded block/catalog assets only. No Python constructors, corpus tables, model, CNL path, network, environment or scoring.",
+  "source_manifest": "public-sources.json",
+  "sources": {
+    "legacy_blocks_raw_sha256": "9dc292b2ddbeb834e09b7754de4d00a9aca16c25acf06ee9ee8fcc77d39c92c7"
+  },
+  "version": "som.compiler-selection-policy.v1.1"
+}

@@ -5,7 +5,7 @@
 //! `migrate upgrade` both create.
 use serde_json::Value;
 
-use super::super::{Field, Kind, related::Resource, text};
+use super::super::{Field, Kind, related::Resource, text, with_key};
 use super::{
     API_MISSING_PARENT, Auth, Flow, LIB, LOCK, MANIFEST, Product, Storage, Workflow, auth, storage,
 };
@@ -811,7 +811,8 @@ fn row_reader(name: &str, row: &str, key_field: Option<&Field>, fields: &[Field]
     let mut out = format!(
         "\nfn {name}(document: &Document) -> Result<{row}, Error> {{\n    Ok({row} {{\n        id: read_int(document.get(\"_id\"))?,\n"
     );
-    for field in key_field.into_iter().chain(fields) {
+    // Named together, as the row struct is: a foreign key and a field can share a fallback.
+    for field in &with_key(key_field, fields) {
         let get = format!("document.get({})", key(&field.name));
         let read = if field.nullable() {
             format!("nullable({get}, {})?", reader(field.kind))

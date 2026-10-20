@@ -1,7 +1,8 @@
 {
   "issue": 52,
-  "phase1_refusals_kept": {
-    "query_parameter_collision": "W4; rust_profile_phase2.py"
+  "phase1_refusals_kept": {},
+  "phase1_refusals_moved_to_compiler_v1": {
+    "query_parameter_collision": "amendment 004: compiler-v1 python_name_collisions refuses the v3 limit and offset filter fields for every target (compiler-v1 amendment 003); the phase 2 profile refuses nothing"
   },
   "phase1_refusals_removed": {
     "identifier_not_raw": "W1 and R2",
@@ -74,7 +75,7 @@
         "date field (before, after)"
       ],
       "id": "W4",
-      "rule": "Query parameter names, parsing, bounds, defaults, errors and ordering are the Python product's. A v3 filter field named like a fixed list parameter (limit or offset) makes the query string ambiguous: phase 2 keeps the phase 1 refusal query_parameter_collision for it (rust_profile_phase2.py), as compiler-v1 already refuses the same names in v4 and v5."
+      "rule": "Query parameter names, parsing, bounds, defaults, errors and ordering are the Python product's. A v3 filter field named like a fixed list parameter (limit or offset) makes the query string ambiguous: compiler-v1 refuses it for every target (python_name_collisions, amendment 004), as it already refuses the same names in v4 and v5."
     },
     {
       "applies_to": [

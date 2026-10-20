@@ -266,6 +266,22 @@
       "R33_V7_INCOMPATIBLE_COMPARISON"
     ],
     "cnl_negative_case_count": 14,
-    "flow_assertion_count": 14
+    "flow_assertion_count": 14,
+    "python_name_fixtures": {
+      "amendment": 3,
+      "issues": [
+        57,
+        58
+      ],
+      "path": "som-rs/tests/compiler-v1/self-name-fixtures.json",
+      "generator": "som-rs/tests/compiler-v1/self_name_fixtures.py",
+      "counts": {
+        "positive": 15,
+        "negative": 13,
+        "accepted": 3
+      },
+      "refusal": "INVALID_VALUE: a name listed in selection-policy.json python_name_collisions for the prompt version and database",
+      "accepted": "a field or relation.foreign_key named self selects the self_name_variants blocks"
+    }
   }
 }

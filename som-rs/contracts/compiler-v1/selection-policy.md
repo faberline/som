@@ -51,3 +51,24 @@ Do not rerun it or treat it as planner code.
 A cap guard rejected scratch cleanup and one policy shell update.
 Inspectable file patching completed the required update.
 No necessary work remains blocked.
+
+## Version 1.2 (amendment 003)
+
+Amendment 003 (issues #57 and #58) makes `selection-policy.json` version `som.compiler-selection-policy.v1.2`.
+Its raw-byte SHA-256 is `6fc29cf4791de4e2c6ec716a03426cf66cb1bdd0c5659c30511b837da8552f56`.
+The version before it was `58508e4e75a05e972b8cd8e114149190d071fc7ac716ee272c2f782d83240a36`, archived at `../../evidence/rust-compiler-contract-archive/selection-policy-v1.1-before-amendment-003.json`.
+The hash at the top of this note is the 2026-10-13 freeze value; amendment 001 replaced it with the archived bytes.
+Every earlier member is unchanged except `version` and `sources.legacy_blocks_raw_sha256`, the raw hash of the v5 block library, which gains the two v1 to v5 variant blocks.
+
+`python_name_collisions` lists names that share a Python scope with an identifier of the generated code.
+Rows are per prompt version and database, each a set of roles and the names refused for a slot with all of them.
+The tables come from a symbol-table analysis of neutralised public, legacy, fixture and example products.
+Each name was then checked against the templates. Some listed names work today only because of field order or an import alias; they are refused anyway.
+On every public, legacy, fixture and example prompt and every Rust case, the tables refuse only the RS12 and RS13 query names.
+
+`self_name_variants` lists the base blocks that pass model values as keyword arguments to a parameter named `self`.
+For each it gives the variant block and both source hashes.
+The variants are `orm.base.self` and `orm.mongo.base.self` for v1 to v5, `orm.base.self` and `orm.composed.mongo.base.self` for v6, and `compact.service.flow.store.postgresql.self` for v7.
+The v6 MongoDB documents subclass beanie's Document, whose constructor takes `self` by name; a batch insert builds them with keyword arguments.
+v7 MongoDB needs none: its pydantic models take values through `model_validate`.
+No primary choice, emission recipe or flow mapping changes.

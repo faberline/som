@@ -1,0 +1,4565 @@
+{
+ "format": "som.compiler-v1.self-name-fixtures.v1",
+ "issues": [
+  57,
+  58
+ ],
+ "generator": "som-rs/tests/compiler-v1/self_name_fixtures.py",
+ "policy": "som-rs/contracts/compiler-v1/selection-policy.json python_name_collisions",
+ "counts": {
+  "positive": 15,
+  "negative": 13,
+  "accepted": 3
+ },
+ "positive": [
+  {
+   "id": "SELF_V1_FIELD",
+   "renamed": "title",
+   "prompt": {
+    "logic": [
+     "List rows in id order.",
+     "Create a row. Return 409 for a unique value conflict.",
+     "Update supplied fields. Return 404 if the row does not exist.",
+     "Get a row by id. Return 404 if it does not exist.",
+     "Delete a row. Return 404 if it does not exist."
+    ],
+    "migration": {
+     "down_revision": null,
+     "revision": "rev0000"
+    },
+    "package": "items",
+    "resource": {
+     "fields": [
+      {
+       "name": "self",
+       "required": true,
+       "type": "str",
+       "unique": true
+      }
+     ],
+     "name": "Item",
+     "path": "/items",
+     "table": "items"
+    },
+    "tests": [
+     "Check CRUD, missing id, and unique conflict when supported."
+    ],
+    "version": "som.prompt.v1"
+   },
+   "prompt_sha256": "89494ff157dce3bc6be7bab6e43cb29cef74146cbdb3fb7571274eb18262d17e",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 1.\nUse package items.\nBegin resource.\nUse resource name Item.\nUse table items.\nUse path \"/items\".\nField self is required str and is unique.\nEnd resource.\nUse migration revision rev0000.\nUse no previous migration revision.\nBegin routes.\nList rows in id order.\nCreate a row. Return 409 for a unique value conflict.\nUpdate supplied fields. Return 404 if the row does not exist.\nGet a row by id. Return 404 if it does not exist.\nDelete a row. Return 404 if it does not exist.\nEnd routes.\nBegin checks.\nCheck CRUD, missing id, and unique conflict when supported.\nEnd checks.\nEnd request.\n",
+   "python_variants": [
+    "orm.base.self"
+   ]
+  },
+  {
+   "id": "SELF_V3_FILTER_FIELD",
+   "renamed": "completed",
+   "prompt": {
+    "logic": [
+     "Create a row. Return 409 for a unique value conflict.",
+     "Delete a row. Return 404 if it does not exist.",
+     "List rows with an optional exact boolean filter, limit, and offset in id order.",
+     "Update supplied fields. Return 404 if the row does not exist.",
+     "Get a row by id. Return 404 if it does not exist."
+    ],
+    "migration": {
+     "down_revision": null,
+     "revision": "service1000"
+    },
+    "package": "todos",
+    "query": {
+     "filter_field": "self",
+     "max_limit": 100
+    },
+    "resource": {
+     "fields": [
+      {
+       "name": "title",
+       "required": true,
+       "type": "str",
+       "unique": false
+      },
+      {
+       "default": null,
+       "name": "description",
+       "required": false,
+       "type": "str",
+       "unique": false
+      },
+      {
+       "default": false,
+       "name": "self",
+       "required": false,
+       "type": "bool",
+       "unique": false
+      }
+     ],
+     "name": "Todo",
+     "path": "/todos",
+     "table": "todos"
+    },
+    "tests": [
+     "Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration."
+    ],
+    "version": "som.prompt.v3"
+   },
+   "prompt_sha256": "3b1c879fd2c88c5ff8e3b621f0f8dc2fafd0ddab035a737bcd7520476cd5eeb0",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 3.\nUse package todos.\nBegin resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField self is optional bool and is not unique with default false.\nEnd resource.\nBegin query.\nFilter exactly on field self.\nLimit query results to 100.\nEnd query.\nUse migration revision service1000.\nUse no previous migration revision.\nBegin routes.\nCreate a row. Return 409 for a unique value conflict.\nDelete a row. Return 404 if it does not exist.\nList rows with an optional exact boolean filter, limit, and offset in id order.\nUpdate supplied fields. Return 404 if the row does not exist.\nGet a row by id. Return 404 if it does not exist.\nEnd routes.\nBegin checks.\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\nEnd checks.\nEnd request.\n",
+   "python_variants": [
+    "orm.base.self"
+   ]
+  },
+  {
+   "id": "SELF_V5_PARENT_FIELD",
+   "renamed": "name",
+   "prompt": {
+    "version": "som.prompt.v5",
+    "package": "app_projects",
+    "resources": {
+     "parent": {
+      "name": "Project",
+      "table": "projects",
+      "path": "/projects",
+      "fields": [
+       {
+        "name": "self",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "description",
+        "type": "str",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": null,
+       "date_field": null,
+       "max_limit": 20
+      }
+     },
+     "child": {
+      "name": "Todo",
+      "table": "todos",
+      "path": "/todos",
+      "fields": [
+       {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "description",
+        "type": "str",
+        "required": false,
+        "unique": false,
+        "default": null
+       },
+       {
+        "name": "completed",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "due_on",
+        "type": "date",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": "completed",
+       "date_field": "due_on",
+       "max_limit": 100
+      }
+     }
+    },
+    "relation": {
+     "foreign_key": "project_id",
+     "on_delete": "restrict"
+    },
+    "logic": [
+     {
+      "scope": "parent",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "parent",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "parent",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "child",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "child",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "child",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "batch",
+      "step": "Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure."
+     }
+    ],
+    "tests": [
+     "Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration."
+    ],
+    "migration": {
+     "revision": "related0",
+     "down_revision": null
+    }
+   },
+   "prompt_sha256": "75f45f1306b3797a7641cd3f335dcad6c5611eac4ab28030a23cbd89778394c3",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 5.\nUse package app_projects.\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects\".\nField self is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_id and restrict deletion.\nUse migration revision related0.\nUse no previous migration revision.\nUse no capabilities.\nBegin routes.\nFor parent: Create a row. Return 409 for a unique value conflict.\nFor parent: Get a row by id. Return 404 if it does not exist.\nFor parent: List scoped rows with the configured filters and pagination in id order.\nFor parent: Update supplied fields. Return 404 if the row does not exist.\nFor parent: Delete a row. Reject a parent with children with 409.\nFor child: Create a row. Return 409 for a unique value conflict.\nFor child: Get a row by id. Return 404 if it does not exist.\nFor child: List scoped rows with the configured filters and pagination in id order.\nFor child: Update supplied fields. Return 404 if the row does not exist.\nFor child: Delete a row. Reject a parent with children with 409.\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\nEnd routes.\nBegin checks.\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\nEnd checks.\nEnd request.\n",
+   "python_variants": [
+    "orm.base.self"
+   ]
+  },
+  {
+   "id": "SELF_V5_CHILD_FOREIGN_KEY",
+   "renamed": "project_id",
+   "prompt": {
+    "version": "som.prompt.v5",
+    "package": "app_projects",
+    "resources": {
+     "parent": {
+      "name": "Project",
+      "table": "projects",
+      "path": "/projects",
+      "fields": [
+       {
+        "name": "name",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "description",
+        "type": "str",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": null,
+       "date_field": null,
+       "max_limit": 20
+      }
+     },
+     "child": {
+      "name": "Todo",
+      "table": "todos",
+      "path": "/todos",
+      "fields": [
+       {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "description",
+        "type": "str",
+        "required": false,
+        "unique": false,
+        "default": null
+       },
+       {
+        "name": "completed",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "due_on",
+        "type": "date",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": "completed",
+       "date_field": "due_on",
+       "max_limit": 100
+      }
+     }
+    },
+    "relation": {
+     "foreign_key": "self",
+     "on_delete": "restrict"
+    },
+    "logic": [
+     {
+      "scope": "parent",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "parent",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "parent",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "child",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "child",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "child",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "batch",
+      "step": "Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure."
+     }
+    ],
+    "tests": [
+     "Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration."
+    ],
+    "migration": {
+     "revision": "related0",
+     "down_revision": null
+    }
+   },
+   "prompt_sha256": "5ea1839eb72c4f417dd164c79f20e358f4796f7cf3430d9ca7b5cdcafc6dd2cd",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 5.\nUse package app_projects.\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects\".\nField name is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key self and restrict deletion.\nUse migration revision related0.\nUse no previous migration revision.\nUse no capabilities.\nBegin routes.\nFor parent: Create a row. Return 409 for a unique value conflict.\nFor parent: Get a row by id. Return 404 if it does not exist.\nFor parent: List scoped rows with the configured filters and pagination in id order.\nFor parent: Update supplied fields. Return 404 if the row does not exist.\nFor parent: Delete a row. Reject a parent with children with 409.\nFor child: Create a row. Return 409 for a unique value conflict.\nFor child: Get a row by id. Return 404 if it does not exist.\nFor child: List scoped rows with the configured filters and pagination in id order.\nFor child: Update supplied fields. Return 404 if the row does not exist.\nFor child: Delete a row. Reject a parent with children with 409.\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\nEnd routes.\nBegin checks.\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\nEnd checks.\nEnd request.\n",
+   "python_variants": [
+    "orm.base.self"
+   ]
+  },
+  {
+   "id": "SELF_V5_CAPS_PG_CHILD_FIELD",
+   "renamed": "label",
+   "prompt": {
+    "version": "som.prompt.v5",
+    "package": "inventory_app",
+    "resources": {
+     "parent": {
+      "name": "Project",
+      "table": "projects",
+      "path": "/projects-v2",
+      "fields": [
+       {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "active",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "due_on",
+        "type": "date",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": "active",
+       "date_field": "due_on",
+       "max_limit": 20
+      }
+     },
+     "child": {
+      "name": "Task",
+      "table": "tasks",
+      "path": "/tasks-v2",
+      "fields": [
+       {
+        "name": "self",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "active",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       }
+      ],
+      "query": {
+       "filter_field": "active",
+       "date_field": null,
+       "max_limit": 20
+      }
+     }
+    },
+    "relation": {
+     "foreign_key": "project_ref",
+     "on_delete": "restrict"
+    },
+    "logic": [
+     {
+      "scope": "parent",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "parent",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "parent",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "child",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "child",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "child",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "batch",
+      "step": "Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure."
+     }
+    ],
+    "tests": [
+     "Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration."
+    ],
+    "migration": {
+     "revision": "projects_initial",
+     "down_revision": null
+    },
+    "capabilities": {
+     "database": "postgresql",
+     "auth": "jwt",
+     "storage": "none",
+     "workflow": "json_export",
+     "value_field": null,
+     "group_field": null
+    }
+   },
+   "prompt_sha256": "62d0282ccdf6b81066589310f708df155b22e5cc92044481200e047ae8c1f211",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 5.\nUse package inventory_app.\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects-v2\".\nField title is required str and is not unique.\nField active is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nBegin query.\nFilter exactly on field active.\nFilter before date on field due_on.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Task.\nUse table tasks.\nUse path \"/tasks-v2\".\nField self is required str and is not unique.\nField active is optional bool and is not unique with default false.\nBegin query.\nFilter exactly on field active.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_ref and restrict deletion.\nUse migration revision projects_initial.\nUse no previous migration revision.\nBegin capabilities.\nUse database postgresql.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nFor parent: Create a row. Return 409 for a unique value conflict.\nFor parent: Get a row by id. Return 404 if it does not exist.\nFor parent: List scoped rows with the configured filters and pagination in id order.\nFor parent: Update supplied fields. Return 404 if the row does not exist.\nFor parent: Delete a row. Reject a parent with children with 409.\nFor child: Create a row. Return 409 for a unique value conflict.\nFor child: Get a row by id. Return 404 if it does not exist.\nFor child: List scoped rows with the configured filters and pagination in id order.\nFor child: Update supplied fields. Return 404 if the row does not exist.\nFor child: Delete a row. Reject a parent with children with 409.\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\nEnd routes.\nBegin checks.\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\nEnd checks.\nEnd request.\n",
+   "python_variants": [
+    "orm.base.self"
+   ]
+  },
+  {
+   "id": "SELF_V5_CAPS_MONGODB_CHILD_FIELD",
+   "renamed": "label",
+   "prompt": {
+    "version": "som.prompt.v5",
+    "package": "inventory_app",
+    "resources": {
+     "parent": {
+      "name": "Project",
+      "table": "projects",
+      "path": "/projects-v2",
+      "fields": [
+       {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "active",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "due_on",
+        "type": "date",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": "active",
+       "date_field": "due_on",
+       "max_limit": 20
+      }
+     },
+     "child": {
+      "name": "Task",
+      "table": "tasks",
+      "path": "/tasks-v2",
+      "fields": [
+       {
+        "name": "self",
+        "type": "str",
+        "required": true,
+        "unique": true
+       },
+       {
+        "name": "active",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       }
+      ],
+      "query": {
+       "filter_field": "active",
+       "date_field": null,
+       "max_limit": 20
+      }
+     }
+    },
+    "relation": {
+     "foreign_key": "project_ref",
+     "on_delete": "restrict"
+    },
+    "logic": [
+     {
+      "scope": "parent",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "parent",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "parent",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "child",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "child",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "child",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "batch",
+      "step": "Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure."
+     }
+    ],
+    "tests": [
+     "Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration."
+    ],
+    "migration": {
+     "revision": "projects_initial",
+     "down_revision": null
+    },
+    "capabilities": {
+     "database": "mongodb",
+     "auth": "jwt",
+     "storage": "none",
+     "workflow": "json_export",
+     "value_field": null,
+     "group_field": null
+    }
+   },
+   "prompt_sha256": "8f93e665d2b93f69af1884f758d5d76b741a638ce398a0ba09ffbb58a2c8a5ce",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 5.\nUse package inventory_app.\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects-v2\".\nField title is required str and is not unique.\nField active is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nBegin query.\nFilter exactly on field active.\nFilter before date on field due_on.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Task.\nUse table tasks.\nUse path \"/tasks-v2\".\nField self is required str and is unique.\nField active is optional bool and is not unique with default false.\nBegin query.\nFilter exactly on field active.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_ref and restrict deletion.\nUse migration revision projects_initial.\nUse no previous migration revision.\nBegin capabilities.\nUse database mongodb.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nFor parent: Create a row. Return 409 for a unique value conflict.\nFor parent: Get a row by id. Return 404 if it does not exist.\nFor parent: List scoped rows with the configured filters and pagination in id order.\nFor parent: Update supplied fields. Return 404 if the row does not exist.\nFor parent: Delete a row. Reject a parent with children with 409.\nFor child: Create a row. Return 409 for a unique value conflict.\nFor child: Get a row by id. Return 404 if it does not exist.\nFor child: List scoped rows with the configured filters and pagination in id order.\nFor child: Update supplied fields. Return 404 if the row does not exist.\nFor child: Delete a row. Reject a parent with children with 409.\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\nEnd routes.\nBegin checks.\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\nEnd checks.\nEnd request.\n",
+   "python_variants": [
+    "orm.mongo.base.self"
+   ]
+  },
+  {
+   "id": "SELF_V5_CAPS_MONGODB_FOREIGN_KEY",
+   "renamed": "project_ref",
+   "prompt": {
+    "version": "som.prompt.v5",
+    "package": "inventory_app",
+    "resources": {
+     "parent": {
+      "name": "Project",
+      "table": "projects",
+      "path": "/projects-v2",
+      "fields": [
+       {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "active",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "due_on",
+        "type": "date",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": "active",
+       "date_field": "due_on",
+       "max_limit": 20
+      }
+     },
+     "child": {
+      "name": "Task",
+      "table": "tasks",
+      "path": "/tasks-v2",
+      "fields": [
+       {
+        "name": "label",
+        "type": "str",
+        "required": true,
+        "unique": true
+       },
+       {
+        "name": "active",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       }
+      ],
+      "query": {
+       "filter_field": "active",
+       "date_field": null,
+       "max_limit": 20
+      }
+     }
+    },
+    "relation": {
+     "foreign_key": "self",
+     "on_delete": "restrict"
+    },
+    "logic": [
+     {
+      "scope": "parent",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "parent",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "parent",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "child",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "child",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "child",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "batch",
+      "step": "Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure."
+     }
+    ],
+    "tests": [
+     "Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration."
+    ],
+    "migration": {
+     "revision": "projects_initial",
+     "down_revision": null
+    },
+    "capabilities": {
+     "database": "mongodb",
+     "auth": "jwt",
+     "storage": "none",
+     "workflow": "json_export",
+     "value_field": null,
+     "group_field": null
+    }
+   },
+   "prompt_sha256": "9130c4ac7ac4b7515a5fb718acab8784c49e7cc0d443b280236df40c5e980baf",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 5.\nUse package inventory_app.\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects-v2\".\nField title is required str and is not unique.\nField active is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nBegin query.\nFilter exactly on field active.\nFilter before date on field due_on.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Task.\nUse table tasks.\nUse path \"/tasks-v2\".\nField label is required str and is unique.\nField active is optional bool and is not unique with default false.\nBegin query.\nFilter exactly on field active.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key self and restrict deletion.\nUse migration revision projects_initial.\nUse no previous migration revision.\nBegin capabilities.\nUse database mongodb.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nFor parent: Create a row. Return 409 for a unique value conflict.\nFor parent: Get a row by id. Return 404 if it does not exist.\nFor parent: List scoped rows with the configured filters and pagination in id order.\nFor parent: Update supplied fields. Return 404 if the row does not exist.\nFor parent: Delete a row. Reject a parent with children with 409.\nFor child: Create a row. Return 409 for a unique value conflict.\nFor child: Get a row by id. Return 404 if it does not exist.\nFor child: List scoped rows with the configured filters and pagination in id order.\nFor child: Update supplied fields. Return 404 if the row does not exist.\nFor child: Delete a row. Reject a parent with children with 409.\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\nEnd routes.\nBegin checks.\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\nEnd checks.\nEnd request.\n",
+   "python_variants": [
+    "orm.mongo.base.self"
+   ]
+  },
+  {
+   "id": "SELF_V6_PG_PARENT_FIELD",
+   "renamed": "name",
+   "prompt": {
+    "capabilities": {
+     "auth": "jwt",
+     "database": "postgresql",
+     "group_field": null,
+     "storage": "none",
+     "value_field": null,
+     "workflow": "json_export"
+    },
+    "contract": {
+     "id": "related-business.v1",
+     "sha256": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380"
+    },
+    "migration": {
+     "down_revision": null,
+     "revision": "related80000"
+    },
+    "operations": [
+     {
+      "action": "create",
+      "scope": "parent"
+     },
+     {
+      "action": "get",
+      "scope": "parent"
+     },
+     {
+      "action": "list",
+      "scope": "parent"
+     },
+     {
+      "action": "patch",
+      "scope": "parent"
+     },
+     {
+      "action": "delete",
+      "scope": "parent"
+     },
+     {
+      "action": "create",
+      "scope": "child"
+     },
+     {
+      "action": "get",
+      "scope": "child"
+     },
+     {
+      "action": "list",
+      "scope": "child"
+     },
+     {
+      "action": "patch",
+      "scope": "child"
+     },
+     {
+      "action": "delete",
+      "scope": "child"
+     },
+     {
+      "action": "batch_create",
+      "scope": "batch"
+     }
+    ],
+    "package": "app_projects",
+    "relation": {
+     "foreign_key": "project_id",
+     "on_delete": "restrict"
+    },
+    "resources": {
+     "child": {
+      "fields": [
+       {
+        "name": "title",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": false,
+        "name": "completed",
+        "required": false,
+        "type": "bool",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "due_on",
+        "required": false,
+        "type": "date",
+        "unique": false
+       },
+       {
+        "name": "external_code",
+        "required": true,
+        "type": "str",
+        "unique": true
+       }
+      ],
+      "name": "Todo",
+      "path": "/todos",
+      "query": {
+       "date_field": "due_on",
+       "filter_field": "completed",
+       "max_limit": 100
+      },
+      "table": "todos"
+     },
+     "parent": {
+      "fields": [
+       {
+        "name": "self",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       }
+      ],
+      "name": "Project",
+      "path": "/projects",
+      "query": {
+       "date_field": null,
+       "filter_field": null,
+       "max_limit": 20
+      },
+      "table": "projects"
+     }
+    },
+    "version": "som.prompt.v6"
+   },
+   "prompt_sha256": "aabde5e9cc1f6a516aa720a3dfc1258ab479e67ac41a353a7b18c73dcdd00c34",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 6.\nUse package app_projects.\nBind contract related-business.v1 with SHA-256 \"9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380\".\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects\".\nField self is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nField external_code is required str and is unique.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_id and restrict deletion.\nUse migration revision related80000.\nUse no previous migration revision.\nBegin capabilities.\nUse database postgresql.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nAllow create on parent.\nAllow get on parent.\nAllow list on parent.\nAllow patch on parent.\nAllow delete on parent.\nAllow create on child.\nAllow get on child.\nAllow list on child.\nAllow patch on child.\nAllow delete on child.\nAllow batch creation.\nEnd routes.\nEnd request.\n",
+   "python_variants": [
+    "orm.base.self"
+   ]
+  },
+  {
+   "id": "SELF_V6_PG_FOREIGN_KEY",
+   "renamed": "project_id",
+   "prompt": {
+    "capabilities": {
+     "auth": "jwt",
+     "database": "postgresql",
+     "group_field": null,
+     "storage": "none",
+     "value_field": null,
+     "workflow": "json_export"
+    },
+    "contract": {
+     "id": "related-business.v1",
+     "sha256": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380"
+    },
+    "migration": {
+     "down_revision": null,
+     "revision": "related80000"
+    },
+    "operations": [
+     {
+      "action": "create",
+      "scope": "parent"
+     },
+     {
+      "action": "get",
+      "scope": "parent"
+     },
+     {
+      "action": "list",
+      "scope": "parent"
+     },
+     {
+      "action": "patch",
+      "scope": "parent"
+     },
+     {
+      "action": "delete",
+      "scope": "parent"
+     },
+     {
+      "action": "create",
+      "scope": "child"
+     },
+     {
+      "action": "get",
+      "scope": "child"
+     },
+     {
+      "action": "list",
+      "scope": "child"
+     },
+     {
+      "action": "patch",
+      "scope": "child"
+     },
+     {
+      "action": "delete",
+      "scope": "child"
+     },
+     {
+      "action": "batch_create",
+      "scope": "batch"
+     }
+    ],
+    "package": "app_projects",
+    "relation": {
+     "foreign_key": "self",
+     "on_delete": "restrict"
+    },
+    "resources": {
+     "child": {
+      "fields": [
+       {
+        "name": "title",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": false,
+        "name": "completed",
+        "required": false,
+        "type": "bool",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "due_on",
+        "required": false,
+        "type": "date",
+        "unique": false
+       },
+       {
+        "name": "external_code",
+        "required": true,
+        "type": "str",
+        "unique": true
+       }
+      ],
+      "name": "Todo",
+      "path": "/todos",
+      "query": {
+       "date_field": "due_on",
+       "filter_field": "completed",
+       "max_limit": 100
+      },
+      "table": "todos"
+     },
+     "parent": {
+      "fields": [
+       {
+        "name": "name",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       }
+      ],
+      "name": "Project",
+      "path": "/projects",
+      "query": {
+       "date_field": null,
+       "filter_field": null,
+       "max_limit": 20
+      },
+      "table": "projects"
+     }
+    },
+    "version": "som.prompt.v6"
+   },
+   "prompt_sha256": "579257a606274ed0238bdee12fc5af7ed61b7cbf31c348e5bd45d7e8433cadfd",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 6.\nUse package app_projects.\nBind contract related-business.v1 with SHA-256 \"9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380\".\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects\".\nField name is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nField external_code is required str and is unique.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key self and restrict deletion.\nUse migration revision related80000.\nUse no previous migration revision.\nBegin capabilities.\nUse database postgresql.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nAllow create on parent.\nAllow get on parent.\nAllow list on parent.\nAllow patch on parent.\nAllow delete on parent.\nAllow create on child.\nAllow get on child.\nAllow list on child.\nAllow patch on child.\nAllow delete on child.\nAllow batch creation.\nEnd routes.\nEnd request.\n",
+   "python_variants": [
+    "orm.base.self"
+   ]
+  },
+  {
+   "id": "SELF_V6_MONGODB_CHILD_FIELD",
+   "renamed": "label",
+   "prompt": {
+    "version": "som.prompt.v6",
+    "package": "inventory_app",
+    "resources": {
+     "parent": {
+      "name": "Project",
+      "table": "projects",
+      "path": "/projects-v2",
+      "fields": [
+       {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "active",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "due_on",
+        "type": "date",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": "active",
+       "date_field": "due_on",
+       "max_limit": 20
+      }
+     },
+     "child": {
+      "name": "Task",
+      "table": "tasks",
+      "path": "/tasks-v2",
+      "fields": [
+       {
+        "name": "self",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "active",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "score",
+        "type": "int",
+        "required": true,
+        "unique": false
+       }
+      ],
+      "query": {
+       "filter_field": "active",
+       "date_field": null,
+       "max_limit": 20
+      }
+     }
+    },
+    "relation": {
+     "foreign_key": "project_ref",
+     "on_delete": "restrict"
+    },
+    "migration": {
+     "revision": "projects_initial",
+     "down_revision": null
+    },
+    "capabilities": {
+     "database": "mongodb",
+     "auth": "jwt",
+     "storage": "none",
+     "workflow": "json_export",
+     "value_field": null,
+     "group_field": null
+    },
+    "contract": {
+     "id": "related-business.v1",
+     "sha256": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380"
+    },
+    "operations": [
+     {
+      "scope": "parent",
+      "action": "create"
+     },
+     {
+      "scope": "child",
+      "action": "list"
+     },
+     {
+      "scope": "batch",
+      "action": "batch_create"
+     }
+    ]
+   },
+   "prompt_sha256": "848fe3f04464ac60d23fb099db539336a7c0d83f0a332bb311e6610e40d47562",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 6.\nUse package inventory_app.\nBind contract related-business.v1 with SHA-256 \"9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380\".\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects-v2\".\nField title is required str and is not unique.\nField active is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nBegin query.\nFilter exactly on field active.\nFilter before date on field due_on.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Task.\nUse table tasks.\nUse path \"/tasks-v2\".\nField self is required str and is not unique.\nField active is optional bool and is not unique with default false.\nField score is required int and is not unique.\nBegin query.\nFilter exactly on field active.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_ref and restrict deletion.\nUse migration revision projects_initial.\nUse no previous migration revision.\nBegin capabilities.\nUse database mongodb.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nAllow create on parent.\nAllow list on child.\nAllow batch creation.\nEnd routes.\nEnd request.\n",
+   "python_variants": [
+    "orm.composed.mongo.base.self"
+   ]
+  },
+  {
+   "id": "SELF_V6_MONGODB_FOREIGN_KEY",
+   "renamed": "project_ref",
+   "prompt": {
+    "version": "som.prompt.v6",
+    "package": "inventory_app",
+    "resources": {
+     "parent": {
+      "name": "Project",
+      "table": "projects",
+      "path": "/projects-v2",
+      "fields": [
+       {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "active",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "due_on",
+        "type": "date",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": "active",
+       "date_field": "due_on",
+       "max_limit": 20
+      }
+     },
+     "child": {
+      "name": "Task",
+      "table": "tasks",
+      "path": "/tasks-v2",
+      "fields": [
+       {
+        "name": "label",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "active",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "score",
+        "type": "int",
+        "required": true,
+        "unique": false
+       }
+      ],
+      "query": {
+       "filter_field": "active",
+       "date_field": null,
+       "max_limit": 20
+      }
+     }
+    },
+    "relation": {
+     "foreign_key": "self",
+     "on_delete": "restrict"
+    },
+    "migration": {
+     "revision": "projects_initial",
+     "down_revision": null
+    },
+    "capabilities": {
+     "database": "mongodb",
+     "auth": "jwt",
+     "storage": "none",
+     "workflow": "json_export",
+     "value_field": null,
+     "group_field": null
+    },
+    "contract": {
+     "id": "related-business.v1",
+     "sha256": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380"
+    },
+    "operations": [
+     {
+      "scope": "parent",
+      "action": "create"
+     },
+     {
+      "scope": "child",
+      "action": "list"
+     },
+     {
+      "scope": "batch",
+      "action": "batch_create"
+     }
+    ]
+   },
+   "prompt_sha256": "3ae46a942d7fa490fa8f16a29904ac8722837c19bbc50de706ddbe0b8f10c727",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 6.\nUse package inventory_app.\nBind contract related-business.v1 with SHA-256 \"9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380\".\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects-v2\".\nField title is required str and is not unique.\nField active is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nBegin query.\nFilter exactly on field active.\nFilter before date on field due_on.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Task.\nUse table tasks.\nUse path \"/tasks-v2\".\nField label is required str and is not unique.\nField active is optional bool and is not unique with default false.\nField score is required int and is not unique.\nBegin query.\nFilter exactly on field active.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key self and restrict deletion.\nUse migration revision projects_initial.\nUse no previous migration revision.\nBegin capabilities.\nUse database mongodb.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nAllow create on parent.\nAllow list on child.\nAllow batch creation.\nEnd routes.\nEnd request.\n",
+   "python_variants": [
+    "orm.composed.mongo.base.self"
+   ]
+  },
+  {
+   "id": "SELF_V7_PG_FOREIGN_KEY",
+   "renamed": "project_id",
+   "prompt": {
+    "capabilities": {
+     "auth": "jwt",
+     "database": "postgresql",
+     "group_field": null,
+     "storage": "none",
+     "value_field": null,
+     "workflow": "json_export"
+    },
+    "contract": {
+     "id": "related-flow.v1",
+     "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+    },
+    "migration": {
+     "down_revision": null,
+     "revision": "related80000"
+    },
+    "operations": [
+     {
+      "action": "create",
+      "scope": "parent"
+     },
+     {
+      "action": "get",
+      "scope": "parent"
+     },
+     {
+      "action": "list",
+      "scope": "parent"
+     },
+     {
+      "action": "patch",
+      "scope": "parent"
+     },
+     {
+      "action": "delete",
+      "scope": "parent"
+     },
+     {
+      "action": "create",
+      "scope": "child"
+     },
+     {
+      "action": "get",
+      "scope": "child"
+     },
+     {
+      "action": "list",
+      "scope": "child"
+     },
+     {
+      "action": "patch",
+      "scope": "child"
+     },
+     {
+      "action": "delete",
+      "scope": "child"
+     },
+     {
+      "action": "batch_create",
+      "scope": "batch"
+     }
+    ],
+    "package": "app_projects",
+    "relation": {
+     "foreign_key": "self",
+     "on_delete": "restrict"
+    },
+    "resources": {
+     "child": {
+      "fields": [
+       {
+        "name": "title",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": false,
+        "name": "completed",
+        "required": false,
+        "type": "bool",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "due_on",
+        "required": false,
+        "type": "date",
+        "unique": false
+       },
+       {
+        "name": "external_code",
+        "required": true,
+        "type": "str",
+        "unique": true
+       }
+      ],
+      "name": "Todo",
+      "path": "/todos",
+      "query": {
+       "date_field": "due_on",
+       "filter_field": "completed",
+       "max_limit": 100
+      },
+      "table": "todos"
+     },
+     "parent": {
+      "fields": [
+       {
+        "name": "name",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       }
+      ],
+      "name": "Project",
+      "path": "/projects",
+      "query": {
+       "date_field": null,
+       "filter_field": null,
+       "max_limit": 20
+      },
+      "table": "projects"
+     }
+    },
+    "version": "som.prompt.v7",
+    "flow": {
+     "name": "make_family",
+     "inputs": [
+      {
+       "name": "parent",
+       "type": "parent_input"
+      },
+      {
+       "name": "child",
+       "type": "child_input"
+      },
+      {
+       "name": "patch",
+       "type": "child_patch"
+      }
+     ],
+     "steps": [
+      {
+       "name": "auth",
+       "op": "authorize",
+       "args": {},
+       "undo": null
+      },
+      {
+       "name": "write",
+       "op": "transaction",
+       "steps": [
+        {
+         "name": "made",
+         "op": "parent.create",
+         "args": {
+          "data": {
+           "input": "parent"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "added",
+         "op": "child.create",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "data": {
+           "input": "child"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "patched",
+         "op": "child.patch",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "child_id": {
+           "step": "added",
+           "field": "id"
+          },
+          "data": {
+           "input": "patch"
+          }
+         },
+         "undo": "restore_patch"
+        }
+       ]
+      },
+      {
+       "name": "summary",
+       "op": "workflow.run",
+       "args": {
+        "parent_id": {
+         "step": "made",
+         "field": "id"
+        }
+       },
+       "undo": null
+      }
+     ],
+     "result": {
+      "parent": {
+       "step": "made",
+       "field": ""
+      },
+      "summary": {
+       "step": "summary",
+       "field": "data"
+      },
+      "label": {
+       "literal": "台灣 \"demo\"\nline",
+       "type": "string"
+      },
+      "signed_zero": {
+       "literal": -0.0,
+       "type": "float"
+      }
+     }
+    }
+   },
+   "prompt_sha256": "e1db359cbe97ad4ce68303555400a511d85db90c732b31a728e881429eeac19c",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 7.\nUse package app_projects.\nBind contract related-flow.v1 with SHA-256 \"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\".\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects\".\nField name is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nField external_code is required str and is unique.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key self and restrict deletion.\nUse migration revision related80000.\nUse no previous migration revision.\nBegin capabilities.\nUse database postgresql.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nAllow create on parent.\nAllow get on parent.\nAllow list on parent.\nAllow patch on parent.\nAllow delete on parent.\nAllow create on child.\nAllow get on child.\nAllow list on child.\nAllow patch on child.\nAllow delete on child.\nAllow batch creation.\nEnd routes.\nBegin flow make_family.\nInput parent has type parent_input.\nInput child has type child_input.\nInput patch has type child_patch.\nBegin steps.\nBegin step auth with operation authorize.\nOn failure, use no undo.\nEnd step auth.\nBegin transaction write.\nBegin step made with operation parent.create.\nSet argument data to input parent.\nOn failure, undo with delete_created.\nEnd step made.\nBegin step added with operation child.create.\nSet argument data to input child.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with delete_created.\nEnd step added.\nBegin step patched with operation child.patch.\nSet argument child_id to step added field \"id\".\nSet argument data to input patch.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with restore_patch.\nEnd step patched.\nEnd transaction write.\nBegin step summary with operation workflow.run.\nSet argument parent_id to step made field \"id\".\nOn failure, use no undo.\nEnd step summary.\nEnd steps.\nReturn label from literal string \"台灣 \\\"demo\\\"\\nline\".\nReturn parent from step made field \"\".\nReturn signed_zero from literal float -0.0.\nReturn summary from step summary field \"data\".\nEnd flow make_family.\nEnd request.\n",
+   "python_variants": [
+    "compact.service.flow.store.postgresql.self"
+   ]
+  },
+  {
+   "id": "SELF_V7_PG_FILTER_FIELD",
+   "renamed": "completed",
+   "prompt": {
+    "capabilities": {
+     "auth": "jwt",
+     "database": "postgresql",
+     "group_field": null,
+     "storage": "none",
+     "value_field": null,
+     "workflow": "json_export"
+    },
+    "contract": {
+     "id": "related-flow.v1",
+     "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+    },
+    "migration": {
+     "down_revision": null,
+     "revision": "related80000"
+    },
+    "operations": [
+     {
+      "action": "create",
+      "scope": "parent"
+     },
+     {
+      "action": "get",
+      "scope": "parent"
+     },
+     {
+      "action": "list",
+      "scope": "parent"
+     },
+     {
+      "action": "patch",
+      "scope": "parent"
+     },
+     {
+      "action": "delete",
+      "scope": "parent"
+     },
+     {
+      "action": "create",
+      "scope": "child"
+     },
+     {
+      "action": "get",
+      "scope": "child"
+     },
+     {
+      "action": "list",
+      "scope": "child"
+     },
+     {
+      "action": "patch",
+      "scope": "child"
+     },
+     {
+      "action": "delete",
+      "scope": "child"
+     },
+     {
+      "action": "batch_create",
+      "scope": "batch"
+     }
+    ],
+    "package": "app_projects",
+    "relation": {
+     "foreign_key": "project_id",
+     "on_delete": "restrict"
+    },
+    "resources": {
+     "child": {
+      "fields": [
+       {
+        "name": "title",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": false,
+        "name": "self",
+        "required": false,
+        "type": "bool",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "due_on",
+        "required": false,
+        "type": "date",
+        "unique": false
+       },
+       {
+        "name": "external_code",
+        "required": true,
+        "type": "str",
+        "unique": true
+       }
+      ],
+      "name": "Todo",
+      "path": "/todos",
+      "query": {
+       "date_field": "due_on",
+       "filter_field": "self",
+       "max_limit": 100
+      },
+      "table": "todos"
+     },
+     "parent": {
+      "fields": [
+       {
+        "name": "name",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       }
+      ],
+      "name": "Project",
+      "path": "/projects",
+      "query": {
+       "date_field": null,
+       "filter_field": null,
+       "max_limit": 20
+      },
+      "table": "projects"
+     }
+    },
+    "version": "som.prompt.v7",
+    "flow": {
+     "name": "make_family",
+     "inputs": [
+      {
+       "name": "parent",
+       "type": "parent_input"
+      },
+      {
+       "name": "child",
+       "type": "child_input"
+      },
+      {
+       "name": "patch",
+       "type": "child_patch"
+      }
+     ],
+     "steps": [
+      {
+       "name": "auth",
+       "op": "authorize",
+       "args": {},
+       "undo": null
+      },
+      {
+       "name": "write",
+       "op": "transaction",
+       "steps": [
+        {
+         "name": "made",
+         "op": "parent.create",
+         "args": {
+          "data": {
+           "input": "parent"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "added",
+         "op": "child.create",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "data": {
+           "input": "child"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "patched",
+         "op": "child.patch",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "child_id": {
+           "step": "added",
+           "field": "id"
+          },
+          "data": {
+           "input": "patch"
+          }
+         },
+         "undo": "restore_patch"
+        }
+       ]
+      },
+      {
+       "name": "summary",
+       "op": "workflow.run",
+       "args": {
+        "parent_id": {
+         "step": "made",
+         "field": "id"
+        }
+       },
+       "undo": null
+      }
+     ],
+     "result": {
+      "parent": {
+       "step": "made",
+       "field": ""
+      },
+      "summary": {
+       "step": "summary",
+       "field": "data"
+      },
+      "label": {
+       "literal": "台灣 \"demo\"\nline",
+       "type": "string"
+      },
+      "signed_zero": {
+       "literal": -0.0,
+       "type": "float"
+      }
+     }
+    }
+   },
+   "prompt_sha256": "86be59e9ae46b0e099b94bb209956515147d860bf3eb9fc699148e55a45857c9",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 7.\nUse package app_projects.\nBind contract related-flow.v1 with SHA-256 \"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\".\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects\".\nField name is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField self is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nField external_code is required str and is unique.\nBegin query.\nFilter exactly on field self.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_id and restrict deletion.\nUse migration revision related80000.\nUse no previous migration revision.\nBegin capabilities.\nUse database postgresql.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nAllow create on parent.\nAllow get on parent.\nAllow list on parent.\nAllow patch on parent.\nAllow delete on parent.\nAllow create on child.\nAllow get on child.\nAllow list on child.\nAllow patch on child.\nAllow delete on child.\nAllow batch creation.\nEnd routes.\nBegin flow make_family.\nInput parent has type parent_input.\nInput child has type child_input.\nInput patch has type child_patch.\nBegin steps.\nBegin step auth with operation authorize.\nOn failure, use no undo.\nEnd step auth.\nBegin transaction write.\nBegin step made with operation parent.create.\nSet argument data to input parent.\nOn failure, undo with delete_created.\nEnd step made.\nBegin step added with operation child.create.\nSet argument data to input child.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with delete_created.\nEnd step added.\nBegin step patched with operation child.patch.\nSet argument child_id to step added field \"id\".\nSet argument data to input patch.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with restore_patch.\nEnd step patched.\nEnd transaction write.\nBegin step summary with operation workflow.run.\nSet argument parent_id to step made field \"id\".\nOn failure, use no undo.\nEnd step summary.\nEnd steps.\nReturn label from literal string \"台灣 \\\"demo\\\"\\nline\".\nReturn parent from step made field \"\".\nReturn signed_zero from literal float -0.0.\nReturn summary from step summary field \"data\".\nEnd flow make_family.\nEnd request.\n",
+   "python_variants": [
+    "compact.service.flow.store.postgresql.self"
+   ]
+  },
+  {
+   "id": "SELF_V7_MONGODB_CHILD_FIELD",
+   "renamed": "title",
+   "prompt": {
+    "capabilities": {
+     "auth": "jwt",
+     "database": "mongodb",
+     "group_field": null,
+     "storage": "none",
+     "value_field": null,
+     "workflow": "json_export"
+    },
+    "contract": {
+     "id": "related-flow.v1",
+     "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+    },
+    "migration": {
+     "down_revision": null,
+     "revision": "related80000"
+    },
+    "operations": [
+     {
+      "action": "create",
+      "scope": "parent"
+     },
+     {
+      "action": "get",
+      "scope": "parent"
+     },
+     {
+      "action": "list",
+      "scope": "parent"
+     },
+     {
+      "action": "patch",
+      "scope": "parent"
+     },
+     {
+      "action": "delete",
+      "scope": "parent"
+     },
+     {
+      "action": "create",
+      "scope": "child"
+     },
+     {
+      "action": "get",
+      "scope": "child"
+     },
+     {
+      "action": "list",
+      "scope": "child"
+     },
+     {
+      "action": "patch",
+      "scope": "child"
+     },
+     {
+      "action": "delete",
+      "scope": "child"
+     },
+     {
+      "action": "batch_create",
+      "scope": "batch"
+     }
+    ],
+    "package": "app_projects",
+    "relation": {
+     "foreign_key": "project_id",
+     "on_delete": "restrict"
+    },
+    "resources": {
+     "child": {
+      "fields": [
+       {
+        "name": "self",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": false,
+        "name": "completed",
+        "required": false,
+        "type": "bool",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "due_on",
+        "required": false,
+        "type": "date",
+        "unique": false
+       },
+       {
+        "name": "external_code",
+        "required": true,
+        "type": "str",
+        "unique": true
+       }
+      ],
+      "name": "Todo",
+      "path": "/todos",
+      "query": {
+       "date_field": "due_on",
+       "filter_field": "completed",
+       "max_limit": 100
+      },
+      "table": "todos"
+     },
+     "parent": {
+      "fields": [
+       {
+        "name": "name",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       }
+      ],
+      "name": "Project",
+      "path": "/projects",
+      "query": {
+       "date_field": null,
+       "filter_field": null,
+       "max_limit": 20
+      },
+      "table": "projects"
+     }
+    },
+    "version": "som.prompt.v7",
+    "flow": {
+     "name": "make_family",
+     "inputs": [
+      {
+       "name": "parent",
+       "type": "parent_input"
+      },
+      {
+       "name": "child",
+       "type": "child_input"
+      },
+      {
+       "name": "patch",
+       "type": "child_patch"
+      }
+     ],
+     "steps": [
+      {
+       "name": "auth",
+       "op": "authorize",
+       "args": {},
+       "undo": null
+      },
+      {
+       "name": "write",
+       "op": "transaction",
+       "steps": [
+        {
+         "name": "made",
+         "op": "parent.create",
+         "args": {
+          "data": {
+           "input": "parent"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "added",
+         "op": "child.create",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "data": {
+           "input": "child"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "patched",
+         "op": "child.patch",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "child_id": {
+           "step": "added",
+           "field": "id"
+          },
+          "data": {
+           "input": "patch"
+          }
+         },
+         "undo": "restore_patch"
+        }
+       ]
+      },
+      {
+       "name": "summary",
+       "op": "workflow.run",
+       "args": {
+        "parent_id": {
+         "step": "made",
+         "field": "id"
+        }
+       },
+       "undo": null
+      }
+     ],
+     "result": {
+      "parent": {
+       "step": "made",
+       "field": ""
+      },
+      "summary": {
+       "step": "summary",
+       "field": "data"
+      },
+      "label": {
+       "literal": "台灣 \"demo\"\nline",
+       "type": "string"
+      },
+      "signed_zero": {
+       "literal": -0.0,
+       "type": "float"
+      }
+     }
+    }
+   },
+   "prompt_sha256": "d174a3de229a55bb616475245dfe33c4baf4169f0c09e21009c40d5e99cfd9b1",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 7.\nUse package app_projects.\nBind contract related-flow.v1 with SHA-256 \"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\".\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects\".\nField name is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField self is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nField external_code is required str and is unique.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_id and restrict deletion.\nUse migration revision related80000.\nUse no previous migration revision.\nBegin capabilities.\nUse database mongodb.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nAllow create on parent.\nAllow get on parent.\nAllow list on parent.\nAllow patch on parent.\nAllow delete on parent.\nAllow create on child.\nAllow get on child.\nAllow list on child.\nAllow patch on child.\nAllow delete on child.\nAllow batch creation.\nEnd routes.\nBegin flow make_family.\nInput parent has type parent_input.\nInput child has type child_input.\nInput patch has type child_patch.\nBegin steps.\nBegin step auth with operation authorize.\nOn failure, use no undo.\nEnd step auth.\nBegin transaction write.\nBegin step made with operation parent.create.\nSet argument data to input parent.\nOn failure, undo with delete_created.\nEnd step made.\nBegin step added with operation child.create.\nSet argument data to input child.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with delete_created.\nEnd step added.\nBegin step patched with operation child.patch.\nSet argument child_id to step added field \"id\".\nSet argument data to input patch.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with restore_patch.\nEnd step patched.\nEnd transaction write.\nBegin step summary with operation workflow.run.\nSet argument parent_id to step made field \"id\".\nOn failure, use no undo.\nEnd step summary.\nEnd steps.\nReturn label from literal string \"台灣 \\\"demo\\\"\\nline\".\nReturn parent from step made field \"\".\nReturn signed_zero from literal float -0.0.\nReturn summary from step summary field \"data\".\nEnd flow make_family.\nEnd request.\n",
+   "python_variants": []
+  },
+  {
+   "id": "SELF_V7_MONGODB_FOREIGN_KEY",
+   "renamed": "project_id",
+   "prompt": {
+    "capabilities": {
+     "auth": "jwt",
+     "database": "mongodb",
+     "group_field": null,
+     "storage": "none",
+     "value_field": null,
+     "workflow": "json_export"
+    },
+    "contract": {
+     "id": "related-flow.v1",
+     "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+    },
+    "migration": {
+     "down_revision": null,
+     "revision": "related80000"
+    },
+    "operations": [
+     {
+      "action": "create",
+      "scope": "parent"
+     },
+     {
+      "action": "get",
+      "scope": "parent"
+     },
+     {
+      "action": "list",
+      "scope": "parent"
+     },
+     {
+      "action": "patch",
+      "scope": "parent"
+     },
+     {
+      "action": "delete",
+      "scope": "parent"
+     },
+     {
+      "action": "create",
+      "scope": "child"
+     },
+     {
+      "action": "get",
+      "scope": "child"
+     },
+     {
+      "action": "list",
+      "scope": "child"
+     },
+     {
+      "action": "patch",
+      "scope": "child"
+     },
+     {
+      "action": "delete",
+      "scope": "child"
+     },
+     {
+      "action": "batch_create",
+      "scope": "batch"
+     }
+    ],
+    "package": "app_projects",
+    "relation": {
+     "foreign_key": "self",
+     "on_delete": "restrict"
+    },
+    "resources": {
+     "child": {
+      "fields": [
+       {
+        "name": "title",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": false,
+        "name": "completed",
+        "required": false,
+        "type": "bool",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "due_on",
+        "required": false,
+        "type": "date",
+        "unique": false
+       },
+       {
+        "name": "external_code",
+        "required": true,
+        "type": "str",
+        "unique": true
+       }
+      ],
+      "name": "Todo",
+      "path": "/todos",
+      "query": {
+       "date_field": "due_on",
+       "filter_field": "completed",
+       "max_limit": 100
+      },
+      "table": "todos"
+     },
+     "parent": {
+      "fields": [
+       {
+        "name": "name",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       }
+      ],
+      "name": "Project",
+      "path": "/projects",
+      "query": {
+       "date_field": null,
+       "filter_field": null,
+       "max_limit": 20
+      },
+      "table": "projects"
+     }
+    },
+    "version": "som.prompt.v7",
+    "flow": {
+     "name": "make_family",
+     "inputs": [
+      {
+       "name": "parent",
+       "type": "parent_input"
+      },
+      {
+       "name": "child",
+       "type": "child_input"
+      },
+      {
+       "name": "patch",
+       "type": "child_patch"
+      }
+     ],
+     "steps": [
+      {
+       "name": "auth",
+       "op": "authorize",
+       "args": {},
+       "undo": null
+      },
+      {
+       "name": "write",
+       "op": "transaction",
+       "steps": [
+        {
+         "name": "made",
+         "op": "parent.create",
+         "args": {
+          "data": {
+           "input": "parent"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "added",
+         "op": "child.create",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "data": {
+           "input": "child"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "patched",
+         "op": "child.patch",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "child_id": {
+           "step": "added",
+           "field": "id"
+          },
+          "data": {
+           "input": "patch"
+          }
+         },
+         "undo": "restore_patch"
+        }
+       ]
+      },
+      {
+       "name": "summary",
+       "op": "workflow.run",
+       "args": {
+        "parent_id": {
+         "step": "made",
+         "field": "id"
+        }
+       },
+       "undo": null
+      }
+     ],
+     "result": {
+      "parent": {
+       "step": "made",
+       "field": ""
+      },
+      "summary": {
+       "step": "summary",
+       "field": "data"
+      },
+      "label": {
+       "literal": "台灣 \"demo\"\nline",
+       "type": "string"
+      },
+      "signed_zero": {
+       "literal": -0.0,
+       "type": "float"
+      }
+     }
+    }
+   },
+   "prompt_sha256": "2fccef6490e3077afda9ed8b01cebd882d8f52423c7a434289db96b852132038",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 7.\nUse package app_projects.\nBind contract related-flow.v1 with SHA-256 \"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\".\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects\".\nField name is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nField external_code is required str and is unique.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key self and restrict deletion.\nUse migration revision related80000.\nUse no previous migration revision.\nBegin capabilities.\nUse database mongodb.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nAllow create on parent.\nAllow get on parent.\nAllow list on parent.\nAllow patch on parent.\nAllow delete on parent.\nAllow create on child.\nAllow get on child.\nAllow list on child.\nAllow patch on child.\nAllow delete on child.\nAllow batch creation.\nEnd routes.\nBegin flow make_family.\nInput parent has type parent_input.\nInput child has type child_input.\nInput patch has type child_patch.\nBegin steps.\nBegin step auth with operation authorize.\nOn failure, use no undo.\nEnd step auth.\nBegin transaction write.\nBegin step made with operation parent.create.\nSet argument data to input parent.\nOn failure, undo with delete_created.\nEnd step made.\nBegin step added with operation child.create.\nSet argument data to input child.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with delete_created.\nEnd step added.\nBegin step patched with operation child.patch.\nSet argument child_id to step added field \"id\".\nSet argument data to input patch.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with restore_patch.\nEnd step patched.\nEnd transaction write.\nBegin step summary with operation workflow.run.\nSet argument parent_id to step made field \"id\".\nOn failure, use no undo.\nEnd step summary.\nEnd steps.\nReturn label from literal string \"台灣 \\\"demo\\\"\\nline\".\nReturn parent from step made field \"\".\nReturn signed_zero from literal float -0.0.\nReturn summary from step summary field \"data\".\nEnd flow make_family.\nEnd request.\n",
+   "python_variants": []
+  }
+ ],
+ "negative": [
+  {
+   "id": "NAME_V1_FIELD_MAPPED_COLUMN",
+   "renamed": [
+    "title",
+    "mapped_column"
+   ],
+   "prompt": {
+    "logic": [
+     "List rows in id order.",
+     "Create a row. Return 409 for a unique value conflict.",
+     "Update supplied fields. Return 404 if the row does not exist.",
+     "Get a row by id. Return 404 if it does not exist.",
+     "Delete a row. Return 404 if it does not exist."
+    ],
+    "migration": {
+     "down_revision": null,
+     "revision": "rev0000"
+    },
+    "package": "items",
+    "resource": {
+     "fields": [
+      {
+       "name": "mapped_column",
+       "required": true,
+       "type": "str",
+       "unique": true
+      }
+     ],
+     "name": "Item",
+     "path": "/items",
+     "table": "items"
+    },
+    "tests": [
+     "Check CRUD, missing id, and unique conflict when supported."
+    ],
+    "version": "som.prompt.v1"
+   },
+   "prompt_sha256": "56352ef17f890173ed97cb9828c7a5d024dbf61eabe63c12ef8393008a17a4cb",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 1.\nUse package items.\nBegin resource.\nUse resource name Item.\nUse table items.\nUse path \"/items\".\nField mapped_column is required str and is unique.\nEnd resource.\nUse migration revision rev0000.\nUse no previous migration revision.\nBegin routes.\nList rows in id order.\nCreate a row. Return 409 for a unique value conflict.\nUpdate supplied fields. Return 404 if the row does not exist.\nGet a row by id. Return 404 if it does not exist.\nDelete a row. Return 404 if it does not exist.\nEnd routes.\nBegin checks.\nCheck CRUD, missing id, and unique conflict when supported.\nEnd checks.\nEnd request.\n",
+   "expected": {
+    "status": 400,
+    "code": "INVALID_VALUE",
+    "detail": "prompt.resource.fields[0].name: name collides with a generated Python identifier",
+    "json_prompt_pointer": "/prompt/resource/fields/0/name",
+    "cnl_prompt_pointer": "/resource/fields/0/name",
+    "cnl_allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
+   }
+  },
+  {
+   "id": "NAME_V2_RESOURCE_BASE",
+   "renamed": [
+    "Item",
+    "Base"
+   ],
+   "prompt": {
+    "logic": [
+     "Delete a row. Return 404 if it does not exist.",
+     "List rows with an optional exact string filter, limit, and offset in id order.",
+     "Create a row. Return 409 for a unique value conflict.",
+     "Update supplied fields. Return 404 if the row does not exist.",
+     "Get a row by id. Return 404 if it does not exist."
+    ],
+    "migration": {
+     "down_revision": null,
+     "revision": "rev1000"
+    },
+    "package": "items",
+    "query": {
+     "filter_field": "title",
+     "max_limit": 20
+    },
+    "resource": {
+     "fields": [
+      {
+       "name": "title",
+       "required": true,
+       "type": "str",
+       "unique": false
+      }
+     ],
+     "name": "Base",
+     "path": "/items",
+     "table": "items"
+    },
+    "tests": [
+     "Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported."
+    ],
+    "version": "som.prompt.v2"
+   },
+   "prompt_sha256": "13ba639e5d0ce8872a49eda4d8746f520943ad041df8ab0c46f846660f32926a",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 2.\nUse package items.\nBegin resource.\nUse resource name Base.\nUse table items.\nUse path \"/items\".\nField title is required str and is not unique.\nEnd resource.\nBegin query.\nFilter exactly on field title.\nLimit query results to 20.\nEnd query.\nUse migration revision rev1000.\nUse no previous migration revision.\nBegin routes.\nDelete a row. Return 404 if it does not exist.\nList rows with an optional exact string filter, limit, and offset in id order.\nCreate a row. Return 409 for a unique value conflict.\nUpdate supplied fields. Return 404 if the row does not exist.\nGet a row by id. Return 404 if it does not exist.\nEnd routes.\nBegin checks.\nCheck CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\nEnd checks.\nEnd request.\n",
+   "expected": {
+    "status": 400,
+    "code": "INVALID_VALUE",
+    "detail": "prompt.resource.name: name collides with a generated Python identifier",
+    "json_prompt_pointer": "/prompt/resource/name",
+    "cnl_prompt_pointer": "/resource/name",
+    "cnl_allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
+   }
+  },
+  {
+   "id": "NAME_V3_FILTER_FIELD_LIMIT",
+   "renamed": [
+    "completed",
+    "limit"
+   ],
+   "prompt": {
+    "logic": [
+     "Create a row. Return 409 for a unique value conflict.",
+     "Delete a row. Return 404 if it does not exist.",
+     "List rows with an optional exact boolean filter, limit, and offset in id order.",
+     "Update supplied fields. Return 404 if the row does not exist.",
+     "Get a row by id. Return 404 if it does not exist."
+    ],
+    "migration": {
+     "down_revision": null,
+     "revision": "service1000"
+    },
+    "package": "todos",
+    "query": {
+     "filter_field": "limit",
+     "max_limit": 100
+    },
+    "resource": {
+     "fields": [
+      {
+       "name": "title",
+       "required": true,
+       "type": "str",
+       "unique": false
+      },
+      {
+       "default": null,
+       "name": "description",
+       "required": false,
+       "type": "str",
+       "unique": false
+      },
+      {
+       "default": false,
+       "name": "limit",
+       "required": false,
+       "type": "bool",
+       "unique": false
+      }
+     ],
+     "name": "Todo",
+     "path": "/todos",
+     "table": "todos"
+    },
+    "tests": [
+     "Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration."
+    ],
+    "version": "som.prompt.v3"
+   },
+   "prompt_sha256": "3085a9dbf6d9f2209d969c89df512cbec5ebe9848f04ff915d9834f6a3477cdc",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 3.\nUse package todos.\nBegin resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField limit is optional bool and is not unique with default false.\nEnd resource.\nBegin query.\nFilter exactly on field limit.\nLimit query results to 100.\nEnd query.\nUse migration revision service1000.\nUse no previous migration revision.\nBegin routes.\nCreate a row. Return 409 for a unique value conflict.\nDelete a row. Return 404 if it does not exist.\nList rows with an optional exact boolean filter, limit, and offset in id order.\nUpdate supplied fields. Return 404 if the row does not exist.\nGet a row by id. Return 404 if it does not exist.\nEnd routes.\nBegin checks.\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\nEnd checks.\nEnd request.\n",
+   "expected": {
+    "status": 400,
+    "code": "INVALID_VALUE",
+    "detail": "prompt.query.filter_field: name collides with a generated Python identifier",
+    "json_prompt_pointer": "/prompt/query/filter_field",
+    "cnl_prompt_pointer": "/query/filter_field",
+    "cnl_allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
+   }
+  },
+  {
+   "id": "NAME_V3_FILTER_FIELD_OFFSET",
+   "renamed": [
+    "completed",
+    "offset"
+   ],
+   "prompt": {
+    "logic": [
+     "Create a row. Return 409 for a unique value conflict.",
+     "Delete a row. Return 404 if it does not exist.",
+     "List rows with an optional exact boolean filter, limit, and offset in id order.",
+     "Update supplied fields. Return 404 if the row does not exist.",
+     "Get a row by id. Return 404 if it does not exist."
+    ],
+    "migration": {
+     "down_revision": null,
+     "revision": "service1000"
+    },
+    "package": "todos",
+    "query": {
+     "filter_field": "offset",
+     "max_limit": 100
+    },
+    "resource": {
+     "fields": [
+      {
+       "name": "title",
+       "required": true,
+       "type": "str",
+       "unique": false
+      },
+      {
+       "default": null,
+       "name": "description",
+       "required": false,
+       "type": "str",
+       "unique": false
+      },
+      {
+       "default": false,
+       "name": "offset",
+       "required": false,
+       "type": "bool",
+       "unique": false
+      }
+     ],
+     "name": "Todo",
+     "path": "/todos",
+     "table": "todos"
+    },
+    "tests": [
+     "Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration."
+    ],
+    "version": "som.prompt.v3"
+   },
+   "prompt_sha256": "3ee9f29d82ebc6baa5447c1a61d1ca4807fd20c81a651808d5b6789f4f225a4b",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 3.\nUse package todos.\nBegin resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField offset is optional bool and is not unique with default false.\nEnd resource.\nBegin query.\nFilter exactly on field offset.\nLimit query results to 100.\nEnd query.\nUse migration revision service1000.\nUse no previous migration revision.\nBegin routes.\nCreate a row. Return 409 for a unique value conflict.\nDelete a row. Return 404 if it does not exist.\nList rows with an optional exact boolean filter, limit, and offset in id order.\nUpdate supplied fields. Return 404 if the row does not exist.\nGet a row by id. Return 404 if it does not exist.\nEnd routes.\nBegin checks.\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\nEnd checks.\nEnd request.\n",
+   "expected": {
+    "status": 400,
+    "code": "INVALID_VALUE",
+    "detail": "prompt.query.filter_field: name collides with a generated Python identifier",
+    "json_prompt_pointer": "/prompt/query/filter_field",
+    "cnl_prompt_pointer": "/query/filter_field",
+    "cnl_allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
+   }
+  },
+  {
+   "id": "NAME_V4_FIELD_DATE",
+   "renamed": [
+    "description",
+    "date"
+   ],
+   "prompt": {
+    "logic": [
+     "Create a row. Return 409 for a unique value conflict.",
+     "Delete a row. Return 404 if it does not exist.",
+     "List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.",
+     "Update supplied fields. Return 404 if the row does not exist.",
+     "Get a row by id. Return 404 if it does not exist."
+    ],
+    "migration": {
+     "down_revision": null,
+     "revision": "service1000"
+    },
+    "package": "todos",
+    "query": {
+     "date_field": "deadline_on",
+     "filter_field": "completed",
+     "max_limit": 100
+    },
+    "resource": {
+     "fields": [
+      {
+       "default": null,
+       "name": "deadline_on",
+       "required": false,
+       "type": "date",
+       "unique": false
+      },
+      {
+       "name": "title",
+       "required": true,
+       "type": "str",
+       "unique": false
+      },
+      {
+       "default": null,
+       "name": "date",
+       "required": false,
+       "type": "str",
+       "unique": false
+      },
+      {
+       "default": false,
+       "name": "completed",
+       "required": false,
+       "type": "bool",
+       "unique": false
+      }
+     ],
+     "name": "Todo",
+     "path": "/todos",
+     "table": "todos"
+    },
+    "tests": [
+     "Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration."
+    ],
+    "version": "som.prompt.v4"
+   },
+   "prompt_sha256": "1a8b5409f27c22e8288c170ed746b1fac1118daff89ecd11268c121a8f308026",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 4.\nUse package todos.\nBegin resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField deadline_on is optional date and is not unique with default null.\nField title is required str and is not unique.\nField date is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nEnd resource.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field deadline_on.\nLimit query results to 100.\nEnd query.\nUse migration revision service1000.\nUse no previous migration revision.\nBegin routes.\nCreate a row. Return 409 for a unique value conflict.\nDelete a row. Return 404 if it does not exist.\nList rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\nUpdate supplied fields. Return 404 if the row does not exist.\nGet a row by id. Return 404 if it does not exist.\nEnd routes.\nBegin checks.\nCheck standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\nEnd checks.\nEnd request.\n",
+   "expected": {
+    "status": 400,
+    "code": "INVALID_VALUE",
+    "detail": "prompt.resource.fields[2].name: name collides with a generated Python identifier",
+    "json_prompt_pointer": "/prompt/resource/fields/2/name",
+    "cnl_prompt_pointer": "/resource/fields/2/name",
+    "cnl_allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
+   }
+  },
+  {
+   "id": "NAME_V5_PG_RESOURCE_DECLARATIVEBASE",
+   "renamed": [
+    "Project",
+    "DeclarativeBase"
+   ],
+   "prompt": {
+    "version": "som.prompt.v5",
+    "package": "app_projects",
+    "resources": {
+     "parent": {
+      "name": "DeclarativeBase",
+      "table": "projects",
+      "path": "/projects",
+      "fields": [
+       {
+        "name": "name",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "description",
+        "type": "str",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": null,
+       "date_field": null,
+       "max_limit": 20
+      }
+     },
+     "child": {
+      "name": "Todo",
+      "table": "todos",
+      "path": "/todos",
+      "fields": [
+       {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "description",
+        "type": "str",
+        "required": false,
+        "unique": false,
+        "default": null
+       },
+       {
+        "name": "completed",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "due_on",
+        "type": "date",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": "completed",
+       "date_field": "due_on",
+       "max_limit": 100
+      }
+     }
+    },
+    "relation": {
+     "foreign_key": "project_id",
+     "on_delete": "restrict"
+    },
+    "logic": [
+     {
+      "scope": "parent",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "parent",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "parent",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "child",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "child",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "child",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "batch",
+      "step": "Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure."
+     }
+    ],
+    "tests": [
+     "Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration."
+    ],
+    "migration": {
+     "revision": "related0",
+     "down_revision": null
+    }
+   },
+   "prompt_sha256": "4debb5246fa421b11e72feef9afdc3a2d6ff5379a851de68f0148290c58e21a6",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 5.\nUse package app_projects.\nBegin parent resource.\nUse resource name DeclarativeBase.\nUse table projects.\nUse path \"/projects\".\nField name is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_id and restrict deletion.\nUse migration revision related0.\nUse no previous migration revision.\nUse no capabilities.\nBegin routes.\nFor parent: Create a row. Return 409 for a unique value conflict.\nFor parent: Get a row by id. Return 404 if it does not exist.\nFor parent: List scoped rows with the configured filters and pagination in id order.\nFor parent: Update supplied fields. Return 404 if the row does not exist.\nFor parent: Delete a row. Reject a parent with children with 409.\nFor child: Create a row. Return 409 for a unique value conflict.\nFor child: Get a row by id. Return 404 if it does not exist.\nFor child: List scoped rows with the configured filters and pagination in id order.\nFor child: Update supplied fields. Return 404 if the row does not exist.\nFor child: Delete a row. Reject a parent with children with 409.\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\nEnd routes.\nBegin checks.\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\nEnd checks.\nEnd request.\n",
+   "expected": {
+    "status": 400,
+    "code": "INVALID_VALUE",
+    "detail": "prompt.resources.parent.name: name collides with a generated Python identifier",
+    "json_prompt_pointer": "/prompt/resources/parent/name",
+    "cnl_prompt_pointer": "/resources/parent/name",
+    "cnl_allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
+   }
+  },
+  {
+   "id": "NAME_V5_MONGODB_RESOURCE_DOCUMENT",
+   "renamed": [
+    "Project",
+    "Document"
+   ],
+   "prompt": {
+    "version": "som.prompt.v5",
+    "package": "inventory_app",
+    "resources": {
+     "parent": {
+      "name": "Document",
+      "table": "projects",
+      "path": "/projects-v2",
+      "fields": [
+       {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "active",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "due_on",
+        "type": "date",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": "active",
+       "date_field": "due_on",
+       "max_limit": 20
+      }
+     },
+     "child": {
+      "name": "Task",
+      "table": "tasks",
+      "path": "/tasks-v2",
+      "fields": [
+       {
+        "name": "label",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "active",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       }
+      ],
+      "query": {
+       "filter_field": "active",
+       "date_field": null,
+       "max_limit": 20
+      }
+     }
+    },
+    "relation": {
+     "foreign_key": "project_ref",
+     "on_delete": "restrict"
+    },
+    "logic": [
+     {
+      "scope": "parent",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "parent",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "parent",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "child",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "child",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "child",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "batch",
+      "step": "Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure."
+     }
+    ],
+    "tests": [
+     "Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration."
+    ],
+    "migration": {
+     "revision": "projects_initial",
+     "down_revision": null
+    },
+    "capabilities": {
+     "database": "mongodb",
+     "auth": "jwt",
+     "storage": "none",
+     "workflow": "json_export",
+     "value_field": null,
+     "group_field": null
+    }
+   },
+   "prompt_sha256": "70ba73f6e810052cb8f8a5230a0db9df3b5dcc6ce0b904c6c0611a5d5c4a0818",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 5.\nUse package inventory_app.\nBegin parent resource.\nUse resource name Document.\nUse table projects.\nUse path \"/projects-v2\".\nField title is required str and is not unique.\nField active is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nBegin query.\nFilter exactly on field active.\nFilter before date on field due_on.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Task.\nUse table tasks.\nUse path \"/tasks-v2\".\nField label is required str and is not unique.\nField active is optional bool and is not unique with default false.\nBegin query.\nFilter exactly on field active.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_ref and restrict deletion.\nUse migration revision projects_initial.\nUse no previous migration revision.\nBegin capabilities.\nUse database mongodb.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nFor parent: Create a row. Return 409 for a unique value conflict.\nFor parent: Get a row by id. Return 404 if it does not exist.\nFor parent: List scoped rows with the configured filters and pagination in id order.\nFor parent: Update supplied fields. Return 404 if the row does not exist.\nFor parent: Delete a row. Reject a parent with children with 409.\nFor child: Create a row. Return 409 for a unique value conflict.\nFor child: Get a row by id. Return 404 if it does not exist.\nFor child: List scoped rows with the configured filters and pagination in id order.\nFor child: Update supplied fields. Return 404 if the row does not exist.\nFor child: Delete a row. Reject a parent with children with 409.\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\nEnd routes.\nBegin checks.\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\nEnd checks.\nEnd request.\n",
+   "expected": {
+    "status": 400,
+    "code": "INVALID_VALUE",
+    "detail": "prompt.resources.parent.name: name collides with a generated Python identifier",
+    "json_prompt_pointer": "/prompt/resources/parent/name",
+    "cnl_prompt_pointer": "/resources/parent/name",
+    "cnl_allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
+   }
+  },
+  {
+   "id": "NAME_V5_PG_FOREIGN_KEY_HASHLIB",
+   "renamed": [
+    "project_id",
+    "hashlib"
+   ],
+   "prompt": {
+    "version": "som.prompt.v5",
+    "package": "app_projects",
+    "resources": {
+     "parent": {
+      "name": "Project",
+      "table": "projects",
+      "path": "/projects",
+      "fields": [
+       {
+        "name": "name",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "description",
+        "type": "str",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": null,
+       "date_field": null,
+       "max_limit": 20
+      }
+     },
+     "child": {
+      "name": "Todo",
+      "table": "todos",
+      "path": "/todos",
+      "fields": [
+       {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "description",
+        "type": "str",
+        "required": false,
+        "unique": false,
+        "default": null
+       },
+       {
+        "name": "completed",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "due_on",
+        "type": "date",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": "completed",
+       "date_field": "due_on",
+       "max_limit": 100
+      }
+     }
+    },
+    "relation": {
+     "foreign_key": "hashlib",
+     "on_delete": "restrict"
+    },
+    "logic": [
+     {
+      "scope": "parent",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "parent",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "parent",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "child",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "child",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "child",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "batch",
+      "step": "Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure."
+     }
+    ],
+    "tests": [
+     "Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration."
+    ],
+    "migration": {
+     "revision": "related0",
+     "down_revision": null
+    }
+   },
+   "prompt_sha256": "54ba25bfaa4c7d9876daa163bc3e34afda5c3aedbc2f7b83817dd9f0b888c0b6",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 5.\nUse package app_projects.\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects\".\nField name is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key hashlib and restrict deletion.\nUse migration revision related0.\nUse no previous migration revision.\nUse no capabilities.\nBegin routes.\nFor parent: Create a row. Return 409 for a unique value conflict.\nFor parent: Get a row by id. Return 404 if it does not exist.\nFor parent: List scoped rows with the configured filters and pagination in id order.\nFor parent: Update supplied fields. Return 404 if the row does not exist.\nFor parent: Delete a row. Reject a parent with children with 409.\nFor child: Create a row. Return 409 for a unique value conflict.\nFor child: Get a row by id. Return 404 if it does not exist.\nFor child: List scoped rows with the configured filters and pagination in id order.\nFor child: Update supplied fields. Return 404 if the row does not exist.\nFor child: Delete a row. Reject a parent with children with 409.\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\nEnd routes.\nBegin checks.\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\nEnd checks.\nEnd request.\n",
+   "expected": {
+    "status": 400,
+    "code": "INVALID_VALUE",
+    "detail": "prompt.relation.foreign_key: name collides with a generated Python identifier",
+    "json_prompt_pointer": "/prompt/relation/foreign_key",
+    "cnl_prompt_pointer": "/relation/foreign_key",
+    "cnl_allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
+   }
+  },
+  {
+   "id": "NAME_V6_PG_FIELD_STR",
+   "renamed": [
+    "name",
+    "str"
+   ],
+   "prompt": {
+    "capabilities": {
+     "auth": "jwt",
+     "database": "postgresql",
+     "group_field": null,
+     "storage": "none",
+     "value_field": null,
+     "workflow": "json_export"
+    },
+    "contract": {
+     "id": "related-business.v1",
+     "sha256": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380"
+    },
+    "migration": {
+     "down_revision": null,
+     "revision": "related80000"
+    },
+    "operations": [
+     {
+      "action": "create",
+      "scope": "parent"
+     },
+     {
+      "action": "get",
+      "scope": "parent"
+     },
+     {
+      "action": "list",
+      "scope": "parent"
+     },
+     {
+      "action": "patch",
+      "scope": "parent"
+     },
+     {
+      "action": "delete",
+      "scope": "parent"
+     },
+     {
+      "action": "create",
+      "scope": "child"
+     },
+     {
+      "action": "get",
+      "scope": "child"
+     },
+     {
+      "action": "list",
+      "scope": "child"
+     },
+     {
+      "action": "patch",
+      "scope": "child"
+     },
+     {
+      "action": "delete",
+      "scope": "child"
+     },
+     {
+      "action": "batch_create",
+      "scope": "batch"
+     }
+    ],
+    "package": "app_projects",
+    "relation": {
+     "foreign_key": "project_id",
+     "on_delete": "restrict"
+    },
+    "resources": {
+     "child": {
+      "fields": [
+       {
+        "name": "title",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": false,
+        "name": "completed",
+        "required": false,
+        "type": "bool",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "due_on",
+        "required": false,
+        "type": "date",
+        "unique": false
+       },
+       {
+        "name": "external_code",
+        "required": true,
+        "type": "str",
+        "unique": true
+       }
+      ],
+      "name": "Todo",
+      "path": "/todos",
+      "query": {
+       "date_field": "due_on",
+       "filter_field": "completed",
+       "max_limit": 100
+      },
+      "table": "todos"
+     },
+     "parent": {
+      "fields": [
+       {
+        "name": "str",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       }
+      ],
+      "name": "Project",
+      "path": "/projects",
+      "query": {
+       "date_field": null,
+       "filter_field": null,
+       "max_limit": 20
+      },
+      "table": "projects"
+     }
+    },
+    "version": "som.prompt.v6"
+   },
+   "prompt_sha256": "37badd6353ff8745eb9b68ea58d47c27cdebf6d24c8f4931d1c95f2e96e49a21",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 6.\nUse package app_projects.\nBind contract related-business.v1 with SHA-256 \"9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380\".\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects\".\nField str is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nField external_code is required str and is unique.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_id and restrict deletion.\nUse migration revision related80000.\nUse no previous migration revision.\nBegin capabilities.\nUse database postgresql.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nAllow create on parent.\nAllow get on parent.\nAllow list on parent.\nAllow patch on parent.\nAllow delete on parent.\nAllow create on child.\nAllow get on child.\nAllow list on child.\nAllow patch on child.\nAllow delete on child.\nAllow batch creation.\nEnd routes.\nEnd request.\n",
+   "expected": {
+    "status": 400,
+    "code": "INVALID_VALUE",
+    "detail": "prompt.resources.parent.fields[0].name: name collides with a generated Python identifier",
+    "json_prompt_pointer": "/prompt/resources/parent/fields/0/name",
+    "cnl_prompt_pointer": "/resources/parent/fields/0/name",
+    "cnl_allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
+   }
+  },
+  {
+   "id": "NAME_V6_MONGODB_RESOURCE_FASTAPI",
+   "renamed": [
+    "Project",
+    "FastAPI"
+   ],
+   "prompt": {
+    "version": "som.prompt.v6",
+    "package": "inventory_app",
+    "resources": {
+     "parent": {
+      "name": "FastAPI",
+      "table": "projects",
+      "path": "/projects-v2",
+      "fields": [
+       {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "active",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "due_on",
+        "type": "date",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": "active",
+       "date_field": "due_on",
+       "max_limit": 20
+      }
+     },
+     "child": {
+      "name": "Task",
+      "table": "tasks",
+      "path": "/tasks-v2",
+      "fields": [
+       {
+        "name": "label",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "active",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "score",
+        "type": "int",
+        "required": true,
+        "unique": false
+       }
+      ],
+      "query": {
+       "filter_field": "active",
+       "date_field": null,
+       "max_limit": 20
+      }
+     }
+    },
+    "relation": {
+     "foreign_key": "project_ref",
+     "on_delete": "restrict"
+    },
+    "migration": {
+     "revision": "projects_initial",
+     "down_revision": null
+    },
+    "capabilities": {
+     "database": "mongodb",
+     "auth": "jwt",
+     "storage": "none",
+     "workflow": "json_export",
+     "value_field": null,
+     "group_field": null
+    },
+    "contract": {
+     "id": "related-business.v1",
+     "sha256": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380"
+    },
+    "operations": [
+     {
+      "scope": "parent",
+      "action": "create"
+     },
+     {
+      "scope": "child",
+      "action": "list"
+     },
+     {
+      "scope": "batch",
+      "action": "batch_create"
+     }
+    ]
+   },
+   "prompt_sha256": "437027271af0497f559977cf6bfe0abeb603af6f1a37f0f1e3e4a4ad63cfb8da",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 6.\nUse package inventory_app.\nBind contract related-business.v1 with SHA-256 \"9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380\".\nBegin parent resource.\nUse resource name FastAPI.\nUse table projects.\nUse path \"/projects-v2\".\nField title is required str and is not unique.\nField active is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nBegin query.\nFilter exactly on field active.\nFilter before date on field due_on.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Task.\nUse table tasks.\nUse path \"/tasks-v2\".\nField label is required str and is not unique.\nField active is optional bool and is not unique with default false.\nField score is required int and is not unique.\nBegin query.\nFilter exactly on field active.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_ref and restrict deletion.\nUse migration revision projects_initial.\nUse no previous migration revision.\nBegin capabilities.\nUse database mongodb.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nAllow create on parent.\nAllow list on child.\nAllow batch creation.\nEnd routes.\nEnd request.\n",
+   "expected": {
+    "status": 400,
+    "code": "INVALID_VALUE",
+    "detail": "prompt.resources.parent.name: name collides with a generated Python identifier",
+    "json_prompt_pointer": "/prompt/resources/parent/name",
+    "cnl_prompt_pointer": "/resources/parent/name",
+    "cnl_allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
+   }
+  },
+  {
+   "id": "NAME_V7_PG_RESOURCE_SCHEMA",
+   "renamed": [
+    "Todo",
+    "SCHEMA"
+   ],
+   "prompt": {
+    "capabilities": {
+     "auth": "jwt",
+     "database": "postgresql",
+     "group_field": null,
+     "storage": "none",
+     "value_field": null,
+     "workflow": "json_export"
+    },
+    "contract": {
+     "id": "related-flow.v1",
+     "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+    },
+    "migration": {
+     "down_revision": null,
+     "revision": "related80000"
+    },
+    "operations": [
+     {
+      "action": "create",
+      "scope": "parent"
+     },
+     {
+      "action": "get",
+      "scope": "parent"
+     },
+     {
+      "action": "list",
+      "scope": "parent"
+     },
+     {
+      "action": "patch",
+      "scope": "parent"
+     },
+     {
+      "action": "delete",
+      "scope": "parent"
+     },
+     {
+      "action": "create",
+      "scope": "child"
+     },
+     {
+      "action": "get",
+      "scope": "child"
+     },
+     {
+      "action": "list",
+      "scope": "child"
+     },
+     {
+      "action": "patch",
+      "scope": "child"
+     },
+     {
+      "action": "delete",
+      "scope": "child"
+     },
+     {
+      "action": "batch_create",
+      "scope": "batch"
+     }
+    ],
+    "package": "app_projects",
+    "relation": {
+     "foreign_key": "project_id",
+     "on_delete": "restrict"
+    },
+    "resources": {
+     "child": {
+      "fields": [
+       {
+        "name": "title",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": false,
+        "name": "completed",
+        "required": false,
+        "type": "bool",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "due_on",
+        "required": false,
+        "type": "date",
+        "unique": false
+       },
+       {
+        "name": "external_code",
+        "required": true,
+        "type": "str",
+        "unique": true
+       }
+      ],
+      "name": "SCHEMA",
+      "path": "/todos",
+      "query": {
+       "date_field": "due_on",
+       "filter_field": "completed",
+       "max_limit": 100
+      },
+      "table": "todos"
+     },
+     "parent": {
+      "fields": [
+       {
+        "name": "name",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       }
+      ],
+      "name": "Project",
+      "path": "/projects",
+      "query": {
+       "date_field": null,
+       "filter_field": null,
+       "max_limit": 20
+      },
+      "table": "projects"
+     }
+    },
+    "version": "som.prompt.v7",
+    "flow": {
+     "name": "make_family",
+     "inputs": [
+      {
+       "name": "parent",
+       "type": "parent_input"
+      },
+      {
+       "name": "child",
+       "type": "child_input"
+      },
+      {
+       "name": "patch",
+       "type": "child_patch"
+      }
+     ],
+     "steps": [
+      {
+       "name": "auth",
+       "op": "authorize",
+       "args": {},
+       "undo": null
+      },
+      {
+       "name": "write",
+       "op": "transaction",
+       "steps": [
+        {
+         "name": "made",
+         "op": "parent.create",
+         "args": {
+          "data": {
+           "input": "parent"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "added",
+         "op": "child.create",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "data": {
+           "input": "child"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "patched",
+         "op": "child.patch",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "child_id": {
+           "step": "added",
+           "field": "id"
+          },
+          "data": {
+           "input": "patch"
+          }
+         },
+         "undo": "restore_patch"
+        }
+       ]
+      },
+      {
+       "name": "summary",
+       "op": "workflow.run",
+       "args": {
+        "parent_id": {
+         "step": "made",
+         "field": "id"
+        }
+       },
+       "undo": null
+      }
+     ],
+     "result": {
+      "parent": {
+       "step": "made",
+       "field": ""
+      },
+      "summary": {
+       "step": "summary",
+       "field": "data"
+      },
+      "label": {
+       "literal": "台灣 \"demo\"\nline",
+       "type": "string"
+      },
+      "signed_zero": {
+       "literal": -0.0,
+       "type": "float"
+      }
+     }
+    }
+   },
+   "prompt_sha256": "6ba240bfd9c5f82733b40358831f48ac72e23ccb9e1412069ce3fc35a9af66bc",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 7.\nUse package app_projects.\nBind contract related-flow.v1 with SHA-256 \"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\".\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects\".\nField name is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name SCHEMA.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nField external_code is required str and is unique.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_id and restrict deletion.\nUse migration revision related80000.\nUse no previous migration revision.\nBegin capabilities.\nUse database postgresql.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nAllow create on parent.\nAllow get on parent.\nAllow list on parent.\nAllow patch on parent.\nAllow delete on parent.\nAllow create on child.\nAllow get on child.\nAllow list on child.\nAllow patch on child.\nAllow delete on child.\nAllow batch creation.\nEnd routes.\nBegin flow make_family.\nInput parent has type parent_input.\nInput child has type child_input.\nInput patch has type child_patch.\nBegin steps.\nBegin step auth with operation authorize.\nOn failure, use no undo.\nEnd step auth.\nBegin transaction write.\nBegin step made with operation parent.create.\nSet argument data to input parent.\nOn failure, undo with delete_created.\nEnd step made.\nBegin step added with operation child.create.\nSet argument data to input child.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with delete_created.\nEnd step added.\nBegin step patched with operation child.patch.\nSet argument child_id to step added field \"id\".\nSet argument data to input patch.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with restore_patch.\nEnd step patched.\nEnd transaction write.\nBegin step summary with operation workflow.run.\nSet argument parent_id to step made field \"id\".\nOn failure, use no undo.\nEnd step summary.\nEnd steps.\nReturn label from literal string \"台灣 \\\"demo\\\"\\nline\".\nReturn parent from step made field \"\".\nReturn signed_zero from literal float -0.0.\nReturn summary from step summary field \"data\".\nEnd flow make_family.\nEnd request.\n",
+   "expected": {
+    "status": 400,
+    "code": "INVALID_VALUE",
+    "detail": "prompt.resources.child.name: name collides with a generated Python identifier",
+    "json_prompt_pointer": "/prompt/resources/child/name",
+    "cnl_prompt_pointer": "/resources/child/name",
+    "cnl_allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
+   }
+  },
+  {
+   "id": "NAME_V7_PG_FOREIGN_KEY_INT",
+   "renamed": [
+    "project_id",
+    "int"
+   ],
+   "prompt": {
+    "capabilities": {
+     "auth": "jwt",
+     "database": "postgresql",
+     "group_field": null,
+     "storage": "none",
+     "value_field": null,
+     "workflow": "json_export"
+    },
+    "contract": {
+     "id": "related-flow.v1",
+     "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+    },
+    "migration": {
+     "down_revision": null,
+     "revision": "related80000"
+    },
+    "operations": [
+     {
+      "action": "create",
+      "scope": "parent"
+     },
+     {
+      "action": "get",
+      "scope": "parent"
+     },
+     {
+      "action": "list",
+      "scope": "parent"
+     },
+     {
+      "action": "patch",
+      "scope": "parent"
+     },
+     {
+      "action": "delete",
+      "scope": "parent"
+     },
+     {
+      "action": "create",
+      "scope": "child"
+     },
+     {
+      "action": "get",
+      "scope": "child"
+     },
+     {
+      "action": "list",
+      "scope": "child"
+     },
+     {
+      "action": "patch",
+      "scope": "child"
+     },
+     {
+      "action": "delete",
+      "scope": "child"
+     },
+     {
+      "action": "batch_create",
+      "scope": "batch"
+     }
+    ],
+    "package": "app_projects",
+    "relation": {
+     "foreign_key": "int",
+     "on_delete": "restrict"
+    },
+    "resources": {
+     "child": {
+      "fields": [
+       {
+        "name": "title",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": false,
+        "name": "completed",
+        "required": false,
+        "type": "bool",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "due_on",
+        "required": false,
+        "type": "date",
+        "unique": false
+       },
+       {
+        "name": "external_code",
+        "required": true,
+        "type": "str",
+        "unique": true
+       }
+      ],
+      "name": "Todo",
+      "path": "/todos",
+      "query": {
+       "date_field": "due_on",
+       "filter_field": "completed",
+       "max_limit": 100
+      },
+      "table": "todos"
+     },
+     "parent": {
+      "fields": [
+       {
+        "name": "name",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       }
+      ],
+      "name": "Project",
+      "path": "/projects",
+      "query": {
+       "date_field": null,
+       "filter_field": null,
+       "max_limit": 20
+      },
+      "table": "projects"
+     }
+    },
+    "version": "som.prompt.v7",
+    "flow": {
+     "name": "make_family",
+     "inputs": [
+      {
+       "name": "parent",
+       "type": "parent_input"
+      },
+      {
+       "name": "child",
+       "type": "child_input"
+      },
+      {
+       "name": "patch",
+       "type": "child_patch"
+      }
+     ],
+     "steps": [
+      {
+       "name": "auth",
+       "op": "authorize",
+       "args": {},
+       "undo": null
+      },
+      {
+       "name": "write",
+       "op": "transaction",
+       "steps": [
+        {
+         "name": "made",
+         "op": "parent.create",
+         "args": {
+          "data": {
+           "input": "parent"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "added",
+         "op": "child.create",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "data": {
+           "input": "child"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "patched",
+         "op": "child.patch",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "child_id": {
+           "step": "added",
+           "field": "id"
+          },
+          "data": {
+           "input": "patch"
+          }
+         },
+         "undo": "restore_patch"
+        }
+       ]
+      },
+      {
+       "name": "summary",
+       "op": "workflow.run",
+       "args": {
+        "parent_id": {
+         "step": "made",
+         "field": "id"
+        }
+       },
+       "undo": null
+      }
+     ],
+     "result": {
+      "parent": {
+       "step": "made",
+       "field": ""
+      },
+      "summary": {
+       "step": "summary",
+       "field": "data"
+      },
+      "label": {
+       "literal": "台灣 \"demo\"\nline",
+       "type": "string"
+      },
+      "signed_zero": {
+       "literal": -0.0,
+       "type": "float"
+      }
+     }
+    }
+   },
+   "prompt_sha256": "44a6e2171d51b269f21f02adffab4b802b73f080b8886f053e0f2e6893926b46",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 7.\nUse package app_projects.\nBind contract related-flow.v1 with SHA-256 \"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\".\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects\".\nField name is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nField external_code is required str and is unique.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key int and restrict deletion.\nUse migration revision related80000.\nUse no previous migration revision.\nBegin capabilities.\nUse database postgresql.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nAllow create on parent.\nAllow get on parent.\nAllow list on parent.\nAllow patch on parent.\nAllow delete on parent.\nAllow create on child.\nAllow get on child.\nAllow list on child.\nAllow patch on child.\nAllow delete on child.\nAllow batch creation.\nEnd routes.\nBegin flow make_family.\nInput parent has type parent_input.\nInput child has type child_input.\nInput patch has type child_patch.\nBegin steps.\nBegin step auth with operation authorize.\nOn failure, use no undo.\nEnd step auth.\nBegin transaction write.\nBegin step made with operation parent.create.\nSet argument data to input parent.\nOn failure, undo with delete_created.\nEnd step made.\nBegin step added with operation child.create.\nSet argument data to input child.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with delete_created.\nEnd step added.\nBegin step patched with operation child.patch.\nSet argument child_id to step added field \"id\".\nSet argument data to input patch.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with restore_patch.\nEnd step patched.\nEnd transaction write.\nBegin step summary with operation workflow.run.\nSet argument parent_id to step made field \"id\".\nOn failure, use no undo.\nEnd step summary.\nEnd steps.\nReturn label from literal string \"台灣 \\\"demo\\\"\\nline\".\nReturn parent from step made field \"\".\nReturn signed_zero from literal float -0.0.\nReturn summary from step summary field \"data\".\nEnd flow make_family.\nEnd request.\n",
+   "expected": {
+    "status": 400,
+    "code": "INVALID_VALUE",
+    "detail": "prompt.relation.foreign_key: name collides with a generated Python identifier",
+    "json_prompt_pointer": "/prompt/relation/foreign_key",
+    "cnl_prompt_pointer": "/relation/foreign_key",
+    "cnl_allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
+   }
+  },
+  {
+   "id": "NAME_V7_MONGODB_FIELD_SET",
+   "renamed": [
+    "title",
+    "set"
+   ],
+   "prompt": {
+    "capabilities": {
+     "auth": "jwt",
+     "database": "mongodb",
+     "group_field": null,
+     "storage": "none",
+     "value_field": null,
+     "workflow": "json_export"
+    },
+    "contract": {
+     "id": "related-flow.v1",
+     "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+    },
+    "migration": {
+     "down_revision": null,
+     "revision": "related80000"
+    },
+    "operations": [
+     {
+      "action": "create",
+      "scope": "parent"
+     },
+     {
+      "action": "get",
+      "scope": "parent"
+     },
+     {
+      "action": "list",
+      "scope": "parent"
+     },
+     {
+      "action": "patch",
+      "scope": "parent"
+     },
+     {
+      "action": "delete",
+      "scope": "parent"
+     },
+     {
+      "action": "create",
+      "scope": "child"
+     },
+     {
+      "action": "get",
+      "scope": "child"
+     },
+     {
+      "action": "list",
+      "scope": "child"
+     },
+     {
+      "action": "patch",
+      "scope": "child"
+     },
+     {
+      "action": "delete",
+      "scope": "child"
+     },
+     {
+      "action": "batch_create",
+      "scope": "batch"
+     }
+    ],
+    "package": "app_projects",
+    "relation": {
+     "foreign_key": "project_id",
+     "on_delete": "restrict"
+    },
+    "resources": {
+     "child": {
+      "fields": [
+       {
+        "name": "set",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": false,
+        "name": "completed",
+        "required": false,
+        "type": "bool",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "due_on",
+        "required": false,
+        "type": "date",
+        "unique": false
+       },
+       {
+        "name": "external_code",
+        "required": true,
+        "type": "str",
+        "unique": true
+       }
+      ],
+      "name": "Todo",
+      "path": "/todos",
+      "query": {
+       "date_field": "due_on",
+       "filter_field": "completed",
+       "max_limit": 100
+      },
+      "table": "todos"
+     },
+     "parent": {
+      "fields": [
+       {
+        "name": "name",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       }
+      ],
+      "name": "Project",
+      "path": "/projects",
+      "query": {
+       "date_field": null,
+       "filter_field": null,
+       "max_limit": 20
+      },
+      "table": "projects"
+     }
+    },
+    "version": "som.prompt.v7",
+    "flow": {
+     "name": "make_family",
+     "inputs": [
+      {
+       "name": "parent",
+       "type": "parent_input"
+      },
+      {
+       "name": "child",
+       "type": "child_input"
+      },
+      {
+       "name": "patch",
+       "type": "child_patch"
+      }
+     ],
+     "steps": [
+      {
+       "name": "auth",
+       "op": "authorize",
+       "args": {},
+       "undo": null
+      },
+      {
+       "name": "write",
+       "op": "transaction",
+       "steps": [
+        {
+         "name": "made",
+         "op": "parent.create",
+         "args": {
+          "data": {
+           "input": "parent"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "added",
+         "op": "child.create",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "data": {
+           "input": "child"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "patched",
+         "op": "child.patch",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "child_id": {
+           "step": "added",
+           "field": "id"
+          },
+          "data": {
+           "input": "patch"
+          }
+         },
+         "undo": "restore_patch"
+        }
+       ]
+      },
+      {
+       "name": "summary",
+       "op": "workflow.run",
+       "args": {
+        "parent_id": {
+         "step": "made",
+         "field": "id"
+        }
+       },
+       "undo": null
+      }
+     ],
+     "result": {
+      "parent": {
+       "step": "made",
+       "field": ""
+      },
+      "summary": {
+       "step": "summary",
+       "field": "data"
+      },
+      "label": {
+       "literal": "台灣 \"demo\"\nline",
+       "type": "string"
+      },
+      "signed_zero": {
+       "literal": -0.0,
+       "type": "float"
+      }
+     }
+    }
+   },
+   "prompt_sha256": "33f3f4bdcf3894e0bb1b4e76b3ef77006d4195a43f4b35fc0108abdf6966f79c",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 7.\nUse package app_projects.\nBind contract related-flow.v1 with SHA-256 \"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\".\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects\".\nField name is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField set is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nField external_code is required str and is unique.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_id and restrict deletion.\nUse migration revision related80000.\nUse no previous migration revision.\nBegin capabilities.\nUse database mongodb.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nAllow create on parent.\nAllow get on parent.\nAllow list on parent.\nAllow patch on parent.\nAllow delete on parent.\nAllow create on child.\nAllow get on child.\nAllow list on child.\nAllow patch on child.\nAllow delete on child.\nAllow batch creation.\nEnd routes.\nBegin flow make_family.\nInput parent has type parent_input.\nInput child has type child_input.\nInput patch has type child_patch.\nBegin steps.\nBegin step auth with operation authorize.\nOn failure, use no undo.\nEnd step auth.\nBegin transaction write.\nBegin step made with operation parent.create.\nSet argument data to input parent.\nOn failure, undo with delete_created.\nEnd step made.\nBegin step added with operation child.create.\nSet argument data to input child.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with delete_created.\nEnd step added.\nBegin step patched with operation child.patch.\nSet argument child_id to step added field \"id\".\nSet argument data to input patch.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with restore_patch.\nEnd step patched.\nEnd transaction write.\nBegin step summary with operation workflow.run.\nSet argument parent_id to step made field \"id\".\nOn failure, use no undo.\nEnd step summary.\nEnd steps.\nReturn label from literal string \"台灣 \\\"demo\\\"\\nline\".\nReturn parent from step made field \"\".\nReturn signed_zero from literal float -0.0.\nReturn summary from step summary field \"data\".\nEnd flow make_family.\nEnd request.\n",
+   "expected": {
+    "status": 400,
+    "code": "INVALID_VALUE",
+    "detail": "prompt.resources.child.fields[0].name: name collides with a generated Python identifier",
+    "json_prompt_pointer": "/prompt/resources/child/fields/0/name",
+    "cnl_prompt_pointer": "/resources/child/fields/0/name",
+    "cnl_allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
+   }
+  }
+ ],
+ "accepted": [
+  {
+   "id": "ACCEPT_V1_FIELD_DATE",
+   "renamed": [
+    "title",
+    "date"
+   ],
+   "prompt": {
+    "logic": [
+     "List rows in id order.",
+     "Create a row. Return 409 for a unique value conflict.",
+     "Update supplied fields. Return 404 if the row does not exist.",
+     "Get a row by id. Return 404 if it does not exist.",
+     "Delete a row. Return 404 if it does not exist."
+    ],
+    "migration": {
+     "down_revision": null,
+     "revision": "rev0000"
+    },
+    "package": "items",
+    "resource": {
+     "fields": [
+      {
+       "name": "date",
+       "required": true,
+       "type": "str",
+       "unique": true
+      }
+     ],
+     "name": "Item",
+     "path": "/items",
+     "table": "items"
+    },
+    "tests": [
+     "Check CRUD, missing id, and unique conflict when supported."
+    ],
+    "version": "som.prompt.v1"
+   },
+   "prompt_sha256": "b2e3207b62210ec6a895fe11ce321def5580b2ac28c76f706d97c1e7de2c3f28",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 1.\nUse package items.\nBegin resource.\nUse resource name Item.\nUse table items.\nUse path \"/items\".\nField date is required str and is unique.\nEnd resource.\nUse migration revision rev0000.\nUse no previous migration revision.\nBegin routes.\nList rows in id order.\nCreate a row. Return 409 for a unique value conflict.\nUpdate supplied fields. Return 404 if the row does not exist.\nGet a row by id. Return 404 if it does not exist.\nDelete a row. Return 404 if it does not exist.\nEnd routes.\nBegin checks.\nCheck CRUD, missing id, and unique conflict when supported.\nEnd checks.\nEnd request.\n"
+  },
+  {
+   "id": "ACCEPT_V5_PG_RESOURCE_DOCUMENT",
+   "renamed": [
+    "Project",
+    "Document"
+   ],
+   "prompt": {
+    "version": "som.prompt.v5",
+    "package": "app_projects",
+    "resources": {
+     "parent": {
+      "name": "Document",
+      "table": "projects",
+      "path": "/projects",
+      "fields": [
+       {
+        "name": "name",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "description",
+        "type": "str",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": null,
+       "date_field": null,
+       "max_limit": 20
+      }
+     },
+     "child": {
+      "name": "Todo",
+      "table": "todos",
+      "path": "/todos",
+      "fields": [
+       {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "unique": false
+       },
+       {
+        "name": "description",
+        "type": "str",
+        "required": false,
+        "unique": false,
+        "default": null
+       },
+       {
+        "name": "completed",
+        "type": "bool",
+        "required": false,
+        "unique": false,
+        "default": false
+       },
+       {
+        "name": "due_on",
+        "type": "date",
+        "required": false,
+        "unique": false,
+        "default": null
+       }
+      ],
+      "query": {
+       "filter_field": "completed",
+       "date_field": "due_on",
+       "max_limit": 100
+      }
+     }
+    },
+    "relation": {
+     "foreign_key": "project_id",
+     "on_delete": "restrict"
+    },
+    "logic": [
+     {
+      "scope": "parent",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "parent",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "parent",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "parent",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "child",
+      "step": "Create a row. Return 409 for a unique value conflict."
+     },
+     {
+      "scope": "child",
+      "step": "Get a row by id. Return 404 if it does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "List scoped rows with the configured filters and pagination in id order."
+     },
+     {
+      "scope": "child",
+      "step": "Update supplied fields. Return 404 if the row does not exist."
+     },
+     {
+      "scope": "child",
+      "step": "Delete a row. Reject a parent with children with 409."
+     },
+     {
+      "scope": "batch",
+      "step": "Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure."
+     }
+    ],
+    "tests": [
+     "Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration."
+    ],
+    "migration": {
+     "revision": "related0",
+     "down_revision": null
+    }
+   },
+   "prompt_sha256": "4aa1710de0d5a3e3e0f503f91d987cbeada3a8999275efa8255fa1c126bddcfd",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 5.\nUse package app_projects.\nBegin parent resource.\nUse resource name Document.\nUse table projects.\nUse path \"/projects\".\nField name is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name Todo.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_id and restrict deletion.\nUse migration revision related0.\nUse no previous migration revision.\nUse no capabilities.\nBegin routes.\nFor parent: Create a row. Return 409 for a unique value conflict.\nFor parent: Get a row by id. Return 404 if it does not exist.\nFor parent: List scoped rows with the configured filters and pagination in id order.\nFor parent: Update supplied fields. Return 404 if the row does not exist.\nFor parent: Delete a row. Reject a parent with children with 409.\nFor child: Create a row. Return 409 for a unique value conflict.\nFor child: Get a row by id. Return 404 if it does not exist.\nFor child: List scoped rows with the configured filters and pagination in id order.\nFor child: Update supplied fields. Return 404 if the row does not exist.\nFor child: Delete a row. Reject a parent with children with 409.\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\nEnd routes.\nBegin checks.\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\nEnd checks.\nEnd request.\n"
+  },
+  {
+   "id": "ACCEPT_V7_MONGODB_RESOURCE_SCHEMA",
+   "renamed": [
+    "Todo",
+    "SCHEMA"
+   ],
+   "prompt": {
+    "capabilities": {
+     "auth": "jwt",
+     "database": "mongodb",
+     "group_field": null,
+     "storage": "none",
+     "value_field": null,
+     "workflow": "json_export"
+    },
+    "contract": {
+     "id": "related-flow.v1",
+     "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+    },
+    "migration": {
+     "down_revision": null,
+     "revision": "related80000"
+    },
+    "operations": [
+     {
+      "action": "create",
+      "scope": "parent"
+     },
+     {
+      "action": "get",
+      "scope": "parent"
+     },
+     {
+      "action": "list",
+      "scope": "parent"
+     },
+     {
+      "action": "patch",
+      "scope": "parent"
+     },
+     {
+      "action": "delete",
+      "scope": "parent"
+     },
+     {
+      "action": "create",
+      "scope": "child"
+     },
+     {
+      "action": "get",
+      "scope": "child"
+     },
+     {
+      "action": "list",
+      "scope": "child"
+     },
+     {
+      "action": "patch",
+      "scope": "child"
+     },
+     {
+      "action": "delete",
+      "scope": "child"
+     },
+     {
+      "action": "batch_create",
+      "scope": "batch"
+     }
+    ],
+    "package": "app_projects",
+    "relation": {
+     "foreign_key": "project_id",
+     "on_delete": "restrict"
+    },
+    "resources": {
+     "child": {
+      "fields": [
+       {
+        "name": "title",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": false,
+        "name": "completed",
+        "required": false,
+        "type": "bool",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "due_on",
+        "required": false,
+        "type": "date",
+        "unique": false
+       },
+       {
+        "name": "external_code",
+        "required": true,
+        "type": "str",
+        "unique": true
+       }
+      ],
+      "name": "SCHEMA",
+      "path": "/todos",
+      "query": {
+       "date_field": "due_on",
+       "filter_field": "completed",
+       "max_limit": 100
+      },
+      "table": "todos"
+     },
+     "parent": {
+      "fields": [
+       {
+        "name": "name",
+        "required": true,
+        "type": "str",
+        "unique": false
+       },
+       {
+        "default": null,
+        "name": "description",
+        "required": false,
+        "type": "str",
+        "unique": false
+       }
+      ],
+      "name": "Project",
+      "path": "/projects",
+      "query": {
+       "date_field": null,
+       "filter_field": null,
+       "max_limit": 20
+      },
+      "table": "projects"
+     }
+    },
+    "version": "som.prompt.v7",
+    "flow": {
+     "name": "make_family",
+     "inputs": [
+      {
+       "name": "parent",
+       "type": "parent_input"
+      },
+      {
+       "name": "child",
+       "type": "child_input"
+      },
+      {
+       "name": "patch",
+       "type": "child_patch"
+      }
+     ],
+     "steps": [
+      {
+       "name": "auth",
+       "op": "authorize",
+       "args": {},
+       "undo": null
+      },
+      {
+       "name": "write",
+       "op": "transaction",
+       "steps": [
+        {
+         "name": "made",
+         "op": "parent.create",
+         "args": {
+          "data": {
+           "input": "parent"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "added",
+         "op": "child.create",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "data": {
+           "input": "child"
+          }
+         },
+         "undo": "delete_created"
+        },
+        {
+         "name": "patched",
+         "op": "child.patch",
+         "args": {
+          "parent_id": {
+           "step": "made",
+           "field": "id"
+          },
+          "child_id": {
+           "step": "added",
+           "field": "id"
+          },
+          "data": {
+           "input": "patch"
+          }
+         },
+         "undo": "restore_patch"
+        }
+       ]
+      },
+      {
+       "name": "summary",
+       "op": "workflow.run",
+       "args": {
+        "parent_id": {
+         "step": "made",
+         "field": "id"
+        }
+       },
+       "undo": null
+      }
+     ],
+     "result": {
+      "parent": {
+       "step": "made",
+       "field": ""
+      },
+      "summary": {
+       "step": "summary",
+       "field": "data"
+      },
+      "label": {
+       "literal": "台灣 \"demo\"\nline",
+       "type": "string"
+      },
+      "signed_zero": {
+       "literal": -0.0,
+       "type": "float"
+      }
+     }
+    }
+   },
+   "prompt_sha256": "e0c5f7090cf8f22cc832554c936a7f0a9f60c85103ea4f11ebd3ddf785d72b1c",
+   "cnl": "Use SOM CNL version 1.\nUse prompt version 7.\nUse package app_projects.\nBind contract related-flow.v1 with SHA-256 \"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\".\nBegin parent resource.\nUse resource name Project.\nUse table projects.\nUse path \"/projects\".\nField name is required str and is not unique.\nField description is optional str and is not unique with default null.\nBegin query.\nUse no exact filter.\nUse no date filter.\nLimit query results to 20.\nEnd query.\nEnd parent resource.\nBegin child resource.\nUse resource name SCHEMA.\nUse table todos.\nUse path \"/todos\".\nField title is required str and is not unique.\nField description is optional str and is not unique with default null.\nField completed is optional bool and is not unique with default false.\nField due_on is optional date and is not unique with default null.\nField external_code is required str and is unique.\nBegin query.\nFilter exactly on field completed.\nFilter before date on field due_on.\nLimit query results to 100.\nEnd query.\nEnd child resource.\nRelate child to parent with foreign key project_id and restrict deletion.\nUse migration revision related80000.\nUse no previous migration revision.\nBegin capabilities.\nUse database mongodb.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities.\nBegin routes.\nAllow create on parent.\nAllow get on parent.\nAllow list on parent.\nAllow patch on parent.\nAllow delete on parent.\nAllow create on child.\nAllow get on child.\nAllow list on child.\nAllow patch on child.\nAllow delete on child.\nAllow batch creation.\nEnd routes.\nBegin flow make_family.\nInput parent has type parent_input.\nInput child has type child_input.\nInput patch has type child_patch.\nBegin steps.\nBegin step auth with operation authorize.\nOn failure, use no undo.\nEnd step auth.\nBegin transaction write.\nBegin step made with operation parent.create.\nSet argument data to input parent.\nOn failure, undo with delete_created.\nEnd step made.\nBegin step added with operation child.create.\nSet argument data to input child.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with delete_created.\nEnd step added.\nBegin step patched with operation child.patch.\nSet argument child_id to step added field \"id\".\nSet argument data to input patch.\nSet argument parent_id to step made field \"id\".\nOn failure, undo with restore_patch.\nEnd step patched.\nEnd transaction write.\nBegin step summary with operation workflow.run.\nSet argument parent_id to step made field \"id\".\nOn failure, use no undo.\nEnd step summary.\nEnd steps.\nReturn label from literal string \"台灣 \\\"demo\\\"\\nline\".\nReturn parent from step made field \"\".\nReturn signed_zero from literal float -0.0.\nReturn summary from step summary field \"data\".\nEnd flow make_family.\nEnd request.\n"
+  }
+ ]
+}

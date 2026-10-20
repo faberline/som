@@ -1,0 +1,94 @@
+{
+  "issue": 52,
+  "phase1_refusals_kept": {
+    "query_parameter_collision": "W4; rust_profile_phase2.py"
+  },
+  "phase1_refusals_removed": {
+    "identifier_not_raw": "W1 and R2",
+    "identifier_not_snake_case": "W1 and R2",
+    "path_empty_segment": "W2",
+    "path_reserved": "W2",
+    "prompt_version": "constructs.json owners #53 and #54",
+    "table_reserved": "W3",
+    "v5_capabilities": "constructs.json owner #53"
+  },
+  "rules": [
+    "W rules fix what a client, a database or an operator can see. Each is the same string the accepted Python product uses for the same prompt; Rust never renames, escapes or normalizes it.",
+    "R rules fix the Rust-internal identifiers. They are a pure function of the prompt, so the same prompt gives the same Rust source; no R rule changes a W string.",
+    "Phase 1 products (v1 to v5 without capabilities, inside the phase 1 profile) keep their frozen output: every R rule below gives the phase 1 identifier for a name the phase 1 profile admits."
+  ],
+  "rust": [
+    {
+      "id": "R1",
+      "rule": "No Rust type, module, function or route-handler name comes from the prompt. Types are fixed per product shape (as phase 1 does for resources, parent and child); flows, steps, capabilities and services use fixed names chosen by #53 and #54."
+    },
+    {
+      "id": "R2",
+      "rule": "A prompt field, foreign key or flow input becomes a Rust struct field named, in this order: (a) the name itself when it is snake case under rust_profile.is_rust_snake_case and not a Rust keyword; (b) r#name when it is a keyword that may be raw; (c) otherwise (crate, self, super, Self, not snake case) field_<k>, k the 1-based position of the name in its array (foreign_key for a relation foreign key). Names are assigned in array order after every (a) and (b) name of the same struct; an (c) name that equals one already taken gets a trailing underscore until it is unique. Every struct field carries #[serde(rename = \"<wire name>\")] when its Rust name differs from the wire name, and SQL always uses the wire name."
+    },
+    {
+      "id": "R3",
+      "rule": "Flow names and step names are never Rust identifiers: they are data (string literals in a fixed table) used for the route segment, the run record and the journal."
+    }
+  ],
+  "version": "som.rust-output-phase2-naming.v1",
+  "wire": [
+    {
+      "applies_to": [
+        "resource and child field names",
+        "relation foreign keys",
+        "flow input names",
+        "error bodies and messages"
+      ],
+      "id": "W1",
+      "rule": "JSON member names, error detail strings and status codes are the Python product's, byte for byte, including names that are not Rust identifiers (crate, self, super, Self, upper case, only underscores, double underscores). Where the accepted Python product fails for such a name (a field or foreign key named self answers 500 on create), the phase 2 suite oracle is the reference for Rust and behavior.json records the Python defect."
+    },
+    {
+      "applies_to": [
+        "resource paths",
+        "child paths",
+        "/healthz",
+        "/objects/{key}",
+        "/auth/*",
+        "/flows/{name}/runs",
+        "export and import routes"
+      ],
+      "id": "W2",
+      "rule": "Every route is the Python route, verbatim, including a trailing slash or an empty segment. The fixed Rust route /healthz is added only when the Python product serves it at that path; a resource whose path is /healthz owns that path as it does in Python, and the Rust product then has the Python health route and nothing else there."
+    },
+    {
+      "applies_to": [
+        "PostgreSQL tables and columns",
+        "MongoDB collections and document fields",
+        "indexes and constraints"
+      ],
+      "id": "W3",
+      "rule": "Table, collection, column and document field names are verbatim and double-quoted in SQL. A prompt table may use any name compiler-v1 admits, _sqlx_migrations included: the Rust migrator keeps its bookkeeping in a table no prompt can name (_som_rust_migrations), and schema comparison ignores migration bookkeeping tables as in phase 1."
+    },
+    {
+      "applies_to": [
+        "list query parameters",
+        "limit",
+        "offset",
+        "filter field",
+        "date field (before, after)"
+      ],
+      "id": "W4",
+      "rule": "Query parameter names, parsing, bounds, defaults, errors and ordering are the Python product's. A v3 filter field named like a fixed list parameter (limit or offset) makes the query string ambiguous: phase 2 keeps the phase 1 refusal query_parameter_collision for it (rust_profile_phase2.py), as compiler-v1 already refuses the same names in v4 and v5."
+    },
+    {
+      "applies_to": [
+        "package"
+      ],
+      "id": "W5",
+      "rule": "The Cargo package and binary stay som_app. Strings the Python product derives from the package keep their Python values: the README title, SESSION_COOKIE som_<package>, BINDING_COOKIE som_<package>_login, REDIS_PREFIX <REDIS_NAMESPACE>:<package>:."
+    },
+    {
+      "applies_to": [
+        "internal tables and fields"
+      ],
+      "id": "W6",
+      "rule": "The internal names of the Python product keep their names and shapes: _som_revision, _som_counters, _som_flow_runs and _som_flow_leases."
+    }
+  ]
+}

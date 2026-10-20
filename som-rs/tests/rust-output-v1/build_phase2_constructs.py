@@ -52,7 +52,7 @@ POINTER_FORMS = {
     "/resources/*/fields/*/unique": "A unique constraint with the Python name (PostgreSQL) or the Python partial unique index on the field's BSON type (MongoDB), and the Python 409 on conflict.",
     "/resource/fields/*/default": "The field_default construct of the same value.",
     "/resources/*/fields/*/default": "The field_default construct of the same value.",
-    "/query/*": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (naming.json W4). A v3 filter field named like a fixed list parameter stays refused (query_parameter_collision, CONTRACT.md section 10).",
+    "/query/*": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (naming.json W4). A v3 filter field named like a fixed list parameter is refused by compiler-v1 for every target (python_name_collisions, CONTRACT.md section 12).",
     "/resources/*/query/*": "The list query parameter of the Python product: same name, parsing, bounds, ordering and index (PostgreSQL index or MongoDB query index) (naming.json W4).",
     "/relation/foreign_key": "The child column or document field, verbatim; the Rust field follows naming.json R2.",
     "/relation/on_delete": "Restrict: deleting a parent that has children gives the Python status and detail. PostgreSQL uses the Python foreign key; MongoDB checks inside the Python transaction.",

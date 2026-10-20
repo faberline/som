@@ -951,6 +951,15 @@ fn common(p: &Value, e: &crate::SomError) -> Option<At> {
             "Bind the exact public contract ID and hash.",
         ));
     }
+    if crate::python_names::is_collision(&e.detail) {
+        let ptr = crate::json_diagnostics::prompt_pointer(p, e)?;
+        return Some(at(
+            &ptr,
+            &ptr,
+            e.detail.clone(),
+            "Rename it; this name shares a scope with an identifier of the generated Python code.",
+        ));
+    }
     let version = p["version"]
         .as_str()
         .unwrap()

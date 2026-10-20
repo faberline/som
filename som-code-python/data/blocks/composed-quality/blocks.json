@@ -1633,5 +1633,30 @@
       "routes": "string"
     },
     "template": "ROUTES = {{routes}}\n\n\nclass Route(TypedDict):\n    \"\"\"Typed service contract.\"\"\"\n    method: str\n    path: str\n\n\nclass ComposedServiceTest(unittest.TestCase):\n    \"\"\"Typed service contract.\"\"\"\n    def test_selected_routes_require_identity(self) -> None:\n        \"\"\"Test selected routes require identity.\"\"\"\n        routes = TypeAdapter(list[Route]).validate_json(ROUTES)\n        application: object = importlib.import_module(APPLICATION + \".app\").app\n        self.assertIsInstance(application, FastAPI)\n        if not isinstance(application, FastAPI):\n            raise TypeError(\"service app must be a FastAPI application\")\n        with TestClient(application) as client:\n            for route in routes:\n                path = route[\"path\"].replace(\"{parent_id}\", \"1\").replace(\"{child_id}\", \"1\")\n                response = client.request(route[\"method\"], path, json={})\n                self.assertEqual(response.status_code, 401, response.text)\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"
+  },
+  {
+    "id": "orm.base.self",
+    "version": 2,
+    "imports": [
+      "from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column",
+      "from sqlalchemy.sql.functions import now as database_now",
+      "import sqlalchemy as sa",
+      "from sqlalchemy.orm import registry as _som_registry"
+    ],
+    "params": {},
+    "template": "def _som_construct(*args: object, **kwargs: object) -> None:\n    \"\"\"Set mapped values; the row is positional so any field name works.\"\"\"\n    (row,) = args\n    kind = type(row)\n    for key, value in kwargs.items():\n        if not hasattr(kind, key):\n            message = f\"{key!r} is an invalid keyword argument for {kind.__name__}\"\n            raise TypeError(message)\n        setattr(row, key, value)\n\n\n# pylint: disable-next=too-few-public-methods\nclass Base(DeclarativeBase):\n    \"\"\"Typed service contract.\"\"\"\n\n    registry = _som_registry(constructor=_som_construct)\n"
+  },
+  {
+    "id": "orm.composed.mongo.base.self",
+    "version": 2,
+    "imports": [
+      "from beanie import Document as _SomBeanieSdkDocument",
+      "from datetime import UTC, date, datetime, time",
+      "from pydantic import Field",
+      "from typing import ClassVar as _SomClassVar",
+      "from typing import TypedDict as _SomTypedDict"
+    ],
+    "params": {},
+    "template": "\n\n# pylint: disable-next=too-many-ancestors\nclass _SomBeanieDocument(_SomBeanieSdkDocument):\n    \"\"\"Beanie document; the row is positional so that any field name works.\"\"\"\n\n    def __init__(self, /, **data: object) -> None:\n        super(_SomBeanieSdkDocument, self).__init__(**data)\n        self.get_pymongo_collection()\n\n\nclass _SomUniqueField(_SomTypedDict):\n    \"\"\"Typed service contract.\"\"\"\n    unique: bool\n    bson_type: str\n\n\ndef encode_date(value: date) -> datetime:\n\n\n    \"\"\"Encode date.\"\"\"\n    if isinstance(value, datetime):\n        return value\n    return datetime.combine(value, time(), UTC)\n\n\ndef _som_query_indexes(fields: list[str | None], prefix: list[str]) -> list[list[str]]:\n\n\n    \"\"\" som query indexes.\"\"\"\n    return [[*prefix, field, \"_id\"] for field in fields if field is not None]\n"
   }
 ]

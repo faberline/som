@@ -61,6 +61,7 @@ The fixture pack has 40 cases: one positive case for each prompt version v1–v7
 - Budget clarification: `m2-output-budget.v2.json` is compact-M2-candidate metadata. Its 12-file and 64-block limits apply there; its `bytes: observed` field is not a byte ceiling, and its input/output token limits are not compiler limits. Existing noncompact 65536-byte limits remain attached to their existing legacy paths.
 - Future compiler acceptance requires fresh independent behavior tests. These fixtures are not acceptance results.
 - Root's acceptance plan remains the source for parser, planner, bundle, runtime, baseline, and release gates. The artifacts here add independent oracle details; they do not replace those gates or claim completion.
+- Amendment 003 (#57, #58) adds `self-name-fixtures.json`, written by `self_name_fixtures.py` from public examples and CNL positive fixtures: 15 prompts with a field, foreign key or query field named `self` that compile with the `self_name_variants` blocks, 13 names refused by `python_name_collisions` with INVALID_VALUE and their typed JSON and CNL pointers, and 3 accepted controls where the version or database has no row. The expected values come from the policy, not from a compiler run.
 
 ## Source files
 

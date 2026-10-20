@@ -22,8 +22,10 @@ Gate: target_selection_checks, scope_checks and python_unchanged.
 
 With --refusals phase2 (acceptance-plan.json phase2.rule), the refusal profile is
 tests/rust-output-v1/rust_profile_phase2.py: the RS rows of negative-cases.json
-give the refusal it computes on the compiled prompt (RS12 and RS13) or a Rust
-bundle, every source form outside them gives a Rust bundle, and the phase 1
+give the refusal it computes on the compiled prompt or a Rust bundle; an RS row
+compiler-v1 refuses without target (RS12 and RS13 since amendment 004) gives
+that frozen diagnostic with and without target. Every source form outside them
+gives a Rust bundle, and the phase 1
 refusal counts are not checked (they stay the phase 1 record).
 
 The reference compiler gets read-only compile calls only. Legacy prompts are
@@ -143,8 +145,16 @@ def phase2_scope_case(qa: str, case: dict, status: int, raw: bytes) -> dict:
     del plain["target"]
     plain_status, plain_raw = post(qa, dump(plain))
     if plain_status != 200:
-        return {"id": case["id"], "status": status, "passed": False,
-                "problems": [f"compile without target gave {plain_status}"]}
+        # A compiler-v1 refusal for every target: the frozen diagnostic, with and without target.
+        problems = one_diagnostic(status, raw, case["http_status"], case["expected"])
+        problems += [f"without target: {p}" for p in
+                     one_diagnostic(plain_status, plain_raw, case["http_status"], case["expected"])]
+        if not case["python_control_expected"].startswith("the same diagnostic"):
+            problems.append(f"compile without target gave {plain_status}")
+        if not problems and located(case["body"], case["form"], json.loads(raw)["diagnostics"][0]) != case["span_text"]:
+            problems.append("span_text differs")
+        return {"id": case["id"], "status": status, "phase2": "compiler_v1_refusal", "reply_sha256": sha(raw),
+                "passed": not problems, "problems": problems}
     found = rust_profile_phase2.check(json.loads(plain_raw)["bundle"]["prompt"])
     if found is None:
         problems, outcome = rust_in_scope(status, raw)

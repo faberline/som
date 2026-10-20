@@ -1,5 +1,5 @@
 //! Model-free compilation and checked bundle assembly.
-use crate::{Block, SomError, composed, flow, flow_compact, planner, quality};
+use crate::{Block, SomError, composed, flow, flow_compact, planner, python_names, quality};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
@@ -47,6 +47,7 @@ fn backend_manifest() -> Value {
         ("src/cnl.rs", include_str!("cnl.rs")),
         ("src/cnl_semantics.rs", include_str!("cnl_semantics.rs")),
         ("src/planner.rs", include_str!("planner.rs")),
+        ("src/python_names.rs", include_str!("python_names.rs")),
         ("src/compiler.rs", include_str!("compiler.rs")),
         ("src/strict_json.rs", include_str!("strict_json.rs")),
         (
@@ -200,6 +201,9 @@ impl Compiler {
             .ok_or_else(|| err("ASSET_UNAVAILABLE", "native quality assets missing"))?;
         composed::verify_blocks_with(&quality_blocks, &quality.catalog)?;
         composed::verify_blocks_with(&current, &flow::COMPACT_CATALOG)?;
+        python_names::verify_variants(&legacy, "v1-v5")?;
+        python_names::verify_variants(&quality_blocks, "v6")?;
+        python_names::verify_variants(&current, "v7")?;
         Ok(Self {
             legacy,
             current,
@@ -280,7 +284,7 @@ impl Compiler {
         json!({
             "grammar":descriptor("som.cnl.v1",GRAMMAR.as_bytes()),
             "compiler_contract":descriptor("som.compiler-contract.v1",CONTRACT.as_bytes()),
-            "selection_policy":descriptor("som.compiler-selection-policy.v1.1",POLICY.as_bytes()),
+            "selection_policy":descriptor("som.compiler-selection-policy.v1.2",POLICY.as_bytes()),
             "catalog":described(catalog_id,&catalog_manifest),
             "block_library":described("som.compiler-block-library.v1",&block_manifest),
             "backend":described("som.compiler-backend.v1",&backend_manifest()),
@@ -325,10 +329,16 @@ impl Compiler {
     }
     fn validate_plan(&self, prompt: &Value, dsl: &Value) -> Result<(), SomError> {
         match prompt["version"].as_str() {
-            Some(flow::VERSION) => flow::validate_plan_with(prompt, dsl, &flow::COMPACT_CATALOG),
-            Some(composed::VERSION) => {
-                composed::validate_plan_with(prompt, dsl, &self.quality.catalog)
-            }
+            Some(flow::VERSION) => flow::validate_plan_with(
+                prompt,
+                &python_names::base_plan(prompt, dsl)?,
+                &flow::COMPACT_CATALOG,
+            ),
+            Some(composed::VERSION) => composed::validate_plan_with(
+                prompt,
+                &python_names::base_plan(prompt, dsl)?,
+                &self.quality.catalog,
+            ),
             _ => {
                 // Legacy prompt families have no catalog semantic-plan validator.
                 // Check required roles/bindings/dependency edges without replacing the supplied plan.
@@ -404,7 +414,7 @@ impl Compiler {
             "blocks_sha256":digest(CURRENT_BYTES),"quality_blocks_sha256":digest(QUALITY_BYTES),"quality_block_count":self.quality_blocks.len(),"legacy_blocks_sha256":digest(LEGACY_BYTES),
             "asset_manifest_sha256":self.manifest_sha256,"backend_sha256":canonical_hash(&backend_manifest()),
             "grammar_version":"som.cnl.v1","grammar_sha256":digest(GRAMMAR.as_bytes()),
-            "selection_policy_version":"som.compiler-selection-policy.v1.1","selection_policy_sha256":digest(POLICY.as_bytes()),
+            "selection_policy_version":"som.compiler-selection-policy.v1.2","selection_policy_sha256":digest(POLICY.as_bytes()),
             "bundle_version":BUNDLE_VERSION,"prompt_versions":(1..=7).map(|v|format!("som.prompt.v{v}")).collect::<Vec<_>>(),
             "quality_contract":quality::VERSION,"formatter_version":quality::FORMATTER_VERSION,
             "formatter_sha256":FORMATTER_SHA256,"compact_output_bytes":"observed",

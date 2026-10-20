@@ -2,7 +2,8 @@
 //! They run on a typed prompt that already passed compiler-v1 validation.
 //! `phase1` is the phase 1 record, in the order and with the texts of the frozen scope.json and
 //! tests/rust-output-v1/rust_profile.py. `check` is the phase 2 profile of
-//! tests/rust-output-v1/rust_profile_phase2.py: only query_parameter_collision stays.
+//! tests/rust-output-v1/rust_profile_phase2.py. Since amendment 004 it refuses nothing:
+//! compiler-v1 amendment 003 refuses the v3 limit and offset filters for every target.
 use serde_json::Value;
 use std::sync::LazyLock;
 
@@ -114,9 +115,10 @@ fn query_parameter_collision(prompt: &Value, version: &str) -> Option<Refusal> {
     )
 }
 
-/// The phase 2 refusal, or None when Rust output covers the prompt.
-pub fn check(prompt: &Value) -> Option<Refusal> {
-    query_parameter_collision(prompt, &text(&prompt["version"]))
+/// The phase 2 refusal, or None when Rust output covers the prompt. Amendment 004 left none:
+/// a v3 filter named like a list parameter never passes compiler-v1 validation.
+pub fn check(_prompt: &Value) -> Option<Refusal> {
+    None
 }
 
 /// The product-layout.json phase2 shape the prompt selects.
@@ -294,13 +296,15 @@ mod tests {
     }
 
     #[test]
-    fn phase2_keeps_only_the_query_parameter_collision() {
-        let prompt = json!({"version":"som.prompt.v3","resource":{"path":"/items","table":"items",
-            "fields":[{"name":"limit"}]},"query":{"filter_field":"limit"}});
-        let found = check(&prompt).unwrap();
-        assert_eq!(found.rule, "query_parameter_collision");
-        assert_eq!(found.pointer, "/query/filter_field");
-        assert_eq!(Some(found), phase1(&prompt));
+    fn phase2_refuses_nothing_and_compiler_v1_refuses_the_list_parameter_names() {
+        let prompt = json!({"version":"som.prompt.v3","resource":{"name":"Item","path":"/items",
+            "table":"items","fields":[{"name":"limit","type":"bool","required":false,"unique":false,
+            "default":false}]},"query":{"filter_field":"limit"}});
+        assert_eq!(check(&prompt), None);
+        assert_eq!(phase1(&prompt).unwrap().rule, "query_parameter_collision");
+        let error = som::python_names::check_collisions(&prompt).unwrap_err();
+        assert_eq!(error.code, "INVALID_VALUE");
+        assert_eq!(error.detail, "prompt.query.filter_field: name collides with a generated Python identifier");
         assert_eq!(check(&json!({"version":"som.prompt.v7"})), None);
     }
 

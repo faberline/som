@@ -1401,5 +1401,23 @@
       "value_field": "string"
     },
     "template": "    @router.get({{parent_path}} + \"/{parent_id}/export\")\n    async def export_rows(parent_id: int):\n        rows = await workflow_rows(parent_id)\n        values = [row[{{value_field}}] for row in rows if row[{{value_field}}] is not None]\n        return {\"count\": len(values), \"mean\": statistics.fmean(values) if values else None, \"median\": statistics.median(values) if values else None, \"minimum\": min(values) if values else None, \"maximum\": max(values) if values else None}"
+  },
+  {
+    "id": "orm.base.self",
+    "version": 1,
+    "imports": [
+      "import sqlalchemy as sa",
+      "from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column",
+      "from sqlalchemy.orm import registry as _som_registry"
+    ],
+    "params": {},
+    "template": "def _som_construct(*args: object, **kwargs: object) -> None:\n    \"\"\"Set mapped values; the row is positional so any field name works.\"\"\"\n    (row,) = args\n    kind = type(row)\n    for key, value in kwargs.items():\n        if not hasattr(kind, key):\n            message = f\"{key!r} is an invalid keyword argument for {kind.__name__}\"\n            raise TypeError(message)\n        setattr(row, key, value)\n\n\nclass Base(DeclarativeBase):\n    registry = _som_registry(constructor=_som_construct)"
+  },
+  {
+    "id": "orm.mongo.base.self",
+    "version": 1,
+    "imports": [],
+    "params": {},
+    "template": "from datetime import date, datetime, time, timezone\nfrom typing import ClassVar\nfrom beanie import Document as _SomBeanieDocument\nfrom pydantic import Field\n\n\nclass Document(_SomBeanieDocument):\n    def __init__(*args: object, **data: object) -> None:\n        (row,) = args\n        if not isinstance(row, _SomBeanieDocument):\n            raise TypeError(row)\n        super(_SomBeanieDocument, row).__init__(**data)\n        row.get_pymongo_collection()"
   }
 ]

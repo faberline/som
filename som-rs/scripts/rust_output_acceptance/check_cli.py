@@ -15,7 +15,8 @@ case whose target is a string; and a few unknown target strings.
 
 With --refusals phase2 (acceptance-plan.json phase2.refusals), an RS negative case
 expects UNSUPPORTED_TARGET only where tests/rust-output-v1/rust_profile_phase2.py
-refuses its compiled prompt (RS12), and a bundle otherwise.
+refuses its compiled prompt (none since amendment 004), the frozen compiler-v1 code
+where compiler-v1 refuses the prompt without target (RS12), and a bundle otherwise.
 
 usage: check_cli.py --binary SOM --base-url http://127.0.0.1:PORT --out NEW.json [--refusals phase2]
 """
@@ -97,11 +98,15 @@ def check(binary: str, base_url: str, scratch: pathlib.Path, label: str, source:
     return row
 
 
-def phase2_code(base_url: str, body: dict) -> str | None:
-    """UNSUPPORTED_TARGET where the phase 2 profile refuses the compiled prompt, None for a bundle."""
+def phase2_code(base_url: str, body: dict, case: dict) -> str | None:
+    """UNSUPPORTED_TARGET where the phase 2 profile refuses the compiled prompt, the frozen code where
+    compiler-v1 refuses the prompt for every target, None for a bundle."""
     plain = {k: v for k, v in body.items() if k != "target"}
     status, raw = post(base_url, json.dumps(plain).encode())
     if status != 200:
+        if case["python_control_expected"].startswith("the same diagnostic") \
+                and json.loads(raw).get("code") == case["expected"]["code"]:
+            return case["expected"]["code"]
         return f"compile without target gave {status}"
     return "UNSUPPORTED_TARGET" if rust_profile_phase2.check(json.loads(raw)["bundle"]["prompt"]) else None
 
@@ -137,7 +142,7 @@ def main() -> int:
                 continue
             expect = case["expected"]["code"]
             if args.refusals == "phase2" and case["id"].startswith("RS"):
-                expect = phase2_code(base_url, body)
+                expect = phase2_code(base_url, body, case)
             row = check(args.binary, base_url, scratch, case["id"], body["source"], body["target"], expect)
             if expect is None and row["http_status"] != 200:
                 row["problems"].append(f"expected a bundle, got {row['http_status']}")

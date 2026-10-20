@@ -295,3 +295,30 @@ Fresh M2 restore and compiler HTTP/CLI canary must pass before a default switch.
 Root owns inspection, installation, freeze, acceptance, GitHub and default switching. The contract freeze alone does not close the implementation or rollout issues.
 
 The baseline backend-source-manifest.json records review inputs. A release backend descriptor must bind the actual final compiled source and embedded templates, including the new compiler modules. It cannot claim those baseline hashes identify modified implementation bytes.
+
+## 10. Amendment 003: names of the generated Python code
+
+Amendment 003 (issues #57 and #58) adds two rules. Its receipt is ../../evidence/rust-compiler-contract-amendment-003.json. Sections 1 to 9 stay binding.
+
+A prompt name can share a Python scope with an identifier of the generated code: a module import, class, helper, builtin or query parameter.
+Then one of them shadows the other, and the product fails at import or at run time, or works only because of the template layout.
+`selection-policy.json` `python_name_collisions` lists those names per prompt version and database, with the name slots, their roles and the traversal order.
+Compile refuses the first listed name with INVALID_VALUE, HTTP 400, detail `prompt.<path>: name collides with a generated Python identifier`, and the slot's JSON pointer.
+A CNL request reports the same code and detail with the pointer and span of that name's clause. Its allowed_form is `Rename it; this name shares a scope with an identifier of the generated Python code.`
+The refusal is a compiler-v1 rule, so it applies to every target, including `target: rust`.
+It replaces the Rust query_parameter_collision refusal for v3 `limit` and `offset` filters (RS12 and RS13).
+A version and database without rows refuses nothing. Names are compared as written.
+
+The name `self` stays valid for a resource field and for relation.foreign_key.
+The generated Python passes model values as keyword arguments to constructors and to `filter_by`, whose first parameter is `self`.
+`selection-policy.json` `self_name_variants` lists, per family, a variant block for each such base block.
+Its constructor takes the row positionally, or its query matches columns without keyword arguments.
+Compile selects the variant exactly when a resource field or relation.foreign_key is `self`; every other prompt keeps its earlier DSL.
+Assembly refuses a plan that uses the base block where the variant is required, or a variant where it is not, with INVALID_COMPOSITION.
+The variants are new block ids in the approved v5, composed-quality and flow-v7-compact libraries. No existing block changes.
+
+Both rules change the selection policy, the backend and the block libraries, so every bundle's asset descriptors and payload hash change.
+For every accepted prompt the DSL and every assembled product file stay byte-identical.
+An earlier bundle presented to a backend with this amendment fails ASSET_HASH_MISMATCH. That is a recorded compatibility break; compile the prompt again.
+The fixtures are ../../tests/compiler-v1/self-name-fixtures.json, written by self_name_fixtures.py from public examples and CNL fixtures.
+They hold 15 `self` cases, 13 refused names and 3 accepted controls, with the expected code, detail, pointers and variant ids.

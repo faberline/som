@@ -446,7 +446,7 @@
     },
     {
       "id": "RS12_CNL_V3_FILTER_LIMIT",
-      "purpose": "A v3 bool filter named like the limit parameter.",
+      "purpose": "A v3 bool filter named like the limit parameter; compiler-v1 refuses it for every target.",
       "form": "cnl",
       "base_example": "v3.cnl",
       "line_edits": [
@@ -459,11 +459,11 @@
           "with": "Filter exactly on field limit."
         }
       ],
-      "http_status": 422,
+      "http_status": 400,
       "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 3.\\nUse package todos.\\nBegin resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField limit is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field limit.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision service1000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact boolean filter, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"rust\"}",
       "span_text": "limit",
       "expected": {
-        "code": "UNSUPPORTED_TARGET",
+        "code": "INVALID_VALUE",
         "line": 13,
         "column": 25,
         "end_line": 13,
@@ -471,22 +471,22 @@
         "byte_start": 376,
         "byte_end": 381,
         "prompt_pointer": "/query/filter_field",
-        "cause": "Rust output cannot filter on limit because a list parameter has the same name.",
-        "allowed_form": "Filter on a field whose name is not limit, offset or before for target rust, or omit target to generate Python."
+        "cause": "prompt.query.filter_field: name collides with a generated Python identifier",
+        "allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
       },
       "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 3.\\nUse package todos.\\nBegin resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField limit is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field limit.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision service1000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact boolean filter, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\"}",
-      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+      "python_control_expected": "the same diagnostic"
     },
     {
       "id": "RS13_JSON_V3_FILTER_OFFSET",
-      "purpose": "A v3 bool filter named like the offset parameter.",
+      "purpose": "A v3 bool filter named like the offset parameter; compiler-v1 refuses it for every target.",
       "form": "json",
       "base_example": "v3.prompt.json",
-      "http_status": 422,
+      "http_status": 400,
       "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact boolean filter, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"service1000\"},\"package\":\"todos\",\"query\":{\"filter_field\":\"offset\",\"max_limit\":100},\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"offset\",\"required\":false,\"type\":\"bool\",\"unique\":false}],\"name\":\"Todo\",\"path\":\"/todos\",\"table\":\"todos\"},\"tests\":[\"Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v3\"},\"target\":\"rust\"}",
       "span_text": "\"offset\"",
       "expected": {
-        "code": "UNSUPPORTED_TARGET",
+        "code": "INVALID_VALUE",
         "line": 1,
         "column": 457,
         "end_line": 1,
@@ -494,11 +494,11 @@
         "byte_start": 456,
         "byte_end": 464,
         "prompt_pointer": "/prompt/query/filter_field",
-        "cause": "Rust output cannot filter on offset because a list parameter has the same name.",
-        "allowed_form": "Filter on a field whose name is not limit, offset or before for target rust, or omit target to generate Python."
+        "cause": "prompt.query.filter_field: name collides with a generated Python identifier",
+        "allowed_form": "A prompt that meets the pinned compiler contract."
       },
       "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact boolean filter, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"service1000\"},\"package\":\"todos\",\"query\":{\"filter_field\":\"offset\",\"max_limit\":100},\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"offset\",\"required\":false,\"type\":\"bool\",\"unique\":false}],\"name\":\"Todo\",\"path\":\"/todos\",\"table\":\"todos\"},\"tests\":[\"Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v3\"}}",
-      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+      "python_control_expected": "the same diagnostic, located in python_control_body"
     },
     {
       "id": "RS14_CNL_V5_FOREIGN_KEY_SELF",

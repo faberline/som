@@ -1,0 +1,448 @@
+{
+  "version": "som.compiler-contract-amendment.v1",
+  "amendment": 3,
+  "frozen_at": "2026-10-20T06:06:23.728180+00:00",
+  "baseline_commit": "87e3f62e5eab56ce2a6708e28ccc52528fa4f911",
+  "issue": [
+    57,
+    58
+  ],
+  "status": "amendment_sealed_after_independent_review",
+  "implementation_already_in_progress": true,
+  "implementation_already_in_progress_refers_to": "a QA spike (.local/rust-output-phase2/self-spike-001) built the implementation below before this freeze, to find the collisions and check the variant blocks; no candidate, acceptance run or default switch used it",
+  "previous_receipt": "som-rs/evidence/rust-compiler-contract-amendment-002.json",
+  "previous_receipt_sha256": "c95b79a89737b2568e7b92529c7b5012c6035bc8e62f830eb010693a4445326d",
+  "reason": "Issue #57: the generated Python passes model values as keyword arguments to SQLAlchemy and beanie constructors and to filter_by, whose first parameter is self, so a field or foreign key named self fails with HTTP 500 at run time. selection-policy.json v1.2 self_name_variants selects a variant block exactly for such prompts; every other prompt keeps its DSL. Issue #58: a prompt name in the same Python scope as a template identifier shadows it (mapped_column and str fail at import, SCHEMA at import, v3 limit and offset filters collide with the query parameters as RS12 and RS13 show). python_name_collisions refuses those names per prompt version and database with INVALID_VALUE, for every target. The user decided on 2026-10-17 that the v3 limit and offset refusal moves to compiler-v1 with #57. CONTRACT.md section 10 states both rules and the compatibility break: every bundle's asset descriptors change, so an earlier bundle gets ASSET_HASH_MISMATCH, while the DSL and product files of every accepted prompt stay byte-identical.",
+  "changed_paths": [
+    "som-rs/contracts/compiler-v1/CONTRACT.md",
+    "som-rs/contracts/compiler-v1/selection-policy.json",
+    "som-rs/contracts/compiler-v1/selection-policy.md",
+    "som-rs/tests/compiler-v1/coverage-and-scope.md",
+    "som-rs/tests/compiler-v1/field-refusal-inventory.json"
+  ],
+  "added_paths": [
+    "som-rs/tests/compiler-v1/self-name-fixtures.json",
+    "som-rs/tests/compiler-v1/self_name_fixtures.py"
+  ],
+  "changes": [
+    {
+      "path": "som-rs/contracts/compiler-v1/CONTRACT.md",
+      "old_sha256": "b846c3e4866a85e70406b3736450495d6e0dd8ba6ae07d0541d64df0ea73ca39",
+      "new_sha256": "2a681fa92148848f6311d9a8be73ede3150ea76357aa8bf2bc1ec76dc0de7ddd",
+      "archived_copy": "som-rs/evidence/rust-compiler-contract-archive/CONTRACT-before-amendment-003.md",
+      "archived_copy_sha256": "b846c3e4866a85e70406b3736450495d6e0dd8ba6ae07d0541d64df0ea73ca39"
+    },
+    {
+      "path": "som-rs/contracts/compiler-v1/selection-policy.json",
+      "old_sha256": "58508e4e75a05e972b8cd8e114149190d071fc7ac716ee272c2f782d83240a36",
+      "new_sha256": "6fc29cf4791de4e2c6ec716a03426cf66cb1bdd0c5659c30511b837da8552f56",
+      "archived_copy": "som-rs/evidence/rust-compiler-contract-archive/selection-policy-v1.1-before-amendment-003.json",
+      "archived_copy_sha256": "58508e4e75a05e972b8cd8e114149190d071fc7ac716ee272c2f782d83240a36"
+    },
+    {
+      "path": "som-rs/contracts/compiler-v1/selection-policy.md",
+      "old_sha256": "67155bfdc08c88c997260b007f2d9c411280dac58ef14dd37979a0d803e07b30",
+      "new_sha256": "914ed5c5a798746b305942d9a03906d28a1e3fbd55e72a71db49a253bae490d1",
+      "archived_copy": "som-rs/evidence/rust-compiler-contract-archive/selection-policy-before-amendment-003.md",
+      "archived_copy_sha256": "67155bfdc08c88c997260b007f2d9c411280dac58ef14dd37979a0d803e07b30"
+    },
+    {
+      "path": "som-rs/tests/compiler-v1/coverage-and-scope.md",
+      "old_sha256": "ea91cbe5d7da81e263ff49c6e1a528f5e030ffdabb285868e71424640c139c46",
+      "new_sha256": "180217f14779d0838045e7727d1a106fec885260da356b9c02d2d9a002729c19",
+      "archived_copy": "som-rs/evidence/rust-compiler-contract-archive/coverage-and-scope-before-amendment-003.md",
+      "archived_copy_sha256": "ea91cbe5d7da81e263ff49c6e1a528f5e030ffdabb285868e71424640c139c46"
+    },
+    {
+      "path": "som-rs/tests/compiler-v1/field-refusal-inventory.json",
+      "old_sha256": "608ea8a385803c034da5d618c4be45828d6d61882cde875cada2e4d3efe13573",
+      "new_sha256": "2387d3f4fbee6851f31f400c8d99379ccc130d56e02eef8acf7c6cf2f2fe604c",
+      "archived_copy": "som-rs/evidence/rust-compiler-contract-archive/field-refusal-inventory-before-amendment-003.json",
+      "archived_copy_sha256": "608ea8a385803c034da5d618c4be45828d6d61882cde875cada2e4d3efe13573"
+    }
+  ],
+  "unchanged": "Every other path of the previous receipt keeps its hash: grammar, field map, schemas, examples, canonical vectors, the 119 positive, 40 typed and 15 CNL negative fixtures, and sections 1 to 9 of CONTRACT.md. No fixture expectation, error code or status mapping is relaxed.",
+  "cases": {
+    "positive": 119,
+    "typed": 40,
+    "cnl_negative": 15,
+    "canonical": 11,
+    "self_name": {
+      "positive": 15,
+      "negative": 13,
+      "accepted": 3
+    }
+  },
+  "fixture_check": {
+    "command": "python3 som-rs/tests/compiler-v1/self_name_fixtures.py --check",
+    "result": "ok"
+  },
+  "fixture_test": {
+    "command": "cargo test --locked --offline --test self_names (som-rs)",
+    "file": "som-rs/tests/self_names.rs",
+    "covers": "every positive case validates, its CNL gives the canonical-equal prompt, the trigger holds and each listed variant is selected for its base block; every negative case gives its code, detail, JSON pointer, CNL status, pointer and allowed form; every accepted control validates without the trigger. The QA probe log records the run (qa_probe)."
+  },
+  "acceptance_requirements": [
+    "Python: every product file of the 127 public products and 544 legacy jobs is byte-identical; compile responses equal the accepted ones except bundle.assets and hashes.payload_sha256",
+    "every self-name positive case compiles from typed JSON and CNL to the same bundle with exactly its python_variants, assembles, and passes the phase 2 behavior suite in Python and Rust",
+    "every negative case is refused with its expected status, code, detail and pointers in typed JSON, typed JSON with target rust, and CNL; every accepted control compiles",
+    "no public, legacy, fixture or example prompt is refused by python_name_collisions"
+  ],
+  "implementation_at_freeze": {
+    "som-rs/src/python_names.rs": "22ab53da0538580165f792d3c47c0080a12c7dd8c2d86c5881c793827df6beec",
+    "som-rs/src/lib.rs": "60ea28026fbcbc72ca623717b81a47236a59e59ffe9f9914591e54730d8c158f",
+    "som-rs/src/planner.rs": "7958474d52f4e9b9f4fd1afc16e328428e32acc77dcbabd2ca3814f22610f12d",
+    "som-rs/src/compiler.rs": "477256f2742cb6c7b051cbfc236195674764c3a1ab4664f0459c1afe6a6739ac",
+    "som-rs/src/cnl_semantics.rs": "4d4c6e706fbf83bc86ef5ae7f11cbdc884ba7a9d43ba7c03b7f7a5851311d834",
+    "som-rs/src/flow_compact.rs": "d4543446c2b5cd99fb020bbddb8f15ed3f1faecfc3ca8c08fb98249649687bb4",
+    "som-code-python/data/blocks/v5/blocks.json": "6dd5359cc320cb804f87f3d16fa5899b5ae801f37c970e3b9ac4fced0cc0170f",
+    "som-code-python/data/blocks/composed-quality/blocks.json": "0bfbf2a452a559a2661ac5c0c8355d0dfb9ce21cc310e505f121a51bb63e85cc",
+    "som-code-python/data/blocks/flow-v7-compact/blocks.json": "c7269e89d5f7b8fb2b36703cc2ccb6ef8201eccfc62fbffe526714fbd570311e",
+    "som-core/scripts/build_self_name_variants.py": "605a52f16256ca5355e4f1a654c761accdb8351a98cdd6d648bbe0cfb00e6136",
+    "som-rs/tests/self_names.rs": "61bfbd82d9a548ae09ba518c38c13868a532a837bf3520759a485e9c6fe35338"
+  },
+  "files": {
+    "som-rs/contracts/compiler-v1/CONTRACT.md": "2a681fa92148848f6311d9a8be73ede3150ea76357aa8bf2bc1ec76dc0de7ddd",
+    "som-rs/contracts/compiler-v1/acceptance-plan.json": "fe21a5e91b393c55324f7c4b7fd47d83cdfeab7455f1251390bb07cfe479b324",
+    "som-rs/contracts/compiler-v1/api.schema.json": "d06ce804113d362ecc5687f6b1d97213114406e41aaf01b304a521ff5adf2f3a",
+    "som-rs/contracts/compiler-v1/backend-source-manifest.json": "5113ca0f2e5fbdb277783fc5b8820a663d94a82ec03fcff7ab834dca235a8261",
+    "som-rs/contracts/compiler-v1/bundle-cases.json": "423d48f8f083d67ee5f8e54da1d07dabf06a570b49ca1780b927f154d8a7e7e9",
+    "som-rs/contracts/compiler-v1/bundle.schema.json": "d1ba391ffbdc8ce032b3a135b28cfd977888212f0d6f06f72dedcb86e42ba8da",
+    "som-rs/contracts/compiler-v1/canonical-vector-qualification.json": "739c245ed05cd898cc16b81a2dd759ad038ff54c61ea74e329a56415aebdf757",
+    "som-rs/contracts/compiler-v1/canonical-vectors.json": "dd09b41f49702f70098574f638e10ea33646366a77dfa486539f324d6f9ff83f",
+    "som-rs/contracts/compiler-v1/compiler-prompt.schema.json": "aa9e6300668181beab47643b6748b72a0942499e454b290f3c6c45053524be73",
+    "som-rs/contracts/compiler-v1/examples/index.json": "8a0a26e6d88e1661edd9b6617203c7dcb30d298c257456b3e48ebfca2e0790e1",
+    "som-rs/contracts/compiler-v1/examples/v1.cnl": "bd30aa50074c2bdb447bcb46cc560a994efd312652623b373afcec5127bf30e0",
+    "som-rs/contracts/compiler-v1/examples/v1.prompt.json": "8a0269b81d7831c329c04d3114d3feaaa4c2def6df378a76b6569e9bf282463a",
+    "som-rs/contracts/compiler-v1/examples/v2.cnl": "2780570353b20be98aac50f87e7fee1bb9401a0ba5479167ee9a711d3c03a0c1",
+    "som-rs/contracts/compiler-v1/examples/v2.prompt.json": "a5baf60682bb5096eb44d14932de9ff95390f40e02eb5887dddbe0d96206ab3f",
+    "som-rs/contracts/compiler-v1/examples/v3.cnl": "829198a93e006155cc2a067bccb310b402b1b5e732d44e50c6ae321acb885d60",
+    "som-rs/contracts/compiler-v1/examples/v3.prompt.json": "72361df884e7d4bf28b9a71da5c6dd4c119fde0e19aa78dcb5c4d2a2d45668ed",
+    "som-rs/contracts/compiler-v1/examples/v4.cnl": "1abb4ba198330434bcc9be833e07a87959506e7d17bf94c165478190e6ae6b56",
+    "som-rs/contracts/compiler-v1/examples/v4.prompt.json": "6f123ea4ff72b7e0d6cba50278b10a5da1ecc449dd441b2ae0ff480500b8e43a",
+    "som-rs/contracts/compiler-v1/examples/v5.cnl": "17c364efbd4262aac7543c1771213047b1332bbd8295ed6e69f8fff181e6d454",
+    "som-rs/contracts/compiler-v1/examples/v5.prompt.json": "65101209a650e209be40ee35d969c6f6764d471a5ea4d71f4561dc054d8bbc39",
+    "som-rs/contracts/compiler-v1/examples/v6.cnl": "609f7613f3ee5c73707cfa8d1b21cfdb31b191c20d334ff7c58ed2bacb5116c2",
+    "som-rs/contracts/compiler-v1/examples/v6.prompt.json": "33d902b113a2cf203250cc6b5e6b41cea5b02225890ad53e96019114a2bf3722",
+    "som-rs/contracts/compiler-v1/examples/v7-branch-null.cnl": "3857714e702c269eb010dfce7a1588f54abb22cd8a1c9913612aad30a877ce41",
+    "som-rs/contracts/compiler-v1/examples/v7-branch-null.prompt.json": "4e3c80e264d13e83c894418f2d011f4dc3b26f94fb5dc094efb719b1b503e522",
+    "som-rs/contracts/compiler-v1/examples/v7.cnl": "644149192bc7bc65d7b28100d518fc9cbfa0d2d35a27b022452d02ab6138e262",
+    "som-rs/contracts/compiler-v1/examples/v7.prompt.json": "2d4a92302f99c30723f49f2ccc642f2c7bf58daf25c8f991002df93746cb5db7",
+    "som-rs/contracts/compiler-v1/field-statement-map.json": "76744262ece22db17c61683b206beaab67105245888719f9e86c2c84e8283be2",
+    "som-rs/contracts/compiler-v1/grammar.ebnf": "115f0a2fbac47903fe738a50d30e3982a7c34a5e32cad9ec987cbcb3e133b6f8",
+    "som-rs/contracts/compiler-v1/literal-policy.json": "32f863c64028dcfa444c7046ada62253ce55d9ea5cf42853f24f003c3d017be1",
+    "som-rs/contracts/compiler-v1/public-sources.json": "4d34976035dd022977d9251b87de4664516addd75c7288117d8dba4ca44f8ae8",
+    "som-rs/contracts/compiler-v1/selection-policy.json": "6fc29cf4791de4e2c6ec716a03426cf66cb1bdd0c5659c30511b837da8552f56",
+    "som-rs/contracts/compiler-v1/selection-policy.md": "914ed5c5a798746b305942d9a03906d28a1e3fbd55e72a71db49a253bae490d1",
+    "som-rs/contracts/compiler-v1/serializer-policy.json": "3704fe8f9a2460d22d1d348f018e62151755b29f0ab194e083f4f2347596ffd1",
+    "som-rs/contracts/compiler-v1/source-index.json": "f21edfb8893ca242ef961ee55a35b426d066af3ba26032e752cc871964d6b033",
+    "som-rs/tests/compiler-v1/cnl-negative-cases.json": "e85f70b29f37915c81135b99b936c4aeaa69fc2c3393151496d156e99b3b0539",
+    "som-rs/tests/compiler-v1/cnl-positive-fixtures.json": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
+    "som-rs/tests/compiler-v1/coverage-and-scope.md": "180217f14779d0838045e7727d1a106fec885260da356b9c02d2d9a002729c19",
+    "som-rs/tests/compiler-v1/field-refusal-inventory.json": "2387d3f4fbee6851f31f400c8d99379ccc130d56e02eef8acf7c6cf2f2fe604c",
+    "som-rs/tests/compiler-v1/flow-operation-capability-assertions.json": "97a47682ffe268258900a68ec6fc5d24ac9eae5f503df567cb89dbe7be9f32ce",
+    "som-rs/tests/compiler-v1/self-name-fixtures.json": "821b4ef626e42805dc96537dda1ac7cf6ba3de85d7a67f1ca04cdc8cc37f46ed",
+    "som-rs/tests/compiler-v1/self_name_fixtures.py": "e192e5251cab3eff22db0e323a426ddf5f5bab445c5c13af927f49328de0031e",
+    "som-rs/tests/compiler-v1/serializer.py": "bfb8eca480c08ee16c1a8bb42aae4a8a10f947ed0ca9c9c5521c75d09809632d",
+    "som-rs/tests/compiler-v1/typed-json-fixtures.json": "5eebf784317e6611451092d286fc589bb90e6999f21c7390b56f74545da9e1bc",
+    "som-rs/tests/compiler-v1/typed-json-oracle-cases.json": "39582fb7b41747d80ffcce0902dca5931810df222e1dd0427d334002f6cf50c6"
+  },
+  "qa_probe": {
+    "summary": ".local/rust-output-phase2/self-spike-001/probe-summary-003.json",
+    "summary_sha256": "e542d29f767d53101295c02af1896f6fde356e5f6b42f56832cc1759730ea616",
+    "result": {
+      "coverage_cases": {
+        "failed": 0,
+        "note": "differs from the 2026-10-15 coverage evidence only in payload_sha256",
+        "output": ".local/rust-output-phase2/self-spike-001/coverage-qa005.json",
+        "output_sha256": "eacd6f6c794dabbc068dd2a0caed6d8fb4239b7a33d0cd83ccf19ce8fd3f24d2",
+        "passed": 6
+      },
+      "issue57_behavior": {
+        "negative": {
+          "passed": 48,
+          "rows": 48
+        },
+        "output": ".local/rust-output-phase2/self-spike-001/issue57-002/summary.json",
+        "output_sha256": "2f6bb246260b65ea878f33fa2d4b2fe485b28228e42e22c9f3798d27b958db5a",
+        "passed": true,
+        "positive": {
+          "python": {
+            "cases": 18,
+            "passed": 18,
+            "worker_exit_codes": [
+              0,
+              0
+            ]
+          },
+          "rust": {
+            "cases": 18,
+            "passed": 18,
+            "worker_exit_codes": [
+              0,
+              0
+            ]
+          }
+        }
+      },
+      "name_collisions": {
+        "groups": {
+          "cnl_fixture": {
+            "compiled": 238,
+            "other_status": [],
+            "total": 238
+          },
+          "example": {
+            "compiled": 16,
+            "other_status": [],
+            "total": 16
+          },
+          "legacy": {
+            "compiled": 544,
+            "other_status": [],
+            "total": 544
+          },
+          "public": {
+            "compiled": 127,
+            "other_status": [],
+            "total": 127
+          },
+          "typed_fixture": {
+            "compiled": 7,
+            "other_status": [],
+            "total": 7
+          }
+        },
+        "output": ".local/rust-output-phase2/self-spike-001/name-collisions-probe-001.json",
+        "output_sha256": "23f0537aa8a9f4c2d9a443472124e9794cd511a8814a0d07d5a5741ed4dadfa9",
+        "passed": true,
+        "tool": "som-rs/scripts/rust_output_acceptance/check_name_collisions.py"
+      },
+      "not_run": [
+        "historical compiler acceptance tools that call qa_harness.verify_freeze (their receipt chain ends at amendment 002): not run"
+      ],
+      "passed": true,
+      "previous_summaries": [
+        {
+          "path": ".local/rust-output-phase2/self-spike-001/probe-summary-001.json",
+          "sha256": "12ee68f5f42bac30f7ae4d3198734ac9d6940e142a8516a4f7c8825647d18260"
+        },
+        {
+          "path": ".local/rust-output-phase2/self-spike-001/probe-summary-002.json",
+          "sha256": "d13d2f171c1dd9d5b11a1bde8cf33ea9b19cbcf0d857660a498f76aff7d577df"
+        }
+      ],
+      "provenance": "qa-005 was built from the working tree before the receipts were sealed. Later edits changed only TARGET_CONTRACT_SHA256 and tests in som-targets/src/rust/mod.rs and added som-rs/tests/self_names.rs; the probe is evidence for the design, not for a candidate. The #57 acceptance runs on a candidate built from committed source.",
+      "python_controls": {
+        "failed": 0,
+        "negative_cases_sha256": "74b36cb9ba0e61e639193f5a55f5e9e9c1924c730e502dd2de300b88c9dbbc1d",
+        "output": ".local/rust-output-phase2/self-spike-001/python-controls-qa005.json",
+        "output_sha256": "2398079609c673ff8086dff85f0fc27c51a66b5b087a09b2622d6913d81fcfdf",
+        "passed": 32
+      },
+      "python_replay_asset_break": {
+        "exchanges": {
+          "passed": 2005,
+          "total": 2005
+        },
+        "legacy": {
+          "accepted": {
+            "accepted_compile_prompts": 540,
+            "accepted_passed": 544,
+            "accepted_required": 544,
+            "accepted_status": "passed"
+          },
+          "compile_prompts": 540,
+          "compile_prompts_passed": 540,
+          "failed": [],
+          "families": {
+            "legacy100": {
+              "passed": 100,
+              "total": 100
+            },
+            "legacy214": {
+              "passed": 214,
+              "total": 214
+            },
+            "quality218": {
+              "passed": 218,
+              "total": 218
+            },
+            "supplement12": {
+              "passed": 12,
+              "total": 12
+            }
+          },
+          "passed": 544,
+          "required": 544,
+          "total": 544
+        },
+        "output": ".local/rust-output-phase2/self-spike-001/python-replay-asset-break-001.json",
+        "output_sha256": "ec768f21541608b84c9291fb53df7901ddabb71f5f45589ca518f90a6c71b777",
+        "passed": true,
+        "public": {
+          "accepted": {
+            "accepted_complete": true,
+            "accepted_passed": 127,
+            "accepted_required": 127,
+            "case_directories": 127
+          },
+          "failed": [],
+          "passed": 127,
+          "required": 127,
+          "total": 127
+        }
+      },
+      "qa": "qa-005 on QA port 18966 (.local/rust-output-phase2/self-spike-001/qa-005), built from the working tree",
+      "rust_unchanged": {
+        "output": ".local/rust-output-phase2/self-spike-001/unchanged-probe-002.json",
+        "output_sha256": "5a2e83f435e4f22aa07f1f3b752d9b8bdb3da8d0dee635451c1839e484aff0d6",
+        "passed": true,
+        "phase1": {
+          "failed": [],
+          "passed": 115,
+          "report": {
+            "command": "check_rust_products.py --no-gates on qa-005",
+            "path": ".local/rust-output-phase2/self-spike-001/phase1-nogates-001.json",
+            "sha256": "a23bde8fc40ee1575effcb0d2afecfb3a2bb95487557440d947f7f8645a3d5c2"
+          },
+          "total": 115
+        },
+        "phase2": {
+          "failed": [],
+          "files_equal": 582,
+          "passed": 584,
+          "refusals": [
+            "RS12_CNL_V3_FILTER_LIMIT",
+            "RS13_JSON_V3_FILTER_OFFSET"
+          ],
+          "total": 584
+        },
+        "tool": "som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py"
+      },
+      "som_rs_cargo_test": {
+        "command": "cargo test --locked --offline (som-rs, pinned toolchain), including tests/self_names.rs",
+        "exit": true,
+        "failed": 0,
+        "groups": 14,
+        "log": ".local/rust-output-phase2/self-spike-001/somrs-cargo-test-002.log",
+        "log_sha256": "42c130abeff9a385e295c0d6329ac9e493537095b7614f2a8ec4830fca0ac029",
+        "passed": 45
+      },
+      "som_sha256": "295b497624b064188f8343fc09a9a35eedce1617209882cc7894188ed15c9eb7",
+      "supersedes": "probe-summary-002.json: its rust_unchanged phase 1 compared run-003 rust-products.json with itself. This summary cites unchanged-probe-002.json, whose phase 1 compares run-003 with phase1-nogates-001.json, a check_rust_products.py --no-gates report made on qa-005.",
+      "version": "som.issue57-qa-probe.v1"
+    }
+  },
+  "independent_review": {
+    "reviewer": "independent Claude Opus 5.5 subagent, read-only, no calls to 8765",
+    "receipt_files_sha256": "5ca3d37a629f0ba75331f69e487ef000359c3e2160031ff4d5f8e6fa13807ce2",
+    "final_verdict": "APPROVED",
+    "confirmed_without_change": [
+      "Fix 1: som-rs/contracts/compiler-v1/selection-policy.md now cites 6fc29cf4791de4e2c6ec716a03426cf66cb1bdd0c5659c30511b837da8552f56, which equals the raw sha256 of selection-policy.json. The diff against HEAD adds only section text and this hash line.",
+      "Fix 2: the receipt was regenerated with frozen_at 2026-10-20T06:04:04.500000+00:00. The receipt's mtime is 14:04:04 local, which is the freeze time. Every bound file (selection-policy.md 13:57:05, self_names.rs 13:57:58, cargo log 14:00:17, probe-summary-003 14:03:41) has an mtime before it.",
+      "Item 1 receipt integrity: the canonical sha256 of the files map is 5ca3d37a...07ce2 (44 entries). Every files, changes (old/new/archive) and implementation_at_freeze hash matches disk, previous_receipt_sha256 matches amendment 002, and the changed and added paths are correct.",
+      "Fix 3: som-rs/tests/self_names.rs exists and is bound in implementation_at_freeze with a hash that matches disk. fixture_test records `cargo test --locked --offline --test self_names`. Its 3 tests assert the counts positive 15, negative 13 and accepted 3.",
+      "Fix 3 test coverage: the positive test covers validate_prompt, CNL/JSON canonical equality, uses_self, and select_variants mapping each base block to its expected .self variant. The negative test covers JSON and CNL code, detail, is_collision, the JSON prompt pointer, the HTTP status, a single CNL diagnostic, the CNL pointer and allowed_form. The accepted test covers acceptance, CNL equality and !uses_self.",
+      "Fix 3 run log: somrs-cargo-test-002.log has 14 test-result groups with 45 passed and 0 failed in total, including tests/self_names.rs with 3 passed.",
+      "Fix 4: the sha256 of probe-summary-003.json is e542d29f767d53101295c02af1896f6fde356e5f6b42f56832cc1759730ea616, matching the receipt. It lists probe-summary-001 and 002 under previous_summaries.",
+      "Fix 4 cited outputs: each output hash cited in probe-summary-003 matches disk: coverage-qa005.json eacd6f6c..., unchanged-probe-002.json 5a2e83f4..., name-collisions-probe-001.json 23f0537a..., issue57-002/summary.json 2f6bb246....",
+      "Fix 4 unchanged probe: phase 1 is 115/115 on check_rust_products.py --no-gates against qa-005. Phase 2 is 584/584 with 582 files equal; the other 2 are refusals RS12_CNL_V3_FILTER_LIMIT and RS13_JSON_V3_FILTER_OFFSET, which is consistent with python_name_collisions taking over the v3 limit/offset refusal.",
+      "Fix 4 name-collision probe: every prompt compiles with no other status \u2014 cnl_fixture 238/238, example 16/16, legacy 544/544, public 127/127, typed_fixture 7/7.",
+      "Fix 4 other probes: #57 negative 48/48. Positive: Python 18/18 and Rust 18/18, all worker exit codes 0. python_controls 32 passed, 0 failed. python_replay_asset_break: 2005/2005 exchanges, legacy 544/544, public 127/127. coverage 6 passed, 0 failed.",
+      "Item 2: CONTRACT.md only appends section 10; sections 1-9 are unchanged.",
+      "Item 3: selection-policy.json v1.2 differs from the v1.1 archive only by the new self_name_variants and python_name_collisions members, version, and sources.legacy_blocks_raw_sha256. The canonical block hashes match.",
+      "Item 4: the three blocks.json diffs only add the .self variant blocks.",
+      "Item 5: the implementation (python_names.rs and its planner/validation wiring) is consistent with contract section 10.",
+      "Item 6: the rerun of self_name_fixtures.py --check prints ok.",
+      "Item 7: my independent re-implementation of the rule (scratch rule.py) finds 0 refusals and 0 self triggers across the 127 public and 544 legacy prompts, and 0 disagreements with the fixtures."
+    ],
+    "findings": [
+      {
+        "severity": "note",
+        "item": "8 / historical tools",
+        "detail": "The historical compiler acceptance tools that call qa_harness.verify_freeze, whose receipt chain ends at amendment 002, were not run. probe-summary-003 also lists them as not run. Because the amendment changes every asset descriptor, those tools are expected to fail on ASSET_HASH_MISMATCH until they are re-pinned to the 003 chain."
+      },
+      {
+        "severity": "note",
+        "item": "7 / provenance",
+        "detail": "qa-005 was built from the working tree before the receipt was sealed. probe-summary-003 states that later edits changed only TARGET_CONTRACT_SHA256 and tests in som-targets/src/rust/mod.rs, and added self_names.rs. The probes are therefore design evidence, not candidate evidence. Final acceptance should run on a candidate built from committed source, as the #57 acceptance plan says."
+      },
+      {
+        "severity": "note",
+        "item": "6 / fixture test scope",
+        "detail": "self_names.rs tests variant selection on a minimal one-block plan, not a full packaged plan, as its header states. Full-plan selection is covered only by the #57 probe (18/18 Python and Rust), not by a cargo test. This is acceptable."
+      },
+      {
+        "severity": "note",
+        "item": "previous minor findings",
+        "detail": "Both earlier minor findings are resolved. The receipt mtime no longer postdates frozen_at, and a cargo test now covers the self-name fixtures. The earlier major finding (stale policy hash in selection-policy.md) is resolved."
+      }
+    ],
+    "commands_run": [
+      "python3 scratch check1.py: recompute the receipt files-map canonical hash and all file, changes, archive and implementation hashes",
+      "git diff HEAD -- som-rs/contracts/compiler-v1/selection-policy.md",
+      "shasum -a 256 som-rs/contracts/compiler-v1/selection-policy.json",
+      "python3 som-rs/tests/compiler-v1/self_name_fixtures.py --check (ok)",
+      "python3 -I scratch rule.py: independent collision and self rule over the public 127, legacy 544, fixtures and examples",
+      "cat som-rs/tests/self_names.rs",
+      "ls -la with mtimes for the receipt, self_names.rs, selection-policy.md, probe-summary-003 and the cargo log",
+      "shasum -a 256 for probe-summary-003.json, coverage-qa005.json, unchanged-probe-002.json, name-collisions-probe-001.json and issue57-002/summary.json",
+      "grep test-result lines in somrs-cargo-test-002.log and sum them (14 groups, 45 passed, 0 failed)",
+      "python3 -I read of probe-summary-003.json, including the rust_unchanged section",
+      "not run: cargo test (I did not re-execute it; I relied on the recorded log)",
+      "not run: historical verify_freeze acceptance tools",
+      "not run: any call to ports 8765 or 18765"
+    ],
+    "rounds": [
+      {
+        "round": 1,
+        "final_verdict": "CHANGES_REQUIRED",
+        "receipt_files_sha256": "7aade3092cac50cc660af2d630fd62f78ce5cc5202978e88f60d212fc1edc353",
+        "findings": [
+          {
+            "severity": "major",
+            "item": "Item 2/3: selection-policy.md stale hash",
+            "detail": "The new 'Version 1.2 (amendment 003)' section of som-rs/contracts/compiler-v1/selection-policy.md says the raw-byte SHA-256 of selection-policy.json v1.2 is dd7d653b7eded5667d94d8b3c21dfb04c5e0142542dd4009d33b06c8159497b5. The actual file, and the receipt's new_sha256, is 6fc29cf4791de4e2c6ec716a03426cf66cb1bdd0c5659c30511b837da8552f56. dd7d65... does not match the file under any formatting or newline variant, nor with the old legacy_blocks hash. This is a false integrity statement in a receipt-bound contract file. Fix the hash, then re-freeze the receipt, because the md hash and the files map change."
+          },
+          {
+            "severity": "minor",
+            "item": "Item 1: receipt edited after frozen_at",
+            "detail": "The receipt's mtime is 2026-10-20 13:52:18 local (05:52 UTC), about 8 minutes after frozen_at (05:43:56 UTC), around the probe run. Its content is self-consistent and every hash checks out. If fields such as status or fixture_check were added after the freeze, record that, or set frozen_at when the receipt is regenerated for the fix above."
+          },
+          {
+            "severity": "minor",
+            "item": "Item 6/8: fixtures not executed by cargo test",
+            "detail": "No Rust test in som-rs/tests references self-name-fixtures.json. cargo test covers only the python_names.rs unit tests and the existing compiler_contract fixtures. The full check of the 15/13/3 self-name fixtures exists only in the .local QA probe (issue57-002) run against port 18966. That is acceptable evidence for this freeze. Consider adding a cargo test that loads self-name-fixtures.json so that refusal, pointer and variant selection are covered by the repository test suite."
+          },
+          {
+            "severity": "note",
+            "item": "Item 7: identifiers added by the variants",
+            "detail": "The collision tables come from base-block products. The variants add identifiers to module scope: _som_construct and _som_registry (orm.base.self), _SomBeanieSdkDocument (v6 Mongo), _som_match (v7). Only v1-v4 resource and field names can start with an underscore. For them, orm.base.self's Base is created before any model class, so a later resource class named _som_construct or _som_registry cannot affect the registry, and a field of that name is class-scoped. I found no reachable collision. Recording it here so future table derivations include variant products."
+          },
+          {
+            "severity": "note",
+            "item": "Item 7: flow names",
+            "detail": "The rule has no slot for v7 flow names, step names or inputs. Inputs are emitted as generated variables (input_{index}) with Field(alias=...), and flow and step names are emitted as literals. They are therefore not Python identifiers, so no slot is missing. The spike's spot-003 also reports that self works in these positions."
+          },
+          {
+            "severity": "note",
+            "item": "Item 8: historical acceptance tools",
+            "detail": "The historical compiler acceptance tools that call qa_harness.verify_freeze bind the receipt chain only up to amendment 002 and were not re-run. probe-summary-001.json records them under not_run. Not a blocker. The compiler fixtures are covered by cargo test, which the probe reports as 42 passed and 0 failed; I did not re-run it."
+          },
+          {
+            "severity": "note",
+            "item": "Out of scope: Rust-output side",
+            "detail": "som-rs/som-targets/src/rust/mod.rs (TARGET_CONTRACT_SHA256 changed to rust-output amendment 4, plus a new test) was modified at 13:54 local. That is after the qa-005 som binary used by the probe was built (13:33). The Rust-side probe evidence therefore predates that edit. This belongs to the rust-output-v1 amendment 004 review, not compiler-v1 amendment 003, and is listed for completeness."
+          }
+        ]
+      },
+      {
+        "round": 2,
+        "final_verdict": "APPROVED",
+        "receipt_files_sha256": "5ca3d37a629f0ba75331f69e487ef000359c3e2160031ff4d5f8e6fa13807ce2",
+        "resolution": "Round 1 major: selection-policy.md gave a stale policy hash; now 6fc29cf4... Round 1 minors: frozen_at regenerated; som-rs/tests/self_names.rs added as the cargo test of the fixtures. qa_probe moved to probe-summary-003.json."
+      }
+    ]
+  }
+}

@@ -24,6 +24,12 @@ import rust_profile  # type: ignore[import-not-found]  # noqa: E402
 
 TARGET_CAUSE = "Target must be the string python or rust."
 TARGET_FORM = "Omit target, or use target python or rust."
+# Amendment 004: compiler-v1 amendment 003 refuses a v3 filter named limit or offset for every target
+# (selection-policy.json python_name_collisions; compiler-v1 CONTRACT.md section 10).
+POLICY = ROOT / "contracts" / "compiler-v1" / "selection-policy.json"
+COLLISION_FORMS = {"cnl": "Rename it; this name shares a scope with an identifier of the generated Python code.",
+                   "json": "A prompt that meets the pinned compiler contract."}
+COMPILER_V1_REFUSED = ("RS12_CNL_V3_FILTER_LIMIT", "RS13_JSON_V3_FILTER_OFFSET")
 
 
 def compact(obj: Any) -> str:
@@ -162,6 +168,11 @@ def refusal(rule: str, **fmt: str) -> tuple[str, int, str, str]:
     return entry["code"], entry["http_status"], entry["cause"].format(**fmt), entry["allowed_form"]
 
 
+def collision(path: str) -> tuple[str, int, str]:
+    error = json.loads(POLICY.read_text())["python_name_collisions"]["error"]
+    return error["code"], 400, error["detail"].replace("<path>", path)
+
+
 def scope_family(version: str) -> str:
     return rust_profile.load_scope()["prompt_versions"]["out_of_scope"][f"som.prompt.{version}"]
 
@@ -260,16 +271,19 @@ def build() -> dict[str, Any]:
                           [(7, 'Use path "/healthz".')], "rust", 7, '"/healthz"', "/resource/path",
                           code, status, cause, form))
 
-    # Query parameter collisions.
-    code, status, cause, form = refusal("query_parameter_collision", name="limit")
-    cases.append(cnl_case("RS12_CNL_V3_FILTER_LIMIT", "A v3 bool filter named like the limit parameter.", "v3",
+    # Query parameter collisions: compiler-v1 refuses them for every target since amendment 004.
+    code, status, cause = collision("query.filter_field")
+    cases.append(cnl_case("RS12_CNL_V3_FILTER_LIMIT", "A v3 bool filter named like the limit parameter; "
+                          "compiler-v1 refuses it for every target.", "v3",
                           [(10, "Field limit is optional bool and is not unique with default false."),
                            (13, "Filter exactly on field limit.")], "rust", 13, "limit", "/query/filter_field",
-                          code, status, cause, form))
-    code, status, cause, form = refusal("query_parameter_collision", name="offset")
-    cases.append(json_case("RS13_JSON_V3_FILTER_OFFSET", "A v3 bool filter named like the offset parameter.", "v3",
+                          code, status, cause, COLLISION_FORMS["cnl"]))
+    cases[-1]["python_control_expected"] = "the same diagnostic"
+    cases.append(json_case("RS13_JSON_V3_FILTER_OFFSET", "A v3 bool filter named like the offset parameter; "
+                           "compiler-v1 refuses it for every target.", "v3",
                            rename_filter("offset"), '"target":"rust"', "/prompt/query/filter_field",
-                           code, status, cause, form))
+                           code, status, cause, COLLISION_FORMS["json"]))
+    cases[-1]["python_control_expected"] = "the same diagnostic, located in python_control_body"
 
     # Foreign keys and order.
     code, status, cause, form = refusal("identifier_not_raw", name="self")
@@ -347,7 +361,7 @@ def build() -> dict[str, Any]:
         elif case["id"].startswith(("RT", "RS")):
             body = case["body"].encode()
             assert body[case["expected"]["byte_start"]:case["expected"]["byte_end"]].decode() == case["span_text"]
-        if case["id"].startswith("RS"):
+        if case["id"].startswith("RS") and case["id"] not in COMPILER_V1_REFUSED:
             prompt = json.loads(case["python_control_body"]).get("prompt")
             if prompt is not None:
                 got = rust_profile.check(prompt)

@@ -860,6 +860,10 @@ fn compact_flow_plan(prompt: &Value, assets: &PlannerAssets<'_>) -> Result<Value
 /// The caller loads approved assets and retains the existing assembly gates.
 pub fn plan(prompt: &Value, assets: &PlannerAssets<'_>) -> Result<Value, SomError> {
     crate::validate_prompt(prompt)?;
+    primary_plan(prompt, assets).map(|dsl| crate::python_names::select_variants(prompt, dsl))
+}
+
+fn primary_plan(prompt: &Value, assets: &PlannerAssets<'_>) -> Result<Value, SomError> {
     match prompt["version"].as_str().unwrap() {
         "som.prompt.v1" => legacy_plan(prompt, 1, assets),
         "som.prompt.v2" => legacy_plan(prompt, 2, assets),

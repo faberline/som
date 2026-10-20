@@ -2,7 +2,10 @@
 """Post each negative case's python_control_body to a compiler and compare.
 
 A control without target must compile to an unchanged som.dsl-bundle.v1
-bundle, or, for RP cases, give exactly the frozen diagnostic. RT07 also checks
+bundle, or, for RP cases and for cases whose python_control_expected starts with
+"the same diagnostic" (RS12 and RS13 since amendment 004), give exactly the
+frozen diagnostic; "located in python_control_body" compares every member but
+the location and checks that the span is span_text in the control. RT07 also checks
 that the duplicate target member is invalid JSON today. Use a QA compiler
 port, or the default compiler for read-only calls.
 """
@@ -41,6 +44,19 @@ def same_diagnostic(status: int, response: dict, case: dict) -> bool:
     return len(diagnostics) == 1 and all(diagnostics[0].get(k) == v for k, v in expected.items())
 
 
+def same_diagnostic_moved(status: int, response: dict, case: dict) -> bool:
+    """The frozen diagnostic at another location: the control body lacks the target member."""
+    location = ("line", "column", "end_line", "end_column", "byte_start", "byte_end")
+    expected = {k: v for k, v in case["expected"].items() if k not in location}
+    if status != case["http_status"] or response.get("code") != expected["code"]:
+        return False
+    diagnostics = response.get("diagnostics", [])
+    if len(diagnostics) != 1 or any(diagnostics[0].get(k) != v for k, v in expected.items()):
+        return False
+    data = case["python_control_body"].encode()
+    return data[diagnostics[0]["byte_start"]:diagnostics[0]["byte_end"]].decode() == case["span_text"]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-url", required=True)
@@ -50,14 +66,17 @@ def main() -> int:
     results = []
     for case in json.loads(data)["cases"]:
         status, response = post(args.base_url, case["python_control_body"])
-        if case["id"].startswith("RP"):
+        control = case.get("python_control_expected", "")
+        if control.startswith("the same diagnostic, located in python_control_body"):
+            ok = same_diagnostic_moved(status, response, case)
+        elif case["id"].startswith("RP") or control.startswith("the same diagnostic"):
             ok = same_diagnostic(status, response, case)
         else:
             ok = status == 200 and response.get("bundle", {}).get("version") == "som.dsl-bundle.v1"
         row = {"id": case["id"], "control_status": status, "passed": ok}
         if ok and status == 200:
             row["payload_sha256"] = response["bundle"]["hashes"]["payload_sha256"]
-        if ok and case["id"].startswith("RS") and case["form"] == "cnl":
+        if ok and status == 200 and case["id"].startswith("RS") and case["form"] == "cnl":
             # The compiled prompt of a CNL scope case must give the frozen refusal.
             got = rust_profile.check(response["bundle"]["prompt"])
             expected = case["expected"]

@@ -49,6 +49,7 @@ pub mod model;
 pub mod compiler;
 pub mod cnl;
 pub mod planner;
+pub mod python_names;
 pub mod strict_json;
 pub mod json_diagnostics;
 pub mod related;
@@ -159,6 +160,11 @@ fn ident(value: &Value, where_: &str) -> Result<String, SomError> {
 }
 
 pub fn validate_prompt(prompt: &Value) -> Result<(), SomError> {
+    validate_prompt_shape(prompt)?;
+    python_names::check_collisions(prompt)
+}
+
+fn validate_prompt_shape(prompt: &Value) -> Result<(), SomError> {
     if prompt["version"] == flow::VERSION { return flow::validate(prompt); }
     if prompt["version"] == composed::VERSION {
         return composed::validate(prompt);

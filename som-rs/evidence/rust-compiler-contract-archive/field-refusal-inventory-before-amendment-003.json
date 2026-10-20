@@ -1,0 +1,271 @@
+{
+  "format": "som-rust-contract-inventory.v1",
+  "prompt_versions": {
+    "v1": {
+      "required": [
+        "version",
+        "package",
+        "resource.name",
+        "resource.table",
+        "resource.path",
+        "resource.fields[]:{name,type,required,unique}",
+        "logic[5]",
+        "tests[1]",
+        "migration.revision",
+        "migration.down_revision"
+      ],
+      "values": {
+        "resource.fields[].type": [
+          "str",
+          "int",
+          "bool",
+          "float"
+        ]
+      },
+      "semantic": [
+        "exact five CRUD steps and test string; nonempty field list; no field-count maximum in the current v1 validator; unique safe field names; migration down_revision is null or identifier"
+      ]
+    },
+    "v2": {
+      "required": [
+        "v1 fields",
+        "query.filter_field",
+        "query.max_limit"
+      ],
+      "semantic": [
+        "v1 semantics plus exact string filter and integer max_limit 20..100; filter references a non-unique str field"
+      ]
+    },
+    "v3": {
+      "required": [
+        "v2 fields"
+      ],
+      "optional": [
+        "resource.fields[].default"
+      ],
+      "values": {
+        "resource.fields[].type": [
+          "str",
+          "int",
+          "bool",
+          "float"
+        ],
+        "resource.fields[].default": [
+          null,
+          false
+        ]
+      },
+      "semantic": [
+        "v2 semantics; optional fields require default null or false; false default only for bool; filter references non-unique bool with default false; down_revision null; service-reserved created_at/updated_at names refused"
+      ]
+    },
+    "v4": {
+      "required": [
+        "v3 fields",
+        "query.date_field"
+      ],
+      "values": {
+        "resource.fields[].type": [
+          "str",
+          "int",
+          "bool",
+          "float",
+          "date"
+        ]
+      },
+      "semantic": [
+        "v3 semantics; date field type added; exactly one optional non-unique date with null default when date filtering is enabled; date_field names it; exclusive date-before; reserved filter names before,limit,offset,db refused"
+      ]
+    },
+    "v5": {
+      "required": [
+        "version",
+        "package",
+        "resources.parent|child.{name,table,path,fields[],query.{filter_field,date_field,max_limit}}",
+        "relation.{foreign_key,on_delete}",
+        "logic[11]",
+        "tests[1]",
+        "migration.{revision,down_revision}"
+      ],
+      "optional": [
+        "capabilities.{database,auth,storage,workflow,value_field,group_field}"
+      ],
+      "semantic": [
+        "parent and child names/tables/routes distinct",
+        "1..8 fields per resource",
+        "parent and child CRUD plus atomic batch",
+        "restrict parent deletion",
+        "field names cannot be reserved or equal FK",
+        "max_limit 20..100",
+        "at most one optional null-default date per resource; date filtering needs bool filtering",
+        "secret inputs prohibited by contracts"
+      ]
+    },
+    "v6": {
+      "required": [
+        "version",
+        "contract.{id,sha256}",
+        "package",
+        "resources",
+        "relation",
+        "operations[]",
+        "capabilities",
+        "migration"
+      ],
+      "semantic": [
+        "contract id/hash pinned to related-business.v1",
+        "1..11 unique scoped operations; operation list order is preserved in planning and must match bundle operation order",
+        "operations parent|child create/get/list/patch/delete and batch_create",
+        "same v5 resource/relation/business semantics",
+        "capability enums database postgresql|mongodb; auth jwt|firebase|google_oauth; storage none|s3|gcs; workflow json_export|csv|gzip_export|decimal_summary|statistics",
+        "numeric workflows require numeric child value_field; decimal_summary also requires required string group_field; unused fields must be null",
+        "schema permits max_limit 20..100 and route hyphens"
+      ]
+    },
+    "v7": {
+      "required": [
+        "v6 fields plus contract related-flow.v1 hash",
+        "flow.{name,inputs[],steps[],result}"
+      ],
+      "semantic": [
+        "v6 fields plus flow contract related-flow.v1 hash",
+        "at most 8 typed inputs; input types boolean|child_input|child_patch|children_input|date|float|integer|parent_input|parent_patch|string",
+        "at most 8 actions, 2 if nodes/depth 2, 2 nonnested transactions; all names unique ASCII Python identifiers <=64, no leading underscore/model_",
+        "authorization first; database writes in transaction; exact undo delete_created/restore_patch",
+        "branch arms export same names/types; no forward/cross-branch refs",
+        "actions authorize,parent.create,child.create,batch.create,parent/child.get|list|patch,workflow.run|import,object.put|get",
+        "typed input/step/literal refs; literals distinguish type including negative zero; comparisons exact compatible scalar; is_null only nullable",
+        "object operations require configured storage and stay outside database transaction; csv import requires csv capability",
+        "no delete op; no source code, SQL, loops, parallel nodes, block IDs in prompt",
+        "Python validator accepts max_limit 20..100 and hyphen paths; v7 schema restricts max_limit to 100 and route regex excludes hyphens",
+        "Flow actions <=8; branches <=2 with depth <=2; transactions <=2 and never nested; all names unique ASCII Python identifiers <=64, no leading underscore/model_; authorization first and once; database writes in transactions with exact undo; branch exports match; no forward/cross-branch refs; object calls require storage and stay outside DB transactions; csv import requires csv capability; no delete, source code, SQL, loops, parallel nodes, block IDs, or bytes results",
+        "Keep existing DSL family file/block bounds: DSL v1 1..8 files and <=64 blocks; DSL v2/v3 1..12 files and <=64 total blocks",
+        "Compact v7 formatted UTF-8 bytes are observed, with no new 65536-byte gate or token limit on compiler path; existing noncompact legacy byte limits remain on their old paths"
+      ]
+    }
+  },
+  "refusal_codes": {
+    "UNSUPPORTED_VERSION": "Unknown prompt version.",
+    "INVALID_SCHEMA": "Missing/extra keys or wrong object shape.",
+    "INVALID_VALUE": "Identifier, path, type, field relation, query or migration value violates contract.",
+    "UNSUPPORTED_LOGIC": "Unsupported, missing, duplicate or malformed operation/logic set.",
+    "UNSUPPORTED_TEST": "Test contract is not the pinned required test contract.",
+    "UNSUPPORTED_CONTRACT": "Pinned contract id/hash mismatch.",
+    "SCOPE_TOO_LARGE": "Input, field, action, branch, transaction, file, block or byte budget exceeded.",
+    "INVALID_REF": "Unknown, mistyped, forward, cross-scope or invalid typed reference; invalid literal or branch export.",
+    "INVALID_AUTHORIZATION": "Authorization missing or out of order.",
+    "INVALID_TRANSACTION": "Mutation/provider use violates transaction and provider boundaries.",
+    "INVALID_COMPENSATION": "Mutation has missing or incompatible undo action.",
+    "INVALID_COMPOSITION": "Prompt capability or planned composition does not meet declared requirements.",
+    "UNSUPPORTED_BLOCK": "Unapproved block identity.",
+    "INVALID_BLOCK": "Block bytes or declared parameter types differ from pinned contract.",
+    "INVALID_DSL": "Malformed/incomplete typed bundle or wrong DSL version.",
+    "INVALID_PATH": "A file path is outside the declared slots.",
+    "CNL_SYNTAX": "Malformed or unsupported CNL sentence.",
+    "CNL_MISSING": "Required CNL clause is absent.",
+    "CNL_DUPLICATE": "A scalar clause, declaration, or name is duplicated.",
+    "CNL_BLOCK_MISMATCH": "An End block name or nesting level does not match.",
+    "INVALID_JSON": "New API envelope or contained JSON is malformed."
+  },
+  "coverage": {
+    "schema_sources": [
+      "som-rs/schemas/som.prompt.v1.schema.json",
+      "som-rs/schemas/som.prompt.v2.schema.json",
+      "som-rs/schemas/som.prompt.v3.schema.json",
+      "som-rs/schemas/som.prompt.v4.schema.json",
+      "som-rs/src/related.rs (v5; no standalone schema file)",
+      "som-rs/schemas/som.prompt.v6.schema.json",
+      "som-rs/contracts/som.prompt.v7.schema.json",
+      "som-rs/contracts/som.dsl.v3.schema.json",
+      "som-rs/contracts/related-flow.v1.md",
+      "som-rs/contracts/related-business.v1.md"
+    ],
+    "semantic_source": [
+      "som-core/src/som_core/v1.py",
+      "som-core/src/som_core/related.py",
+      "som-core/src/som_core/business.py",
+      "som-core/src/som_core/composed.py",
+      "som-core/src/som_core/flow.py",
+      "som-core/src/som_core/rule_planner.py"
+    ],
+    "excluded": [
+      "No old M2 formal/dev/supplement case contents or saved answer DSL read.",
+      "No model, training, eval, runtime service or app state read."
+    ],
+    "version_gaps": [
+      "v5 has no standalone JSON Schema file; current Rust/Python validators define v5 behavior.",
+      "Historical v7 schema has max_limit=100 and excludes hyphen routes, while live validators accept max_limit 20..100 and hyphens. Preserve current validator acceptance in new compiler contract and leave hash-bound historical schema files unchanged.",
+      "DSL schema/catalog alone do not establish full generated-bundle acceptance. Alternate pinned plans, exact operation coverage and archive byte parity still require root-frozen independent fixtures.",
+      "CNL diagnostic expected positions and codes are contract-derived proposals; root must freeze them before implementation."
+    ],
+    "suite_accounting": {
+      "legacy_100": 100,
+      "legacy_214": 214,
+      "legacy_regression_jobs": 314,
+      "m2_formal_114": 114,
+      "m2_development_12": 12,
+      "m2_supplement_12": 12,
+      "m2_quality_218": 218,
+      "formal_and_development_disjoint_subsets_of_quality_218": true,
+      "supplement_is_separate": true,
+      "distinct_m2_products": 230,
+      "baseline_jobs_legacy_100_plus_214_plus_quality_218_plus_supplement_12": 544,
+      "source": "som-rs/RUST_ROADMAP.md acceptance scope; inventory metadata only, no old formal corpus contents read",
+      "m2_quality_218_interpretation": "218 original prompt products include alternative-standard and alternative-checked variants for the same prompts; compile deterministically selects standard and cannot choose the variant by case ID. Validate both variants through pinned-bundle assemble/archive byte parity; validate compile semantic and byte parity against standard expected output.",
+      "bundle_acceptance": "Assembler accepts semantically valid alternate approved plans; it rejects omitted or reordered requested operations. Compile path remains deterministic to standard expected plan.",
+      "groups": {
+        "legacy_100": 100,
+        "legacy_214": 214,
+        "quality_218": 218,
+        "supplement_12": 12
+      },
+      "quality_218_alternative_variants": "Original products may include alternative-standard and alternative-checked variants for one prompt. Compile always selects standard and cannot select by case ID. Test both variants through valid pinned-bundle assembly and archive byte parity; compare compile semantics/bytes with standard expected output.",
+      "full_behavior_scope": "126 products within quality 218 plus all 12 supplements; other 92 quality products retain quality/parity scope only."
+    },
+    "case_count": 40,
+    "case_ids": [
+      "P1_ACCEPT_CRUD_FIELDS",
+      "P2_ACCEPT_STRING_FILTER_MAX20",
+      "P3_ACCEPT_BOOL_DEFAULT_FALSE",
+      "P4_ACCEPT_EXCLUSIVE_DATE_FILTER",
+      "P5_ACCEPT_RELATED_HYPHEN_ROUTES",
+      "P6_ACCEPT_COMPOSED_CAPABILITIES",
+      "P7_ACCEPT_TYPED_FLOW_AND_FLOAT_NEGZERO",
+      "R01_UNKNOWN_PROMPT_VERSION",
+      "R02_V4_WRONG_FILTER_TYPE",
+      "R03_V4_LIMIT_OVER100",
+      "R04_V4_DATE_FIELD_MISSING",
+      "R05_V5_ROUTE_COLLISION",
+      "R06_V5_RESERVED_FOREIGN_KEY",
+      "R07_V5_BAD_DATE_DEFAULT",
+      "R08_V5_WORKFLOW_VALUE_FIELD_MISSING",
+      "R09_V6_CONTRACT_HASH_DRIFT",
+      "R10_V6_DUPLICATE_OPERATION",
+      "R11_V7_UNSUPPORTED_INPUT_TYPE",
+      "R12_V7_MUTATION_OUTSIDE_TRANSACTION",
+      "R13_V7_MISSING_UNDO",
+      "R14_V7_WRONG_ARGUMENT_TYPE",
+      "R15_V7_NULL_AS_STRING_LITERAL",
+      "R16_V7_FLOAT_NEGZERO_AS_INTEGER",
+      "R17_V7_FORWARD_STEP_REFERENCE",
+      "R18_V7_CROSS_BRANCH_REFERENCE",
+      "R19_V7_BRANCH_EXPORT_TYPE_MISMATCH",
+      "R20_V7_NULL_CHECK_NON_NULLABLE",
+      "R21_V7_MISSING_AUTHORIZATION",
+      "R22_V7_NESTED_TRANSACTION",
+      "R23_V7_PROVIDER_INSIDE_TRANSACTION",
+      "R24_V7_UNSUPPORTED_DELETE_ACTION",
+      "R25_V7_IMPORT_WITHOUT_CSV_CAPABILITY",
+      "R26_V7_BYTES_RESULT_EXPOSED",
+      "R27_V7_TOO_MANY_INPUTS",
+      "R28_V7_TOO_MANY_ACTIONS",
+      "R29_V5_UNSUPPORTED_TEST_CONTRACT",
+      "R30_V1_UNSUPPORTED_LOGIC",
+      "R31_V1_EXTRA_PROPERTY",
+      "R32_V7_FLOW_ROUTE_COLLISION",
+      "R33_V7_INCOMPATIBLE_COMPARISON"
+    ],
+    "cnl_negative_case_count": 14,
+    "flow_assertion_count": 14
+  }
+}

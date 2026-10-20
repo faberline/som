@@ -28,8 +28,10 @@ every command is the one the accepted runs used.
 
 --language rust (amendment 003) compiles each typed prompt with target rust on the candidate at
 --qa and assembles it. A case whose phase2/case-inventory.json result is a refusal (RS12, RS13)
-passes when the compile gives exactly that UNSUPPORTED_TARGET diagnostic, as
-tests/rust-output-v1/rust_profile_phase2.py finds it. Every other case must give a product; it runs
+passes when the compile gives exactly that diagnostic: since amendment 004 the compiler-v1
+python_name_collisions refusal with the inventory code, status, detail and pointer (an
+UNSUPPORTED_TARGET refusal would be the one tests/rust-output-v1/rust_profile_phase2.py finds, and
+it finds none). Every other case must give a product; it runs
 as RustProduct with the vendored crates of CARGO_HOME and one cargo target directory per worker,
 or on the phase 1 suite as hosts.Host.rust_product runs it. The Python product of the run record
 is still read and hash-checked, so both languages run on the same prompts.
@@ -220,16 +222,23 @@ def rust_files(qa_url: str, case: dict, prompt: dict, row: dict) -> dict[str, st
                               "compile_sha256": hashlib.sha256(raw).hexdigest()}
     row["rust"] = record
     if expected["result"] == "refusal":
-        found = rust_profile_phase2.check(prompt)
-        if found is None or found["rule"] != expected["rule"]:
-            raise RuntimeError("rust_profile_phase2 does not give the inventory refusal")
+        if "code" in expected:
+            # A compiler-v1 refusal for every target (amendment 004).
+            wanted = {"code": expected["code"], "detail": expected["detail"],
+                      "prompt_pointer": "/prompt" + expected["pointer"]}
+            wanted_status = expected["http_status"]
+        else:
+            found = rust_profile_phase2.check(prompt)
+            if found is None or found["rule"] != expected["rule"]:
+                raise RuntimeError("rust_profile_phase2 does not give the inventory refusal")
+            wanted = {"code": "UNSUPPORTED_TARGET", "detail": found["cause"],
+                      "prompt_pointer": "/prompt" + found["pointer"]}
+            wanted_status = 422
         reply = json.loads(raw)
         diagnostics = reply.get("diagnostics") or [{}]
         record["refusal"] = {"code": reply.get("code"), "detail": reply.get("detail"),
                              "prompt_pointer": diagnostics[0].get("prompt_pointer")}
-        wanted = {"code": "UNSUPPORTED_TARGET", "detail": found["cause"],
-                  "prompt_pointer": "/prompt" + found["pointer"]}
-        if status != 422 or record["refusal"] != wanted or len(diagnostics) != 1:
+        if status != wanted_status or record["refusal"] != wanted or len(diagnostics) != 1:
             raise RuntimeError(f"the Rust compile did not give the {expected['rule']} refusal")
         return None
     if status != 200:

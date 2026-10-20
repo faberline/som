@@ -4433,6 +4433,1135 @@
     }
   },
   "purpose": "Compile primary selection only. Assembly admits any independently valid supported alternative, including checked flow IDs. No equality to this primary plan is required for assembly.",
+  "python_name_collisions": {
+    "error": {
+      "code": "INVALID_VALUE",
+      "detail": "prompt.<path>: name collides with a generated Python identifier"
+    },
+    "names_compared": "As written; resource names are compared in the written Pascal form.",
+    "order": "v1-v4: resource name, then fields in order. v5-v7: parent name, parent fields, child name, child fields, then foreign key. The first refused slot is reported.",
+    "pointer": "The query, capabilities or relation member that adds the matched row's specific role; otherwise the name member of the field or resource.",
+    "rule": "A name slot has roles. Refuse its name when, for some row of the prompt version and database, every role of the row is a role of the slot and the name is listed in that row. The database is capabilities.database, or postgresql when the prompt has none; a version and database without rows refuses nothing.",
+    "slots": {
+      "v1-v4": "resource.name has {resource}. Each resource field has {field}, plus filter_field or date_field when query.filter_field or query.date_field names it.",
+      "v5-v7": "For parent then child: resources.<role>.name has {resource}; each field has {<role>_field}, plus filter_field or date_field from that resource query; capabilities.group_field and value_field add their role to the child field of that name, else the parent field. relation.foreign_key has {foreign_key}."
+    },
+    "versions": {
+      "som.prompt.v1": {
+        "postgresql": [
+          {
+            "names": [
+              "ConfigDict",
+              "Mapped",
+              "__tablename__",
+              "int",
+              "mapped_column",
+              "model_config",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "field"
+            ]
+          },
+          {
+            "names": [
+              "Base",
+              "DeclarativeBase",
+              "Mapped",
+              "int",
+              "mapped_column",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "resource"
+            ]
+          }
+        ]
+      },
+      "som.prompt.v2": {
+        "postgresql": [
+          {
+            "names": [
+              "ConfigDict",
+              "Mapped",
+              "__tablename__",
+              "int",
+              "mapped_column",
+              "model_config",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "field"
+            ]
+          },
+          {
+            "names": [
+              "ConfigDict",
+              "Mapped",
+              "__tablename__",
+              "int",
+              "mapped_column",
+              "model_config",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "field",
+              "filter_field"
+            ]
+          },
+          {
+            "names": [
+              "Base",
+              "DeclarativeBase",
+              "Mapped",
+              "int",
+              "mapped_column",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "resource"
+            ]
+          }
+        ]
+      },
+      "som.prompt.v3": {
+        "postgresql": [
+          {
+            "names": [
+              "ConfigDict",
+              "Mapped",
+              "__table_args__",
+              "__tablename__",
+              "bool",
+              "datetime",
+              "float",
+              "int",
+              "mapped_column",
+              "model_config",
+              "model_validator",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "field"
+            ]
+          },
+          {
+            "names": [
+              "ConfigDict",
+              "Mapped",
+              "__table_args__",
+              "__tablename__",
+              "bool",
+              "datetime",
+              "db",
+              "float",
+              "int",
+              "limit",
+              "list",
+              "mapped_column",
+              "model_config",
+              "model_validator",
+              "models",
+              "offset",
+              "reject_null_for_required_columns",
+              "sa",
+              "select",
+              "stmt",
+              "str"
+            ],
+            "roles": [
+              "field",
+              "filter_field"
+            ]
+          },
+          {
+            "names": [
+              "Base",
+              "DeclarativeBase",
+              "Mapped",
+              "bool",
+              "datetime",
+              "float",
+              "int",
+              "mapped_column",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "resource"
+            ]
+          }
+        ]
+      },
+      "som.prompt.v4": {
+        "postgresql": [
+          {
+            "names": [
+              "ConfigDict",
+              "Mapped",
+              "__table_args__",
+              "__tablename__",
+              "bool",
+              "date",
+              "datetime",
+              "float",
+              "int",
+              "mapped_column",
+              "model_config",
+              "model_validator",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "date_field",
+              "field"
+            ]
+          },
+          {
+            "names": [
+              "ConfigDict",
+              "Mapped",
+              "__table_args__",
+              "__tablename__",
+              "bool",
+              "date",
+              "datetime",
+              "float",
+              "int",
+              "mapped_column",
+              "model_config",
+              "model_validator",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "field"
+            ]
+          },
+          {
+            "names": [
+              "ConfigDict",
+              "Mapped",
+              "__table_args__",
+              "__tablename__",
+              "bool",
+              "date",
+              "datetime",
+              "float",
+              "int",
+              "list",
+              "mapped_column",
+              "model_config",
+              "model_validator",
+              "models",
+              "reject_null_for_required_columns",
+              "sa",
+              "select",
+              "stmt",
+              "str"
+            ],
+            "roles": [
+              "field",
+              "filter_field"
+            ]
+          },
+          {
+            "names": [
+              "Base",
+              "DeclarativeBase",
+              "Mapped",
+              "bool",
+              "date",
+              "datetime",
+              "float",
+              "int",
+              "mapped_column",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "resource"
+            ]
+          }
+        ]
+      },
+      "som.prompt.v5": {
+        "mongodb": [
+          {
+            "names": [
+              "bool",
+              "dict",
+              "float",
+              "int",
+              "key",
+              "list",
+              "reject_null_for_required_columns",
+              "str"
+            ],
+            "roles": [
+              "child_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "float",
+              "int",
+              "key",
+              "list",
+              "reject_null_for_required_columns",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "date_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "filters",
+              "float",
+              "int",
+              "key",
+              "list",
+              "reject_null_for_required_columns",
+              "require_parent",
+              "str",
+              "time",
+              "timezone"
+            ],
+            "roles": [
+              "child_field",
+              "filter_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "float",
+              "int",
+              "key",
+              "list",
+              "reject_null_for_required_columns",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "group_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "float",
+              "int",
+              "key",
+              "list",
+              "reject_null_for_required_columns",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "value_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "int",
+              "key",
+              "list",
+              "reject_null_for_required_columns",
+              "str"
+            ],
+            "roles": [
+              "date_field",
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "filters",
+              "int",
+              "key",
+              "list",
+              "reject_null_for_required_columns",
+              "str",
+              "time",
+              "timezone"
+            ],
+            "roles": [
+              "filter_field",
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "float",
+              "int",
+              "key",
+              "list",
+              "str"
+            ],
+            "roles": [
+              "foreign_key"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "int",
+              "key",
+              "list",
+              "reject_null_for_required_columns",
+              "str"
+            ],
+            "roles": [
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "Batch",
+              "ClassVar",
+              "Document",
+              "RuntimeError"
+            ],
+            "roles": [
+              "resource"
+            ]
+          }
+        ],
+        "postgresql": [
+          {
+            "names": [
+              "bool",
+              "float",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "child_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "date_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "hashlib",
+              "int",
+              "list",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "require_parent",
+              "sa",
+              "select",
+              "statement",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "filter_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "group_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "value_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "date_field",
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "hashlib",
+              "int",
+              "list",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "select",
+              "statement",
+              "str"
+            ],
+            "roles": [
+              "filter_field",
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "foreign_key"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "Batch",
+              "DeclarativeBase"
+            ],
+            "roles": [
+              "resource"
+            ]
+          }
+        ]
+      },
+      "som.prompt.v6": {
+        "mongodb": [
+          {
+            "names": [
+              "bool",
+              "dict",
+              "float",
+              "int",
+              "list",
+              "reject_null_for_required_columns",
+              "str"
+            ],
+            "roles": [
+              "child_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "float",
+              "int",
+              "list",
+              "reject_null_for_required_columns",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "date_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "filters",
+              "float",
+              "int",
+              "list",
+              "object",
+              "page_size",
+              "reject_null_for_required_columns",
+              "require_parent",
+              "str",
+              "time"
+            ],
+            "roles": [
+              "child_field",
+              "filter_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "float",
+              "int",
+              "list",
+              "reject_null_for_required_columns",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "group_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "float",
+              "int",
+              "list",
+              "reject_null_for_required_columns",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "value_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "float",
+              "int",
+              "list",
+              "reject_null_for_required_columns",
+              "str"
+            ],
+            "roles": [
+              "date_field",
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "filters",
+              "float",
+              "int",
+              "list",
+              "object",
+              "page_size",
+              "reject_null_for_required_columns",
+              "str",
+              "time"
+            ],
+            "roles": [
+              "filter_field",
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "float",
+              "int",
+              "list",
+              "str"
+            ],
+            "roles": [
+              "foreign_key"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "dict",
+              "float",
+              "int",
+              "list",
+              "reject_null_for_required_columns",
+              "str"
+            ],
+            "roles": [
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "AsyncIterator",
+              "AsyncMongoClient",
+              "Batch",
+              "FastAPI",
+              "RuntimeError",
+              "UTC"
+            ],
+            "roles": [
+              "resource"
+            ]
+          }
+        ],
+        "postgresql": [
+          {
+            "names": [
+              "bool",
+              "database_now",
+              "float",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "child_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "database_now",
+              "float",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "date_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "database_now",
+              "float",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "filter_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "database_now",
+              "float",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "group_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "database_now",
+              "float",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "value_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "database_now",
+              "float",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "date_field",
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "database_now",
+              "float",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "filter_field",
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "database_now",
+              "float",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "foreign_key"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "database_now",
+              "float",
+              "hashlib",
+              "int",
+              "mapped_column",
+              "reject_null_for_required_columns",
+              "sa",
+              "str"
+            ],
+            "roles": [
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "Batch",
+              "DeclarativeBase"
+            ],
+            "roles": [
+              "resource"
+            ]
+          }
+        ]
+      },
+      "som.prompt.v7": {
+        "mongodb": [
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "child_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "date_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "filter_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "group_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "value_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "date_field",
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "filter_field",
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "int"
+            ],
+            "roles": [
+              "foreign_key"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "parent_field"
+            ]
+          }
+        ],
+        "postgresql": [
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "child_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "date_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "filter_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "group_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "child_field",
+              "value_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "date_field",
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "filter_field",
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "int"
+            ],
+            "roles": [
+              "foreign_key"
+            ]
+          },
+          {
+            "names": [
+              "bool",
+              "float",
+              "int",
+              "set",
+              "str"
+            ],
+            "roles": [
+              "parent_field"
+            ]
+          },
+          {
+            "names": [
+              "SCHEMA",
+              "SchemaItem"
+            ],
+            "roles": [
+              "resource"
+            ]
+          }
+        ]
+      }
+    }
+  },
   "qualification": {
     "all_standard_to_compact_semantic_metadata_equal": true,
     "artifact": "public-qualification.json",
@@ -4443,9 +5572,52 @@
     "v7_standard_to_compact_reference_exact": "true on four public-example design variants; public constructor recipe frozen above"
   },
   "runtime_inputs": "Validated prompt and installed approved loaded block/catalog assets only. No Python constructors, corpus tables, model, CNL path, network, environment or scoring.",
+  "self_name_variants": {
+    "assembly": "A plan for a prompt with the trigger must use the variant and never the base block; a plan without the trigger must never use a variant. Otherwise INVALID_COMPOSITION. Plan validators and catalogs see the base id.",
+    "families": {
+      "v1-v5": [
+        {
+          "base": "orm.base",
+          "base_source_sha256": "694c8df43ce6f64e6ebc08c6af878f43cb1cdcb33a5c6701089face0db4bd4a0",
+          "variant": "orm.base.self",
+          "variant_source_sha256": "e98cc925a5f7bef34c79b3c302fa68983aab6b8472119e938904057f99e400b2"
+        },
+        {
+          "base": "orm.mongo.base",
+          "base_source_sha256": "598d5f5831cf85a1cea1041a99574a827ba5a5f158bf0e97f637d249308991c8",
+          "variant": "orm.mongo.base.self",
+          "variant_source_sha256": "4a609497b2f34c5188185d841499a0fb7b2d4353e22a48a80960ae5fd4a3f696"
+        }
+      ],
+      "v6": [
+        {
+          "base": "orm.base",
+          "base_source_sha256": "9cab47e36299dfe74f8300d62d727b4f2fb38f7175a4b57f719b196b6440ce35",
+          "variant": "orm.base.self",
+          "variant_source_sha256": "62b8f9315cd8a73e84ff898f9fd305ff26df354b4abbf95741270586f5cf3d91"
+        },
+        {
+          "base": "orm.composed.mongo.base",
+          "base_source_sha256": "6235ace3f9989ebd5a219b61953f971ea529a38b57a414cd90b404826793e38f",
+          "variant": "orm.composed.mongo.base.self",
+          "variant_source_sha256": "3631312bc50976f3eb512fccd1df827686f2918f46a45d8ebc79602057d96536"
+        }
+      ],
+      "v7": [
+        {
+          "base": "compact.service.flow.store.postgresql",
+          "base_source_sha256": "732879602ac2185fc961a665252699c6ec8b5c34a29c37e66805388645bd4f09",
+          "variant": "compact.service.flow.store.postgresql.self",
+          "variant_source_sha256": "ffb3589bb78fa55e6735cd671e5924b659e2d4ee85bc8a6f579c9336b4d21d04"
+        }
+      ]
+    },
+    "selection": "After the primary plan is built, replace each listed base block id in dsl files with its variant id. Without the trigger no variant is selected.",
+    "trigger": "Any resource field name, or relation.foreign_key, equals the text self."
+  },
   "source_manifest": "public-sources.json",
   "sources": {
-    "legacy_blocks_raw_sha256": "9dc292b2ddbeb834e09b7754de4d00a9aca16c25acf06ee9ee8fcc77d39c92c7"
+    "legacy_blocks_raw_sha256": "6dd5359cc320cb804f87f3d16fa5899b5ae801f37c970e3b9ac4fced0cc0170f"
   },
-  "version": "som.compiler-selection-policy.v1.1"
+  "version": "som.compiler-selection-policy.v1.2"
 }

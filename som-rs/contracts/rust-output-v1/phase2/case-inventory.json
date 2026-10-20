@@ -38,7 +38,7 @@
     },
     "by_phase2_expected": {
       "product": 582,
-      "query_parameter_collision": 2
+      "python_name_collisions": 2
     },
     "by_prompt_version": {
       "som.prompt.v1": 6,
@@ -9803,8 +9803,12 @@
       "kind": "rs",
       "phase1_refusal": "query_parameter_collision",
       "phase2_expected": {
+        "code": "INVALID_VALUE",
+        "detail": "prompt.query.filter_field: name collides with a generated Python identifier",
+        "http_status": 400,
+        "pointer": "/query/filter_field",
         "result": "refusal",
-        "rule": "query_parameter_collision"
+        "rule": "python_name_collisions"
       },
       "position": 12,
       "product_sha256": "cc4dde850c4b934a3978317ba569648c19d6a7dc009e9be432d54f3f0e285cf8",
@@ -9821,8 +9825,12 @@
       "kind": "rs",
       "phase1_refusal": "query_parameter_collision",
       "phase2_expected": {
+        "code": "INVALID_VALUE",
+        "detail": "prompt.query.filter_field: name collides with a generated Python identifier",
+        "http_status": 400,
+        "pointer": "/query/filter_field",
         "result": "refusal",
-        "rule": "query_parameter_collision"
+        "rule": "python_name_collisions"
       },
       "position": 13,
       "product_sha256": "d48f1cd851d918e4f834bf1c16c3126808aaa41f6eaaa1b48417e41f7ee78997",
@@ -9991,7 +9999,7 @@
     "cnl_fixture: every CNL positive fixture the phase 1 profile refuses, as assembled in public-products-003b.",
     "public_example: every public example the phase 1 profile refuses (v6, v7, v7-branch-null), as assembled in public-products-003b.",
     "rs: RS01 to RS22 of negative-cases.json, as assembled in rs-products-001; phase 2 removes their refusals.",
-    "phase2_expected is the phase 2 profile (rust_profile_phase2.py) result: a Rust product, or the kept query_parameter_collision refusal.",
+    "phase2_expected is the phase 2 profile (rust_profile_phase2.py) result, a Rust product, unless compiler-v1 refuses the prompt for every target: since amendment 004 RS12 and RS13 are python_name_collisions refusals (compiler-v1 amendment 003) with the code, status, detail and prompt pointer of negative-cases.json.",
     "Cases are counted per source. A prompt can be a case in more than one source (a legacy job and a public example, the CNL and JSON forms of one RS prompt, or repeated legacy jobs); counts.distinct_prompts and shared_prompts record it.",
     "Legacy jobs are named by id, position and hash only; no legacy prompt or gold answer is copied."
   ],
@@ -10030,12 +10038,12 @@
     ]
   ],
   "sources": {
-    "som-rs/behavior/phase2/check_phase2.py": "3ac72c1ec42adf74f112c45f395ee57166f8843a5bc7d14eeca8e41c1ea07ade",
+    "som-rs/behavior/phase2/check_phase2.py": "7c37aa4cc6f40c988eb48da92873ffbdf8fab76a2faf8d953107c2fd1d6ff1b9",
     "som-rs/contracts/rust-output-v1/case-inventory.json": "fc6fbec822623cb9bdc0a6e11c2a72b6f0dfac3c41e8b7c1e35830090eb7d2a5",
-    "som-rs/contracts/rust-output-v1/negative-cases.json": "a82736a98e4f8c8650f58ae92fb262c9f98fc4b66c6b9e60aab3512804208c97",
+    "som-rs/contracts/rust-output-v1/negative-cases.json": "74b36cb9ba0e61e639193f5a55f5e9e9c1924c730e502dd2de300b88c9dbbc1d",
     "som-rs/contracts/rust-output-v1/scope.json": "0f31b4c0290afda9b4c4ccf99b575edec81c3361ae31c74b44bc16d5ff20e51d",
     "som-rs/tests/compiler-v1/cnl-positive-fixtures.json": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
-    "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "71de51983273f9313edc139b68c73c9534d2f07c0bc48b0e3788be409b0425df"
+    "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "66361c04b8c7069868aa03205dbb33f9d28ede06e55ea262326671b91108316b"
   },
   "version": "som.rust-output-phase2-case-inventory.v1"
 }

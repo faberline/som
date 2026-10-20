@@ -15,7 +15,10 @@ harness change superseded is recorded with that change.
 
 The phase 2 Rust reference is the suite oracle of each checker, not a Python product: a Rust
 product passes a case when the same checker passes on it. Python products that fail their own
-oracle are recorded as python_defects; prompts the phase 2 profile refuses as phase2_refusals.
+oracle are recorded as python_defects; refused prompts as phase2_refusals. Since amendment 004 the
+refusals are compiler-v1 python_name_collisions refusals for every target (compiler-v1 amendment 003),
+and the record stays the one of the Python products accepted before #57: issue57 says what #57
+changes and which check covers it.
 """
 from __future__ import annotations
 
@@ -49,8 +52,20 @@ PYTHON_DEFECTS = {
     "RS14_CNL_V5_FOREIGN_KEY_SELF": "a relation whose foreign key field is self",
     "RS16_CNL_V5_FIRST_REFUSAL": "a relation whose foreign key field is self, with a field a__b",
 }
-PHASE2_REFUSALS = {"RS12_CNL_V3_FILTER_LIMIT": "query_parameter_collision",
-                   "RS13_JSON_V3_FILTER_OFFSET": "query_parameter_collision"}
+PHASE2_REFUSALS = {"RS12_CNL_V3_FILTER_LIMIT": "python_name_collisions",
+                   "RS13_JSON_V3_FILTER_OFFSET": "python_name_collisions"}
+# Amendment 004: what #57 changes in the Python products this record's run checked.
+ISSUE57 = {
+    "issue": 57,
+    "python_defects": "fixed: the Python product of each python_defects case selects the self_name_variants "
+                      "blocks (compiler-v1 amendment 003); som-rs/scripts/rust_output_acceptance/check_issue57.py "
+                      "runs it on the same checker and requires it to pass, in Python and Rust",
+    "phase2_refusals": "the phase 1 profile refused these prompts for Rust only (query_parameter_collision); "
+                       "compiler-v1 now refuses them for every target with INVALID_VALUE, so no Python product "
+                       "is generated for them either",
+    "other_cases": "every other Python product of this run is byte-identical after #57, so this run stays "
+                   "its behavior record",
+}
 # Suite defects found by a complete run and fixed before the run this record accepts.
 SUITE_FIXES = {
     "m2-semantic-05": "EXISTING bound an object key input to the seeded object although the flow puts that key "
@@ -206,7 +221,8 @@ def build(run: pathlib.Path, superseded: list[pathlib.Path]) -> dict[str, Any]:
     if explained - failed:
         raise SystemExit(f"explained cases that passed: {sorted(explained - failed)}")
     for case_id, rule in PHASE2_REFUSALS.items():
-        if inventory[case_id]["phase2_expected"] != {"result": "refusal", "rule": rule}:
+        expected = inventory[case_id]["phase2_expected"]
+        if (expected["result"], expected["rule"]) != ("refusal", rule):
             raise SystemExit(f"{case_id}: the inventory does not expect {rule}")
     refused = {i for i, row in inventory.items() if row["phase2_expected"]["result"] == "refusal"}
     if refused != set(PHASE2_REFUSALS):
@@ -238,7 +254,7 @@ def build(run: pathlib.Path, superseded: list[pathlib.Path]) -> dict[str, Any]:
         refusals[case_id] = {"rule": rule, "python_product": "does not start: "
                              + ("SyntaxError, duplicate argument" if "duplicate argument" in row["problems"][0]
                                 else row["problems"][0][:120]),
-                             "rust": "refused at compile (rust_profile_phase2.py); not a behavior case"}
+                             "rust": "refused at compile by compiler-v1 for every target; not a behavior case"}
 
     manifest = json.loads(MANIFEST.read_text())
     passed_products = sum(1 for i in inventory if i not in failed)
@@ -252,7 +268,7 @@ def build(run: pathlib.Path, superseded: list[pathlib.Path]) -> dict[str, Any]:
             "and no assembled file changed during the run.",
             "A Python product that fails its own oracle is a python_defect: Rust is still checked against the "
             "oracle and the Python output stays byte-identical.",
-            "A case the phase 2 profile refuses is not a behavior case for Rust; Rust refuses its prompt.",
+            "A case compiler-v1 refuses is not a behavior case; the compile refuses its prompt for every target.",
             "Not-applicable records are counted from the outcomes of the Python run; a Rust run must record "
             "the same cases as not applicable.",
         ],
@@ -292,6 +308,7 @@ def build(run: pathlib.Path, superseded: list[pathlib.Path]) -> dict[str, Any]:
         "superseded_runs": [superseded_run(old) for old in superseded],
         "python_defects": defects,
         "phase2_refusals": refusals,
+        "issue57": ISSUE57,
     }
 
 

@@ -13,8 +13,8 @@ acceptance case (contracts/rust-output-v1/acceptance-plan.json).
 - assemble_refusals: recipes A1 to A9 give their frozen code, status and
   pointer, and the span selects the pointer target in the canonical request.
   With --refusals phase2 (the default), acceptance-plan.json phase2 applies:
-  A6 uses the RS12 typed prompt and expects the rust_profile_phase2.py
-  pointer, A8 expects 200 with the files of the renamed prompt's own compile
+  A6 uses the RS13 typed prompt and expects its compiler-v1 refusal
+  (amendment 004), A8 expects 200 with the files of the renamed prompt's own compile
   and assemble, and A1, A2, A4, A5, A7 and A9 also run on the PUBLIC_v6 base.
 - product_gates: rustfmt --check, cargo build, clippy with warnings denied and
   the product tests on a fresh database, with Cargo.lock unchanged; schema
@@ -57,7 +57,6 @@ from sqlalchemy import create_engine
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import check_targets as targets  # noqa: E402
-import rust_profile_phase2 as PROFILE_PHASE2  # type: ignore[import-not-found]  # noqa: E402
 
 CONTRACT = targets.CONTRACT
 REFERENCE = CONTRACT / "reference"
@@ -324,8 +323,8 @@ def assemble_refusals(qa: str, base: dict, v5_base: dict) -> list[dict]:
 
 def phase2_refusals(qa: str, base: dict) -> list[dict]:
     """acceptance-plan.json phase2.assemble_refusals: the phase 1 recipes on the example-v1 base
-    except A6 and A8, which phase 2 replaces, and A1, A2, A4, A5, A7 and A9 again on the
-    PUBLIC_v6 Rust bundle as base with the same code, status and pointer."""
+    except A6 (A6_amendment_004) and A8, which phase 2 replaces, and A1, A2, A4, A5, A7 and A9
+    again on the PUBLIC_v6 Rust bundle as base with the same code, status and pointer."""
     frozen = {recipe["id"]: recipe for recipe in PLAN["assemble_refusals"]["recipes"]}
     v1 = json.loads((targets.EXAMPLES / "v1.prompt.json").read_text())
     v6 = json.loads((targets.EXAMPLES / "v6.prompt.json").read_text())
@@ -335,16 +334,15 @@ def phase2_refusals(qa: str, base: dict) -> list[dict]:
     rows = [refusal_row(qa, key, built[key], frozen[key]["code"], frozen[key]["http_status"],
                         frozen[key]["prompt_pointer"], "example-v1") for key in sorted(built)]
 
-    # A6: the RS12 typed prompt, as compiler-v1 types the RS12 CNL source.
-    rs12 = next(case for case in json.loads((CONTRACT / "negative-cases.json").read_text())["cases"]
-                if case["id"].startswith("RS12"))
-    rs12_python = json.loads(targets.post(qa, rs12["python_control_body"])[1])["bundle"]
-    refusal = PROFILE_PHASE2.check(rs12_python["prompt"])
-    if refusal is None:
-        rows.append({"id": "A6", "passed": False, "problems": ["rust_profile_phase2.py admits the RS12 prompt"]})
-    else:
-        rows.append(refusal_row(qa, "A6", with_shared(base, rs12_python["prompt"], rs12_python),
-                                refusal["code"], 422, "/bundle/prompt" + refusal["pointer"], "example-v1"))
+    # A6 (amendment 004): the RS13 typed prompt with the shared descriptors of the example-v3
+    # Python compile. compiler-v1 refuses it for every target, so assemble gives the RS13 code
+    # and status at the prompt pointer under /bundle.
+    rs13 = next(case for case in json.loads((CONTRACT / "negative-cases.json").read_text())["cases"]
+                if case["id"].startswith("RS13"))
+    v3 = json.loads((targets.EXAMPLES / "v3.prompt.json").read_text())
+    rows.append(refusal_row(qa, "A6", with_shared(base, json.loads(rs13["body"])["prompt"], python_compile(qa, v3)),
+                            rs13["expected"]["code"], rs13["http_status"],
+                            "/bundle" + rs13["expected"]["prompt_pointer"], "example-v1"))
 
     # A8: 200, and the files equal the compile and assemble of the renamed prompt with target rust.
     a8, prompt = renamed(base)
@@ -609,6 +607,7 @@ def main() -> int:
                     CONTRACT / "behavior-normalization.json", CONTRACT / "scope.json",
                     CONTRACT / "toolchain.json",
                     targets.SOM_RS / "evidence" / "rust-output-contract-amendment-003.json",
+                    targets.SOM_RS / "evidence" / "rust-output-contract-amendment-004.json",
                     REFERENCE / "Cargo.toml", REFERENCE / "Cargo.lock",
                     targets.TESTS / "rust_profile.py", targets.TESTS / "rust_profile_phase2.py",
                     CONTRACT / "negative-cases.json", targets.FIXTURES, targets.COVERAGE,

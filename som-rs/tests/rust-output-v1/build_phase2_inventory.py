@@ -53,8 +53,24 @@ def rel(path: pathlib.Path) -> str:
     return str(path.relative_to(REPO))
 
 
+def compiler_v1_refusals() -> dict[str, dict[str, Any]]:
+    """RS rows that compiler-v1 amendment 003 refuses for every target (negative-cases.json since
+    amendment 004): python_name_collisions, with the frozen code, status, detail and pointer."""
+    found = {}
+    for case in json.loads(NEGATIVE.read_text())["cases"]:
+        expected = case["expected"]
+        if case["id"].startswith("RS") and expected["code"] != "UNSUPPORTED_TARGET" \
+                and case["python_control_expected"].startswith("the same diagnostic"):
+            pointer = expected["prompt_pointer"].removeprefix("/prompt")
+            found[case["id"]] = {"result": "refusal", "rule": "python_name_collisions", "code": expected["code"],
+                                 "http_status": case["http_status"], "detail": expected["cause"],
+                                 "pointer": pointer}
+    return found
+
+
 def build() -> dict[str, Any]:
     scope = rust_profile.load_scope()
+    compiler_v1 = compiler_v1_refusals()
     rows = []
     for case in check_phase2.cases():
         prompt, _files = check_phase2.load(case)
@@ -62,6 +78,8 @@ def build() -> dict[str, Any]:
         if refusal is None:
             raise SystemExit(f"{case['id']}: the phase 1 profile accepts it, so it is not a phase 2 case")
         kept = rust_profile_phase2.check(prompt, scope)
+        if kept is None and case["id"] in compiler_v1:
+            kept = compiler_v1[case["id"]]
         kind = ("legacy" if case["family"] not in ("public", "rs")
                 else "rs" if case["family"] == "rs"
                 else "public_example" if case["group"] == "public_example" else "cnl_fixture")
@@ -70,7 +88,8 @@ def build() -> dict[str, Any]:
                      "prompt_version": case["prompt_version"], "prompt_sha256": case["prompt_sha256"],
                      "product_sha256": case["product_sha256"],
                      "phase1_refusal": refusal["rule"],
-                     "phase2_expected": {"result": "refusal", "rule": kept["rule"]} if kept else {"result": "product"},
+                     "phase2_expected": ({"result": "refusal", "rule": kept["rule"]} if kept and "code" not in kept
+                                         else kept if kept else {"result": "product"}),
                      "checker": case["checker"],
                      "standard": case["standard"]})
     counts = collections.Counter(row["kind"] for row in rows)
@@ -98,7 +117,7 @@ def build() -> dict[str, Any]:
             "cnl_fixture: every CNL positive fixture the phase 1 profile refuses, as assembled in public-products-003b.",
             "public_example: every public example the phase 1 profile refuses (v6, v7, v7-branch-null), as assembled in public-products-003b.",
             "rs: RS01 to RS22 of negative-cases.json, as assembled in rs-products-001; phase 2 removes their refusals.",
-            "phase2_expected is the phase 2 profile (rust_profile_phase2.py) result: a Rust product, or the kept query_parameter_collision refusal.",
+            "phase2_expected is the phase 2 profile (rust_profile_phase2.py) result, a Rust product, unless compiler-v1 refuses the prompt for every target: since amendment 004 RS12 and RS13 are python_name_collisions refusals (compiler-v1 amendment 003) with the code, status, detail and prompt pointer of negative-cases.json.",
             "Cases are counted per source. A prompt can be a case in more than one source (a legacy job and a public example, the CNL and JSON forms of one RS prompt, or repeated legacy jobs); counts.distinct_prompts and shared_prompts record it.",
             "Legacy jobs are named by id, position and hash only; no legacy prompt or gold answer is copied.",
         ],
