@@ -143,6 +143,58 @@ Negative float zero stays distinct in the compiler and generated Python literal.
 Executable source and SQL clauses are not accepted. Literal strings stay data.
 Missing or conflicting facts fail without repair.
 
+### Semantic rules the grammar does not show
+
+A clause can parse and still fail these rules. They come from
+[section 3](contracts/compiler-v1/CONTRACT.md#3-prompt-families-and-exact-omission-rules)
+and [section 4](contracts/compiler-v1/CONTRACT.md#4-existing-semantic-rules-stay-binding)
+of the contract. Check them before the first compile.
+
+- `Limit query results to N.` accepts only N from 20 to 100.
+  The generated product uses 20 as its default page size.
+- `Filter exactly on field F.` needs F to be an optional, nonunique bool
+  with default false. Any other field fails with "invalid query field".
+- A date filter also needs that boolean exact filter.
+  The resource must then have exactly one date field.
+  That field must be optional and nonunique with default null.
+  Otherwise the compile fails with "date filtering requires a boolean filter and one date".
+- Required filters depend on the version. v2 needs a nonunique string filter.
+  v3 needs a boolean filter. v4 needs both a boolean filter and a date filter.
+  v5–v7 can use the "Use no … filter." clauses instead.
+- `decimal_summary` and `statistics` need an int or float child value field.
+  `decimal_summary` also needs a required str child group field.
+- `json_export`, `gzip_export`, and `csv` take no value or group field.
+  Write "Use no workflow value field." and "Use no workflow group field.".
+- A required field takes no default clause. Optional v3–v7 fields default to null.
+  The only other default is an explicit false on an optional bool.
+- Each related resource has 1 to 8 fields.
+  Parent and child must use different tables and different paths.
+- A path has one to three lowercase segments. Hyphens and underscores are allowed.
+
+Each rejection returns `INVALID_VALUE`. Its diagnostic gives the `line` and
+`prompt_pointer` of the failing clause.
+
+### Parent and child routes
+
+The child path is not served at the root. It is nested under one parent row.
+Python and Rust products expose the same routes.
+With parent path P and child path C, the routes are:
+
+| Route | Meaning |
+|---|---|
+| `POST P`, `GET P` | Create a parent, list parents |
+| `GET`, `PATCH`, `DELETE P/{parent_id}` | Read, update, delete one parent |
+| `POST P/{parent_id}C`, `GET P/{parent_id}C` | Create a child, list one parent's children |
+| `GET`, `PATCH`, `DELETE P/{parent_id}C/{child_id}` | Read, update, delete one child |
+| `POST P/with-children` | Create a parent and its children together |
+| `GET P/{parent_id}/export` | Run the selected workflow, when one is set |
+| `GET /auth/me` | Return the caller identity, when authentication is set |
+| `GET /healthz` | Health check, always present |
+
+For example, `Use path "/projects".` on the parent and `Use path "/todos".` on
+the child give `/projects/{parent_id}/todos` and `/projects/{parent_id}/todos/{child_id}`.
+A v6 or v7 prompt serves only the operations it selects.
+
 ## Limits and output meaning
 
 Compile and generate each accept at most 262144 HTTP body bytes.
