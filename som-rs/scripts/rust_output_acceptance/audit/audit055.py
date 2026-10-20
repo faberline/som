@@ -30,6 +30,7 @@ HEALTH_BACKEND_SHA256 = "1c18257000d2519e85c644d5bb243d5ec7251878efadf4cf27f3bc5
 HEALTH_ASSET_MANIFEST_SHA256 = "872eb4dc162e54c0cf4ada196652417161cffc3cb4a0382d987fc668f94d416e"
 DEFAULT_PORT = 8765
 REFUSAL_RULE = "query_parameter_collision"
+AUDIT_REL = "som-rs/scripts/rust_output_acceptance/audit/audit055.py"
 FORBIDDEN_CODES = {"NOT_IMPLEMENTED", "OUTPUT_QUALITY_FAILED"}
 EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
 LIST_LIMIT = 15
@@ -554,8 +555,14 @@ def check_tools_unchanged(ctx: Ctx) -> Row:
     if not isinstance(tools, dict) or not tools.get("files"):
         row.unrun("header tools missing")
         return row
+    # The auditor is not a tool of the run: it is updated and committed after the run ends, so its own
+    # file is left out of this comparison. Every other recorded file is compared strictly.
+    files = {k: v for k, v in tools["files"].items() if k != AUDIT_REL}
+    if len(files) != len(tools["files"]):
+        row.ev(f"excluded the auditor's own file {AUDIT_REL} from the tool comparison (header sha256 "
+               f"{tools['files'][AUDIT_REL]}); it is not a run tool")
     changed, missing = [], []
-    for rel, want in tools["files"].items():
+    for rel, want in files.items():
         p = ctx.repo / rel
         if not p.is_file():
             missing.append(rel)
@@ -566,7 +573,7 @@ def check_tools_unchanged(ctx: Ctx) -> Row:
     if changed:
         row.fail(f"tool files changed since the header: {first(changed)}")
     if not missing and not changed:
-        row.ev(f"{len(tools['files'])} tool and contract files hash to the header values now")
+        row.ev(f"{len(files)} tool and contract files hash to the header values now")
     rel_plan = "som-rs/contracts/rust-output-v1/acceptance-plan.json"
     if tools["files"].get(rel_plan) not in (None, sha_file(ctx.plan_path)):
         row.fail("the audited acceptance plan is not the one the run used")
@@ -580,10 +587,11 @@ def check_tools_unchanged(ctx: Ctx) -> Row:
         row.fail("summary plan_sha256 differs from the plan file")
     after = summ.get("tools_after") or summ.get("tools")
     if isinstance(after, dict):
-        if after.get("files") != tools["files"] or after.get("head") != tools.get("head"):
+        after_files = {k: v for k, v in (after.get("files") or {}).items() if k != AUDIT_REL}
+        if after_files != files or after.get("head") != tools.get("head"):
             row.fail("summary tools differ from header tools")
         else:
-            row.ev("summary tools equal header tools")
+            row.ev("summary tools equal header tools (the auditor's own file excluded)")
     else:
         row.ev("summary records no tools after the run; the files were hashed again by this audit")
     return row
@@ -1959,16 +1967,35 @@ def check_phase1_unchanged(ctx: Ctx) -> Row:
     return row
 
 
-def norm_base(row: dict) -> str | None:
-    b = row.get("base")
-    if b is None:
-        return "example-v1"
-    s = str(b)
-    if "PUBLIC_v6" in s or s.endswith("v6"):
-        return "PUBLIC_v6"
-    if "example-v1" in s or s.endswith("v1"):
-        return "example-v1"
-    return None
+BASES = {"example-v1": "example-v1", "example_v1": "example-v1", "PUBLIC_v6": "PUBLIC_v6"}
+RECIPE_ID = re.compile(r"(A\d+)(?:_(.+))?")
+
+
+def recipe_key(row: dict):
+    """(base, recipe, problem) of one assemble refusal row.
+
+    The recipe is the id without its base suffix ("A1_PUBLIC_v6" -> A1 on PUBLIC_v6). A "base" field
+    decides the base; a row without one (the older format) takes the base from the id suffix, and a
+    plain recipe id is the example-v1 base. A base field that contradicts the id suffix is a problem.
+    """
+    rid = str(row.get("id") or "")
+    m = RECIPE_ID.fullmatch(rid)
+    if not m:
+        return None, None, f"unknown recipe id {rid!r}"
+    recipe, suffix = m.group(1), m.group(2)
+    id_base = None
+    if suffix is not None:
+        id_base = BASES.get(suffix)
+        if id_base is None:
+            return None, recipe, f"{rid}: unknown base suffix {suffix!r}"
+    if "base" in row:
+        b = BASES.get(str(row.get("base")))
+        if b is None:
+            return None, recipe, f"{rid}: unknown base {row.get('base')!r}"
+        if id_base is not None and id_base != b:
+            return None, recipe, f"{rid}: base field {b} contradicts the id suffix {id_base}"
+        return b, recipe, None
+    return (id_base or "example-v1"), recipe, None
 
 
 def refusal_rows(ctx: Ctx):
@@ -1976,20 +2003,31 @@ def refusal_rows(ctx: Ctx):
     unknown = []
     srcs = []
     files = [(p, o) for p, o in ctx.products_checks if o.get("assemble_refusals")]
-    # A phase 2 product check names the base of each recipe run; when one exists, a phase 1 format
-    # file (no base, phase 1 A6 and A8) is not the phase 2 record.
-    phase2 = [(p, o) for p, o in files if any("base" in r for r in o["assemble_refusals"])]
+    # A phase 2 product check runs recipes on the PUBLIC_v6 base too (a base field or a base id suffix);
+    # when one exists, a phase 1 format file (example-v1 only, phase 1 A6 and A8) is not the phase 2 record.
+    def is_phase2(o):
+        return any(isinstance(r, dict) and ("base" in r or recipe_key(r)[0] == "PUBLIC_v6")
+                   for r in o["assemble_refusals"])
+    phase2 = [(p, o) for p, o in files if is_phase2(o)]
     for p, o in (phase2 or files):
         rows = o.get("assemble_refusals") or []
         if rows:
             srcs.append(p)
         for r in rows:
-            b = norm_base(r)
-            if b is None:
-                unknown.append(r.get("id"))
+            if not isinstance(r, dict):
+                unknown.append(f"non-object row in {p.name}")
                 continue
-            out.setdefault((b, r.get("id")), []).append((p, r))
+            b, recipe, problem = recipe_key(r)
+            if problem:
+                unknown.append(problem)
+                continue
+            out.setdefault((b, recipe), []).append((p, r))
     return out, unknown, srcs
+
+
+def new_format(r: dict) -> bool:
+    """A row that names its base also records the pointer (and, for A8, both file hashes)."""
+    return "base" in r
 
 
 def pointer_of(r: dict):
@@ -2015,8 +2053,8 @@ def check_assemble(ctx: Ctx) -> list[Row]:
         for p in srcs:
             tie_any(ctx, row, p)
     if unknown:
-        row.fail(f"assemble refusal rows with an unknown base: {unknown}")
-    att = 0
+        row.fail(f"assemble refusal rows with an unknown base or id: {first(unknown)}")
+    att = cmp = 0
     for base, rid in need:
         rec = recipes[rid]
         rs = got.get((base, rid))
@@ -2029,21 +2067,29 @@ def check_assemble(ctx: Ctx) -> list[Row]:
                 row.fail(f"{rid} on {base}: {r.get('status')} {r.get('code')}, expected {rec['http_status']} {rec['code']}")
             ptr = pointer_of(r)
             if ptr is None:
+                # The run's own passed flag is not a verdict: without the pointer the check is unrun.
                 if r.get("passed") is not True:
                     row.fail(f"{rid} on {base}: row not passed")
                 att += 1
             elif ptr != rec["prompt_pointer"]:
                 row.fail(f"{rid} on {base}: pointer {ptr}, expected {rec['prompt_pointer']}")
+            else:
+                cmp += 1
     if srcs:
         row.ev(f"{len(need)} recipe runs required (A1-A5, A7, A9 on example-v1; A1, A2, A4, A5, A7, A9 on PUBLIC_v6); "
-               f"status and code recomputed against the plan; {att} pointers recorded only as the per-case row")
+               f"ids read as <recipe> or <recipe>_<base>, a base field taking precedence; "
+               f"status and code recomputed against the plan; {cmp} pointers compared with the plan pointer")
+        if att:
+            row.unrun(f"{att} recipe rows record no prompt_pointer (older format), so their pointers cannot be compared")
     rows_out.append(row)
 
-    # A6
+    # A6 (phase 2 replacement, on the example-v1 base)
     row = Row("phase2.assemble_refusals", "A6", ar["A6"])
-    rs = [x for (b, i), v in got.items() if i == "A6" for x in v]
+    rs = got.get(("example-v1", "A6")) or []
     if not rs:
-        row.unrun("A6 not recorded")
+        row.unrun("A6 on example-v1 not recorded")
+    for p in sorted({p for p, _ in rs}):
+        tie_any(ctx, row, p)
     for p, r in rs:
         if r.get("status") != 422 or r.get("code") != "UNSUPPORTED_TARGET":
             row.fail(f"A6: {r.get('status')} {r.get('code')}, expected 422 UNSUPPORTED_TARGET")
@@ -2054,36 +2100,46 @@ def check_assemble(ctx: Ctx) -> list[Row]:
         if ptr is None:
             if r.get("passed") is not True:
                 row.fail("A6 row not passed")
-            row.ev("A6: 422 UNSUPPORTED_TARGET recomputed; the pointer is recorded only as the per-case row")
+            row.ev("A6: 422 UNSUPPORTED_TARGET recomputed")
+            row.unrun("A6: the row records no prompt_pointer, so the RS12 pointer cannot be compared")
         elif not str(ptr).startswith("/bundle/prompt"):
             row.fail(f"A6 pointer {ptr} not under /bundle/prompt")
-        elif ref_ptr and ptr != "/bundle" + ref_ptr:
-            row.fail(f"A6 pointer {ptr} is not the RS12 typed prompt pointer under /bundle")
         elif not ref_ptr:
             row.unrun("RS12 refusal pointer not available to compare the A6 pointer")
+        elif ptr != "/bundle" + ref_ptr:
+            row.fail(f"A6 pointer {ptr} is not the RS12 typed prompt pointer under /bundle")
+        elif not tie_any(ctx, row, rs12[0]):
+            row.unrun("the RS12 case record that gives the reference pointer is not sealed by a receipt")
         else:
             row.ev(f"A6: 422 UNSUPPORTED_TARGET at {ptr} (the RS12 pointer under /bundle)")
     rows_out.append(row)
 
     # A8
     row = Row("phase2.assemble_refusals", "A8", ar["A8"])
-    rs = [x for (b, i), v in got.items() if i == "A8" for x in v]
+    rs = got.get(("example-v1", "A8")) or []
     if not rs:
-        row.unrun("A8 not recorded")
+        row.unrun("A8 on example-v1 not recorded")
+    for p in sorted({p for p, _ in rs}):
+        tie_any(ctx, row, p)
     for p, r in rs:
         if r.get("status") != 200 or r.get("code") not in (None, ""):
             row.fail(f"A8: {r.get('status')} {r.get('code')}, expected 200")
             continue
         hashes = {k: v for k, v in r.items() if "files_sha256" in k and isinstance(v, str)}
-        if len(hashes) >= 2:
+        bad = [k for k, v in hashes.items() if not re.fullmatch(r"[0-9a-f]{64}", v)]
+        if bad:
+            row.fail(f"A8: {bad} not a sha256 hex digest")
+        elif len(hashes) >= 2:
             if len(set(hashes.values())) != 1:
                 row.fail(f"A8 files differ from the compile and assemble of the renamed prompt: {sorted(hashes)}")
             else:
-                row.ev(f"A8: 200 and {sorted(hashes)} equal")
+                row.ev(f"A8: 200 and {sorted(hashes)} equal ({next(iter(hashes.values()))})")
         else:
             if r.get("passed") is not True:
                 row.fail("A8 row not passed")
-            row.ev("A8: 200 recomputed; file equality is recorded only as the per-case row")
+            row.ev("A8: 200 recomputed")
+            row.unrun(f"A8: the row records {sorted(hashes) or 'no'} file hashes; files_sha256 and "
+                      "renamed_files_sha256 are both needed to compare the files")
     rows_out.append(row)
     return rows_out
 
