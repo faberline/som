@@ -7,6 +7,7 @@ output hashes; summary.json maps each plan check to the steps that prove it. The
 identity and the default on 8765 are recorded before and after; 8765 gets read-only compile and
 assemble calls from check_targets.py only (the reference compiler).
 
+Each step passes on exit code 0, except rust-products (see judge_rust_products).
 The independent audit (the last plan check) is not run here: it reads this run's raw outputs.
 
 usage: run_issue57.py --candidate DIR --vendor DIR --out NEW_DIR
@@ -46,7 +47,7 @@ def steps(candidate: pathlib.Path, run: pathlib.Path, qa: str) -> list[dict]:
         {"name": "cli", "cwd": ra.REPO,
          "argv": [py, str(HERE / "check_cli.py"), "--binary", str(candidate / "som"), "--base-url", qa,
                   "--out", str(run / "cli.json"), *phase2], "outputs": ["cli.json"]},
-        {"name": "rust-products", "cwd": ra.QA_DIR,
+        {"name": "rust-products", "cwd": ra.QA_DIR, "judge": judge_rust_products,
          "argv": [py, str(HERE / "run_acceptance.py"), "cluster-gates", "--qa", qa, "--work", str(run / "products"),
                   "--target-dir", str(run / "target"), "--out", str(run / "rust-products.json"), "--no-gates", *phase2],
          "outputs": ["rust-products.json"]},
@@ -61,6 +62,31 @@ def steps(candidate: pathlib.Path, run: pathlib.Path, qa: str) -> list[dict]:
          "argv": [py, str(HERE / "check_name_collisions.py"), "--qa", qa, "--out", str(run / "name-collisions.json")],
          "outputs": ["name-collisions.json"]},
     ]
+
+
+PARITY_BLOCKER = "behavior parity: not run, pass --parity with a check_behavior.py report"
+
+
+def judge_exit(receipt: dict, _run: pathlib.Path) -> tuple[bool, dict]:
+    return receipt["exit_code"] == 0, {}
+
+
+def judge_rust_products(receipt: dict, run: pathlib.Path) -> tuple[bool, dict]:
+    """Plan check 5 asks for the bundle checks and assemble_refusals, not the product gates or parity:
+    a --no-gates report exits 2 with the parity blocker alone. The products themselves are compared
+    with the accepted #55 products by rust-unchanged."""
+    report = ra.load(run / "rust-products.json")
+    summary = report["summary"]
+    refusals = {row["id"]: row for row in report["assemble_refusals"]}
+    ok = (receipt["exit_code"] in (0, 2) and not summary["failed"] and summary["blocked"] in ([], [PARITY_BLOCKER])
+          and summary["bundle_checks"]["passed"] == summary["bundle_checks"]["total"]
+          == summary["acceptance_cases"]["frozen_acceptance_total"]
+          and summary["assemble_refusals"]["passed"] == summary["assemble_refusals"]["total"] == len(refusals)
+          and all(row["passed"] for row in refusals.values()) and report["refusal_plan"] == "phase2"
+          and refusals.get("A6", {}).get("code") == "INVALID_VALUE")
+    return ok, {"exit_code": receipt["exit_code"], "bundle_checks": summary["bundle_checks"],
+                "assemble_refusals": summary["assemble_refusals"], "blocked": summary["blocked"],
+                "A6_amendment_004": refusals.get("A6", {}).get("code")}
 
 
 # Each acceptance-plan.json issue57 check and the steps whose exit codes prove it.
@@ -105,7 +131,7 @@ def main() -> int:
 
     receipts = []
     for index, step in enumerate(steps(candidate, run, qa), 1):
-        step["judge"] = lambda receipt, _run: (receipt["exit_code"] == 0, {})
+        step.setdefault("judge", judge_exit)
         receipts.append(ra.run_step(index, step, run, env_delta))
     passed = {r["step"]: r["passed"] for r in receipts}
     coverage = [{"index": i, "check": check, "steps": names,
