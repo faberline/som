@@ -52,7 +52,7 @@ def input_hashes(args):
     paths += [args.repo / rel for rel in (
         'som-code-python/data/blocks/v5/blocks.json',
         'som-code-python/data/blocks/composed-quality/blocks.json',
-        'som-code-python/data/blocks/flow-v7-compact/blocks.json',
+        'som-code-python/data/blocks/flow-v7-compact-self/blocks.json',
         'som-code-python/data/block-contracts/composed-quality.json',
         'som-code-python/data/block-contracts/flow-v7-compact.json',
         'som-rs/tests/compiler-v1/typed-json-fixtures.json',

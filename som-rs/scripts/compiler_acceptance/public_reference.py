@@ -29,7 +29,7 @@ import build_date_corpus_v4  # noqa: E402
 BINARY = Path('ruff-not-configured')
 PROFILE = ROOT / 'som-rs/contracts/python-quality-v1/pyproject.toml'
 LEGACY = {b['id']: b for b in json.loads((ROOT / 'som-code-python/data/blocks/v5/blocks.json').read_text(encoding='utf-8'))}
-CURRENT = {b['id']: b for b in json.loads((ROOT / 'som-code-python/data/blocks/flow-v7-compact/blocks.json').read_text(encoding='utf-8'))}
+CURRENT = {b['id']: b for b in json.loads((ROOT / 'som-code-python/data/blocks/flow-v7-compact-self/blocks.json').read_text(encoding='utf-8'))}
 QUALITY_BLOCKS = {b['id']: b for b in json.loads((ROOT / 'som-code-python/data/blocks/composed-quality/blocks.json').read_text(encoding='utf-8'))}
 OPS = ['create', 'get', 'list', 'patch', 'delete']
 

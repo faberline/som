@@ -390,7 +390,7 @@ def build_jobs(asset_index_path: Path = DEFAULT_ASSET_INDEX,
     }
     if checked_ids != expected_checked_ids:
         raise ValueError(f'approved checked-variant inventory changed: {sorted(checked_ids)}')
-    blocks_path = REPO / 'som-code-python/data/blocks/flow-v7-compact/blocks.json'
+    blocks_path = REPO / 'som-code-python/data/blocks/flow-v7-compact-self/blocks.json'
     checked_plan_validation = []
     blocks = load_blocks(blocks_path.parent)
     for job in jobs:
@@ -514,7 +514,7 @@ def build_jobs(asset_index_path: Path = DEFAULT_ASSET_INDEX,
         REPO / 'som-core/src/som_core/compact_names.py',
         REPO / 'som-core/src/som_core/quality.py',
         REPO / 'som-core/src/som_core/v1.py',
-        REPO / 'som-code-python/data/blocks/flow-v7-compact/blocks.json',
+        REPO / 'som-code-python/data/blocks/flow-v7-compact-self/blocks.json',
         REPO / 'som-code-python/data/block-contracts/flow-v7-compact.json',
         REPO / 'som-rs/contracts/python-literal-encoding.v1.json',
         REPO / 'som-rs/contracts/python-quality-v1/pyproject.toml',
@@ -746,7 +746,7 @@ def run_acceptance(client: qa.Client, inventory: dict[str, Any], jobs: list[dict
         raise ValueError('invalid per-version asset index: ' + '; '.join(asset_index_errors))
     policy = json.loads((CONTRACT / 'selection-policy.json').read_text(encoding='utf-8'))
     serialize_prompt = load_serializer()
-    blocks_path = REPO / 'som-code-python/data/blocks/flow-v7-compact/blocks.json'
+    blocks_path = REPO / 'som-code-python/data/blocks/flow-v7-compact-self/blocks.json'
     blocks = load_blocks(blocks_path.parent)
     output.mkdir(parents=True, exist_ok=False)
     before_status, before_body, before_raw = candidate_health(client.base_url or '')

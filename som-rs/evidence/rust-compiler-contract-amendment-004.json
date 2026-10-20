@@ -1,0 +1,225 @@
+{
+  "version": "som.compiler-contract-amendment.v1",
+  "amendment": 4,
+  "frozen_at": "2026-10-20T07:59:59.998449+00:00",
+  "baseline_commit": "2e95fc75f66ef6936a53bb39f204786ef9bc0f04",
+  "issue": [
+    57,
+    58
+  ],
+  "status": "amendment_sealed_after_independent_review",
+  "previous_receipt": "som-rs/evidence/rust-compiler-contract-amendment-003.json",
+  "previous_receipt_sha256": "bcdd59eda51d4b2a21c855f0186432ed7f9bc301331892ac35fb8e623120ae81",
+  "reason": "Amendment 003 appended the variant compact.service.flow.store.postgresql.self to som-code-python/data/blocks/flow-v7-compact/blocks.json. That file is the block library of the retained M2 service: blocks/current points to it, and the accepted M2 health (.local/rust-compiler-goal/acceptance/default-switch-001/0002-legacy-default.json) records blocks_sha256 5a75971536ae02f627bb4a4e97737604cefc120e71293b8c10f7dcc442c460ea. Section 9 binds those hashes to the M2 service and requires a fresh M2 restore before a default switch; the #57 release inputs (rust_output_release/prepare_inputs.py) refused with 'blocks differ from the legacy health', and a rollback to M2 would have failed its health check. Amendment 004 restores the M2 bytes and moves the amended library, byte for byte, to som-code-python/data/blocks/flow-v7-compact-self/blocks.json, which compiler-v1 embeds.",
+  "changed_paths": [
+    "som-rs/contracts/compiler-v1/CONTRACT.md"
+  ],
+  "added_paths": [],
+  "changes": [
+    {
+      "path": "som-rs/contracts/compiler-v1/CONTRACT.md",
+      "old_sha256": "2a681fa92148848f6311d9a8be73ede3150ea76357aa8bf2bc1ec76dc0de7ddd",
+      "new_sha256": "cf0a1727f924fd5b43df976ab8ca98c811d10e39d9ba41b6434f99f57fc65f3e",
+      "archived_copy": "som-rs/evidence/rust-compiler-contract-archive/CONTRACT-before-amendment-004.md",
+      "archived_copy_sha256": "2a681fa92148848f6311d9a8be73ede3150ea76357aa8bf2bc1ec76dc0de7ddd"
+    }
+  ],
+  "unchanged": "Every other path of amendment 003 keeps its hash: grammar, field map, schemas, selection policy v1.2, examples, canonical vectors and every fixture. No fixture expectation, error code, status mapping, selection rule or block changes.",
+  "libraries": {
+    "m2": {
+      "path": "som-code-python/data/blocks/flow-v7-compact/blocks.json",
+      "sha256": "5a75971536ae02f627bb4a4e97737604cefc120e71293b8c10f7dcc442c460ea",
+      "blocks": 357,
+      "equals": "the bytes before amendment 003 (2108a97cc7^) and the accepted M2 health blocks_sha256"
+    },
+    "compiler": {
+      "path": "som-code-python/data/blocks/flow-v7-compact-self/blocks.json",
+      "sha256": "c7269e89d5f7b8fb2b36703cc2ccb6ef8201eccfc62fbffe526714fbd570311e",
+      "blocks": 358,
+      "equals": "the amendment 003 bytes of the M2 path (implementation_at_freeze of amendment 003)",
+      "added_after_m2": [
+        "compact.service.flow.store.postgresql.self"
+      ]
+    }
+  },
+  "effect": "The embedded blocks.json asset keeps its bytes. compiler.rs (an input of the backend manifest) and CONTRACT.md (the compiler_contract descriptor) change, so the backend hash, the asset manifest and every bundle's asset descriptors and payload hash change again; rust-output-v1 amendment 004 python_unchanged already admits exactly this. DSL and product files stay byte-identical.",
+  "checks": {
+    "variant_builder": {
+      "command": "python3 som-core/scripts/build_self_name_variants.py --check",
+      "result": "checked 5 variants; no change"
+    },
+    "cargo_test": {
+      "command": "cargo test --locked --offline (som-rs)",
+      "log_sha256": "57e483a1b38b0c1ad76fba5b2bcb7cf635ca714dd8110c0164a60c6b86fe9427",
+      "results": [
+        "test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.10s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.35s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.07s",
+        "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    "clippy": {
+      "command": "cargo clippy --locked --offline --all-targets -- -D warnings (som-rs)",
+      "log_sha256": "f76a3b5cfaaeabd416732f673e498b9f1559d85b7391396569260381e7a141ce",
+      "result": "failed",
+      "lints": 34,
+      "files": [
+        "src/cnl_semantics.rs",
+        "src/composed.rs",
+        "src/flow.rs",
+        "src/flow_codec.rs",
+        "src/flow_compact.rs",
+        "src/flow_constraints.rs",
+        "src/json_diagnostics.rs",
+        "src/lib.rs",
+        "src/planner.rs",
+        "src/python_names.rs"
+      ],
+      "note": "not a compiler-v1 gate: every lint is in a file this amendment does not change; compiler.rs changes one include path and clippy reports nothing in it"
+    },
+    "som_core_tests": {
+      "state": "not run",
+      "reason": "tests/test_flow_compact_storage.py and the other som-core tests that read the M2 library need fastapi, which the local som-core venv lacks and PyPI is not approved; the M2 library is restored to the bytes they were written against"
+    }
+  },
+  "acceptance_requirements": [
+    "a new candidate built from this source, with the issue57 acceptance (acceptance-plan.json issue57) run again on it and an independent audit with no failed and no unrun check",
+    "the #57 release inputs bind the accepted M2 health and pass a fresh M2 restore"
+  ],
+  "implementation_at_freeze": {
+    "som-rs/src/compiler.rs": "9f131e728e2feb2b769d7150053a3949b5149a024a2cde1e38035c13c54e935f",
+    "som-code-python/data/blocks/flow-v7-compact/blocks.json": "5a75971536ae02f627bb4a4e97737604cefc120e71293b8c10f7dcc442c460ea",
+    "som-code-python/data/blocks/flow-v7-compact-self/blocks.json": "c7269e89d5f7b8fb2b36703cc2ccb6ef8201eccfc62fbffe526714fbd570311e",
+    "som-core/scripts/build_self_name_variants.py": "90bc2e6d50352465d2a3a96808ac6bb127928e58a0ecfbe006c9187e9f5e371b",
+    "som-rs/scripts/compiler_acceptance/asset_index_generator.py": "5d1a1d84117f8938237aafa547702adb33d910fc54155c4ddda935f1943cb17d",
+    "som-rs/scripts/compiler_acceptance/diagnostic_http_acceptance.py": "6e9ab32be5857f5a539858da253f6054765c0a0134a0dca9ec84a2f791f94864",
+    "som-rs/scripts/compiler_acceptance/public_reference.py": "e94c996cfe612f30acd06e311e1817ed7c3228bcc6d54646b3b45c4001d78a06",
+    "som-rs/scripts/compiler_acceptance/legacy544/runner.py": "e29002a568435d8f9f6af310ce78dfd6e62a1dd2b30e462130319b4a8297923a"
+  },
+  "files": {
+    "som-rs/contracts/compiler-v1/CONTRACT.md": "cf0a1727f924fd5b43df976ab8ca98c811d10e39d9ba41b6434f99f57fc65f3e",
+    "som-rs/contracts/compiler-v1/acceptance-plan.json": "fe21a5e91b393c55324f7c4b7fd47d83cdfeab7455f1251390bb07cfe479b324",
+    "som-rs/contracts/compiler-v1/api.schema.json": "d06ce804113d362ecc5687f6b1d97213114406e41aaf01b304a521ff5adf2f3a",
+    "som-rs/contracts/compiler-v1/backend-source-manifest.json": "5113ca0f2e5fbdb277783fc5b8820a663d94a82ec03fcff7ab834dca235a8261",
+    "som-rs/contracts/compiler-v1/bundle-cases.json": "423d48f8f083d67ee5f8e54da1d07dabf06a570b49ca1780b927f154d8a7e7e9",
+    "som-rs/contracts/compiler-v1/bundle.schema.json": "d1ba391ffbdc8ce032b3a135b28cfd977888212f0d6f06f72dedcb86e42ba8da",
+    "som-rs/contracts/compiler-v1/canonical-vector-qualification.json": "739c245ed05cd898cc16b81a2dd759ad038ff54c61ea74e329a56415aebdf757",
+    "som-rs/contracts/compiler-v1/canonical-vectors.json": "dd09b41f49702f70098574f638e10ea33646366a77dfa486539f324d6f9ff83f",
+    "som-rs/contracts/compiler-v1/compiler-prompt.schema.json": "aa9e6300668181beab47643b6748b72a0942499e454b290f3c6c45053524be73",
+    "som-rs/contracts/compiler-v1/examples/index.json": "8a0a26e6d88e1661edd9b6617203c7dcb30d298c257456b3e48ebfca2e0790e1",
+    "som-rs/contracts/compiler-v1/examples/v1.cnl": "bd30aa50074c2bdb447bcb46cc560a994efd312652623b373afcec5127bf30e0",
+    "som-rs/contracts/compiler-v1/examples/v1.prompt.json": "8a0269b81d7831c329c04d3114d3feaaa4c2def6df378a76b6569e9bf282463a",
+    "som-rs/contracts/compiler-v1/examples/v2.cnl": "2780570353b20be98aac50f87e7fee1bb9401a0ba5479167ee9a711d3c03a0c1",
+    "som-rs/contracts/compiler-v1/examples/v2.prompt.json": "a5baf60682bb5096eb44d14932de9ff95390f40e02eb5887dddbe0d96206ab3f",
+    "som-rs/contracts/compiler-v1/examples/v3.cnl": "829198a93e006155cc2a067bccb310b402b1b5e732d44e50c6ae321acb885d60",
+    "som-rs/contracts/compiler-v1/examples/v3.prompt.json": "72361df884e7d4bf28b9a71da5c6dd4c119fde0e19aa78dcb5c4d2a2d45668ed",
+    "som-rs/contracts/compiler-v1/examples/v4.cnl": "1abb4ba198330434bcc9be833e07a87959506e7d17bf94c165478190e6ae6b56",
+    "som-rs/contracts/compiler-v1/examples/v4.prompt.json": "6f123ea4ff72b7e0d6cba50278b10a5da1ecc449dd441b2ae0ff480500b8e43a",
+    "som-rs/contracts/compiler-v1/examples/v5.cnl": "17c364efbd4262aac7543c1771213047b1332bbd8295ed6e69f8fff181e6d454",
+    "som-rs/contracts/compiler-v1/examples/v5.prompt.json": "65101209a650e209be40ee35d969c6f6764d471a5ea4d71f4561dc054d8bbc39",
+    "som-rs/contracts/compiler-v1/examples/v6.cnl": "609f7613f3ee5c73707cfa8d1b21cfdb31b191c20d334ff7c58ed2bacb5116c2",
+    "som-rs/contracts/compiler-v1/examples/v6.prompt.json": "33d902b113a2cf203250cc6b5e6b41cea5b02225890ad53e96019114a2bf3722",
+    "som-rs/contracts/compiler-v1/examples/v7-branch-null.cnl": "3857714e702c269eb010dfce7a1588f54abb22cd8a1c9913612aad30a877ce41",
+    "som-rs/contracts/compiler-v1/examples/v7-branch-null.prompt.json": "4e3c80e264d13e83c894418f2d011f4dc3b26f94fb5dc094efb719b1b503e522",
+    "som-rs/contracts/compiler-v1/examples/v7.cnl": "644149192bc7bc65d7b28100d518fc9cbfa0d2d35a27b022452d02ab6138e262",
+    "som-rs/contracts/compiler-v1/examples/v7.prompt.json": "2d4a92302f99c30723f49f2ccc642f2c7bf58daf25c8f991002df93746cb5db7",
+    "som-rs/contracts/compiler-v1/field-statement-map.json": "76744262ece22db17c61683b206beaab67105245888719f9e86c2c84e8283be2",
+    "som-rs/contracts/compiler-v1/grammar.ebnf": "115f0a2fbac47903fe738a50d30e3982a7c34a5e32cad9ec987cbcb3e133b6f8",
+    "som-rs/contracts/compiler-v1/literal-policy.json": "32f863c64028dcfa444c7046ada62253ce55d9ea5cf42853f24f003c3d017be1",
+    "som-rs/contracts/compiler-v1/public-sources.json": "4d34976035dd022977d9251b87de4664516addd75c7288117d8dba4ca44f8ae8",
+    "som-rs/contracts/compiler-v1/selection-policy.json": "6fc29cf4791de4e2c6ec716a03426cf66cb1bdd0c5659c30511b837da8552f56",
+    "som-rs/contracts/compiler-v1/selection-policy.md": "914ed5c5a798746b305942d9a03906d28a1e3fbd55e72a71db49a253bae490d1",
+    "som-rs/contracts/compiler-v1/serializer-policy.json": "3704fe8f9a2460d22d1d348f018e62151755b29f0ab194e083f4f2347596ffd1",
+    "som-rs/contracts/compiler-v1/source-index.json": "f21edfb8893ca242ef961ee55a35b426d066af3ba26032e752cc871964d6b033",
+    "som-rs/tests/compiler-v1/cnl-negative-cases.json": "e85f70b29f37915c81135b99b936c4aeaa69fc2c3393151496d156e99b3b0539",
+    "som-rs/tests/compiler-v1/cnl-positive-fixtures.json": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
+    "som-rs/tests/compiler-v1/coverage-and-scope.md": "180217f14779d0838045e7727d1a106fec885260da356b9c02d2d9a002729c19",
+    "som-rs/tests/compiler-v1/field-refusal-inventory.json": "2387d3f4fbee6851f31f400c8d99379ccc130d56e02eef8acf7c6cf2f2fe604c",
+    "som-rs/tests/compiler-v1/flow-operation-capability-assertions.json": "97a47682ffe268258900a68ec6fc5d24ac9eae5f503df567cb89dbe7be9f32ce",
+    "som-rs/tests/compiler-v1/self-name-fixtures.json": "821b4ef626e42805dc96537dda1ac7cf6ba3de85d7a67f1ca04cdc8cc37f46ed",
+    "som-rs/tests/compiler-v1/self_name_fixtures.py": "e192e5251cab3eff22db0e323a426ddf5f5bab445c5c13af927f49328de0031e",
+    "som-rs/tests/compiler-v1/serializer.py": "bfb8eca480c08ee16c1a8bb42aae4a8a10f947ed0ca9c9c5521c75d09809632d",
+    "som-rs/tests/compiler-v1/typed-json-fixtures.json": "5eebf784317e6611451092d286fc589bb90e6999f21c7390b56f74545da9e1bc",
+    "som-rs/tests/compiler-v1/typed-json-oracle-cases.json": "39582fb7b41747d80ffcce0902dca5931810df222e1dd0427d334002f6cf50c6"
+  },
+  "independent_review": {
+    "reviewer": "independent Claude Opus 5.5 subagent, read-only, no calls to 8765",
+    "receipt_files_sha256": "30bf9d7c746a8e72c9d001a8040d790b5a552f183761dc3bdd7313a3d511eb43",
+    "final_verdict": "APPROVED",
+    "confirmed_without_change": [
+      "Receipt integrity: all 44 `files` hashes match disk; the key set equals amendment 003's `files` key set; the only key whose hash differs from amendment 003 is som-rs/contracts/compiler-v1/CONTRACT.md, so changed_paths=[CONTRACT.md] and added_paths=[] are correct. Canonical sha256(json.dumps(files, sort_keys=True, separators=(',',':'))) = 30bf9d7c746a8e72c9d001a8040d790b5a552f183761dc3bdd7313a3d511eb43 (amendment 003's is 5ca3d37a...07ce2).",
+      "previous_receipt_sha256 bcdd59eda51d...ae81 equals sha256 of som-rs/evidence/rust-compiler-contract-amendment-003.json on disk, which is byte-identical to HEAD.",
+      "changes[0]: new_sha256 cf0a1727... = disk CONTRACT.md; old_sha256 2a681fa9... = amendment 003 files[CONTRACT.md] = git show HEAD:CONTRACT.md = archived_copy_sha256; the archive file is byte-identical to the HEAD CONTRACT.md; the new CONTRACT.md is the HEAD bytes plus an appended section 11 (startswith check true).",
+      "All 8 implementation_at_freeze hashes match disk.",
+      "Claim 1: flow-v7-compact/blocks.json on disk sha 5a75971536ae... = git show 2108a97cc7^ bytes = blocks_sha256 in .local/rust-compiler-goal/acceptance/default-switch-001/0002-legacy-default.json; 357 blocks, canonical layout; som-code-python/data/blocks/current still -> flow-v7-compact.",
+      "Claim 2: flow-v7-compact-self/blocks.json (only file in the new dir) sha c7269e89d5f7... = git show HEAD:flow-v7-compact/blocks.json = amendment 003 implementation_at_freeze for the M2 path; 358 blocks whose first 357 equal the M2 library and whose only extra block is compact.service.flow.store.postgresql.self; canonical layout.",
+      "Claim 3: compiler.rs on disk equals HEAD with only the CURRENT_BYTES include_bytes! path replaced (string-replace equality check). CURRENT_BYTES feeds asset 'blocks.json', health blocks_sha256 and package_assets, so the embedded asset bytes stay c7269e...; backend_manifest() include_str!s src/compiler.rs, so the backend hash changes.",
+      "Claim 4: `python3 som-core/scripts/build_self_name_variants.py --check` -> 'checked 5 variants; no change' (rc 0). In a scratch copy of the tree: missing copy -> --check fails, write regenerates sha c7269e... exactly and leaves M2 bytes unchanged, then --check passes and a second write is a no-op; M2 holding the variant -> refused in both modes; copy with stale base, extra block, empty file -> --check fails; non-canonical copy -> refused; v5 and composed-quality paths unchanged (OUTPUT maps only flow-v7-compact).",
+      "Claim 5: the four compiler_acceptance readers (asset_index_generator.py, diagnostic_http_acceptance.py, public_reference.py, legacy544/runner.py x3) now read flow-v7-compact-self/blocks.json; diff is path-only.",
+      "Claim 6: CONTRACT.md is the only changed contract file; section 11 is appended text only. `git diff HEAD --stat` and `git status --short` show exactly the 8 modified files plus the 3 untracked paths named in the brief; no other block library, selection rule, fixture, error code or contract file changed.",
+      "Section 11 is accurate: M2 path/hash/symlink facts, byte-identity of the copy with amendment 003's M2 bytes, builder behaviour and the descriptor effect all verified; it is consistent with section 9 (fresh M2 restore) and reads as a correction of section 10's 'approved v5, composed-quality and flow-v7-compact libraries' sentence.",
+      "Reader sweep: no other Python/Rust reader outside som-core references the flow-v7-compact block file (git grep). som-core M2-era scripts/tests (freeze_m2_candidate, run_flow_acceptance, train_flow, switch_flow_default, check_flow_compact_*, tests/test_flow_*) correctly keep the M2 file; compiler_default_switch.py and rust_output_release/prepare_inputs.py bind blocks/current and the legacy health, which now match (5a7597...). qa_harness.py only reads block-contracts/flow-v7-compact.json (catalog, unchanged). public-sources.json and renderer_behavior/references/boundary-receipt.json record 5a7597..., which matches disk again.",
+      "cargo test --locked --offline (isolated CARGO_TARGET_DIR under scratch/review004/target): exit 0, the same 14 result lines and counts as the author's a004-cargo-test.log (21/0/0/5/0/0/0/0/3/0/11/2/3/0 passed, 0 failed). Author log sha256 57e483a1... and clippy log f76a3b5c... match the receipt.",
+      "Clippy: the author's log lists lints only in cnl_semantics, composed, flow, flow_codec, flow_compact, flow_constraints, json_diagnostics, lib, planner, python_names; none in compiler.rs, and none of those files is touched by this diff, so the failure is pre-existing; a one-line string-literal path change cannot introduce a lint.",
+      "check_contract.py 'receipt was sealed before implementation' is pre-existing: the check requires status == 'contract_frozen_before_implementation', while rust-output receipts 001-004 all have status 'amendment_sealed_after_independent_review'; running it on rust-output amendment 004 gives only that failure, and all 52 files of that receipt still match disk (this amendment touches no rust-output-v1 file).",
+      "python_replay.py ASSET_BREAK_DESCRIPTORS = (backend, block_library, catalog, compiler_contract, selection_policy) already admits the descriptors this amendment changes (backend, compiler_contract); no replay change needed.",
+      "som-core tests on the restored M2 library (subset that imports in the local venv): tests/test_flow_compact_contract.py + tests/test_flow_constraints.py -> 146 passed, 3 failed, all 3 with ModuleNotFoundError: fastapi (environment, not the library)."
+    ],
+    "findings": [
+      {
+        "severity": "major",
+        "item": "audit057 check_frozen (plan run check 5) will now fail, so the acceptance requirement 'independent audit with no failed and no unrun check' cannot be met without a tooling follow-up.",
+        "evidence": "som-rs/scripts/rust_output_acceptance/audit/audit057.py AMEND_EVIDENCE pins som-rs/evidence/rust-compiler-contract-amendment-003.json and fails on any `files` entry whose disk hash differs; simulating it now gives 'changed: [som-rs/contracts/compiler-v1/CONTRACT.md]' (2a681fa9... recorded vs cf0a1727... on disk). The rust-output amendment 004 receipt (52 files) still passes.",
+        "suggestion": "Before re-running the issue57 audit, change AMEND_EVIDENCE (and the row 5 text/docstring) to use the newest sealed compiler-v1 receipt (amendment 004 once sealed), or walk the chain: for each later receipt, accept a 003 file only when a sealed later receipt lists it in `changes` with old_sha256 = the 003 hash, the archived copy hashes to it, and the new hash equals disk. Seal amendment 004 first so the audit binds a sealed receipt."
+      },
+      {
+        "severity": "minor",
+        "item": "build_self_name_variants.py --check compares the copy as parsed JSON, not as bytes, so a copy with reordered keys inside a block passes --check.",
+        "evidence": "The canonical-layout test re-dumps the parsed object in its own key order and the derived comparison uses dict equality; a write would produce different bytes. Same pattern already exists for the in-place libraries (pre-existing), and the embedded sha would still be caught by receipts/acceptance.",
+        "suggestion": "Optionally compare bytes: fail when `written != json.dumps(kept + derived, indent=2) + '\\n'` (and likewise for in-place libraries)."
+      },
+      {
+        "severity": "note",
+        "item": "selection-policy.json asset_families.v7 says 'blocks from approved current library' and public-sources.json describes flow-v7-compact/blocks.json as the 'approved library input to public reference qualification', while public_reference.py and the compiler now use flow-v7-compact-self.",
+        "evidence": "Both files are frozen contract files (hashes unchanged by design); section 11 states which file compiler-v1 embeds. public-sources.json's recorded hash 5a7597... matches the M2 file on disk again.",
+        "suggestion": "No change in this amendment; if a later amendment touches selection-policy/public-sources, add the flow-v7-compact-self path so wording does not suggest blocks/current."
+      },
+      {
+        "severity": "note",
+        "item": "som-core tests that need fastapi/alembic were not run (receipt marks them not run).",
+        "evidence": "Local som-core venv lacks fastapi and alembic; 146 importable tests in test_flow_compact_contract.py and test_flow_constraints.py pass on the restored M2 bytes.",
+        "suggestion": "Run the full som-core suite where fastapi/alembic are available, or keep it recorded as unrun."
+      },
+      {
+        "severity": "note",
+        "item": "Input-hash records of legacy544 runner and diagnostic_http_acceptance now key flow-v7-compact-self instead of flow-v7-compact.",
+        "evidence": "Earlier recorded runs list the M2 path; new runs list the copy (same bytes c7269e... as amendment 003's runs).",
+        "suggestion": "Any comparator against earlier run input maps should expect the renamed key; the receipt already requires a new candidate and acceptance run."
+      }
+    ],
+    "commands_run": [
+      "git status --short; git diff HEAD --stat; git diff HEAD -- som-core som-rs/contracts som-rs/scripts som-rs/src",
+      "python3 scratch/review004/verify.py (receipt files/changes/implementation_at_freeze hashes, previous_receipt_sha256, key set vs 003, canonical files hash, M2 vs 2108a97cc7^, copy vs HEAD, block prefix, canonical layout, health blocks_sha256, symlink, archive vs HEAD, contract append-only, compiler.rs one-line diff)",
+      "python3 som-core/scripts/build_self_name_variants.py --check",
+      "python3 scratch/review004/sim_builder.py (builder edge cases in a scratch copy of the tree)",
+      "git grep for 'flow-v7-compact/blocks', 'blocks/current', 'flow-v7-compact', hard-coded hashes 2a681fa9/c7269e89/5a759715/cf0a1727, public-sources/source_manifest readers",
+      "sed/grep of compiler.rs, compiler_default_switch.py, prepare_inputs.py, qa_harness.py, audit057.py, python_replay.py, check_contract.py, CONTRACT.md sections 9-11, selection-policy.json, public-sources.json",
+      "python3 scratch/review004/frozen.py (simulates audit057 check_frozen)",
+      "python3 som-rs/tests/rust-output-v1/check_contract.py --receipt som-rs/evidence/rust-output-contract-amendment-00{3,4}.json",
+      "CARGO_TARGET_DIR=scratch/review004/target cargo test --locked --offline (som-rs)",
+      "shasum -a 256 scratch/a004-cargo-test.log scratch/a004-clippy.log; grep of clippy log file list",
+      "som-core/.venv/bin/python -m pytest -p no:cacheprovider -q tests/test_flow_compact_contract.py tests/test_flow_constraints.py (PYTHONDONTWRITEBYTECODE=1)"
+    ],
+    "rounds": 1
+  }
+}

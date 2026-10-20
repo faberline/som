@@ -7,6 +7,10 @@ existing blocks. No existing block changes. compiler-v1 selects a variant only w
 resource field or the foreign key is named `self` (selection-policy.json
 `self_name_variants`). `--check` verifies that the libraries already hold exactly the
 derived variants and changes nothing.
+
+flow-v7-compact/blocks.json binds the retained M2 service (`blocks/current`), so its
+variants go to a copy, flow-v7-compact-self/blocks.json, which compiler-v1 embeds
+(compiler-v1 amendment 004). The v5 and composed-quality libraries hold theirs in place.
 """
 import json
 import pathlib
@@ -14,6 +18,8 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 BLOCKS = ROOT / "som-code-python/data/blocks"
+# Library whose variants are written to another directory: the base stays the M2 bytes.
+OUTPUT: dict[str, str] = {"flow-v7-compact": "flow-v7-compact-self"}
 
 CONSTRUCT = (
     "def _som_construct(*args: object, **kwargs: object) -> None:\n"
@@ -109,19 +115,28 @@ def main() -> None:
         raise SystemExit(__doc__)
     failures = []
     for library in dict.fromkeys(row[0] for row in VARIANTS):
-        path = BLOCKS / library / "blocks.json"
-        raw = path.read_text()
+        source = BLOCKS / library / "blocks.json"
+        path = BLOCKS / OUTPUT.get(library, library) / "blocks.json"
+        raw = source.read_text()
         blocks = json.loads(raw)
         if json.dumps(blocks, indent=2) + "\n" != raw:
-            raise SystemExit(f"{path}: not in the canonical library layout")
+            raise SystemExit(f"{source}: not in the canonical library layout")
         variants = {row[2] for row in VARIANTS if row[0] == library}
         kept = [block for block in blocks if block["id"] not in variants]
+        if path != source:
+            if len(kept) != len(blocks):
+                raise SystemExit(f"{source}: holds variant blocks; it must keep the M2 bytes")
+            written = path.read_text() if path.is_file() else ""
+            blocks = json.loads(written) if written else []
+            if written and json.dumps(blocks, indent=2) + "\n" != written:
+                raise SystemExit(f"{path}: not in the canonical library layout")
         by_id = {block["id"]: block for block in kept}
         derived = [derive(by_id[base], variant, imports, edits)
                    for lib, base, variant, imports, edits in VARIANTS if lib == library]
         if blocks[len(kept):] != derived or blocks[:len(kept)] != kept:
             failures.append(str(path.relative_to(ROOT)))
             if not check:
+                path.parent.mkdir(exist_ok=True)
                 path.write_text(json.dumps(kept + derived, indent=2) + "\n")
     if check and failures:
         raise SystemExit("variant blocks differ: " + ", ".join(failures))

@@ -322,3 +322,17 @@ For every accepted prompt the DSL and every assembled product file stay byte-ide
 An earlier bundle presented to a backend with this amendment fails ASSET_HASH_MISMATCH. That is a recorded compatibility break; compile the prompt again.
 The fixtures are ../../tests/compiler-v1/self-name-fixtures.json, written by self_name_fixtures.py from public examples and CNL fixtures.
 They hold 15 `self` cases, 13 refused names and 3 accepted controls, with the expected code, detail, pointers and variant ids.
+
+## 11. Amendment 004: the retained M2 block library
+
+Amendment 004 corrects where amendment 003 put the flow-v7-compact variant. Its receipt is ../../evidence/rust-compiler-contract-amendment-004.json. Sections 1 to 10 stay binding.
+
+`som-code-python/data/blocks/flow-v7-compact/blocks.json` is the block library of the retained M2 service: `blocks/current` points to it, and its hash is the M2 health `blocks_sha256` that a fresh M2 restore must report (section 9).
+Amendment 003 appended its variant to that file, so a fresh M2 restore no longer matched the accepted M2 health.
+That file again holds the bytes M2 accepted. The flow-v7-compact library that compiler-v1 embeds as `blocks.json` is `som-code-python/data/blocks/flow-v7-compact-self/blocks.json`: those bytes followed by the variant `compact.service.flow.store.postgresql.self`.
+It holds exactly the bytes that amendment 003 gave the M2 file, so the embedded `blocks.json` asset is unchanged.
+`som-core/scripts/build_self_name_variants.py` reads the base blocks from the M2 file and writes the variant to the copy; it refuses an M2 file that holds a variant.
+The v5 and composed-quality libraries do not bind M2 and keep their variants in place.
+
+Only the backend source and this contract text change, so the backend and compiler contract descriptors and the payload hash of every bundle change again.
+For every accepted prompt the DSL and every assembled product file stay byte-identical. An earlier bundle fails ASSET_HASH_MISMATCH, as in section 10.

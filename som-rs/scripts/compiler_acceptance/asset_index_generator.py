@@ -168,7 +168,7 @@ def build_asset_index(package: Path, formatter_path: Path) -> tuple[dict[str, An
     flow_contract = ROOT / 'som-rs/contracts/related-flow.v1.md'
     legacy_path = ROOT / 'som-code-python/data/blocks/v5/blocks.json'
     quality_blocks_path = ROOT / 'som-code-python/data/blocks/composed-quality/blocks.json'
-    current_path = ROOT / 'som-code-python/data/blocks/flow-v7-compact/blocks.json'
+    current_path = ROOT / 'som-code-python/data/blocks/flow-v7-compact-self/blocks.json'
     legacy_catalog_path = policy_path
     quality_catalog_path = ROOT / 'som-code-python/data/block-contracts/composed-quality.json'
     flow_catalog_path = ROOT / 'som-code-python/data/block-contracts/flow-v7-compact.json'

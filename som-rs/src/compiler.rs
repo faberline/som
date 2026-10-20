@@ -10,7 +10,7 @@ pub const BUNDLE_VERSION: &str = "som.dsl-bundle.v1";
 pub const COMPILE_BODY_LIMIT: usize = 262144;
 pub const ASSEMBLE_BODY_LIMIT: usize = 2097152;
 const CURRENT_BYTES: &[u8] =
-    include_bytes!("../../som-code-python/data/blocks/flow-v7-compact/blocks.json");
+    include_bytes!("../../som-code-python/data/blocks/flow-v7-compact-self/blocks.json");
 const LEGACY_BYTES: &[u8] = include_bytes!("../../som-code-python/data/blocks/v5/blocks.json");
 const QUALITY_BYTES: &[u8] =
     include_bytes!("../../som-code-python/data/blocks/composed-quality/blocks.json");
