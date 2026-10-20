@@ -28,6 +28,12 @@ that frozen diagnostic with and without target. Every source form outside them
 gives a Rust bundle, and the phase 1
 refusal counts are not checked (they stay the phase 1 record).
 
+With --asset-break (rust-output-v1 amendment 004, compiler-v1 amendment 003, issues #57 and
+#58) the QA reply without target may differ from the reference reply only as
+python_unchanged.amendment_004 admits: the asset descriptors of
+python_replay.ASSET_BREAK_DESCRIPTORS and the payload_sha256 of the new payload. Each bundle is
+then assembled on its own compiler and the Python file bytes must be equal.
+
 The reference compiler gets read-only compile calls only. Legacy prompts are
 read from the local acceptance tree. The report names them by id and hash only.
 """
@@ -57,9 +63,12 @@ LEGACY = REPO / ".local" / "rust-compiler-goal" / "acceptance" / "legacy544"
 sys.path.insert(0, str(TESTS))
 import rust_profile  # type: ignore[import-not-found]  # noqa: E402
 import rust_profile_phase2  # type: ignore[import-not-found]  # noqa: E402
+sys.path.insert(0, str(SOM_RS / "scripts" / "rust_output_acceptance"))
+import python_replay  # type: ignore[import-not-found]  # noqa: E402
 
 PROFILES = {"phase1": rust_profile, "phase2": rust_profile_phase2}
 PROFILE = rust_profile
+ASSET_BREAK = False
 
 RUST_BUNDLE = "som.dsl-bundle.v2"
 SPAN_KEYS = ("line", "column", "end_line", "end_column", "byte_start", "byte_end")
@@ -268,7 +277,13 @@ def check_form(qa: str, reference: str, case: dict, form: str, request: dict) ->
     body = dump(request)
     status, raw = post(qa, body)
     ref_status, ref_raw = post(reference, body)
-    if (status, raw) != (ref_status, ref_raw):
+    same = (status, raw) == (ref_status, ref_raw)
+    if not same and ASSET_BREAK and status == ref_status == 200:
+        difference = python_replay.asset_only_difference(ref_raw, raw)
+        same = difference is None
+        if difference:
+            problems.append(difference)
+    if not same:
         problems.append("reply without target differs from the reference compiler")
     py_status, py_raw = post(qa, dump({**request, "target": "python"}))
     if (py_status, py_raw) != (status, raw):
@@ -289,7 +304,11 @@ def check_form(qa: str, reference: str, case: dict, form: str, request: dict) ->
     # The Python files: the same bundle must assemble to the same bytes on both compilers.
     assemble_body = dump({"bundle": json.loads(raw)["bundle"]})
     files_status, files_raw = post(qa, assemble_body, "/v1/assemble")
-    if files_status != 200 or (files_status, files_raw) != post(reference, assemble_body, "/v1/assemble"):
+    if ASSET_BREAK and ref_status == 200:
+        ref_files = post(reference, dump({"bundle": json.loads(ref_raw)["bundle"]}), "/v1/assemble")
+    else:
+        ref_files = post(reference, assemble_body, "/v1/assemble")
+    if files_status != 200 or (files_status, files_raw) != ref_files:
         problems.append("assembled Python files differ from the reference compiler")
     row["python_files_sha256"] = sha(files_raw)
     compiled = json.loads(raw)["bundle"]["prompt"]
@@ -377,9 +396,12 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--refusals", choices=sorted(PROFILES), default="phase1",
                         help="refusal profile: phase1 (#47 to #51) or phase2 (#53 to #56)")
+    parser.add_argument("--asset-break", action="store_true",
+                        help="rust-output-v1 amendment 004: admit the new Python asset descriptors")
     args = parser.parse_args()
-    global PROFILE
+    global PROFILE, ASSET_BREAK
     PROFILE = PROFILES[args.refusals]
+    ASSET_BREAK = args.asset_break
 
     negatives = negative_cases(args.qa)
     examples = target_examples(args.qa)
@@ -396,6 +418,7 @@ def main() -> int:
         "qa": args.qa,
         "reference": args.reference,
         "refusals": args.refusals,
+        "asset_break": args.asset_break,
         "inputs": {p.relative_to(REPO).as_posix(): sha(p.read_bytes()) for p in
                    [CONTRACT / "negative-cases.json", CONTRACT / "target-examples.json",
                     CONTRACT / "case-inventory.json", CONTRACT / "scope.json", TESTS / "rust_profile.py",
