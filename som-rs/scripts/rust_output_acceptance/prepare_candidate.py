@@ -6,7 +6,12 @@ source.json, source.tar, build.json, som, assets/ and runtime.json. The build
 uses a fresh target directory and the pinned toolchain. The candidate serves on
 a QA port and never on 8765 or 18765. Nothing in the repository is written.
 
-usage: prepare_candidate.py --out <new candidate dir> --port <QA port>
+With --package-assets FORMATTER the asset package is built from the same commit
+by som-compiler-assets (som-rs, pinned toolchain) with that native formatter,
+instead of copied from som-rs/compiler-assets/current. A compiler-v1 amendment
+that changes the Python asset descriptors needs this (#57).
+
+usage: prepare_candidate.py --out <new candidate dir> --port <QA port> [--package-assets FORMATTER]
 """
 from __future__ import annotations
 
@@ -60,16 +65,16 @@ def pinned_env(target_dir: pathlib.Path) -> dict:
             "CARGO": str(BIN_DIR / "cargo"), "CARGO_TARGET_DIR": str(target_dir), "CARGO_NET_OFFLINE": "true"}
 
 
-def timed(command: list[str], env: dict, out: pathlib.Path, index: int) -> dict:
+def timed(command: list[str], env: dict, out: pathlib.Path, index: int, cwd: pathlib.Path = TARGETS) -> dict:
     """Run one build command under /usr/bin/time -l and keep its logs."""
     started = time.monotonic()
     with (out / f"build-{index}.stdout").open("wb") as stdout, (out / f"build-{index}.stderr").open("wb") as stderr:
-        code = subprocess.run(["/usr/bin/time", "-l", *command], cwd=TARGETS, env=env,
+        code = subprocess.run(["/usr/bin/time", "-l", *command], cwd=cwd, env=env,
                               stdout=stdout, stderr=stderr).returncode
     seconds = time.monotonic() - started
     tail = (out / f"build-{index}.stderr").read_text(errors="replace")
     rss = re.search(r"(\d+)\s+maximum resident set size", tail)
-    return {"command": command, "cwd": "som-rs/som-targets", "exit_code": code, "seconds": seconds,
+    return {"command": command, "cwd": str(cwd.relative_to(REPO)), "exit_code": code, "seconds": seconds,
             "max_rss_bytes": int(rss.group(1)) if rss else None}
 
 
@@ -106,7 +111,11 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=pathlib.Path, required=True)
     parser.add_argument("--port", type=int, required=True)
+    parser.add_argument("--package-assets", type=pathlib.Path, metavar="FORMATTER")
     args = parser.parse_args()
+    formatter = args.package_assets.resolve() if args.package_assets else None
+    if formatter and not formatter.is_file():
+        raise SystemExit(f"formatter not found: {formatter}")
     out = args.out.resolve()
     if out.exists():
         raise SystemExit(f"preserve existing candidate: {out}")
@@ -130,6 +139,13 @@ def main() -> int:
         rows.append(timed(command, env, out, index))
         if rows[-1]["exit_code"] != 0:
             break
+    packager = None
+    if formatter and len(rows) == len(commands) and rows[-1]["exit_code"] == 0:
+        packager_env = {**env, "CARGO_TARGET_DIR": str(out / "target-assets")}
+        command = [str(BIN_DIR / "cargo"), "build", "--release", "--locked", "--offline", "--bin", "som-compiler-assets"]
+        commands.append(command)
+        rows.append(timed(command, packager_env, out, len(rows), SOM_RS))
+        packager = out / "target-assets/release/som-compiler-assets"
     complete = len(rows) == len(commands) and all(row["exit_code"] == 0 for row in rows)
     built = target_dir / "release/som"
     read_files = dep_info_files(target_dir / "release/som.d") if complete else []
@@ -153,15 +169,30 @@ def main() -> int:
     binary = out / "som"
     if complete:
         shutil.copy2(built, binary)
-    assets = (SOM_RS / "compiler-assets/current").resolve()
-    shutil.copytree(assets, out / "assets", symlinks=False)
+    if formatter:
+        assets = formatter
+        if complete:
+            packaged = subprocess.run([str(packager), "--destination", str(out / "assets"), "--formatter", str(formatter)],
+                                      cwd=REPO, capture_output=True)
+            (out / "assets-package.stdout").write_bytes(packaged.stdout)
+            (out / "assets-package.stderr").write_bytes(packaged.stderr)
+            complete = packaged.returncode == 0
+        if not complete:
+            print(json.dumps({"complete": False, "stage": "assets"}))
+            return 1
+    else:
+        assets = (SOM_RS / "compiler-assets/current").resolve()
+        shutil.copytree(assets, out / "assets", symlinks=False)
     build = {"version": "som.rust-output-candidate-build.v1", "commands": rows, "complete": complete,
              "toolchain": {name: TOOLCHAIN["rust"][name]["sha256"] for name in ("rustc", "cargo")},
              "tree_before": before, "tree_after": after, "read_files_status": before_reads, "untracked_reads": untracked_reads,
              "source_unchanged": unchanged, "source_sha256": sha(out / "source.json"),
              "binary_sha256": sha(binary) if complete else None,
              "binary_bytes": binary.stat().st_size if complete else None,
-             "assets_from": str(assets), "asset_manifest_sha256": sha(out / "assets/manifest.json")}
+             "assets_from": str(assets), "asset_manifest_sha256": sha(out / "assets/manifest.json"),
+             "assets_packaged": None if not formatter else {
+                 "packager_sha256": sha(packager), "formatter": str(formatter), "formatter_sha256": sha(formatter),
+                 "files": {p.name: sha(p) for p in sorted((out / "assets").iterdir()) if p.is_file()}}}
     (out / "build.json").write_text(json.dumps(build, indent=1, sort_keys=True) + "\n")
     if not (complete and unchanged):
         print(json.dumps({"complete": complete, "source_unchanged": unchanged,
