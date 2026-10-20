@@ -48,10 +48,11 @@ Going back further to `05f1bfe6…` after a #57 restore needs its own rehearsal 
   A fresh machine needs that directory or network access to crates.io.
 - The M2 check before the switch is a fresh legacy M2 clone on a harness port. The #44 post-commit M2 restore tool is bound to the default-switch-001 lineage and was not rerun.
 
-### Not run
+### som-core tests
 
-The som-core tests that need fastapi (for example `tests/test_flow_compact_storage.py`): the local venv lacks fastapi and PyPI is not approved.
-The M2 library they read is restored to the bytes they were written against.
+`som-core/.venv` lacks fastapi. Run the som-core tests offline with the M3 acceptance venv instead:
+`cd som-core && PYTHONPATH=src ../som-rs/runtime/acceptance-m3-venv/bin/python -m pytest -q tests`.
+After the #57 test fixes, 679 pass and `test_flow_m3_input.py` fails: it needs the local M3 eval archive `som-rs/evals/m3-flow-2026-10-05/`, which is not on this machine.
 
 ## Rust output phase 2 default (#56) — 2026-10-20
 

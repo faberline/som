@@ -29,7 +29,14 @@ See the [acceptance evidence](evidence/rust-output-acceptance-2026-10-20-issue57
 | Live switch | committed with no rollback under the user's standing instruction; previous owner pid 507 stopped, new owner pid 61463 |
 | Post-switch check | owner, health, pointers, legacy rollback assets, canaries, owner after: all passed |
 
-Not run: the som-core tests that need fastapi (the local venv lacks it and PyPI is not approved); compiler-v1 amendment 004 records them.
+Follow-up checks after the release:
+- som-core tests, run offline with `som-rs/runtime/acceptance-m3-venv` (fastapi 0.118.0, Python 3.12.11): 679 passed, 1 failed.
+  They found two #57 regressions in the tests themselves, both now fixed:
+  `test_business_contract.py` expected every v5 block to appear in a template sample, and `test_flow_contract.py` expected composed-quality to equal flow-v7.
+  The tests now render each `.self` variant in place of its base block and exclude the variants from the flow-v7 comparison.
+  The one failure, `test_flow_m3_input.py`, is not related to #57: it reads a local M3 eval archive (`som-rs/evals/m3-flow-2026-10-05/`) that is absent on this machine, and it fails the same way before #57.
+- Old bundles on candidate 006: all 7 #56 canary bundles (2 Python, 5 Rust) are refused with 400 ASSET_HASH_MISMATCH.
+  Compiling the same CNL again changes only `assets` and `hashes`, and the new bundle assembles to files equal to the #56 output in all 7 cases.
 
 ## Rust output phase 2 release (#56) — 2026-10-20
 

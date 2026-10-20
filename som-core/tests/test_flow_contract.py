@@ -176,7 +176,11 @@ def test_codec_rejects_truncation_unknown_and_duplicate_keys():
 def test_old_block_objects_are_unchanged():
     old=load_blocks(ROOT/"som-code-python/data/blocks/composed-quality")
     candidate=load_blocks(ROOT/"som-code-python/data/blocks/flow-v7")
-    assert all(candidate[key] == value for key,value in old.items())
+    # The #57 `.self` variants were appended to composed-quality after flow-v7 was frozen.
+    variants={key for key in old if key.endswith(".self")}
+    assert variants=={"orm.base.self","orm.composed.mongo.base.self"}
+    assert all(key.removesuffix(".self") in candidate for key in variants)
+    assert all(candidate[key] == value for key,value in old.items() if key not in variants)
 
 
 @pytest.mark.parametrize("operations", [

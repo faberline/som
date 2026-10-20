@@ -56,6 +56,7 @@ def test_all_new_blocks_have_positive_compositions_and_reject_extra_parameters()
     from build_related_corpus import case, date, field, flag, resource
     from som_core.related import document
     seen = set()
+    samples = {}
     for key in templates:
         pieces = key.split(".")
         p = case(0, 0, 999001)
@@ -72,6 +73,7 @@ def test_all_new_blocks_have_positive_compositions_and_reject_extra_parameters()
         assemble(resolved, blocks)
         for f in resolved["files"]:
             for b in f["blocks"]:
+                samples.setdefault(b["id"], resolved)
                 if b["id"] in seen or b["id"] in old:
                     continue
                 seen.add(b["id"])
@@ -80,4 +82,19 @@ def test_all_new_blocks_have_positive_compositions_and_reject_extra_parameters()
                 target["params"]["unapproved_source"] = "print('not allowed')"
                 with pytest.raises(V1Error):
                     assemble(bad, blocks)
-    assert seen == set(blocks) - set(old)
+    # compiler-v1 selects a `.self` variant only for a field or foreign key named self (#57),
+    # so the template samples never reach it. Render each in place of its base block instead.
+    variants = {key for key in blocks if key.endswith(".self")}
+    assert variants == {"orm.base.self", "orm.mongo.base.self"}
+    assert seen == set(blocks) - set(old) - variants
+    for variant in sorted(variants):
+        good = deepcopy(samples[variant.removesuffix(".self")])
+        for item in (item for file in good["files"] for item in file["blocks"]):
+            if item["id"] == variant.removesuffix(".self"):
+                item["id"] = variant
+        assemble(good, blocks)
+        bad = deepcopy(good)
+        target = next(item for file in bad["files"] for item in file["blocks"] if item["id"] == variant)
+        target["params"]["unapproved_source"] = "print('not allowed')"
+        with pytest.raises(V1Error):
+            assemble(bad, blocks)
