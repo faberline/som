@@ -72,7 +72,9 @@
     "no_sampling": "Every acceptance case runs every gate. A missing result, a failure and a skipped check are each reported as such and block acceptance."
   },
   "amendment_001": {
-    "rule": "The target is not served and no product exists until typescript-output-v1 amendment 001 is sealed. It follows the one approved npm download into toolchain.json vendored_cache.",
+    "rule": "The target is not served and no product exists until typescript-output-v1 amendment 001 is sealed. It followed the one approved npm download into toolchain.json vendored_cache.",
+    "status": "sealed",
+    "receipt": "som-rs/evidence/typescript-output-contract-amendment-001.json",
     "records": [
       "reference/package-lock.json, written by npm install --ignore-scripts against the approved registry access, with lockfileVersion 3",
       "toolchain.json packages.lock_packages: every lockfile package with its version, resolved URL and integrity",

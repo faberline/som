@@ -159,13 +159,15 @@
     "configuration": "prettier defaults. Products contain no .prettierrc, .editorconfig or prettier key in package.json.",
     "applies": "Every generated .ts file. package.json, package-lock.json and tsconfig.json are reference bytes. README.md and the migration are not formatted.",
     "rule": "Every generated .ts file is the formatter output for itself, so prettier --check --no-config --no-editorconfig accepts it unchanged.",
-    "sha256": "pending amendment 001",
-    "sha256_rule": "The SHA-256 of the canonical JSON {\"node\": <node.sha256>, \"libnode\": <node.libnode.sha256>, \"prettier_tree_sha256\": <tree sha of the vendored prettier package>}. It is the TypeScript bundle formatter asset."
+    "sha256": "636bd4a26884ea92873af81bf4fd5bbc0c065157e645c3919658a4d0bc29c0e8",
+    "sha256_rule": "The SHA-256 of the canonical JSON {\"node\": <node.sha256>, \"libnode\": <node.libnode.sha256>, \"prettier_tree_sha256\": <tree sha of the vendored prettier package>}. It is the TypeScript bundle formatter asset.",
+    "prettier_tree_sha256": "f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299",
+    "prettier_tree_rule": "tree_sha.py of node_modules/prettier after the install command, from the vendored cache; 56 files, no symlinks"
   },
   "packages": {
     "registry": "https://registry.npmjs.org, accessed once after the freeze (approved on 2026-10-21) to fill a local vendored npm cache. Every install after that is offline.",
     "manifest": "reference/package.json",
-    "lock": "reference/package-lock.json, added by amendment 001",
+    "lock": "reference/package-lock.json, lockfileVersion 3, added by amendment 001",
     "dependencies": {
       "@hono/node-server": "2.1.5",
       "hono": "4.13.13",
@@ -177,18 +179,175 @@
       "typescript": "5.9.3"
     },
     "transitive": "@types/node and the pg helper packages come from the lockfile. Amendment 001 records each lockfile package with its version and integrity.",
-    "lock_packages": "pending amendment 001",
+    "lock_packages": [
+      {
+        "path": "node_modules/@hono/node-server",
+        "name": "@hono/node-server",
+        "version": "2.1.5",
+        "resolved": "https://registry.npmjs.org/@hono/node-server/-/node-server-2.1.5.tgz",
+        "integrity": "sha512-MgP/I06GdvsilDspMk/qmRzpk8LOUStP6jFAbSRi40W09DhoyUn+Mj7eyKICPqeYKybOjVFLVIAQzvu1bfIa7Q=="
+      },
+      {
+        "path": "node_modules/@types/node",
+        "name": "@types/node",
+        "version": "26.6.5",
+        "resolved": "https://registry.npmjs.org/@types/node/-/node-26.6.5.tgz",
+        "integrity": "sha512-uMzsv9stDdofIZBx4UGh4Z9ZgXnGC9seRDscilBcTHAeOFk67MZg/k9bWVfO+bk4qZmG+l52hRnLwUiH2LnJTg==",
+        "dev": true
+      },
+      {
+        "path": "node_modules/@types/pg",
+        "name": "@types/pg",
+        "version": "8.23.1",
+        "resolved": "https://registry.npmjs.org/@types/pg/-/pg-8.23.1.tgz",
+        "integrity": "sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==",
+        "dev": true
+      },
+      {
+        "path": "node_modules/hono",
+        "name": "hono",
+        "version": "4.13.13",
+        "resolved": "https://registry.npmjs.org/hono/-/hono-4.13.13.tgz",
+        "integrity": "sha512-CQ46U0ZkAGmbT/4UxdzzGJpacP2IeKgY4a5/tOI9AABbpOMfK739wfDXmv1usCk+3RkKj1hQy4/fjhiwa2xlrA=="
+      },
+      {
+        "path": "node_modules/pg",
+        "name": "pg",
+        "version": "8.23.1",
+        "resolved": "https://registry.npmjs.org/pg/-/pg-8.23.1.tgz",
+        "integrity": "sha512-aL96AHANtWjPLDOLqnhx+ngp9+UK7ETEU8VJrDCGvsSSi/mGLcWYsS6Herg7lmaBJe4uwrfqsa7gTEFaSizDoQ=="
+      },
+      {
+        "path": "node_modules/pg-cloudflare",
+        "name": "pg-cloudflare",
+        "version": "1.4.1",
+        "resolved": "https://registry.npmjs.org/pg-cloudflare/-/pg-cloudflare-1.4.1.tgz",
+        "integrity": "sha512-6PQbsFWZcp9EmJEwy5cGQ2La+AMWpP46lgbb8X+U/XsHIUweYDNCpeuKck5RxL2MdVFi7krbbEi5nX4Zh7JhrQ=="
+      },
+      {
+        "path": "node_modules/pg-connection-string",
+        "name": "pg-connection-string",
+        "version": "2.14.1",
+        "resolved": "https://registry.npmjs.org/pg-connection-string/-/pg-connection-string-2.14.1.tgz",
+        "integrity": "sha512-qR3kGNPBLpCNtz0evbKA0Y/MRFXwSSdT+pTJvYp/bXTcReZbvX1kzF0IyTc1QnxqF7AZbOeBhNL8R5mYQZV/MA=="
+      },
+      {
+        "path": "node_modules/pg-int8",
+        "name": "pg-int8",
+        "version": "1.0.1",
+        "resolved": "https://registry.npmjs.org/pg-int8/-/pg-int8-1.0.1.tgz",
+        "integrity": "sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw=="
+      },
+      {
+        "path": "node_modules/pg-pool",
+        "name": "pg-pool",
+        "version": "3.14.0",
+        "resolved": "https://registry.npmjs.org/pg-pool/-/pg-pool-3.14.0.tgz",
+        "integrity": "sha512-gKtPkFdQPU3DksooVLi9LsjZxrsBUZIpa+7aVx+LV5pNh0KzP4Zleud2po+ConrxbuXGBJ6Hfer6hdgpIBpBaw=="
+      },
+      {
+        "path": "node_modules/pg-protocol",
+        "name": "pg-protocol",
+        "version": "1.16.1",
+        "resolved": "https://registry.npmjs.org/pg-protocol/-/pg-protocol-1.16.1.tgz",
+        "integrity": "sha512-p9VOFMiHB/ZbJATetbg+99PxssTVSQRnyuPSQ67mN1+1KBOjZaZ83ZQzltnxPhJwSsC3nwVjJ10DVJlerbFzLg=="
+      },
+      {
+        "path": "node_modules/pg-types",
+        "name": "pg-types",
+        "version": "2.2.0",
+        "resolved": "https://registry.npmjs.org/pg-types/-/pg-types-2.2.0.tgz",
+        "integrity": "sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA=="
+      },
+      {
+        "path": "node_modules/pgpass",
+        "name": "pgpass",
+        "version": "1.0.5",
+        "resolved": "https://registry.npmjs.org/pgpass/-/pgpass-1.0.5.tgz",
+        "integrity": "sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug=="
+      },
+      {
+        "path": "node_modules/postgres-array",
+        "name": "postgres-array",
+        "version": "2.0.0",
+        "resolved": "https://registry.npmjs.org/postgres-array/-/postgres-array-2.0.0.tgz",
+        "integrity": "sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA=="
+      },
+      {
+        "path": "node_modules/postgres-bytea",
+        "name": "postgres-bytea",
+        "version": "1.0.1",
+        "resolved": "https://registry.npmjs.org/postgres-bytea/-/postgres-bytea-1.0.1.tgz",
+        "integrity": "sha512-5+5HqXnsZPE65IJZSMkZtURARZelel2oXUEO8rH83VS/hxH5vv1uHquPg5wZs8yMAfdv971IU+kcPUczi7NVBQ=="
+      },
+      {
+        "path": "node_modules/postgres-date",
+        "name": "postgres-date",
+        "version": "1.0.7",
+        "resolved": "https://registry.npmjs.org/postgres-date/-/postgres-date-1.0.7.tgz",
+        "integrity": "sha512-suDmjLVQg78nMK2UZ454hAG+OAW+HQPZ6n++TNDUX+L0+uUlLywnoxJKDou51Zm+zTCjrCl0Nq6J9C5hP9vK/Q=="
+      },
+      {
+        "path": "node_modules/postgres-interval",
+        "name": "postgres-interval",
+        "version": "1.2.0",
+        "resolved": "https://registry.npmjs.org/postgres-interval/-/postgres-interval-1.2.0.tgz",
+        "integrity": "sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ=="
+      },
+      {
+        "path": "node_modules/prettier",
+        "name": "prettier",
+        "version": "3.9.10",
+        "resolved": "https://registry.npmjs.org/prettier/-/prettier-3.9.10.tgz",
+        "integrity": "sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA==",
+        "dev": true
+      },
+      {
+        "path": "node_modules/split2",
+        "name": "split2",
+        "version": "4.2.0",
+        "resolved": "https://registry.npmjs.org/split2/-/split2-4.2.0.tgz",
+        "integrity": "sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg=="
+      },
+      {
+        "path": "node_modules/typescript",
+        "name": "typescript",
+        "version": "5.9.3",
+        "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
+        "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
+        "dev": true
+      },
+      {
+        "path": "node_modules/undici-types",
+        "name": "undici-types",
+        "version": "8.9.0",
+        "resolved": "https://registry.npmjs.org/undici-types/-/undici-types-8.9.0.tgz",
+        "integrity": "sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==",
+        "dev": true
+      },
+      {
+        "path": "node_modules/xtend",
+        "name": "xtend",
+        "version": "4.0.2",
+        "resolved": "https://registry.npmjs.org/xtend/-/xtend-4.0.2.tgz",
+        "integrity": "sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ=="
+      }
+    ],
     "install_scripts": "Never run. Every install passes --ignore-scripts. A pinned package that needs an install script to work is a blocker for amendment 001.",
     "no_other_packages": "A product depends on exactly these packages. A change to a package or version is a contract amendment.",
-    "missing_version": "If a pinned version cannot be fetched at the approved download, amendment 001 is not sealed and the choice goes back to the user."
+    "missing_version": "If a pinned version cannot be fetched at the approved download, amendment 001 is not sealed and the choice goes back to the user.",
+    "lock_rule": "Every entry of the lockfile packages map except the root, in lockfile order. No entry has hasInstallScript. Every resolved URL is under https://registry.npmjs.org/ and every integrity is sha512. lock_packages records path, name, version, resolved, integrity and dev only; the lockfile's optional flag (pg-cloudflare) is not copied."
   },
   "vendored_cache": {
     "path": ".local/typescript-output/npm-cache-001",
     "rule": "Written once by the approved download, then read-only. A new download goes to a new numbered path.",
-    "tree_sha256": "pending amendment 001"
+    "tree_sha256": "11ae1ed59d4e17888d3b6e3b864cdfdbc850b11752cae2735d13ccb5f71eb1e9",
+    "tree_files": 86,
+    "tree_symlinks": 0,
+    "logs": "npm writes debug logs into <cache>/_logs unless npm_config_logs_dir is set. The download's log was moved out, the cache was made read-only (chmod -R a-w) with an empty _logs directory left in place, and every command sets npm_config_logs_dir outside the cache, so the tree hash stays fixed."
   },
   "commands": {
-    "environment": "npm_config_cache=<vendored cache>, npm_config_offline=true, npm_config_audit=false, npm_config_fund=false, npm_config_update_notifier=false. No network access.",
+    "environment": "npm_config_cache=<vendored cache>, npm_config_offline=true, npm_config_audit=false, npm_config_fund=false, npm_config_update_notifier=false, npm_config_logs_dir=<a directory outside the vendored cache>, npm_config_userconfig=<an empty file>. No network access.",
     "install": "npm ci --offline --ignore-scripts --no-audit --no-fund",
     "typecheck": "node node_modules/typescript/bin/tsc -p tsconfig.json",
     "format_check": "node node_modules/prettier/bin/prettier.cjs --check --no-config --no-editorconfig src/main.ts src/app.ts src/schemas.ts src/db.ts src/migrate.ts test/api.test.ts",
@@ -208,14 +367,18 @@
     "pg_ctl": {
       "sha256": "4ffcfe64fa1605aa7ca9f93fb00616cbbb392c95557c8219d98da3b8689b53ac"
     },
-    "cluster": "A fresh initdb cluster per acceptance run, on a QA port other than 8765 and 18765, with UTF8 encoding and UTC time zone."
+    "cluster": "A fresh initdb cluster per acceptance run, on a QA port other than 8765 and 18765, with UTF8 encoding and UTC time zone.",
+    "start": "pg_ctl start runs with LC_ALL=C. Without it the postmaster can stop with \"postmaster became multithreaded during startup\" on this host."
   },
   "python": {
     "version": "3.12.11",
     "use": "Python products, the parity harness and the contract scripts. The Python product dependency set is the one compiler-v1 already freezes."
   },
   "reference_verification": {
-    "status": "not_run",
-    "rule": "Amendment 001 records a reference product (an example-v1 product with a Hono route test and a pg probe) that passes install, typecheck, format_check and test against the vendored cache, with the lockfile unchanged."
+    "status": "passed",
+    "rule": "Amendment 001 records a reference product (an example-v1 product with a Hono route test and a pg probe) that passes install, typecheck, format_check and test against the vendored cache, with the lockfile unchanged.",
+    "evidence": "som-rs/evidence/typescript-output-v1/reference-verification-2026-10-21.json",
+    "product": "som-rs/evidence/typescript-output-v1/reference-product-001 (example v1, package items)",
+    "result": "install, typecheck, format_check and test exit 0 on a fresh copy against the vendored cache and a fresh UTC PostgreSQL 17.7 cluster on QA port 55433; 8 tests pass, none skipped; the lockfile is unchanged; node src/main.ts serves /healthz and stops with status 0 on SIGTERM."
   }
 }

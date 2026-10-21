@@ -63,13 +63,13 @@
     "foreign_key": "INTEGER NOT NULL REFERENCES parent(id) ON DELETE RESTRICT (v5 only)"
   },
   "identifiers": {
-    "rule": "Field names and the foreign key are used verbatim as JSON members, query parameter names and SQL column names. In TypeScript a prompt name appears only as a quoted string: a quoted property key, a quoted interface member, a string literal, or a double-quoted SQL identifier inside a string constant. No TypeScript identifier (variable, function, type, interface, module or file name) comes from the prompt, so JavaScript reserved words, uppercase letters and repeated underscores need no rule.",
+    "rule": "Field names and the foreign key are used verbatim as JSON members, query parameter names and SQL column names. In TypeScript a prompt name appears only as a property key, an interface member, a string literal, or a double-quoted SQL identifier inside a string constant. A key or member is printed with quotes unless the formatter drops them for an IdentifierName (reserved words such as class or delete included) (product-layout.json naming.fields); it is never read with dot syntax. No TypeScript identifier (variable, function, type, interface, module or file name) comes from the prompt, so JavaScript reserved words, uppercase letters and repeated underscores need no rule.",
     "reserved_names": [
       "__proto__",
       "constructor",
       "prototype"
     ],
-    "reserved_names_reason": "An object literal with the quoted key \"__proto__\" sets the prototype instead of creating a member, so a field named __proto__ would silently vanish from responses. constructor and prototype are refused as a conservative rule: they are the members most often special-cased by JavaScript libraries and serializers. Other Object.prototype member names such as toString or hasOwnProperty are admitted, because generated code reads request members only after Object.hasOwn and builds every response as an object literal with quoted keys (product-layout.json naming).",
+    "reserved_names_reason": "An object literal with the quoted key \"__proto__\" sets the prototype instead of creating a member, so a field named __proto__ would silently vanish from responses. constructor and prototype are refused as a conservative rule: they are the members most often special-cased by JavaScript libraries and serializers. Other Object.prototype member names such as toString or hasOwnProperty are admitted, because generated code reads request members only after Object.hasOwn and builds every response as an object literal (product-layout.json naming).",
     "prompt_names_not_used_in_typescript": [
       "package, only in README.md",
       "resource name, only in README.md",

@@ -16,7 +16,7 @@
     },
     {
       "path": "package-lock.json",
-      "rule": "Bytes equal reference/package-lock.json. This file and its reference are added by typescript-output-v1 amendment 001, after the one approved npm download. Until amendment 001 is sealed the target is not served and no product exists."
+      "rule": "Bytes equal reference/package-lock.json, which typescript-output-v1 amendment 001 added after the one approved npm download."
     },
     {
       "path": "tsconfig.json",
@@ -32,7 +32,7 @@
     },
     {
       "path": "src/schemas.ts",
-      "rule": "Interfaces for create, update and read bodies, and hand-written validators that return either a typed value or the 422 items. v5 adds the parent, child and with-children batch shapes. The batch request has exactly the members parent (a parent create body) and children (1 to 20 child create bodies), and the batch response has exactly the members parent (a parent read body) and children (child read bodies in the same order as the Python product), as in contracts/related-business.v1.md and the Rust ParentWithChildrenCreate rule. Prompt field names never become members of these two wrapper objects, so a field named parent or children does not collide. Prompt field names appear only as quoted interface members and string literals. Request bodies reject unknown members only where the Python product does (v3 to v5)."
+      "rule": "Interfaces for create, update and read bodies, and hand-written validators that return either a typed value or the 422 items. v5 adds the parent, child and with-children batch shapes. The batch request has exactly the members parent (a parent create body) and children (1 to 20 child create bodies), and the batch response has exactly the members parent (a parent read body) and children (child read bodies in the same order as the Python product), as in contracts/related-business.v1.md and the Rust ParentWithChildrenCreate rule. Prompt field names never become members of these two wrapper objects, so a field named parent or children does not collide. Prompt field names appear only as interface members (quoted only where the formatter keeps the quotes, naming.fields) and string literals. Request bodies reject unknown members only where the Python product does (v3 to v5)."
     },
     {
       "path": "src/db.ts",
@@ -64,8 +64,8 @@
   },
   "naming": {
     "typescript_items": "Variable, function, type, interface, module and file names come from a fixed table by role. No TypeScript identifier comes from the prompt.",
-    "fields": "A field name is used verbatim as a quoted property key, a quoted interface member and a string literal. Generated code never reads a prompt-named member with dot syntax. Request members are read only after an own-property check (Object.hasOwn), and response objects are built as object literals with quoted keys.",
-    "reserved": "__proto__, constructor and prototype are refused by scope.json identifier_reserved. Other Object.prototype member names are safe because of the Object.hasOwn reads and quoted-key literals above; test/api.test.ts proves it for each field it covers.",
+    "fields": "A field name is used verbatim as a property key, an interface member and a string literal. The formatter (prettier defaults, quoteProps as-needed) prints a key or member without quotes when the name is an IdentifierName (reserved words such as class or delete included) and with quotes otherwise; both spellings define the same own property and the same member, and __proto__ is refused (reserved below). Generated code never reads a prompt-named member with dot syntax: it uses bracket access with a string literal, which the formatter keeps. Request members are read only after an own-property check (Object.hasOwn), and response objects are built as object literals.",
+    "reserved": "__proto__, constructor and prototype are refused by scope.json identifier_reserved. Other Object.prototype member names are safe because of the Object.hasOwn reads and the object-literal responses above; test/api.test.ts proves it for each field it covers.",
     "sql": "Table, column and constraint identifiers are double-quoted verbatim prompt names. Values are always bound parameters. No prompt text is pasted into SQL except quoted identifiers.",
     "unique_constraints": "Names are not compared. A unique field gets a UNIQUE constraint. The foreign key gets REFERENCES parent(id) ON DELETE RESTRICT.",
     "indexes": "The migration creates the same indexes as the Python migration for the same prompt: the same tables, columns in the same order, and the same uniqueness. Index names are not compared."

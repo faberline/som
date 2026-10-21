@@ -1,0 +1,125 @@
+{
+  "version": "som.typescript-output-reference-verification.v1",
+  "run_on": "2026-10-21",
+  "issue": 73,
+  "product": {
+    "prompt": "som-rs/contracts/compiler-v1/examples/v1.prompt.json (package items, som.prompt.v1)",
+    "source": "hand-written by Claude to the product-layout.json rules; the migration bytes equal the Rust example_v1 product's migrations/0001_rev0000.sql",
+    "copy": "som-rs/evidence/typescript-output-v1/reference-product-001",
+    "files": {
+      "package.json": "02b2aa2b167dcf5f9282c8c04a7d8deb8f77888d1fa2c5726ea4e98d17b5eaa7",
+      "package-lock.json": "d5daa744e5efc0c7ad754e42930b34880a077ca2a38b466003786931a9f56606",
+      "tsconfig.json": "e1bb40b56013abf2525a53023ebc1ce455d176fe4c0c5061d18a563f25962fae",
+      "src/main.ts": "3c2392b474f3dfd369083fb2602ee5d1667bbd29da815f4425ba13530b8682b2",
+      "src/app.ts": "89bcd9d11d43d450242e9bff3e65cfe56c116bca6b2df0b4513d2f641b9dc6c9",
+      "src/schemas.ts": "f2159727c1156b727c285c42660c53bcd959e22e14c3fcb95847b6145506a174",
+      "src/db.ts": "a57e3ead187815f5b3c517184dd419e5831841448d704f85b542fe896d62105b",
+      "src/migrate.ts": "c3452a5125857ab259bef72af4c42bb9407113613cf0a4fbca2ca620d3af5b65",
+      "migrations/0001_rev0000.sql": "346dd960b0704ab14229e2d1e87ecbfbd5ddc6030223f1908207527bc72b9704",
+      "test/api.test.ts": "25c3936cde84cdc5d8e1ec2f99f703c4addee32d7eed7b3964027db7c3abbcd3",
+      "README.md": "69dad36d620542832b94fce0e40c2a1dbe8a65332ba200e1cbbbf37da47dd6b6"
+    },
+    "fixed_files_equal_reference": {
+      "package.json": true,
+      "package-lock.json": true,
+      "tsconfig.json": true
+    }
+  },
+  "run_directory": ".local/typescript-output/reference-run-002/product, a fresh copy of the 11 files with no node_modules",
+  "environment": {
+    "npm_config_cache": ".local/typescript-output/npm-cache-001 (read-only)",
+    "npm_config_offline": "true",
+    "npm_config_audit": "false",
+    "npm_config_fund": "false",
+    "npm_config_update_notifier": "false",
+    "npm_config_logs_dir": ".local/typescript-output/npm-logs",
+    "npm_config_userconfig": ".local/typescript-output/empty-npmrc (an empty file)",
+    "PATH": "/opt/homebrew/Cellar/node/26.5.0/bin:/usr/bin:/bin",
+    "TEST_DATABASE_URL": "postgres://som_qa@127.0.0.1:55433/som_ts_gate"
+  },
+  "postgresql": {
+    "version": "PostgreSQL 17.7 (Homebrew) on aarch64-apple-darwin25.2.0",
+    "binaries_match_toolchain": true,
+    "cluster": ".local/typescript-output/pg-002/data, fresh initdb with TZ=UTC, --encoding=UTF8 --locale=C --auth=trust, user som_qa",
+    "port": 55433,
+    "timezone": "UTC",
+    "server_encoding": "UTF8",
+    "start": "pg_ctl start runs with LC_ALL=C. Without it the postmaster stops with \"postmaster became multithreaded during startup\" on this host (the first attempt, pg-001)."
+  },
+  "lock_sha256_before": "d5daa744e5efc0c7ad754e42930b34880a077ca2a38b466003786931a9f56606",
+  "lock_sha256_after": "d5daa744e5efc0c7ad754e42930b34880a077ca2a38b466003786931a9f56606",
+  "lock_unchanged": true,
+  "gates": [
+    {
+      "step": "install",
+      "command": "npm ci --offline --ignore-scripts --no-audit --no-fund",
+      "exit_code": 0,
+      "stdout": "\nadded 21 packages in 345ms\n",
+      "stderr": ""
+    },
+    {
+      "step": "typecheck",
+      "command": "node node_modules/typescript/bin/tsc -p tsconfig.json",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "step": "format_check",
+      "command": "node node_modules/prettier/bin/prettier.cjs --check --no-config --no-editorconfig src/main.ts src/app.ts src/schemas.ts src/db.ts src/migrate.ts test/api.test.ts",
+      "exit_code": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "step": "test",
+      "command": "node --test --test-concurrency=1 test/api.test.ts",
+      "exit_code": 0,
+      "stdout": "✔ healthz answers ok (25.595291ms)\n✔ CRUD round trip (9.288833ms)\n✔ missing ids are 404 (5.415083ms)\n✔ unique values conflict (8.480333ms)\n✔ invalid requests are 422 (8.258458ms)\n✔ Object.prototype names are not read from the body (3.913334ms)\n✔ fallbacks are JSON (4.252ms)\n✔ migrate is idempotent (4.473916ms)\nℹ tests 8\nℹ suites 0\nℹ pass 8\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 172.795916\n",
+      "stderr": ""
+    }
+  ],
+  "run_smoke": {
+    "command": "node src/main.ts",
+    "addr": "127.0.0.1:55434",
+    "calls": [
+      {
+        "request": "GET /healthz",
+        "status": 200,
+        "body": "{\"status\":\"ok\"}"
+      },
+      {
+        "request": "POST /items",
+        "status": 201,
+        "body": "{\"id\":1,\"title\":\"smoke\"}"
+      },
+      {
+        "request": "GET /items",
+        "status": 200,
+        "body": "[{\"id\":1,\"title\":\"smoke\"}]"
+      },
+      {
+        "request": "PUT /items",
+        "status": 405,
+        "body": "{\"detail\":\"Method Not Allowed\"}"
+      }
+    ],
+    "sigterm_exit_code": 0,
+    "stderr": "",
+    "passed": true
+  },
+  "vendored_cache_tree_sha256_after": "11ae1ed59d4e17888d3b6e3b864cdfdbc850b11752cae2735d13ccb5f71eb1e9",
+  "prettier_tree_sha256": "f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299",
+  "prettier_tree_path": ".local/typescript-output/reference-run-002/product/node_modules/prettier",
+  "earlier_runs": "reference-run-001 passed the same gates on cluster pg-001, whose time zone was the host zone, not UTC as toolchain.json postgresql.cluster requires; run 002 repeats it on a UTC cluster and is the recorded run.",
+  "passed": true,
+  "gates_command_note": "Each command is the toolchain.json command as run, with node and npm resolved to the pinned binaries. The raw .local gates.json record dropped the leading node.",
+  "reference_product_notes": [
+    "The reference product is a toolchain probe for amendment 001, not the renderer's template. These limits, found by the independent review, are left for the renderer and parity acceptance:",
+    "src/main.ts: a second SIGINT or SIGTERM calls pool.end() again, which rejects unhandled and exits 1; the server.close error is ignored.",
+    "src/main.ts: no pool error listener, so an idle client error stops the process.",
+    "src/main.ts: SOM_APP_ADDR accepts any host text; a host that cannot be bound fails at listen with exit 1, not 2.",
+    "src/db.ts: every SQLSTATE class 23 error maps to 409, while product-layout.json names 23505 (and 23503 for v5); PATCH with title null reaches 409 through NOT NULL (23502), not compared with Python here.",
+    "src/app.ts: the json_invalid loc position is a UTF-16 index; Python reports a code point index."
+  ]
+}

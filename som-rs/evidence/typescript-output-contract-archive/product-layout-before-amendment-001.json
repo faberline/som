@@ -1,0 +1,104 @@
+{
+  "version": "som.typescript-output-product-layout.v1",
+  "package": {
+    "name": "som-app",
+    "rule": "The npm package name is always som-app. The prompt package name appears only in README.md. So package.json, package-lock.json and tsconfig.json are the same bytes for every product."
+  },
+  "execution": {
+    "rule": "Node runs the .ts sources directly with its built-in type stripping (process.features.typescript is \"strip\" on Node 26.5.0). There is no build step and no dist directory. tsc -p tsconfig.json is a type-check gate only (noEmit).",
+    "erasable_syntax_only": "Generated code uses only syntax that type stripping can erase: no enum, no namespace, no parameter properties, no decorators, no import = require. tsconfig.json sets erasableSyntaxOnly so tsc refuses anything else.",
+    "imports": "Relative imports name the .ts file, for example ./db.ts. Type-only imports use import type, as verbatimModuleSyntax requires."
+  },
+  "files": [
+    {
+      "path": "package.json",
+      "rule": "Bytes equal reference/package.json."
+    },
+    {
+      "path": "package-lock.json",
+      "rule": "Bytes equal reference/package-lock.json. This file and its reference are added by typescript-output-v1 amendment 001, after the one approved npm download. Until amendment 001 is sealed the target is not served and no product exists."
+    },
+    {
+      "path": "tsconfig.json",
+      "rule": "Bytes equal reference/tsconfig.json."
+    },
+    {
+      "path": "src/main.ts",
+      "rule": "Reads DATABASE_URL, which is required, and SOM_APP_ADDR, which defaults to 127.0.0.1:8000 and must be host:port with a port from 1 to 65535. A missing DATABASE_URL or an invalid SOM_APP_ADDR prints one line to stderr and exits with status 2. Creates a pg Pool, runs migrate(pool) from src/migrate.ts, then serves createApp(pool) from src/app.ts with @hono/node-server. SIGINT and SIGTERM close the server and the pool, then exit with status 0."
+    },
+    {
+      "path": "src/app.ts",
+      "rule": "Exports createApp(pool): Hono. Holds the route handlers, the /healthz route, the JSON fallbacks for 404 and 405, the v5 with-children route, and the mapping of every validation failure to the frozen 422 body."
+    },
+    {
+      "path": "src/schemas.ts",
+      "rule": "Interfaces for create, update and read bodies, and hand-written validators that return either a typed value or the 422 items. v5 adds the parent, child and with-children batch shapes. The batch request has exactly the members parent (a parent create body) and children (1 to 20 child create bodies), and the batch response has exactly the members parent (a parent read body) and children (child read bodies in the same order as the Python product), as in contracts/related-business.v1.md and the Rust ParentWithChildrenCreate rule. Prompt field names never become members of these two wrapper objects, so a field named parent or children does not collide. Prompt field names appear only as quoted interface members and string literals. Request bodies reject unknown members only where the Python product does (v3 to v5)."
+    },
+    {
+      "path": "src/db.ts",
+      "rule": "Every SQL statement, as a string constant with double-quoted identifiers, and the functions that run them with pg. Values are always bound parameters ($1, $2, ...). Installs a pg type parser that returns DATE (OID 1082) as its text. Maps SQLSTATE 23505 to the 409 body and SQLSTATE 23503 to the v5 404 or 409 body exactly as the Python product does for the same statement."
+    },
+    {
+      "path": "src/migrate.ts",
+      "rule": "Exports migrate(pool). Creates the table _som_ts_migrations (version INTEGER PRIMARY KEY, revision TEXT NOT NULL, checksum TEXT NOT NULL, applied_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()) if absent, takes pg_advisory_xact_lock inside one transaction, and applies migrations/0001_<revision>.sql if version 1 is absent. The file is read through new URL(\"../migrations/0001_<revision>.sql\", import.meta.url). The checksum is the SHA-256 hex of the file bytes. A recorded version 1 with another checksum or revision is an error that stops startup."
+    },
+    {
+      "path": "migrations/0001_<revision>.sql",
+      "rule": "The schema for the prompt. <revision> is migration.revision verbatim. The first line is the comment -- revision: <revision>, down_revision: <down_revision or none>. The SQL is the same statements as the Rust product's migration for the same prompt."
+    },
+    {
+      "path": "test/api.test.ts",
+      "rule": "Product tests with node:test and node:assert/strict. They read TEST_DATABASE_URL. A missing variable fails the test; it is never a skip. Each test drops and recreates schema public, runs migrate, and drives createApp(pool) with app.request()."
+    },
+    {
+      "path": "README.md",
+      "rule": "Names the prompt package, the prompt version, the routes, and the install, run, test, type-check and format-check commands from toolchain.json."
+    }
+  ],
+  "file_count": 11,
+  "limits": {
+    "max_files": 12,
+    "max_blocks_per_file": 64,
+    "rule": "The same limits as the Rust backend (som-targets MAX_FILES and MAX_BLOCKS): at most 12 files, 1 to 64 blocks per file (bundle schema), and at most 64 blocks in total across files (planning, SCOPE_TOO_LARGE; assemble, INVALID_SCHEMA). package-lock.json counts as one file and is one block.",
+    "max_total_blocks": 64
+  },
+  "naming": {
+    "typescript_items": "Variable, function, type, interface, module and file names come from a fixed table by role. No TypeScript identifier comes from the prompt.",
+    "fields": "A field name is used verbatim as a quoted property key, a quoted interface member and a string literal. Generated code never reads a prompt-named member with dot syntax. Request members are read only after an own-property check (Object.hasOwn), and response objects are built as object literals with quoted keys.",
+    "reserved": "__proto__, constructor and prototype are refused by scope.json identifier_reserved. Other Object.prototype member names are safe because of the Object.hasOwn reads and quoted-key literals above; test/api.test.ts proves it for each field it covers.",
+    "sql": "Table, column and constraint identifiers are double-quoted verbatim prompt names. Values are always bound parameters. No prompt text is pasted into SQL except quoted identifiers.",
+    "unique_constraints": "Names are not compared. A unique field gets a UNIQUE constraint. The foreign key gets REFERENCES parent(id) ON DELETE RESTRICT.",
+    "indexes": "The migration creates the same indexes as the Python migration for the same prompt: the same tables, columns in the same order, and the same uniqueness. Index names are not compared."
+  },
+  "types": {
+    "id": "number in TypeScript, SERIAL PRIMARY KEY in SQL, as in the Rust product",
+    "str": "string, VARCHAR(255). A request value longer than 255 Unicode code points (counted with Array.from or for-of, not .length) is a 422.",
+    "int": "number, INTEGER. A request value must satisfy Number.isInteger and lie in -2147483648..2147483647, else 422. A JSON number with a zero fraction such as 1.0 is accepted, because JSON.parse cannot tell it from 1 and the Python product accepts it too.",
+    "float": "number, DOUBLE PRECISION. Any finite JSON number is accepted; a JSON number without a fraction is accepted.",
+    "bool": "boolean, BOOLEAN. Only JSON true and false are accepted.",
+    "date": "string, DATE, ISO 8601 YYYY-MM-DD on the wire. The value must match ^\\d{4}-\\d{2}-\\d{2}$ and be a real calendar date, else 422. pg returns the column as text through the OID 1082 parser, so no time zone conversion happens.",
+    "timestamps": "string on the wire, TIMESTAMP WITH TIME ZONE NOT NULL, for v3 to v5 only, with the same column DEFAULT as the Rust product. pg returns a Date; the response uses Date.prototype.toISOString(), an RFC 3339 UTC string with millisecond precision. behavior-normalization.json compares timestamps as instants, not as text. A PATCH that supplies at least one field also sets updated_at to now(), as in the Rust and Python products; a PATCH with no field leaves updated_at unchanged. test/api.test.ts checks both.",
+    "optional": "An optional field without a default is T | null and a nullable column. An optional field with a default is T, NOT NULL with that column DEFAULT, and the same request default. This matches the Python migration."
+  },
+  "request_parsing": {
+    "body": "The body is parsed with JSON.parse on the raw text. Invalid JSON, or a top-level value that is not an object, is a 422 with the same type and loc as the Python product (behavior-normalization.json normalizes msg).",
+    "path_id": "A path id that does not match ^[+-]?[0-9]+$ is a 422 with loc [\"path\", <name>] (divergence D7). An integer outside i32 is a 404, as in the Rust product (divergence D3).",
+    "query": "A query parameter is read with c.req.queries(name). More than one value is a 422 (divergence D4). Unknown query parameters are ignored. Query values are text and follow the Rust product's rules, not the body rules. limit is optional with default 20 and must lie in 1..max_limit, the catalog param of the list block. offset is optional with default 0 and must lie in 0..9223372036854775807. Both must match ^[+-]?[0-9]+$ and are compared with BigInt, never Number, so no precision is lost; offset is bound to SQL as decimal text. The boolean filter field accepts 1, on, t, true, y, yes, 0, off, f, false, n and no, ignoring ASCII case. before must be exactly 10 characters YYYY-MM-DD and a real calendar date. v2 filter_value is any text. Any other value is a 422 with loc [\"query\", <name>].",
+    "trailing_slash": "Hono strict routing is on, so /items/ does not match /items and returns the 404 fallback (divergence D5)."
+  },
+  "fixed_routes": {
+    "/healthz": "GET returns 200 {\"status\":\"ok\"} after SELECT 1 succeeds, else 503 {\"detail\":\"database unavailable\"}.",
+    "fallback_404": "Any unmatched path returns 404 {\"detail\":\"Not Found\"}.",
+    "fallback_405": "A matched path with another method returns 405 {\"detail\":\"Method Not Allowed\"}, except as below.",
+    "v5_with_children": "{parent_path}/with-children accepts only POST. GET, PATCH and DELETE on it return 422 like the Python product, whose parent id path parameter fails to parse there."
+  },
+  "errors": {
+    "404": "{\"detail\": \"not found\"} for v1 to v4. v5 uses \"parent not found\" or \"child not found\".",
+    "409": "{\"detail\": \"conflict\"} for v1 to v4. v5 uses \"relationship or unique value conflict\".",
+    "422": "{\"detail\": [{\"type\": string, \"loc\": [\"body\" | \"query\" | \"path\", ...], \"msg\": string}, ...]} with at least one item.",
+    "500": "No generated handler returns 500 on purpose. app.onError logs one line to stderr and returns status 500 with no stack trace in the body. Like the Rust contract, which has no 500 rule, the 500 body is not part of parity."
+  },
+  "excluded_from_schema_equivalence": [
+    "_som_ts_migrations"
+  ]
+}

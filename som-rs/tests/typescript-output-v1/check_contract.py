@@ -7,11 +7,13 @@ reruns every case builder with --check, and compares the catalog, the product
 layout, the bundle schema, the reference files and toolchain.json with each
 other. ts_profile is checked against the typed JSON cases, the public examples
 and the coverage cases; CNL cases are checked by span only. The checks of the
-amendment 001 fields assert the frozen state ("pending amendment 001", no
-lockfile): amendment 001 replaces them with checks of the sealed values.
+amendment 001 fields check the sealed values: the reference lockfile against
+toolchain.json lock_packages, the formatter sha256 by its rule, and the
+reference verification evidence. The vendored cache and prettier tree hashes
+are recomputed only when those local directories exist.
 --files prints the SHA-256 of every contract, tool and evidence file, the
-files map a freeze receipt seals. --receipt also checks every file hash in a
-freeze receipt.
+files map a receipt seals. --receipt also checks every file hash in a freeze
+receipt or an amendment receipt.
 """
 from __future__ import annotations
 
@@ -28,6 +30,7 @@ from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
 
 from common import CONTRACT, EXAMPLES, HERE, REPO, SOM_RS, ts_profile
+from tree_sha import tree_sha
 
 V1 = SOM_RS / "contracts" / "compiler-v1"
 RUST = SOM_RS / "contracts" / "rust-output-v1"
@@ -37,7 +40,7 @@ EVIDENCE = SOM_RS / "evidence" / "typescript-output-v1"
 JSON_FILES = ["acceptance-plan.json", "api.schema.json", "behavior-normalization.json", "bundle.schema.json",
               "case-inventory.json", "negative-cases.json", "product-layout.json", "scope.json", "target-examples.json",
               "toolchain.json", "catalog/typescript-catalog.v1.json", "reference/package.json",
-              "reference/tsconfig.json"]
+              "reference/package-lock.json", "reference/tsconfig.json"]
 BUILDERS = ["build_negative_cases.py", "build_target_examples.py", "build_case_inventory.py"]
 IN_SCOPE = {f"som.prompt.v{v}" for v in range(1, 6)}
 MIGRATION = re.compile(r"^migrations/0001_[A-Za-z_][A-Za-z0-9_]*\.sql$")
@@ -208,15 +211,91 @@ def check_reference(report: Report) -> None:
     options = tsconfig["compilerOptions"]
     for key in ["strict", "noEmit", "erasableSyntaxOnly", "verbatimModuleSyntax", "allowImportingTsExtensions"]:
         report.check(f"reference tsconfig sets {key}", options.get(key) is True)
-    pending = [k for k, v in [("formatter.sha256", toolchain["formatter"]["sha256"]),
-                              ("packages.lock_packages", toolchain["packages"]["lock_packages"]),
-                              ("vendored_cache.tree_sha256", toolchain["vendored_cache"]["tree_sha256"])]
-               if v == "pending amendment 001"]
-    report.check("amendment 001 fields are pending", len(pending) == 3, str(pending))
-    report.check("reference verification not run before amendment 001",
-                 toolchain["reference_verification"]["status"] == "not_run")
-    report.check("no reference lockfile before amendment 001",
-                 not (CONTRACT / "reference" / "package-lock.json").exists())
+    check_lockfile(report, toolchain, package)
+    formatter = toolchain["formatter"]
+    node = toolchain["node"]
+    report.check("formatter sha256 follows its rule",
+                 formatter["sha256"] == h({"node": node["sha256"], "libnode": node["libnode"]["sha256"],
+                                           "prettier_tree_sha256": formatter["prettier_tree_sha256"]}))
+    check_reference_verification(report, toolchain)
+    cache = REPO / toolchain["vendored_cache"]["path"]
+    if cache.is_dir():
+        got = tree_sha(cache)
+        report.check("vendored cache tree hash equals toolchain.json",
+                     got == (toolchain["vendored_cache"]["tree_sha256"], toolchain["vendored_cache"]["tree_files"],
+                             toolchain["vendored_cache"]["tree_symlinks"]), str(got))
+    else:
+        print(f"NOTE vendored cache {cache.relative_to(REPO)} is absent: its tree hash was not recomputed")
+
+
+def check_lockfile(report: Report, toolchain: dict[str, Any], package: dict[str, Any]) -> None:
+    lock = load(CONTRACT / "reference" / "package-lock.json")
+    report.check("reference lockfile is lockfileVersion 3 for som-app",
+                 lock.get("lockfileVersion") == 3 and lock.get("name") == "som-app"
+                 and lock.get("version") == package["version"] and lock.get("requires") is True)
+    root = lock["packages"][""]
+    report.check("lockfile root equals reference/package.json",
+                 root.get("name") == package["name"] and root.get("version") == package["version"]
+                 and root.get("dependencies") == package["dependencies"]
+                 and root.get("devDependencies") == package["devDependencies"]
+                 and root.get("engines") == package["engines"])
+    entries = [{"path": path, "name": path.removeprefix("node_modules/"), "version": entry["version"],
+                "resolved": entry["resolved"], "integrity": entry["integrity"], **({"dev": True} if entry.get("dev")
+                                                                                   else {})}
+               for path, entry in lock["packages"].items() if path != ""]
+    report.check("lockfile packages equal toolchain.json lock_packages",
+                 entries == toolchain["packages"]["lock_packages"])
+    report.check("no lockfile package has an install script",
+                 not any(entry.get("hasInstallScript") for entry in lock["packages"].values()))
+    report.check("every lockfile package resolves to registry.npmjs.org with sha512 integrity",
+                 all(e["resolved"].startswith("https://registry.npmjs.org/") and e["integrity"].startswith("sha512-")
+                     for e in entries))
+    direct = {**toolchain["packages"]["dependencies"], **toolchain["packages"]["dev_dependencies"]}
+    versions = {e["name"]: e["version"] for e in entries}
+    report.check("every pinned package has its pinned version in the lockfile",
+                 all(versions.get(name) == version for name, version in direct.items()))
+    report.check("lockfile dev flags follow dependencies and devDependencies",
+                 all(("dev" in e) == (e["name"] in toolchain["packages"]["dev_dependencies"])
+                     for e in entries if e["name"] in direct))
+
+
+def check_reference_verification(report: Report, toolchain: dict[str, Any]) -> None:
+    verification = toolchain["reference_verification"]
+    report.check("reference verification passed", verification["status"] == "passed")
+    evidence = load(REPO / verification["evidence"])
+    product = REPO / evidence["product"]["copy"]
+    files = {str(path.relative_to(product)) for path in product.rglob("*") if path.is_file()}
+    layout = {p.replace("<revision>", "rev0000") for p in layout_paths()}
+    report.check("reference product has the 11 layout files", files == layout, str(sorted(files ^ layout)))
+    report.check("reference product file hashes equal the evidence",
+                 all(hashlib.sha256((product / rel).read_bytes()).hexdigest() == digest
+                     for rel, digest in evidence["product"]["files"].items()) and set(evidence["product"]["files"])
+                 == files)
+    for name in ["package.json", "package-lock.json", "tsconfig.json"]:
+        report.check(f"reference product {name} is the reference bytes",
+                     (product / name).read_bytes() == (CONTRACT / "reference" / name).read_bytes())
+    steps = [(g["step"], g["exit_code"]) for g in evidence["gates"]]
+    report.check("reference gates install, typecheck, format_check and test exit 0",
+                 steps == [("install", 0), ("typecheck", 0), ("format_check", 0), ("test", 0)], str(steps))
+    report.check("reference gate commands equal toolchain.json commands",
+                 all(g["command"] == toolchain["commands"][g["step"]] for g in evidence["gates"]),
+                 str([g["command"] for g in evidence["gates"]]))
+    report.check("reference lockfile unchanged by the commands",
+                 evidence["lock_unchanged"] is True and evidence["lock_sha256_before"] == evidence["lock_sha256_after"]
+                 == hashlib.sha256((CONTRACT / "reference" / "package-lock.json").read_bytes()).hexdigest())
+    report.check("reference run smoke passed", evidence["run_smoke"]["passed"] is True
+                 and evidence["run_smoke"]["sigterm_exit_code"] == 0)
+    report.check("reference evidence passed", evidence["passed"] is True)
+    report.check("reference evidence prettier tree equals toolchain.json",
+                 evidence["prettier_tree_sha256"] == toolchain["formatter"]["prettier_tree_sha256"])
+    report.check("reference evidence cache tree equals toolchain.json",
+                 evidence["vendored_cache_tree_sha256_after"] == toolchain["vendored_cache"]["tree_sha256"])
+    prettier = REPO / evidence["prettier_tree_path"]
+    if prettier.is_dir():
+        report.check("prettier tree hash equals toolchain.json",
+                     tree_sha(prettier)[0] == toolchain["formatter"]["prettier_tree_sha256"])
+    else:
+        print(f"NOTE {evidence['prettier_tree_path']} is absent: the prettier tree hash was not recomputed")
 
 
 def check_negative_cases(report: Report, schema: Callable[[str], Draft202012Validator]) -> None:
@@ -338,15 +417,40 @@ def check_receipt(report: Report, receipt_path: pathlib.Path) -> None:
     report.check("receipt lists every contract, tool and evidence file", present == set(receipt["files"]),
                  json.dumps(sorted(present ^ set(receipt["files"]))))
     report.check("receipt target_contract hash is H(files)", receipt["target_contract"]["sha256"] == h(receipt["files"]))
-    report.check("receipt was sealed before implementation",
-                 receipt["status"] == "contract_frozen_before_implementation"
-                 and receipt["implementation_started_before_freeze"] is False)
+    if "amendment" in receipt:
+        previous = REPO / receipt["previous_receipt"]
+        report.check("amendment receipt names its previous receipt by hash",
+                     previous.is_file() and hashlib.sha256(previous.read_bytes()).hexdigest()
+                     == receipt["previous_receipt_sha256"])
+        report.check("amendment previous target hash is the previous receipt's",
+                     receipt["target_contract"]["previous_sha256"] == load(previous)["target_contract"]["sha256"])
+        old = load(previous)["files"]
+        changed = sorted(k for k in receipt["files"] if k in old and receipt["files"][k] != old[k])
+        added = sorted(k for k in receipt["files"] if k not in old)
+        report.check("amendment changed_paths and added_paths equal the files map diff",
+                     receipt["changed_paths"] == changed and receipt["added_paths"] == added
+                     and set(old) <= set(receipt["files"]))
+        report.check("amendment changes record each changed path",
+                     [c["path"] for c in receipt["changes"]] == changed)
+        for change in receipt["changes"]:
+            archived = REPO / change["archived_copy"]
+            report.check(f"amendment change {change['path']} hashes",
+                         change["old_sha256"] == old.get(change["path"]) == change["archived_copy_sha256"]
+                         and archived.is_file() and hashlib.sha256(archived.read_bytes()).hexdigest()
+                         == change["old_sha256"] and change["new_sha256"] == receipt["files"][change["path"]])
+        report.check("amendment was sealed after independent review",
+                     receipt["status"] == "amendment_sealed_after_independent_review"
+                     and receipt["implementation_already_in_progress"] is False)
+    else:
+        report.check("receipt was sealed before implementation",
+                     receipt["status"] == "contract_frozen_before_implementation"
+                     and receipt["implementation_started_before_freeze"] is False)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--files", action="store_true", help="print the SHA-256 of every contract file")
-    parser.add_argument("--receipt", type=pathlib.Path, help="also check the files map of a freeze receipt")
+    parser.add_argument("--receipt", type=pathlib.Path, help="also check the files map of a receipt")
     args = parser.parse_args()
     report = Report()
     for name in JSON_FILES:

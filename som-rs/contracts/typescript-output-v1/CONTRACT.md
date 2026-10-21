@@ -6,7 +6,7 @@ Implementation acceptance is separate and follows [acceptance-plan.json](accepta
 The compiler-v1 contract (../compiler-v1) and the rust-output-v1 contract (../rust-output-v1) stay in force. This contract only adds to them.
 rust-output-v1 amendment 005 (its CONTRACT.md section 13) admits the `target` value typescript and hands it to this contract.
 
-Status: frozen. The receipt is `som-rs/evidence/typescript-output-contract-freeze-2026-10-21.json` (section 11).
+Status: frozen. The freeze receipt is `som-rs/evidence/typescript-output-contract-freeze-2026-10-21.json` (section 11). Amendment 001 is sealed by `som-rs/evidence/typescript-output-contract-amendment-001.json` (section 7).
 
 | File | Content |
 |---|---|
@@ -114,7 +114,7 @@ README.md
 The npm package name is always `som-app`, so package.json, package-lock.json and tsconfig.json are the same bytes in every product.
 product-layout.json fixes each file's rule, request parsing, the 404, 405, 409, 422 and 500 bodies, `/healthz`, and the startup exit codes.
 Query values follow the Rust product's text rules, not the JSON body rules.
-Generated code reads prompt-named members only after `Object.hasOwn`, builds responses as object literals with quoted keys, and uses prompt names in SQL only as double-quoted identifiers.
+Generated code reads prompt-named members only after `Object.hasOwn` and with bracket access, builds responses as object literals, and uses prompt names in SQL only as double-quoted identifiers. The formatter may print a key that is an IdentifierName (reserved words such as class or delete included) without quotes (amendment 001).
 
 ## 6. Toolchain
 
@@ -140,7 +140,15 @@ After the freeze, one approved download fills `.local/typescript-output/npm-cach
 - toolchain.json `vendored_cache.tree_sha256` and `formatter.sha256`;
 - toolchain.json `reference_verification`, a reference product that passes install, typecheck, format_check and test against the cache.
 
-`formatter.sha256`, `packages.lock_packages` and `vendored_cache.tree_sha256` read "pending amendment 001" until then, `reference_verification.status` reads `not_run`, and check_contract.py asserts that state. Amendment 001 replaces those assertions with checks of the sealed values.
+At the freeze, `formatter.sha256`, `packages.lock_packages` and `vendored_cache.tree_sha256` read "pending amendment 001" and `reference_verification.status` read `not_run`.
+Amendment 001 (2026-10-21, issue #73) sealed them, and check_contract.py now checks the sealed values (the cache and prettier tree hashes are recomputed when the local directories are present):
+
+- the lockfile has 21 packages; none has an install script, and every resolved URL is on the npm registry;
+- the vendored cache tree sha256 is `11ae1ed59d4e17888d3b6e3b864cdfdbc850b11752cae2735d13ccb5f71eb1e9`, and every command sets `npm_config_logs_dir` outside the cache, so npm writes no logs into it;
+- the formatter sha256 is `636bd4a26884ea92873af81bf4fd5bbc0c065157e645c3919658a4d0bc29c0e8`;
+- the reference product, example v1, passed the four commands (evidence `som-rs/evidence/typescript-output-v1/reference-verification-2026-10-21.json`).
+
+The reference verification also showed that prettier's default quoteProps prints identifier field names without quotes, so product-layout.json `naming.fields` now asks for bracket reads and own-property checks, not quoted keys.
 A missing pinned version, a package that needs an install script, or any network access after the download blocks amendment 001 and goes back to the user.
 No build is a candidate and no product is accepted before amendment 001 is sealed.
 
