@@ -8,6 +8,7 @@ import io
 import json
 import os
 from pathlib import Path
+import signal
 import socket
 import stat
 import sys
@@ -52,11 +53,13 @@ class FakeHarness:
         package: str = "todos",
         unittest_exit_code: int = 0,
         create_status_code: int = 201,
+        uvicorn_exit_after_healthz: bool = False,
     ) -> None:
         self.root = root
         self.package = package
         self.unittest_exit_code = unittest_exit_code
         self.create_status_code = create_status_code
+        self.uvicorn_exit_after_healthz = uvicorn_exit_after_healthz
         self.pg_bin = root / "pg_bin"
         self.py_bin = root / "py_bin"
         self.pg_bin.mkdir(parents=True, exist_ok=True)
@@ -73,6 +76,7 @@ class FakeHarness:
         self._create_py_tools(
             unittest_exit_code=unittest_exit_code,
             create_status_code=create_status_code,
+            uvicorn_exit_after_healthz=uvicorn_exit_after_healthz,
         )
 
     def _header_lines(self) -> list[str]:
@@ -167,6 +171,7 @@ class FakeHarness:
         *,
         unittest_exit_code: int,
         create_status_code: int,
+        uvicorn_exit_after_healthz: bool,
     ) -> None:
         write_executable(
             self.py_bin / "alembic",
@@ -195,6 +200,7 @@ class FakeHarness:
                 "import signal",
                 "argv = sys.argv[1:]",
                 'port = int(argv[argv.index("--port") + 1])',
+                f"EXIT_AFTER_HEALTHZ = {uvicorn_exit_after_healthz!r}",
                 "class Handler(BaseHTTPRequestHandler):",
                 "    def log_message(self, fmt, *args):",
                 "        return",
@@ -206,6 +212,9 @@ class FakeHarness:
                 '            self.send_header("Content-Length", str(len(body)))',
                 "            self.end_headers()",
                 "            self.wfile.write(body)",
+                "            self.wfile.flush()",
+                "            if EXIT_AFTER_HEALTHZ:",
+                "                os._exit(1)",
                 "        else:",
                 "            self.send_response(404)",
                 "            self.end_headers()",
@@ -280,6 +289,9 @@ class PgRunTest(unittest.TestCase):
                 return None, payload
             parsed = urllib.parse.urlparse(url)
             if method == "GET" and parsed.path == "/healthz":
+                if harness.uvicorn_exit_after_healthz:
+                    with contextlib.suppress(OSError):
+                        os.kill(pid, signal.SIGKILL)
                 return 200, '{"status":"ok"}'
             if method == "POST":
                 raw_text = (body or b"").decode("utf-8", errors="replace")
@@ -444,6 +456,78 @@ class PgRunTest(unittest.TestCase):
             self.assertIn("--out", summary_dir["error"])
             self.assertEqual(sentinel.read_text(encoding="utf-8"), "untouched\n")
             self.assertEqual(harness.read_events(), [])
+
+            # 1e. Occupied --app-port is refused with exit 2 before initdb
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as squatter:
+                squatter.bind(("127.0.0.1", 0))
+                squatter.listen(1)
+                busy_app_port = int(squatter.getsockname()[1])
+                free_pg_port = pick_free_port(exclude={busy_app_port})
+
+                code_app_busy, stdout_app_busy = self.invoke_pg_run(
+                    harness,
+                    [
+                        "--som",
+                        str(harness.som_bin),
+                        "--url",
+                        TEST_URL,
+                        "--cnl",
+                        str(harness.cnl_file),
+                        "--out",
+                        str(valid_out),
+                        "--python-bin",
+                        str(harness.py_bin),
+                        "--pg-port",
+                        str(free_pg_port),
+                        "--app-port",
+                        str(busy_app_port),
+                        "--create",
+                        '/todos={"title":"a"}',
+                    ],
+                )
+                self.assertEqual(code_app_busy, 2)
+                summary_app_busy = json.loads(stdout_app_busy.strip())
+                self.assertEqual(summary_app_busy["status"], "refused")
+                self.assertFalse(summary_app_busy["passed"])
+                self.assertIn("--app-port", summary_app_busy["error"])
+                self.assertFalse(valid_out.exists())
+                self.assertEqual(harness.read_events(), [])
+
+            # 1f. Occupied --pg-port is refused with exit 2 before initdb
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as squatter:
+                squatter.bind(("127.0.0.1", 0))
+                squatter.listen(1)
+                busy_pg_port = int(squatter.getsockname()[1])
+                free_app_port = pick_free_port(exclude={busy_pg_port})
+
+                code_pg_busy, stdout_pg_busy = self.invoke_pg_run(
+                    harness,
+                    [
+                        "--som",
+                        str(harness.som_bin),
+                        "--url",
+                        TEST_URL,
+                        "--cnl",
+                        str(harness.cnl_file),
+                        "--out",
+                        str(valid_out),
+                        "--python-bin",
+                        str(harness.py_bin),
+                        "--pg-port",
+                        str(busy_pg_port),
+                        "--app-port",
+                        str(free_app_port),
+                        "--create",
+                        '/todos={"title":"a"}',
+                    ],
+                )
+                self.assertEqual(code_pg_busy, 2)
+                summary_pg_busy = json.loads(stdout_pg_busy.strip())
+                self.assertEqual(summary_pg_busy["status"], "refused")
+                self.assertFalse(summary_pg_busy["passed"])
+                self.assertIn("--pg-port", summary_pg_busy["error"])
+                self.assertFalse(valid_out.exists())
+                self.assertEqual(harness.read_events(), [])
 
     def test_step_order_env_vars_result_json_and_app_stopped(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -657,6 +741,55 @@ class PgRunTest(unittest.TestCase):
             uvicorn_pid = int(harness.uvicorn_pid_file.read_text(encoding="utf-8").strip())
             with self.assertRaises(ProcessLookupError):
                 os.kill(uvicorn_pid, 0)
+
+    def test_uvicorn_exiting_immediately_after_first_poll_fails_healthz_and_stops_pg(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            harness = FakeHarness(root, package="todos", uvicorn_exit_after_healthz=True)
+            out_dir = root / "run_uvicorn_early_exit"
+            pg_port = pick_free_port()
+            app_port = pick_free_port(exclude={pg_port})
+
+            code, stdout = self.invoke_pg_run(
+                harness,
+                [
+                    "--som",
+                    str(harness.som_bin),
+                    "--url",
+                    TEST_URL,
+                    "--cnl",
+                    str(harness.cnl_file),
+                    "--out",
+                    str(out_dir),
+                    "--python-bin",
+                    str(harness.py_bin),
+                    "--pg-port",
+                    str(pg_port),
+                    "--app-port",
+                    str(app_port),
+                    "--create",
+                    '/todos={"title":"first"}',
+                ],
+            )
+            self.assertEqual(code, 1)
+            summary = json.loads(stdout.strip())
+            self.assertFalse(summary["passed"])
+            self.assertEqual(summary["status"], "error")
+
+            result = json.loads((out_dir / "result.json").read_text(encoding="utf-8"))
+            self.assertFalse(result["passed"])
+            steps_by_name = {s["name"]: s for s in result["steps"]}
+
+            self.assertEqual(steps_by_name["uvicorn_healthz"]["status"], "failed", steps_by_name)
+            self.assertFalse(steps_by_name["uvicorn_healthz"]["passed"])
+            self.assertEqual(steps_by_name["create"]["status"], "not run")
+            self.assertFalse(steps_by_name["create"]["passed"])
+            self.assertEqual(steps_by_name["alembic_downgrade"]["status"], "not run")
+            self.assertFalse(steps_by_name["alembic_downgrade"]["passed"])
+
+            self.assertEqual(result["cleanup"]["pg_stop"]["status"], "passed")
+            events = harness.read_events()
+            self.assertEqual(events[-1]["tool"], "pg_ctl_stop")
 
 
 if __name__ == "__main__":

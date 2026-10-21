@@ -23,6 +23,7 @@ from pathlib import Path
 import re
 import shutil
 import signal
+import socket
 import subprocess
 import sys
 import time
@@ -104,6 +105,15 @@ def validate_port(port: int, flag_name: str) -> str | None:
         return f"Refused {flag_name} {port}: ports 8765 and 18765 are forbidden"
     if port <= 0 or port > 65535:
         return f"Refused {flag_name} {port}: port must be between 1 and 65535"
+    return None
+
+
+def check_port_free(port: int, flag_name: str) -> str | None:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        try:
+            probe.bind(("127.0.0.1", port))
+        except OSError as exc:
+            return f"Refused {flag_name} {port}: port is already in use on 127.0.0.1 ({exc})"
     return None
 
 
@@ -288,6 +298,11 @@ def run_pg_check(
     if create_err is not None or create_pairs is None:
         return 2, {"status": "refused", "passed": False, "error": create_err or "Invalid --create"}
 
+    for port, flag in ((pg_port, "--pg-port"), (app_port, "--app-port")):
+        busy_err = check_port_free(port, flag)
+        if busy_err is not None:
+            return 2, {"status": "refused", "passed": False, "error": busy_err}
+
     out_dir = out_dir.resolve()
     som_bin = som_bin.resolve()
     cnl_path = cnl_path.resolve()
@@ -416,10 +431,10 @@ def run_pg_check(
             "-w",
             "start",
         ]
-        pg_started = True
         code, tail = run_cmd(argv_pg_start, env=pg_env)
         if not record_step(steps_map, "pg_start", argv=argv_pg_start, exit_code=code, output_tail=tail):
             raise RuntimeError("pg_start failed")
+        pg_started = True
 
         # Steps 3 & 4: createdb (<package>_dev, <package>_test) and som write.
         # If `--cnl` declares `Use package <package>.`, run step 3 (createdb) then step 4 (som write)
@@ -539,11 +554,13 @@ def run_pg_check(
             last_status = status_code
             last_body = body
             if status_code == 200:
-                health_ok = True
+                time.sleep(0.1)
+                if app_proc.poll() is None:
+                    health_ok = True
                 break
             time.sleep(0.1)
 
-        if not health_ok:
+        if not health_ok or app_proc.poll() is not None:
             proc_code = app_proc.poll()
             exit_val = proc_code if (proc_code is not None and proc_code != 0) else 1
             if app_stdout_handle is not None:
@@ -584,6 +601,12 @@ def run_pg_check(
         for path, raw_json in create_pairs:
             target_url = f"http://127.0.0.1:{app_port}{path}"
             create_argv.append(f"POST {target_url} {raw_json}")
+            if app_proc.poll() is not None:
+                create_failed = True
+                create_tails.append(
+                    f"POST {path} aborted: uvicorn exited early (exit_code={app_proc.returncode})"
+                )
+                break
             status_code, resp_body = http_request(
                 "POST",
                 target_url,
@@ -599,7 +622,7 @@ def run_pg_check(
                 }
             )
             create_tails.append(f"POST {path} -> {status_code}: {resp_body}")
-            if status_code != 201:
+            if status_code != 201 or app_proc.poll() is not None:
                 create_failed = True
                 break
 
