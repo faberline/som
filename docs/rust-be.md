@@ -159,6 +159,20 @@ Environment variables for `resource` products:
 - `SOM_APP_ADDR` (optional, default `127.0.0.1:8000`): socket address `som_app` binds when serving HTTP.
 - `TEST_DATABASE_URL` (required by `tests/api.rs`): PostgreSQL connection URL for integration tests; each test resets `schema public`, runs `MIGRATOR`, and drives `som_app::router` in-process.
 
+To run the full `som write --target rust` generation, local PostgreSQL lifecycle, offline `cargo build` and `cargo test`, `/healthz` check, and `POST` smoke requests for a `resource` product (v1–v5 without capabilities) in a single command, use [pg_run.py](../som-rs/scripts/rust_quickstart/pg_run.py):
+
+```sh
+python3 som-rs/scripts/rust_quickstart/pg_run.py \
+  --som som-rs/runtime/current/som \
+  --url http://127.0.0.1:18080 \
+  --cnl som-rs/contracts/compiler-v1/examples/v1.cnl \
+  --out ~/work/items_rust_pg_run \
+  --vendor .local/rust-output-phase2/vendor-002 \
+  --pg-port 55432 \
+  --app-port 18081 \
+  --create '/items={"title":"first"}'
+```
+
 ### Capability and flow products (v5 with capabilities, v6, and v7)
 
 Capability and flow products (such as [v6.cnl](../som-rs/contracts/compiler-v1/examples/v6.cnl) and [v7.cnl](../som-rs/contracts/compiler-v1/examples/v7.cnl)) build and test with the same offline Cargo flags (`cargo build --offline` / `cargo build --locked --offline` and `cargo test --offline -- --test-threads=1`) and expose the operator subcommands defined in [phase2/services.json](../som-rs/contracts/rust-output-v1/phase2/services.json) (`serve` does not auto-migrate):
