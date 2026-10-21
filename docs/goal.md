@@ -30,3 +30,4 @@ No TypeScript, SRE, AI, or FE output exists yet.
   A target that talks to a cloud or model API is tested against a local fake or emulator.
 
 The [roadmap](roadmap.md) lists the tracks, their open decisions, and their issues.
+The [Python backend quickstart](python-be.md) shows how to generate and run a Python backend project.
