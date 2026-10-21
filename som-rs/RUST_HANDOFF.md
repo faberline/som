@@ -45,7 +45,7 @@ Going back further to `05f1bfe6…` after a #57 restore needs its own rehearsal 
   Health reports its SHA-256 under `rust_target`. If a Homebrew upgrade removes that version, Rust assemble answers ASSET_UNAVAILABLE.
   Python output is not affected. Pin or reinstall that toolchain before upgrading. Run `python3 som-rs/scripts/rust_toolchain/check_toolchain.py` before and after upgrading Homebrew to verify that every pinned Rust binary is still present and matches its SHA-256.
 - Phase 2 products build offline only with vendored crates. The #55 and #57 runs used `.local/rust-output-phase2/vendor-002`.
-  A fresh machine needs that directory or network access to crates.io.
+  A fresh machine needs that directory or network access to crates.io. Run `python3 som-rs/scripts/rust_vendor/check_vendor.py` before running phase 2 builds or acceptance to verify that the vendored crate tree is intact and matches the frozen `Cargo.lock` files.
 - The M2 check before the switch is a fresh legacy M2 clone on a harness port. The #44 post-commit M2 restore tool is bound to the default-switch-001 lineage and was not rerun.
 
 ### som-core tests
