@@ -8,7 +8,11 @@ and are never overwritten.
    the pinned toolchain, records `source.json`, `source.tar` and `build.json`, and
    starts it on a QA port (never 8765 or 18765). With `--package-assets FORMATTER`
    the asset package is built from the same commit instead of copied from
-   `compiler-assets/current` (#57).
+   `compiler-assets/current` (#57). With `--prettier PATH` (for example
+   `.local/typescript-output/prettier-001/node_modules/prettier`) `SOM_TS_PRETTIER`
+   is set to the resolved directory for `cargo test`, `cargo build` and `som serve`,
+   and the path and its `tree_sha.py` tree SHA-256 (`som_ts_prettier` and
+   `prettier_tree_sha256`) are recorded in `build.json` and `runtime.json` (#97).
 2. `vendor_crates.py --out DIR` builds the vendored crate set for the frozen
    reference `Cargo.lock` from the local cargo cache, offline. Crates that only
    other platforms need become stubs that fail if compiled.
