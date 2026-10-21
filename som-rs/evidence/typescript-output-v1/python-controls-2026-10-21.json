@@ -1,0 +1,318 @@
+{
+  "version": "som.typescript-output-python-controls.v1",
+  "sources_sha256": {
+    "negative-cases.json": "c96fb4e6b3b1d86fdd2c1af12724f3e3585878c375c96c96deb057757f771543",
+    "target-examples.json": "fac94a5cb3295c5cb26c39f541ef395f6fa6ca1a99f25ca8cb5b3ff16f1aa6c5"
+  },
+  "base_url": "http://127.0.0.1:8765",
+  "passed": 43,
+  "failed": [],
+  "results": [
+    {
+      "id": "TT01_JSON_TARGET_ALIAS",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "TT02_JSON_TARGET_NULL",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "TT03_JSON_TARGET_CASE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "TT04_CNL_TARGET_NUMBER",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "TT05_CNL_TARGET_SPACE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "TT06_CNL_TARGET_ARRAY",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "TT07_JSON_TARGET_DUPLICATE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "TS01_CNL_V6",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "1c29e552f16ac928d6457549f944056db887193811f3bd4f85f9995c6e8c9bd9"
+    },
+    {
+      "id": "TS02_CNL_V7",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "b99aa974db62ebdb1abf3a3e092465a9fad6f4283fd3ca71d42288f703276277"
+    },
+    {
+      "id": "TS03_JSON_V6",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "1c29e552f16ac928d6457549f944056db887193811f3bd4f85f9995c6e8c9bd9"
+    },
+    {
+      "id": "TS04_JSON_V7",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "b99aa974db62ebdb1abf3a3e092465a9fad6f4283fd3ca71d42288f703276277"
+    },
+    {
+      "id": "TS05_CNL_PATH_TRAILING_SLASH",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "4390c3bc92e3493c49d84e9d5477168df52d7ef297f8dc8937875141a1cd3230"
+    },
+    {
+      "id": "TS06_JSON_PATH_DOUBLE_SLASH",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "bff0712f9a95c3f6e1faa016ac0f67a25116a08c6ab3186969df6c4e330207fc"
+    },
+    {
+      "id": "TS07_CNL_PATH_HEALTHZ",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "268bec38174ed0da82f1e3d375383f6cd419702531090285111fc475b8cd3e16"
+    },
+    {
+      "id": "TS08_JSON_PATH_HEALTHZ",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "5738e54a37b9c8df4357926298f587ebd2e16760ebabd744d9ac24c9b0dee37c"
+    },
+    {
+      "id": "TS09_CNL_TABLE_TS_MIGRATIONS",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "3925ddea425e0fde9639aa910767af8fa9997b1b4ecad035e050c6ceabad73bc"
+    },
+    {
+      "id": "TS10_JSON_TABLE_BEFORE_FIELD",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "8aa08dd18bfce5e94a21e39421fbc2cfad589df90d62cf3613162689686db773"
+    },
+    {
+      "id": "TS11_CNL_FIELD_PROTO",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "d7ddf1dbf647fb23c065ea0f7a51f94d267baaf6f253ed0c66056ba768f32296"
+    },
+    {
+      "id": "TS12_JSON_FIELD_CONSTRUCTOR",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "7be8efe3bded3781f4d38d3046c8adcb2bd3b7089429ef87eabda8b7198ebf71"
+    },
+    {
+      "id": "TS13_CNL_V5_CHILD_FIELD_PROTOTYPE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "df6514d2d0135e52da2b92750b041359e7f9e6dd0299d34fac9959f77874f276"
+    },
+    {
+      "id": "TS14_JSON_V5_FOREIGN_KEY_CONSTRUCTOR",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "a5b5230f3f43ff3e204e93f66361575eb9dcc5ecd03a37b2e2f3674f0603a802"
+    },
+    {
+      "id": "TS15_CNL_PATH_BEFORE_FIELD",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "b77c306b418571b0daa402ec7ce09bf51e8305463b7918ca71b61bac3e72ae8a"
+    },
+    {
+      "id": "TS16_CNL_V5_CHILD_FIELD_BEFORE_FOREIGN_KEY",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "cd5d5cdeb3ba37cc2ab4b26dc297ef2e8020c3ea9885d915e86a84259fe01688"
+    },
+    {
+      "id": "TS17_JSON_V5_PARENT_BEFORE_CHILD",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "8cfbac9a54e507455d2ba8256cd286a2a99ec99bee45a89fbf8b997cd80a8566"
+    },
+    {
+      "id": "TS18_CNL_V5_CAPABILITIES",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "c4ebd380ae566c98c5d0a0b73f878a7b4622ca9f0e7aa1b67d4e4e2bab99e0ba"
+    },
+    {
+      "id": "TS19_JSON_V5_CAPABILITIES",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "c4ebd380ae566c98c5d0a0b73f878a7b4622ca9f0e7aa1b67d4e4e2bab99e0ba"
+    },
+    {
+      "id": "TS20_CNL_V5_CAPABILITIES_FIRST",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "c0d1c7debf53aff6a8fecd5e96c3a84c58472321750c59b56828d99a1508d7a5"
+    },
+    {
+      "id": "TS21_CNL_V3_FILTER_LIMIT",
+      "control_status": 400,
+      "passed": true,
+      "diagnostic": {
+        "code": "INVALID_VALUE",
+        "cause": "prompt.query.filter_field: name collides with a generated Python identifier",
+        "allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code.",
+        "byte_start": 376,
+        "byte_end": 381,
+        "line": 13,
+        "column": 25
+      }
+    },
+    {
+      "id": "TS22_JSON_V3_FILTER_OFFSET",
+      "control_status": 400,
+      "passed": true,
+      "diagnostic": {
+        "code": "INVALID_VALUE",
+        "cause": "prompt.query.filter_field: name collides with a generated Python identifier",
+        "allowed_form": "A prompt that meets the pinned compiler contract.",
+        "byte_start": 456,
+        "byte_end": 464,
+        "line": 1,
+        "column": 457
+      }
+    },
+    {
+      "id": "TP01_CNL_SYNTAX_BEFORE_TARGET",
+      "control_status": 400,
+      "passed": true,
+      "diagnostic": {
+        "code": "CNL_SYNTAX",
+        "cause": "Field token uuid is outside the grammar vocabulary.",
+        "allowed_form": "str, int, float, bool, or date when the prompt version allows date.",
+        "byte_start": 610,
+        "byte_end": 614,
+        "line": 21,
+        "column": 25
+      }
+    },
+    {
+      "id": "TP02_CNL_VERSION_BEFORE_TARGET",
+      "control_status": 422,
+      "passed": true,
+      "diagnostic": {
+        "code": "UNSUPPORTED_VERSION",
+        "cause": "Prompt version is outside the supported set 1 through 7.",
+        "allowed_form": "Use prompt version 1 through 7.",
+        "byte_start": 42,
+        "byte_end": 43,
+        "line": 2,
+        "column": 20
+      }
+    },
+    {
+      "id": "TP03_JSON_V4_RESERVED_FILTER_BEFORE_TARGET",
+      "control_status": 400,
+      "passed": true,
+      "diagnostic": {
+        "code": "INVALID_VALUE",
+        "cause": "prompt.query.filter_field: reserved query name",
+        "allowed_form": "A prompt that meets the pinned compiler contract.",
+        "byte_start": 507,
+        "byte_end": 515,
+        "line": 1,
+        "column": 508
+      }
+    },
+    {
+      "id": "TP04_JSON_V5_HEALTHZ_PATH_BEFORE_TARGET",
+      "control_status": 400,
+      "passed": true,
+      "diagnostic": {
+        "code": "INVALID_VALUE",
+        "cause": "invalid resource path",
+        "allowed_form": "A prompt that meets the pinned compiler contract.",
+        "byte_start": 158,
+        "byte_end": 168,
+        "line": 1,
+        "column": 159
+      }
+    },
+    {
+      "id": "TN01_CNL_FIELD_UPPERCASE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "424a2de0a4d2e7b03566ce5119c3315051a81d82ad3fa02fd0bda4ee72375236"
+    },
+    {
+      "id": "TN02_JSON_FIELD_UPPERCASE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "424a2de0a4d2e7b03566ce5119c3315051a81d82ad3fa02fd0bda4ee72375236"
+    },
+    {
+      "id": "TN03_CNL_FIELD_SELF",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "0178075f9d3258f9be65270c99b1639a733107d4123d39f2760be517a1172341"
+    },
+    {
+      "id": "TN04_JSON_CHILD_FIELD_DOUBLE_UNDERSCORE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "4ba07d5b6b16623d2882f022e4321fae659e71c60c0964fa63167036e2dcee13"
+    },
+    {
+      "id": "TN05_CNL_V5_FOREIGN_KEY_SELF",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "7e2b2448b04c84ed899219be814e038bd132b392550584eed04c1f59681dda3d"
+    },
+    {
+      "id": "TN06_JSON_V5_FOREIGN_KEY_CRATE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "247e980f6861caf4961d9244be6d50e22a600812f3a795bb8fec177f1c7f4585"
+    },
+    {
+      "id": "TN07_CNL_V5_CHILD_FIELD_AND_FOREIGN_KEY",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "d696c19e6922e9d535cfa5c9edc45370c38b4aeaa519f1f830a773ada39a5db9"
+    },
+    {
+      "id": "TN08_CNL_TABLE_SQLX_MIGRATIONS",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "0283087f479d148767c710d55edc31da41cac1e87c7fa56eca0dabf5e7ac3950"
+    },
+    {
+      "id": "TN09_CNL_FIELD_TO_STRING",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "9ba0545d7a61dd35f1e45f13712d01f3fb5b710988e00004b159e56a4547831f"
+    },
+    {
+      "id": "TN10_JSON_FIELD_HAS_OWN_PROPERTY",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "80317f4fc5617f3337cb93bb54d82eb9ec56194e71eb5e4c8ca066939e0793e7"
+    }
+  ]
+}

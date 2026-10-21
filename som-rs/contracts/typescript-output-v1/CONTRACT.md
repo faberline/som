@@ -6,8 +6,7 @@ Implementation acceptance is separate and follows [acceptance-plan.json](accepta
 The compiler-v1 contract (../compiler-v1) and the rust-output-v1 contract (../rust-output-v1) stay in force. This contract only adds to them.
 rust-output-v1 amendment 005 (its CONTRACT.md section 13) admits the `target` value typescript and hands it to this contract.
 
-Status: freeze candidate. It sits in `docs/typescript-output-v1/` until a person approves the freeze (section 11).
-Links to ../compiler-v1 and ../rust-output-v1 resolve once the files are copied into `som-rs/contracts/typescript-output-v1/`.
+Status: frozen. The receipt is `som-rs/evidence/typescript-output-contract-freeze-2026-10-21.json` (section 11).
 
 | File | Content |
 |---|---|
@@ -24,8 +23,8 @@ Links to ../compiler-v1 and ../rust-output-v1 resolve once the files are copied 
 | [case-inventory.json](case-inventory.json) | The 125 acceptance cases and the selection rules |
 | [acceptance-plan.json](acceptance-plan.json) | Checks, assemble refusals A1 to A12, product gates, amendment 001 and issue gates |
 
-The scripts in [tools/](tools/) build the case files and check the contract. At the freeze they move to `som-rs/tests/typescript-output-v1/`.
-`tools/check_contract.py` needs no compiler and no network. `tools/check_python_controls.py` sends each Python control to a compiler's read-only compile endpoint.
+The scripts in [som-rs/tests/typescript-output-v1/](../../tests/typescript-output-v1/) (the tools) build the case files and check the contract.
+`check_contract.py` needs no compiler and no network; `--receipt` also checks the freeze receipt. `check_python_controls.py` sends each Python control to a compiler's read-only compile endpoint, and `--evidence` records the results.
 
 ## 1. Python and Rust
 
@@ -89,7 +88,7 @@ Each refusal is UNSUPPORTED_TARGET, HTTP 422. The pointer follows the Rust rules
 | table_reserved | The table `_som_ts_migrations` | v1 to v4; the v5 table pattern refuses a leading underscore |
 | identifier_reserved | A field or foreign key named `__proto__`, `constructor` or `prototype` | `__proto__` v1 to v4; the other two in every version |
 
-The causes, allowed forms and order are in scope.json. tools/ts_profile.py is the reference implementation. check_contract.py runs it on every typed JSON TS case, every public example and every coverage case. CNL cases are checked by their byte spans, and the compiler checks them at acceptance (scope_checks).
+The causes, allowed forms and order are in scope.json. The tools' ts_profile.py is the reference implementation. check_contract.py runs it on every typed JSON TS case, every public example and every coverage case. CNL cases are checked by their byte spans, and the compiler checks them at acceptance (scope_checks).
 No TypeScript identifier comes from the prompt. So the names Rust refuses or renames (`self`, `Title`, `a__b`) and JavaScript reserved words are in scope. The 10 name cases in target-examples.json are positive acceptance cases.
 A v3 filter named `limit` or `offset` is refused by compiler-v1 amendment 003 for every target. It is not a target refusal.
 
@@ -122,7 +121,7 @@ Generated code reads prompt-named members only after `Object.hasOwn`, builds res
 | Tool | Pin |
 |---|---|
 | Node | Homebrew 26.5.0, binary, libnode and Homebrew library SHA-256 |
-| npm | 11.17.0, tree SHA-256 by tools/tree_sha.py |
+| npm | 11.17.0, tree SHA-256 by the tools' tree_sha.py |
 | Packages | hono 4.13.13, @hono/node-server 2.1.5, pg 8.23.1; dev: typescript 5.9.3, prettier 3.9.10, @types/pg 8.23.1 |
 | Formatter | prettier 3.9.10 with defaults, `--no-config --no-editorconfig` |
 | PostgreSQL | 17.7, binary SHA-256 |
@@ -198,11 +197,11 @@ The options considered for runtime, framework, database layer, validation, tests
 
 ## 11. Freeze procedure
 
-1. A person approves this candidate.
-2. Copy the JSON files, catalog/, reference/ and this file to `som-rs/contracts/typescript-output-v1/`. Copy tools/ to `som-rs/tests/typescript-output-v1/`.
-3. Run `python3 som-rs/tests/typescript-output-v1/check_contract.py --files` there. It must report no failure.
-4. An independent reviewer checks the copied files.
-5. Seal the receipt `som-rs/evidence/typescript-output-contract-freeze-<date>.json` with the files map, the review and the approval.
+1. A person approved the candidate on 2026-10-21.
+2. The contract files moved from `docs/typescript-output-v1/` to `som-rs/contracts/typescript-output-v1/`, and the tools to `som-rs/tests/typescript-output-v1/`.
+3. `python3 som-rs/tests/typescript-output-v1/check_contract.py --files` reports no failure. `check_python_controls.py --evidence` recorded the Python controls on 8765 in `som-rs/evidence/typescript-output-v1/`.
+4. An independent reviewer checked the frozen files.
+5. The receipt `som-rs/evidence/typescript-output-contract-freeze-2026-10-21.json` seals the files map, the review and the approval. `check_contract.py --receipt` checks it.
 6. Split phase 1 into issues: target selection and profile, catalog and renderer, host and parity, and acceptance. Amendment 001 comes first.
 
 After the receipt is sealed, a change to any frozen file needs a numbered amendment with its reason, the old and new hashes, and an independent review.

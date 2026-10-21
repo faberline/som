@@ -8,8 +8,10 @@ layout, the bundle schema, the reference files and toolchain.json with each
 other. ts_profile is checked against the typed JSON cases, the public examples
 and the coverage cases; CNL cases are checked by span only. The checks of the
 amendment 001 fields assert the frozen state ("pending amendment 001", no
-lockfile): amendment 001 replaces them with checks of the sealed values. --files prints the SHA-256 of every contract file, the files map a
-freeze receipt seals.
+lockfile): amendment 001 replaces them with checks of the sealed values.
+--files prints the SHA-256 of every contract, tool and evidence file, the
+files map a freeze receipt seals. --receipt also checks every file hash in a
+freeze receipt.
 """
 from __future__ import annotations
 
@@ -30,6 +32,7 @@ from common import CONTRACT, EXAMPLES, HERE, REPO, SOM_RS, ts_profile
 V1 = SOM_RS / "contracts" / "compiler-v1"
 RUST = SOM_RS / "contracts" / "rust-output-v1"
 COVERAGE = SOM_RS / "tests" / "rust-output-v1" / "cases"
+EVIDENCE = SOM_RS / "evidence" / "typescript-output-v1"
 
 JSON_FILES = ["acceptance-plan.json", "api.schema.json", "behavior-normalization.json", "bundle.schema.json",
               "case-inventory.json", "negative-cases.json", "product-layout.json", "scope.json", "target-examples.json",
@@ -321,14 +324,29 @@ def check_builders(report: Report) -> None:
 
 
 def contract_files() -> list[pathlib.Path]:
-    files = [CONTRACT / name for name in JSON_FILES] + [CONTRACT / "CONTRACT.md"]
-    files += sorted(p for p in HERE.glob("*.py"))
-    return [p for p in files if p.is_file()]
+    roots = [CONTRACT, HERE, EVIDENCE]
+    return sorted({path for root in roots if root.is_dir() for path in root.rglob("*")
+                   if path.is_file() and "__pycache__" not in path.parts})
+
+
+def check_receipt(report: Report, receipt_path: pathlib.Path) -> None:
+    receipt = load(receipt_path)
+    for rel, digest in receipt["files"].items():
+        path = REPO / rel
+        report.check(f"receipt {rel}", path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == digest)
+    present = {str(path.relative_to(REPO)) for path in contract_files()}
+    report.check("receipt lists every contract, tool and evidence file", present == set(receipt["files"]),
+                 json.dumps(sorted(present ^ set(receipt["files"]))))
+    report.check("receipt target_contract hash is H(files)", receipt["target_contract"]["sha256"] == h(receipt["files"]))
+    report.check("receipt was sealed before implementation",
+                 receipt["status"] == "contract_frozen_before_implementation"
+                 and receipt["implementation_started_before_freeze"] is False)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--files", action="store_true", help="print the SHA-256 of every contract file")
+    parser.add_argument("--receipt", type=pathlib.Path, help="also check the files map of a freeze receipt")
     args = parser.parse_args()
     report = Report()
     for name in JSON_FILES:
@@ -347,10 +365,11 @@ def main() -> int:
     check_profile(report)
     check_plan(report)
     check_builders(report)
+    if args.receipt:
+        check_receipt(report, args.receipt)
     if args.files:
-        root = CONTRACT if CONTRACT == HERE.parent else REPO
         for path in contract_files():
-            print(hashlib.sha256(path.read_bytes()).hexdigest(), path.relative_to(root))
+            print(hashlib.sha256(path.read_bytes()).hexdigest(), path.relative_to(REPO))
     for line in report.failed:
         print("FAIL", line)
     print(f"{len(report.passed)} passed, {len(report.failed)} failed")

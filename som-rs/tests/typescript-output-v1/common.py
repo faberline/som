@@ -1,9 +1,7 @@
 """Shared paths and helpers for the TypeScript output contract tools.
 
-The tools live in <contract>/tools while the contract is a draft
-(docs/typescript-output-v1/tools) and move to som-rs/tests/typescript-output-v1
-when it is frozen. CONTRACT is the directory that holds scope.json in either
-place. The JSON span helpers are reused from the frozen Rust tools, which are
+The tools live in som-rs/tests/typescript-output-v1 and the frozen contract
+in som-rs/contracts/typescript-output-v1. The JSON span helpers are reused from the frozen Rust tools, which are
 read, never changed.
 """
 from __future__ import annotations
@@ -20,14 +18,7 @@ EXAMPLES = SOM_RS / "contracts" / "compiler-v1" / "examples"
 COVERAGE_CASES = RUST_TOOLS / "cases"
 
 
-def contract_dir() -> pathlib.Path:
-    draft = HERE.parent
-    if (draft / "scope.json").is_file():
-        return draft
-    return SOM_RS / "contracts" / "typescript-output-v1"
-
-
-CONTRACT = contract_dir()
+CONTRACT = SOM_RS / "contracts" / "typescript-output-v1"
 
 sys.path.insert(0, str(HERE))
 sys.path.append(str(RUST_TOOLS))  # rust_profile, imported by the Rust builder

@@ -1,8 +1,7 @@
 # SOM TypeScript output contract v1 — draft for issue #65
 
 Status: **draft, not frozen.** The options in section 6 and the four review decisions in section 10 were chosen on 2026-10-21.
-The freeze candidate is [typescript-output-v1/CONTRACT.md](typescript-output-v1/CONTRACT.md) with its JSON files. A person still approves it.
-Only then is it copied to `som-rs/contracts/typescript-output-v1/`, sealed with a receipt, and split into `agy:todo` issues.
+The frozen contract is [som-rs/contracts/typescript-output-v1/CONTRACT.md](../som-rs/contracts/typescript-output-v1/CONTRACT.md) with its JSON files, approved on 2026-10-21 and sealed by `som-rs/evidence/typescript-output-contract-freeze-2026-10-21.json`. This draft is history; the frozen contract wins where they differ.
 Nothing in this draft changes code, contracts, or outputs.
 
 The structure follows the [Rust output contract](../som-rs/contracts/rust-output-v1/CONTRACT.md).
@@ -176,12 +175,12 @@ Building and testing then runs offline. Other npm packages still need approval.
 
 - Reuse the Rust parity harness with the TypeScript `behavior-normalization.json`.
 - Add a TypeScript host: `node` runs the product with `DATABASE_URL` and `SOM_APP_ADDR` on a QA port, never 8765 or 18765.
-- Each prompt's TypeScript product must match the Python product under the frozen normalization and the divergences D1–D7 (typescript-output-v1/behavior-normalization.json).
+- Each prompt's TypeScript product must match the Python product under the frozen normalization and the divergences D1–D7 (som-rs/contracts/typescript-output-v1/behavior-normalization.json).
 - The migrator's bookkeeping table is excluded from the comparison.
 
 ## 8. Cases
 
-The frozen form of this section is typescript-output-v1/CONTRACT.md section 9.
+The frozen form of this section is som-rs/contracts/typescript-output-v1/CONTRACT.md section 9.
 
 - `target-examples.json`: the Rust examples with target `typescript`.
 - `negative-cases.json`: TS01 onward, one per refusal in section 4, plus the RT cases from amendment 005.
@@ -210,7 +209,7 @@ The first review found the draft not freezable and listed four decisions for a p
 4. **Backend location.** The TypeScript backend lives in `som-targets/src/typescript/` with its own `BACKEND_FILES` and its own backend descriptor.
    A later change to a file the Rust backend descriptor hashes (`Cargo.toml`, `src/lib.rs`, `src/main.rs`, `src/profile.rs`, ...) is recorded as a Rust bundle compatibility break, as amendment 005 already records for phase 1.
 
-The gaps the review listed are filled in the freeze candidate, [typescript-output-v1/](typescript-output-v1/):
+The gaps the review listed are filled in the frozen contract, [som-rs/contracts/typescript-output-v1/](../som-rs/contracts/typescript-output-v1/):
 
 - descriptors, the DSL `som.dsl.typescript.v1`, the catalog outline, and the formatter descriptor: CONTRACT.md section 3, `bundle.schema.json`, `catalog/typescript-catalog.v1.json`;
 - the naming rule for generated identifiers and the fixed table name: `scope.json` and `product-layout.json`;

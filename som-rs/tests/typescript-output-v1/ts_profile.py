@@ -14,7 +14,7 @@ import pathlib
 from typing import Any
 
 HERE = pathlib.Path(__file__).resolve().parent
-SCOPE = HERE.parent / "scope.json"
+SCOPE = HERE.parents[1] / "contracts" / "typescript-output-v1" / "scope.json"
 
 
 def load_scope() -> dict[str, Any]:

@@ -1,0 +1,142 @@
+{
+  "version": "som.typescript-output-contract-freeze.v1",
+  "frozen_at": "2026-10-21T08:51:16.919975+00:00",
+  "baseline_commit": "ba27832a9c88b4f0eeabc67df433b162162e528a",
+  "issue": 65,
+  "status": "contract_frozen_before_implementation",
+  "implementation_started_before_freeze": false,
+  "target": "typescript",
+  "bundle": "som.dsl-bundle.v2",
+  "approval": {
+    "by": "the user, in the Claude Code session, 2026-10-21",
+    "text": "核准凍結 typescript-output-v1：複製到 som-rs/contracts 和 tests、跑 --files、獨立審查、封存 receipt，然後開 amendment 001 issue。",
+    "decisions": [
+      "Freeze without package-lock.json; amendment 001 seals the lock, integrity and formatter hash after the one approved npm download.",
+      "identifier reserved names are __proto__, constructor and prototype.",
+      "Node type stripping runs the .ts files directly; tsc is a gate only; no dist/.",
+      "The backend lives in som-targets/src/typescript/ with its own backend files; an edit to a shared file is a bundle compatibility break for both targets."
+    ]
+  },
+  "target_contract": {
+    "id": "som.typescript-output-contract.v1",
+    "sha256": "6fc7933d5616895c91182090926d38eda810aacaecaef4fc5b0a765887ed55b8",
+    "rule": "sha256 of the som.canonical-json.v1 bytes of the files map below"
+  },
+  "files": {
+    "som-rs/contracts/typescript-output-v1/CONTRACT.md": "255e6bac9be6113336b1d761d5fbff3c053fbffe2fe331cb8780332e999a4054",
+    "som-rs/contracts/typescript-output-v1/acceptance-plan.json": "0df79cfbecce86b1f9e4a850e44317a063ada0ed0423f57defb95d8b572e7638",
+    "som-rs/contracts/typescript-output-v1/api.schema.json": "0c756dd0d808c439343e2df0de0517a9bbb7e8c0ef4bccc07925f90ce7fc81fe",
+    "som-rs/contracts/typescript-output-v1/behavior-normalization.json": "cc068fe361cfbcb960a299be67143eab06e7a02930a981c122251ff6afb4e8b0",
+    "som-rs/contracts/typescript-output-v1/bundle.schema.json": "c5f69b453562cd2259996994c6e57d8e69745d72109cac52ee746d754fc979b6",
+    "som-rs/contracts/typescript-output-v1/case-inventory.json": "f45572b155c89808bae9153c7a833da779ad043fb4c0a34002de9c9ef26dee0c",
+    "som-rs/contracts/typescript-output-v1/catalog/typescript-catalog.v1.json": "14c87b4421a0b5f015d3e6a7a65321edaa256a37bf24fe50db145ce22b5b4642",
+    "som-rs/contracts/typescript-output-v1/negative-cases.json": "c96fb4e6b3b1d86fdd2c1af12724f3e3585878c375c96c96deb057757f771543",
+    "som-rs/contracts/typescript-output-v1/product-layout.json": "1421eb273432e5a056fe130d3e2ff2b7844129f69e6b20658bed1970a3ba5e09",
+    "som-rs/contracts/typescript-output-v1/reference/package.json": "02b2aa2b167dcf5f9282c8c04a7d8deb8f77888d1fa2c5726ea4e98d17b5eaa7",
+    "som-rs/contracts/typescript-output-v1/reference/tsconfig.json": "e1bb40b56013abf2525a53023ebc1ce455d176fe4c0c5061d18a563f25962fae",
+    "som-rs/contracts/typescript-output-v1/scope.json": "121dd2827afb876ac8ff99575c4d057477542071c7defc9c8d987db5927a0945",
+    "som-rs/contracts/typescript-output-v1/target-examples.json": "fac94a5cb3295c5cb26c39f541ef395f6fa6ca1a99f25ca8cb5b3ff16f1aa6c5",
+    "som-rs/contracts/typescript-output-v1/toolchain.json": "38955842064a5111ae5ca3f4c94cfd8064e3aeb8237c13a693ca2fe3a042e0a9",
+    "som-rs/evidence/typescript-output-v1/python-controls-2026-10-21.json": "7e97dceb3a8b20ab19c4c26b7029ebc1541783c1104cb35ebe840e7ac71d2cec",
+    "som-rs/tests/typescript-output-v1/build_case_inventory.py": "9ae6096a1708c478f19ec75b361e0bc721b12f64646d24ef190fb1b51e92e1f1",
+    "som-rs/tests/typescript-output-v1/build_negative_cases.py": "822ab4d5d7079dd8169a5fa7907bbaba1a8e462e3c37ff657a6a0b3df7b07b63",
+    "som-rs/tests/typescript-output-v1/build_target_examples.py": "9bbc13521fcbf9530aadb8417a45128a20d7b972b3b7460ab51dc21f7bb24efd",
+    "som-rs/tests/typescript-output-v1/check_contract.py": "5e8b7ea5ebdac1de6e9539ca3fc6f735f6f777da6cbf96e0e06d0654884c0eba",
+    "som-rs/tests/typescript-output-v1/check_python_controls.py": "3e4bb02ecad2e9ee748de327c1db63813cc4c6dc3c0e5cbfa569f6b02c660172",
+    "som-rs/tests/typescript-output-v1/common.py": "77b92f00cdf13d66c54c1069e215bc8de479953887bc853e4316275b02a24497",
+    "som-rs/tests/typescript-output-v1/tree_sha.py": "6c9bccd1293aa8629f18539ea89fa0b5bb284dc70a579b13bc86f8d0324fa9a2",
+    "som-rs/tests/typescript-output-v1/ts_profile.py": "de964991d0022711e799e7b3dfca4f44fa7eb834e978d2a5ec40b52d93d8f6c4"
+  },
+  "qualification": {
+    "target_examples": 24,
+    "name_cases": 10,
+    "negative_cases": 33,
+    "negative_target_cases": 7,
+    "negative_scope_cases": 22,
+    "negative_precedence_cases": 4,
+    "python_controls_passed_on_default": 43,
+    "python_controls_failed_on_default": 0,
+    "acceptance_cases": 125,
+    "check_contract": "376 passed, 0 failed with --files before sealing; --receipt adds the receipt checks",
+    "builders": "build_negative_cases.py, build_target_examples.py and build_case_inventory.py pass --check"
+  },
+  "scope": {
+    "prompt_versions": [
+      "som.prompt.v1",
+      "som.prompt.v2",
+      "som.prompt.v3",
+      "som.prompt.v4",
+      "som.prompt.v5"
+    ],
+    "refusal_rules": [
+      "prompt_version",
+      "v5: capabilities",
+      "for each resource in order (resource, or parent then child): path, then table, then each field name in array order",
+      "v5: relation foreign key"
+    ],
+    "public_examples_in_scope": 5,
+    "version_positive_in_scope": 4,
+    "coverage_cases": 6,
+    "legacy_in_scope": 100
+  },
+  "independent_review": {
+    "reviewer": "independent Claude Opus 5.5 subagents, read-only, no calls to 8765",
+    "rounds": [
+      {
+        "round": 1,
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          "PATCH updated_at rule missing from product-layout types.timestamps",
+          "ts_profile coverage claim in CONTRACT.md wider than what check_contract.py checks",
+          "shared-file edits not tied to rust-output-v1 CONTRACT.md section 13",
+          "total limit of 64 blocks across files not stated",
+          "query parsing defaults, bounds and BigInt comparison not fixed",
+          "with-children wrapper members not fixed in src/schemas.ts",
+          "assemble target dispatch order after members and version not stated",
+          "reference_verification status and format_check file list incomplete",
+          "case-inventory selection rule not in toolchain command names",
+          "catalog, block_library and backend descriptor formulas not spelled out",
+          "no negative case for resource path /healthz (added TS08_JSON_PATH_HEALTHZ)"
+        ],
+        "resolution": "all fixed in commit ba27832a9c"
+      },
+      {
+        "round": 2,
+        "verdict": "APPROVED after one minor fix",
+        "findings": [
+          "check_contract.py did not assert reference_verification.status not_run"
+        ],
+        "resolution": "assertion added in commit ba27832a9c"
+      },
+      {
+        "round": 3,
+        "scope": "the frozen copy in som-rs",
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          "ts_profile.py SCOPE pointed at som-rs/tests/scope.json after the move",
+          "check_python_controls.py --evidence checked for overwrite after the requests, not before",
+          "python controls evidence has no run time or compiler identity"
+        ],
+        "resolution": "SCOPE points at the frozen scope.json; the overwrite check runs first and writes with mode x; the run time and compiler identity are in python_controls below"
+      }
+    ],
+    "final_verdict": "APPROVED"
+  },
+  "python_controls": {
+    "evidence": "som-rs/evidence/typescript-output-v1/python-controls-2026-10-21.json",
+    "run_on": "2026-10-21, read-only POST /v1/compile on 127.0.0.1:8765",
+    "default_identity": {
+      "compiler_version": "som.rust-compiler.v1",
+      "backend_sha256": "581ce38f29702c300342cdefe8fe5f1735cefcd1869d6485b44f30063a866711",
+      "asset_manifest_sha256": "d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa",
+      "blocks_sha256": "c7269e89d5f7b8fb2b36703cc2ccb6ef8201eccfc62fbffe526714fbd570311e",
+      "formatter_sha256": "cb0cdeba051c5c5bdc85c22dc31440ac1ea17651366bf188d4df1f8fe985933a",
+      "bundle_version": "som.dsl-bundle.v1"
+    }
+  },
+  "actual_compiler_tests": "unrun; the TypeScript target implementation has not started",
+  "amendment_001": "unrun; the npm download, lockfile, vendored cache tree, formatter hash and reference verification wait for typescript-output-v1 amendment 001",
+  "actual_product_acceptance": "unrun",
+  "default": "accepted compiler default on 127.0.0.1:8765 unchanged; only read-only compile and healthz calls were made",
+  "limitations": "TypeScript products, behavior parity and assemble refusals A1 to A12 are frozen requirements, not observed passes. The TypeScript catalog, block_library, backend and formatter descriptors are recorded by the implementation and amendment 001, not by this receipt."
+}

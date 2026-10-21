@@ -149,7 +149,7 @@
     "tree_sha256": "3a9e0a20999d2a5c9727e911c554cd66230dba9a169fe0f0a6a54bd3dc7f9186",
     "tree_files": 1957,
     "tree_symlinks": 9,
-    "tree_algorithm": "tools/tree_sha.py: for each path in sorted(root.rglob(\"*\")), a symlink adds <relpath>\\0symlink:<target>\\n, a regular file adds <relpath>\\0<sha256>\\n; the tree sha is the SHA-256 of all lines.",
+    "tree_algorithm": "som-rs/tests/typescript-output-v1/tree_sha.py: for each path in sorted(root.rglob(\"*\")), a symlink adds <relpath>\\0symlink:<target>\\n, a regular file adds <relpath>\\0<sha256>\\n; the tree sha is the SHA-256 of all lines.",
     "invocation": "/opt/homebrew/Cellar/node/26.5.0/bin/node /opt/homebrew/lib/node_modules/npm/bin/npm-cli.js"
   },
   "formatter": {

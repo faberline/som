@@ -9,7 +9,7 @@
     "checks": [
       "Every typed prompt of the 127 public products (public-products-003b) and the 544 legacy jobs (legacy544 run-005), sent without target and with target python, gives a compile response equal byte for byte to the baseline's response, and assembling that bundle gives response bytes equal to the baseline's.",
       "rust-output-v1 python_unchanged with its amendment_004 rule passes: python_replay.py --asset-break over public-products-003b and legacy544 run-005 has no failure, and validate_cases.py gives the frozen Python file hashes.",
-      "tools/check_python_controls.py passes for every negative case and every name case of this contract.",
+      "som-rs/tests/typescript-output-v1/check_python_controls.py passes for every negative case and every name case of this contract.",
       "tests/rust-output-v1/check_python_controls.py passes for every negative case of rust-output-v1."
     ]
   },
@@ -27,7 +27,7 @@
   "scope_checks": [
     "Every TS and TP case gives exactly its expected diagnostic with target typescript.",
     "Every out-of-scope public example, CNL positive fixture and legacy job gives UNSUPPORTED_TARGET with the refusal case-inventory.json records for it, with target typescript.",
-    "The compiler refusal for each typed prompt equals tools/ts_profile.py on that prompt.",
+    "The compiler refusal for each typed prompt equals som-rs/tests/typescript-output-v1/ts_profile.py on that prompt.",
     "No in-scope acceptance case gives UNSUPPORTED_TARGET with target typescript."
   ],
   "bundle_checks": [
