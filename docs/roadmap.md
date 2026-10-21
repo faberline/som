@@ -27,7 +27,8 @@ Proposed order: TypeScript BE, then SRE, then AI, then React FE.
 - Reuses the existing CNL, DSL bundle, and behavior suites. Only the output target is new.
 - Chosen: Node.js 26.5.0, Hono, `pg` with hand-written SQL, hand-written validation, `node:test`, npm, tsc 5.9.3 and prettier.
 - First phase: the Rust phase 1 scope (prompt v1–v5 with PostgreSQL), then capabilities and flows.
-- Contract draft: [typescript-output-v1-draft.md](typescript-output-v1-draft.md), options chosen on 2026-10-21; not frozen yet.
+- Contract: [typescript-output-v1](../som-rs/contracts/typescript-output-v1/CONTRACT.md), frozen on 2026-10-21 after approval; amendment 001 sealed the npm lockfile, the vendored cache and the formatter hash ([#73](https://github.com/faberline/som/issues/73)). The draft and the options considered are in [typescript-output-v1-draft.md](typescript-output-v1-draft.md).
+- Phase 1 issues: target selection and profile ([#74](https://github.com/faberline/som/issues/74)), bundle, catalog and renderer ([#75](https://github.com/faberline/som/issues/75)), host, product gates and parity ([#76](https://github.com/faberline/som/issues/76)), then the acceptance run.
 - Issue: [#65](https://github.com/faberline/som/issues/65).
 
 ### 2. SRE in Python, Rust, and TypeScript
