@@ -132,6 +132,22 @@ uv run python -m unittest discover -s tests -v
 
 To run the full local PostgreSQL lifecycle, migrations, unit tests, `/healthz` check, and `POST` smoke requests in a single command, use [pg_run.py](../som-rs/scripts/python_quickstart/pg_run.py) (for example, `python3 som-rs/scripts/python_quickstart/pg_run.py --som som-rs/runtime/current/som --url http://127.0.0.1:18080 --cnl som-rs/contracts/compiler-v1/examples/v3.cnl --out ~/work/todos_pg_run --pg-port 55432 --app-port 18081 --create '/todos={"title":"first"}'`).
 
+For parent/child and JWT-enabled prompts (v5–v7), such as [v6.cnl](../som-rs/contracts/compiler-v1/examples/v6.cnl) (`package app_projects`), pass two `--create` arguments and reference `{1.id}` in the child path so the child row is created under the newly created parent's `id`:
+
+```sh
+python3 som-rs/scripts/python_quickstart/pg_run.py \
+  --som som-rs/runtime/current/som \
+  --url http://127.0.0.1:18080 \
+  --cnl som-rs/contracts/compiler-v1/examples/v6.cnl \
+  --out ~/work/tasks_pg_run \
+  --pg-port 55432 \
+  --app-port 18081 \
+  --create '/projects={"name":"p"}' \
+  --create '/projects/{1.id}/todos={"title":"t","external_code":"c1"}'
+```
+
+When the generated product requires JWT authentication, `pg_run.py` automatically generates a local-only test RSA keypair (`<out>/auth/private.pem` with mode `0600` and `<out>/auth/public.pem`) and signs a short-lived `RS256` token (`role="editor"`), wiring `JWT_PUBLIC_KEY_FILE`, `JWT_ISSUER`, `JWT_AUDIENCE`, `TEST_AUTH_HEADERS`, and `TEST_AUTH_COOKIES` for `alembic`, `unittest`, and `uvicorn` while redacting the token and private key from `stdout` and `<out>/result.json`.
+
 ## 6. Change it and generate again
 
 Generated product files are deterministic for a given prompt and compiler release. When you edit your `.cnl` file and run `som write` again, point `--out` to a new or empty directory (`som write` refuses a non-empty `--out` directory so it never overwrites existing files).
