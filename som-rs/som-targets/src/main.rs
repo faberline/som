@@ -45,7 +45,7 @@ enum Command {
         source: PathBuf,
         #[arg(long, default_value = "http://127.0.0.1:8765")]
         url: String,
-        /// Forwarded unchecked as the request target member (python or rust).
+        /// Forwarded unchecked as the request target member (python, rust or typescript).
         #[arg(long)]
         target: Option<String>,
     },
