@@ -19,6 +19,7 @@ set of products (--manifest), without sampling:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime
 import hashlib
 import json
@@ -31,6 +32,7 @@ import sys
 import tempfile
 import time
 import traceback
+from collections.abc import Iterator
 from typing import Any
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -586,6 +588,15 @@ def save_raw(out_dir: pathlib.Path, name: str, run: ts_suite.TsRun) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+@contextlib.contextmanager
+def leased_port(ports: base_hosts.Ports) -> Iterator[int]:
+    port = ports.take()
+    try:
+        yield port
+    finally:
+        ports.give(port)
+
+
 def run_startup_gate(
     product_root: pathlib.Path,
     pg_host: str,
@@ -601,8 +612,9 @@ def run_startup_gate(
     # 1. Missing DATABASE_URL -> exit 2 and 1 stderr line
     env_no_db = dict(env)
     env_no_db.pop("DATABASE_URL", None)
-    env_no_db["SOM_APP_ADDR"] = f"127.0.0.1:{ports.take()}"
-    missing_db = run_cmd(command, product_root, env_no_db, timeout=30.0)
+    with leased_port(ports) as no_db_port:
+        env_no_db["SOM_APP_ADDR"] = f"127.0.0.1:{no_db_port}"
+        missing_db = run_cmd(command, product_root, env_no_db, timeout=30.0)
 
     # 2. Invalid SOM_APP_ADDR -> exit 2 and 1 stderr line
     startup_db = rust_products.fresh_database(pg_host, f"ts76_start_{key}_{stamp}")
@@ -610,38 +622,45 @@ def run_startup_gate(
     invalid_addr = run_cmd(command, product_root, env_bad_addr, timeout=30.0)
 
     # 3. SIGTERM on a running server -> exit 0
-    port = ports.take()
-    ts_host.check_port_allowed(port)
-    env_run = {**env, "DATABASE_URL": startup_db, "SOM_APP_ADDR": f"127.0.0.1:{port}"}
-    log_path = product_root.parent / f"{key}-startup-sigterm-{port}.log"
-    with log_path.open("wb") as log_file:
-        proc = subprocess.Popen(
-            command,
-            cwd=product_root,
-            env=env_run,
-            stdout=log_file,
-            stderr=subprocess.STDOUT,
-            start_new_session=True,
-        )
-    record = tracker.register(proc.pid, "typescript_startup_probe", product_root, command)
-    sigterm_info: dict[str, Any] = {"ready": False, "cwd_verified": False, "exit_code": None}
-    try:
-        ts_host.wait_http_ready(proc, port, "/healthz", log_path=log_path, timeout=20.0)
-        sigterm_info["ready"] = True
-        matched, _ = ts_host.verify_process_cwd(proc.pid, product_root)
-        sigterm_info["cwd_verified"] = matched
-        code = tracker.stop(proc, product_root, record, sig=signal.SIGTERM, timeout=10.0)
-        sigterm_info["exit_code"] = code
-    except Exception as err:  # noqa: BLE001
-        sigterm_info["error"] = f"{type(err).__name__}: {err}"
-        with contextlib.suppress(Exception):
-            tracker.stop(proc, product_root, record, sig=signal.SIGTERM, timeout=5.0)
+    with leased_port(ports) as port:
+        ts_host.check_port_allowed(port)
+        env_run = {**env, "DATABASE_URL": startup_db, "SOM_APP_ADDR": f"127.0.0.1:{port}"}
+        log_path = product_root.parent / f"{key}-startup-sigterm-{port}.log"
+        proc: subprocess.Popen[Any] | None = None
+        record: dict[str, Any] | None = None
+        stopped = False
+        sigterm_info: dict[str, Any] = {"ready": False, "cwd_verified": False, "exit_code": None}
+        try:
+            with log_path.open("wb") as log_file:
+                proc = subprocess.Popen(
+                    command,
+                    cwd=product_root,
+                    env=env_run,
+                    stdout=log_file,
+                    stderr=subprocess.STDOUT,
+                    start_new_session=True,
+                )
+            record = tracker.register(proc.pid, "typescript_startup_probe", product_root, command)
+            try:
+                ts_host.wait_http_ready(proc, port, "/healthz", log_path=log_path, timeout=20.0)
+                sigterm_info["ready"] = True
+                matched, _ = ts_host.verify_process_cwd(proc.pid, product_root)
+                sigterm_info["cwd_verified"] = matched
+                code = tracker.stop(proc, product_root, record, sig=signal.SIGTERM, timeout=10.0)
+                stopped = True
+                sigterm_info["exit_code"] = code
+            except Exception as err:  # noqa: BLE001
+                sigterm_info["error"] = f"{type(err).__name__}: {err}"
+                with contextlib.suppress(Exception):
+                    tracker.stop(proc, product_root, record, sig=signal.SIGTERM, timeout=5.0)
+                    stopped = True
+        finally:
+            if not stopped and proc is not None and record is not None:
+                with contextlib.suppress(Exception):
+                    tracker.stop(proc, product_root, record, sig=signal.SIGTERM, timeout=5.0)
 
     duration_ms = round((time.monotonic() - started) * 1000)
     return evaluate_startup(missing_db, invalid_addr, sigterm_info, command, duration_ms)
-
-
-import contextlib  # noqa: E402
 
 
 def check_one_product(
@@ -778,25 +797,31 @@ def check_one_product(
     try:
         py_parity_url = rust_products.fresh_database(pg_host, f"ts76_parity_py_{key}_{stamp}")
         ts_parity_url = rust_products.fresh_database(pg_host, f"ts76_parity_ts_{key}_{stamp}")
-        with ts_host.python_product(
-            work_dir,
-            f"py_parity_{key}",
-            prompt,
-            py_files,
-            py_parity_url,
-            ports.take(),
-            python_exe,
-            tracker,
-        ) as py_base:
+        with (
+            leased_port(ports) as py_port,
+            ts_host.python_product(
+                work_dir,
+                f"py_parity_{key}",
+                prompt,
+                py_files,
+                py_parity_url,
+                py_port,
+                python_exe,
+                tracker,
+            ) as py_base,
+        ):
             python_run = ts_suite.run(prompt, py_base)
 
-        with ts_host.typescript_product(
-            product_work,
-            ts_parity_url,
-            ports.take(),
-            env,
-            tracker,
-        ) as ts_base:
+        with (
+            leased_port(ports) as ts_port,
+            ts_host.typescript_product(
+                product_work,
+                ts_parity_url,
+                ts_port,
+                env,
+                tracker,
+            ) as ts_base,
+        ):
             ts_run = ts_suite.run(prompt, ts_base)
             parity_duration_ms = round((time.monotonic() - parity_started) * 1000)
             script_steps = len(ts_run.transcript)
@@ -954,8 +979,10 @@ def main(argv: list[str] | None = None) -> int:
 
     with tempfile.TemporaryDirectory(prefix="som-ts-gates-", ignore_cleanup_errors=True) as scratch:
         work = pathlib.Path(scratch)
-        pg_port = ports.take()
-        with ts_host.pg_cluster(work, pg_port, tracker) as pg_host:
+        with (
+            leased_port(ports) as pg_port,
+            ts_host.pg_cluster(work, pg_port, tracker) as pg_host,
+        ):
             if args.qa is not None:
                 for item in work_items:
                     rows.append(
@@ -974,8 +1001,10 @@ def main(argv: list[str] | None = None) -> int:
                         )
                     )
             else:
-                qa_port = ports.take()
-                with ts_host.qa_compiler(work, qa_port, tracker) as qa_url:
+                with (
+                    leased_port(ports) as qa_port,
+                    ts_host.qa_compiler(work, qa_port, tracker) as qa_url,
+                ):
                     for item in work_items:
                         rows.append(
                             check_one_product(

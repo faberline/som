@@ -1215,4 +1215,477 @@ def test_v5_parity_and_strict_against_simulator() -> None:
         assert any(f["category"] == expected_cat for f in bad_run.failures), f"expected {expected_cat} failure for {kw}"
 
 
+class ControlledPorts:
+    """Deterministic Ports double over hosts.QA_PORTS (81 ports) without opening real sockets."""
+
+    def __init__(self) -> None:
+        self.used: set[int] = set()
+        self.active_processes: set[int] = set()
+        self.events: list[tuple[str, int]] = []
+        self.take_count = 0
+        self.give_count = 0
+        self.max_concurrent_used = 0
+
+    def take(self) -> int:
+        for port in gates_mod.base_hosts.QA_PORTS:
+            if port in self.used or port in gates_mod.base_hosts.FORBIDDEN_PORTS:
+                continue
+            self.used.add(port)
+            self.take_count += 1
+            self.max_concurrent_used = max(self.max_concurrent_used, len(self.used))
+            self.events.append(("take", port))
+            return port
+        raise RuntimeError("no free QA port")
+
+    def give(self, port: int) -> None:
+        assert port not in self.active_processes, f"port {port} was returned while its process was still active"
+        assert port in self.used, f"port {port} was given back when not in used={self.used}"
+        self.used.discard(port)
+        self.give_count += 1
+        self.events.append(("give", port))
+
+
+def _install_fake_gate_environment(
+    monkeypatch: pytest.MonkeyPatch,
+    ports: ControlledPorts,
+    prompt: dict[str, Any],
+) -> None:
+    """Stub out external processes/DBs in check_ts_products so unit tests run purely in-memory."""
+    import contextlib
+
+    spec_out = "ℹ tests 8\nℹ suites 0\nℹ pass 8\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\n"
+    sample_schema = {
+        "items": {
+            "columns": [["id", "integer", None, "NO", None]],
+            "primary_key": [["id"]],
+            "unique": [],
+            "foreign_keys": [],
+            "indexes": [],
+        }
+    }
+
+    monkeypatch.setattr(gates_mod.base_hosts, "Ports", lambda: ports)
+    monkeypatch.setattr(
+        ts_host,
+        "verify_toolchain",
+        lambda _cache_dir: {
+            "node_version": "26.5.0",
+            "cache": {"tree_sha256": "cache-sha", "tree_files": 1, "tree_symlinks": 0},
+        },
+    )
+    monkeypatch.setattr(ts_host, "tree_sha", lambda _cache_dir: ("cache-sha", 1, 0))
+    monkeypatch.setattr(
+        ts_host,
+        "copy_product",
+        lambda _src, dest: (
+            dest.mkdir(parents=True, exist_ok=True),
+            {**gates_mod.REFERENCE_FILE_HASHES, "src/main.ts": "main-sha"},
+        )[1],
+    )
+    monkeypatch.setattr(
+        ts_host,
+        "snapshot_outside_node_modules",
+        lambda _root: {**gates_mod.REFERENCE_FILE_HASHES, "src/main.ts": "main-sha"},
+    )
+    monkeypatch.setattr(ts_host, "toolchain_env", lambda _cache, _scratch: {"PATH": "/usr/bin:/bin"})
+    monkeypatch.setattr(gates_mod.rust_products, "fresh_database", lambda _pg, name: f"postgresql://127.0.0.1/{name}")
+    monkeypatch.setattr(gates_mod.rust_products, "schema", lambda _url, _excl: sample_schema)
+    monkeypatch.setattr(gates_mod.base_hosts, "bundle_files", lambda _qa, _prompt, _target: {"pkg/api.py": "# py"})
+    monkeypatch.setattr(gates_mod.base_hosts.products, "write", lambda root, _files: root.mkdir(parents=True, exist_ok=True))
+    monkeypatch.setattr(ts_host, "migrate_python_product", lambda *_a, **_kw: None)
+
+    @contextlib.contextmanager
+    def fake_pg_cluster(_work: pathlib.Path, port: int, _tracker: ts_host.ProcessTracker):
+        assert port in ports.used
+        ports.active_processes.add(port)
+        ports.events.append(("start_pg", port))
+        try:
+            yield f"127.0.0.1:{port}"
+        finally:
+            ports.events.append(("stop_pg", port))
+            ports.active_processes.discard(port)
+
+    @contextlib.contextmanager
+    def fake_qa_compiler(_work: pathlib.Path, port: int, _tracker: ts_host.ProcessTracker):
+        assert port in ports.used
+        ports.active_processes.add(port)
+        ports.events.append(("start_qa", port))
+        try:
+            yield f"http://127.0.0.1:{port}"
+        finally:
+            ports.events.append(("stop_qa", port))
+            ports.active_processes.discard(port)
+
+    @contextlib.contextmanager
+    def fake_python_product(
+        _work: pathlib.Path,
+        _name: str,
+        _prompt: dict[str, Any],
+        _files: dict[str, str],
+        _db_url: str,
+        port: int,
+        _python_exe: str,
+        _tracker: ts_host.ProcessTracker,
+    ):
+        assert port in ports.used
+        ports.active_processes.add(port)
+        ports.events.append(("start_py", port))
+        try:
+            yield f"http://127.0.0.1:{port}"
+        finally:
+            ports.events.append(("stop_py", port))
+            ports.active_processes.discard(port)
+
+    @contextlib.contextmanager
+    def fake_typescript_product(
+        _root: pathlib.Path,
+        _db_url: str,
+        port: int,
+        _env: dict[str, str],
+        _tracker: ts_host.ProcessTracker,
+    ):
+        assert port in ports.used
+        ports.active_processes.add(port)
+        ports.events.append(("start_ts", port))
+        try:
+            yield f"http://127.0.0.1:{port}"
+        finally:
+            ports.events.append(("stop_ts", port))
+            ports.active_processes.discard(port)
+
+    def fake_suite_run(p: dict[str, Any], base_url: str) -> ts_suite.TsRun:
+        prof = ts_suite.profile(p)
+        table = prof.tables[0]
+        r = ts_suite.TsRun(prof, lambda *_a, **_kw: (200, "application/json", b"{}"))
+        r.transcript = [
+            {
+                "step": f"{table.name}: healthz ({base_url})",
+                "category": "health",
+                "request": {"method": "GET", "path": "/healthz"},
+                "status": 200,
+                "media": "application/json",
+                "body": {"status": "ok"},
+            }
+        ]
+        r.raw = [{"step": r.transcript[0]["step"]}]
+        r.failures = []
+
+        def fake_strict() -> None:
+            for div in ("D1", "D2", "D3", "D4", "D5", "D7", "prototype_members"):
+                r.transcript.append(
+                    {
+                        "step": f"strict {div}",
+                        "category": div,
+                        "request": {"method": "POST", "path": table.path},
+                        "status": 422,
+                        "media": "application/json",
+                        "body": {"detail": []},
+                    }
+                )
+
+        monkeypatch.setattr(r, "strict", fake_strict)
+        return r
+
+    def fake_run_cmd(
+        command: list[str],
+        _cwd: pathlib.Path,
+        env: dict[str, str],
+        timeout: float = 300.0,
+    ) -> dict[str, Any]:
+        del timeout
+        cmd_str = " ".join(command)
+        if "src/main.ts" in cmd_str:
+            addr = env.get("SOM_APP_ADDR", "")
+            if addr.startswith("127.0.0.1:"):
+                port = int(addr.split(":")[1])
+                assert port in ports.used
+                ports.active_processes.add(port)
+                ports.events.append(("run_missing_db", port))
+                ports.active_processes.discard(port)
+                return {
+                    "command": command,
+                    "exit_code": 2,
+                    "stdout": "",
+                    "stderr": "DATABASE_URL is required\n",
+                    "duration_ms": 1,
+                }
+            return {
+                "command": command,
+                "exit_code": 2,
+                "stdout": "",
+                "stderr": "SOM_APP_ADDR must be host:port\n",
+                "duration_ms": 1,
+            }
+        if "--test" in command:
+            if "TEST_DATABASE_URL" in env:
+                return {"command": command, "exit_code": 0, "stdout": spec_out, "stderr": "", "duration_ms": 1}
+            return {"command": command, "exit_code": 1, "stdout": "", "stderr": "missing TEST_DATABASE_URL\n", "duration_ms": 1}
+        return {"command": command, "exit_code": 0, "stdout": "", "stderr": "", "duration_ms": 1}
+
+    class FakePopen:
+        _next_pid = 70000
+
+        def __init__(self, command: list[str], cwd: pathlib.Path, env: dict[str, str], **_kw: Any) -> None:
+            del command, cwd
+            FakePopen._next_pid += 1
+            self.pid = FakePopen._next_pid
+            self.returncode: int | None = None
+            addr = env.get("SOM_APP_ADDR", "")
+            self.port = int(addr.split(":")[1])
+            assert self.port in ports.used
+            ports.active_processes.add(self.port)
+            ports.events.append(("start_sigterm_probe", self.port))
+
+        def poll(self) -> int | None:
+            return self.returncode
+
+    def fake_register(self: ts_host.ProcessTracker, pid: int, role: str, cwd: pathlib.Path, command: list[str]) -> dict[str, Any]:
+        entry = {"pid": pid, "role": role, "expected_cwd": str(cwd), "command": command, "stopped": False, "exit_code": None}
+        self.records.append(entry)
+        return entry
+
+    def fake_stop(
+        self: ts_host.ProcessTracker,
+        proc: FakePopen,
+        _cwd: pathlib.Path,
+        entry: dict[str, Any],
+        sig: int = 15,
+        timeout: float = 10.0,
+    ) -> int:
+        del self, sig, timeout
+        proc.returncode = 0
+        entry["stopped"] = True
+        entry["exit_code"] = 0
+        ports.events.append(("stop_sigterm_probe", proc.port))
+        ports.active_processes.discard(proc.port)
+        return 0
+
+    monkeypatch.setattr(ts_host, "pg_cluster", fake_pg_cluster)
+    monkeypatch.setattr(ts_host, "qa_compiler", fake_qa_compiler)
+    monkeypatch.setattr(ts_host, "python_product", fake_python_product)
+    monkeypatch.setattr(ts_host, "typescript_product", fake_typescript_product)
+    monkeypatch.setattr(ts_suite, "run", fake_suite_run)
+    monkeypatch.setattr(gates_mod, "run_cmd", fake_run_cmd)
+    monkeypatch.setattr(gates_mod.subprocess, "Popen", FakePopen)
+    monkeypatch.setattr(ts_host, "wait_http_ready", lambda *_a, **_kw: None)
+    monkeypatch.setattr(ts_host, "verify_process_cwd", lambda pid, cwd: (True, str(cwd)))
+    monkeypatch.setattr(ts_host.ProcessTracker, "register", fake_register)
+    monkeypatch.setattr(ts_host.ProcessTracker, "stop", fake_stop)
+    del prompt
+
+
+def test_check_ts_products_returns_ports_across_more_than_81_products(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: pathlib.Path,
+) -> None:
+    prompt = RichV4Prompt()
+    ports = ControlledPorts()
+    _install_fake_gate_environment(monkeypatch, ports, prompt)
+
+    num_products = 90  # > len(hosts.QA_PORTS) == 81; requires 90 * 4 + 2 = 362 port leases
+    assert len(gates_mod.base_hosts.QA_PORTS) == 81
+    manifest_entries = []
+    for i in range(num_products):
+        prod_dir = tmp_path / "products" / f"p_{i:03d}"
+        prod_dir.mkdir(parents=True, exist_ok=True)
+        manifest_entries.append({"id": f"case-{i:03d}", "product": str(prod_dir), "prompt": prompt})
+
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps({"products": manifest_entries}))
+    cache_dir = tmp_path / "cache"
+    cache_dir.mkdir()
+    out_dir = tmp_path / "out"
+
+    exit_code = gates_mod.main(["--manifest", str(manifest_path), "--cache", str(cache_dir), "--out", str(out_dir)])
+    assert exit_code == 0
+
+    # 2 cluster-level ports (pg + qa) + 4 ports per product (py parity, ts parity, missing_db, sigterm)
+    assert ports.take_count == 2 + 4 * num_products
+    assert ports.give_count == ports.take_count
+    assert ports.used == set()
+    assert ports.active_processes == set()
+    # Only pg_port, qa_port, and at most 1 per-product port are ever held simultaneously
+    assert ports.max_concurrent_used == 3
+
+    # Verify pg_cluster and qa_compiler ports were taken first and given back only at the end of the run,
+    # after stop_qa and stop_pg respectively:
+    pg_port = ports.events[0][1]
+    qa_port = ports.events[2][1]
+    assert ports.events[0] == ("take", pg_port)
+    assert ports.events[1] == ("start_pg", pg_port)
+    assert ports.events[2] == ("take", qa_port)
+    assert ports.events[3] == ("start_qa", qa_port)
+    assert ports.events[-4:] == [
+        ("stop_qa", qa_port),
+        ("give", qa_port),
+        ("stop_pg", pg_port),
+        ("give", pg_port),
+    ]
+
+
+def test_check_ts_products_returns_ports_when_gates_raise_exceptions(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: pathlib.Path,
+) -> None:
+    prompt = RichV4Prompt()
+    ports = ControlledPorts()
+    _install_fake_gate_environment(monkeypatch, ports, prompt)
+
+    cache_dir = tmp_path / "cache"
+    cache_dir.mkdir()
+    prod_src = tmp_path / "prod_src"
+    prod_src.mkdir()
+    tracker = ts_host.ProcessTracker()
+
+    # Reserve pg_port and qa_port as main() does during a run
+    pg_port = ports.take()
+    qa_port = ports.take()
+    baseline_used = {pg_port, qa_port}
+
+    # 1. Exception inside parity Python product -> py_port returned after stop_py
+    orig_suite_run = ts_suite.run
+
+    def boom_on_py_parity(_p: dict[str, Any], base_url: str) -> ts_suite.TsRun:
+        raise RuntimeError(f"simulated python parity crash on {base_url}")
+
+    monkeypatch.setattr(ts_suite, "run", boom_on_py_parity)
+    row_py_fail = gates_mod.check_one_product(
+        "case-py-boom",
+        prod_src,
+        prompt,
+        cache_dir,
+        tmp_path / "work1",
+        tmp_path / "out1",
+        f"127.0.0.1:{pg_port}",
+        f"http://127.0.0.1:{qa_port}",
+        sys.executable,
+        ports,
+        tracker,
+    )
+    assert row_py_fail["gates"]["parity"]["status"] == "failed"
+    assert row_py_fail["gates"]["strict_refusals"]["status"] == "failed"
+    assert row_py_fail["gates"]["startup"]["status"] == "passed"
+    assert ports.used == baseline_used
+    assert ports.active_processes == set()
+
+    # 2. Exception inside TypeScript parity/strict_refusals -> both py_port and ts_port returned
+    call_count = 0
+
+    def boom_on_ts_parity(p: dict[str, Any], base_url: str) -> ts_suite.TsRun:
+        nonlocal call_count
+        call_count += 1
+        if call_count % 2 == 0:
+            raise RuntimeError(f"simulated ts parity crash on {base_url}")
+        return orig_suite_run(p, base_url)
+
+    monkeypatch.setattr(ts_suite, "run", boom_on_ts_parity)
+    row_ts_fail = gates_mod.check_one_product(
+        "case-ts-boom",
+        prod_src,
+        prompt,
+        cache_dir,
+        tmp_path / "work2",
+        tmp_path / "out2",
+        f"127.0.0.1:{pg_port}",
+        f"http://127.0.0.1:{qa_port}",
+        sys.executable,
+        ports,
+        tracker,
+    )
+    assert row_ts_fail["gates"]["parity"]["status"] == "failed"
+    assert row_ts_fail["gates"]["strict_refusals"]["status"] == "failed"
+    assert row_ts_fail["gates"]["startup"]["status"] == "passed"
+    assert ports.used == baseline_used
+    assert ports.active_processes == set()
+    monkeypatch.setattr(ts_suite, "run", orig_suite_run)
+
+    # 3. Exception during startup missing-DATABASE_URL -> missing_db port returned
+    orig_run_cmd = gates_mod.run_cmd
+
+    def boom_on_missing_db(
+        command: list[str],
+        cwd: pathlib.Path,
+        env: dict[str, str],
+        timeout: float = 300.0,
+    ) -> dict[str, Any]:
+        if "src/main.ts" in " ".join(command) and "DATABASE_URL" not in env:
+            addr = env["SOM_APP_ADDR"]
+            port = int(addr.split(":")[1])
+            assert port in ports.used
+            raise RuntimeError("simulated missing_db subprocess failure")
+        return orig_run_cmd(command, cwd, env, timeout=timeout)
+
+    monkeypatch.setattr(gates_mod, "run_cmd", boom_on_missing_db)
+    row_startup_db_fail = gates_mod.check_one_product(
+        "case-startup-db-boom",
+        prod_src,
+        prompt,
+        cache_dir,
+        tmp_path / "work3",
+        tmp_path / "out3",
+        f"127.0.0.1:{pg_port}",
+        f"http://127.0.0.1:{qa_port}",
+        sys.executable,
+        ports,
+        tracker,
+    )
+    assert row_startup_db_fail["gates"]["parity"]["status"] == "passed"
+    assert row_startup_db_fail["gates"]["startup"]["status"] == "failed"
+    assert ports.used == baseline_used
+    assert ports.active_processes == set()
+    monkeypatch.setattr(gates_mod, "run_cmd", orig_run_cmd)
+
+    # 4. Exception during startup SIGTERM (both caught wait_http_ready error and uncaught register error)
+    def boom_wait_ready(*_a: Any, **_kw: Any) -> None:
+        raise RuntimeError("simulated wait_http_ready timeout")
+
+    monkeypatch.setattr(ts_host, "wait_http_ready", boom_wait_ready)
+    row_sigterm_wait_fail = gates_mod.check_one_product(
+        "case-sigterm-wait-boom",
+        prod_src,
+        prompt,
+        cache_dir,
+        tmp_path / "work4",
+        tmp_path / "out4",
+        f"127.0.0.1:{pg_port}",
+        f"http://127.0.0.1:{qa_port}",
+        sys.executable,
+        ports,
+        tracker,
+    )
+    assert row_sigterm_wait_fail["gates"]["startup"]["status"] == "failed"
+    assert ports.used == baseline_used
+    assert ports.active_processes == set()
+
+    monkeypatch.setattr(ts_host, "wait_http_ready", lambda *_a, **_kw: None)
+    orig_eval_startup = gates_mod.evaluate_startup
+
+    def boom_eval_startup(*_a: Any, **_kw: Any) -> dict[str, Any]:
+        raise RuntimeError("simulated evaluate_startup failure")
+
+    monkeypatch.setattr(gates_mod, "evaluate_startup", boom_eval_startup)
+    row_sigterm_eval_fail = gates_mod.check_one_product(
+        "case-sigterm-eval-boom",
+        prod_src,
+        prompt,
+        cache_dir,
+        tmp_path / "work5",
+        tmp_path / "out5",
+        f"127.0.0.1:{pg_port}",
+        f"http://127.0.0.1:{qa_port}",
+        sys.executable,
+        ports,
+        tracker,
+    )
+    assert row_sigterm_eval_fail["gates"]["startup"]["status"] == "failed"
+    assert ports.used == baseline_used
+    assert ports.active_processes == set()
+    monkeypatch.setattr(gates_mod, "evaluate_startup", orig_eval_startup)
+
+    ports.give(qa_port)
+    ports.give(pg_port)
+    assert ports.used == set()
+
+
+
 
