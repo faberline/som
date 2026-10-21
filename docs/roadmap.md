@@ -18,9 +18,29 @@ Every track follows the path the Rust target took ([Rust output roadmap](../som-
 Only steps 3–6 become `agy:todo` issues, and only after the contract is frozen.
 Steps 1, 2, and 7 need a person.
 
+## Milestones and releases
+
+On 2026-10-21 the user set the priority to Python BE, then React FE, then Rust, then the rest.
+Each milestone ends with a usable release: a candidate, an independent acceptance, a switch of 8765 after the user approves, and a version tag.
+The repository is public, so each tag and GitHub release also needs the user's yes.
+
+| Milestone | Release | Usable result | Issues |
+|---|---|---|---|
+| — | v0.1.0 (proposed) | The current default, candidate-006: Python and Rust BE for prompts v1–v7 | tag only |
+| [M5](https://github.com/faberline/som/milestone/11) | v0.2.0 | `som write` puts a Python project on disk, and a quickstart page runs it | [#79](https://github.com/faberline/som/issues/79), [#80](https://github.com/faberline/som/issues/80), release [#81](https://github.com/faberline/som/issues/81) |
+| [M6](https://github.com/faberline/som/milestone/12) | v0.3.0 | A React CRUD client for a generated Python BE (v1–v4) | [#68](https://github.com/faberline/som/issues/68); needs scope and contract approval |
+| [M7](https://github.com/faberline/som/milestone/13) | v0.4.0 | `som write --target rust` and an offline build quickstart | [#82](https://github.com/faberline/som/issues/82) |
+| [M8](https://github.com/faberline/som/milestone/14) | v0.5.0 | TypeScript BE phase 1 (v1–v5, PostgreSQL) | [#65](https://github.com/faberline/som/issues/65), [#74](https://github.com/faberline/som/issues/74)–[#76](https://github.com/faberline/som/issues/76) |
+| [M9](https://github.com/faberline/som/milestone/15) | v0.6.0 | SRE | [#66](https://github.com/faberline/som/issues/66); needs scope |
+| [M10](https://github.com/faberline/som/milestone/16) | v0.7.0 | AI | [#67](https://github.com/faberline/som/issues/67); needs scope |
+
+The TypeScript phase 1 work that AGY already started (#74, #76) finishes.
+Other TypeScript issues wait until the higher-priority issues are done.
+A release that contains #74 before TypeScript phase 1 ships answers `target typescript` with 501 or 422, and its notes say that TypeScript is not supported yet.
+
 ## Tracks
 
-Proposed order: TypeScript BE, then SRE, then AI, then React FE.
+The track sections below keep their original numbering. The order of work is the milestone table above.
 
 ### 1. BE in TypeScript
 
