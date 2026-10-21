@@ -1,6 +1,6 @@
 # SOM TypeScript output contract v1 — draft for issue #65
 
-Status: **draft, not frozen.** A person picks the options in section 6 and approves the contract.
+Status: **draft, not frozen.** The options in section 6 were chosen on 2026-10-21. A person still approves the contract.
 Only then is it copied to `som-rs/contracts/typescript-output-v1/`, sealed with a receipt, and split into `agy:todo` issues.
 Nothing in this draft changes code, contracts, or outputs.
 
@@ -84,6 +84,20 @@ test/api.test.ts           # generated tests, same coverage as the Rust tests
 - The lockfile is a frozen reference file, as `reference/Cargo.lock` is for Rust.
 
 ## 6. Options to choose
+
+**Chosen on 2026-10-21:** the recommended option in every table.
+
+- Runtime: Node.js 26.5.0 (Homebrew).
+- Framework: Hono 4.13.13 with @hono/node-server 2.1.5.
+- Database layer: `pg` 8.23.1 with hand-written parameterized SQL.
+- Validation: hand-written.
+- Tests: `node:test`.
+- Package manager: npm with `package-lock.json`.
+- Type check and formatting: typescript 5.9.3 and prettier 3.9.10.
+
+npm downloads are approved once, after the contract freezes, into a local vendored cache.
+Section 4's `identifier_reserved` refusal stays as proposed until review says otherwise.
+The tables below record the options that were considered.
 
 Versions are the registry's current releases on 2026-10-21.
 "Closure" counts the transitive npm packages from registry metadata. Optional platform packages are not counted.

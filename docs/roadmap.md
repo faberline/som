@@ -25,9 +25,9 @@ Proposed order: TypeScript BE, then SRE, then AI, then React FE.
 ### 1. BE in TypeScript
 
 - Reuses the existing CNL, DSL bundle, and behavior suites. Only the output target is new.
-- Decisions needed: runtime and version (Node.js or another), HTTP framework, database layer, test runner, and the package manager with its lockfile.
+- Chosen: Node.js 26.5.0, Hono, `pg` with hand-written SQL, hand-written validation, `node:test`, npm, tsc 5.9.3 and prettier.
 - First phase: the Rust phase 1 scope (prompt v1–v5 with PostgreSQL), then capabilities and flows.
-- Contract draft: [typescript-output-v1-draft.md](typescript-output-v1-draft.md), waiting for those choices.
+- Contract draft: [typescript-output-v1-draft.md](typescript-output-v1-draft.md), options chosen on 2026-10-21; not frozen yet.
 - Issue: [#65](https://github.com/faberline/som/issues/65).
 
 ### 2. SRE in Python, Rust, and TypeScript
