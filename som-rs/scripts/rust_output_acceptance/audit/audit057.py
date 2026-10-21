@@ -9,11 +9,17 @@ hashes, file bytes); the run's own ``passed`` and ``summary`` values are never t
 raw record of a sub-check is a per-case boolean, the evidence says "attested".  Anything that cannot be
 checked is "unrun".
 
-Frozen compiler-v1 files are judged through the sealed receipt chain COMPILER_RECEIPTS (amendment 003, then
-amendment 004, which keeps the M2 library at flow-v7-compact/blocks.json and has the compiler embed
-flow-v7-compact-self/blocks.json): an amendment 003 file may differ on disk only when a later sealed, APPROVED
-receipt that names the exact previous receipt bytes records the change, with an archived copy of the old bytes.
-The candidate's health selection_policy_sha256 and blocks_sha256 are compared with the last receipt of that chain.
+Frozen files are judged through two sealed receipt chains, walked by receipt_chain() with the same rules:
+- COMPILER_RECEIPTS: compiler-v1 amendment 003, then amendment 004, which keeps the M2 library at
+  flow-v7-compact/blocks.json and has the compiler embed flow-v7-compact-self/blocks.json.
+- RUST_OUTPUT_RECEIPTS: rust-output-v1 amendment 004 (the #57/#58 freeze), then amendment 005 (#65, admits
+  target typescript), which changes CONTRACT.md, acceptance-plan.json, api.schema.json, negative-cases.json and
+  build_negative_cases.py and adds one Python controls evidence file.
+A file frozen by the first receipt of a chain may differ on disk only when a later sealed, APPROVED receipt that
+names the exact previous receipt bytes records the change from the chain hash, with an archived copy of the old
+bytes, to the hash on disk; every file of the last admitted receipt must hash to its recorded value.
+The candidate's health selection_policy_sha256 and blocks_sha256 are compared with the last receipt of the
+compiler-v1 chain.
 
 Usage:
     audit057.py --run RUN_DIR --out NEW_REPORT.json
@@ -49,7 +55,13 @@ ACC_EVIDENCE_REL = "som-rs/evidence/rust-output-acceptance-2026-10-20-phase2.jso
 # amendment that may supersede one of its frozen files (amendment 004 keeps the M2 block library).
 COMPILER_RECEIPTS = ("som-rs/evidence/rust-compiler-contract-amendment-003.json",
                      "som-rs/evidence/rust-compiler-contract-amendment-004.json")
-RUST_OUTPUT_RECEIPT = "som-rs/evidence/rust-output-contract-amendment-004.json"
+# rust-output-v1 receipt chain, oldest first: amendment 004 (#57/#58 freeze) and every later sealed rust-output-v1
+# amendment that may supersede one of its frozen files (amendment 005, #65, admits target typescript).
+RUST_OUTPUT_RECEIPTS = ("som-rs/evidence/rust-output-contract-amendment-004.json",
+                        "som-rs/evidence/rust-output-contract-amendment-005.json")
+# The only status admitted for any receipt of either chain.  Every sealed receipt on disk uses exactly this string
+# (rust-output amendments 001-005 and compiler-v1 amendments 003-004); the older compiler-v1 amendments 001-002
+# carry other statuses and no independent_review, and are not part of either chain.
 SEALED_STATUS = "amendment_sealed_after_independent_review"
 COVERAGE_FROZEN_REL = "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json"
 SELF_FIXTURES_REL = "som-rs/tests/compiler-v1/self-name-fixtures.json"
@@ -141,11 +153,21 @@ def first(items, limit=LIST_LIMIT):
     return items[:limit] + ([f"... {more} more"] if more > 0 else [])
 
 
-_CHAIN_CACHE: dict[Path, dict] = {}
+_CHAIN_CACHE: dict[tuple[Path, tuple[str, ...]], dict] = {}
 
 
 def compiler_chain(repo: Path) -> dict:
-    """Walk the compiler-v1 receipt chain COMPILER_RECEIPTS from raw receipt bytes.
+    """The compiler-v1 receipt chain COMPILER_RECEIPTS (see receipt_chain)."""
+    return receipt_chain(repo, COMPILER_RECEIPTS)
+
+
+def rust_output_chain(repo: Path) -> dict:
+    """The rust-output-v1 receipt chain RUST_OUTPUT_RECEIPTS (see receipt_chain)."""
+    return receipt_chain(repo, RUST_OUTPUT_RECEIPTS)
+
+
+def receipt_chain(repo: Path, receipts: tuple[str, ...]) -> dict:
+    """Walk the sealed receipt chain ``receipts`` (repository-relative paths, oldest first) from raw receipt bytes.
 
     The first receipt's ``files`` is the frozen set.  A later receipt is admitted only when it is sealed
     (status SEALED_STATUS) with an APPROVED independent_review, names the previous receipt and its exact sha256,
@@ -156,12 +178,13 @@ def compiler_chain(repo: Path) -> dict:
     [(receipt, old, new, archive)], "last": last admitted receipt, "last_rel", "admitted": [rel], "problems",
     "unrun"}.  Disk hashes are compared by the caller."""
     key = Path(repo).resolve()
-    if key in _CHAIN_CACHE:
-        return _CHAIN_CACHE[key]
+    receipts = tuple(receipts)
+    if (key, receipts) in _CHAIN_CACHE:
+        return _CHAIN_CACHE[(key, receipts)]
     out = {"expected": {}, "base": {}, "superseded": {}, "last": None, "last_rel": None, "admitted": [],
            "problems": [], "unrun": []}
-    _CHAIN_CACHE[key] = out
-    base_rel = COMPILER_RECEIPTS[0]
+    _CHAIN_CACHE[(key, receipts)] = out
+    base_rel = receipts[0]
     base, err = load_json(key / base_rel)
     if err or not isinstance((base or {}).get("files"), dict):
         out["unrun"].append(f"{base_rel} unreadable or without files")
@@ -175,7 +198,7 @@ def compiler_chain(repo: Path) -> dict:
     out["last"], out["last_rel"] = base, base_rel
     out["admitted"].append(base_rel)
     prev_rel, prev = base_rel, base
-    for rel in COMPILER_RECEIPTS[1:]:
+    for rel in receipts[1:]:
         rec, err = load_json(key / rel)
         if err or not isinstance((rec or {}).get("files"), dict):
             out["unrun"].append(f"{rel} unreadable or without files")
@@ -919,60 +942,58 @@ def check_exit_codes(ctx: Ctx) -> Row:
     return row
 
 
-def check_frozen(ctx: Ctx) -> Row:
-    row = Row("run", 5, "The frozen amendment evidence still hashes to its recorded files: rust-output amendment 004, "
-              "and compiler-v1 amendment 003 through its sealed receipt chain (a frozen file may differ only when "
-              "a later sealed, independently approved compiler-v1 amendment such as 004 records the change from "
-              "its frozen hash, with an archived copy, to the hash on disk); and the accepted #55 run is the one "
-              "its evidence names.")
-    # rust-output amendment 004: every frozen file hashes as recorded.
-    ev, err = load_json(ctx.repo / RUST_OUTPUT_RECEIPT)
-    if err or not isinstance((ev or {}).get("files"), dict):
-        row.unrun(f"{RUST_OUTPUT_RECEIPT} unreadable or without files")
-    else:
-        bad = [f for f, want in ev["files"].items()
-               if not (ctx.repo / f).is_file() or sha_file(ctx.repo / f) != want]
-        if bad:
-            row.fail(f"{RUST_OUTPUT_RECEIPT}: files changed since the freeze: {first(bad)}")
-        else:
-            row.ev(f"{RUST_OUTPUT_RECEIPT}: {len(ev['files'])} frozen files hash to their recorded values")
-    # compiler-v1 amendment 003 and its sealed successors.
-    chain = compiler_chain(ctx.repo)
+def judge_chain(row: Row, ctx: Ctx, chain: dict, receipts: tuple[str, ...]):
+    """Report a receipt_chain() result on ``row``: chain problems fail, every file frozen by the first receipt
+    must hash to its frozen value or be superseded by an admitted sealed amendment and hash to the chain's last
+    hash, and every file of the last admitted receipt must hash to its recorded value."""
     for msg in chain["unrun"]:
         row.unrun(msg)
     for msg in chain["problems"]:
         row.fail(msg)
-    if chain["base"]:
-        base_rel = COMPILER_RECEIPTS[0]
-        same, superseded, bad = 0, [], []
-        for f, want in chain["base"].items():
-            p = ctx.repo / f
-            got = sha_file(p) if p.is_file() else None
-            if got == want:
-                same += 1
-            elif f in chain["superseded"] and got == chain["expected"].get(f):
-                superseded.append(f)
-            else:
-                bad.append(f)
-        if bad:
-            row.fail(f"{base_rel}: files changed since the freeze without a sealed later amendment: {first(bad)}")
-        for f in superseded:
-            steps = "; ".join(f"{r}: {o[:16]} -> {n[:16]}, archived copy {a} hashes to {o[:16]}"
-                              for r, o, n, a in chain["superseded"][f])
-            row.ev(f"{base_rel}: {f} superseded by a sealed amendment ({steps}); disk hashes to "
-                   f"{chain['expected'][f][:16]}")
-        row.ev(f"{base_rel}: {same} of {len(chain['base'])} frozen files hash to their recorded values, "
-               f"{len(superseded)} superseded")
-        later = [r for r in chain["admitted"] if r != base_rel]
-        if later:
-            stale = [f for f, want in chain["expected"].items()
-                     if not (ctx.repo / f).is_file() or sha_file(ctx.repo / f) != want]
-            if stale:
-                row.fail(f"{chain['last_rel']}: files differ from the receipt chain: {first(stale)}")
-            else:
-                row.ev(f"{', '.join(later)}: sealed with an APPROVED independent_review and the exact previous "
-                       f"receipt sha256; all {len(chain['last']['files'])} files of {chain['last_rel']} hash to "
-                       f"their recorded values")
+    if not chain["base"]:
+        return
+    base_rel = receipts[0]
+    same, superseded, bad = 0, [], []
+    for f, want in chain["base"].items():
+        p = ctx.repo / f
+        got = sha_file(p) if p.is_file() else None
+        if got == want:
+            same += 1
+        elif f in chain["superseded"] and got == chain["expected"].get(f):
+            superseded.append(f)
+        else:
+            bad.append(f)
+    if bad:
+        row.fail(f"{base_rel}: files changed since the freeze without a sealed later amendment: {first(bad)}")
+    for f in superseded:
+        steps = "; ".join(f"{r}: {o[:16]} -> {n[:16]}, archived copy {a} hashes to {o[:16]}"
+                          for r, o, n, a in chain["superseded"][f])
+        row.ev(f"{base_rel}: {f} superseded by a sealed amendment ({steps}); disk hashes to "
+               f"{chain['expected'][f][:16]}")
+    row.ev(f"{base_rel}: {same} of {len(chain['base'])} frozen files hash to their recorded values, "
+           f"{len(superseded)} superseded")
+    later = [r for r in chain["admitted"] if r != base_rel]
+    if later:
+        stale = [f for f, want in chain["expected"].items()
+                 if not (ctx.repo / f).is_file() or sha_file(ctx.repo / f) != want]
+        if stale:
+            row.fail(f"{chain['last_rel']}: files differ from the receipt chain: {first(stale)}")
+        else:
+            row.ev(f"{', '.join(later)}: sealed with an APPROVED independent_review and the exact previous "
+                   f"receipt sha256; all {len(chain['last']['files'])} files of {chain['last_rel']} hash to "
+                   f"their recorded values")
+
+
+def check_frozen(ctx: Ctx) -> Row:
+    row = Row("run", 5, "The frozen amendment evidence still hashes to its recorded files: rust-output amendment 004 "
+              "and compiler-v1 amendment 003, each through its sealed receipt chain (a frozen file may differ only "
+              "when a later sealed, independently approved amendment of the same contract, such as rust-output "
+              "005 or compiler-v1 004, records the change from its frozen hash, with an archived copy, to the hash "
+              "on disk); and the accepted #55 run is the one its evidence names.")
+    # rust-output-v1 amendment 004 and its sealed successors.
+    judge_chain(row, ctx, rust_output_chain(ctx.repo), RUST_OUTPUT_RECEIPTS)
+    # compiler-v1 amendment 003 and its sealed successors.
+    judge_chain(row, ctx, compiler_chain(ctx.repo), COMPILER_RECEIPTS)
     lo = ctx.acc_evidence.get("local_only") or {}
     if not lo:
         row.unrun(f"{ACC_EVIDENCE_REL} records no local_only run identity")
