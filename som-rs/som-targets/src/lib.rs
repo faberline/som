@@ -5,6 +5,7 @@
 //! The check order is the frozen contracts/rust-output-v1/api.schema.json x-check-order.
 pub mod profile;
 pub mod rust;
+pub mod typescript;
 
 use serde_json::{Value, json};
 use som::{
@@ -13,13 +14,14 @@ use som::{
     strict_json::{self, Document},
 };
 
-pub const TARGET_CAUSE: &str = "Target must be the string python or rust.";
-pub const TARGET_ALLOWED: &str = "Omit target, or use target python or rust.";
+pub const TARGET_CAUSE: &str = "Target must be the string python, rust or typescript.";
+pub const TARGET_ALLOWED: &str = "Omit target, or use target python, rust or typescript.";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Target {
     Python,
     Rust,
+    TypeScript,
 }
 
 /// A complete HTTP reply: status code and JSON body.
@@ -64,6 +66,7 @@ pub fn select(doc: &Document) -> Result<Target, Value> {
         None => Ok(Target::Python),
         Some(Value::String(target)) if target == "python" => Ok(Target::Python),
         Some(Value::String(target)) if target == "rust" => Ok(Target::Rust),
+        Some(Value::String(target)) if target == "typescript" => Ok(Target::TypeScript),
         Some(_) => Err(doc.error("/target", "INVALID_SCHEMA", TARGET_CAUSE, TARGET_ALLOWED)),
     }
 }
@@ -110,12 +113,31 @@ enum Origin<'a> {
     Json,
 }
 
+fn profile_refusal(doc: &Document, origin: Origin, found: &profile::Refusal) -> Reply {
+    let body = match origin {
+        Origin::Cnl(map) => cnl_diagnostic(
+            map,
+            &found.pointer,
+            &found.code,
+            &found.cause,
+            &found.allowed_form,
+        ),
+        Origin::Json => doc.error(
+            &format!("/prompt{}", found.pointer),
+            &found.code,
+            &found.cause,
+            &found.allowed_form,
+        ),
+    };
+    rejected(body)
+}
+
 fn compile_rust(
-    compiler: &Compiler,
     doc: &Document,
     prompt: &Value,
     origin: Origin,
     pointer: &str,
+    rust_bundle: impl FnOnce(&Document, &Value, &str) -> Reply,
 ) -> Reply {
     // Step 4: compiler-v1 semantic validation, unchanged. CNL parsing already ran it.
     if let Origin::Json = origin
@@ -127,30 +149,44 @@ fn compile_rust(
     }
     // Step 5: the Rust profile.
     if let Some(found) = profile::active(prompt) {
-        let body = match origin {
-            Origin::Cnl(map) => cnl_diagnostic(
-                map,
-                &found.pointer,
-                &found.code,
-                &found.cause,
-                &found.allowed_form,
-            ),
-            Origin::Json => doc.error(
-                &format!("/prompt{}", found.pointer),
-                &found.code,
-                &found.cause,
-                &found.allowed_form,
-            ),
-        };
-        return rejected(body);
+        return profile_refusal(doc, origin, &found);
     }
     // Step 6: planning.
-    rust::compile(compiler, doc, prompt, pointer)
+    rust_bundle(doc, prompt, pointer)
+}
+
+fn compile_typescript(doc: &Document, prompt: &Value, origin: Origin) -> Reply {
+    // Step 4: compiler-v1 semantic validation, unchanged. CNL parsing already ran it.
+    if let Origin::Json = origin
+        && let Err(error) = som::validate_prompt(prompt)
+    {
+        return rejected(som::json_diagnostics::prompt_error(
+            doc, prompt, &error, "/prompt",
+        ));
+    }
+    // Step 5: the TypeScript phase 1 profile.
+    if let Some(found) = typescript::profile::check(prompt) {
+        return profile_refusal(doc, origin, &found);
+    }
+    // Step 6: planning (NOT_IMPLEMENTED until issue #75 lands).
+    typescript::compile(doc)
 }
 
 /// One compile request body, in the frozen check order.
 /// Without target, or with target python, the reply is the compiler-v1 reply byte for byte.
 pub fn compile(compiler: &Compiler, source: &str) -> Reply {
+    compile_with(
+        source,
+        |doc, prompt, pointer| rust::compile(compiler, doc, prompt, pointer),
+        |prompt| compiler.compile_prompt(prompt),
+    )
+}
+
+pub(crate) fn compile_with(
+    source: &str,
+    rust_bundle: impl FnOnce(&Document, &Value, &str) -> Reply,
+    python_bundle: impl FnOnce(&Value) -> Result<Value, som::SomError>,
+) -> Reply {
     let doc = match strict_json::parse(source) {
         Ok(doc) => doc,
         Err(error) => return rejected(error),
@@ -198,11 +234,15 @@ pub fn compile(compiler: &Compiler, source: &str) -> Reply {
             ));
         }
     };
-    if target == Target::Rust {
-        let origin = map.as_ref().map_or(Origin::Json, Origin::Cnl);
-        return compile_rust(compiler, &doc, &prompt, origin, semantic_pointer);
+    let origin = map.as_ref().map_or(Origin::Json, Origin::Cnl);
+    match target {
+        Target::Rust => {
+            return compile_rust(&doc, &prompt, origin, semantic_pointer, rust_bundle);
+        }
+        Target::TypeScript => return compile_typescript(&doc, &prompt, origin),
+        Target::Python => {}
     }
-    match compiler.compile_prompt(&prompt) {
+    match python_bundle(&prompt) {
         Ok(bundle) => (200, json!({"status":"ok","bundle":bundle})),
         Err(error) if semantic_pointer == "/prompt" => rejected(
             som::json_diagnostics::prompt_error(&doc, &prompt, &error, "/prompt"),
