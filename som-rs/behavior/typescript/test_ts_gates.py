@@ -674,14 +674,41 @@ def test_v1_prototype_pollution_on_patch_caught_when_mutating_row() -> None:
 def test_v5_strict_covers_child_routes_parent_id_batch_and_with_children() -> None:
     v5_prompt = json.loads((EXAMPLES_DIR / "v5.prompt.json").read_text())
 
-    # 1. Exact reproduction from PR #78 review: build a TsRun for v5.prompt.json against a fake client,
-    # call strict(), and verify child routes, out-of-range/non-canonical parent & child ids,
-    # trailing slashes on child & with-children routes, GET /projects/with-children, and batch D1/D2 checks.
+    # 0. Verify that script() on a v5 profile sends no GET, PATCH or DELETE to {parent_path}/with-children:
+    script_sent: list[tuple[str, str]] = []
+
+    def fake_script_send(
+        method: str,
+        path: str,
+        body: bytes | None,
+        content_type: str = "application/json",
+    ) -> tuple[int, str | None, bytes]:
+        del body, content_type
+        script_sent.append((method, path))
+        return 200, "application/json", b'{"id": 1}'
+
+    script_run = ts_suite.TsRun(ts_suite.profile(v5_prompt), fake_script_send)
+    script_run.script()
+    with_children_methods = {m for m, p in script_sent if p.endswith("/with-children")}
+    assert with_children_methods == {"POST"}
+    assert ("GET", "/projects/with-children") not in script_sent
+    assert ("PATCH", "/projects/with-children") not in script_sent
+    assert ("DELETE", "/projects/with-children") not in script_sent
+
+    # 1. Build a TsRun for v5.prompt.json against a fake client, call strict(), and verify:
+    # - _ensure_live_token creates the parent and child rows through POST requests;
+    # - child collection and item routes, out-of-range/non-canonical parent & child ids,
+    #   trailing slashes on child & with-children routes, GET/PATCH/DELETE /projects/with-children,
+    #   and batch D1/D2 checks all run.
     sent: list[tuple[str, str, bytes | None]] = []
+    seeded_paths: set[str] = set()
 
     def fake_send(method: str, path: str, body: bytes | None, content_type: str = "application/json") -> tuple[int, str | None, bytes]:
         del content_type
         sent.append((method, path, body))
+        if method == "POST" and path in ("/projects", "/projects/1/todos") and path not in seeded_paths:
+            seeded_paths.add(path)
+            return 201, "application/json", b'{"id":1,"created_at":"2026-10-21T12:00:00.000Z","updated_at":"2026-10-21T12:00:00.000Z"}'
         return 422, "application/json", b'{"detail":[{"type":"invalid","loc":["body","x"],"msg":"err"}]}'
 
     run = ts_suite.TsRun(ts_suite.profile(v5_prompt), fake_send)
@@ -689,6 +716,10 @@ def test_v5_strict_covers_child_routes_parent_id_batch_and_with_children() -> No
 
     paths = [p for _, p, _ in sent]
     methods_and_paths = {(m, p) for m, p, _ in sent}
+
+    # Verify _ensure_live_token seeded parent and child via POST requests:
+    assert sent[0][:2] == ("POST", "/projects")
+    assert sent[1][:2] == ("POST", "/projects/1/todos")
 
     # Child collection and item routes with a live parent token:
     assert any(p.startswith("/projects/1/todos") for p in paths)
@@ -762,6 +793,7 @@ def test_v5_strict_covers_child_routes_parent_id_batch_and_with_children() -> No
     v5_numeric["resources"]["child"]["fields"].append(
         {"name": "hours", "type": "int", "required": True, "unique": False}
     )
+    seeded_paths.clear()
     run_num = ts_suite.TsRun(ts_suite.profile(v5_numeric), fake_send)
     run_num.strict()
     num_batch_posts = [
@@ -1150,6 +1182,11 @@ def test_v5_parity_and_strict_against_simulator() -> None:
     sim = InMemoryV5Product(v5_prompt)
     run = ts_suite.run(v5_prompt, "http://127.0.0.1:18999", send=sim.send)
     assert run.failures == []
+    assert all(
+        e["request"]["method"] == "POST"
+        for e in run.transcript
+        if e["request"]["path"].endswith("/with-children")
+    )
 
     before = len(run.transcript)
     run.strict()
@@ -1159,6 +1196,12 @@ def test_v5_parity_and_strict_against_simulator() -> None:
     assert gate["passed"] is True
     assert set(gate["by_divergence"]) == {"D1", "D2", "D3", "D4", "D5", "D7"}
     assert gate["prototype_members"] >= 5
+
+    # Standalone strict() on a fresh simulator (without running script() first) creates rows via POST and passes:
+    standalone_sim = InMemoryV5Product(v5_prompt)
+    standalone_run = ts_suite.TsRun(ts_suite.profile(v5_prompt), standalone_sim.send)
+    standalone_run.strict()
+    assert standalone_run.failures == []
 
     # Verify child-route defects on v5 are caught by strict():
     for kw, expected_cat in (

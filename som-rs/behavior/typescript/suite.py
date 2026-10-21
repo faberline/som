@@ -206,13 +206,6 @@ class TsRun(base_suite.Run):
             self.table_added_inputs(parent, None)
             ptoken = self.alive(parent, None)[0]
             self.table_added_inputs(child, ptoken)
-            self.refuse(
-                "validation",
-                f"{parent.name}: GET with-children refuses non-integer parent_id",
-                "GET",
-                [parent.path + "/with-children"],
-                ["path"],
-            )
         else:
             self.table_added_inputs(self.prof.tables[0], None)
 
@@ -221,15 +214,17 @@ class TsRun(base_suite.Run):
         self.added_inputs()
 
     def _ensure_live_token(self, table: Table, parent: str | None) -> str:
-        """Return an existing live row token for (table, parent), or seed one when strict() runs standalone."""
+        """Return an existing live row token for (table, parent), or create one via POST when absent."""
         alive = self.alive(table, parent)
         if alive:
             return alive[0]
-        token = self.store(table, self.fresh(table, "required"), parent)
-        actual_id = len(self.norm.ids.get(table.name, {})) + 1
-        self.norm.ids.setdefault(table.name, {})[token] = actual_id
-        self.norm.tokens.setdefault(table.name, {})[actual_id] = token
-        return token
+        return self.create(
+            table,
+            parent,
+            self.fresh(table, "required"),
+            "crud",
+            f"{table.name}: create row for strict",
+        )
 
     def table_strict(self, table: Table, parent: str | None, token: str) -> None:
         """Check divergences D1 to D5, D7 and prototype_members on one resource table."""
