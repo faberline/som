@@ -1216,6 +1216,61 @@ class PgRunTest(unittest.TestCase):
                     self.assertFalse(valid_out.exists())
                     self.assertEqual(harness.read_events(), [])
 
+    def test_unsupported_capabilities_in_json_prompt_refused_with_exit_2_before_initdb(self) -> None:
+        v6_prompt_path = (
+            SCRIPT_DIR.parents[1] / "contracts" / "compiler-v1" / "examples" / "v6.prompt.json"
+        )
+        base_prompt = json.loads(v6_prompt_path.read_text(encoding="utf-8"))
+        unsupported_json_caps = (
+            ("database", "mongodb"),
+            ("auth", "firebase"),
+            ("auth", "google_oauth"),
+            ("storage", "s3"),
+            ("storage", "gcs"),
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            harness = FakeHarness(root, package="app_projects")
+            valid_out = root / "out_never_created"
+            pg_port = pick_free_port()
+            app_port = pick_free_port(exclude={pg_port})
+
+            for idx, (cap_key, cap_val) in enumerate(unsupported_json_caps):
+                with self.subTest(cap_key=cap_key, cap_val=cap_val):
+                    prompt_doc = json.loads(json.dumps(base_prompt))
+                    prompt_doc["capabilities"][cap_key] = cap_val
+                    prompt_path = root / f"unsupported_{idx}.prompt.json"
+                    prompt_path.write_text(json.dumps(prompt_doc, indent=2) + "\n", encoding="utf-8")
+
+                    code, stdout = self.invoke_pg_run(
+                        harness,
+                        [
+                            "--som",
+                            str(harness.som_bin),
+                            "--url",
+                            TEST_URL,
+                            "--cnl",
+                            str(prompt_path),
+                            "--out",
+                            str(valid_out),
+                            "--python-bin",
+                            str(harness.py_bin),
+                            "--pg-port",
+                            str(pg_port),
+                            "--app-port",
+                            str(app_port),
+                            "--create",
+                            '/projects={"name":"p"}',
+                        ],
+                    )
+                    self.assertEqual(code, 2, f"{cap_key}={cap_val}, stdout={stdout}")
+                    summary = json.loads(stdout.strip())
+                    self.assertEqual(summary["status"], "refused")
+                    self.assertFalse(summary["passed"])
+                    self.assertIn(f"{cap_key}={cap_val}", summary["error"])
+                    self.assertFalse(valid_out.exists())
+                    self.assertEqual(harness.read_events(), [])
+
 
 if __name__ == "__main__":
     unittest.main()

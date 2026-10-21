@@ -181,9 +181,7 @@ def parse_package_from_cnl(cnl_path: Path) -> str | None:
     except ValueError:
         return None
     if isinstance(data, dict):
-        pkg = data.get("package") or (
-            data.get("prompt", {}).get("package") if isinstance(data.get("prompt"), dict) else None
-        )
+        pkg = data.get("package")
         if isinstance(pkg, str) and pkg:
             return pkg
     return None
@@ -240,17 +238,16 @@ def check_supported_capabilities(cnl_path: Path) -> str | None:
     except ValueError:
         data = None
     if isinstance(data, dict):
-        prompt_obj = data.get("prompt") if isinstance(data.get("prompt"), dict) else data
-        caps = prompt_obj.get("capabilities") if isinstance(prompt_obj, dict) else None
+        caps = data.get("capabilities")
         if isinstance(caps, dict):
             if caps.get("database") == "mongodb":
                 return f"Refused --cnl {cnl_path}: unsupported capability database=mongodb"
-            if caps.get("authentication") in ("firebase", "google_oauth"):
-                auth_val = caps["authentication"]
-                return f"Refused --cnl {cnl_path}: unsupported capability authentication={auth_val}"
-            if caps.get("object_storage") in ("s3", "gcs"):
-                storage_val = caps["object_storage"]
-                return f"Refused --cnl {cnl_path}: unsupported capability object storage={storage_val}"
+            if caps.get("auth") in ("firebase", "google_oauth"):
+                auth_val = caps["auth"]
+                return f"Refused --cnl {cnl_path}: unsupported capability auth={auth_val}"
+            if caps.get("storage") in ("s3", "gcs"):
+                storage_val = caps["storage"]
+                return f"Refused --cnl {cnl_path}: unsupported capability storage={storage_val}"
     return None
 
 
