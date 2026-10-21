@@ -67,52 +67,72 @@ def check_generated_dir(target_dir: Path) -> list[str]:
     return missing
 
 
-def is_query_parameter_collision_refusal(stderr: str) -> bool:
+def _extract_filter_field_token(source: Path, diag: dict[str, Any]) -> str | None:
+    try:
+        raw_bytes = source.read_bytes()
+    except OSError:
+        return None
+
+    byte_start = diag.get("byte_start")
+    byte_end = diag.get("byte_end")
+    if (
+        isinstance(byte_start, int)
+        and not isinstance(byte_start, bool)
+        and isinstance(byte_end, int)
+        and not isinstance(byte_end, bool)
+        and 0 <= byte_start < byte_end <= len(raw_bytes)
+    ):
+        token = raw_bytes[byte_start:byte_end].decode("utf-8", errors="replace")
+        if token.startswith('"') and token.endswith('"') and len(token) >= 2:
+            token = token[1:-1]
+        return token
+
+    if source.name.endswith(".json"):
+        try:
+            doc = json.loads(raw_bytes.decode("utf-8"))
+        except (UnicodeDecodeError, ValueError):
+            return None
+        if isinstance(doc, dict):
+            query_obj = doc.get("query")
+            if not isinstance(query_obj, dict) and isinstance(doc.get("prompt"), dict):
+                query_obj = doc["prompt"].get("query")
+            if isinstance(query_obj, dict):
+                field_val = query_obj.get("filter_field")
+                if isinstance(field_val, str):
+                    return field_val
+    return None
+
+
+def is_query_parameter_collision_refusal(
+    stderr: str,
+    source: Path | None = None,
+) -> bool:
     text = stderr.strip()
     if not text:
         return False
-    if "query_parameter_collision" in text:
-        return True
-    if "because a list parameter has the same name" in text:
-        return True
-    if "prompt.query.filter_field" in text:
-        return True
     try:
         payload = json.loads(text)
     except ValueError:
         return False
     if not isinstance(payload, dict):
         return False
-    if payload.get("rule") == "query_parameter_collision":
-        return True
-    detail = payload.get("detail")
-    if isinstance(detail, str) and (
-        "query_parameter_collision" in detail
-        or "prompt.query.filter_field" in detail
-        or "because a list parameter has the same name" in detail
-    ):
-        return True
+
     diagnostics = payload.get("diagnostics")
-    if isinstance(diagnostics, list):
-        for diag in diagnostics:
-            if not isinstance(diag, dict):
-                continue
-            pointer = diag.get("prompt_pointer", "")
-            cause = diag.get("cause", "")
-            rule = diag.get("rule", "")
-            if (
-                rule == "query_parameter_collision"
-                or (
-                    isinstance(pointer, str)
-                    and pointer.endswith("/query/filter_field")
-                    and isinstance(cause, str)
-                    and (
-                        "collides with a generated Python identifier" in cause
-                        or "because a list parameter has the same name" in cause
-                        or "query_parameter_collision" in cause
-                    )
-                )
-            ):
+    if not isinstance(diagnostics, list):
+        return False
+
+    for diag in diagnostics:
+        if not isinstance(diag, dict):
+            continue
+        if diag.get("rule") == "query_parameter_collision":
+            return True
+        if (
+            payload.get("code") == "INVALID_VALUE"
+            and diag.get("prompt_pointer") == "/query/filter_field"
+            and source is not None
+        ):
+            token = _extract_filter_field_token(source, diag)
+            if token in ("limit", "offset"):
                 return True
     return False
 
@@ -253,7 +273,7 @@ def run_smoke(
 
         if proc.returncode != 0:
             stderr_text = proc.stderr.strip()
-            if is_query_parameter_collision_refusal(stderr_text):
+            if is_query_parameter_collision_refusal(stderr_text, source):
                 refusals.append(
                     {
                         "name": name,

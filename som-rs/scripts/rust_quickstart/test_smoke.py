@@ -14,6 +14,10 @@ import textwrap
 import unittest
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+import smoke  # noqa: E402
+
 REPO_ROOT = SCRIPT_DIR.parents[2]
 SMOKE_PY = SCRIPT_DIR / "smoke.py"
 EXAMPLES_DIR = REPO_ROOT / "som-rs" / "contracts" / "compiler-v1" / "examples"
@@ -31,6 +35,7 @@ def make_fake_som(
     differ_lock_on_case: str | None = None,
     differ_toml_on_case: str | None = None,
     refuse_on_case: str | None = None,
+    refuse_mode: str = "target_rule",
     fail_on_case: str | None = None,
 ) -> Path:
     script = directory / "fake_som.py"
@@ -64,20 +69,46 @@ def make_fake_som(
             sys.exit(1)
 
         refuse_case = {refuse_on_case!r}
+        refuse_mode = {refuse_mode!r}
         if refuse_case is not None and out.name == refuse_case:
-            diagnostic = {{
-                "status": "error",
-                "code": "INVALID_VALUE",
-                "rule": "query_parameter_collision",
-                "detail": "prompt.query.filter_field: name collides with a generated Python identifier",
-                "diagnostics": [
-                    {{
-                        "code": "INVALID_VALUE",
-                        "prompt_pointer": "/query/filter_field",
-                        "cause": "prompt.query.filter_field: name collides with a generated Python identifier",
-                    }}
-                ],
-            }}
+            if refuse_mode == "target_rule":
+                diagnostic = {{
+                    "status": "error",
+                    "code": "UNSUPPORTED_TARGET",
+                    "detail": "prompt.query.filter_field: query parameter collision",
+                    "diagnostics": [
+                        {{
+                            "code": "UNSUPPORTED_TARGET",
+                            "rule": "query_parameter_collision",
+                            "prompt_pointer": "/query/filter_field",
+                            "cause": "prompt.query.filter_field: query parameter collision",
+                        }}
+                    ],
+                }}
+            elif refuse_mode == "compiler_v1_span":
+                raw = source.read_bytes()
+                idx = raw.find(b"Filter exactly on field ")
+                if idx != -1:
+                    start = idx + len(b"Filter exactly on field ")
+                    end = raw.find(b".", start)
+                else:
+                    start, end = 0, 0
+                diagnostic = {{
+                    "status": "error",
+                    "code": "INVALID_VALUE",
+                    "detail": "prompt.query.filter_field: name collides with a generated Python identifier",
+                    "diagnostics": [
+                        {{
+                            "code": "INVALID_VALUE",
+                            "prompt_pointer": "/query/filter_field",
+                            "byte_start": start,
+                            "byte_end": end,
+                            "cause": "prompt.query.filter_field: name collides with a generated Python identifier",
+                        }}
+                    ],
+                }}
+            else:
+                diagnostic = {{"status": "error", "code": "INVALID_VALUE"}}
             sys.stderr.write(json.dumps(diagnostic) + "\\n")
             sys.exit(2)
 
@@ -233,35 +264,197 @@ class RustSmokeScriptTest(unittest.TestCase):
             self.assertEqual(failure["name"], "v3-cnl")
             self.assertIn("Cargo.lock", failure["differing_files"])
 
+    def test_refusal_classifier_strictness_and_smoke_handling(self) -> None:
+        # 1. The three non-collision filter_field errors must all return False (failed):
+        self.assertFalse(
+            smoke.is_query_parameter_collision_refusal(
+                json.dumps(
+                    {
+                        "code": "INVALID_VALUE",
+                        "detail": 'prompt.query.filter_field: unknown field "done"',
+                    }
+                )
+            )
+        )
+        self.assertFalse(
+            smoke.is_query_parameter_collision_refusal(
+                "error at prompt.query.filter_field: must name a boolean field"
+            )
+        )
+        self.assertFalse(
+            smoke.is_query_parameter_collision_refusal(
+                json.dumps(
+                    {
+                        "code": "INVALID_VALUE",
+                        "diagnostics": [
+                            {
+                                "prompt_pointer": "/query/filter_field",
+                                "cause": "prompt.query.filter_field: name collides with a generated Python identifier",
+                            }
+                        ],
+                    }
+                )
+            )
+        )
+
+        # 2. Case (a): target 422 diagnostic with rule == "query_parameter_collision" -> True
+        case_a_stderr = json.dumps(
+            {
+                "status": "error",
+                "code": "UNSUPPORTED_TARGET",
+                "diagnostics": [
+                    {
+                        "code": "UNSUPPORTED_TARGET",
+                        "rule": "query_parameter_collision",
+                        "prompt_pointer": "/query/filter_field",
+                        "cause": "prompt.query.filter_field: query parameter collision",
+                    }
+                ],
+            }
+        )
+        self.assertTrue(smoke.is_query_parameter_collision_refusal(case_a_stderr))
+
+        # 3. Case (b): compiler-v1 400 INVALID_VALUE at /query/filter_field where source span is limit/offset -> True
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            v3_limit_cnl = tmp_path / "v3_limit.cnl"
+            v3_text = (EXAMPLES_DIR / "v3.cnl").read_text(encoding="utf-8").replace(
+                "Filter exactly on field completed.",
+                "Filter exactly on field limit.",
+            )
+            v3_limit_cnl.write_text(v3_text, encoding="utf-8")
+            raw = v3_limit_cnl.read_bytes()
+            start = raw.index(b"Filter exactly on field ") + len(b"Filter exactly on field ")
+            end = start + len(b"limit")
+            case_b_stderr = json.dumps(
+                {
+                    "status": "error",
+                    "code": "INVALID_VALUE",
+                    "detail": "prompt.query.filter_field: name collides with a generated Python identifier",
+                    "diagnostics": [
+                        {
+                            "code": "INVALID_VALUE",
+                            "prompt_pointer": "/query/filter_field",
+                            "byte_start": start,
+                            "byte_end": end,
+                            "cause": "prompt.query.filter_field: name collides with a generated Python identifier",
+                        }
+                    ],
+                }
+            )
+            self.assertTrue(
+                smoke.is_query_parameter_collision_refusal(case_b_stderr, v3_limit_cnl)
+            )
+
+            # And on the unmodified v3.cnl (where the field at byte_start:byte_end is `completed`),
+            # the same compiler-v1 diagnostic is NOT a limit/offset refusal -> False
+            v3_orig = EXAMPLES_DIR / "v3.cnl"
+            orig_raw = v3_orig.read_bytes()
+            orig_start = orig_raw.index(b"Filter exactly on field ") + len(b"Filter exactly on field ")
+            orig_end = orig_start + len(b"completed")
+            non_limit_stderr = json.dumps(
+                {
+                    "status": "error",
+                    "code": "INVALID_VALUE",
+                    "detail": "prompt.query.filter_field: name collides with a generated Python identifier",
+                    "diagnostics": [
+                        {
+                            "code": "INVALID_VALUE",
+                            "prompt_pointer": "/query/filter_field",
+                            "byte_start": orig_start,
+                            "byte_end": orig_end,
+                            "cause": "prompt.query.filter_field: name collides with a generated Python identifier",
+                        }
+                    ],
+                }
+            )
+            self.assertFalse(
+                smoke.is_query_parameter_collision_refusal(non_limit_stderr, v3_orig)
+            )
+
     def test_refused_example_is_counted_as_refused_not_failed(self) -> None:
         expected_total = self.expected_example_count()
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
-            fake_som = make_fake_som(
+            # Case (a) via CLI on default examples
+            fake_som_a = make_fake_som(
                 tmp_path,
                 refuse_on_case="v3-cnl",
+                refuse_mode="target_rule",
             )
-            out_dir = tmp_path / "out"
+            out_dir_a = tmp_path / "out-a"
 
-            proc = self.run_cli(
+            proc_a = self.run_cli(
                 "--som",
-                str(fake_som),
+                str(fake_som_a),
                 "--url",
                 TEST_URL,
                 "--out",
-                str(out_dir),
+                str(out_dir_a),
             )
-            self.assertEqual(proc.returncode, 0, proc.stderr)
-            summary = json.loads(proc.stdout.strip())
-            self.assertEqual(summary["status"], "ok")
-            self.assertEqual(summary["total"], expected_total)
-            self.assertEqual(summary["passed"], expected_total - 1)
-            self.assertEqual(summary["refused"], 1)
-            self.assertEqual(summary["failed"], 0)
-            self.assertEqual(summary["failures"], [])
-            self.assertEqual(len(summary["refusals"]), 1)
-            self.assertEqual(summary["refusals"][0]["name"], "v3-cnl")
-            self.assertEqual(summary["refusals"][0]["rule"], "query_parameter_collision")
+            self.assertEqual(proc_a.returncode, 0, proc_a.stderr)
+            summary_a = json.loads(proc_a.stdout.strip())
+            self.assertEqual(summary_a["status"], "ok")
+            self.assertEqual(summary_a["total"], expected_total)
+            self.assertEqual(summary_a["passed"], expected_total - 1)
+            self.assertEqual(summary_a["refused"], 1)
+            self.assertEqual(summary_a["failed"], 0)
+            self.assertEqual(summary_a["failures"], [])
+            self.assertEqual(len(summary_a["refusals"]), 1)
+            self.assertEqual(summary_a["refusals"][0]["name"], "v3-cnl")
+            self.assertEqual(summary_a["refusals"][0]["rule"], "query_parameter_collision")
+
+            # Case (b) where the filter field is `completed` (not `limit`/`offset`) -> failed: 1, exit 1
+            fake_som_b_non_limit = make_fake_som(
+                tmp_path,
+                refuse_on_case="v3-cnl",
+                refuse_mode="compiler_v1_span",
+            )
+            out_dir_b_fail = tmp_path / "out-b-fail"
+            proc_b_fail = self.run_cli(
+                "--som",
+                str(fake_som_b_non_limit),
+                "--url",
+                TEST_URL,
+                "--out",
+                str(out_dir_b_fail),
+            )
+            self.assertEqual(proc_b_fail.returncode, 1)
+            summary_b_fail = json.loads(proc_b_fail.stdout.strip())
+            self.assertEqual(summary_b_fail["status"], "error")
+            self.assertEqual(summary_b_fail["passed"], expected_total - 1)
+            self.assertEqual(summary_b_fail["refused"], 0)
+            self.assertEqual(summary_b_fail["failed"], 1)
+            self.assertEqual(summary_b_fail["refusals"], [])
+            self.assertEqual(len(summary_b_fail["failures"]), 1)
+            self.assertEqual(summary_b_fail["failures"][0]["name"], "v3-cnl")
+
+            # Case (b) where the filter field in the source file IS `limit` -> refused: 1, failed: 0, exit 0
+            custom_examples = tmp_path / "examples"
+            custom_examples.mkdir()
+            (custom_examples / "v1.cnl").write_text(
+                (EXAMPLES_DIR / "v1.cnl").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (custom_examples / "v3.cnl").write_text(
+                (EXAMPLES_DIR / "v3.cnl")
+                .read_text(encoding="utf-8")
+                .replace("Filter exactly on field completed.", "Filter exactly on field limit."),
+                encoding="utf-8",
+            )
+            out_dir_b_ok = tmp_path / "out-b-ok"
+            code_b_ok, summary_b_ok = smoke.run_smoke(
+                fake_som_b_non_limit,
+                TEST_URL,
+                out_dir_b_ok,
+                examples_dir=custom_examples,
+            )
+            self.assertEqual(code_b_ok, 0)
+            self.assertEqual(summary_b_ok["status"], "ok")
+            self.assertEqual(summary_b_ok["total"], 2)
+            self.assertEqual(summary_b_ok["passed"], 1)
+            self.assertEqual(summary_b_ok["refused"], 1)
+            self.assertEqual(summary_b_ok["failed"], 0)
 
     def test_existing_non_empty_out_is_refused(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

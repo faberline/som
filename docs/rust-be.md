@@ -23,7 +23,7 @@ As stated in [product-layout.json](../som-rs/contracts/rust-output-v1/product-la
 
 ### Scope limits and target notes you meet first
 
-- **`query_parameter_collision` (`limit` or `offset` filter field in v3):** In prompt v3, list routes expose the boolean filter field by its own name alongside fixed pagination parameters `limit` and `offset`. A v3 `query.filter_field` named `limit` or `offset` makes `?limit=5` ambiguous and is refused (`RS12_CNL_V3_FILTER_LIMIT` and `RS13_JSON_V3_FILTER_OFFSET` in [negative-cases.json](../som-rs/contracts/rust-output-v1/negative-cases.json); see also [scope.json](../som-rs/contracts/rust-output-v1/scope.json) and [phase2/naming.json](../som-rs/contracts/rust-output-v1/phase2/naming.json)). Since amendment 004, `compiler-v1` refuses `limit` and `offset` as v3 filter fields for every target with HTTP 400 `INVALID_VALUE` (`prompt.query.filter_field: name collides with a generated Python identifier`).
+- **`query_parameter_collision` (`limit` or `offset` filter field in v3):** In prompt v3, list routes expose the boolean filter field by its own name alongside fixed pagination parameters `limit` and `offset`. A v3 `query.filter_field` named `limit` or `offset` makes `?limit=5` ambiguous (`RS12_CNL_V3_FILTER_LIMIT` and `RS13_JSON_V3_FILTER_OFFSET` in [negative-cases.json](../som-rs/contracts/rust-output-v1/negative-cases.json); see also [scope.json](../som-rs/contracts/rust-output-v1/scope.json) and [phase2/naming.json](../som-rs/contracts/rust-output-v1/phase2/naming.json)). Since `compiler-v1` amendment 003 ([rust-compiler-contract-amendment-003.json](../som-rs/evidence/rust-compiler-contract-amendment-003.json), issue #58), `compiler-v1` refuses `limit` and `offset` as v3 filter fields for every target before target-specific checking, so `som write` exits `2` with HTTP 400 `INVALID_VALUE` at `/query/filter_field` (`prompt.query.filter_field: name collides with a generated Python identifier`); the Rust target's `query_parameter_collision` rule (`RS12`/`RS13`) is reached only after `compiler-v1`.
 - **PostgreSQL `JSONB` signed zero (`-0.0`):** In v7 flows (`literal_type:float` in [phase2/constructs.json](../som-rs/contracts/rust-output-v1/phase2/constructs.json)), the compiled bundle and generated Rust code preserve negative zero (`-0.0_f64`, serialized as `-0.0` in HTTP responses), whereas PostgreSQL `JSONB` normalizes `-0.0` to `0.0` when persisting flow run records in `_som_flow_runs`.
 
 ## 2. Check the toolchain and the crates
@@ -53,20 +53,20 @@ ok clippy-driver
 ok formatter
 ```
 
-Run [check_vendor.py](../som-rs/scripts/rust_vendor/check_vendor.py) to verify the offline vendor directory against the union of [reference/Cargo.lock](../som-rs/contracts/rust-output-v1/reference/Cargo.lock) and [reference-phase2/Cargo.lock](../som-rs/contracts/rust-output-v1/reference-phase2/Cargo.lock) (350 distinct crates):
+Run [check_vendor.py](../som-rs/scripts/rust_vendor/check_vendor.py) to verify the offline vendor directory against the union of [reference/Cargo.lock](../som-rs/contracts/rust-output-v1/reference/Cargo.lock) and [reference-phase2/Cargo.lock](../som-rs/contracts/rust-output-v1/reference-phase2/Cargo.lock) (352 distinct crates):
 
 ```sh
 python3 som-rs/scripts/rust_vendor/check_vendor.py --vendor .local/rust-output-phase2/vendor-002
 ```
 
-A passing run prints `ok <name>-<version>` for each of the 350 crates, followed by `ok vendor.json`, `ok config.toml`, and the summary line:
+A passing run prints `ok <name>-<version>` for each of the 352 crates, followed by `ok vendor.json`, `ok config.toml`, and the summary line:
 
 ```text
-ok addr2line-0.24.2
-ok adler2-2.0.0
+ok ahash-0.8.12
+ok allocator-api2-0.2.21
 ...
-ok zeroize-1.8.1
-ok zlib-rs-0.5.5
+ok zerovec-derive-0.11.6
+ok zmij-1.0.23
 ok vendor.json
 ok config.toml
 summary ok=352 problems=0
