@@ -1,5 +1,7 @@
 # som
 
+SOM's end goal is code for backend, frontend, SRE, and AI. Read [the goal](GOAL.md).
+
 The new Rust compiler passed independent acceptance and is the local default.
 It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.
 The root post-switch check passed 76/76. Commit `3ced191137` published it to main.
