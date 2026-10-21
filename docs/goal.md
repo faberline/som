@@ -31,3 +31,4 @@ No TypeScript, SRE, AI, or FE output exists yet.
 
 The [roadmap](roadmap.md) lists the tracks, their open decisions, and their issues.
 The [Python backend quickstart](python-be.md) shows how to generate and run a Python backend project.
+The [Rust backend quickstart](rust-be.md) shows how to generate and build a Rust backend project offline.
