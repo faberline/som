@@ -15,6 +15,7 @@ sends `--create` POST requests, and stops both `som_app` and PostgreSQL in `fina
 from __future__ import annotations
 
 import argparse
+import errno
 import json
 import os
 from pathlib import Path
@@ -119,10 +120,23 @@ def validate_port(port: int, flag_name: str) -> str | None:
 
 def check_port_free(port: int, flag_name: str) -> str | None:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             probe.bind(("127.0.0.1", port))
         except OSError as exc:
             return f"Refused {flag_name} {port}: port is already in use on 127.0.0.1 ({exc})"
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as conn:
+        conn.settimeout(0.2)
+        rc = conn.connect_ex(("127.0.0.1", port))
+    if rc == 0:
+        return f"Refused {flag_name} {port}: port is already in use on 127.0.0.1 (listener active)"
+    if rc == errno.EPERM:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as wildcard_probe:
+            wildcard_probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                wildcard_probe.bind(("0.0.0.0", port))
+            except OSError as exc:
+                return f"Refused {flag_name} {port}: port is already in use on 127.0.0.1 ({exc})"
     return None
 
 

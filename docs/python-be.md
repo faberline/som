@@ -146,7 +146,7 @@ python3 som-rs/scripts/python_quickstart/pg_run.py \
   --create '/projects/{1.id}/todos={"title":"t","external_code":"c1"}'
 ```
 
-When the generated product requires JWT authentication, `pg_run.py` automatically generates a local-only test RSA keypair (`<out>/auth/private.pem` with mode `0600` and `<out>/auth/public.pem`) and signs a short-lived `RS256` token (`role="editor"`), wiring `JWT_PUBLIC_KEY_FILE`, `JWT_ISSUER`, `JWT_AUDIENCE`, `TEST_AUTH_HEADERS`, and `TEST_AUTH_COOKIES` for `alembic`, `unittest`, and `uvicorn` while redacting the token and private key from `stdout` and `<out>/result.json`.
+When the generated product requires JWT authentication, `pg_run.py` automatically generates a local-only test RSA keypair (`<out>/auth/private.pem` with mode `0600` and `<out>/auth/public.pem`) and signs a short-lived `RS256` token (`role="editor"`), wiring `JWT_PUBLIC_KEY_FILE`, `JWT_ISSUER`, `JWT_AUDIENCE`, `TEST_AUTH_HEADERS`, and `TEST_AUTH_COOKIES` for `alembic`, `unittest`, and `uvicorn` while redacting the token and private key from `stdout` and `<out>/result.json`. Note that `--python-bin` must point at a Python environment (`bin/` directory) that has the generated product's runtime and test dependencies installed (`fastapi`, `uvicorn`, `sqlalchemy`, `psycopg`, `alembic`, `pydantic`, plus `cryptography` and `PyJWT` for JWT products); v7 products use async SQLAlchemy and also require `greenlet`.
 
 ## 6. Change it and generate again
 

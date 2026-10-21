@@ -30,11 +30,41 @@ def pick_free_port(exclude: set[int] | None = None) -> int:
     forbidden = {8765, 18765} | (exclude or set())
     for _ in range(50):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             sock.bind(("127.0.0.1", 0))
             port = int(sock.getsockname()[1])
         if port not in forbidden:
             return port
     raise RuntimeError("Could not allocate an allowed free TCP port")
+
+
+def make_time_wait_port(exclude: set[int] | None = None) -> tuple[int, bool]:
+    forbidden = {8765, 18765} | (exclude or set())
+    for _ in range(50):
+        listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(("127.0.0.1", 0))
+        port = int(listener.getsockname()[1])
+        if port in forbidden:
+            listener.close()
+            continue
+        listener.listen(1)
+        entered_time_wait = False
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+                try:
+                    client.connect(("127.0.0.1", port))
+                except PermissionError:
+                    # Inside restricted Seatbelt sandboxes that block loopback connect().
+                    pass
+                else:
+                    accepted, _ = listener.accept()
+                    accepted.close()
+                    entered_time_wait = True
+        finally:
+            listener.close()
+        return port, entered_time_wait
+    raise RuntimeError("Could not allocate a TIME_WAIT TCP port")
 
 
 def write_executable(path: Path, lines: list[str]) -> Path:
@@ -632,46 +662,82 @@ class RustPgRunTest(unittest.TestCase):
                     self.assertFalse(valid_out.exists())
                     self.assertEqual(harness.read_events(), [])
 
-            # 1i. Occupied --app-port or --pg-port refused with exit 2 before initdb
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as squatter:
-                squatter.bind(("127.0.0.1", 0))
-                squatter.listen(1)
-                busy_port = int(squatter.getsockname()[1])
-                free_port = pick_free_port(exclude={busy_port})
+            # 1i. Occupied --app-port or --pg-port on 127.0.0.1 or 0.0.0.0 refused with exit 2 before initdb
+            for bind_host in ("127.0.0.1", "0.0.0.0"):
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as squatter:
+                    squatter.bind((bind_host, 0))
+                    squatter.listen(5)
+                    busy_port = int(squatter.getsockname()[1])
+                    free_port = pick_free_port(exclude={busy_port})
 
-                for pg_p, app_p, expected_flag in (
-                    (free_port, busy_port, "--app-port"),
-                    (busy_port, free_port, "--pg-port"),
-                ):
-                    with self.subTest(expected_flag=expected_flag):
-                        code_b, stdout_b = self.invoke_pg_run(
-                            harness,
-                            [
-                                "--som",
-                                str(harness.som_bin),
-                                "--url",
-                                TEST_URL,
-                                "--cnl",
-                                str(harness.cnl_file),
-                                "--out",
-                                str(valid_out),
-                                "--vendor",
-                                str(harness.vendor_dir),
-                                "--pg-port",
-                                str(pg_p),
-                                "--app-port",
-                                str(app_p),
-                                "--create",
-                                '/items={"title":"a"}',
-                            ],
-                        )
-                        self.assertEqual(code_b, 2)
-                        summary_b = json.loads(stdout_b.strip())
-                        self.assertEqual(summary_b["status"], "refused")
-                        self.assertFalse(summary_b["passed"])
-                        self.assertIn(expected_flag, summary_b["error"])
-                        self.assertFalse(valid_out.exists())
-                        self.assertEqual(harness.read_events(), [])
+                    for pg_p, app_p, expected_flag in (
+                        (free_port, busy_port, "--app-port"),
+                        (busy_port, free_port, "--pg-port"),
+                    ):
+                        with self.subTest(bind_host=bind_host, expected_flag=expected_flag):
+                            code_b, stdout_b = self.invoke_pg_run(
+                                harness,
+                                [
+                                    "--som",
+                                    str(harness.som_bin),
+                                    "--url",
+                                    TEST_URL,
+                                    "--cnl",
+                                    str(harness.cnl_file),
+                                    "--out",
+                                    str(valid_out),
+                                    "--vendor",
+                                    str(harness.vendor_dir),
+                                    "--pg-port",
+                                    str(pg_p),
+                                    "--app-port",
+                                    str(app_p),
+                                    "--create",
+                                    '/items={"title":"a"}',
+                                ],
+                            )
+                            self.assertEqual(code_b, 2)
+                            summary_b = json.loads(stdout_b.strip())
+                            self.assertEqual(summary_b["status"], "refused")
+                            self.assertFalse(summary_b["passed"])
+                            self.assertIn(expected_flag, summary_b["error"])
+                            self.assertFalse(valid_out.exists())
+                            self.assertEqual(harness.read_events(), [])
+
+            # 1j. A port in TIME_WAIT is accepted
+            tw_app_port, entered_tw = make_time_wait_port()
+            if entered_tw:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as no_reuse:
+                    with self.assertRaises(OSError):
+                        no_reuse.bind(("127.0.0.1", tw_app_port))
+            self.assertIsNone(pg_run.check_port_free(tw_app_port, "--app-port"))
+            free_pg_for_tw = pick_free_port(exclude={tw_app_port})
+            out_tw = root / "out_time_wait_ok"
+            code_tw, stdout_tw = self.invoke_pg_run(
+                harness,
+                [
+                    "--som",
+                    str(harness.som_bin),
+                    "--url",
+                    TEST_URL,
+                    "--cnl",
+                    str(harness.cnl_file),
+                    "--out",
+                    str(out_tw),
+                    "--vendor",
+                    str(harness.vendor_dir),
+                    "--pg-port",
+                    str(free_pg_for_tw),
+                    "--app-port",
+                    str(tw_app_port),
+                    "--create",
+                    '/items={"title":"a"}',
+                ],
+            )
+            self.assertEqual(code_tw, 0, f"stdout={stdout_tw}")
+            summary_tw = json.loads(stdout_tw.strip())
+            self.assertEqual(summary_tw["status"], "ok")
+            self.assertTrue(summary_tw["passed"])
 
     def test_non_resource_shape_refused_with_exit_2_without_calling_initdb(self) -> None:
         for shape in ("capability_postgresql", "flow_postgresql"):
