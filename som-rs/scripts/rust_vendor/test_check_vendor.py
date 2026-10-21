@@ -307,3 +307,69 @@ def test_unreadable_cargo_lock_exits_2(tmp_path: Path) -> None:
         str(missing_ref),
     )
     assert result.returncode == 2
+
+
+def test_reference_reversed_order_ok(tmp_path: Path) -> None:
+    vendor_dir, ref1, ref2 = _build_fixture(tmp_path)
+    result = _run(
+        "--vendor",
+        str(vendor_dir),
+        "--reference",
+        str(ref2),
+        "--reference",
+        str(ref1),
+    )
+    assert result.returncode == 0
+    assert result.stdout.splitlines() == [
+        "ok alpha-0.1.0",
+        "ok beta-0.2.0",
+        "ok vendor.json",
+        "ok config.toml",
+        "summary ok=2 problems=0",
+    ]
+
+
+def test_corrupted_cargo_checksum_json_exits_1(tmp_path: Path) -> None:
+    vendor_dir, ref1, ref2 = _build_fixture(tmp_path)
+    cfile = vendor_dir / "vendor/alpha-0.1.0/.cargo-checksum.json"
+    cfile.write_text("{", encoding="utf-8")
+
+    result = _run(
+        "--vendor",
+        str(vendor_dir),
+        "--reference",
+        str(ref1),
+        "--reference",
+        str(ref2),
+    )
+    assert result.returncode == 1
+    assert result.stderr == ""
+    lines = result.stdout.splitlines()
+    assert any(
+        line.startswith("mismatch alpha-0.1.0 .cargo-checksum.json ") for line in lines
+    )
+    assert "ok beta-0.2.0" in lines
+    assert lines[-1] == "summary ok=1 problems=1"
+
+
+def test_config_toml_non_table_source_exits_1_without_traceback(tmp_path: Path) -> None:
+    vendor_dir, ref1, ref2 = _build_fixture(tmp_path)
+    config_path = vendor_dir / "cargo-home/config.toml"
+    config_path.write_text(
+        'source = "x"\n[net]\noffline = true\n',
+        encoding="utf-8",
+    )
+
+    result = _run(
+        "--vendor",
+        str(vendor_dir),
+        "--reference",
+        str(ref1),
+        "--reference",
+        str(ref2),
+    )
+    assert result.returncode == 1
+    assert "Traceback" not in result.stderr
+    lines = result.stdout.splitlines()
+    assert f"mismatch config.toml directory {vendor_dir / 'vendor'} None" in lines
+

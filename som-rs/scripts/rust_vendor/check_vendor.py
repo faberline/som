@@ -107,7 +107,9 @@ def load_locks(references: list[Path]) -> tuple[dict[tuple[str, str], str], list
     return locked, ref_shas
 
 
-def load_vendor_receipt(vendor_json: Path) -> tuple[dict[tuple[str, str], str], int, list[str], str]:
+def load_vendor_receipt(
+    vendor_json: Path,
+) -> tuple[dict[tuple[str, str], str], int, list[tuple[str | None, str]], str]:
     try:
         data = json.loads(vendor_json.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -145,17 +147,50 @@ def load_vendor_receipt(vendor_json: Path) -> tuple[dict[tuple[str, str], str], 
     references = data.get("references")
     if not isinstance(references, list):
         raise ValueError("vendor.json missing 'references' list")
-    ref_lock_shas: list[str] = []
+    receipt_refs: list[tuple[str | None, str]] = []
     for ref in references:
         if not isinstance(ref, dict) or not isinstance(ref.get("lock_sha256"), str):
             raise ValueError("vendor.json reference entry missing 'lock_sha256'")
-        ref_lock_shas.append(ref["lock_sha256"])
+        ref_path = ref.get("path")
+        receipt_refs.append((ref_path if isinstance(ref_path, str) else None, ref["lock_sha256"]))
 
     cargo_config_sha = data.get("cargo_config_sha256")
     if not isinstance(cargo_config_sha, str) or not cargo_config_sha:
         raise ValueError("vendor.json missing 'cargo_config_sha256'")
 
-    return tree_map, lock_packages, ref_lock_shas, cargo_config_sha
+    return tree_map, lock_packages, receipt_refs, cargo_config_sha
+
+
+def _references_match(
+    ref_shas: list[tuple[Path, str]], receipt_refs: list[tuple[str | None, str]]
+) -> bool:
+    actual_by_resolved: dict[Path, str] = {}
+    for ref_dir, sha in ref_shas:
+        resolved = ref_dir.resolve()
+        if resolved in actual_by_resolved and actual_by_resolved[resolved] != sha:
+            return False
+        actual_by_resolved[resolved] = sha
+
+    if len(actual_by_resolved) != len(receipt_refs):
+        return False
+
+    receipt_shas = [sha for _, sha in receipt_refs]
+    actual_shas = list(actual_by_resolved.values())
+    if sorted(actual_shas) != sorted(receipt_shas):
+        return False
+
+    for raw_path, expected_sha in receipt_refs:
+        if raw_path is None:
+            continue
+        p = Path(raw_path)
+        candidates = [p.resolve()] if p.is_absolute() else [(REPO / p).resolve(), p.resolve()]
+        for cand in candidates:
+            if cand in actual_by_resolved:
+                if actual_by_resolved[cand] != expected_sha:
+                    return False
+                break
+
+    return True
 
 
 def check_vendor(
@@ -180,12 +215,12 @@ def check_vendor(
     has_receipt = vendor_json.exists()
     tree_map: dict[tuple[str, str], str] = {}
     receipt_lock_packages = 0
-    receipt_ref_shas: list[str] = []
+    receipt_refs: list[tuple[str | None, str]] = []
     receipt_config_sha = ""
     if has_receipt:
         if not vendor_json.is_file():
             raise ValueError(f"vendor.json is not a regular file: {vendor_json}")
-        tree_map, receipt_lock_packages, receipt_ref_shas, receipt_config_sha = (
+        tree_map, receipt_lock_packages, receipt_refs, receipt_config_sha = (
             load_vendor_receipt(vendor_json)
         )
 
@@ -228,10 +263,34 @@ def check_vendor(
         try:
             checksum_data = json.loads(checksum_path.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-            raise ValueError(f"invalid .cargo-checksum.json at {checksum_path}: {exc}") from exc
+            reason = f"invalid_json:{type(exc).__name__}"
+            lines.append(f"mismatch {pkg_id} .cargo-checksum.json {reason}")
+            items.append(
+                {
+                    "name": pkg_id,
+                    "status": "mismatch",
+                    "what": ".cargo-checksum.json",
+                    "reason": str(exc),
+                }
+            )
+            problem_count += 1
+            continue
 
-        if not isinstance(checksum_data, dict) or not isinstance(checksum_data.get("files"), dict):
-            raise ValueError(f"malformed .cargo-checksum.json at {checksum_path}")
+        if not isinstance(checksum_data, dict) or not isinstance(
+            checksum_data.get("files"), dict
+        ):
+            reason = "malformed_structure"
+            lines.append(f"mismatch {pkg_id} .cargo-checksum.json {reason}")
+            items.append(
+                {
+                    "name": pkg_id,
+                    "status": "mismatch",
+                    "what": ".cargo-checksum.json",
+                    "reason": reason,
+                }
+            )
+            problem_count += 1
+            continue
 
         recorded_pkg = checksum_data.get("package")
         if recorded_pkg != checksum:
@@ -248,9 +307,22 @@ def check_vendor(
             pkg_problems += 1
 
         files_map: dict[str, Any] = checksum_data["files"]
-        for relpath, expected_sha in sorted(files_map.items()):
+        for relpath, expected_sha in sorted(
+            files_map.items(), key=lambda kv: str(kv[0])
+        ):
             if not isinstance(relpath, str) or not isinstance(expected_sha, str):
-                raise ValueError(f"malformed file entry in {checksum_path}")
+                reason = f"invalid_files_entry:{relpath}"
+                lines.append(f"mismatch {pkg_id} .cargo-checksum.json {reason}")
+                items.append(
+                    {
+                        "name": pkg_id,
+                        "status": "mismatch",
+                        "what": ".cargo-checksum.json",
+                        "reason": reason,
+                    }
+                )
+                pkg_problems += 1
+                continue
             file_path = pkg_dir / relpath
             if not file_path.is_file():
                 lines.append(f"missing {pkg_id} {file_path}")
@@ -265,8 +337,8 @@ def check_vendor(
             else:
                 try:
                     actual_sha = sha_file(file_path)
-                except OSError as exc:
-                    raise ValueError(f"cannot read file {file_path}: {exc}") from exc
+                except OSError:
+                    actual_sha = "unreadable"
                 if actual_sha != expected_sha:
                     lines.append(f"mismatch {pkg_id} {relpath} {expected_sha} {actual_sha}")
                     items.append(
@@ -308,7 +380,10 @@ def check_vendor(
                 pkg_problems += 1
                 receipt_tree_mismatches += 1
             else:
-                actual_tree = tree_sha(pkg_dir)
+                try:
+                    actual_tree = tree_sha(pkg_dir)
+                except OSError:
+                    actual_tree = "unreadable"
                 if actual_tree != expected_tree:
                     lines.append(
                         f"mismatch {pkg_id} tree_sha256 {expected_tree} {actual_tree}"
@@ -357,7 +432,8 @@ def check_vendor(
             receipt_problems += 1
 
         actual_ref_shas = [sha for _, sha in ref_shas]
-        if receipt_ref_shas != actual_ref_shas:
+        receipt_ref_shas = [sha for _, sha in receipt_refs]
+        if not _references_match(ref_shas, receipt_refs):
             expected_joined = ",".join(actual_ref_shas)
             actual_joined = ",".join(receipt_ref_shas)
             lines.append(
@@ -396,16 +472,24 @@ def check_vendor(
             items.append({"name": "vendor.json", "status": "ok"})
 
     config_problems = 0
-    vendored_source = config_data.get("source", {}).get("vendored-sources", {})
+    source_table = config_data.get("source")
+    vendored_source = (
+        source_table.get("vendored-sources")
+        if isinstance(source_table, dict)
+        else None
+    )
     configured_dir = (
         vendored_source.get("directory") if isinstance(vendored_source, dict) else None
     )
     expected_dir_resolved = vendor_root.resolve()
-    configured_resolved = (
-        Path(configured_dir).resolve()
-        if isinstance(configured_dir, str) and configured_dir
-        else None
-    )
+    try:
+        configured_resolved = (
+            Path(configured_dir).resolve()
+            if isinstance(configured_dir, str) and configured_dir
+            else None
+        )
+    except OSError:
+        configured_resolved = None
     if configured_resolved != expected_dir_resolved:
         lines.append(
             f"mismatch config.toml directory {vendor_root} {configured_dir}"
@@ -421,7 +505,7 @@ def check_vendor(
         )
         config_problems += 1
 
-    net_table = config_data.get("net", {})
+    net_table = config_data.get("net")
     offline_val = net_table.get("offline") if isinstance(net_table, dict) else None
     if offline_val is not True:
         lines.append(f"mismatch config.toml offline True {offline_val}")
@@ -474,7 +558,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         all_ok, items, lines, summary = check_vendor(args.vendor, references)
-    except ValueError as exc:
+    except (ValueError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
