@@ -16,6 +16,7 @@ Do not start a second server on 8765.
 ```sh
 som-rs/runtime/current/som compile som-rs/contracts/compiler-v1/examples/v7.cnl > /private/tmp/som-example.bundle.json
 som-rs/runtime/current/som assemble /private/tmp/som-example.bundle.json > /private/tmp/som-example.files.json
+som-rs/runtime/current/som write som-rs/contracts/compiler-v1/examples/v7.cnl --out /private/tmp/som-example-product
 som-rs/runtime/current/som generate som-rs/contracts/compiler-v1/examples/v7.prompt.json
 ```
 
@@ -25,6 +26,7 @@ The service returns files. The calling agent writes and checks them in its proje
 
 Compile and assemble exit 0 on success. Local input/transport errors exit 1.
 HTTP rejection exits 2. Their full error JSON goes to stderr.
+Write prints one summary JSON line on stdout and exits 0 on success, 1 on local input or output path errors (`LOCAL_ERROR` on stderr), and 2 on HTTP rejection from compile or assemble.
 Generate retains its response on stdout and exit 2 on HTTP rejection.
 
 The installed path points to the immutable candidate binary
