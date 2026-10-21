@@ -224,3 +224,7 @@ Keep the legacy M2 rollback assets.
 The #45 contract is frozen. Later changes to it are numbered amendments. #47 added target selection and the Rust scope refusals. #48 generates v1–v4 Rust products. #46 runs behavior parity for them. #49 adds parent and child output. #50 records the acceptance run and the Python regressions. #51 makes the Rust output build the default.
 
 [Milestone 10](https://github.com/faberline/som/milestone/10) holds issues #52–#56 for phase 2. #52 freezes amendment 2: the phase 2 constructs, naming and service rules, the case inventory, the pins and the extended behavior suite with its Python run. #53 and #54 generate the phase 2 products. #55 runs their acceptance. #56 makes the phase 2 build the default. #57 fixes the Python self defect and #58 the Python name collisions.
+
+## Later directions
+
+- **In-product behavior regression tests for capability and flow products (issue #61):** Generating full in-product regression tests (CRUD, filters, pagination, unique 409, restricted delete, batch rollback, export summary) within the 24,576-byte file limit for capability and flow Rust products would require a new rust-output-v1 amendment and updated phase 2 product output records, while keeping Python products byte-identical; no schedule is committed.
