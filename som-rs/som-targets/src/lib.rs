@@ -168,7 +168,7 @@ fn compile_typescript(doc: &Document, prompt: &Value, origin: Origin) -> Reply {
     if let Some(found) = typescript::profile::check(prompt) {
         return profile_refusal(doc, origin, &found);
     }
-    // Step 6: planning (NOT_IMPLEMENTED until issue #66 lands).
+    // Step 6: planning (NOT_IMPLEMENTED until issue #75 lands).
     typescript::compile(doc)
 }
 

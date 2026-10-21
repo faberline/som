@@ -1,7 +1,9 @@
-//! TypeScript output phase 1 target selection and profile (issue #65).
+//! TypeScript output phase 1 target selection and profile (issues #65 and #74).
 //!
-//! Until issue #66 lands the TypeScript bundle planner, an in-scope `target: "typescript"`
-//! compile request returns HTTP 501 `NOT_IMPLEMENTED` at `/target` (CONTRACT.md section 10).
+//! Until issue #75 lands the TypeScript bundle planner and renderer, an in-scope
+//! `target: "typescript"` compile request returns HTTP 501 `NOT_IMPLEMENTED` at `/target`
+//! per issue #74 acceptance. No candidate is prepared from this intermediate state
+//! (CONTRACT.md section 2).
 pub mod profile;
 
 use som::strict_json::Document;
@@ -18,7 +20,7 @@ pub const NOT_IMPLEMENTED_CAUSE: &str =
 pub const NOT_IMPLEMENTED_ALLOWED: &str =
     "Use a delivered TypeScript phase 1 construct, or omit target to generate Python.";
 
-/// Step 6 of a TypeScript compile: NOT_IMPLEMENTED until issue #66 delivers the bundle planner.
+/// Step 6 of a TypeScript compile: NOT_IMPLEMENTED until issue #75 delivers the bundle planner.
 pub fn compile(doc: &Document) -> Reply {
     rejected(doc.error(
         "/target",
@@ -32,7 +34,7 @@ pub fn compile(doc: &Document) -> Reply {
 mod tests {
     use super::*;
     use serde_json::{Value, json};
-    use som::compiler::{Compiler, canonical_hash, digest};
+    use som::compiler::{canonical_hash, digest};
     use std::collections::BTreeMap;
     use std::path::{Path, PathBuf};
 
@@ -55,29 +57,15 @@ mod tests {
         }
     }
 
-    fn load_compiler() -> Option<Compiler> {
-        let candidates = [
-            som_rs().join("compiler-assets/current"),
-            som_rs().join("../../../som-rs/compiler-assets/current"),
-        ];
-        candidates
-            .into_iter()
-            .find(|path| path.exists())
-            .and_then(|path| Compiler::load(&path).ok())
-    }
-
-    fn run_compile(compiler: Option<&Compiler>, source: &str) -> Reply {
-        match compiler {
-            Some(compiler) => crate::compile(compiler, source),
-            None => crate::compile_with(
-                source,
-                |doc, _, _| compile(doc),
-                |prompt| {
-                    som::validate_prompt(prompt)?;
-                    Ok(json!({"version": som::compiler::BUNDLE_VERSION, "prompt": prompt}))
-                },
-            ),
-        }
+    fn run_compile(source: &str) -> Reply {
+        crate::compile_with(
+            source,
+            |doc, _, _| compile(doc),
+            |prompt| {
+                som::validate_prompt(prompt)?;
+                Ok(json!({"version": som::compiler::BUNDLE_VERSION, "prompt": prompt}))
+            },
+        )
     }
 
     fn located(body: &str, form: &str, diagnostic: &Value) -> String {
@@ -117,7 +105,6 @@ mod tests {
 
     #[test]
     fn typescript_negative_cases_and_python_controls_match_the_frozen_contract() {
-        let compiler = load_compiler();
         let path = som_rs().join("contracts/typescript-output-v1/negative-cases.json");
         let doc: Value =
             serde_json::from_str(&std::fs::read_to_string(path).expect("negative-cases.json"))
@@ -132,7 +119,7 @@ mod tests {
             let expected_status = case["http_status"].as_u64().expect("http_status") as u16;
             let expected = &case["expected"];
 
-            let (status, reply) = run_compile(compiler.as_ref(), body);
+            let (status, reply) = run_compile(body);
             assert_one_diagnostic(status, &reply, expected_status, expected, id);
             let span = located(body, form, &reply["diagnostics"][0]);
             assert_eq!(
@@ -147,7 +134,7 @@ mod tests {
             let control_expected = case["python_control_expected"]
                 .as_str()
                 .expect("python_control_expected");
-            let (py_status, py_reply) = run_compile(compiler.as_ref(), control_body);
+            let (py_status, py_reply) = run_compile(control_body);
             if control_expected.starts_with("HTTP 200") {
                 assert_eq!(py_status, 200, "{id}: python_control status");
                 assert_eq!(py_reply["status"], "ok", "{id}: python_control ok");
@@ -174,7 +161,6 @@ mod tests {
 
     #[test]
     fn rust_target_selection_negative_cases_match_amendment_005() {
-        let compiler = load_compiler();
         let path = som_rs().join("contracts/rust-output-v1/negative-cases.json");
         let doc: Value =
             serde_json::from_str(&std::fs::read_to_string(path).expect("negative-cases.json"))
@@ -194,7 +180,7 @@ mod tests {
             let expected_status = case["http_status"].as_u64().expect("http_status") as u16;
             let expected = &case["expected"];
 
-            let (status, reply) = run_compile(compiler.as_ref(), body);
+            let (status, reply) = run_compile(body);
             assert_one_diagnostic(status, &reply, expected_status, expected, id);
             let span = located(body, form, &reply["diagnostics"][0]);
             assert_eq!(
@@ -206,7 +192,7 @@ mod tests {
             let control_body = case["python_control_body"]
                 .as_str()
                 .expect("python_control_body");
-            let (py_status, py_reply) = run_compile(compiler.as_ref(), control_body);
+            let (py_status, py_reply) = run_compile(control_body);
             assert_eq!(py_status, 200, "{id}: python_control status");
             assert_eq!(
                 py_reply["bundle"]["version"],
@@ -231,7 +217,6 @@ mod tests {
 
     #[test]
     fn target_examples_and_name_cases_pass_the_typescript_profile() {
-        let compiler = load_compiler();
         let path = som_rs().join("contracts/typescript-output-v1/target-examples.json");
         let doc: Value =
             serde_json::from_str(&std::fs::read_to_string(path).expect("target-examples.json"))
@@ -244,8 +229,8 @@ mod tests {
 
             if target == "python" {
                 let same_as = example["same_as_body"].as_str().expect("same_as_body");
-                let with_py = run_compile(compiler.as_ref(), body);
-                let without = run_compile(compiler.as_ref(), same_as);
+                let with_py = run_compile(body);
+                let without = run_compile(same_as);
                 assert_eq!(with_py.0, 200, "{id}: status");
                 assert_eq!(with_py, without, "{id}: byte-identical to omitted target");
             } else {
@@ -253,8 +238,8 @@ mod tests {
                 let prompt = parsed_prompt(body);
                 assert_eq!(profile::check(&prompt), None, "{id}: profile must admit");
 
-                let (status, reply) = run_compile(compiler.as_ref(), body);
-                assert_eq!(status, 501, "{id}: phase 1 before #66 returns 501");
+                let (status, reply) = run_compile(body);
+                assert_eq!(status, 501, "{id}: phase 1 before #75 returns 501");
                 assert_eq!(reply["code"], "NOT_IMPLEMENTED", "{id}: code");
                 let diag = &reply["diagnostics"][0];
                 assert_eq!(diag["prompt_pointer"], "/target", "{id}: pointer");
@@ -275,8 +260,8 @@ mod tests {
             let prompt = parsed_prompt(body);
             assert_eq!(profile::check(&prompt), None, "{id}: TS profile must admit");
 
-            let (status, reply) = run_compile(compiler.as_ref(), body);
-            assert_eq!(status, 501, "{id}: TS compile before #66 returns 501");
+            let (status, reply) = run_compile(body);
+            assert_eq!(status, 501, "{id}: TS compile before #75 returns 501");
             assert_eq!(reply["code"], "NOT_IMPLEMENTED", "{id}: code");
             assert_eq!(
                 reply["diagnostics"][0]["prompt_pointer"], "/target",
@@ -305,7 +290,7 @@ mod tests {
             let control_body = case["python_control_body"]
                 .as_str()
                 .expect("python_control_body");
-            let (py_status, py_reply) = run_compile(compiler.as_ref(), control_body);
+            let (py_status, py_reply) = run_compile(control_body);
             assert_eq!(py_status, 200, "{id}: python_control status");
             assert_eq!(
                 py_reply["bundle"]["version"],
