@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 import re
 
+import pytest
+
 from som_core import flow_codec, flow_compact
 from som_core.v1 import load_blocks
 
@@ -25,6 +27,8 @@ def test_all_old_input_bytes_and_output_tokens_are_preserved() -> None:
         "som-rs/evals/m3-flow-2026-10-05/r4/predecessor-source-001/"
         "som-core/src/som_core/flow_codec.py"
     )
+    if not source.is_file():
+        pytest.skip(f"missing local M3 eval archive: {source}")
     spec = importlib.util.spec_from_file_location("som_core._archived_codec", source)
     assert spec is not None and spec.loader is not None
     archived = importlib.util.module_from_spec(spec)

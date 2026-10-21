@@ -52,7 +52,7 @@ Going back further to `05f1bfe6…` after a #57 restore needs its own rehearsal 
 
 `som-core/.venv` lacks fastapi. Run the som-core tests offline with the M3 acceptance venv instead:
 `cd som-core && PYTHONPATH=src ../som-rs/runtime/acceptance-m3-venv/bin/python -m pytest -q tests`.
-After the #57 test fixes, 679 pass and `test_flow_m3_input.py` fails: it needs the local M3 eval archive `som-rs/evals/m3-flow-2026-10-05/`, which is not on this machine.
+When the local M3 eval archive `som-rs/evals/m3-flow-2026-10-05/r4/predecessor-source-001/` is not present, `test_flow_m3_input.py::test_all_old_input_bytes_and_output_tokens_are_preserved` skips and the entire `som-core` test suite passes (679 passed, 1 skipped).
 
 ## Rust output phase 2 default (#56) — 2026-10-20
 
