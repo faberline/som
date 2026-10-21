@@ -1,6 +1,19 @@
 # som
 
-SOM's end goal is code for backend, frontend, SRE, and AI. Read [the goal](GOAL.md).
+## Goal
+
+SOM's end goal is code for four scenarios: backend, frontend, SRE, and AI.
+
+| Scenario | Python | Rust | TypeScript | React |
+|---|---|---|---|---|
+| BE | supported | supported | planned ([#65](https://github.com/faberline/som/issues/65)) | — |
+| SRE | planned ([#66](https://github.com/faberline/som/issues/66)) | planned | planned | — |
+| AI | planned ([#67](https://github.com/faberline/som/issues/67)) | planned | planned | — |
+| FE | — | — | — | planned ([#68](https://github.com/faberline/som/issues/68)) |
+
+FE starts with React only. Read [the goal](docs/goal.md) and [the scenario roadmap](docs/roadmap.md).
+
+## Current state
 
 The new Rust compiler passed independent acceptance and is the local default.
 It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.

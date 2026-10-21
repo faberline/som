@@ -1,6 +1,7 @@
 # SOM goal
 
 SOM's end goal is to generate code for four scenarios: backend (BE), frontend (FE), SRE, and AI.
+The user set this goal on 2026-10-21.
 
 | Scenario | Python | Rust | TypeScript | React |
 |---|---|---|---|---|
@@ -18,19 +19,14 @@ Only BE exists. It covers prompts v1–v7 with Python and Rust output.
 The local service on `127.0.0.1:8765` serves both.
 No TypeScript, SRE, AI, or FE output exists yet.
 
-## Rules for new targets
+## Rules for every new target
 
 - Each new language or scenario starts with its own frozen contract: product layout, toolchain, dependencies, and acceptance plan.
   A person approves the contract before implementation starts.
 - New targets never change existing output. The 127 public products and 544 legacy jobs stay byte-identical in Python and Rust.
+- The compiler never guesses a missing fact and never falls back to another target. An unsupported request fails with a diagnostic.
 - A target is supported only after an independent acceptance run passes with zero failures and zero unrun checks.
-- Local tools only. No paid or cloud services are needed to build or test a target.
+- Local tools only. Building and testing a target needs no paid or cloud service.
+  A target that talks to a cloud or model API is tested against a local fake or emulator.
 
-## Suggested order
-
-1. TypeScript BE. It reuses the existing DSL and the behavior harness, like the Rust target did.
-2. SRE in Python, Rust, and TypeScript. Its DSL scope needs a decision first.
-3. AI in Python, Rust, and TypeScript. Its DSL scope also needs a decision first.
-4. React FE.
-
-The order is a proposal. Each step's contract and scope are decided by a person.
+The [roadmap](roadmap.md) lists the tracks, their open decisions, and their issues.
