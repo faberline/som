@@ -363,6 +363,9 @@ def evaluate_parity(
     )
 
 
+DIVERGENCE_IDS: frozenset[str] = frozenset({"D1", "D2", "D3", "D4", "D5", "D7"})
+
+
 def evaluate_strict_refusals(
     strict_entries: list[dict[str, Any]],
     strict_failures: list[dict[str, Any]],
@@ -370,9 +373,13 @@ def evaluate_strict_refusals(
     command: list[str],
 ) -> dict[str, Any]:
     by_divergence: dict[str, int] = {}
+    prototype_members = 0
     for entry in strict_entries:
         cat = entry["category"]
-        by_divergence[cat] = by_divergence.get(cat, 0) + 1
+        if cat in DIVERGENCE_IDS:
+            by_divergence[cat] = by_divergence.get(cat, 0) + 1
+        elif cat == "prototype_members":
+            prototype_members += 1
     status_500 = [e["step"] for e in strict_entries if e["status"] == 500]
     problems: list[str] = []
     if not strict_entries:
@@ -386,6 +393,7 @@ def evaluate_strict_refusals(
         problems.append(f"TypeScript product returned 500 on strict steps {status_500}")
 
     ok = not problems
+    ordered_div = dict(sorted(by_divergence.items()))
     return make_gate(
         "passed" if ok else "failed",
         command=command,
@@ -393,12 +401,14 @@ def evaluate_strict_refusals(
         duration_ms=duration_ms,
         reason="; ".join(problems),
         output_summary=(
-            f"{len(strict_entries)} strict checks passed ({by_divergence})"
+            f"{len(strict_entries)} strict checks passed "
+            f"(divergences={ordered_div}, prototype_members={prototype_members})"
             if ok
             else json.dumps(strict_failures[:5], ensure_ascii=False)
         ),
         strict_steps=len(strict_entries),
-        by_divergence=dict(sorted(by_divergence.items())),
+        by_divergence=ordered_div,
+        prototype_members=prototype_members,
         failures=len(strict_failures),
         first_failures=strict_failures[:10],
     )

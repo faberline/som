@@ -424,8 +424,15 @@ def test_parity_excludes_divergences_and_strict_checks_them() -> None:
     run.strict()
     strict_entries = run.transcript[before_steps:]
     strict_cats = {e["category"] for e in strict_entries}
-    assert {"D1", "D2", "D3", "D4", "D5", "D7"} <= strict_cats
+    assert {"D1", "D2", "D3", "D4", "D5", "D7", "prototype_members"} <= strict_cats
     assert run.failures == []
+
+    # Verify evaluate_strict_refusals reports prototype_members apart from D1-D5 and D7:
+    gate = gates_mod.evaluate_strict_refusals(strict_entries, run.failures, 10, ["node", "src/main.ts"])
+    assert gate["passed"] is True
+    assert set(gate["by_divergence"]) == {"D1", "D2", "D3", "D4", "D5", "D7"}
+    assert "prototype_members" not in gate["by_divergence"]
+    assert gate["prototype_members"] >= 2
 
 
 def test_strict_detects_each_divergence_defect() -> None:
@@ -454,13 +461,14 @@ def test_strict_detects_each_divergence_defect() -> None:
     run_d5.strict()
     assert any(f["category"] == "D5" for f in run_d5.failures)
 
-    # 5. Defect in D7: accepting non-canonical path id or Object.prototype toString
+    # 5. Defect in D7 and prototype_members: accepting non-canonical path id or Object.prototype toString
     sim_d7 = InMemoryProduct(prompt, allow_non_canonical_path_id=True, allow_prototype_keys=True)
     run_d7 = ts_suite.run(prompt, "http://127.0.0.1:18999", send=sim_d7.send)
     run_d7.strict()
     d7_steps = [f["step"] for f in run_d7.failures if f["category"] == "D7"]
+    proto_steps = [f["step"] for f in run_d7.failures if f["category"] == "prototype_members"]
     assert any("path id" in s for s in d7_steps)
-    assert any("Object.prototype toString" in s for s in d7_steps)
+    assert any("Object.prototype toString" in s for s in proto_steps)
 
 
 def test_compare_flags_500_as_parity_failure() -> None:
@@ -659,6 +667,509 @@ def test_v1_prototype_pollution_on_patch_caught_when_mutating_row() -> None:
     sim_buggy = InMemoryProduct(v1_prompt, allow_prototype_keys=True)
     run_buggy = ts_suite.run(v1_prompt, "http://127.0.0.1:18999", send=sim_buggy.send)
     run_buggy.strict()
-    d7_failures = [f for f in run_buggy.failures if f["category"] == "D7"]
-    assert len(d7_failures) >= 2
+    proto_failures = [f for f in run_buggy.failures if f["category"] == "prototype_members"]
+    assert len(proto_failures) >= 2
+
+
+def test_v5_strict_covers_child_routes_parent_id_batch_and_with_children() -> None:
+    v5_prompt = json.loads((EXAMPLES_DIR / "v5.prompt.json").read_text())
+
+    # 1. Exact reproduction from PR #78 review: build a TsRun for v5.prompt.json against a fake client,
+    # call strict(), and verify child routes, out-of-range/non-canonical parent & child ids,
+    # trailing slashes on child & with-children routes, GET /projects/with-children, and batch D1/D2 checks.
+    sent: list[tuple[str, str, bytes | None]] = []
+
+    def fake_send(method: str, path: str, body: bytes | None, content_type: str = "application/json") -> tuple[int, str | None, bytes]:
+        del content_type
+        sent.append((method, path, body))
+        return 422, "application/json", b'{"detail":[{"type":"invalid","loc":["body","x"],"msg":"err"}]}'
+
+    run = ts_suite.TsRun(ts_suite.profile(v5_prompt), fake_send)
+    run.strict()
+
+    paths = [p for _, p, _ in sent]
+    methods_and_paths = {(m, p) for m, p, _ in sent}
+
+    # Child collection and item routes with a live parent token:
+    assert any(p.startswith("/projects/1/todos") for p in paths)
+    assert ("POST", "/projects/1/todos") in methods_and_paths
+    assert ("PATCH", "/projects/1/todos/1") in methods_and_paths
+
+    # D3: out-of-range parent id (2147483648) and out-of-range child id (2147483648) on child routes:
+    d3_entries = [e for e in run.transcript if e["category"] == "D3"]
+    d3_paths = {e["request"]["path"] for e in d3_entries}
+    assert "/projects/2147483648/todos" in d3_paths
+    assert "/projects/2147483648/todos/{id#1}" in d3_paths
+    assert "/projects/{id#1}/todos/2147483648" in d3_paths
+    assert ("GET", "/projects/2147483648/todos") in methods_and_paths
+    assert ("POST", "/projects/2147483648/todos") in methods_and_paths
+    assert ("GET", "/projects/2147483648/todos/1") in methods_and_paths
+    assert ("PATCH", "/projects/2147483648/todos/1") in methods_and_paths
+    assert ("DELETE", "/projects/2147483648/todos/1") in methods_and_paths
+    assert ("GET", "/projects/1/todos/2147483648") in methods_and_paths
+    assert ("PATCH", "/projects/1/todos/2147483648") in methods_and_paths
+    assert ("DELETE", "/projects/1/todos/2147483648") in methods_and_paths
+
+    # D7: non-canonical integer text in parent id position and child id position of child routes,
+    # plus child query parameters and GET/PATCH/DELETE on /projects/with-children:
+    d7_entries = [e for e in run.transcript if e["category"] == "D7"]
+    d7_paths = {e["request"]["path"] for e in d7_entries}
+    assert "/projects/%201/todos" in d7_paths
+    assert "/projects/1_0/todos" in d7_paths
+    assert "/projects/1.0/todos" in d7_paths
+    assert "/projects/%201/todos/{id#1}" in d7_paths
+    assert "/projects/{id#1}/todos/%201" in d7_paths
+    assert "/projects/{id#1}/todos/1_0" in d7_paths
+    assert "/projects/{id#1}/todos/1.0" in d7_paths
+    assert "/projects/with-children" in d7_paths
+    assert ("GET", "/projects/with-children") in methods_and_paths
+    assert ("PATCH", "/projects/with-children") in methods_and_paths
+    assert ("DELETE", "/projects/with-children") in methods_and_paths
+    assert any(p.startswith("/projects/1/todos?limit=") for p in paths)
+
+    # D4: repeated query parameters on child route (including filter_field completed and before):
+    d4_entries = [e for e in run.transcript if e["category"] == "D4"]
+    d4_paths = {e["request"]["path"] for e in d4_entries}
+    assert any(p.startswith("/projects/{id#1}/todos?") and "completed=true&completed=true" in p for p in d4_paths)
+    assert any(p.startswith("/projects/{id#1}/todos?") and "before=2026-06-01&before=2026-06-01" in p for p in d4_paths)
+
+    # D5: trailing slash on child collection, child item and with-children routes:
+    d5_entries = [e for e in run.transcript if e["category"] == "D5"]
+    d5_paths = {(e["request"]["method"], e["request"]["path"]) for e in d5_entries}
+    assert ("GET", "/projects/{id#1}/todos/") in d5_paths
+    assert ("POST", "/projects/{id#1}/todos/") in d5_paths
+    assert ("GET", "/projects/{id#1}/todos/{id#1}/") in d5_paths
+    assert ("PATCH", "/projects/{id#1}/todos/{id#1}/") in d5_paths
+    assert ("DELETE", "/projects/{id#1}/todos/{id#1}/") in d5_paths
+    assert ("GET", "/projects/with-children/") in d5_paths
+    assert ("POST", "/projects/with-children/") in d5_paths
+
+    # D1 and D2 on the with-children batch body: bad parent field and bad field inside one child:
+    batch_posts = [
+        (e["category"], e["step"], json.loads(e["request"]["body"]))
+        for e in run.transcript
+        if e["request"]["method"] == "POST" and e["request"]["path"] == "/projects/with-children"
+    ]
+    assert any(cat == "D2" and "batch parent name" in step and len(b["parent"]["name"]) == 256 for cat, step, b in batch_posts)
+    assert any(cat == "D2" and "batch child title" in step and len(b["children"][1]["title"]) == 256 for cat, step, b in batch_posts)
+    assert any(cat == "D1" and "batch child completed" in step and b["children"][1]["completed"] == "true" for cat, step, b in batch_posts)
+
+    # Also verify a v5 prompt with int and float fields on parent and child covers int/float D1 and D2 in batch:
+    v5_numeric = json.loads(json.dumps(v5_prompt))
+    v5_numeric["resources"]["parent"]["fields"].append(
+        {"name": "budget", "type": "int", "required": True, "unique": False}
+    )
+    v5_numeric["resources"]["child"]["fields"].append(
+        {"name": "hours", "type": "int", "required": True, "unique": False}
+    )
+    run_num = ts_suite.TsRun(ts_suite.profile(v5_numeric), fake_send)
+    run_num.strict()
+    num_batch_posts = [
+        (e["category"], e["step"], json.loads(e["request"]["body"]))
+        for e in run_num.transcript
+        if e["request"]["method"] == "POST" and e["request"]["path"] == "/projects/with-children"
+    ]
+    assert any(cat == "D1" and "batch parent budget" in step and b["parent"]["budget"] == "1" for cat, step, b in num_batch_posts)
+    assert any(cat == "D2" and "batch parent budget" in step and b["parent"]["budget"] == 2147483648 for cat, step, b in num_batch_posts)
+    assert any(cat == "D1" and "batch child hours" in step and b["children"][1]["hours"] == "1" for cat, step, b in num_batch_posts)
+    assert any(cat == "D2" and "batch child hours" in step and b["children"][1]["hours"] == 2147483648 for cat, step, b in num_batch_posts)
+
+
+class InMemoryV5Product(InMemoryProduct):
+    """In-memory HTTP simulator for v5 prompts to verify v5 parity, added_inputs and strict checks end-to-end."""
+
+    def __init__(
+        self,
+        prompt: dict[str, Any],
+        *,
+        wrong_out_of_range_parent_on_child: bool = False,
+        redirect_child_trailing_slash: bool = False,
+        allow_lax_batch_child: bool = False,
+    ) -> None:
+        super().__init__(prompt)
+        self.parent_table, self.child_table = self.prof.tables
+        self.parent_rows: dict[int, dict[str, Any]] = {}
+        self.child_rows: dict[int, dict[str, Any]] = {}
+        self.next_parent_id = 1
+        self.next_child_id = 1
+        self.wrong_out_of_range_parent_on_child = wrong_out_of_range_parent_on_child
+        self.redirect_child_trailing_slash = redirect_child_trailing_slash
+        self.allow_lax_batch_child = allow_lax_batch_child
+
+    def _validate_row_fields(
+        self,
+        table: ts_suite.Table,
+        data: dict[str, Any],
+        *,
+        allow_lax: bool = False,
+    ) -> tuple[bool, dict[str, Any]]:
+        field_map = {f["name"]: f for f in table.fields}
+        if any(k not in field_map for k in data):
+            return False, {}
+        out: dict[str, Any] = {}
+        for f in table.fields:
+            fname = f["name"]
+            if fname not in data:
+                if f["required"]:
+                    return False, {}
+                out[fname] = table.default(f)
+                continue
+            val = data[fname]
+            if val is None:
+                if table.nullable(f):
+                    out[fname] = None
+                    continue
+                return False, {}
+            if allow_lax and f["type"] == "bool" and val == "true":
+                out[fname] = True
+                continue
+            valid, cleaned = self._validate_field(f, val)
+            if not valid:
+                return False, {}
+            out[fname] = cleaned
+        return True, out
+
+    def send(self, method: str, path: str, body: bytes | None, content_type: str = "application/json") -> tuple[int, str | None, bytes]:
+        parsed = urllib.parse.urlsplit(path)
+        route = parsed.path
+        query_pairs = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
+        p_path = self.parent_table.path
+        c_path = self.child_table.path
+
+        if route != "/" and route.endswith("/"):
+            if self.redirect_child_trailing_slash and c_path in route:
+                return self._json(307, {"detail": "Redirect"})
+            return self._json(404, {"detail": "Not Found"})
+
+        if route == "/healthz":
+            return self._json(200, {"status": "ok"}) if method == "GET" else self._json(405, {"detail": "Method Not Allowed"})
+
+        if route == p_path:
+            if method == "GET":
+                return self._list_table(self.parent_table, self.parent_rows, None, query_pairs)
+            if method == "POST":
+                return self._create_parent(body, content_type)
+            return self._json(405, {"detail": "Method Not Allowed"})
+
+        if route == p_path + "/with-children":
+            if method == "POST":
+                return self._create_batch(body, content_type)
+            if method in ("GET", "PATCH", "DELETE"):
+                return self._err422("path", "parent_id")
+            return self._json(405, {"detail": "Method Not Allowed"})
+
+        prefix = p_path + "/"
+        if route.startswith(prefix):
+            rest = route[len(prefix):]
+            if "/" not in rest:
+                raw_pid = urllib.parse.unquote(rest)
+                if method not in ("GET", "PATCH", "DELETE"):
+                    return self._json(405, {"detail": "Method Not Allowed"})
+                return self._item_parent(method, raw_pid, body, content_type)
+
+            # Check child routes: {p_path}/{raw_pid}{c_path} or {p_path}/{raw_pid}{c_path}/{raw_cid}
+            c_idx = rest.find(c_path)
+            if c_idx > 0:
+                raw_pid = urllib.parse.unquote(rest[:c_idx])
+                tail = rest[c_idx + len(c_path):]
+                if tail == "":
+                    if method == "GET":
+                        return self._list_children(raw_pid, query_pairs)
+                    if method == "POST":
+                        return self._create_child(raw_pid, body, content_type)
+                    return self._json(405, {"detail": "Method Not Allowed"})
+                if tail.startswith("/") and "/" not in tail[1:]:
+                    raw_cid = urllib.parse.unquote(tail[1:])
+                    if method not in ("GET", "PATCH", "DELETE"):
+                        return self._json(405, {"detail": "Method Not Allowed"})
+                    return self._item_child(method, raw_pid, raw_cid, body, content_type)
+
+        return self._json(404, {"detail": "Not Found"})
+
+    def _list_table(
+        self,
+        table: ts_suite.Table,
+        store: dict[int, dict[str, Any]],
+        parent_id: int | None,
+        query_pairs: list[tuple[str, str]],
+    ) -> tuple[int, str | None, bytes]:
+        seen: set[str] = set()
+        params: dict[str, str] = {}
+        for k, v in query_pairs:
+            if k in seen:
+                return self._err422("query", k)
+            seen.add(k)
+            params[k] = v
+        q = table.query
+        limit = 20
+        if "limit" in params:
+            if not re.match(r"^[+-]?[0-9]+$", params["limit"]):
+                return self._err422("query", "limit")
+            limit = int(params["limit"])
+            if limit < 1 or limit > q["max_limit"]:
+                return self._err422("query", "limit")
+        offset = 0
+        if "offset" in params:
+            if not re.match(r"^[+-]?[0-9]+$", params["offset"]):
+                return self._err422("query", "offset")
+            offset = int(params["offset"])
+            if offset < 0 or offset > 9223372036854775807:
+                return self._err422("query", "offset")
+        items = [
+            dict(store[k])
+            for k in sorted(store)
+            if parent_id is None or store[k].get(self.child_table.fk) == parent_id
+        ]
+        if q.get("filter_field") and q["filter_field"] in params:
+            ff = q["filter_field"]
+            raw_b = params[ff].lower()
+            if raw_b in ("1", "on", "t", "true", "y", "yes"):
+                wanted = True
+            elif raw_b in ("0", "off", "f", "false", "n", "no"):
+                wanted = False
+            else:
+                return self._err422("query", ff)
+            items = [r for r in items if r[ff] is wanted]
+        if q.get("date_field") and "before" in params:
+            bf = params["before"]
+            ok_d, _ = self._validate_field({"type": "date"}, bf)
+            if not ok_d:
+                return self._err422("query", "before")
+            df = q["date_field"]
+            items = [r for r in items if r[df] is not None and r[df] < bf]
+        return self._json(200, items[offset : offset + limit])
+
+    def _create_parent(self, body: bytes | None, content_type: str) -> tuple[int, str | None, bytes]:
+        ok, data = self._parse_body(body, content_type)
+        if not ok:
+            return self._err422("body")
+        valid, vals = self._validate_row_fields(self.parent_table, data)
+        if not valid:
+            return self._err422("body")
+        for f in self.parent_table.fields:
+            if f["unique"] and vals[f["name"]] is not None:
+                if any(r[f["name"]] == vals[f["name"]] for r in self.parent_rows.values()):
+                    return self._json(409, {"detail": self.parent_table.conflict})
+        pid = self.next_parent_id
+        self.next_parent_id += 1
+        self.clock += 1
+        now = self._ts()
+        row = {"id": pid, **vals, "created_at": now, "updated_at": now}
+        self.parent_rows[pid] = row
+        return self._json(201, dict(row))
+
+    def _item_parent(self, method: str, raw_pid: str, body: bytes | None, content_type: str) -> tuple[int, str | None, bytes]:
+        p_state, pid = self._parse_id(raw_pid)
+        if method == "PATCH":
+            ok_b, data = self._parse_body(body, content_type)
+            if not ok_b:
+                return self._err422("body")
+            fmap = {f["name"]: f for f in self.parent_table.fields}
+            if any(k not in fmap for k in data):
+                return self._err422("body")
+            updates: dict[str, Any] = {}
+            for k, v in data.items():
+                f = fmap[k]
+                if v is None:
+                    if not self.parent_table.nullable(f):
+                        return self._err422("body", k)
+                    updates[k] = None
+                else:
+                    valid, cleaned = self._validate_field(f, v)
+                    if not valid:
+                        return self._err422("body", k)
+                    updates[k] = cleaned
+            if p_state == "invalid":
+                return self._err422("path", "parent_id")
+            if p_state == "out_of_range" or pid not in self.parent_rows:
+                return self._json(404, {"detail": self.parent_table.not_found})
+            for f in self.parent_table.fields:
+                fname = f["name"]
+                if f["unique"] and fname in updates and updates[fname] is not None:
+                    if any(oid != pid and r[fname] == updates[fname] for oid, r in self.parent_rows.items()):
+                        return self._json(409, {"detail": self.parent_table.conflict})
+            row = self.parent_rows[pid]
+            if updates:
+                row.update(updates)
+                self.clock += 1
+                row["updated_at"] = self._ts()
+            return self._json(200, dict(row))
+
+        if p_state == "invalid":
+            return self._err422("path", "parent_id")
+        if p_state == "out_of_range" or pid not in self.parent_rows:
+            return self._json(404, {"detail": self.parent_table.not_found})
+        if method == "GET":
+            return self._json(200, dict(self.parent_rows[pid]))
+        fk = self.child_table.fk
+        if any(c.get(fk) == pid for c in self.child_rows.values()):
+            return self._json(409, {"detail": self.parent_table.conflict})
+        del self.parent_rows[pid]
+        return self._json(204, None)
+
+    def _list_children(self, raw_pid: str, query_pairs: list[tuple[str, str]]) -> tuple[int, str | None, bytes]:
+        p_state, pid = self._parse_id(raw_pid)
+        # Validate query params before missing parent check, matching Rust/Python
+        dummy = self._list_table(self.child_table, {}, 0, query_pairs)
+        if dummy[0] == 422 or p_state == "invalid":
+            return self._err422("query" if dummy[0] == 422 else "path", "x")
+        if p_state == "out_of_range" or pid not in self.parent_rows:
+            if self.wrong_out_of_range_parent_on_child and p_state == "out_of_range":
+                return self._json(500, {"detail": "Internal Server Error"})
+            return self._json(404, {"detail": self.parent_table.not_found})
+        return self._list_table(self.child_table, self.child_rows, pid, query_pairs)
+
+    def _create_child(self, raw_pid: str, body: bytes | None, content_type: str) -> tuple[int, str | None, bytes]:
+        p_state, pid = self._parse_id(raw_pid)
+        ok_b, data = self._parse_body(body, content_type)
+        valid_b, vals = self._validate_row_fields(self.child_table, data) if ok_b else (False, {})
+        if p_state == "invalid" or not valid_b:
+            return self._err422("path" if p_state == "invalid" else "body")
+        if p_state == "out_of_range" or pid not in self.parent_rows:
+            return self._json(404, {"detail": self.parent_table.not_found})
+        for f in self.child_table.fields:
+            if f["unique"] and vals[f["name"]] is not None:
+                if any(r[f["name"]] == vals[f["name"]] for r in self.child_rows.values()):
+                    return self._json(409, {"detail": self.child_table.conflict})
+        cid = self.next_child_id
+        self.next_child_id += 1
+        self.clock += 1
+        now = self._ts()
+        fk = self.child_table.fk
+        assert fk is not None
+        row = {"id": cid, fk: pid, **vals, "created_at": now, "updated_at": now}
+        self.child_rows[cid] = row
+        return self._json(201, dict(row))
+
+    def _item_child(
+        self,
+        method: str,
+        raw_pid: str,
+        raw_cid: str,
+        body: bytes | None,
+        content_type: str,
+    ) -> tuple[int, str | None, bytes]:
+        p_state, pid = self._parse_id(raw_pid)
+        c_state, cid = self._parse_id(raw_cid)
+        updates: dict[str, Any] = {}
+        if method == "PATCH":
+            ok_b, data = self._parse_body(body, content_type)
+            if not ok_b:
+                return self._err422("body")
+            fmap = {f["name"]: f for f in self.child_table.fields}
+            if any(k not in fmap for k in data):
+                return self._err422("body")
+            for k, v in data.items():
+                f = fmap[k]
+                if v is None:
+                    if not self.child_table.nullable(f):
+                        return self._err422("body", k)
+                    updates[k] = None
+                else:
+                    valid, cleaned = self._validate_field(f, v)
+                    if not valid:
+                        return self._err422("body", k)
+                    updates[k] = cleaned
+        if p_state == "invalid" or c_state == "invalid":
+            return self._err422("path")
+        if p_state == "out_of_range" or pid not in self.parent_rows:
+            return self._json(404, {"detail": self.parent_table.not_found})
+        fk = self.child_table.fk
+        if c_state == "out_of_range" or cid not in self.child_rows or self.child_rows[cid].get(fk) != pid:
+            return self._json(404, {"detail": self.child_table.not_found})
+        if method == "GET":
+            return self._json(200, dict(self.child_rows[cid]))
+        if method == "DELETE":
+            del self.child_rows[cid]
+            return self._json(204, None)
+        for f in self.child_table.fields:
+            fname = f["name"]
+            if f["unique"] and fname in updates and updates[fname] is not None:
+                if any(oid != cid and r[fname] == updates[fname] for oid, r in self.child_rows.items()):
+                    return self._json(409, {"detail": self.child_table.conflict})
+        row = self.child_rows[cid]
+        if updates:
+            row.update(updates)
+            self.clock += 1
+            row["updated_at"] = self._ts()
+        return self._json(200, dict(row))
+
+    def _create_batch(self, body: bytes | None, content_type: str) -> tuple[int, str | None, bytes]:
+        ok, data = self._parse_body(body, content_type)
+        if not ok or set(data) != {"parent", "children"}:
+            return self._err422("body")
+        p_raw, c_raw = data["parent"], data["children"]
+        if not isinstance(p_raw, dict) or not isinstance(c_raw, list) or not (1 <= len(c_raw) <= 20):
+            return self._err422("body")
+        ok_p, p_vals = self._validate_row_fields(self.parent_table, p_raw)
+        if not ok_p:
+            return self._err422("body")
+        c_vals_list: list[dict[str, Any]] = []
+        for item in c_raw:
+            if not isinstance(item, dict):
+                return self._err422("body")
+            ok_c, c_vals = self._validate_row_fields(self.child_table, item, allow_lax=self.allow_lax_batch_child)
+            if not ok_c:
+                return self._err422("body")
+            c_vals_list.append(c_vals)
+        for f in self.parent_table.fields:
+            if f["unique"] and p_vals[f["name"]] is not None:
+                if any(r[f["name"]] == p_vals[f["name"]] for r in self.parent_rows.values()):
+                    return self._json(409, {"detail": self.parent_table.conflict})
+        for f in self.child_table.fields:
+            if f["unique"]:
+                seen_u: set[Any] = set()
+                for cv in c_vals_list:
+                    uval = cv[f["name"]]
+                    if uval is not None:
+                        if uval in seen_u or any(r[f["name"]] == uval for r in self.child_rows.values()):
+                            return self._json(409, {"detail": self.parent_table.conflict})
+                        seen_u.add(uval)
+        pid = self.next_parent_id
+        self.next_parent_id += 1
+        self.clock += 1
+        now = self._ts()
+        p_row = {"id": pid, **p_vals, "created_at": now, "updated_at": now}
+        self.parent_rows[pid] = p_row
+        fk = self.child_table.fk
+        assert fk is not None
+        created_children: list[dict[str, Any]] = []
+        for cv in c_vals_list:
+            cid = self.next_child_id
+            self.next_child_id += 1
+            self.clock += 1
+            c_now = self._ts()
+            c_row = {"id": cid, fk: pid, **cv, "created_at": c_now, "updated_at": c_now}
+            self.child_rows[cid] = c_row
+            created_children.append(dict(c_row))
+        return self._json(201, {"parent": dict(p_row), "children": created_children})
+
+
+def test_v5_parity_and_strict_against_simulator() -> None:
+    v5_prompt = json.loads((EXAMPLES_DIR / "v5.prompt.json").read_text())
+    sim = InMemoryV5Product(v5_prompt)
+    run = ts_suite.run(v5_prompt, "http://127.0.0.1:18999", send=sim.send)
+    assert run.failures == []
+
+    before = len(run.transcript)
+    run.strict()
+    assert run.failures == []
+    strict_entries = run.transcript[before:]
+    gate = gates_mod.evaluate_strict_refusals(strict_entries, run.failures, 15, ["node", "src/main.ts"])
+    assert gate["passed"] is True
+    assert set(gate["by_divergence"]) == {"D1", "D2", "D3", "D4", "D5", "D7"}
+    assert gate["prototype_members"] >= 5
+
+    # Verify child-route defects on v5 are caught by strict():
+    for kw, expected_cat in (
+        ({"wrong_out_of_range_parent_on_child": True}, "D3"),
+        ({"redirect_child_trailing_slash": True}, "D5"),
+        ({"allow_lax_batch_child": True}, "D1"),
+    ):
+        bad_sim = InMemoryV5Product(v5_prompt, **kw)
+        bad_run = ts_suite.run(v5_prompt, "http://127.0.0.1:18999", send=bad_sim.send)
+        bad_run.strict()
+        assert any(f["category"] == expected_cat for f in bad_run.failures), f"expected {expected_cat} failure for {kw}"
+
+
 

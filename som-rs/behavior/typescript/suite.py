@@ -206,6 +206,13 @@ class TsRun(base_suite.Run):
             self.table_added_inputs(parent, None)
             ptoken = self.alive(parent, None)[0]
             self.table_added_inputs(child, ptoken)
+            self.refuse(
+                "validation",
+                f"{parent.name}: GET with-children refuses non-integer parent_id",
+                "GET",
+                [parent.path + "/with-children"],
+                ["path"],
+            )
         else:
             self.table_added_inputs(self.prof.tables[0], None)
 
@@ -213,12 +220,22 @@ class TsRun(base_suite.Run):
         super().script()
         self.added_inputs()
 
-    def strict(self) -> None:
-        """Check divergences D1 to D5 and D7 on a TypeScript product alone."""
-        table = self.prof.tables[0]
-        coll = self.coll(table, None)
-        token = next(iter(self.alive(table, None)))
-        item = self.item(table, None, token)
+    def _ensure_live_token(self, table: Table, parent: str | None) -> str:
+        """Return an existing live row token for (table, parent), or seed one when strict() runs standalone."""
+        alive = self.alive(table, parent)
+        if alive:
+            return alive[0]
+        token = self.store(table, self.fresh(table, "required"), parent)
+        actual_id = len(self.norm.ids.get(table.name, {})) + 1
+        self.norm.ids.setdefault(table.name, {})[token] = actual_id
+        self.norm.tokens.setdefault(table.name, {})[actual_id] = token
+        return token
+
+    def table_strict(self, table: Table, parent: str | None, token: str) -> None:
+        """Check divergences D1 to D5, D7 and prototype_members on one resource table."""
+        name = table.name
+        coll = self.coll(table, parent)
+        item = self.item(table, parent, token)
         base = self.fresh(table, "required")
         # D1: Pydantic lax coercion refused by TypeScript.
         # Note: a JSON number with a zero fraction (1.0) for an int field is NOT a divergence in TypeScript.
@@ -227,38 +244,91 @@ class TsRun(base_suite.Run):
             fname, kind = field["name"], field["type"]
             for value in lax.get(kind, []):
                 label = json.dumps(value)
-                self.refuse("D1", f"D1: create with {fname} as {label}", "POST", coll, ["body"],
-                            body={**base, fname: value})
-                self.refuse("D1", f"D1: patch {fname} as {label}", "PATCH", item, ["body"], body={fname: value})
+                self.refuse(
+                    "D1",
+                    f"D1: {name}: create with {fname} as {label}",
+                    "POST",
+                    coll,
+                    ["body"],
+                    body={**base, fname: value},
+                )
+                self.refuse(
+                    "D1",
+                    f"D1: {name}: patch {fname} as {label}",
+                    "PATCH",
+                    item,
+                    ["body"],
+                    body={fname: value},
+                )
             if kind == "str":
                 for bad, label in (("é" * 256, "256 characters"), (non_bmp_256(1), "256 non-BMP code points")):
-                    self.refuse("D2", f"D2: create with {fname} {label}", "POST", coll, ["body"],
-                                body={**base, fname: bad})
-                    self.refuse("D2", f"D2: patch {fname} {label}", "PATCH", item, ["body"], body={fname: bad})
+                    self.refuse(
+                        "D2",
+                        f"D2: {name}: create with {fname} {label}",
+                        "POST",
+                        coll,
+                        ["body"],
+                        body={**base, fname: bad},
+                    )
+                    self.refuse(
+                        "D2",
+                        f"D2: {name}: patch {fname} {label}",
+                        "PATCH",
+                        item,
+                        ["body"],
+                        body={fname: bad},
+                    )
             elif kind == "int":
                 for bad in (2147483648, -2147483649):
-                    self.refuse("D2", f"D2: create with {fname} {bad}", "POST", coll, ["body"],
-                                body={**base, fname: bad})
-                    self.refuse("D2", f"D2: patch {fname} {bad}", "PATCH", item, ["body"], body={fname: bad})
+                    self.refuse(
+                        "D2",
+                        f"D2: {name}: create with {fname} {bad}",
+                        "POST",
+                        coll,
+                        ["body"],
+                        body={**base, fname: bad},
+                    )
+                    self.refuse(
+                        "D2",
+                        f"D2: {name}: patch {fname} {bad}",
+                        "PATCH",
+                        item,
+                        ["body"],
+                        body={fname: bad},
+                    )
 
         # D3: path id outside signed 32-bit integer returns 404 without querying PostgreSQL.
         for text in ("2147483648", "-2147483649", "99999999999999999999"):
-            path = self.item_raw(table, None, text)
-            self.call("D3", f"D3: get {text}", "GET", path, status=404, expect={"detail": table.not_found})
-            self.call("D3", f"D3: patch {text}", "PATCH", path, body=self.harmless(table), status=404,
-                      expect={"detail": table.not_found})
-            self.call("D3", f"D3: delete {text}", "DELETE", path, status=404, expect={"detail": table.not_found})
+            path = self.item_raw(table, parent, text)
+            self.call("D3", f"D3: {name}: get {text}", "GET", path, status=404, expect={"detail": table.not_found})
+            self.call(
+                "D3",
+                f"D3: {name}: patch {text}",
+                "PATCH",
+                path,
+                body=self.harmless(table),
+                status=404,
+                expect={"detail": table.not_found},
+            )
+            self.call(
+                "D3",
+                f"D3: {name}: delete {text}",
+                "DELETE",
+                path,
+                status=404,
+                expect={"detail": table.not_found},
+            )
 
         # D4: query parameter given twice returns 422.
         if self.prof.version != "som.prompt.v1":
             repeats = [[("limit", "1"), ("limit", "2")], [("offset", "0"), ("offset", "1")]]
             if table.query.get("filter_field"):
-                name = "filter_value" if self.prof.version == "som.prompt.v2" else table.query["filter_field"]
-                repeats.append([(name, "true"), (name, "true")])
+                qname = "filter_value" if self.prof.version == "som.prompt.v2" else table.query["filter_field"]
+                repeats.append([(qname, "true"), (qname, "true")])
             if table.query.get("date_field"):
                 repeats.append([("before", "2026-06-01"), ("before", "2026-06-01")])
             for query in repeats:
-                self.refuse("D4", f"D4: repeated {query[0][0]}", "GET", coll, ["query"], query=query)
+                self.refuse("D4", f"D4: {name}: repeated {query[0][0]}", "GET", coll, ["query"], query=query)
 
         # D5: trailing slash returns 404 {"detail": "Not Found"}.
         for method, path, body in (
@@ -268,38 +338,295 @@ class TsRun(base_suite.Run):
             ("PATCH", item + ["/"], {}),
             ("DELETE", item + ["/"], None),
         ):
-            self.call("D5", f"D5: {method} with a trailing slash", method, path, body=body, status=404,
-                      expect={"detail": "Not Found"})
+            self.call(
+                "D5",
+                f"D5: {name}: {method} with a trailing slash",
+                method,
+                path,
+                body=body,
+                status=404,
+                expect={"detail": "Not Found"},
+            )
 
-        # D7: non-canonical integer text in path/query and Object.prototype property names in JSON bodies.
+        # D7: non-canonical integer text in path and query parameters (behavior-normalization.json divergences D7).
         for raw_id, label in (("%201", "leading space"), ("1_0", "underscore"), ("1.0", "fraction")):
-            path = self.item_raw(table, None, raw_id)
-            self.refuse("D7", f"D7: get path id with {label}", "GET", path, ["path"])
-            self.refuse("D7", f"D7: patch path id with {label}", "PATCH", path, ["path"], body={})
-            self.refuse("D7", f"D7: delete path id with {label}", "DELETE", path, ["path"])
+            path = self.item_raw(table, parent, raw_id)
+            self.refuse("D7", f"D7: {name}: get path id with {label}", "GET", path, ["path"])
+            self.refuse("D7", f"D7: {name}: patch path id with {label}", "PATCH", path, ["path"], body={})
+            self.refuse("D7", f"D7: {name}: delete path id with {label}", "DELETE", path, ["path"])
 
         if self.prof.version != "som.prompt.v1":
             for param in ("limit", "offset"):
                 for bad_text in (" 1", "1_0", "1.0"):
-                    self.refuse("D7", f"D7: query {param}={bad_text!r}", "GET", coll, ["query"],
-                                query=[(param, bad_text)])
+                    self.refuse(
+                        "D7",
+                        f"D7: {name}: query {param}={bad_text!r}",
+                        "GET",
+                        coll,
+                        ["query"],
+                        query=[(param, bad_text)],
+                    )
 
+        # Hardening check (contracts/typescript-output-v1/scope.json reserved_names_reason and
+        # product-layout.json naming.fields): Object.prototype member names such as toString are
+        # admitted because generated code reads request members only after Object.hasOwn.
         field_names = {f["name"] for f in table.fields}
         has_required = any(f["required"] for f in table.fields)
         if "toString" not in field_names and has_required:
-            self.refuse("D7", "D7: create with Object.prototype toString", "POST", coll, ["body"],
-                        body={"toString": "x"})
+            self.refuse(
+                "prototype_members",
+                f"prototype_members: {name}: create with Object.prototype toString",
+                "POST",
+                coll,
+                ["body"],
+                body={"toString": "x"},
+            )
         if "toString" not in field_names:
             if table.service:
-                self.refuse("D7", "D7: patch with Object.prototype toString", "PATCH", item, ["body"],
-                            body={"toString": "x"})
+                self.refuse(
+                    "prototype_members",
+                    f"prototype_members: {name}: patch with Object.prototype toString",
+                    "PATCH",
+                    item,
+                    ["body"],
+                    body={"toString": "x"},
+                )
             else:
-                self.call("D7", "D7: patch ignores Object.prototype toString", "PATCH", item,
-                          body={"toString": "x"}, status=200, expect=self.expected_row(table, token),
-                          kind="row", tables=(table,), stamp="same")
+                self.call(
+                    "prototype_members",
+                    f"prototype_members: {name}: patch ignores Object.prototype toString",
+                    "PATCH",
+                    item,
+                    body={"toString": "x"},
+                    status=200,
+                    expect=self.expected_row(table, token),
+                    kind="row",
+                    tables=(table,),
+                    stamp="same",
+                )
 
-        self.get(table, None, token, "D2", "D1 to D7 changed no row")
-        self.listing(table, None, self.top(table), "D2", "D1 to D7 added no row")
+    def v5_strict(self, parent: Table, child: Table, ptoken: str, ctoken: str) -> None:
+        """Check v5-specific strict refusals: parent id in child routes, with-children routes and batch bodies."""
+        del ptoken
+        cname = child.name
+        pname = parent.name
+        child_base = self.fresh(child, "required")
+
+        # D3: out-of-range parent id in child collection and child item routes returns 404 parent not found.
+        for text in ("2147483648", "-2147483649", "99999999999999999999"):
+            cpath = [f"{parent.path}/{text}{child.path}"]
+            cipath = [f"{parent.path}/{text}{child.path}/", (child, ctoken)]
+            self.call(
+                "D3",
+                f"D3: {cname}: list under parent {text}",
+                "GET",
+                cpath,
+                status=404,
+                expect={"detail": parent.not_found},
+            )
+            self.call(
+                "D3",
+                f"D3: {cname}: create under parent {text}",
+                "POST",
+                cpath,
+                body=child_base,
+                status=404,
+                expect={"detail": parent.not_found},
+            )
+            self.call(
+                "D3",
+                f"D3: {cname}: get under parent {text}",
+                "GET",
+                cipath,
+                status=404,
+                expect={"detail": parent.not_found},
+            )
+            self.call(
+                "D3",
+                f"D3: {cname}: patch under parent {text}",
+                "PATCH",
+                cipath,
+                body=self.harmless(child),
+                status=404,
+                expect={"detail": parent.not_found},
+            )
+            self.call(
+                "D3",
+                f"D3: {cname}: delete under parent {text}",
+                "DELETE",
+                cipath,
+                status=404,
+                expect={"detail": parent.not_found},
+            )
+
+        # D7: non-canonical parent id text in child collection and child item routes returns 422 loc[0]=="path".
+        for raw_id, label in (("%201", "leading space"), ("1_0", "underscore"), ("1.0", "fraction")):
+            cpath = [f"{parent.path}/{raw_id}{child.path}"]
+            cipath = [f"{parent.path}/{raw_id}{child.path}/", (child, ctoken)]
+            self.refuse("D7", f"D7: {cname}: list with parent path id {label}", "GET", cpath, ["path"])
+            self.refuse(
+                "D7",
+                f"D7: {cname}: create with parent path id {label}",
+                "POST",
+                cpath,
+                ["path"],
+                body=child_base,
+            )
+            self.refuse("D7", f"D7: {cname}: get with parent path id {label}", "GET", cipath, ["path"])
+            self.refuse("D7", f"D7: {cname}: patch with parent path id {label}", "PATCH", cipath, ["path"], body={})
+            self.refuse("D7", f"D7: {cname}: delete with parent path id {label}", "DELETE", cipath, ["path"])
+
+        # v5 with-children route: GET, PATCH and DELETE on {parent_path}/with-children fail parent_id path parsing (422),
+        # while a trailing slash on {parent_path}/with-children/ returns 404 Not Found (D5).
+        batch_path = [parent.path + "/with-children"]
+        self.refuse("D7", f"D7: {pname}: GET with-children", "GET", batch_path, ["path"])
+        self.refuse("D7", f"D7: {pname}: PATCH with-children", "PATCH", batch_path, ["path"], body={})
+        self.refuse("D7", f"D7: {pname}: DELETE with-children", "DELETE", batch_path, ["path"])
+
+        valid_batch, _, _ = self.batch_body(parent, child, 1)
+        for method, body in (("GET", None), ("POST", valid_batch)):
+            self.call(
+                "D5",
+                f"D5: {pname}: {method} with-children with a trailing slash",
+                method,
+                [parent.path + "/with-children/"],
+                body=body,
+                status=404,
+                expect={"detail": "Not Found"},
+            )
+
+        # D1 and D2 on the with-children batch body: a bad parent field, and a bad field inside one child.
+        lax = {"int": ["1"], "float": ["1.5"], "bool": ["true", 1]}
+        for field in parent.fields:
+            fname, kind = field["name"], field["type"]
+            for value in lax.get(kind, []):
+                label = json.dumps(value)
+                body, top, _ = self.batch_body(parent, child, 1)
+                top[fname] = value
+                self.refuse(
+                    "D1",
+                    f"D1: batch parent {fname} as {label}",
+                    "POST",
+                    batch_path,
+                    ["body"],
+                    body=body,
+                )
+            if kind == "str":
+                for bad, label in (("é" * 256, "256 characters"), (non_bmp_256(1), "256 non-BMP code points")):
+                    body, top, _ = self.batch_body(parent, child, 1)
+                    top[fname] = bad
+                    self.refuse(
+                        "D2",
+                        f"D2: batch parent {fname} {label}",
+                        "POST",
+                        batch_path,
+                        ["body"],
+                        body=body,
+                    )
+            elif kind == "int":
+                for bad in (2147483648, -2147483649):
+                    body, top, _ = self.batch_body(parent, child, 1)
+                    top[fname] = bad
+                    self.refuse(
+                        "D2",
+                        f"D2: batch parent {fname} {bad}",
+                        "POST",
+                        batch_path,
+                        ["body"],
+                        body=body,
+                    )
+
+        for field in child.fields:
+            fname, kind = field["name"], field["type"]
+            for value in lax.get(kind, []):
+                label = json.dumps(value)
+                body, _, kids = self.batch_body(parent, child, 2)
+                kids[1][fname] = value
+                self.refuse(
+                    "D1",
+                    f"D1: batch child {fname} as {label}",
+                    "POST",
+                    batch_path,
+                    ["body"],
+                    body=body,
+                )
+            if kind == "str":
+                for bad, label in (("é" * 256, "256 characters"), (non_bmp_256(1), "256 non-BMP code points")):
+                    body, _, kids = self.batch_body(parent, child, 2)
+                    kids[1][fname] = bad
+                    self.refuse(
+                        "D2",
+                        f"D2: batch child {fname} {label}",
+                        "POST",
+                        batch_path,
+                        ["body"],
+                        body=body,
+                    )
+            elif kind == "int":
+                for bad in (2147483648, -2147483649):
+                    body, _, kids = self.batch_body(parent, child, 2)
+                    kids[1][fname] = bad
+                    self.refuse(
+                        "D2",
+                        f"D2: batch child {fname} {bad}",
+                        "POST",
+                        batch_path,
+                        ["body"],
+                        body=body,
+                    )
+
+        # Hardening check (scope.json reserved_names_reason) on the batch wrapper, parent and child objects.
+        body_wrap, _, _ = self.batch_body(parent, child, 1)
+        self.refuse(
+            "prototype_members",
+            "prototype_members: batch wrapper with Object.prototype toString",
+            "POST",
+            batch_path,
+            ["body"],
+            body={**body_wrap, "toString": "x"},
+        )
+        if "toString" not in {f["name"] for f in parent.fields}:
+            body_parent_proto, top_proto, _ = self.batch_body(parent, child, 1)
+            top_proto["toString"] = "x"
+            self.refuse(
+                "prototype_members",
+                "prototype_members: batch parent with Object.prototype toString",
+                "POST",
+                batch_path,
+                ["body"],
+                body=body_parent_proto,
+            )
+        if "toString" not in {f["name"] for f in child.fields}:
+            body_child_proto, _, kids_proto = self.batch_body(parent, child, 1)
+            kids_proto[0]["toString"] = "x"
+            self.refuse(
+                "prototype_members",
+                "prototype_members: batch child with Object.prototype toString",
+                "POST",
+                batch_path,
+                ["body"],
+                body=body_child_proto,
+            )
+
+    def strict(self) -> None:
+        """Check divergences D1 to D5, D7 and prototype_members on a TypeScript product alone."""
+        if self.prof.v5:
+            parent, child = self.prof.tables
+            ptoken = self._ensure_live_token(parent, None)
+            ctoken = self._ensure_live_token(child, ptoken)
+            self.table_strict(parent, None, ptoken)
+            self.table_strict(child, ptoken, ctoken)
+            self.v5_strict(parent, child, ptoken, ctoken)
+            self.get(parent, None, ptoken, "D2", f"{parent.name}: D1 to D7 changed no row")
+            self.listing(parent, None, self.top(parent), "D2", f"{parent.name}: D1 to D7 added no row")
+            self.get(child, ptoken, ctoken, "D2", f"{child.name}: D1 to D7 changed no row")
+            self.listing(child, ptoken, self.top(child), "D2", f"{child.name}: D1 to D7 added no row")
+        else:
+            table = self.prof.tables[0]
+            token = self._ensure_live_token(table, None)
+            self.table_strict(table, None, token)
+            self.get(table, None, token, "D2", "D1 to D7 changed no row")
+            self.listing(table, None, self.top(table), "D2", "D1 to D7 added no row")
 
 
 def run(prompt: dict, base: str, send: Send | None = None) -> TsRun:
