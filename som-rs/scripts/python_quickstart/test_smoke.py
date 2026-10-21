@@ -199,6 +199,13 @@ class SmokeScriptTest(unittest.TestCase):
         v1_text = (EXAMPLES_DIR / "v1.cnl").read_text(encoding="utf-8")
         self.assertIn(v1_text, doc_text)
 
+        v3_prompt = json.loads(
+            (EXAMPLES_DIR / "v3.prompt.json").read_text(encoding="utf-8")
+        )
+        v3_package = v3_prompt["package"]
+        uvicorn_matches = re.findall(r"uvicorn\s+([A-Za-z0-9_]+)\.app:app", doc_text)
+        self.assertEqual(uvicorn_matches, [v3_package])
+
         link_pattern = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
         links = link_pattern.findall(doc_text)
         self.assertGreater(len(links), 0)

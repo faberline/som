@@ -114,18 +114,19 @@ If a clause violates a semantic rule—for example, changing line 8 of `my.cnl` 
 
 ## 5. Run it
 
-Follow the generated product's own `README.md`, which carries the exact `uv sync`, migration, `uvicorn`, and `unittest` instructions for its selected database and capabilities (prompts v1 and v2 emit the 5 router, model, schema, migration, and test files under `som.dsl.v1`, while prompts v3–v7 such as [v3.cnl](../som-rs/contracts/compiler-v1/examples/v3.cnl) include `pyproject.toml`, `README.md`, `<package>/app.py`, `<package>/database.py`, and `alembic.ini`).
+Prompt v1 and v2 output is router, model, schema, migration, and test files to add to an existing FastAPI app; it has no `README.md` and cannot be run on its own, so use v3 or later for a standalone project.
 
-For a PostgreSQL product (`package items`), set the environment variables named in `README.md` (`DATABASE_URL` and `TEST_DATABASE_URL`, both using the `postgresql+psycopg://` scheme) and run:
+Generate the standalone [v3.cnl](../som-rs/contracts/compiler-v1/examples/v3.cnl) example (`package todos`) into its own new directory and follow its generated `README.md`, which carries the exact `uv sync`, migration, `uvicorn`, and `unittest` instructions along with the `DATABASE_URL` and `TEST_DATABASE_URL` environment variables (both using the `postgresql+psycopg` scheme):
 
 ```sh
-cd ~/work/my_app
-export DATABASE_URL="postgresql+psycopg://postgres:postgres@127.0.0.1:5432/items_dev"
-export TEST_DATABASE_URL="postgresql+psycopg://postgres:postgres@127.0.0.1:5432/items_test"
+som-rs/runtime/current/som write som-rs/contracts/compiler-v1/examples/v3.cnl --out ~/work/todos_app
+cd ~/work/todos_app
+export DATABASE_URL="postgresql+psycopg://postgres:postgres@127.0.0.1:5432/todos_dev"
+export TEST_DATABASE_URL="postgresql+psycopg://postgres:postgres@127.0.0.1:5432/todos_test"
 
 uv sync
 uv run alembic upgrade head
-uv run uvicorn items.app:app
+uv run uvicorn todos.app:app
 uv run python -m unittest discover -s tests -v
 ```
 
