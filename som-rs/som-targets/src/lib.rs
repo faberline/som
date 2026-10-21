@@ -133,11 +133,11 @@ fn profile_refusal(doc: &Document, origin: Origin, found: &profile::Refusal) -> 
 }
 
 fn compile_rust(
+    compiler: &Compiler,
     doc: &Document,
     prompt: &Value,
     origin: Origin,
     pointer: &str,
-    rust_bundle: impl FnOnce(&Document, &Value, &str) -> Reply,
 ) -> Reply {
     // Step 4: compiler-v1 semantic validation, unchanged. CNL parsing already ran it.
     if let Origin::Json = origin
@@ -152,10 +152,16 @@ fn compile_rust(
         return profile_refusal(doc, origin, &found);
     }
     // Step 6: planning.
-    rust_bundle(doc, prompt, pointer)
+    rust::compile(compiler, doc, prompt, pointer)
 }
 
-fn compile_typescript(doc: &Document, prompt: &Value, origin: Origin) -> Reply {
+fn compile_typescript(
+    compiler: &Compiler,
+    doc: &Document,
+    prompt: &Value,
+    origin: Origin,
+    pointer: &str,
+) -> Reply {
     // Step 4: compiler-v1 semantic validation, unchanged. CNL parsing already ran it.
     if let Origin::Json = origin
         && let Err(error) = som::validate_prompt(prompt)
@@ -168,25 +174,24 @@ fn compile_typescript(doc: &Document, prompt: &Value, origin: Origin) -> Reply {
     if let Some(found) = typescript::profile::check(prompt) {
         return profile_refusal(doc, origin, &found);
     }
-    // Step 6: planning (NOT_IMPLEMENTED until issue #75 lands).
-    typescript::compile(doc)
+    // Step 6: planning.
+    typescript::compile(compiler, doc, prompt, pointer)
+}
+
+/// Assemble a som.dsl-bundle.v2 bundle. A bundle whose target member is "typescript"
+/// runs the TypeScript v2 assembler; every other v2 bundle runs the Rust v2 assembler
+/// (which checks members, version and target in the frozen check_schema order).
+pub fn assemble(compiler: &Compiler, doc: &Document) -> Reply {
+    if doc.value["bundle"]["target"] == typescript::TARGET {
+        typescript::assemble(compiler, doc)
+    } else {
+        rust::assemble(compiler, doc)
+    }
 }
 
 /// One compile request body, in the frozen check order.
 /// Without target, or with target python, the reply is the compiler-v1 reply byte for byte.
 pub fn compile(compiler: &Compiler, source: &str) -> Reply {
-    compile_with(
-        source,
-        |doc, prompt, pointer| rust::compile(compiler, doc, prompt, pointer),
-        |prompt| compiler.compile_prompt(prompt),
-    )
-}
-
-pub(crate) fn compile_with(
-    source: &str,
-    rust_bundle: impl FnOnce(&Document, &Value, &str) -> Reply,
-    python_bundle: impl FnOnce(&Value) -> Result<Value, som::SomError>,
-) -> Reply {
     let doc = match strict_json::parse(source) {
         Ok(doc) => doc,
         Err(error) => return rejected(error),
@@ -237,12 +242,14 @@ pub(crate) fn compile_with(
     let origin = map.as_ref().map_or(Origin::Json, Origin::Cnl);
     match target {
         Target::Rust => {
-            return compile_rust(&doc, &prompt, origin, semantic_pointer, rust_bundle);
+            return compile_rust(compiler, &doc, &prompt, origin, semantic_pointer);
         }
-        Target::TypeScript => return compile_typescript(&doc, &prompt, origin),
+        Target::TypeScript => {
+            return compile_typescript(compiler, &doc, &prompt, origin, semantic_pointer);
+        }
         Target::Python => {}
     }
-    match python_bundle(&prompt) {
+    match compiler.compile_prompt(&prompt) {
         Ok(bundle) => (200, json!({"status":"ok","bundle":bundle})),
         Err(error) if semantic_pointer == "/prompt" => rejected(
             som::json_diagnostics::prompt_error(&doc, &prompt, &error, "/prompt"),

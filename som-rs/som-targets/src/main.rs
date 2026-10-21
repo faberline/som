@@ -203,23 +203,26 @@ async fn assemble(
     Ok(Json(json!({"status":"ok","files":files})))
 }
 
-/// A som.dsl-bundle.v2 bundle goes to the Rust assembler. Every other bundle keeps the
-/// unchanged compiler-v1 path.
+/// A som.dsl-bundle.v2 bundle goes to the v2 assembler (Rust or TypeScript). Every other bundle
+/// keeps the unchanged compiler-v1 path.
 async fn assemble_rust(compiler: Arc<Compiler>, doc: strict_json::Document) -> Reply {
     let started = std::time::Instant::now();
-    let (code, reply) =
-        tokio::task::spawn_blocking(move || som_targets::rust::assemble(&compiler, &doc))
-            .await
-            .map_err(|e| {
-                rejected(strict_json::envelope_error(
-                    "OUTPUT_QUALITY_FAILED",
-                    &format!("Assembler worker failed: {e}"),
-                    "An admitted complete bundle.",
-                ))
-            })?;
+    let target = doc.value["bundle"]["target"]
+        .as_str()
+        .unwrap_or("rust")
+        .to_owned();
+    let (code, reply) = tokio::task::spawn_blocking(move || som_targets::assemble(&compiler, &doc))
+        .await
+        .map_err(|e| {
+            rejected(strict_json::envelope_error(
+                "OUTPUT_QUALITY_FAILED",
+                &format!("Assembler worker failed: {e}"),
+                "An admitted complete bundle.",
+            ))
+        })?;
     eprintln!(
         "{}",
-        json!({"stage":"assemble","target":"rust","total_ms":started.elapsed().as_secs_f64()*1000.0,"http_status":code})
+        json!({"stage":"assemble","target":target,"total_ms":started.elapsed().as_secs_f64()*1000.0,"http_status":code})
     );
     if code == 200 {
         return Ok(Json(reply));
