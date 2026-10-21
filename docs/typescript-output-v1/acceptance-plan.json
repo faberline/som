@@ -1,0 +1,94 @@
+{
+  "version": "som.typescript-output-acceptance-plan.v1",
+  "case_inventory": "case-inventory.json",
+  "negative_cases": "negative-cases.json",
+  "target_examples": "target-examples.json",
+  "baseline": "The current default compiler: rust-output-candidate-006, binary 52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2, build commit 6116fed549d458f6ac06f51541c93c5de6514385, the #57 release (som-rs/evidence/rust-output-release-2026-10-20-issue57.json), read only.",
+  "python_unchanged": {
+    "rule": "A request without target, or with target python, returns the same bytes as the baseline for the same request. No existing CNL text, typed prompt, bundle, asset or Python output changes.",
+    "checks": [
+      "Every typed prompt of the 127 public products (public-products-003b) and the 544 legacy jobs (legacy544 run-005), sent without target and with target python, gives a compile response equal byte for byte to the baseline's response, and assembling that bundle gives response bytes equal to the baseline's.",
+      "rust-output-v1 python_unchanged with its amendment_004 rule passes: python_replay.py --asset-break over public-products-003b and legacy544 run-005 has no failure, and validate_cases.py gives the frozen Python file hashes.",
+      "tools/check_python_controls.py passes for every negative case and every name case of this contract.",
+      "tests/rust-output-v1/check_python_controls.py passes for every negative case of rust-output-v1."
+    ]
+  },
+  "rust_unchanged": {
+    "rule": "The rust-output-v1 amendment 005 checks (rust-output-v1 acceptance-plan.json amendment005) run on the same candidate as this plan. A Rust compile response may differ from the baseline only in bundle.assets.backend, bundle.assets.target_contract and bundle.hashes.payload_sha256, and every Rust product file stays byte-identical.",
+    "checks": "rust-output-v1 acceptance-plan.json amendment005 checks, every one, on the same candidate."
+  },
+  "target_selection_checks": [
+    "Every target-examples.json example and name case body gives its expected result.",
+    "Every TT case gives exactly its expected diagnostic, located in the raw request body.",
+    "The rust-output-v1 RT cases give their amendment 005 diagnostics unchanged on the candidate.",
+    "A target python request gives the same bytes as the request without target, for every acceptance case and every CNL positive fixture.",
+    "The CLI forwards --target typescript unchanged and exits with status 2 on a refusal."
+  ],
+  "scope_checks": [
+    "Every TS and TP case gives exactly its expected diagnostic with target typescript.",
+    "Every out-of-scope public example, CNL positive fixture and legacy job gives UNSUPPORTED_TARGET with the refusal case-inventory.json records for it, with target typescript.",
+    "The compiler refusal for each typed prompt equals tools/ts_profile.py on that prompt.",
+    "No in-scope acceptance case gives UNSUPPORTED_TARGET with target typescript."
+  ],
+  "bundle_checks": [
+    "For every acceptance case, the CNL and typed JSON requests with target typescript return byte-identical som.dsl-bundle.v2 bundles with target typescript.",
+    "Every TypeScript bundle validates against bundle.schema.json, has at most 12 files and 64 blocks per file, and every block id starts with ts. and is a block of catalog/typescript-catalog.v1.json.",
+    "Every bundle asset descriptor equals the candidate's TypeScript manifest (api.schema.json x-manifest), and the six shared descriptors equal the candidate's Rust manifest.",
+    "Two compiles and two assembles of the same request give the same bytes.",
+    "The assembled files are exactly the product-layout.json file set (11 files), and package.json, package-lock.json and tsconfig.json equal the reference files."
+  ],
+  "assemble_refusals": {
+    "base": "A valid TypeScript bundle for the acceptance case example-v1 from the candidate; for A6 the TypeScript bundle for example-v5; for A11 the candidate's Rust bundle for example-v1.",
+    "rehash": "Unless a recipe says otherwise, recompute prompt_sha256, dsl_sha256 and payload_sha256 with the frozen formulas after the change, so the hash check passes and the named check is reached.",
+    "span": "Line, column and byte spans locate the pointer target in the canonical assemble request body, computed at test time.",
+    "schema_order": "The TypeScript bundle schema check reports the first failure in the Rust check_schema order: members, version, target, prompt, dsl members, dsl version, files, then each file.",
+    "recipes": [
+      {"id": "A1", "change": "Replace assets.formatter.sha256 with 64 zero digits.", "code": "ASSET_HASH_MISMATCH", "http_status": 400, "prompt_pointer": "/bundle/assets"},
+      {"id": "A2", "change": "Replace target_contract, catalog, block_library, backend and formatter with the Rust descriptors from the candidate's Rust manifest.", "code": "ASSET_HASH_MISMATCH", "http_status": 400, "prompt_pointer": "/bundle/assets"},
+      {"id": "A3", "change": "Add target typescript to a valid som.dsl-bundle.v1 Python bundle.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/target", "note": "The baseline already gives this result."},
+      {"id": "A4", "change": "Set target to python in a TypeScript bundle.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/target"},
+      {"id": "A5", "change": "Replace the first block id with the Python block id orm.base.", "code": "INVALID_COMPOSITION", "http_status": 400, "prompt_pointer": "/bundle/dsl/files/0/blocks/0/id"},
+      {"id": "A6", "change": "Replace the prompt with the public v6 example prompt. Recompute the shared compiler-v1 descriptors for the v6 prompt, keep the TypeScript descriptors and the TypeScript DSL, and rehash.", "code": "UNSUPPORTED_TARGET", "http_status": 422, "prompt_pointer": "/bundle/prompt/version"},
+      {"id": "A7", "change": "Change one hex digit of payload_sha256. Do not rehash.", "code": "BUNDLE_HASH_MISMATCH", "http_status": 400, "prompt_pointer": "/bundle/hashes/payload_sha256"},
+      {"id": "A8", "change": "Rename the first prompt field to __proto__ in the prompt and in every DSL param that names it.", "code": "UNSUPPORTED_TARGET", "http_status": 422, "prompt_pointer": "/bundle/prompt/resource/fields/0/name"},
+      {"id": "A9", "change": "Add a 12th and a 13th file entry, each a copy of the last file.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/dsl/files"},
+      {"id": "A10", "change": "Set target to rust in a TypeScript bundle.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/dsl/version", "note": "rust-output-v1 check_schema reaches the DSL version som.dsl.typescript.v1 first."},
+      {"id": "A11", "change": "Set target to typescript in a Rust bundle.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/dsl/version"},
+      {"id": "A12", "change": "Replace the first block id with the first block id of the candidate's Rust bundle for the same prompt.", "code": "INVALID_COMPOSITION", "http_status": 400, "prompt_pointer": "/bundle/dsl/files/0/blocks/0/id"}
+    ]
+  },
+  "product_gates": {
+    "each_acceptance_case": [
+      "toolchain.json install with the vendored npm cache, offline, with --ignore-scripts",
+      "toolchain.json typecheck: tsc -p tsconfig.json with no diagnostic",
+      "toolchain.json format_check: prettier --check --no-config --no-editorconfig accepts every .ts file unchanged",
+      "toolchain.json test: node --test --test-concurrency=1 test/api.test.ts with TEST_DATABASE_URL on a fresh database; a missing database is a failure",
+      "package.json and package-lock.json unchanged after the commands, and no file outside node_modules added or changed",
+      "schema equivalence with the Python migration for the same prompt (behavior-normalization.json)",
+      "the behavior parity suite against the Python product for the same prompt, after the frozen normalization",
+      "the strict refusals in behavior-normalization.json divergences D1 to D5 and D7 checked on the TypeScript product alone",
+      "startup: a missing DATABASE_URL and an invalid SOM_APP_ADDR each exit with status 2 and one stderr line; SIGTERM exits with status 0"
+    ],
+    "no_sampling": "Every acceptance case runs every gate. A missing result, a failure and a skipped check are each reported as such and block acceptance."
+  },
+  "amendment_001": {
+    "rule": "The target is not served and no product exists until typescript-output-v1 amendment 001 is sealed. It follows the one approved npm download into toolchain.json vendored_cache.",
+    "records": [
+      "reference/package-lock.json, written by npm install --ignore-scripts against the approved registry access, with lockfileVersion 3",
+      "toolchain.json packages.lock_packages: every lockfile package with its version, resolved URL and integrity",
+      "toolchain.json vendored_cache.tree_sha256",
+      "toolchain.json formatter.sha256 by its sha256_rule",
+      "toolchain.json reference_verification: the reference product passes install, typecheck, format_check and test against the vendored cache with the lockfile unchanged, and its outputs are kept as evidence"
+    ],
+    "blockers": "A pinned package missing from the registry, a package that needs an install script, or an extra network access after the download. Each sends the choice back to the user before amendment 001 is sealed."
+  },
+  "issue_gates": {
+    "phase1-contract": "This contract is frozen with a sealed receipt and an independent review, after the user's approval.",
+    "phase1-amendment-001": "amendment_001 is sealed with an independent review.",
+    "phase1-target": "target_selection_checks, scope_checks, python_unchanged and rust_unchanged pass on one candidate.",
+    "phase1-products": "bundle_checks, assemble_refusals and product_gates pass for every acceptance case on the same candidate.",
+    "phase1-acceptance": "Every check in this plan passes on one recorded build, with the evidence hashed, and an independent audit written from this plan and the raw outputs only reports no failure and nothing unrun.",
+    "#65": "The default on 8765 changes only after a rehearsal with the Python, Rust and TypeScript canaries and a rollback on a QA port, with the user's approval."
+  },
+  "amendments": "After the freeze receipt is sealed, a change to any frozen file is a numbered amendment with its reason, the old and new hashes, and an independent review."
+}

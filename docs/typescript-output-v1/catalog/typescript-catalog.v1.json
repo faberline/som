@@ -1,0 +1,1372 @@
+{
+  "version": "som.typescript-catalog.v1",
+  "dsl_version": "som.dsl.typescript.v1",
+  "rule": "The plan for a prompt keeps, in this order, every file and every block whose versions list the prompt version. There are no when conditions in phase 1: every admitted prompt has the one product-layout.json shape, and /healthz is refused as a resource path. A DSL block has only id, name, params and refs. A block param {\"$ref\": \"a.b\"} names the prompt value at /a/b. refs name blocks of the same file. A file path names the prompt value in braces. Every block id starts with ts. and is rendered by the TypeScript block library. Block names and params mirror the Rust phase 1 resource blocks of the same role, so a prompt has the same block names in both targets. The Rust src/models.rs row blocks have no TypeScript file: the read interface in src/schemas.ts is also the row type. The Rust src/lib.rs block becomes src/migrate.ts, the hand-written migrator.",
+  "files": [
+    {
+      "path": "package.json",
+      "blocks": [
+        {
+          "id": "ts.package.manifest",
+          "name": "manifest",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4",
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "blocks": [
+        {
+          "id": "ts.package.lock",
+          "name": "lock",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4",
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "tsconfig.json",
+      "blocks": [
+        {
+          "id": "ts.tsconfig.config",
+          "name": "config",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4",
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/main.ts",
+      "blocks": [
+        {
+          "id": "ts.main.startup",
+          "name": "startup",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4",
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/app.ts",
+      "blocks": [
+        {
+          "id": "ts.app.support",
+          "name": "support",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        },
+        {
+          "id": "ts.app.related.support",
+          "name": "support",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": []
+        },
+        {
+          "id": "ts.app.health",
+          "name": "health",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4",
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "ts.app.list.all",
+          "name": "list",
+          "versions": [
+            "som.prompt.v1"
+          ],
+          "params": {},
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "ts.app.list.text",
+          "name": "list",
+          "versions": [
+            "som.prompt.v2"
+          ],
+          "params": {
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "ts.app.list.boolean",
+          "name": "list",
+          "versions": [
+            "som.prompt.v3"
+          ],
+          "params": {
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "ts.app.list.boolean.date",
+          "name": "list",
+          "versions": [
+            "som.prompt.v4"
+          ],
+          "params": {
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "date_field": {
+              "$ref": "query.date_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "ts.app.create",
+          "name": "create",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "ts.app.get",
+          "name": "get",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "ts.app.update",
+          "name": "update",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "ts.app.delete",
+          "name": "delete",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "ts.app.router",
+          "name": "router",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "path": {
+              "$ref": "resource.path"
+            }
+          },
+          "refs": [
+            "health",
+            "list",
+            "create",
+            "get",
+            "update",
+            "delete"
+          ]
+        },
+        {
+          "id": "ts.app.related.list",
+          "name": "list",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            }
+          },
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "ts.app.related.parent",
+          "name": "parent",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": [
+            "support",
+            "router"
+          ]
+        },
+        {
+          "id": "ts.app.related.child",
+          "name": "child",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "ts.app.related.router",
+          "name": "router",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent_path": {
+              "$ref": "resources.parent.path"
+            },
+            "child_path": {
+              "$ref": "resources.child.path"
+            }
+          },
+          "refs": [
+            "health",
+            "list",
+            "parent",
+            "child"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/schemas.ts",
+      "blocks": [
+        {
+          "id": "ts.schemas.create.plain",
+          "name": "create",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.schemas.create.service",
+          "name": "create",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.schemas.update.plain",
+          "name": "update",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": [
+            "create"
+          ]
+        },
+        {
+          "id": "ts.schemas.update.service",
+          "name": "update",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": [
+            "create"
+          ]
+        },
+        {
+          "id": "ts.schemas.read.plain",
+          "name": "read",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.schemas.read.service",
+          "name": "read",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.schemas.related.support",
+          "name": "support",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.schemas.related.parent",
+          "name": "parent",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            }
+          },
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "ts.schemas.related.child",
+          "name": "child",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": [
+            "support"
+          ]
+        },
+        {
+          "id": "ts.schemas.related.batch",
+          "name": "batch",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": [
+            "parent",
+            "child"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/db.ts",
+      "blocks": [
+        {
+          "id": "ts.db.ping",
+          "name": "ping",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        },
+        {
+          "id": "ts.db.insert.plain",
+          "name": "insert",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.db.insert.service",
+          "name": "insert",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.db.fetch.plain",
+          "name": "fetch",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.db.fetch.service",
+          "name": "fetch",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.db.list.all",
+          "name": "list",
+          "versions": [
+            "som.prompt.v1"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.db.list.text",
+          "name": "list",
+          "versions": [
+            "som.prompt.v2"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.db.list.boolean",
+          "name": "list",
+          "versions": [
+            "som.prompt.v3"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.db.list.boolean.date",
+          "name": "list",
+          "versions": [
+            "som.prompt.v4"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "date_field": {
+              "$ref": "query.date_field"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.db.update.plain",
+          "name": "update",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.db.update.service",
+          "name": "update",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.db.delete",
+          "name": "delete",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.db.related.ping",
+          "name": "ping",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": []
+        },
+        {
+          "id": "ts.db.related.parent",
+          "name": "parent",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            }
+          },
+          "refs": [
+            "ping"
+          ]
+        },
+        {
+          "id": "ts.db.related.child",
+          "name": "child",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": [
+            "ping"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "src/migrate.ts",
+      "blocks": [
+        {
+          "id": "ts.migrate.runner",
+          "name": "runner",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4",
+            "som.prompt.v5"
+          ],
+          "params": {
+            "revision": {
+              "$ref": "migration.revision"
+            }
+          },
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "migrations/0001_{migration.revision}.sql",
+      "blocks": [
+        {
+          "id": "ts.migration.table.plain",
+          "name": "table",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.migration.table.service",
+          "name": "table",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.migration.indexes.boolean",
+          "name": "indexes",
+          "versions": [
+            "som.prompt.v3"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            }
+          },
+          "refs": [
+            "table"
+          ]
+        },
+        {
+          "id": "ts.migration.indexes.boolean.date",
+          "name": "indexes",
+          "versions": [
+            "som.prompt.v4"
+          ],
+          "params": {
+            "table": {
+              "$ref": "resource.table"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "date_field": {
+              "$ref": "query.date_field"
+            }
+          },
+          "refs": [
+            "table"
+          ]
+        },
+        {
+          "id": "ts.migration.related.parent",
+          "name": "parent",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.migration.related.child",
+          "name": "child",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent_table": {
+              "$ref": "resources.parent.table"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": [
+            "parent"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "test/api.test.ts",
+      "blocks": [
+        {
+          "id": "ts.tests.harness",
+          "name": "harness",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "path": {
+              "$ref": "resource.path"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.tests.related.harness",
+          "name": "harness",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.tests.health",
+          "name": "health",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4",
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.crud.plain",
+          "name": "crud",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.crud.service",
+          "name": "crud",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.validation.plain",
+          "name": "validation",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.validation.service",
+          "name": "validation",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.unique",
+          "name": "unique",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.list.all",
+          "name": "list",
+          "versions": [
+            "som.prompt.v1"
+          ],
+          "params": {},
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.list.text",
+          "name": "list",
+          "versions": [
+            "som.prompt.v2"
+          ],
+          "params": {
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.list.boolean",
+          "name": "list",
+          "versions": [
+            "som.prompt.v3"
+          ],
+          "params": {
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.list.boolean.date",
+          "name": "list",
+          "versions": [
+            "som.prompt.v4"
+          ],
+          "params": {
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "date_field": {
+              "$ref": "query.date_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.fallback",
+          "name": "fallback",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.related.crud",
+          "name": "crud",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.related.validation",
+          "name": "validation",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.related.unique",
+          "name": "unique",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.related.list",
+          "name": "list",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.related.scope",
+          "name": "scope",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.related.batch",
+          "name": "batch",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            }
+          },
+          "refs": [
+            "harness"
+          ]
+        },
+        {
+          "id": "ts.tests.related.fallback",
+          "name": "fallback",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {},
+          "refs": [
+            "harness"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "README.md",
+      "blocks": [
+        {
+          "id": "ts.readme.all",
+          "name": "readme",
+          "versions": [
+            "som.prompt.v1"
+          ],
+          "params": {
+            "package": {
+              "$ref": "package"
+            },
+            "version": {
+              "$ref": "version"
+            },
+            "path": {
+              "$ref": "resource.path"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.readme.text",
+          "name": "readme",
+          "versions": [
+            "som.prompt.v2"
+          ],
+          "params": {
+            "package": {
+              "$ref": "package"
+            },
+            "version": {
+              "$ref": "version"
+            },
+            "path": {
+              "$ref": "resource.path"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.readme.boolean",
+          "name": "readme",
+          "versions": [
+            "som.prompt.v3"
+          ],
+          "params": {
+            "package": {
+              "$ref": "package"
+            },
+            "version": {
+              "$ref": "version"
+            },
+            "path": {
+              "$ref": "resource.path"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.readme.boolean.date",
+          "name": "readme",
+          "versions": [
+            "som.prompt.v4"
+          ],
+          "params": {
+            "package": {
+              "$ref": "package"
+            },
+            "version": {
+              "$ref": "version"
+            },
+            "path": {
+              "$ref": "resource.path"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "date_field": {
+              "$ref": "query.date_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "ts.readme.related",
+          "name": "readme",
+          "versions": [
+            "som.prompt.v5"
+          ],
+          "params": {
+            "package": {
+              "$ref": "package"
+            },
+            "version": {
+              "$ref": "version"
+            },
+            "parent": {
+              "$ref": "resources.parent"
+            },
+            "child": {
+              "$ref": "resources.child"
+            },
+            "foreign_key": {
+              "$ref": "relation.foreign_key"
+            },
+            "revision": {
+              "$ref": "migration.revision"
+            },
+            "down_revision": {
+              "$ref": "migration.down_revision"
+            }
+          },
+          "refs": []
+        }
+      ]
+    }
+  ]
+}

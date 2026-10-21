@@ -1,0 +1,857 @@
+{
+  "version": "som.typescript-output-negative-cases.v1",
+  "status": "frozen expected cases; not executed against a TypeScript-target compiler",
+  "span_model": "CNL cases locate the CNL source. JSON cases and envelope cases locate the raw request body. Lines and columns are 1-based Unicode scalar positions. Byte spans are 0-based half-open UTF-8 offsets. JSON spans cover the whole value token, including quotes. A duplicate member locates the second key token. This is the rust-output-v1 span model.",
+  "python_control": "python_control_body is the same request without target. It must give python_control_expected before and after the TypeScript target lands.",
+  "cases": [
+    {
+      "id": "TT01_JSON_TARGET_ALIAS",
+      "purpose": "An abbreviation is not a target name.",
+      "form": "json",
+      "base_example": "v1.prompt.json",
+      "http_status": 400,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"},\"target\":\"ts\"}",
+      "span_text": "\"ts\"",
+      "expected": {
+        "code": "INVALID_SCHEMA",
+        "line": 1,
+        "column": 610,
+        "end_line": 1,
+        "end_column": 614,
+        "byte_start": 609,
+        "byte_end": 613,
+        "prompt_pointer": "/target",
+        "cause": "Target must be the string python, rust or typescript.",
+        "allowed_form": "Omit target, or use target python, rust or typescript."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TT02_JSON_TARGET_NULL",
+      "purpose": "A null target is not an omitted target.",
+      "form": "json",
+      "base_example": "v1.prompt.json",
+      "http_status": 400,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"},\"target\":null}",
+      "span_text": "null",
+      "expected": {
+        "code": "INVALID_SCHEMA",
+        "line": 1,
+        "column": 610,
+        "end_line": 1,
+        "end_column": 614,
+        "byte_start": 609,
+        "byte_end": 613,
+        "prompt_pointer": "/target",
+        "cause": "Target must be the string python, rust or typescript.",
+        "allowed_form": "Omit target, or use target python, rust or typescript."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TT03_JSON_TARGET_CASE",
+      "purpose": "Target names are case sensitive.",
+      "form": "json",
+      "base_example": "v1.prompt.json",
+      "http_status": 400,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"},\"target\":\"TypeScript\"}",
+      "span_text": "\"TypeScript\"",
+      "expected": {
+        "code": "INVALID_SCHEMA",
+        "line": 1,
+        "column": 610,
+        "end_line": 1,
+        "end_column": 622,
+        "byte_start": 609,
+        "byte_end": 621,
+        "prompt_pointer": "/target",
+        "cause": "Target must be the string python, rust or typescript.",
+        "allowed_form": "Omit target, or use target python, rust or typescript."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TT04_CNL_TARGET_NUMBER",
+      "purpose": "A non-string target.",
+      "form": "cnl",
+      "base_example": "v1.cnl",
+      "http_status": 400,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":3}",
+      "span_text": "3",
+      "expected": {
+        "code": "INVALID_SCHEMA",
+        "line": 1,
+        "column": 695,
+        "end_line": 1,
+        "end_column": 696,
+        "byte_start": 694,
+        "byte_end": 695,
+        "prompt_pointer": "/target",
+        "cause": "Target must be the string python, rust or typescript.",
+        "allowed_form": "Omit target, or use target python, rust or typescript."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TT05_CNL_TARGET_SPACE",
+      "purpose": "Target names are not trimmed.",
+      "form": "cnl",
+      "base_example": "v1.cnl",
+      "http_status": 400,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\" typescript\"}",
+      "span_text": "\" typescript\"",
+      "expected": {
+        "code": "INVALID_SCHEMA",
+        "line": 1,
+        "column": 695,
+        "end_line": 1,
+        "end_column": 708,
+        "byte_start": 694,
+        "byte_end": 707,
+        "prompt_pointer": "/target",
+        "cause": "Target must be the string python, rust or typescript.",
+        "allowed_form": "Omit target, or use target python, rust or typescript."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TT06_CNL_TARGET_ARRAY",
+      "purpose": "A list is not a target.",
+      "form": "cnl",
+      "base_example": "v1.cnl",
+      "http_status": 400,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":[\"typescript\"]}",
+      "span_text": "[\"typescript\"]",
+      "expected": {
+        "code": "INVALID_SCHEMA",
+        "line": 1,
+        "column": 695,
+        "end_line": 1,
+        "end_column": 709,
+        "byte_start": 694,
+        "byte_end": 708,
+        "prompt_pointer": "/target",
+        "cause": "Target must be the string python, rust or typescript.",
+        "allowed_form": "Omit target, or use target python, rust or typescript."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TT07_JSON_TARGET_DUPLICATE",
+      "purpose": "A duplicate target member is invalid JSON for the envelope.",
+      "form": "json",
+      "base_example": "v1.prompt.json",
+      "http_status": 400,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"},\"target\":\"typescript\",\"target\":\"typescript\"}",
+      "span_text": "\"target\"",
+      "expected": {
+        "code": "INVALID_JSON",
+        "line": 1,
+        "column": 623,
+        "end_line": 1,
+        "end_column": 631,
+        "byte_start": 622,
+        "byte_end": 630,
+        "prompt_pointer": "/target",
+        "cause": "Duplicate JSON member.",
+        "allowed_form": "One valid JSON value with unique object keys."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS01_CNL_V6",
+      "purpose": "Prompt v6 is Python-only in TypeScript phase 1.",
+      "form": "cnl",
+      "base_example": "v6.cnl",
+      "line_edits": [],
+      "http_status": 422,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 6.\\nUse package app_projects.\\nBind contract related-business.v1 with SHA-256 \\\"9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380\\\".\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nField external_code is required str and is unique.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related80000.\\nUse no previous migration revision.\\nBegin capabilities.\\nUse database postgresql.\\nUse authentication jwt.\\nUse object storage none.\\nUse workflow json_export.\\nUse no workflow value field.\\nUse no workflow group field.\\nEnd capabilities.\\nBegin routes.\\nAllow create on parent.\\nAllow get on parent.\\nAllow list on parent.\\nAllow patch on parent.\\nAllow delete on parent.\\nAllow create on child.\\nAllow get on child.\\nAllow list on child.\\nAllow patch on child.\\nAllow delete on child.\\nAllow batch creation.\\nEnd routes.\\nEnd request.\\n\",\"target\":\"typescript\"}",
+      "span_text": "6",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 2,
+        "column": 20,
+        "end_line": 2,
+        "end_column": 21,
+        "byte_start": 42,
+        "byte_end": 43,
+        "prompt_pointer": "/version",
+        "cause": "TypeScript output phase 1 does not cover prompt version 6: capabilities: authentication, database selection, object storage and workflows.",
+        "allowed_form": "Use prompt version 1 through 5 for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 6.\\nUse package app_projects.\\nBind contract related-business.v1 with SHA-256 \\\"9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380\\\".\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nField external_code is required str and is unique.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related80000.\\nUse no previous migration revision.\\nBegin capabilities.\\nUse database postgresql.\\nUse authentication jwt.\\nUse object storage none.\\nUse workflow json_export.\\nUse no workflow value field.\\nUse no workflow group field.\\nEnd capabilities.\\nBegin routes.\\nAllow create on parent.\\nAllow get on parent.\\nAllow list on parent.\\nAllow patch on parent.\\nAllow delete on parent.\\nAllow create on child.\\nAllow get on child.\\nAllow list on child.\\nAllow patch on child.\\nAllow delete on child.\\nAllow batch creation.\\nEnd routes.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS02_CNL_V7",
+      "purpose": "Prompt v7 is Python-only in TypeScript phase 1.",
+      "form": "cnl",
+      "base_example": "v7.cnl",
+      "line_edits": [],
+      "http_status": 422,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 7.\\nUse package app_projects.\\nBind contract related-flow.v1 with SHA-256 \\\"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\\\".\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nField external_code is required str and is unique.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related80000.\\nUse no previous migration revision.\\nBegin capabilities.\\nUse database postgresql.\\nUse authentication jwt.\\nUse object storage none.\\nUse workflow json_export.\\nUse no workflow value field.\\nUse no workflow group field.\\nEnd capabilities.\\nBegin routes.\\nAllow create on parent.\\nAllow get on parent.\\nAllow list on parent.\\nAllow patch on parent.\\nAllow delete on parent.\\nAllow create on child.\\nAllow get on child.\\nAllow list on child.\\nAllow patch on child.\\nAllow delete on child.\\nAllow batch creation.\\nEnd routes.\\nBegin flow make_family.\\nInput parent has type parent_input.\\nInput child has type child_input.\\nInput patch has type child_patch.\\nBegin steps.\\nBegin step auth with operation authorize.\\nOn failure, use no undo.\\nEnd step auth.\\nBegin transaction write.\\nBegin step made with operation parent.create.\\nSet argument data to input parent.\\nOn failure, undo with delete_created.\\nEnd step made.\\nBegin step added with operation child.create.\\nSet argument parent_id to step made field \\\"id\\\".\\nSet argument data to input child.\\nOn failure, undo with delete_created.\\nEnd step added.\\nBegin step patched with operation child.patch.\\nSet argument parent_id to step made field \\\"id\\\".\\nSet argument child_id to step added field \\\"id\\\".\\nSet argument data to input patch.\\nOn failure, undo with restore_patch.\\nEnd step patched.\\nEnd transaction write.\\nBegin step summary with operation workflow.run.\\nSet argument parent_id to step made field \\\"id\\\".\\nOn failure, use no undo.\\nEnd step summary.\\nEnd steps.\\nReturn parent from step made field \\\"\\\".\\nReturn summary from step summary field \\\"data\\\".\\nReturn label from literal string \\\"台灣 \\\\\\\"demo\\\\\\\"\\\\nline\\\".\\nReturn signed_zero from literal float -0.0.\\nEnd flow make_family.\\nEnd request.\\n\",\"target\":\"typescript\"}",
+      "span_text": "7",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 2,
+        "column": 20,
+        "end_line": 2,
+        "end_column": 21,
+        "byte_start": 42,
+        "byte_end": 43,
+        "prompt_pointer": "/version",
+        "cause": "TypeScript output phase 1 does not cover prompt version 7: flows and capabilities: authentication, database selection, object storage, workflows, branches and compensation.",
+        "allowed_form": "Use prompt version 1 through 5 for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 7.\\nUse package app_projects.\\nBind contract related-flow.v1 with SHA-256 \\\"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\\\".\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nField external_code is required str and is unique.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related80000.\\nUse no previous migration revision.\\nBegin capabilities.\\nUse database postgresql.\\nUse authentication jwt.\\nUse object storage none.\\nUse workflow json_export.\\nUse no workflow value field.\\nUse no workflow group field.\\nEnd capabilities.\\nBegin routes.\\nAllow create on parent.\\nAllow get on parent.\\nAllow list on parent.\\nAllow patch on parent.\\nAllow delete on parent.\\nAllow create on child.\\nAllow get on child.\\nAllow list on child.\\nAllow patch on child.\\nAllow delete on child.\\nAllow batch creation.\\nEnd routes.\\nBegin flow make_family.\\nInput parent has type parent_input.\\nInput child has type child_input.\\nInput patch has type child_patch.\\nBegin steps.\\nBegin step auth with operation authorize.\\nOn failure, use no undo.\\nEnd step auth.\\nBegin transaction write.\\nBegin step made with operation parent.create.\\nSet argument data to input parent.\\nOn failure, undo with delete_created.\\nEnd step made.\\nBegin step added with operation child.create.\\nSet argument parent_id to step made field \\\"id\\\".\\nSet argument data to input child.\\nOn failure, undo with delete_created.\\nEnd step added.\\nBegin step patched with operation child.patch.\\nSet argument parent_id to step made field \\\"id\\\".\\nSet argument child_id to step added field \\\"id\\\".\\nSet argument data to input patch.\\nOn failure, undo with restore_patch.\\nEnd step patched.\\nEnd transaction write.\\nBegin step summary with operation workflow.run.\\nSet argument parent_id to step made field \\\"id\\\".\\nOn failure, use no undo.\\nEnd step summary.\\nEnd steps.\\nReturn parent from step made field \\\"\\\".\\nReturn summary from step summary field \\\"data\\\".\\nReturn label from literal string \\\"台灣 \\\\\\\"demo\\\\\\\"\\\\nline\\\".\\nReturn signed_zero from literal float -0.0.\\nEnd flow make_family.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS03_JSON_V6",
+      "purpose": "Prompt v6 is Python-only in TypeScript phase 1.",
+      "form": "json",
+      "base_example": "v6.prompt.json",
+      "http_status": 422,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"capabilities\":{\"auth\":\"jwt\",\"database\":\"postgresql\",\"group_field\":null,\"storage\":\"none\",\"value_field\":null,\"workflow\":\"json_export\"},\"contract\":{\"id\":\"related-business.v1\",\"sha256\":\"9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380\"},\"migration\":{\"down_revision\":null,\"revision\":\"related80000\"},\"operations\":[{\"action\":\"create\",\"scope\":\"parent\"},{\"action\":\"get\",\"scope\":\"parent\"},{\"action\":\"list\",\"scope\":\"parent\"},{\"action\":\"patch\",\"scope\":\"parent\"},{\"action\":\"delete\",\"scope\":\"parent\"},{\"action\":\"create\",\"scope\":\"child\"},{\"action\":\"get\",\"scope\":\"child\"},{\"action\":\"list\",\"scope\":\"child\"},{\"action\":\"patch\",\"scope\":\"child\"},{\"action\":\"delete\",\"scope\":\"child\"},{\"action\":\"batch_create\",\"scope\":\"batch\"}],\"package\":\"app_projects\",\"relation\":{\"foreign_key\":\"project_id\",\"on_delete\":\"restrict\"},\"resources\":{\"child\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"completed\",\"required\":false,\"type\":\"bool\",\"unique\":false},{\"default\":null,\"name\":\"due_on\",\"required\":false,\"type\":\"date\",\"unique\":false},{\"name\":\"external_code\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Todo\",\"path\":\"/todos\",\"query\":{\"date_field\":\"due_on\",\"filter_field\":\"completed\",\"max_limit\":100},\"table\":\"todos\"},\"parent\":{\"fields\":[{\"name\":\"name\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false}],\"name\":\"Project\",\"path\":\"/projects\",\"query\":{\"date_field\":null,\"filter_field\":null,\"max_limit\":20},\"table\":\"projects\"}},\"version\":\"som.prompt.v6\"},\"target\":\"typescript\"}",
+      "span_text": "\"som.prompt.v6\"",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 1,
+        "column": 1674,
+        "end_line": 1,
+        "end_column": 1689,
+        "byte_start": 1673,
+        "byte_end": 1688,
+        "prompt_pointer": "/prompt/version",
+        "cause": "TypeScript output phase 1 does not cover prompt version 6: capabilities: authentication, database selection, object storage and workflows.",
+        "allowed_form": "Use prompt version 1 through 5 for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"capabilities\":{\"auth\":\"jwt\",\"database\":\"postgresql\",\"group_field\":null,\"storage\":\"none\",\"value_field\":null,\"workflow\":\"json_export\"},\"contract\":{\"id\":\"related-business.v1\",\"sha256\":\"9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380\"},\"migration\":{\"down_revision\":null,\"revision\":\"related80000\"},\"operations\":[{\"action\":\"create\",\"scope\":\"parent\"},{\"action\":\"get\",\"scope\":\"parent\"},{\"action\":\"list\",\"scope\":\"parent\"},{\"action\":\"patch\",\"scope\":\"parent\"},{\"action\":\"delete\",\"scope\":\"parent\"},{\"action\":\"create\",\"scope\":\"child\"},{\"action\":\"get\",\"scope\":\"child\"},{\"action\":\"list\",\"scope\":\"child\"},{\"action\":\"patch\",\"scope\":\"child\"},{\"action\":\"delete\",\"scope\":\"child\"},{\"action\":\"batch_create\",\"scope\":\"batch\"}],\"package\":\"app_projects\",\"relation\":{\"foreign_key\":\"project_id\",\"on_delete\":\"restrict\"},\"resources\":{\"child\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"completed\",\"required\":false,\"type\":\"bool\",\"unique\":false},{\"default\":null,\"name\":\"due_on\",\"required\":false,\"type\":\"date\",\"unique\":false},{\"name\":\"external_code\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Todo\",\"path\":\"/todos\",\"query\":{\"date_field\":\"due_on\",\"filter_field\":\"completed\",\"max_limit\":100},\"table\":\"todos\"},\"parent\":{\"fields\":[{\"name\":\"name\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false}],\"name\":\"Project\",\"path\":\"/projects\",\"query\":{\"date_field\":null,\"filter_field\":null,\"max_limit\":20},\"table\":\"projects\"}},\"version\":\"som.prompt.v6\"}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS04_JSON_V7",
+      "purpose": "Prompt v7 is Python-only in TypeScript phase 1.",
+      "form": "json",
+      "base_example": "v7.prompt.json",
+      "http_status": 422,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"capabilities\":{\"auth\":\"jwt\",\"database\":\"postgresql\",\"group_field\":null,\"storage\":\"none\",\"value_field\":null,\"workflow\":\"json_export\"},\"contract\":{\"id\":\"related-flow.v1\",\"sha256\":\"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\"},\"migration\":{\"down_revision\":null,\"revision\":\"related80000\"},\"operations\":[{\"action\":\"create\",\"scope\":\"parent\"},{\"action\":\"get\",\"scope\":\"parent\"},{\"action\":\"list\",\"scope\":\"parent\"},{\"action\":\"patch\",\"scope\":\"parent\"},{\"action\":\"delete\",\"scope\":\"parent\"},{\"action\":\"create\",\"scope\":\"child\"},{\"action\":\"get\",\"scope\":\"child\"},{\"action\":\"list\",\"scope\":\"child\"},{\"action\":\"patch\",\"scope\":\"child\"},{\"action\":\"delete\",\"scope\":\"child\"},{\"action\":\"batch_create\",\"scope\":\"batch\"}],\"package\":\"app_projects\",\"relation\":{\"foreign_key\":\"project_id\",\"on_delete\":\"restrict\"},\"resources\":{\"child\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"completed\",\"required\":false,\"type\":\"bool\",\"unique\":false},{\"default\":null,\"name\":\"due_on\",\"required\":false,\"type\":\"date\",\"unique\":false},{\"name\":\"external_code\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Todo\",\"path\":\"/todos\",\"query\":{\"date_field\":\"due_on\",\"filter_field\":\"completed\",\"max_limit\":100},\"table\":\"todos\"},\"parent\":{\"fields\":[{\"name\":\"name\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false}],\"name\":\"Project\",\"path\":\"/projects\",\"query\":{\"date_field\":null,\"filter_field\":null,\"max_limit\":20},\"table\":\"projects\"}},\"version\":\"som.prompt.v7\",\"flow\":{\"name\":\"make_family\",\"inputs\":[{\"name\":\"parent\",\"type\":\"parent_input\"},{\"name\":\"child\",\"type\":\"child_input\"},{\"name\":\"patch\",\"type\":\"child_patch\"}],\"steps\":[{\"name\":\"auth\",\"op\":\"authorize\",\"args\":{},\"undo\":null},{\"name\":\"write\",\"op\":\"transaction\",\"steps\":[{\"name\":\"made\",\"op\":\"parent.create\",\"args\":{\"data\":{\"input\":\"parent\"}},\"undo\":\"delete_created\"},{\"name\":\"added\",\"op\":\"child.create\",\"args\":{\"parent_id\":{\"step\":\"made\",\"field\":\"id\"},\"data\":{\"input\":\"child\"}},\"undo\":\"delete_created\"},{\"name\":\"patched\",\"op\":\"child.patch\",\"args\":{\"parent_id\":{\"step\":\"made\",\"field\":\"id\"},\"child_id\":{\"step\":\"added\",\"field\":\"id\"},\"data\":{\"input\":\"patch\"}},\"undo\":\"restore_patch\"}]},{\"name\":\"summary\",\"op\":\"workflow.run\",\"args\":{\"parent_id\":{\"step\":\"made\",\"field\":\"id\"}},\"undo\":null}],\"result\":{\"parent\":{\"step\":\"made\",\"field\":\"\"},\"summary\":{\"step\":\"summary\",\"field\":\"data\"},\"label\":{\"literal\":\"台灣 \\\"demo\\\"\\nline\",\"type\":\"string\"},\"signed_zero\":{\"literal\":-0.0,\"type\":\"float\"}}}},\"target\":\"typescript\"}",
+      "span_text": "\"som.prompt.v7\"",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 1,
+        "column": 1670,
+        "end_line": 1,
+        "end_column": 1685,
+        "byte_start": 1669,
+        "byte_end": 1684,
+        "prompt_pointer": "/prompt/version",
+        "cause": "TypeScript output phase 1 does not cover prompt version 7: flows and capabilities: authentication, database selection, object storage, workflows, branches and compensation.",
+        "allowed_form": "Use prompt version 1 through 5 for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"capabilities\":{\"auth\":\"jwt\",\"database\":\"postgresql\",\"group_field\":null,\"storage\":\"none\",\"value_field\":null,\"workflow\":\"json_export\"},\"contract\":{\"id\":\"related-flow.v1\",\"sha256\":\"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\"},\"migration\":{\"down_revision\":null,\"revision\":\"related80000\"},\"operations\":[{\"action\":\"create\",\"scope\":\"parent\"},{\"action\":\"get\",\"scope\":\"parent\"},{\"action\":\"list\",\"scope\":\"parent\"},{\"action\":\"patch\",\"scope\":\"parent\"},{\"action\":\"delete\",\"scope\":\"parent\"},{\"action\":\"create\",\"scope\":\"child\"},{\"action\":\"get\",\"scope\":\"child\"},{\"action\":\"list\",\"scope\":\"child\"},{\"action\":\"patch\",\"scope\":\"child\"},{\"action\":\"delete\",\"scope\":\"child\"},{\"action\":\"batch_create\",\"scope\":\"batch\"}],\"package\":\"app_projects\",\"relation\":{\"foreign_key\":\"project_id\",\"on_delete\":\"restrict\"},\"resources\":{\"child\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"completed\",\"required\":false,\"type\":\"bool\",\"unique\":false},{\"default\":null,\"name\":\"due_on\",\"required\":false,\"type\":\"date\",\"unique\":false},{\"name\":\"external_code\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Todo\",\"path\":\"/todos\",\"query\":{\"date_field\":\"due_on\",\"filter_field\":\"completed\",\"max_limit\":100},\"table\":\"todos\"},\"parent\":{\"fields\":[{\"name\":\"name\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false}],\"name\":\"Project\",\"path\":\"/projects\",\"query\":{\"date_field\":null,\"filter_field\":null,\"max_limit\":20},\"table\":\"projects\"}},\"version\":\"som.prompt.v7\",\"flow\":{\"name\":\"make_family\",\"inputs\":[{\"name\":\"parent\",\"type\":\"parent_input\"},{\"name\":\"child\",\"type\":\"child_input\"},{\"name\":\"patch\",\"type\":\"child_patch\"}],\"steps\":[{\"name\":\"auth\",\"op\":\"authorize\",\"args\":{},\"undo\":null},{\"name\":\"write\",\"op\":\"transaction\",\"steps\":[{\"name\":\"made\",\"op\":\"parent.create\",\"args\":{\"data\":{\"input\":\"parent\"}},\"undo\":\"delete_created\"},{\"name\":\"added\",\"op\":\"child.create\",\"args\":{\"parent_id\":{\"step\":\"made\",\"field\":\"id\"},\"data\":{\"input\":\"child\"}},\"undo\":\"delete_created\"},{\"name\":\"patched\",\"op\":\"child.patch\",\"args\":{\"parent_id\":{\"step\":\"made\",\"field\":\"id\"},\"child_id\":{\"step\":\"added\",\"field\":\"id\"},\"data\":{\"input\":\"patch\"}},\"undo\":\"restore_patch\"}]},{\"name\":\"summary\",\"op\":\"workflow.run\",\"args\":{\"parent_id\":{\"step\":\"made\",\"field\":\"id\"}},\"undo\":null}],\"result\":{\"parent\":{\"step\":\"made\",\"field\":\"\"},\"summary\":{\"step\":\"summary\",\"field\":\"data\"},\"label\":{\"literal\":\"台灣 \\\"demo\\\"\\nline\",\"type\":\"string\"},\"signed_zero\":{\"literal\":-0.0,\"type\":\"float\"}}}}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS05_CNL_PATH_TRAILING_SLASH",
+      "purpose": "A path with a trailing slash.",
+      "form": "cnl",
+      "base_example": "v1.cnl",
+      "line_edits": [
+        {
+          "line": 7,
+          "with": "Use path \"/items/\"."
+        }
+      ],
+      "http_status": 422,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items/\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"typescript\"}",
+      "span_text": "\"/items/\"",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 7,
+        "column": 10,
+        "end_line": 7,
+        "end_column": 19,
+        "byte_start": 130,
+        "byte_end": 139,
+        "prompt_pointer": "/resource/path",
+        "cause": "TypeScript output needs a path without empty segments, not /items/.",
+        "allowed_form": "Use a path such as /items or /team/items without a trailing or double slash for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items/\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS06_JSON_PATH_DOUBLE_SLASH",
+      "purpose": "A path with an empty segment.",
+      "form": "json",
+      "base_example": "v2.prompt.json",
+      "http_status": 422,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact string filter, limit, and offset in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev1000\"},\"package\":\"items\",\"query\":{\"filter_field\":\"title\",\"max_limit\":20},\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false}],\"name\":\"Item\",\"path\":\"/a//b\",\"table\":\"items\"},\"tests\":[\"Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v2\"},\"target\":\"typescript\"}",
+      "span_text": "\"/a//b\"",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 1,
+        "column": 581,
+        "end_line": 1,
+        "end_column": 588,
+        "byte_start": 580,
+        "byte_end": 587,
+        "prompt_pointer": "/prompt/resource/path",
+        "cause": "TypeScript output needs a path without empty segments, not /a//b.",
+        "allowed_form": "Use a path such as /items or /team/items without a trailing or double slash for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact string filter, limit, and offset in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev1000\"},\"package\":\"items\",\"query\":{\"filter_field\":\"title\",\"max_limit\":20},\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false}],\"name\":\"Item\",\"path\":\"/a//b\",\"table\":\"items\"},\"tests\":[\"Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v2\"}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS07_CNL_PATH_HEALTHZ",
+      "purpose": "A resource path that is the health check.",
+      "form": "cnl",
+      "base_example": "v4.cnl",
+      "line_edits": [
+        {
+          "line": 7,
+          "with": "Use path \"/healthz\"."
+        }
+      ],
+      "http_status": 422,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 4.\\nUse package todos.\\nBegin resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/healthz\\\".\\nField deadline_on is optional date and is not unique with default null.\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field deadline_on.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision service1000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"typescript\"}",
+      "span_text": "\"/healthz\"",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 7,
+        "column": 10,
+        "end_line": 7,
+        "end_column": 20,
+        "byte_start": 130,
+        "byte_end": 140,
+        "prompt_pointer": "/resource/path",
+        "cause": "TypeScript output reserves the path /healthz for the health check.",
+        "allowed_form": "Use a resource path other than /healthz for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 4.\\nUse package todos.\\nBegin resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/healthz\\\".\\nField deadline_on is optional date and is not unique with default null.\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field deadline_on.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision service1000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS08_JSON_PATH_HEALTHZ",
+      "purpose": "A v3 resource path that is the health check.",
+      "form": "json",
+      "base_example": "v3.prompt.json",
+      "http_status": 422,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact boolean filter, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"service1000\"},\"package\":\"todos\",\"query\":{\"filter_field\":\"completed\",\"max_limit\":100},\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"completed\",\"required\":false,\"type\":\"bool\",\"unique\":false}],\"name\":\"Todo\",\"path\":\"/healthz\",\"table\":\"todos\"},\"tests\":[\"Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v3\"},\"target\":\"typescript\"}",
+      "span_text": "\"/healthz\"",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 1,
+        "column": 757,
+        "end_line": 1,
+        "end_column": 767,
+        "byte_start": 756,
+        "byte_end": 766,
+        "prompt_pointer": "/prompt/resource/path",
+        "cause": "TypeScript output reserves the path /healthz for the health check.",
+        "allowed_form": "Use a resource path other than /healthz for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact boolean filter, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"service1000\"},\"package\":\"todos\",\"query\":{\"filter_field\":\"completed\",\"max_limit\":100},\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"completed\",\"required\":false,\"type\":\"bool\",\"unique\":false}],\"name\":\"Todo\",\"path\":\"/healthz\",\"table\":\"todos\"},\"tests\":[\"Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v3\"}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS09_CNL_TABLE_TS_MIGRATIONS",
+      "purpose": "A table named like the TypeScript migrator table.",
+      "form": "cnl",
+      "base_example": "v1.cnl",
+      "line_edits": [
+        {
+          "line": 6,
+          "with": "Use table _som_ts_migrations."
+        }
+      ],
+      "http_status": 422,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table _som_ts_migrations.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"typescript\"}",
+      "span_text": "_som_ts_migrations",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 6,
+        "column": 11,
+        "end_line": 6,
+        "end_column": 29,
+        "byte_start": 114,
+        "byte_end": 132,
+        "prompt_pointer": "/resource/table",
+        "cause": "TypeScript output reserves the table _som_ts_migrations for the migrator.",
+        "allowed_form": "Use a table name other than _som_ts_migrations for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table _som_ts_migrations.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS10_JSON_TABLE_BEFORE_FIELD",
+      "purpose": "A table refusal comes before a field refusal.",
+      "form": "json",
+      "base_example": "v1.prompt.json",
+      "http_status": 422,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"constructor\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"_som_ts_migrations\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"},\"target\":\"typescript\"}",
+      "span_text": "\"_som_ts_migrations\"",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 1,
+        "column": 499,
+        "end_line": 1,
+        "end_column": 519,
+        "byte_start": 498,
+        "byte_end": 518,
+        "prompt_pointer": "/prompt/resource/table",
+        "cause": "TypeScript output reserves the table _som_ts_migrations for the migrator.",
+        "allowed_form": "Use a table name other than _som_ts_migrations for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"constructor\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"_som_ts_migrations\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS11_CNL_FIELD_PROTO",
+      "purpose": "A field named __proto__; v1 to v4 names admit a leading underscore.",
+      "form": "cnl",
+      "base_example": "v1.cnl",
+      "line_edits": [
+        {
+          "line": 8,
+          "with": "Field __proto__ is required str and is unique."
+        }
+      ],
+      "http_status": 422,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField __proto__ is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"typescript\"}",
+      "span_text": "__proto__",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 8,
+        "column": 7,
+        "end_line": 8,
+        "end_column": 16,
+        "byte_start": 146,
+        "byte_end": 155,
+        "prompt_pointer": "/resource/fields/0/name",
+        "cause": "TypeScript output cannot use the name __proto__.",
+        "allowed_form": "Use a name other than __proto__, constructor or prototype for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField __proto__ is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS12_JSON_FIELD_CONSTRUCTOR",
+      "purpose": "A field named constructor, also the v2 filter field.",
+      "form": "json",
+      "base_example": "v2.prompt.json",
+      "http_status": 422,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact string filter, limit, and offset in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev1000\"},\"package\":\"items\",\"query\":{\"filter_field\":\"constructor\",\"max_limit\":20},\"resource\":{\"fields\":[{\"name\":\"constructor\",\"required\":true,\"type\":\"str\",\"unique\":false}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v2\"},\"target\":\"typescript\"}",
+      "span_text": "\"constructor\"",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 1,
+        "column": 512,
+        "end_line": 1,
+        "end_column": 525,
+        "byte_start": 511,
+        "byte_end": 524,
+        "prompt_pointer": "/prompt/resource/fields/0/name",
+        "cause": "TypeScript output cannot use the name constructor.",
+        "allowed_form": "Use a name other than __proto__, constructor or prototype for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact string filter, limit, and offset in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev1000\"},\"package\":\"items\",\"query\":{\"filter_field\":\"constructor\",\"max_limit\":20},\"resource\":{\"fields\":[{\"name\":\"constructor\",\"required\":true,\"type\":\"str\",\"unique\":false}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v2\"}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS13_CNL_V5_CHILD_FIELD_PROTOTYPE",
+      "purpose": "A v5 child field named prototype.",
+      "form": "cnl",
+      "base_example": "v5.cnl",
+      "line_edits": [
+        {
+          "line": 20,
+          "with": "Field prototype is required str and is not unique."
+        }
+      ],
+      "http_status": 422,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package app_projects.\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField prototype is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related0.\\nUse no previous migration revision.\\nUse no capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"typescript\"}",
+      "span_text": "prototype",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 20,
+        "column": 7,
+        "end_line": 20,
+        "end_column": 16,
+        "byte_start": 481,
+        "byte_end": 490,
+        "prompt_pointer": "/resources/child/fields/0/name",
+        "cause": "TypeScript output cannot use the name prototype.",
+        "allowed_form": "Use a name other than __proto__, constructor or prototype for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package app_projects.\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField prototype is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related0.\\nUse no previous migration revision.\\nUse no capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS14_JSON_V5_FOREIGN_KEY_CONSTRUCTOR",
+      "purpose": "A v5 foreign key named constructor.",
+      "form": "json",
+      "base_example": "v5.prompt.json",
+      "http_status": 422,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"app_projects\",\"resources\":{\"parent\":{\"name\":\"Project\",\"table\":\"projects\",\"path\":\"/projects\",\"fields\":[{\"name\":\"name\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}},\"child\":{\"name\":\"Todo\",\"table\":\"todos\",\"path\":\"/todos\",\"fields\":[{\"name\":\"title\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"completed\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"due_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"completed\",\"date_field\":\"due_on\",\"max_limit\":100}}},\"relation\":{\"foreign_key\":\"constructor\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"related0\",\"down_revision\":null}},\"target\":\"typescript\"}",
+      "span_text": "\"constructor\"",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 1,
+        "column": 864,
+        "end_line": 1,
+        "end_column": 877,
+        "byte_start": 863,
+        "byte_end": 876,
+        "prompt_pointer": "/prompt/relation/foreign_key",
+        "cause": "TypeScript output cannot use the name constructor.",
+        "allowed_form": "Use a name other than __proto__, constructor or prototype for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"app_projects\",\"resources\":{\"parent\":{\"name\":\"Project\",\"table\":\"projects\",\"path\":\"/projects\",\"fields\":[{\"name\":\"name\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}},\"child\":{\"name\":\"Todo\",\"table\":\"todos\",\"path\":\"/todos\",\"fields\":[{\"name\":\"title\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"completed\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"due_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"completed\",\"date_field\":\"due_on\",\"max_limit\":100}}},\"relation\":{\"foreign_key\":\"constructor\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"related0\",\"down_revision\":null}}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS15_CNL_PATH_BEFORE_FIELD",
+      "purpose": "A path refusal comes before a field refusal.",
+      "form": "cnl",
+      "base_example": "v1.cnl",
+      "line_edits": [
+        {
+          "line": 7,
+          "with": "Use path \"/items/\"."
+        },
+        {
+          "line": 8,
+          "with": "Field constructor is required str and is unique."
+        }
+      ],
+      "http_status": 422,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items/\\\".\\nField constructor is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"typescript\"}",
+      "span_text": "\"/items/\"",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 7,
+        "column": 10,
+        "end_line": 7,
+        "end_column": 19,
+        "byte_start": 130,
+        "byte_end": 139,
+        "prompt_pointer": "/resource/path",
+        "cause": "TypeScript output needs a path without empty segments, not /items/.",
+        "allowed_form": "Use a path such as /items or /team/items without a trailing or double slash for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items/\\\".\\nField constructor is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS16_CNL_V5_CHILD_FIELD_BEFORE_FOREIGN_KEY",
+      "purpose": "A child field refusal comes before a foreign key refusal.",
+      "form": "cnl",
+      "base_example": "v5.cnl",
+      "line_edits": [
+        {
+          "line": 20,
+          "with": "Field prototype is required str and is not unique."
+        },
+        {
+          "line": 30,
+          "with": "Relate child to parent with foreign key constructor and restrict deletion."
+        }
+      ],
+      "http_status": 422,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package app_projects.\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField prototype is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key constructor and restrict deletion.\\nUse migration revision related0.\\nUse no previous migration revision.\\nUse no capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"typescript\"}",
+      "span_text": "prototype",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 20,
+        "column": 7,
+        "end_line": 20,
+        "end_column": 16,
+        "byte_start": 481,
+        "byte_end": 490,
+        "prompt_pointer": "/resources/child/fields/0/name",
+        "cause": "TypeScript output cannot use the name prototype.",
+        "allowed_form": "Use a name other than __proto__, constructor or prototype for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package app_projects.\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField prototype is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key constructor and restrict deletion.\\nUse migration revision related0.\\nUse no previous migration revision.\\nUse no capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS17_JSON_V5_PARENT_BEFORE_CHILD",
+      "purpose": "Every parent check comes before every child check.",
+      "form": "json",
+      "base_example": "v5.prompt.json",
+      "http_status": 422,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"app_projects\",\"resources\":{\"parent\":{\"name\":\"Project\",\"table\":\"projects\",\"path\":\"/projects\",\"fields\":[{\"name\":\"constructor\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}},\"child\":{\"name\":\"Todo\",\"table\":\"todos\",\"path\":\"/todos\",\"fields\":[{\"name\":\"prototype\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"completed\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"due_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"completed\",\"date_field\":\"due_on\",\"max_limit\":100}}},\"relation\":{\"foreign_key\":\"project_id\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"related0\",\"down_revision\":null}},\"target\":\"typescript\"}",
+      "span_text": "\"constructor\"",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 1,
+        "column": 189,
+        "end_line": 1,
+        "end_column": 202,
+        "byte_start": 188,
+        "byte_end": 201,
+        "prompt_pointer": "/prompt/resources/parent/fields/0/name",
+        "cause": "TypeScript output cannot use the name constructor.",
+        "allowed_form": "Use a name other than __proto__, constructor or prototype for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"app_projects\",\"resources\":{\"parent\":{\"name\":\"Project\",\"table\":\"projects\",\"path\":\"/projects\",\"fields\":[{\"name\":\"constructor\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}},\"child\":{\"name\":\"Todo\",\"table\":\"todos\",\"path\":\"/todos\",\"fields\":[{\"name\":\"prototype\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"completed\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"due_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"completed\",\"date_field\":\"due_on\",\"max_limit\":100}}},\"relation\":{\"foreign_key\":\"project_id\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"related0\",\"down_revision\":null}}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS18_CNL_V5_CAPABILITIES",
+      "purpose": "A v5 prompt with capabilities.",
+      "form": "cnl",
+      "base_example": "v5.cnl",
+      "line_edits": [
+        {
+          "line": 33,
+          "with": "Begin capabilities.\nUse database postgresql.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities."
+        }
+      ],
+      "http_status": 422,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package app_projects.\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related0.\\nUse no previous migration revision.\\nBegin capabilities.\\nUse database postgresql.\\nUse authentication jwt.\\nUse object storage none.\\nUse workflow json_export.\\nUse no workflow value field.\\nUse no workflow group field.\\nEnd capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"typescript\"}",
+      "span_text": "jwt",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 35,
+        "column": 20,
+        "end_line": 35,
+        "end_column": 23,
+        "byte_start": 1081,
+        "byte_end": 1084,
+        "prompt_pointer": "/capabilities/auth",
+        "cause": "TypeScript output phase 1 does not cover v5 capabilities such as authentication jwt.",
+        "allowed_form": "Use no capabilities for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package app_projects.\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related0.\\nUse no previous migration revision.\\nBegin capabilities.\\nUse database postgresql.\\nUse authentication jwt.\\nUse object storage none.\\nUse workflow json_export.\\nUse no workflow value field.\\nUse no workflow group field.\\nEnd capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS19_JSON_V5_CAPABILITIES",
+      "purpose": "A v5 prompt with capabilities.",
+      "form": "json",
+      "base_example": "v5.prompt.json",
+      "http_status": 422,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"app_projects\",\"resources\":{\"parent\":{\"name\":\"Project\",\"table\":\"projects\",\"path\":\"/projects\",\"fields\":[{\"name\":\"name\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}},\"child\":{\"name\":\"Todo\",\"table\":\"todos\",\"path\":\"/todos\",\"fields\":[{\"name\":\"title\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"completed\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"due_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"completed\",\"date_field\":\"due_on\",\"max_limit\":100}}},\"relation\":{\"foreign_key\":\"project_id\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"related0\",\"down_revision\":null},\"capabilities\":{\"database\":\"postgresql\",\"auth\":\"jwt\",\"storage\":\"none\",\"workflow\":\"json_export\",\"value_field\":null,\"group_field\":null}},\"target\":\"typescript\"}",
+      "span_text": "\"jwt\"",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 1,
+        "column": 2116,
+        "end_line": 1,
+        "end_column": 2121,
+        "byte_start": 2115,
+        "byte_end": 2120,
+        "prompt_pointer": "/prompt/capabilities/auth",
+        "cause": "TypeScript output phase 1 does not cover v5 capabilities such as authentication jwt.",
+        "allowed_form": "Use no capabilities for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"app_projects\",\"resources\":{\"parent\":{\"name\":\"Project\",\"table\":\"projects\",\"path\":\"/projects\",\"fields\":[{\"name\":\"name\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}},\"child\":{\"name\":\"Todo\",\"table\":\"todos\",\"path\":\"/todos\",\"fields\":[{\"name\":\"title\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"completed\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"due_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"completed\",\"date_field\":\"due_on\",\"max_limit\":100}}},\"relation\":{\"foreign_key\":\"project_id\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"related0\",\"down_revision\":null},\"capabilities\":{\"database\":\"postgresql\",\"auth\":\"jwt\",\"storage\":\"none\",\"workflow\":\"json_export\",\"value_field\":null,\"group_field\":null}}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS20_CNL_V5_CAPABILITIES_FIRST",
+      "purpose": "A capabilities refusal comes before a field refusal.",
+      "form": "cnl",
+      "base_example": "v5.cnl",
+      "line_edits": [
+        {
+          "line": 20,
+          "with": "Field prototype is required str and is not unique."
+        },
+        {
+          "line": 33,
+          "with": "Begin capabilities.\nUse database postgresql.\nUse authentication jwt.\nUse object storage none.\nUse workflow json_export.\nUse no workflow value field.\nUse no workflow group field.\nEnd capabilities."
+        }
+      ],
+      "http_status": 422,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package app_projects.\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField prototype is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related0.\\nUse no previous migration revision.\\nBegin capabilities.\\nUse database postgresql.\\nUse authentication jwt.\\nUse object storage none.\\nUse workflow json_export.\\nUse no workflow value field.\\nUse no workflow group field.\\nEnd capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"typescript\"}",
+      "span_text": "jwt",
+      "expected": {
+        "code": "UNSUPPORTED_TARGET",
+        "line": 35,
+        "column": 20,
+        "end_line": 35,
+        "end_column": 23,
+        "byte_start": 1085,
+        "byte_end": 1088,
+        "prompt_pointer": "/capabilities/auth",
+        "cause": "TypeScript output phase 1 does not cover v5 capabilities such as authentication jwt.",
+        "allowed_form": "Use no capabilities for target typescript, or omit target to generate Python."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package app_projects.\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField prototype is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related0.\\nUse no previous migration revision.\\nBegin capabilities.\\nUse database postgresql.\\nUse authentication jwt.\\nUse object storage none.\\nUse workflow json_export.\\nUse no workflow value field.\\nUse no workflow group field.\\nEnd capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "TS21_CNL_V3_FILTER_LIMIT",
+      "purpose": "A v3 bool filter named like the limit parameter; compiler-v1 refuses it for every target.",
+      "form": "cnl",
+      "base_example": "v3.cnl",
+      "line_edits": [
+        {
+          "line": 10,
+          "with": "Field limit is optional bool and is not unique with default false."
+        },
+        {
+          "line": 13,
+          "with": "Filter exactly on field limit."
+        }
+      ],
+      "http_status": 400,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 3.\\nUse package todos.\\nBegin resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField limit is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field limit.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision service1000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact boolean filter, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"typescript\"}",
+      "span_text": "limit",
+      "expected": {
+        "code": "INVALID_VALUE",
+        "line": 13,
+        "column": 25,
+        "end_line": 13,
+        "end_column": 30,
+        "byte_start": 376,
+        "byte_end": 381,
+        "prompt_pointer": "/query/filter_field",
+        "cause": "prompt.query.filter_field: name collides with a generated Python identifier",
+        "allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 3.\\nUse package todos.\\nBegin resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField limit is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field limit.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision service1000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact boolean filter, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "the same diagnostic"
+    },
+    {
+      "id": "TS22_JSON_V3_FILTER_OFFSET",
+      "purpose": "A v3 bool filter named like the offset parameter; compiler-v1 refuses it for every target.",
+      "form": "json",
+      "base_example": "v3.prompt.json",
+      "http_status": 400,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact boolean filter, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"service1000\"},\"package\":\"todos\",\"query\":{\"filter_field\":\"offset\",\"max_limit\":100},\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"offset\",\"required\":false,\"type\":\"bool\",\"unique\":false}],\"name\":\"Todo\",\"path\":\"/todos\",\"table\":\"todos\"},\"tests\":[\"Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v3\"},\"target\":\"typescript\"}",
+      "span_text": "\"offset\"",
+      "expected": {
+        "code": "INVALID_VALUE",
+        "line": 1,
+        "column": 457,
+        "end_line": 1,
+        "end_column": 465,
+        "byte_start": 456,
+        "byte_end": 464,
+        "prompt_pointer": "/prompt/query/filter_field",
+        "cause": "prompt.query.filter_field: name collides with a generated Python identifier",
+        "allowed_form": "A prompt that meets the pinned compiler contract."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact boolean filter, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"service1000\"},\"package\":\"todos\",\"query\":{\"filter_field\":\"offset\",\"max_limit\":100},\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"offset\",\"required\":false,\"type\":\"bool\",\"unique\":false}],\"name\":\"Todo\",\"path\":\"/todos\",\"table\":\"todos\"},\"tests\":[\"Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v3\"}}",
+      "python_control_expected": "the same diagnostic, located in python_control_body"
+    },
+    {
+      "id": "TP01_CNL_SYNTAX_BEFORE_TARGET",
+      "purpose": "The frozen compiler-v1 case CNL03_WRONG_FIELD_TYPE keeps its diagnostic with target typescript.",
+      "form": "cnl",
+      "base_example": "v7.cnl",
+      "line_edits": [
+        {
+          "line": 21,
+          "with": "Field title is required uuid and is not unique."
+        }
+      ],
+      "http_status": 400,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 7.\\nUse package app_projects.\\nBind contract related-flow.v1 with SHA-256 \\\"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\\\".\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required uuid and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nField external_code is required str and is unique.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related80000.\\nUse no previous migration revision.\\nBegin capabilities.\\nUse database postgresql.\\nUse authentication jwt.\\nUse object storage none.\\nUse workflow json_export.\\nUse no workflow value field.\\nUse no workflow group field.\\nEnd capabilities.\\nBegin routes.\\nAllow create on parent.\\nAllow get on parent.\\nAllow list on parent.\\nAllow patch on parent.\\nAllow delete on parent.\\nAllow create on child.\\nAllow get on child.\\nAllow list on child.\\nAllow patch on child.\\nAllow delete on child.\\nAllow batch creation.\\nEnd routes.\\nBegin flow make_family.\\nInput parent has type parent_input.\\nInput child has type child_input.\\nInput patch has type child_patch.\\nBegin steps.\\nBegin step auth with operation authorize.\\nOn failure, use no undo.\\nEnd step auth.\\nBegin transaction write.\\nBegin step made with operation parent.create.\\nSet argument data to input parent.\\nOn failure, undo with delete_created.\\nEnd step made.\\nBegin step added with operation child.create.\\nSet argument parent_id to step made field \\\"id\\\".\\nSet argument data to input child.\\nOn failure, undo with delete_created.\\nEnd step added.\\nBegin step patched with operation child.patch.\\nSet argument parent_id to step made field \\\"id\\\".\\nSet argument child_id to step added field \\\"id\\\".\\nSet argument data to input patch.\\nOn failure, undo with restore_patch.\\nEnd step patched.\\nEnd transaction write.\\nBegin step summary with operation workflow.run.\\nSet argument parent_id to step made field \\\"id\\\".\\nOn failure, use no undo.\\nEnd step summary.\\nEnd steps.\\nReturn parent from step made field \\\"\\\".\\nReturn summary from step summary field \\\"data\\\".\\nReturn label from literal string \\\"台灣 \\\\\\\"demo\\\\\\\"\\\\nline\\\".\\nReturn signed_zero from literal float -0.0.\\nEnd flow make_family.\\nEnd request.\\n\",\"target\":\"typescript\"}",
+      "span_text": "uuid",
+      "expected": {
+        "code": "CNL_SYNTAX",
+        "line": 21,
+        "column": 25,
+        "end_line": 21,
+        "end_column": 29,
+        "byte_start": 610,
+        "byte_end": 614,
+        "prompt_pointer": null,
+        "cause": "Field token uuid is outside the grammar vocabulary.",
+        "allowed_form": "str, int, float, bool, or date when the prompt version allows date."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 7.\\nUse package app_projects.\\nBind contract related-flow.v1 with SHA-256 \\\"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\\\".\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required uuid and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nField external_code is required str and is unique.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related80000.\\nUse no previous migration revision.\\nBegin capabilities.\\nUse database postgresql.\\nUse authentication jwt.\\nUse object storage none.\\nUse workflow json_export.\\nUse no workflow value field.\\nUse no workflow group field.\\nEnd capabilities.\\nBegin routes.\\nAllow create on parent.\\nAllow get on parent.\\nAllow list on parent.\\nAllow patch on parent.\\nAllow delete on parent.\\nAllow create on child.\\nAllow get on child.\\nAllow list on child.\\nAllow patch on child.\\nAllow delete on child.\\nAllow batch creation.\\nEnd routes.\\nBegin flow make_family.\\nInput parent has type parent_input.\\nInput child has type child_input.\\nInput patch has type child_patch.\\nBegin steps.\\nBegin step auth with operation authorize.\\nOn failure, use no undo.\\nEnd step auth.\\nBegin transaction write.\\nBegin step made with operation parent.create.\\nSet argument data to input parent.\\nOn failure, undo with delete_created.\\nEnd step made.\\nBegin step added with operation child.create.\\nSet argument parent_id to step made field \\\"id\\\".\\nSet argument data to input child.\\nOn failure, undo with delete_created.\\nEnd step added.\\nBegin step patched with operation child.patch.\\nSet argument parent_id to step made field \\\"id\\\".\\nSet argument child_id to step added field \\\"id\\\".\\nSet argument data to input patch.\\nOn failure, undo with restore_patch.\\nEnd step patched.\\nEnd transaction write.\\nBegin step summary with operation workflow.run.\\nSet argument parent_id to step made field \\\"id\\\".\\nOn failure, use no undo.\\nEnd step summary.\\nEnd steps.\\nReturn parent from step made field \\\"\\\".\\nReturn summary from step summary field \\\"data\\\".\\nReturn label from literal string \\\"台灣 \\\\\\\"demo\\\\\\\"\\\\nline\\\".\\nReturn signed_zero from literal float -0.0.\\nEnd flow make_family.\\nEnd request.\\n\"}",
+      "python_control_expected": "the same diagnostic"
+    },
+    {
+      "id": "TP02_CNL_VERSION_BEFORE_TARGET",
+      "purpose": "The frozen compiler-v1 case CNL02_UNSUPPORTED_PROMPT_VERSION keeps its diagnostic with target typescript.",
+      "form": "cnl",
+      "base_example": "v7.cnl",
+      "line_edits": [
+        {
+          "line": 2,
+          "with": "Use prompt version 8."
+        }
+      ],
+      "http_status": 422,
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 8.\\nUse package app_projects.\\nBind contract related-flow.v1 with SHA-256 \\\"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\\\".\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nField external_code is required str and is unique.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related80000.\\nUse no previous migration revision.\\nBegin capabilities.\\nUse database postgresql.\\nUse authentication jwt.\\nUse object storage none.\\nUse workflow json_export.\\nUse no workflow value field.\\nUse no workflow group field.\\nEnd capabilities.\\nBegin routes.\\nAllow create on parent.\\nAllow get on parent.\\nAllow list on parent.\\nAllow patch on parent.\\nAllow delete on parent.\\nAllow create on child.\\nAllow get on child.\\nAllow list on child.\\nAllow patch on child.\\nAllow delete on child.\\nAllow batch creation.\\nEnd routes.\\nBegin flow make_family.\\nInput parent has type parent_input.\\nInput child has type child_input.\\nInput patch has type child_patch.\\nBegin steps.\\nBegin step auth with operation authorize.\\nOn failure, use no undo.\\nEnd step auth.\\nBegin transaction write.\\nBegin step made with operation parent.create.\\nSet argument data to input parent.\\nOn failure, undo with delete_created.\\nEnd step made.\\nBegin step added with operation child.create.\\nSet argument parent_id to step made field \\\"id\\\".\\nSet argument data to input child.\\nOn failure, undo with delete_created.\\nEnd step added.\\nBegin step patched with operation child.patch.\\nSet argument parent_id to step made field \\\"id\\\".\\nSet argument child_id to step added field \\\"id\\\".\\nSet argument data to input patch.\\nOn failure, undo with restore_patch.\\nEnd step patched.\\nEnd transaction write.\\nBegin step summary with operation workflow.run.\\nSet argument parent_id to step made field \\\"id\\\".\\nOn failure, use no undo.\\nEnd step summary.\\nEnd steps.\\nReturn parent from step made field \\\"\\\".\\nReturn summary from step summary field \\\"data\\\".\\nReturn label from literal string \\\"台灣 \\\\\\\"demo\\\\\\\"\\\\nline\\\".\\nReturn signed_zero from literal float -0.0.\\nEnd flow make_family.\\nEnd request.\\n\",\"target\":\"typescript\"}",
+      "span_text": "8",
+      "expected": {
+        "code": "UNSUPPORTED_VERSION",
+        "line": 2,
+        "column": 20,
+        "end_line": 2,
+        "end_column": 21,
+        "byte_start": 42,
+        "byte_end": 43,
+        "prompt_pointer": "/version",
+        "cause": "Prompt version is outside the supported set 1 through 7.",
+        "allowed_form": "Use prompt version 1 through 7."
+      },
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 8.\\nUse package app_projects.\\nBind contract related-flow.v1 with SHA-256 \\\"716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091\\\".\\nBegin parent resource.\\nUse resource name Project.\\nUse table projects.\\nUse path \\\"/projects\\\".\\nField name is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nField external_code is required str and is unique.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field due_on.\\nLimit query results to 100.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key project_id and restrict deletion.\\nUse migration revision related80000.\\nUse no previous migration revision.\\nBegin capabilities.\\nUse database postgresql.\\nUse authentication jwt.\\nUse object storage none.\\nUse workflow json_export.\\nUse no workflow value field.\\nUse no workflow group field.\\nEnd capabilities.\\nBegin routes.\\nAllow create on parent.\\nAllow get on parent.\\nAllow list on parent.\\nAllow patch on parent.\\nAllow delete on parent.\\nAllow create on child.\\nAllow get on child.\\nAllow list on child.\\nAllow patch on child.\\nAllow delete on child.\\nAllow batch creation.\\nEnd routes.\\nBegin flow make_family.\\nInput parent has type parent_input.\\nInput child has type child_input.\\nInput patch has type child_patch.\\nBegin steps.\\nBegin step auth with operation authorize.\\nOn failure, use no undo.\\nEnd step auth.\\nBegin transaction write.\\nBegin step made with operation parent.create.\\nSet argument data to input parent.\\nOn failure, undo with delete_created.\\nEnd step made.\\nBegin step added with operation child.create.\\nSet argument parent_id to step made field \\\"id\\\".\\nSet argument data to input child.\\nOn failure, undo with delete_created.\\nEnd step added.\\nBegin step patched with operation child.patch.\\nSet argument parent_id to step made field \\\"id\\\".\\nSet argument child_id to step added field \\\"id\\\".\\nSet argument data to input patch.\\nOn failure, undo with restore_patch.\\nEnd step patched.\\nEnd transaction write.\\nBegin step summary with operation workflow.run.\\nSet argument parent_id to step made field \\\"id\\\".\\nOn failure, use no undo.\\nEnd step summary.\\nEnd steps.\\nReturn parent from step made field \\\"\\\".\\nReturn summary from step summary field \\\"data\\\".\\nReturn label from literal string \\\"台灣 \\\\\\\"demo\\\\\\\"\\\\nline\\\".\\nReturn signed_zero from literal float -0.0.\\nEnd flow make_family.\\nEnd request.\\n\"}",
+      "python_control_expected": "the same diagnostic"
+    },
+    {
+      "id": "TP03_JSON_V4_RESERVED_FILTER_BEFORE_TARGET",
+      "purpose": "Existing validation refuses a v4 filter named before, so the TypeScript scope never sees it.",
+      "form": "json",
+      "base_example": "v4.prompt.json",
+      "http_status": 400,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"service1000\"},\"package\":\"todos\",\"query\":{\"date_field\":\"deadline_on\",\"filter_field\":\"before\",\"max_limit\":100},\"resource\":{\"fields\":[{\"default\":null,\"name\":\"deadline_on\",\"required\":false,\"type\":\"date\",\"unique\":false},{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"before\",\"required\":false,\"type\":\"bool\",\"unique\":false}],\"name\":\"Todo\",\"path\":\"/todos\",\"table\":\"todos\"},\"tests\":[\"Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v4\"},\"target\":\"typescript\"}",
+      "span_text": "\"before\"",
+      "expected": {
+        "code": "INVALID_VALUE",
+        "line": 1,
+        "column": 508,
+        "end_line": 1,
+        "end_column": 516,
+        "byte_start": 507,
+        "byte_end": 515,
+        "prompt_pointer": "/prompt/query/filter_field",
+        "cause": "prompt.query.filter_field: reserved query name",
+        "allowed_form": "A prompt that meets the pinned compiler contract."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"service1000\"},\"package\":\"todos\",\"query\":{\"date_field\":\"deadline_on\",\"filter_field\":\"before\",\"max_limit\":100},\"resource\":{\"fields\":[{\"default\":null,\"name\":\"deadline_on\",\"required\":false,\"type\":\"date\",\"unique\":false},{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"before\",\"required\":false,\"type\":\"bool\",\"unique\":false}],\"name\":\"Todo\",\"path\":\"/todos\",\"table\":\"todos\"},\"tests\":[\"Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v4\"}}",
+      "python_control_expected": "the same diagnostic, located in python_control_body"
+    },
+    {
+      "id": "TP04_JSON_V5_HEALTHZ_PATH_BEFORE_TARGET",
+      "purpose": "compiler-v1 refuses a v5 path whose first segment is healthz, so path_reserved is reachable only for v1 to v4.",
+      "form": "json",
+      "base_example": "v5.prompt.json",
+      "http_status": 400,
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"app_projects\",\"resources\":{\"parent\":{\"name\":\"Project\",\"table\":\"projects\",\"path\":\"/healthz\",\"fields\":[{\"name\":\"name\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}},\"child\":{\"name\":\"Todo\",\"table\":\"todos\",\"path\":\"/todos\",\"fields\":[{\"name\":\"title\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"completed\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"due_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"completed\",\"date_field\":\"due_on\",\"max_limit\":100}}},\"relation\":{\"foreign_key\":\"project_id\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"related0\",\"down_revision\":null}},\"target\":\"typescript\"}",
+      "span_text": "\"/healthz\"",
+      "expected": {
+        "code": "INVALID_VALUE",
+        "line": 1,
+        "column": 159,
+        "end_line": 1,
+        "end_column": 169,
+        "byte_start": 158,
+        "byte_end": 168,
+        "prompt_pointer": "/prompt/resources/parent/path",
+        "cause": "invalid resource path",
+        "allowed_form": "A prompt that meets the pinned compiler contract."
+      },
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"app_projects\",\"resources\":{\"parent\":{\"name\":\"Project\",\"table\":\"projects\",\"path\":\"/healthz\",\"fields\":[{\"name\":\"name\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}},\"child\":{\"name\":\"Todo\",\"table\":\"todos\",\"path\":\"/todos\",\"fields\":[{\"name\":\"title\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"description\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"completed\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"due_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"completed\",\"date_field\":\"due_on\",\"max_limit\":100}}},\"relation\":{\"foreign_key\":\"project_id\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"related0\",\"down_revision\":null}}}",
+      "python_control_expected": "the same diagnostic, located in python_control_body"
+    }
+  ]
+}

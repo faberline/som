@@ -1,0 +1,383 @@
+{
+  "version": "som.typescript-output-scope.v1",
+  "target": "typescript",
+  "prompt_versions": {
+    "in_scope": [
+      "som.prompt.v1",
+      "som.prompt.v2",
+      "som.prompt.v3",
+      "som.prompt.v4",
+      "som.prompt.v5"
+    ],
+    "out_of_scope": {
+      "som.prompt.v6": "capabilities: authentication, database selection, object storage and workflows",
+      "som.prompt.v7": "flows and capabilities: authentication, database selection, object storage, workflows, branches and compensation"
+    }
+  },
+  "semantics": "A TypeScript request admits exactly the prompts that the existing compiler-v1 validation admits, minus the refusals below. Prompt meaning does not change by target.",
+  "field_types": {
+    "som.prompt.v1": [
+      "str",
+      "int",
+      "float",
+      "bool"
+    ],
+    "som.prompt.v2": [
+      "str",
+      "int",
+      "float",
+      "bool"
+    ],
+    "som.prompt.v3": [
+      "str",
+      "int",
+      "float",
+      "bool"
+    ],
+    "som.prompt.v4": [
+      "str",
+      "int",
+      "float",
+      "bool",
+      "date"
+    ],
+    "som.prompt.v5": [
+      "str",
+      "int",
+      "float",
+      "bool",
+      "date"
+    ]
+  },
+  "column_types": {
+    "id": "SERIAL PRIMARY KEY, the INTEGER column with a sequence default that SQLAlchemy creates for an Integer primary key",
+    "str": "VARCHAR(255)",
+    "optional_with_default": "NOT NULL with the prompt default as the column DEFAULT",
+    "optional_without_default": "nullable",
+    "int": "INTEGER",
+    "float": "DOUBLE PRECISION",
+    "bool": "BOOLEAN",
+    "date": "DATE",
+    "created_at": "TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP for v3 and v4, DEFAULT now() for v5 (v3, v4, v5 only)",
+    "updated_at": "TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP for v3 and v4, DEFAULT now() for v5 (v3, v4, v5 only)",
+    "foreign_key": "INTEGER NOT NULL REFERENCES parent(id) ON DELETE RESTRICT (v5 only)"
+  },
+  "identifiers": {
+    "rule": "Field names and the foreign key are used verbatim as JSON members, query parameter names and SQL column names. In TypeScript a prompt name appears only as a quoted string: a quoted property key, a quoted interface member, a string literal, or a double-quoted SQL identifier inside a string constant. No TypeScript identifier (variable, function, type, interface, module or file name) comes from the prompt, so JavaScript reserved words, uppercase letters and repeated underscores need no rule.",
+    "reserved_names": [
+      "__proto__",
+      "constructor",
+      "prototype"
+    ],
+    "reserved_names_reason": "An object literal with the quoted key \"__proto__\" sets the prototype instead of creating a member, so a field named __proto__ would silently vanish from responses. constructor and prototype are refused as a conservative rule: they are the members most often special-cased by JavaScript libraries and serializers. Other Object.prototype member names such as toString or hasOwnProperty are admitted, because generated code reads request members only after Object.hasOwn and builds every response as an object literal with quoted keys (product-layout.json naming).",
+    "prompt_names_not_used_in_typescript": [
+      "package, only in README.md",
+      "resource name, only in README.md",
+      "table name, only as a quoted SQL identifier",
+      "migration revision, only in the migration file name, a SQL comment and the migrator record"
+    ],
+    "reserved_tables": [
+      "_som_ts_migrations"
+    ]
+  },
+  "query_parameters": {
+    "som.prompt.v2": {
+      "filter_parameter": "filter_value",
+      "fixed": [
+        "filter_value",
+        "limit",
+        "offset"
+      ]
+    },
+    "som.prompt.v3": {
+      "filter_parameter": "field_name",
+      "fixed": [
+        "limit",
+        "offset"
+      ]
+    },
+    "som.prompt.v4": {
+      "filter_parameter": "field_name",
+      "fixed": [
+        "before",
+        "limit",
+        "offset"
+      ]
+    },
+    "som.prompt.v5": {
+      "filter_parameter": "field_name",
+      "fixed": [
+        "before",
+        "limit",
+        "offset"
+      ]
+    }
+  },
+  "routes": {
+    "fixed_top_level_paths": [
+      "/healthz"
+    ],
+    "every_product": [
+      {
+        "method": "GET",
+        "path": "/healthz",
+        "success": 200,
+        "body": "{\"status\":\"ok\"}",
+        "database_unavailable": "503 {\"detail\":\"database unavailable\"}"
+      }
+    ],
+    "som.prompt.v1": [
+      {
+        "method": "GET",
+        "path": "{path}",
+        "success": 200,
+        "logic": "List rows in id order."
+      },
+      {
+        "method": "POST",
+        "path": "{path}",
+        "success": 201,
+        "logic": "Create a row. Return 409 for a unique value conflict."
+      },
+      {
+        "method": "GET",
+        "path": "{path}/{id}",
+        "success": 200,
+        "logic": "Get a row by id. Return 404 if it does not exist."
+      },
+      {
+        "method": "PATCH",
+        "path": "{path}/{id}",
+        "success": 200,
+        "logic": "Update supplied fields. Return 404 if the row does not exist."
+      },
+      {
+        "method": "DELETE",
+        "path": "{path}/{id}",
+        "success": 204,
+        "logic": "Delete a row. Return 404 if it does not exist."
+      }
+    ],
+    "som.prompt.v2": [
+      {
+        "method": "GET",
+        "path": "{path}",
+        "success": 200,
+        "query": [
+          "filter_value",
+          "limit",
+          "offset"
+        ],
+        "logic": "List rows with an optional exact string filter, limit, and offset in id order."
+      },
+      {
+        "method": "POST",
+        "path": "{path}",
+        "success": 201
+      },
+      {
+        "method": "GET",
+        "path": "{path}/{id}",
+        "success": 200
+      },
+      {
+        "method": "PATCH",
+        "path": "{path}/{id}",
+        "success": 200
+      },
+      {
+        "method": "DELETE",
+        "path": "{path}/{id}",
+        "success": 204
+      }
+    ],
+    "som.prompt.v3": [
+      {
+        "method": "GET",
+        "path": "{path}",
+        "success": 200,
+        "query": [
+          "{filter_field}",
+          "limit",
+          "offset"
+        ],
+        "logic": "List rows with an optional exact boolean filter, limit, and offset in id order."
+      },
+      {
+        "method": "POST",
+        "path": "{path}",
+        "success": 201
+      },
+      {
+        "method": "GET",
+        "path": "{path}/{id}",
+        "success": 200
+      },
+      {
+        "method": "PATCH",
+        "path": "{path}/{id}",
+        "success": 200
+      },
+      {
+        "method": "DELETE",
+        "path": "{path}/{id}",
+        "success": 204
+      }
+    ],
+    "som.prompt.v4": [
+      {
+        "method": "GET",
+        "path": "{path}",
+        "success": 200,
+        "query": [
+          "{filter_field}",
+          "before",
+          "limit",
+          "offset"
+        ],
+        "logic": "List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order."
+      },
+      {
+        "method": "POST",
+        "path": "{path}",
+        "success": 201
+      },
+      {
+        "method": "GET",
+        "path": "{path}/{id}",
+        "success": 200
+      },
+      {
+        "method": "PATCH",
+        "path": "{path}/{id}",
+        "success": 200
+      },
+      {
+        "method": "DELETE",
+        "path": "{path}/{id}",
+        "success": 204
+      }
+    ],
+    "som.prompt.v5": [
+      {
+        "method": "POST",
+        "path": "{parent_path}",
+        "success": 201
+      },
+      {
+        "method": "GET",
+        "path": "{parent_path}",
+        "success": 200,
+        "query": [
+          "{parent_filter_field} when set",
+          "before when parent date_field is set",
+          "limit",
+          "offset"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "{parent_path}/{parent_id}",
+        "success": 200
+      },
+      {
+        "method": "PATCH",
+        "path": "{parent_path}/{parent_id}",
+        "success": 200
+      },
+      {
+        "method": "DELETE",
+        "path": "{parent_path}/{parent_id}",
+        "success": 204,
+        "conflict": "409 when the parent has children"
+      },
+      {
+        "method": "POST",
+        "path": "{parent_path}/{parent_id}{child_path}",
+        "success": 201
+      },
+      {
+        "method": "GET",
+        "path": "{parent_path}/{parent_id}{child_path}",
+        "success": 200,
+        "query": [
+          "{child_filter_field} when set",
+          "before when child date_field is set",
+          "limit",
+          "offset"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "{parent_path}/{parent_id}{child_path}/{child_id}",
+        "success": 200
+      },
+      {
+        "method": "PATCH",
+        "path": "{parent_path}/{parent_id}{child_path}/{child_id}",
+        "success": 200
+      },
+      {
+        "method": "DELETE",
+        "path": "{parent_path}/{parent_id}{child_path}/{child_id}",
+        "success": 204
+      },
+      {
+        "method": "POST",
+        "path": "{parent_path}/with-children",
+        "success": 201,
+        "logic": "Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure."
+      }
+    ]
+  },
+  "refusal_order": [
+    "prompt_version",
+    "v5: capabilities",
+    "for each resource in order (resource, or parent then child): path, then table, then each field name in array order",
+    "v5: relation foreign key"
+  ],
+  "compiler_v1_refusals": {
+    "query_parameter_collision": "A v3 filter field named limit or offset is refused by compiler-v1 for every target since compiler-v1 amendment 003 (INVALID_VALUE 400, selection-policy.json python_name_collisions), before any target check. TypeScript has no rule of its own for it. A v4 or v5 filter or date field named before, limit or offset is refused by existing validation as before."
+  },
+  "refusals": {
+    "prompt_version": {
+      "code": "UNSUPPORTED_TARGET",
+      "http_status": 422,
+      "cause": "TypeScript output phase 1 does not cover prompt version {version}: {family}.",
+      "allowed_form": "Use prompt version 1 through 5 for target typescript, or omit target to generate Python."
+    },
+    "v5_capabilities": {
+      "code": "UNSUPPORTED_TARGET",
+      "http_status": 422,
+      "cause": "TypeScript output phase 1 does not cover v5 capabilities such as authentication {auth}.",
+      "allowed_form": "Use no capabilities for target typescript, or omit target to generate Python."
+    },
+    "path_empty_segment": {
+      "code": "UNSUPPORTED_TARGET",
+      "http_status": 422,
+      "cause": "TypeScript output needs a path without empty segments, not {path}.",
+      "allowed_form": "Use a path such as /items or /team/items without a trailing or double slash for target typescript, or omit target to generate Python."
+    },
+    "path_reserved": {
+      "code": "UNSUPPORTED_TARGET",
+      "http_status": 422,
+      "cause": "TypeScript output reserves the path {path} for the health check.",
+      "allowed_form": "Use a resource path other than /healthz for target typescript, or omit target to generate Python.",
+      "reachable": "Only for prompt versions 1 to 4. compiler-v1 already refuses a v5 parent or child path whose first segment is healthz (INVALID_VALUE invalid resource path; negative case TP04)."
+    },
+    "table_reserved": {
+      "code": "UNSUPPORTED_TARGET",
+      "http_status": 422,
+      "cause": "TypeScript output reserves the table {table} for the migrator.",
+      "allowed_form": "Use a table name other than _som_ts_migrations for target typescript, or omit target to generate Python.",
+      "reachable": "Only for prompt versions 1 to 4. The v5 table pattern already refuses a leading underscore."
+    },
+    "identifier_reserved": {
+      "code": "UNSUPPORTED_TARGET",
+      "http_status": 422,
+      "cause": "TypeScript output cannot use the name {name}.",
+      "allowed_form": "Use a name other than __proto__, constructor or prototype for target typescript, or omit target to generate Python.",
+      "reachable": "__proto__ only for prompt versions 1 to 4, whose name pattern admits a leading underscore. constructor and prototype for every phase 1 version."
+    }
+  }
+}

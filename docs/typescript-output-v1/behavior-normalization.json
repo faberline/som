@@ -1,0 +1,88 @@
+{
+  "version": "som.typescript-output-behavior-normalization.v1",
+  "purpose": "How the parity suite compares the Python product and the TypeScript product generated from the same prompt.",
+  "hosting": {
+    "python": "As in rust-output-v1 behavior-normalization.json: v5 products run their own FastAPI app; v1 to v4 products export create_router(get_session) and the harness mounts it on a plain FastAPI() app with a session factory for the run database. Both run under uvicorn on a QA port.",
+    "typescript": "After the toolchain.json install command, the TypeScript product runs as node src/main.ts from the product directory with DATABASE_URL and SOM_APP_ADDR on a QA port, using the pinned Node binary and the toolchain.json command environment.",
+    "databases": "Each product gets its own fresh database in the same PostgreSQL 17.7 cluster. The Python database is migrated by the generated Alembic revision through the harness Alembic environment. The TypeScript database is migrated by migrate(pool) from src/migrate.ts at startup.",
+    "ports": "Never 8765 or 18765."
+  },
+  "schema_equivalence": {
+    "query": "information_schema and pg_catalog for schema public, excluding the alembic_version and _som_ts_migrations tables.",
+    "compared": [
+      "table names",
+      "column names in ordinal order",
+      "data_type and character_maximum_length",
+      "is_nullable",
+      "column_default, with sequence names rewritten to <table>_<column>_seq form",
+      "primary key columns",
+      "unique constraint column sets",
+      "foreign key columns, referenced table and column, and ON DELETE action",
+      "index column lists in order and uniqueness"
+    ],
+    "not_compared": [
+      "constraint names",
+      "index names",
+      "migration bookkeeping tables",
+      "sequence ownership names beyond the rewrite above"
+    ]
+  },
+  "request_scripts": {
+    "rule": "The parity script for a prompt is derived from the prompt alone, by the same rule as rust-output-v1: create rows with valid values for every field, list them with every query parameter the version has, get, patch each field, delete, and the refusals each route declares (404, 409, 422 for a missing required field and for a wrong JSON type). v5 adds child routes, the with-children batch with 1 and 20 children, a batch with 21 children, a child under a missing parent, a parent delete with children, and GET on {parent_path}/with-children.",
+    "added_inputs": [
+      "An int field value sent as a JSON number with a zero fraction, such as 1.0. Both products accept it and return the JSON integer.",
+      "A float field value sent as a JSON integer. Both products accept it; the numbers rule compares the returned values.",
+      "A str field value of exactly 255 Unicode code points that contains a character outside the Basic Multilingual Plane. Both products accept it.",
+      "For v5 only, a str field value of 256 Unicode code points. Both products return 422."
+    ],
+    "excluded_inputs": "The script sends no input listed under divergences."
+  },
+  "normalization": {
+    "ids": "Every id value in a response is replaced by its creation-order token: the first id the product returned for that table is id#1, and so on. Ids in later request paths use the same token mapping.",
+    "timestamps": "created_at and updated_at must be RFC 3339 strings with a UTC offset. Each is replaced by <timestamp>. Values are not compared as text: the TypeScript product writes Date.prototype.toISOString() with millisecond precision and Python writes its own form. Within each product, created_at <= updated_at when both are read as instants.",
+    "numbers": "JSON integers and JSON numbers with a fraction are distinct. A float field value is compared as a float; 3 and 3.0 are equal there. An int field value must be a JSON integer in both products.",
+    "member_order": "Object member order is ignored. Array order is compared.",
+    "422": "Both products return 422. Each body is {\"detail\": [items]} with at least one item, and each item has type, loc and msg. The set of loc[0] values is compared. type and msg text are not compared.",
+    "other_errors": "Status and the full JSON body are compared after id normalization. This covers 404 and 409 detail strings and the 404 and 405 fallback bodies.",
+    "headers": "Only status and the content-type media type are compared. 204 responses have no body in both products.",
+    "500": "A 500 in either product is a parity failure. Its body is not compared (product-layout.json errors)."
+  },
+  "divergences": [
+    {
+      "id": "D1",
+      "rule": "Pydantic lax coercion. Python accepts a string \"1\" for an int field, \"true\" for a bool field and similar coercions in a JSON body. TypeScript accepts only the JSON type and returns 422. A JSON number with a zero fraction for an int field is not a divergence (request_scripts added_inputs).",
+      "parity": "Excluded from parity inputs. The TypeScript product tests check the 422."
+    },
+    {
+      "id": "D2",
+      "rule": "v1 to v4 Python products return 500 for a string longer than 255 Unicode code points or an int outside signed 32 bits, because the database refuses the value. TypeScript returns 422. v5 Python already returns 422.",
+      "parity": "Excluded for v1 to v4. Compared for v5."
+    },
+    {
+      "id": "D3",
+      "rule": "A path id outside signed 32 bits. Python passes it to the database. TypeScript returns 404 without a query.",
+      "parity": "Excluded."
+    },
+    {
+      "id": "D4",
+      "rule": "A query parameter given twice. Python uses one of the values. TypeScript returns 422.",
+      "parity": "Excluded."
+    },
+    {
+      "id": "D5",
+      "rule": "A trailing slash on a route. The Python app redirects with 307. TypeScript returns 404 {\"detail\":\"Not Found\"}.",
+      "parity": "Excluded."
+    },
+    {
+      "id": "D6",
+      "rule": "/healthz exists in every TypeScript product but only in the v5 Python product.",
+      "parity": "Compared for v5 only. TypeScript product tests check it for every version."
+    },
+    {
+      "id": "D7",
+      "rule": "Query and path integer text other than an optional sign and ASCII digits (spaces, underscores, a fraction). Python may accept some of these forms. TypeScript returns 422, as the Rust product does.",
+      "parity": "Excluded."
+    }
+  ],
+  "strict_refusals": "acceptance-plan.json product_gates check D1 to D5 and D7 on the TypeScript product alone."
+}

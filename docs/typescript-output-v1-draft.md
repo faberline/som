@@ -1,6 +1,7 @@
 # SOM TypeScript output contract v1 — draft for issue #65
 
-Status: **draft, not frozen.** The options in section 6 were chosen on 2026-10-21. A person still approves the contract.
+Status: **draft, not frozen.** The options in section 6 and the four review decisions in section 10 were chosen on 2026-10-21.
+The freeze candidate is [typescript-output-v1/CONTRACT.md](typescript-output-v1/CONTRACT.md) with its JSON files. A person still approves it.
 Only then is it copied to `som-rs/contracts/typescript-output-v1/`, sealed with a receipt, and split into `agy:todo` issues.
 Nothing in this draft changes code, contracts, or outputs.
 
@@ -52,38 +53,38 @@ Each refusal is UNSUPPORTED_TARGET, HTTP 422, with the same pointer rules as Rus
 | v5_capabilities | A v5 prompt with a capabilities block | Phase 2 |
 | path_empty_segment | A resource path with an empty segment | Same as Rust phase 1 |
 | path_reserved | The top-level resource path `/healthz` | The product's own health route |
-| table_reserved | The table used by the TypeScript migrator (proposed `_som_ts_migrations`) | Bookkeeping table |
+| table_reserved | The table `_som_ts_migrations`, used by the TypeScript migrator | Bookkeeping table |
 | identifier_reserved | A field or foreign key named `__proto__`, `constructor`, or `prototype` | Object-key hazards in JavaScript |
-| query_parameter_collision | A v3 filter field named `limit` or `offset` | Same as Rust |
 
-Open question for review: the alternative to `identifier_reserved` is to generate code that never uses wire names as plain object keys (a `Map`, or `Object.create(null)` with quoted keys).
-That removes the refusal and costs some readability in the generated code.
-The draft proposes the refusal for phase 1.
+**Decided on 2026-10-21:** phase 1 keeps the `identifier_reserved` refusal.
+A v3 filter named `limit` or `offset` is no longer a target refusal: compiler-v1 amendment 003 refuses it for every target (INVALID_VALUE 400), as the Rust cases RS12 and RS13 record.
+No TypeScript identifier comes from the prompt, so names that Rust refuses (`self`, `Title`, `a__b`) and JavaScript reserved words are in scope for TypeScript.
 
 Check order: the Rust order, with the TypeScript profile in step 5.
 Every compiler-v1 diagnostic keeps its precedence over a TypeScript refusal.
 
-## 5. Product layout (proposal)
+## 5. Product layout
 
-For v1–v5 with PostgreSQL:
+**Decided on 2026-10-21:** Node runs the `.ts` files directly with type stripping. There is no build step and no `dist/`.
+For v1–v5 with PostgreSQL, 11 files:
 
 ```
-package.json
-package-lock.json
-tsconfig.json
+package.json                       # same bytes for every product
+package-lock.json                  # same bytes for every product; sealed in amendment 001
+tsconfig.json                      # same bytes for every product
+src/main.ts                        # DATABASE_URL, SOM_APP_ADDR, migrate, serve
+src/app.ts                         # Hono app, routes, /healthz, fallbacks, 422 mapping
+src/schemas.ts                     # request and response types, hand-written validators
+src/db.ts                          # SQL constants and pg functions
+src/migrate.ts                     # hand-written migrator, table _som_ts_migrations
+migrations/0001_<revision>.sql
+test/api.test.ts                   # node:test, needs TEST_DATABASE_URL
 README.md
-migrations/0001_init.sql
-src/main.ts                # serve, migrate upgrade|downgrade
-src/settings.ts            # DATABASE_URL, SOM_APP_ADDR
-src/db.ts                  # pool, migrator
-src/schemas.ts             # request and response types, validation
-src/routes.ts              # one handler per route
-test/api.test.ts           # generated tests, same coverage as the Rust tests
 ```
 
-- The exact file set, file count limit, and block order are frozen in `product-layout.json` and `bundle.schema.json`, as in Rust.
+- The exact file set (at most 12 files and 64 blocks) and the block order are frozen in `product-layout.json`, `bundle.schema.json` and the catalog, as in Rust.
 - `package.json` pins exact versions with no ranges.
-- The lockfile is a frozen reference file, as `reference/Cargo.lock` is for Rust.
+- **Decided on 2026-10-21:** the contract freezes without `package-lock.json`. After the one approved npm download, typescript-output-v1 amendment 001 seals `reference/package-lock.json`, the package integrity hashes and the formatter hash. No build is a candidate before amendment 001.
 
 ## 6. Options to choose
 
@@ -98,7 +99,7 @@ test/api.test.ts           # generated tests, same coverage as the Rust tests
 - Type check and formatting: typescript 5.9.3 and prettier 3.9.10.
 
 npm downloads are approved once, after the contract freezes, into a local vendored cache.
-Section 4's `identifier_reserved` refusal stays as proposed until review says otherwise.
+Section 4's `identifier_reserved` refusal is kept (section 10, decision 2).
 The tables below record the options that were considered.
 
 Versions are the registry's current releases on 2026-10-21.
@@ -162,7 +163,8 @@ Versions are the registry's current releases on 2026-10-21.
 | B. typescript 7.0.2 (native) | Already installed globally under nvm 22.18.0. Fast. Ships as platform binary packages, which are harder to pin. |
 | C. No `tsc`, Node type stripping only | No type check at all. Not recommended. |
 
-The product runs on compiled JavaScript or with type stripping. This follows from 6.1 A and is decided at freeze time.
+**Decided on 2026-10-21:** the product runs with Node's type stripping (`node src/main.ts`).
+`tsc --noEmit --strict --erasableSyntaxOnly` is a gate only. It emits nothing.
 
 ### 6.8 Downloads
 
@@ -172,12 +174,14 @@ Building and testing then runs offline. Other npm packages still need approval.
 
 ## 7. Behavior parity
 
-- Reuse `som-rs/behavior/suite.py` and `behavior-normalization.json` unchanged.
+- Reuse the Rust parity harness with the TypeScript `behavior-normalization.json`.
 - Add a TypeScript host: `node` runs the product with `DATABASE_URL` and `SOM_APP_ADDR` on a QA port, never 8765 or 18765.
-- Each prompt's TypeScript product must match the Python product under the same normalization (D1–D6) and the same schema-equivalence query.
+- Each prompt's TypeScript product must match the Python product under the frozen normalization and the divergences D1–D7 (typescript-output-v1/behavior-normalization.json).
 - The migrator's bookkeeping table is excluded from the comparison.
 
 ## 8. Cases
+
+The frozen form of this section is typescript-output-v1/CONTRACT.md section 9.
 
 - `target-examples.json`: the Rust examples with target `typescript`.
 - `negative-cases.json`: TS01 onward, one per refusal in section 4, plus the RT cases from amendment 005.
@@ -197,25 +201,19 @@ Building and testing then runs offline. Other npm packages still need approval.
 
 ## 10. Freeze review (2026-10-21)
 
-Verdict: **not freezable yet.** Sections 1 and 2 were corrected above. The items below are still open.
+The first review found the draft not freezable and listed four decisions for a person. All four were decided on 2026-10-21 with the recommended option:
 
-Decisions for a person:
+1. **Reference lockfile.** The contract freezes without `package-lock.json`. No npm access happens before the freeze.
+   After the one approved download, typescript-output-v1 amendment 001 seals `reference/package-lock.json`, the integrity hashes, and the formatter hash.
+2. **`identifier_reserved`.** Phase 1 refuses `__proto__`, `constructor` and `prototype` as field and foreign key names.
+3. **Type stripping.** Node runs the `.ts` files directly. `tsc --noEmit --strict --erasableSyntaxOnly` is a gate only. No build step, no `dist/`.
+4. **Backend location.** The TypeScript backend lives in `som-targets/src/typescript/` with its own `BACKEND_FILES` and its own backend descriptor.
+   A later change to a file the Rust backend descriptor hashes (`Cargo.toml`, `src/lib.rs`, `src/main.rs`, `src/profile.rs`, ...) is recorded as a Rust bundle compatibility break, as amendment 005 already records for phase 1.
 
-1. **Reference lockfile before the download.** Section 5 freezes `package-lock.json` as a reference file, but writing it needs registry metadata, and npm access is approved only after the freeze.
-   Options: allow one metadata-only resolution (`npm install --package-lock-only`, no tarballs) before the freeze; or freeze without the lockfile and seal it in amendment 001 right after the download.
-2. **`identifier_reserved`** (section 4): refuse `__proto__`, `constructor` and `prototype`, or generate code that never uses wire names as plain object keys.
-3. **Compiled JavaScript or type stripping** (6.7): the product runs `tsc` output or Node's type stripping. This changes the layout (a `dist/` build step or not) and the gates.
-4. **Where the TypeScript backend lives, and what it does to Rust bundles.** The Rust `backend` descriptor hashes `som-targets/Cargo.toml`, `src/lib.rs`, `src/main.rs` and `src/profile.rs`.
-   If the TypeScript backend is added to `som-targets`, every change to those shared files breaks recorded Rust bundles again.
-   Options: a separate crate or module with its own descriptor, plus moving the shared files out of the Rust backend file list (a rust-output-v1 amendment); or accept a Rust bundle break with each TypeScript change that touches them.
+The gaps the review listed are filled in the freeze candidate, [typescript-output-v1/](typescript-output-v1/):
 
-Gaps to fill before the freeze, with no decision needed:
-
-- Descriptors: a Rust bundle carries 11 asset keys (`ASSET_KEYS` in `som-rs/som-targets/src/rust/mod.rs`): six shared compiler-v1 descriptors and five target ones from `rust_descriptors()` (catalog, block_library, backend, formatter, target_contract). The TypeScript set needs its own target descriptors, a formatter descriptor for prettier, and a way to pin the Node binary (Rust pins rustc in toolchain.json).
-- `som.dsl.typescript.v1` is named but not defined. The DSL schema, the TypeScript catalog and the block library are still to be written.
-- Section 4 has no naming rule for generated identifiers. Resource and field names that are JavaScript reserved words (`class`, `delete`, `default`, ...) need a rule, as Rust's R2 handles keywords.
-- `table_reserved` names a proposed table (`_som_ts_migrations`). Fix the name.
-- Section 5 gives no file count limit and no block order.
-- The JSON files do not exist yet: `scope.json`, `product-layout.json`, `bundle.schema.json`, `toolchain.json` (the Node binary SHA-256, the npm version and the package integrity hashes), `api.schema.json` for the TypeScript responses, the cases, `case-inventory.json` and `acceptance-plan.json`.
-- The acceptance plan must carry rust-output-v1 `amendment005`. Five of its checks need tools that phase 1 adds: the RT diagnostics, Python against the current default, the Rust compile comparison, the Rust recorded-bundle rebase, and the CLI `--target typescript` case.
-- Rust candidate work waits for phase 1, because builds between amendment 005 and phase 1 are not candidates.
+- descriptors, the DSL `som.dsl.typescript.v1`, the catalog outline, and the formatter descriptor: CONTRACT.md section 3, `bundle.schema.json`, `catalog/typescript-catalog.v1.json`;
+- the naming rule for generated identifiers and the fixed table name: `scope.json` and `product-layout.json`;
+- the file count limit and block order: `product-layout.json`, `bundle.schema.json`, the catalog;
+- the JSON files: `scope.json`, `product-layout.json`, `bundle.schema.json`, `api.schema.json`, `toolchain.json`, `behavior-normalization.json`, `target-examples.json`, `negative-cases.json`, `case-inventory.json`, `acceptance-plan.json`;
+- rust-output-v1 `amendment005` carried in `acceptance-plan.json`, with the tools phase 1 adds named there.

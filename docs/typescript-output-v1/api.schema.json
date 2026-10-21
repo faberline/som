@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "som.compiler-api.v1.typescript-target",
+  "$comment": "The TypeScript half of target selection. rust-output-v1 amendment 005 admits typescript in the target enum and hands every target typescript request and every som.dsl-bundle.v2 bundle with target typescript to this contract. Requests without target, or with target python or rust, are not covered here and keep their responses byte for byte. Diagnostics, transport limits and the error envelope are unchanged from som.compiler-api.v1.",
+  "$defs": {
+    "compile_request": {
+      "$ref": "som.compiler-api.v1.rust-target#/$defs/compile_request"
+    },
+    "assemble_request": {
+      "$ref": "som.compiler-api.v1.rust-target#/$defs/assemble_request"
+    },
+    "compile_success": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": "ok"
+        },
+        "bundle": {
+          "$ref": "som.dsl-bundle.v2.typescript"
+        }
+      },
+      "required": [
+        "status",
+        "bundle"
+      ],
+      "additionalProperties": false
+    },
+    "assemble_success": {
+      "$ref": "som.compiler-api.v1#/$defs/assemble_success"
+    },
+    "compiler_error": {
+      "$ref": "som.compiler-api.v1#/$defs/compiler_error"
+    }
+  },
+  "x-target-selection": {
+    "typescript": "A som.dsl-bundle.v2 bundle with target typescript, or one diagnostic.",
+    "others": "absent, python, rust and invalid values: rust-output-v1 api.schema.json x-target-selection, unchanged by this contract.",
+    "before_phase_1": "Until a build implements typescript-output-v1 phase 1, target typescript gets the INVALID_SCHEMA refusal of rust-output-v1 CONTRACT.md section 13. No candidate is prepared from such a build."
+  },
+  "x-new-error-codes": {
+    "UNSUPPORTED_TARGET": {
+      "http_status": 422,
+      "use": "The code rust-output-v1 introduced. For target typescript: a prompt that passes existing validation but is outside TypeScript output phase 1, or a TypeScript bundle whose prompt is outside phase 1. Causes and allowed forms are the scope.json refusals of this contract."
+    }
+  },
+  "x-check-order": [
+    "transport limit and JSON parse, including duplicate members",
+    "envelope schema, including target",
+    "CNL parse or prompt JSON schema",
+    "existing compiler-v1 semantic validation, unchanged (this already refuses a v3 filter field named limit or offset, compiler-v1 amendment 003)",
+    "TypeScript profile, only when target is typescript, in the scope.json refusal_order (UNSUPPORTED_TARGET)",
+    "planning, with SCOPE_TOO_LARGE for a TypeScript DSL over 12 files or over 64 blocks in total, or an assemble envelope over 2097152 bytes"
+  ],
+  "x-assemble-check-order": [
+    "transport limit, JSON parse and envelope schema",
+    "bundle version dispatch: only a bundle whose version member is the string som.dsl-bundle.v2 continues; every other bundle keeps the compiler-v1 order and result unchanged",
+    "target dispatch: a bundle whose target member is the string typescript continues below; target rust follows rust-output-v1; any other value is INVALID_SCHEMA at /bundle/target after the members and version checks of the rust-output-v1 check_schema order",
+    "bundle schema som.dsl-bundle.v2.typescript in the rust-output-v1 check_schema order, and at most 64 blocks in total (INVALID_SCHEMA at the failing pointer)",
+    "hashes: prompt_sha256, dsl_sha256, then payload_sha256 = H({version,target,prompt,dsl,assets}) (BUNDLE_HASH_MISMATCH)",
+    "asset descriptors equal the active TypeScript manifest (ASSET_HASH_MISMATCH at /bundle/assets)",
+    "existing compiler-v1 prompt validation, unchanged",
+    "TypeScript profile (UNSUPPORTED_TARGET at /bundle/prompt plus the scope.json pointer)",
+    "catalog and composition: every block id is an admitted ts. block in the frozen order for the prompt (INVALID_COMPOSITION at the block id)",
+    "render, prettier and output checks"
+  ],
+  "x-manifest": {
+    "asset_keys": [
+      "grammar",
+      "compiler_contract",
+      "selection_policy",
+      "literal_policy",
+      "serializer",
+      "semantic_contracts",
+      "target_contract",
+      "catalog",
+      "block_library",
+      "backend",
+      "formatter"
+    ],
+    "shared_with_rust": "grammar, compiler_contract, selection_policy, literal_policy, serializer and semantic_contracts equal the Rust manifest's descriptors for the same build.",
+    "target_contract": "id som.typescript-output-contract.v1; sha256 is the canonical hash of the sealed receipt's files map, as for rust-output-v1.",
+    "catalog": "id som.typescript-catalog.v1; descriptor {id, sha256} with the SHA-256 of the bytes of catalog/typescript-catalog.v1.json as embedded in som-targets.",
+    "block_library": "id som.typescript-block-library.v1; descriptor {id, sha256} with the SHA-256 of the concatenated text of the TypeScript renderer sources that hold the block bodies, in the order som-targets/src/typescript/mod.rs lists them, as the Rust BLOCK_LIBRARY_TEXT.",
+    "backend": "id som.typescript-backend.v1; sha256 = H({\"version\": \"som.typescript-backend.v1\", \"files\": {path: SHA-256 of the file text}}), the formula of the Rust backend descriptor. The files map has every source that decides the TypeScript bundle and its files, keyed by som-rs-relative path (som-targets/...): every file under som-targets/src/typescript/, plus the shared som-targets/Cargo.toml, src/lib.rs, src/main.rs and src/profile.rs. Shared files appear in both backend maps, so an edit to one changes both descriptors: it needs an amendment of both contracts and is recorded as a bundle compatibility break for both targets (rust-output-v1 CONTRACT.md section 13).",
+    "formatter": "toolchain.json formatter id and sha256."
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "som.dsl-bundle.v2.typescript",
+  "$comment": "TypeScript target bundle. Structural schema only. The prompt must also pass existing compiler-v1 validation and the TypeScript profile in scope.json. Every asset descriptor must equal the active local TypeScript manifest. Each file has 1 to 64 blocks (this schema). Total blocks across files are at most 64, which the assembler checks after this schema (api.schema.json x-assemble-check-order). The envelope version is som.dsl-bundle.v2, shared with the Rust target; the target member selects this schema (rust-output-v1 CONTRACT.md section 13). A Python bundle stays som.dsl-bundle.v1 and never has a target member.",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "som.dsl-bundle.v2"
+    },
+    "target": {
+      "const": "typescript"
+    },
+    "prompt": {
+      "$ref": "som.compiler-prompt-family.v1"
+    },
+    "dsl": {
+      "$ref": "#/$defs/typescript_dsl"
+    },
+    "assets": {
+      "type": "object",
+      "properties": {
+        "grammar": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "compiler_contract": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "selection_policy": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "literal_policy": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "serializer": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "semantic_contracts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/descriptor"
+          },
+          "uniqueItems": true
+        },
+        "target_contract": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "catalog": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "block_library": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "backend": {
+          "$ref": "#/$defs/descriptor"
+        },
+        "formatter": {
+          "$ref": "#/$defs/descriptor"
+        }
+      },
+      "required": [
+        "grammar",
+        "compiler_contract",
+        "selection_policy",
+        "literal_policy",
+        "serializer",
+        "semantic_contracts",
+        "target_contract",
+        "catalog",
+        "block_library",
+        "backend",
+        "formatter"
+      ],
+      "additionalProperties": false
+    },
+    "hashes": {
+      "type": "object",
+      "properties": {
+        "prompt_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "dsl_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "required": [
+        "prompt_sha256",
+        "dsl_sha256",
+        "payload_sha256"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "version",
+    "target",
+    "prompt",
+    "dsl",
+    "assets",
+    "hashes"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "descriptor": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "required": [
+        "id",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "typescript_dsl": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "som.dsl.typescript.v1"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "package.json",
+                      "package-lock.json",
+                      "tsconfig.json",
+                      "src/main.ts",
+                      "src/app.ts",
+                      "src/schemas.ts",
+                      "src/db.ts",
+                      "src/migrate.ts",
+                      "test/api.test.ts",
+                      "README.md"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^migrations/0001_[A-Za-z_][A-Za-z0-9_]*\\.sql$"
+                  }
+                ]
+              },
+              "blocks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "$comment": "Catalog validation, not this schema, admits block ids. Every admitted TypeScript block id starts with ts."
+                    },
+                    "name": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                    },
+                    "params": {
+                      "type": "object"
+                    },
+                    "refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "params",
+                    "refs"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "maxItems": 64
+              }
+            },
+            "required": [
+              "path",
+              "blocks"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 12
+        }
+      },
+      "required": [
+        "version",
+        "files"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
