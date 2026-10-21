@@ -97,9 +97,7 @@ Known differences from the Python product:
 The scope of tests generated in `tests/api.rs` depends on whether the prompt selects capabilities or flows:
 
 - **v1–v5 products without capabilities** include built-in CRUD and query regression tests in `tests/api.rs`. They exercise create/get/patch/delete round-trips, declared exact and date filters, limit and offset bounds, unique constraint conflicts (HTTP 409), restricted parent deletion, and parent/child batch creation rollback.
-- **Capability (v5/v6) and flow (v7) products** align with the Python reference templates and generate a `tests/api.rs` that validates only authentication and configuration:
-  - Authentication and identity verification: `selected_routes_require_identity` and `test_client_headers_identify_the_caller` (exercising `TEST_AUTH_HEADERS` or `TEST_AUTH_COOKIES`);
-  - Flow products additionally verify `flow_runs_require_identity`.
+- **Capability (v5/v6) and flow (v7) products** align with the Python reference templates and generate a `tests/api.rs` that validates only authentication and configuration through two tests: `selected_routes_require_identity` and `test_client_headers_identify_the_caller` (exercising `TEST_AUTH_HEADERS` or `TEST_AUTH_COOKIES`).
 
 Product runtime behaviors for capability and flow products are verified by SOM's `som-rs/behavior/phase2` test harness (584/584 passed in acceptance) rather than by bundled product tests. The harness validates:
 
@@ -108,21 +106,16 @@ Product runtime behaviors for capability and flow products are verified by SOM's
 - `POST {parent}/with-children` atomic batch creation and rollback on invalid child data, and workflow export summaries (`decimal_summary`, `statistics`, `json_export`, `csv`);
 - Flow behavior: step execution, transaction boundaries, branching, compensation/undo, and lease recovery.
 
-Command entry points for behavior verification:
+The phase 1 black-box HTTP suite (`som-rs/behavior/suite.py`) and the adapted capability, workflow, and flow checkers in `som-rs/behavior/phase2/adapted/` (`verify_composed_related.py`, `verify_business_workflows.py`, `verify_flow_service.py`) are library modules imported and driven by `check_phase2.py` rather than standalone CLI scripts.
+
+Command entry points for behavior verification (run from the main checkout where `.local` acceptance fixtures reside):
 
 ```sh
+# List all 584 phase 2 cases and their assigned checker:
+python3 som-rs/behavior/phase2/check_phase2.py list
+
 # Run the complete phase 2 behavior verification suite (584 cases) against the running compiler default:
 python3 som-rs/behavior/phase2/check_phase2.py run --out /private/tmp/phase2-eval --language rust --qa http://127.0.0.1:8765
-
-# Phase 1 black-box HTTP behavior suite (CRUD, filter, limit/offset, unique, restrict, batch):
-python3 som-rs/behavior/suite.py --help
-
-# Adapted capability and workflow checkers:
-python3 som-rs/behavior/phase2/adapted/verify_composed_related.py
-python3 som-rs/behavior/phase2/adapted/verify_business_workflows.py
-
-# Adapted flow checkers (transactions, branching, fault injection, undo):
-python3 som-rs/behavior/phase2/adapted/verify_flow_service.py
 ```
 
 ## HTTP requests
