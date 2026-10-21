@@ -130,6 +130,8 @@ uv run uvicorn todos.app:app
 uv run python -m unittest discover -s tests -v
 ```
 
+To run the full local PostgreSQL lifecycle, migrations, unit tests, `/healthz` check, and `POST` smoke requests in a single command, use [pg_run.py](../som-rs/scripts/python_quickstart/pg_run.py) (for example, `python3 som-rs/scripts/python_quickstart/pg_run.py --som som-rs/runtime/current/som --url http://127.0.0.1:18080 --cnl som-rs/contracts/compiler-v1/examples/v3.cnl --out ~/work/todos_pg_run --pg-port 55432 --app-port 18081 --create '/todos={"title":"first"}'`).
+
 ## 6. Change it and generate again
 
 Generated product files are deterministic for a given prompt and compiler release. When you edit your `.cnl` file and run `som write` again, point `--out` to a new or empty directory (`som write` refuses a non-empty `--out` directory so it never overwrites existing files).
