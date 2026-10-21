@@ -274,23 +274,14 @@ async fn request(
         return Err("SOM only connects to the local HTTP service".into());
     }
     let client = reqwest::Client::builder()
-        .no_proxy()
         .redirect(reqwest::redirect::Policy::none())
         .build()?;
-    let send_res = client
+    let response = client
         .post(host.join(endpoint)?)
         .header("content-type", "application/json")
-        .body(body.clone())
+        .body(body)
         .send()
-        .await;
-    #[cfg(test)]
-    if let Err(ref err) = send_res
-        && err.is_connect()
-        && let Some(fallback) = tests::try_sandbox_loopback_dispatch(url, endpoint, &body)
-    {
-        return Ok(fallback);
-    }
-    let response = send_res?;
+        .await?;
     let status = response.status();
     let result = response.json().await?;
     Ok((status, result))
@@ -826,58 +817,6 @@ mod tests {
         }
     }
 
-    static SANDBOX_TEST_URL: std::sync::Mutex<Option<String>> = std::sync::Mutex::new(None);
-
-    pub(super) fn try_sandbox_loopback_dispatch(
-        url: &str,
-        endpoint: &str,
-        body: &str,
-    ) -> Option<(reqwest::StatusCode, Value)> {
-        let active = SANDBOX_TEST_URL.lock().ok()?.clone()?;
-        if active != url {
-            return None;
-        }
-        match endpoint {
-            "/v1/compile" => {
-                let parsed: Value = serde_json::from_str(body).ok()?;
-                let format = parsed["format"].as_str().unwrap_or("");
-                if format == "som.cnl.v1" && parsed["source"].as_str() == Some("REJECT\n") {
-                    return Some((
-                        reqwest::StatusCode::UNPROCESSABLE_ENTITY,
-                        json!({"status": "error", "code": "INVALID_VALUE", "detail": "rejected"}),
-                    ));
-                }
-                let mut bundle = json!({
-                    "version": "som.dsl-bundle.v1",
-                    "received_format": format,
-                });
-                if let Some(target) = parsed.get("target") {
-                    bundle["target"] = target.clone();
-                }
-                Some((
-                    reqwest::StatusCode::OK,
-                    json!({"status": "ok", "bundle": bundle}),
-                ))
-            }
-            "/v1/assemble" => {
-                let doc = strict_json::parse(body).ok()?;
-                assert!(super::exact(&doc.value, &["bundle"]));
-                let target = doc.value["bundle"]
-                    .get("target")
-                    .and_then(Value::as_str)
-                    .unwrap_or("python");
-                let mut files = serde_json::Map::new();
-                files.insert("README.md".into(), json!(format!("# target={target}\n")));
-                files.insert("src/app.txt".into(), json!("ok\n"));
-                Some((
-                    reqwest::StatusCode::OK,
-                    json!({"status": "ok", "files": files}),
-                ))
-            }
-            _ => None,
-        }
-    }
-
     #[tokio::test]
     async fn write_command_round_trips_over_ephemeral_loopback_server() {
         let scope = TempScope::new("http-integration");
@@ -926,7 +865,6 @@ mod tests {
             .expect("bind ephemeral loopback");
         let addr = listener.local_addr().expect("local_addr");
         let url = format!("http://{addr}");
-        *SANDBOX_TEST_URL.lock().expect("lock test url") = Some(url.clone());
         let server = tokio::spawn(async move {
             let _ = axum::serve(listener, router).await;
         });
