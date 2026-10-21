@@ -1,8 +1,38 @@
-# Rust compiler handoff — 2026-10-20
+# Rust compiler handoff — 2026-10-22
 
-## Current default: Python self-name fix (#57, #58)
+## Current default: v0.2.0, `som write` (#81)
 
-The default on `127.0.0.1:8765` is rust-output-candidate-006 since `2026-10-20T08:39:04.671848+00:00`.
+The default on `127.0.0.1:8765` is rust-output-candidate-007 since `2026-10-21T17:09:02.500328+00:00`, released as [v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0).
+Binary SHA-256: `350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e`, built from commit `b891143d8f`.
+`som-rs/runtime/current` points to `runtime/versions/350369aa…`. `compiler-assets/current` still points to `compiler-assets/versions/d95d93c7…`.
+The Python backend stays `581ce38f…`, so Python and Rust product files and bundles are byte-identical to candidate-006.
+The [release evidence](evidence/rust-output-release-2026-10-22-issue81.json) binds the acceptance run and its independent audit (16 passed, 0 failed, 0 unrun),
+the `som write` smoke (16/16 examples), a v3 product tested on a local PostgreSQL, the rehearsal, the approval, the switch journal and the post-switch check.
+
+What changed for callers:
+
+- `som write <file.cnl> --out <dir>` compiles, assembles and writes a product directory in one command (#79). See [docs/python-be.md](../docs/python-be.md) (#84).
+- `target typescript` is selectable; it answers 501 NOT_IMPLEMENTED for v1–v5 and 422 UNSUPPORTED_TARGET for v6/v7.
+
+The post-switch check passed 6/6 checks with the Python canaries post-switch-smoke12 and post-switch-legacy100 and the Rust canaries
+example-v1, example-v5, example-v6, example-v7 and CAP_MONGODB_FIREBASE_GCS_CSV.
+
+### Recovery command
+
+To put candidate-006 (`52658e13…`) back, write a fresh approval with action `restore-default-8765-rust-output`
+bound to the current `default.json`, then run from the repository root:
+
+```sh
+som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/rust_output_release/switch.py --prerequisites $PWD/.local/rust-compiler-goal/acceptance/release-020/inputs-001/prerequisites.json --restore $PWD/.local/rust-compiler-goal/acceptance/release-020/switch-002 --approval FRESH_APPROVAL.json --output FRESH_ABSOLUTE_DIR
+```
+
+The #81 rehearsal qualified this restore on a harness port.
+Then run `scripts/rust_output_release/check_default.py` with `--expect-binary-sha256 52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2`.
+After that restore, `som write` is gone from the installed CLI; Python and Rust output does not change.
+
+## Previous default: Python self-name fix (#57, #58)
+
+The default on `127.0.0.1:8765` was rust-output-candidate-006 from `2026-10-20T08:39:04.671848+00:00` until `2026-10-21T17:09:02.500328+00:00`.
 It serves the Python target and the phase 2 Rust target. Binary SHA-256: `52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2`, built from commit `6116fed549`.
 `som-rs/runtime/current` points to `runtime/versions/52658e13…`. `compiler-assets/current` points to `compiler-assets/versions/d95d93c7…`.
 The Python backend is `581ce38f…`; its compiler embeds `som-code-python/data/blocks/flow-v7-compact-self/blocks.json` (358 blocks).

@@ -13,10 +13,10 @@ The user set this goal on 2026-10-21.
 - BE, SRE, and AI must each support Python, Rust, and TypeScript.
 - FE starts with React only. Other frameworks wait until the React target is mature.
 
-## Status on 2026-10-21
+## Status on 2026-10-22
 
 Only BE exists. It covers prompts v1–v7 with Python and Rust output.
-The local service on `127.0.0.1:8765` serves both.
+The local service on `127.0.0.1:8765` serves both. [v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0) added `som write` and the Python backend quickstart.
 No TypeScript, SRE, AI, or FE output exists yet.
 
 ## Rules for every new target

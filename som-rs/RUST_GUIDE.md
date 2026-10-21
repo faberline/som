@@ -1,7 +1,8 @@
 # Rust compiler guide
 
-This guide describes the local default on port 8765: rust-output-candidate-006, switched on `2026-10-20T08:39:04.671848+00:00` (#57, #58).
+This guide describes the local default on port 8765: rust-output-candidate-007 ([v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0)), switched on `2026-10-21T17:09:02.500328+00:00` (#81).
 It serves the Python target and the phase 2 Rust target. The post-switch check passed.
+The #57/#58 default (rust-output-candidate-006) was switched in at `2026-10-20T08:39:04.671848+00:00`.
 The #56 default (rust-output-candidate-004) was switched in at `2026-10-20T03:14:10.975162+00:00`.
 The phase 1 Rust output default (rust-output-candidate-003 of #51) was switched in at `2026-10-16T05:54:52.297481+00:00`.
 The compiler default before it (candidate 003 of #38–#44) was switched in at `2026-10-15T03:08:08.737006+00:00`.
@@ -30,8 +31,9 @@ Write prints one summary JSON line on stdout and exits 0 on success, 1 on local 
 Generate retains its response on stdout and exit 2 on HTTP rejection.
 
 The installed path points to the immutable candidate binary
-`runtime/versions/52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2/som`.
-The previous binaries `runtime/versions/d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b/som` (#56),
+`runtime/versions/350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e/som`.
+The previous binaries `runtime/versions/52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2/som` (#57),
+`runtime/versions/d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b/som` (#56),
 `runtime/versions/05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c/som` (#51)
 and `runtime/versions/3fad3cb7eafb35274f6a37f9a8a371f93807a6b5fedf3e9fe0e074cbf5bfef02/som` (#38–#44) are kept for recovery.
 The legacy M2 binary also accepts the old `generate` command.

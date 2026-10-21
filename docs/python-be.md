@@ -68,7 +68,7 @@ See [Write CNL in RUST_GUIDE.md](../som-rs/RUST_GUIDE.md#write-cnl), [grammar.eb
 
 ## 4. Generate the project
 
-`som write` requires the v0.2.0 default or later (`som-rs/runtime/current/som` is still candidate-006 until #81 switches the default); until then, build `som-targets` from `main`, or use `som compile` plus `som assemble`.
+`som write` requires the v0.2.0 default or later. `som-rs/runtime/current/som` is that default (candidate-007) since #81. With an older binary, use `som compile` plus `som assemble`.
 
 Run `som write` to compile `my.cnl`, assemble the bundle, and write the generated files into a fresh or empty output directory:
 

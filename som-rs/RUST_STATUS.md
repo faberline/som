@@ -1,8 +1,16 @@
-# Rust compiler status — 2026-10-20
+# Rust compiler status — 2026-10-22
+
+## v0.2.0 release (#81) — 2026-10-22
+
+Since `2026-10-21T17:09:02.500328+00:00` the default on `127.0.0.1:8765` is rust-output-candidate-007 ([v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0)).
+`som write` writes a product directory in one command (#79); `docs/python-be.md` is the Python quickstart (#84).
+The acceptance audit passed 16/0/0 and the post-switch check passed 6/6 checks with all 7 canary cases.
+Binary SHA-256: `350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e`, built from commit `b891143d8f`. Assets `d95d93c7…` and the Python backend `581ce38f…` are unchanged.
+Candidate-006 (`52658e13…`) is kept for rollback. See the [release evidence](evidence/rust-output-release-2026-10-22-issue81.json).
 
 ## Python self-name fix release (#57, #58) — 2026-10-20
 
-Since `2026-10-20T08:39:04.671848+00:00` the default on `127.0.0.1:8765` is rust-output-candidate-006.
+From `2026-10-20T08:39:04.671848+00:00` until `2026-10-21T17:09:02.500328+00:00` the default on `127.0.0.1:8765` was rust-output-candidate-006.
 A Python resource field or foreign key named `self` now builds and runs (#57): compiler-v1 selects a `self` variant block
 only for those prompts, so every other Python product keeps its files.
 compiler-v1 now refuses a name that collides with a generated Python identifier with INVALID_VALUE

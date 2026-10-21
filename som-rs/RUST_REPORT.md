@@ -1,8 +1,19 @@
-# Rust compiler acceptance report — 2026-10-20
+# Rust compiler acceptance report — 2026-10-22
+
+## v0.2.0 release (#81) — 2026-10-22
+
+Since `2026-10-21T17:09:02.500328+00:00` the default on `127.0.0.1:8765` is rust-output-candidate-007, released as [v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0).
+It adds `som write` (#79) and the Python backend quickstart (#84). `target typescript` answers 501 or 422: TypeScript output is not supported yet.
+Candidate-007 passed the issue57 acceptance plan against candidate-006 with an independent audit (16 passed, 0 failed, 0 unrun).
+`som write` wrote all 16 compiler-v1 examples, and a v3 product passed its own tests, `/healthz` and a POST on a local PostgreSQL.
+The post-switch check passed 6/6 checks with all 7 canary cases.
+Binary SHA-256: `350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e`, built from commit `b891143d8f`.
+Assets `d95d93c7…` and the Python backend `581ce38f…` are unchanged, so product files and bundles are byte-identical to candidate-006.
+See the [release evidence](evidence/rust-output-release-2026-10-22-issue81.json).
 
 ## Python self-name fix release (#57, #58) — 2026-10-20
 
-Since `2026-10-20T08:39:04.671848+00:00` the default on `127.0.0.1:8765` is rust-output-candidate-006.
+From `2026-10-20T08:39:04.671848+00:00` until `2026-10-21T17:09:02.500328+00:00` the default on `127.0.0.1:8765` was rust-output-candidate-006.
 A Python resource field or foreign key named `self` now builds and runs (#57).
 compiler-v1 refuses a name that collides with a generated Python identifier with INVALID_VALUE, for example a v3 filter
 field named limit or offset (#58), so the Rust target refuses nothing that compiler-v1 admits.

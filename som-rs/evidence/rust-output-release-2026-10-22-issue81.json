@@ -1,0 +1,497 @@
+{
+ "version": "som.rust-output-release.v1",
+ "issues": [
+  81
+ ],
+ "release": "v0.2.0",
+ "milestone": "M5 — Python BE v0.2",
+ "phase": 2,
+ "recorded_at": "2026-10-21T17:09:02.500328+00:00",
+ "status": "passed",
+ "status_note": "Candidate rust-output-candidate-007, built from b891143d8f (the M5 `som write` subcommand of #79 and the Python quickstart of #84, plus target typescript selection of #65 phase 1), passed the issue57 acceptance plan against the candidate-006 default with an independent audit (16 passed, 0 failed, 0 unrun). `som write` wrote every compiler-v1 example (16/16) and one v3 product passed its own tests on a local PostgreSQL. A sandbox rehearsal passed the switch, every injected failure and the restore, then the switch on 127.0.0.1:8765 and a post-switch check passed. The compiler assets are unchanged, so Python and Rust product files and bundles are byte-identical. Raw outputs stay local; this file holds summaries and hashes only.",
+ "blockers": [],
+ "tools_commit": "7a31bc0a86",
+ "tool_files": {
+  "som-rs/scripts/rust_output_release/check_default.py": "e9b3d0bf793479cfd0039b78638e9cf4edd965001bbc851f1bc6ffd16cbb962a",
+  "som-rs/scripts/rust_output_release/prepare_inputs.py": "c5dfa3aee2f219eac19339592ae6542538fa00cf28ecc47c40c2a08124652aa2",
+  "som-rs/scripts/rust_output_release/rehearse.py": "3239cec6649c90fdb2c4eee20534be71deed74df36ce44e7763c9a4fb66b0a1d",
+  "som-rs/scripts/rust_output_release/release_common.py": "7f51f6238a02089c036ccb87d1fcae4d4b78a542078c9b54a6927012cb0a8b33",
+  "som-rs/scripts/rust_output_release/switch.py": "a857d3eb9d903fe7f7c76adfc1c34a3ed073389a63d32b619b15bd203ce6a725",
+  "som-rs/scripts/compiler_default_switch.py": "289a8470c5de2a183b01c8a138ecb4bc6cfe80a624f0291b32b779cc854bfb12"
+ },
+ "candidate": {
+  "directory": ".local/rust-compiler-goal/rust-output-candidate-007",
+  "build_commit": "b891143d8f45009f3e109125927dfae8f2659266",
+  "binary_sha256": "350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e",
+  "binary_bytes": 13479504,
+  "source_json_sha256": "9f491ba145541809efc08f54231b8a44129234c43ba7c18e16b1f107645cb1a8",
+  "runtime_receipt_sha256": "60d0eb7701a313c14aa878a4dc86b8c173127efcfa513a932d5e10d0986e93d1",
+  "build_receipt_sha256": "91395e4c6fdfae962e451bd0c614ccb53aeea3c52a461371f1d92a37552d89a5",
+  "build_binary_sha256": "350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e",
+  "qa_port": 18971,
+  "health": {
+   "backend_sha256": "581ce38f29702c300342cdefe8fe5f1735cefcd1869d6485b44f30063a866711",
+   "asset_manifest_sha256": "d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa"
+  }
+ },
+ "acceptance": {
+  "plan": "the issue57 acceptance plan (rust-output-v1 acceptance-plan.json), reused unchanged",
+  "run": ".local/rust-compiler-goal/acceptance/release-020/run-002",
+  "summary_sha256": "7354da8be2c3116b598f3689e6fb16119dc7b2dd0fe03ae2a340936fa7daaa5f",
+  "header_sha256": "0d71a6b75efeab9526344b89650f40bb8c2e86e33b4511487220328495533f53",
+  "steps": {
+   "cli": true,
+   "contract": true,
+   "issue57": true,
+   "name-collisions": true,
+   "python-controls": true,
+   "python-replay": true,
+   "rust-products": true,
+   "rust-unchanged": true,
+   "targets": true,
+   "validate-cases": true
+  },
+  "passed": true,
+  "audit": ".local/rust-compiler-goal/acceptance/release-020/audit-003.json",
+  "audit_sha256": "2d3d915ae3513e40b19785292d726952a6b7fae174fab124c00fad1bc6c5b522",
+  "audit_counts": {
+   "passed": 16,
+   "failed": 0,
+   "unrun": 0
+  },
+  "audit_weak_evidence": 8,
+  "earlier_runs": "run-001 was an ad hoc driver: its python_replay step omitted --asset-break and failed on the admitted descriptors; run-002 is the plan's own run_acceptance.py. audit-001 and audit-002 were superseded once audit057 learned the amendment 005 receipt chain (commit d2229f187e); audit-003 is the accepted audit.",
+  "som_write_smoke": {
+   "source": ".local/rust-compiler-goal/acceptance/release-020/run-001/logs/10-python-quickstart-smoke.stdout",
+   "passed": 16,
+   "failed": 0,
+   "total": 16
+  },
+  "typescript_interim": {
+   "source": ".local/rust-compiler-goal/acceptance/release-020/run-001/ts-interim.json",
+   "passed": true,
+   "answers": {
+    "v1.cnl": [
+     501,
+     "NOT_IMPLEMENTED"
+    ],
+    "v2.cnl": [
+     501,
+     "NOT_IMPLEMENTED"
+    ],
+    "v3.cnl": [
+     501,
+     "NOT_IMPLEMENTED"
+    ],
+    "v4.cnl": [
+     501,
+     "NOT_IMPLEMENTED"
+    ],
+    "v5.cnl": [
+     501,
+     "NOT_IMPLEMENTED"
+    ],
+    "v6.cnl": [
+     422,
+     "UNSUPPORTED_TARGET"
+    ],
+    "v7.cnl": [
+     422,
+     "UNSUPPORTED_TARGET"
+    ]
+   }
+  },
+  "postgresql_product": {
+   "source": ".local/rust-compiler-goal/acceptance/release-020/pg-001/result.json",
+   "result_sha256": "8c93b348e81906434af047d5465fa8df24e86ad8dc4c552987d52f8972e8075d",
+   "example": "som-rs/contracts/compiler-v1/examples/v3.cnl",
+   "steps": {
+    "initdb": 0,
+    "pg_start": 0,
+    "createdb-todos_dev": 0,
+    "createdb-todos_test": 0,
+    "som-write": 0,
+    "alembic-upgrade": 0,
+    "unittest": 0,
+    "alembic-downgrade": 0,
+    "pg_stop": 0
+   },
+   "healthz": {
+    "status": "ok"
+   },
+   "post_status": 201,
+   "note": "The issue asked for a v1 product; the v3 example (todos, with filters and a migration) was used as the stronger case. The product ran with the acceptance venv, whose packages equal the product's pins, on a throwaway cluster on harness ports 18993 and 18994."
+  }
+ },
+ "prerequisites": {
+  "path": ".local/rust-compiler-goal/acceptance/release-020/inputs-001/prerequisites.json",
+  "file_sha256": "9ca5dfa8c9d8b6caa11420dc9cfbcd77b8c8b7c8d76e89fc0dd24cdac3680e68",
+  "receipt_sha256": "1153cfaf2d035168d2d8f7cc089691574d534e92d507b8f35895b553c93084e1",
+  "gates": {
+   "acceptance": {
+    "/passed": true,
+    "/blockers": [],
+    "/candidate_after/binary_sha256": "350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e"
+   },
+   "audit": {
+    "/status": "passed",
+    "/run": "/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/release-020/run-002"
+   }
+  },
+  "python_canary_source": {
+   "kind": "stand-in",
+   "port": 18919,
+   "binary_sha256": "52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2",
+   "note": "A fresh process of the candidate-006 default's command (same binary and assets) on a harness port served the Python canary exchanges, so 8765 got no request while the inputs were pinned."
+  },
+  "python_canaries": [
+   {
+    "name": "post-switch-smoke12",
+    "family": "flow",
+    "steps": [
+     "generate",
+     "compile-cnl",
+     "compile-json",
+     "assemble",
+     "cli-generate",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "post-switch-legacy100",
+    "family": "legacy",
+    "steps": [
+     "generate",
+     "compile-cnl",
+     "compile-json",
+     "assemble",
+     "cli-generate",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   }
+  ],
+  "rust_products_run": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003",
+  "rust_canaries": [
+   {
+    "name": "example-v1",
+    "prompt_version": "som.prompt.v1",
+    "phase2_id": null,
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/products/example_v1",
+    "files": 11,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "example-v5",
+    "prompt_version": "som.prompt.v5",
+    "phase2_id": null,
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/products/example_v5",
+    "files": 11,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "example-v6",
+    "prompt_version": "som.prompt.v6",
+    "phase2_id": "RS03_JSON_V6",
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/work/RS03_JSON_V6/product",
+    "files": 12,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "example-v7",
+    "prompt_version": "som.prompt.v7",
+    "phase2_id": "RS04_JSON_V7",
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/work/RS04_JSON_V7/product",
+    "files": 12,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   },
+   {
+    "name": "CAP_MONGODB_FIREBASE_GCS_CSV",
+    "prompt_version": "som.prompt.v6",
+    "phase2_id": "CAP_MONGODB_FIREBASE_GCS_CSV",
+    "accepted_product": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/work/CAP_MONGODB_FIREBASE_GCS_CSV/product",
+    "files": 11,
+    "steps": [
+     "compile-json",
+     "compile-cnl",
+     "assemble",
+     "cli-compile",
+     "cli-assemble"
+    ]
+   }
+  ],
+  "emulators": {
+   "phase1_product_gates": {
+    "ids": [
+     "example-v1",
+     "example-v5"
+    ],
+    "product_gates": {
+     "passed": 2,
+     "total": 2
+    },
+    "exit_code": 2,
+    "exit_code_note": "2: only the parity input of the full run is absent",
+    "report_sha256": "5966ef95146b1a3191bf49825c2f313a16f2bdccd4535ab8c1e4abee867b396e"
+   },
+   "phase2_behavior": {
+    "ids": [
+     "RS03_JSON_V6",
+     "RS04_JSON_V7",
+     "CAP_MONGODB_FIREBASE_GCS_CSV"
+    ],
+    "run": 3,
+    "passed": 3,
+    "exit_code": 1,
+    "exit_code_note": "1: a subset run is not complete over all 584 cases",
+    "summary_sha256": "06237ee0b628b1a95173be831f5c662e0fb87989c522146f559640679a48e8b9"
+   }
+  },
+  "m2_canaries": [
+   "post-switch-smoke12",
+   "post-switch-legacy100"
+  ],
+  "previous_default": {
+   "receipt_sha256": "65cd0f1e9fba7095254952ee7145a430bf6ae2394185b02740faf7713dcab6f4",
+   "binary_sha256": "52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2",
+   "previous_defaults": [
+    {
+     "path": ".local/rust-compiler-goal/acceptance/rust-output-057/switch-001/0002-previous-default.json",
+     "sha256": "9f6018a18737267a7ed9a6b312aa9fe0838d8afd6e6ede5fba90a8da82f77cf7"
+    },
+    {
+     "path": ".local/rust-compiler-goal/acceptance/rust-output-056/switch-001/0002-previous-default.json",
+     "sha256": "c315c2794ca1f959db1711285f24f252aba9dd853291d9328ab07bdf33148aa4"
+    },
+    {
+     "path": ".local/rust-compiler-goal/acceptance/rust-output-051/switch-001/0002-previous-default.json",
+     "sha256": "f7833c26ee108736bca5566d33cbf20b28fe3299230a8b195af7058d0f655ed4"
+    }
+   ]
+  }
+ },
+ "rehearsal": {
+  "output": ".local/rust-compiler-goal/acceptance/release-020/rehearsal-001",
+  "report_sha256": "3df17d5c6ac258fa7b863c91d125cdf0becacf5e7ad1d67c5d55b129dadba2db",
+  "passed": true,
+  "live_default_unchanged": true,
+  "scenarios": [
+   {
+    "name": "switch",
+    "passed": true,
+    "switch_last_stage": "committed",
+    "calls": {
+     "switch": 0,
+     "check": 0,
+     "restore": 0,
+     "check-restored": 0
+    }
+   },
+   {
+    "name": "after_stop",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   },
+   {
+    "name": "after_start",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   },
+   {
+    "name": "after_pointer",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   },
+   {
+    "name": "after_commit",
+    "passed": true,
+    "switch_last_stage": "rollback_verified",
+    "calls": {
+     "switch": 1,
+     "check": 0
+    }
+   }
+  ]
+ },
+ "approval_plan": {
+  "path": ".local/rust-compiler-goal/acceptance/release-020/plan-001.json",
+  "sha256": "7f972756c81a6e9855324c6f931d4d090535412285b5069fa123822b40be83fa",
+  "mutations": 0,
+  "service_calls": 0
+ },
+ "approval": {
+  "path": ".local/rust-compiler-goal/acceptance/release-020/approval-001.json",
+  "sha256": "0125ec05d7db4ea952f792143e511be9c9496400d5c91a966899adba86267b69",
+  "quote": "核准：把 8765 切到 candidate-007，並在 b891143d8f 打 v0.2.0 tag，發只有說明文字的 GitHub release。",
+  "bound": {
+   "candidate_binary_sha256": "350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e",
+   "script_sha256": "a857d3eb9d903fe7f7c76adfc1c34a3ed073389a63d32b619b15bd203ce6a725",
+   "common_sha256": "7f51f6238a02089c036ccb87d1fcae4d4b78a542078c9b54a6927012cb0a8b33",
+   "prerequisites_sha256": "1153cfaf2d035168d2d8f7cc089691574d534e92d507b8f35895b553c93084e1",
+   "default_sha256": "65cd0f1e9fba7095254952ee7145a430bf6ae2394185b02740faf7713dcab6f4"
+  }
+ },
+ "switch": {
+  "output": ".local/rust-compiler-goal/acceptance/release-020/switch-002",
+  "journal_sha256": "b315050e243e708c521f90b0bc3c121ddb48af4cbba590d2328277a8f97ce27e",
+  "stages": [
+   "pointers",
+   "canary_passed",
+   "canary_passed",
+   "started",
+   "m2_canary_passed",
+   "m2_canary_passed",
+   "stopped",
+   "started",
+   "canary_passed",
+   "canary_passed",
+   "stopped",
+   "started",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "stopped",
+   "immutable_install_verified",
+   "stop_intent",
+   "started",
+   "new_default_owner",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "pointer_set",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "committed"
+  ],
+  "rollback": false,
+  "stop_intent_at": "2026-10-21T17:08:52.348869+00:00",
+  "committed_at": "2026-10-21T17:09:02.500328+00:00",
+  "previous_owner": {
+   "pid": 61463,
+   "start": "Tue Oct 20 16:38:51 2026",
+   "binary_sha256": "52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2"
+  },
+  "new_owner": {
+   "pid": 42786,
+   "start": "Thu Oct 22 01:08:52 2026",
+   "binary_sha256": "350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e"
+  },
+  "previous_default_sha256": "65cd0f1e9fba7095254952ee7145a430bf6ae2394185b02740faf7713dcab6f4",
+  "previous_default_snapshot": ".local/rust-compiler-goal/acceptance/release-020/switch-002/0002-previous-default.json",
+  "default_receipt_sha256": "c3caf48c8eec1aadaf7eb5d266ab1aef289fd5ce91fb18f0479553423518e7f4",
+  "earlier_attempt": "switch-001 refused a relative --output before any mutation."
+ },
+ "post_switch_check": {
+  "output": ".local/rust-compiler-goal/acceptance/release-020/check-001",
+  "result_sha256": "34129f1d499a00fccca18ae2fa96e7c893849c07d079b4fdb08be3d8a0ab0395",
+  "passed": true,
+  "checks": {
+   "owner": true,
+   "health": true,
+   "pointers": true,
+   "legacy_rollback_assets": true,
+   "canaries": true,
+   "owner_after": true
+  },
+  "cases": [
+   "post-switch-smoke12",
+   "post-switch-legacy100",
+   "example-v1",
+   "example-v5",
+   "example-v6",
+   "example-v7",
+   "CAP_MONGODB_FIREBASE_GCS_CSV"
+  ]
+ },
+ "pointers_after": {
+  "som-rs/runtime/current": "som-rs/runtime/versions/350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e",
+  "som-rs/compiler-assets/current": "som-rs/compiler-assets/versions/d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa"
+ },
+ "rollback_assets": {
+  "previous_default_binary_sha256": "52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2",
+  "previous_default_receipt_sha256": "65cd0f1e9fba7095254952ee7145a430bf6ae2394185b02740faf7713dcab6f4",
+  "older_defaults": [
+   "d2de7522… (#56)",
+   "05f1bfe6… (phase 1)",
+   "3fad3cb7… (#51 compiler)"
+  ],
+  "legacy_m2_binary_sha256": "14cf0a67fbcc943639c9e0efb661d6aaf0de7b00289c05fc52819f9e97f239d6",
+  "legacy_default_sha256": "e035e04c5fd8d38e2c26b0664f10fe3becb61c5c3237d0c1c84f2adf689c4698",
+  "asset_manifest_sha256": "d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa"
+ },
+ "recovery": {
+  "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/rust_output_release/switch.py --prerequisites $PWD/.local/rust-compiler-goal/acceptance/release-020/inputs-001/prerequisites.json --root $PWD --port 8765 --restore $PWD/.local/rust-compiler-goal/acceptance/release-020/switch-002 --approval FRESH_APPROVAL.json --output FRESH_ABSOLUTE_DIR",
+  "then": "som-rs/scripts/rust_output_release/check_default.py with --expect-binary-sha256 52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2",
+  "approval_action": "restore-default-8765-rust-output",
+  "restores_to": "the candidate-006 default (binary 52658e13…, receipt 65cd0f1e…)",
+  "qualified_by": "rehearsal scenario switch: restore exit 0, check-restored exit 0"
+ },
+ "boundary": {
+  "default_8765_before_approval": "No HTTP request or signal reached 8765 before the approval: the inputs used a stand-in on a harness port, the rehearsal used sandbox roots on harness ports and observed the live default by ps and lsof only, and the plan printed 0 mutations and 0 service calls. The acceptance targets step read 8765 as its reference with GET and compile requests only.",
+  "local_tools_only": true,
+  "paid_or_cloud_runs": false,
+  "training": false,
+  "python_output_byte_identical": true
+ },
+ "risks": [
+  "Rust assemble uses rustfmt from /opt/homebrew/Cellar/rust/1.96.1. A Homebrew upgrade that removes that version makes Rust assemble answer ASSET_UNAVAILABLE; Python output is not affected.",
+  "Phase 2 Rust products build offline only with the vendored crates (.local/rust-output-phase2/vendor-002).",
+  "`target typescript` answers 501 NOT_IMPLEMENTED for v1–v5 and 422 UNSUPPORTED_TARGET for v6/v7: TypeScript output is not supported in this release.",
+  "A generated Python product needs its pinned packages; the PostgreSQL check used the acceptance venv, so a fresh `pip install` of a product was not exercised here."
+ ],
+ "not_done": [
+  "som-core tests that need fastapi were not run.",
+  "The PostgreSQL product check ran one example (v3), not every example."
+ ],
+ "not_published": "binaries, raw request and response bytes, process logs and vendored crates stay local"
+}

@@ -27,8 +27,8 @@ The repository is public, so each tag and GitHub release also needs the user's y
 
 | Milestone | Release | Usable result | Issues |
 |---|---|---|---|
-| — | [v0.1.0](https://github.com/faberline/som/releases/tag/v0.1.0) (released 2026-10-21) | The current default, candidate-006: Python and Rust BE for prompts v1–v7 | tag at the build commit `6116fed549`, notes only |
-| [M5](https://github.com/faberline/som/milestone/11) | v0.2.0 | `som write` puts a Python project on disk, and a quickstart page runs it | [#79](https://github.com/faberline/som/issues/79), [#80](https://github.com/faberline/som/issues/80), release [#81](https://github.com/faberline/som/issues/81) |
+| — | [v0.1.0](https://github.com/faberline/som/releases/tag/v0.1.0) (released 2026-10-21) | candidate-006: Python and Rust BE for prompts v1–v7 | tag at the build commit `6116fed549`, notes only |
+| [M5](https://github.com/faberline/som/milestone/11) | [v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0) (released 2026-10-22) | The current default, candidate-007: `som write` puts a Python project on disk, and a quickstart page runs it | [#79](https://github.com/faberline/som/issues/79), [#80](https://github.com/faberline/som/issues/80), release [#81](https://github.com/faberline/som/issues/81) |
 | [M6](https://github.com/faberline/som/milestone/12) | v0.3.0 | A React CRUD client for a generated Python BE (v1–v4) | [#68](https://github.com/faberline/som/issues/68); proposal in [react-output-v1-draft.md](react-output-v1-draft.md), waiting for approval |
 | [M7](https://github.com/faberline/som/milestone/13) | v0.4.0 | `som write --target rust` and an offline build quickstart | [#82](https://github.com/faberline/som/issues/82) |
 | [M8](https://github.com/faberline/som/milestone/14) | v0.5.0 | TypeScript BE phase 1 (v1–v5, PostgreSQL) | [#65](https://github.com/faberline/som/issues/65), [#74](https://github.com/faberline/som/issues/74)–[#76](https://github.com/faberline/som/issues/76) |
