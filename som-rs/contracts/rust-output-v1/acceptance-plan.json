@@ -130,5 +130,25 @@
       "#57": "Every check above passes, and the default on 8765 changes only after a rehearsal with the Python and Rust canaries and a rollback, with the user's approval.",
       "#58": "The python_name_collisions checks above pass on the same candidate."
     }
+  },
+  "amendment005": {
+    "amendment": 5,
+    "rule": "The acceptance of CONTRACT.md section 13 (issue #65) on the first typescript-output-v1 phase 1 candidate build. Every check runs on every case it names; a missing result, a failure and a skipped check each block acceptance. A check whose tool does not exist yet is added with typescript-output-v1 phase 1 before the candidate runs; until then it counts as unrun.",
+    "checks": [
+      "RT diagnostics: every RT case of negative-cases.json, sent as written, gives exactly its expected code, status, pointer, cause, allowed form and span located in the raw request body: RT01 to RT06 with the amendment 005 texts, RT07 unchanged (a tool added with typescript-output-v1 phase 1).",
+      "check_python_controls.py passes for every negative case of negative-cases.json.",
+      "Python against the baseline: every typed prompt of the 127 public products (public-products-003b) and the 544 legacy jobs (legacy544 run-005), sent without target and with target python, gives a compile response equal byte for byte to the baseline's response, and assembling that bundle gives response bytes equal to the baseline's (a tool added with typescript-output-v1 phase 1).",
+      "Python recordings: python_unchanged with its amendment_004 rule, python_replay.py --asset-break over public-products-003b and legacy544 run-005, passes with no failure; validate_cases.py gives the frozen Python file hashes.",
+      "Rust compile against the baseline: every case of the rust-output-055 run-003 inventory (the accepted run of rust-output-acceptance-2026-10-20-phase2.json), compiled with target rust, gives a response equal to the baseline's response for the same request except bundle.assets.backend, bundle.assets.target_contract and bundle.hashes.payload_sha256; RS12 and RS13 give the baseline's compiler-v1 refusal bytes (a tool added with typescript-output-v1 phase 1).",
+      "check_rust_unchanged.py: every phase 1 and phase 2 Rust product of rust-output-055 run-003 assembles to byte-identical files on the candidate; phase 1 compares a check_rust_products.py --no-gates report made on the candidate.",
+      "Rust bundles of the baseline: every Rust bundle the baseline returns for that inventory is refused by the candidate at assemble with ASSET_HASH_MISMATCH, and the same bundle rebased on the candidate's backend and target_contract descriptors assembles to the files_sha256 run-003 recorded (a tool added with typescript-output-v1 phase 1).",
+      "check_rust_products.py with --refusals phase2 passes assemble_refusals, with A6_amendment_004; A4 (target python in a Rust bundle) keeps INVALID_SCHEMA at /bundle/target.",
+      "check_cli.py passes, and a case added with typescript-output-v1 phase 1 shows that `som compile --target typescript` forwards the string unchanged.",
+      "An independent audit, written from this plan and the raw outputs only, reports no failure and nothing unrun."
+    ],
+    "issue_gates": {
+      "#65": "Every check above passes on the same candidate as the typescript-output-v1 phase 1 acceptance, and the default on 8765 changes only after a rehearsal with the Python, Rust and TypeScript canaries and a rollback, with the user's approval."
+    },
+    "baseline": "the current default compiler: rust-output-candidate-006, binary 52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2, build commit 6116fed549d458f6ac06f51541c93c5de6514385, the #57 release (som-rs/evidence/rust-output-release-2026-10-20-issue57.json), read only"
   }
 }

@@ -27,9 +27,9 @@ pub const CATALOG_ID: &str = "som.rust-catalog.v1";
 pub const BLOCK_LIBRARY_ID: &str = "som.rust-block-library.v1";
 pub const BACKEND_ID: &str = "som.rust-backend.v1";
 pub const TARGET_CONTRACT_ID: &str = "som.rust-output-contract.v1";
-/// H(files map) of the latest sealed receipt for contracts/rust-output-v1: amendment 4.
+/// H(files map) of the latest sealed receipt for contracts/rust-output-v1: amendment 5.
 pub const TARGET_CONTRACT_SHA256: &str =
-    "4aa0e4afc0f17def6a3342ab445d69488a437f68b8b7ac9a2e2f7cf8c6a1622c";
+    "8c25078c84fdec3dea1b4cb15df499d682ccb9b7286d957598f2076e3a685d51";
 
 pub const CATALOG_TEXT: &str = include_str!("../../catalog/rust-catalog.v1.json");
 const BLOCK_LIBRARY_TEXT: &str = concat!(

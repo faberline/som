@@ -48,11 +48,13 @@ It is the same member for the CNL request (`format` som.cnl.v1) and the typed JS
 | absent | Python, the unchanged som.dsl-bundle.v1 response |
 | `"python"` | The same bytes as absent |
 | `"rust"` | A som.dsl-bundle.v2 bundle with `target` rust, or one diagnostic |
+| `"typescript"` | The result of the typescript-output-v1 contract (amendment 005, section 13) |
 | any other JSON value | 400 INVALID_SCHEMA at /target, located on the value token |
 
-The refusal cause is "Target must be the string python or rust." The allowed form is "Omit target, or use target python or rust."
+The refusal cause is "Target must be the string python, rust or typescript." The allowed form is "Omit target, or use target python, rust or typescript."
+Amendment 005 (section 13) added typescript to both texts. Before it they named python and rust only.
 A second `target` member is INVALID_JSON at the second key token, like any duplicate member.
-`som compile --target python|rust` forwards the string as the member without checking it. A server refusal exits with status 2.
+`som compile --target python|rust|typescript` forwards the string as the member without checking it. A server refusal exits with status 2.
 
 ### Deviation from the issue text: no CNL target sentence
 
@@ -407,3 +409,56 @@ Before the fix, each of those products failed to compile, so no accepted product
 
 A6 needs a prompt that compiler-v1 admits and Rust does not. Phase 2 has none left.
 A6 now uses the RS13 typed prompt, which compiler-v1 refuses. Assemble validates the prompt first, so the result is INVALID_VALUE 400 at /bundle/prompt/query/filter_field.
+
+## 13. TypeScript target selection (amendment 005, issue #65)
+
+Issue #65 adds a third output target, TypeScript. Its own contract, typescript-output-v1, defines the TypeScript bundle, scope, refusals, product and acceptance.
+That contract is separate from this one and is sealed after this amendment.
+This amendment changes only what this contract says about the `target` member. Sections 1 to 12 stay in force otherwise.
+
+### What changes
+
+- api.schema.json admits `"typescript"` in the `target` enum. A request with target typescript gets the result typescript-output-v1 defines.
+- The refusal texts of section 2 name all three targets:
+  - cause "Target must be the string python, rust or typescript.";
+  - allowed form "Omit target, or use target python, rust or typescript.".
+- negative-cases.json: RT01 to RT06 carry the new texts. Their requests, codes, statuses, pointers and spans are unchanged.
+  RT07 (a duplicate target member) is INVALID_JSON and keeps its texts.
+- Compile check order (api.schema.json x-check-order): step 5, the Rust profile, still runs only for target rust. A typescript request follows the typescript-output-v1 check order instead.
+- Assemble check order (x-assemble-check-order): a som.dsl-bundle.v2 bundle whose `target` member is the string typescript continues in the typescript-output-v1 assemble order.
+  Every other target value except rust is still INVALID_SCHEMA at /bundle/target, so A4 (target python in a Rust bundle) keeps its result.
+- `som compile --target` documents python, rust and typescript. The CLI still forwards the string without checking it.
+- api.schema.json: compile_success and the som.dsl-bundle.v2 bundle schema of this contract cover target python and rust only.
+  A typescript response and a som.dsl-bundle.v2 bundle with target typescript follow the typescript-output-v1 schemas; the two contracts share only the envelope version and the `target` member.
+
+### What stays
+
+- Python: section 1 holds with no new exception. A request without target or with target python never reaches the target texts, and the som library sources stay byte-identical.
+  Every Python compile and assemble response equals the response of the current default compiler byte for byte.
+  The current default is rust-output-candidate-006, the #57 release (binary `52658e13…`, build commit `6116fed5`).
+  The recorded bundles of the 127 public products (public-products-003b) and the 544 historical jobs (legacy544 run-005) predate section 12, so they keep its rule: every product file stays byte-identical, and a recorded bundle gives ASSET_HASH_MISMATCH until it is rebased.
+- Rust: a target rust compile gives the same typed prompt, DSL and product files as before.
+  Its bundle differs only in two descriptors and in payload_sha256:
+  - target_contract changes, as section 9 says for every amendment;
+  - backend changes, because it hashes the som-targets sources that carry the target_contract hash and, later, the section 13 behavior.
+  A Rust bundle compiled before this amendment is refused at assemble with ASSET_HASH_MISMATCH. That is a recorded compatibility break, as in section 12; compile the prompt again.
+- No scope, refusal, profile, layout, crate, toolchain, case inventory or phase 2 file changes.
+
+### Implementation and acceptance
+
+The som-targets source carries this amendment's target_contract hash (`TARGET_CONTRACT_SHA256`) from the commit that seals it, because its test binds that hash to the latest receipt.
+The behavior change lands with typescript-output-v1 phase 1, in one change: target selection admits typescript, the two texts change, and the assembler dispatches typescript bundles.
+Until then a build answers target typescript with the INVALID_SCHEMA refusal and the old texts. Such a build does not meet this amendment, so no Rust or TypeScript candidate is prepared from it.
+Rust candidate work therefore waits for typescript-output-v1 phase 1, or for a later amendment that changes this order.
+
+[acceptance-plan.json](acceptance-plan.json) amendment005 is the acceptance plan for this amendment. It runs on the first typescript-output-v1 phase 1 candidate:
+
+- every RT case gives exactly its expected diagnostic, located in the raw request body;
+- check_python_controls.py passes for every negative case;
+- every Python compile and assemble response equals the current default's byte for byte, and the recorded Python bundles keep the section 12 rule;
+- every Rust compile response equals the current default's except the two descriptors and payload_sha256;
+- every phase 1 and phase 2 Rust product of the latest accepted run (rust-output-055 run-003) assembles to byte-identical files on the candidate;
+- every Rust bundle the current default returns is refused with ASSET_HASH_MISMATCH, and the same bundle rebased on the new descriptors gives the files run-003 recorded;
+- the CLI check passes and forwards --target typescript unchanged.
+
+Some of these checks need tools that do not exist yet. typescript-output-v1 phase 1 adds them before the candidate runs; a check without a tool counts as unrun and blocks acceptance.

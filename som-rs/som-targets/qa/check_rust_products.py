@@ -608,6 +608,7 @@ def main() -> int:
                     CONTRACT / "toolchain.json",
                     targets.SOM_RS / "evidence" / "rust-output-contract-amendment-003.json",
                     targets.SOM_RS / "evidence" / "rust-output-contract-amendment-004.json",
+                    targets.SOM_RS / "evidence" / "rust-output-contract-amendment-005.json",
                     REFERENCE / "Cargo.toml", REFERENCE / "Cargo.lock",
                     targets.TESTS / "rust_profile.py", targets.TESTS / "rust_profile_phase2.py",
                     CONTRACT / "negative-cases.json", targets.FIXTURES, targets.COVERAGE,

@@ -1,0 +1,412 @@
+{
+  "version": "som.rust-output-contract-amendment.v1",
+  "amendment": 5,
+  "frozen_at": "2026-10-21T07:51:48.130064+00:00",
+  "baseline_commit": "56aca0ca8a28881d7345e78733e70f3752a0c3d2",
+  "issue": [
+    65
+  ],
+  "target": "rust",
+  "bundle": "som.dsl-bundle.v2",
+  "status": "amendment_sealed_after_independent_review",
+  "implementation_already_in_progress": false,
+  "implementation_deferred_to": "the first typescript-output-v1 phase 1 change: select(), the target texts and the compile and assemble dispatch of section 13 land there in one change; until then a build refuses target typescript with the amendment 004 diagnostic and is not a candidate for this amendment",
+  "previous_receipt": "som-rs/evidence/rust-output-contract-amendment-004.json",
+  "previous_receipt_sha256": "f425bf95dfde2f6ae3bfdc30ab9aced8a6e45955ca15543a0662cb8a9416c537",
+  "reason": "Issue #65 adds a TypeScript backend as a third target of the som.dsl-bundle.v2 envelope. The envelope's target selection is part of this contract, so amendment 005 adds typescript to the target enum and to the INVALID_SCHEMA /target cause and allowed form (api.schema.json, CONTRACT.md section 2 and new section 13). negative-cases.json RT01 to RT06 change only those two texts (build_negative_cases.py); RT07 is unchanged. The Python controls ran again on the amended negative cases (negative-python-controls-2026-10-21.json, 32 passed). acceptance-plan.json gains amendment005, run on the first typescript-output-v1 phase 1 candidate. Python gains no exception. Rust prompts, DSL and product files stay the same, but the Rust target_contract descriptor and the backend descriptor (which hashes som-targets/src/rust/mod.rs, where TARGET_CONTRACT_SHA256 changes now) change, so a recorded Rust bundle gives ASSET_HASH_MISMATCH at assemble, the same compatibility break amendment 004 recorded for Python. The Python controls ran read-only against the current default compiler (the #57 release), so their payload_sha256 values differ from the 2026-10-20 run, which used a QA port before that release; every row passes. Issue #65 names RT01 to RT07, but RT07 is an INVALID_JSON duplicate member whose texts do not name targets, so only RT01 to RT06 change.",
+  "changed_paths": [
+    "som-rs/contracts/rust-output-v1/CONTRACT.md",
+    "som-rs/contracts/rust-output-v1/acceptance-plan.json",
+    "som-rs/contracts/rust-output-v1/api.schema.json",
+    "som-rs/contracts/rust-output-v1/negative-cases.json",
+    "som-rs/tests/rust-output-v1/build_negative_cases.py"
+  ],
+  "added_paths": [
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-21.json"
+  ],
+  "changes": [
+    {
+      "path": "som-rs/contracts/rust-output-v1/CONTRACT.md",
+      "old_sha256": "9df4f816a1d3508a45a3deb4db4d70ddb10171ece76c2ef0f00643bf0db84f5f",
+      "new_sha256": "67e665189d58fe3380accc6226e36776d52cec3cede4bc7ab8f4f2c96f28f8c3",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/CONTRACT-before-amendment-005.md",
+      "archived_copy_sha256": "9df4f816a1d3508a45a3deb4db4d70ddb10171ece76c2ef0f00643bf0db84f5f"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/acceptance-plan.json",
+      "old_sha256": "6077e6e16218c00fd65d69830cdb9a7dff57d6b08a8fb2adbd39752d4abcd887",
+      "new_sha256": "a3f2392fef920aa6e4fe42c5aaa923f03369fe2293a92e5ee3be3f9e2ebe83fe",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/acceptance-plan-before-amendment-005.json",
+      "archived_copy_sha256": "6077e6e16218c00fd65d69830cdb9a7dff57d6b08a8fb2adbd39752d4abcd887"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/api.schema.json",
+      "old_sha256": "dbd396f5e395487f05d6ad8c696d307a6641a9af47322e8c78284a47d053fff0",
+      "new_sha256": "1428a5e25e9f1bf72b84aaa2bd61c9fa31d37a444289df58a2e2b3e07256780b",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/api.schema-before-amendment-005.json",
+      "archived_copy_sha256": "dbd396f5e395487f05d6ad8c696d307a6641a9af47322e8c78284a47d053fff0"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/negative-cases.json",
+      "old_sha256": "74b36cb9ba0e61e639193f5a55f5e9e9c1924c730e502dd2de300b88c9dbbc1d",
+      "new_sha256": "cf269636ff3e41f6491e9c42f8e254c5072ebe6275201700dc959229fa5aa42e",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/negative-cases-before-amendment-005.json",
+      "archived_copy_sha256": "74b36cb9ba0e61e639193f5a55f5e9e9c1924c730e502dd2de300b88c9dbbc1d"
+    },
+    {
+      "path": "som-rs/tests/rust-output-v1/build_negative_cases.py",
+      "old_sha256": "fe97797483e8f34ee12297c2c48412adcf4bc6baedbe0833adf769cc7683f15a",
+      "new_sha256": "90930bdee4257f0eb4ca7f627547b2314aea0f798d238ecb1aa42d224291c96b",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/build_negative_cases-before-amendment-005.py",
+      "archived_copy_sha256": "fe97797483e8f34ee12297c2c48412adcf4bc6baedbe0833adf769cc7683f15a"
+    }
+  ],
+  "unchanged": "Every other path of the previous receipt keeps its hash: scope.json, rust_profile.py, the bundle schema, product layout, toolchain, reference crates, phase 2 files and cases. Sections 1 and 3 to 12 of CONTRACT.md are unchanged; section 2 adds a typescript row and a note, and changes the two texts and the CLI line, and its other rows are unchanged.",
+  "target_contract": {
+    "id": "som.rust-output-contract.v1",
+    "previous_sha256": "4aa0e4afc0f17def6a3342ab445d69488a437f68b8b7ac9a2e2f7cf8c6a1622c",
+    "sha256": "8c25078c84fdec3dea1b4cb15df499d682ccb9b7286d957598f2076e3a685d51",
+    "rule": "sha256 of the som.canonical-json.v1 bytes of the files map below"
+  },
+  "files": {
+    "som-rs/contracts/rust-output-v1/CONTRACT.md": "67e665189d58fe3380accc6226e36776d52cec3cede4bc7ab8f4f2c96f28f8c3",
+    "som-rs/contracts/rust-output-v1/acceptance-plan.json": "a3f2392fef920aa6e4fe42c5aaa923f03369fe2293a92e5ee3be3f9e2ebe83fe",
+    "som-rs/contracts/rust-output-v1/api.schema.json": "1428a5e25e9f1bf72b84aaa2bd61c9fa31d37a444289df58a2e2b3e07256780b",
+    "som-rs/contracts/rust-output-v1/behavior-normalization.json": "c75b29346d605af7e6ec8ad5d856381f4f8e0e0d321f1d236a5d93b545be97bf",
+    "som-rs/contracts/rust-output-v1/bundle.schema.json": "0d9e9db5495c0d9121b3213ed0eb15b18af6de462ee16ef3e91561414f4547bd",
+    "som-rs/contracts/rust-output-v1/case-inventory.json": "fc6fbec822623cb9bdc0a6e11c2a72b6f0dfac3c41e8b7c1e35830090eb7d2a5",
+    "som-rs/contracts/rust-output-v1/negative-cases.json": "cf269636ff3e41f6491e9c42f8e254c5072ebe6275201700dc959229fa5aa42e",
+    "som-rs/contracts/rust-output-v1/phase2/behavior.json": "d2007cc091a5f3ff22a2d0aeeef2c6cfe0e8f620caa255b5dc14c06efdf82ece",
+    "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6",
+    "som-rs/contracts/rust-output-v1/phase2/constructs.json": "6ef923690ce209795141076aec0d76d67d702d0fa35831324da136dd83e463dd",
+    "som-rs/contracts/rust-output-v1/phase2/naming.json": "cf9e2b70608f8ba7bd65710e901c99682bb4478562377ae3d1457abbc1e54de2",
+    "som-rs/contracts/rust-output-v1/phase2/pins.json": "76fa9338f987211dfc4cd1ff01f2b812855c131da7e58f5de3bdac117826e5f1",
+    "som-rs/contracts/rust-output-v1/phase2/services.json": "64c7b3ad93ea8359280232b5b6244f21c5bdcf1fb84931711376708b44ed572d",
+    "som-rs/contracts/rust-output-v1/product-layout.json": "d2d781f31d959fb913b1182a481e44bc4520e6157ef80de1e7e2fcec46be0b8f",
+    "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.lock": "0483374722515e3daa7f8509708abb9c551f1bc1815f9110e6662b893db443ad",
+    "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.toml": "d06a474e62ab474465c73f4ad99ddcf5d0e33a750684e3a8cfa83714949cd430",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.lock": "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.toml": "8b708c38686b77e6740171e24c28793c4a40b54a8e9807f8e147a9ef3b44591d",
+    "som-rs/contracts/rust-output-v1/scope.json": "0f31b4c0290afda9b4c4ccf99b575edec81c3361ae31c74b44bc16d5ff20e51d",
+    "som-rs/contracts/rust-output-v1/target-examples.json": "4d91b175e9c75cadb61ae335dc1540582b3d89c01815abe651b02d57ac6889ae",
+    "som-rs/contracts/rust-output-v1/toolchain.json": "9a05dd1953defc89c4a44eada333cbfc41570e4728295ab1a2be060c76b7029d",
+    "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-15.json": "b83e01caf26dbd403d04dac4948a04b97f059accd22edceae78f8c2519438462",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-20.json": "2398079609c673ff8086dff85f0fc27c51a66b5b087a09b2622d6913d81fcfdf",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-21.json": "8d302755f218237a5fcdb0275d4a35da0566604598e1d0c8c9c0e51ced8142a7",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-16.json": "64eb707bdecdcacb878240ca87094834015cb3dd1a77c2050e852335b18932da",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-17.json": "24cee7a81cf46379c318efd9271dfb18b15acddbde03e549208df162b538f383",
+    "som-rs/tests/rust-output-v1/build_case_inventory.py": "494976a61dd2184d2a9135d297c635fc4b6bd04be4cbb34bd2b7efc00b855874",
+    "som-rs/tests/rust-output-v1/build_cases.py": "13096aacb9ba3eafe84e4389586478622aca5eea8622f6d8774a15bb4da265b3",
+    "som-rs/tests/rust-output-v1/build_negative_cases.py": "90930bdee4257f0eb4ca7f627547b2314aea0f798d238ecb1aa42d224291c96b",
+    "som-rs/tests/rust-output-v1/build_phase2_behavior.py": "7d58af568f093cff9caaae0bff83dba2bac5ba9dbe8e2fc27ad029bbb8d22d9b",
+    "som-rs/tests/rust-output-v1/build_phase2_constructs.py": "a1c2b3ff09644ef246580a2afec062c78299e9cace169d4e750d11313f1e80ee",
+    "som-rs/tests/rust-output-v1/build_phase2_inventory.py": "60328ce9c02446891a5aff86a1681ce103b895a58b25cd970a0529625b44c994",
+    "som-rs/tests/rust-output-v1/build_phase2_pins.py": "7476958452c998972074a9b9e4ae3ee56d5598617ad4f1d4b3cf41b6d9c31c61",
+    "som-rs/tests/rust-output-v1/build_target_examples.py": "697ca7c91c2c9f4c3d27985ed0f50ce6c6f2a103ea7ed264ba1915c056d43ab2",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.cnl": "22e6cb0aacd219cb47478dca4ff5f244b63ae605de399f08a16bb62093ec9ce7",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.cnl": "a2512cdbbea998a8f051160166e3c1d2f4b43ae5d7bbcbe5e6a0cd211a9b7c1d",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.cnl": "554eb27bbd5c894fa7ccd473b45734a33753b1ec32395ccb5f73133b0a71a12c",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.cnl": "cb7f5fb994d6c7bfbdff549e71286211cd1d3f7177b91bdbeeb34337229b7724",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.cnl": "97cb49f506fb16fb9da2ea203b5a114ea68766ec46ebb69cdb4d63f012deb16c",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.prompt.json": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.cnl": "627623f91944b13158487086efec5653948be6c2e77a341e0d0ba9410d291e5d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347",
+    "som-rs/tests/rust-output-v1/cases/index.json": "b49af2a7ba842e5dd810d8d010fcf93436474df7f49f1c569367bed1bc94ed1b",
+    "som-rs/tests/rust-output-v1/check_contract.py": "958aacace4f99badd190715140665bb3bf9f08ec0e88c8557b6d24f87a069b15",
+    "som-rs/tests/rust-output-v1/check_python_controls.py": "50e081a6a10cdbb7db8e84e094854ef8833f25d3cfa0857cc98e9cb4e9ccd047",
+    "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513",
+    "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "66361c04b8c7069868aa03205dbb33f9d28ede06e55ea262326671b91108316b",
+    "som-rs/tests/rust-output-v1/validate_cases.py": "9b9131de7a56a54c6a9f103da170143bc18ec6d113bedb6f79ea0a7f8453d4bb"
+  },
+  "related_tools": {
+    "som-rs/som-targets/src/rust/mod.rs": {
+      "sha256": "2a4721921c9c03154f8da93ed3d520a0027148a607dfc002ffafcc3a3047a8bf",
+      "role": "TARGET_CONTRACT_SHA256 is this receipt's target sha"
+    },
+    "som-rs/som-targets/src/lib.rs": {
+      "sha256": "0a5e497727f72a6a5c53e19ba68f3d3cc5d5b0274fe19730428e6859723d681e",
+      "role": "select(), TARGET_CAUSE and TARGET_ALLOWED keep the amendment 004 behavior until typescript-output-v1 phase 1 implements section 13 in one change"
+    }
+  },
+  "independent_review": {
+    "reviewer": "independent Claude Opus 5.5 subagent, read-only, no calls to 8765",
+    "target_sha256": "8c25078c84fdec3dea1b4cb15df499d682ccb9b7286d957598f2076e3a685d51",
+    "final_verdict": "APPROVED",
+    "confirmed_without_change": [
+      "Receipt (regenerated in round 3): 53 file hashes match the working tree, and the file set equals the files under som-rs/{contracts,tests,evidence}/rust-output-v1 (empty symmetric difference). sha256(canonical(files)) = 8c25078c84fdec3dea1b4cb15df499d682ccb9b7286d957598f2076e3a685d51 = target_contract.sha256 = TARGET_CONTRACT_SHA256 in mod.rs. HEAD's mod.rs constant equals amendment 004's target.",
+      "previous_sha256 and previous_receipt_sha256 are correct. changed_paths (5) and added_paths (1) equal the map diff, and nothing was removed. changes[] old = amendment 004 = HEAD = archived copy, and new = disk. related_tools mod.rs and lib.rs match disk, and lib.rs is unchanged from HEAD.",
+      "Texts are consistent across schema, builder, CONTRACT sections 2 and 13, and RT01-RT06. RT07 and all other cases are unchanged, the 32 ids are the same, no body uses typescript, and no old text remains in CONTRACT.md. negative-python-controls-2026-10-21.json matches the current negative-cases sha, 32 passed.",
+      "build_negative_cases.py --check passes. check_contract.py gives 399 passed, 0 failed. check_contract.py --receipt amendment-005.json gives 454 passed, 1 failed; the only failure is 'receipt was sealed before implementation', status-driven and expected, as with amendment 004.",
+      "cargo test --offline --no-fail-fast in som-targets (CARGO_TARGET_DIR=.local/cargo-target-a005): lib 20 passed, 1 failed. The failure is target_contract_is_the_latest_receipt at mod.rs:816 (final_verdict Null != APPROVED), which goes away once the receipt records this review. Bin and doc tests are ok.",
+      "Baseline identity: candidate-006, binary 52658e13..., commit 6116fed5... equal rust-output-release-2026-10-20-issue57.json candidate.{directory, binary_sha256, build_binary_sha256, build_commit} and pointers_after. The local som-rs/runtime/current symlink resolves to that binary's version directory (read with readlink, no HTTP).",
+      "The Python checks are satisfiable: the baseline byte equality holds because the Python manifest (som-rs/src/compiler.rs backend_manifest) does not depend on som-targets, and the recordings check keeps python_replay.py --asset-break under the amendment_004 rule.",
+      "The Rust checks are satisfiable: Rust bundles carry the 6 compiler-v1 descriptors from compiler.descriptors(prompt) plus 5 from rust_descriptors(). Against candidate-006 only backend (BACKEND_FILES includes mod.rs) and target_contract change. run-003 keeps files_sha256 for phase 1 (rust-products.json) and phase 2 (phase2/cases), which the rebase and check_rust_unchanged checks need.",
+      "Tool-less checks (RT diagnostics, Python against the baseline, Rust compile against the baseline, Rust bundles of the baseline, the CLI typescript case) are marked as added with typescript-output-v1 phase 1, and the rule makes them unrun and blocking until then. The named tools and flags exist.",
+      "api.schema.json $comments (compile_success, assemble_request), the x-check-order and x-assemble-check-order notes, and the section 13 schema-coverage bullet are consistent. A4 still holds because bundle.schema.json requires target rust.",
+      "Protected paths are unchanged. git status shows the same 6 modified (plus the draft doc) and 7 untracked files."
+    ],
+    "findings": [
+      {
+        "round": 3,
+        "severity": "note",
+        "item": "R3-1: section 13 Rust bullet says 'as before' without naming the baseline",
+        "detail": "'Rust: a target rust compile gives the same typed prompt, DSL and product files as before. Its bundle differs only in two descriptors and in payload_sha256' is true against the current default (candidate-006), but not against run-003, whose shared compiler-v1 descriptors predate amendment 004. The acceptance bullets and the plan already say 'current default', so this is not ambiguous for acceptance. Saying 'as the current default' in that bullet would match the Python bullet. This is optional and does not block."
+      },
+      {
+        "round": 2,
+        "severity": "major",
+        "item": "R2-1: acceptance-plan.json amendment005 'Rust compile' and 'Rust recordings' checks use a baseline that cannot satisfy them (rust-output-055 run-003)",
+        "detail": "Both checks compare the candidate against 'every recorded Rust compile response' or 'every recorded Rust bundle' of rust-output-055 run-003, and both fail. (a) run-003 does not keep Rust compile responses or bundles. phase2/cases/*.json keep only compile_sha256, bundle_sha256 and files_sha256 under 'rust'. rust-products.json (phase 1) keeps only bundle_payload_sha256 and files_sha256. A grep for som.dsl-bundle.v2 in run-003 outside the cargo target and work dirs finds only header, summary, health and CLI artefacts. A comparison 'except backend, target_contract and payload_sha256' cannot be computed from a hash, and no recorded bundle exists to send and rebase. issue57 run-004 does not keep Rust bundles either. (b) Even if the bytes existed, run-003 ran on rust-output-candidate-004, before compiler-v1 amendment 003 / rust-output-v1 amendment 004. A Rust bundle carries the shared compiler-v1 descriptors (som-targets/src/rust/mod.rs descriptors() starts from compiler.descriptors(prompt); ASSET_KEYS includes compiler_contract and selection_policy). Those changed with amendment 004: python_unchanged amendment_004 admits compiler_contract and selection_policy, and A6_amendment_004 recomputes the shared descriptors. So the current candidate's Rust bundles also differ from run-003 in those descriptors, and the claims 'only backend and target_contract differ' and 'except bundle.assets.backend, bundle.assets.target_contract and hashes.payload_sha256' are false against run-003. They are true only against the current default (#57 release, candidate-006). Each check blocks acceptance, so #65 could never be accepted without another amendment. This is the same class of problem as round 1 finding 1. Fix (the Rust analog of the new Python check): baseline both checks on the current default. Compile every phase 1 and phase 2 Rust case of run-003's inventory with target rust read-only against the current default, and require that the candidate's response equal it except bundle.assets.backend, bundle.assets.target_contract and bundle.hashes.payload_sha256 (RS12/RS13: equal compiler-v1 refusal bytes). Then send those current-default bundles to the candidate's assemble, require ASSET_HASH_MISMATCH at /bundle/assets, and require that the same bundles, rebased on the candidate's descriptors (only backend and target_contract replaced, payload rehashed), assemble to the files run-003 recorded (files_sha256). Keep check_rust_unchanged.py against run-003 as written, because it compares files_sha256, which run-003 does keep. Also update the matching section 13 acceptance bullets ('equals the recorded one', 'every recorded Rust bundle').",
+        "resolution": "RESOLVED in round 3. acceptance-plan.json amendment005 gains a 'baseline' key: rust-output-candidate-006, binary 52658e13..., build commit 6116fed5..., release evidence rust-output-release-2026-10-20-issue57.json, read only. 'Rust compile against the baseline' compares the candidate with the baseline's response for the run-003 inventory, except backend, target_contract and payload_sha256, and requires RS12/RS13 to give the baseline's refusal bytes. This is satisfiable because the shared compiler-v1 descriptors and the Rust catalog, block_library and formatter are unchanged against candidate-006. 'Rust bundles of the baseline' refuses the baseline's bundles with ASSET_HASH_MISMATCH and assembles them, rebased on backend and target_contract, to run-003's files_sha256. That data exists: phase 1 rust-products.json and phase2/cases files_sha256. Bundles exist for 582 of the 584 phase 2 cases plus the phase 1 cases; RS12/RS13 return refusals, so they have none, which matches 'every Rust bundle the baseline returns'. check_rust_unchanged.py against run-003 is kept. The section 13 acceptance bullets now say current default and run-003."
+      },
+      {
+        "round": 2,
+        "severity": "minor",
+        "item": "R2-2: docs/typescript-output-v1-draft.md says amendment 005 is sealed while the receipt is pending",
+        "detail": "Line 193 says '(Sealed 2026-10-21.)', but the receipt status is pending_independent_review and this review is CHANGES_REQUIRED. Line 40 lists the Rust asset descriptors as 'backend, block library, selection policy, target_contract'. Line 214 says Rust has catalog, block_library, backend, formatter and target_contract, 'not selection_policy'. Both lines are incomplete: a Rust v2 bundle carries all 11 ASSET_KEYS. rust_descriptors() replaces catalog, block_library and backend, and adds formatter and target_contract, while selection_policy, compiler_contract, grammar, literal_policy, serializer and semantic_contracts come from compiler-v1. The draft is not part of the receipt, but it is the input to typescript-output-v1. Fix both before that contract is frozen.",
+        "resolution": "RESOLVED in round 3. The draft no longer claims amendment 005 is sealed (line 193 now reads 'written and independently reviewed. It is sealed first.'). Sections 3 and 10 list the 11 ASSET_KEYS: 6 compiler-v1 plus the 5 from rust_descriptors(), matching mod.rs ASSET_KEYS and rust_descriptors()."
+      },
+      {
+        "round": 2,
+        "severity": "note",
+        "item": "R2-3: pin 'the current default' by build identity",
+        "detail": "The Python check (and the Rust fix proposed in R2-1) compare against 'the current default compiler (the #57 release)'. The plan should record the default's identity (rust-output-candidate-006, binary_sha256 52658e13..., source commit 6116fed5) or say that the run header records it. An audit could then detect a default that changed between the seal and the candidate run.",
+        "resolution": "RESOLVED in round 3. The plan's baseline and CONTRACT.md section 13 name candidate-006, binary 52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2 and build commit 6116fed549d458f6ac06f51541c93c5de6514385. These equal the release evidence's candidate.binary_sha256, build_binary_sha256, build_commit and directory, and the local pointer som-rs/runtime/current resolves to runtime/versions/52658e13... (pointers_after)."
+      },
+      {
+        "severity": "major",
+        "item": "acceptance-plan.json amendment005 check 3 (python_unchanged) cannot pass as written",
+        "detail": "The check requires 'python_replay.py without --asset-break over the 127 public products (public-products-003b) and the 544 legacy jobs (legacy544 run-005)'. Those recorded exchanges predate compiler-v1 amendment 003. The issue57 acceptance (rust-output-acceptance-2026-10-20-issue57.json results.python_replay.mode) had to use asset_break true, with 671 recorded bundles refused with ASSET_HASH_MISMATCH and 671 rebased assembles. The default on 8765 is now that post-amendment-004 build (rust-output-release-2026-10-20-issue57.json). Without --asset-break, python_replay.py requires byte-identical compile responses, so every compile and assemble exchange on any post-004 candidate (including the first TS phase 1 candidate) fails by construction. The check would block #65 or force another amendment. Fix: compare against the current accepted default, for example with a new Python baseline recorded from the post-004 default and named in the plan, or check_targets.py --reference against the default without --asset-break, with python_replay byte comparison against that baseline. Or keep --asset-break for the old recordings and also require that the candidate's Python compile responses equal the current default's byte for byte. Update section 13 'That covers the 127 public products and the 544 historical jobs' to name the baseline.",
+        "round": 1,
+        "resolution": "RESOLVED. The new 'Python against the current default' check requires byte-for-byte compile and assemble equality with the current default (the #57 release) for the 127 public and 544 legacy prompts, with no target and with target python. This is satisfiable because the Python manifest (som-rs/src/compiler.rs backend_manifest) does not depend on som-targets. The separate 'Python recordings' check keeps python_replay.py --asset-break with the amendment_004 rule. Section 13 names the baselines."
+      },
+      {
+        "severity": "minor",
+        "item": "Backend descriptor already changes now; receipt reason and section 13 say it changes only on implementation",
+        "detail": "BACKEND_FILES in som-targets/src/rust/mod.rs includes include_str!(\"mod.rs\") and lib.rs, so the TARGET_CONTRACT_SHA256 edit already changes the Rust backend descriptor. The receipt reason says '(and the backend descriptor once som-targets implements section 13)', and section 13 says 'backend changes when som-targets changes to implement this amendment'. Both should say the backend descriptor changes with this receipt's mod.rs change, and again when lib.rs implements section 13. The ASSET_HASH_MISMATCH conclusion is unaffected.",
+        "round": 1,
+        "resolution": "RESOLVED. The receipt reason and section 13 now say that the backend descriptor changes now, because it hashes mod.rs, where TARGET_CONTRACT_SHA256 changes, and changes again with the section 13 behavior."
+      },
+      {
+        "severity": "minor",
+        "item": "amendment005 check 5 (recorded Rust bundles refused, then rebased) names no tool, and none exists",
+        "detail": "python_replay.py rebases only Python exchanges, and check_rust_unchanged.py recompiles from prompts, so it never sends recorded Rust bundles. No script under scripts/rust_output_acceptance or som-targets/qa sends a recorded Rust bundle and then rebases it on the candidate's descriptors, checking that only backend and target_contract differ. The tool needs to be written before the candidate run, and the plan should name it. A fresh Rust compile response is also never compared with the recorded one except for assets/payload_sha256, although section 13 claims the prompt and DSL are the same. Add that comparison (the Rust analog of asset_only_difference).",
+        "round": 1,
+        "resolution": "PARTIALLY RESOLVED. The checks with no tool are now marked 'a tool added with typescript-output-v1 phase 1', and the rule makes them unrun and blocking until then. A Rust compile comparison was added. But both Rust checks are baselined on rust-output-055 run-003, which makes them unsatisfiable as written (see new finding R2-1)."
+      },
+      {
+        "severity": "minor",
+        "item": "amendment005 check 7: check_cli.py does not exercise --target typescript",
+        "detail": "check_cli.py sends no typescript input (its UNKNOWN_TARGETS are RUST, '', go, ' rust', python3, plus coverage cases with none/python/rust), so 'check_cli.py passes' does not show that --target typescript is forwarded unchanged. The plan should say check_cli.py gains a typescript input, or name a separate check. The som CLI help text in som-targets/src/main.rs:48 still says '(python or rust)'. That belongs with the implementation.",
+        "round": 1,
+        "resolution": "RESOLVED. The plan adds a check_cli.py case for `--target typescript`, added with phase 1. main.rs:48 help is explicitly left for phase 1, consistent with section 13 'Implementation and acceptance'."
+      },
+      {
+        "severity": "minor",
+        "item": "amendment005 checks 1, 4 and 6: tools, flags and baseline run are not named",
+        "detail": "Check 1 (RT diagnostics located in the raw body) names no tool (check_targets.py reads negative-cases.json and is presumably meant). Check 4 says 'the latest accepted Rust run' where amendment 004 named rust-output-055 run-003, which is the run format check_rust_unchanged.py reads. Check 6 does not say --refusals phase2 or A6_amendment_004. Naming them makes the independent audit decidable.",
+        "round": 1,
+        "resolution": "RESOLVED. The RT diagnostics check is marked as a tool added in phase 1. check_rust_unchanged.py names rust-output-055 run-003 and the check_rust_products.py --no-gates phase 1 report (the flag exists). check_rust_products.py names --refusals phase2 and A6_amendment_004 (both exist in the tool and the plan)."
+      },
+      {
+        "severity": "minor",
+        "item": "api.schema.json compile_success and the assemble_request $comment are stale for typescript",
+        "detail": "compile_request now admits target typescript, but compile_success still admits only som.dsl-bundle.v1 or this contract's som.dsl-bundle.v2, whose bundle.schema.json requires target rust. So a TS success response is invalid under this contract's schema. The assemble_request $comment still says every som.dsl-bundle.v2 bundle is checked against som.dsl-bundle.v2. The x-target-selection.typescript text defers to typescript-output-v1, so this is a documentation gap. Consider a note in compile_success/$comment, or saying in section 13 that those defs describe the python/rust results only. typescript-output-v1 will reuse the version string som.dsl-bundle.v2 with a different schema; section 13 should say how the two v2 schemas coexist.",
+        "round": 1,
+        "resolution": "RESOLVED. compile_success has a $comment that excludes typescript responses. The assemble_request $comment and x-assemble-check-order step 3 route a v2 bundle with target typescript to typescript-output-v1. The x-check-order step 5 note was added. Section 13 says the schemas cover python and rust only and that the two contracts share only the envelope version and the target member."
+      },
+      {
+        "severity": "minor",
+        "item": "Receipt 'unchanged' wording for section 2",
+        "detail": "It says 'section 2 changes the target row, the two texts and the CLI line'. Section 2 actually adds a typescript row (existing rows unchanged), changes the two texts, adds a one-line note on amendment 005 and changes the CLI line.",
+        "round": 1,
+        "resolution": "RESOLVED. 'unchanged' now says that section 2 adds a typescript row and a note, changes the two texts and the CLI line, and keeps its other rows."
+      },
+      {
+        "severity": "note",
+        "item": "Deviation from issue #65 / TS draft text should be recorded",
+        "detail": "Issue #65 and docs/typescript-output-v1-draft.md (lines 25 and 29) say RT01-RT07 change. The amendment changes RT01-RT06 and keeps RT07, which is correct. The draft's section 1 also says a target rust request returns the same bytes as today except the diagnostic text, but this amendment breaks recorded Rust bundles (target_contract/backend). Record the deviation in the receipt and fix the draft before typescript-output-v1 is frozen.",
+        "round": 1,
+        "resolution": "RESOLVED. The receipt reason records the RT01-RT07 deviation from issue #65. The draft now says that the RT01-RT06 texts change and RT07 keeps its texts, and that the Rust bundle is not byte-identical (target_contract and backend)."
+      },
+      {
+        "severity": "note",
+        "item": "Interim window: builds carry the 005 target_contract hash with 004 behavior",
+        "detail": "From the seal commit until TS phase 1, every build reports target_contract = amendment 005 in Rust bundles and health, but refuses typescript with the old texts. Section 13 says no Rust or TypeScript candidate is prepared from such a build, which also blocks unrelated Rust candidate work until TS phase 1 lands. This is accepted by design. Keep the window short, or implement select() and the texts with the seal.",
+        "round": 1,
+        "resolution": "ADDRESSED (accepted by design). Section 13 states that interim builds are not candidates and that Rust candidate work waits for typescript-output-v1 phase 1 or a later amendment."
+      },
+      {
+        "severity": "note",
+        "item": "Python controls rerun against 8765; payload_sha256 differs from the 10-20 run",
+        "detail": "The 10-21 run used base_url http://127.0.0.1:8765 (read-only compiles). The 10-20 run used QA port 18966. All 32 rows have the same control_status and passed, but payload_sha256 differs on the 200 rows, consistent with the post-004 default having different Python descriptors. The receipt could note this so an auditor does not read it as a Python change from amendment 005.",
+        "round": 1,
+        "resolution": "RESOLVED. The receipt reason explains that the controls ran read-only against the current default (the #57 release), so payload_sha256 differs from the 10-20 QA-port run, and that every row passes."
+      }
+    ],
+    "commands_run": [
+      {
+        "command": "git status --short; git diff --stat; git diff --stat HEAD -- som-rs/src som-rs/Cargo.toml som-rs/Cargo.lock som-rs/som-targets/Cargo.toml som-rs/som-targets/Cargo.lock som-rs/contracts/compiler-v1 som-code-python som-rs/som-targets/catalog som-rs/evidence",
+        "result": "6 modified + 7 untracked files as listed; protected-path diff empty"
+      },
+      {
+        "command": "python3 scratchpad/review005/integrity.py (receipt files, H(files), previous sha, previous receipt sha, changed/added paths, changes[] vs amendment 004/HEAD/archive, related_tools, file-set coverage, mod.rs constant)",
+        "result": "all checks true; 53 files; target b775b8a1...0829"
+      },
+      {
+        "command": "python3 scratchpad/review005/consistency.py (schema/builder/CONTRACT texts, negative-cases vs git show HEAD, evidence sha)",
+        "result": "texts identical; only RT01-RT06 expected.cause/allowed_form changed; RT07 and all others unchanged; evidence sha matches, 32 passed"
+      },
+      {
+        "command": "python3 som-rs/tests/rust-output-v1/build_negative_cases.py --check",
+        "result": "checked negative-cases.json, exit 0"
+      },
+      {
+        "command": "python3 som-rs/tests/rust-output-v1/check_contract.py",
+        "result": "399 passed, 0 failed, exit 0"
+      },
+      {
+        "command": "python3 som-rs/tests/rust-output-v1/check_contract.py --receipt som-rs/evidence/rust-output-contract-amendment-005.json",
+        "result": "454 passed, 1 failed: 'receipt was sealed before implementation' (expected, status-driven)"
+      },
+      {
+        "command": "cd som-rs/som-targets; CARGO_TARGET_DIR=/Users/chrischeng/faberlines/som/.local/cargo-target-a005 cargo test --offline",
+        "result": "lib: 20 passed, 1 failed (target_contract_is_the_latest_receipt at mod.rs:816, final_verdict Null != APPROVED); exit 101"
+      },
+      {
+        "command": "same with --no-fail-fast",
+        "result": "same single failure; bin and doc tests ok (0 tests)"
+      },
+      {
+        "command": "python3 compare negative-python-controls 2026-10-20 vs 2026-10-21",
+        "result": "same ids and pass status; only payload_sha256 differs"
+      },
+      {
+        "command": "grep/sed of som-targets/src/lib.rs, src/rust/mod.rs (BACKEND_FILES, rust_descriptors, assemble steps 3-9, receipt test), som-rs/src/compiler.rs backend_manifest, src/rust/render",
+        "result": "backend descriptor includes mod.rs and lib.rs; target_contract only via rust_descriptors; render independent of descriptors; Python manifest independent of som-targets"
+      },
+      {
+        "command": "read scripts/rust_output_acceptance/python_replay.py, check_rust_unchanged.py, check_cli.py, run_issue57.py, run_acceptance.py; evidence rust-output-acceptance-2026-10-20-issue57.json and rust-output-release-2026-10-20-issue57.json",
+        "result": "issue57 python_replay over public-products-003b/legacy544 run-005 needed --asset-break (671 bundles refused); default 8765 switched to the post-004 candidate; no Rust recorded-bundle rebase tool; check_cli has no typescript input"
+      },
+      {
+        "command": "gh issue view 65 --comments",
+        "result": "issue says RT01-RT07; amendment changes RT01-RT06 (correctly)"
+      },
+      {
+        "command": "[round 2] python3 scratchpad/review005/integrity.py",
+        "result": "all true; 53 files; H(files)=a27bc757...b8f3 = target = mod.rs constant"
+      },
+      {
+        "command": "[round 2] python3 scratchpad/review005/consistency.py",
+        "result": "texts consistent; only RT01-RT06 cause/allowed_form changed; evidence sha matches, 32 passed"
+      },
+      {
+        "command": "[round 2] python3 som-rs/tests/rust-output-v1/check_contract.py",
+        "result": "399 passed, 0 failed, exit 0"
+      },
+      {
+        "command": "[round 2] python3 som-rs/tests/rust-output-v1/check_contract.py --receipt som-rs/evidence/rust-output-contract-amendment-005.json",
+        "result": "454 passed, 1 failed ('receipt was sealed before implementation', expected), exit 1"
+      },
+      {
+        "command": "[round 2] python3 som-rs/tests/rust-output-v1/build_negative_cases.py --check",
+        "result": "checked negative-cases.json"
+      },
+      {
+        "command": "[round 2] cd som-rs/som-targets; CARGO_TARGET_DIR=/Users/chrischeng/faberlines/som/.local/cargo-target-a005 cargo test --offline --no-fail-fast",
+        "result": "lib 20 passed, 1 failed (target_contract_is_the_latest_receipt, mod.rs:816, final_verdict Null); bin/doc ok; exit 101"
+      },
+      {
+        "command": "[round 2] git diff (acceptance-plan.json, api.schema.json, CONTRACT.md); section 13 read in full; receipt reason/unchanged/related_tools; docs/typescript-output-v1-draft.md grep",
+        "result": "see findings R2-1..R2-3 and resolutions"
+      },
+      {
+        "command": "[round 2] grep tools: check_rust_products.py (--no-gates, --refusals, A6_amendment_004), check_rust_unchanged.py and python_replay.py argparse, acceptance-plan python_unchanged.amendment_004",
+        "result": "all named flags and rules exist"
+      },
+      {
+        "command": "[round 2] read-only inspection of .local/rust-compiler-goal/acceptance/rust-output-055/run-003 (phase2/cases record keys, rust-products.json case keys, grep for som.dsl-bundle.v2 / compiler_contract) and issue57/run-004",
+        "result": "run-003 keeps only compile/bundle/payload/files sha256, no Rust compile responses or bundles; issue57 run-004 keeps none either"
+      },
+      {
+        "command": "[round 2] read som-targets/src/rust/mod.rs descriptors(), rust_descriptors(), ASSET_KEYS; evidence phase2 and issue57 candidate fields; issue57 python-replay.json mode",
+        "result": "Rust bundles carry shared compiler-v1 descriptors (compiler_contract, selection_policy), which changed with amendment 004; run-003 was candidate-004, the current default is candidate-006"
+      },
+      {
+        "command": "[round 3] python3 scratchpad/review005/integrity.py",
+        "result": "all true; 53 files; H(files)=8c25078c...5d51 = target = mod.rs constant"
+      },
+      {
+        "command": "[round 3] python3 scratchpad/review005/consistency.py",
+        "result": "texts consistent; only RT01-RT06 texts changed; evidence sha matches, 32 passed"
+      },
+      {
+        "command": "[round 3] python3 som-rs/tests/rust-output-v1/check_contract.py",
+        "result": "399 passed, 0 failed, exit 0"
+      },
+      {
+        "command": "[round 3] python3 som-rs/tests/rust-output-v1/check_contract.py --receipt som-rs/evidence/rust-output-contract-amendment-005.json",
+        "result": "454 passed, 1 failed ('receipt was sealed before implementation', expected), exit 1"
+      },
+      {
+        "command": "[round 3] python3 som-rs/tests/rust-output-v1/build_negative_cases.py --check",
+        "result": "checked negative-cases.json"
+      },
+      {
+        "command": "[round 3] cd som-rs/som-targets; CARGO_TARGET_DIR=/Users/chrischeng/faberlines/som/.local/cargo-target-a005 cargo test --offline --no-fail-fast",
+        "result": "lib 20 passed, 1 failed (mod.rs:816 final_verdict Null); bin/doc ok; exit 101"
+      },
+      {
+        "command": "[round 3] read acceptance-plan.json amendment005 (checks, baseline); release evidence rust-output-release-2026-10-20-issue57.json candidate/pointers_after; readlink som-rs/runtime/current",
+        "result": "baseline identity matches the release evidence and the runtime pointer"
+      },
+      {
+        "command": "[round 3] CONTRACT.md section 13 and git diff of docs/typescript-output-v1-draft.md (grep sealed, selection_policy, ASSET_KEYS)",
+        "result": "section 13 names the baseline; draft sealed claim removed; 11 ASSET_KEYS listed"
+      },
+      {
+        "command": "[round 3] git status --short",
+        "result": "same modified/untracked set"
+      }
+    ],
+    "rounds": [
+      {
+        "round": 1,
+        "verdict": "CHANGES_REQUIRED",
+        "summary": "Receipt integrity, texts, negative cases and checks were correct. 1 major: the Python check required python_replay.py without --asset-break over pre-amendment-003 recordings, which is impossible on post-004 builds. 6 minor issues (backend wording, Rust rebase and compile comparison missing a tool, CLI typescript case, unnamed tools/runs/flags, stale schema comments, receipt 'unchanged' wording) and 3 notes."
+      },
+      {
+        "round": 2,
+        "verdict": "CHANGES_REQUIRED",
+        "summary": "The regenerated receipt (a27bc757...b8f3) is intact and consistent. check_contract and cargo test show only the expected status-driven failures. Round 1 findings 1, 2 and 4-10 are resolved or addressed. Finding 3 is partially resolved: the new 'Rust compile' and 'Rust recordings' checks are baselined on rust-output-055 run-003, which keeps no Rust compile responses or bundles (only sha256 digests) and predates the amendment 004 change to the shared compiler_contract/selection_policy descriptors that Rust bundles carry, so both checks are unsatisfiable (new major R2-1). Fix: baseline them on the current default as the Python check now does. New minor R2-2: the draft says 'Sealed' and lists the descriptors inconsistently. New note R2-3: pin the current default's identity."
+      },
+      {
+        "round": 3,
+        "verdict": "APPROVED",
+        "summary": "The receipt (8c25078c...5d51) is intact and consistent. check_contract and cargo test show only the expected status-driven failures. R2-1 is resolved: the Rust compile and bundle checks are baselined on the current default (candidate-006, verified against the release evidence and the runtime pointer) and run-003 files_sha256, so they are satisfiable. R2-2 (draft sealed claim, 11 ASSET_KEYS) and R2-3 (baseline pinned) are resolved. No blocker or major remains. Only an optional wording note (R3-1) is open."
+      }
+    ]
+  },
+  "check_contract": {
+    "command": "python3 som-rs/tests/rust-output-v1/check_contract.py --receipt som-rs/evidence/rust-output-contract-amendment-005.json",
+    "passed": 454,
+    "failed": 1,
+    "expected_failure": "receipt was sealed before implementation: this amendment records implementation_already_in_progress false, because the section 13 behavior lands with typescript-output-v1 phase 1",
+    "also_passed": [
+      "check_contract.py without a receipt: 399 passed, 0 failed",
+      "build_negative_cases.py --check",
+      "tests/rust-output-v1/check_python_controls.py --base-url http://127.0.0.1:8765 (the current default, read only): 32 passed, written to negative-python-controls-2026-10-21.json",
+      "som-targets cargo test --offline --no-fail-fast with CARGO_TARGET_DIR .local/cargo-target-a005: 21 passed, 0 failed, after sealing"
+    ],
+    "not_run": [
+      "the acceptance-plan.json amendment005 checks: they run on the first typescript-output-v1 phase 1 candidate, and five of them need tools phase 1 adds",
+      "python_replay.py, check_rust_unchanged.py, check_rust_products.py and check_cli.py: no candidate implements this amendment yet"
+    ]
+  }
+}

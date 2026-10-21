@@ -7,14 +7,15 @@ Nothing in this draft changes code, contracts, or outputs.
 The structure follows the [Rust output contract](../som-rs/contracts/rust-output-v1/CONTRACT.md).
 Section numbers match it where they can.
 
-## 1. Python and Rust stay byte-identical
+## 1. What happens to Python and Rust
 
-- A request without `target`, or with target `python`, returns the same bytes as today.
-  This covers the 127 public products and the 544 legacy jobs.
-- A request with target `rust` returns the same bytes as today.
-- The Python backend hash, the asset hash, and every Rust contract hash stay unchanged.
-  The only exception is the target diagnostic text in section 2.
-- The acceptance plan replays the existing Python and Rust gates against the TypeScript candidate.
+- A request without `target`, or with target `python`, returns the same bytes as the current default compiler.
+  The som library is untouched, so the Python descriptors stay the same. The recorded bundles of the 127 public products and the 544 legacy jobs keep rust-output-v1 section 12's rule.
+- A request with target `rust` gives the same typed prompt, DSL and product files as today.
+  Its bundle is **not** byte-identical: amendment 005 changes the `target_contract` descriptor, and the `backend` descriptor hashes `som-targets` sources (`Cargo.toml`, `lib.rs`, `main.rs`, `profile.rs`, `rust/mod.rs`, ...).
+  A recorded Rust bundle is refused at assemble with ASSET_HASH_MISMATCH and has to be compiled again.
+- The only diagnostic texts that change are the RT01–RT06 target texts in section 2.
+- The acceptance plan replays the existing Python and Rust gates against the TypeScript candidate (rust-output-v1 acceptance-plan.json `amendment005`).
 
 ## 2. Target selection
 
@@ -22,20 +23,21 @@ Section numbers match it where they can.
 - Every other value still fails the envelope schema.
 - No CNL sentence selects a target, as in Rust.
 
-The frozen Rust negative cases RT01–RT07 state the cause "Target must be the string python or rust." and the allowed form "Omit target, or use target python or rust."
+The frozen Rust negative cases RT01–RT06 state the cause "Target must be the string python or rust." and the allowed form "Omit target, or use target python or rust."
 Adding `typescript` therefore needs **rust-output-v1 amendment 005**, sealed with its own independent review and receipt. The amendment:
 
 - adds `typescript` to the `target` enum in `api.schema.json`;
-- rewrites the RT01–RT07 cause and allowed-form texts to name all three targets;
-- changes nothing else.
+- rewrites the RT01–RT06 cause and allowed-form texts to name all three targets (RT07 is an INVALID_JSON duplicate member and keeps its texts);
+- dispatches a typescript request and a v2 bundle with target typescript to this contract's check orders.
 
-The Python and Rust products are unaffected. Only those seven error responses change.
+Amendment 005 is written in rust-output-v1 CONTRACT.md section 13. Its behavior lands with this contract's phase 1 in one change; the build in between keeps the old refusal and is not a candidate.
+The Python and Rust products are unaffected. The six RT error responses change, and so do the Rust bundle descriptors (section 1).
 
 ## 3. The TypeScript bundle
 
 - Bundle version `som.dsl-bundle.v2`, with `target: "typescript"`.
 - DSL `som.dsl.typescript.v1`.
-- Asset descriptors are the same as in Rust: backend, block library, selection policy, and `target_contract` (this contract's hash).
+- Asset descriptors follow Rust's 11 asset keys: the compiler-v1 descriptors (grammar, compiler_contract, selection_policy, literal_policy, serializer, semantic_contracts) plus the target's own (target_contract, catalog, block_library, backend, formatter). See section 10.
 - The assemble check order is the Rust order, with a TypeScript profile and a TypeScript catalog in place of the Rust ones.
 
 ## 4. Phase 1 scope and refusals
@@ -67,7 +69,7 @@ For v1–v5 with PostgreSQL:
 
 ```
 package.json
-package-lock.json          # or pnpm-lock.yaml, see 6.6
+package-lock.json
 tsconfig.json
 README.md
 migrations/0001_init.sql
@@ -165,9 +167,8 @@ The product runs on compiled JavaScript or with type stripping. This follows fro
 ### 6.8 Downloads
 
 Every option except the runtime needs packages from the npm registry.
-Your rules approve only crates.io downloads, so **npm downloads need your approval**.
-The proposal is a single download into a local vendored cache, pinned by lockfile integrity hashes, after the contract freezes.
-Building and testing then runs offline.
+**Approved on 2026-10-21:** one download of the chosen pinned packages into a local vendored cache, after the contract freezes, pinned by lockfile integrity hashes.
+Building and testing then runs offline. Other npm packages still need approval.
 
 ## 7. Behavior parity
 
@@ -193,3 +194,28 @@ Building and testing then runs offline.
 3. This contract is copied to `som-rs/contracts/typescript-output-v1/` with its JSON files, independently reviewed, and sealed with a receipt in `som-rs/evidence/`.
 4. Phase 1 is split into `agy:todo` issues: target selection, profile, renderer, host, and acceptance.
 5. Later changes need numbered amendments, as in Rust.
+
+## 10. Freeze review (2026-10-21)
+
+Verdict: **not freezable yet.** Sections 1 and 2 were corrected above. The items below are still open.
+
+Decisions for a person:
+
+1. **Reference lockfile before the download.** Section 5 freezes `package-lock.json` as a reference file, but writing it needs registry metadata, and npm access is approved only after the freeze.
+   Options: allow one metadata-only resolution (`npm install --package-lock-only`, no tarballs) before the freeze; or freeze without the lockfile and seal it in amendment 001 right after the download.
+2. **`identifier_reserved`** (section 4): refuse `__proto__`, `constructor` and `prototype`, or generate code that never uses wire names as plain object keys.
+3. **Compiled JavaScript or type stripping** (6.7): the product runs `tsc` output or Node's type stripping. This changes the layout (a `dist/` build step or not) and the gates.
+4. **Where the TypeScript backend lives, and what it does to Rust bundles.** The Rust `backend` descriptor hashes `som-targets/Cargo.toml`, `src/lib.rs`, `src/main.rs` and `src/profile.rs`.
+   If the TypeScript backend is added to `som-targets`, every change to those shared files breaks recorded Rust bundles again.
+   Options: a separate crate or module with its own descriptor, plus moving the shared files out of the Rust backend file list (a rust-output-v1 amendment); or accept a Rust bundle break with each TypeScript change that touches them.
+
+Gaps to fill before the freeze, with no decision needed:
+
+- Descriptors: a Rust bundle carries 11 asset keys (`ASSET_KEYS` in `som-rs/som-targets/src/rust/mod.rs`): six shared compiler-v1 descriptors and five target ones from `rust_descriptors()` (catalog, block_library, backend, formatter, target_contract). The TypeScript set needs its own target descriptors, a formatter descriptor for prettier, and a way to pin the Node binary (Rust pins rustc in toolchain.json).
+- `som.dsl.typescript.v1` is named but not defined. The DSL schema, the TypeScript catalog and the block library are still to be written.
+- Section 4 has no naming rule for generated identifiers. Resource and field names that are JavaScript reserved words (`class`, `delete`, `default`, ...) need a rule, as Rust's R2 handles keywords.
+- `table_reserved` names a proposed table (`_som_ts_migrations`). Fix the name.
+- Section 5 gives no file count limit and no block order.
+- The JSON files do not exist yet: `scope.json`, `product-layout.json`, `bundle.schema.json`, `toolchain.json` (the Node binary SHA-256, the npm version and the package integrity hashes), `api.schema.json` for the TypeScript responses, the cases, `case-inventory.json` and `acceptance-plan.json`.
+- The acceptance plan must carry rust-output-v1 `amendment005`. Five of its checks need tools that phase 1 adds: the RT diagnostics, Python against the current default, the Rust compile comparison, the Rust recorded-bundle rebase, and the CLI `--target typescript` case.
+- Rust candidate work waits for phase 1, because builds between amendment 005 and phase 1 are not candidates.
