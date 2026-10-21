@@ -1,6 +1,7 @@
 # SOM scenario roadmap
 
 This roadmap serves the [goal](goal.md): BE, FE, SRE, and AI code.
+The [Python backend quickstart](python-be.md) walks through generating and running a Python backend project.
 It is a proposal. A person decides each track's scope and approves its contract.
 
 ## How a track runs
