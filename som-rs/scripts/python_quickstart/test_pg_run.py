@@ -30,11 +30,41 @@ def pick_free_port(exclude: set[int] | None = None) -> int:
     forbidden = {8765, 18765} | (exclude or set())
     for _ in range(50):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             sock.bind(("127.0.0.1", 0))
             port = int(sock.getsockname()[1])
         if port not in forbidden:
             return port
     raise RuntimeError("Could not allocate an allowed free TCP port")
+
+
+def make_time_wait_port(exclude: set[int] | None = None) -> tuple[int, bool]:
+    forbidden = {8765, 18765} | (exclude or set())
+    for _ in range(50):
+        listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(("127.0.0.1", 0))
+        port = int(listener.getsockname()[1])
+        if port in forbidden:
+            listener.close()
+            continue
+        listener.listen(1)
+        entered_time_wait = False
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+                try:
+                    client.connect(("127.0.0.1", port))
+                except PermissionError:
+                    # Inside restricted Seatbelt sandboxes that block loopback connect().
+                    pass
+                else:
+                    accepted, _ = listener.accept()
+                    accepted.close()
+                    entered_time_wait = True
+        finally:
+            listener.close()
+        return port, entered_time_wait
+    raise RuntimeError("Could not allocate a TIME_WAIT TCP port")
 
 
 def write_executable(path: Path, lines: list[str]) -> Path:
@@ -591,6 +621,82 @@ class PgRunTest(unittest.TestCase):
                 self.assertIn("--pg-port", summary_pg_busy["error"])
                 self.assertFalse(valid_out.exists())
                 self.assertEqual(harness.read_events(), [])
+
+            # 1g. Wildcard (0.0.0.0) listener on --app-port or --pg-port is refused with exit 2 before initdb
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as wildcard_squatter:
+                wildcard_squatter.bind(("0.0.0.0", 0))
+                wildcard_squatter.listen(5)
+                busy_wildcard_port = int(wildcard_squatter.getsockname()[1])
+                free_other_port = pick_free_port(exclude={busy_wildcard_port})
+
+                for pg_p, app_p, expected_flag in (
+                    (free_other_port, busy_wildcard_port, "--app-port"),
+                    (busy_wildcard_port, free_other_port, "--pg-port"),
+                ):
+                    with self.subTest(host="0.0.0.0", expected_flag=expected_flag):
+                        code_wc, stdout_wc = self.invoke_pg_run(
+                            harness,
+                            [
+                                "--som",
+                                str(harness.som_bin),
+                                "--url",
+                                TEST_URL,
+                                "--cnl",
+                                str(harness.cnl_file),
+                                "--out",
+                                str(valid_out),
+                                "--python-bin",
+                                str(harness.py_bin),
+                                "--pg-port",
+                                str(pg_p),
+                                "--app-port",
+                                str(app_p),
+                                "--create",
+                                '/todos={"title":"a"}',
+                            ],
+                        )
+                        self.assertEqual(code_wc, 2)
+                        summary_wc = json.loads(stdout_wc.strip())
+                        self.assertEqual(summary_wc["status"], "refused")
+                        self.assertFalse(summary_wc["passed"])
+                        self.assertIn(expected_flag, summary_wc["error"])
+                        self.assertFalse(valid_out.exists())
+                        self.assertEqual(harness.read_events(), [])
+
+            # 1h. A port in TIME_WAIT is accepted
+            tw_app_port, entered_tw = make_time_wait_port()
+            if entered_tw:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as no_reuse:
+                    with self.assertRaises(OSError):
+                        no_reuse.bind(("127.0.0.1", tw_app_port))
+            self.assertIsNone(pg_run.check_port_free(tw_app_port, "--app-port"))
+            free_pg_for_tw = pick_free_port(exclude={tw_app_port})
+            out_tw = root / "out_time_wait_ok"
+            code_tw, stdout_tw = self.invoke_pg_run(
+                harness,
+                [
+                    "--som",
+                    str(harness.som_bin),
+                    "--url",
+                    TEST_URL,
+                    "--cnl",
+                    str(harness.cnl_file),
+                    "--out",
+                    str(out_tw),
+                    "--python-bin",
+                    str(harness.py_bin),
+                    "--pg-port",
+                    str(free_pg_for_tw),
+                    "--app-port",
+                    str(tw_app_port),
+                    "--create",
+                    '/todos={"title":"a"}',
+                ],
+            )
+            self.assertEqual(code_tw, 0, f"stdout={stdout_tw}")
+            summary_tw = json.loads(stdout_tw.strip())
+            self.assertEqual(summary_tw["status"], "ok")
+            self.assertTrue(summary_tw["passed"])
 
     def test_step_order_env_vars_result_json_and_app_stopped(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
