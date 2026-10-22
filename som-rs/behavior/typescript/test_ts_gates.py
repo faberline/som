@@ -424,15 +424,92 @@ def test_parity_excludes_divergences_and_strict_checks_them() -> None:
     run.strict()
     strict_entries = run.transcript[before_steps:]
     strict_cats = {e["category"] for e in strict_entries}
-    assert {"D1", "D2", "D3", "D4", "D5", "D7", "prototype_members"} <= strict_cats
+    assert {"D1", "D2", "D3", "D4", "D5", "D7", "prototype_members", "strict_no_row_change"} <= strict_cats
     assert run.failures == []
 
-    # Verify evaluate_strict_refusals reports prototype_members apart from D1-D5 and D7:
+    # Verify evaluate_strict_refusals reports prototype_members and strict_no_row_change apart from D1-D5 and D7:
     gate = gates_mod.evaluate_strict_refusals(strict_entries, run.failures, 10, ["node", "src/main.ts"])
     assert gate["passed"] is True
     assert set(gate["by_divergence"]) == {"D1", "D2", "D3", "D4", "D5", "D7"}
     assert "prototype_members" not in gate["by_divergence"]
+    assert "strict_no_row_change" not in gate["by_divergence"]
     assert gate["prototype_members"] >= 2
+    assert gate["no_row_change_checks"] == 2
+    assert (
+        sum(gate["by_divergence"].values())
+        + gate["prototype_members"]
+        + gate["no_row_change_checks"]
+        == gate["strict_steps"]
+    )
+
+
+def test_schema_without_str_or_int_has_no_d2_entries_and_counts_strict_no_row_change() -> None:
+    prompt = {
+        "version": "som.prompt.v4",
+        "package": "metrics_app",
+        "migration": {"revision": "rev0005", "down_revision": None},
+        "query": {
+            "max_limit": 50,
+            "filter_field": "active",
+            "date_field": "recorded_on",
+        },
+        "resource": {
+            "name": "Metric",
+            "table": "metrics",
+            "path": "/metrics",
+            "fields": [
+                {"name": "score", "type": "float", "required": True, "unique": False},
+                {"name": "active", "type": "bool", "required": False, "unique": False, "default": True},
+                {"name": "recorded_on", "type": "date", "required": False, "unique": False, "default": None},
+            ],
+        },
+    }
+    sim = InMemoryProduct(prompt)
+    run = ts_suite.run(prompt, "http://127.0.0.1:18999", send=sim.send)
+    before = len(run.transcript)
+    run.strict()
+    strict_entries = run.transcript[before:]
+    assert run.failures == []
+
+    d2_entries = [e for e in strict_entries if e["category"] == "D2"]
+    assert d2_entries == []
+    no_row_entries = [e for e in strict_entries if e["category"] == "strict_no_row_change"]
+    assert [e["step"] for e in no_row_entries] == [
+        "D1 to D7 changed no row",
+        "D1 to D7 added no row",
+    ]
+
+    gate = gates_mod.evaluate_strict_refusals(strict_entries, run.failures, 10, ["node", "src/main.ts"])
+    assert gate["passed"] is True
+    assert "D2" not in gate["by_divergence"]
+    assert "strict_no_row_change" not in gate["by_divergence"]
+    assert gate["no_row_change_checks"] == 2
+    assert (
+        sum(gate["by_divergence"].values())
+        + gate["prototype_members"]
+        + gate["no_row_change_checks"]
+        == gate["strict_steps"]
+    )
+
+    # Also verify strict_no_row_change entries participate in failure and 500 checks:
+    bad_500 = [
+        *strict_entries[:-1],
+        {**strict_entries[-1], "status": 500},
+    ]
+    gate_500 = gates_mod.evaluate_strict_refusals(bad_500, [], 10, ["node", "src/main.ts"])
+    assert gate_500["passed"] is False
+    assert "500" in gate_500["reason"]
+    assert gate_500["no_row_change_checks"] == 2
+
+    gate_fail = gates_mod.evaluate_strict_refusals(
+        strict_entries,
+        [{"step": "D1 to D7 changed no row", "category": "strict_no_row_change", "problems": ["row changed"]}],
+        10,
+        ["node", "src/main.ts"],
+    )
+    assert gate_fail["passed"] is False
+    assert "D1 to D7 changed no row" in gate_fail["reason"]
+    assert gate_fail["no_row_change_checks"] == 2
 
 
 def test_strict_detects_each_divergence_defect() -> None:
@@ -1192,10 +1269,19 @@ def test_v5_parity_and_strict_against_simulator() -> None:
     run.strict()
     assert run.failures == []
     strict_entries = run.transcript[before:]
+    no_row_v5 = [e for e in strict_entries if e["category"] == "strict_no_row_change"]
+    assert [e["step"] for e in no_row_v5] == [
+        "projects: D1 to D7 changed no row",
+        "projects: D1 to D7 added no row",
+        "todos: D1 to D7 changed no row",
+        "todos: D1 to D7 added no row",
+    ]
     gate = gates_mod.evaluate_strict_refusals(strict_entries, run.failures, 15, ["node", "src/main.ts"])
     assert gate["passed"] is True
     assert set(gate["by_divergence"]) == {"D1", "D2", "D3", "D4", "D5", "D7"}
+    assert "strict_no_row_change" not in gate["by_divergence"]
     assert gate["prototype_members"] >= 5
+    assert gate["no_row_change_checks"] == 4
 
     # Standalone strict() on a fresh simulator (without running script() first) creates rows via POST and passes:
     standalone_sim = InMemoryV5Product(v5_prompt)

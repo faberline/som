@@ -612,16 +612,16 @@ class TsRun(base_suite.Run):
             self.table_strict(parent, None, ptoken)
             self.table_strict(child, ptoken, ctoken)
             self.v5_strict(parent, child, ptoken, ctoken)
-            self.get(parent, None, ptoken, "D2", f"{parent.name}: D1 to D7 changed no row")
-            self.listing(parent, None, self.top(parent), "D2", f"{parent.name}: D1 to D7 added no row")
-            self.get(child, ptoken, ctoken, "D2", f"{child.name}: D1 to D7 changed no row")
-            self.listing(child, ptoken, self.top(child), "D2", f"{child.name}: D1 to D7 added no row")
+            self.get(parent, None, ptoken, "strict_no_row_change", f"{parent.name}: D1 to D7 changed no row")
+            self.listing(parent, None, self.top(parent), "strict_no_row_change", f"{parent.name}: D1 to D7 added no row")
+            self.get(child, ptoken, ctoken, "strict_no_row_change", f"{child.name}: D1 to D7 changed no row")
+            self.listing(child, ptoken, self.top(child), "strict_no_row_change", f"{child.name}: D1 to D7 added no row")
         else:
             table = self.prof.tables[0]
             token = self._ensure_live_token(table, None)
             self.table_strict(table, None, token)
-            self.get(table, None, token, "D2", "D1 to D7 changed no row")
-            self.listing(table, None, self.top(table), "D2", "D1 to D7 added no row")
+            self.get(table, None, token, "strict_no_row_change", "D1 to D7 changed no row")
+            self.listing(table, None, self.top(table), "strict_no_row_change", "D1 to D7 added no row")
 
 
 def run(prompt: dict, base: str, send: Send | None = None) -> TsRun:

@@ -376,12 +376,15 @@ def evaluate_strict_refusals(
 ) -> dict[str, Any]:
     by_divergence: dict[str, int] = {}
     prototype_members = 0
+    no_row_change_checks = 0
     for entry in strict_entries:
         cat = entry["category"]
         if cat in DIVERGENCE_IDS:
             by_divergence[cat] = by_divergence.get(cat, 0) + 1
         elif cat == "prototype_members":
             prototype_members += 1
+        elif cat == "strict_no_row_change":
+            no_row_change_checks += 1
     status_500 = [e["step"] for e in strict_entries if e["status"] == 500]
     problems: list[str] = []
     if not strict_entries:
@@ -404,13 +407,15 @@ def evaluate_strict_refusals(
         reason="; ".join(problems),
         output_summary=(
             f"{len(strict_entries)} strict checks passed "
-            f"(divergences={ordered_div}, prototype_members={prototype_members})"
+            f"(divergences={ordered_div}, prototype_members={prototype_members}, "
+            f"no_row_change_checks={no_row_change_checks})"
             if ok
             else json.dumps(strict_failures[:5], ensure_ascii=False)
         ),
         strict_steps=len(strict_entries),
         by_divergence=ordered_div,
         prototype_members=prototype_members,
+        no_row_change_checks=no_row_change_checks,
         failures=len(strict_failures),
         first_failures=strict_failures[:10],
     )
