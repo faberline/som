@@ -22,9 +22,10 @@ OUT = ROOT / "contracts" / "rust-output-v1" / "negative-cases.json"
 sys.path.insert(0, str(HERE))
 import rust_profile  # type: ignore[import-not-found]  # noqa: E402
 
-# Amendment 005 (issue #65): the envelope admits target typescript, so the target texts name three targets.
-TARGET_CAUSE = "Target must be the string python, rust or typescript."
-TARGET_FORM = "Omit target, or use target python, rust or typescript."
+# Amendment 005 (issue #65) admitted target typescript; amendment 006 (issue #126) admits target react,
+# so the target texts name four targets (react-output-v1 api.schema.json x-target-selection invalid).
+TARGET_CAUSE = "Target must be the string python, rust, typescript or react."
+TARGET_FORM = "Omit target, or use target python, rust, typescript or react."
 # Amendment 004: compiler-v1 amendment 003 refuses a v3 filter named limit or offset for every target
 # (selection-policy.json python_name_collisions; compiler-v1 CONTRACT.md section 10).
 POLICY = ROOT / "contracts" / "compiler-v1" / "selection-policy.json"

@@ -1,0 +1,192 @@
+{
+  "version": "som.typescript-output-contract-amendment.v1",
+  "amendment": 2,
+  "frozen_at": "2026-10-22T16:31:36.281121+00:00",
+  "baseline_commit": "dbe960aab89c057f3b81f820ccfe05c8edc9be4f",
+  "issue": 126,
+  "target": "typescript",
+  "bundle": "som.dsl-bundle.v2",
+  "status": "amendment_sealed_after_independent_review",
+  "implementation_already_in_progress": false,
+  "implementation_deferred_to": "react-output-v1 phase 1: select() admits react there. The sealing commit changes only the shared target texts (lib.rs TARGET_CAUSE and TARGET_ALLOWED), the main.rs --target help and TARGET_CONTRACT_SHA256, because the som-targets tests check the TT cases against the build",
+  "previous_receipt": "som-rs/evidence/typescript-output-contract-amendment-001.json",
+  "previous_receipt_sha256": "882a06751e0601ddbdb584f7031eacf6f83b03a7a310d883ebdfd897a76d913a",
+  "reason": "Issue #68 adds react as the fourth target value; react-output-v1 (frozen 2026-10-22) requires this amendment and rust-output-v1 amendment 006 before any candidate serves target react. This contract's TT01 to TT06 restate the rust-output-v1 target texts, so they change only their cause and allowed form to the four-target texts (build_negative_cases.py imports them from the rust-output-v1 builder; its comment changes). TT07 and every TS and TP case are unchanged. CONTRACT.md gains section 12 and names the amendment in its status line, file table and section 2; api.schema.json x-target-selection others names react; acceptance-plan.json gains amendment_002. The Python controls ran again on the amended negative cases, read-only against the current default (the #65 release) (python-controls-2026-10-23.json, 43 passed). TypeScript prompts, DSL and product files stay the same; the TypeScript backend descriptor (which hashes lib.rs, main.rs and typescript/mod.rs) and target_contract descriptor change, so a recorded TypeScript bundle gives ASSET_HASH_MISMATCH at assemble, a recorded compatibility break. Deviation: react-output-v1 x-target-selection before_phase_1 names the three-target texts for an interim build; an interim build uses the four-target texts instead, and no candidate is prepared from it either way. api.schema.json x-assemble-check-order target dispatch and the top-level comment hand target react to react-output-v1. The Python controls only read compile responses from 8765 (the current default); no QA candidate ran on 8765 or 18765.",
+  "changed_paths": [
+    "som-rs/contracts/typescript-output-v1/CONTRACT.md",
+    "som-rs/contracts/typescript-output-v1/acceptance-plan.json",
+    "som-rs/contracts/typescript-output-v1/api.schema.json",
+    "som-rs/contracts/typescript-output-v1/negative-cases.json",
+    "som-rs/tests/typescript-output-v1/build_negative_cases.py"
+  ],
+  "added_paths": [
+    "som-rs/evidence/typescript-output-v1/python-controls-2026-10-23.json"
+  ],
+  "changes": [
+    {
+      "path": "som-rs/contracts/typescript-output-v1/CONTRACT.md",
+      "old_sha256": "a222427cff9dab46d3ba1e99a4ea3fcdb5eebf8484ae89516d71d1bfb89c1921",
+      "new_sha256": "ed3fbf2182763a43ea8985034d770af3108c30b088b609b8ed40291a2c92ead1",
+      "archived_copy": "som-rs/evidence/typescript-output-contract-archive/CONTRACT-before-amendment-002.md",
+      "archived_copy_sha256": "a222427cff9dab46d3ba1e99a4ea3fcdb5eebf8484ae89516d71d1bfb89c1921"
+    },
+    {
+      "path": "som-rs/contracts/typescript-output-v1/acceptance-plan.json",
+      "old_sha256": "318d4ab8f4dc35e5d490f89fe8edf4d4c3eb021068b2c429025f0641927e58cf",
+      "new_sha256": "17478469d02bf362e6d394ef9081ff4e842eeab239fbfc89550fba92951d35f5",
+      "archived_copy": "som-rs/evidence/typescript-output-contract-archive/acceptance-plan-before-amendment-002.json",
+      "archived_copy_sha256": "318d4ab8f4dc35e5d490f89fe8edf4d4c3eb021068b2c429025f0641927e58cf"
+    },
+    {
+      "path": "som-rs/contracts/typescript-output-v1/api.schema.json",
+      "old_sha256": "0c756dd0d808c439343e2df0de0517a9bbb7e8c0ef4bccc07925f90ce7fc81fe",
+      "new_sha256": "bef2cb55ec61680eb997429d5290d8ced8ab61f790be751e5608dba3ce28f75f",
+      "archived_copy": "som-rs/evidence/typescript-output-contract-archive/api.schema-before-amendment-002.json",
+      "archived_copy_sha256": "0c756dd0d808c439343e2df0de0517a9bbb7e8c0ef4bccc07925f90ce7fc81fe"
+    },
+    {
+      "path": "som-rs/contracts/typescript-output-v1/negative-cases.json",
+      "old_sha256": "c96fb4e6b3b1d86fdd2c1af12724f3e3585878c375c96c96deb057757f771543",
+      "new_sha256": "858906170db681b95ecfb28cf4f0374157570771250a6dead23b84bbf6bce52d",
+      "archived_copy": "som-rs/evidence/typescript-output-contract-archive/negative-cases-before-amendment-002.json",
+      "archived_copy_sha256": "c96fb4e6b3b1d86fdd2c1af12724f3e3585878c375c96c96deb057757f771543"
+    },
+    {
+      "path": "som-rs/tests/typescript-output-v1/build_negative_cases.py",
+      "old_sha256": "822ab4d5d7079dd8169a5fa7907bbaba1a8e462e3c37ff657a6a0b3df7b07b63",
+      "new_sha256": "32158c2324e271d4bfd49a5a45106f046e67a136f91605463b21f87b1fc2d7e4",
+      "archived_copy": "som-rs/evidence/typescript-output-contract-archive/build_negative_cases-before-amendment-002.py",
+      "archived_copy_sha256": "822ab4d5d7079dd8169a5fa7907bbaba1a8e462e3c37ff657a6a0b3df7b07b63"
+    }
+  ],
+  "unchanged": "Every other path of the previous receipt keeps its hash: scope.json, the bundle schema, the catalog, product layout, toolchain, reference files, case inventory, target examples, behavior normalization and the other tools. CONTRACT.md sections 1 and 3 to 11 are unchanged.",
+  "target_contract": {
+    "id": "som.typescript-output-contract.v1",
+    "previous_sha256": "a1ed9978d7ddd0123e22a1e388f1a6e889ca63e43752563cd744733b84c103b4",
+    "sha256": "34eb509d5568ebbf3b2f8117073104f2eb8809bc4f3219c887f05d9ed77d807d",
+    "rule": "sha256 of the som.canonical-json.v1 bytes of the files map below"
+  },
+  "files": {
+    "som-rs/contracts/typescript-output-v1/CONTRACT.md": "ed3fbf2182763a43ea8985034d770af3108c30b088b609b8ed40291a2c92ead1",
+    "som-rs/contracts/typescript-output-v1/acceptance-plan.json": "17478469d02bf362e6d394ef9081ff4e842eeab239fbfc89550fba92951d35f5",
+    "som-rs/contracts/typescript-output-v1/api.schema.json": "bef2cb55ec61680eb997429d5290d8ced8ab61f790be751e5608dba3ce28f75f",
+    "som-rs/contracts/typescript-output-v1/behavior-normalization.json": "cc068fe361cfbcb960a299be67143eab06e7a02930a981c122251ff6afb4e8b0",
+    "som-rs/contracts/typescript-output-v1/bundle.schema.json": "c5f69b453562cd2259996994c6e57d8e69745d72109cac52ee746d754fc979b6",
+    "som-rs/contracts/typescript-output-v1/case-inventory.json": "f45572b155c89808bae9153c7a833da779ad043fb4c0a34002de9c9ef26dee0c",
+    "som-rs/contracts/typescript-output-v1/catalog/typescript-catalog.v1.json": "14c87b4421a0b5f015d3e6a7a65321edaa256a37bf24fe50db145ce22b5b4642",
+    "som-rs/contracts/typescript-output-v1/negative-cases.json": "858906170db681b95ecfb28cf4f0374157570771250a6dead23b84bbf6bce52d",
+    "som-rs/contracts/typescript-output-v1/product-layout.json": "eec61af43adb02583b86ded51478edb57459098f0899062a69c7591591f7ce47",
+    "som-rs/contracts/typescript-output-v1/reference/package-lock.json": "d5daa744e5efc0c7ad754e42930b34880a077ca2a38b466003786931a9f56606",
+    "som-rs/contracts/typescript-output-v1/reference/package.json": "02b2aa2b167dcf5f9282c8c04a7d8deb8f77888d1fa2c5726ea4e98d17b5eaa7",
+    "som-rs/contracts/typescript-output-v1/reference/tsconfig.json": "e1bb40b56013abf2525a53023ebc1ce455d176fe4c0c5061d18a563f25962fae",
+    "som-rs/contracts/typescript-output-v1/scope.json": "7e4beea87179bb06f3263645dd67ce110ec12d28df7e6239da61d4a3fc106304",
+    "som-rs/contracts/typescript-output-v1/target-examples.json": "fac94a5cb3295c5cb26c39f541ef395f6fa6ca1a99f25ca8cb5b3ff16f1aa6c5",
+    "som-rs/contracts/typescript-output-v1/toolchain.json": "0875aeb7e60aa72a44bc59c9aef89b971dffc5fc5304813e0b04ec5dc26da618",
+    "som-rs/evidence/typescript-output-v1/python-controls-2026-10-21.json": "7e97dceb3a8b20ab19c4c26b7029ebc1541783c1104cb35ebe840e7ac71d2cec",
+    "som-rs/evidence/typescript-output-v1/python-controls-2026-10-23.json": "b5b81e63e3d41dac2358862ccc968b66eeaf5c1d4d0c0d391007788d1f46ccfd",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/README.md": "69dad36d620542832b94fce0e40c2a1dbe8a65332ba200e1cbbbf37da47dd6b6",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/migrations/0001_rev0000.sql": "346dd960b0704ab14229e2d1e87ecbfbd5ddc6030223f1908207527bc72b9704",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/package-lock.json": "d5daa744e5efc0c7ad754e42930b34880a077ca2a38b466003786931a9f56606",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/package.json": "02b2aa2b167dcf5f9282c8c04a7d8deb8f77888d1fa2c5726ea4e98d17b5eaa7",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/app.ts": "89bcd9d11d43d450242e9bff3e65cfe56c116bca6b2df0b4513d2f641b9dc6c9",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/db.ts": "a57e3ead187815f5b3c517184dd419e5831841448d704f85b542fe896d62105b",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/main.ts": "3c2392b474f3dfd369083fb2602ee5d1667bbd29da815f4425ba13530b8682b2",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/migrate.ts": "c3452a5125857ab259bef72af4c42bb9407113613cf0a4fbca2ca620d3af5b65",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/schemas.ts": "f2159727c1156b727c285c42660c53bcd959e22e14c3fcb95847b6145506a174",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/test/api.test.ts": "25c3936cde84cdc5d8e1ec2f99f703c4addee32d7eed7b3964027db7c3abbcd3",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/tsconfig.json": "e1bb40b56013abf2525a53023ebc1ce455d176fe4c0c5061d18a563f25962fae",
+    "som-rs/evidence/typescript-output-v1/reference-verification-2026-10-21.json": "5dd5f94cd6bcd2f6d84bed937c3df83a161c361e9317d9bc9a2bb37141498b42",
+    "som-rs/tests/typescript-output-v1/build_case_inventory.py": "9ae6096a1708c478f19ec75b361e0bc721b12f64646d24ef190fb1b51e92e1f1",
+    "som-rs/tests/typescript-output-v1/build_negative_cases.py": "32158c2324e271d4bfd49a5a45106f046e67a136f91605463b21f87b1fc2d7e4",
+    "som-rs/tests/typescript-output-v1/build_target_examples.py": "9bbc13521fcbf9530aadb8417a45128a20d7b972b3b7460ab51dc21f7bb24efd",
+    "som-rs/tests/typescript-output-v1/check_contract.py": "a26c5c59579b609ff0ffe651f57292efd3eb8e4cce95a841232b2e98c409d376",
+    "som-rs/tests/typescript-output-v1/check_python_controls.py": "3e4bb02ecad2e9ee748de327c1db63813cc4c6dc3c0e5cbfa569f6b02c660172",
+    "som-rs/tests/typescript-output-v1/common.py": "77b92f00cdf13d66c54c1069e215bc8de479953887bc853e4316275b02a24497",
+    "som-rs/tests/typescript-output-v1/tree_sha.py": "6c9bccd1293aa8629f18539ea89fa0b5bb284dc70a579b13bc86f8d0324fa9a2",
+    "som-rs/tests/typescript-output-v1/ts_profile.py": "de964991d0022711e799e7b3dfca4f44fa7eb834e978d2a5ec40b52d93d8f6c4"
+  },
+  "related_tools": {
+    "som-rs/som-targets/src/typescript/mod.rs": {
+      "sha256": "8f20c4b556f689f446c2353d3d78a2d0f846242f62d9c9795a069efbb4bd8ff6",
+      "role": "TARGET_CONTRACT_SHA256 is this receipt's target sha"
+    },
+    "som-rs/som-targets/src/lib.rs": {
+      "sha256": "25fbe320df6eb74989da7f2a97c8aa79cc8b580cd9197092236898da2f41e8f6",
+      "role": "TARGET_CAUSE and TARGET_ALLOWED carry the four-target texts from the sealing commit; select() still refuses target react until react-output-v1 phase 1"
+    },
+    "som-rs/som-targets/src/main.rs": {
+      "sha256": "6f521d6d7f3fa7b074de861da4ce5c15934d312d8ce77464f47cf0c3e9863fe2",
+      "role": "the som compile --target help names react; the CLI still forwards the string unchecked"
+    }
+  },
+  "independent_review": {
+    "reviewer": "independent Claude Opus 5.5 subagent, read-only, no network, no calls to 8765 or 18765",
+    "target_sha256": "34eb509d5568ebbf3b2f8117073104f2eb8809bc4f3219c887f05d9ed77d807d",
+    "scope": "rust-output-v1 amendment 006 and typescript-output-v1 amendment 002 together (issue #126)",
+    "rounds": [
+      {
+        "round": 1,
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          "blocking: typescript-output-v1 api.schema.json x-assemble-check-order target dispatch still made every value other than typescript and rust INVALID_SCHEMA at /bundle/target, contradicting rust-output-v1 amendment 006 and react-output-v1 for target react",
+          "blocking: issue #126 Never line '\u4e0d\u6539 contracts/rust-output-v1/CONTRACT.md' conflicts with amendment 006 editing CONTRACT.md (justified through the numbered amendment, as 005); the deviation was not recorded in the receipt and must be reported to the owner",
+          "TS section 12 did not call the interim four-target texts a deviation from react-output-v1 x-target-selection before_phase_1",
+          "sections 14 and 12 did not say the later react-output-v1 phase 1 edits to shared som-targets sources are covered by this backend break",
+          "som-targets/src/main.rs CLI doc comments still named three targets",
+          "stale test name rust_target_selection_negative_cases_match_amendment_005",
+          "scripts/rust_output_acceptance/test_check_cli.py mock server kept the three-target text",
+          "typescript acceptance-plan.json amendment_002 had a stray comma line",
+          "TS api.schema.json top-level $comment did not mention react",
+          "controls evidence records base_url 127.0.0.1:8765; explain the read-only reads",
+          "issue gates #128, #130 and #131 cannot be checked offline"
+        ]
+      },
+      {
+        "round": 2,
+        "verdict": "APPROVED",
+        "findings": [
+          "non-blocking: implementation_deferred_to did not name the main.rs --target help (receipt-only, fixed before sealing)",
+          "non-blocking: at sealing, set status, independent_review APPROVED and check_contract; record the rust 'sealed before implementation' failure as expected, as 005",
+          "non-blocking: the som-targets TypeScript tests need SOM_TS_PRETTIER set to .local/typescript-output/prettier-001/node_modules/prettier",
+          "non-blocking: the controls runs on 8765 and the issue gates #128, #130 and #131 were not re-verified offline; the #126 deviation comment and the #128 before_phase_1 note are the coordinator's follow-up"
+        ]
+      }
+    ],
+    "final_verdict": "APPROVED",
+    "confirmed_without_change": [
+      "Round 1 blockers resolved: the TS assemble target dispatch hands target react to react-output-v1, agreeing with rust-output-v1 x-assemble-check-order and react-output-v1; the rust receipt reason records the #126 Never-line deviation and its justification",
+      "sha256(canonical(files)) equals target_contract.sha256 and TARGET_CONTRACT_SHA256 for both contracts; previous_sha256 and previous_receipt_sha256 chain to the HEAD receipts",
+      "every files-map hash matches disk with an empty symmetric difference; changed_paths (5) and added_paths (1) equal the map diff; changes[] old = previous receipt = archived copy = HEAD and new = disk; related_tools (mod.rs, lib.rs, main.rs) match disk",
+      "negative-cases.json differs from the archived copies only by the four-target texts in RT01-RT06 and TT01-TT06; RT07, TT07 and every other case are byte-identical; both builders reproduce it; builder texts equal lib.rs TARGET_CAUSE and TARGET_ALLOWED",
+      "no stale three-target text outside history and evidence except rust CONTRACT.md section 13 (historical) and the react-output-v1 $comment (correct)",
+      "lib.rs select() still refuses react with the four-target texts, as sections 14 and 12 describe",
+      "controls evidence source hashes match the amended cases: rust 32 passed, TS 43 passed (33 negative + 10 TN), 0 failed",
+      "no change under som-rs/src, the som-rs Cargo files, blocks, catalogs, compiler_default_switch.py or existing check_contract.py tools; existing evidence only gains new files",
+      "react-output-v1 check_contract --require-prompts --receipt freeze-2026-10-22: 660 passed, 0 failed",
+      "cargo test (som-targets, SOM_TS_PRETTIER set): 29 passed, 2 failed, only the two target_contract_is_the_latest_receipt tests waiting for final_verdict APPROVED"
+    ],
+    "commands_run": [
+      "git status / git diff of every changed file",
+      "python3 som-rs/tests/rust-output-v1/check_contract.py [--receipt amendment-006]: 399/0 and 455/1 (expected)",
+      "python3 som-rs/tests/typescript-output-v1/check_contract.py [--receipt amendment-002]: 397/0 and 445/1 (pending status)",
+      "build_negative_cases.py --check for both contracts",
+      "python3 som-rs/tests/react-output-v1/check_contract.py --require-prompts --receipt freeze-2026-10-22: 660/0",
+      "python3 -m unittest test_check_cli: 4 OK",
+      "independent hash-chain and controls verifiers (scratchpad review126/verify.py, controls.py)",
+      "SOM_TS_PRETTIER=... cargo test --offline --no-fail-fast in som-targets"
+    ]
+  },
+  "check_contract": {
+    "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/tests/typescript-output-v1/check_contract.py --receipt som-rs/evidence/typescript-output-contract-amendment-002.json",
+    "passed": 446,
+    "failed": 0,
+    "also_passed": [
+      "check_contract.py without a receipt: 397 passed, 0 failed",
+      "build_negative_cases.py --check",
+      "tests/typescript-output-v1/check_python_controls.py against http://127.0.0.1:8765 (the current default, read only): 43 passed, 0 failed"
+    ],
+    "not_run": [
+      "acceptance-plan.json amendment_002 checks: they run on the first react-output-v1 phase 1 candidate"
+    ]
+  }
+}

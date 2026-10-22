@@ -21,8 +21,8 @@
         "byte_start": 609,
         "byte_end": 613,
         "prompt_pointer": "/target",
-        "cause": "Target must be the string python, rust or typescript.",
-        "allowed_form": "Omit target, or use target python, rust or typescript."
+        "cause": "Target must be the string python, rust, typescript or react.",
+        "allowed_form": "Omit target, or use target python, rust, typescript or react."
       },
       "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"}}",
       "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
@@ -44,8 +44,8 @@
         "byte_start": 609,
         "byte_end": 613,
         "prompt_pointer": "/target",
-        "cause": "Target must be the string python, rust or typescript.",
-        "allowed_form": "Omit target, or use target python, rust or typescript."
+        "cause": "Target must be the string python, rust, typescript or react.",
+        "allowed_form": "Omit target, or use target python, rust, typescript or react."
       },
       "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"}}",
       "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
@@ -67,8 +67,8 @@
         "byte_start": 609,
         "byte_end": 615,
         "prompt_pointer": "/target",
-        "cause": "Target must be the string python, rust or typescript.",
-        "allowed_form": "Omit target, or use target python, rust or typescript."
+        "cause": "Target must be the string python, rust, typescript or react.",
+        "allowed_form": "Omit target, or use target python, rust, typescript or react."
       },
       "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"}}",
       "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
@@ -90,8 +90,8 @@
         "byte_start": 694,
         "byte_end": 695,
         "prompt_pointer": "/target",
-        "cause": "Target must be the string python, rust or typescript.",
-        "allowed_form": "Omit target, or use target python, rust or typescript."
+        "cause": "Target must be the string python, rust, typescript or react.",
+        "allowed_form": "Omit target, or use target python, rust, typescript or react."
       },
       "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
       "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
@@ -113,8 +113,8 @@
         "byte_start": 694,
         "byte_end": 696,
         "prompt_pointer": "/target",
-        "cause": "Target must be the string python, rust or typescript.",
-        "allowed_form": "Omit target, or use target python, rust or typescript."
+        "cause": "Target must be the string python, rust, typescript or react.",
+        "allowed_form": "Omit target, or use target python, rust, typescript or react."
       },
       "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
       "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
@@ -136,8 +136,8 @@
         "byte_start": 694,
         "byte_end": 702,
         "prompt_pointer": "/target",
-        "cause": "Target must be the string python, rust or typescript.",
-        "allowed_form": "Omit target, or use target python, rust or typescript."
+        "cause": "Target must be the string python, rust, typescript or react.",
+        "allowed_form": "Omit target, or use target python, rust, typescript or react."
       },
       "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
       "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"

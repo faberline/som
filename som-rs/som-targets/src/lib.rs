@@ -14,8 +14,8 @@ use som::{
     strict_json::{self, Document},
 };
 
-pub const TARGET_CAUSE: &str = "Target must be the string python, rust or typescript.";
-pub const TARGET_ALLOWED: &str = "Omit target, or use target python, rust or typescript.";
+pub const TARGET_CAUSE: &str = "Target must be the string python, rust, typescript or react.";
+pub const TARGET_ALLOWED: &str = "Omit target, or use target python, rust, typescript or react.";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Target {

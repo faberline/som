@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "som.compiler-api.v1.typescript-target",
-  "$comment": "The TypeScript half of target selection. rust-output-v1 amendment 005 admits typescript in the target enum and hands every target typescript request and every som.dsl-bundle.v2 bundle with target typescript to this contract. Requests without target, or with target python or rust, are not covered here and keep their responses byte for byte. Diagnostics, transport limits and the error envelope are unchanged from som.compiler-api.v1.",
+  "$comment": "The TypeScript half of target selection. rust-output-v1 amendment 005 admits typescript in the target enum and hands every target typescript request and every som.dsl-bundle.v2 bundle with target typescript to this contract. Requests without target, or with target python or rust, are not covered here and keep their responses byte for byte. Amendment 002: rust-output-v1 amendment 006 also admits react and hands target react requests and bundles to react-output-v1, not to this contract. Diagnostics, transport limits and the error envelope are unchanged from som.compiler-api.v1.",
   "$defs": {
     "compile_request": {
       "$ref": "som.compiler-api.v1.rust-target#/$defs/compile_request"
@@ -34,7 +34,7 @@
   },
   "x-target-selection": {
     "typescript": "A som.dsl-bundle.v2 bundle with target typescript, or one diagnostic.",
-    "others": "absent, python, rust and invalid values: rust-output-v1 api.schema.json x-target-selection, unchanged by this contract.",
+    "others": "absent, python, rust, react and invalid values: rust-output-v1 api.schema.json x-target-selection, unchanged by this contract. rust-output-v1 amendment 006 admits react and hands it to react-output-v1; this contract's amendment 002 restates its four-target invalid texts in TT01 to TT06.",
     "before_phase_1": "Until a build implements typescript-output-v1 phase 1, target typescript gets the INVALID_SCHEMA refusal of rust-output-v1 CONTRACT.md section 13. No candidate is prepared from such a build."
   },
   "x-new-error-codes": {
@@ -54,7 +54,7 @@
   "x-assemble-check-order": [
     "transport limit, JSON parse and envelope schema",
     "bundle version dispatch: only a bundle whose version member is the string som.dsl-bundle.v2 continues; every other bundle keeps the compiler-v1 order and result unchanged",
-    "target dispatch: a bundle whose target member is the string typescript continues below; target rust follows rust-output-v1; any other value is INVALID_SCHEMA at /bundle/target after the members and version checks of the rust-output-v1 check_schema order",
+    "target dispatch: a bundle whose target member is the string typescript continues below; target rust follows rust-output-v1; target react follows react-output-v1 (rust-output-v1 amendment 006, this contract's amendment 002); any other value is INVALID_SCHEMA at /bundle/target after the members and version checks of the rust-output-v1 check_schema order",
     "bundle schema som.dsl-bundle.v2.typescript in the rust-output-v1 check_schema order, and at most 64 blocks in total (INVALID_SCHEMA at the failing pointer)",
     "hashes: prompt_sha256, dsl_sha256, then payload_sha256 = H({version,target,prompt,dsl,assets}) (BUNDLE_HASH_MISMATCH)",
     "asset descriptors equal the active TypeScript manifest (ASSET_HASH_MISMATCH at /bundle/assets)",

@@ -1,0 +1,154 @@
+{
+  "version": "som.rust-output-acceptance-plan.v1",
+  "case_inventory": "case-inventory.json",
+  "negative_cases": "negative-cases.json",
+  "target_examples": "target-examples.json",
+  "python_unchanged": {
+    "rule": "A request without target, or with target python, returns the same bytes as the accepted compiler-v1 default for the same request. No existing CNL text, typed prompt, bundle, asset or Python output changes.",
+    "checks": [
+      "All 127 public Python products are byte-identical to their accepted outputs.",
+      "All 544 historical jobs keep their accepted results.",
+      "The legacy 100 and 214 case sets keep their scope.",
+      "Every negative case python_control_body gives its python_control_expected result (tests/rust-output-v1/check_python_controls.py).",
+      "Every coverage case gives the same Python bundle payload_sha256 and Python file hashes as the frozen evidence (tests/rust-output-v1/validate_cases.py)."
+    ],
+    "amendment_004": "CONTRACT.md section 12: compiler-v1 amendment 003 changes the Python asset descriptors. For every prompt compiler-v1 still admits, a compile response equals the accepted one except bundle.assets, where only the backend, block_library, catalog, compiler_contract and selection_policy descriptors may differ, and hashes.payload_sha256, which is the canonical hash of the new payload. The prompt, the DSL and every product file stay byte-identical. A recorded bundle is refused at assemble with ASSET_HASH_MISMATCH, and the same bundle rebased on the new descriptors gives the recorded response bytes (som-rs/scripts/rust_output_acceptance/python_replay.py --asset-break). RS07, RS14 and RS16 now pass in Python, and RS12 and RS13 are refused with INVALID_VALUE; check_python_controls.py checks them against negative-cases.json. Coverage cases keep their Python file hashes; their payload_sha256 may differ."
+  },
+  "target_selection_checks": [
+    "Every target-examples.json body gives its expected result.",
+    "Every RT case gives exactly its expected diagnostic, located in the raw request body.",
+    "A target python request gives the same bytes as the request without target, for every acceptance case and every CNL positive fixture.",
+    "The CLI forwards --target unchanged and exits with status 2 on a refusal."
+  ],
+  "scope_checks": [
+    "Every RS and RP case gives exactly its expected diagnostic with target rust.",
+    "Every out-of-scope public example, CNL positive fixture and legacy job gives UNSUPPORTED_TARGET with the refusal case-inventory.json records for it, with target rust.",
+    "The compiler refusal for each case equals tests/rust-output-v1/rust_profile.py on the typed prompt."
+  ],
+  "bundle_checks": [
+    "For every acceptance case, the CNL and typed JSON requests with target rust return byte-identical som.dsl-bundle.v2 bundles.",
+    "Every Rust bundle validates against bundle.schema.json, has at most 12 files and 64 blocks, and every block id starts with rust.",
+    "Two compiles and two assembles of the same request give the same bytes.",
+    "The assembled files are exactly the product-layout.json file set, and Cargo.toml and Cargo.lock equal the reference files."
+  ],
+  "assemble_refusals": {
+    "base": "A valid Rust bundle for the acceptance case example-v1, and for A6 the bundle for example-v5.",
+    "rehash": "Unless a recipe says otherwise, recompute prompt_sha256, dsl_sha256 and payload_sha256 with the frozen formulas after the change, so the hash check passes and the named check is reached.",
+    "span": "Line, column and byte spans locate the pointer target in the canonical assemble request body, computed at test time.",
+    "recipes": [
+      {"id": "A1", "change": "Replace assets.formatter.sha256 with the hash of a different rustfmt binary.", "code": "ASSET_HASH_MISMATCH", "http_status": 400, "prompt_pointer": "/bundle/assets"},
+      {"id": "A2", "change": "Replace catalog, block_library, backend and formatter with the Python descriptors from the compiler-v1 manifest.", "code": "ASSET_HASH_MISMATCH", "http_status": 400, "prompt_pointer": "/bundle/assets"},
+      {"id": "A3", "change": "Add target rust to a valid som.dsl-bundle.v1 Python bundle.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/target", "note": "The accepted default already gives this result."},
+      {"id": "A4", "change": "Set target to python in a Rust bundle.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/target"},
+      {"id": "A5", "change": "Replace the first block id with the Python block id orm.base.", "code": "INVALID_COMPOSITION", "http_status": 400, "prompt_pointer": "/bundle/dsl/files/0/blocks/0/id"},
+      {"id": "A6", "change": "Replace the prompt with the public v6 example prompt. Recompute the shared compiler-v1 descriptors for the v6 prompt, keep the Rust descriptors and the Rust DSL, and rehash.", "code": "UNSUPPORTED_TARGET", "http_status": 422, "prompt_pointer": "/bundle/prompt/version"},
+      {"id": "A7", "change": "Change one hex digit of payload_sha256. Do not rehash.", "code": "BUNDLE_HASH_MISMATCH", "http_status": 400, "prompt_pointer": "/bundle/hashes/payload_sha256"},
+      {"id": "A8", "change": "Rename the first prompt field to Title in the prompt and in every DSL param that names it.", "code": "UNSUPPORTED_TARGET", "http_status": 422, "prompt_pointer": "/bundle/prompt/resource/fields/0/name"},
+      {"id": "A9", "change": "Add a 13th file entry by copying the last file with path README.md.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/dsl/files"}
+    ]
+  },
+  "product_gates": {
+    "each_acceptance_case": [
+      "rustfmt --edition 2024 --check accepts every .rs file unchanged",
+      "cargo build --locked --offline",
+      "cargo clippy --locked --offline --all-targets -- -D warnings",
+      "cargo test --locked --offline -- --test-threads=1 with TEST_DATABASE_URL on a fresh database; a missing database is a failure",
+      "Cargo.lock unchanged after the commands",
+      "schema equivalence with the Python migration for the same prompt (behavior-normalization.json)",
+      "the behavior parity suite against the Python product for the same prompt, after the frozen normalization",
+      "the strict refusals in behavior-normalization.json divergences D1 to D5 checked on the Rust product alone"
+    ],
+    "no_sampling": "Every acceptance case runs every gate. A missing result, a failure and a skipped check are each reported as such and block acceptance."
+  },
+  "issue_gates": {
+    "#46": "The behavior suite and harness pass on the current Python products for every acceptance case before any Rust product exists.",
+    "#47": "target_selection_checks, scope_checks and python_unchanged pass. Rust compiles may still return a not-yet-implemented diagnostic for in-scope prompts only until #48.",
+    "#48": "bundle_checks, assemble_refusals and product_gates pass for every v1 to v4 acceptance case.",
+    "#49": "bundle_checks, assemble_refusals and product_gates pass for every v5 acceptance case.",
+    "#50": "Every check in this plan passes on one recorded build, with the evidence hashed.",
+    "#51": "A qualified switch on a QA port, a canary and a rollback check pass before the default on 8765 changes."
+  },
+  "phase2": {
+    "amendment": 3,
+    "rule": "The sections above stay the phase 1 plan and gates (#46 to #51). This section is the phase 2 plan (#53 to #56). python_unchanged and target_selection_checks apply unchanged. For phase 2, refusals replaces the phase 1 scope_checks and the expected UNSUPPORTED_TARGET results of the RS rows of negative-cases.json, which stay the phase 1 record. RP01 to RP03 still run and keep their compiler-v1 diagnostics. Every phase 2 check runs on every case it names: there is no sampling, and a missing result, a failure and a skipped check each block acceptance.",
+    "cases": {
+      "phase1": "Every acceptance case of case-inventory.json (115).",
+      "phase2": "Every row of phase2/case-inventory.json (584): 444 legacy v6 and v7 jobs, 115 CNL positive fixtures, 3 public examples and RS01 to RS22.",
+      "legacy": "The 544 legacy jobs of legacy544 run-005: the 100 of case-inventory.json and the 444 of phase2/case-inventory.json."
+    },
+    "refusals": "With target rust, the only UNSUPPORTED_TARGET results for these cases are RS12 (its CNL form) and RS13 (its JSON form), with exactly the query_parameter_collision diagnostic tests/rust-output-v1/rust_profile_phase2.py gives for the typed prompt. Any other UNSUPPORTED_TARGET, and any NOT_IMPLEMENTED or OUTPUT_QUALITY_FAILED result, fails acceptance.",
+    "refusals_amendment_004": "Replaces refusals above. With target rust, no case gives UNSUPPORTED_TARGET. RS12 (its CNL form) and RS13 (its JSON form) are refused by compiler-v1 with the INVALID_VALUE diagnostic negative-cases.json records, for every target. Any UNSUPPORTED_TARGET, NOT_IMPLEMENTED or OUTPUT_QUALITY_FAILED result fails acceptance.",
+    "phase1_unchanged": "For every phase 1 acceptance case, the Rust bundle differs from the accepted phase 1 bundle (rust-output-050) only in the Rust asset descriptors and the hashes over them, and the assembled files are byte-identical.",
+    "bundle_checks": [
+      "For every phase 2 product case, the CNL and typed JSON requests with target rust return byte-identical som.dsl-bundle.v2 bundles; a case with one form runs that form.",
+      "Every Rust bundle validates against bundle.schema.json, has at most 12 files and 64 blocks per file, and every block id starts with rust.",
+      "Two compiles and two assembles of the same request give the same bytes.",
+      "The assembled files are exactly the file set of the product-layout.json phase2 shape the prompt selects, and Cargo.toml and Cargo.lock equal the reference files of that shape."
+    ],
+    "assemble_refusals": {
+      "rule": "assemble_refusals above run unchanged on the example-v1 base, except A6 and A8, which phase 2 replaces as below. A1, A2, A4, A5, A7 and A9 also run on the PUBLIC_v6 Rust bundle as base, with the same code, status and pointer.",
+      "A6": "Replace the prompt with the RS12 typed prompt. Recompute the shared compiler-v1 descriptors for it, keep the Rust descriptors and the Rust DSL, and rehash. Result: UNSUPPORTED_TARGET 422, with the prompt_pointer of rust_profile_phase2.py under /bundle/prompt.",
+      "A8": "The A8 change gives 200, and the files equal the compile and assemble of the renamed prompt with target rust: Title is a field with an R2 Rust name and the wire name Title.",
+      "A6_amendment_004": "Replaces A6 above. Replace the prompt with the RS13 typed prompt. Recompute the shared compiler-v1 descriptors from the example-v3 Python compile, keep the Rust descriptors and the Rust DSL, and rehash. Assemble validates the prompt first, so the result is RS13's compiler-v1 refusal: INVALID_VALUE 400 at /bundle/prompt/query/filter_field."
+    },
+    "product_gates": [
+      "rustfmt --edition 2024 --check accepts every .rs file unchanged",
+      "cargo build --locked --offline, with CARGO_HOME holding only the vendored union of toolchain.json phase2_crates vendor",
+      "cargo clippy --locked --offline --all-targets -- -D warnings",
+      "cargo test --locked --offline -- --test-threads=1 on a fresh database: TEST_DATABASE_URL for PostgreSQL shapes, MONGODB_URL with SOM_TEST_DATABASE_NAME for MongoDB shapes; a missing setting is a failure",
+      "Cargo.lock unchanged after the commands",
+      "PostgreSQL shapes: schema equivalence with the Python migration for the same prompt, as phase 1, ignoring _som_rust_migrations and alembic_version",
+      "MongoDB shapes: after som_app migrate upgrade, the collections and indexes (keys, order and uniqueness; names not compared) equal the Python product's after its migrate upgrade",
+      "the phase 2 behavior suite: som-rs/behavior/phase2/check_phase2.py run --language rust passes the case's checker (phase2/case-inventory.json) with no assembled file changed",
+      "the same case passes check_phase2.py --language python, or is a Python defect or phase 2 refusal that phase2/behavior.json explains"
+    ],
+    "legacy_gate": "Every one of the 544 legacy jobs gives a Rust product that passes product_gates (phase 1 jobs: the phase 1 product_gates and parity), and its Python result stays the accepted one.",
+    "issue_gates": {
+      "#53": "bundle_checks, product_gates and refusals pass for every case whose constructs.json owner is #53: v5 with capabilities, v6, and the naming refusal removals (RS cases). phase1_unchanged passes.",
+      "#54": "bundle_checks and product_gates pass for every v7 case, with flow_fault_checks and flow_provider_fault_checks and a fault injected at every step that has undo.",
+      "#55": "Every check of this section and python_unchanged passes on one recorded candidate build, with every case receipt kept, and an independent audit (som-rs/scripts/rust_output_acceptance/audit/audit055.py), written from this plan and the raw outputs only, reports no failure and nothing unrun.",
+      "#56": "A qualified switch on a QA port, Rust canaries on the local emulators (example-v1, example-v5, a v6 PostgreSQL product, a v6 MongoDB product, a v7 flow with undo), the Python canaries and a rollback to the phase 1 default pass before the default on 8765 changes, and the change has the user's explicit approval."
+    }
+  },
+  "amendments": "After the freeze receipt is sealed, a change to any frozen file is a numbered amendment with its reason, the old and new hashes, and an independent review.",
+  "issue57": {
+    "amendment": 4,
+    "rule": "The acceptance of CONTRACT.md section 12 (issues #57 and #58) on one recorded candidate build. Every check runs on every case it names; a missing result, a failure and a skipped check each block acceptance.",
+    "checks": [
+      "python_unchanged with its amendment_004 rule: python_replay.py --asset-break over the 127 public products (public-products-003b) and the 544 legacy jobs (legacy544 run-005) passes with no failure.",
+      "check_python_controls.py passes for every negative case of negative-cases.json.",
+      "validate_cases.py: every coverage case gives the frozen Python file hashes.",
+      "The phase 1 target checks (check_targets.py) and the CLI check (check_cli.py) pass.",
+      "check_rust_products.py with --refusals phase2 passes assemble_refusals, with A6_amendment_004.",
+      "phase2 refusals_amendment_004: no case gives UNSUPPORTED_TARGET with target rust.",
+      "check_rust_unchanged.py: every phase 1 and phase 2 Rust product of the #55 run (rust-output-055 run-003, the accepted run of rust-output-acceptance-2026-10-20-phase2.json) assembles to byte-identical files on the candidate. Phase 1 compares a check_rust_products.py --no-gates report made on the candidate; RS12 and RS13 give their compiler-v1 refusal.",
+      "check_issue57.py: every positive self-name fixture and RS07, RS14 and RS16 compile from typed JSON and CNL to the same bundle, select exactly their recorded variant blocks, assemble, and pass their phase 2 checker in Python and in Rust (build, clippy with warnings denied, tests). Every negative and accepted fixture gives its recorded result in typed JSON, typed JSON with target rust, and CNL.",
+      "check_name_collisions.py: no public, legacy, fixture or example prompt is refused by python_name_collisions (the compiler-v1 examples and 119 CNL positive fixtures in typed JSON and CNL, the 7 typed fixtures, the 127 public and the 544 legacy prompts).",
+      "An independent audit, written from this plan and the raw outputs only, reports no failure and nothing unrun."
+    ],
+    "issue_gates": {
+      "#57": "Every check above passes, and the default on 8765 changes only after a rehearsal with the Python and Rust canaries and a rollback, with the user's approval.",
+      "#58": "The python_name_collisions checks above pass on the same candidate."
+    }
+  },
+  "amendment005": {
+    "amendment": 5,
+    "rule": "The acceptance of CONTRACT.md section 13 (issue #65) on the first typescript-output-v1 phase 1 candidate build. Every check runs on every case it names; a missing result, a failure and a skipped check each block acceptance. A check whose tool does not exist yet is added with typescript-output-v1 phase 1 before the candidate runs; until then it counts as unrun.",
+    "checks": [
+      "RT diagnostics: every RT case of negative-cases.json, sent as written, gives exactly its expected code, status, pointer, cause, allowed form and span located in the raw request body: RT01 to RT06 with the amendment 005 texts, RT07 unchanged (a tool added with typescript-output-v1 phase 1).",
+      "check_python_controls.py passes for every negative case of negative-cases.json.",
+      "Python against the baseline: every typed prompt of the 127 public products (public-products-003b) and the 544 legacy jobs (legacy544 run-005), sent without target and with target python, gives a compile response equal byte for byte to the baseline's response, and assembling that bundle gives response bytes equal to the baseline's (a tool added with typescript-output-v1 phase 1).",
+      "Python recordings: python_unchanged with its amendment_004 rule, python_replay.py --asset-break over public-products-003b and legacy544 run-005, passes with no failure; validate_cases.py gives the frozen Python file hashes.",
+      "Rust compile against the baseline: every case of the rust-output-055 run-003 inventory (the accepted run of rust-output-acceptance-2026-10-20-phase2.json), compiled with target rust, gives a response equal to the baseline's response for the same request except bundle.assets.backend, bundle.assets.target_contract and bundle.hashes.payload_sha256; RS12 and RS13 give the baseline's compiler-v1 refusal bytes (a tool added with typescript-output-v1 phase 1).",
+      "check_rust_unchanged.py: every phase 1 and phase 2 Rust product of rust-output-055 run-003 assembles to byte-identical files on the candidate; phase 1 compares a check_rust_products.py --no-gates report made on the candidate.",
+      "Rust bundles of the baseline: every Rust bundle the baseline returns for that inventory is refused by the candidate at assemble with ASSET_HASH_MISMATCH, and the same bundle rebased on the candidate's backend and target_contract descriptors assembles to the files_sha256 run-003 recorded (a tool added with typescript-output-v1 phase 1).",
+      "check_rust_products.py with --refusals phase2 passes assemble_refusals, with A6_amendment_004; A4 (target python in a Rust bundle) keeps INVALID_SCHEMA at /bundle/target.",
+      "check_cli.py passes, and a case added with typescript-output-v1 phase 1 shows that `som compile --target typescript` forwards the string unchanged.",
+      "An independent audit, written from this plan and the raw outputs only, reports no failure and nothing unrun."
+    ],
+    "issue_gates": {
+      "#65": "Every check above passes on the same candidate as the typescript-output-v1 phase 1 acceptance, and the default on 8765 changes only after a rehearsal with the Python, Rust and TypeScript canaries and a rollback, with the user's approval."
+    },
+    "baseline": "the current default compiler: rust-output-candidate-006, binary 52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2, build commit 6116fed549d458f6ac06f51541c93c5de6514385, the #57 release (som-rs/evidence/rust-output-release-2026-10-20-issue57.json), read only"
+  }
+}

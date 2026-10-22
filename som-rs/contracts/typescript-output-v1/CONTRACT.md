@@ -6,7 +6,7 @@ Implementation acceptance is separate and follows [acceptance-plan.json](accepta
 The compiler-v1 contract (../compiler-v1) and the rust-output-v1 contract (../rust-output-v1) stay in force. This contract only adds to them.
 rust-output-v1 amendment 005 (its CONTRACT.md section 13) admits the `target` value typescript and hands it to this contract.
 
-Status: frozen. The freeze receipt is `som-rs/evidence/typescript-output-contract-freeze-2026-10-21.json` (section 11). Amendment 001 is sealed by `som-rs/evidence/typescript-output-contract-amendment-001.json` (section 7).
+Status: frozen. The freeze receipt is `som-rs/evidence/typescript-output-contract-freeze-2026-10-21.json` (section 11). Amendment 001 is sealed by `som-rs/evidence/typescript-output-contract-amendment-001.json` (section 7). Amendment 002 is sealed by `som-rs/evidence/typescript-output-contract-amendment-002.json` (section 12).
 
 | File | Content |
 |---|---|
@@ -21,7 +21,7 @@ Status: frozen. The freeze receipt is `som-rs/evidence/typescript-output-contrac
 | [target-examples.json](target-examples.json) | Positive compile requests for target typescript and python, and the name cases |
 | [negative-cases.json](negative-cases.json) | 33 refused requests with exact diagnostics and Python controls |
 | [case-inventory.json](case-inventory.json) | The 125 acceptance cases and the selection rules |
-| [acceptance-plan.json](acceptance-plan.json) | Checks, assemble refusals A1 to A12, product gates, amendment 001 and issue gates |
+| [acceptance-plan.json](acceptance-plan.json) | Checks, assemble refusals A1 to A12, product gates, amendments 001 and 002 and issue gates |
 
 The scripts in [som-rs/tests/typescript-output-v1/](../../tests/typescript-output-v1/) (the tools) build the case files and check the contract.
 `check_contract.py` needs no compiler and no network; `--receipt` also checks the freeze receipt. `check_python_controls.py` sends each Python control to a compiler's read-only compile endpoint, and `--evidence` records the results.
@@ -42,7 +42,8 @@ A recorded Rust bundle is refused at assemble with ASSET_HASH_MISMATCH and has t
 `target` typescript is the third value of the optional `target` member, for both the CNL request and the typed JSON request.
 No CNL sentence selects a target, as in rust-output-v1 section 2.
 Every other value keeps the rust-output-v1 result (api.schema.json `x-target-selection`).
-The texts that name the three targets are rust-output-v1 amendment 005's RT01 to RT06. This contract's TT cases restate them.
+The texts that name the targets are rust-output-v1's RT01 to RT06. This contract's TT cases restate them.
+Amendment 005 of rust-output-v1 named three targets. Its amendment 006 and this contract's amendment 002 (section 12) name four, with react.
 
 A build that does not implement this contract's phase 1 still refuses target typescript with INVALID_SCHEMA. No candidate is prepared from such a build.
 
@@ -213,3 +214,29 @@ The options considered for runtime, framework, database layer, validation, tests
 6. Split phase 1 into issues: target selection and profile, catalog and renderer, host and parity, and acceptance. Amendment 001 comes first.
 
 After the receipt is sealed, a change to any frozen file needs a numbered amendment with its reason, the old and new hashes, and an independent review.
+
+## 12. Amendment 002: react in the target texts (issue #126)
+
+The react-output-v1 contract (frozen 2026-10-22) adds react as the fourth value of the `target` member.
+rust-output-v1 amendment 006 (its CONTRACT.md section 14) admits it, and this amendment follows for the texts this contract restates.
+
+- TT01 to TT06 refuse a target value outside the enum. They change only their cause and allowed form, to the texts of rust-output-v1 api.schema.json `x-target-selection` invalid:
+  - cause "Target must be the string python, rust, typescript or react.";
+  - allowed form "Omit target, or use target python, rust, typescript or react.".
+- TT07 (a duplicate target member) is INVALID_JSON and keeps its texts. Every TS and TP case is unchanged.
+- api.schema.json `x-target-selection` `others` now names react, which rust-output-v1 hands to react-output-v1.
+- api.schema.json `x-assemble-check-order` target dispatch: a bundle with target react follows react-output-v1, not INVALID_SCHEMA at /bundle/target. Target typescript and rust dispatch as before.
+- No scope, refusal, layout, catalog, toolchain, package, case inventory or product rule changes.
+
+A target typescript compile gives the same typed prompt, DSL and product files as before.
+Its bundle differs only in bundle.assets.backend, bundle.assets.target_contract and bundle.hashes.payload_sha256:
+the TypeScript backend descriptor hashes the shared som-targets lib.rs, where the target texts change, main.rs, where the CLI help names react, and typescript/mod.rs, where this amendment's target_contract hash is set.
+The same break covers the later react-output-v1 phase 1 edits to the shared som-targets sources (lib.rs, main.rs, profile.rs and Cargo.toml) that admit and dispatch react. They need no further amendment of this contract, as long as every TypeScript prompt, DSL and product file stays the same.
+A TypeScript bundle compiled before this amendment is refused at assemble with ASSET_HASH_MISMATCH. That is a recorded compatibility break; compile the prompt again.
+Python gains no exception (section 1).
+
+The som-targets source changes `TARGET_CAUSE`, `TARGET_ALLOWED`, the `som compile --target` help and this contract's `TARGET_CONTRACT_SHA256` in the commit that seals this amendment, because the som-targets tests check the TT cases against the build.
+From that commit until react-output-v1 phase 1, a build refuses target react with INVALID_SCHEMA at /target and the four-target texts.
+This deviates from react-output-v1 api.schema.json `x-target-selection` before_phase_1, which names the three-target texts for that interval, as rust-output-v1 section 14 records. No candidate is prepared from such a build either way.
+[acceptance-plan.json](acceptance-plan.json) `amendment_002` lists the checks, run on the react-output-v1 phase 1 candidate.
+The Python controls ran again on the amended negative cases, read-only against the current default on 8765 (`som-rs/evidence/typescript-output-v1/python-controls-2026-10-23.json`). They only read compile responses there; no QA candidate ran on 8765 or 18765.

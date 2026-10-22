@@ -19,9 +19,9 @@ pub const MAX_FILES: usize = 12;
 pub const MAX_BLOCKS: usize = 64;
 
 pub const TARGET_CONTRACT_ID: &str = "som.typescript-output-contract.v1";
-/// H(files map) of the latest sealed receipt for contracts/typescript-output-v1: amendment 1.
+/// H(files map) of the latest sealed receipt for contracts/typescript-output-v1: amendment 2.
 pub const TARGET_CONTRACT_SHA256: &str =
-    "a1ed9978d7ddd0123e22a1e388f1a6e889ca63e43752563cd744733b84c103b4";
+    "34eb509d5568ebbf3b2f8117073104f2eb8809bc4f3219c887f05d9ed77d807d";
 pub const CATALOG_ID: &str = "som.typescript-catalog.v1";
 pub const BLOCK_LIBRARY_ID: &str = "som.typescript-block-library.v1";
 pub const BACKEND_ID: &str = "som.typescript-backend.v1";
@@ -694,7 +694,7 @@ mod tests {
 
     #[test]
     fn target_contract_is_the_latest_receipt() {
-        let path = som_rs().join("evidence/typescript-output-contract-amendment-001.json");
+        let path = som_rs().join("evidence/typescript-output-contract-amendment-002.json");
         let receipt: Value =
             serde_json::from_str(&fs::read_to_string(path).expect("receipt")).expect("JSON");
         assert_eq!(canonical_hash(&receipt["files"]), TARGET_CONTRACT_SHA256);
@@ -792,7 +792,7 @@ mod tests {
     }
 
     #[test]
-    fn rust_target_selection_negative_cases_match_amendment_005() {
+    fn rust_target_selection_negative_cases_match_amendment_006() {
         let comp = compiler();
         let data: Value = serde_json::from_str(RUST_NEGATIVE_CASES).expect("rust negative-cases");
         let cases = data["cases"].as_array().expect("cases array");

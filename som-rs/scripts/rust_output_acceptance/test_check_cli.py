@@ -292,7 +292,7 @@ class FakeCompilerServer:
                     err_doc = {
                         "status": "error",
                         "code": "INVALID_SCHEMA",
-                        "detail": "Target must be the string python, rust or typescript.",
+                        "detail": "Target must be the string python, rust, typescript or react.",
                         "diagnostics": [{"code": "INVALID_SCHEMA", "prompt_pointer": "/target"}],
                     }
                     self._send(400, json.dumps(err_doc, separators=(",", ":")).encode("utf-8"))

@@ -92,5 +92,19 @@
     "phase1-acceptance": "Every check in this plan passes on one recorded build, with the evidence hashed, and an independent audit written from this plan and the raw outputs only reports no failure and nothing unrun.",
     "#65": "The default on 8765 changes only after a rehearsal with the Python, Rust and TypeScript canaries and a rollback on a QA port, with the user's approval."
   },
-  "amendments": "After the freeze receipt is sealed, a change to any frozen file is a numbered amendment with its reason, the old and new hashes, and an independent review."
+  "amendments": "After the freeze receipt is sealed, a change to any frozen file is a numbered amendment with its reason, the old and new hashes, and an independent review.",
+  "amendment_002": {
+    "rule": "The acceptance of CONTRACT.md section 12 (issue #126) on the first react-output-v1 phase 1 candidate build. Every check runs on every case it names; a missing result, a failure and a skipped check each block acceptance.",
+    "status": "sealed",
+    "receipt": "som-rs/evidence/typescript-output-contract-amendment-002.json",
+    "checks": [
+      "Every TT case gives exactly its expected diagnostic, located in the raw request body: TT01 to TT06 with the amendment 002 texts, TT07 unchanged. Every TS and TP case gives its expected diagnostic unchanged.",
+      "check_python_controls.py passes for every negative case of negative-cases.json.",
+      "Every in-scope case of case-inventory.json, compiled with target typescript on the candidate and on the baseline, gives responses that differ only in bundle.assets.backend, bundle.assets.target_contract and bundle.hashes.payload_sha256; assembling each gives the product files the baseline gives.",
+      "Every TypeScript bundle the baseline returns for that inventory is refused by the candidate at assemble with ASSET_HASH_MISMATCH, and the same bundle rebased on the candidate's backend and target_contract descriptors assembles to the same files.",
+      "Every TypeScript acceptance case passes the product gates of this plan on the candidate.",
+      "An independent audit, written from this plan and the raw outputs only, reports no failure and nothing unrun."
+    ],
+    "baseline": "the current default compiler: typescript-output candidate-001, binary 2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c, build commit 8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af, the #65 release (som-rs/evidence/typescript-output-release-2026-10-22-issue65.json), read only"
+  }
 }

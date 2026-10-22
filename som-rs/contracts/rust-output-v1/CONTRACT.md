@@ -49,12 +49,13 @@ It is the same member for the CNL request (`format` som.cnl.v1) and the typed JS
 | `"python"` | The same bytes as absent |
 | `"rust"` | A som.dsl-bundle.v2 bundle with `target` rust, or one diagnostic |
 | `"typescript"` | The result of the typescript-output-v1 contract (amendment 005, section 13) |
+| `"react"` | The result of the react-output-v1 contract (amendment 006, section 14) |
 | any other JSON value | 400 INVALID_SCHEMA at /target, located on the value token |
 
-The refusal cause is "Target must be the string python, rust or typescript." The allowed form is "Omit target, or use target python, rust or typescript."
-Amendment 005 (section 13) added typescript to both texts. Before it they named python and rust only.
+The refusal cause is "Target must be the string python, rust, typescript or react." The allowed form is "Omit target, or use target python, rust, typescript or react."
+Amendment 005 (section 13) added typescript to both texts, and amendment 006 (section 14) added react. Before amendment 005 they named python and rust only.
 A second `target` member is INVALID_JSON at the second key token, like any duplicate member.
-`som compile --target python|rust|typescript` forwards the string as the member without checking it. A server refusal exits with status 2.
+`som compile --target python|rust|typescript|react` forwards the string as the member without checking it. A server refusal exits with status 2.
 
 ### Deviation from the issue text: no CNL target sentence
 
@@ -462,3 +463,56 @@ Rust candidate work therefore waits for typescript-output-v1 phase 1, or for a l
 - the CLI check passes and forwards --target typescript unchanged.
 
 Some of these checks need tools that do not exist yet. typescript-output-v1 phase 1 adds them before the candidate runs; a check without a tool counts as unrun and blocks acceptance.
+
+## 14. React target selection (amendment 006, issue #126)
+
+Issue #68 adds a fourth output target, React. Its own contract, react-output-v1, was frozen on 2026-10-22 (som-rs/evidence/react-output-contract-freeze-2026-10-22.json). It defines the React bundle, scope, refusals, product and acceptance.
+That contract asks this amendment and typescript-output-v1 amendment 002 to admit react before any candidate serves it (react-output-v1 acceptance-plan.json `target_amendments`).
+This amendment changes only what this contract says about the `target` member. Sections 1 to 13 stay in force otherwise.
+
+### What changes
+
+- api.schema.json admits `"react"` in the `target` enum. A request with target react gets the result react-output-v1 defines.
+- The refusal texts of section 2 name all four targets. They are the texts of react-output-v1 api.schema.json `x-target-selection` invalid:
+  - cause "Target must be the string python, rust, typescript or react.";
+  - allowed form "Omit target, or use target python, rust, typescript or react.".
+  They replace the three-target texts of section 13 for every target value outside the enum.
+- negative-cases.json: RT01 to RT06 carry the new texts. Their requests, codes, statuses, pointers and spans are unchanged.
+  RT07 (a duplicate target member) is INVALID_JSON and keeps its texts.
+- Compile check order (x-check-order): step 5, the Rust profile, still runs only for target rust. A react request follows the react-output-v1 check order instead.
+- Assemble check order (x-assemble-check-order): a som.dsl-bundle.v2 bundle whose `target` member is the string react continues in the react-output-v1 assemble order.
+  Every other target value except rust and typescript is still INVALID_SCHEMA at /bundle/target, so A4 (target python in a Rust bundle) keeps its result.
+- `som compile --target` documents python, rust, typescript and react. The CLI still forwards the string without checking it.
+- compile_success and the som.dsl-bundle.v2 bundle schema of this contract still cover target python and rust only. A react response and a react bundle follow the react-output-v1 schemas.
+
+### What stays
+
+- Python: section 1 holds with no new exception. A request without target or with target python never reaches the target texts.
+  Every Python compile and assemble response equals the response of the current default compiler byte for byte.
+  The current default is TypeScript candidate-001, the #65 release (binary `2bceb3a0…`, build commit `8c4a91fb`, som-rs/evidence/typescript-output-release-2026-10-22-issue65.json).
+  The recorded Python bundles keep the section 12 rule.
+- Rust: a target rust compile gives the same typed prompt, DSL and product files as before.
+  Its bundle differs only in two descriptors and in payload_sha256:
+  - target_contract changes, as section 9 says for every amendment;
+  - backend changes, because it hashes the som-targets sources that carry the target_contract hash, the target texts and the CLI help, and, later, the react-output-v1 phase 1 edits to the shared sources (lib.rs, main.rs, profile.rs and Cargo.toml) that admit and dispatch react.
+  Those later edits need no further amendment of this contract, as long as every Rust prompt, DSL and product file stays the same.
+  A Rust bundle compiled before this amendment is refused at assemble with ASSET_HASH_MISMATCH. That is a recorded compatibility break, as in sections 12 and 13; compile the prompt again.
+- No scope, refusal, profile, layout, crate, toolchain, case inventory or phase 2 file changes.
+
+### Implementation and acceptance
+
+The som-targets source carries this amendment's target_contract hash (`TARGET_CONTRACT_SHA256`) from the commit that seals it, because its test binds that hash to the latest receipt.
+The same commit changes the two shared texts in som-targets (`TARGET_CAUSE` and `TARGET_ALLOWED`) and the `som compile --target` help in main.rs, because the som-targets tests check the RT cases of this contract and the TT cases of typescript-output-v1 against the build.
+From that commit until react-output-v1 phase 1, a build refuses target react with INVALID_SCHEMA at /target and the four-target texts.
+This deviates from react-output-v1 api.schema.json `x-target-selection` before_phase_1, which names the three-target texts for that interval. Either way no candidate is prepared from such a build.
+The rest of the behavior lands with react-output-v1 phase 1: target selection admits react, and the assembler dispatches react bundles.
+
+[acceptance-plan.json](acceptance-plan.json) amendment006 is the acceptance plan for this amendment. It runs on the react-output-v1 phase 1 candidate:
+
+- every RT case gives exactly its expected diagnostic, located in the raw request body;
+- check_python_controls.py passes for every negative case;
+- every Python compile and assemble response equals the current default's byte for byte, and the recorded Python bundles keep the section 12 rule;
+- every Rust compile response equals the current default's except the two descriptors and payload_sha256;
+- every phase 1 and phase 2 Rust product of the latest accepted Rust inventory assembles to byte-identical files on the candidate;
+- every Rust bundle the current default returns is refused with ASSET_HASH_MISMATCH, and the same bundle rebased on the new descriptors gives the recorded files;
+- the CLI check passes and forwards --target react unchanged.

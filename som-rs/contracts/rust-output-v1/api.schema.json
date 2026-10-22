@@ -7,7 +7,8 @@
       "enum": [
         "python",
         "rust",
-        "typescript"
+        "typescript",
+        "react"
       ]
     },
     "compile_request": {
@@ -57,7 +58,7 @@
       "properties": {
         "bundle": {
           "type": "object",
-          "$comment": "Dispatch on bundle.version before any bundle schema runs. A bundle whose version is som.dsl-bundle.v2 is checked against som.dsl-bundle.v2 in x-assemble-check-order. Every other bundle keeps the compiler-v1 assemble behavior byte for byte, including INVALID_SCHEMA at /bundle/target for a som.dsl-bundle.v1 bundle with a target member. Amendment 005: a som.dsl-bundle.v2 bundle whose target member is typescript is checked against the typescript-output-v1 bundle schema instead of this contract's (CONTRACT.md section 13)."
+          "$comment": "Dispatch on bundle.version before any bundle schema runs. A bundle whose version is som.dsl-bundle.v2 is checked against som.dsl-bundle.v2 in x-assemble-check-order. Every other bundle keeps the compiler-v1 assemble behavior byte for byte, including INVALID_SCHEMA at /bundle/target for a som.dsl-bundle.v1 bundle with a target member. Amendment 005: a som.dsl-bundle.v2 bundle whose target member is typescript is checked against the typescript-output-v1 bundle schema instead of this contract's (CONTRACT.md section 13). Amendment 006: one whose target member is react is checked against the react-output-v1 bundle schema (CONTRACT.md section 14)."
         }
       },
       "required": [
@@ -66,7 +67,7 @@
       "additionalProperties": false
     },
     "compile_success": {
-      "$comment": "Amendment 005: a request with target typescript gets the response typescript-output-v1 defines, and that response is not checked against this schema (CONTRACT.md section 13).",
+      "$comment": "Amendment 005: a request with target typescript gets the response typescript-output-v1 defines, and that response is not checked against this schema (CONTRACT.md section 13). Amendment 006: the same holds for target react and react-output-v1 (CONTRACT.md section 14).",
       "type": "object",
       "properties": {
         "status": {
@@ -101,16 +102,17 @@
     "python": "The same response as absent.",
     "rust": "A som.dsl-bundle.v2 bundle with target rust, or one diagnostic.",
     "typescript": "Amendment 005 (issue #65): the result the typescript-output-v1 contract defines. That contract is not part of this one; until a build implements it, see CONTRACT.md section 13.",
+    "react": "Amendment 006 (issue #126): the result the react-output-v1 contract defines. That contract is not part of this one; until a build implements it, see CONTRACT.md section 14.",
     "invalid": {
       "code": "INVALID_SCHEMA",
       "http_status": 400,
       "prompt_pointer": "/target",
       "span": "the raw value token of the target member",
-      "cause": "Target must be the string python, rust or typescript.",
-      "allowed_form": "Omit target, or use target python, rust or typescript."
+      "cause": "Target must be the string python, rust, typescript or react.",
+      "allowed_form": "Omit target, or use target python, rust, typescript or react."
     },
     "duplicate_member": "INVALID_JSON 400 at the second target key token, as for any duplicate member.",
-    "cli": "som compile --target python|rust|typescript forwards the string as the target member without checking it. A server refusal exits with status 2."
+    "cli": "som compile --target python|rust|typescript|react forwards the string as the target member without checking it. A server refusal exits with status 2."
   },
   "x-new-error-codes": {
     "UNSUPPORTED_TARGET": {
@@ -123,13 +125,13 @@
     "envelope schema, including target",
     "CNL parse or prompt JSON schema",
     "existing compiler-v1 semantic validation, unchanged",
-    "Rust profile, only when target is rust, in the scope.json refusal_order (amendment 005: target typescript continues in the typescript-output-v1 check order instead)",
+    "Rust profile, only when target is rust, in the scope.json refusal_order (amendment 005: target typescript continues in the typescript-output-v1 check order instead; amendment 006: target react continues in the react-output-v1 check order instead)",
     "planning, with SCOPE_TOO_LARGE for a Rust DSL over 12 files or 64 blocks, or an assemble envelope over 2097152 bytes"
   ],
   "x-assemble-check-order": [
     "transport limit, JSON parse and envelope schema",
     "bundle version dispatch: only a bundle whose version member is the string som.dsl-bundle.v2 continues below; every other bundle, including som.dsl-bundle.v1, keeps the compiler-v1 order and result unchanged",
-    "bundle schema, including target rust (INVALID_SCHEMA at /bundle/target for any other value; amendment 005: a bundle whose target member is the string typescript continues in the typescript-output-v1 assemble order instead)",
+    "bundle schema, including target rust (INVALID_SCHEMA at /bundle/target for any other value; amendment 005: a bundle whose target member is the string typescript continues in the typescript-output-v1 assemble order instead; amendment 006: one whose target member is the string react continues in the react-output-v1 assemble order instead)",
     "hashes: prompt_sha256, dsl_sha256, then payload_sha256 = H({version,target,prompt,dsl,assets}) (BUNDLE_HASH_MISMATCH)",
     "asset descriptors equal the active Rust manifest (ASSET_HASH_MISMATCH at /bundle/assets)",
     "existing compiler-v1 prompt validation, unchanged",

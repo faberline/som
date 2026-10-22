@@ -19,7 +19,7 @@ from common import CONTRACT, SOM_RS, TARGET, rust_cases, ts_profile
 
 OUT = CONTRACT / "negative-cases.json"
 
-# rust-output-v1 amendment 005 already names three targets in the envelope texts.
+# rust-output-v1 amendment 006 names four targets in the envelope texts (this contract's amendment 002).
 TARGET_CAUSE = rust_cases.TARGET_CAUSE
 TARGET_FORM = rust_cases.TARGET_FORM
 COMPILER_V1_REFUSED = ("TS21_CNL_V3_FILTER_LIMIT", "TS22_JSON_V3_FILTER_OFFSET")

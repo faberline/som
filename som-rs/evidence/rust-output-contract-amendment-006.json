@@ -1,0 +1,214 @@
+{
+  "version": "som.rust-output-contract-amendment.v1",
+  "amendment": 6,
+  "frozen_at": "2026-10-22T16:31:35.948331+00:00",
+  "baseline_commit": "dbe960aab89c057f3b81f820ccfe05c8edc9be4f",
+  "issue": [
+    126
+  ],
+  "target": "rust",
+  "bundle": "som.dsl-bundle.v2",
+  "status": "amendment_sealed_after_independent_review",
+  "implementation_already_in_progress": false,
+  "implementation_deferred_to": "react-output-v1 phase 1: select() admits react and the compile and assemble dispatch of section 14 land there. The sealing commit changes only the shared target texts (lib.rs TARGET_CAUSE and TARGET_ALLOWED), the main.rs --target help and TARGET_CONTRACT_SHA256, because the som-targets tests check the RT and TT cases against the build; until phase 1 a build refuses target react with INVALID_SCHEMA at /target and the four-target texts, and is not a candidate for this amendment",
+  "previous_receipt": "som-rs/evidence/rust-output-contract-amendment-005.json",
+  "previous_receipt_sha256": "01ad9019e58a0c82c2eeb5fb31a62dde65055c2ce5c588537a854f62c191a896",
+  "reason": "Issue #68 adds a React frontend as a fourth target; its contract react-output-v1 was frozen on 2026-10-22 and requires this amendment before any candidate serves target react (its acceptance-plan.json target_amendments). The envelope's target selection is part of this contract, so amendment 006 adds react to the target enum and to the INVALID_SCHEMA /target cause and allowed form (api.schema.json, CONTRACT.md section 2 and new section 14), and hands target react to react-output-v1 in the compile and assemble check orders. negative-cases.json RT01 to RT06 change only those two texts (build_negative_cases.py); RT07 is unchanged. The Python controls ran again on the amended negative cases, read-only against the current default (the #65 release, TypeScript candidate-001) (negative-python-controls-2026-10-23.json, 32 passed). acceptance-plan.json gains amendment006, run on the first react-output-v1 phase 1 candidate. Python gains no exception. Rust prompts, DSL and product files stay the same, but the Rust target_contract descriptor and the backend descriptor (which hashes som-targets/src/lib.rs, src/main.rs and src/rust/mod.rs, all changed in the sealing commit) change, so a recorded Rust bundle gives ASSET_HASH_MISMATCH at assemble, the compatibility break sections 12 and 13 record. Deviation: react-output-v1 api.schema.json x-target-selection before_phase_1 says an interim build refuses target react with the three-target texts; because the shared texts change in the sealing commit, an interim build uses the four-target texts. No candidate is prepared from such a build either way. Deviation from the issue text: issue #126 lists '\u4e0d\u6539 contracts/rust-output-v1/CONTRACT.md' under Never, but section 2 is the normative statement of the target texts that the #126 acceptance and react-output-v1 target_amendments require to change, so CONTRACT.md changes here through this numbered amendment (section 2 and new section 14), as amendment 005 changed it; the deviation is reported on the issue. The Python controls only read compile responses from 8765 (the current default); no QA candidate ran on 8765 or 18765.",
+  "changed_paths": [
+    "som-rs/contracts/rust-output-v1/CONTRACT.md",
+    "som-rs/contracts/rust-output-v1/acceptance-plan.json",
+    "som-rs/contracts/rust-output-v1/api.schema.json",
+    "som-rs/contracts/rust-output-v1/negative-cases.json",
+    "som-rs/tests/rust-output-v1/build_negative_cases.py"
+  ],
+  "added_paths": [
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-23.json"
+  ],
+  "changes": [
+    {
+      "path": "som-rs/contracts/rust-output-v1/CONTRACT.md",
+      "old_sha256": "67e665189d58fe3380accc6226e36776d52cec3cede4bc7ab8f4f2c96f28f8c3",
+      "new_sha256": "067c6392b78dab379abd0688b2291a21349be66db384834e769e9ab0eb082897",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/CONTRACT-before-amendment-006.md",
+      "archived_copy_sha256": "67e665189d58fe3380accc6226e36776d52cec3cede4bc7ab8f4f2c96f28f8c3"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/acceptance-plan.json",
+      "old_sha256": "a3f2392fef920aa6e4fe42c5aaa923f03369fe2293a92e5ee3be3f9e2ebe83fe",
+      "new_sha256": "bea96ef0e19eb5d2e9923cba5e8a41d05df2ac95e0d55baf2d080a5f9f76a83d",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/acceptance-plan-before-amendment-006.json",
+      "archived_copy_sha256": "a3f2392fef920aa6e4fe42c5aaa923f03369fe2293a92e5ee3be3f9e2ebe83fe"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/api.schema.json",
+      "old_sha256": "1428a5e25e9f1bf72b84aaa2bd61c9fa31d37a444289df58a2e2b3e07256780b",
+      "new_sha256": "fb97891d28a1c757f3cbcad1a82a0d4ab286cfa4478f435309505282477d113f",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/api.schema-before-amendment-006.json",
+      "archived_copy_sha256": "1428a5e25e9f1bf72b84aaa2bd61c9fa31d37a444289df58a2e2b3e07256780b"
+    },
+    {
+      "path": "som-rs/contracts/rust-output-v1/negative-cases.json",
+      "old_sha256": "cf269636ff3e41f6491e9c42f8e254c5072ebe6275201700dc959229fa5aa42e",
+      "new_sha256": "9bb36d689ad4be26e608ac8be779a1a8bb8db043d37788b5819c9fe1bf402e22",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/negative-cases-before-amendment-006.json",
+      "archived_copy_sha256": "cf269636ff3e41f6491e9c42f8e254c5072ebe6275201700dc959229fa5aa42e"
+    },
+    {
+      "path": "som-rs/tests/rust-output-v1/build_negative_cases.py",
+      "old_sha256": "90930bdee4257f0eb4ca7f627547b2314aea0f798d238ecb1aa42d224291c96b",
+      "new_sha256": "6c0d9313452a8e44f93b981babadf3b7ab433a96d3d9020e56f1004a62f7c7c7",
+      "archived_copy": "som-rs/evidence/rust-output-contract-archive/build_negative_cases-before-amendment-006.py",
+      "archived_copy_sha256": "90930bdee4257f0eb4ca7f627547b2314aea0f798d238ecb1aa42d224291c96b"
+    }
+  ],
+  "unchanged": "Every other path of the previous receipt keeps its hash: scope.json, rust_profile.py, the bundle schema, product layout, toolchain, reference crates, phase 2 files and cases. Sections 1 and 3 to 13 of CONTRACT.md are unchanged; section 2 adds a react row, changes the two texts, their note and the CLI line, and its other rows are unchanged.",
+  "target_contract": {
+    "id": "som.rust-output-contract.v1",
+    "previous_sha256": "8c25078c84fdec3dea1b4cb15df499d682ccb9b7286d957598f2076e3a685d51",
+    "sha256": "ec825f3d584a05b05fd42103caead344bc03e62a358682f925fca3b997a7365d",
+    "rule": "sha256 of the som.canonical-json.v1 bytes of the files map below"
+  },
+  "files": {
+    "som-rs/contracts/rust-output-v1/CONTRACT.md": "067c6392b78dab379abd0688b2291a21349be66db384834e769e9ab0eb082897",
+    "som-rs/contracts/rust-output-v1/acceptance-plan.json": "bea96ef0e19eb5d2e9923cba5e8a41d05df2ac95e0d55baf2d080a5f9f76a83d",
+    "som-rs/contracts/rust-output-v1/api.schema.json": "fb97891d28a1c757f3cbcad1a82a0d4ab286cfa4478f435309505282477d113f",
+    "som-rs/contracts/rust-output-v1/behavior-normalization.json": "c75b29346d605af7e6ec8ad5d856381f4f8e0e0d321f1d236a5d93b545be97bf",
+    "som-rs/contracts/rust-output-v1/bundle.schema.json": "0d9e9db5495c0d9121b3213ed0eb15b18af6de462ee16ef3e91561414f4547bd",
+    "som-rs/contracts/rust-output-v1/case-inventory.json": "fc6fbec822623cb9bdc0a6e11c2a72b6f0dfac3c41e8b7c1e35830090eb7d2a5",
+    "som-rs/contracts/rust-output-v1/negative-cases.json": "9bb36d689ad4be26e608ac8be779a1a8bb8db043d37788b5819c9fe1bf402e22",
+    "som-rs/contracts/rust-output-v1/phase2/behavior.json": "d2007cc091a5f3ff22a2d0aeeef2c6cfe0e8f620caa255b5dc14c06efdf82ece",
+    "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6",
+    "som-rs/contracts/rust-output-v1/phase2/constructs.json": "6ef923690ce209795141076aec0d76d67d702d0fa35831324da136dd83e463dd",
+    "som-rs/contracts/rust-output-v1/phase2/naming.json": "cf9e2b70608f8ba7bd65710e901c99682bb4478562377ae3d1457abbc1e54de2",
+    "som-rs/contracts/rust-output-v1/phase2/pins.json": "76fa9338f987211dfc4cd1ff01f2b812855c131da7e58f5de3bdac117826e5f1",
+    "som-rs/contracts/rust-output-v1/phase2/services.json": "64c7b3ad93ea8359280232b5b6244f21c5bdcf1fb84931711376708b44ed572d",
+    "som-rs/contracts/rust-output-v1/product-layout.json": "d2d781f31d959fb913b1182a481e44bc4520e6157ef80de1e7e2fcec46be0b8f",
+    "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.lock": "0483374722515e3daa7f8509708abb9c551f1bc1815f9110e6662b893db443ad",
+    "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.toml": "d06a474e62ab474465c73f4ad99ddcf5d0e33a750684e3a8cfa83714949cd430",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.lock": "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.toml": "8b708c38686b77e6740171e24c28793c4a40b54a8e9807f8e147a9ef3b44591d",
+    "som-rs/contracts/rust-output-v1/scope.json": "0f31b4c0290afda9b4c4ccf99b575edec81c3361ae31c74b44bc16d5ff20e51d",
+    "som-rs/contracts/rust-output-v1/target-examples.json": "4d91b175e9c75cadb61ae335dc1540582b3d89c01815abe651b02d57ac6889ae",
+    "som-rs/contracts/rust-output-v1/toolchain.json": "9a05dd1953defc89c4a44eada333cbfc41570e4728295ab1a2be060c76b7029d",
+    "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-15.json": "b83e01caf26dbd403d04dac4948a04b97f059accd22edceae78f8c2519438462",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-20.json": "2398079609c673ff8086dff85f0fc27c51a66b5b087a09b2622d6913d81fcfdf",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-21.json": "8d302755f218237a5fcdb0275d4a35da0566604598e1d0c8c9c0e51ced8142a7",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-23.json": "7f6ddae1dbc9c14ca3d9c25437dc6721f54d9693de43bc178ae1a73a27957b8a",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-16.json": "64eb707bdecdcacb878240ca87094834015cb3dd1a77c2050e852335b18932da",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-17.json": "24cee7a81cf46379c318efd9271dfb18b15acddbde03e549208df162b538f383",
+    "som-rs/tests/rust-output-v1/build_case_inventory.py": "494976a61dd2184d2a9135d297c635fc4b6bd04be4cbb34bd2b7efc00b855874",
+    "som-rs/tests/rust-output-v1/build_cases.py": "13096aacb9ba3eafe84e4389586478622aca5eea8622f6d8774a15bb4da265b3",
+    "som-rs/tests/rust-output-v1/build_negative_cases.py": "6c0d9313452a8e44f93b981babadf3b7ab433a96d3d9020e56f1004a62f7c7c7",
+    "som-rs/tests/rust-output-v1/build_phase2_behavior.py": "7d58af568f093cff9caaae0bff83dba2bac5ba9dbe8e2fc27ad029bbb8d22d9b",
+    "som-rs/tests/rust-output-v1/build_phase2_constructs.py": "a1c2b3ff09644ef246580a2afec062c78299e9cace169d4e750d11313f1e80ee",
+    "som-rs/tests/rust-output-v1/build_phase2_inventory.py": "60328ce9c02446891a5aff86a1681ce103b895a58b25cd970a0529625b44c994",
+    "som-rs/tests/rust-output-v1/build_phase2_pins.py": "7476958452c998972074a9b9e4ae3ee56d5598617ad4f1d4b3cf41b6d9c31c61",
+    "som-rs/tests/rust-output-v1/build_target_examples.py": "697ca7c91c2c9f4c3d27985ed0f50ce6c6f2a103ea7ed264ba1915c056d43ab2",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.cnl": "22e6cb0aacd219cb47478dca4ff5f244b63ae605de399f08a16bb62093ec9ce7",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.cnl": "a2512cdbbea998a8f051160166e3c1d2f4b43ae5d7bbcbe5e6a0cd211a9b7c1d",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.cnl": "554eb27bbd5c894fa7ccd473b45734a33753b1ec32395ccb5f73133b0a71a12c",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.cnl": "cb7f5fb994d6c7bfbdff549e71286211cd1d3f7177b91bdbeeb34337229b7724",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.cnl": "97cb49f506fb16fb9da2ea203b5a114ea68766ec46ebb69cdb4d63f012deb16c",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.prompt.json": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.cnl": "627623f91944b13158487086efec5653948be6c2e77a341e0d0ba9410d291e5d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347",
+    "som-rs/tests/rust-output-v1/cases/index.json": "b49af2a7ba842e5dd810d8d010fcf93436474df7f49f1c569367bed1bc94ed1b",
+    "som-rs/tests/rust-output-v1/check_contract.py": "958aacace4f99badd190715140665bb3bf9f08ec0e88c8557b6d24f87a069b15",
+    "som-rs/tests/rust-output-v1/check_python_controls.py": "50e081a6a10cdbb7db8e84e094854ef8833f25d3cfa0857cc98e9cb4e9ccd047",
+    "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513",
+    "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "66361c04b8c7069868aa03205dbb33f9d28ede06e55ea262326671b91108316b",
+    "som-rs/tests/rust-output-v1/validate_cases.py": "9b9131de7a56a54c6a9f103da170143bc18ec6d113bedb6f79ea0a7f8453d4bb"
+  },
+  "related_tools": {
+    "som-rs/som-targets/src/rust/mod.rs": {
+      "sha256": "ef318d5457e64406816780075861d10aa9c7cbc84f01d1e0ea0ea2e4c340a3eb",
+      "role": "TARGET_CONTRACT_SHA256 is this receipt's target sha"
+    },
+    "som-rs/som-targets/src/lib.rs": {
+      "sha256": "25fbe320df6eb74989da7f2a97c8aa79cc8b580cd9197092236898da2f41e8f6",
+      "role": "TARGET_CAUSE and TARGET_ALLOWED carry the four-target texts of section 14 from the sealing commit; select() still refuses target react until react-output-v1 phase 1"
+    },
+    "som-rs/som-targets/src/main.rs": {
+      "sha256": "6f521d6d7f3fa7b074de861da4ce5c15934d312d8ce77464f47cf0c3e9863fe2",
+      "role": "the som compile --target help names react; the CLI still forwards the string unchecked"
+    }
+  },
+  "independent_review": {
+    "reviewer": "independent Claude Opus 5.5 subagent, read-only, no network, no calls to 8765 or 18765",
+    "target_sha256": "ec825f3d584a05b05fd42103caead344bc03e62a358682f925fca3b997a7365d",
+    "scope": "rust-output-v1 amendment 006 and typescript-output-v1 amendment 002 together (issue #126)",
+    "rounds": [
+      {
+        "round": 1,
+        "verdict": "CHANGES_REQUIRED",
+        "findings": [
+          "blocking: typescript-output-v1 api.schema.json x-assemble-check-order target dispatch still made every value other than typescript and rust INVALID_SCHEMA at /bundle/target, contradicting rust-output-v1 amendment 006 and react-output-v1 for target react",
+          "blocking: issue #126 Never line '\u4e0d\u6539 contracts/rust-output-v1/CONTRACT.md' conflicts with amendment 006 editing CONTRACT.md (justified through the numbered amendment, as 005); the deviation was not recorded in the receipt and must be reported to the owner",
+          "TS section 12 did not call the interim four-target texts a deviation from react-output-v1 x-target-selection before_phase_1",
+          "sections 14 and 12 did not say the later react-output-v1 phase 1 edits to shared som-targets sources are covered by this backend break",
+          "som-targets/src/main.rs CLI doc comments still named three targets",
+          "stale test name rust_target_selection_negative_cases_match_amendment_005",
+          "scripts/rust_output_acceptance/test_check_cli.py mock server kept the three-target text",
+          "typescript acceptance-plan.json amendment_002 had a stray comma line",
+          "TS api.schema.json top-level $comment did not mention react",
+          "controls evidence records base_url 127.0.0.1:8765; explain the read-only reads",
+          "issue gates #128, #130 and #131 cannot be checked offline"
+        ]
+      },
+      {
+        "round": 2,
+        "verdict": "APPROVED",
+        "findings": [
+          "non-blocking: implementation_deferred_to did not name the main.rs --target help (receipt-only, fixed before sealing)",
+          "non-blocking: at sealing, set status, independent_review APPROVED and check_contract; record the rust 'sealed before implementation' failure as expected, as 005",
+          "non-blocking: the som-targets TypeScript tests need SOM_TS_PRETTIER set to .local/typescript-output/prettier-001/node_modules/prettier",
+          "non-blocking: the controls runs on 8765 and the issue gates #128, #130 and #131 were not re-verified offline; the #126 deviation comment and the #128 before_phase_1 note are the coordinator's follow-up"
+        ]
+      }
+    ],
+    "final_verdict": "APPROVED",
+    "confirmed_without_change": [
+      "Round 1 blockers resolved: the TS assemble target dispatch hands target react to react-output-v1, agreeing with rust-output-v1 x-assemble-check-order and react-output-v1; the rust receipt reason records the #126 Never-line deviation and its justification",
+      "sha256(canonical(files)) equals target_contract.sha256 and TARGET_CONTRACT_SHA256 for both contracts; previous_sha256 and previous_receipt_sha256 chain to the HEAD receipts",
+      "every files-map hash matches disk with an empty symmetric difference; changed_paths (5) and added_paths (1) equal the map diff; changes[] old = previous receipt = archived copy = HEAD and new = disk; related_tools (mod.rs, lib.rs, main.rs) match disk",
+      "negative-cases.json differs from the archived copies only by the four-target texts in RT01-RT06 and TT01-TT06; RT07, TT07 and every other case are byte-identical; both builders reproduce it; builder texts equal lib.rs TARGET_CAUSE and TARGET_ALLOWED",
+      "no stale three-target text outside history and evidence except rust CONTRACT.md section 13 (historical) and the react-output-v1 $comment (correct)",
+      "lib.rs select() still refuses react with the four-target texts, as sections 14 and 12 describe",
+      "controls evidence source hashes match the amended cases: rust 32 passed, TS 43 passed (33 negative + 10 TN), 0 failed",
+      "no change under som-rs/src, the som-rs Cargo files, blocks, catalogs, compiler_default_switch.py or existing check_contract.py tools; existing evidence only gains new files",
+      "react-output-v1 check_contract --require-prompts --receipt freeze-2026-10-22: 660 passed, 0 failed",
+      "cargo test (som-targets, SOM_TS_PRETTIER set): 29 passed, 2 failed, only the two target_contract_is_the_latest_receipt tests waiting for final_verdict APPROVED"
+    ],
+    "commands_run": [
+      "git status / git diff of every changed file",
+      "python3 som-rs/tests/rust-output-v1/check_contract.py [--receipt amendment-006]: 399/0 and 455/1 (expected)",
+      "python3 som-rs/tests/typescript-output-v1/check_contract.py [--receipt amendment-002]: 397/0 and 445/1 (pending status)",
+      "build_negative_cases.py --check for both contracts",
+      "python3 som-rs/tests/react-output-v1/check_contract.py --require-prompts --receipt freeze-2026-10-22: 660/0",
+      "python3 -m unittest test_check_cli: 4 OK",
+      "independent hash-chain and controls verifiers (scratchpad review126/verify.py, controls.py)",
+      "SOM_TS_PRETTIER=... cargo test --offline --no-fail-fast in som-targets"
+    ]
+  },
+  "check_contract": {
+    "command": "python3 som-rs/tests/rust-output-v1/check_contract.py --receipt som-rs/evidence/rust-output-contract-amendment-006.json",
+    "passed": 455,
+    "failed": 1,
+    "expected_failure": "receipt was sealed before implementation: this amendment records implementation_already_in_progress false, because the section 14 behavior lands with react-output-v1 phase 1",
+    "also_passed": [
+      "check_contract.py without a receipt: 399 passed, 0 failed",
+      "build_negative_cases.py --check",
+      "tests/rust-output-v1/check_python_controls.py --base-url http://127.0.0.1:8765 (the current default, read only): 32 passed, 0 failed",
+      "react-output-v1 check_contract.py --require-prompts --receipt freeze-2026-10-22: 660 passed, 0 failed",
+      "scripts/rust_output_acceptance/test_check_cli.py: 4 tests OK"
+    ],
+    "not_run": [
+      "acceptance-plan.json amendment006 checks: they run on the first react-output-v1 phase 1 candidate"
+    ]
+  }
+}
