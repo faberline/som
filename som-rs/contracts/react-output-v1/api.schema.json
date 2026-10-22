@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "som.compiler-api.v1.react-target",
+  "$comment": "The React half of target selection. rust-output-v1 amendment 006 and typescript-output-v1 amendment 002 admit react as the fourth value of the target enum and hand every target react request and every som.dsl-bundle.v2 bundle with target react to this contract. Requests without target, or with target python, rust or typescript, are not covered here and keep their responses, except for the invalid-target texts those amendments change. Diagnostics, transport limits and the error envelope are unchanged from som.compiler-api.v1.",
+  "$defs": {
+    "target": {
+      "enum": [
+        "python",
+        "rust",
+        "typescript",
+        "react"
+      ]
+    },
+    "compile_request": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "format": {
+              "const": "som.cnl.v1"
+            },
+            "source": {
+              "type": "string"
+            },
+            "target": {
+              "$ref": "#/$defs/target"
+            }
+          },
+          "required": [
+            "format",
+            "source"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "format": {
+              "const": "som.prompt-json.v1"
+            },
+            "prompt": {
+              "$ref": "som.compiler-prompt-family.v1"
+            },
+            "target": {
+              "$ref": "#/$defs/target"
+            }
+          },
+          "required": [
+            "format",
+            "prompt"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "assemble_request": {
+      "$ref": "som.compiler-api.v1.rust-target#/$defs/assemble_request"
+    },
+    "compile_success": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": "ok"
+        },
+        "bundle": {
+          "$ref": "som.dsl-bundle.v2.react"
+        }
+      },
+      "required": [
+        "status",
+        "bundle"
+      ],
+      "additionalProperties": false
+    },
+    "assemble_success": {
+      "$ref": "som.compiler-api.v1#/$defs/assemble_success"
+    },
+    "compiler_error": {
+      "$ref": "som.compiler-api.v1#/$defs/compiler_error"
+    }
+  },
+  "x-target-selection": {
+    "react": "A som.dsl-bundle.v2 bundle with target react, or one diagnostic.",
+    "others": "absent, python, rust and typescript: rust-output-v1 and typescript-output-v1 x-target-selection, unchanged by this contract.",
+    "invalid": {
+      "code": "INVALID_SCHEMA",
+      "http_status": 400,
+      "prompt_pointer": "/target",
+      "span": "the raw value token of the target member",
+      "cause": "Target must be the string python, rust, typescript or react.",
+      "allowed_form": "Omit target, or use target python, rust, typescript or react.",
+      "rule": "rust-output-v1 amendment 006 and typescript-output-v1 amendment 002 adopt these two texts for every target value outside the enum, in place of the three-target texts."
+    },
+    "cli": "som compile --target react forwards the string as the target member without checking it. A server refusal exits with status 2.",
+    "before_phase_1": "Until a build implements react-output-v1 phase 1, target react gets the three-target INVALID_SCHEMA refusal of rust-output-v1. No candidate is prepared from such a build."
+  },
+  "x-new-error-codes": {
+    "UNSUPPORTED_TARGET": {
+      "http_status": 422,
+      "use": "The code rust-output-v1 introduced. For target react: a prompt that passes existing validation but is outside React output phase 1, or a React bundle whose prompt is outside phase 1. Causes and allowed forms are the scope.json refusals of this contract."
+    }
+  },
+  "x-check-order": [
+    "transport limit and JSON parse, including duplicate members",
+    "envelope schema, including target",
+    "CNL parse or prompt JSON schema",
+    "existing compiler-v1 semantic validation, unchanged (this already refuses a v3 filter field named limit or offset, compiler-v1 amendment 003)",
+    "React profile, only when target is react, in the scope.json refusal_order (UNSUPPORTED_TARGET)",
+    "planning, with SCOPE_TOO_LARGE for a React DSL over 19 files or over 64 blocks in total, or an assemble envelope over 2097152 bytes"
+  ],
+  "x-assemble-check-order": [
+    "transport limit, JSON parse and envelope schema",
+    "bundle version dispatch: only a bundle whose version member is the string som.dsl-bundle.v2 continues; every other bundle keeps the compiler-v1 order and result unchanged",
+    "target dispatch: a bundle whose target member is the string react continues below; target rust follows rust-output-v1 and target typescript follows typescript-output-v1; any other value is INVALID_SCHEMA at /bundle/target after the members and version checks of the rust-output-v1 check_schema order",
+    "bundle schema som.dsl-bundle.v2.react in the rust-output-v1 check_schema order, and at most 64 blocks in total (INVALID_SCHEMA at the failing pointer)",
+    "hashes: prompt_sha256, dsl_sha256, then payload_sha256 = H({version,target,prompt,dsl,assets}) (BUNDLE_HASH_MISMATCH)",
+    "asset descriptors equal the active React manifest (ASSET_HASH_MISMATCH at /bundle/assets)",
+    "existing compiler-v1 prompt validation, unchanged",
+    "React profile (UNSUPPORTED_TARGET at /bundle/prompt plus the scope.json pointer)",
+    "catalog and composition: the DSL equals the frozen plan for the prompt. Files are compared in order: a file path that differs is INVALID_COMPOSITION at /bundle/dsl/files/<i>/path; then the blocks in order, and a block whose id, name, params or refs differ, or a block the plan does not have, is INVALID_COMPOSITION at /bundle/dsl/files/<i>/blocks/<j>/id; a file the plan has and the DSL lacks is INVALID_COMPOSITION at /bundle/dsl/files. Every block id is an admitted react. block of the catalog.",
+    "render and output checks: the 19 product-layout.json files, the fixed files equal to the reference bytes"
+  ],
+  "x-manifest": {
+    "asset_keys": [
+      "grammar",
+      "compiler_contract",
+      "selection_policy",
+      "literal_policy",
+      "serializer",
+      "semantic_contracts",
+      "target_contract",
+      "catalog",
+      "block_library",
+      "backend",
+      "formatter"
+    ],
+    "shared_with_rust": "grammar, compiler_contract, selection_policy, literal_policy, serializer and semantic_contracts equal the Rust manifest's descriptors for the same build.",
+    "target_contract": "id som.react-output-contract.v1; sha256 is the canonical hash of the sealed receipt's files map, as for rust-output-v1.",
+    "catalog": "id som.react-catalog.v1; descriptor {id, sha256} with the SHA-256 of the bytes of catalog/react-catalog.v1.json as embedded in som-targets.",
+    "block_library": "id som.react-block-library.v1; descriptor {id, sha256} with the SHA-256 of the concatenated text of the React renderer sources that hold the block bodies and the fixed reference files, in the order som-targets/src/react/mod.rs lists them, as the Rust BLOCK_LIBRARY_TEXT.",
+    "backend": "id som.react-backend.v1; sha256 = H({\"version\": \"som.react-backend.v1\", \"files\": {path: SHA-256 of the file text}}), the formula of the Rust backend descriptor. The files map has every source that decides the React bundle and its files, keyed by som-rs-relative path: every file under som-targets/src/react/, plus the shared som-targets/Cargo.toml, src/lib.rs, src/main.rs and src/profile.rs. Shared files appear in every backend map, so an edit to one changes the Rust, TypeScript and React descriptors: it needs an amendment of each contract and is recorded as a bundle compatibility break for each target.",
+    "formatter": "toolchain.json formatter id and sha256. The formatter does not run at compile or assemble; the descriptor pins the prettier that format_check uses."
+  }
+}

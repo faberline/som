@@ -1,0 +1,631 @@
+{
+  "version": "som.react-catalog.v1",
+  "dsl_version": "som.dsl.react.v1",
+  "rule": "The plan for a prompt keeps, in this order, every file and every block whose versions list the prompt version. There are no when conditions in phase 1: every admitted prompt has the one product-layout.json shape. A DSL block has only id, name, params and refs. A block param {\"$ref\": \"a.b\"} names the prompt value at /a/b; refs name blocks of the same file; phase 1 blocks have none. Every block id starts with react. and is rendered by the React block library. A fixed file is one block that renders the reference bytes; src/schema.ts and README.md are rendered by the blocks in their order and give the bytes of render_reference.py.",
+  "files": [
+    {
+      "path": "index.html",
+      "blocks": [
+        {
+          "id": "react.index.page",
+          "name": "page",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "package.json",
+      "blocks": [
+        {
+          "id": "react.package.manifest",
+          "name": "manifest",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "blocks": [
+        {
+          "id": "react.package.lock",
+          "name": "lock",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "tsconfig.json",
+      "blocks": [
+        {
+          "id": "react.tsconfig.config",
+          "name": "config",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "vite.config.ts",
+      "blocks": [
+        {
+          "id": "react.vite.config",
+          "name": "config",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/main.tsx",
+      "blocks": [
+        {
+          "id": "react.main.mount",
+          "name": "mount",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/App.tsx",
+      "blocks": [
+        {
+          "id": "react.app.routes",
+          "name": "routes",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/api.ts",
+      "blocks": [
+        {
+          "id": "react.api.client",
+          "name": "client",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/spec.ts",
+      "blocks": [
+        {
+          "id": "react.spec.types",
+          "name": "types",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/form.ts",
+      "blocks": [
+        {
+          "id": "react.form.text",
+          "name": "text",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/styles.css",
+      "blocks": [
+        {
+          "id": "react.styles.sheet",
+          "name": "sheet",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/pages/ListPage.tsx",
+      "blocks": [
+        {
+          "id": "react.pages.list",
+          "name": "list",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/pages/DetailPage.tsx",
+      "blocks": [
+        {
+          "id": "react.pages.detail",
+          "name": "detail",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/pages/FormPage.tsx",
+      "blocks": [
+        {
+          "id": "react.pages.form",
+          "name": "form",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/pages/ErrorView.tsx",
+      "blocks": [
+        {
+          "id": "react.pages.error",
+          "name": "error",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/app.test.tsx",
+      "blocks": [
+        {
+          "id": "react.test.app",
+          "name": "app",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/form.test.ts",
+      "blocks": [
+        {
+          "id": "react.test.form",
+          "name": "form",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {},
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "src/schema.ts",
+      "blocks": [
+        {
+          "id": "react.schema.header",
+          "name": "header",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "version": {
+              "$ref": "version"
+            },
+            "package": {
+              "$ref": "package"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.schema.row.plain",
+          "name": "row",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.schema.row.timestamps",
+          "name": "row",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.schema.create",
+          "name": "create",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.schema.patch",
+          "name": "patch",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.schema.list_query.none",
+          "name": "list_query",
+          "versions": [
+            "som.prompt.v1"
+          ],
+          "params": {},
+          "refs": []
+        },
+        {
+          "id": "react.schema.list_query.filter_value",
+          "name": "list_query",
+          "versions": [
+            "som.prompt.v2"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.schema.list_query.field",
+          "name": "list_query",
+          "versions": [
+            "som.prompt.v3"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.schema.list_query.field.date",
+          "name": "list_query",
+          "versions": [
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "date_field": {
+              "$ref": "query.date_field"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.schema.resource.plain",
+          "name": "resource",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2"
+          ],
+          "params": {
+            "name": {
+              "$ref": "resource.name"
+            },
+            "path": {
+              "$ref": "resource.path"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.schema.resource.timestamps",
+          "name": "resource",
+          "versions": [
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "name": {
+              "$ref": "resource.name"
+            },
+            "path": {
+              "$ref": "resource.path"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.schema.fields",
+          "name": "fields",
+          "versions": [
+            "som.prompt.v1",
+            "som.prompt.v2",
+            "som.prompt.v3",
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.schema.query.none",
+          "name": "query",
+          "versions": [
+            "som.prompt.v1"
+          ],
+          "params": {},
+          "refs": []
+        },
+        {
+          "id": "react.schema.query.filter_value",
+          "name": "query",
+          "versions": [
+            "som.prompt.v2"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.schema.query.field",
+          "name": "query",
+          "versions": [
+            "som.prompt.v3"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.schema.query.field.date",
+          "name": "query",
+          "versions": [
+            "som.prompt.v4"
+          ],
+          "params": {
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "date_field": {
+              "$ref": "query.date_field"
+            },
+            "max_limit": {
+              "$ref": "query.max_limit"
+            }
+          },
+          "refs": []
+        }
+      ]
+    },
+    {
+      "path": "README.md",
+      "blocks": [
+        {
+          "id": "react.readme.all",
+          "name": "readme",
+          "versions": [
+            "som.prompt.v1"
+          ],
+          "params": {
+            "name": {
+              "$ref": "resource.name"
+            },
+            "path": {
+              "$ref": "resource.path"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.readme.filter",
+          "name": "readme",
+          "versions": [
+            "som.prompt.v2",
+            "som.prompt.v3"
+          ],
+          "params": {
+            "name": {
+              "$ref": "resource.name"
+            },
+            "path": {
+              "$ref": "resource.path"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            }
+          },
+          "refs": []
+        },
+        {
+          "id": "react.readme.filter.date",
+          "name": "readme",
+          "versions": [
+            "som.prompt.v4"
+          ],
+          "params": {
+            "name": {
+              "$ref": "resource.name"
+            },
+            "path": {
+              "$ref": "resource.path"
+            },
+            "fields": {
+              "$ref": "resource.fields"
+            },
+            "filter_field": {
+              "$ref": "query.filter_field"
+            },
+            "date_field": {
+              "$ref": "query.date_field"
+            }
+          },
+          "refs": []
+        }
+      ]
+    }
+  ]
+}

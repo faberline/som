@@ -1,0 +1,110 @@
+{
+  "version": "som.react-output-acceptance-plan.v1",
+  "case_inventory": "case-inventory.json",
+  "negative_cases": "negative-cases.json",
+  "target_examples": "target-examples.json",
+  "api_contract": "api-contract.json",
+  "baseline": "The current default compiler: typescript candidate-001, binary 2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c, build commit 8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af, the #65 release (som-rs/evidence/typescript-output-release-2026-10-22-issue65.json), read only.",
+  "target_amendments": {
+    "rule": "Target react is not served, and no React product is assembled by a candidate, until rust-output-v1 amendment 006 and typescript-output-v1 amendment 002 are sealed, each with an independent review. Both admit react as the fourth value of the target enum and adopt the four-target texts of api.schema.json x-target-selection invalid for every target value outside the enum.",
+    "rust_output_v1_amendment_006": "The RT cases of rust-output-v1 negative-cases.json that refuse a target value outside the enum change only their cause and allowed form to the four-target texts. The shared som-targets files change, so the Rust backend descriptor, the Rust target contract and every Rust payload_sha256 change; no Rust product file changes.",
+    "typescript_output_v1_amendment_002": "The TT cases of typescript-output-v1 negative-cases.json that refuse a target value outside the enum change only their cause and allowed form to the four-target texts. The TypeScript backend descriptor, the TypeScript target contract and every TypeScript payload_sha256 change; no TypeScript product file changes.",
+    "status": "not sealed; the next milestone (M6) seals both before a candidate is prepared"
+  },
+  "python_unchanged": {
+    "rule": "A request without target, or with target python, returns the same bytes as the baseline for the same request. No existing CNL text, typed prompt, bundle, asset or Python output changes.",
+    "checks": [
+      "Every typed prompt of the 127 public products (public-products-003b) and the 544 legacy jobs (legacy544 run-005), sent without target and with target python, gives a compile response equal byte for byte to the baseline's response, and assembling that bundle gives response bytes equal to the baseline's.",
+      "som-rs/tests/react-output-v1/check_python_controls.py --expect som-rs/evidence/react-output-v1/python-controls-2026-10-22.json passes for every negative case and every name case of this contract: each refusal gives the same diagnostic, and each HTTP 200 control gives the payload_sha256 the default gave on 2026-10-22.",
+      "som-rs/tests/typescript-output-v1/check_python_controls.py and som-rs/tests/rust-output-v1/check_python_controls.py pass for every negative case of their contracts."
+    ]
+  },
+  "rust_unchanged": {
+    "rule": "A Rust compile response may differ from the baseline only in bundle.assets.backend, bundle.assets.target_contract and bundle.hashes.payload_sha256, and every Rust product file stays byte-identical. An RT case changes only as rust-output-v1 amendment 006 records.",
+    "checks": [
+      "Every case of the accepted Rust inventory, compiled with target rust on the candidate and on the baseline, gives responses that differ only in the three members above; assembling each gives the same product files.",
+      "Every RT case gives its amendment 006 diagnostic, located in the raw request body."
+    ]
+  },
+  "typescript_unchanged": {
+    "rule": "A TypeScript compile response may differ from the baseline only in bundle.assets.backend, bundle.assets.target_contract and bundle.hashes.payload_sha256, and every TypeScript product file stays byte-identical. A TT case changes only as typescript-output-v1 amendment 002 records.",
+    "checks": [
+      "Every in-scope case of typescript-output-v1 case-inventory.json, compiled with target typescript on the candidate and on the baseline, gives responses that differ only in the three members above; assembling each gives the same product files.",
+      "Every TT, TS and TP case gives its expected diagnostic, with the amendment 002 texts for the TT cases that refuse a value outside the enum."
+    ]
+  },
+  "target_selection_checks": [
+    "Every target-examples.json example and name case body gives its expected result.",
+    "Every RR case gives exactly its expected code, status, pointer, cause, allowed form and span, located in the raw request body.",
+    "A target python request gives the same bytes as the request without target, for every acceptance case and every CNL positive fixture.",
+    "The CLI forwards --target react unchanged and exits with status 2 on a refusal."
+  ],
+  "scope_checks": [
+    "Every RS and RP case gives exactly its expected diagnostic with target react; RS17 and RS18 give the compiler-v1 refusal before any target check.",
+    "Every out-of-scope public example, CNL positive fixture and legacy job gives UNSUPPORTED_TARGET with the refusal case-inventory.json records for it, with target react.",
+    "The compiler refusal for each typed prompt equals som-rs/tests/react-output-v1/react_profile.py on that prompt.",
+    "No in-scope acceptance case gives UNSUPPORTED_TARGET with target react."
+  ],
+  "bundle_checks": [
+    "For every acceptance case, the CNL and typed JSON requests with target react return byte-identical som.dsl-bundle.v2 bundles with target react.",
+    "Every React bundle validates against bundle.schema.json, has at most 19 files, 1 to 64 blocks per file and at most 64 blocks in total, and every block id starts with react. and is a block of catalog/react-catalog.v1.json.",
+    "Every bundle asset descriptor equals the candidate's React manifest (api.schema.json x-manifest), and the six shared descriptors equal the candidate's Rust manifest.",
+    "Two compiles and two assembles of the same request give the same bytes.",
+    "The assembled files are exactly the product-layout.json file set (19 files); the 17 fixed files equal the reference files, and src/schema.ts and README.md equal render_reference.py for the prompt."
+  ],
+  "assemble_refusals": {
+    "base": "A valid React bundle for the acceptance case example-v1 from the candidate; for A12 the candidate's TypeScript bundle for example-v1, and for A13 the candidate's Rust bundle for example-v1.",
+    "rehash": "Unless a recipe says otherwise, recompute prompt_sha256, dsl_sha256 and payload_sha256 with the frozen formulas after the change, so the hash check passes and the named check is reached.",
+    "span": "Line, column and byte spans locate the pointer target in the canonical assemble request body, computed at test time.",
+    "schema_order": "The React bundle schema check reports the first failure in the Rust check_schema order: members, version, target, prompt, dsl members, dsl version, files, then each file.",
+    "recipes": [
+      {"id": "A1", "change": "Replace assets.formatter.sha256 with 64 zero digits.", "code": "ASSET_HASH_MISMATCH", "http_status": 400, "prompt_pointer": "/bundle/assets"},
+      {"id": "A2", "change": "Replace target_contract, catalog, block_library, backend and formatter with the TypeScript descriptors from the candidate's TypeScript manifest.", "code": "ASSET_HASH_MISMATCH", "http_status": 400, "prompt_pointer": "/bundle/assets"},
+      {"id": "A3", "change": "Add target react to a valid som.dsl-bundle.v1 Python bundle.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/target", "note": "The baseline already gives this result."},
+      {"id": "A4", "change": "Set target to python in a React bundle.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/target"},
+      {"id": "A5", "change": "Replace the first block id with the Python block id orm.base.", "code": "INVALID_COMPOSITION", "http_status": 400, "prompt_pointer": "/bundle/dsl/files/0/blocks/0/id"},
+      {"id": "A6", "change": "Replace the prompt with the public v5 example prompt. Recompute the shared compiler-v1 descriptors for the v5 prompt, keep the React descriptors and the React DSL, and rehash.", "code": "UNSUPPORTED_TARGET", "http_status": 422, "prompt_pointer": "/bundle/prompt/version"},
+      {"id": "A7", "change": "Change one hex digit of payload_sha256. Do not rehash.", "code": "BUNDLE_HASH_MISMATCH", "http_status": 400, "prompt_pointer": "/bundle/hashes/payload_sha256"},
+      {"id": "A8", "change": "Rename the first prompt field to __proto__ in the prompt and in every DSL param that names it.", "code": "UNSUPPORTED_TARGET", "http_status": 422, "prompt_pointer": "/bundle/prompt/resource/fields/0/name"},
+      {"id": "A9", "change": "Add a 20th file entry, a copy of the last file.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/dsl/files"},
+      {"id": "A10", "change": "Set target to rust in a React bundle.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/dsl/version", "note": "rust-output-v1 check_schema reaches the DSL version som.dsl.react.v1 first."},
+      {"id": "A11", "change": "Set target to typescript in a React bundle.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/dsl/version"},
+      {"id": "A12", "change": "Set target to react in a TypeScript bundle.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/dsl/version"},
+      {"id": "A13", "change": "Set target to react in a Rust bundle.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/dsl/version"},
+      {"id": "A14", "change": "Replace the first block id with the first block id of the candidate's TypeScript bundle for the same prompt.", "code": "INVALID_COMPOSITION", "http_status": 400, "prompt_pointer": "/bundle/dsl/files/0/blocks/0/id"},
+      {"id": "A15", "change": "Append copies of the last block of the last file until the bundle has 65 blocks in total, keeping that file at 64 blocks or fewer; when it would pass 64, append to the file before it.", "code": "INVALID_SCHEMA", "http_status": 400, "prompt_pointer": "/bundle/dsl/files", "note": "The total block limit is checked after the bundle schema (api.schema.json x-assemble-check-order)."},
+      {"id": "A16", "change": "Swap the path members of the first two files, keeping their blocks.", "code": "INVALID_COMPOSITION", "http_status": 400, "prompt_pointer": "/bundle/dsl/files/0/path", "note": "Both paths are in the bundle schema path enum, so the composition check is reached."}
+    ]
+  },
+  "product_gates": {
+    "each_acceptance_case": [
+      "toolchain.json install with the vendored npm cache, offline, with --ignore-scripts",
+      "toolchain.json typecheck: tsc -p tsconfig.json with no diagnostic",
+      "toolchain.json format_check: prettier --check --no-config --no-editorconfig accepts every product file unchanged",
+      "toolchain.json test: vitest run with jsdom; every test passes",
+      "toolchain.json build twice into two directories outside the product; the two dist trees are identical",
+      "package.json and package-lock.json unchanged after the commands, the vendored cache tree hash unchanged, and no product file outside node_modules added or changed",
+      "api-contract.json: the product's src/api.ts against the Python product the candidate assembles for the same request without target, hosted on QA ports with a fresh PostgreSQL cluster; all 20 steps are recorded, no step fails, the skipped steps are exactly those whose when condition is false (api-contract.json skip_rule), and every process started is stopped"
+    ],
+    "no_sampling": "Every acceptance case runs every gate. A missing result, a failure and a skipped check are each reported as such and block acceptance. The only allowed skip is an api-contract.json step whose when condition is false for the prompt, recorded with ok null and its skip_reasons reason."
+  },
+  "pre_freeze_verification": {
+    "rule": "Before the freeze, render_reference.py stands in for the Rust renderer. Its products must pass the product gates, so the reference files and the generated file rules are known to work before the renderer is written.",
+    "evidence": [
+      "som-rs/evidence/react-output-v1/public-products-2026-10-22.json: the 8 in-scope public products, every gate and the API contract against the public Python product",
+      "som-rs/evidence/react-output-v1/reference-verification-2026-10-22.json: public product 003, recorded in toolchain.json reference_verification",
+      "som-rs/evidence/react-output-v1/name-cases-2026-10-22.json: the 9 name cases, every gate; the API contract is not run for them before the freeze",
+      "som-rs/evidence/react-output-v1/python-controls-2026-10-22.json: check_python_controls.py against the live default, read only"
+    ]
+  },
+  "issue_gates": {
+    "phase1-contract": "This contract is frozen with a sealed receipt and an independent review, after the user's approval of its scope and toolchain (issue #68).",
+    "phase1-target-amendments": "target_amendments: rust-output-v1 amendment 006 and typescript-output-v1 amendment 002 are sealed with independent reviews.",
+    "phase1-renderer": "The Rust React renderer gives render_reference.py bytes for every acceptance case, and its catalog, block library and backend descriptors follow api.schema.json x-manifest.",
+    "phase1-target": "target_selection_checks, scope_checks, python_unchanged, rust_unchanged and typescript_unchanged pass on one candidate.",
+    "phase1-products": "bundle_checks, assemble_refusals and product_gates pass for every acceptance case on the same candidate.",
+    "phase1-acceptance": "Every check in this plan passes on one recorded build, with the evidence hashed, and an independent audit written from this plan and the raw outputs only reports no failure and nothing unrun.",
+    "release": "The default on 8765 changes only after a rehearsal with the Python, Rust, TypeScript and React canaries and a rollback on a QA port, with the user's approval. A tag or a GitHub release needs its own approval."
+  },
+  "amendments": "After the freeze receipt is sealed, a change to any frozen file is a numbered amendment with its reason, the old and new hashes, and an independent review."
+}

@@ -1,0 +1,74 @@
+{
+  "version": "som.react-output-product-layout.v1",
+  "package": {
+    "name": "som-app",
+    "rule": "The npm package name is always som-app. The prompt package name appears only in the src/schema.ts header comment. So package.json, package-lock.json, tsconfig.json and every other fixed file are the same bytes for every product."
+  },
+  "service": {
+    "rule": "The React product is a front end for the Python service that the same prompt generates without a target (or with target python). It calls only the routes in scope.json routes.api_calls and reads only the response bodies that the Python service returns for them.",
+    "proxy": "vite.config.ts sends /api/* to SOM_API_URL with the /api prefix removed, in both the dev server and vite preview. SOM_API_URL defaults to http://127.0.0.1:8000. The built dist is static; serving it with a reverse proxy for /api is outside phase 1.",
+    "errors": "src/api.ts maps every response to Result<T>. A status other than the expected one is an ApiError with the response detail when it is a string; a 422 detail array becomes fieldErrors for loc [\"body\", <field name>] and otherErrors (\"<loc joined by .>: <msg>\") for every other item. A fetch that throws is status 0 with detail \"network error\"."
+  },
+  "execution": {
+    "rule": "Vite builds and serves the TypeScript sources; vitest runs the tests in jsdom; tsc -p tsconfig.json is a type-check gate only (noEmit). Node and the vendored packages in toolchain.json are the only tools.",
+    "erasable_syntax_only": "Sources use only syntax that type stripping can erase: no enum, no namespace, no parameter properties, no decorators. tsconfig.json sets erasableSyntaxOnly.",
+    "imports": "Relative imports name the .ts or .tsx file. Type-only imports use import type, as verbatimModuleSyntax requires.",
+    "react": "Function components and hooks only. React Router in declarative mode: BrowserRouter in src/main.tsx, Routes in src/App.tsx. No data router, loader, action or server rendering."
+  },
+  "files": [
+    {"path": "index.html", "kind": "fixed", "rule": "Bytes equal reference/index.html."},
+    {"path": "package.json", "kind": "fixed", "rule": "Bytes equal reference/package.json."},
+    {"path": "package-lock.json", "kind": "fixed", "rule": "Bytes equal reference/package-lock.json, written by the one approved npm download (toolchain.json packages)."},
+    {"path": "tsconfig.json", "kind": "fixed", "rule": "Bytes equal reference/tsconfig.json."},
+    {"path": "vite.config.ts", "kind": "fixed", "rule": "Bytes equal reference/vite.config.ts: the /api proxy (service.proxy) and the jsdom test environment."},
+    {"path": "src/main.tsx", "kind": "fixed", "rule": "Bytes equal reference/src/main.tsx: mounts App in BrowserRouter and StrictMode on #root."},
+    {"path": "src/App.tsx", "kind": "fixed", "rule": "Bytes equal reference/src/App.tsx: the routes of scope.json routes.pages."},
+    {"path": "src/api.ts", "kind": "fixed", "rule": "Bytes equal reference/src/api.ts: the fetch client (service.errors)."},
+    {"path": "src/spec.ts", "kind": "fixed", "rule": "Bytes equal reference/src/spec.ts: the types of the constants in src/schema.ts."},
+    {"path": "src/form.ts", "kind": "fixed", "rule": "Bytes equal reference/src/form.ts: form text to JSON values and the bodies sent on create and edit."},
+    {"path": "src/styles.css", "kind": "fixed", "rule": "Bytes equal reference/src/styles.css."},
+    {"path": "src/pages/ListPage.tsx", "kind": "fixed", "rule": "Bytes equal reference/src/pages/ListPage.tsx."},
+    {"path": "src/pages/DetailPage.tsx", "kind": "fixed", "rule": "Bytes equal reference/src/pages/DetailPage.tsx."},
+    {"path": "src/pages/FormPage.tsx", "kind": "fixed", "rule": "Bytes equal reference/src/pages/FormPage.tsx."},
+    {"path": "src/pages/ErrorView.tsx", "kind": "fixed", "rule": "Bytes equal reference/src/pages/ErrorView.tsx."},
+    {"path": "src/app.test.tsx", "kind": "fixed", "rule": "Bytes equal reference/src/app.test.tsx: page tests against a fake fetch, driven by the constants in src/schema.ts."},
+    {"path": "src/form.test.ts", "kind": "fixed", "rule": "Bytes equal reference/src/form.test.ts."},
+    {"path": "src/schema.ts", "kind": "generated", "rule": "Bytes equal render_reference.py schema_ts for the prompt: the Row, CreateBody, PatchBody and ListQuery types, and the RESOURCE, FIELDS and QUERY constants typed by src/spec.ts."},
+    {"path": "README.md", "kind": "generated", "rule": "Bytes equal render_reference.py readme for the prompt: the resource name and path, the run and check commands, the pages and the field table."}
+  ],
+  "file_count": 19,
+  "fixed_file_count": 17,
+  "generated_file_count": 2,
+  "renderer": {
+    "reference": "som-rs/tests/react-output-v1/render_reference.py",
+    "rule": "The Rust renderer gives the same bytes as render_reference.py render(prompt) for every in-scope prompt. The generated files are already in the formatter's output, so prettier --check accepts them unchanged; the formatter does not run during compile or assemble.",
+    "spec": {
+      "required": "A required field has nullable false and no default.",
+      "optional": "An optional field has default equal to the prompt default, or null when the prompt has none (v1 and v2), and nullable true exactly when the default is null.",
+      "query": "v1 has QUERY null. v2 to v4 have filter {field: filter_field, param: filter_value for v2 or the field name for v3 and v4, type: the field type}, before: date_field or null, pageSize 20, maxLimit: query.max_limit.",
+      "timestamps": "RESOURCE.timestamps is true for v3 and v4."
+    }
+  },
+  "limits": {
+    "max_files": 19,
+    "max_blocks_per_file": 64,
+    "max_total_blocks": 64,
+    "rule": "At most 19 files, 1 to 64 blocks per file (bundle schema), and at most 64 blocks in total across files (planning, SCOPE_TOO_LARGE; assemble, INVALID_SCHEMA). Every fixed file is one block; package-lock.json counts as one file and one block."
+  },
+  "naming": {
+    "typescript_items": "Variable, function, type, component, module and file names come from the fixed files. No TypeScript identifier comes from the prompt.",
+    "fields": "A field name is an unquoted member of the Row, CreateBody, PatchBody and ListQuery type literals (always an IdentifierName under the compiler-v1 pattern) and a JSON string literal elsewhere. Records keyed by prompt names are read only through own() in src/form.ts (Object.hasOwn).",
+    "reserved": "__proto__, constructor and prototype are refused by scope.json identifier_reserved."
+  },
+  "types": {
+    "id": "number",
+    "str": "string",
+    "int": "number",
+    "float": "number",
+    "bool": "boolean",
+    "date": "string, YYYY-MM-DD",
+    "nullable": "<type> | null",
+    "created_at": "string (v3 and v4 only)",
+    "updated_at": "string (v3 and v4 only)"
+  }
+}

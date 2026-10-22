@@ -1,0 +1,294 @@
+{
+  "version": "som.react-output-python-controls.v1",
+  "sources_sha256": {
+    "negative-cases.json": "1a4bb708e2153df640dfe7bb4b165d4a85059fc7efcbe894fe4444e75ca77e8a",
+    "target-examples.json": "b3aca1037fe801c8cbfd43ec132b595f93b6b06ce45a2e5f6356502e67f42906"
+  },
+  "base_url": "http://127.0.0.1:8765",
+  "passed": 39,
+  "failed": [],
+  "results": [
+    {
+      "id": "RR01_JSON_TARGET_ALIAS",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "RR02_JSON_TARGET_NULL",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "RR03_JSON_TARGET_CASE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "RR04_CNL_TARGET_NUMBER",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "RR05_CNL_TARGET_SPACE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "RR06_CNL_TARGET_ARRAY",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "RR07_JSON_TARGET_COMBINED",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "RR08_JSON_TARGET_DUPLICATE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "eb3d8618f1eb1b1d6ba80a0ac51c33f832bab0ed3ced7d706c6b84eb05b3f42d"
+    },
+    {
+      "id": "RS01_CNL_V5",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "8b267706f0d6eee025e1d80743a466d6ec6335ee97d5573ddef4275467de5c3a"
+    },
+    {
+      "id": "RS02_CNL_V6",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "1c29e552f16ac928d6457549f944056db887193811f3bd4f85f9995c6e8c9bd9"
+    },
+    {
+      "id": "RS03_CNL_V7",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "b99aa974db62ebdb1abf3a3e092465a9fad6f4283fd3ca71d42288f703276277"
+    },
+    {
+      "id": "RS04_JSON_V5",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "8b267706f0d6eee025e1d80743a466d6ec6335ee97d5573ddef4275467de5c3a"
+    },
+    {
+      "id": "RS05_JSON_V6",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "1c29e552f16ac928d6457549f944056db887193811f3bd4f85f9995c6e8c9bd9"
+    },
+    {
+      "id": "RS06_JSON_V7",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "b99aa974db62ebdb1abf3a3e092465a9fad6f4283fd3ca71d42288f703276277"
+    },
+    {
+      "id": "RS07_CNL_PATH_TRAILING_SLASH",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "4390c3bc92e3493c49d84e9d5477168df52d7ef297f8dc8937875141a1cd3230"
+    },
+    {
+      "id": "RS08_JSON_PATH_DOUBLE_SLASH",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "bff0712f9a95c3f6e1faa016ac0f67a25116a08c6ab3186969df6c4e330207fc"
+    },
+    {
+      "id": "RS09_CNL_V4_PATH_TRAILING_SLASH",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "cd3141c5b9bf66c7b162d1aa39f19f99c06894bd8a7948d8ebd866baa85b3a9d"
+    },
+    {
+      "id": "RS10_CNL_FIELD_PROTO",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "d7ddf1dbf647fb23c065ea0f7a51f94d267baaf6f253ed0c66056ba768f32296"
+    },
+    {
+      "id": "RS11_JSON_FIELD_CONSTRUCTOR",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "7be8efe3bded3781f4d38d3046c8adcb2bd3b7089429ef87eabda8b7198ebf71"
+    },
+    {
+      "id": "RS12_CNL_V3_FIELD_PROTOTYPE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "bf706f9eb2010137b891bbfc3ba0f95ed598905a83582dcbd4375ed8030a94aa"
+    },
+    {
+      "id": "RS13_JSON_V4_DATE_FIELD_CONSTRUCTOR",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "64cdff3c0bb72725c12ac759b6112f18e171c2a571d4c745926f01155bacde5f"
+    },
+    {
+      "id": "RS14_CNL_PATH_BEFORE_FIELD",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "b77c306b418571b0daa402ec7ce09bf51e8305463b7918ca71b61bac3e72ae8a"
+    },
+    {
+      "id": "RS15_JSON_FIELDS_IN_ARRAY_ORDER",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "05cbde45c36aba4580bf12854536bfa7cd66ad631c3252c57ba7da28d674ab9d"
+    },
+    {
+      "id": "RS16_CNL_VERSION_BEFORE_FIELD",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "df6514d2d0135e52da2b92750b041359e7f9e6dd0299d34fac9959f77874f276"
+    },
+    {
+      "id": "RS17_CNL_V3_FILTER_LIMIT",
+      "control_status": 400,
+      "passed": true,
+      "diagnostic": {
+        "code": "INVALID_VALUE",
+        "cause": "prompt.query.filter_field: name collides with a generated Python identifier",
+        "allowed_form": "Rename it; this name shares a scope with an identifier of the generated Python code.",
+        "byte_start": 376,
+        "byte_end": 381,
+        "line": 13,
+        "column": 25
+      }
+    },
+    {
+      "id": "RS18_JSON_V3_FILTER_OFFSET",
+      "control_status": 400,
+      "passed": true,
+      "diagnostic": {
+        "code": "INVALID_VALUE",
+        "cause": "prompt.query.filter_field: name collides with a generated Python identifier",
+        "allowed_form": "A prompt that meets the pinned compiler contract.",
+        "byte_start": 456,
+        "byte_end": 464,
+        "line": 1,
+        "column": 457
+      }
+    },
+    {
+      "id": "RP01_CNL_SYNTAX_BEFORE_TARGET",
+      "control_status": 400,
+      "passed": true,
+      "diagnostic": {
+        "code": "CNL_SYNTAX",
+        "cause": "Field token uuid is outside the grammar vocabulary.",
+        "allowed_form": "str, int, float, bool, or date when the prompt version allows date.",
+        "byte_start": 610,
+        "byte_end": 614,
+        "line": 21,
+        "column": 25
+      }
+    },
+    {
+      "id": "RP02_CNL_VERSION_BEFORE_TARGET",
+      "control_status": 422,
+      "passed": true,
+      "diagnostic": {
+        "code": "UNSUPPORTED_VERSION",
+        "cause": "Prompt version is outside the supported set 1 through 7.",
+        "allowed_form": "Use prompt version 1 through 7.",
+        "byte_start": 42,
+        "byte_end": 43,
+        "line": 2,
+        "column": 20
+      }
+    },
+    {
+      "id": "RP03_JSON_V4_RESERVED_FILTER_BEFORE_TARGET",
+      "control_status": 400,
+      "passed": true,
+      "diagnostic": {
+        "code": "INVALID_VALUE",
+        "cause": "prompt.query.filter_field: reserved query name",
+        "allowed_form": "A prompt that meets the pinned compiler contract.",
+        "byte_start": 507,
+        "byte_end": 515,
+        "line": 1,
+        "column": 508
+      }
+    },
+    {
+      "id": "RP04_JSON_V5_HEALTHZ_PATH_BEFORE_TARGET",
+      "control_status": 400,
+      "passed": true,
+      "diagnostic": {
+        "code": "INVALID_VALUE",
+        "cause": "invalid resource path",
+        "allowed_form": "A prompt that meets the pinned compiler contract.",
+        "byte_start": 158,
+        "byte_end": 168,
+        "line": 1,
+        "column": 159
+      }
+    },
+    {
+      "id": "RN01_CNL_FIELD_UPPERCASE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "424a2de0a4d2e7b03566ce5119c3315051a81d82ad3fa02fd0bda4ee72375236"
+    },
+    {
+      "id": "RN02_CNL_FIELD_SELF",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "0178075f9d3258f9be65270c99b1639a733107d4123d39f2760be517a1172341"
+    },
+    {
+      "id": "RN03_JSON_FILTER_DOUBLE_UNDERSCORE",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "1c1b5e3e8eb566028c93456c24a4f8cc3372ed32382e27e841134c013d28ec12"
+    },
+    {
+      "id": "RN04_CNL_FIELD_TO_STRING",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "9ba0545d7a61dd35f1e45f13712d01f3fb5b710988e00004b159e56a4547831f"
+    },
+    {
+      "id": "RN05_JSON_FIELD_HAS_OWN_PROPERTY",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "80317f4fc5617f3337cb93bb54d82eb9ec56194e71eb5e4c8ca066939e0793e7"
+    },
+    {
+      "id": "RN06_CNL_V4_FIELD_FUNCTION",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "3bba7cb4db140830ab8a3b77dc83477fee67dcc18ccc93562c1b9cde8f2f6d83"
+    },
+    {
+      "id": "RN07_JSON_V3_FILTER_VALUE_OF",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "bee4fda3fd9b09d0b9a00a307bfe80a00d0c011d1e694312fcd974e55cc9f52b"
+    },
+    {
+      "id": "RN08_CNL_TABLE_TS_MIGRATIONS",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "3925ddea425e0fde9639aa910767af8fa9997b1b4ecad035e050c6ceabad73bc"
+    },
+    {
+      "id": "RN09_CNL_PATH_TWO_SEGMENTS",
+      "control_status": 200,
+      "passed": true,
+      "payload_sha256": "9ddb630252a4c7fa022e9310a1616cd6d955aeac5ae1e9608aca838d779b08f5"
+    }
+  ]
+}

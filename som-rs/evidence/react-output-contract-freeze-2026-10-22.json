@@ -1,0 +1,137 @@
+{
+  "version": "som.react-output-contract-freeze.v1",
+  "frozen_at": "2026-10-22T16:03:15.148812+00:00",
+  "baseline_commit": "4ac9a0c4efaca44c6f7050003fd7a453b2ca00c8",
+  "issue": 125,
+  "decision_issue": 68,
+  "status": "contract_frozen_before_implementation",
+  "implementation_started_before_freeze": false,
+  "target": "react",
+  "bundle": "som.dsl-bundle.v2",
+  "approval": {
+    "by": "the user, in the Claude Code session, 2026-10-22",
+    "text": "全部照推薦核准 (Recommended)",
+    "decisions": [
+      "Phase 1 covers prompt versions 1 to 4; versions 5 to 7 are refused with prompt_version.",
+      "TypeScript, Vite, React Router in declarative mode, a fetch client with hooks, one plain CSS file, Vitest with jsdom and Testing Library, no Playwright.",
+      "One npm download fills the vendored cache; the lockfile is sealed at the freeze.",
+      "react joins the target enum through rust-output-v1 amendment 006 and typescript-output-v1 amendment 002."
+    ]
+  },
+  "target_contract": {
+    "id": "som.react-output-contract.v1",
+    "sha256": "a63224bd4030cc3e1d4c248f2877539b41561a3fcd986d8d13f7d5b798e80115",
+    "rule": "sha256 of the som.canonical-json.v1 bytes of the files map below"
+  },
+  "files": {
+    "som-rs/contracts/react-output-v1/CONTRACT.md": "2dbde31abc88a439337bf616ac8d91a4a8a5b7f1085dac90ab2ba2c248cf2825",
+    "som-rs/contracts/react-output-v1/acceptance-plan.json": "c3145cdc4528357dba8faa9e80ce2687204eef7c2812581366ab34d7df33792f",
+    "som-rs/contracts/react-output-v1/api-contract.json": "246f6592222a35ad61124fadcc57b198ec5f48a429ad78ab42625e0b3a787ae4",
+    "som-rs/contracts/react-output-v1/api.schema.json": "7c0a3394b0e312d3372b8b040ea43b070f61262339c2ad7a0f3c630c8087b5e7",
+    "som-rs/contracts/react-output-v1/bundle.schema.json": "d9c8e615c4674168a624b94daf796801e8219ac8ebc4c35e42b1522c439676ee",
+    "som-rs/contracts/react-output-v1/case-inventory.json": "91d326678b94214b780b800140cf28d24540620373fe89377584e52d05e475ff",
+    "som-rs/contracts/react-output-v1/catalog/react-catalog.v1.json": "793b361f4d2bc76d8fc71cbc51385ca960fce2be1a4c995a3347d65399c6477c",
+    "som-rs/contracts/react-output-v1/negative-cases.json": "1a4bb708e2153df640dfe7bb4b165d4a85059fc7efcbe894fe4444e75ca77e8a",
+    "som-rs/contracts/react-output-v1/product-layout.json": "ac7ed47bb35a6f0674ab63619c34d02750bbaf02bcd0406e33df379c05b438cc",
+    "som-rs/contracts/react-output-v1/reference/index.html": "141e4bbe4eb2b1c7136379a527619a050ccc89a004803eab4ab2ead905b2f983",
+    "som-rs/contracts/react-output-v1/reference/package-lock.json": "c6f3856e1a620d78d4357ef54f89488612a5c1606bbf0219265fc984334b5814",
+    "som-rs/contracts/react-output-v1/reference/package.json": "ba9cda19860b88d13f319bc8762c03ba738c81e8aa32158f35a6864b6c1d8230",
+    "som-rs/contracts/react-output-v1/reference/src/App.tsx": "64df0fb2d1c7be84be3fc4187522d78fa475e52a3c67afb9dcd4a73e683ff365",
+    "som-rs/contracts/react-output-v1/reference/src/api.ts": "a6844b788376aa5a931cf149cc4b95d6b19930b195eee635e1e960fc9aa69072",
+    "som-rs/contracts/react-output-v1/reference/src/app.test.tsx": "560b269b546bfd13b6242845e88488617cff35d64efe7bb7638d23cd9ac4b523",
+    "som-rs/contracts/react-output-v1/reference/src/form.test.ts": "439ae9a6659149ea0266e658335e5429fb6bad5ac6bc2910d2747ed19e3427e2",
+    "som-rs/contracts/react-output-v1/reference/src/form.ts": "2e13ea9b5253ec21f7186b9a618251d6ff43f9ca889c8d4b49cc41a047d36fe0",
+    "som-rs/contracts/react-output-v1/reference/src/main.tsx": "fb2893392e1126ee419123621a4d47d93d57cc7ba6a25515e145732f235caac0",
+    "som-rs/contracts/react-output-v1/reference/src/pages/DetailPage.tsx": "9d4d6122cc5d984134fa096423b55e46983257394fcc260340a13165a8c1354c",
+    "som-rs/contracts/react-output-v1/reference/src/pages/ErrorView.tsx": "2409e2d80d9786f42a07fd8fc6a77280b56e16683b961d3206fd8655a218d293",
+    "som-rs/contracts/react-output-v1/reference/src/pages/FormPage.tsx": "e5ca6d588627d637ef5ea8b78a4ee2faf61afa593205d4a8fd06744f57db9f37",
+    "som-rs/contracts/react-output-v1/reference/src/pages/ListPage.tsx": "9a7b8e1933be24d0938956637a08c65540bdc7b071c59d0b124e338effb3910b",
+    "som-rs/contracts/react-output-v1/reference/src/spec.ts": "b0e978c90959622b761523fa5c14a2dfa888f2d5da61380c77092ff4cc03145d",
+    "som-rs/contracts/react-output-v1/reference/src/styles.css": "efda39d72cd4e709d9c6eab7ceae15c6cb1621853402c4e9c625b7d7773f53d8",
+    "som-rs/contracts/react-output-v1/reference/tsconfig.json": "105e3ddf3619ff274f2d914878de0fa4493ab5f53a97d35e30f2b50df8b26e9a",
+    "som-rs/contracts/react-output-v1/reference/vite.config.ts": "39157972db6b4b8476a7ce983740df3075f7a85177158de509fd779461519a34",
+    "som-rs/contracts/react-output-v1/scope.json": "847a3126584c57e31886081a111e33b52d6c7e008add24b2c77fc090a397d089",
+    "som-rs/contracts/react-output-v1/target-examples.json": "b3aca1037fe801c8cbfd43ec132b595f93b6b06ce45a2e5f6356502e67f42906",
+    "som-rs/contracts/react-output-v1/toolchain.json": "c25441a6b37356fa652b1202eb4b516b5bb91b195dd6cf26e62c14034bcf4962",
+    "som-rs/evidence/react-output-v1/name-cases-2026-10-22.json": "b743503343e25f8ef624de7069ea228f1e1e45f13edf37e4673155fde69a2af3",
+    "som-rs/evidence/react-output-v1/public-products-2026-10-22.json": "19e475bbf15c1692274c89cbd195c015993c4bad0c9a425cb61cfc676877e5c9",
+    "som-rs/evidence/react-output-v1/python-controls-2026-10-22.json": "b9a435d150e04b504cfff2e3603d733132d0ce758cbae60972454c5756d0eca6",
+    "som-rs/evidence/react-output-v1/reference-verification-2026-10-22.json": "0303e2806e10cf8b89fe17c7ab694be5db10e30fcd3df097846915c386e8fed8",
+    "som-rs/tests/react-output-v1/api_contract.mjs": "8c0a143e014b33ae425c8e231716a02bc9a8964110d032c44eb48e94f9220f02",
+    "som-rs/tests/react-output-v1/build_case_inventory.py": "262e49b431f26ea6734bec45e1e34d14ed66b36febb070026b11d94b229c2575",
+    "som-rs/tests/react-output-v1/build_negative_cases.py": "f3272854991573619aeccc5359ab21c75ed0bbaab06af7c1ae8fff81d2177e85",
+    "som-rs/tests/react-output-v1/build_target_examples.py": "91d34a1821a82b23174533333def1933c2f7c73a82e98d0235c670e6d1f9c5a1",
+    "som-rs/tests/react-output-v1/check_contract.py": "acbf134513c7f90ba5ba05eb5cc556f1ca2282726b31a367620eb2fdeb7c6931",
+    "som-rs/tests/react-output-v1/check_python_controls.py": "22c458c09e942d758ec0114bedcf85d3134e31c22f94309b2fdd8ad43ceae64d",
+    "som-rs/tests/react-output-v1/common.py": "56c7318db6cbd85e27e6ac3c168de3cb9591e9c66cdb751b7d039ce3c8e3da73",
+    "som-rs/tests/react-output-v1/make_evidence.py": "472368f127be6f33525c599c6a0355fe3bca859066443e927774c50017d7a96a",
+    "som-rs/tests/react-output-v1/react_profile.py": "4fb08644d4766ecc2733cb72ab620471cfe760ce6696f18090f9f8581b484c66",
+    "som-rs/tests/react-output-v1/render_reference.py": "bc45d0f568985ab44829ae51086b253203df19c00188161462003a5a9dd11291",
+    "som-rs/tests/react-output-v1/run_api_contract.py": "8e95f2bdad2f4c6df023f22e9ebab7d1549e694c80f755be1b300d132169aedf",
+    "som-rs/tests/react-output-v1/run_gates.py": "99eadcfd02b6e1550ba84a2c7db07b5d1f0fbb57cb9b0c1eeda92834fdc8755c",
+    "som-rs/tests/react-output-v1/run_name_cases.py": "550bfc1c6829b84552c061c3a7602771d1dd71a92d89a365f177cab514ed1543",
+    "som-rs/tests/react-output-v1/run_products.py": "dd5e516941c1e025bbd2f8c7183f2076da19229d2e30041c18a01bde29c3bf01",
+    "som-rs/tests/react-output-v1/tree_sha.py": "b047ae9ac44eb76df4a33cabc0ae20fb8258480069b17be0825c83921dfefc3c"
+  },
+  "qualification": {
+    "target_examples": 18,
+    "name_cases": 9,
+    "negative_cases": 30,
+    "negative_target_cases": 8,
+    "negative_scope_cases": 18,
+    "negative_precedence_cases": 4,
+    "python_controls_passed_on_default": 39,
+    "python_controls_failed_on_default": 0,
+    "acceptance_cases": 129,
+    "check_contract": "609 passed, 0 failed with --files before sealing; --receipt adds the receipt checks",
+    "builders": "build_negative_cases.py, build_target_examples.py and build_case_inventory.py pass --check"
+  },
+  "pre_freeze_verification": {
+    "public_products": "8 public v1 to v4 products pass every product gate and the API contract",
+    "name_cases": "9 name cases pass every product gate; their API contract is unrun until M6",
+    "evidence": [
+      "som-rs/evidence/react-output-v1/name-cases-2026-10-22.json",
+      "som-rs/evidence/react-output-v1/public-products-2026-10-22.json",
+      "som-rs/evidence/react-output-v1/python-controls-2026-10-22.json",
+      "som-rs/evidence/react-output-v1/reference-verification-2026-10-22.json"
+    ]
+  },
+  "independent_review": {
+    "reviewer": "independent Claude subagent aa873442e803f054a, read-only, no part in writing the contract",
+    "rounds": [
+      {
+        "round": 1,
+        "verdict": "CHANGES_REQUESTED",
+        "findings": 11,
+        "blocking": 2,
+        "summary": "API steps could be dropped silently and the skipped steps were not checked against the prompt; product files could change during the gates; exit codes, re-rendered files and the prompt file hash were not checked; format:check read config files; api_ok accepted a missing step; Python controls compared status only; the composition check order was underspecified; CONTRACT.md counts were not cross-checked; the network wording overclaimed.",
+        "fixes": "All 11 fixed: the driver records all 20 steps with skip reasons and facts that check_contract derives again from the prompt; product_unchanged and fixed_files_sha256 per case; exit codes, re-render and prompt_file_sha256 checked; format:check --no-config --no-editorconfig; api_ok uses ok is not False; check_python_controls --expect compares payload_sha256; the composition rule and A16; check_contract_text; the network wording says only npm is enforced offline."
+      },
+      {
+        "round": 2,
+        "verdict": "APPROVED",
+        "findings": 2,
+        "blocking": 0,
+        "summary": "Minor: absent .local prompts only gave a NOTE; --expect passed an HTTP 200 control with no recorded payload_sha256.",
+        "fixes": "Both fixed before sealing: check_contract.py --require-prompts makes an absent prompt a failure and the M6 acceptance uses it (CONTRACT.md section 7); check_python_controls.py --expect fails an HTTP 200 control the expected file has no payload_sha256 for. After the fixes: check_contract.py --require-prompts 609 passed, 0 failed; check_python_controls.py --expect on 8765, read-only, 39 passed, 0 failed."
+      }
+    ]
+  },
+  "python_controls": {
+    "evidence": "som-rs/evidence/react-output-v1/python-controls-2026-10-22.json",
+    "run_on": "2026-10-22, read-only POST /v1/compile on 127.0.0.1:8765",
+    "default_identity": {
+      "compiler_version": "som.rust-compiler.v1",
+      "backend_sha256": "581ce38f29702c300342cdefe8fe5f1735cefcd1869d6485b44f30063a866711",
+      "asset_manifest_sha256": "d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa",
+      "blocks_sha256": "c7269e89d5f7b8fb2b36703cc2ccb6ef8201eccfc62fbffe526714fbd570311e",
+      "formatter_sha256": "cb0cdeba051c5c5bdc85c22dc31440ac1ea17651366bf188d4df1f8fe985933a",
+      "bundle_version": "som.dsl-bundle.v1"
+    }
+  },
+  "target_amendments": "unrun; rust-output-v1 amendment 006 and typescript-output-v1 amendment 002 are sealed in M6 before any candidate serves target react",
+  "actual_compiler_tests": "unrun; the React target implementation has not started",
+  "actual_product_acceptance": "unrun",
+  "default": "accepted compiler default on 127.0.0.1:8765 unchanged; only read-only compile and healthz calls were made",
+  "limitations": "The React products the compiler will assemble, the assemble refusals A1 to A16 and the API contract of the name cases are frozen requirements, not observed passes. The React catalog, block_library and backend descriptors are recorded by the implementation, not by this receipt."
+}

@@ -1,0 +1,96 @@
+/* Styles of the generated front end. This file is the same in every generated product. */
+:root {
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: #1f2328;
+  background: #ffffff;
+}
+
+body {
+  margin: 0;
+}
+
+.app {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+header {
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #d0d7de;
+  font-weight: 600;
+}
+
+a {
+  color: #0969da;
+}
+
+.toolbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 1rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid #d0d7de;
+  text-align: left;
+}
+
+.filters,
+.pager,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.filters label {
+  display: flex;
+  flex-direction: column;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.75rem;
+}
+
+.field input[type="checkbox"] {
+  align-self: flex-start;
+}
+
+.field-errors,
+.error {
+  color: #cf222e;
+}
+
+.field-errors {
+  margin: 0.25rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 12rem 1fr;
+}
+
+dd {
+  margin: 0;
+}

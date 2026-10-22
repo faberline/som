@@ -1,0 +1,361 @@
+{
+  "version": "som.react-output-target-examples.v1",
+  "status": "frozen expected examples; not executed against a React-target compiler",
+  "rule": "The target member is the last member of the compile request object. Absent and python both select Python; react selects React. The CNL text and the typed prompt do not change by target.",
+  "coverage": {
+    "som.prompt.v1": {
+      "examples": 2,
+      "field_types": [
+        "bool",
+        "float",
+        "int",
+        "str"
+      ],
+      "field_kinds": [
+        "optional_without_default",
+        "required",
+        "unique"
+      ],
+      "query": [],
+      "routes": "every route in scope.json routes for this version"
+    },
+    "som.prompt.v2": {
+      "examples": 2,
+      "field_types": [
+        "bool",
+        "float",
+        "int",
+        "str"
+      ],
+      "field_kinds": [
+        "optional_without_default",
+        "required",
+        "unique"
+      ],
+      "query": [
+        "filter_field",
+        "max_limit"
+      ],
+      "routes": "every route in scope.json routes for this version"
+    },
+    "som.prompt.v3": {
+      "examples": 2,
+      "field_types": [
+        "bool",
+        "float",
+        "int",
+        "str"
+      ],
+      "field_kinds": [
+        "optional_with_default",
+        "optional_without_default",
+        "required",
+        "unique"
+      ],
+      "query": [
+        "filter_field",
+        "max_limit"
+      ],
+      "routes": "every route in scope.json routes for this version"
+    },
+    "som.prompt.v4": {
+      "examples": 2,
+      "field_types": [
+        "bool",
+        "date",
+        "float",
+        "int",
+        "str"
+      ],
+      "field_kinds": [
+        "optional_with_default",
+        "optional_without_default",
+        "required",
+        "unique"
+      ],
+      "query": [
+        "date_field",
+        "filter_field",
+        "max_limit"
+      ],
+      "routes": "every route in scope.json routes for this version"
+    }
+  },
+  "examples": [
+    {
+      "id": "example-v1-cnl-react",
+      "source": "som-rs/contracts/compiler-v1/examples/v1.cnl",
+      "target": "react",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v1-json-react",
+      "source": "som-rs/contracts/compiler-v1/examples/v1.prompt.json",
+      "target": "react",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"},\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v1-cnl-python",
+      "source": "som-rs/contracts/compiler-v1/examples/v1.cnl",
+      "target": "python",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"python\"}",
+      "expected": "HTTP 200 with the same response bytes as the same request without target.",
+      "same_as_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}"
+    },
+    {
+      "id": "example-v1-json-python",
+      "source": "som-rs/contracts/compiler-v1/examples/v1.prompt.json",
+      "target": "python",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"},\"target\":\"python\"}",
+      "expected": "HTTP 200 with the same response bytes as the same request without target.",
+      "same_as_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev0000\"},\"package\":\"items\",\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":true}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"}}"
+    },
+    {
+      "id": "example-v2-cnl-react",
+      "source": "som-rs/contracts/compiler-v1/examples/v2.cnl",
+      "target": "react",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 2.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField title is required str and is not unique.\\nEnd resource.\\nBegin query.\\nFilter exactly on field title.\\nLimit query results to 20.\\nEnd query.\\nUse migration revision rev1000.\\nUse no previous migration revision.\\nBegin routes.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact string filter, limit, and offset in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v2-json-react",
+      "source": "som-rs/contracts/compiler-v1/examples/v2.prompt.json",
+      "target": "react",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact string filter, limit, and offset in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev1000\"},\"package\":\"items\",\"query\":{\"filter_field\":\"title\",\"max_limit\":20},\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v2\"},\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v3-cnl-react",
+      "source": "som-rs/contracts/compiler-v1/examples/v3.cnl",
+      "target": "react",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 3.\\nUse package todos.\\nBegin resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field completed.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision service1000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact boolean filter, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v3-json-react",
+      "source": "som-rs/contracts/compiler-v1/examples/v3.prompt.json",
+      "target": "react",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact boolean filter, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"service1000\"},\"package\":\"todos\",\"query\":{\"filter_field\":\"completed\",\"max_limit\":100},\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"completed\",\"required\":false,\"type\":\"bool\",\"unique\":false}],\"name\":\"Todo\",\"path\":\"/todos\",\"table\":\"todos\"},\"tests\":[\"Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v3\"},\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v4-cnl-react",
+      "source": "som-rs/contracts/compiler-v1/examples/v4.cnl",
+      "target": "react",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 4.\\nUse package todos.\\nBegin resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField deadline_on is optional date and is not unique with default null.\\nField title is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field deadline_on.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision service1000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "example-v4-json-react",
+      "source": "som-rs/contracts/compiler-v1/examples/v4.prompt.json",
+      "target": "react",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"service1000\"},\"package\":\"todos\",\"query\":{\"date_field\":\"deadline_on\",\"filter_field\":\"completed\",\"max_limit\":100},\"resource\":{\"fields\":[{\"default\":null,\"name\":\"deadline_on\",\"required\":false,\"type\":\"date\",\"unique\":false},{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"completed\",\"required\":false,\"type\":\"bool\",\"unique\":false}],\"name\":\"Todo\",\"path\":\"/todos\",\"table\":\"todos\"},\"tests\":[\"Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v4\"},\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v1-types-cnl-react",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v1-types.cnl",
+      "target": "react",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package inventory.\\nBegin resource.\\nUse resource name Part.\\nUse table parts.\\nUse path \\\"/parts\\\".\\nField sku is required str and is unique.\\nField bin is required int and is unique.\\nField weight is required float and is not unique.\\nField fragile is required bool and is not unique.\\nField note is optional str and is not unique.\\nField count is optional int and is not unique.\\nField ratio is optional float and is not unique.\\nField checked is optional bool and is not unique.\\nEnd resource.\\nUse migration revision cov1000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v1-types-json-react",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json",
+      "target": "react",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov1000\"},\"package\":\"inventory\",\"resource\":{\"fields\":[{\"name\":\"sku\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"bin\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"weight\",\"type\":\"float\",\"required\":true,\"unique\":false},{\"name\":\"fragile\",\"type\":\"bool\",\"required\":true,\"unique\":false},{\"name\":\"note\",\"type\":\"str\",\"required\":false,\"unique\":false},{\"name\":\"count\",\"type\":\"int\",\"required\":false,\"unique\":false},{\"name\":\"ratio\",\"type\":\"float\",\"required\":false,\"unique\":false},{\"name\":\"checked\",\"type\":\"bool\",\"required\":false,\"unique\":false}],\"name\":\"Part\",\"path\":\"/parts\",\"table\":\"parts\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"},\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v2-types-cnl-react",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v2-types.cnl",
+      "target": "react",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 2.\\nUse package catalog.\\nBegin resource.\\nUse resource name Product.\\nUse table products.\\nUse path \\\"/products\\\".\\nField category is required str and is not unique.\\nField code is required str and is unique.\\nField price is required float and is not unique.\\nField stock is optional int and is not unique.\\nField active is optional bool and is not unique.\\nEnd resource.\\nBegin query.\\nFilter exactly on field category.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision cov2000.\\nUse no previous migration revision.\\nBegin routes.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact string filter, limit, and offset in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v2-types-json-react",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json",
+      "target": "react",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact string filter, limit, and offset in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov2000\"},\"package\":\"catalog\",\"query\":{\"filter_field\":\"category\",\"max_limit\":100},\"resource\":{\"fields\":[{\"name\":\"category\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"code\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"price\",\"type\":\"float\",\"required\":true,\"unique\":false},{\"name\":\"stock\",\"type\":\"int\",\"required\":false,\"unique\":false},{\"name\":\"active\",\"type\":\"bool\",\"required\":false,\"unique\":false}],\"name\":\"Product\",\"path\":\"/products\",\"table\":\"products\"},\"tests\":[\"Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v2\"},\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v3-types-cnl-react",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v3-types.cnl",
+      "target": "react",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 3.\\nUse package tickets.\\nBegin resource.\\nUse resource name Ticket.\\nUse table tickets.\\nUse path \\\"/tickets\\\".\\nField subject is required str and is unique.\\nField code is required int and is unique.\\nField priority is required int and is not unique.\\nField estimate is optional float and is not unique with default null.\\nField note is optional str and is not unique with default null.\\nField closed is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field closed.\\nLimit query results to 50.\\nEnd query.\\nUse migration revision cov3000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact boolean filter, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v3-types-json-react",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json",
+      "target": "react",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact boolean filter, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov3000\"},\"package\":\"tickets\",\"query\":{\"filter_field\":\"closed\",\"max_limit\":50},\"resource\":{\"fields\":[{\"name\":\"subject\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"code\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"priority\",\"type\":\"int\",\"required\":true,\"unique\":false},{\"name\":\"estimate\",\"type\":\"float\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"note\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"closed\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false}],\"name\":\"Ticket\",\"path\":\"/tickets\",\"table\":\"tickets\"},\"tests\":[\"Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v3\"},\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v4-types-cnl-react",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v4-types.cnl",
+      "target": "react",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 4.\\nUse package events.\\nBegin resource.\\nUse resource name Event.\\nUse table events.\\nUse path \\\"/events\\\".\\nField name is required str and is not unique.\\nField capacity is required int and is unique.\\nField price is optional float and is not unique with default null.\\nField public is optional bool and is not unique with default false.\\nField starts_on is optional date and is not unique with default null.\\nEnd resource.\\nBegin query.\\nFilter exactly on field public.\\nFilter before date on field starts_on.\\nLimit query results to 20.\\nEnd query.\\nUse migration revision cov4000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    },
+    {
+      "id": "cov-v4-types-json-react",
+      "source": "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json",
+      "target": "react",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov4000\"},\"package\":\"events\",\"query\":{\"date_field\":\"starts_on\",\"filter_field\":\"public\",\"max_limit\":20},\"resource\":{\"fields\":[{\"name\":\"name\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"capacity\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"price\",\"type\":\"float\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"public\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"starts_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null}],\"name\":\"Event\",\"path\":\"/events\",\"table\":\"events\"},\"tests\":[\"Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v4\"},\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react. The CNL and JSON forms of the same source give byte-identical bundles."
+    }
+  ],
+  "name_cases_rule": "Each name case compiles for target react and builds a product that passes the phase 1 product gates. rust_case names the Rust negative case the edit comes from. python_control_body must give python_control_expected before and after the React target lands.",
+  "name_cases": [
+    {
+      "id": "RN01_CNL_FIELD_UPPERCASE",
+      "purpose": "An uppercase field name; Rust phase 1 refused it.",
+      "form": "cnl",
+      "base_example": "v1.cnl",
+      "line_edits": [
+        {
+          "line": 8,
+          "with": "Field Title is required str and is unique."
+        }
+      ],
+      "rust_case": "RS05_CNL_FIELD_UPPERCASE",
+      "target": "react",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField Title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react.",
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField Title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "RN02_CNL_FIELD_SELF",
+      "purpose": "A field named self; Rust phase 1 refused it.",
+      "form": "cnl",
+      "base_example": "v3.cnl",
+      "line_edits": [
+        {
+          "line": 8,
+          "with": "Field self is required str and is not unique."
+        }
+      ],
+      "rust_case": "RS07_CNL_FIELD_SELF",
+      "target": "react",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 3.\\nUse package todos.\\nBegin resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField self is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field completed.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision service1000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact boolean filter, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react.",
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 3.\\nUse package todos.\\nBegin resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField self is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field completed.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision service1000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact boolean filter, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "RN03_JSON_FILTER_DOUBLE_UNDERSCORE",
+      "purpose": "A v2 filter field with a double underscore; Rust phase 1 refused such names.",
+      "form": "json",
+      "base_example": "v2.prompt.json",
+      "rust_case": null,
+      "target": "react",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact string filter, limit, and offset in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev1000\"},\"package\":\"items\",\"query\":{\"filter_field\":\"a__b\",\"max_limit\":20},\"resource\":{\"fields\":[{\"name\":\"a__b\",\"required\":true,\"type\":\"str\",\"unique\":false}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v2\"},\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react.",
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact string filter, limit, and offset in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev1000\"},\"package\":\"items\",\"query\":{\"filter_field\":\"a__b\",\"max_limit\":20},\"resource\":{\"fields\":[{\"name\":\"a__b\",\"required\":true,\"type\":\"str\",\"unique\":false}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v2\"}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "RN04_CNL_FIELD_TO_STRING",
+      "purpose": "An Object.prototype member name that is not reserved.",
+      "form": "cnl",
+      "base_example": "v1.cnl",
+      "line_edits": [
+        {
+          "line": 8,
+          "with": "Field toString is required str and is unique."
+        }
+      ],
+      "rust_case": null,
+      "target": "react",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField toString is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react.",
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/items\\\".\\nField toString is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "RN05_JSON_FIELD_HAS_OWN_PROPERTY",
+      "purpose": "An Object.prototype member name that is not reserved, also the v2 filter field.",
+      "form": "json",
+      "base_example": "v2.prompt.json",
+      "rust_case": null,
+      "target": "react",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact string filter, limit, and offset in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev1000\"},\"package\":\"items\",\"query\":{\"filter_field\":\"hasOwnProperty\",\"max_limit\":20},\"resource\":{\"fields\":[{\"name\":\"hasOwnProperty\",\"required\":true,\"type\":\"str\",\"unique\":false}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v2\"},\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react.",
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact string filter, limit, and offset in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"rev1000\"},\"package\":\"items\",\"query\":{\"filter_field\":\"hasOwnProperty\",\"max_limit\":20},\"resource\":{\"fields\":[{\"name\":\"hasOwnProperty\",\"required\":true,\"type\":\"str\",\"unique\":false}],\"name\":\"Item\",\"path\":\"/items\",\"table\":\"items\"},\"tests\":[\"Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v2\"}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "RN06_CNL_V4_FIELD_FUNCTION",
+      "purpose": "A JavaScript reserved word that Python admits as a field name; it appears only as a member and a string.",
+      "form": "cnl",
+      "base_example": "v4.cnl",
+      "line_edits": [
+        {
+          "line": 9,
+          "with": "Field function is required str and is not unique."
+        }
+      ],
+      "rust_case": null,
+      "target": "react",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 4.\\nUse package todos.\\nBegin resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField deadline_on is optional date and is not unique with default null.\\nField function is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field deadline_on.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision service1000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react.",
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 4.\\nUse package todos.\\nBegin resource.\\nUse resource name Todo.\\nUse table todos.\\nUse path \\\"/todos\\\".\\nField deadline_on is optional date and is not unique with default null.\\nField function is required str and is not unique.\\nField description is optional str and is not unique with default null.\\nField completed is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field completed.\\nFilter before date on field deadline_on.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision service1000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "RN07_JSON_V3_FILTER_VALUE_OF",
+      "purpose": "A v3 filter field named valueOf, so the list query parameter is valueOf.",
+      "form": "json",
+      "base_example": "v3.prompt.json",
+      "rust_case": null,
+      "target": "react",
+      "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact boolean filter, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"service1000\"},\"package\":\"todos\",\"query\":{\"filter_field\":\"valueOf\",\"max_limit\":100},\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"valueOf\",\"required\":false,\"type\":\"bool\",\"unique\":false}],\"name\":\"Todo\",\"path\":\"/todos\",\"table\":\"todos\"},\"tests\":[\"Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v3\"},\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react.",
+      "python_control_body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact boolean filter, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"service1000\"},\"package\":\"todos\",\"query\":{\"filter_field\":\"valueOf\",\"max_limit\":100},\"resource\":{\"fields\":[{\"name\":\"title\",\"required\":true,\"type\":\"str\",\"unique\":false},{\"default\":null,\"name\":\"description\",\"required\":false,\"type\":\"str\",\"unique\":false},{\"default\":false,\"name\":\"valueOf\",\"required\":false,\"type\":\"bool\",\"unique\":false}],\"name\":\"Todo\",\"path\":\"/todos\",\"table\":\"todos\"},\"tests\":[\"Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v3\"}}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "RN08_CNL_TABLE_TS_MIGRATIONS",
+      "purpose": "A table named like the TypeScript migrator table; a React product has no table.",
+      "form": "cnl",
+      "base_example": "v1.cnl",
+      "line_edits": [
+        {
+          "line": 6,
+          "with": "Use table _som_ts_migrations."
+        }
+      ],
+      "rust_case": null,
+      "target": "react",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table _som_ts_migrations.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react.",
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table _som_ts_migrations.\\nUse path \\\"/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    },
+    {
+      "id": "RN09_CNL_PATH_TWO_SEGMENTS",
+      "purpose": "A path with two segments.",
+      "form": "cnl",
+      "base_example": "v1.cnl",
+      "line_edits": [
+        {
+          "line": 7,
+          "with": "Use path \"/team/items\"."
+        }
+      ],
+      "rust_case": null,
+      "target": "react",
+      "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/team/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"react\"}",
+      "expected": "HTTP 200 with a som.dsl-bundle.v2 bundle with target react.",
+      "python_control_body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package items.\\nBegin resource.\\nUse resource name Item.\\nUse table items.\\nUse path \\\"/team/items\\\".\\nField title is required str and is unique.\\nEnd resource.\\nUse migration revision rev0000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
+      "python_control_expected": "HTTP 200 with the unchanged som.dsl-bundle.v1 bundle"
+    }
+  ]
+}

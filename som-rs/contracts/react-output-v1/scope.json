@@ -1,0 +1,188 @@
+{
+  "version": "som.react-output-scope.v1",
+  "target": "react",
+  "prompt_versions": {
+    "in_scope": [
+      "som.prompt.v1",
+      "som.prompt.v2",
+      "som.prompt.v3",
+      "som.prompt.v4"
+    ],
+    "out_of_scope": {
+      "som.prompt.v5": "related resources: a parent and a child joined by a foreign key",
+      "som.prompt.v6": "capabilities: authentication, database selection, object storage and workflows",
+      "som.prompt.v7": "flows and capabilities: authentication, database selection, object storage, workflows, branches and compensation"
+    }
+  },
+  "semantics": "A React request admits exactly the prompts that the existing compiler-v1 validation admits, minus the refusals below. Prompt meaning does not change by target. The React product is a front end for the Python service that the same prompt generates without a target; it has no server, database or migration of its own.",
+  "field_types": {
+    "som.prompt.v1": [
+      "str",
+      "int",
+      "float",
+      "bool"
+    ],
+    "som.prompt.v2": [
+      "str",
+      "int",
+      "float",
+      "bool"
+    ],
+    "som.prompt.v3": [
+      "str",
+      "int",
+      "float",
+      "bool"
+    ],
+    "som.prompt.v4": [
+      "str",
+      "int",
+      "float",
+      "bool",
+      "date"
+    ]
+  },
+  "form_inputs": {
+    "str": "text input; empty text of a nullable field sends null, of a field that is not nullable sends the empty string",
+    "int": "text input with inputMode numeric; finite number text sends a number, any other text is sent as typed so the service answers 422",
+    "float": "text input with inputMode decimal; finite number text sends a number, any other text is sent as typed so the service answers 422",
+    "bool": "checkbox for a field that is not nullable, starting false when required; a select of null, true and false for a nullable field",
+    "date": "date input sending the browser's YYYY-MM-DD text; empty text of a nullable field sends null",
+    "create": "a create sends every required field and every optional field whose text differs from its default",
+    "edit": "an edit sends only the fields whose text differs from the row as loaded"
+  },
+  "identifiers": {
+    "rule": "Field names are used verbatim as JSON members, query parameter names, form labels and string literals. In TypeScript a prompt field name appears only as an unquoted member of a type literal in src/schema.ts and as a string literal; it is never a variable, function, type or file name, and generated code reads it only with bracket syntax after Object.hasOwn. The compiler-v1 name pattern [A-Za-z_][A-Za-z0-9_]* is always a valid IdentifierName, so JavaScript reserved words, uppercase letters and repeated underscores need no rule.",
+    "reserved_names": [
+      "__proto__",
+      "constructor",
+      "prototype"
+    ],
+    "reserved_names_reason": "Form state and error maps are plain objects written with bracket syntax, so a field named __proto__ would set the prototype instead of creating a member and the field would silently vanish. constructor and prototype are refused as a conservative rule, the same as the TypeScript target. Other Object.prototype member names such as toString or hasOwnProperty are admitted, because generated code reads members only through Object.hasOwn (src/form.ts own).",
+    "prompt_names_in_the_product": [
+      "package, only in the src/schema.ts header comment",
+      "resource name, in RESOURCE.name (the page title and header link) and the README.md heading as a code span",
+      "resource path, in RESOURCE.path (the API path under /api) and README.md as a code span",
+      "field names, as listed in rule; README.md shows them as code spans",
+      "table name and migration revision, nowhere"
+    ]
+  },
+  "query_parameters": {
+    "som.prompt.v1": {
+      "filter_parameter": null,
+      "fixed": []
+    },
+    "som.prompt.v2": {
+      "filter_parameter": "filter_value",
+      "fixed": [
+        "filter_value",
+        "limit",
+        "offset"
+      ]
+    },
+    "som.prompt.v3": {
+      "filter_parameter": "field_name",
+      "fixed": [
+        "limit",
+        "offset"
+      ]
+    },
+    "som.prompt.v4": {
+      "filter_parameter": "field_name",
+      "fixed": [
+        "before",
+        "limit",
+        "offset"
+      ]
+    }
+  },
+  "routes": {
+    "rule": "Front end routes are fixed and never come from the prompt. The resource path appears only in API calls, which go to /api<path> and are sent to SOM_API_URL<path> by the Vite dev and preview proxy.",
+    "pages": [
+      {
+        "path": "/",
+        "page": "ListPage",
+        "logic": "List rows. v1 lists every row in id order. v2 to v4 list pageSize rows from offset with the optional filter (and for v4 the optional before date), with previous and next page links kept in the URL query."
+      },
+      {
+        "path": "/new",
+        "page": "FormPage create",
+        "logic": "Create a row. A 201 opens /:id; a 422 shows the messages by field; a 409 shows the conflict."
+      },
+      {
+        "path": "/:id",
+        "page": "DetailPage",
+        "logic": "Show one row with edit and delete. A 404 shows not found. A 204 on delete opens /."
+      },
+      {
+        "path": "/:id/edit",
+        "page": "FormPage edit",
+        "logic": "Edit a row. Sends only the fields that changed; with no change, sends nothing and opens /:id."
+      },
+      {
+        "path": "*",
+        "page": "not found",
+        "logic": "Page not found."
+      }
+    ],
+    "api_calls": {
+      "som.prompt.v1": [
+        "GET {path}",
+        "POST {path}",
+        "GET {path}/{id}",
+        "PATCH {path}/{id}",
+        "DELETE {path}/{id}"
+      ],
+      "som.prompt.v2": [
+        "GET {path}?filter_value&limit&offset",
+        "POST {path}",
+        "GET {path}/{id}",
+        "PATCH {path}/{id}",
+        "DELETE {path}/{id}"
+      ],
+      "som.prompt.v3": [
+        "GET {path}?{filter_field}&limit&offset",
+        "POST {path}",
+        "GET {path}/{id}",
+        "PATCH {path}/{id}",
+        "DELETE {path}/{id}"
+      ],
+      "som.prompt.v4": [
+        "GET {path}?{filter_field}&before&limit&offset",
+        "POST {path}",
+        "GET {path}/{id}",
+        "PATCH {path}/{id}",
+        "DELETE {path}/{id}"
+      ]
+    }
+  },
+  "refusal_order": [
+    "prompt_version",
+    "resource path",
+    "each field name in array order"
+  ],
+  "compiler_v1_refusals": {
+    "query_parameter_collision": "A v3 filter field named limit or offset is refused by compiler-v1 for every target since compiler-v1 amendment 003 (INVALID_VALUE 400), before any target check. A v4 filter or date field named before, limit or offset is refused by existing validation. React has no rule of its own for either.",
+    "reserved_fields": "id, created_at, updated_at, metadata and registry are refused as field names by existing validation, so a Row member never repeats."
+  },
+  "refusals": {
+    "prompt_version": {
+      "code": "UNSUPPORTED_TARGET",
+      "http_status": 422,
+      "cause": "React output phase 1 does not cover prompt version {version}: {family}.",
+      "allowed_form": "Use prompt version 1 through 4 for target react, or omit target to generate Python."
+    },
+    "path_empty_segment": {
+      "code": "UNSUPPORTED_TARGET",
+      "http_status": 422,
+      "cause": "React output needs a path without empty segments, not {path}.",
+      "allowed_form": "Use a path such as /items or /team/items without a trailing or double slash for target react, or omit target to generate Python."
+    },
+    "identifier_reserved": {
+      "code": "UNSUPPORTED_TARGET",
+      "http_status": 422,
+      "cause": "React output cannot use the name {name}.",
+      "allowed_form": "Use a name other than __proto__, constructor or prototype for target react, or omit target to generate Python."
+    }
+  }
+}
