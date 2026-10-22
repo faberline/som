@@ -459,6 +459,16 @@ def main():
     rc.harness_port(port)
     new = candidate / 'som'
     rc.require(rc.digest(new) == runtime['binary_sha256'], 'candidate binary differs from its receipt')
+    if ts_run is not None:
+        prettier = runtime.get('som_ts_prettier')
+        rc.require(isinstance(prettier, str) and bool(prettier), 'candidate runtime has no som_ts_prettier')
+        prettier_path = Path(prettier)
+        rc.require(prettier_path.is_absolute() and prettier_path.is_dir(),
+                   f'missing TypeScript formatter directory: {prettier}')
+        ts_formatter = {'env': 'SOM_TS_PRETTIER', 'path': str(prettier_path)}
+        rc.apply_formatter_env({'typescript_formatter': ts_formatter})
+    else:
+        ts_formatter = None
     gates, header_sha256 = gate_assertions(run, audit, runtime['binary_sha256'], ts_run, args.ts_cases)
     current = rc.load(rc.REPO / 'som-rs/runtime/default.json')
     previous = Path(current['command'][0])
@@ -512,7 +522,8 @@ def main():
                            'previous_defaults': chain},
         'python_canary_source': source,
         'rust_products_run': str(products_run),
-        **({'typescript_products_run': str(ts_run)} if ts_run is not None else {}),
+        **({'typescript_products_run': str(ts_run),
+            'typescript_formatter': ts_formatter} if ts_run is not None else {}),
         'rust_emulators': emulators,
         'legacy_default': binding(legacy_path),
         'legacy_binary': binding(Path(legacy['command'][0])),

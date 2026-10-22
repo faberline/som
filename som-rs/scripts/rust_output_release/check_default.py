@@ -56,6 +56,7 @@ def main():
 
     config = rc.load(args.prerequisites)
     runtime, _ = rc.check_prerequisites(config)
+    rc.apply_formatter_env(config)
     receipt = rc.load(root / 'som-rs/runtime/default.json')
     command = receipt['command']
     candidate = args.expect_binary_sha256 == config['candidate']['binary']['sha256']

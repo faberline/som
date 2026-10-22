@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import io
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -18,6 +19,7 @@ if str(HERE) not in sys.path:
 
 import check_default  # noqa: E402
 import prepare_inputs as pi  # noqa: E402
+import rehearse  # noqa: E402
 import release_common as rc  # noqa: E402
 import switch  # noqa: E402
 
@@ -155,8 +157,15 @@ def _make_base_prerequisites(tmp: Path, *, with_ts: bool = True, ts_count: int =
         'targets': ['python', 'rust'],
         'rust_target': {'formatter_sha256': 'd' * 64},
     }
+    prettier_dir = tmp / 'prettier'
+    prettier_dir.mkdir(parents=True, exist_ok=True)
     runtime_path = tmp / 'candidate/runtime.json'
-    runtime_path.write_text(json.dumps({'port': 18960, 'binary_sha256': bin_sha, 'health': health}))
+    runtime_path.write_text(json.dumps({
+        'port': 18960,
+        'binary_sha256': bin_sha,
+        'health': health,
+        **({'som_ts_prettier': str(prettier_dir)} if with_ts else {}),
+    }))
     build_path = tmp / 'candidate/build.json'
     build_path.write_text(json.dumps({'binary_sha256': bin_sha}))
     source_path = tmp / 'candidate/source.json'
@@ -251,7 +260,14 @@ def _make_base_prerequisites(tmp: Path, *, with_ts: bool = True, ts_count: int =
         },
         'gates': gates,
         'rust_products_run': str(run_dir),
-        **({'typescript_products_run': str(run_dir)} if with_ts else {}),
+        **(
+            {
+                'typescript_products_run': str(run_dir),
+                'typescript_formatter': {'env': 'SOM_TS_PRETTIER', 'path': str(prettier_dir)},
+            }
+            if with_ts
+            else {}
+        ),
         'legacy_default': pi.binding(legacy_default),
         'legacy_binary': pi.binding(legacy_bin),
         'legacy_model_manifest': pi.binding(legacy_manifest),
@@ -278,6 +294,8 @@ class TestTypeScriptCanaries(unittest.TestCase):
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.tmp = Path(self._tmp.name).resolve()
+        self.enterContext(mock.patch.dict(os.environ, {}, clear=False))
+        os.environ.pop('SOM_TS_PRETTIER', None)
         self.enterContext(mock.patch.object(pi.targets, 'sources', side_effect=_fake_target_sources))
         self.ts_run = self.tmp / 'ts-run'
         self.files_by_id = {
@@ -692,6 +710,8 @@ class TestTypeScriptCanaries(unittest.TestCase):
         blocks_file = root / 'blocks.json'
         blocks_file.write_bytes(b'{}')
 
+        prettier_dir = root / 'prettier'
+        prettier_dir.mkdir()
         health = {
             'status': 'ok',
             'asset_manifest_sha256': 'a' * 64,
@@ -699,7 +719,12 @@ class TestTypeScriptCanaries(unittest.TestCase):
             'blocks_sha256': rc.digest(blocks_file),
         }
         (candidate_dir / 'runtime.json').write_text(
-            json.dumps({'port': 18960, 'binary_sha256': bin_sha, 'health': health})
+            json.dumps({
+                'port': 18960,
+                'binary_sha256': bin_sha,
+                'health': health,
+                'som_ts_prettier': str(prettier_dir),
+            })
         )
         (candidate_dir / 'build.json').write_text(json.dumps({'binary_sha256': bin_sha}))
         (candidate_dir / 'source.json').write_text(json.dumps({'commit': '0' * 40}))
@@ -820,8 +845,64 @@ class TestTypeScriptCanaries(unittest.TestCase):
                     pi.main()
                 written = json.loads((out_with_ts / 'prerequisites.json').read_text())
                 self.assertEqual(written['typescript_products_run'], str(run_dir))
+                self.assertEqual(
+                    written['typescript_formatter'],
+                    {'env': 'SOM_TS_PRETTIER', 'path': str(prettier_dir)},
+                )
+                self.assertEqual(os.environ.get('SOM_TS_PRETTIER'), str(prettier_dir))
                 self.assertEqual([c['name'] for c in written['typescript_canaries']], ['example-v1', 'example-v5'])
                 self.assertEqual([c['family'] for c in written['typescript_canaries']], ['typescript', 'typescript'])
+
+                # 1b. Missing prettier directory in runtime.json is refused.
+                (candidate_dir / 'runtime.json').write_text(
+                    json.dumps({
+                        'port': 18960,
+                        'binary_sha256': bin_sha,
+                        'health': health,
+                        'som_ts_prettier': str(root / 'missing-prettier'),
+                    })
+                )
+                with mock.patch.object(
+                    sys,
+                    'argv',
+                    [
+                        'prepare_inputs.py',
+                        '--candidate', str(candidate_dir),
+                        '--acceptance', str(run_dir),
+                        '--audit', str(audit_path),
+                        '--out', str(root / 'out-missing-prettier'),
+                        '--ts-run', str(run_dir),
+                    ],
+                ):
+                    with self.assertRaisesRegex(RuntimeError, 'missing TypeScript formatter directory'):
+                        pi.main()
+
+                # Restore valid runtime.json and test conflicting caller SOM_TS_PRETTIER is refused.
+                (candidate_dir / 'runtime.json').write_text(
+                    json.dumps({
+                        'port': 18960,
+                        'binary_sha256': bin_sha,
+                        'health': health,
+                        'som_ts_prettier': str(prettier_dir),
+                    })
+                )
+                with (
+                    mock.patch.dict(os.environ, {'SOM_TS_PRETTIER': str(root / 'other-prettier')}),
+                    mock.patch.object(
+                        sys,
+                        'argv',
+                        [
+                            'prepare_inputs.py',
+                            '--candidate', str(candidate_dir),
+                            '--acceptance', str(run_dir),
+                            '--audit', str(audit_path),
+                            '--out', str(root / 'out-conflict-prettier'),
+                            '--ts-run', str(run_dir),
+                        ],
+                    ),
+                ):
+                    with self.assertRaisesRegex(RuntimeError, 'SOM_TS_PRETTIER=.*conflicts with pinned'):
+                        pi.main()
 
                 # 2. TS acceptance run without --ts-run is refused in main().
                 with mock.patch.object(
@@ -838,7 +919,8 @@ class TestTypeScriptCanaries(unittest.TestCase):
                     with self.assertRaisesRegex(RuntimeError, 'TypeScript acceptance gate'):
                         pi.main()
 
-                # 3. Rust acceptance run without --ts-run omits both TS keys.
+                # 3. Rust acceptance run without --ts-run omits TS keys and does not set SOM_TS_PRETTIER.
+                os.environ.pop('SOM_TS_PRETTIER', None)
                 (run_dir / 'summary.json').write_text(
                     json.dumps({
                         'version': 'som.rust-output-acceptance-run.v1',
@@ -871,6 +953,145 @@ class TestTypeScriptCanaries(unittest.TestCase):
                 written_no_ts = json.loads((out_no_ts / 'prerequisites.json').read_text())
                 self.assertNotIn('typescript_canaries', written_no_ts)
                 self.assertNotIn('typescript_products_run', written_no_ts)
+                self.assertNotIn('typescript_formatter', written_no_ts)
+                self.assertNotIn('SOM_TS_PRETTIER', os.environ)
+
+    def test_check_prerequisites_typescript_formatter_validation(self) -> None:
+        base_dir = self.tmp / 'check-fmt'
+        base_dir.mkdir()
+        config = _make_base_prerequisites(base_dir, with_ts=True, ts_count=2)
+
+        # 1. Missing typescript_formatter when typescript_canaries is present is refused.
+        no_fmt = copy.deepcopy(config)
+        del no_fmt['typescript_formatter']
+        with mock.patch.object(rc, 'REPO', base_dir):
+            with self.assertRaisesRegex(RuntimeError, 'missing or invalid typescript_formatter'):
+                rc.check_prerequisites(no_fmt)
+
+        # 2. Wrong env name is refused.
+        wrong_env = copy.deepcopy(config)
+        wrong_env['typescript_formatter']['env'] = 'OTHER_ENV'
+        with mock.patch.object(rc, 'REPO', base_dir):
+            with self.assertRaisesRegex(RuntimeError, 'missing or invalid typescript_formatter'):
+                rc.check_prerequisites(wrong_env)
+
+        # 3. Relative path is refused.
+        rel_fmt = copy.deepcopy(config)
+        rel_fmt['typescript_formatter']['path'] = 'relative/prettier'
+        with mock.patch.object(rc, 'REPO', base_dir):
+            with self.assertRaisesRegex(RuntimeError, 'invalid typescript_formatter path'):
+                rc.check_prerequisites(rel_fmt)
+
+        # 4. Non-existent absolute path is refused.
+        missing_fmt = copy.deepcopy(config)
+        missing_fmt['typescript_formatter']['path'] = str(base_dir / 'does-not-exist')
+        with mock.patch.object(rc, 'REPO', base_dir):
+            with self.assertRaisesRegex(RuntimeError, 'invalid typescript_formatter path'):
+                rc.check_prerequisites(missing_fmt)
+
+    def test_apply_formatter_env_helper(self) -> None:
+        pinned = str(self.tmp / 'pinned-prettier')
+        cfg_with = {'typescript_formatter': {'env': 'SOM_TS_PRETTIER', 'path': pinned}}
+        cfg_without: dict = {}
+
+        # 1. Does nothing without typescript_formatter.
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop('SOM_TS_PRETTIER', None)
+            rc.apply_formatter_env(cfg_without)
+            self.assertNotIn('SOM_TS_PRETTIER', os.environ)
+
+        # 2. Sets SOM_TS_PRETTIER when unset.
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop('SOM_TS_PRETTIER', None)
+            rc.apply_formatter_env(cfg_with)
+            self.assertEqual(os.environ.get('SOM_TS_PRETTIER'), pinned)
+
+        # 3. Accepts an equal SOM_TS_PRETTIER.
+        with mock.patch.dict(os.environ, {'SOM_TS_PRETTIER': pinned}, clear=False):
+            rc.apply_formatter_env(cfg_with)
+            self.assertEqual(os.environ.get('SOM_TS_PRETTIER'), pinned)
+
+        # 4. Refuses a different SOM_TS_PRETTIER.
+        with mock.patch.dict(os.environ, {'SOM_TS_PRETTIER': '/different/path'}, clear=False):
+            with self.assertRaisesRegex(RuntimeError, 'SOM_TS_PRETTIER=/different/path conflicts with pinned'):
+                rc.apply_formatter_env(cfg_with)
+
+    def test_switch_check_default_and_rehearse_call_apply_formatter_env(self) -> None:
+        config = _make_base_prerequisites(self.tmp, with_ts=True, ts_count=2)
+        expected_prettier = config['typescript_formatter']['path']
+        prereq_path = self.tmp / 'prereq-env.json'
+        prereq_path.write_text(json.dumps(config))
+
+        # 1. switch.execute calls apply_formatter_env right after check_prerequisites.
+        with (
+            mock.patch.object(rc, 'REPO', self.tmp),
+            mock.patch.object(rc, 'apply_formatter_env', wraps=rc.apply_formatter_env) as spy_exec,
+            mock.patch.object(switch, 'current_state', side_effect=RuntimeError('stop-after-env')),
+        ):
+            os.environ.pop('SOM_TS_PRETTIER', None)
+            with self.assertRaisesRegex(RuntimeError, 'stop-after-env'):
+                switch.execute(config, self.tmp, 18961, self.tmp / 'exec-out', None, True, None)
+            spy_exec.assert_called_once_with(config)
+            self.assertEqual(os.environ.get('SOM_TS_PRETTIER'), expected_prettier)
+
+        # 2. switch.restore calls apply_formatter_env right after check_prerequisites.
+        with (
+            mock.patch.object(rc, 'REPO', self.tmp),
+            mock.patch.object(rc, 'apply_formatter_env', wraps=rc.apply_formatter_env) as spy_restore,
+            mock.patch.object(switch, 'current_state', side_effect=RuntimeError('stop-after-env-restore')),
+        ):
+            os.environ.pop('SOM_TS_PRETTIER', None)
+            with self.assertRaisesRegex(RuntimeError, 'stop-after-env-restore'):
+                switch.restore(config, self.tmp, 18961, self.tmp / 'rest-out', None, True, self.tmp / 'ev')
+            spy_restore.assert_called_once_with(config)
+            self.assertEqual(os.environ.get('SOM_TS_PRETTIER'), expected_prettier)
+
+        # 3. check_default.main calls apply_formatter_env right after check_prerequisites.
+        default_file = self.tmp / 'som-rs/runtime/default.json'
+        default_file.parent.mkdir(parents=True, exist_ok=True)
+        default_file.write_text(json.dumps({'command': ['som', 'serve', '--assets', 'a', '--port', '18961'], 'pid': 1, 'health': {}, 'identity': {}}))
+        with (
+            mock.patch.object(rc, 'REPO', self.tmp),
+            mock.patch.object(rc, 'apply_formatter_env', wraps=rc.apply_formatter_env) as spy_check,
+            mock.patch.object(
+                sys,
+                'argv',
+                [
+                    'check_default.py',
+                    '--prerequisites', str(prereq_path),
+                    '--root', str(self.tmp),
+                    '--port', '18961',
+                    '--expect-binary-sha256', config['candidate']['binary']['sha256'],
+                    '--output', str(self.tmp / 'check-env-out'),
+                ],
+            ),
+            mock.patch('builtins.print'),
+        ):
+            os.environ.pop('SOM_TS_PRETTIER', None)
+            check_default.main()
+            spy_check.assert_called_once_with(config)
+            self.assertEqual(os.environ.get('SOM_TS_PRETTIER'), expected_prettier)
+
+        # 4. rehearse.main calls apply_formatter_env right after check_prerequisites.
+        with (
+            mock.patch.object(rc, 'REPO', self.tmp),
+            mock.patch.object(rc, 'apply_formatter_env', wraps=rc.apply_formatter_env) as spy_rehearse,
+            mock.patch.object(rc, 'identity', side_effect=RuntimeError('stop-after-rehearse-env')),
+            mock.patch.object(
+                sys,
+                'argv',
+                [
+                    'rehearse.py',
+                    '--prerequisites', str(prereq_path),
+                    '--out', str(self.tmp / 'rehearse-env-out'),
+                ],
+            ),
+        ):
+            os.environ.pop('SOM_TS_PRETTIER', None)
+            with self.assertRaisesRegex(RuntimeError, 'stop-after-rehearse-env'):
+                rehearse.main()
+            spy_rehearse.assert_called_once_with(config)
+            self.assertEqual(os.environ.get('SOM_TS_PRETTIER'), expected_prettier)
 
 
 if __name__ == '__main__':

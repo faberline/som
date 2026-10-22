@@ -106,6 +106,7 @@ def main():
     out.mkdir(parents=True, exist_ok=False)
     config = rc.load(prerequisites)
     rc.check_prerequisites(config)
+    rc.apply_formatter_env(config)
     live_bytes = (rc.REPO / 'som-rs/runtime/default.json').read_bytes()
     live = json.loads(live_bytes)
     rc.require(rc.identity(live['pid'], live['command'], 8765) == live['identity'], 'live default differs')
