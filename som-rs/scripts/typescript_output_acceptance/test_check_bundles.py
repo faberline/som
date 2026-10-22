@@ -15,6 +15,7 @@ import sys
 import tempfile
 import threading
 import unittest
+import unittest.mock
 from typing import Any, Callable
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -61,6 +62,7 @@ def _build_fixture_tables() -> tuple[
             base_prompt = json.loads(
                 (check_bundles.EXAMPLES / base_prompt_file).read_text(encoding="utf-8")
             )
+            base_prompt["package"] = f"name_case_{nc['id'].split('_', 1)[0].lower()}"
             cnl_to_prompt[cnl_text] = copy.deepcopy(base_prompt)
 
     ts_specific = check_bundles.compute_expected_ts_specific_descriptors()
@@ -366,12 +368,119 @@ class FakeSomServer:
         self._thread.join(timeout=5)
 
 
+def create_tiny_legacy_run(
+    base_dir: pathlib.Path,
+) -> tuple[pathlib.Path, pathlib.Path, dict[str, Any]]:
+    """Build a synthetic tiny legacy run (1 in-scope + 1 out-of-scope job) using public prompts."""
+    v3_prompt = json.loads(
+        (check_bundles.EXAMPLES / "v3.prompt.json").read_text(encoding="utf-8")
+    )
+    in_prompt = {**v3_prompt, "package": "fake_legacy_in_scope"}
+    in_sha = check_bundles.canonical_hash(in_prompt)
+
+    v6_prompt = json.loads(
+        (check_bundles.EXAMPLES / "v6.prompt.json").read_text(encoding="utf-8")
+    )
+    out_prompt = {**v6_prompt, "package": "fake_legacy_out_of_scope"}
+    out_sha = check_bundles.canonical_hash(out_prompt)
+
+    leg_dir = base_dir / "legacy544" / "run-005"
+    for idx, (job_id, p_obj, p_sha) in enumerate(
+        (
+            ("legacy100-0000", in_prompt, in_sha),
+            ("services14-0000", out_prompt, out_sha),
+        )
+    ):
+        comp_dir = leg_dir / "compile" / p_sha
+        comp_dir.mkdir(parents=True, exist_ok=True)
+        req_text = (
+            check_bundles.compact_json(
+                {"format": "som.prompt-json.v1", "prompt": p_obj}
+            )
+            + "\n"
+        )
+        (comp_dir / "compile-json.request.json").write_text(req_text, encoding="utf-8")
+        idx_dir = leg_dir / f"{idx:04d}"
+        idx_dir.mkdir(parents=True, exist_ok=True)
+        (idx_dir / "compile-json.request.json").write_text(req_text, encoding="utf-8")
+
+    result_doc = {
+        "required_job_count": 2,
+        "passed_job_count": 2,
+        "records": [
+            {
+                "id": "legacy100-0000",
+                "group": "legacy100",
+                "prompt_sha256": in_sha,
+            },
+            {
+                "id": "services14-0000",
+                "group": "services14",
+                "prompt_sha256": out_sha,
+            },
+        ],
+    }
+    (leg_dir / "result.json").write_text(
+        json.dumps(result_doc, indent=2) + "\n", encoding="utf-8"
+    )
+
+    inv = json.loads(
+        (check_bundles.CONTRACT / "case-inventory.json").read_text(encoding="utf-8")
+    )
+    inv["legacy_in_scope"] = [
+        {
+            "id": "legacy100-0000",
+            "group": "legacy100",
+            "inventory_index": 0,
+            "prompt_version": in_prompt["version"],
+            "prompt_sha256": in_sha,
+        }
+    ]
+    inv["counts"]["legacy_in_scope"] = 1
+    inv["counts"]["acceptance_total"] = 26
+    inv_path = base_dir / "case-inventory.json"
+    inv_path.write_text(json.dumps(inv, indent=2) + "\n", encoding="utf-8")
+    return leg_dir, inv_path, in_prompt
+
+
 class CheckBundlesTests(unittest.TestCase):
-    def _run_main(self, argv: list[str]) -> tuple[int, str, str]:
+    def _run_main(
+        self,
+        argv: list[str],
+        *,
+        expected_legacy_in_scope: int | None = 1,
+        expected_manifest_products: int | None = 26,
+        inv_path: pathlib.Path | None = None,
+        patch_inventory: bool = True,
+    ) -> tuple[int, str, str]:
         stdout = io.StringIO()
         stderr = io.StringIO()
-        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
-            rc = check_bundles.main(argv)
+        with tempfile.TemporaryDirectory() as leg_tmp:
+            if "--legacy-run" not in argv:
+                leg_run, default_inv, _ = create_tiny_legacy_run(pathlib.Path(leg_tmp))
+                argv = [*argv, "--legacy-run", str(leg_run)]
+                if inv_path is None:
+                    inv_path = default_inv
+            if patch_inventory and inv_path is not None:
+                with (
+                    unittest.mock.patch.object(
+                        check_bundles.build_case_inventory, "OUT", inv_path
+                    ),
+                    contextlib.redirect_stdout(stdout),
+                    contextlib.redirect_stderr(stderr),
+                ):
+                    rc = check_bundles.main(
+                        argv,
+                        expected_legacy_in_scope=expected_legacy_in_scope,
+                        expected_manifest_products=expected_manifest_products,
+                    )
+            else:
+                with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                    rc = check_bundles.main(
+                        argv,
+                        expected_legacy_in_scope=expected_legacy_in_scope,
+                        expected_manifest_products=expected_manifest_products,
+                    )
         return rc, stdout.getvalue(), stderr.getvalue()
 
     def test_pass_path_and_recipes_a1_to_a12_mutations(self) -> None:
@@ -383,32 +492,54 @@ class CheckBundlesTests(unittest.TestCase):
             report = json.loads((out_dir / "report.json").read_text(encoding="utf-8"))
             self.assertTrue(report["passed"])
             self.assertEqual(report["status"], "passed")
-            self.assertEqual(report["total"], 37)
-            self.assertEqual(report["passed_count"], 37)
+            self.assertEqual(report["total"], 38)
+            self.assertEqual(report["passed_count"], 38)
             self.assertEqual(report["failed_count"], 0)
             self.assertEqual(report["not_run_count"], 0)
-            self.assertIn("out_of_scope", report["legacy_in_scope"])
+            self.assertNotIn("legacy_in_scope", report)
 
             bundle_rows = [r for r in report["cases"] if r["section"] == "bundle_checks"]
             refusal_rows = [r for r in report["cases"] if r["section"] == "assemble_refusals"]
-            self.assertEqual(len(bundle_rows), 25)
+            self.assertEqual(len(bundle_rows), 26)
             self.assertEqual(len(refusal_rows), 12)
+            # Existing 25 non-legacy bundle_checks + 12 assemble_refusals come first; legacy row goes after them
+            self.assertEqual(
+                [r["section"] for r in report["cases"][:25]],
+                ["bundle_checks"] * 25,
+            )
+            self.assertEqual(
+                [r["section"] for r in report["cases"][25:37]],
+                ["assemble_refusals"] * 12,
+            )
+            self.assertEqual(report["cases"][37]["id"], "legacy100-0000")
+            self.assertEqual(report["cases"][37]["section"], "bundle_checks")
+            self.assertEqual(report["cases"][37]["forms"], ["json"])
+            self.assertIn("no CNL source", report["cases"][37]["single_form"])
 
-            # Single-form name_cases vs two-form cases
+            # Single-form cases (4 JSON-only name_cases + 1 legacy job) vs two-form cases (15 + 6 CNL name_cases = 21)
             single_form_rows = [r for r in bundle_rows if r["single_form"] is not None]
             two_form_rows = [r for r in bundle_rows if r["single_form"] is None]
-            self.assertEqual(len(single_form_rows), 10)
-            self.assertEqual(len(two_form_rows), 15)
+            self.assertEqual(len(single_form_rows), 5)
+            self.assertEqual(len(two_form_rows), 21)
+            tn01_row = next(r for r in bundle_rows if r["id"] == "TN01_CNL_FIELD_UPPERCASE")
+            self.assertEqual(tn01_row["forms"], ["cnl", "json"])
+            self.assertIsNone(tn01_row["single_form"])
+            self.assertTrue(
+                (
+                    out_dir
+                    / "responses"
+                    / "bundle_checks__TN01_CNL_FIELD_UPPERCASE__compile_json_1.json"
+                ).is_file()
+            )
             for r in single_form_rows:
-                self.assertTrue(r["id"].startswith("TN"))
-                self.assertEqual(len(r["forms"]), 1)
-                self.assertIn("only", r["single_form"])
+                self.assertEqual(r["forms"], ["json"])
 
-            # Verify products/manifest.json and assembled product directories
+            # Verify products/manifest.json and assembled product directories (25 non-legacy + 1 legacy = 26)
             manifest_path = out_dir / "products" / "manifest.json"
             self.assertTrue(manifest_path.is_file())
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-            self.assertEqual(len(manifest["products"]), 25)
+            self.assertEqual(len(manifest["products"]), 26)
+            self.assertEqual(manifest["products"][-1]["id"], "legacy100-0000")
             for entry in manifest["products"]:
                 self.assertIn("id", entry)
                 self.assertIn("product", entry)
@@ -420,7 +551,7 @@ class CheckBundlesTests(unittest.TestCase):
 
             # Verify the 12 mutated assemble request bodies sent for A1-A12
             # The last 12 assemble requests sent to the server are A1..A12 in order.
-            self.assertEqual(len(srv.assemble_requests), 25 * 2 + 12)
+            self.assertEqual(len(srv.assemble_requests), 26 * 2 + 12)
             recipe_bodies = srv.assemble_requests[-12:]
             v1_prompt = json.loads((check_bundles.EXAMPLES / "v1.prompt.json").read_text(encoding="utf-8"))
             v5_prompt = json.loads((check_bundles.EXAMPLES / "v5.prompt.json").read_text(encoding="utf-8"))
@@ -649,6 +780,177 @@ class CheckBundlesTests(unittest.TestCase):
             self.assertEqual(rc, 2)
             self.assertIn("refused:", err)
             self.assertEqual(srv.request_count, 0)
+
+    def test_legacy_bundle_differs_between_two_compiles_fails(self) -> None:
+        seen_legacy_compile: set[str] = set()
+
+        def nondet_legacy_compile(
+            path: str, body: str, default: tuple[int, bytes]
+        ) -> tuple[int, bytes]:
+            if path == "/v1/compile":
+                req = json.loads(body)
+                if (
+                    req.get("target") == "typescript"
+                    and isinstance(req.get("prompt"), dict)
+                    and req["prompt"].get("package") == "fake_legacy_in_scope"
+                ):
+                    if body in seen_legacy_compile:
+                        return default[0], default[1] + b"\n"
+                    seen_legacy_compile.add(body)
+            return default
+
+        with tempfile.TemporaryDirectory() as tmp, FakeSomServer(
+            override=nondet_legacy_compile
+        ) as srv:
+            out_dir = pathlib.Path(tmp) / "out"
+            rc, _, _ = self._run_main(["--url", srv.url, "--out", str(out_dir)])
+            self.assertEqual(rc, 1)
+            report = json.loads((out_dir / "report.json").read_text(encoding="utf-8"))
+            self.assertFalse(report["passed"])
+            leg_row = next(r for r in report["cases"] if r["id"] == "legacy100-0000")
+            self.assertFalse(leg_row["passed"])
+            self.assertIn("nondeterministic compile", leg_row["reason"])
+
+    def test_name_case_typed_json_bundle_differs_from_cnl_bundle_fails(self) -> None:
+        def tamper_tn01_json(
+            path: str, body: str, default: tuple[int, bytes]
+        ) -> tuple[int, bytes]:
+            if path == "/v1/compile":
+                req = json.loads(body)
+                if (
+                    req.get("format") == "som.prompt-json.v1"
+                    and req.get("target") == "typescript"
+                    and isinstance(req.get("prompt"), dict)
+                    and req["prompt"].get("package") == "name_case_tn01"
+                ):
+                    return default[0], default[1] + b"\n"
+            return default
+
+        with tempfile.TemporaryDirectory() as tmp, FakeSomServer(
+            override=tamper_tn01_json
+        ) as srv:
+            out_dir = pathlib.Path(tmp) / "out"
+            rc, _, _ = self._run_main(["--url", srv.url, "--out", str(out_dir)])
+            self.assertEqual(rc, 1)
+            report = json.loads((out_dir / "report.json").read_text(encoding="utf-8"))
+            self.assertFalse(report["passed"])
+            tn01_row = next(
+                r for r in report["cases"] if r["id"] == "TN01_CNL_FIELD_UPPERCASE"
+            )
+            self.assertFalse(tn01_row["passed"])
+            self.assertIn("CNL and JSON compile bytes differ", tn01_row["reason"])
+
+    def test_wrong_manifest_count_and_wrong_in_scope_count_fail(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, FakeSomServer() as srv:
+            base = pathlib.Path(tmp)
+            leg_run, inv_path, _ = create_tiny_legacy_run(base)
+
+            # 1. Default expected_manifest_products=125 fails when tiny run produces 26 products
+            out_default_125 = base / "out-default-125"
+            rc_125, _, _ = self._run_main(
+                [
+                    "--url",
+                    srv.url,
+                    "--out",
+                    str(out_default_125),
+                    "--legacy-run",
+                    str(leg_run),
+                ],
+                expected_legacy_in_scope=1,
+                expected_manifest_products=None,
+                inv_path=inv_path,
+            )
+            self.assertEqual(rc_125, 1)
+            rep_125 = json.loads(
+                (out_default_125 / "report.json").read_text(encoding="utf-8")
+            )
+            self.assertFalse(rep_125["passed"])
+            self.assertTrue(
+                any(
+                    "products/manifest.json product count is 26, expected 125" in p
+                    for p in rep_125["problems"]
+                ),
+                msg=rep_125["problems"],
+            )
+
+            # 2. Lowered expected_manifest_products parameter (e.g. 25 != 26) also fails
+            out_param_25 = base / "out-param-25"
+            rc_25, _, _ = self._run_main(
+                [
+                    "--url",
+                    srv.url,
+                    "--out",
+                    str(out_param_25),
+                    "--legacy-run",
+                    str(leg_run),
+                ],
+                expected_legacy_in_scope=1,
+                expected_manifest_products=25,
+                inv_path=inv_path,
+            )
+            self.assertEqual(rc_25, 1)
+            rep_25 = json.loads(
+                (out_param_25 / "report.json").read_text(encoding="utf-8")
+            )
+            self.assertFalse(rep_25["passed"])
+            self.assertTrue(
+                any(
+                    "products/manifest.json product count is 26, expected 25" in p
+                    for p in rep_25["problems"]
+                ),
+                msg=rep_25["problems"],
+            )
+
+            # 3. Wrong in-scope count fails
+            out_wrong_in_scope = base / "out-wrong-in-scope"
+            rc_in, _, _ = self._run_main(
+                [
+                    "--url",
+                    srv.url,
+                    "--out",
+                    str(out_wrong_in_scope),
+                    "--legacy-run",
+                    str(leg_run),
+                ],
+                expected_legacy_in_scope=100,
+                expected_manifest_products=26,
+                inv_path=inv_path,
+            )
+            self.assertEqual(rc_in, 1)
+            rep_in = json.loads(
+                (out_wrong_in_scope / "report.json").read_text(encoding="utf-8")
+            )
+            self.assertFalse(rep_in["passed"])
+            self.assertTrue(
+                any(
+                    "legacy_in_scope job count is 1, expected 100" in p
+                    for p in rep_in["problems"]
+                ),
+                msg=rep_in["problems"],
+            )
+
+    def test_missing_legacy_job_input_is_not_run_and_exits_1(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, FakeSomServer() as srv:
+            base = pathlib.Path(tmp)
+            leg_run, inv_path, in_prompt = create_tiny_legacy_run(base)
+            in_sha = check_bundles.canonical_hash(in_prompt)
+            (leg_run / "compile" / in_sha / "compile-json.request.json").unlink()
+            (leg_run / "0000" / "compile-json.request.json").unlink()
+
+            out_dir = base / "out"
+            rc, _, _ = self._run_main(
+                ["--url", srv.url, "--out", str(out_dir), "--legacy-run", str(leg_run)],
+                expected_legacy_in_scope=1,
+                expected_manifest_products=26,
+                inv_path=inv_path,
+            )
+            self.assertEqual(rc, 1)
+            report = json.loads((out_dir / "report.json").read_text(encoding="utf-8"))
+            self.assertFalse(report["passed"])
+            self.assertEqual(report["not_run_count"], 1)
+            leg_row = next(r for r in report["cases"] if r["id"] == "legacy100-0000")
+            self.assertEqual(leg_row["status"], "not_run")
+            self.assertFalse(leg_row["passed"])
 
 
 if __name__ == "__main__":
