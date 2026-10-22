@@ -55,9 +55,11 @@ import sys
 import tarfile
 import traceback
 
-VERSION = "som.typescript-output-audit-065.v2"
+VERSION = "som.typescript-output-audit-065.v3"
 AUDIT_SELF_REL = "som-rs/scripts/typescript_output_acceptance/audit/audit065.py"
 AUDIT_V1_SHA = "cecccad8d885c4290d272a6ff4afa7a9cbe3c3cdba45906b68df42c1c41207e7"  # committed v1 (audit-001)
+AUDIT_V2_SHA = "934be226e5dc72ac3ceb678cb4c4b89511a7fcc0935bc68ef8de16ec65e5be4d"  # committed v2 (audit-002, 9687ba99b5)
+AUDIT_COMMITTED = {AUDIT_V1_SHA: "v1", AUDIT_V2_SHA: "v2"}
 TS_PLAN_REL = "som-rs/contracts/typescript-output-v1/acceptance-plan.json"
 TS_PLAN_SHA = "318d4ab8f4dc35e5d490f89fe8edf4d4c3eb021068b2c429025f0641927e58cf"
 RS_PLAN_REL = "som-rs/contracts/rust-output-v1/acceptance-plan.json"
@@ -714,9 +716,10 @@ class Audit:
                 if is_tool_path(rel):
                     n_tool += 1
                 if rel == AUDIT_SELF_REL and got != want:
-                    # this script was extended for audit-002 after the run; the run recorded the committed v1
-                    row.eq(want, AUDIT_V1_SHA, f"{rel} recorded hash = committed audit v1")
-                    row.ev(f"note: {rel} on disk ({got[:12]}) is this audit's edited version; the run recorded v1 {want[:12]}")
+                    # this script was extended after the run; the run must have recorded a committed version
+                    row.need(want in AUDIT_COMMITTED, f"{rel} recorded hash {want[:12]} is not a committed audit version")
+                    row.ev(f"note: {rel} on disk ({got[:12]}) is this audit's edited version; the run recorded "
+                           f"{AUDIT_COMMITTED.get(want, '?')} {want[:12]}")
                     n_ok += 1
                     continue
                 if row.eq(got, want, f"tool file {rel} on disk vs header"):
@@ -788,8 +791,8 @@ class Audit:
             for rel, want in rp["inputs"].items():
                 if is_tool_path(rel):
                     n_tool += 1
-                    if rel == AUDIT_SELF_REL:
-                        row.eq(want, AUDIT_V1_SHA, f"rust-products input {rel} = committed audit v1")
+                    if rel == AUDIT_SELF_REL and self.r.hash_only(rel) != want:
+                        row.need(want in AUDIT_COMMITTED, f"rust-products input {rel} = a committed audit version")
                     else:
                         row.eq(self.r.hash_only(rel), want, f"rust-products tool input {rel} (identity hash)")
                     continue
@@ -809,7 +812,9 @@ class Audit:
                 continue
             if is_tool_path(path):
                 skipped += 1
-                got = AUDIT_V1_SHA if path == AUDIT_SELF_REL else self.r.hash_only(path)
+                got = self.r.hash_only(path)
+                if path == AUDIT_SELF_REL and want in AUDIT_COMMITTED:
+                    got = want
                 if got == want:
                     ok += 1
                 else:
@@ -1432,6 +1437,31 @@ class Audit:
                 row.miss(f"{leg_cnl_missing} legacy in-scope jobs were compiled from typed JSON only, but each has a CNL source "
                          "(legacy544 run-005 source.cnl, sha equal to its record's cnl_sha256); case-inventory selection_rules[2] "
                          "requires the CNL compile where a CNL source exists and byte-identical bundles")
+            # legacy jobs compiled from both forms: the CNL source is legacy544 run-005's, and nothing else records it
+            leg_two = 0
+            for cid in legacy:
+                if cid in single:
+                    continue
+                j = recs.get(cid)
+                if j is None:
+                    row.fail(f"{cid} is not a legacy544 run-005 record")
+                    continue
+                src = self.r.bytes(j["dir"] + "/source.cnl")
+                row.eq(sha(src), j["rec"].get("cnl_sha256"), f"{cid} source.cnl sha = record cnl_sha256")
+                req = self.r.json(j["dir"] + "/compile-cnl.request.json")
+                row.eq(sorted(req), ["format", "source"], f"{cid} compile-cnl request keys")
+                row.eq(req.get("format"), "som.cnl.v1", f"{cid} compile-cnl request format")
+                row.need(req.get("source") == src.decode("utf-8"), f"{cid} compile-cnl request source != source.cnl")
+                x, xj = self.bresp(f"bundle_checks__{cid}__compile_cnl_1.json")
+                row.need(x is not None and H(xj["bundle"]["prompt"]) == j["rec"]["prompt_sha256"],
+                         f"{cid} CNL compile bundle prompt hash != record prompt_sha256")
+                leg_two += 1
+            if leg_two:
+                row.ev(f"{leg_two} legacy jobs: CNL source verified in legacy544 run-005 (source.cnl sha = cnl_sha256, "
+                       "compile-cnl request source = source.cnl); CNL and typed-JSON TypeScript bundles byte-identical")
+                row.attest(f"{leg_two} legacy jobs: the CNL compile request body is not kept (no request hash recorded); that "
+                           "compile_cnl_1/2 were sent the legacy544 CNL source with target typescript is the tool's record "
+                           "(the response file name)")
             # the same typed JSON request in the target report gives the same bytes
             same = 0
             for cid in legacy:
