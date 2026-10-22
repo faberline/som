@@ -22,10 +22,48 @@ REPO_ROOT = SCRIPT_DIR.parents[2]
 SMOKE_PY = SCRIPT_DIR / "smoke.py"
 EXAMPLES_DIR = REPO_ROOT / "som-rs" / "contracts" / "compiler-v1" / "examples"
 TS_REFERENCE_DIR = REPO_ROOT / "som-rs" / "contracts" / "typescript-output-v1" / "reference"
+TS_ACCEPTANCE_PLAN = REPO_ROOT / "som-rs" / "contracts" / "typescript-output-v1" / "acceptance-plan.json"
 TS_BE_DOC = REPO_ROOT / "docs" / "typescript-be.md"
 GOAL_DOC = REPO_ROOT / "docs" / "goal.md"
 ROADMAP_DOC = REPO_ROOT / "docs" / "roadmap.md"
 TEST_URL = "http://127.0.0.1:19876"
+
+
+def check_doc_asset_hash_mismatch_status(doc_text: str, plan_path: Path = TS_ACCEPTANCE_PLAN) -> list[str]:
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    recipes = plan.get("assemble_refusals", {}).get("recipes", [])
+    statuses = {
+        int(r["http_status"])
+        for r in recipes
+        if isinstance(r, dict) and r.get("code") == "ASSET_HASH_MISMATCH"
+    }
+    if len(statuses) != 1:
+        return [f"expected exactly one ASSET_HASH_MISMATCH http_status in {plan_path}, got {statuses!r}"]
+    expected_status = str(next(iter(statuses)))
+
+    problems: list[str] = []
+    matching_lines = [line for line in doc_text.splitlines() if "ASSET_HASH_MISMATCH" in line]
+    if not matching_lines:
+        return ["missing ASSET_HASH_MISMATCH mention in doc"]
+
+    http_status_re = re.compile(r"\bHTTP\s+`?([0-9]{3})`?|\bstatus\s+`?([1-5][0-9]{2})`?", re.IGNORECASE)
+    found_expected = False
+    for line in matching_lines:
+        for match in http_status_re.finditer(line):
+            code_str = match.group(1) or match.group(2)
+            if code_str != expected_status:
+                problems.append(
+                    f"ASSET_HASH_MISMATCH paired with HTTP status {code_str} instead of {expected_status}: {line!r}"
+                )
+            else:
+                found_expected = True
+    if not found_expected:
+        problems.append(
+            f"ASSET_HASH_MISMATCH must be paired with HTTP {expected_status} from acceptance-plan.json assemble_refusals"
+        )
+    if "acceptance-plan.json" not in doc_text or "assemble_refusals" not in doc_text:
+        problems.append("doc must cite acceptance-plan.json assemble_refusals for ASSET_HASH_MISMATCH")
+    return problems
 
 
 def make_fake_som(
@@ -498,6 +536,12 @@ class TypeScriptSmokeScriptTest(unittest.TestCase):
             self.assertIn("(typescript-be.md)", text, f"{doc_path} must link typescript-be.md")
             target = (doc_path.parent / "typescript-be.md").resolve()
             self.assertTrue(target.is_file())
+
+        self.assertEqual(check_doc_asset_hash_mismatch_status(doc_text), [])
+        wrong_status_doc = doc_text.replace("HTTP `400`", "HTTP `422`")
+        self.assertNotEqual(check_doc_asset_hash_mismatch_status(wrong_status_doc), [])
+        missing_cite_doc = doc_text.replace("assemble_refusals", "other_section")
+        self.assertNotEqual(check_doc_asset_hash_mismatch_status(missing_cite_doc), [])
 
 
 if __name__ == "__main__":
