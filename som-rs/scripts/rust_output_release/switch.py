@@ -24,6 +24,12 @@ The live default (ROOT is the repository, PORT 8765) needs --approval. A
 rehearsal (--rehearsal) uses a sandbox ROOT under .local and a harness port and
 may inject a failure. Every byte exchanged is saved in the fresh --output.
 
+When prerequisites.json includes typescript_formatter, switch.py sets
+SOM_TS_PRETTIER=<typescript_formatter.path> for every process it starts.
+runtime/default.json does not record the environment, so after a
+TypeScript-capable switch, any manual restart of 8765 needs
+SOM_TS_PRETTIER=<typescript_formatter.path>.
+
 usage: switch.py --prerequisites FILE [--root DIR --port N --output NEW_DIR
                  (--execute | --restore EVIDENCE) [--approval FILE | --rehearsal [--inject-failure STAGE]]]
 """
@@ -118,6 +124,7 @@ def bring_back(run, root, port, previous, pointers, stop, binaries, python):
 
 def execute(config, root, port, output, approval, rehearsal, selected):
     runtime, legacy = rc.check_prerequisites(config)
+    rc.apply_formatter_env(config)
     default_path, snapshot, current, pointers = current_state(root, port)
     if not rehearsal:
         approval = check_approval(approval, 'switch-default-8765-rust-output', config, snapshot)
@@ -226,6 +233,7 @@ def execute(config, root, port, output, approval, rehearsal, selected):
 def restore(config, root, port, output, approval, rehearsal, evidence):
     """Recovery: put back the previous default of a committed switch."""
     rc.check_prerequisites(config)
+    rc.apply_formatter_env(config)
     default_path, snapshot, current, pointers = current_state(root, port)
     rc.require(Path(current['evidence']) == evidence, 'the default was not committed by this evidence')
     journal = rc.load(evidence / 'journal.json')

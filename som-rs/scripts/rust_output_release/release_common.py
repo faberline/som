@@ -168,11 +168,31 @@ def check_prerequisites(config):
     require(len(config['rust_canaries']) >= 2, 'need two Rust canaries')
     if 'typescript_canaries' in config:
         require(len(config['typescript_canaries']) >= 2, 'need two TypeScript canaries')
+        formatter = config.get('typescript_formatter')
+        require(isinstance(formatter, dict) and formatter.get('env') == 'SOM_TS_PRETTIER',
+                'missing or invalid typescript_formatter')
+        formatter_path = formatter.get('path')
+        require(isinstance(formatter_path, str) and Path(formatter_path).is_absolute() and Path(formatter_path).exists(),
+                f'invalid typescript_formatter path: {formatter_path}')
     if 'assets' in config['candidate']:
         assets_match(Path(config['candidate']['assets']['path']), runtime['health'])
         require({c['family'] for c in previous_python(config)} >= {'flow', 'legacy'},
                 'missing previous python canary family')
     return runtime, legacy
+
+
+def apply_formatter_env(config):
+    """Set SOM_TS_PRETTIER in os.environ when typescript_formatter is present."""
+    formatter = config.get('typescript_formatter')
+    if formatter is None:
+        return
+    require(isinstance(formatter, dict) and formatter.get('env') == 'SOM_TS_PRETTIER',
+            'invalid typescript_formatter')
+    path = formatter.get('path')
+    require(isinstance(path, str) and bool(path), 'invalid typescript_formatter path')
+    current = os.environ.get('SOM_TS_PRETTIER')
+    require(current in (None, path), f'SOM_TS_PRETTIER={current} conflicts with pinned {path}')
+    os.environ['SOM_TS_PRETTIER'] = path
 
 
 def previous_python(config):
