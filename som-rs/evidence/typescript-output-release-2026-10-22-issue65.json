@@ -1,0 +1,300 @@
+{
+ "version": "som.rust-output-release.v1",
+ "issues": [
+  65,
+  117,
+  118,
+  121,
+  123
+ ],
+ "release": null,
+ "release_note": "No GitHub release or tag was made. A v0.5.0 release needs a separate user approval.",
+ "milestone": "M8 — TypeScript BE phase 1",
+ "phase": 1,
+ "target": "typescript",
+ "recorded_at": "2026-10-22T13:55:00.006599+00:00",
+ "status": "passed",
+ "status_note": "TypeScript candidate-001, built from 8c4a91fbb5, passed the #65 TypeScript acceptance plan (run-003) with an independent audit (audit-003: 34 passed, 39 attested, 2 post-acceptance, 0 unrun, 0 failed). The release inputs pin Python, Rust and TypeScript canaries and the prettier tree (SOM_TS_PRETTIER). A sandbox rehearsal passed the switch, every injected failure and the restore without touching the live default; after the user approval, the switch on 127.0.0.1:8765 and a post-switch check passed. The compiler assets are unchanged (d95d93c7…), so Python and Rust product files and bundles are byte-identical. Raw outputs stay local; this file holds summaries and hashes only.",
+ "blockers": [],
+ "tools_commit": "f45801455f",
+ "tool_files": {
+  "som-rs/scripts/rust_output_release/check_default.py": "1667cee4c2c0cc0b9052b55abcd7e1b836a121e91ce55eca13d985b2eb92dff7",
+  "som-rs/scripts/rust_output_release/prepare_inputs.py": "659356b4031a7d841c79faa2f572054984b3b94b5c62b304b32149e2893a6e90",
+  "som-rs/scripts/rust_output_release/rehearse.py": "13ab79745b8e75896bf007827680c83354ba840d4de4906279e8affe9ef7e1c3",
+  "som-rs/scripts/rust_output_release/release_common.py": "684aaa99d5210b1f6a6f3bbc473dfffdd91da202c0e1ad3b9bbb4821dcba70ce",
+  "som-rs/scripts/rust_output_release/switch.py": "a00bc290c75762d864f6f4f2f973cc146a771fd6872347a89d8f3f1d855d2ba9",
+  "som-rs/scripts/rust_output_release/test_typescript_canaries.py": "e2b153605cfcab51a9415f9f98308dcea1b7b811ec7df8f2deb7295e15055905",
+  "som-rs/scripts/compiler_default_switch.py": "289a8470c5de2a183b01c8a138ecb4bc6cfe80a624f0291b32b779cc854bfb12"
+ },
+ "candidate": {
+  "directory": ".local/typescript-output/candidate-001",
+  "build_commit": "8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af",
+  "binary_sha256": "2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c",
+  "binary_bytes": 14112704,
+  "source_json_sha256": "d40578d8845fff8bfeff627924aa501e56f3973eddb09c2d871e25adec2bbbe5",
+  "runtime_receipt_sha256": "7c4ba46a498bb0f601bd67ff77f99dfe75e4ee1669d6af3c53f3b338a550b970",
+  "build_receipt_sha256": "0918984e7c9c00c5299d62d38209658385b960f996d84bf0514b52c04c528d73",
+  "qa_port": 18960,
+  "prettier_tree_sha256": "f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299",
+  "health": {
+   "backend_sha256": "581ce38f29702c300342cdefe8fe5f1735cefcd1869d6485b44f30063a866711",
+   "asset_manifest_sha256": "d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa"
+  }
+ },
+ "acceptance": {
+  "plan": "som-rs/contracts/typescript-output-v1/acceptance-plan.json",
+  "run": ".local/typescript-output/acceptance/run-003",
+  "summary_sha256": "b2fade210f4084c225677796ea743953574bbdec21d909431bf72d329dc81db1",
+  "header_sha256": "086d83c57e90ec3c2da85b23d450987bbe2e9b2a6a2bb955ab2cb9d67119355a",
+  "started_at": "2026-10-22T10:00:25.468425+00:00",
+  "ended_at": "2026-10-22T10:19:49.277929+00:00",
+  "steps": {
+   "target": true,
+   "rt-diagnostics": true,
+   "cli": true,
+   "bundles": true,
+   "ts-products": true,
+   "python-baseline": true,
+   "python-replay": true,
+   "validate-cases": true,
+   "ts-python-controls": true,
+   "rust-python-controls": true,
+   "rust-baseline": true,
+   "rust-products": true,
+   "rust-unchanged": true
+  },
+  "passed": true,
+  "audit": ".local/typescript-output/acceptance/audit-003.json",
+  "audit_version": "som.typescript-output-audit-065.v3",
+  "audit_sha256": "afa5fa6a2936956a2f0fc2b5e82067368f2ff24fc6f15c43d96401dd734b6cca",
+  "audit_counts": {
+   "passed": 34,
+   "attested": 39,
+   "post_acceptance": 2,
+   "unrun": 0,
+   "failed": 0,
+   "rows": 75
+  },
+  "earlier_runs": "run-001 and run-002 were superseded: audit-002 found that the 100 legacy jobs compiled from typed JSON only (#117) and that two strict closing checks were labelled D2 (#118). run-003 is the accepted run and audit-003 the accepted audit."
+ },
+ "prerequisites": {
+  "path": ".local/typescript-output/release-065/inputs-002/prerequisites.json",
+  "file_sha256": "a1f7b93ae376641bdb7e787f029b66c94c5233ed7471f08aa163a905f0fa630e",
+  "receipt_sha256": "d31dbfe739e3e3374fb40c9fc9d3f161619c333581e4753cd961c83c193c545e",
+  "gates": {
+   "acceptance": {
+    "path": "/Users/chrischeng/faberlines/som/.local/typescript-output/acceptance/run-003/summary.json",
+    "sha256": "b2fade210f4084c225677796ea743953574bbdec21d909431bf72d329dc81db1",
+    "assertions": {
+     "/status": "passed",
+     "/blockers": [],
+     "/candidate_after/binary_sha256": "2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c"
+    }
+   },
+   "audit": {
+    "path": "/Users/chrischeng/faberlines/som/.local/typescript-output/acceptance/audit-003.json",
+    "sha256": "afa5fa6a2936956a2f0fc2b5e82067368f2ff24fc6f15c43d96401dd734b6cca",
+    "assertions": {
+     "/totals/failed": 0,
+     "/totals/unrun": 0,
+     "/run": ".local/typescript-output/acceptance/run-003"
+    }
+   }
+  },
+  "typescript_products_run": ".local/typescript-output/acceptance/run-003",
+  "typescript_formatter": {
+   "env": "SOM_TS_PRETTIER",
+   "path": ".local/typescript-output/prettier-001/node_modules/prettier"
+  },
+  "canary_counts": {
+   "python": 2,
+   "rust": 2,
+   "typescript": 2,
+   "m2": 2
+  },
+  "typescript_cases": [
+   "example-v1",
+   "example-v5"
+  ],
+  "earlier_inputs": "inputs-001 predates #123: it had no typescript_formatter, and its rehearsal-001 failed on the first TypeScript canary with 503 ASSET_UNAVAILABLE."
+ },
+ "rehearsal": {
+  "output": ".local/rust-compiler-goal/acceptance/typescript-065/rehearsal-003",
+  "report_sha256": "9ae38149e6af23d23751827cf37b9b9f324d66927f31314d733e3a1f93766b30",
+  "passed": true,
+  "live_default_unchanged": true,
+  "scenarios": [
+   {
+    "name": "switch",
+    "port": 18919,
+    "passed": true,
+    "problems": []
+   },
+   {
+    "name": "after_stop",
+    "port": 18919,
+    "passed": true,
+    "problems": []
+   },
+   {
+    "name": "after_start",
+    "port": 18919,
+    "passed": true,
+    "problems": []
+   },
+   {
+    "name": "after_pointer",
+    "port": 18919,
+    "passed": true,
+    "problems": []
+   },
+   {
+    "name": "after_commit",
+    "port": 18919,
+    "passed": true,
+    "problems": []
+   }
+  ],
+  "earlier_rehearsals": "rehearsal-001 failed (SOM_TS_PRETTIER unset, 503); rehearsal-002 passed with the variable exported by hand; rehearsal-003 passed with #123 setting it from the prerequisites."
+ },
+ "plan": {
+  "path": ".local/rust-compiler-goal/acceptance/typescript-065/plan-001.json",
+  "sha256": "8c3922a98773ebb47ed3cfd9ec85cfc16ea2db754681dbf2208d8449991c006b",
+  "mutations": 0,
+  "service_calls": 0
+ },
+ "approval": {
+  "path": ".local/rust-compiler-goal/acceptance/typescript-065/approval-001.json",
+  "sha256": "e85b5c762e51db7f6392bd1cee63e62dcacc2b9e80cb1ac5f1ab770a59d58e67",
+  "quote": "核准，切換 8765 到 candidate-001（2bceb3a0a1de），用 inputs-002 的 prerequisites。",
+  "bound": {
+   "action": "switch-default-8765-rust-output",
+   "candidate_binary_sha256": "2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c",
+   "script_sha256": "a00bc290c75762d864f6f4f2f973cc146a771fd6872347a89d8f3f1d855d2ba9",
+   "common_sha256": "684aaa99d5210b1f6a6f3bbc473dfffdd91da202c0e1ad3b9bbb4821dcba70ce",
+   "prerequisites_sha256": "d31dbfe739e3e3374fb40c9fc9d3f161619c333581e4753cd961c83c193c545e",
+   "default_sha256": "c3caf48c8eec1aadaf7eb5d266ab1aef289fd5ce91fb18f0479553423518e7f4"
+  }
+ },
+ "switch": {
+  "output": ".local/rust-compiler-goal/acceptance/typescript-065/switch-001",
+  "journal_sha256": "75926d65546f5e6b0f5d9661ea89e0b60e60d6aec84a20fc55cf8dafb693966b",
+  "stages": [
+   "pointers",
+   "canary_passed",
+   "canary_passed",
+   "started",
+   "m2_canary_passed",
+   "m2_canary_passed",
+   "stopped",
+   "started",
+   "canary_passed",
+   "canary_passed",
+   "stopped",
+   "started",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "stopped",
+   "immutable_install_verified",
+   "stop_intent",
+   "started",
+   "new_default_owner",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "pointer_set",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "canary_passed",
+   "committed"
+  ],
+  "rollback": false,
+  "stop_intent_at": "2026-10-22T13:54:48.973799+00:00",
+  "committed_at": "2026-10-22T13:55:00.006599+00:00",
+  "previous_owner_pid": 42786,
+  "new_owner": {
+   "pid": 16959,
+   "start": "Thu Oct 22 21:54:49 2026",
+   "binary_sha256": "2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c"
+  },
+  "previous_default_sha256": "c3caf48c8eec1aadaf7eb5d266ab1aef289fd5ce91fb18f0479553423518e7f4",
+  "default_receipt_sha256": "7715b055bd0d6c43459d67f63d966ecfbe03f4f3636dbac8850100d9038b2ddf"
+ },
+ "post_switch_check": {
+  "output": ".local/rust-compiler-goal/acceptance/typescript-065/check-001",
+  "result_sha256": "7f139034a168a3889a1672daaa3cde0bf20b130657fe9d7074f142a0a9469a73",
+  "passed": true,
+  "checks": {
+   "owner": true,
+   "health": true,
+   "pointers": true,
+   "legacy_rollback_assets": true,
+   "canaries": true,
+   "owner_after": true
+  },
+  "cases": [
+   "post-switch-smoke12",
+   "post-switch-legacy100",
+   "example-v1",
+   "example-v5",
+   "example-v1",
+   "example-v5"
+  ],
+  "health_targets_note": "The health document lists targets [\"python\", \"rust\"]; TypeScript is served through the target field and was exercised by the two TypeScript canaries."
+ },
+ "pointers": {
+  "som-rs/runtime/current": "som-rs/runtime/versions/2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c",
+  "som-rs/compiler-assets/current": "som-rs/compiler-assets/versions/d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa"
+ },
+ "rollback": {
+  "previous_default_binary_sha256": "350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e",
+  "previous_default_receipt_sha256": "c3caf48c8eec1aadaf7eb5d266ab1aef289fd5ce91fb18f0479553423518e7f4",
+  "command": "SOM_TS_PRETTIER=$PWD/.local/typescript-output/prettier-001/node_modules/prettier som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/rust_output_release/switch.py --prerequisites $PWD/.local/typescript-output/release-065/inputs-002/prerequisites.json --root $PWD --port 8765 --restore $PWD/.local/rust-compiler-goal/acceptance/typescript-065/switch-001 --approval FRESH_APPROVAL.json --output FRESH_ABSOLUTE_DIR",
+  "approval_action": "restore-default-8765-rust-output",
+  "restores_to": "the candidate-007 default (binary 350369aa…, receipt c3caf48c…)",
+  "qualified_by": "rehearsal-003 scenario switch: restore and restored check passed"
+ },
+ "claims": {
+  "default_8765_before_approval": "No HTTP request or signal reached 8765 before the approval: the inputs used a stand-in on a harness port, the rehearsal used sandbox roots on harness ports and observed the live default by ps and lsof only, and the plan printed 0 mutations and 0 service calls.",
+  "local_tools_only": true,
+  "paid_or_cloud_runs": false,
+  "training": false,
+  "python_output_byte_identical": true
+ },
+ "limits": [
+  "TypeScript assemble needs SOM_TS_PRETTIER in the environment of `som serve`. runtime/default.json does not record the environment, so a manual restart of 8765 must set SOM_TS_PRETTIER=<repo>/.local/typescript-output/prettier-001/node_modules/prettier, or TypeScript assemble answers 503 ASSET_UNAVAILABLE.",
+  "TypeScript phase 1 covers prompt versions 1 to 5 with PostgreSQL. Versions 6 and 7, v5 capabilities and the other scope.json refusals answer 422 UNSUPPORTED_TARGET for target typescript.",
+  "Rust assemble uses rustfmt from /opt/homebrew/Cellar/rust/1.96.1; Python output is not affected."
+ ],
+ "post_switch_typescript_product": {
+  "note": "After the switch, `som-rs/runtime/current/som write som-rs/contracts/compiler-v1/examples/v1.cnl --target typescript` against 8765 wrote 11 files to a scratch directory. In it, with the toolchain.json offline environment and the vendored cache .local/typescript-output/npm-cache-001: npm ci --offline --ignore-scripts, tsc -p tsconfig.json and the prettier --check of the six source files exited 0, and node --test --test-concurrency=1 test/api.test.ts passed 7 of 7 tests against a scratch PostgreSQL 17.7 on 127.0.0.1:18977, stopped afterwards.",
+  "example": "som-rs/contracts/compiler-v1/examples/v1.cnl",
+  "files": 11,
+  "exit_codes": {
+   "som write": 0,
+   "npm ci": 0,
+   "tsc": 0,
+   "prettier --check": 0,
+   "node --test": 0
+  },
+  "tests": {
+   "total": 7,
+   "passed": 7,
+   "failed": 0,
+   "skipped": 0
+  }
+ },
+ "unrun": [
+  "Only the v1 example was written and tested after the switch; the other TypeScript products were covered by the acceptance run (ts-products step) on the candidate."
+ ]
+}

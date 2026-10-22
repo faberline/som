@@ -1,18 +1,21 @@
 # Current development state — 2026-10-22
 
-The local default on `127.0.0.1:8765` is rust-output-candidate-007 since `2026-10-21T17:09:02.500328+00:00`, released as [v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0) (#81).
-It serves the Python target and the phase 2 Rust target without loading a model. The post-switch check passed.
+The local default on `127.0.0.1:8765` is TypeScript candidate-001 since `2026-10-22T13:55:00.006599+00:00` (#65).
+It serves the Python, Rust and TypeScript targets without loading a model. The post-switch check passed, with Python, Rust and TypeScript canaries.
+`target typescript` now writes a Node.js 26.5 + Hono + `pg` product for prompt versions 1 to 5 with PostgreSQL; versions 6 and 7 and the other scope.json refusals answer 422 UNSUPPORTED_TARGET. Read [docs/typescript-be.md](../docs/typescript-be.md).
+TypeScript assemble needs `SOM_TS_PRETTIER` in the environment of `som serve`. `runtime/default.json` does not record it, so a manual restart of 8765 must set `SOM_TS_PRETTIER=$PWD/.local/typescript-output/prettier-001/node_modules/prettier`, or TypeScript assemble answers 503 ASSET_UNAVAILABLE (#123).
 `som write` compiles CNL, assembles the bundle and writes the product directory in one command (#79).
 [docs/python-be.md](../docs/python-be.md) is the Python backend quickstart (#84).
-`target typescript` is selectable but answers 501 for v1–v5 and 422 for v6/v7: TypeScript output is not supported yet.
 A Python resource field or foreign key named `self` builds and runs (#57).
 compiler-v1 refuses a name that collides with a generated Python identifier, such as a v3 filter field named limit or offset, with INVALID_VALUE (#58).
 The Rust target covers every prompt compiler-v1 admits, v1 to v7.
-The compiler assets are unchanged (`d95d93c7…`), so Python and Rust product files and bundles are byte-identical to candidate-006.
-See the [release evidence](evidence/rust-output-release-2026-10-22-issue81.json).
+The compiler assets are unchanged (`d95d93c7…`), so Python and Rust product files and bundles are byte-identical to candidate-007.
+No version tag or GitHub release has been made for this default yet; v0.5.0 needs the user's approval.
+See the [release evidence](evidence/typescript-output-release-2026-10-22-issue65.json).
 
 Earlier defaults, all kept for rollback:
 
+- rust-output-candidate-007 (#81, [v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0)), binary `350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e`, from `2026-10-21T17:09:02.500328+00:00`;
 - rust-output-candidate-006 (#57, #58), binary `52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2`, from `2026-10-20T08:39:04.671848+00:00`;
 - rust-output-candidate-004 (#56), binary `d2de75223496665cd563b51daa51741faa337c9cc2d46d8af8cc596b9f399b9b`, from `2026-10-20T03:14:10.975162+00:00`;
 - rust-output-candidate-003 (#51), binary `05f1bfe6eef7045f054b1323a193e8f7bea1b4afe4f287a47cd0d0f9347ae11c`, from `2026-10-16T05:54:52.297481+00:00`;
@@ -24,10 +27,10 @@ Earlier defaults, all kept for rollback:
 CNL uses fixed English clauses. Data strings can include Chinese.
 The caller supplies each business choice. The compiler does not guess missing facts.
 The new production path does not load models or start Python.
-Python remains the default output language and an independent test tool. Add `--target rust` for a Cargo product.
+Python remains the default output language and an independent test tool. Add `--target rust` for a Cargo product, or `--target typescript` for an npm product.
 
 The installed compiler uses separate `runtime/current` and `compiler-assets/current` links.
-`som-rs/runtime/current` points to `versions/350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e`.
+`som-rs/runtime/current` points to `versions/2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c`.
 `som-rs/compiler-assets/current` points to `versions/d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa`.
 The model link `som-rs/models/current` and the block link are unchanged legacy M2 rollback assets.
 Read [the acceptance report](RUST_REPORT.md), [the guide](RUST_GUIDE.md) and [the operator handoff](RUST_HANDOFF.md).

@@ -1,9 +1,19 @@
 # Rust compiler acceptance report — 2026-10-22
 
+## TypeScript BE phase 1 release (#65) — 2026-10-22
+
+Since `2026-10-22T13:55:00.006599+00:00` the default on `127.0.0.1:8765` is TypeScript candidate-001. It serves Python, Rust and TypeScript (prompt versions 1 to 5 with PostgreSQL).
+The acceptance run-003 passed every step, and its independent audit-003 passed with 0 failed and 0 unrun (34 passed, 39 attested, 2 post-acceptance).
+A sandbox rehearsal passed the switch, every injected failure and the restore; the post-switch check passed 6/6 checks with the Python, Rust and TypeScript canaries.
+After the switch, `som write --target typescript` wrote the v1 example, and that product passed `npm ci --offline`, `tsc`, the prettier check and 7/7 `node --test` tests on a scratch PostgreSQL.
+Binary SHA-256: `2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c`, built from commit `8c4a91fbb5`. Assets `d95d93c7…` and the Python backend `581ce38f…` are unchanged, so Python and Rust product files and bundles are byte-identical to candidate-007.
+TypeScript assemble needs `SOM_TS_PRETTIER` in the server environment (#123); see the restart note in [RUST_HANDOFF.md](RUST_HANDOFF.md).
+No tag or GitHub release yet; v0.5.0 needs the user's approval. Candidate-007 (`350369aa…`) is kept for rollback. See the [release evidence](evidence/typescript-output-release-2026-10-22-issue65.json).
+
 ## v0.2.0 release (#81) — 2026-10-22
 
-Since `2026-10-21T17:09:02.500328+00:00` the default on `127.0.0.1:8765` is rust-output-candidate-007, released as [v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0).
-It adds `som write` (#79) and the Python backend quickstart (#84). `target typescript` answers 501 or 422: TypeScript output is not supported yet.
+From `2026-10-21T17:09:02.500328+00:00` until `2026-10-22T13:55:00.006599+00:00` the default on `127.0.0.1:8765` was rust-output-candidate-007, released as [v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0).
+It adds `som write` (#79) and the Python backend quickstart (#84). `target typescript` answered 501 or 422: TypeScript output was not supported in that release.
 Candidate-007 passed the issue57 acceptance plan against candidate-006 with an independent audit (16 passed, 0 failed, 0 unrun).
 `som write` wrote all 16 compiler-v1 examples, and a v3 product passed its own tests, `/healthz` and a POST on a local PostgreSQL.
 The post-switch check passed 6/6 checks with all 7 canary cases.

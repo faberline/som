@@ -79,7 +79,7 @@ Run `som write <file.cnl> --target typescript --out <new dir>` to compile a `.cn
 som write <file.cnl> --target typescript --out <new dir>
 ```
 
-`som write --target typescript` needs the v0.5.0 default; until then, point `--url` at a candidate on a QA port.
+`som write --target typescript` needs the #65 default (TypeScript candidate-001, the default on `127.0.0.1:8765` since 2026-10-22) or later. With an older default, point `--url` at a TypeScript candidate on a QA port.
 
 For example, with [v1.cnl](../som-rs/contracts/compiler-v1/examples/v1.cnl):
 

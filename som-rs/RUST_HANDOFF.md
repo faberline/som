@@ -1,8 +1,48 @@
 # Rust compiler handoff — 2026-10-22
 
-## Current default: v0.2.0, `som write` (#81)
+## Current default: TypeScript BE phase 1 (#65)
 
-The default on `127.0.0.1:8765` is rust-output-candidate-007 since `2026-10-21T17:09:02.500328+00:00`, released as [v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0).
+The default on `127.0.0.1:8765` is TypeScript candidate-001 since `2026-10-22T13:55:00.006599+00:00`. No tag or GitHub release has been made; v0.5.0 needs the user's approval.
+Binary SHA-256: `2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c`, built from commit `8c4a91fbb5`.
+`som-rs/runtime/current` points to `runtime/versions/2bceb3a0…`. `compiler-assets/current` still points to `compiler-assets/versions/d95d93c7…`.
+The Python backend stays `581ce38f…`, so Python and Rust product files and bundles are byte-identical to candidate-007.
+The [release evidence](evidence/typescript-output-release-2026-10-22-issue65.json) binds TypeScript acceptance run-003 and its independent audit-003 (0 failed, 0 unrun),
+the release inputs (inputs-002), rehearsal-003, the approval, the switch journal, the post-switch check and a post-switch TypeScript product test.
+
+What changed for callers:
+
+- `--target typescript` writes a Node.js 26.5 + Hono + `pg` product for prompt versions 1 to 5 with PostgreSQL. See [docs/typescript-be.md](../docs/typescript-be.md).
+- Versions 6 and 7, v5 capabilities and the other scope.json refusals answer 422 UNSUPPORTED_TARGET for `target typescript`.
+
+The post-switch check passed 6/6 checks with the Python canaries post-switch-smoke12 and post-switch-legacy100, and the Rust and TypeScript canaries example-v1 and example-v5.
+
+### Restarting 8765 by hand
+
+TypeScript assemble reads the pinned prettier tree from `SOM_TS_PRETTIER`. `runtime/default.json` records the command but not the environment.
+The release tools set the variable from the prerequisites `typescript_formatter` (#123). A manual restart of 8765 must set it too, or TypeScript assemble answers 503 ASSET_UNAVAILABLE:
+
+```sh
+SOM_TS_PRETTIER=$PWD/.local/typescript-output/prettier-001/node_modules/prettier $PWD/som-rs/runtime/versions/2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c/som serve --assets $PWD/som-rs/compiler-assets/versions/d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa --port 8765
+```
+
+This is the `command` in `runtime/default.json`, run from the repository root.
+
+### Recovery command
+
+To put candidate-007 (`350369aa…`) back, write a fresh approval with action `restore-default-8765-rust-output`
+bound to the current `default.json`, then run from the repository root:
+
+```sh
+som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/rust_output_release/switch.py --prerequisites $PWD/.local/typescript-output/release-065/inputs-002/prerequisites.json --root $PWD --port 8765 --restore $PWD/.local/rust-compiler-goal/acceptance/typescript-065/switch-001 --approval FRESH_APPROVAL.json --output FRESH_ABSOLUTE_DIR
+```
+
+The #65 rehearsal (rehearsal-003) qualified this restore on a harness port.
+Then run `scripts/rust_output_release/check_default.py` with `--expect-binary-sha256 350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e`.
+After that restore, `target typescript` answers 501 or 422 again; Python and Rust output does not change.
+
+## Previous default: v0.2.0, `som write` (#81)
+
+The default on `127.0.0.1:8765` was rust-output-candidate-007 from `2026-10-21T17:09:02.500328+00:00` until `2026-10-22T13:55:00.006599+00:00`, released as [v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0).
 Binary SHA-256: `350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e`, built from commit `b891143d8f`.
 `som-rs/runtime/current` points to `runtime/versions/350369aa…`. `compiler-assets/current` still points to `compiler-assets/versions/d95d93c7…`.
 The Python backend stays `581ce38f…`, so Python and Rust product files and bundles are byte-identical to candidate-006.
@@ -17,7 +57,7 @@ What changed for callers:
 The post-switch check passed 6/6 checks with the Python canaries post-switch-smoke12 and post-switch-legacy100 and the Rust canaries
 example-v1, example-v5, example-v6, example-v7 and CAP_MONGODB_FIREBASE_GCS_CSV.
 
-### Recovery command
+### Recovery command for #81
 
 To put candidate-006 (`52658e13…`) back, write a fresh approval with action `restore-default-8765-rust-output`
 bound to the current `default.json`, then run from the repository root:

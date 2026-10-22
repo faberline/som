@@ -6,7 +6,7 @@ SOM's end goal is code for four scenarios: backend, frontend, SRE, and AI.
 
 | Scenario | Python | Rust | TypeScript | React |
 |---|---|---|---|---|
-| BE | supported | supported | planned ([#65](https://github.com/faberline/som/issues/65)) | — |
+| BE | supported | supported | phase 1: v1–v5, PostgreSQL ([#65](https://github.com/faberline/som/issues/65)) | — |
 | SRE | planned ([#66](https://github.com/faberline/som/issues/66)) | planned | planned | — |
 | AI | planned ([#67](https://github.com/faberline/som/issues/67)) | planned | planned | — |
 | FE | — | — | — | planned ([#68](https://github.com/faberline/som/issues/68)) |

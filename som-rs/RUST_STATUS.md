@@ -1,8 +1,18 @@
 # Rust compiler status — 2026-10-22
 
+## TypeScript BE phase 1 (#65) — 2026-10-22
+
+Since `2026-10-22T13:55:00.006599+00:00` the default on `127.0.0.1:8765` is TypeScript candidate-001. It serves Python, Rust and TypeScript (prompt versions 1 to 5 with PostgreSQL).
+The acceptance run-003 passed every step, and its independent audit-003 passed with 0 failed and 0 unrun (34 passed, 39 attested, 2 post-acceptance).
+A sandbox rehearsal passed the switch, every injected failure and the restore; the post-switch check passed 6/6 checks with the Python, Rust and TypeScript canaries.
+After the switch, `som write --target typescript` wrote the v1 example, and that product passed `npm ci --offline`, `tsc`, the prettier check and 7/7 `node --test` tests on a scratch PostgreSQL.
+Binary SHA-256: `2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c`, built from commit `8c4a91fbb5`. Assets `d95d93c7…` and the Python backend `581ce38f…` are unchanged, so Python and Rust product files and bundles are byte-identical to candidate-007.
+TypeScript assemble needs `SOM_TS_PRETTIER` in the server environment (#123); see the restart note in [RUST_HANDOFF.md](RUST_HANDOFF.md).
+No tag or GitHub release yet; v0.5.0 needs the user's approval. Candidate-007 (`350369aa…`) is kept for rollback. See the [release evidence](evidence/typescript-output-release-2026-10-22-issue65.json).
+
 ## v0.2.0 release (#81) — 2026-10-22
 
-Since `2026-10-21T17:09:02.500328+00:00` the default on `127.0.0.1:8765` is rust-output-candidate-007 ([v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0)).
+From `2026-10-21T17:09:02.500328+00:00` until `2026-10-22T13:55:00.006599+00:00` the default on `127.0.0.1:8765` was rust-output-candidate-007 ([v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0)).
 `som write` writes a product directory in one command (#79); `docs/python-be.md` is the Python quickstart (#84).
 The acceptance audit passed 16/0/0 and the post-switch check passed 6/6 checks with all 7 canary cases.
 Binary SHA-256: `350369aa3f84aeed470d8f076418622fba9a65a9907b81e88ff868620fd1788e`, built from commit `b891143d8f`. Assets `d95d93c7…` and the Python backend `581ce38f…` are unchanged.
