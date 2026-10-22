@@ -4,6 +4,7 @@
 //! sources, so every Python bundle keeps the bytes the accepted compiler-v1 returns.
 //! The check order is the frozen contracts/rust-output-v1/api.schema.json x-check-order.
 pub mod profile;
+pub mod react;
 pub mod rust;
 pub mod typescript;
 
