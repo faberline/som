@@ -62,7 +62,7 @@ def _build_fixture_tables() -> tuple[
             base_prompt = json.loads(
                 (check_bundles.EXAMPLES / base_prompt_file).read_text(encoding="utf-8")
             )
-            base_prompt["package"] = f"name_case_{nc['id'].lower()}"
+            base_prompt["package"] = f"name_case_{nc['id'].split('_', 1)[0].lower()}"
             cnl_to_prompt[cnl_text] = copy.deepcopy(base_prompt)
 
     ts_specific = check_bundles.compute_expected_ts_specific_descriptors()
@@ -821,8 +821,7 @@ class CheckBundlesTests(unittest.TestCase):
                     req.get("format") == "som.prompt-json.v1"
                     and req.get("target") == "typescript"
                     and isinstance(req.get("prompt"), dict)
-                    and req["prompt"].get("package")
-                    == "name_case_tn01_cnl_field_uppercase"
+                    and req["prompt"].get("package") == "name_case_tn01"
                 ):
                     return default[0], default[1] + b"\n"
             return default
