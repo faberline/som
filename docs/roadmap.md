@@ -3,6 +3,7 @@
 This roadmap serves the [goal](goal.md): BE, FE, SRE, and AI code.
 The [Python backend quickstart](python-be.md) walks through generating and running a Python backend project.
 The [Rust backend quickstart](rust-be.md) walks through generating and building a Rust backend project offline.
+The [TypeScript backend quickstart](typescript-be.md) walks through generating and running a TypeScript backend project offline.
 It is a proposal. A person decides each track's scope and approves its contract.
 
 ## How a track runs
