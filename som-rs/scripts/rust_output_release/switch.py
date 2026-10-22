@@ -127,6 +127,7 @@ def execute(config, root, port, output, approval, rehearsal, selected):
     rc.assets_match(Path(current['command'][3]), current['health'])
     rc.assets_match(assets, runtime['health'])
     python, rust, previous_python = config['python_canaries'], config['rust_canaries'], rc.previous_python(config)
+    typescript = config.get('typescript_canaries', [])
     output.mkdir(parents=True, exist_ok=False)
     run = rc.Release(output, current['identity']['cwd'])
     run.save('prerequisites.json', rc.canon(config).encode())
@@ -144,7 +145,8 @@ def execute(config, root, port, output, approval, rehearsal, selected):
         for argv, health, cases in [
                 (legacy['command'][:-1], legacy['health'], None),
                 (current['command'][:-1], current['health'], previous_python),
-                ([str(candidate), 'serve', '--assets', str(assets), '--port'], runtime['health'], python + rust)]:
+                ([str(candidate), 'serve', '--assets', str(assets), '--port'], runtime['health'],
+                 python + rust + typescript)]:
             clone = run.start(argv + [str(rc.free_harness_port(harness))], health)
             try:
                 if cases is None:
@@ -169,7 +171,7 @@ def execute(config, root, port, output, approval, rehearsal, selected):
             new_owner = run.start(argv, runtime['health'])
             run.event('new_default_owner', owner=new_owner)
             inject(selected, 'after_start')
-            run.canary(port, served, python + rust, 'new-default')
+            run.canary(port, served, python + rust + typescript, 'new-default')
             rc.require(rc.link_state(root / 'som-rs/runtime/current') == pointers['runtime'], 'pointer changed externally')
             rc.atomic_link(root / 'som-rs/runtime/current', {'kind': 'symlink', 'target': str(installed.parent)})
             run.event('pointer_set', name='runtime', target=str(installed.parent))
@@ -180,7 +182,7 @@ def execute(config, root, port, output, approval, rehearsal, selected):
                 run.event('pointer_set', name='compiler-assets', target=str(new_assets))
             inject(selected, 'after_pointer')
             run.health(port, runtime['health'])
-            run.canary(port, served, python + rust, 'new-default-after-pointer')
+            run.canary(port, served, python + rust + typescript, 'new-default-after-pointer')
             rc.require(rc.identity(new_owner['pid'], argv, port) == new_owner, 'new owner changed')
             rc.require(default_path.read_bytes() == snapshot, 'default receipt changed externally')
             receipt = {'version': 'som.default-runtime.v2', 'pid': new_owner['pid'], 'command': argv,
