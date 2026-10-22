@@ -16,7 +16,7 @@ The user set this goal on 2026-10-21.
 ## Status on 2026-10-22
 
 Only BE exists. It covers prompts v1–v7 with Python and Rust output, and prompts v1–v5 with PostgreSQL in TypeScript (phase 1, #65).
-The local service on `127.0.0.1:8765` serves all three. [v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0) added `som write` and the Python backend quickstart; TypeScript candidate-001 became the default on 2026-10-22, before its v0.5.0 tag.
+The local service on `127.0.0.1:8765` serves all three. [v0.2.0](https://github.com/faberline/som/releases/tag/v0.2.0) added `som write` and the Python backend quickstart; TypeScript candidate-001 became the default on 2026-10-22 and was released as [v0.5.0](https://github.com/faberline/som/releases/tag/v0.5.0).
 No SRE, AI, or FE output exists yet.
 
 ## Rules for every new target

@@ -8,7 +8,7 @@ A sandbox rehearsal passed the switch, every injected failure and the restore; t
 After the switch, `som write --target typescript` wrote the v1 example, and that product passed `npm ci --offline`, `tsc`, the prettier check and 7/7 `node --test` tests on a scratch PostgreSQL.
 Binary SHA-256: `2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c`, built from commit `8c4a91fbb5`. Assets `d95d93c7…` and the Python backend `581ce38f…` are unchanged, so Python and Rust product files and bundles are byte-identical to candidate-007.
 TypeScript assemble needs `SOM_TS_PRETTIER` in the server environment (#123); see the restart note in [RUST_HANDOFF.md](RUST_HANDOFF.md).
-No tag or GitHub release yet; v0.5.0 needs the user's approval. Candidate-007 (`350369aa…`) is kept for rollback. See the [release evidence](evidence/typescript-output-release-2026-10-22-issue65.json).
+Released as [v0.5.0](https://github.com/faberline/som/releases/tag/v0.5.0) (tag at `8c4a91fbb5`, notes only). Candidate-007 (`350369aa…`) is kept for rollback. See the [release evidence](evidence/typescript-output-release-2026-10-22-issue65.json).
 
 ## v0.2.0 release (#81) — 2026-10-22
 

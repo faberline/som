@@ -10,7 +10,7 @@ A Python resource field or foreign key named `self` builds and runs (#57).
 compiler-v1 refuses a name that collides with a generated Python identifier, such as a v3 filter field named limit or offset, with INVALID_VALUE (#58).
 The Rust target covers every prompt compiler-v1 admits, v1 to v7.
 The compiler assets are unchanged (`d95d93c7…`), so Python and Rust product files and bundles are byte-identical to candidate-007.
-No version tag or GitHub release has been made for this default yet; v0.5.0 needs the user's approval.
+It is released as [v0.5.0](https://github.com/faberline/som/releases/tag/v0.5.0), tagged at the build commit `8c4a91fbb5`, notes only.
 See the [release evidence](evidence/typescript-output-release-2026-10-22-issue65.json).
 
 Earlier defaults, all kept for rollback:

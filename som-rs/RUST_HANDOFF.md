@@ -2,7 +2,7 @@
 
 ## Current default: TypeScript BE phase 1 (#65)
 
-The default on `127.0.0.1:8765` is TypeScript candidate-001 since `2026-10-22T13:55:00.006599+00:00`. No tag or GitHub release has been made; v0.5.0 needs the user's approval.
+The default on `127.0.0.1:8765` is TypeScript candidate-001 since `2026-10-22T13:55:00.006599+00:00`. It is released as [v0.5.0](https://github.com/faberline/som/releases/tag/v0.5.0) (tag at `8c4a91fbb5`, notes only).
 Binary SHA-256: `2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c`, built from commit `8c4a91fbb5`.
 `som-rs/runtime/current` points to `runtime/versions/2bceb3a0…`. `compiler-assets/current` still points to `compiler-assets/versions/d95d93c7…`.
 The Python backend stays `581ce38f…`, so Python and Rust product files and bundles are byte-identical to candidate-007.
