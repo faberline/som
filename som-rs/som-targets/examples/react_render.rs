@@ -4,8 +4,8 @@
 //! Usage: react_render <compiler assets dir> <cases.json> <out dir (new)>
 //!
 //! cases.json is {"cases": [{"id": ..., "bodies": [request body, ...]}]}. Each body is a
-//! compile request with target react in the frozen x-check-order up to the React profile;
-//! the crate's compile entry admits target react only from issue #128. For each case the
+//! compile request with target react, run in the frozen x-check-order up to the React profile
+//! (the same steps as the crate compile entry since issue #128). For each case the
 //! driver writes <out>/<id>/prompt.json (the canonical bundle prompt) and <out>/<id>/files/,
 //! and <out>/results.json lists per case the status and bundle hash of each body, the
 //! prompt hash and the hash of each product file.

@@ -23,6 +23,7 @@ pub enum Target {
     Python,
     Rust,
     TypeScript,
+    React,
 }
 
 /// A complete HTTP reply: status code and JSON body.
@@ -68,6 +69,7 @@ pub fn select(doc: &Document) -> Result<Target, Value> {
         Some(Value::String(target)) if target == "python" => Ok(Target::Python),
         Some(Value::String(target)) if target == "rust" => Ok(Target::Rust),
         Some(Value::String(target)) if target == "typescript" => Ok(Target::TypeScript),
+        Some(Value::String(target)) if target == "react" => Ok(Target::React),
         Some(_) => Err(doc.error("/target", "INVALID_SCHEMA", TARGET_CAUSE, TARGET_ALLOWED)),
     }
 }
@@ -179,12 +181,38 @@ fn compile_typescript(
     typescript::compile(compiler, doc, prompt, pointer)
 }
 
+fn compile_react(
+    compiler: &Compiler,
+    doc: &Document,
+    prompt: &Value,
+    origin: Origin,
+    pointer: &str,
+) -> Reply {
+    // Step 4: compiler-v1 semantic validation, unchanged. CNL parsing already ran it.
+    if let Origin::Json = origin
+        && let Err(error) = som::validate_prompt(prompt)
+    {
+        return rejected(som::json_diagnostics::prompt_error(
+            doc, prompt, &error, "/prompt",
+        ));
+    }
+    // Step 5: the React phase 1 profile.
+    if let Some(found) = react::profile::check(prompt) {
+        return profile_refusal(doc, origin, &found);
+    }
+    // Step 6: planning.
+    react::compile(compiler, doc, prompt, pointer)
+}
+
 /// Assemble a som.dsl-bundle.v2 bundle. A bundle whose target member is "typescript"
-/// runs the TypeScript v2 assembler; every other v2 bundle runs the Rust v2 assembler
-/// (which checks members, version and target in the frozen check_schema order).
+/// runs the TypeScript v2 assembler and one whose target member is "react" runs the React
+/// v2 assembler; every other v2 bundle runs the Rust v2 assembler (which checks members,
+/// version and target in the frozen check_schema order).
 pub fn assemble(compiler: &Compiler, doc: &Document) -> Reply {
     if doc.value["bundle"]["target"] == typescript::TARGET {
         typescript::assemble(compiler, doc)
+    } else if doc.value["bundle"]["target"] == react::TARGET {
+        react::assemble(compiler, doc)
     } else {
         rust::assemble(compiler, doc)
     }
@@ -247,6 +275,9 @@ pub fn compile(compiler: &Compiler, source: &str) -> Reply {
         }
         Target::TypeScript => {
             return compile_typescript(compiler, &doc, &prompt, origin, semantic_pointer);
+        }
+        Target::React => {
+            return compile_react(compiler, &doc, &prompt, origin, semantic_pointer);
         }
         Target::Python => {}
     }

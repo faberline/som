@@ -690,46 +690,15 @@ mod tests {
         );
     }
 
-    /// A compile request with target react, in the frozen x-check-order. The crate's compile
-    /// entry admits target react only once select() does (issue #128).
-    fn react_compile(comp: &Compiler, body: &str) -> Reply {
-        let doc = match strict_json::parse(body) {
-            Ok(doc) => doc,
-            Err(error) => return rejected(error),
-        };
-        assert_eq!(doc.value["target"], TARGET, "a target react request");
-        if doc.value["format"] == "som.cnl.v1" {
-            assert!(crate::envelope(&doc.value, &["format", "source"]));
-            let source = doc.value["source"].as_str().expect("CNL source");
-            match som::cnl::parse(source) {
-                Ok(parsed) => {
-                    if let Some(found) = profile::check(&parsed.prompt) {
-                        let origin = crate::Origin::Cnl(&parsed.source_map);
-                        return crate::profile_refusal(&doc, origin, &found);
-                    }
-                    compile(comp, &doc, &parsed.prompt, "/source")
-                }
-                Err(error) => (error.http_status(), error.response()),
-            }
-        } else {
-            assert_eq!(doc.value["format"], "som.prompt-json.v1");
-            assert!(crate::envelope(&doc.value, &["format", "prompt"]));
-            let prompt = doc.value["prompt"].clone();
-            if let Err(error) = som::validate_prompt(&prompt) {
-                return rejected(som::json_diagnostics::prompt_error(
-                    &doc, &prompt, &error, "/prompt",
-                ));
-            }
-            if let Some(found) = profile::check(&prompt) {
-                return crate::profile_refusal(&doc, crate::Origin::Json, &found);
-            }
-            compile(comp, &doc, &prompt, "/prompt")
-        }
-    }
-
     fn assemble_bundle(comp: &Compiler, bundle: &Value) -> Reply {
         let doc = strict_json::parse(&som::flow::canonical(&json!({"bundle": bundle}))).unwrap();
-        assemble(comp, &doc)
+        let reply = assemble(comp, &doc);
+        assert_eq!(
+            crate::assemble(comp, &doc),
+            reply,
+            "the crate dispatches to React"
+        );
+        reply
     }
 
     fn located(body: &str, form: &str, diagnostic: &Value) -> String {
@@ -935,11 +904,7 @@ mod tests {
             let form = case["form"].as_str().expect("form");
             let expected_status = case["http_status"].as_u64().expect("http_status") as u16;
             let expected = &case["expected"];
-            let (status, reply) = if id.starts_with("RR") {
-                crate::compile(&comp, body)
-            } else {
-                react_compile(&comp, body)
-            };
+            let (status, reply) = crate::compile(&comp, body);
             assert_one_diagnostic(status, &reply, expected_status, expected, id);
             assert_eq!(
                 located(body, form, &reply["diagnostics"][0]),
@@ -1074,7 +1039,7 @@ mod tests {
                 );
                 continue;
             }
-            let (status, reply) = react_compile(&comp, body);
+            let (status, reply) = crate::compile(&comp, body);
             assert_eq!(status, 200, "{id}: {reply}");
             let bundle = reply["bundle"].clone();
             assert_eq!(bundle["target"], TARGET);
@@ -1090,7 +1055,7 @@ mod tests {
         assert_eq!(bundles.len(), 8);
         for case in data["name_cases"].as_array().expect("name_cases") {
             let id = case["id"].as_str().expect("id");
-            let (status, reply) = react_compile(&comp, case["body"].as_str().expect("body"));
+            let (status, reply) = crate::compile(&comp, case["body"].as_str().expect("body"));
             assert_eq!(status, 200, "{id}: {reply}");
             let (status, assembled) = assemble_bundle(&comp, &reply["bundle"]);
             assert_eq!(status, 200, "{id}: {assembled}");
@@ -1106,8 +1071,8 @@ mod tests {
         let comp = compiler();
         let data: Value = serde_json::from_str(TARGET_EXAMPLES).expect("target-examples.json");
         let body = data["examples"][0]["body"].as_str().expect("body");
-        let first = react_compile(&comp, body);
-        assert_eq!(first, react_compile(&comp, body));
+        let first = crate::compile(&comp, body);
+        assert_eq!(first, crate::compile(&comp, body));
         let bundle = &first.1["bundle"];
         assert_eq!(
             assemble_bundle(&comp, bundle),
@@ -1131,7 +1096,7 @@ mod tests {
                 .to_owned()
         };
         let v1_body = example("example-v1-json-react");
-        let (code, compiled) = react_compile(&comp, &v1_body);
+        let (code, compiled) = crate::compile(&comp, &v1_body);
         assert_eq!(code, 200);
         let base = compiled["bundle"].clone();
         let other_target = |target: &str| {
