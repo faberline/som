@@ -22,6 +22,20 @@ import release_common as rc  # noqa: E402
 import switch  # noqa: E402
 
 
+def _fake_target_sources() -> list[dict]:
+    cases = []
+    for name in ('v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v7-branch-null'):
+        cnl = pi.targets.EXAMPLES / f'{name}.cnl'
+        cases.append({
+            'id': f'example-{name}',
+            'group': 'public_examples',
+            'prompt_file_sha256': pi.targets.sha((pi.targets.EXAMPLES / f'{name}.prompt.json').read_bytes()),
+            'prompt': json.loads((pi.targets.EXAMPLES / f'{name}.prompt.json').read_text()),
+            'cnl': cnl.read_text() if cnl.exists() else None,
+        })
+    return cases + pi.targets.rejections()
+
+
 def _fake_files(case_id: str) -> dict[str, str]:
     return {
         'package.json': f'{{"name": "{case_id}"}}\n',
@@ -264,6 +278,7 @@ class TestTypeScriptCanaries(unittest.TestCase):
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.tmp = Path(self._tmp.name).resolve()
+        self.enterContext(mock.patch.object(pi.targets, 'sources', side_effect=_fake_target_sources))
         self.ts_run = self.tmp / 'ts-run'
         self.files_by_id = {
             'example-v1': _fake_files('example-v1'),
@@ -775,6 +790,14 @@ class TestTypeScriptCanaries(unittest.TestCase):
             mock.patch.object(pi, 'SWITCH_001', switch_dir),
             mock.patch.object(rc, 'post_raw', side_effect=harness.post_raw),
             mock.patch.object(pi.subprocess, 'run', side_effect=harness.subprocess_run),
+            mock.patch.object(
+                pi,
+                'rust_sources',
+                side_effect=lambda r, ids: [
+                    {'id': cid, 'prompt': {'version': 1}, 'cnl': 'Use prompt version 1.\n', 'phase2_id': None, 'accepted': r / 'products' / pi.products_key(cid)}
+                    for cid in ids
+                ],
+            ),
             mock.patch.object(pi, 'rust_case', side_effect=_fake_rust_case),
             mock.patch.object(pi, 'python_case', side_effect=_fake_py_case),
             mock.patch('builtins.print'),

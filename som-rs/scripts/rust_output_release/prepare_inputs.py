@@ -256,35 +256,6 @@ def _parse_json(raw, message):
         rc.require(False, message)
 
 
-def _target_sources():
-    if not targets.LEGACY.exists():
-        for parent in rc.REPO.parents:
-            candidate = parent / '.local/rust-compiler-goal/acceptance/legacy544'
-            if (candidate / 'inventory-003.json').exists():
-                targets.LEGACY = candidate
-                break
-    try:
-        return targets.sources()
-    except OSError:
-        cases = []
-        for name in ('v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v7-branch-null'):
-            cnl = targets.EXAMPLES / f'{name}.cnl'
-            cases.append({'id': f'example-{name}', 'group': 'public_examples',
-                          'prompt_file_sha256': targets.sha((targets.EXAMPLES / f'{name}.prompt.json').read_bytes()),
-                          'prompt': json.loads((targets.EXAMPLES / f'{name}.prompt.json').read_text()),
-                          'cnl': cnl.read_text() if cnl.exists() else None})
-        for case in json.loads(targets.FIXTURES.read_text())['cases']:
-            cases.append({'id': case['id'], 'group': 'cnl_positive_fixtures:' + case['category'],
-                          'prompt_sha256': case['prompt_sha256'],
-                          'prompt': case['expected_prompt'], 'cnl': case['cnl']})
-        for case in json.loads(targets.COVERAGE.read_text())['cases']:
-            cases.append({'id': case['id'], 'group': 'coverage_cases',
-                          'prompt_file_sha256': case['prompt_file_sha256'],
-                          'prompt': json.loads((targets.COVERAGE.parent / case['prompt']).read_text()),
-                          'cnl': (targets.COVERAGE.parent / case['cnl']).read_text()})
-        return cases + targets.rejections()
-
-
 def ts_compile_body(case, form):
     if form == 'cnl':
         return targets.dump({'format': 'som.cnl.v1', 'source': case['cnl'], 'target': 'typescript'})
@@ -334,7 +305,7 @@ def ts_case(pin, case, port, new):
 def ts_sources(run, ids):
     """Each TypeScript canary with its prompt, CNL (or None) and the accepted product of the TS run."""
     rc.require(len(set(ids)) == len(ids), 'repeated TypeScript canary')
-    sources = {case['id']: case for case in _target_sources() if not case.get('rejection')}
+    sources = {case['id']: case for case in targets.sources() if not case.get('rejection')}
     out = []
     for name in ids:
         rc.require(name in sources, f'unknown TypeScript canary {name}')
@@ -346,31 +317,22 @@ def ts_sources(run, ids):
 
 def rust_sources(run, ids):
     """Each canary with its prompt, CNL (or None) and the accepted product of the acceptance run."""
-    sources = {case['id']: case for case in _target_sources() if not case.get('rejection')}
-    phase2 = by_id = by_prompt = None
+    sources = {case['id']: case for case in targets.sources() if not case.get('rejection')}
+    sys.path.insert(0, str(PHASE2.parent))
+    import check_phase2 as phase2  # type: ignore[import-not-found]
+    every = phase2.cases()
+    by_id = {case['id']: case for case in every}
+    by_prompt = {case['prompt_sha256']: case['id'] for case in every}
     out = []
     for name in ids:
-        if name in sources and targets.rust_profile.check(sources[name]['prompt']) is None:
+        if name in sources:
             prompt, cnl = sources[name]['prompt'], sources[name]['cnl']
+        else:
+            rc.require(name in by_id, f'unknown Rust canary {name}')
+            prompt, cnl = by_id[name]['load_prompt'](), None
+        if targets.rust_profile.check(prompt) is None:
             phase2_id, accepted = None, run / 'products' / products_key(name)
         else:
-            if phase2 is None:
-                sys.path.insert(0, str(PHASE2.parent))
-                import check_phase2 as phase2  # type: ignore[import-not-found]
-                if not phase2.LEGACY.exists():
-                    for parent in rc.REPO.parents:
-                        candidate = parent / '.local/rust-compiler-goal/acceptance/legacy544/run-005'
-                        if candidate.exists():
-                            phase2.LEGACY = candidate
-                            break
-                every = phase2.cases()
-                by_id = {case['id']: case for case in every}
-                by_prompt = {case['prompt_sha256']: case['id'] for case in every}
-            if name in sources:
-                prompt, cnl = sources[name]['prompt'], sources[name]['cnl']
-            else:
-                rc.require(name in by_id, f'unknown Rust canary {name}')
-                prompt, cnl = by_id[name]['load_prompt'](), None
             phase2_id = by_prompt.get(phase2.qa.sha(prompt))
             rc.require(phase2_id is not None, f'{name} is not a phase 2 case')
             accepted = run / 'phase2/work' / phase2.key(phase2_id) / 'product'
