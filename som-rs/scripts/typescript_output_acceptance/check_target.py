@@ -8,13 +8,13 @@ Sends compile requests to POST <url>/v1/compile and verifies:
   the contract's span_model;
 - for every public example and name case in case-inventory.json, target: "python"
   gives the same response bytes as the same request without target;
-- for every out-of-scope public example and CNL positive fixture in
+- for every out-of-scope public example, CNL positive fixture, and legacy job in
   case-inventory.json, target: "typescript" gives UNSUPPORTED_TARGET with the
   recorded refusal matching som-rs/tests/typescript-output-v1/ts_profile.py;
-- no in-scope public example, version positive fixture, coverage case, or name
-  case gives UNSUPPORTED_TARGET with target: "typescript".
+- no in-scope public example, version positive fixture, coverage case, name
+  case, or legacy job gives UNSUPPORTED_TARGET with target: "typescript".
 
-usage: check_target.py --url URL --out DIR
+usage: check_target.py --url URL --out DIR [--legacy-run DIR]
 """
 from __future__ import annotations
 
@@ -33,10 +33,13 @@ from typing import Any
 HERE = pathlib.Path(__file__).resolve().parent
 SOM_RS = HERE.parents[1]
 TS_TESTS = SOM_RS / "tests" / "typescript-output-v1"
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
 if str(TS_TESTS) not in sys.path:
     sys.path.insert(0, str(TS_TESTS))
 
 import build_case_inventory  # type: ignore[import-not-found]  # noqa: E402
+import check_python_baseline  # type: ignore[import-not-found]  # noqa: E402
 import common  # type: ignore[import-not-found]  # noqa: E402
 import ts_profile  # type: ignore[import-not-found]  # noqa: E402
 
@@ -45,6 +48,10 @@ EXAMPLES = common.EXAMPLES
 COVERAGE_CASES = common.COVERAGE_CASES
 REPO = common.REPO
 rust_cases = common.rust_cases
+
+DEFAULT_LEGACY_RUN = check_python_baseline.DEFAULT_LEGACY_RUN
+EXPECTED_LEGACY = 544
+EXPECTED_LEGACY_IN_SCOPE = 100
 
 FORBIDDEN_PORTS = {8765, 18765}
 LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
@@ -370,7 +377,14 @@ def make_row(
     }
 
 
-def run_checks(base_url: str, out_dir: pathlib.Path) -> dict[str, Any]:
+def run_checks(
+    base_url: str,
+    out_dir: pathlib.Path,
+    legacy_run: pathlib.Path = DEFAULT_LEGACY_RUN,
+    *,
+    expected_legacy: int | None = None,
+    expected_legacy_in_scope: int | None = None,
+) -> dict[str, Any]:
     responses_dir = out_dir / "responses"
     responses_dir.mkdir(parents=True, exist_ok=False)
 
@@ -879,21 +893,32 @@ def run_checks(base_url: str, out_dir: pathlib.Path) -> dict[str, Any]:
             cov_problems,
         )
 
-    all_passed = bool(rows) and all(r["passed"] for r in rows)
-    report = {
+    # 6. Legacy 544 jobs (run-005) with target: "typescript"
+    legacy_run_resolved = check_python_baseline.resolve_local_path(pathlib.Path(legacy_run))
+    legacy_problems = _check_legacy_jobs(
+        base_url,
+        responses_dir,
+        rows,
+        legacy_run_resolved,
+        inventory,
+        scope,
+        expected_legacy=expected_legacy,
+        expected_legacy_in_scope=expected_legacy_in_scope,
+    )
+
+    all_passed = bool(rows) and not legacy_problems and all(r["passed"] for r in rows)
+    report: dict[str, Any] = {
         "version": "som.typescript-output-target-checks.v1",
         "issue": 98,
         "url": base_url,
-        "legacy_in_scope": (
-            "out_of_scope: legacy_in_scope jobs live in "
-            ".local/rust-compiler-goal/acceptance/legacy544 and are out of scope for check_target.py"
-        ),
+        "legacy_run": str(legacy_run_resolved.resolve()),
         "status": "passed" if all_passed else "failed",
         "passed": all_passed,
         "total": len(rows),
         "passed_count": sum(1 for r in rows if r["passed"]),
         "failed_count": sum(1 for r in rows if not r["passed"]),
         "not_run_count": sum(1 for r in rows if r["status"] == "not_run"),
+        "problems": legacy_problems,
         "cases": rows,
     }
     (out_dir / "report.json").write_text(
@@ -901,6 +926,311 @@ def run_checks(base_url: str, out_dir: pathlib.Path) -> dict[str, Any]:
         encoding="utf-8",
     )
     return report
+
+
+def _check_legacy_jobs(
+    base_url: str,
+    responses_dir: pathlib.Path,
+    rows: list[dict[str, Any]],
+    legacy_run: pathlib.Path,
+    inventory: dict[str, Any],
+    scope: dict[str, Any],
+    *,
+    expected_legacy: int | None = None,
+    expected_legacy_in_scope: int | None = None,
+) -> list[str]:
+    legacy_problems: list[str] = []
+    try:
+        legacy_inputs, legacy_meta = check_python_baseline.read_legacy_inputs(legacy_run)
+    except (OSError, ValueError) as err:
+        legacy_inputs = []
+        legacy_meta = {}
+        legacy_problems.append(
+            f"cannot read legacy run {legacy_run}: {type(err).__name__}: {err}"
+        )
+
+    legacy_records: list[dict[str, Any]] = []
+    result_path = legacy_run / "result.json"
+    if result_path.is_file():
+        try:
+            raw_res = json.loads(result_path.read_text(encoding="utf-8"))
+            if isinstance(raw_res, dict) and isinstance(raw_res.get("records"), list):
+                legacy_records = raw_res["records"]
+        except (OSError, ValueError):
+            legacy_records = []
+
+    in_scope_list: list[dict[str, Any]] = inventory.get("legacy_in_scope", [])
+    in_scope_by_key: dict[tuple[int, str], dict[str, Any]] = {
+        (int(entry["inventory_index"]), str(entry["prompt_sha256"])): entry
+        for entry in in_scope_list
+    }
+    in_scope_by_index: dict[int, dict[str, Any]] = {
+        int(entry["inventory_index"]): entry for entry in in_scope_list
+    }
+    in_scope_by_sha: dict[str, list[dict[str, Any]]] = {}
+    for entry in in_scope_list:
+        in_scope_by_sha.setdefault(str(entry["prompt_sha256"]), []).append(entry)
+
+    inv_legacy_counts_list: list[dict[str, Any]] = inventory.get("counts", {}).get("legacy", [])
+    inv_in_scope_count = int(
+        inventory.get("counts", {}).get("legacy_in_scope", len(in_scope_list))
+    )
+
+    exp_legacy = EXPECTED_LEGACY if expected_legacy is None else expected_legacy
+    exp_in_scope = (
+        EXPECTED_LEGACY_IN_SCOPE
+        if expected_legacy_in_scope is None
+        else expected_legacy_in_scope
+    )
+
+    actual_legacy_counts: collections.Counter[tuple[str, str, str]] = collections.Counter()
+    in_scope_count = 0
+    legacy_rows: list[dict[str, Any]] = []
+
+    for item in legacy_inputs:
+        job_id = str(item["id"])
+        idx = int(item["index"])
+        rec = (
+            legacy_records[idx]
+            if idx < len(legacy_records) and isinstance(legacy_records[idx], dict)
+            else {}
+        )
+        group = rec.get("group")
+        if not group:
+            if idx in in_scope_by_index:
+                group = in_scope_by_index[idx].get("group")
+            elif "-" in job_id:
+                group = job_id.rsplit("-", 1)[0]
+
+        if item.get("not_run_reason") is not None or item.get("body") is None:
+            rec_sha = str(item.get("prompt_sha256") or "")
+            is_in_scope = (idx, rec_sha) in in_scope_by_key
+            expected_desc: Any = (
+                "HTTP 200 with a som.dsl-bundle.v2 bundle with target typescript (never UNSUPPORTED_TARGET)."
+                if is_in_scope
+                else {"http_status": 422, "code": "UNSUPPORTED_TARGET"}
+            )
+            not_run_row = {
+                "id": job_id,
+                "section": "legacy",
+                "inventory_index": idx,
+                "group": group,
+                "in_scope": is_in_scope,
+                "prompt_sha256": item.get("prompt_sha256"),
+                "status": "not_run",
+                "request_sha256": None,
+                "http_status": None,
+                "response_sha256": None,
+                "response_file": None,
+                "expected": expected_desc,
+                "passed": False,
+                "reason": item.get("not_run_reason") or f"missing compile request for {job_id}",
+            }
+            rows.append(not_run_row)
+            legacy_rows.append(not_run_row)
+            continue
+
+        req_obj = item["body"]
+        job_problems: list[str] = []
+        if "target" in req_obj:
+            job_problems.append(
+                f"recorded compile request already contains a 'target' key ({req_obj['target']!r})"
+            )
+        prompt_obj = req_obj.get("prompt")
+        if not isinstance(prompt_obj, dict):
+            job_problems.append(
+                f"recorded compile request for {job_id} missing 'prompt' object"
+            )
+            prompt_obj = {}
+
+        canon_sha = sha_bytes(canonical_json(prompt_obj).encode("utf-8")) if prompt_obj else ""
+        compact_sha = sha_bytes(compact_json(prompt_obj).encode("utf-8")) if prompt_obj else ""
+        recorded_sha = item.get("prompt_sha256")
+        if recorded_sha is not None:
+            prompt_sha = str(recorded_sha)
+            if prompt_obj and prompt_sha not in (canon_sha, compact_sha):
+                job_problems.append(
+                    f"prompt_sha256 mismatch for {job_id}: prompt hashes to {canon_sha}, record has {prompt_sha}"
+                )
+        else:
+            prompt_sha = canon_sha
+
+        in_scope_entry = in_scope_by_key.get((idx, prompt_sha))
+        if (
+            in_scope_entry is not None
+            and prompt_obj
+            and in_scope_entry["prompt_sha256"] not in (canon_sha, compact_sha)
+        ):
+            in_scope_entry = None
+        is_in_scope = in_scope_entry is not None
+
+        if idx in in_scope_by_index and not is_in_scope:
+            job_problems.append(
+                f"legacy_in_scope prompt_sha256 mismatch at inventory_index {idx}: "
+                f"got {prompt_sha}, expected {in_scope_by_index[idx]['prompt_sha256']}"
+            )
+        elif prompt_sha in in_scope_by_sha and not is_in_scope:
+            job_problems.append(
+                f"legacy_in_scope inventory_index mismatch for prompt {prompt_sha}: got {idx}"
+            )
+
+        found = ts_profile.check(prompt_obj, scope) if prompt_obj else None
+        actual_rule = "in_scope" if found is None else found["rule"]
+        prompt_version = str(prompt_obj.get("version", "")) if prompt_obj else ""
+        if group is not None and prompt_version:
+            actual_legacy_counts[(str(group), prompt_version, actual_rule)] += 1
+
+        if is_in_scope:
+            in_scope_count += 1
+            if actual_rule != "in_scope":
+                job_problems.append(
+                    f"ts_profile.check rule {actual_rule!r} != 'in_scope' for in-scope legacy job {job_id}"
+                )
+            expected_desc = (
+                "HTTP 200 with a som.dsl-bundle.v2 bundle with target typescript (never UNSUPPORTED_TARGET)."
+            )
+        else:
+            if found is None:
+                job_problems.append(
+                    f"expected out-of-scope refusal for {job_id}, but ts_profile.check returned None"
+                )
+                expected_desc = {"http_status": 422, "code": "UNSUPPORTED_TARGET"}
+            else:
+                pointer = "/prompt" + found["pointer"]
+                expected_desc = {
+                    "http_status": 422,
+                    "rule": found["rule"],
+                    "code": "UNSUPPORTED_TARGET",
+                    "prompt_pointer": pointer,
+                    "cause": found["cause"],
+                    "allowed_form": found["allowed_form"],
+                }
+
+        ts_body = compact_json({**req_obj, "target": "typescript"})
+        status, raw, resp_file, err = post_compile(
+            base_url,
+            ts_body,
+            responses_dir,
+            f"legacy__{idx:04d}__{job_id}",
+        )
+        if err is not None:
+            row = make_row(
+                job_id,
+                "legacy",
+                ts_body,
+                None,
+                None,
+                None,
+                expected_desc,
+                [],
+                not_run_error=err,
+            )
+            row["inventory_index"] = idx
+            row["group"] = group
+            row["in_scope"] = is_in_scope
+            row["prompt_sha256"] = prompt_sha
+            rows.append(row)
+            legacy_rows.append(row)
+            continue
+
+        assert status is not None and raw is not None
+        if is_in_scope:
+            more_problems, _ = check_ts_bundle_reply(status, raw)
+            job_problems.extend(more_problems)
+        else:
+            if found is not None:
+                pointer = "/prompt" + found["pointer"]
+                expected_diag = {
+                    "code": "UNSUPPORTED_TARGET",
+                    "prompt_pointer": pointer,
+                    "cause": found["cause"],
+                    "allowed_form": found["allowed_form"],
+                }
+                leaf = resolve_pointer(prompt_obj, found["pointer"])
+                expected_span = compact_json(leaf)
+                job_problems.extend(
+                    check_diagnostic_reply(
+                        status,
+                        raw,
+                        422,
+                        expected_diag,
+                        ts_body,
+                        "json",
+                        expected_span_text=expected_span,
+                    )
+                )
+            else:
+                if status != 422:
+                    job_problems.append(f"http_status {status} != expected 422")
+
+        row = make_row(
+            job_id,
+            "legacy",
+            ts_body,
+            status,
+            raw,
+            resp_file,
+            expected_desc,
+            job_problems,
+        )
+        row["inventory_index"] = idx
+        row["group"] = group
+        row["in_scope"] = is_in_scope
+        row["prompt_sha256"] = prompt_sha
+        rows.append(row)
+        legacy_rows.append(row)
+
+    if len(legacy_inputs) != exp_legacy:
+        legacy_problems.append(
+            f"legacy job count is {len(legacy_inputs)}, expected {exp_legacy}"
+        )
+    elif legacy_meta.get("accepted_required") not in (None, exp_legacy):
+        legacy_problems.append(
+            f"legacy result.json required_job_count is {legacy_meta.get('accepted_required')}, expected {exp_legacy}"
+        )
+
+    if in_scope_count != exp_in_scope:
+        legacy_problems.append(
+            f"legacy in-scope job count is {in_scope_count}, expected {exp_in_scope}"
+        )
+    elif in_scope_count != inv_in_scope_count or in_scope_count != len(in_scope_list):
+        legacy_problems.append(
+            f"legacy in-scope job count is {in_scope_count}, case-inventory.json expects {inv_in_scope_count} ({len(in_scope_list)} entries)"
+        )
+
+    expected_legacy_counts: dict[tuple[str, str, str], int] = {
+        (str(entry["group"]), str(entry["prompt_version"]), str(entry["typescript"])): int(
+            entry["count"]
+        )
+        for entry in inv_legacy_counts_list
+    }
+    expected_legacy_refusal_counts: dict[tuple[str, str, str], int] = {
+        k: v for k, v in expected_legacy_counts.items() if k[2] != "in_scope"
+    }
+    actual_legacy_refusal_counts: dict[tuple[str, str, str], int] = {
+        k: v for k, v in actual_legacy_counts.items() if k[2] != "in_scope"
+    }
+    if actual_legacy_refusal_counts != expected_legacy_refusal_counts:
+        legacy_problems.append(
+            f"legacy group refusal counts {actual_legacy_refusal_counts} != expected {expected_legacy_refusal_counts}"
+        )
+    elif dict(actual_legacy_counts) != expected_legacy_counts:
+        legacy_problems.append(
+            f"legacy group counts {dict(actual_legacy_counts)} != expected {expected_legacy_counts}"
+        )
+
+    if (
+        legacy_problems
+        and legacy_rows
+        and all(r["status"] == "passed" for r in legacy_rows)
+    ):
+        msg = "; ".join(legacy_problems)
+        last = legacy_rows[-1]
+        last["passed"] = False
+        last["status"] = "failed"
+        last["reason"] = msg if last["reason"] == "ok" else f"{last['reason']}; {msg}"
+
+    return legacy_problems
 
 
 def _check_python_pair(
@@ -1119,10 +1449,21 @@ def _check_scope_forms(
                 r["reason"] = msg if r["reason"] == "ok" else f"{r['reason']}; {msg}"
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(
+    argv: list[str] | None = None,
+    *,
+    expected_legacy: int | None = None,
+    expected_legacy_in_scope: int | None = None,
+) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--url", required=True, help="Loopback URL of the candidate som server")
     parser.add_argument("--out", type=pathlib.Path, required=True, help="New output directory for report.json and responses/")
+    parser.add_argument(
+        "--legacy-run",
+        type=pathlib.Path,
+        default=DEFAULT_LEGACY_RUN,
+        help="Path to the recorded legacy544 run (default: %(default)s)",
+    )
     args = parser.parse_args(argv)
 
     url_err = validate_url(args.url)
@@ -1134,7 +1475,13 @@ def main(argv: list[str] | None = None) -> int:
         print(f"refused: output directory already exists: {args.out}", file=sys.stderr)
         return 2
 
-    report = run_checks(args.url, args.out)
+    report = run_checks(
+        args.url,
+        args.out,
+        args.legacy_run,
+        expected_legacy=expected_legacy,
+        expected_legacy_in_scope=expected_legacy_in_scope,
+    )
     print(
         json.dumps(
             {

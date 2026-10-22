@@ -38,6 +38,7 @@ from typing import Any
 
 REPO = pathlib.Path(__file__).resolve().parents[3]
 CONTRACT = REPO / "som-rs/contracts/rust-output-v1"
+TS_CONTRACT = REPO / "som-rs/contracts/typescript-output-v1"
 CASES = REPO / "som-rs/tests/rust-output-v1/cases"
 sys.path.insert(0, str(REPO / "som-rs/tests/rust-output-v1"))
 import rust_profile_phase2  # type: ignore[import-not-found]  # noqa: E402
@@ -184,6 +185,41 @@ def check_typescript(
     return check(binary, base_url, scratch, label, source, "typescript", verify_request=True)
 
 
+def check_typescript_refusal(
+    binary: str,
+    base_url: str,
+    scratch: pathlib.Path,
+    label: str | None = None,
+    source: str | None = None,
+) -> dict:
+    """Run `som compile <cnl> --url URL --target typescript` on one out-of-scope public example CNL."""
+    if source is None or label is None:
+        ts_inventory = json.loads((TS_CONTRACT / "case-inventory.json").read_text(encoding="utf-8"))
+        out_of_scope = next(
+            row
+            for row in ts_inventory["public_examples"]
+            if row.get("typescript") != "in_scope" and row.get("cnl")
+        )
+        if source is None:
+            source = (REPO / out_of_scope["cnl"]).read_text(encoding="utf-8")
+        if label is None:
+            label = f"{out_of_scope['id']} target 'typescript' refusal"
+    row = check(
+        binary,
+        base_url,
+        scratch,
+        label,
+        source,
+        "typescript",
+        expect="UNSUPPORTED_TARGET",
+        verify_request=True,
+    )
+    if row["http_status"] == 200 and not any("UNSUPPORTED_TARGET" in p for p in row["problems"]):
+        row["problems"].append("expected UNSUPPORTED_TARGET refusal, got HTTP 200")
+        row["passed"] = False
+    return row
+
+
 def phase2_code(base_url: str, body: dict, case: dict) -> str | None:
     """UNSUPPORTED_TARGET where the phase 2 profile refuses the compiled prompt, the frozen code where
     compiler-v1 refuses the prompt for every target, None for a bundle."""
@@ -240,6 +276,8 @@ def main(argv: list[str] | None = None) -> int:
             rows.append(check(args.binary, base_url, scratch, f"{first['id']} unknown {target!r}", source, target))
         ts_row = check_typescript(args.binary, base_url, scratch, f"{first['id']} target 'typescript'", source)
         rows.append(ts_row)
+        ts_refusal_row = check_typescript_refusal(args.binary, base_url, scratch)
+        rows.append(ts_refusal_row)
     for row in rows:
         row.pop("_stdout", None)
     refusals = [r for r in rows if r["http_status"] != 200]
@@ -249,7 +287,7 @@ def main(argv: list[str] | None = None) -> int:
                          "coverage_index_sha256": sha((CASES / "index.json").read_bytes())},
               "total": len(rows), "passed": sum(r["passed"] for r in rows),
               "refusals": len(refusals), "refusals_exit_2": sum(r["exit_code"] == 2 for r in refusals),
-              "typescript": ts_row,
+              "typescript": ts_row, "typescript_refusal": ts_refusal_row,
               "failed": [f"{r['input']} target={r['target']!r}" for r in rows if not r["passed"]], "rows": rows}
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n")
