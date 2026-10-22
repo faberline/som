@@ -30,12 +30,16 @@
 - --products-run names the run whose accepted Rust products the Rust canaries
   must equal (default: the acceptance run). An issue57 acceptance run proves
   that the Rust products are unchanged from its rust-output-055 run.
+- With --ts-run, TypeScript canaries (--ts-cases, default example-v1 and
+  example-v5) are compiled and assembled with target typescript on the
+  candidate's QA port and compared against <ts-run>/bundles/products/<id>/.
 
 Nothing outside the new output directory is written.
 
 usage: prepare_inputs.py --candidate DIR --acceptance RUN_DIR --audit AUDIT_JSON --out NEW_DIR
                          [--rust-cases ID ...] [--stand-in] [--cargo-home DIR]
                          [--products-run RUN_DIR] [--self-cases ID ...]
+                         [--ts-run RUN_DIR] [--ts-cases ID ...]
 """
 from __future__ import annotations
 
@@ -61,10 +65,13 @@ import python_replay  # type: ignore[import-not-found]  # noqa: E402  (imported 
 SWITCH_001 = rc.REPO / '.local/rust-compiler-goal/acceptance/default-switch-001'
 PINNED_051 = rc.REPO / '.local/rust-compiler-goal/acceptance/rust-output-051/inputs-001/inputs/python'
 RUST_CASES = ('example-v1', 'example-v5')
+TS_CASES = ('example-v1', 'example-v5')
 PHASE2 = rc.REPO / 'som-rs/behavior/phase2/check_phase2.py'
 CLUSTER_GATES = rc.REPO / 'som-rs/scripts/rust_output_acceptance/run_acceptance.py'
 SELF_FIXTURES = rc.REPO / 'som-rs/tests/compiler-v1/self-name-fixtures.json'
 ISSUE57_RUN = 'som.rust-output-issue57-run.v1'
+TS_RUN = 'som.typescript-output-acceptance-run.v1'
+TS_AUDIT_PREFIX = 'som.typescript-output-audit-065.'
 
 
 def binding(path):
@@ -242,6 +249,72 @@ def products_key(case_id):
     return re.sub(r'[^a-z0-9]+', '_', case_id.lower())
 
 
+def _parse_json(raw, message):
+    try:
+        return json.loads(raw)
+    except (ValueError, UnicodeDecodeError):
+        rc.require(False, message)
+
+
+def ts_compile_body(case, form):
+    if form == 'cnl':
+        return targets.dump({'format': 'som.cnl.v1', 'source': case['cnl'], 'target': 'typescript'})
+    return targets.dump({'format': 'som.prompt-json.v1', 'prompt': case['prompt'], 'target': 'typescript'})
+
+
+def ts_case(pin, case, port, new):
+    relative = f'typescript/{case["id"]}'
+    cnl = pin.write(f'{relative}/source.cnl', case['cnl'].encode()) if case['cnl'] is not None else None
+    steps = []
+    raw, step = pin.http(port, 'compile-json', relative, '/v1/compile', ts_compile_body(case, 'json').encode())
+    compiled = json.loads(raw)
+    steps.append(step)
+    if cnl is not None:
+        cnl_raw, step = pin.http(port, 'compile-cnl', relative, '/v1/compile',
+                                 ts_compile_body(case, 'cnl').encode())
+        rc.require(cnl_raw == raw and rc.exact_json(json.loads(cnl_raw), compiled),
+                   'TypeScript CNL and prompt JSON compile differ')
+        steps.append(step)
+    bundle = compiled['bundle']
+    rc.require(bundle.get('target') == 'typescript', 'bundle target is not typescript')
+    raw, step = pin.http(port, 'assemble', relative, '/v1/assemble', targets.dump({'bundle': bundle}).encode())
+    files = json.loads(raw)['files']
+    steps.append(step)
+    rc.require(case['accepted'].is_dir(), f'{case["id"]}: no accepted product at {case["accepted"]}')
+    accepted_files = {p.relative_to(case['accepted']).as_posix() for p in case['accepted'].rglob('*') if p.is_file()}
+    rc.require(set(files) == accepted_files, f'{case["id"]} file set differs from the accepted product')
+    for name, content in files.items():
+        rc.require((case['accepted'] / name).read_text() == content,
+                   f'{case["id"]} {name} differs from the accepted product')
+    saved = pin.write(f'{relative}/bundle.json', rc.canon(bundle).encode())
+    binaries = {'new': new}
+    if cnl is not None:
+        stdout, step = pin.cli(binaries, port, 'cli-compile', relative,
+                               ['compile', cnl['path'], '--target', 'typescript'], [cnl])
+        rc.require(rc.exact_json(_parse_json(stdout, 'TypeScript CLI bundle differs'), bundle),
+                   'TypeScript CLI bundle differs')
+        steps.append(step)
+    stdout, step = pin.cli(binaries, port, 'cli-assemble', relative, ['assemble', saved['path']], [saved])
+    rc.require(_parse_json(stdout, 'TypeScript CLI assemble differs') == json.loads(raw),
+               'TypeScript CLI assemble differs')
+    steps.append(step)
+    return {'name': case['id'], 'family': 'typescript', 'prompt_version': case['prompt']['version'],
+            'accepted_product': str(case['accepted']), 'files': len(files), 'steps': steps}
+
+
+def ts_sources(run, ids):
+    """Each TypeScript canary with its prompt, CNL (or None) and the accepted product of the TS run."""
+    rc.require(len(set(ids)) == len(ids), 'repeated TypeScript canary')
+    sources = {case['id']: case for case in targets.sources() if not case.get('rejection')}
+    out = []
+    for name in ids:
+        rc.require(name in sources, f'unknown TypeScript canary {name}')
+        accepted = run / 'bundles/products' / name
+        rc.require(accepted.is_dir(), f'{name}: no accepted product at {accepted}')
+        out.append({'id': name, 'prompt': sources[name]['prompt'], 'cnl': sources[name]['cnl'], 'accepted': accepted})
+    return out
+
+
 def rust_sources(run, ids):
     """Each canary with its prompt, CNL (or None) and the accepted product of the acceptance run."""
     sources = {case['id']: case for case in targets.sources() if not case.get('rejection')}
@@ -325,6 +398,34 @@ def default_chain(current, legacy_sha256):
     return chain
 
 
+def gate_assertions(run, audit, binary_sha256, ts_run=None, ts_cases=TS_CASES):
+    summary = rc.load(run / 'summary.json')
+    if summary.get('version') == ISSUE57_RUN:
+        acceptance_assertions = {'/passed': True, '/blockers': [],
+                                 '/candidate_after/binary_sha256': binary_sha256}
+        header_sha256 = rc.digest(run / 'header.json')
+    else:
+        if summary.get('version') == TS_RUN:
+            rc.require(ts_run is not None and len(ts_cases) >= 2,
+                       'TypeScript acceptance gate requires --ts-run and at least two TypeScript cases')
+        acceptance_assertions = {'/status': 'passed', '/blockers': [],
+                                 '/candidate_after/binary_sha256': binary_sha256}
+        header_sha256 = summary['header_sha256']
+    audit_receipt = rc.load(audit)
+    audit_version = str(audit_receipt.get('version', ''))
+    if audit_version == 'som.rust-output-audit-055.v1':
+        audit_assertions = {'/totals': {'failed': 0, 'unrun': 0}, '/run': str(run)}
+    elif audit_version.startswith(TS_AUDIT_PREFIX):
+        expected_run = str(run.relative_to(rc.REPO)) if run.is_relative_to(rc.REPO) else str(run)
+        audit_assertions = {'/totals/failed': 0, '/totals/unrun': 0, '/run': expected_run}
+    else:
+        audit_assertions = {'/status': 'passed', '/run': str(run)}
+    return {
+        'acceptance': {**binding(run / 'summary.json'), 'assertions': acceptance_assertions},
+        'audit': {**binding(audit), 'assertions': audit_assertions},
+    }, header_sha256
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--candidate', type=Path, required=True)
@@ -336,12 +437,21 @@ def main():
     parser.add_argument('--cargo-home', type=Path)
     parser.add_argument('--products-run', type=Path)
     parser.add_argument('--self-cases', nargs='*', default=[])
+    parser.add_argument('--ts-run', type=Path)
+    parser.add_argument('--ts-cases', nargs='+', default=list(TS_CASES))
     args = parser.parse_args()
     candidate, run, audit, out = (p.resolve() for p in (args.candidate, args.acceptance, args.audit, args.out))
     products_run = args.products_run.resolve() if args.products_run else run
+    ts_run = args.ts_run.resolve() if args.ts_run else None
     rc.require(not out.exists(), f'preserve existing output: {out}')
     rc.require(len(set(args.rust_cases)) == len(args.rust_cases), 'repeated Rust canary')
+    rc.require(len(set(args.ts_cases)) == len(args.ts_cases), 'repeated TypeScript canary')
     sources = rust_sources(products_run, args.rust_cases)
+    if ts_run is not None:
+        rc.require(len(args.ts_cases) >= 2, 'need two TypeScript canaries')
+        ts_cases = ts_sources(ts_run, args.ts_cases)
+    else:
+        ts_cases = []
     fixtures = {case['id']: case for case in rc.load(SELF_FIXTURES)['positive']}
     rc.require(set(args.self_cases) <= set(fixtures), 'unknown self-name case')
     runtime = rc.load(candidate / 'runtime.json')
@@ -349,6 +459,7 @@ def main():
     rc.harness_port(port)
     new = candidate / 'som'
     rc.require(rc.digest(new) == runtime['binary_sha256'], 'candidate binary differs from its receipt')
+    gates, header_sha256 = gate_assertions(run, audit, runtime['binary_sha256'], ts_run, args.ts_cases)
     current = rc.load(rc.REPO / 'som-rs/runtime/default.json')
     previous = Path(current['command'][0])
     rc.require(rc.digest(previous) == current['identity']['binary_sha256'], 'default binary differs')
@@ -385,21 +496,8 @@ def main():
             rc.terminate(rc.identity(owner['pid'], owner['argv'], owner['port']))
     python += [self_case(pin, fixtures[name], port, {'previous': previous, 'new': new}) for name in args.self_cases]
     rust = [rust_case(pin, case, port, new) for case in sources]
+    typescript = [ts_case(pin, case, port, new) for case in ts_cases]
     emulators = emulator_runs(out, sources, port, args.cargo_home.resolve()) if args.cargo_home else None
-    summary = rc.load(run / 'summary.json')
-    if summary.get('version') == ISSUE57_RUN:
-        acceptance_assertions = {'/passed': True, '/blockers': [],
-                                 '/candidate_after/binary_sha256': runtime['binary_sha256']}
-        header_sha256 = rc.digest(run / 'header.json')
-    else:
-        acceptance_assertions = {'/status': 'passed', '/blockers': [],
-                                 '/candidate_after/binary_sha256': runtime['binary_sha256']}
-        header_sha256 = summary['header_sha256']
-    audit_receipt = rc.load(audit)
-    if audit_receipt.get('version') == 'som.rust-output-audit-055.v1':
-        audit_assertions = {'/totals': {'failed': 0, 'unrun': 0}, '/run': str(run)}
-    else:
-        audit_assertions = {'/status': 'passed', '/run': str(run)}
     config = {
         'version': rc.PREREQUISITES_VERSION,
         'repo': str(rc.REPO),
@@ -409,14 +507,12 @@ def main():
                       **({'assets': {'path': str(candidate / 'assets'),
                                      'manifest_sha256': runtime['health']['asset_manifest_sha256']}}
                          if own_assets else {})},
-        'gates': {
-            'acceptance': {**binding(run / 'summary.json'), 'assertions': acceptance_assertions},
-            'audit': {**binding(audit), 'assertions': audit_assertions},
-        },
+        'gates': gates,
         'phase1_default': {'receipt': binding(rc.REPO / 'som-rs/runtime/default.json'), 'binary': binding(previous),
                            'previous_defaults': chain},
         'python_canary_source': source,
         'rust_products_run': str(products_run),
+        **({'typescript_products_run': str(ts_run)} if ts_run is not None else {}),
         'rust_emulators': emulators,
         'legacy_default': binding(legacy_path),
         'legacy_binary': binding(Path(legacy['command'][0])),
@@ -425,6 +521,7 @@ def main():
         'python_canaries': python,
         **({'previous_python_canaries': previous_python} if own_assets else {}),
         'rust_canaries': rust,
+        **({'typescript_canaries': typescript} if ts_run is not None else {}),
         'm2_canaries': m2,
         'acceptance_summary_header_sha256': header_sha256,
     }
@@ -436,7 +533,9 @@ def main():
     (out / 'prerequisites.json').write_bytes(data)
     print(json.dumps({'prerequisites': str(out / 'prerequisites.json'), 'sha256': rc.sha_bytes(data),
                       'python_steps': sum(len(c['steps']) for c in python),
-                      'rust_steps': sum(len(c['steps']) for c in rust), 'm2_cases': len(m2)}))
+                      'rust_steps': sum(len(c['steps']) for c in rust),
+                      **({'typescript_steps': sum(len(c['steps']) for c in typescript)} if ts_run is not None else {}),
+                      'm2_cases': len(m2)}))
 
 
 if __name__ == '__main__':

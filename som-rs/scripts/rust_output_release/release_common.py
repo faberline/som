@@ -153,7 +153,8 @@ def check_prerequisites(config):
     legacy = load(bound(config['legacy_default']))
     for name in ('legacy_binary', 'legacy_model_manifest', 'legacy_blocks'):
         bound(config[name])
-    for case in config['python_canaries'] + previous_python(config) + config['rust_canaries']:
+    for case in (config['python_canaries'] + previous_python(config)
+                 + config['rust_canaries'] + config.get('typescript_canaries', [])):
         for step in case['steps']:
             bound(step['response'])
             if step['kind'] == 'http':
@@ -165,6 +166,8 @@ def check_prerequisites(config):
         bound(case['expected_response'])
     require({c['family'] for c in config['python_canaries']} >= {'flow', 'legacy'}, 'missing python canary family')
     require(len(config['rust_canaries']) >= 2, 'need two Rust canaries')
+    if 'typescript_canaries' in config:
+        require(len(config['typescript_canaries']) >= 2, 'need two TypeScript canaries')
     if 'assets' in config['candidate']:
         assets_match(Path(config['candidate']['assets']['path']), runtime['health'])
         require({c['family'] for c in previous_python(config)} >= {'flow', 'legacy'},
