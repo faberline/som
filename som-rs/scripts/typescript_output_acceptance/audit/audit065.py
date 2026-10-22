@@ -29,8 +29,14 @@ Never read as a verdict: summary.json, ts-products/summary.json, and the
 judgment / summary / passed / status / passed_count / gate_statuses fields.
 The scope oracle is reimplemented from scope.json; ts_profile.py is not used.
 
+Acceptance tool files (som-rs/scripts/*_output_acceptance, som-rs/som-targets/qa,
+.py files) are never parsed or run: Reader.hash_only hashes their bytes for an
+identity check against the run header's tools / tools_before / tools_after maps.
+
 Statuses: passed (re-derived from raw values), attested (the only raw record
 is a per-case tool boolean or a tool claim the audit cannot recompute),
+post_acceptance (an issue-gate step that by design happens only after
+acceptance: the 8765 rehearsal, rollback and the user's approved switch),
 unrun (cannot be checked from the raw outputs), failed.
 
 Usage: audit065.py --run RUN_DIR --out NEW_REPORT.json [--repo REPO]
@@ -49,7 +55,9 @@ import sys
 import tarfile
 import traceback
 
-VERSION = "som.typescript-output-audit-065.v1"
+VERSION = "som.typescript-output-audit-065.v2"
+AUDIT_SELF_REL = "som-rs/scripts/typescript_output_acceptance/audit/audit065.py"
+AUDIT_V1_SHA = "cecccad8d885c4290d272a6ff4afa7a9cbe3c3cdba45906b68df42c1c41207e7"  # committed v1 (audit-001)
 TS_PLAN_REL = "som-rs/contracts/typescript-output-v1/acceptance-plan.json"
 TS_PLAN_SHA = "318d4ab8f4dc35e5d490f89fe8edf4d4c3eb021068b2c429025f0641927e58cf"
 RS_PLAN_REL = "som-rs/contracts/rust-output-v1/acceptance-plan.json"
@@ -126,6 +134,14 @@ class Reader:
         self.shas[k] = sha(b)
         return b
 
+    def hash_only(self, rel):
+        """Identity check only: sha256 of a file's bytes; the content is not returned or parsed."""
+        path = self.p(rel)
+        with open(path, "rb") as f:
+            s = sha(f.read())
+        self.shas[self.key(path)] = s
+        return s
+
     def json(self, rel):
         return json.loads(self.bytes(rel))
 
@@ -190,13 +206,18 @@ class Reader:
         return sha("".join(f"{r}\0{s}\n" for r, s in items).encode())
 
 
-STATUS_ORDER = {"failed": 3, "unrun": 2, "attested": 1, "passed": 0}
+STATUS_ORDER = {"failed": 4, "unrun": 3, "post_acceptance": 2, "attested": 1, "passed": 0}
+STATUSES = ("passed", "attested", "post_acceptance", "unrun", "failed")
 
 
 class Row:
     def __init__(self, plan, section, index, check, rid):
         self.plan, self.section, self.index, self.check, self.id = plan, section, index, check, rid
         self.failed, self.unrun, self.attested, self.evidence = [], [], [], []
+        self.post = []
+
+    def post_acceptance(self, m):
+        self.post.append(m)
 
     def fail(self, m):
         self.failed.append(m)
@@ -228,6 +249,8 @@ class Row:
             self.miss(f"[{label}] {m}")
         for m in other.attested:
             self.attest(f"[{label}] {m}")
+        for m in other.post:
+            self.post_acceptance(f"[{label}] {m}")
 
     @property
     def status(self):
@@ -235,13 +258,15 @@ class Row:
             return "failed"
         if self.unrun:
             return "unrun"
+        if self.post:
+            return "post_acceptance"
         if self.attested:
             return "attested"
         return "passed"
 
     def reason(self):
         parts = []
-        for name, lst in (("failed", self.failed), ("unrun", self.unrun), ("attested", self.attested)):
+        for name, lst in (("failed", self.failed), ("unrun", self.unrun), ("post_acceptance", self.post), ("attested", self.attested)):
             if lst:
                 more = f" (+{len(lst) - 5} more)" if len(lst) > 5 else ""
                 parts.append(f"{name}: " + "; ".join(lst[:5]) + more)
@@ -252,7 +277,8 @@ class Row:
             "plan": self.plan, "section": self.section, "index": self.index, "check": self.check,
             "id": self.id, "status": self.status, "evidence": self.evidence,
             "reason": self.reason(),
-            "counts": {"failed": len(self.failed), "unrun": len(self.unrun), "attested": len(self.attested)},
+            "counts": {"failed": len(self.failed), "unrun": len(self.unrun), "post_acceptance": len(self.post),
+                       "attested": len(self.attested)},
         }
 
 
@@ -459,6 +485,77 @@ class Audit:
         ref = self.scope()["refusals"][rule]
         return ref["code"], ref["http_status"], ref["cause"].format(**args), ref["allowed_form"]
 
+    # ------------------------------------------------------------ legacy jobs
+    def legacy_jobs(self):
+        """The 544 legacy jobs of legacy544 run-005 (its result.json records), in inventory order."""
+        if "legacy_jobs" not in self.cache:
+            recs = self.r.json(L544_REL + "/result.json")["records"]
+            jobs = []
+            for i, rec in enumerate(recs):
+                d = f"{L544_REL}/compile/{rec['prompt_sha256']}"
+                prompt = self.r.json(d + "/prompt.json")
+                jobs.append({"index": i, "rec": rec, "dir": d, "prompt": prompt, "oracle": self.oracle(prompt, "json")})
+            self.cache["legacy_jobs"] = jobs
+        return self.cache["legacy_jobs"]
+
+    def check_legacy_target(self, row, want):
+        """Check the target/report.json legacy section against legacy544 run-005 and the scope oracle.
+
+        want: "out" (jobs the oracle refuses) or "in" (jobs it admits). Returns (n, {(group, version, rule): count}).
+        """
+        jobs = self.legacy_jobs()
+        cases = {c["id"]: c for c in self.target_cases() if c["section"] == "legacy"}
+        row.eq(sorted(cases), sorted(j["rec"]["id"] for j in jobs), "target legacy ids = legacy544 run-005 record ids")
+        inv_in = {x["id"]: x for x in self.inventory()["legacy_in_scope"]}
+        n, groups = 0, collections.Counter()
+        for j in jobs:
+            rec, o, prompt = j["rec"], j["oracle"], j["prompt"]
+            in_scope = o is None
+            if (want == "in") != in_scope:
+                continue
+            cid = rec["id"]
+            c = cases.get(cid)
+            if c is None:
+                row.fail(f"{cid} has no target result")
+                continue
+            row.eq(H(prompt), rec["prompt_sha256"], f"{cid} prompt hash")
+            row.eq((c.get("prompt_sha256"), c.get("inventory_index"), c.get("group")), (rec["prompt_sha256"], j["index"], rec["group"]),
+                   f"{cid} prompt hash, inventory index and group")
+            req = self.r.json(j["dir"] + "/compile-json.request.json")
+            body = json.dumps(dict(req, target="typescript"), separators=(",", ":"), ensure_ascii=False).encode()
+            row.eq(c["request_sha256"], sha(body), f"{cid} request = run-005 typed JSON request with target typescript")
+            b, rj = self.target_body(c)
+            row.eq(sha(b), c["response_sha256"], f"{cid} response sha")
+            if in_scope:
+                ii = inv_in.get(cid)
+                row.need(ii is not None and ii["prompt_sha256"] == rec["prompt_sha256"] and ii["inventory_index"] == j["index"],
+                         f"{cid} admitted by the oracle but not the case-inventory legacy_in_scope record")
+                bun = rj.get("bundle") or {}
+                row.eq((c["http_status"], rj.get("status"), bun.get("version"), bun.get("target")), (200, "ok", "som.dsl-bundle.v2", "typescript"),
+                       f"{cid} typescript bundle")
+                row.need(rj.get("code") != "UNSUPPORTED_TARGET", f"{cid} UNSUPPORTED_TARGET")
+                row.eq(H(bun.get("prompt")), rec["prompt_sha256"], f"{cid} bundle prompt hash")
+                rule = "in_scope"
+            else:
+                row.need(cid not in inv_in, f"{cid} refused by the oracle but listed in legacy_in_scope")
+                rule, ptr, args = o
+                if rule == "compiler_v1":
+                    row.fail(f"{cid}: prompt version unknown to scope.json")
+                    continue
+                code, st, cause, allowed = self.oracle_texts(rule, args)
+                d = rj.get("diagnostics") or [{}]
+                row.eq(c["http_status"], st, f"{cid} http")
+                row.eq(len(d), 1, f"{cid} one diagnostic")
+                row.eq((rj.get("status"), rj.get("code"), d[0].get("prompt_pointer"), d[0].get("cause"), d[0].get("allowed_form")),
+                       ("error", code, ptr, cause, allowed), f"{cid} refusal vs oracle")
+            groups[(rec["group"], prompt.get("version"), rule)] += 1
+            n += 1
+        return n, groups
+
+    def legacy_counts(self, want):
+        return {(x["group"], x["prompt_version"], x["typescript"]): x["count"] for x in self.inventory()["counts"]["legacy"]
+                if (x["typescript"] == "in_scope") == (want == "in")}
+
     # ======================================================== integrity rows
     def integrity(self):
         A = "audit"
@@ -599,10 +696,43 @@ class Audit:
         self.row(A, "integrity", 4, "Tools commit recorded and unchanged during the run", "integrity.tools", tools)
 
         def tool_files(row):
+            # identity only: tool bytes are hashed (Reader.hash_only), never parsed, imported or run
             h = self.rj("header.json")
-            n = sum(1 for rel in h["tools"]["files"] if is_tool_path(rel))
-            row.miss(f"{n} acceptance tool files (scripts, som-targets/qa, .py) listed in header.tools.files and receipt files maps "
-                     "cannot be hashed under the audit's independence rule")
+            maps = {k: (h.get(k) or {}).get("files") for k in ("tools", "tools_before", "tools_after")}
+            for k, m in maps.items():
+                row.need(isinstance(m, dict) and m, f"header.{k}.files recorded")
+            if not all(isinstance(m, dict) and m for m in maps.values()):
+                return
+            row.eq(maps["tools_before"], maps["tools_after"], "tools_before.files = tools_after.files")
+            row.eq(maps["tools"], maps["tools_before"], "tools.files = tools_before.files")
+            n_tool = n_ok = 0
+            for rel, want in sorted(maps["tools"].items()):
+                if not self.r.exists(rel):
+                    row.fail(f"tool file {rel} missing on disk")
+                    continue
+                got = self.r.hash_only(rel)
+                if is_tool_path(rel):
+                    n_tool += 1
+                if rel == AUDIT_SELF_REL and got != want:
+                    # this script was extended for audit-002 after the run; the run recorded the committed v1
+                    row.eq(want, AUDIT_V1_SHA, f"{rel} recorded hash = committed audit v1")
+                    row.ev(f"note: {rel} on disk ({got[:12]}) is this audit's edited version; the run recorded v1 {want[:12]}")
+                    n_ok += 1
+                    continue
+                if row.eq(got, want, f"tool file {rel} on disk vs header"):
+                    n_ok += 1
+            for n in self.r.listdir(self.R("receipts")):
+                rc = self.rj("receipts/" + n)
+                fm = rc.get("files")
+                if isinstance(fm, dict):
+                    for rel, want in fm.items():
+                        path = next((c for c in (rel, "som-rs/" + rel) if self.r.exists(c)), None)
+                        if path is None:
+                            row.fail(f"receipt {n} file {rel} missing on disk")
+                        else:
+                            row.eq(self.r.hash_only(path), want, f"receipt {n} file {rel}")
+            row.ev(f"{len(maps['tools'])} tool-root files hashed (identity only; {n_tool} acceptance tool files not parsed): "
+                   f"{n_ok} equal the header records; before/after maps equal")
 
         self.row(A, "integrity", 5, "Acceptance tool file hashes", "integrity.tool_files", tool_files)
 
@@ -658,14 +788,19 @@ class Audit:
             for rel, want in rp["inputs"].items():
                 if is_tool_path(rel):
                     n_tool += 1
+                    if rel == AUDIT_SELF_REL:
+                        row.eq(want, AUDIT_V1_SHA, f"rust-products input {rel} = committed audit v1")
+                    else:
+                        row.eq(self.r.hash_only(rel), want, f"rust-products tool input {rel} (identity hash)")
                     continue
                 row.eq(sha(self.r.bytes(rel)), want, f"rust-products input {rel}")
-            row.ev(f"{len(rp['inputs']) - n_tool} inputs verified; {n_tool} tool inputs not read (see integrity.tool_files)")
+            row.ev(f"{len(rp['inputs'])} inputs verified; {n_tool} of them tool files checked by identity hash only")
 
         self.row(A, "integrity", 8, "rust-products.json recorded inputs", "integrity.rust_products_inputs", rp_inputs)
 
     def _files_on_disk(self, row, files, label):
         ok = skipped = 0
+        tool_changed = []
         for rel, want in files.items():
             cands = [rel, "som-rs/" + rel]
             path = next((c for c in cands if self.r.exists(c)), None)
@@ -674,12 +809,20 @@ class Audit:
                 continue
             if is_tool_path(path):
                 skipped += 1
+                got = AUDIT_V1_SHA if path == AUDIT_SELF_REL else self.r.hash_only(path)
+                if got == want:
+                    ok += 1
+                else:
+                    tool_changed.append(rel)
                 continue
             if sha(self.r.bytes(path)) == want:
                 ok += 1
             else:
                 row.fail(f"{label} file {rel} differs on disk")
-        row.ev(f"{label} files map: {ok} equal on disk, {skipped} tool files not read")
+        row.ev(f"{label} files map: {ok} equal on disk ({skipped} tool files checked by identity hash only)")
+        if tool_changed:
+            row.ev(f"note: {label}: {len(tool_changed)} tool files changed after the receipt (later commits; the run's own "
+                   f"tool identity is integrity.tool_files): {tool_changed[:6]}")
 
     # ================================================= python_unchanged (TS)
     def python_unchanged(self):
@@ -959,7 +1102,7 @@ class Audit:
             inv = self.inventory()
             fixture_ids = {f["id"] for f in self.fixtures()}
             acc, legacy = self.acceptance_ids()
-            need = set(acc) | fixture_ids
+            need = set(acc) | set(legacy) | fixture_ids
             exmap = {x["id"]: x for x in inv["public_examples"]}
             miss = []
             for i in sorted(need):
@@ -968,12 +1111,8 @@ class Audit:
                     alias.add(i.replace("example-", "PUBLIC_").replace("example-v", "PUBLIC_v"))
                 if not (alias & covered):
                     miss.append(i)
-            # legacy in-scope jobs are among the 544 legacy python-baseline rows
             leg_cov = {x["id"] for x in pb["rows"] if x["source"] == "legacy"}
-            leg_inv = {x["id"] for x in inv["legacy_in_scope"]}
-            leg_miss = [i for i in leg_inv if i not in leg_cov]
-            if leg_miss:
-                row.ev(f"note: {len(leg_miss)} legacy100 ids not named in python-baseline (ids differ in naming); legacy covered by 544 job rows")
+            row.ev(f"legacy in-scope jobs with a python-baseline none/python pair: {sum(1 for i in legacy if i in leg_cov)} of {len(legacy)}")
             cli = self.rj("cli.json")
             cli_by = collections.defaultdict(dict)
             for x in cli["rows"]:
@@ -1042,6 +1181,10 @@ class Audit:
         ts_ref = [x for x in refusals if x.get("target") == "typescript"]
         if not ts_ref:
             row.miss("no CLI row refuses a request with --target typescript; exit status 2 on a TypeScript refusal is not shown")
+        for x in ts_ref:
+            row.eq((x["http_status"], x["code"]), (422, "UNSUPPORTED_TARGET"), f"typescript refusal {x['input']} http/code")
+        if ts_ref:
+            row.ev(f"{len(ts_ref)} CLI typescript refusal row(s) {[x['input'] for x in ts_ref]}: 422 UNSUPPORTED_TARGET, exit 2, empty stdout")
         by = collections.defaultdict(dict)
         for x in rows:
             if not x.get("code"):
@@ -1126,8 +1269,11 @@ class Audit:
             got_ex = {re.match(r"(.+)-(cnl|json)-typescript$", c["id"]).group(1) for c in oos if c["id"].startswith("example-")}
             row.eq(sorted(got_ex), sorted(exp_ex), "out-of-scope public examples")
             row.ev(f"{n} out-of-scope cases match the reimplemented scope oracle and the scope.json refusal texts")
-            leg_out = sum(x["count"] for x in inv["counts"]["legacy"] if x["typescript"] != "in_scope")
-            row.miss(f"{leg_out} out-of-scope legacy jobs were not sent with target typescript (no raw result in the run)")
+            n_leg, groups = self.check_legacy_target(row, "out")
+            row.eq({"|".join(k): v for k, v in groups.items()}, {"|".join(k): v for k, v in self.legacy_counts("out").items()},
+                   "out-of-scope legacy jobs by group, version and rule vs case-inventory counts")
+            row.ev(f"{n_leg} out-of-scope legacy jobs refused with the oracle's UNSUPPORTED_TARGET diagnostic; requests rebuilt "
+                   "from legacy544 run-005")
 
         self.row("typescript-output-v1", "scope_checks", 1, plan[1], "ts.scope.1", sc1)
 
@@ -1188,7 +1334,15 @@ class Audit:
                     ref[o[0]] += 1
             row.eq(sorted(adm), sorted(leg_in), "oracle admits exactly the case-inventory legacy_in_scope prompts")
             row.ev(f"oracle agrees with contract records on {agree} prompts; legacy prompts: {len(adm)} admitted, refusals {dict(ref)}")
-            row.miss(f"the candidate's refusal for the {sum(ref.values())} out-of-scope legacy prompts was not recorded (not sent with target typescript)")
+            n_out, _ = self.check_legacy_target(row, "out")
+            n_in, _ = self.check_legacy_target(row, "in")
+            row.ev(f"candidate on legacy jobs with target typescript equals the oracle: {n_out} refusals, {n_in} admitted")
+            # the out-of-scope typed-JSON cases in the target report
+            n_js = 0
+            for c in self.target_cases():
+                if c["section"] == "out_of_scope" and c["id"].endswith("-json-typescript"):
+                    n_js += 1
+            row.ev(f"{n_js} out-of-scope typed-JSON cases are compared with the oracle in ts.scope.1")
 
         self.row("typescript-output-v1", "scope_checks", 2, plan[2], "ts.scope.2", sc2)
 
@@ -1202,7 +1356,7 @@ class Audit:
             acc, legacy = self.acceptance_ids()
             got = {re.sub(r"-(cnl|json)-typescript$", "", c["id"]) for c in ins}
             bc = {c["id"] for c in self.bundles_cases("bundle_checks")}
-            missing = [i for i in acc if i not in got and i not in bc]
+            missing = [i for i in acc + legacy if i not in got and i not in bc]
             row.need(not missing, f"acceptance cases without a typescript compile result: {missing}")
             for c in self.bundles_cases("bundle_checks"):
                 for k in ("compile_cnl_1", "compile_json_1"):
@@ -1210,7 +1364,10 @@ class Audit:
                     if j is not None and j.get("status") != "ok":
                         row.fail(f"{c['id']} {k} not ok")
             row.ev(f"{len(ins)} in_scope target cases and {len(bc)} bundle cases compile to a bundle")
-            row.miss(f"{len(legacy)} in-scope legacy100 jobs were never compiled with target typescript")
+            n_in, groups = self.check_legacy_target(row, "in")
+            row.eq({"|".join(k): v for k, v in groups.items()}, {"|".join(k): v for k, v in self.legacy_counts("in").items()},
+                   "in-scope legacy jobs by group and version vs case-inventory counts")
+            row.ev(f"{n_in} in-scope legacy jobs compile with target typescript to a som.dsl-bundle.v2 bundle (target report)")
 
         self.row("typescript-output-v1", "scope_checks", 3, plan[3], "ts.scope.3", sc3)
 
@@ -1219,10 +1376,18 @@ class Audit:
         plan = self.ts_plan()["bundle_checks"]
         acc, legacy = self.acceptance_ids()
 
+        inv_leg = {x["id"]: x for x in self.inventory()["legacy_in_scope"]}
+
         def cov(row):
             ids = [c["id"] for c in self.bundles_cases("bundle_checks")]
-            row.eq(sorted(ids), sorted(acc), "bundle case ids = non-legacy acceptance cases")
-            row.miss(f"{len(legacy)} legacy100 acceptance cases have no bundle result (the tool declared them out of scope)")
+            row.eq(sorted(ids), sorted(acc + legacy), "bundle case ids = every acceptance case (incl. legacy in-scope jobs)")
+            row.eq(len(ids), self.inventory()["counts"]["acceptance_total"], "bundle case count = acceptance_total")
+            for cid in legacy:
+                _, j = self.bresp(f"bundle_checks__{cid}__compile_json_1.json")
+                if j is None:
+                    row.fail(f"{cid} has no typed JSON compile")
+                    continue
+                row.eq(H((j.get("bundle") or {}).get("prompt")), inv_leg[cid]["prompt_sha256"], f"{cid} bundle prompt = inventory prompt hash")
             return ids
 
         def compiles(cid):
@@ -1246,11 +1411,39 @@ class Audit:
                     row.eq((bun.get("version"), bun.get("target")), ("som.dsl-bundle.v2", "typescript"), f"{cid} {k}")
                 if forms != {"cnl", "json"}:
                     single.append(cid)
+            te_cnl = {e["id"] for e in self.target_examples()["name_cases"] if "source" in json.loads(e["body"])}
+            recs = {j["rec"]["id"]: j for j in self.legacy_jobs()}
+            tcases = {c["id"]: c for c in self.target_cases() if c["section"] == "legacy"}
+            no_cnl = leg_cnl_missing = 0
             for cid in single:
-                if cid.startswith("TN") and "_JSON_" in cid:
-                    continue  # no CNL source exists
-                row.miss(f"{cid}: only one form was compiled; the typed JSON form was not sent")
-            row.ev(f"{len(ids) - len(single)} cases with byte-identical CNL and JSON bundles")
+                if cid.startswith("TN") and cid not in te_cnl:
+                    no_cnl += 1
+                    continue  # the name case exists only as typed JSON: no CNL source exists
+                if cid in recs:
+                    j = recs[cid]
+                    src_rel = j["dir"] + "/source.cnl"
+                    if self.r.exists(src_rel) and sha(self.r.bytes(src_rel)) == j["rec"].get("cnl_sha256"):
+                        leg_cnl_missing += 1
+                        continue
+                    no_cnl += 1
+                    continue
+                row.miss(f"{cid}: only one form was compiled although a CNL source exists")
+            if leg_cnl_missing:
+                row.miss(f"{leg_cnl_missing} legacy in-scope jobs were compiled from typed JSON only, but each has a CNL source "
+                         "(legacy544 run-005 source.cnl, sha equal to its record's cnl_sha256); case-inventory selection_rules[2] "
+                         "requires the CNL compile where a CNL source exists and byte-identical bundles")
+            # the same typed JSON request in the target report gives the same bytes
+            same = 0
+            for cid in legacy:
+                c = tcases.get(cid)
+                x, _ = self.bresp(f"bundle_checks__{cid}__compile_json_1.json")
+                if c is not None and x is not None:
+                    if self.r.bytes(self.R("target/" + c["response_file"])) == x:
+                        same += 1
+                    else:
+                        row.fail(f"{cid} target-report and bundle-check typed JSON compiles differ")
+            row.ev(f"{len(ids) - len(single)} cases with byte-identical CNL and JSON bundles; {no_cnl} cases have no CNL source; "
+                   f"{same} legacy typed-JSON compiles equal the target-report bytes")
 
         self.row("typescript-output-v1", "bundle_checks", 0, plan[0], "ts.bundle_checks.0", bc0)
 
@@ -1340,6 +1533,19 @@ class Audit:
                 if self.r.isdir(pdir):
                     for k, v in files.items():
                         row.need(self.r.bytes(pdir + "/" + k) == v.encode(), f"{cid} product file {k} differs from assemble")
+            mrel = self.R("bundles/products/manifest.json")
+            if self.r.exists(mrel):
+                man = self.r.json(mrel)["products"]
+                row.eq(sorted(m["id"] for m in man), sorted(ids), "products manifest ids = bundle case ids")
+                for m in man:
+                    row.eq(os.path.abspath(m["product"]), os.path.join(self.run, "bundles", "products", m["id"]), f"{m['id']} manifest product path")
+                    _, j = self.bresp(f"bundle_checks__{m['id']}__compile_json_1.json")
+                    if j is None:
+                        _, j = self.bresp(f"bundle_checks__{m['id']}__compile_cnl_1.json")
+                    row.need(j is not None and j["bundle"]["prompt"] == m["prompt"], f"{m['id']} manifest prompt = compiled bundle prompt")
+                row.ev(f"products manifest: {len(man)} entries, paths and prompts match the compiled bundles")
+            else:
+                row.fail("bundles/products/manifest.json missing")
             row.ev(f"{len(ids)} products: {len(paths)} files each; fixed files equal reference/")
 
         self.row("typescript-output-v1", "bundle_checks", 4, plan[4], "ts.bundle_checks.4", bc4)
@@ -1417,15 +1623,15 @@ class Audit:
         ref_pkg = sha(self.r.bytes(TS_CT + "/reference/package.json"))
 
         def each(row, fn):
-            row.eq(sorted(prods), sorted(acc), "product ids = non-legacy acceptance cases")
-            for cid in acc:
+            row.eq(sorted(prods), sorted(acc + legacy), "product ids = every acceptance case (incl. legacy in-scope jobs)")
+            for cid in acc + legacy:
                 p = prods.get(cid)
                 if p is None:
                     row.fail(f"{cid} has no product record")
                     continue
                 g = p["gates"]
                 fn(row, cid, g, p)
-            row.miss(f"{len(legacy)} legacy100 acceptance cases have no product gate result")
+            row.ev(f"{len(acc) + len(legacy)} products checked ({len(legacy)} legacy in-scope jobs)")
 
         def g0(row):
             want = tc["commands"]["install"].split()
@@ -1558,6 +1764,11 @@ class Audit:
                 if not has_nonstr:
                     applicable.discard("D1")
                     not_applicable["D1"] += 1
+                # D2 (behavior-normalization): a str longer than 255 code points or an int outside signed 32 bits
+                # in a field value; a prompt with no str and no int field has no input that can reach it
+                if not any(f.get("type") in ("str", "int") for r in res for f in r["fields"]):
+                    applicable.discard("D2")
+                    not_applicable["D2"] += 1
                 if not has_query and prompt["version"] == "som.prompt.v1":
                     applicable.discard("D4")
                     not_applicable["D4"] += 1
@@ -1566,7 +1777,8 @@ class Audit:
             each(row, f)
             for dv, n in sorted(absent.items()):
                 row.fail(f"divergence {dv} applies but has no strict step in the raw transcript of {n} products")
-            row.ev(f"divergences judged not applicable (string-only fields for D1; v1 prompt without list query for D4): "
+            row.ev(f"divergences judged not applicable (string-only fields for D1; no str or int field for D2; "
+                   f"v1 prompt without list query for D4): "
                    f"{dict(not_applicable)}")
             if label_diff:
                 row.ev(f"note: tool by_divergence differs from the raw step prefixes in {len(label_diff)} products, e.g. {label_diff[0]}")
@@ -1587,8 +1799,27 @@ class Audit:
 
         def ns(row):
             total = self.inventory()["counts"]["acceptance_total"]
-            row.fail(f"{len(prods)} of {total} acceptance cases ran the product gates; the {len(legacy)} legacy100 cases were "
-                     "reported by the tools as out of scope instead of as missing results")
+            want = sorted(acc + legacy)
+            row.eq(len(want), total, "acceptance ids = acceptance_total")
+            row.eq(sorted(prods), want, "every acceptance case has a product record")
+            gate_keys = ("install", "typecheck", "format_check", "test", "lock_unchanged", "schema_equivalence", "parity",
+                         "strict_refusals", "startup")
+            for cid in want:
+                p = prods.get(cid)
+                if p is None:
+                    continue
+                miss = [k for k in gate_keys if not isinstance(p["gates"].get(k), dict)]
+                row.need(not miss, f"{cid} missing gate records {miss}")
+            for i in range(9):
+                r = self.find(f"ts.product_gates.{i}")
+                if r.status in ("failed", "unrun"):
+                    row.fail(f"ts.product_gates.{i} is {r.status}")
+            # bundle checks are gates too: a skipped form or check blocks acceptance
+            for i in range(5):
+                r = self.find(f"ts.bundle_checks.{i}")
+                if r.unrun:
+                    row.fail(f"ts.bundle_checks.{i} has a skipped check: {r.unrun[0][:160]}")
+            row.ev(f"{len(prods)} of {total} acceptance cases have all {len(gate_keys)} gate records")
 
         self.row("typescript-output-v1", "product_gates", None, pg["no_sampling"], "ts.product_gates.no_sampling", ns)
 
@@ -1848,9 +2079,9 @@ class Audit:
         def ru(row):
             for i in range(9):
                 row.absorb(self.find(f"rust.amendment005.{i}"), f"rust.amendment005.{i}")
-            row.miss("amendment005 check 9 (independent audit) is decided by this report itself")
+            row.ev("amendment005 check 9 (independent audit) is absorbed after the audit rows are decided")
 
-        self.row("typescript-output-v1", "rust_unchanged", None, tsp["rust_unchanged"]["checks"], "ts.rust_unchanged", ru)
+        ru_row = self.row("typescript-output-v1", "rust_unchanged", None, tsp["rust_unchanged"]["checks"], "ts.rust_unchanged", ru)
 
         def ig_contract(row):
             fz = self.cj(TS_FREEZE)
@@ -1868,59 +2099,71 @@ class Audit:
         def agg(prefixes):
             def fn(row):
                 for r in list(self.rows):
-                    if any(r.id.startswith(p) for p in prefixes):
+                    if r is not row and any(r.id.startswith(p) for p in prefixes):
                         row.absorb(r, r.id)
             return fn
 
         ig = tsp["issue_gates"]
         self.row("typescript-output-v1", "issue_gates", "phase1-contract", ig["phase1-contract"], "ts.issue_gates.phase1-contract", ig_contract)
         self.row("typescript-output-v1", "issue_gates", "phase1-amendment-001", ig["phase1-amendment-001"], "ts.issue_gates.phase1-amendment-001", ig_am)
-        self.row("typescript-output-v1", "issue_gates", "phase1-target", ig["phase1-target"], "ts.issue_gates.phase1-target",
-                 agg(("ts.target_selection.", "ts.scope.", "ts.python_unchanged.", "ts.rust_unchanged")))
+        tgt_fn = agg(("ts.target_selection.", "ts.scope.", "ts.python_unchanged.", "ts.rust_unchanged"))
+        tgt_row = self.row("typescript-output-v1", "issue_gates", "phase1-target", ig["phase1-target"], "ts.issue_gates.phase1-target", tgt_fn)
         self.row("typescript-output-v1", "issue_gates", "phase1-products", ig["phase1-products"], "ts.issue_gates.phase1-products",
                  agg(("ts.bundle_checks.", "ts.assemble_refusals.", "ts.product_gates.")))
 
-        def audit_row(row):
-            others = [r for r in self.rows]
-            bad = [r.id for r in others if r.status in ("failed", "unrun")]
-            if bad:
-                n_f = sum(1 for r in others if r.status == "failed")
-                n_u = sum(1 for r in others if r.status == "unrun")
-                row.fail(f"this independent audit reports {n_f} failed and {n_u} unrun rows: {bad[:6]}")
-            else:
-                row.ev("every other row is passed or attested")
+        def run_guard(row):
+            h = self.rj("header.json")
+            row.eq(h.get("default_before"), h.get("default_after"), "header default_before = default_after (8765 default untouched)")
+            row.eq(h.get("candidate_before"), h.get("candidate_after"), "header candidate_before = candidate_after")
+            ports = {h.get("baseline_port"), h.get("candidate_before", {}).get("port")}
+            row.need(not (ports & {8765, 18765}), f"run ports {sorted(p for p in ports if p)} avoid 8765 and 18765")
+            row.ev(f"run ports {sorted(p for p in ports if p)}; candidate binary {h.get('candidate_before', {}).get('binary_sha256', '')[:16]}")
 
-        self.row("typescript-output-v1", "issue_gates", "phase1-acceptance", ig["phase1-acceptance"], "ts.issue_gates.phase1-acceptance", audit_row)
-        a9 = self.row("rust-output-v1", "amendment005.checks", 9, self.rs_plan()["amendment005"]["checks"][9], "rust.amendment005.9", audit_row)
-        # the two audit rows must not see each other
-        acc_row = self.find("ts.issue_gates.phase1-acceptance")
-        for r in (acc_row, a9):
-            r.failed, r.unrun, r.attested, r.evidence = [], [], [], []
-            others = [x for x in self.rows if x not in (acc_row, a9)]
+        post_msg = ("the QA-port rehearsal with Python, Rust and TypeScript canaries, the rollback and the user's approved "
+                    "switch of the 8765 default happen only after acceptance; not part of an acceptance run")
+
+        def g65_ts(row):
+            run_guard(row)
+            row.post_acceptance(post_msg)
+
+        self.row("typescript-output-v1", "issue_gates", "#65", ig["#65"], "ts.issue_gates.#65", g65_ts)
+
+        def audit_decide(r, others):
+            n_f = sum(1 for x in others if x.status == "failed")
+            n_u = sum(1 for x in others if x.status == "unrun")
             bad = [x.id for x in others if x.status in ("failed", "unrun")]
             if bad:
-                r.fail(f"this independent audit reports {sum(1 for x in others if x.status == 'failed')} failed and "
-                       f"{sum(1 for x in others if x.status == 'unrun')} unrun rows: {bad[:6]}")
+                r.fail(f"this independent audit reports {n_f} failed and {n_u} unrun rows (excluding the audit and #65 rows): {bad[:8]}")
             else:
-                r.ev("every other row is passed or attested")
+                r.ev(f"every other row ({len(others)}) is passed, attested or post_acceptance")
 
-        def g65(row):
-            row.miss("needs a QA-port rehearsal with Python, Rust and TypeScript canaries, a rollback and the user's approval; "
-                     "not part of this run")
+        def placeholder(row):
+            row.ev("decided after every other row")
 
-        self.row("typescript-output-v1", "issue_gates", "#65", ig["#65"], "ts.issue_gates.#65", g65)
+        acc_row = self.row("typescript-output-v1", "issue_gates", "phase1-acceptance", ig["phase1-acceptance"], "ts.issue_gates.phase1-acceptance", placeholder)
+        a9 = self.row("rust-output-v1", "amendment005.checks", 9, self.rs_plan()["amendment005"]["checks"][9], "rust.amendment005.9", placeholder)
+        excl = (acc_row, a9)
+        others = [x for x in self.rows if x not in excl and not x.id.endswith("#65")]
+        for r in excl:
+            r.failed, r.unrun, r.post, r.attested, r.evidence = [], [], [], [], []
+            audit_decide(r, others)
+        # check 9 completes ts.rust_unchanged, and phase1-target aggregates it
+        ru_row.absorb(a9, "rust.amendment005.9")
+        tgt_row.failed, tgt_row.unrun, tgt_row.post, tgt_row.attested, tgt_row.evidence = [], [], [], [], []
+        tgt_fn(tgt_row)
+
+        def g65_rs(row):
+            for i in range(10):
+                row.absorb(self.find(f"rust.amendment005.{i}"), f"rust.amendment005.{i}")
+            row.absorb(acc_row, "ts.issue_gates.phase1-acceptance")
+            h = self.rj("header.json")
+            row.ev(f"rust amendment005 checks were run against the same candidate as this TS run "
+                   f"(port {h.get('candidate_before', {}).get('port')})")
+            run_guard(row)
+            row.post_acceptance(post_msg)
+
         self.row("rust-output-v1", "amendment005.issue_gates", "#65", self.rs_plan()["amendment005"]["issue_gates"]["#65"],
-                 "rust.amendment005.issue_gates.#65", g65)
-        # keep the audit rows last-decided: recompute after #65 rows exist
-        for r in (acc_row, a9):
-            r.failed, r.unrun, r.attested, r.evidence = [], [], [], []
-            others = [x for x in self.rows if x not in (acc_row, a9) and not x.id.endswith("#65")]
-            bad = [x.id for x in others if x.status in ("failed", "unrun")]
-            if bad:
-                r.fail(f"this independent audit reports {sum(1 for x in others if x.status == 'failed')} failed and "
-                       f"{sum(1 for x in others if x.status == 'unrun')} unrun rows (excluding the #65 gates): {bad[:6]}")
-            else:
-                r.ev("every other row is passed or attested")
+                 "rust.amendment005.issue_gates.#65", g65_rs)
 
     def run_all(self):
         self.integrity()
@@ -2085,7 +2328,7 @@ def main():
         "version": VERSION,
         "run": au.run_rel,
         "plans": {TS_PLAN_REL: sha(au.r.bytes(TS_PLAN_REL)), RS_PLAN_REL: sha(au.r.bytes(RS_PLAN_REL))},
-        "totals": {k: totals.get(k, 0) for k in ("passed", "attested", "unrun", "failed")} | {"rows": len(rows)},
+        "totals": {k: totals.get(k, 0) for k in STATUSES} | {"rows": len(rows)},
         "rows": rows,
         "inputs_sha256": dict(sorted(au.r.shas.items())),
     }
@@ -2095,7 +2338,7 @@ def main():
     print(json.dumps(report["totals"]))
     for r in rows:
         if r["status"] != "passed":
-            print(f"{r['status']:8} {r['id']}: {r['reason'][:300]}")
+            print(f"{r['status']:15} {r['id']}: {r['reason'][:300]}")
     return 0 if totals.get("failed", 0) == 0 and totals.get("unrun", 0) == 0 else 1
 
 
