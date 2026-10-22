@@ -1,0 +1,231 @@
+{
+  "version": "som.react-output-target-evidence.v1",
+  "issue": 128,
+  "gate": "phase1-target",
+  "date": "2026-10-23",
+  "commit": "e64eb1947c9d0f420fa66874dc86bbaed8d4dcd0",
+  "candidate": {
+    "directory": ".local/react-output/candidate-001",
+    "binary_sha256": "c0ed699ca6d6ffd30fdbeb8374042326d61ee8f0e6f8ca24c1563e6a885b0a00",
+    "source_sha256": "3cbccb005b2da4779502d546e36a749ce6b18e7b8481ac53d4d25b23d17c255e",
+    "asset_manifest_sha256": "d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa",
+    "prettier_tree_sha256": "f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299",
+    "port": 18970,
+    "build_commands": [
+      {
+        "command": [
+          "/opt/homebrew/Cellar/rust/1.96.1/bin/cargo",
+          "test",
+          "--locked",
+          "--offline"
+        ],
+        "cwd": "som-rs/som-targets",
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/rust/1.96.1/bin/cargo",
+          "build",
+          "--release",
+          "--locked",
+          "--offline",
+          "--bin",
+          "som"
+        ],
+        "cwd": "som-rs/som-targets",
+        "exit_code": 0
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/rust/1.96.1/bin/cargo",
+          "build",
+          "--release",
+          "--locked",
+          "--offline",
+          "--bin",
+          "som-compiler-assets"
+        ],
+        "cwd": "som-rs",
+        "exit_code": 0
+      }
+    ]
+  },
+  "baseline": {
+    "description": "TypeScript candidate-001 (v0.5.0 default build)",
+    "url": "http://127.0.0.1:18960",
+    "directory": ".local/typescript-output/candidate-001"
+  },
+  "reports": [
+    {
+      "check": "react target and scope",
+      "acceptance_plan": [
+        "target_selection_checks",
+        "scope_checks"
+      ],
+      "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/react_output_acceptance/check_target.py --url http://127.0.0.1:18970 --out .local/react-output/target-128-001/react-target --binary .local/react-output/candidate-001/som",
+      "report": ".local/react-output/target-128-001/react-target/report.json",
+      "report_sha256": "0dea610ba43344b9dd118b1bd5a2b5bc84c355150c805cd3f9627ef274b96389",
+      "summary": {
+        "status": "passed",
+        "passed": true,
+        "total": 1050,
+        "passed_count": 1050,
+        "failed_count": 0,
+        "not_run_count": 0,
+        "problems": []
+      },
+      "sections": {
+        "in_scope": 40,
+        "legacy": 544,
+        "name_cases": 9,
+        "negative_cases": 30,
+        "out_of_scope": 130,
+        "python_equivalence": 279,
+        "target_examples": 18
+      },
+      "cli": {
+        "total": 22,
+        "refusals": 13,
+        "passed_count": 22,
+        "passed": true,
+        "binary_sha256": "c0ed699ca6d6ffd30fdbeb8374042326d61ee8f0e6f8ca24c1563e6a885b0a00"
+      }
+    },
+    {
+      "check": "react python controls",
+      "acceptance_plan": [
+        "python_unchanged"
+      ],
+      "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/tests/react-output-v1/check_python_controls.py --url http://127.0.0.1:18970 --expect som-rs/evidence/react-output-v1/python-controls-2026-10-22.json --evidence .local/react-output/target-128-001/react-python-controls.json",
+      "report": ".local/react-output/target-128-001/react-python-controls.json",
+      "report_sha256": "de16a5c212eb93f483f45e7aeff467a5905527c240c3b6b95fc517c0b7c3d8d9",
+      "summary": {
+        "passed": 39,
+        "failed": []
+      }
+    },
+    {
+      "check": "python baseline (127 public products, 544 legacy jobs, no target and target python)",
+      "acceptance_plan": [
+        "python_unchanged"
+      ],
+      "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/typescript_output_acceptance/check_python_baseline.py --qa http://127.0.0.1:18970 --baseline http://127.0.0.1:18960 --out .local/react-output/target-128-001/python-baseline",
+      "report": ".local/react-output/target-128-001/python-baseline/report.json",
+      "report_sha256": "2a8b488a6540899be482cbf1bb432dd70d8b7c4f278b469fb339515f9c0e1dc1",
+      "summary": {
+        "status": "passed",
+        "passed": true,
+        "total": 1342,
+        "passed_count": 1342,
+        "failed_count": 0,
+        "not_run_count": 0,
+        "problems": []
+      }
+    },
+    {
+      "check": "rust baseline",
+      "acceptance_plan": [
+        "rust_unchanged"
+      ],
+      "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py --qa http://127.0.0.1:18970 --baseline http://127.0.0.1:18960 --out .local/react-output/target-128-001/rust-baseline",
+      "report": ".local/react-output/target-128-001/rust-baseline/report.json",
+      "report_sha256": "681df6900c07534a38e09e550d1bd5646190a671c680d5e872a59d18b49b3bb8",
+      "summary": {
+        "status": "passed",
+        "passed": true,
+        "total": 2093,
+        "passed_count": 2093,
+        "failed_count": 0,
+        "not_run_count": 0,
+        "problems": []
+      }
+    },
+    {
+      "check": "rust python controls",
+      "acceptance_plan": [
+        "rust_unchanged"
+      ],
+      "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/tests/rust-output-v1/check_python_controls.py --base-url http://127.0.0.1:18970 --out .local/react-output/target-128-001/rust-python-controls.json",
+      "report": ".local/react-output/target-128-001/rust-python-controls.json",
+      "report_sha256": "2ad653ee75c8559c2325d1f90496b02beff483d18ca08fdfd01468fd64b554f5",
+      "summary": {
+        "passed": 32,
+        "failed": []
+      }
+    },
+    {
+      "check": "rust RT diagnostics",
+      "acceptance_plan": [
+        "rust_unchanged"
+      ],
+      "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py --url http://127.0.0.1:18970 --out .local/react-output/target-128-001/rt-diagnostics",
+      "report": ".local/react-output/target-128-001/rt-diagnostics/report.json",
+      "report_sha256": "d70e24d51580ac1a3c2c444b4aa4fc59c58ebb45cb9c50d6da289fa67c3bcc6f",
+      "summary": {
+        "status": "passed",
+        "passed": true,
+        "total": 7,
+        "passed_count": 7,
+        "failed_count": 0,
+        "not_run_count": 0,
+        "problems": []
+      }
+    },
+    {
+      "check": "typescript target and scope (amendment 002 texts)",
+      "acceptance_plan": [
+        "typescript_unchanged"
+      ],
+      "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/typescript_output_acceptance/check_target.py --url http://127.0.0.1:18970 --out .local/react-output/target-128-001/ts-target",
+      "report": ".local/react-output/target-128-001/ts-target/report.json",
+      "report_sha256": "04b3a8ff05614eeeb826451a9f942cae26670a09a3ea64ea2378c93915fb1916",
+      "summary": {
+        "status": "passed",
+        "passed": true,
+        "total": 791,
+        "passed_count": 791,
+        "failed_count": 0,
+        "not_run_count": 0,
+        "problems": []
+      }
+    },
+    {
+      "check": "typescript bundles and products against the baseline",
+      "acceptance_plan": [
+        "typescript_unchanged"
+      ],
+      "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/react_output_acceptance/check_typescript_baseline.py --qa http://127.0.0.1:18970 --baseline http://127.0.0.1:18960 --out .local/react-output/target-128-001/ts-baseline",
+      "report": ".local/react-output/target-128-001/ts-baseline/report.json",
+      "report_sha256": "dfd9eb5991109cc83493c555d6edd2a6527b0096e390935ad932e30f1165e3ed",
+      "summary": {
+        "status": "passed",
+        "passed": true,
+        "total": 125,
+        "passed_count": 125,
+        "failed_count": 0,
+        "not_run_count": 0,
+        "problems": []
+      },
+      "allowed_differences": [
+        "bundle.assets.backend",
+        "bundle.assets.target_contract",
+        "bundle.hashes.payload_sha256"
+      ]
+    },
+    {
+      "check": "typescript python controls",
+      "acceptance_plan": [
+        "typescript_unchanged"
+      ],
+      "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/tests/typescript-output-v1/check_python_controls.py --url http://127.0.0.1:18970 --evidence .local/react-output/target-128-001/ts-python-controls.json",
+      "report": ".local/react-output/target-128-001/ts-python-controls.json",
+      "report_sha256": "cd9ac2bc6bce05f38774a20f42cc939a61152735f298671977f6aaf091be63f8",
+      "summary": {
+        "passed": 43,
+        "failed": []
+      }
+    }
+  ],
+  "passed": true,
+  "not_run": []
+}
