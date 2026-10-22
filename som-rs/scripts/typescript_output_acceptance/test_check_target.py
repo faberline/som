@@ -237,12 +237,160 @@ class FakeSomServer:
         self._thread.join(timeout=5)
 
 
+def create_tiny_legacy_run(
+    root: pathlib.Path,
+    *,
+    in_scope_count_override: int | None = None,
+    group_counts_override: list[dict[str, Any]] | None = None,
+    omit_second_job_input: bool = False,
+) -> tuple[pathlib.Path, pathlib.Path, dict[str, Any], dict[str, Any]]:
+    """Create a 2-job fake legacy run (1 in-scope, 1 out-of-scope) and matching fake inventory."""
+    legacy_run = root / "legacy-run"
+    compile_root = legacy_run / "compile"
+    compile_root.mkdir(parents=True, exist_ok=True)
+
+    v3_prompt = json.loads(
+        (check_target.EXAMPLES / "v3.prompt.json").read_text(encoding="utf-8")
+    )
+    in_scope_prompt = {**v3_prompt, "package": "fake_legacy_in_scope"}
+    in_scope_sha = check_target.sha_bytes(
+        check_target.canonical_json(in_scope_prompt).encode("utf-8")
+    )
+
+    v6_prompt = json.loads(
+        (check_target.EXAMPLES / "v6.prompt.json").read_text(encoding="utf-8")
+    )
+    out_of_scope_prompt = {**v6_prompt, "package": "fake_legacy_out_of_scope"}
+    out_of_scope_sha = check_target.sha_bytes(
+        check_target.canonical_json(out_of_scope_prompt).encode("utf-8")
+    )
+
+    jobs = [
+        ("legacy100-0000", "legacy100", in_scope_prompt, in_scope_sha, False),
+        (
+            "services14-0000",
+            "services14",
+            out_of_scope_prompt,
+            out_of_scope_sha,
+            omit_second_job_input,
+        ),
+    ]
+    records: list[dict[str, Any]] = []
+    for idx, (job_id, group, prompt_obj, prompt_sha, omit_input) in enumerate(jobs):
+        job_dir = legacy_run / f"{idx:04d}"
+        job_dir.mkdir(parents=True, exist_ok=True)
+        comp_dir = compile_root / prompt_sha
+        comp_dir.mkdir(parents=True, exist_ok=True)
+        if not omit_input:
+            req_body = {"format": "som.prompt-json.v1", "prompt": prompt_obj}
+            (comp_dir / "compile-json.request.json").write_text(
+                json.dumps(req_body, indent=2) + "\n",
+                encoding="utf-8",
+            )
+        records.append(
+            {
+                "id": job_id,
+                "family": "legacy214",
+                "group": group,
+                "passed": True,
+                "prompt_sha256": prompt_sha,
+            }
+        )
+
+    (legacy_run / "result.json").write_text(
+        json.dumps(
+            {
+                "version": "som.compiler-legacy544-result.v1",
+                "status": "passed",
+                "required_job_count": len(records),
+                "passed_job_count": len(records),
+                "compile_prompt_count": len(records),
+                "records": records,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    base_inv = json.loads(
+        (check_target.CONTRACT / "case-inventory.json").read_text(encoding="utf-8")
+    )
+    base_inv["legacy_in_scope"] = [
+        {
+            "id": "legacy100-0000",
+            "group": "legacy100",
+            "inventory_index": 0,
+            "prompt_version": in_scope_prompt["version"],
+            "prompt_sha256": in_scope_sha,
+        }
+    ]
+    base_inv["counts"]["legacy_in_scope"] = (
+        1 if in_scope_count_override is None else in_scope_count_override
+    )
+    base_inv["counts"]["legacy"] = (
+        [
+            {
+                "group": "legacy100",
+                "prompt_version": in_scope_prompt["version"],
+                "typescript": "in_scope",
+                "count": 1,
+            },
+            {
+                "group": "services14",
+                "prompt_version": out_of_scope_prompt["version"],
+                "typescript": "prompt_version",
+                "count": 1,
+            },
+        ]
+        if group_counts_override is None
+        else group_counts_override
+    )
+    inv_path = root / "case-inventory.json"
+    inv_path.write_text(json.dumps(base_inv, indent=2) + "\n", encoding="utf-8")
+    return legacy_run, inv_path, in_scope_prompt, out_of_scope_prompt
+
+
 class CheckTargetTests(unittest.TestCase):
-    def _run_main(self, argv: list[str]) -> tuple[int, str, str]:
+    def _run_main(
+        self,
+        argv: list[str],
+        *,
+        expected_legacy: int | None = 2,
+        expected_legacy_in_scope: int | None = 1,
+        patch_legacy: bool = True,
+        inv_path: pathlib.Path | None = None,
+    ) -> tuple[int, str, str]:
         stdout = io.StringIO()
         stderr = io.StringIO()
-        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
-            rc = check_target.main(argv)
+        with tempfile.TemporaryDirectory() as leg_tmp:
+            if "--legacy-run" not in argv:
+                leg_run, default_inv, _, _ = create_tiny_legacy_run(pathlib.Path(leg_tmp))
+                argv = [*argv, "--legacy-run", str(leg_run)]
+                if inv_path is None:
+                    inv_path = default_inv
+            if patch_legacy and inv_path is not None:
+                with (
+                    unittest.mock.patch.object(
+                        check_target.build_case_inventory, "OUT", inv_path
+                    ),
+                    unittest.mock.patch.object(
+                        check_target,
+                        "EXPECTED_LEGACY",
+                        2 if expected_legacy is None else expected_legacy,
+                    ),
+                    unittest.mock.patch.object(
+                        check_target,
+                        "EXPECTED_LEGACY_IN_SCOPE",
+                        1 if expected_legacy_in_scope is None else expected_legacy_in_scope,
+                    ),
+                    contextlib.redirect_stdout(stdout),
+                    contextlib.redirect_stderr(stderr),
+                ):
+                    rc = check_target.main(argv)
+            else:
+                with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                    rc = check_target.main(argv)
         return rc, stdout.getvalue(), stderr.getvalue()
 
     def test_pass_path(self) -> None:
@@ -258,7 +406,7 @@ class CheckTargetTests(unittest.TestCase):
             self.assertEqual(report["failed_count"], 0)
             self.assertEqual(report["not_run_count"], 0)
             self.assertEqual(report["passed_count"], report["total"])
-            self.assertIn("out_of_scope", report["legacy_in_scope"])
+            self.assertNotIn("legacy_in_scope", report)
 
             sections = {row["section"] for row in report["cases"]}
             self.assertEqual(
@@ -270,8 +418,23 @@ class CheckTargetTests(unittest.TestCase):
                     "python_equivalence",
                     "in_scope",
                     "out_of_scope",
+                    "legacy",
                 },
             )
+            legacy_rows = [r for r in report["cases"] if r["section"] == "legacy"]
+            self.assertEqual(len(legacy_rows), 2)
+            self.assertEqual(report["cases"][-2:], legacy_rows)
+            self.assertEqual(legacy_rows[0]["id"], "legacy100-0000")
+            self.assertEqual(legacy_rows[0]["inventory_index"], 0)
+            self.assertEqual(legacy_rows[0]["group"], "legacy100")
+            self.assertTrue(legacy_rows[0]["in_scope"])
+            self.assertEqual(legacy_rows[0]["http_status"], 200)
+            self.assertEqual(legacy_rows[1]["id"], "services14-0000")
+            self.assertEqual(legacy_rows[1]["inventory_index"], 1)
+            self.assertEqual(legacy_rows[1]["group"], "services14")
+            self.assertFalse(legacy_rows[1]["in_scope"])
+            self.assertEqual(legacy_rows[1]["http_status"], 422)
+
             for row in report["cases"]:
                 for key in (
                     "id",
@@ -477,6 +640,253 @@ class CheckTargetTests(unittest.TestCase):
             self.assertEqual(rc, 2)
             self.assertIn("refused:", err)
             self.assertEqual(srv.request_count, 0)
+
+    def test_legacy_in_scope_refused_fails(self) -> None:
+        def refuse_legacy_in_scope(
+            body: str, default: tuple[int, bytes]
+        ) -> tuple[int, bytes]:
+            try:
+                req = json.loads(body)
+            except Exception:  # noqa: BLE001
+                return default
+            if (
+                req.get("target") == "typescript"
+                and isinstance(req.get("prompt"), dict)
+                and req["prompt"].get("package") == "fake_legacy_in_scope"
+            ):
+                reply = {
+                    "status": "error",
+                    "code": "UNSUPPORTED_TARGET",
+                    "detail": "refused in-scope legacy job",
+                    "diagnostics": [
+                        {
+                            "code": "UNSUPPORTED_TARGET",
+                            "prompt_pointer": "/prompt/version",
+                            "cause": "refused in-scope legacy job",
+                            "allowed_form": "som.prompt.v1 .. som.prompt.v5",
+                            "line": 1,
+                            "column": 1,
+                            "end_line": 1,
+                            "end_column": 2,
+                            "byte_start": 0,
+                            "byte_end": 1,
+                        }
+                    ],
+                }
+                return 422, check_target.compact_json(reply).encode("utf-8")
+            return default
+
+        with tempfile.TemporaryDirectory() as tmp, FakeSomServer(
+            override=refuse_legacy_in_scope
+        ) as srv:
+            out_dir = pathlib.Path(tmp) / "out"
+            rc, _, _ = self._run_main(["--url", srv.url, "--out", str(out_dir)])
+            self.assertEqual(rc, 1)
+            report = json.loads((out_dir / "report.json").read_text(encoding="utf-8"))
+            self.assertFalse(report["passed"])
+            leg_in = [r for r in report["cases"] if r["id"] == "legacy100-0000"]
+            self.assertEqual(len(leg_in), 1)
+            self.assertFalse(leg_in[0]["passed"])
+            self.assertEqual(leg_in[0]["status"], "failed")
+            self.assertIn("UNSUPPORTED_TARGET", leg_in[0]["reason"])
+
+    def test_legacy_out_of_scope_accepted_fails(self) -> None:
+        def accept_legacy_out_of_scope(
+            body: str, default: tuple[int, bytes]
+        ) -> tuple[int, bytes]:
+            try:
+                req = json.loads(body)
+            except Exception:  # noqa: BLE001
+                return default
+            if (
+                req.get("target") == "typescript"
+                and isinstance(req.get("prompt"), dict)
+                and req["prompt"].get("package") == "fake_legacy_out_of_scope"
+            ):
+                reply = {
+                    "status": "ok",
+                    "bundle": {
+                        "version": check_target.TS_BUNDLE_VERSION,
+                        "target": "typescript",
+                    },
+                }
+                return 200, check_target.compact_json(reply).encode("utf-8")
+            return default
+
+        with tempfile.TemporaryDirectory() as tmp, FakeSomServer(
+            override=accept_legacy_out_of_scope
+        ) as srv:
+            out_dir = pathlib.Path(tmp) / "out"
+            rc, _, _ = self._run_main(["--url", srv.url, "--out", str(out_dir)])
+            self.assertEqual(rc, 1)
+            report = json.loads((out_dir / "report.json").read_text(encoding="utf-8"))
+            self.assertFalse(report["passed"])
+            leg_out = [r for r in report["cases"] if r["id"] == "services14-0000"]
+            self.assertEqual(len(leg_out), 1)
+            self.assertFalse(leg_out[0]["passed"])
+            self.assertEqual(leg_out[0]["status"], "failed")
+            self.assertIn("http_status 200 != expected 422", leg_out[0]["reason"])
+
+    def test_legacy_refusal_wrong_rule_or_pointer_fails(self) -> None:
+        def wrong_rule(body: str, default: tuple[int, bytes]) -> tuple[int, bytes]:
+            try:
+                req = json.loads(body)
+            except Exception:  # noqa: BLE001
+                return default
+            if (
+                req.get("target") == "typescript"
+                and isinstance(req.get("prompt"), dict)
+                and req["prompt"].get("package") == "fake_legacy_out_of_scope"
+            ):
+                payload = json.loads(default[1])
+                other_ref = SCOPE["refusals"]["table_reserved"]
+                cause = other_ref["cause"].format(table="_sqlx_migrations")
+                payload["detail"] = cause
+                payload["diagnostics"][0]["cause"] = cause
+                payload["diagnostics"][0]["allowed_form"] = other_ref["allowed_form"]
+                return 422, check_target.compact_json(payload).encode("utf-8")
+            return default
+
+        def wrong_pointer(body: str, default: tuple[int, bytes]) -> tuple[int, bytes]:
+            try:
+                req = json.loads(body)
+            except Exception:  # noqa: BLE001
+                return default
+            if (
+                req.get("target") == "typescript"
+                and isinstance(req.get("prompt"), dict)
+                and req["prompt"].get("package") == "fake_legacy_out_of_scope"
+            ):
+                payload = json.loads(default[1])
+                payload["diagnostics"][0]["prompt_pointer"] = "/prompt/package"
+                return 422, check_target.compact_json(payload).encode("utf-8")
+            return default
+
+        for label, override_fn, expected_substr in (
+            ("wrong_rule", wrong_rule, "diagnostic.cause"),
+            ("wrong_pointer", wrong_pointer, "diagnostic.prompt_pointer"),
+        ):
+            with self.subTest(case=label), tempfile.TemporaryDirectory() as tmp, FakeSomServer(
+                override=override_fn
+            ) as srv:
+                out_dir = pathlib.Path(tmp) / "out"
+                rc, _, _ = self._run_main(["--url", srv.url, "--out", str(out_dir)])
+                self.assertEqual(rc, 1)
+                report = json.loads((out_dir / "report.json").read_text(encoding="utf-8"))
+                self.assertFalse(report["passed"])
+                leg_out = [r for r in report["cases"] if r["id"] == "services14-0000"]
+                self.assertEqual(len(leg_out), 1)
+                self.assertFalse(leg_out[0]["passed"])
+                self.assertIn(expected_substr, leg_out[0]["reason"])
+
+    def test_legacy_wrong_counts_fail(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, FakeSomServer() as srv:
+            base = pathlib.Path(tmp)
+            leg_run, inv_path, _, _ = create_tiny_legacy_run(base / "fx-default")
+
+            # 1. Unpatched 544 requirement fails when legacy run only has 2 jobs
+            out_not_544 = base / "out-not-544"
+            rc_544, _, _ = self._run_main(
+                ["--url", srv.url, "--out", str(out_not_544), "--legacy-run", str(leg_run)],
+                patch_legacy=False,
+            )
+            self.assertEqual(rc_544, 1)
+            rep_544 = json.loads((out_not_544 / "report.json").read_text(encoding="utf-8"))
+            self.assertFalse(rep_544["passed"])
+            self.assertTrue(
+                any("legacy job count is 2, expected 544" in p for p in rep_544["problems"]),
+                msg=rep_544["problems"],
+            )
+
+            # 2. Wrong in-scope count fails
+            out_wrong_in_scope = base / "out-wrong-in-scope"
+            rc_in, _, _ = self._run_main(
+                [
+                    "--url",
+                    srv.url,
+                    "--out",
+                    str(out_wrong_in_scope),
+                    "--legacy-run",
+                    str(leg_run),
+                ],
+                expected_legacy=2,
+                expected_legacy_in_scope=100,
+                inv_path=inv_path,
+            )
+            self.assertEqual(rc_in, 1)
+            rep_in = json.loads(
+                (out_wrong_in_scope / "report.json").read_text(encoding="utf-8")
+            )
+            self.assertFalse(rep_in["passed"])
+            self.assertTrue(
+                any("legacy in-scope job count is 1, expected 100" in p for p in rep_in["problems"]),
+                msg=rep_in["problems"],
+            )
+
+            # 3. Group count that differs from counts.legacy fails
+            bad_group_counts = [
+                {
+                    "group": "legacy100",
+                    "prompt_version": "som.prompt.v3",
+                    "typescript": "in_scope",
+                    "count": 1,
+                },
+                {
+                    "group": "services14",
+                    "prompt_version": "som.prompt.v6",
+                    "typescript": "prompt_version",
+                    "count": 2,
+                },
+            ]
+            leg_run_grp, inv_path_grp, _, _ = create_tiny_legacy_run(
+                base / "fx-group", group_counts_override=bad_group_counts
+            )
+            out_wrong_grp = base / "out-wrong-group"
+            rc_grp, _, _ = self._run_main(
+                [
+                    "--url",
+                    srv.url,
+                    "--out",
+                    str(out_wrong_grp),
+                    "--legacy-run",
+                    str(leg_run_grp),
+                ],
+                expected_legacy=2,
+                expected_legacy_in_scope=1,
+                inv_path=inv_path_grp,
+            )
+            self.assertEqual(rc_grp, 1)
+            rep_grp = json.loads(
+                (out_wrong_grp / "report.json").read_text(encoding="utf-8")
+            )
+            self.assertFalse(rep_grp["passed"])
+            self.assertTrue(
+                any("legacy group refusal counts" in p for p in rep_grp["problems"]),
+                msg=rep_grp["problems"],
+            )
+
+    def test_legacy_missing_job_input_is_not_run_and_exits_1(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, FakeSomServer() as srv:
+            base = pathlib.Path(tmp)
+            leg_run, inv_path, _, _ = create_tiny_legacy_run(
+                base / "fx-missing", omit_second_job_input=True
+            )
+            out_dir = base / "out-missing"
+            rc, _, _ = self._run_main(
+                ["--url", srv.url, "--out", str(out_dir), "--legacy-run", str(leg_run)],
+                expected_legacy=2,
+                expected_legacy_in_scope=1,
+                inv_path=inv_path,
+            )
+            self.assertEqual(rc, 1)
+            report = json.loads((out_dir / "report.json").read_text(encoding="utf-8"))
+            self.assertFalse(report["passed"])
+            self.assertEqual(report["not_run_count"], 1)
+            leg_rows = {r["id"]: r for r in report["cases"] if r["section"] == "legacy"}
+            self.assertTrue(leg_rows["legacy100-0000"]["passed"])
+            self.assertEqual(leg_rows["legacy100-0000"]["status"], "passed")
+            self.assertFalse(leg_rows["services14-0000"]["passed"])
+            self.assertEqual(leg_rows["services14-0000"]["status"], "not_run")
 
 
 if __name__ == "__main__":

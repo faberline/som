@@ -218,6 +218,8 @@ def main() -> int:
         sys.stdout.write(json.dumps(doc.get("bundle"), ensure_ascii=False, separators=(",", ":")))
         return 0
     sys.stderr.write(resp_bytes.decode("utf-8"))
+    if MODE == "exit_0_on_refusal":
+        return 0
     return 2
 
 
@@ -243,6 +245,13 @@ class FakeCompilerServer:
                 if isinstance(body.get("source"), str) and isinstance(body.get("target"), str):
                     self.neg_by_source_target[(body["source"], body["target"])] = case
 
+        ts_inventory = json.loads((check_cli.TS_CONTRACT / "case-inventory.json").read_text(encoding="utf-8"))
+        self.ts_out_of_scope_sources: set[str] = {
+            (check_cli.REPO / row["cnl"]).read_text(encoding="utf-8")
+            for row in ts_inventory["public_examples"]
+            if row.get("typescript") != "in_scope" and row.get("cnl")
+        }
+
         class Handler(http.server.BaseHTTPRequestHandler):
             def do_POST(self) -> None:  # noqa: N802
                 length = int(self.headers.get("Content-Length", "0"))
@@ -267,7 +276,9 @@ class FakeCompilerServer:
                     self._send(status, payload)
                     return
 
-                if target == "typescript" and parent.refuse_typescript:
+                if target == "typescript" and (
+                    parent.refuse_typescript or source in parent.ts_out_of_scope_sources
+                ):
                     err_doc = {
                         "status": "error",
                         "code": "UNSUPPORTED_TARGET",
@@ -384,6 +395,32 @@ class CheckCliTypescriptTests(unittest.TestCase):
                     msg=f"expected request mismatch in problems, got {row['problems']}",
                 )
 
+    def test_typescript_refusal_row_passes_and_fails_on_exit_0_or_dropped_target(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, FakeCompilerServer() as srv:
+            tmp_path = pathlib.Path(tmp)
+            good_stub = _write_stub_binary(tmp_path, mode="pass")
+            row = check_cli.check_typescript_refusal(str(good_stub), srv.url, tmp_path)
+            self.assertTrue(row["passed"], msg=row.get("problems"))
+            self.assertEqual(row["input"], "example-v6 target 'typescript' refusal")
+            self.assertEqual(row["target"], "typescript")
+            self.assertEqual(row["http_status"], 422)
+            self.assertEqual(row["exit_code"], 2)
+            self.assertEqual(row["code"], "UNSUPPORTED_TARGET")
+            self.assertEqual(row["request_sha256"], row["expected_request_sha256"])
+
+            exit0_stub = _write_stub_binary(tmp_path, mode="exit_0_on_refusal")
+            row_exit0 = check_cli.check_typescript_refusal(str(exit0_stub), srv.url, tmp_path)
+            self.assertFalse(row_exit0["passed"])
+            self.assertIn("CLI did not exit 2 on a refusal", row_exit0["problems"])
+
+            drop_stub = _write_stub_binary(tmp_path, mode="drop_typescript")
+            row_drop = check_cli.check_typescript_refusal(str(drop_stub), srv.url, tmp_path)
+            self.assertFalse(row_drop["passed"])
+            self.assertTrue(
+                any("CLI request body differs" in p for p in row_drop["problems"]),
+                msg=f"expected request mismatch in problems, got {row_drop['problems']}",
+            )
+
     def test_full_main_report_includes_typescript_case_and_fails_when_dropped(self) -> None:
         with tempfile.TemporaryDirectory() as tmp, FakeCompilerServer() as srv:
             tmp_path = pathlib.Path(tmp)
@@ -398,8 +435,14 @@ class CheckCliTypescriptTests(unittest.TestCase):
             self.assertEqual(rep_good["failed"], [])
             self.assertIn("typescript", rep_good)
             self.assertTrue(rep_good["typescript"]["passed"])
-            self.assertEqual(rep_good["rows"][-1]["input"], "cov-v1-types target 'typescript'")
+            self.assertIn("typescript_refusal", rep_good)
+            self.assertTrue(rep_good["typescript_refusal"]["passed"])
+            self.assertEqual(rep_good["rows"][-2]["input"], "cov-v1-types target 'typescript'")
+            self.assertEqual(rep_good["rows"][-2]["target"], "typescript")
+            self.assertEqual(rep_good["rows"][-1]["input"], "example-v6 target 'typescript' refusal")
             self.assertEqual(rep_good["rows"][-1]["target"], "typescript")
+            self.assertEqual(rep_good["rows"][-1]["code"], "UNSUPPORTED_TARGET")
+            self.assertEqual(rep_good["rows"][-1]["exit_code"], 2)
 
             bad_stub = _write_stub_binary(tmp_path, mode="drop_typescript")
             out_bad = tmp_path / "cli-bad.json"
@@ -410,8 +453,13 @@ class CheckCliTypescriptTests(unittest.TestCase):
             self.assertEqual(rc_bad, 1)
             rep_bad = json.loads(out_bad.read_text(encoding="utf-8"))
             self.assertFalse(rep_bad["typescript"]["passed"])
+            self.assertFalse(rep_bad["typescript_refusal"]["passed"])
             self.assertIn(
                 "cov-v1-types target 'typescript' target='typescript'",
+                rep_bad["failed"],
+            )
+            self.assertIn(
+                "example-v6 target 'typescript' refusal target='typescript'",
                 rep_bad["failed"],
             )
 
