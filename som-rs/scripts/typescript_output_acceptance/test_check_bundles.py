@@ -65,6 +65,26 @@ def _build_fixture_tables() -> tuple[
             base_prompt["package"] = f"name_case_{nc['id'].split('_', 1)[0].lower()}"
             cnl_to_prompt[cnl_text] = copy.deepcopy(base_prompt)
 
+    v3_prompt = json.loads(
+        (check_bundles.EXAMPLES / "v3.prompt.json").read_text(encoding="utf-8")
+    )
+    in_cnl = (
+        (check_bundles.EXAMPLES / "v3.cnl")
+        .read_text(encoding="utf-8")
+        .replace("Use package todos.\n", "Use package fake_legacy_in_scope.\n", 1)
+    )
+    cnl_to_prompt[in_cnl] = {**v3_prompt, "package": "fake_legacy_in_scope"}
+
+    v6_prompt = json.loads(
+        (check_bundles.EXAMPLES / "v6.prompt.json").read_text(encoding="utf-8")
+    )
+    out_cnl = (
+        (check_bundles.EXAMPLES / "v6.cnl")
+        .read_text(encoding="utf-8")
+        .replace("Use package projects.\n", "Use package fake_legacy_out_of_scope.\n", 1)
+    )
+    cnl_to_prompt[out_cnl] = {**v6_prompt, "package": "fake_legacy_out_of_scope"}
+
     ts_specific = check_bundles.compute_expected_ts_specific_descriptors()
     catalog_doc = json.loads(check_bundles.CATALOG_PATH.read_text(encoding="utf-8"))
     reference_texts = {
@@ -309,6 +329,7 @@ class FakeSomServer:
     def __init__(self, override: OverrideFn | None = None) -> None:
         self.override = override
         self.request_count = 0
+        self.compile_requests: list[str] = []
         self.assemble_requests: list[str] = []
         self._lock = threading.Lock()
         parent = self
@@ -319,7 +340,9 @@ class FakeSomServer:
                 raw_body = self.rfile.read(length).decode("utf-8")
                 with parent._lock:
                     parent.request_count += 1
-                    if self.path == "/v1/assemble":
+                    if self.path == "/v1/compile":
+                        parent.compile_requests.append(raw_body)
+                    elif self.path == "/v1/assemble":
                         parent.assemble_requests.append(raw_body)
                 if self.path == "/v1/compile":
                     default_resp = compute_default_compile_response(raw_body)
@@ -377,18 +400,30 @@ def create_tiny_legacy_run(
     )
     in_prompt = {**v3_prompt, "package": "fake_legacy_in_scope"}
     in_sha = check_bundles.canonical_hash(in_prompt)
+    in_cnl = (
+        (check_bundles.EXAMPLES / "v3.cnl")
+        .read_text(encoding="utf-8")
+        .replace("Use package todos.\n", "Use package fake_legacy_in_scope.\n", 1)
+    )
+    in_cnl_sha = check_bundles.sha_bytes(in_cnl.encode("utf-8"))
 
     v6_prompt = json.loads(
         (check_bundles.EXAMPLES / "v6.prompt.json").read_text(encoding="utf-8")
     )
     out_prompt = {**v6_prompt, "package": "fake_legacy_out_of_scope"}
     out_sha = check_bundles.canonical_hash(out_prompt)
+    out_cnl = (
+        (check_bundles.EXAMPLES / "v6.cnl")
+        .read_text(encoding="utf-8")
+        .replace("Use package projects.\n", "Use package fake_legacy_out_of_scope.\n", 1)
+    )
+    out_cnl_sha = check_bundles.sha_bytes(out_cnl.encode("utf-8"))
 
     leg_dir = base_dir / "legacy544" / "run-005"
-    for idx, (job_id, p_obj, p_sha) in enumerate(
+    for idx, (job_id, p_obj, p_sha, cnl_src) in enumerate(
         (
-            ("legacy100-0000", in_prompt, in_sha),
-            ("services14-0000", out_prompt, out_sha),
+            ("legacy100-0000", in_prompt, in_sha, in_cnl),
+            ("services14-0000", out_prompt, out_sha, out_cnl),
         )
     ):
         comp_dir = leg_dir / "compile" / p_sha
@@ -399,7 +434,17 @@ def create_tiny_legacy_run(
             )
             + "\n"
         )
+        cnl_req_text = (
+            check_bundles.compact_json(
+                {"format": "som.cnl.v1", "source": cnl_src}
+            )
+            + "\n"
+        )
         (comp_dir / "compile-json.request.json").write_text(req_text, encoding="utf-8")
+        (comp_dir / "compile-cnl.request.json").write_text(
+            cnl_req_text, encoding="utf-8"
+        )
+        (comp_dir / "source.cnl").write_text(cnl_src, encoding="utf-8")
         idx_dir = leg_dir / f"{idx:04d}"
         idx_dir.mkdir(parents=True, exist_ok=True)
         (idx_dir / "compile-json.request.json").write_text(req_text, encoding="utf-8")
@@ -412,11 +457,13 @@ def create_tiny_legacy_run(
                 "id": "legacy100-0000",
                 "group": "legacy100",
                 "prompt_sha256": in_sha,
+                "cnl_sha256": in_cnl_sha,
             },
             {
                 "id": "services14-0000",
                 "group": "services14",
                 "prompt_sha256": out_sha,
+                "cnl_sha256": out_cnl_sha,
             },
         ],
     }
@@ -513,14 +560,47 @@ class CheckBundlesTests(unittest.TestCase):
             )
             self.assertEqual(report["cases"][37]["id"], "legacy100-0000")
             self.assertEqual(report["cases"][37]["section"], "bundle_checks")
-            self.assertEqual(report["cases"][37]["forms"], ["json"])
-            self.assertIn("no CNL source", report["cases"][37]["single_form"])
+            self.assertEqual(report["cases"][37]["forms"], ["json", "cnl"])
+            self.assertIsNone(report["cases"][37]["single_form"])
+            for r in report["cases"]:
+                self.assertNotIn("no CNL source", json.dumps(r))
 
-            # Single-form cases (4 JSON-only name_cases + 1 legacy job) vs two-form cases (15 + 6 CNL name_cases = 21)
+            expected_in_cnl = (
+                (check_bundles.EXAMPLES / "v3.cnl")
+                .read_text(encoding="utf-8")
+                .replace("Use package todos.\n", "Use package fake_legacy_in_scope.\n", 1)
+            )
+            expected_legacy_cnl_body = check_bundles.compact_json(
+                {
+                    "format": "som.cnl.v1",
+                    "source": expected_in_cnl,
+                    "target": "typescript",
+                }
+            )
+            self.assertEqual(srv.compile_requests.count(expected_legacy_cnl_body), 2)
+            parsed_legacy_cnl = json.loads(expected_legacy_cnl_body)
+            self.assertEqual(parsed_legacy_cnl["target"], "typescript")
+            self.assertEqual(parsed_legacy_cnl["source"], expected_in_cnl)
+            self.assertTrue(
+                (
+                    out_dir
+                    / "responses"
+                    / "bundle_checks__legacy100-0000__compile_cnl_1.json"
+                ).is_file()
+            )
+            self.assertTrue(
+                (
+                    out_dir
+                    / "responses"
+                    / "bundle_checks__legacy100-0000__compile_cnl_2.json"
+                ).is_file()
+            )
+
+            # Single-form cases (4 JSON-only name_cases) vs two-form cases (15 + 6 CNL name_cases + 1 legacy job = 22)
             single_form_rows = [r for r in bundle_rows if r["single_form"] is not None]
             two_form_rows = [r for r in bundle_rows if r["single_form"] is None]
-            self.assertEqual(len(single_form_rows), 5)
-            self.assertEqual(len(two_form_rows), 21)
+            self.assertEqual(len(single_form_rows), 4)
+            self.assertEqual(len(two_form_rows), 22)
             tn01_row = next(r for r in bundle_rows if r["id"] == "TN01_CNL_FIELD_UPPERCASE")
             self.assertEqual(tn01_row["forms"], ["cnl", "json"])
             self.assertIsNone(tn01_row["single_form"])
@@ -951,6 +1031,122 @@ class CheckBundlesTests(unittest.TestCase):
             leg_row = next(r for r in report["cases"] if r["id"] == "legacy100-0000")
             self.assertEqual(leg_row["status"], "not_run")
             self.assertFalse(leg_row["passed"])
+
+    def test_legacy_cnl_bundle_differs_from_json_bundle_fails(self) -> None:
+        def tamper_legacy_cnl(
+            path: str, body: str, default: tuple[int, bytes]
+        ) -> tuple[int, bytes]:
+            if path == "/v1/compile":
+                req = json.loads(body)
+                if (
+                    req.get("format") == "som.cnl.v1"
+                    and req.get("target") == "typescript"
+                    and "Use package fake_legacy_in_scope." in req.get("source", "")
+                ):
+                    return default[0], default[1] + b"\n"
+            return default
+
+        with tempfile.TemporaryDirectory() as tmp, FakeSomServer(
+            override=tamper_legacy_cnl
+        ) as srv:
+            out_dir = pathlib.Path(tmp) / "out"
+            rc, _, _ = self._run_main(["--url", srv.url, "--out", str(out_dir)])
+            self.assertEqual(rc, 1)
+            report = json.loads((out_dir / "report.json").read_text(encoding="utf-8"))
+            self.assertFalse(report["passed"])
+            leg_row = next(r for r in report["cases"] if r["id"] == "legacy100-0000")
+            self.assertEqual(leg_row["status"], "failed")
+            self.assertFalse(leg_row["passed"])
+            self.assertIn("CNL and JSON compile bytes differ", leg_row["reason"])
+            for r in report["cases"]:
+                self.assertNotIn("no CNL source", json.dumps(r))
+
+    def test_legacy_cnl_sha256_mismatch_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, FakeSomServer() as srv:
+            base = pathlib.Path(tmp)
+            leg_run, inv_path, _ = create_tiny_legacy_run(base)
+            res_path = leg_run / "result.json"
+            res_doc = json.loads(res_path.read_text(encoding="utf-8"))
+            res_doc["records"][0]["cnl_sha256"] = "0" * 64
+            res_path.write_text(json.dumps(res_doc, indent=2) + "\n", encoding="utf-8")
+
+            out_dir = base / "out"
+            rc, _, _ = self._run_main(
+                ["--url", srv.url, "--out", str(out_dir), "--legacy-run", str(leg_run)],
+                expected_legacy_in_scope=1,
+                expected_manifest_products=26,
+                inv_path=inv_path,
+            )
+            self.assertEqual(rc, 1)
+            report = json.loads((out_dir / "report.json").read_text(encoding="utf-8"))
+            self.assertFalse(report["passed"])
+            leg_row = next(r for r in report["cases"] if r["id"] == "legacy100-0000")
+            self.assertEqual(leg_row["status"], "failed")
+            self.assertFalse(leg_row["passed"])
+            self.assertIn("cnl_sha256 mismatch", leg_row["reason"])
+            for r in report["cases"]:
+                self.assertNotIn("no CNL source", json.dumps(r))
+
+    def test_legacy_source_cnl_differs_from_request_source_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, FakeSomServer() as srv:
+            base = pathlib.Path(tmp)
+            leg_run, inv_path, in_prompt = create_tiny_legacy_run(base)
+            in_sha = check_bundles.canonical_hash(in_prompt)
+            src_path = leg_run / "compile" / in_sha / "source.cnl"
+            src_path.write_text(
+                src_path.read_text(encoding="utf-8") + "\n", encoding="utf-8"
+            )
+
+            out_dir = base / "out"
+            rc, _, _ = self._run_main(
+                ["--url", srv.url, "--out", str(out_dir), "--legacy-run", str(leg_run)],
+                expected_legacy_in_scope=1,
+                expected_manifest_products=26,
+                inv_path=inv_path,
+            )
+            self.assertEqual(rc, 1)
+            report = json.loads((out_dir / "report.json").read_text(encoding="utf-8"))
+            self.assertFalse(report["passed"])
+            leg_row = next(r for r in report["cases"] if r["id"] == "legacy100-0000")
+            self.assertEqual(leg_row["status"], "failed")
+            self.assertFalse(leg_row["passed"])
+            self.assertIn("source.cnl bytes differ", leg_row["reason"])
+            for r in report["cases"]:
+                self.assertNotIn("no CNL source", json.dumps(r))
+
+    def test_missing_legacy_compile_cnl_request_is_not_run(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, FakeSomServer() as srv:
+            base = pathlib.Path(tmp)
+            leg_run, inv_path, in_prompt = create_tiny_legacy_run(base)
+            in_sha = check_bundles.canonical_hash(in_prompt)
+            (leg_run / "compile" / in_sha / "compile-cnl.request.json").unlink()
+
+            out_dir = base / "out"
+            rc, _, _ = self._run_main(
+                ["--url", srv.url, "--out", str(out_dir), "--legacy-run", str(leg_run)],
+                expected_legacy_in_scope=1,
+                expected_manifest_products=26,
+                inv_path=inv_path,
+            )
+            self.assertEqual(rc, 1)
+            report = json.loads((out_dir / "report.json").read_text(encoding="utf-8"))
+            self.assertFalse(report["passed"])
+            self.assertEqual(report["not_run_count"], 1)
+            leg_row = next(r for r in report["cases"] if r["id"] == "legacy100-0000")
+            self.assertEqual(leg_row["status"], "not_run")
+            self.assertFalse(leg_row["passed"])
+            self.assertIsNone(leg_row["single_form"])
+            self.assertEqual(leg_row["forms"], ["json", "cnl"])
+            self.assertIn("compile-cnl.request.json", leg_row["reason"])
+            self.assertFalse(
+                (
+                    out_dir
+                    / "responses"
+                    / "bundle_checks__legacy100-0000__compile_json_1.json"
+                ).exists()
+            )
+            for r in report["cases"]:
+                self.assertNotIn("no CNL source", json.dumps(r))
 
 
 if __name__ == "__main__":

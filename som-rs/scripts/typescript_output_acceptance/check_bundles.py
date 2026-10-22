@@ -2,8 +2,9 @@
 """Check TypeScript phase 1 bundles and assemble refusals A1-A12 over HTTP (issue #99).
 
 Sends compile and assemble requests to <url>/v1/compile and <url>/v1/assemble:
-- bundle_checks, for every in-scope acceptance case in case-inventory.json except
-  legacy_in_scope (public examples, version_positive fixtures, coverage cases, name cases):
+- bundle_checks, for every in-scope acceptance case in case-inventory.json
+  (public examples, version_positive fixtures, coverage cases, name cases, and
+  legacy_in_scope jobs):
   * CNL and typed JSON requests with target: "typescript" return byte-identical
     som.dsl-bundle.v2 bundles with target typescript (for a single-form case, the
     report records that only one form exists);
@@ -75,7 +76,6 @@ RECEIPT_PATH = SOM_RS / "evidence" / "typescript-output-contract-amendment-001.j
 DEFAULT_LEGACY_RUN = check_python_baseline.DEFAULT_LEGACY_RUN
 EXPECTED_LEGACY_IN_SCOPE = 100
 EXPECTED_MANIFEST_PRODUCTS = 125
-LEGACY_SINGLE_FORM = "legacy job has no CNL source; compiled from typed JSON only"
 
 FORBIDDEN_PORTS = {8765, 18765}
 LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
@@ -675,6 +675,11 @@ def collect_legacy_in_scope_cases(
     }
 
     try:
+        result_path = legacy_run / "result.json"
+        result_doc = json.loads(result_path.read_text(encoding="utf-8"))
+        records = result_doc.get("records")
+        if not isinstance(records, list):
+            raise ValueError(f"{result_path} missing 'records' list")
         legacy_inputs, _ = check_python_baseline.read_legacy_inputs(legacy_run)
     except (OSError, ValueError) as err:
         err_msg = f"cannot read legacy run {legacy_run}: {type(err).__name__}: {err}"
@@ -687,7 +692,7 @@ def collect_legacy_in_scope_cases(
                 "prompt": None,
                 "requests": [],
                 "derive_json_from_cnl_bundle": False,
-                "single_form": LEGACY_SINGLE_FORM,
+                "single_form": None,
                 "file_problems": [],
                 "not_run_error": err_msg,
             }
@@ -720,11 +725,116 @@ def collect_legacy_in_scope_cases(
                     "prompt": None,
                     "requests": [],
                     "derive_json_from_cnl_bundle": False,
-                    "single_form": LEGACY_SINGLE_FORM,
+                    "single_form": None,
                     "file_problems": [],
                     "not_run_error": (
                         item.get("not_run_reason")
                         or f"missing compile request for {cid}"
+                    ),
+                }
+            )
+            continue
+
+        compile_dir = pathlib.Path(item["directory"])
+        record = (
+            records[idx]
+            if 0 <= idx < len(records) and isinstance(records[idx], dict)
+            else {}
+        )
+        cnl_sha256 = record.get("cnl_sha256")
+        if not isinstance(cnl_sha256, str) or not cnl_sha256.strip():
+            selected_cases.append(
+                {
+                    "id": cid,
+                    "group": "legacy_in_scope",
+                    "inventory_index": idx,
+                    "prompt": None,
+                    "requests": [],
+                    "derive_json_from_cnl_bundle": False,
+                    "single_form": None,
+                    "file_problems": [],
+                    "not_run_error": (
+                        f"missing or invalid cnl_sha256 in result.json records[{idx}] for {cid}"
+                    ),
+                }
+            )
+            continue
+
+        cnl_req_path = compile_dir / "compile-cnl.request.json"
+        if not cnl_req_path.is_file():
+            selected_cases.append(
+                {
+                    "id": cid,
+                    "group": "legacy_in_scope",
+                    "inventory_index": idx,
+                    "prompt": None,
+                    "requests": [],
+                    "derive_json_from_cnl_bundle": False,
+                    "single_form": None,
+                    "file_problems": [],
+                    "not_run_error": f"missing compile-cnl.request.json for {cid}: {cnl_req_path}",
+                }
+            )
+            continue
+
+        try:
+            cnl_req = json.loads(cnl_req_path.read_text(encoding="utf-8"))
+            if not isinstance(cnl_req, dict) or not isinstance(
+                cnl_req.get("source"), str
+            ):
+                raise ValueError(
+                    f"{cnl_req_path} must be a JSON object with a string 'source'"
+                )
+        except (OSError, UnicodeDecodeError, ValueError) as err:
+            selected_cases.append(
+                {
+                    "id": cid,
+                    "group": "legacy_in_scope",
+                    "inventory_index": idx,
+                    "prompt": None,
+                    "requests": [],
+                    "derive_json_from_cnl_bundle": False,
+                    "single_form": None,
+                    "file_problems": [],
+                    "not_run_error": (
+                        f"unreadable compile-cnl.request.json for {cid}: {type(err).__name__}: {err}"
+                    ),
+                }
+            )
+            continue
+
+        source_cnl_path = compile_dir / "source.cnl"
+        if not source_cnl_path.is_file():
+            selected_cases.append(
+                {
+                    "id": cid,
+                    "group": "legacy_in_scope",
+                    "inventory_index": idx,
+                    "prompt": None,
+                    "requests": [],
+                    "derive_json_from_cnl_bundle": False,
+                    "single_form": None,
+                    "file_problems": [],
+                    "not_run_error": f"missing source.cnl for {cid}: {source_cnl_path}",
+                }
+            )
+            continue
+
+        try:
+            source_cnl_bytes = source_cnl_path.read_bytes()
+        except OSError as err:
+            selected_cases.append(
+                {
+                    "id": cid,
+                    "group": "legacy_in_scope",
+                    "inventory_index": idx,
+                    "prompt": None,
+                    "requests": [],
+                    "derive_json_from_cnl_bundle": False,
+                    "single_form": None,
+                    "file_problems": [],
+                    "not_run_error": (
+                        f"unreadable source.cnl for {cid}: {type(err).__name__}: {err}"
                     ),
                 }
             )
@@ -748,16 +858,39 @@ def collect_legacy_in_scope_cases(
                     f"prompt_sha256 mismatch for {cid}: got {canon_sha}, expected {inv_entry['prompt_sha256']}"
                 )
 
+        if cnl_req.get("format") != "som.cnl.v1":
+            file_problems.append(
+                f"recorded CNL compile request for {cid} has format {cnl_req.get('format')!r} != 'som.cnl.v1'"
+            )
+        if "target" in cnl_req:
+            file_problems.append(
+                f"recorded CNL compile request for {cid} already contains a 'target' key ({cnl_req['target']!r})"
+            )
+        cnl_source_bytes = cnl_req["source"].encode("utf-8")
+        actual_cnl_sha = sha_bytes(cnl_source_bytes)
+        if actual_cnl_sha != cnl_sha256:
+            file_problems.append(
+                f"cnl_sha256 mismatch for {cid}: got {actual_cnl_sha}, expected {cnl_sha256}"
+            )
+        if source_cnl_bytes != cnl_source_bytes:
+            file_problems.append(
+                f"source.cnl bytes differ from compile-cnl.request.json source for {cid}"
+            )
+
         ts_req_body = compact_json({**req_obj, "target": "typescript"})
+        ts_cnl_req_body = compact_json({**cnl_req, "target": "typescript"})
         selected_cases.append(
             {
                 "id": cid,
                 "group": "legacy_in_scope",
                 "inventory_index": idx,
                 "prompt": prompt_obj,
-                "requests": [("json", ts_req_body)],
+                "requests": [
+                    ("json", ts_req_body),
+                    ("cnl", ts_cnl_req_body),
+                ],
                 "derive_json_from_cnl_bundle": False,
-                "single_form": LEGACY_SINGLE_FORM,
+                "single_form": None,
                 "file_problems": file_problems,
                 "not_run_error": None,
             }
@@ -958,7 +1091,9 @@ def _check_bundle_case(
     rust_bundles_by_id: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
     cid = case["id"]
-    forms = [f for f, _ in case["requests"]] or ["json"]
+    forms = [f for f, _ in case["requests"]] or (
+        ["json", "cnl"] if case["single_form"] is None else ["json"]
+    )
     if case.get("derive_json_from_cnl_bundle") and "json" not in forms:
         forms = [*forms, "json"]
     first_req_body = case["requests"][0][1] if case["requests"] else None
