@@ -45,8 +45,11 @@ SOM_RS = HERE.parents[1]
 TS_TESTS = SOM_RS / "tests" / "typescript-output-v1"
 if str(TS_TESTS) not in sys.path:
     sys.path.insert(0, str(TS_TESTS))
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
 
 import build_case_inventory  # type: ignore[import-not-found]  # noqa: E402
+import check_python_baseline  # noqa: E402
 import common  # type: ignore[import-not-found]  # noqa: E402
 
 try:
@@ -68,6 +71,11 @@ RUST_CONTRACT = SOM_RS / "contracts" / "rust-output-v1"
 REFERENCE_DIR = CONTRACT / "reference"
 CATALOG_PATH = CONTRACT / "catalog" / "typescript-catalog.v1.json"
 RECEIPT_PATH = SOM_RS / "evidence" / "typescript-output-contract-amendment-001.json"
+
+DEFAULT_LEGACY_RUN = check_python_baseline.DEFAULT_LEGACY_RUN
+EXPECTED_LEGACY_IN_SCOPE = 100
+EXPECTED_MANIFEST_PRODUCTS = 125
+LEGACY_SINGLE_FORM = "legacy job has no CNL source; compiled from typed JSON only"
 
 FORBIDDEN_PORTS = {8765, 18765}
 LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
@@ -616,7 +624,7 @@ def collect_in_scope_cases(inventory: dict[str, Any], target_examples_doc: dict[
             }
         )
 
-    # 4. name_cases (only one form exists per name_case in target-examples.json)
+    # 4. name_cases (CNL-form cases also compile their bundle.prompt as som.prompt-json.v1)
     te_name_by_id = {c["id"]: c for c in target_examples_doc["name_cases"]}
     for row in inventory["name_cases"]:
         cid = row["id"]
@@ -633,18 +641,138 @@ def collect_in_scope_cases(inventory: dict[str, Any], target_examples_doc: dict[
             )
         parsed_body = json.loads(body)
         prompt_obj = parsed_body.get("prompt")
+        derive_json = form == "cnl"
         cases.append(
             {
                 "id": cid,
                 "group": "name_cases",
                 "prompt": prompt_obj,
                 "requests": [(form, body)],
-                "single_form": f"only {form} form exists in target-examples.json name_cases",
+                "derive_json_from_cnl_bundle": derive_json,
+                "single_form": (
+                    None
+                    if derive_json
+                    else f"only {form} form exists in target-examples.json name_cases"
+                ),
                 "file_problems": file_problems,
             }
         )
 
     return cases
+
+
+def collect_legacy_in_scope_cases(
+    inventory: dict[str, Any],
+    legacy_run: pathlib.Path,
+    expected_legacy_in_scope: int,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Select the 100 legacy_in_scope jobs by inventory_index and prompt_sha256."""
+    legacy_problems: list[str] = []
+    in_scope_list: list[dict[str, Any]] = inventory.get("legacy_in_scope", [])
+    in_scope_by_key: dict[tuple[int, str], dict[str, Any]] = {
+        (int(entry["inventory_index"]), str(entry["prompt_sha256"])): entry
+        for entry in in_scope_list
+    }
+
+    try:
+        legacy_inputs, _ = check_python_baseline.read_legacy_inputs(legacy_run)
+    except (OSError, ValueError) as err:
+        err_msg = f"cannot read legacy run {legacy_run}: {type(err).__name__}: {err}"
+        legacy_problems.append(err_msg)
+        not_run_cases = [
+            {
+                "id": str(entry["id"]),
+                "group": "legacy_in_scope",
+                "inventory_index": int(entry["inventory_index"]),
+                "prompt": None,
+                "requests": [],
+                "derive_json_from_cnl_bundle": False,
+                "single_form": LEGACY_SINGLE_FORM,
+                "file_problems": [],
+                "not_run_error": err_msg,
+            }
+            for entry in in_scope_list
+        ]
+        return not_run_cases, legacy_problems
+
+    selected_cases: list[dict[str, Any]] = []
+    for item in legacy_inputs:
+        idx = int(item["index"])
+        rec_sha = str(item.get("prompt_sha256") or "")
+        if (
+            not rec_sha
+            and isinstance(item.get("body"), dict)
+            and isinstance(item["body"].get("prompt"), dict)
+        ):
+            rec_sha = canonical_hash(item["body"]["prompt"])
+
+        inv_entry = in_scope_by_key.get((idx, rec_sha))
+        if inv_entry is None:
+            continue
+
+        cid = str(inv_entry["id"])
+        if item.get("not_run_reason") is not None or item.get("body") is None:
+            selected_cases.append(
+                {
+                    "id": cid,
+                    "group": "legacy_in_scope",
+                    "inventory_index": idx,
+                    "prompt": None,
+                    "requests": [],
+                    "derive_json_from_cnl_bundle": False,
+                    "single_form": LEGACY_SINGLE_FORM,
+                    "file_problems": [],
+                    "not_run_error": (
+                        item.get("not_run_reason")
+                        or f"missing compile request for {cid}"
+                    ),
+                }
+            )
+            continue
+
+        req_obj = item["body"]
+        file_problems: list[str] = []
+        if "target" in req_obj:
+            file_problems.append(
+                f"recorded compile request for {cid} already contains a 'target' key ({req_obj['target']!r})"
+            )
+        prompt_obj = req_obj.get("prompt")
+        if not isinstance(prompt_obj, dict):
+            file_problems.append(f"recorded compile request for {cid} missing 'prompt' object")
+            prompt_obj = {}
+        else:
+            canon_sha = canonical_hash(prompt_obj)
+            compact_sha = sha_bytes(compact_json(prompt_obj).encode("utf-8"))
+            if inv_entry["prompt_sha256"] not in (canon_sha, compact_sha):
+                file_problems.append(
+                    f"prompt_sha256 mismatch for {cid}: got {canon_sha}, expected {inv_entry['prompt_sha256']}"
+                )
+
+        ts_req_body = compact_json({**req_obj, "target": "typescript"})
+        selected_cases.append(
+            {
+                "id": cid,
+                "group": "legacy_in_scope",
+                "inventory_index": idx,
+                "prompt": prompt_obj,
+                "requests": [("json", ts_req_body)],
+                "derive_json_from_cnl_bundle": False,
+                "single_form": LEGACY_SINGLE_FORM,
+                "file_problems": file_problems,
+                "not_run_error": None,
+            }
+        )
+
+    if len(in_scope_list) != expected_legacy_in_scope:
+        legacy_problems.append(
+            f"case-inventory.json legacy_in_scope count is {len(in_scope_list)}, expected {expected_legacy_in_scope}"
+        )
+    if len(selected_cases) != expected_legacy_in_scope:
+        legacy_problems.append(
+            f"selected legacy_in_scope job count is {len(selected_cases)}, expected {expected_legacy_in_scope}"
+        )
+
+    return selected_cases, legacy_problems
 
 
 def _verify_sha(path: pathlib.Path, expected_sha: str, label: str) -> list[str]:
@@ -816,11 +944,383 @@ def check_refusal_response(
     return problems
 
 
-def run_checks(base_url: str, out_dir: pathlib.Path) -> dict[str, Any]:
+def _check_bundle_case(
+    base_url: str,
+    responses_dir: pathlib.Path,
+    products_dir: pathlib.Path,
+    case: dict[str, Any],
+    fixed_layout_paths: set[str],
+    catalog_block_ids: set[str],
+    reference_bytes: dict[str, bytes],
+    expected_ts_specific: dict[str, dict[str, str]],
+    manifest_entries: list[dict[str, Any]],
+    compiled_bundles_by_id: dict[str, dict[str, Any]],
+    rust_bundles_by_id: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    cid = case["id"]
+    forms = [f for f, _ in case["requests"]] or ["json"]
+    if case.get("derive_json_from_cnl_bundle") and "json" not in forms:
+        forms = [*forms, "json"]
+    first_req_body = case["requests"][0][1] if case["requests"] else None
+    expected_summary = {
+        "section": "bundle_checks",
+        "forms": forms,
+        "single_form": case["single_form"],
+        "bundle_version": TS_BUNDLE_VERSION,
+        "target": "typescript",
+        "file_count": 11,
+    }
+    if case.get("not_run_error") is not None:
+        return _make_row(
+            cid,
+            "bundle_checks",
+            first_req_body,
+            None,
+            None,
+            None,
+            expected_summary,
+            [],
+            not_run_error=case["not_run_error"],
+            forms=forms,
+            single_form=case["single_form"],
+        )
+
+    assert first_req_body is not None
+    problems = list(case["file_problems"])
+
+    compile_replies: list[tuple[str, int, bytes, str]] = []
+    not_run_err: str | None = None
+    for form, req_body in case["requests"]:
+        for attempt in (1, 2):
+            st, raw, rfile, err = post_json(
+                base_url,
+                "/v1/compile",
+                req_body,
+                responses_dir,
+                f"bundle_checks__{cid}__compile_{form}_{attempt}",
+            )
+            if err is not None:
+                not_run_err = err
+                break
+            assert st is not None and raw is not None and rfile is not None
+            compile_replies.append((f"{form}#{attempt}", st, raw, rfile))
+        if not_run_err is not None:
+            break
+
+    if (
+        not_run_err is None
+        and case.get("derive_json_from_cnl_bundle")
+        and compile_replies
+        and compile_replies[0][1] == 200
+    ):
+        try:
+            cnl_doc = json.loads(compile_replies[0][2])
+        except Exception:  # noqa: BLE001
+            cnl_doc = None
+        cnl_bundle = cnl_doc.get("bundle") if isinstance(cnl_doc, dict) else None
+        derived_prompt = (
+            cnl_bundle.get("prompt") if isinstance(cnl_bundle, dict) else None
+        )
+        if isinstance(derived_prompt, dict):
+            derived_json_body = compact_json(
+                {
+                    "format": "som.prompt-json.v1",
+                    "prompt": derived_prompt,
+                    "target": "typescript",
+                }
+            )
+            for attempt in (1, 2):
+                st, raw, rfile, err = post_json(
+                    base_url,
+                    "/v1/compile",
+                    derived_json_body,
+                    responses_dir,
+                    f"bundle_checks__{cid}__compile_json_{attempt}",
+                )
+                if err is not None:
+                    not_run_err = err
+                    break
+                assert st is not None and raw is not None and rfile is not None
+                compile_replies.append((f"json#{attempt}", st, raw, rfile))
+
+    if not_run_err is not None:
+        return _make_row(
+            cid,
+            "bundle_checks",
+            first_req_body,
+            None,
+            None,
+            None,
+            expected_summary,
+            [],
+            not_run_error=not_run_err,
+            forms=forms,
+            single_form=case["single_form"],
+        )
+
+    first_label, first_status, first_raw, first_rfile = compile_replies[0]
+    if first_status != 200:
+        problems.append(f"compile {first_label} returned HTTP {first_status} != 200")
+        return _make_row(
+            cid,
+            "bundle_checks",
+            first_req_body,
+            first_status,
+            first_raw,
+            first_rfile,
+            expected_summary,
+            problems,
+            forms=forms,
+            single_form=case["single_form"],
+        )
+
+    by_form_first: dict[str, tuple[str, bytes]] = {}
+    for label, _, raw, _ in compile_replies:
+        fname = label.split("#")[0]
+        if fname not in by_form_first:
+            by_form_first[fname] = (label, raw)
+
+    for label, st, raw, _ in compile_replies[1:]:
+        fname = label.split("#")[0]
+        if st != 200:
+            problems.append(f"compile {label} returned HTTP {st} != 200")
+        elif label != by_form_first[fname][0] and raw != by_form_first[fname][1]:
+            problems.append(
+                f"nondeterministic compile: {label} bytes differ from {by_form_first[fname][0]}"
+            )
+        elif raw != first_raw:
+            problems.append(
+                f"CNL and JSON compile bytes differ ({label} vs {first_label})"
+            )
+
+    try:
+        compile_doc = json.loads(first_raw)
+    except Exception as exc:  # noqa: BLE001
+        problems.append(f"invalid compile JSON: {exc}")
+        return _make_row(
+            cid,
+            "bundle_checks",
+            first_req_body,
+            first_status,
+            first_raw,
+            first_rfile,
+            expected_summary,
+            problems,
+            forms=forms,
+            single_form=case["single_form"],
+        )
+
+    if not isinstance(compile_doc, dict) or compile_doc.get("status") != "ok":
+        problems.append(
+            f"compile reply status {compile_doc.get('status') if isinstance(compile_doc, dict) else compile_doc!r} != 'ok'"
+        )
+    bundle = compile_doc.get("bundle") if isinstance(compile_doc, dict) else None
+    problems.extend(
+        validate_bundle_structure(bundle, fixed_layout_paths, catalog_block_ids)
+    )
+
+    if (
+        isinstance(bundle, dict)
+        and isinstance(bundle.get("prompt"), dict)
+        and isinstance(bundle.get("assets"), dict)
+    ):
+        compiled_bundles_by_id[cid] = bundle
+        prompt_obj = bundle["prompt"]
+        expected_shared = compute_expected_shared_descriptors(prompt_obj)
+        expected_manifest = {**expected_shared, **expected_ts_specific}
+        for akey, expected_desc in expected_manifest.items():
+            if bundle["assets"].get(akey) != expected_desc:
+                problems.append(
+                    f"assets.{akey}: got {bundle['assets'].get(akey)!r} != expected TypeScript manifest {expected_desc!r}"
+                )
+
+        # Query candidate's Rust compile for the same prompt to verify shared descriptors
+        rust_req = compact_json(
+            {
+                "format": "som.prompt-json.v1",
+                "prompt": prompt_obj,
+                "target": "rust",
+            }
+        )
+        r_status, r_raw, _, r_err = post_json(
+            base_url,
+            "/v1/compile",
+            rust_req,
+            responses_dir,
+            f"bundle_checks__{cid}__rust_manifest",
+        )
+        if r_err is not None:
+            return _make_row(
+                cid,
+                "bundle_checks",
+                first_req_body,
+                None,
+                None,
+                None,
+                expected_summary,
+                [],
+                not_run_error=r_err,
+                forms=forms,
+                single_form=case["single_form"],
+            )
+        assert r_status is not None and r_raw is not None
+        if r_status != 200:
+            problems.append(f"Rust manifest compile returned HTTP {r_status} != 200")
+        else:
+            try:
+                r_doc = json.loads(r_raw)
+                r_bundle = r_doc["bundle"]
+                rust_bundles_by_id[cid] = r_bundle
+                for skey in SHARED_ASSET_KEYS:
+                    if bundle["assets"].get(skey) != r_bundle["assets"].get(skey):
+                        problems.append(
+                            f"shared descriptor {skey} differs from candidate Rust manifest"
+                        )
+            except Exception as exc:  # noqa: BLE001
+                problems.append(f"invalid Rust compile JSON: {exc}")
+
+        # Two POST /v1/assemble calls
+        assemble_body = canonical_json({"bundle": bundle})
+        a1_status, a1_raw, a1_file, a1_err = post_json(
+            base_url,
+            "/v1/assemble",
+            assemble_body,
+            responses_dir,
+            f"bundle_checks__{cid}__assemble_1",
+        )
+        if a1_err is not None:
+            return _make_row(
+                cid,
+                "bundle_checks",
+                first_req_body,
+                None,
+                None,
+                None,
+                expected_summary,
+                [],
+                not_run_error=a1_err,
+                forms=forms,
+                single_form=case["single_form"],
+            )
+        a2_status, a2_raw, _, a2_err = post_json(
+            base_url,
+            "/v1/assemble",
+            assemble_body,
+            responses_dir,
+            f"bundle_checks__{cid}__assemble_2",
+        )
+        if a2_err is not None:
+            return _make_row(
+                cid,
+                "bundle_checks",
+                first_req_body,
+                None,
+                None,
+                None,
+                expected_summary,
+                [],
+                not_run_error=a2_err,
+                forms=forms,
+                single_form=case["single_form"],
+            )
+        assert a1_status is not None and a1_raw is not None and a1_file is not None
+        assert a2_status is not None and a2_raw is not None
+        if a1_status != 200:
+            problems.append(f"assemble #1 returned HTTP {a1_status} != 200")
+        if a2_status != 200:
+            problems.append(f"assemble #2 returned HTTP {a2_status} != 200")
+        if (a1_status, a1_raw) != (a2_status, a2_raw):
+            problems.append("nondeterministic assemble: two POST /v1/assemble responses differ in bytes")
+
+        if a1_status == 200:
+            try:
+                assembled_doc = json.loads(a1_raw)
+                files_map = assembled_doc["files"]
+                if not isinstance(files_map, dict):
+                    problems.append("assemble response files is not an object")
+                else:
+                    revision = prompt_obj.get("migration", {}).get("revision", "")
+                    expected_migration = f"migrations/0001_{revision}.sql"
+                    expected_file_set = set(fixed_layout_paths) | {expected_migration}
+                    if set(files_map) != expected_file_set or len(files_map) != 11:
+                        problems.append(
+                            f"assembled file set {sorted(files_map)} != expected 11 product-layout.json files {sorted(expected_file_set)}"
+                        )
+                    for ref_name, ref_content in reference_bytes.items():
+                        actual_content = files_map.get(ref_name)
+                        if not isinstance(actual_content, str) or actual_content.encode("utf-8") != ref_content:
+                            problems.append(
+                                f"assembled {ref_name} bytes differ from reference/{ref_name}"
+                            )
+
+                    # Write assembled product to <out>/products/<case-id>/
+                    case_product_dir = products_dir / cid
+                    case_product_dir.mkdir(parents=True, exist_ok=True)
+                    for rel_path, content in files_map.items():
+                        if isinstance(content, str):
+                            target_file = case_product_dir / rel_path
+                            target_file.parent.mkdir(parents=True, exist_ok=True)
+                            target_file.write_text(content, encoding="utf-8")
+                    manifest_entries.append(
+                        {
+                            "id": cid,
+                            "product": str(case_product_dir.resolve()),
+                            "prompt": prompt_obj,
+                        }
+                    )
+            except Exception as exc:  # noqa: BLE001
+                problems.append(f"invalid assemble JSON: {exc}")
+
+        return _make_row(
+            cid,
+            "bundle_checks",
+            first_req_body,
+            a1_status,
+            a1_raw,
+            a1_file,
+            expected_summary,
+            problems,
+            forms=forms,
+            single_form=case["single_form"],
+        )
+
+    return _make_row(
+        cid,
+        "bundle_checks",
+        first_req_body,
+        first_status,
+        first_raw,
+        first_rfile,
+        expected_summary,
+        problems,
+        forms=forms,
+        single_form=case["single_form"],
+    )
+
+
+def run_checks(
+    base_url: str,
+    out_dir: pathlib.Path,
+    legacy_run: pathlib.Path = DEFAULT_LEGACY_RUN,
+    *,
+    expected_legacy_in_scope: int | None = None,
+    expected_manifest_products: int | None = None,
+) -> dict[str, Any]:
     responses_dir = out_dir / "responses"
     products_dir = out_dir / "products"
     responses_dir.mkdir(parents=True, exist_ok=False)
     products_dir.mkdir(parents=True, exist_ok=False)
+
+    exp_legacy_in_scope = (
+        EXPECTED_LEGACY_IN_SCOPE
+        if expected_legacy_in_scope is None
+        else expected_legacy_in_scope
+    )
+    exp_manifest_products = (
+        EXPECTED_MANIFEST_PRODUCTS
+        if expected_manifest_products is None
+        else expected_manifest_products
+    )
 
     inventory = json.loads(build_case_inventory.OUT.read_text(encoding="utf-8"))
     target_examples_doc = json.loads(
@@ -851,313 +1351,65 @@ def run_checks(base_url: str, out_dir: pathlib.Path) -> dict[str, Any]:
     expected_ts_specific = compute_expected_ts_specific_descriptors()
 
     in_scope_cases = collect_in_scope_cases(inventory, target_examples_doc)
-    rows: list[dict[str, Any]] = []
+    legacy_run_resolved = check_python_baseline.resolve_local_path(
+        pathlib.Path(legacy_run)
+    )
+    legacy_cases, report_problems = collect_legacy_in_scope_cases(
+        inventory, legacy_run_resolved, exp_legacy_in_scope
+    )
+
+    non_legacy_rows: list[dict[str, Any]] = []
+    legacy_rows: list[dict[str, Any]] = []
+    refusal_rows: list[dict[str, Any]] = []
     manifest_entries: list[dict[str, Any]] = []
     compiled_bundles_by_id: dict[str, dict[str, Any]] = {}
     rust_bundles_by_id: dict[str, dict[str, Any]] = {}
 
-    # 1. bundle_checks across all 25 non-legacy in-scope cases
+    # 1a. bundle_checks across all 25 non-legacy in-scope cases
     for case in in_scope_cases:
-        cid = case["id"]
-        forms = [f for f, _ in case["requests"]]
-        first_req_body = case["requests"][0][1]
-        expected_summary = {
-            "section": "bundle_checks",
-            "forms": forms,
-            "single_form": case["single_form"],
-            "bundle_version": TS_BUNDLE_VERSION,
-            "target": "typescript",
-            "file_count": 11,
-        }
-        problems = list(case["file_problems"])
-
-        compile_replies: list[tuple[str, int, bytes, str]] = []
-        not_run_err: str | None = None
-        for form, req_body in case["requests"]:
-            for attempt in (1, 2):
-                st, raw, rfile, err = post_json(
-                    base_url,
-                    "/v1/compile",
-                    req_body,
-                    responses_dir,
-                    f"bundle_checks__{cid}__compile_{form}_{attempt}",
-                )
-                if err is not None:
-                    not_run_err = err
-                    break
-                assert st is not None and raw is not None and rfile is not None
-                compile_replies.append((f"{form}#{attempt}", st, raw, rfile))
-            if not_run_err is not None:
-                break
-
-        if not_run_err is not None:
-            rows.append(
-                _make_row(
-                    cid,
-                    "bundle_checks",
-                    first_req_body,
-                    None,
-                    None,
-                    None,
-                    expected_summary,
-                    [],
-                    not_run_error=not_run_err,
-                    forms=forms,
-                    single_form=case["single_form"],
-                )
+        non_legacy_rows.append(
+            _check_bundle_case(
+                base_url,
+                responses_dir,
+                products_dir,
+                case,
+                fixed_layout_paths,
+                catalog_block_ids,
+                reference_bytes,
+                expected_ts_specific,
+                manifest_entries,
+                compiled_bundles_by_id,
+                rust_bundles_by_id,
             )
-            continue
-
-        first_label, first_status, first_raw, first_rfile = compile_replies[0]
-        if first_status != 200:
-            problems.append(f"compile {first_label} returned HTTP {first_status} != 200")
-            rows.append(
-                _make_row(
-                    cid,
-                    "bundle_checks",
-                    first_req_body,
-                    first_status,
-                    first_raw,
-                    first_rfile,
-                    expected_summary,
-                    problems,
-                    forms=forms,
-                    single_form=case["single_form"],
-                )
-            )
-            continue
-
-        for label, st, raw, _ in compile_replies[1:]:
-            if st != 200:
-                problems.append(f"compile {label} returned HTTP {st} != 200")
-            elif raw != first_raw:
-                if label.split("#")[0] == first_label.split("#")[0]:
-                    problems.append(
-                        f"nondeterministic compile: {label} bytes differ from {first_label}"
-                    )
-                else:
-                    problems.append(
-                        f"CNL and JSON compile bytes differ ({label} vs {first_label})"
-                    )
-
-        try:
-            compile_doc = json.loads(first_raw)
-        except Exception as exc:  # noqa: BLE001
-            problems.append(f"invalid compile JSON: {exc}")
-            rows.append(
-                _make_row(
-                    cid,
-                    "bundle_checks",
-                    first_req_body,
-                    first_status,
-                    first_raw,
-                    first_rfile,
-                    expected_summary,
-                    problems,
-                    forms=forms,
-                    single_form=case["single_form"],
-                )
-            )
-            continue
-
-        if not isinstance(compile_doc, dict) or compile_doc.get("status") != "ok":
-            problems.append(f"compile reply status {compile_doc.get('status') if isinstance(compile_doc, dict) else compile_doc!r} != 'ok'")
-        bundle = compile_doc.get("bundle") if isinstance(compile_doc, dict) else None
-        problems.extend(
-            validate_bundle_structure(bundle, fixed_layout_paths, catalog_block_ids)
         )
 
-        if isinstance(bundle, dict) and isinstance(bundle.get("prompt"), dict) and isinstance(bundle.get("assets"), dict):
-            compiled_bundles_by_id[cid] = bundle
-            prompt_obj = bundle["prompt"]
-            expected_shared = compute_expected_shared_descriptors(prompt_obj)
-            expected_manifest = {**expected_shared, **expected_ts_specific}
-            for akey, expected_desc in expected_manifest.items():
-                if bundle["assets"].get(akey) != expected_desc:
-                    problems.append(
-                        f"assets.{akey}: got {bundle['assets'].get(akey)!r} != expected TypeScript manifest {expected_desc!r}"
-                    )
-
-            # Query candidate's Rust compile for the same prompt to verify shared descriptors
-            rust_req = compact_json(
-                {
-                    "format": "som.prompt-json.v1",
-                    "prompt": prompt_obj,
-                    "target": "rust",
-                }
-            )
-            r_status, r_raw, _, r_err = post_json(
-                base_url,
-                "/v1/compile",
-                rust_req,
-                responses_dir,
-                f"bundle_checks__{cid}__rust_manifest",
-            )
-            if r_err is not None:
-                rows.append(
-                    _make_row(
-                        cid,
-                        "bundle_checks",
-                        first_req_body,
-                        None,
-                        None,
-                        None,
-                        expected_summary,
-                        [],
-                        not_run_error=r_err,
-                        forms=forms,
-                        single_form=case["single_form"],
-                    )
-                )
-                continue
-            assert r_status is not None and r_raw is not None
-            if r_status != 200:
-                problems.append(f"Rust manifest compile returned HTTP {r_status} != 200")
-            else:
-                try:
-                    r_doc = json.loads(r_raw)
-                    r_bundle = r_doc["bundle"]
-                    rust_bundles_by_id[cid] = r_bundle
-                    for skey in SHARED_ASSET_KEYS:
-                        if bundle["assets"].get(skey) != r_bundle["assets"].get(skey):
-                            problems.append(
-                                f"shared descriptor {skey} differs from candidate Rust manifest"
-                            )
-                except Exception as exc:  # noqa: BLE001
-                    problems.append(f"invalid Rust compile JSON: {exc}")
-
-            # Two POST /v1/assemble calls
-            assemble_body = canonical_json({"bundle": bundle})
-            a1_status, a1_raw, a1_file, a1_err = post_json(
-                base_url,
-                "/v1/assemble",
-                assemble_body,
-                responses_dir,
-                f"bundle_checks__{cid}__assemble_1",
-            )
-            if a1_err is not None:
-                rows.append(
-                    _make_row(
-                        cid,
-                        "bundle_checks",
-                        first_req_body,
-                        None,
-                        None,
-                        None,
-                        expected_summary,
-                        [],
-                        not_run_error=a1_err,
-                        forms=forms,
-                        single_form=case["single_form"],
-                    )
-                )
-                continue
-            a2_status, a2_raw, _, a2_err = post_json(
-                base_url,
-                "/v1/assemble",
-                assemble_body,
-                responses_dir,
-                f"bundle_checks__{cid}__assemble_2",
-            )
-            if a2_err is not None:
-                rows.append(
-                    _make_row(
-                        cid,
-                        "bundle_checks",
-                        first_req_body,
-                        None,
-                        None,
-                        None,
-                        expected_summary,
-                        [],
-                        not_run_error=a2_err,
-                        forms=forms,
-                        single_form=case["single_form"],
-                    )
-                )
-                continue
-            assert a1_status is not None and a1_raw is not None and a1_file is not None
-            assert a2_status is not None and a2_raw is not None
-            if a1_status != 200:
-                problems.append(f"assemble #1 returned HTTP {a1_status} != 200")
-            if a2_status != 200:
-                problems.append(f"assemble #2 returned HTTP {a2_status} != 200")
-            if (a1_status, a1_raw) != (a2_status, a2_raw):
-                problems.append("nondeterministic assemble: two POST /v1/assemble responses differ in bytes")
-
-            if a1_status == 200:
-                try:
-                    assembled_doc = json.loads(a1_raw)
-                    files_map = assembled_doc["files"]
-                    if not isinstance(files_map, dict):
-                        problems.append("assemble response files is not an object")
-                    else:
-                        revision = prompt_obj.get("migration", {}).get("revision", "")
-                        expected_migration = f"migrations/0001_{revision}.sql"
-                        expected_file_set = set(fixed_layout_paths) | {expected_migration}
-                        if set(files_map) != expected_file_set or len(files_map) != 11:
-                            problems.append(
-                                f"assembled file set {sorted(files_map)} != expected 11 product-layout.json files {sorted(expected_file_set)}"
-                            )
-                        for ref_name, ref_content in reference_bytes.items():
-                            actual_content = files_map.get(ref_name)
-                            if not isinstance(actual_content, str) or actual_content.encode("utf-8") != ref_content:
-                                problems.append(
-                                    f"assembled {ref_name} bytes differ from reference/{ref_name}"
-                                )
-
-                        # Write assembled product to <out>/products/<case-id>/
-                        case_product_dir = products_dir / cid
-                        case_product_dir.mkdir(parents=True, exist_ok=True)
-                        for rel_path, content in files_map.items():
-                            if isinstance(content, str):
-                                target_file = case_product_dir / rel_path
-                                target_file.parent.mkdir(parents=True, exist_ok=True)
-                                target_file.write_text(content, encoding="utf-8")
-                        manifest_entries.append(
-                            {
-                                "id": cid,
-                                "product": str(case_product_dir.resolve()),
-                                "prompt": prompt_obj,
-                            }
-                        )
-                except Exception as exc:  # noqa: BLE001
-                    problems.append(f"invalid assemble JSON: {exc}")
-
-            rows.append(
-                _make_row(
-                    cid,
-                    "bundle_checks",
-                    first_req_body,
-                    a1_status,
-                    a1_raw,
-                    a1_file,
-                    expected_summary,
-                    problems,
-                    forms=forms,
-                    single_form=case["single_form"],
-                )
-            )
-        else:
-            rows.append(
-                _make_row(
-                    cid,
-                    "bundle_checks",
-                    first_req_body,
-                    first_status,
-                    first_raw,
-                    first_rfile,
-                    expected_summary,
-                    problems,
-                    forms=forms,
-                    single_form=case["single_form"],
-                )
-            )
+    # 1b. bundle_checks across the 100 legacy_in_scope jobs
+    for case in legacy_cases:
+        legacy_row = _check_bundle_case(
+            base_url,
+            responses_dir,
+            products_dir,
+            case,
+            fixed_layout_paths,
+            catalog_block_ids,
+            reference_bytes,
+            expected_ts_specific,
+            manifest_entries,
+            compiled_bundles_by_id,
+            rust_bundles_by_id,
+        )
+        if "inventory_index" in case:
+            legacy_row["inventory_index"] = case["inventory_index"]
+        legacy_rows.append(legacy_row)
 
     (products_dir / "manifest.json").write_text(
         json.dumps({"products": manifest_entries}, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+    if len(manifest_entries) != exp_manifest_products:
+        report_problems.append(
+            f"products/manifest.json product count is {len(manifest_entries)}, expected {exp_manifest_products}"
+        )
 
     # 2. assemble_refusals: A1-A12
     v1_prompt = json.loads((EXAMPLES / "v1.prompt.json").read_text(encoding="utf-8"))
@@ -1201,7 +1453,7 @@ def run_checks(base_url: str, out_dir: pathlib.Path) -> dict[str, Any]:
         )
         for recipe in recipes_list:
             rid = recipe["id"]
-            rows.append(
+            refusal_rows.append(
                 _make_row(
                     rid,
                     "assemble_refusals",
@@ -1246,7 +1498,7 @@ def run_checks(base_url: str, out_dir: pathlib.Path) -> dict[str, Any]:
                 f"assemble_refusals__{rid}",
             )
             if err is not None:
-                rows.append(
+                refusal_rows.append(
                     _make_row(
                         rid,
                         "assemble_refusals",
@@ -1262,7 +1514,7 @@ def run_checks(base_url: str, out_dir: pathlib.Path) -> dict[str, Any]:
                 continue
             assert st is not None and raw is not None and rfile is not None
             r_problems = check_refusal_response(st, raw, req_body, recipe)
-            rows.append(
+            refusal_rows.append(
                 _make_row(
                     rid,
                     "assemble_refusals",
@@ -1275,14 +1527,20 @@ def run_checks(base_url: str, out_dir: pathlib.Path) -> dict[str, Any]:
                 )
             )
 
-    all_passed = bool(rows) and all(r["passed"] for r in rows)
+    rows = [*non_legacy_rows, *refusal_rows, *legacy_rows]
+    if report_problems and rows and all(r["passed"] for r in rows):
+        msg = "; ".join(report_problems)
+        last = rows[-1]
+        last["passed"] = False
+        last["status"] = "failed"
+        last["reason"] = msg if last["reason"] == "ok" else f"{last['reason']}; {msg}"
+
+    all_passed = bool(rows) and not report_problems and all(r["passed"] for r in rows)
     report = {
         "version": "som.typescript-output-bundle-checks.v1",
         "issue": 99,
         "url": base_url,
-        "legacy_in_scope": (
-            "out_of_scope: legacy_in_scope jobs are out of scope for check_bundles.py"
-        ),
+        "legacy_run": str(legacy_run_resolved.resolve()),
         "manifest": str((products_dir / "manifest.json").relative_to(out_dir)),
         "status": "passed" if all_passed else "failed",
         "passed": all_passed,
@@ -1290,6 +1548,7 @@ def run_checks(base_url: str, out_dir: pathlib.Path) -> dict[str, Any]:
         "passed_count": sum(1 for r in rows if r["passed"]),
         "failed_count": sum(1 for r in rows if not r["passed"]),
         "not_run_count": sum(1 for r in rows if r["status"] == "not_run"),
+        "problems": report_problems,
         "cases": rows,
     }
     (out_dir / "report.json").write_text(
@@ -1302,7 +1561,7 @@ def run_checks(base_url: str, out_dir: pathlib.Path) -> dict[str, Any]:
 def _make_row(
     case_id: str,
     section: str,
-    request_body: str,
+    request_body: str | None,
     http_status: int | None,
     raw_response: bytes | None,
     response_file: str | None,
@@ -1312,7 +1571,11 @@ def _make_row(
     forms: list[str] | None = None,
     single_form: str | None = None,
 ) -> dict[str, Any]:
-    req_sha = sha_bytes(request_body.encode("utf-8"))
+    req_sha = (
+        sha_bytes(request_body.encode("utf-8"))
+        if isinstance(request_body, str) and request_body
+        else None
+    )
     extra: dict[str, Any] = {}
     if forms is not None:
         extra["forms"] = forms
@@ -1347,7 +1610,12 @@ def _make_row(
     }
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(
+    argv: list[str] | None = None,
+    *,
+    expected_legacy_in_scope: int | None = None,
+    expected_manifest_products: int | None = None,
+) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--url", required=True, help="Loopback URL of the candidate som server")
     parser.add_argument(
@@ -1355,6 +1623,12 @@ def main(argv: list[str] | None = None) -> int:
         type=pathlib.Path,
         required=True,
         help="New output directory for report.json, responses/, and products/",
+    )
+    parser.add_argument(
+        "--legacy-run",
+        type=pathlib.Path,
+        default=DEFAULT_LEGACY_RUN,
+        help="Path to the recorded legacy544 run (default: %(default)s)",
     )
     args = parser.parse_args(argv)
 
@@ -1367,7 +1641,13 @@ def main(argv: list[str] | None = None) -> int:
         print(f"refused: output directory already exists: {args.out}", file=sys.stderr)
         return 2
 
-    report = run_checks(args.url, args.out)
+    report = run_checks(
+        args.url,
+        args.out,
+        args.legacy_run,
+        expected_legacy_in_scope=expected_legacy_in_scope,
+        expected_manifest_products=expected_manifest_products,
+    )
     print(
         json.dumps(
             {
