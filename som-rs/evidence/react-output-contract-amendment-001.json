@@ -6,7 +6,7 @@
   "issue": 132,
   "target": "react",
   "bundle": "som.dsl-bundle.v2",
-  "status": "draft_pending_independent_review",
+  "status": "amendment_sealed_after_independent_review",
   "implementation_already_in_progress": false,
   "previous_receipt": "som-rs/evidence/react-output-contract-freeze-2026-10-22.json",
   "previous_receipt_sha256": "d427096f8ceca6742f0ad0ee6e3c867e726fa90038f0bb4028fe8ecd4233ed95",
@@ -137,14 +137,22 @@
           "The receipt is still a draft: independent_review.rounds is empty."
         ],
         "fixes": "Generated the three 2026-10-23 evidence files with make_evidence.py from the host runs (.local/react-output/review132-products-002 and .local/react-output/review132-names-002), updated som-targets/src/react/mod.rs:740 to load evidence/react-output-contract-amendment-001.json and updated TARGET_CONTRACT_SHA256, and recorded round 1 in independent_review.rounds while keeping draft status until approved to seal."
+      },
+      {
+        "round": 2,
+        "reviewer": "Claude acceptance review of PR #133 (issuecomment-6358039523)",
+        "date": "2026-10-23",
+        "head": "554784e0e1",
+        "result": "approved to seal",
+        "verdict": "APPROVED",
+        "findings": []
       }
     ]
   },
   "check_contract": {
     "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/tests/react-output-v1/check_contract.py --require-prompts --receipt som-rs/evidence/react-output-contract-amendment-001.json",
-    "passed": 671,
-    "failed": 1,
-    "expected_draft_failure": "amendment was sealed after independent review (status is draft_pending_independent_review until PR review approves sealing)",
+    "passed": 672,
+    "failed": 0,
     "also_passed": [
       "build_negative_cases.py --check",
       "build_target_examples.py --check",
