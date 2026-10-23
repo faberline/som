@@ -25,7 +25,7 @@ pub const MAX_BLOCKS: usize = 64;
 pub const TARGET_CONTRACT_ID: &str = "som.react-output-contract.v1";
 /// H(files map) of the latest sealed receipt for contracts/react-output-v1: amendment 2.
 pub const TARGET_CONTRACT_SHA256: &str =
-    "33395ef18c854a6204fe6774e1267839a7fa8474c5a21b177ce64d5fd7890741";
+    "d48cbd2a790554bab14a38bd6092e5975e82027c0a6da1ef46d8ff7affdbf638";
 pub const CATALOG_ID: &str = "som.react-catalog.v1";
 pub const BLOCK_LIBRARY_ID: &str = "som.react-block-library.v1";
 pub const BACKEND_ID: &str = "som.react-backend.v1";

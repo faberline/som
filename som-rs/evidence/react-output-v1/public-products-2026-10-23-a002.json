@@ -1,0 +1,1028 @@
+{
+  "version": "som.react-output-public-products.v1",
+  "public_products": ".local/rust-compiler-goal/acceptance/public-products-003b",
+  "cases": [
+    {
+      "index": "000",
+      "prompt_version": "som.prompt.v1",
+      "resource": "Item",
+      "prompt_file_sha256": "74329a5b3abb2839291f06343971650682babb4e38855c226a08c43c21b08906",
+      "generated_files": {
+        "README.md": "0be781c4a96915fd5884e7a8cc2e843070dfbf1fe61cfab8b62107458ba62271",
+        "src/schema.ts": "e2e298b1d61f7ce046df475c592a366cc5f88a6175a798eaca731aa0494907b8"
+      },
+      "fixed_files_sha256": "15b2575b40a2cb91405b6248bbfb4f3864b92a67d6a288d35e68506ba4d5ec82",
+      "exit_codes": {
+        "render": 0,
+        "gates": 0,
+        "api_contract": 0
+      },
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "dist_files": {
+        "assets/index-Dos3HsYM.js": "87a41e1f2033d2ea5f705c73985541e1f723ed51129c32f6bd869b77e5bf8592",
+        "assets/index-GMF0Rol1.css": "6ca73ee05f7a21b1fd5f4602333e1e542d10ad819554ba7f1ee0d29a0a8a1b7b",
+        "index.html": "1e78c8d215dd85c569a588dcea720b7dc61b63ff6e3d5ef7e19469e7e04183a2"
+      },
+      "api_facts": {
+        "query": false,
+        "filter": false,
+        "before": false,
+        "not_nullable": true,
+        "required": true,
+        "unique": true
+      },
+      "api_steps": [
+        {
+          "name": "list empty",
+          "ok": true
+        },
+        {
+          "name": "create required fields",
+          "ok": true
+        },
+        {
+          "name": "create every field",
+          "ok": true
+        },
+        {
+          "name": "get row",
+          "ok": true
+        },
+        {
+          "name": "list in id order",
+          "ok": true
+        },
+        {
+          "name": "list filter",
+          "ok": null,
+          "skipped": "no filter"
+        },
+        {
+          "name": "list before",
+          "ok": null,
+          "skipped": "no before filter"
+        },
+        {
+          "name": "list page",
+          "ok": null,
+          "skipped": "no list query"
+        },
+        {
+          "name": "list limit too large",
+          "ok": null,
+          "skipped": "no list query"
+        },
+        {
+          "name": "patch changed field",
+          "ok": true
+        },
+        {
+          "name": "patch null on a field that is not nullable",
+          "ok": true
+        },
+        {
+          "name": "create missing a required field",
+          "ok": true
+        },
+        {
+          "name": "create with an unknown field",
+          "ok": true
+        },
+        {
+          "name": "create unique conflict",
+          "ok": true
+        },
+        {
+          "name": "get missing row",
+          "ok": true
+        },
+        {
+          "name": "patch missing row",
+          "ok": true
+        },
+        {
+          "name": "delete row",
+          "ok": true
+        },
+        {
+          "name": "get deleted row",
+          "ok": true
+        },
+        {
+          "name": "delete deleted row",
+          "ok": true
+        },
+        {
+          "name": "network error",
+          "ok": true
+        }
+      ],
+      "processes_stopped": true,
+      "passed": true
+    },
+    {
+      "index": "119",
+      "prompt_version": "som.prompt.v1",
+      "resource": "Item",
+      "prompt_file_sha256": "8a0269b81d7831c329c04d3114d3feaaa4c2def6df378a76b6569e9bf282463a",
+      "generated_files": {
+        "README.md": "0be781c4a96915fd5884e7a8cc2e843070dfbf1fe61cfab8b62107458ba62271",
+        "src/schema.ts": "1b48f4e4c4032f3da3a098ba67dcf4e0895382ebc325fb50665f89c2fb192f00"
+      },
+      "fixed_files_sha256": "15b2575b40a2cb91405b6248bbfb4f3864b92a67d6a288d35e68506ba4d5ec82",
+      "exit_codes": {
+        "render": 0,
+        "gates": 0,
+        "api_contract": 0
+      },
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "dist_files": {
+        "assets/index-Dos3HsYM.js": "87a41e1f2033d2ea5f705c73985541e1f723ed51129c32f6bd869b77e5bf8592",
+        "assets/index-GMF0Rol1.css": "6ca73ee05f7a21b1fd5f4602333e1e542d10ad819554ba7f1ee0d29a0a8a1b7b",
+        "index.html": "1e78c8d215dd85c569a588dcea720b7dc61b63ff6e3d5ef7e19469e7e04183a2"
+      },
+      "api_facts": {
+        "query": false,
+        "filter": false,
+        "before": false,
+        "not_nullable": true,
+        "required": true,
+        "unique": true
+      },
+      "api_steps": [
+        {
+          "name": "list empty",
+          "ok": true
+        },
+        {
+          "name": "create required fields",
+          "ok": true
+        },
+        {
+          "name": "create every field",
+          "ok": true
+        },
+        {
+          "name": "get row",
+          "ok": true
+        },
+        {
+          "name": "list in id order",
+          "ok": true
+        },
+        {
+          "name": "list filter",
+          "ok": null,
+          "skipped": "no filter"
+        },
+        {
+          "name": "list before",
+          "ok": null,
+          "skipped": "no before filter"
+        },
+        {
+          "name": "list page",
+          "ok": null,
+          "skipped": "no list query"
+        },
+        {
+          "name": "list limit too large",
+          "ok": null,
+          "skipped": "no list query"
+        },
+        {
+          "name": "patch changed field",
+          "ok": true
+        },
+        {
+          "name": "patch null on a field that is not nullable",
+          "ok": true
+        },
+        {
+          "name": "create missing a required field",
+          "ok": true
+        },
+        {
+          "name": "create with an unknown field",
+          "ok": true
+        },
+        {
+          "name": "create unique conflict",
+          "ok": true
+        },
+        {
+          "name": "get missing row",
+          "ok": true
+        },
+        {
+          "name": "patch missing row",
+          "ok": true
+        },
+        {
+          "name": "delete row",
+          "ok": true
+        },
+        {
+          "name": "get deleted row",
+          "ok": true
+        },
+        {
+          "name": "delete deleted row",
+          "ok": true
+        },
+        {
+          "name": "network error",
+          "ok": true
+        }
+      ],
+      "processes_stopped": true,
+      "passed": true
+    },
+    {
+      "index": "001",
+      "prompt_version": "som.prompt.v2",
+      "resource": "Item",
+      "prompt_file_sha256": "efb1b644283c52eb06f52820f3b60f24245714213c570d99cdab7fe77d2060ce",
+      "generated_files": {
+        "README.md": "5924a7411fdb942155dcc50274fdf1a88d483984bcf68b407255cdbc1f544bf5",
+        "src/schema.ts": "c9ec1d9fe53a4fbc588b6d3a9c8a7a9045d61b4358bc12254ce7a84986969cc7"
+      },
+      "fixed_files_sha256": "15b2575b40a2cb91405b6248bbfb4f3864b92a67d6a288d35e68506ba4d5ec82",
+      "exit_codes": {
+        "render": 0,
+        "gates": 0,
+        "api_contract": 0
+      },
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "dist_files": {
+        "assets/index-DiovZCHd.js": "2a38554f6b87b29255742d06a7e82f101b674d1d8b8f63c68dd4c2f82b14d36c",
+        "assets/index-GMF0Rol1.css": "6ca73ee05f7a21b1fd5f4602333e1e542d10ad819554ba7f1ee0d29a0a8a1b7b",
+        "index.html": "1fe1b9e2bca6b1a2ce9f3849da2d5942445a7e4b3197d8332b283ea111fdbab3"
+      },
+      "api_facts": {
+        "query": true,
+        "filter": true,
+        "before": false,
+        "not_nullable": true,
+        "required": true,
+        "unique": true
+      },
+      "api_steps": [
+        {
+          "name": "list empty",
+          "ok": true
+        },
+        {
+          "name": "create required fields",
+          "ok": true
+        },
+        {
+          "name": "create every field",
+          "ok": true
+        },
+        {
+          "name": "get row",
+          "ok": true
+        },
+        {
+          "name": "list in id order",
+          "ok": true
+        },
+        {
+          "name": "list filter",
+          "ok": true
+        },
+        {
+          "name": "list before",
+          "ok": null,
+          "skipped": "no before filter"
+        },
+        {
+          "name": "list page",
+          "ok": true
+        },
+        {
+          "name": "list limit too large",
+          "ok": true
+        },
+        {
+          "name": "patch changed field",
+          "ok": true
+        },
+        {
+          "name": "patch null on a field that is not nullable",
+          "ok": true
+        },
+        {
+          "name": "create missing a required field",
+          "ok": true
+        },
+        {
+          "name": "create with an unknown field",
+          "ok": true
+        },
+        {
+          "name": "create unique conflict",
+          "ok": true
+        },
+        {
+          "name": "get missing row",
+          "ok": true
+        },
+        {
+          "name": "patch missing row",
+          "ok": true
+        },
+        {
+          "name": "delete row",
+          "ok": true
+        },
+        {
+          "name": "get deleted row",
+          "ok": true
+        },
+        {
+          "name": "delete deleted row",
+          "ok": true
+        },
+        {
+          "name": "network error",
+          "ok": true
+        }
+      ],
+      "processes_stopped": true,
+      "passed": true
+    },
+    {
+      "index": "120",
+      "prompt_version": "som.prompt.v2",
+      "resource": "Item",
+      "prompt_file_sha256": "a5baf60682bb5096eb44d14932de9ff95390f40e02eb5887dddbe0d96206ab3f",
+      "generated_files": {
+        "README.md": "ba494bd0134a185ce5ecf7841d6b51167a99d9ab8377a45b1a15f85a376becdb",
+        "src/schema.ts": "ae9dee4672f4d2dcbb42c3e4c863741cd23cf4ac99ddc9067bc8f136814eb83b"
+      },
+      "fixed_files_sha256": "15b2575b40a2cb91405b6248bbfb4f3864b92a67d6a288d35e68506ba4d5ec82",
+      "exit_codes": {
+        "render": 0,
+        "gates": 0,
+        "api_contract": 0
+      },
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "dist_files": {
+        "assets/index-BlgwZIRU.js": "2a53beca1894ac9bfa0c7eaf5df5a5a25ca326ff818589425702dd542f715158",
+        "assets/index-GMF0Rol1.css": "6ca73ee05f7a21b1fd5f4602333e1e542d10ad819554ba7f1ee0d29a0a8a1b7b",
+        "index.html": "b526e1ddaf15196093d1d89079395dec989c38adeaab613258e6e426dbcaee8a"
+      },
+      "api_facts": {
+        "query": true,
+        "filter": true,
+        "before": false,
+        "not_nullable": true,
+        "required": true,
+        "unique": false
+      },
+      "api_steps": [
+        {
+          "name": "list empty",
+          "ok": true
+        },
+        {
+          "name": "create required fields",
+          "ok": true
+        },
+        {
+          "name": "create every field",
+          "ok": true
+        },
+        {
+          "name": "get row",
+          "ok": true
+        },
+        {
+          "name": "list in id order",
+          "ok": true
+        },
+        {
+          "name": "list filter",
+          "ok": true
+        },
+        {
+          "name": "list before",
+          "ok": null,
+          "skipped": "no before filter"
+        },
+        {
+          "name": "list page",
+          "ok": true
+        },
+        {
+          "name": "list limit too large",
+          "ok": true
+        },
+        {
+          "name": "patch changed field",
+          "ok": true
+        },
+        {
+          "name": "patch null on a field that is not nullable",
+          "ok": true
+        },
+        {
+          "name": "create missing a required field",
+          "ok": true
+        },
+        {
+          "name": "create with an unknown field",
+          "ok": true
+        },
+        {
+          "name": "create unique conflict",
+          "ok": null,
+          "skipped": "no unique field"
+        },
+        {
+          "name": "get missing row",
+          "ok": true
+        },
+        {
+          "name": "patch missing row",
+          "ok": true
+        },
+        {
+          "name": "delete row",
+          "ok": true
+        },
+        {
+          "name": "get deleted row",
+          "ok": true
+        },
+        {
+          "name": "delete deleted row",
+          "ok": true
+        },
+        {
+          "name": "network error",
+          "ok": true
+        }
+      ],
+      "processes_stopped": true,
+      "passed": true
+    },
+    {
+      "index": "002",
+      "prompt_version": "som.prompt.v3",
+      "resource": "Item",
+      "prompt_file_sha256": "e0574c6f9362026be5556060d2444a6988dc5b9db2bcb14b35903b65da165f04",
+      "generated_files": {
+        "README.md": "8768a506f504fdf154e22dab02a7bf6886f1d5a13e2bff3fc5118a850c9251f2",
+        "src/schema.ts": "ad91948c18fff34bd6273e3c9dd6a2b077085c6ebbae17b5025dceba9eb0e14a"
+      },
+      "fixed_files_sha256": "15b2575b40a2cb91405b6248bbfb4f3864b92a67d6a288d35e68506ba4d5ec82",
+      "exit_codes": {
+        "render": 0,
+        "gates": 0,
+        "api_contract": 0
+      },
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "dist_files": {
+        "assets/index-C4PSrVOg.js": "7e7c2866f96b26d2764eeae47d33dd91760b1a377cd9ccf1bd036a3f260c71b1",
+        "assets/index-GMF0Rol1.css": "6ca73ee05f7a21b1fd5f4602333e1e542d10ad819554ba7f1ee0d29a0a8a1b7b",
+        "index.html": "97b9a5f9b0837761548c3c56d942412dd7a55534c9cd0e6d0cab6161746e5197"
+      },
+      "api_facts": {
+        "query": true,
+        "filter": true,
+        "before": false,
+        "not_nullable": true,
+        "required": true,
+        "unique": true
+      },
+      "api_steps": [
+        {
+          "name": "list empty",
+          "ok": true
+        },
+        {
+          "name": "create required fields",
+          "ok": true
+        },
+        {
+          "name": "create every field",
+          "ok": true
+        },
+        {
+          "name": "get row",
+          "ok": true
+        },
+        {
+          "name": "list in id order",
+          "ok": true
+        },
+        {
+          "name": "list filter",
+          "ok": true
+        },
+        {
+          "name": "list before",
+          "ok": null,
+          "skipped": "no before filter"
+        },
+        {
+          "name": "list page",
+          "ok": true
+        },
+        {
+          "name": "list limit too large",
+          "ok": true
+        },
+        {
+          "name": "patch changed field",
+          "ok": true
+        },
+        {
+          "name": "patch null on a field that is not nullable",
+          "ok": true
+        },
+        {
+          "name": "create missing a required field",
+          "ok": true
+        },
+        {
+          "name": "create with an unknown field",
+          "ok": true
+        },
+        {
+          "name": "create unique conflict",
+          "ok": true
+        },
+        {
+          "name": "get missing row",
+          "ok": true
+        },
+        {
+          "name": "patch missing row",
+          "ok": true
+        },
+        {
+          "name": "delete row",
+          "ok": true
+        },
+        {
+          "name": "get deleted row",
+          "ok": true
+        },
+        {
+          "name": "delete deleted row",
+          "ok": true
+        },
+        {
+          "name": "network error",
+          "ok": true
+        }
+      ],
+      "processes_stopped": true,
+      "passed": true
+    },
+    {
+      "index": "121",
+      "prompt_version": "som.prompt.v3",
+      "resource": "Todo",
+      "prompt_file_sha256": "72361df884e7d4bf28b9a71da5c6dd4c119fde0e19aa78dcb5c4d2a2d45668ed",
+      "generated_files": {
+        "README.md": "b1b48164e30f17d23bcf4e51233535730306af5da65428c8aa551417543b2258",
+        "src/schema.ts": "2c1c758b04288b4b9e06ad275c6da9e5a919071fe695db75cfa862061ba6b3bb"
+      },
+      "fixed_files_sha256": "15b2575b40a2cb91405b6248bbfb4f3864b92a67d6a288d35e68506ba4d5ec82",
+      "exit_codes": {
+        "render": 0,
+        "gates": 0,
+        "api_contract": 0
+      },
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "dist_files": {
+        "assets/index-C0h740-p.js": "09767465037378860af7ac851d2fc4e5c78c2afd86f9bb37a8c6092c3d1d24cb",
+        "assets/index-GMF0Rol1.css": "6ca73ee05f7a21b1fd5f4602333e1e542d10ad819554ba7f1ee0d29a0a8a1b7b",
+        "index.html": "1a7e9fc4c0157e200ba49bc8fa216b826894f8bbd58730b9fe961c074ec811d0"
+      },
+      "api_facts": {
+        "query": true,
+        "filter": true,
+        "before": false,
+        "not_nullable": true,
+        "required": true,
+        "unique": false
+      },
+      "api_steps": [
+        {
+          "name": "list empty",
+          "ok": true
+        },
+        {
+          "name": "create required fields",
+          "ok": true
+        },
+        {
+          "name": "create every field",
+          "ok": true
+        },
+        {
+          "name": "get row",
+          "ok": true
+        },
+        {
+          "name": "list in id order",
+          "ok": true
+        },
+        {
+          "name": "list filter",
+          "ok": true
+        },
+        {
+          "name": "list before",
+          "ok": null,
+          "skipped": "no before filter"
+        },
+        {
+          "name": "list page",
+          "ok": true
+        },
+        {
+          "name": "list limit too large",
+          "ok": true
+        },
+        {
+          "name": "patch changed field",
+          "ok": true
+        },
+        {
+          "name": "patch null on a field that is not nullable",
+          "ok": true
+        },
+        {
+          "name": "create missing a required field",
+          "ok": true
+        },
+        {
+          "name": "create with an unknown field",
+          "ok": true
+        },
+        {
+          "name": "create unique conflict",
+          "ok": null,
+          "skipped": "no unique field"
+        },
+        {
+          "name": "get missing row",
+          "ok": true
+        },
+        {
+          "name": "patch missing row",
+          "ok": true
+        },
+        {
+          "name": "delete row",
+          "ok": true
+        },
+        {
+          "name": "get deleted row",
+          "ok": true
+        },
+        {
+          "name": "delete deleted row",
+          "ok": true
+        },
+        {
+          "name": "network error",
+          "ok": true
+        }
+      ],
+      "processes_stopped": true,
+      "passed": true
+    },
+    {
+      "index": "003",
+      "prompt_version": "som.prompt.v4",
+      "resource": "Item",
+      "prompt_file_sha256": "eb494847f108ee12ae614247896003db0c9d34fb58747fd07ea26ebe7c0ce7a5",
+      "generated_files": {
+        "README.md": "0f66788d3aea5ac50bc024fa8af63420896d8aa34495b9888c300fc3e1bac64a",
+        "src/schema.ts": "f4c8823d21cb51fc61d16b0b06111171cb4c6f97b3a213ffd27f59a4c2bf67a6"
+      },
+      "fixed_files_sha256": "15b2575b40a2cb91405b6248bbfb4f3864b92a67d6a288d35e68506ba4d5ec82",
+      "exit_codes": {
+        "render": 0,
+        "gates": 0,
+        "api_contract": 0
+      },
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "dist_files": {
+        "assets/index-CXj7L8SL.js": "2d0567a47e1bde4f2997abd28467c18ac38d8323c3e8c75943f9a21298b90c66",
+        "assets/index-GMF0Rol1.css": "6ca73ee05f7a21b1fd5f4602333e1e542d10ad819554ba7f1ee0d29a0a8a1b7b",
+        "index.html": "600473f0c7f4c40508e99c7eb66a43e01f8c32fbb818cd6d45eecc099c755e2b"
+      },
+      "api_facts": {
+        "query": true,
+        "filter": true,
+        "before": true,
+        "not_nullable": true,
+        "required": true,
+        "unique": true
+      },
+      "api_steps": [
+        {
+          "name": "list empty",
+          "ok": true
+        },
+        {
+          "name": "create required fields",
+          "ok": true
+        },
+        {
+          "name": "create every field",
+          "ok": true
+        },
+        {
+          "name": "get row",
+          "ok": true
+        },
+        {
+          "name": "list in id order",
+          "ok": true
+        },
+        {
+          "name": "list filter",
+          "ok": true
+        },
+        {
+          "name": "list before",
+          "ok": true
+        },
+        {
+          "name": "list page",
+          "ok": true
+        },
+        {
+          "name": "list limit too large",
+          "ok": true
+        },
+        {
+          "name": "patch changed field",
+          "ok": true
+        },
+        {
+          "name": "patch null on a field that is not nullable",
+          "ok": true
+        },
+        {
+          "name": "create missing a required field",
+          "ok": true
+        },
+        {
+          "name": "create with an unknown field",
+          "ok": true
+        },
+        {
+          "name": "create unique conflict",
+          "ok": true
+        },
+        {
+          "name": "get missing row",
+          "ok": true
+        },
+        {
+          "name": "patch missing row",
+          "ok": true
+        },
+        {
+          "name": "delete row",
+          "ok": true
+        },
+        {
+          "name": "get deleted row",
+          "ok": true
+        },
+        {
+          "name": "delete deleted row",
+          "ok": true
+        },
+        {
+          "name": "network error",
+          "ok": true
+        }
+      ],
+      "processes_stopped": true,
+      "passed": true
+    },
+    {
+      "index": "122",
+      "prompt_version": "som.prompt.v4",
+      "resource": "Todo",
+      "prompt_file_sha256": "6f123ea4ff72b7e0d6cba50278b10a5da1ecc449dd441b2ae0ff480500b8e43a",
+      "generated_files": {
+        "README.md": "a7a0fb24ea96332f37fb2a8fc2b8a5bed62c37f1b05e8ae2703ff98e82521cfb",
+        "src/schema.ts": "3f5fa78dcc29e365211db4c7286e0813549ad7d7a0e9f5aeadd35540c31df1da"
+      },
+      "fixed_files_sha256": "15b2575b40a2cb91405b6248bbfb4f3864b92a67d6a288d35e68506ba4d5ec82",
+      "exit_codes": {
+        "render": 0,
+        "gates": 0,
+        "api_contract": 0
+      },
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "dist_files": {
+        "assets/index-CDCQQE79.js": "8d5db2f909622d13760002138c1dffcf573b3ee7430458c61347acd2fad13bc0",
+        "assets/index-GMF0Rol1.css": "6ca73ee05f7a21b1fd5f4602333e1e542d10ad819554ba7f1ee0d29a0a8a1b7b",
+        "index.html": "ecef80fb4a44557ed90db95d96a93b495517be6ed728d446ae7385008ee30764"
+      },
+      "api_facts": {
+        "query": true,
+        "filter": true,
+        "before": true,
+        "not_nullable": true,
+        "required": true,
+        "unique": false
+      },
+      "api_steps": [
+        {
+          "name": "list empty",
+          "ok": true
+        },
+        {
+          "name": "create required fields",
+          "ok": true
+        },
+        {
+          "name": "create every field",
+          "ok": true
+        },
+        {
+          "name": "get row",
+          "ok": true
+        },
+        {
+          "name": "list in id order",
+          "ok": true
+        },
+        {
+          "name": "list filter",
+          "ok": true
+        },
+        {
+          "name": "list before",
+          "ok": true
+        },
+        {
+          "name": "list page",
+          "ok": true
+        },
+        {
+          "name": "list limit too large",
+          "ok": true
+        },
+        {
+          "name": "patch changed field",
+          "ok": true
+        },
+        {
+          "name": "patch null on a field that is not nullable",
+          "ok": true
+        },
+        {
+          "name": "create missing a required field",
+          "ok": true
+        },
+        {
+          "name": "create with an unknown field",
+          "ok": true
+        },
+        {
+          "name": "create unique conflict",
+          "ok": null,
+          "skipped": "no unique field"
+        },
+        {
+          "name": "get missing row",
+          "ok": true
+        },
+        {
+          "name": "patch missing row",
+          "ok": true
+        },
+        {
+          "name": "delete row",
+          "ok": true
+        },
+        {
+          "name": "get deleted row",
+          "ok": true
+        },
+        {
+          "name": "delete deleted row",
+          "ok": true
+        },
+        {
+          "name": "network error",
+          "ok": true
+        }
+      ],
+      "processes_stopped": true,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "run": {
+    "date": "2026-10-23-a002",
+    "work_dir": ".local/react-output/review134-products-001",
+    "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/tests/react-output-v1/run_products.py .local/rust-compiler-goal/acceptance/public-products-003b .local/react-output/review134-products-001",
+    "ports": "QA ports from behavior/hosts.py Ports; never 8765 or 18765"
+  }
+}

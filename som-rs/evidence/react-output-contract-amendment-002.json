@@ -16,7 +16,11 @@
     "som-rs/contracts/react-output-v1/reference/src/app.test.tsx",
     "som-rs/contracts/react-output-v1/toolchain.json"
   ],
-  "added_paths": [],
+  "added_paths": [
+    "som-rs/evidence/react-output-v1/name-cases-2026-10-23-a002.json",
+    "som-rs/evidence/react-output-v1/public-products-2026-10-23-a002.json",
+    "som-rs/evidence/react-output-v1/reference-verification-2026-10-23-a002.json"
+  ],
   "changes": [
     {
       "path": "som-rs/contracts/react-output-v1/CONTRACT.md",
@@ -44,7 +48,7 @@
   "target_contract": {
     "id": "som.react-output-contract.v1",
     "previous_sha256": "199deb383239847463eee690d8caf226d8f7f5c2b842d6dac5c2e37e3c71ca06",
-    "sha256": "33395ef18c854a6204fe6774e1267839a7fa8474c5a21b177ce64d5fd7890741",
+    "sha256": "d48cbd2a790554bab14a38bd6092e5975e82027c0a6da1ef46d8ff7affdbf638",
     "rule": "sha256 of the som.canonical-json.v1 bytes of the files map below"
   },
   "files": {
@@ -78,11 +82,14 @@
     "som-rs/contracts/react-output-v1/target-examples.json": "b3aca1037fe801c8cbfd43ec132b595f93b6b06ce45a2e5f6356502e67f42906",
     "som-rs/contracts/react-output-v1/toolchain.json": "49ad8ccd194b110e10a8141ecdfe2dafc7f649ff085ffb709bb06a7df7269bc2",
     "som-rs/evidence/react-output-v1/name-cases-2026-10-22.json": "b743503343e25f8ef624de7069ea228f1e1e45f13edf37e4673155fde69a2af3",
+    "som-rs/evidence/react-output-v1/name-cases-2026-10-23-a002.json": "23c095bbc984f9666d1607b2dff5b0664cf774fb21ee81a9a9256448cd5b8c82",
     "som-rs/evidence/react-output-v1/name-cases-2026-10-23.json": "1cd14265c7e3a7cff3dd4a3065c92df6a7e22b64cec7bd0f78ef06459bad9fd8",
     "som-rs/evidence/react-output-v1/public-products-2026-10-22.json": "19e475bbf15c1692274c89cbd195c015993c4bad0c9a425cb61cfc676877e5c9",
+    "som-rs/evidence/react-output-v1/public-products-2026-10-23-a002.json": "e9d08b9b53725671387457bfda46740b907355865cef725fe5e88fdf5fe06762",
     "som-rs/evidence/react-output-v1/public-products-2026-10-23.json": "68e98d4b6178584777bc46758a193409e5ddd1af629eb5cb0b8566ed22c1f2c5",
     "som-rs/evidence/react-output-v1/python-controls-2026-10-22.json": "b9a435d150e04b504cfff2e3603d733132d0ce758cbae60972454c5756d0eca6",
     "som-rs/evidence/react-output-v1/reference-verification-2026-10-22.json": "0303e2806e10cf8b89fe17c7ab694be5db10e30fcd3df097846915c386e8fed8",
+    "som-rs/evidence/react-output-v1/reference-verification-2026-10-23-a002.json": "2abd46201f1291e5fb1027a8c13fd5b5b0f30708c96bb1dec55590044ab2fd16",
     "som-rs/evidence/react-output-v1/reference-verification-2026-10-23.json": "d8779ac6592c226d201e557fefa31d3e771843f3bc09d4a09a27b273bb7083e5",
     "som-rs/tests/react-output-v1/api_contract.mjs": "bd33149d0278b4228f510ab038bdf29e1dafc5ed77223622469fd3222ef24d81",
     "som-rs/tests/react-output-v1/build_case_inventory.py": "262e49b431f26ea6734bec45e1e34d14ed66b36febb070026b11d94b229c2575",
@@ -101,15 +108,28 @@
     "som-rs/tests/react-output-v1/tree_sha.py": "b047ae9ac44eb76df4a33cabc0ae20fb8258480069b17be0825c83921dfefc3c"
   },
   "independent_review": {
-    "reviewer": "Claude acceptance review of this PR",
-    "target_sha256": "33395ef18c854a6204fe6774e1267839a7fa8474c5a21b177ce64d5fd7890741",
-    "rounds": []
+    "reviewer": "Claude acceptance review of PR #135",
+    "target_sha256": "d48cbd2a790554bab14a38bd6092e5975e82027c0a6da1ef46d8ff7affdbf638",
+    "rounds": [
+      {
+        "round": 1,
+        "reviewer": "Claude acceptance review of PR #135 (issuecomment-6359446819)",
+        "date": "2026-10-23",
+        "head": "b31337e800",
+        "result": "changes requested",
+        "verdict": "CHANGES_REQUESTED",
+        "findings": [
+          "The a002 evidence is missing: toolchain.json points to three *-2026-10-23-a002.json files that the PR did not contain, and the receipt's added_paths was empty."
+        ],
+        "fixes": "Generated the three *-2026-10-23-a002.json evidence files with make_evidence.py from the host runs (.local/react-output/review134-products-001 and .local/react-output/review134-names-001), added them to files and added_paths, recomputed target_contract.sha256 and TARGET_CONTRACT_SHA256, and recorded round 1 in independent_review.rounds while keeping draft status until approved to seal."
+      }
+    ]
   },
   "check_contract": {
     "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/tests/react-output-v1/check_contract.py --require-prompts --receipt som-rs/evidence/react-output-contract-amendment-002.json",
-    "passed": 667,
-    "failed": 5,
-    "expected_draft_failure": "pending 2026-10-23-a002 reference verification host runs (run_products.py and run_name_cases.py) and amendment sealing after independent review",
+    "passed": 672,
+    "failed": 1,
+    "expected_draft_failure": "amendment was sealed after independent review (status is draft_pending_independent_review until PR review approves sealing)",
     "also_passed": [
       "build_negative_cases.py --check",
       "build_target_examples.py --check",
