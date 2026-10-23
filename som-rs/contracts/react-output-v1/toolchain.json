@@ -1554,11 +1554,11 @@
   "reference_verification": {
     "status": "passed",
     "rule": "The contract records a reference product (public product 003, a som.prompt.v4 prompt rendered by render_reference.py) that passes every gate of commands against the vendored cache, builds twice to identical dist trees with the lockfile and the vendored cache unchanged, and passes the API contract against the hosted Python product of the same prompt. The same run covers the eight public v1 to v4 products.",
-    "evidence": "som-rs/evidence/react-output-v1/reference-verification-2026-10-22.json",
-    "public_products_evidence": "som-rs/evidence/react-output-v1/public-products-2026-10-22.json",
+    "evidence": "som-rs/evidence/react-output-v1/reference-verification-2026-10-23.json",
+    "public_products_evidence": "som-rs/evidence/react-output-v1/public-products-2026-10-23.json",
     "product": "public product 003 (som.prompt.v4) from .local/rust-compiler-goal/acceptance/public-products-003b, rendered by som-rs/tests/react-output-v1/render_reference.py",
     "result": "install, typecheck, format_check, test, build-1 and build-2 exit 0 on a fresh copy for each of the products 000, 119, 001, 120, 002, 121, 003 and 122; both builds are identical; the lockfile, every product file outside node_modules and the vendored cache tree are unchanged; the API contract records all 20 steps against the hosted Python product, with no failed step and with exactly the steps whose when condition is false skipped.",
-    "name_cases_evidence": "som-rs/evidence/react-output-v1/name-cases-2026-10-22.json",
+    "name_cases_evidence": "som-rs/evidence/react-output-v1/name-cases-2026-10-23.json",
     "name_cases_result": "The nine target-examples.json name cases render and pass install, typecheck, format_check, test and two identical builds with the lockfile, every product file outside node_modules and the vendored cache unchanged. RN07 (a v3 filter field named valueOf) first failed typecheck: listRows had the default parameter ListQuery = {}, and {} is not assignable to a ListQuery whose valueOf member is a boolean. reference/src/api.ts now takes the query without a default, and every run in this record used the fixed file. The API contract does not run for name cases."
   }
 }

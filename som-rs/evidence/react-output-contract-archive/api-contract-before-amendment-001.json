@@ -1,0 +1,57 @@
+{
+  "version": "som.react-output-api-contract.v1",
+  "purpose": "The generated product's own src/api.ts, driven against the Python product of the same prompt, must give the results below. It checks that the React client and the Python service agree on paths, bodies, status codes, error details and list queries.",
+  "driver": "som-rs/tests/react-output-v1/api_contract.mjs <product dir> <service url> <prompt.json>, run by run_api_contract.py with node.binary of toolchain.json after the product's install gate. The driver imports src/api.ts and src/schema.ts of the product; it reads no other product file.",
+  "service": "The Python product of the same prompt, assembled by the live default compiler and hosted by run_api_contract.py on a QA port with a fresh PostgreSQL cluster (toolchain.json postgresql). Never 8765 or 18765. run_api_contract.py checks the cwd of every process it starts with lsof before it signals it, and stops each one.",
+  "inputs": {
+    "fields": "FIELDS of src/schema.ts",
+    "query": "QUERY of src/schema.ts, null for v1",
+    "resource": "RESOURCE of src/schema.ts",
+    "strict": "true for som.prompt.v3 and som.prompt.v4: their bodies forbid unknown members and refuse null for a field that is not nullable. v1 and v2 bodies ignore unknown members, and the database refuses null for a required field."
+  },
+  "samples": {
+    "str": "\"<tag> <field name>\"",
+    "int": "min 3, extra 11, otherwise 7",
+    "float": "min 0.5, extra 2.5, otherwise 1.5",
+    "bool": "a field without a default: false for min, true otherwise; a field with a default: the negated default",
+    "date": "min 2026-03-01, otherwise 2026-01-05"
+  },
+  "row_rule": "A row result passes when id is an integer of at least 1, every field equals the body member or, when the body has none, the field default, and created_at and updated_at are strings when RESOURCE.timestamps.",
+  "error_rule": "An error result passes when result.ok is false and error.status and error.detail equal the step's values. error.status 0 with detail \"network error\" is the client's own result for a fetch that fails.",
+  "page": "{limit: QUERY.pageSize, offset: 0} when QUERY is not null, otherwise {}",
+  "steps": [
+    {"name": "list empty", "call": "listRows(page)", "expected": "ok, []"},
+    {"name": "create required fields", "call": "createRow(min body: every required field, sample min)", "expected": "ok, row_rule"},
+    {"name": "create every field", "call": "createRow(full body: every field, sample full)", "expected": "ok, row_rule"},
+    {"name": "get row", "call": "getRow(full row id)", "expected": "ok, equal to the full row"},
+    {"name": "list in id order", "call": "listRows(page)", "expected": "ok, [min row, full row]"},
+    {"name": "list filter", "when": "QUERY.filter is not null", "call": "listRows({...page, [QUERY.filter.param]: full body filter value})", "expected": "ok, the rows whose filter field equals the value"},
+    {"name": "list before", "when": "QUERY.before is not null", "call": "listRows({...page, before: \"2026-02-01\"})", "expected": "ok, the rows whose date field is not null and is before 2026-02-01"},
+    {"name": "list page", "when": "QUERY is not null", "call": "listRows({limit: 1, offset: 1})", "expected": "ok, [full row]"},
+    {"name": "list limit too large", "when": "QUERY is not null", "call": "listRows({limit: QUERY.maxLimit + 1, offset: 0})", "expected": "422 \"validation failed\""},
+    {"name": "patch changed field", "call": "patchRow(min row id, {first str field, or the first field: sample changed})", "expected": "ok; that field changed, every other field unchanged, updated_at not earlier when RESOURCE.timestamps"},
+    {"name": "patch null on a field that is not nullable", "when": "a field is not nullable", "call": "patchRow(min row id, {that field: null})", "expected": "strict: 422 \"validation failed\" with at least one field or other error; otherwise 409 \"conflict\""},
+    {"name": "create missing a required field", "when": "a field is required", "call": "createRow({})", "expected": "422 \"validation failed\" with a fieldErrors entry for the first required field"},
+    {"name": "create with an unknown field", "call": "createRow({...every required field with sample extra, unknown_field: 1})", "expected": "strict: 422 \"validation failed\" with an otherErrors message starting \"body.unknown_field: \"; otherwise ok, row_rule, and the row has no unknown_field member"},
+    {"name": "create unique conflict", "when": "a field is unique", "call": "createRow(full body)", "expected": "409 \"conflict\""},
+    {"name": "get missing row", "call": "getRow(2147483647)", "expected": "404 \"not found\""},
+    {"name": "patch missing row", "call": "patchRow(2147483647, {})", "expected": "404 \"not found\""},
+    {"name": "delete row", "call": "deleteRow(full row id)", "expected": "ok, null"},
+    {"name": "get deleted row", "call": "getRow(full row id)", "expected": "404 \"not found\""},
+    {"name": "delete deleted row", "call": "deleteRow(full row id)", "expected": "404 \"not found\""},
+    {"name": "network error", "call": "setBase(\"http://127.0.0.1:9\"), then listRows(page)", "expected": "status 0, \"network error\""}
+  ],
+  "skip_rule": "The driver records all 20 steps, in this order, every run. A step whose when condition is false is recorded with ok null and its skip reason; that is the only skip. A step that needs the min row or the full row when an earlier step did not create it is recorded with ok false.",
+  "skip_reasons": {
+    "list filter": "no filter",
+    "list before": "no before filter",
+    "list page": "no list query",
+    "list limit too large": "no list query",
+    "patch null on a field that is not nullable": "no field that is not nullable",
+    "create missing a required field": "no required field",
+    "create unique conflict": "no unique field"
+  },
+  "facts": "The driver also prints facts {query, filter, before, not_nullable, required, unique}: whether QUERY, QUERY.filter and QUERY.before are not null and whether a field is not nullable, required or unique. The evidence checker derives the same facts from the prompt (render_reference.spec) and checks that exactly the steps whose when condition is false were skipped.",
+  "result": "The driver prints {resource, failed, facts, steps} and exits 1 when a step fails. A product passes when the exit code is 0, there are 20 steps named as above, no step has ok false, the skipped steps are exactly those whose when condition is false, and every process run_api_contract.py started is stopped.",
+  "scope": "Before the freeze it runs for every public v1 to v4 product (run_products.py), against the public Python product. Name cases have no public Python product, so before the freeze only their product gates run. In the M6 acceptance it runs for every acceptance case, name cases included, against the Python product the candidate assembles for the same request without target."
+}

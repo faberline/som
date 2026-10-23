@@ -95,9 +95,15 @@ describe("list", () => {
     expect(calls).toEqual([
       { url: `/api${RESOURCE.path}${query}`, method: "GET", body: undefined },
     ]);
+    const rows = screen.getByRole("table").querySelectorAll("tbody tr");
+    expect(rows.length).toBe(2);
     const first = FIELDS[0];
     if (first !== undefined) {
-      expect(screen.getAllByText(String(sample(first))).length).toBe(2);
+      for (const row of rows) {
+        expect(row.querySelectorAll("td")[1]?.textContent).toBe(
+          String(sample(first)),
+        );
+      }
     }
   });
 

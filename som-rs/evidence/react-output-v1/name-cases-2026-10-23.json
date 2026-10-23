@@ -1,0 +1,238 @@
+{
+  "version": "som.react-output-name-cases.v1",
+  "cases": [
+    {
+      "id": "RN01_CNL_FIELD_UPPERCASE",
+      "prompt_version": "som.prompt.v1",
+      "prompt_file_sha256": "afd86ef401f62db91e18cbeff2355343d3bc6e1872e06f3e7df0440c85762d03",
+      "generated_files": {
+        "README.md": "fbf84dfd300d761e1b8554b7ededda87adcb2b51a49e785f515034e312ecb6eb",
+        "src/schema.ts": "b06387f093eea58b156735e93cf79e1543f8af28bb56ac07cae20cfc80909d10"
+      },
+      "fixed_files_sha256": "83edaa65b0fd7f6ee032fa613e40692fb039145fdcd564e3c6243bc297db3f93",
+      "render_exit": 0,
+      "gates_exit": 0,
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "passed": true
+    },
+    {
+      "id": "RN02_CNL_FIELD_SELF",
+      "prompt_version": "som.prompt.v3",
+      "prompt_file_sha256": "9783c0115be489bf162fe5e4d4abf11b000d11087ab5a9fe0ba8644500b3f8a5",
+      "generated_files": {
+        "README.md": "20d9aabccfa41fd343e80f656eafd253fdf1c4e1fda6946b0adbadb01914cd37",
+        "src/schema.ts": "720f4a8e02e075497d817d70d9b991466283012cdc6776479806fcff2c48a75b"
+      },
+      "fixed_files_sha256": "83edaa65b0fd7f6ee032fa613e40692fb039145fdcd564e3c6243bc297db3f93",
+      "render_exit": 0,
+      "gates_exit": 0,
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "passed": true
+    },
+    {
+      "id": "RN03_JSON_FILTER_DOUBLE_UNDERSCORE",
+      "prompt_version": "som.prompt.v2",
+      "prompt_file_sha256": "d53b276c3ce63774b89ef0cb0de959605222c06aaae88d109ddda8eb86beb51f",
+      "generated_files": {
+        "README.md": "e51b4bf9c5ab8503c50c2ab23db1e0b43687c4595742b5c4c35d0e71b313a733",
+        "src/schema.ts": "99615608093b61f27e1c1df489dacf2bb235ef95d0f91c4eea39d4649d0365f9"
+      },
+      "fixed_files_sha256": "83edaa65b0fd7f6ee032fa613e40692fb039145fdcd564e3c6243bc297db3f93",
+      "render_exit": 0,
+      "gates_exit": 0,
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "passed": true
+    },
+    {
+      "id": "RN04_CNL_FIELD_TO_STRING",
+      "prompt_version": "som.prompt.v1",
+      "prompt_file_sha256": "676b52498a0c44cfa80dc9c92cfe9ee4ecb48ef80d021e16a91fd1fa325ab958",
+      "generated_files": {
+        "README.md": "06cd858450a798561751e1f6f9d48696d23898edc25ccf86857adc2b61558e05",
+        "src/schema.ts": "f6e8eee896c9c0260abffedf1ee44c8220c5c78838756c8cf7efbd8b19e93313"
+      },
+      "fixed_files_sha256": "83edaa65b0fd7f6ee032fa613e40692fb039145fdcd564e3c6243bc297db3f93",
+      "render_exit": 0,
+      "gates_exit": 0,
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "passed": true
+    },
+    {
+      "id": "RN05_JSON_FIELD_HAS_OWN_PROPERTY",
+      "prompt_version": "som.prompt.v2",
+      "prompt_file_sha256": "b0d86ff9f4dc878671bfb4d75dba0af098822d8179526282f085f32024df5d15",
+      "generated_files": {
+        "README.md": "4e69decea5e5b01cb92f7fb9cdd284cd450082d140bac791836e2d9568c0da7a",
+        "src/schema.ts": "7feb7950837524cd3ec6208c6ff55d2734766d703dd2494e6a96d87225ae58a7"
+      },
+      "fixed_files_sha256": "83edaa65b0fd7f6ee032fa613e40692fb039145fdcd564e3c6243bc297db3f93",
+      "render_exit": 0,
+      "gates_exit": 0,
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "passed": true
+    },
+    {
+      "id": "RN06_CNL_V4_FIELD_FUNCTION",
+      "prompt_version": "som.prompt.v4",
+      "prompt_file_sha256": "b889eab45ebbb0f3a7c389374970d4f5d21cb854cb00dcf8317decde85dddeb4",
+      "generated_files": {
+        "README.md": "5c415fdbe4e1a85841179ee5e1721b0b76e33efbef4fc137d3e50e1ea63a7e2f",
+        "src/schema.ts": "9bebd9b9f5ffa6d591ce2c875dda50471a5604040371b89a7babcd28cf42049c"
+      },
+      "fixed_files_sha256": "83edaa65b0fd7f6ee032fa613e40692fb039145fdcd564e3c6243bc297db3f93",
+      "render_exit": 0,
+      "gates_exit": 0,
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "passed": true
+    },
+    {
+      "id": "RN07_JSON_V3_FILTER_VALUE_OF",
+      "prompt_version": "som.prompt.v3",
+      "prompt_file_sha256": "d02e23f296d28d2a60c50331c3a5efb80313d9ded9d0ef6a4681caf895ca6e17",
+      "generated_files": {
+        "README.md": "e7b0e0012ed84696f4d2fa6514eb68e58bbbf0eac66b13c625c2ce98e204f563",
+        "src/schema.ts": "f258bd0894fe13136e6f617421798687c032f8f285fd3429826b02bd7d6fd4de"
+      },
+      "fixed_files_sha256": "83edaa65b0fd7f6ee032fa613e40692fb039145fdcd564e3c6243bc297db3f93",
+      "render_exit": 0,
+      "gates_exit": 0,
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "passed": true
+    },
+    {
+      "id": "RN08_CNL_TABLE_TS_MIGRATIONS",
+      "prompt_version": "som.prompt.v1",
+      "prompt_file_sha256": "ed2c69aa49600cfa603d5b0c17170ab098bbfb133d34fb4eb16df68770d0e084",
+      "generated_files": {
+        "README.md": "0be781c4a96915fd5884e7a8cc2e843070dfbf1fe61cfab8b62107458ba62271",
+        "src/schema.ts": "1b48f4e4c4032f3da3a098ba67dcf4e0895382ebc325fb50665f89c2fb192f00"
+      },
+      "fixed_files_sha256": "83edaa65b0fd7f6ee032fa613e40692fb039145fdcd564e3c6243bc297db3f93",
+      "render_exit": 0,
+      "gates_exit": 0,
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "passed": true
+    },
+    {
+      "id": "RN09_CNL_PATH_TWO_SEGMENTS",
+      "prompt_version": "som.prompt.v1",
+      "prompt_file_sha256": "0e6de69325800a33007b731342afcf44a3b7710fda9f10eea85f4805b6fedd2d",
+      "generated_files": {
+        "README.md": "e9392e535a6a874cccf90534dd7be98015cfdcc035574fdaf53bfab12f4d654d",
+        "src/schema.ts": "df2f407219fbb5de96202523f53d81856a70877228f4be88340e39420121bbe0"
+      },
+      "fixed_files_sha256": "83edaa65b0fd7f6ee032fa613e40692fb039145fdcd564e3c6243bc297db3f93",
+      "render_exit": 0,
+      "gates_exit": 0,
+      "gates": {
+        "install": 0,
+        "typecheck": 0,
+        "format_check": 0,
+        "test": 0,
+        "build-1": 0,
+        "build-2": 0
+      },
+      "builds_identical": true,
+      "lock_unchanged": true,
+      "product_unchanged": true,
+      "vendored_cache_unchanged": true,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "api_contract": "not run: a name case has no hosted Python product. The API contract runs against the public products and, after the React target lands, in the M6 acceptance.",
+  "run": {
+    "date": "2026-10-23",
+    "work_dir": ".local/react-output/review132-names-002",
+    "command": "python3 som-rs/tests/react-output-v1/run_name_cases.py .local/react-output/review132-names-002",
+    "prompts": "each case's python_control_body compiled read-only on 127.0.0.1:8765"
+  }
+}
