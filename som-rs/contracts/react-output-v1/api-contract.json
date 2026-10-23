@@ -11,10 +11,10 @@
   },
   "samples": {
     "str": "\"<tag> <field name>\"",
-    "int": "min 3, extra 11, otherwise 7",
-    "float": "min 0.5, extra 2.5, otherwise 1.5",
+    "int": "min 3, extra 11, changed 19, otherwise 7",
+    "float": "min 0.5, extra 2.5, changed 4.5, otherwise 1.5",
     "bool": "a field without a default: false for min, true otherwise; a field with a default: the negated default",
-    "date": "min 2026-03-01, otherwise 2026-01-05"
+    "date": "min 2026-03-01, changed 2026-04-01, otherwise 2026-01-05"
   },
   "row_rule": "A row result passes when id is an integer of at least 1, every field equals the body member or, when the body has none, the field default, and created_at and updated_at are strings when RESOURCE.timestamps.",
   "error_rule": "An error result passes when result.ok is false and error.status and error.detail equal the step's values. error.status 0 with detail \"network error\" is the client's own result for a fetch that fails.",

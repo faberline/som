@@ -36,13 +36,13 @@ function sample(field, tag) {
     case "str":
       return `${tag} ${field.name}`;
     case "int":
-      return { min: 3, extra: 11 }[tag] ?? 7;
+      return { min: 3, extra: 11, changed: 19 }[tag] ?? 7;
     case "float":
-      return { min: 0.5, extra: 2.5 }[tag] ?? 1.5;
+      return { min: 0.5, extra: 2.5, changed: 4.5 }[tag] ?? 1.5;
     case "bool":
       return field.default === undefined ? tag !== "min" : !field.default;
     case "date":
-      return tag === "min" ? "2026-03-01" : "2026-01-05";
+      return { min: "2026-03-01", changed: "2026-04-01" }[tag] ?? "2026-01-05";
   }
 }
 

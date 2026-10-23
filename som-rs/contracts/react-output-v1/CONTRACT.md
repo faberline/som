@@ -201,3 +201,26 @@ The Python controls of the 30 negative cases and the 9 name cases were run read-
 5. Phase 1 is split into issues: the target amendments, catalog and renderer, target and host, products, acceptance and release (acceptance-plan.json `issue_gates`).
 
 After the receipt is sealed, a change to any frozen file needs a numbered amendment with its reason, the old and new hashes, and an independent review.
+
+## 12. Amendment 001: list test assertion and changed API sample (2026-10-23, issue #132)
+
+The user approved amendment 001 on 2026-10-23 after the first full 129-case product-gate run (#129) found two defects in the frozen test tools:
+
+1. In `reference/src/app.test.tsx`, the list test "lists rows with the first page query" counted `screen.getAllByText(String(sample(first)))` across the whole page and expected `2`. When another column rendered the same text (for example, several `bool` fields all rendering `true`), the count was 3 to 7 instead of 2 (60 legacy100 products). The test now checks that the table has `2` data rows (`tbody tr`) and that in each data row the `FIELDS[0]` cell (the column right after `id`) has the text `String(sample(FIELDS[0]))`.
+2. In `tests/react-output-v1/api_contract.mjs`, `sample(field, "changed")` returned the same value as the full row for `int` (`7`), `float` (`1.5`) and `date` (`2026-01-05`). When the changed field was `unique`, the step "patch changed field" failed with `409 conflict` against the full row (legacy100-0012 and legacy100-0030). The `changed` sample values are now `19` for `int`, `4.5` for `float` and `"2026-04-01"` for `date`; `str` stays `"changed <field name>"` and `bool` is unchanged.
+
+Changed paths:
+
+- `som-rs/contracts/react-output-v1/CONTRACT.md`: adds this section;
+- `som-rs/contracts/react-output-v1/api-contract.json`: `samples` names the `changed` values `19`, `4.5` and `2026-04-01`; the 20 steps, their names and their `when` conditions are unchanged;
+- `som-rs/contracts/react-output-v1/reference/src/app.test.tsx`: the list test checks the 2 `tbody tr` data rows and the `FIELDS[0]` cell text in each row;
+- `som-rs/contracts/react-output-v1/toolchain.json`: `reference_verification` points to the 2026-10-23 reference verification evidence;
+- `som-rs/tests/react-output-v1/api_contract.mjs`: `sample(field, "changed")` returns `19` for `int`, `4.5` for `float` and `"2026-04-01"` for `date`.
+
+Added evidence (`som-rs/evidence/react-output-v1/`, keeping the 2026-10-22 files in the files map):
+
+- `som-rs/evidence/react-output-v1/name-cases-2026-10-23.json`;
+- `som-rs/evidence/react-output-v1/public-products-2026-10-23.json`;
+- `som-rs/evidence/react-output-v1/reference-verification-2026-10-23.json`.
+
+No other rule changes. The receipt is `som-rs/evidence/react-output-contract-amendment-001.json`.

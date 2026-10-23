@@ -23,9 +23,9 @@ pub const MAX_FILES: usize = 19;
 pub const MAX_BLOCKS: usize = 64;
 
 pub const TARGET_CONTRACT_ID: &str = "som.react-output-contract.v1";
-/// H(files map) of the latest sealed receipt for contracts/react-output-v1: the 2026-10-22 freeze.
+/// H(files map) of the latest sealed receipt for contracts/react-output-v1: amendment 1.
 pub const TARGET_CONTRACT_SHA256: &str =
-    "a63224bd4030cc3e1d4c248f2877539b41561a3fcd986d8d13f7d5b798e80115";
+    "e8145bd8eceb21bf0c09b2712620cf7f5f766aa760c2ea3042bbe9b1fb8317ef";
 pub const CATALOG_ID: &str = "som.react-catalog.v1";
 pub const BLOCK_LIBRARY_ID: &str = "som.react-block-library.v1";
 pub const BACKEND_ID: &str = "som.react-backend.v1";

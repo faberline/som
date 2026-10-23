@@ -1,0 +1,133 @@
+{
+  "version": "som.react-output-contract-amendment.v1",
+  "amendment": 1,
+  "frozen_at": "2026-10-23T04:40:00+00:00",
+  "baseline_commit": "db19a3212ffb6b15e80c0a0fc4e81585cd1d1d0d",
+  "issue": 132,
+  "target": "react",
+  "bundle": "som.dsl-bundle.v2",
+  "status": "draft_pending_independent_review",
+  "implementation_already_in_progress": false,
+  "previous_receipt": "som-rs/evidence/react-output-contract-freeze-2026-10-22.json",
+  "previous_receipt_sha256": "d427096f8ceca6742f0ad0ee6e3c867e726fa90038f0bb4028fe8ecd4233ed95",
+  "reason": "The first full 129-case product-gate run (#129) found two defects in the frozen react-output-v1 test tools. First, in reference/src/app.test.tsx, the list test \"lists rows with the first page query\" counted screen.getAllByText(String(sample(first))) across the whole page and expected 2; when another column rendered the same text (such as multiple bool fields rendering true), the count was 3 to 7 instead of 2 (60 legacy100 products). The test now checks that the table has 2 data rows (tbody tr) and that in each data row the FIELDS[0] cell (column index 1, right after id) has text String(sample(FIELDS[0])). Second, in tests/react-output-v1/api_contract.mjs, sample(field, \"changed\") returned the same value as the full row for int (7), float (1.5) and date (2026-01-05), causing a 409 conflict when patching a unique non-str first field (legacy100-0012 and legacy100-0030). sample(field, \"changed\") now returns 19 for int, 4.5 for float and \"2026-04-01\" for date, and api-contract.json samples records those values.",
+  "changed_paths": [
+    "som-rs/contracts/react-output-v1/CONTRACT.md",
+    "som-rs/contracts/react-output-v1/api-contract.json",
+    "som-rs/contracts/react-output-v1/reference/src/app.test.tsx",
+    "som-rs/contracts/react-output-v1/toolchain.json",
+    "som-rs/tests/react-output-v1/api_contract.mjs"
+  ],
+  "added_paths": [],
+  "changes": [
+    {
+      "path": "som-rs/contracts/react-output-v1/CONTRACT.md",
+      "old_sha256": "2dbde31abc88a439337bf616ac8d91a4a8a5b7f1085dac90ab2ba2c248cf2825",
+      "new_sha256": "a8697ea7c0a4699666005ee6e0458d761509092c5029e0ca049c7dedaa16c32e",
+      "archived_copy": "som-rs/evidence/react-output-contract-archive/CONTRACT-before-amendment-001.md",
+      "archived_copy_sha256": "2dbde31abc88a439337bf616ac8d91a4a8a5b7f1085dac90ab2ba2c248cf2825"
+    },
+    {
+      "path": "som-rs/contracts/react-output-v1/api-contract.json",
+      "old_sha256": "246f6592222a35ad61124fadcc57b198ec5f48a429ad78ab42625e0b3a787ae4",
+      "new_sha256": "0f362067d1a57c1da93d2fb7da3ba319e67d2e1c97bba5c6bc1b3632f73bfdb3",
+      "archived_copy": "som-rs/evidence/react-output-contract-archive/api-contract-before-amendment-001.json",
+      "archived_copy_sha256": "246f6592222a35ad61124fadcc57b198ec5f48a429ad78ab42625e0b3a787ae4"
+    },
+    {
+      "path": "som-rs/contracts/react-output-v1/reference/src/app.test.tsx",
+      "old_sha256": "560b269b546bfd13b6242845e88488617cff35d64efe7bb7638d23cd9ac4b523",
+      "new_sha256": "283f3511e4e52daaed666da191aed6c4040390f2e4eaeb346a57939a780b05f5",
+      "archived_copy": "som-rs/evidence/react-output-contract-archive/app.test-before-amendment-001.tsx",
+      "archived_copy_sha256": "560b269b546bfd13b6242845e88488617cff35d64efe7bb7638d23cd9ac4b523"
+    },
+    {
+      "path": "som-rs/contracts/react-output-v1/toolchain.json",
+      "old_sha256": "c25441a6b37356fa652b1202eb4b516b5bb91b195dd6cf26e62c14034bcf4962",
+      "new_sha256": "2747af56240d4e095ee447b8f796c11db2f7472104fd9c5f8310b6785f9359e3",
+      "archived_copy": "som-rs/evidence/react-output-contract-archive/toolchain-before-amendment-001.json",
+      "archived_copy_sha256": "c25441a6b37356fa652b1202eb4b516b5bb91b195dd6cf26e62c14034bcf4962"
+    },
+    {
+      "path": "som-rs/tests/react-output-v1/api_contract.mjs",
+      "old_sha256": "8c0a143e014b33ae425c8e231716a02bc9a8964110d032c44eb48e94f9220f02",
+      "new_sha256": "bd33149d0278b4228f510ab038bdf29e1dafc5ed77223622469fd3222ef24d81",
+      "archived_copy": "som-rs/evidence/react-output-contract-archive/api_contract-before-amendment-001.mjs",
+      "archived_copy_sha256": "8c0a143e014b33ae425c8e231716a02bc9a8964110d032c44eb48e94f9220f02"
+    }
+  ],
+  "unchanged": "Every other path of the freeze receipt keeps its hash: api.schema.json, bundle.schema.json, scope.json, product-layout.json, catalog/react-catalog.v1.json, the other 16 reference files, negative-cases.json, target-examples.json, case-inventory.json, acceptance-plan.json, the 2026-10-22 evidence files and the other tools.",
+  "target_contract": {
+    "id": "som.react-output-contract.v1",
+    "previous_sha256": "a63224bd4030cc3e1d4c248f2877539b41561a3fcd986d8d13f7d5b798e80115",
+    "sha256": "e8145bd8eceb21bf0c09b2712620cf7f5f766aa760c2ea3042bbe9b1fb8317ef",
+    "rule": "sha256 of the som.canonical-json.v1 bytes of the files map below"
+  },
+  "files": {
+    "som-rs/contracts/react-output-v1/CONTRACT.md": "a8697ea7c0a4699666005ee6e0458d761509092c5029e0ca049c7dedaa16c32e",
+    "som-rs/contracts/react-output-v1/acceptance-plan.json": "c3145cdc4528357dba8faa9e80ce2687204eef7c2812581366ab34d7df33792f",
+    "som-rs/contracts/react-output-v1/api-contract.json": "0f362067d1a57c1da93d2fb7da3ba319e67d2e1c97bba5c6bc1b3632f73bfdb3",
+    "som-rs/contracts/react-output-v1/api.schema.json": "7c0a3394b0e312d3372b8b040ea43b070f61262339c2ad7a0f3c630c8087b5e7",
+    "som-rs/contracts/react-output-v1/bundle.schema.json": "d9c8e615c4674168a624b94daf796801e8219ac8ebc4c35e42b1522c439676ee",
+    "som-rs/contracts/react-output-v1/case-inventory.json": "91d326678b94214b780b800140cf28d24540620373fe89377584e52d05e475ff",
+    "som-rs/contracts/react-output-v1/catalog/react-catalog.v1.json": "793b361f4d2bc76d8fc71cbc51385ca960fce2be1a4c995a3347d65399c6477c",
+    "som-rs/contracts/react-output-v1/negative-cases.json": "1a4bb708e2153df640dfe7bb4b165d4a85059fc7efcbe894fe4444e75ca77e8a",
+    "som-rs/contracts/react-output-v1/product-layout.json": "ac7ed47bb35a6f0674ab63619c34d02750bbaf02bcd0406e33df379c05b438cc",
+    "som-rs/contracts/react-output-v1/reference/index.html": "141e4bbe4eb2b1c7136379a527619a050ccc89a004803eab4ab2ead905b2f983",
+    "som-rs/contracts/react-output-v1/reference/package-lock.json": "c6f3856e1a620d78d4357ef54f89488612a5c1606bbf0219265fc984334b5814",
+    "som-rs/contracts/react-output-v1/reference/package.json": "ba9cda19860b88d13f319bc8762c03ba738c81e8aa32158f35a6864b6c1d8230",
+    "som-rs/contracts/react-output-v1/reference/src/App.tsx": "64df0fb2d1c7be84be3fc4187522d78fa475e52a3c67afb9dcd4a73e683ff365",
+    "som-rs/contracts/react-output-v1/reference/src/api.ts": "a6844b788376aa5a931cf149cc4b95d6b19930b195eee635e1e960fc9aa69072",
+    "som-rs/contracts/react-output-v1/reference/src/app.test.tsx": "283f3511e4e52daaed666da191aed6c4040390f2e4eaeb346a57939a780b05f5",
+    "som-rs/contracts/react-output-v1/reference/src/form.test.ts": "439ae9a6659149ea0266e658335e5429fb6bad5ac6bc2910d2747ed19e3427e2",
+    "som-rs/contracts/react-output-v1/reference/src/form.ts": "2e13ea9b5253ec21f7186b9a618251d6ff43f9ca889c8d4b49cc41a047d36fe0",
+    "som-rs/contracts/react-output-v1/reference/src/main.tsx": "fb2893392e1126ee419123621a4d47d93d57cc7ba6a25515e145732f235caac0",
+    "som-rs/contracts/react-output-v1/reference/src/pages/DetailPage.tsx": "9d4d6122cc5d984134fa096423b55e46983257394fcc260340a13165a8c1354c",
+    "som-rs/contracts/react-output-v1/reference/src/pages/ErrorView.tsx": "2409e2d80d9786f42a07fd8fc6a77280b56e16683b961d3206fd8655a218d293",
+    "som-rs/contracts/react-output-v1/reference/src/pages/FormPage.tsx": "e5ca6d588627d637ef5ea8b78a4ee2faf61afa593205d4a8fd06744f57db9f37",
+    "som-rs/contracts/react-output-v1/reference/src/pages/ListPage.tsx": "9a7b8e1933be24d0938956637a08c65540bdc7b071c59d0b124e338effb3910b",
+    "som-rs/contracts/react-output-v1/reference/src/spec.ts": "b0e978c90959622b761523fa5c14a2dfa888f2d5da61380c77092ff4cc03145d",
+    "som-rs/contracts/react-output-v1/reference/src/styles.css": "efda39d72cd4e709d9c6eab7ceae15c6cb1621853402c4e9c625b7d7773f53d8",
+    "som-rs/contracts/react-output-v1/reference/tsconfig.json": "105e3ddf3619ff274f2d914878de0fa4493ab5f53a97d35e30f2b50df8b26e9a",
+    "som-rs/contracts/react-output-v1/reference/vite.config.ts": "39157972db6b4b8476a7ce983740df3075f7a85177158de509fd779461519a34",
+    "som-rs/contracts/react-output-v1/scope.json": "847a3126584c57e31886081a111e33b52d6c7e008add24b2c77fc090a397d089",
+    "som-rs/contracts/react-output-v1/target-examples.json": "b3aca1037fe801c8cbfd43ec132b595f93b6b06ce45a2e5f6356502e67f42906",
+    "som-rs/contracts/react-output-v1/toolchain.json": "2747af56240d4e095ee447b8f796c11db2f7472104fd9c5f8310b6785f9359e3",
+    "som-rs/evidence/react-output-v1/name-cases-2026-10-22.json": "b743503343e25f8ef624de7069ea228f1e1e45f13edf37e4673155fde69a2af3",
+    "som-rs/evidence/react-output-v1/public-products-2026-10-22.json": "19e475bbf15c1692274c89cbd195c015993c4bad0c9a425cb61cfc676877e5c9",
+    "som-rs/evidence/react-output-v1/python-controls-2026-10-22.json": "b9a435d150e04b504cfff2e3603d733132d0ce758cbae60972454c5756d0eca6",
+    "som-rs/evidence/react-output-v1/reference-verification-2026-10-22.json": "0303e2806e10cf8b89fe17c7ab694be5db10e30fcd3df097846915c386e8fed8",
+    "som-rs/tests/react-output-v1/api_contract.mjs": "bd33149d0278b4228f510ab038bdf29e1dafc5ed77223622469fd3222ef24d81",
+    "som-rs/tests/react-output-v1/build_case_inventory.py": "262e49b431f26ea6734bec45e1e34d14ed66b36febb070026b11d94b229c2575",
+    "som-rs/tests/react-output-v1/build_negative_cases.py": "f3272854991573619aeccc5359ab21c75ed0bbaab06af7c1ae8fff81d2177e85",
+    "som-rs/tests/react-output-v1/build_target_examples.py": "91d34a1821a82b23174533333def1933c2f7c73a82e98d0235c670e6d1f9c5a1",
+    "som-rs/tests/react-output-v1/check_contract.py": "acbf134513c7f90ba5ba05eb5cc556f1ca2282726b31a367620eb2fdeb7c6931",
+    "som-rs/tests/react-output-v1/check_python_controls.py": "22c458c09e942d758ec0114bedcf85d3134e31c22f94309b2fdd8ad43ceae64d",
+    "som-rs/tests/react-output-v1/common.py": "56c7318db6cbd85e27e6ac3c168de3cb9591e9c66cdb751b7d039ce3c8e3da73",
+    "som-rs/tests/react-output-v1/make_evidence.py": "472368f127be6f33525c599c6a0355fe3bca859066443e927774c50017d7a96a",
+    "som-rs/tests/react-output-v1/react_profile.py": "4fb08644d4766ecc2733cb72ab620471cfe760ce6696f18090f9f8581b484c66",
+    "som-rs/tests/react-output-v1/render_reference.py": "bc45d0f568985ab44829ae51086b253203df19c00188161462003a5a9dd11291",
+    "som-rs/tests/react-output-v1/run_api_contract.py": "8e95f2bdad2f4c6df023f22e9ebab7d1549e694c80f755be1b300d132169aedf",
+    "som-rs/tests/react-output-v1/run_gates.py": "99eadcfd02b6e1550ba84a2c7db07b5d1f0fbb57cb9b0c1eeda92834fdc8755c",
+    "som-rs/tests/react-output-v1/run_name_cases.py": "550bfc1c6829b84552c061c3a7602771d1dd71a92d89a365f177cab514ed1543",
+    "som-rs/tests/react-output-v1/run_products.py": "dd5e516941c1e025bbd2f8c7183f2076da19229d2e30041c18a01bde29c3bf01",
+    "som-rs/tests/react-output-v1/tree_sha.py": "b047ae9ac44eb76df4a33cabc0ae20fb8258480069b17be0825c83921dfefc3c"
+  },
+  "independent_review": {
+    "reviewer": "Claude acceptance review of the PR for issue #132",
+    "target_sha256": "e8145bd8eceb21bf0c09b2712620cf7f5f766aa760c2ea3042bbe9b1fb8317ef",
+    "rounds": []
+  },
+  "check_contract": {
+    "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/tests/react-output-v1/check_contract.py --receipt som-rs/evidence/react-output-contract-amendment-001.json",
+    "sandbox_verified": [
+      "516 non-evidence contract and builder checks in check_contract.py (0 failed)",
+      "render_reference.py and run_gates.py (install, typecheck, format_check, test, build-1, build-2) on all 8 public products and all 9 name cases (17/17 passed)",
+      "som-targets/qa/check_react_render.py on all 129 acceptance cases (129/129 passed)",
+      "cargo clippy --offline --all-targets -- -D warnings in som-targets (0 warnings)"
+    ],
+    "not_run": [
+      "run_products.py (run_api_contract.py) and run_name_cases.py + make_evidence.py --date 2026-10-23: blocked in the AGY macOS Seatbelt sandbox by Operation not permitted on SysV shmget (initdb) and localhost outbound TCP sockets (127.0.0.1 QA ports and 8765)"
+    ]
+  }
+}
