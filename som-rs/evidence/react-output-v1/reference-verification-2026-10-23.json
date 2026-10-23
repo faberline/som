@@ -1,0 +1,207 @@
+{
+  "version": "som.react-output-reference-verification.v1",
+  "date": "2026-10-23",
+  "product": "public product 003 (som.prompt.v4, resource Item, fields str/bool/date), rendered by render_reference.py",
+  "public_product": ".local/rust-compiler-goal/acceptance/public-products-003b/003",
+  "prompt_file_sha256": "eb494847f108ee12ae614247896003db0c9d34fb58747fd07ea26ebe7c0ce7a5",
+  "product_files": {
+    "README.md": "0f66788d3aea5ac50bc024fa8af63420896d8aa34495b9888c300fc3e1bac64a",
+    "index.html": "141e4bbe4eb2b1c7136379a527619a050ccc89a004803eab4ab2ead905b2f983",
+    "package-lock.json": "c6f3856e1a620d78d4357ef54f89488612a5c1606bbf0219265fc984334b5814",
+    "package.json": "ba9cda19860b88d13f319bc8762c03ba738c81e8aa32158f35a6864b6c1d8230",
+    "src/App.tsx": "64df0fb2d1c7be84be3fc4187522d78fa475e52a3c67afb9dcd4a73e683ff365",
+    "src/api.ts": "a6844b788376aa5a931cf149cc4b95d6b19930b195eee635e1e960fc9aa69072",
+    "src/app.test.tsx": "283f3511e4e52daaed666da191aed6c4040390f2e4eaeb346a57939a780b05f5",
+    "src/form.test.ts": "439ae9a6659149ea0266e658335e5429fb6bad5ac6bc2910d2747ed19e3427e2",
+    "src/form.ts": "2e13ea9b5253ec21f7186b9a618251d6ff43f9ca889c8d4b49cc41a047d36fe0",
+    "src/main.tsx": "fb2893392e1126ee419123621a4d47d93d57cc7ba6a25515e145732f235caac0",
+    "src/pages/DetailPage.tsx": "9d4d6122cc5d984134fa096423b55e46983257394fcc260340a13165a8c1354c",
+    "src/pages/ErrorView.tsx": "2409e2d80d9786f42a07fd8fc6a77280b56e16683b961d3206fd8655a218d293",
+    "src/pages/FormPage.tsx": "e5ca6d588627d637ef5ea8b78a4ee2faf61afa593205d4a8fd06744f57db9f37",
+    "src/pages/ListPage.tsx": "9a7b8e1933be24d0938956637a08c65540bdc7b071c59d0b124e338effb3910b",
+    "src/schema.ts": "f4c8823d21cb51fc61d16b0b06111171cb4c6f97b3a213ffd27f59a4c2bf67a6",
+    "src/spec.ts": "b0e978c90959622b761523fa5c14a2dfa888f2d5da61380c77092ff4cc03145d",
+    "src/styles.css": "efda39d72cd4e709d9c6eab7ceae15c6cb1621853402c4e9c625b7d7773f53d8",
+    "tsconfig.json": "105e3ddf3619ff274f2d914878de0fa4493ab5f53a97d35e30f2b50df8b26e9a",
+    "vite.config.ts": "39157972db6b4b8476a7ce983740df3075f7a85177158de509fd779461519a34"
+  },
+  "product_files_after": {
+    "README.md": "0f66788d3aea5ac50bc024fa8af63420896d8aa34495b9888c300fc3e1bac64a",
+    "index.html": "141e4bbe4eb2b1c7136379a527619a050ccc89a004803eab4ab2ead905b2f983",
+    "package-lock.json": "c6f3856e1a620d78d4357ef54f89488612a5c1606bbf0219265fc984334b5814",
+    "package.json": "ba9cda19860b88d13f319bc8762c03ba738c81e8aa32158f35a6864b6c1d8230",
+    "src/App.tsx": "64df0fb2d1c7be84be3fc4187522d78fa475e52a3c67afb9dcd4a73e683ff365",
+    "src/api.ts": "a6844b788376aa5a931cf149cc4b95d6b19930b195eee635e1e960fc9aa69072",
+    "src/app.test.tsx": "283f3511e4e52daaed666da191aed6c4040390f2e4eaeb346a57939a780b05f5",
+    "src/form.test.ts": "439ae9a6659149ea0266e658335e5429fb6bad5ac6bc2910d2747ed19e3427e2",
+    "src/form.ts": "2e13ea9b5253ec21f7186b9a618251d6ff43f9ca889c8d4b49cc41a047d36fe0",
+    "src/main.tsx": "fb2893392e1126ee419123621a4d47d93d57cc7ba6a25515e145732f235caac0",
+    "src/pages/DetailPage.tsx": "9d4d6122cc5d984134fa096423b55e46983257394fcc260340a13165a8c1354c",
+    "src/pages/ErrorView.tsx": "2409e2d80d9786f42a07fd8fc6a77280b56e16683b961d3206fd8655a218d293",
+    "src/pages/FormPage.tsx": "e5ca6d588627d637ef5ea8b78a4ee2faf61afa593205d4a8fd06744f57db9f37",
+    "src/pages/ListPage.tsx": "9a7b8e1933be24d0938956637a08c65540bdc7b071c59d0b124e338effb3910b",
+    "src/schema.ts": "f4c8823d21cb51fc61d16b0b06111171cb4c6f97b3a213ffd27f59a4c2bf67a6",
+    "src/spec.ts": "b0e978c90959622b761523fa5c14a2dfa888f2d5da61380c77092ff4cc03145d",
+    "src/styles.css": "efda39d72cd4e709d9c6eab7ceae15c6cb1621853402c4e9c625b7d7773f53d8",
+    "tsconfig.json": "105e3ddf3619ff274f2d914878de0fa4493ab5f53a97d35e30f2b50df8b26e9a",
+    "vite.config.ts": "39157972db6b4b8476a7ce983740df3075f7a85177158de509fd779461519a34"
+  },
+  "product_unchanged": true,
+  "environment": {
+    "PATH": "/opt/homebrew/Cellar/node/26.5.0/bin:/usr/bin:/bin",
+    "npm_config_cache": ".local/react-output/npm-cache-001",
+    "npm_config_offline": "true",
+    "npm_config_audit": "false",
+    "npm_config_fund": "false",
+    "npm_config_update_notifier": "false",
+    "npm_config_logs_dir": ".local/react-output/review132-products-002/003/gates/npm-logs",
+    "npm_config_userconfig": ".local/react-output/review132-products-002/003/gates/empty-npmrc"
+  },
+  "gates": [
+    {
+      "step": "install",
+      "command": "npm ci --offline --ignore-scripts --no-audit --no-fund",
+      "exit_code": 0,
+      "log": "install.log"
+    },
+    {
+      "step": "typecheck",
+      "command": "node node_modules/typescript/bin/tsc -p tsconfig.json",
+      "exit_code": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "step": "format_check",
+      "command": "node node_modules/prettier/bin/prettier.cjs --check --no-config --no-editorconfig .",
+      "exit_code": 0,
+      "log": "format_check.log"
+    },
+    {
+      "step": "test",
+      "command": "node node_modules/vitest/vitest.mjs run",
+      "exit_code": 0,
+      "log": "test.log"
+    },
+    {
+      "step": "build-1",
+      "command": "node node_modules/vite/bin/vite.js build --outDir .local/react-output/review132-products-002/003/gates/dist-1 --emptyOutDir",
+      "exit_code": 0,
+      "log": "build-1.log"
+    },
+    {
+      "step": "build-2",
+      "command": "node node_modules/vite/bin/vite.js build --outDir .local/react-output/review132-products-002/003/gates/dist-2 --emptyOutDir",
+      "exit_code": 0,
+      "log": "build-2.log"
+    }
+  ],
+  "builds_identical": true,
+  "dist_files": {
+    "assets/index-CXj7L8SL.js": "2d0567a47e1bde4f2997abd28467c18ac38d8323c3e8c75943f9a21298b90c66",
+    "assets/index-GMF0Rol1.css": "6ca73ee05f7a21b1fd5f4602333e1e542d10ad819554ba7f1ee0d29a0a8a1b7b",
+    "index.html": "600473f0c7f4c40508e99c7eb66a43e01f8c32fbb818cd6d45eecc099c755e2b"
+  },
+  "lock_unchanged": true,
+  "vendored_cache_tree_sha256_before": "8560dba81d69e7599ec4a050946a1b7c2240b5ac7cd8155647750b4df59796b6",
+  "vendored_cache_tree_sha256_after": "8560dba81d69e7599ec4a050946a1b7c2240b5ac7cd8155647750b4df59796b6",
+  "prettier_tree_sha256": "f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299",
+  "api_contract": {
+    "exit_code": 0,
+    "facts": {
+      "query": true,
+      "filter": true,
+      "before": true,
+      "not_nullable": true,
+      "required": true,
+      "unique": true
+    },
+    "steps": [
+      {
+        "name": "list empty",
+        "ok": true
+      },
+      {
+        "name": "create required fields",
+        "ok": true
+      },
+      {
+        "name": "create every field",
+        "ok": true
+      },
+      {
+        "name": "get row",
+        "ok": true
+      },
+      {
+        "name": "list in id order",
+        "ok": true
+      },
+      {
+        "name": "list filter",
+        "ok": true
+      },
+      {
+        "name": "list before",
+        "ok": true
+      },
+      {
+        "name": "list page",
+        "ok": true
+      },
+      {
+        "name": "list limit too large",
+        "ok": true
+      },
+      {
+        "name": "patch changed field",
+        "ok": true
+      },
+      {
+        "name": "patch null on a field that is not nullable",
+        "ok": true
+      },
+      {
+        "name": "create missing a required field",
+        "ok": true
+      },
+      {
+        "name": "create with an unknown field",
+        "ok": true
+      },
+      {
+        "name": "create unique conflict",
+        "ok": true
+      },
+      {
+        "name": "get missing row",
+        "ok": true
+      },
+      {
+        "name": "patch missing row",
+        "ok": true
+      },
+      {
+        "name": "delete row",
+        "ok": true
+      },
+      {
+        "name": "get deleted row",
+        "ok": true
+      },
+      {
+        "name": "delete deleted row",
+        "ok": true
+      },
+      {
+        "name": "network error",
+        "ok": true
+      }
+    ],
+    "processes_stopped": true
+  },
+  "run": {
+    "work_dir": ".local/react-output/review132-products-002/003",
+    "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/tests/react-output-v1/run_products.py .local/rust-compiler-goal/acceptance/public-products-003b .local/react-output/review132-products-002"
+  },
+  "passed": true
+}

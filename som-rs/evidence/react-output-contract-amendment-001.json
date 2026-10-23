@@ -1,7 +1,7 @@
 {
   "version": "som.react-output-contract-amendment.v1",
   "amendment": 1,
-  "frozen_at": "2026-10-23T04:40:00+00:00",
+  "frozen_at": "2026-10-23T05:14:00+00:00",
   "baseline_commit": "db19a3212ffb6b15e80c0a0fc4e81585cd1d1d0d",
   "issue": 132,
   "target": "react",
@@ -18,7 +18,11 @@
     "som-rs/contracts/react-output-v1/toolchain.json",
     "som-rs/tests/react-output-v1/api_contract.mjs"
   ],
-  "added_paths": [],
+  "added_paths": [
+    "som-rs/evidence/react-output-v1/name-cases-2026-10-23.json",
+    "som-rs/evidence/react-output-v1/public-products-2026-10-23.json",
+    "som-rs/evidence/react-output-v1/reference-verification-2026-10-23.json"
+  ],
   "changes": [
     {
       "path": "som-rs/contracts/react-output-v1/CONTRACT.md",
@@ -60,7 +64,7 @@
   "target_contract": {
     "id": "som.react-output-contract.v1",
     "previous_sha256": "a63224bd4030cc3e1d4c248f2877539b41561a3fcd986d8d13f7d5b798e80115",
-    "sha256": "e8145bd8eceb21bf0c09b2712620cf7f5f766aa760c2ea3042bbe9b1fb8317ef",
+    "sha256": "199deb383239847463eee690d8caf226d8f7f5c2b842d6dac5c2e37e3c71ca06",
     "rule": "sha256 of the som.canonical-json.v1 bytes of the files map below"
   },
   "files": {
@@ -94,9 +98,12 @@
     "som-rs/contracts/react-output-v1/target-examples.json": "b3aca1037fe801c8cbfd43ec132b595f93b6b06ce45a2e5f6356502e67f42906",
     "som-rs/contracts/react-output-v1/toolchain.json": "2747af56240d4e095ee447b8f796c11db2f7472104fd9c5f8310b6785f9359e3",
     "som-rs/evidence/react-output-v1/name-cases-2026-10-22.json": "b743503343e25f8ef624de7069ea228f1e1e45f13edf37e4673155fde69a2af3",
+    "som-rs/evidence/react-output-v1/name-cases-2026-10-23.json": "1cd14265c7e3a7cff3dd4a3065c92df6a7e22b64cec7bd0f78ef06459bad9fd8",
     "som-rs/evidence/react-output-v1/public-products-2026-10-22.json": "19e475bbf15c1692274c89cbd195c015993c4bad0c9a425cb61cfc676877e5c9",
+    "som-rs/evidence/react-output-v1/public-products-2026-10-23.json": "68e98d4b6178584777bc46758a193409e5ddd1af629eb5cb0b8566ed22c1f2c5",
     "som-rs/evidence/react-output-v1/python-controls-2026-10-22.json": "b9a435d150e04b504cfff2e3603d733132d0ce758cbae60972454c5756d0eca6",
     "som-rs/evidence/react-output-v1/reference-verification-2026-10-22.json": "0303e2806e10cf8b89fe17c7ab694be5db10e30fcd3df097846915c386e8fed8",
+    "som-rs/evidence/react-output-v1/reference-verification-2026-10-23.json": "d8779ac6592c226d201e557fefa31d3e771843f3bc09d4a09a27b273bb7083e5",
     "som-rs/tests/react-output-v1/api_contract.mjs": "bd33149d0278b4228f510ab038bdf29e1dafc5ed77223622469fd3222ef24d81",
     "som-rs/tests/react-output-v1/build_case_inventory.py": "262e49b431f26ea6734bec45e1e34d14ed66b36febb070026b11d94b229c2575",
     "som-rs/tests/react-output-v1/build_negative_cases.py": "f3272854991573619aeccc5359ab21c75ed0bbaab06af7c1ae8fff81d2177e85",
@@ -114,20 +121,34 @@
     "som-rs/tests/react-output-v1/tree_sha.py": "b047ae9ac44eb76df4a33cabc0ae20fb8258480069b17be0825c83921dfefc3c"
   },
   "independent_review": {
-    "reviewer": "Claude acceptance review of the PR for issue #132",
-    "target_sha256": "e8145bd8eceb21bf0c09b2712620cf7f5f766aa760c2ea3042bbe9b1fb8317ef",
-    "rounds": []
+    "reviewer": "Claude acceptance review of PR #133",
+    "target_sha256": "199deb383239847463eee690d8caf226d8f7f5c2b842d6dac5c2e37e3c71ca06",
+    "rounds": [
+      {
+        "round": 1,
+        "reviewer": "Claude acceptance review of PR #133 (issuecomment-6357819087)",
+        "date": "2026-10-23",
+        "head": "9b79742a3d",
+        "result": "changes requested",
+        "verdict": "CHANGES_REQUESTED",
+        "findings": [
+          "The evidence is missing: toolchain.json reference_verification points to evidence/react-output-v1/public-products-2026-10-23.json, reference-verification-2026-10-23.json and name-cases-2026-10-23.json, which the PR did not contain.",
+          "cargo test fails: react::tests::target_contract_is_the_latest_receipt panics at src/react/mod.rs:743 because line 740 still loads evidence/react-output-contract-freeze-2026-10-22.json.",
+          "The receipt is still a draft: independent_review.rounds is empty."
+        ],
+        "fixes": "Generated the three 2026-10-23 evidence files with make_evidence.py from the host runs (.local/react-output/review132-products-002 and .local/react-output/review132-names-002), updated som-targets/src/react/mod.rs:740 to load evidence/react-output-contract-amendment-001.json and updated TARGET_CONTRACT_SHA256, and recorded round 1 in independent_review.rounds while keeping draft status until approved to seal."
+      }
+    ]
   },
   "check_contract": {
-    "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/tests/react-output-v1/check_contract.py --receipt som-rs/evidence/react-output-contract-amendment-001.json",
-    "sandbox_verified": [
-      "516 non-evidence contract and builder checks in check_contract.py (0 failed)",
-      "render_reference.py and run_gates.py (install, typecheck, format_check, test, build-1, build-2) on all 8 public products and all 9 name cases (17/17 passed)",
-      "som-targets/qa/check_react_render.py on all 129 acceptance cases (129/129 passed)",
-      "cargo clippy --offline --all-targets -- -D warnings in som-targets (0 warnings)"
-    ],
-    "not_run": [
-      "run_products.py (run_api_contract.py) and run_name_cases.py + make_evidence.py --date 2026-10-23: blocked in the AGY macOS Seatbelt sandbox by Operation not permitted on SysV shmget (initdb) and localhost outbound TCP sockets (127.0.0.1 QA ports and 8765)"
+    "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/tests/react-output-v1/check_contract.py --require-prompts --receipt som-rs/evidence/react-output-contract-amendment-001.json",
+    "passed": 671,
+    "failed": 1,
+    "expected_draft_failure": "amendment was sealed after independent review (status is draft_pending_independent_review until PR review approves sealing)",
+    "also_passed": [
+      "build_negative_cases.py --check",
+      "build_target_examples.py --check",
+      "build_case_inventory.py --check"
     ]
   }
 }
