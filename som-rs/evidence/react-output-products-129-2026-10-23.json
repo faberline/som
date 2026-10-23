@@ -1,0 +1,1385 @@
+{
+  "version": "som.react-output-products-evidence.v1",
+  "issue": 129,
+  "gate": "phase1-products",
+  "date": "2026-10-23",
+  "candidate": {
+    "directory": ".local/react-output/candidate-003",
+    "commit": "e6adc538bea6d01b8607bdeb7c225c4aaeae85a2",
+    "binary_sha256": "3b48c90e93d0fbc4e16a2687b9adc84c702cd2cd776ccd9fcdc6646a95cbe195",
+    "source_sha256": "6d04ed09c836ae212d4ad07e340fe0b5a3a7486fe39a7796595fc88e2763b4cb",
+    "asset_manifest_sha256": "d95d93c764d95373480b580cfa672de91c55f8f06a5446a786bff61395aeccaa",
+    "url": "http://127.0.0.1:18972"
+  },
+  "bundle_checks": {
+    "command": "python3 som-rs/scripts/react_output_acceptance/check_bundles.py --url http://127.0.0.1:18972 --out .local/react-output/bundles-129-003 --legacy-run .local/rust-compiler-goal/acceptance/legacy544/run-005",
+    "report": ".local/react-output/bundles-129-003/report.json",
+    "report_sha256": "61da3a33dffa1c185bbd087ca050a90af2b9ec658dab0e6cab1709b25dbe8f3d",
+    "summary": {
+      "status": "passed",
+      "passed": true,
+      "total": 145,
+      "passed_count": 145,
+      "failed_count": 0,
+      "not_run_count": 0
+    },
+    "cases": 129,
+    "groups": {
+      "public_examples": 4,
+      "version_positive_fixtures": 4,
+      "coverage_cases": 4,
+      "name_cases": 9,
+      "public_products_in_scope": 8,
+      "legacy_in_scope": 100
+    },
+    "single_form": [
+      "RN03_JSON_FILTER_DOUBLE_UNDERSCORE",
+      "RN05_JSON_FIELD_HAS_OWN_PROPERTY",
+      "RN07_JSON_V3_FILTER_VALUE_OF"
+    ],
+    "manifest": ".local/react-output/bundles-129-003/products/manifest.json",
+    "manifest_sha256": "bada72cb07aaacbfcc329dd06b15d3d119190b03e8ccc964e603baaa6f82743a"
+  },
+  "assemble_refusals": [
+    {
+      "id": "A1",
+      "http_status": 400,
+      "code": "ASSET_HASH_MISMATCH",
+      "prompt_pointer": "/bundle/assets",
+      "passed": true
+    },
+    {
+      "id": "A2",
+      "http_status": 400,
+      "code": "ASSET_HASH_MISMATCH",
+      "prompt_pointer": "/bundle/assets",
+      "passed": true
+    },
+    {
+      "id": "A3",
+      "http_status": 400,
+      "code": "INVALID_SCHEMA",
+      "prompt_pointer": "/bundle/target",
+      "passed": true
+    },
+    {
+      "id": "A4",
+      "http_status": 400,
+      "code": "INVALID_SCHEMA",
+      "prompt_pointer": "/bundle/target",
+      "passed": true
+    },
+    {
+      "id": "A5",
+      "http_status": 400,
+      "code": "INVALID_COMPOSITION",
+      "prompt_pointer": "/bundle/dsl/files/0/blocks/0/id",
+      "passed": true
+    },
+    {
+      "id": "A6",
+      "http_status": 422,
+      "code": "UNSUPPORTED_TARGET",
+      "prompt_pointer": "/bundle/prompt/version",
+      "passed": true
+    },
+    {
+      "id": "A7",
+      "http_status": 400,
+      "code": "BUNDLE_HASH_MISMATCH",
+      "prompt_pointer": "/bundle/hashes/payload_sha256",
+      "passed": true
+    },
+    {
+      "id": "A8",
+      "http_status": 422,
+      "code": "UNSUPPORTED_TARGET",
+      "prompt_pointer": "/bundle/prompt/resource/fields/0/name",
+      "passed": true
+    },
+    {
+      "id": "A9",
+      "http_status": 400,
+      "code": "INVALID_SCHEMA",
+      "prompt_pointer": "/bundle/dsl/files",
+      "passed": true
+    },
+    {
+      "id": "A10",
+      "http_status": 400,
+      "code": "INVALID_SCHEMA",
+      "prompt_pointer": "/bundle/dsl/version",
+      "passed": true
+    },
+    {
+      "id": "A11",
+      "http_status": 400,
+      "code": "INVALID_SCHEMA",
+      "prompt_pointer": "/bundle/dsl/version",
+      "passed": true
+    },
+    {
+      "id": "A12",
+      "http_status": 400,
+      "code": "INVALID_SCHEMA",
+      "prompt_pointer": "/bundle/dsl/version",
+      "passed": true
+    },
+    {
+      "id": "A13",
+      "http_status": 400,
+      "code": "INVALID_SCHEMA",
+      "prompt_pointer": "/bundle/dsl/version",
+      "passed": true
+    },
+    {
+      "id": "A14",
+      "http_status": 400,
+      "code": "INVALID_COMPOSITION",
+      "prompt_pointer": "/bundle/dsl/files/0/blocks/0/id",
+      "passed": true
+    },
+    {
+      "id": "A15",
+      "http_status": 400,
+      "code": "INVALID_SCHEMA",
+      "prompt_pointer": "/bundle/dsl/files",
+      "passed": true
+    },
+    {
+      "id": "A16",
+      "http_status": 400,
+      "code": "INVALID_COMPOSITION",
+      "prompt_pointer": "/bundle/dsl/files/0/path",
+      "passed": true
+    }
+  ],
+  "product_gates": {
+    "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/react_output_acceptance/check_products.py --url http://127.0.0.1:18972 --manifest .local/react-output/bundles-129-003/products/manifest.json --out .local/react-output/products-129-003",
+    "report": ".local/react-output/products-129-003/report.json",
+    "report_sha256": "157aed7a27ae340ffa7fa879c32133d33e01e8d1b6c8f6fd862e1b870a700b38",
+    "vendored_cache": "/Users/chrischeng/faberlines/som/.local/react-output/npm-cache-001",
+    "case_count": 129,
+    "complete": true,
+    "failed": [],
+    "passed": true,
+    "seconds": 1094.1,
+    "every_gate_exit_0": true,
+    "builds_identical": true,
+    "lock_unchanged": true,
+    "product_unchanged": true,
+    "vendored_cache_unchanged": true,
+    "api_steps_per_case": [
+      20
+    ],
+    "api_failed_steps": 0,
+    "api_skipped_steps": {
+      "list filter": 9,
+      "list before": 73,
+      "list page": 9,
+      "list limit too large": 9,
+      "create unique conflict": 78
+    },
+    "processes_stopped": true,
+    "cases": [
+      {
+        "id": "example-v1",
+        "group": "public_examples",
+        "prompt_version": "som.prompt.v1",
+        "passed": true,
+        "api_skipped": [
+          "list filter",
+          "list before",
+          "list page",
+          "list limit too large"
+        ]
+      },
+      {
+        "id": "example-v2",
+        "group": "public_examples",
+        "prompt_version": "som.prompt.v2",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "example-v3",
+        "group": "public_examples",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "example-v4",
+        "group": "public_examples",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "PAIR_V1_MINIMAL_CRUD",
+        "group": "version_positive_fixtures",
+        "prompt_version": "som.prompt.v1",
+        "passed": true,
+        "api_skipped": [
+          "list filter",
+          "list before",
+          "list page",
+          "list limit too large"
+        ]
+      },
+      {
+        "id": "PAIR_V2_STRING_FILTER_MAX20",
+        "group": "version_positive_fixtures",
+        "prompt_version": "som.prompt.v2",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "PAIR_V3_BOOL_DEFAULT",
+        "group": "version_positive_fixtures",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "PAIR_V4_DATE_BEFORE",
+        "group": "version_positive_fixtures",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "cov-v1-types",
+        "group": "coverage_cases",
+        "prompt_version": "som.prompt.v1",
+        "passed": true,
+        "api_skipped": [
+          "list filter",
+          "list before",
+          "list page",
+          "list limit too large"
+        ]
+      },
+      {
+        "id": "cov-v2-types",
+        "group": "coverage_cases",
+        "prompt_version": "som.prompt.v2",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "cov-v3-types",
+        "group": "coverage_cases",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "cov-v4-types",
+        "group": "coverage_cases",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "RN01_CNL_FIELD_UPPERCASE",
+        "group": "name_cases",
+        "prompt_version": "som.prompt.v1",
+        "passed": true,
+        "api_skipped": [
+          "list filter",
+          "list before",
+          "list page",
+          "list limit too large"
+        ]
+      },
+      {
+        "id": "RN02_CNL_FIELD_SELF",
+        "group": "name_cases",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "RN03_JSON_FILTER_DOUBLE_UNDERSCORE",
+        "group": "name_cases",
+        "prompt_version": "som.prompt.v2",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "RN04_CNL_FIELD_TO_STRING",
+        "group": "name_cases",
+        "prompt_version": "som.prompt.v1",
+        "passed": true,
+        "api_skipped": [
+          "list filter",
+          "list before",
+          "list page",
+          "list limit too large"
+        ]
+      },
+      {
+        "id": "RN05_JSON_FIELD_HAS_OWN_PROPERTY",
+        "group": "name_cases",
+        "prompt_version": "som.prompt.v2",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "RN06_CNL_V4_FIELD_FUNCTION",
+        "group": "name_cases",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "RN07_JSON_V3_FILTER_VALUE_OF",
+        "group": "name_cases",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "RN08_CNL_TABLE_TS_MIGRATIONS",
+        "group": "name_cases",
+        "prompt_version": "som.prompt.v1",
+        "passed": true,
+        "api_skipped": [
+          "list filter",
+          "list before",
+          "list page",
+          "list limit too large"
+        ]
+      },
+      {
+        "id": "RN09_CNL_PATH_TWO_SEGMENTS",
+        "group": "name_cases",
+        "prompt_version": "som.prompt.v1",
+        "passed": true,
+        "api_skipped": [
+          "list filter",
+          "list before",
+          "list page",
+          "list limit too large"
+        ]
+      },
+      {
+        "id": "public-product-000",
+        "group": "public_products_in_scope",
+        "prompt_version": "som.prompt.v1",
+        "passed": true,
+        "api_skipped": [
+          "list filter",
+          "list before",
+          "list page",
+          "list limit too large"
+        ]
+      },
+      {
+        "id": "public-product-001",
+        "group": "public_products_in_scope",
+        "prompt_version": "som.prompt.v2",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "public-product-002",
+        "group": "public_products_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "public-product-003",
+        "group": "public_products_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "public-product-119",
+        "group": "public_products_in_scope",
+        "prompt_version": "som.prompt.v1",
+        "passed": true,
+        "api_skipped": [
+          "list filter",
+          "list before",
+          "list page",
+          "list limit too large"
+        ]
+      },
+      {
+        "id": "public-product-120",
+        "group": "public_products_in_scope",
+        "prompt_version": "som.prompt.v2",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "public-product-121",
+        "group": "public_products_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "public-product-122",
+        "group": "public_products_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0000",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0001",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0002",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0003",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0004",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0005",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0006",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0007",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0008",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0009",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0010",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0011",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0012",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0013",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0014",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0015",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0016",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0017",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0018",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0019",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0020",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0021",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0022",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0023",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0024",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0025",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0026",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0027",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0028",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0029",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0030",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0031",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0032",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0033",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0034",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0035",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0036",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0037",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0038",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0039",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0040",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0041",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0042",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0043",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0044",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0045",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0046",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0047",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0048",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before"
+        ]
+      },
+      {
+        "id": "legacy100-0049",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v3",
+        "passed": true,
+        "api_skipped": [
+          "list before",
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0050",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0051",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0052",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0053",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0054",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0055",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0056",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0057",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0058",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0059",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0060",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0061",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0062",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0063",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0064",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0065",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0066",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0067",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0068",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0069",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0070",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0071",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0072",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0073",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0074",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0075",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0076",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0077",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0078",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0079",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0080",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0081",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0082",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0083",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0084",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0085",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0086",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0087",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0088",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0089",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0090",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0091",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0092",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0093",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0094",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0095",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0096",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      },
+      {
+        "id": "legacy100-0097",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0098",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": []
+      },
+      {
+        "id": "legacy100-0099",
+        "group": "legacy_in_scope",
+        "prompt_version": "som.prompt.v4",
+        "passed": true,
+        "api_skipped": [
+          "create unique conflict"
+        ]
+      }
+    ]
+  },
+  "notes": [
+    "toolchain.json has no separate lint command; the product gates are install, typecheck (tsc), format_check (prettier --check), test (vitest), and two builds, as acceptance-plan.json product_gates lists.",
+    "The Python products are those the candidate assembles for each request without target.",
+    "Built from main after react-output-v1 amendment 002 (#134), which fixed the create-test race that failed legacy100-0046 and legacy100-0077 on candidate-002."
+  ],
+  "not_run": [],
+  "passed": true
+}
