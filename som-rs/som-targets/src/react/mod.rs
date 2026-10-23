@@ -23,9 +23,9 @@ pub const MAX_FILES: usize = 19;
 pub const MAX_BLOCKS: usize = 64;
 
 pub const TARGET_CONTRACT_ID: &str = "som.react-output-contract.v1";
-/// H(files map) of the latest sealed receipt for contracts/react-output-v1: amendment 1.
+/// H(files map) of the latest sealed receipt for contracts/react-output-v1: amendment 2.
 pub const TARGET_CONTRACT_SHA256: &str =
-    "199deb383239847463eee690d8caf226d8f7f5c2b842d6dac5c2e37e3c71ca06";
+    "d48cbd2a790554bab14a38bd6092e5975e82027c0a6da1ef46d8ff7affdbf638";
 pub const CATALOG_ID: &str = "som.react-catalog.v1";
 pub const BLOCK_LIBRARY_ID: &str = "som.react-block-library.v1";
 pub const BACKEND_ID: &str = "som.react-backend.v1";
@@ -737,7 +737,7 @@ mod tests {
 
     #[test]
     fn target_contract_is_the_latest_receipt() {
-        let path = som_rs().join("evidence/react-output-contract-amendment-001.json");
+        let path = som_rs().join("evidence/react-output-contract-amendment-002.json");
         let receipt: Value =
             serde_json::from_str(&fs::read_to_string(path).expect("receipt")).expect("JSON");
         assert_eq!(canonical_hash(&receipt["files"]), TARGET_CONTRACT_SHA256);

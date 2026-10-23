@@ -1,5 +1,11 @@
 // Tests of the pages against a fake service. This file is the same in every generated product.
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App.tsx";
@@ -135,7 +141,7 @@ describe("create", () => {
       method: "POST",
       body: expected,
     });
-    expect(calls[1]?.url).toBe(`/api${RESOURCE.path}/5`);
+    await waitFor(() => expect(calls[1]?.url).toBe(`/api${RESOURCE.path}/5`));
   });
 
   it("shows a 422 message next to its field", async () => {

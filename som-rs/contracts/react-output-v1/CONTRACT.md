@@ -224,3 +224,29 @@ Added evidence (`som-rs/evidence/react-output-v1/`, keeping the 2026-10-22 files
 - `som-rs/evidence/react-output-v1/reference-verification-2026-10-23.json`.
 
 No other rule changes. The receipt is `som-rs/evidence/react-output-contract-amendment-001.json`.
+
+## 13. Amendment 002: create test wait for detail GET (2026-10-23, issue #134)
+
+In the #129 rerun on 2026-10-23 (`candidate-002` after amendment 001), 145/145 bundles and 127/129 products passed, and the 2 failures (`legacy100-0046` and `legacy100-0077`) came from a timing race in the frozen reference test "create > sends the required fields and opens the new row" (`reference/src/app.test.tsx`): after Save, the detail page heading `<Name> 5` renders as soon as the page mounts, while the detail GET starts later in a passive `useEffect`. `findByRole("heading")` could therefore resolve before the GET was recorded in `calls[1]`, producing `expected undefined to be '/api<path>/5'`.
+
+In `reference/src/app.test.tsx`, the assertion on `calls[1]` now waits for the detail GET using `waitFor` from `@testing-library/react`:
+
+```ts
+await waitFor(() => expect(calls[1]?.url).toBe(`/api${RESOURCE.path}/5`));
+```
+
+The test keeps every assertion (the heading, the POST body in `calls[0]`, and the GET url in `calls[1]`), and no other test changes behavior.
+
+Changed paths:
+
+- `som-rs/contracts/react-output-v1/CONTRACT.md`: adds this section;
+- `som-rs/contracts/react-output-v1/reference/src/app.test.tsx`: the create test waits for `calls[1]?.url` with `waitFor`;
+- `som-rs/contracts/react-output-v1/toolchain.json`: `reference_verification` points to the `2026-10-23-a002` reference verification evidence.
+
+Added evidence (`som-rs/evidence/react-output-v1/`, keeping all earlier evidence files in the files map):
+
+- `som-rs/evidence/react-output-v1/name-cases-2026-10-23-a002.json`;
+- `som-rs/evidence/react-output-v1/public-products-2026-10-23-a002.json`;
+- `som-rs/evidence/react-output-v1/reference-verification-2026-10-23-a002.json`.
+
+No other rule changes. The receipt is `som-rs/evidence/react-output-contract-amendment-002.json`.
