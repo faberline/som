@@ -6,7 +6,7 @@
   "issue": 134,
   "target": "react",
   "bundle": "som.dsl-bundle.v2",
-  "status": "draft_pending_independent_review",
+  "status": "amendment_sealed_after_independent_review",
   "implementation_already_in_progress": false,
   "previous_receipt": "som-rs/evidence/react-output-contract-amendment-001.json",
   "previous_receipt_sha256": "468b8b146dd39ffdc16a70285d46631adc89a62d30fafc5197dc5c6e8335a3bb",
@@ -122,14 +122,22 @@
           "The a002 evidence is missing: toolchain.json points to three *-2026-10-23-a002.json files that the PR did not contain, and the receipt's added_paths was empty."
         ],
         "fixes": "Generated the three *-2026-10-23-a002.json evidence files with make_evidence.py from the host runs (.local/react-output/review134-products-001 and .local/react-output/review134-names-001), added them to files and added_paths, recomputed target_contract.sha256 and TARGET_CONTRACT_SHA256, and recorded round 1 in independent_review.rounds while keeping draft status until approved to seal."
+      },
+      {
+        "round": 2,
+        "reviewer": "Claude acceptance review of PR #135 (issuecomment-6359726277)",
+        "date": "2026-10-23",
+        "head": "950f0799d3",
+        "result": "approved to seal",
+        "verdict": "APPROVED",
+        "findings": []
       }
     ]
   },
   "check_contract": {
     "command": "som-rs/runtime/acceptance-m3-venv/bin/python som-rs/tests/react-output-v1/check_contract.py --require-prompts --receipt som-rs/evidence/react-output-contract-amendment-002.json",
-    "passed": 672,
-    "failed": 1,
-    "expected_draft_failure": "amendment was sealed after independent review (status is draft_pending_independent_review until PR review approves sealing)",
+    "passed": 673,
+    "failed": 0,
     "also_passed": [
       "build_negative_cases.py --check",
       "build_target_examples.py --check",
