@@ -75,6 +75,10 @@ jobs:
           python3 -m unittest discover -s som-rs/scripts/react_output_acceptance -p 'test_*.py' -v 2>&1 | tee runner-tests.log
           python3 som-rs/scripts/react_output_acceptance/run_acceptance.py --help | tee runner-help.txt
           python3 som-rs/scripts/react_output_acceptance/check_typescript_baseline.py --help | tee collector-help.txt
+      - name: Test encrypted input carrier with fake files
+        run: |
+          node --version
+          node --test som-rs/scripts/react_output_acceptance/test_sealed_inputs.mjs 2>&1 | tee sealed-inputs-tests.log
       - name: Keep unit gate evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -85,6 +89,7 @@ jobs:
             runner-tests.log
             runner-help.txt
             collector-help.txt
+            sealed-inputs-tests.log
           if-no-files-found: error
           retention-days: 30
 
