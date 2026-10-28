@@ -806,7 +806,7 @@ class Audit:
                 base = directory / f"{index:03d}"
                 raw = self.reader.bytes(base / "prompt.json")
                 prompt = object_value(json.loads(raw), "public product prompt")
-                need(prompt == frozen_sources[index]["prompt"], "public source prompt differs from immutable fixture/example prompt")
+                need(canonical(prompt) == canonical(frozen_sources[index]["prompt"]), "public source prompt differs from immutable fixture/example prompt")
                 refusal = self.scope_oracle(prompt)
                 rule = "in_scope" if refusal is None else refusal["rule"]
                 key = (prompt["version"], rule)
@@ -819,7 +819,17 @@ class Audit:
                 actual_cnl = self.reader.bytes(cnl).decode()
                 need(actual_cnl == frozen_sources[index]["cnl"], "public CNL source differs from immutable fixture/example source")
                 forms["cnl"] = {"format": "som.cnl.v1", "source": actual_cnl, "target": "react"}
-                self.scope_case(cid, prompt, forms, rule)
+                if refusal is None:
+                    self.scope_case(cid, prompt, forms, rule)
+                else:
+                    # The frozen writer emits dedicated product rows only for
+                    # admitted products. Refusals use the original fixture or
+                    # example identity and that source's declared forms.
+                    source_case = frozen_sources[index]
+                    source_forms = {form: forms[form] for form in source_case["scope_forms"]}
+                    if "json" in source_forms:
+                        source_forms["json"] = {"format": "som.prompt-json.v1", "prompt": source_case["prompt"], "target": "react"}
+                    self.scope_case(source_case["scope_id"], source_case["prompt"], source_forms, rule)
             self.row(f"scope_case/{cid}", check)
         need(observed == expected, "complete public source profile histogram differs from frozen contract")
 
@@ -835,7 +845,8 @@ class Audit:
             need(isinstance(case.get("id"), str) and isinstance(case.get("cnl"), str), "frozen public fixture identity/source missing")
             need(case.get("prompt_sha256") == sha(canonical(prompt)), "frozen public fixture prompt hash differs")
             need(case.get("cnl_sha256") == sha(case["cnl"].encode()), "frozen public fixture CNL hash differs")
-            cases.append({"id": case["id"], "prompt": prompt, "cnl": case["cnl"]})
+            cases.append({"id": case["id"], "prompt": prompt, "cnl": case["cnl"],
+                          "scope_id": case["id"], "scope_forms": ("json", "cnl") if case.get("category") == "version_positive" else ("cnl",)})
         examples = Path("som-rs/contracts/compiler-v1/examples")
         pins = sources.get("examples", {})
         index_path = examples / "index.json"
@@ -846,9 +857,12 @@ class Audit:
             prompt = object_value(self.pinned_json(prompt_path, pins.get(prompt_path.as_posix())), "frozen public example prompt")
             raw_cnl = self.reader.bytes(cnl_path)
             need(sha(raw_cnl) == pins.get(cnl_path.as_posix()), "frozen public example CNL hash differs")
-            cases.append({"id": "PUBLIC_" + case["id"], "prompt": prompt, "cnl": raw_cnl.decode()})
+            cases.append({"id": "PUBLIC_" + case["id"], "prompt": prompt, "cnl": raw_cnl.decode(),
+                          "scope_id": "example-" + case["id"], "scope_forms": ("json", "cnl")})
         ids = [case["id"] for case in cases]
         need(cases and len(set(ids)) == len(ids), "immutable public input ids are empty or repeated")
+        scope_ids = [case["scope_id"] for case in cases]
+        need(len(set(scope_ids)) == len(scope_ids), "immutable public scope source ids are ambiguous")
         return cases
 
     def bundle_data(self, case_id: str) -> tuple[dict, dict, dict]:

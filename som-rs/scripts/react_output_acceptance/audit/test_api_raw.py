@@ -63,7 +63,8 @@ class Fixture:
         if strict:
             self.prompt["query"] = {"filter_field": "name", "date_field": "due", "max_limit": 50}
         self.contract = json.loads((SOURCE_REPO / "som-rs/contracts/react-output-v1/api-contract.json").read_bytes())
-        self.toolchain = {"node": {"binary": "/frozen/node"}, "postgresql": {"bin_dir": "/frozen/pg"}}
+        self.toolchain = {"node": {"binary": "/frozen/node"}, "postgresql": {"bin_dir": "/frozen/pg"},
+                          "python": {"version": "3.12.11"}}
         save(repo / "som-rs/contracts/react-output-v1/toolchain.json", self.toolchain)
         self.receipt = {"version": "som.react-api-raw.v1", "exit_code": 0}
         for field, relative in (("probe_sha256", "som-rs/tests/react-output-v1/api_contract.mjs"),
@@ -184,6 +185,17 @@ class Fixture:
     def validate(self):
         return audit.validate(self.reader, self.raw, self.work / "report.json", self.prompt, self.contract, self.product)
 
+    def framework_python(self):
+        recipe = "som-rs/scripts/react_output_acceptance/macos_bottles.json"
+        save(self.repo / recipe, json.loads((SOURCE_REPO / recipe).read_bytes()))
+        executable = "/opt/homebrew/Cellar/python@3.12/3.12.11_1/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+        launched = self.api["processes"][1]["command"]
+        for index, event in enumerate(self.receipt["events"]):
+            if event.get("pid") == 5432 and event.get("phase") == "cwd-check":
+                raw = f"5432 100 5432 {' '.join([executable, *launched[1:]])}\n"
+                event["ps"]["stdout"] = self.retain(f"framework-{index}.stdout", raw)
+        self.refresh()
+
 
 class ApiRawTests(unittest.TestCase):
     def setUp(self):
@@ -196,6 +208,62 @@ class ApiRawTests(unittest.TestCase):
 
     def test_v1_exact_conditional_skips(self):
         self.assertEqual(Fixture(self.root / "v1", "som.prompt.v1").validate()["exchanges"], 16)
+
+    def test_pinned_framework_exec_keeps_exact_launch_and_cleanup_proof(self):
+        fixture = Fixture(self.root / "framework")
+        launched = fixture.api["processes"][1]["command"][:]
+        fixture.framework_python()
+        self.assertEqual(fixture.validate(), {"steps": 20, "exchanges": 20, "processes": 2})
+        self.assertEqual(fixture.api["processes"][1]["command"], launched)
+
+    def test_framework_alias_cannot_hide_other_executable_or_argument(self):
+        for index, (before, after) in enumerate((("3.12.11_1/", "3.12.12_1/"),
+                                                ("/opt/homebrew/Cellar/", "/tmp/Cellar/"),
+                                                ("--host 127.0.0.1", "--host 0.0.0.0"))):
+            with self.subTest(after=after):
+                fixture = Fixture(self.root / f"bad-framework-{index}")
+                fixture.framework_python()
+                event = next(row for row in fixture.receipt["events"] if row.get("pid") == 5432 and row.get("phase") == "cwd-check")
+                raw = fixture.reader.bytes(fixture.raw / event["ps"]["stdout"]["file"]).replace(before.encode(), after.encode())
+                event["ps"]["stdout"] = fixture.retain("wrong-framework.stdout", raw)
+                fixture.refresh()
+                with self.assertRaisesRegex(audit.ApiRawError, "Python argv or session group"):
+                    fixture.validate()
+
+    def test_framework_alias_requires_fixed_venv_and_session_group(self):
+        for change in ("launch", "group"):
+            with self.subTest(change=change):
+                fixture = Fixture(self.root / ("framework-" + change))
+                fixture.framework_python()
+                if change == "launch":
+                    fixture.api["processes"][1]["command"][0] = "/other/venv/bin/python"
+                else:
+                    event = next(row for row in fixture.receipt["events"] if row.get("pid") == 5432 and row.get("phase") == "cwd-check")
+                    event["pgid"] = 7000
+                    raw = fixture.reader.bytes(fixture.raw / event["ps"]["stdout"]["file"]).replace(b"5432 100 5432 ", b"5432 100 7000 ")
+                    event["ps"]["stdout"] = fixture.retain("wrong-group.stdout", raw)
+                    event["table"]["stdout"] = fixture.retain("wrong-group-table.stdout", b"5431 100 5431\n5433 5431 5431\n5432 100 7000\n")
+                fixture.refresh()
+                with self.assertRaisesRegex(audit.ApiRawError, "Python argv or session group"):
+                    fixture.validate()
+
+    def test_framework_alias_requires_matching_bottle_pin(self):
+        fixture = Fixture(self.root / "framework-recipe")
+        fixture.framework_python()
+        path = fixture.repo / "som-rs/scripts/react_output_acceptance/macos_bottles.json"
+        recipe = fixture.reader.json(path)
+        next(row for row in recipe["bottles"] if row["formula"] == "python@3.12")["archive_sha256"] = "0" * 64
+        save(path, recipe)
+        with self.assertRaisesRegex(audit.ApiRawError, "pinned bottle"):
+            fixture.validate()
+
+    def test_missing_framework_recipe_is_unrun(self):
+        fixture = Fixture(self.root / "missing-framework-recipe")
+        fixture.framework_python()
+        (fixture.repo / "som-rs/scripts/react_output_acceptance/macos_bottles.json").unlink()
+        with self.assertRaises(audit.ApiRawError) as caught:
+            fixture.validate()
+        self.assertEqual(caught.exception.status, "unrun")
 
     def test_true_step_booleans_cannot_hide_wrong_response_bytes(self):
         fixture = Fixture(self.root / "bad-row")

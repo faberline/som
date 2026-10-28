@@ -29,6 +29,7 @@ concurrency:
 jobs:
   acceptance:
     name: Frozen M6 tools and optional full acceptance
+    if: github.event_name == 'workflow_dispatch' || !contains(github.event.pull_request.labels.*.name, 'm6:replay-audit')
     # The retained baseline and these frozen bottles require macOS 26.
     # This is a compatibility run. Linux tool adaptation belongs to M12.
     runs-on: macos-26

@@ -1,0 +1,18 @@
+{
+  "version": "som.m6-retained-audit-input.v1",
+  "repository": "faberline/som",
+  "source_commit": "40cffc13b3bff35e3ea5804b9f43a49cdef7b3c0",
+  "input_commit": "55eb7f5c3b21d4f3b57eb721ab60c6aa97e10db3",
+  "input_index_sha256": "78375feb14ed286ac5df4c52f13d5d1ae301b2057d5e3894edf0f36c2705c498",
+  "run_id": 40743738705,
+  "artifact_id": 12843589912,
+  "artifact_name": "m6-sealed-raw-evidence",
+  "artifact_bytes": 249935784,
+  "artifact_sha256": "33fbad9d63cfa257636384b9b7c10e1406f2306922e4f28e8189c79f703b041e",
+  "index_sha256": "3759239392208eab81bf740ca9ca2a41465be3e3e4995de2bd255774f4596bea",
+  "candidate_binary_sha256": "59dab78a0f401a86e028c186285a888cfdf304b2d077e167d46b20d1131a3308",
+  "package_count": 23,
+  "file_count": 51964,
+  "plaintext_bytes": 735818564,
+  "raw_root": ".local/m6-hosted/acceptance"
+}

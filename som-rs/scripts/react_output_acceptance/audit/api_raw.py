@@ -272,6 +272,29 @@ def numeric_table(raw: bytes) -> dict[int, tuple[int, int]]:
     return table
 
 
+def python_argv_matches(reader, observed: str, launched: list[str], toolchain: dict) -> bool:
+    if observed == " ".join(launched):
+        return True
+    if not launched or launched[0] != str(reader.repo / "som-rs/runtime/acceptance-m3-venv/bin/python"):
+        return False
+    # macOS's framework launcher execs Python.app with the same PID and arguments.
+    # Admit only the interpreter in the exact reviewed bottle, never a basename,
+    # resolved path on the audit host, or an arbitrary Python installation.
+    recipe = reader.json(reader.repo / "som-rs/scripts/react_output_acceptance/macos_bottles.json")
+    entries = [row for row in recipe.get("bottles", []) if row.get("formula") == "python@3.12"]
+    need(recipe.get("version") == "som.react-output-macos-bottles.v1" and len(entries) == 1,
+         "Python framework alias recipe missing", "unrun")
+    bottle = entries[0]
+    keg = "/opt/homebrew/Cellar/python@3.12/3.12.11_1"
+    need(toolchain.get("python", {}).get("version") == bottle.get("version") == "3.12.11"
+         and type(bottle.get("revision")) is int and bottle["revision"] == 1
+         and bottle.get("expected_keg_directory") == keg
+         and bottle.get("archive_sha256") == "1443684f05205bf2aca7b050fdea79c93fa4f52fdbf2f085c037aef09b19b0a0",
+         "Python framework alias differs from the pinned bottle")
+    framework = keg + "/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python"
+    return observed == " ".join([framework, *launched[1:]])
+
+
 def cleanup(reader, directory: Path, events: list[dict], api: dict, base: str, work: Path, toolchain: dict) -> int:
     processes = api.get("processes")
     need(isinstance(processes, list) and {row.get("role") for row in processes} == {"postgres", "python_product"}
@@ -321,7 +344,8 @@ def cleanup(reader, directory: Path, events: list[dict], api: dict, base: str, w
             need(table.get(pid) == (parent, pgid), "ps snapshots disagree")
             group = pgid
             if role == "python_product":
-                need(columns[3] == " ".join(process["command"]) and pgid == pid, "Python argv or session group differs")
+                need(python_argv_matches(reader, columns[3], process["command"], toolchain)
+                     and pgid == pid, "Python argv or session group differs")
             else:
                 argv = shlex.split(columns[3])
                 need(Path(argv[0]).name == "postgres" and "-D" in argv and argv[argv.index("-D") + 1] == expected_cwd, "PostgreSQL master argv differs")

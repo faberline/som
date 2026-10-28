@@ -842,6 +842,138 @@ class Audit130Tests(unittest.TestCase):
                       if row["id"] == "target_case/target_examples/example-v1-cnl-react")
         self.assertEqual(target["status"], "failed")
 
+    def _public_refusal_sources(self):
+        """The frozen writer names refused public products by their source."""
+        examples = self.fixture.repo / "som-rs/contracts/compiler-v1/examples"
+        prompt = read_json(examples / "v5.prompt.json")
+        cnl = (examples / "v5.cnl").read_text()
+        fixtures_path = self.fixture.repo / "som-rs/tests/compiler-v1/cnl-positive-fixtures.json"
+        source_cases = [{"id": cid, "category": category, "expected_prompt": prompt, "cnl": cnl,
+                         "prompt_sha256": sha_bytes(canonical(prompt)), "cnl_sha256": sha_bytes(cnl.encode())}
+                        for cid, category in (("OUTSIDE_CNL", "capability_tuple"), ("OUTSIDE_PAIR", "version_positive"))]
+        save_json(fixtures_path, {"cases": source_cases})
+        index_path = examples / "index.json"
+        index = read_json(index_path)
+        index["cases"] = [case for case in index["cases"] if case["id"] == "v5"]
+        save_json(index_path, index)
+        public = self.fixture.repo / ".local/public-refusal-sources"
+        source_ids = ["OUTSIDE_CNL", "OUTSIDE_PAIR", "PUBLIC_v5"]
+        save_json(public / "result.json", {"records": [{"id": cid} for cid in source_ids]})
+        # Stored products may have another member order. The source writer's
+        # exact typed request still uses the pinned fixture/example order.
+        reversed_prompt = dict(reversed(list(prompt.items())))
+        for position in range(len(source_ids)):
+            directory = public / f"{position:03d}"
+            directory.mkdir(parents=True, exist_ok=True)
+            (directory / "prompt.json").write_text(json.dumps(reversed_prompt, ensure_ascii=False) + "\n")
+            (directory / "source.cnl").write_text(cnl)
+        inventory = self.fixture.docs["case-inventory.json"]
+        inventory["sources"]["cnl_positive_fixtures"] = {
+            fixtures_path.relative_to(self.fixture.repo).as_posix(): sha_file(fixtures_path)}
+        inventory["sources"]["examples"][index_path.relative_to(self.fixture.repo).as_posix()] = sha_file(index_path)
+        source = {"directory": public.relative_to(self.fixture.repo).as_posix()}
+        inventory["sources"]["public_products"] = source
+        inventory["counts"]["public_products"] = [{"prompt_version": "som.prompt.v5", "react": "prompt_version", "count": 3}]
+        save_json(self.fixture.contract / "case-inventory.json", inventory)
+        scope = self.fixture.docs["scope.json"]
+        expected = scope["refusals"]["prompt_version"]
+        cause = expected["cause"].format(version="5", family=scope["prompt_versions"]["out_of_scope"]["som.prompt.v5"])
+        rows = []
+        pinned_cases = read_json(fixtures_path)["cases"]
+        cases = [(case["id"], case["expected_prompt"], ("cnl", "json") if case["category"] == "version_positive" else ("cnl",))
+                 for case in pinned_cases]
+        cases.append(("example-v5", read_json(examples / "v5.prompt.json"), ("cnl", "json")))
+        for cid, own_prompt, forms in cases:
+            for form in forms:
+                request = {"format": "som.cnl.v1", "source": cnl, "target": "react"} if form == "cnl" else {
+                    "format": "som.prompt-json.v1", "prompt": own_prompt, "target": "react"}
+                body = json.dumps(request, ensure_ascii=False, separators=(",", ":"))
+                located = cnl if form == "cnl" else body
+                token = "5" if form == "cnl" else '"som.prompt.v5"'
+                start = cnl.index("Use prompt version 5.") + len("Use prompt version ") if form == "cnl" else body.index(token)
+                diagnostic = {"code": expected["code"], "cause": cause, "allowed_form": expected["allowed_form"],
+                              "prompt_pointer": "/version" if form == "cnl" else "/prompt/version"}
+                for position, prefix in ((start, ""), (start + len(token), "end_")):
+                    before = located[:position]
+                    diagnostic[prefix + "line"] = before.count("\n") + 1
+                    diagnostic[prefix + "column"] = len(before.rsplit("\n", 1)[-1]) + 1
+                    diagnostic["byte_" + ("start" if not prefix else "end")] = len(before.encode())
+                response = {"status": "error", "code": expected["code"], "detail": cause, "diagnostics": [diagnostic]}
+                row = self.fixture._raw_row("react-target", "out_of_scope", f"{cid}-{form}-react", body,
+                                            response, expected["http_status"])
+                row["passed"] = False
+                rows.append(row)
+        self.fixture.reports["react-target"]["cases"] = rows
+        save_json(self.fixture.run / "react-target/report.json", self.fixture.reports["react-target"])
+        return source, public
+
+    def _public_scope_audit(self, source):
+        save_json(self.fixture.run / "react-target/report.json", self.fixture.reports["react-target"])
+        auditor = audit130.Audit(self.fixture.repo, self.fixture.run)
+        auditor.read_contracts()
+        auditor.row("scope_case/source-public-products", lambda: auditor.public_product_scope(source))
+        return auditor
+
+    def test_public_refusals_use_exact_source_names_and_only_emitted_forms(self):
+        source, _ = self._public_refusal_sources()
+        auditor = self._public_scope_audit(source)
+        self.assertEqual([row["id"] for row in auditor.rows], [*[f"scope_case/public-product-{index:03d}" for index in range(3)],
+                                                              "scope_case/source-public-products"])
+        self.assertTrue(all(row["status"] == "passed" for row in auditor.rows), auditor.rows)
+
+    def test_public_refusal_source_rows_cannot_be_missing_aliased_or_duplicated(self):
+        for mutation, status in (("missing_json", "unrun"), ("product_alias", "unrun"), ("example_prefix", "unrun"),
+                                 ("wrong_section", "unrun"), ("duplicate", "failed"), ("wrong_request", "failed")):
+            with self.subTest(mutation=mutation):
+                source, _ = self._public_refusal_sources()
+                rows = self.fixture.reports["react-target"]["cases"]
+                selected = next(row for row in rows if row["id"] == ("OUTSIDE_PAIR-json-react" if mutation == "missing_json" else
+                                      "example-v5-json-react" if mutation == "example_prefix" else "OUTSIDE_CNL-cnl-react"))
+                if mutation == "missing_json":
+                    rows.remove(selected)
+                elif mutation == "product_alias":
+                    selected["id"] = "public-product-000-cnl-react"
+                elif mutation == "example_prefix":
+                    selected["id"] = "example-v50-json-react"
+                elif mutation == "wrong_section":
+                    selected["section"] = "in_scope"
+                elif mutation == "duplicate":
+                    rows.append(copy.deepcopy(selected))
+                else:
+                    selected["request_sha256"] = "0" * 64
+                auditor = self._public_scope_audit(source)
+                self.assertEqual([row["status"] for row in auditor.rows].count(status), 1, auditor.rows)
+
+    def test_public_refusal_products_remain_bound_to_immutable_prompt_and_cnl(self):
+        for changed in ("prompt", "cnl", "json_type"):
+            with self.subTest(changed=changed):
+                source, public = self._public_refusal_sources()
+                if changed != "cnl":
+                    path = public / "000/prompt.json"
+                    prompt = read_json(path)
+                    if changed == "prompt":
+                        prompt["package"] = "another_package"
+                    else:
+                        prompt["resources"]["parent"]["fields"][0]["required"] = 1
+                    save_json(path, prompt)
+                else:
+                    (public / "000/source.cnl").write_text("Use SOM CNL version 1.\n")
+                auditor = self._public_scope_audit(source)
+                self.assertEqual(auditor.rows[0]["status"], "failed", auditor.rows)
+
+    def test_public_scope_source_identity_collision_is_rejected(self):
+        source, _ = self._public_refusal_sources()
+        path = self.fixture.repo / "som-rs/tests/compiler-v1/cnl-positive-fixtures.json"
+        fixtures = read_json(path)
+        fixtures["cases"][0]["id"] = "example-v5"
+        save_json(path, fixtures)
+        inventory = self.fixture.docs["case-inventory.json"]
+        inventory["sources"]["cnl_positive_fixtures"][path.relative_to(self.fixture.repo).as_posix()] = sha_file(path)
+        save_json(self.fixture.contract / "case-inventory.json", inventory)
+        auditor = self._public_scope_audit(source)
+        self.assertEqual(auditor.rows[-1]["status"], "failed", auditor.rows)
+        self.assertIn("scope source ids are ambiguous", auditor.rows[-1]["reason"])
+
     def _python_baseline_source_universes(self, public_ids):
         """Declare source names and prompts before writing mutable result.records."""
         public = self.fixture.repo / ".local/baseline-public"

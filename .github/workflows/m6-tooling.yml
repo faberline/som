@@ -5,6 +5,7 @@ on:
     paths:
       - .github/workflows/m6-tooling.yml
       - .github/workflows/m6-acceptance.yml
+      - .github/workflows/m6-retained-audit.yml
       - som-rs/scripts/react_output_acceptance/**
       - som-rs/scripts/rust_output_release/**
       - som-rs/scripts/react_quickstart/**
