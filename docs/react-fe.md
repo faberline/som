@@ -255,4 +255,4 @@ After an asset or default change, an old bundle can fail with `ASSET_HASH_MISMAT
 This is HTTP `400` from `/v1/assemble` and CLI exit code `2`.
 The refusal is defined in [acceptance-plan.json](../som-rs/contracts/react-output-v1/acceptance-plan.json), `assemble_refusals.recipes` A1 and A2.
 Run `som write --target react` again from the source with a new output directory.
-If you need a saved bundle, run `som compile --target react` again from the source.
+If you need a saved bundle, run `som compile <file.cnl> --target react` again from the CNL source.
