@@ -20,6 +20,14 @@ This preserves the existing baseline for this compatibility run.
 It does not make Apple hardware a requirement of the compiler algorithm.
 M12 owns native tool support on other hosts.
 
+Eleven public third-party tool files use a separate frozen file supplement.
+The macOS signer cannot reproduce their historical allocation bytes.
+The supplement preserves those complete files and their original license text.
+Its commit, manifest, official bottle provenance, installed paths, and file hashes are pinned.
+The runner checks every file before it changes any staged tool.
+It still checks all official bottles and every unchanged installed tool hash.
+This supplement contains no SOM inputs and needs no project input key.
+
 ## Approve inputs before transfer
 
 `hosted_inputs.json` pins an encrypted input commit and its index hash.
@@ -56,6 +64,11 @@ Public crates and Python packages are fetched before offline verification.
 The frozen npm caches remain read-only during verification.
 The baseline uses QA port `18917`. The candidate uses QA port `18919`.
 No QA service binds to `8765` or `18765`.
+
+Unit tests need the ignored `som-rs/compiler-assets/current` fixture directory.
+The driver copies the frozen baseline assets there without changing their bytes.
+The candidate then packages assets from its own recorded source.
+Both complete file maps must match. The bootstrap receipt stays with raw evidence.
 
 The isolated runner expects no default service on `8765`.
 Two read-only health requests must both get an OS connection-refused result.

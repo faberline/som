@@ -143,7 +143,7 @@ export async function collectEvidence(root) {
 
     for (const entry of await fs.readdir(root, { withFileTypes: true })) {
       const filename = path.join(root, entry.name);
-      if (["summary.json", "audit.json"].includes(entry.name) || /^[A-Za-z0-9][A-Za-z0-9_.-]*\.(stdout|stderr)$/.test(entry.name)) {
+      if (["summary.json", "audit.json", "bootstrap-assets.json"].includes(entry.name) || /^[A-Za-z0-9][A-Za-z0-9_.-]*\.(stdout|stderr)$/.test(entry.name)) {
         await addFile(filename);
       } else if (["run", "reconstructed-inputs"].includes(entry.name)) {
         await walk(filename);

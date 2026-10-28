@@ -28,6 +28,7 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[2]
 PREFIX = Path("/opt/homebrew")
 HEX = re.compile(r"^[0-9a-f]{64}$")
+COMMIT = re.compile(r"^[0-9a-f]{40}$")
 FORMULA = re.compile(r"^[a-z0-9][a-z0-9+._@-]*$")
 VERSION = re.compile(r"^[0-9][A-Za-z0-9.+-]*$")
 RUST_BINARIES = ("rustc", "cargo", "rustfmt", "cargo-fmt", "cargo-clippy", "clippy-driver")
@@ -36,6 +37,9 @@ MACHO_NORMALIZATION_POLICY = "homebrew-6.0.6-ruby-macho-5.0.0-v1"
 MACHO_PREFIXES = {"@@HOMEBREW_PREFIX@@": "/opt/homebrew", "@@HOMEBREW_CELLAR@@": "/opt/homebrew/Cellar"}
 CODESIGN_ARGUMENTS = ("--sign", "-", "--force", "--preserve-metadata=entitlements,requirements,flags,runtime")
 PYTHON_BINARY = "/opt/homebrew/opt/python@3.12/bin/python3.12"
+SUPPLEMENT_VERSION = "som.m6-frozen-tool-files.v1"
+REPRODUCED_COMPACT_FILE = "/opt/homebrew/Cellar/node/26.5.0/lib/libnode.147.dylib"
+SUPPLEMENT_FILE_LIMIT = 128 * 1024 * 1024
 PYTHON_RUNTIME_PROBE = (
     "import _decimal, _lzma, ensurepip, sqlite3, ssl, venv; from pathlib import Path; "
     "assert any((Path(ensurepip.__file__).parent / '_bundled').glob('pip-*.whl')); "
@@ -234,6 +238,15 @@ def extract_archive(archive: Path, staging: Path, entry: dict[str, Any], *,
     """Validate all members, then extract files before creating safe symlinks."""
     relative_keg = PurePosixPath(entry["expected_keg_directory"]).relative_to("/opt/homebrew/Cellar")
     link_roots = package_link_roots(entry, closure)
+    global_links = entry.get("global_symlinks", {})
+    need(isinstance(global_links, dict) and (not global_links or (str(relative_keg) == "llvm/22.1.8" and global_links == {
+        "etc/clang": {"link_target": "../../../../etc/clang", "resolved_target": "/opt/homebrew/etc/clang"}})),
+        "manifest_invalid", "The bottle global symlink declaration is not the reviewed LLVM link.")
+    copy_prefixes = entry.get("hardlink_copy_prefixes", [])
+    need(isinstance(copy_prefixes, list) and (not copy_prefixes or (str(relative_keg) == "postgresql@17/17.7_1"
+                              and copy_prefixes == ["share/postgresql/timezone"])),
+         "manifest_invalid", "The hardlink copy declaration is not the reviewed PostgreSQL timezone subtree.")
+    hardlink_roots = [relative_keg / value for value in copy_prefixes]
     need(not staging.exists(), "stage_exists", "A bottle staging directory already exists.")
     try:
         with tarfile.open(archive, "r:*") as bundle:
@@ -246,8 +259,12 @@ def extract_archive(archive: Path, staging: Path, entry: dict[str, Any], *,
                 ancestor = path in relative_keg.parents and path != PurePosixPath(".")
                 need(inside(path, relative_keg) or (ancestor and member.isdir()),
                      "archive_path_refused", "A bottle archive path is outside its exact keg.")
-                need(path not in paths and (member.isdir() or member.isfile() or member.issym()),
-                     "archive_member_refused", "A bottle member is repeated, a hard link or a special file.")
+                copy_link = member.islnk() and any(inside(path, root) for root in hardlink_roots)
+                if path in paths or not (member.isdir() or member.isfile() or member.issym() or copy_link):
+                    raise ProvisionError("archive_member_refused", "A bottle member is repeated, a hard link or a special file.",
+                                         {"member": member.name, "member_type_hex": member.type.hex(),
+                                          "link_target": member.linkname,
+                                          "reason": "duplicate" if path in paths else "unsupported_type"})
                 paths[path] = member
                 if member.issym():
                     target = PurePosixPath(member.linkname)
@@ -256,13 +273,27 @@ def extract_archive(archive: Path, staging: Path, entry: dict[str, Any], *,
                     else:
                         public_parent = PurePosixPath("/opt/homebrew/Cellar") / path.parent
                         resolved = PurePosixPath(posixpath.normpath(str(public_parent / target)))
-                    if not any(inside(resolved, root) for root in link_roots):
+                    declaration = global_links.get(path.relative_to(relative_keg).as_posix())
+                    exact_global = declaration == {"link_target": member.linkname, "resolved_target": str(resolved)}
+                    if not exact_global and not any(inside(resolved, root) for root in link_roots):
                         raise ProvisionError("archive_link_refused", "A bottle symlink leaves its declared package closure.",
                                              {"member": member.name, "link_target": member.linkname,
                                               "resolved_target": str(resolved)})
-            links = {path for path, member in paths.items() if member.issym()}
+            links = {path for path, member in paths.items() if member.issym() or member.islnk()}
             need(not any(parent in links for path in paths for parent in path.parents),
                  "archive_link_refused", "A bottle symlink is a parent of another member.")
+            hardlinks = {}
+            for path, member in paths.items():
+                if not member.islnk():
+                    continue
+                target = PurePosixPath(member.linkname)
+                if (target.is_absolute() or ".." in target.parts
+                        or not any(inside(path, root) and inside(target, root) for root in hardlink_roots)
+                        or target not in paths or not paths[target].isfile()):
+                    raise ProvisionError("archive_hardlink_refused", "A timezone hardlink does not name a validated regular timezone member.",
+                                         {"member": member.name, "member_type_hex": member.type.hex(),
+                                          "link_target": member.linkname})
+                hardlinks[path] = target
             staging.mkdir(parents=True)
             directories = []
             for path, member in paths.items():
@@ -277,7 +308,13 @@ def extract_archive(archive: Path, staging: Path, entry: dict[str, Any], *,
                     with source, target.open("xb") as stream:
                         shutil.copyfileobj(source, stream)
                     target.chmod(member.mode & 0o777)
-            for path in links:
+            for path, source in hardlinks.items():
+                target = staging.joinpath(*path.parts)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                with staging.joinpath(*source.parts).open("rb") as content, target.open("xb") as stream:
+                    shutil.copyfileobj(content, stream)
+                target.chmod(paths[path].mode & 0o777)
+            for path in links - hardlinks.keys():
                 target = staging.joinpath(*path.parts)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.symlink_to(paths[path].linkname)
@@ -474,6 +511,78 @@ def security_signing_recipe(page_size: int) -> dict[str, Any]:
             "create_flags": 1 << 7, "add_signature_flags": 0}
 
 
+def read_supplement_blob(commit: str, path: str) -> bytes:
+    require_github_runner()
+    try:
+        result = subprocess.run(["git", "-C", str(REPO), "show", f"{commit}:{path}"],
+                                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                timeout=120, check=False)
+    except (OSError, subprocess.TimeoutExpired):
+        raise ProvisionError("supplement_unavailable", "The pinned public tool supplement could not be read.") from None
+    need(result.returncode == 0, "supplement_unavailable", "The pinned public tool supplement could not be read.")
+    return result.stdout
+
+
+def load_frozen_file_supplement(specification: dict[str, Any], entries: list[dict[str, Any]],
+                                pins: list[dict[str, str]], policy: dict[str, Any],
+                                record: dict[str, Any], *, blob_reader=None) -> dict[str, dict[str, Any]]:
+    """Verify the public commit, manifest, and every exact frozen file before use."""
+    need(isinstance(specification, dict)
+         and set(specification) == {"repository", "commit", "manifest_path", "manifest_sha256"}
+         and specification.get("repository") == "faberline/som"
+         and isinstance(specification.get("commit"), str) and COMMIT.fullmatch(specification["commit"])
+         and specification.get("manifest_path") == "frozen-tools/manifest.json"
+         and isinstance(specification.get("manifest_sha256"), str) and HEX.fullmatch(specification["manifest_sha256"]),
+         "supplement_invalid", "The public tool supplement commit or manifest pin is invalid.")
+    reader = read_supplement_blob if blob_reader is None else blob_reader
+    record.update(status="started", **specification, files=[])
+    manifest_raw = reader(specification["commit"], specification["manifest_path"])
+    need(len(manifest_raw) <= 2 * 1024 * 1024 and hashlib.sha256(manifest_raw).hexdigest() == specification["manifest_sha256"],
+         "supplement_manifest_hash_mismatch", "The public tool supplement manifest differs from its pin.")
+    try:
+        manifest = json.loads(manifest_raw)
+    except (ValueError, UnicodeError):
+        raise ProvisionError("supplement_invalid", "The pinned public tool manifest is not valid JSON.") from None
+    need(isinstance(manifest, dict) and set(manifest) == {"version", "repository", "files"}
+         and manifest.get("version") == SUPPLEMENT_VERSION and manifest.get("repository") == "faberline/som"
+         and isinstance(manifest.get("files"), list) and len(manifest["files"]) == 11,
+         "supplement_invalid", "The public tool supplement must contain the exact eleven frozen files.")
+    frozen = {(pin["path"], pin["sha256"]) for pin in pins}
+    expected = {binding["path"]: binding for binding in policy.get("installed_signing_page_sizes", [])
+                if binding.get("cms_reserve") == 0 and binding.get("path") != REPRODUCED_COMPACT_FILE}
+    need(len(expected) == 11, "supplement_invalid", "The reviewed frozen supplement inventory is incomplete.")
+    inventory = {entry["formula"]: entry for entry in entries}
+    verified = {}
+    for row in manifest["files"]:
+        keys = {"path", "installed_path", "sha256", "formula", "archive_sha256", "license_path", "bytes", "mode"}
+        need(isinstance(row, dict) and set(row) == keys, "supplement_invalid", "A public frozen file record is invalid.")
+        installed, formula = row["installed_path"], row["formula"]
+        need(isinstance(installed, str) and installed in expected and installed not in verified
+             and isinstance(row["sha256"], str) and (installed, row["sha256"]) in frozen
+             and row["sha256"] == expected[installed]["sha256"] and isinstance(formula, str) and formula in inventory,
+             "supplement_invalid", "A public frozen file does not match an unchanged installed path and hash.")
+        entry = inventory[formula]
+        keg = PurePosixPath(entry["expected_keg_directory"])
+        public = PurePosixPath(installed)
+        need(public.is_relative_to(keg) and row["archive_sha256"] == entry["archive_sha256"],
+             "supplement_invalid", "A public frozen file does not match its exact official bottle.")
+        relative = public.relative_to(keg).as_posix()
+        version = keg.name
+        need(row["path"] == f"frozen-tools/files/{formula}/{version}/{relative}"
+             and row["license_path"] == f"frozen-tools/licenses/{formula}.txt"
+             and type(row["bytes"]) is int and 0 < row["bytes"] <= SUPPLEMENT_FILE_LIMIT
+             and type(row["mode"]) is int and row["mode"] in (0o644, 0o755),
+             "supplement_invalid", "A public frozen file source path, size or mode is invalid.")
+        raw = reader(specification["commit"], row["path"])
+        need(len(raw) == row["bytes"] and hashlib.sha256(raw).hexdigest() == row["sha256"],
+             "supplement_file_hash_mismatch", "A public frozen file differs from its unchanged contract pin.")
+        verified[installed] = {**row, "data": raw}
+        record["files"].append({**row, "status": "verified"})
+    need(set(verified) == set(expected), "supplement_invalid", "The exact public frozen file inventory is incomplete.")
+    record["status"] = "verified"
+    return verified
+
+
 def sign_macho_with_security(path: Path, page_size: int) -> int:
     """Use Apple's signer with explicit zero CMS reserve, which its CLI omits."""
     require_github_runner()
@@ -543,7 +652,8 @@ def sign_macho_with_security(path: Path, page_size: int) -> int:
 
 
 def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[str, Any], *, command_runner=None,
-                           installed_signing: dict[str, dict[str, Any]] | None = None, security_runner=None) -> None:
+                           installed_signing: dict[str, dict[str, Any]] | None = None, security_runner=None,
+                           supplement_members: set[str] | None = None) -> None:
     need(policy.get("policy") == MACHO_NORMALIZATION_POLICY and policy.get("prefixes") == MACHO_PREFIXES
          and policy.get("codesign_arguments") == list(CODESIGN_ARGUMENTS),
          "manifest_invalid", "The Mach-O normalization recipe differs from the reviewed policy.")
@@ -578,7 +688,8 @@ def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[st
         if binding is not None:
             item["installed_signing_pin"] = dict(binding)
         compact = binding is not None and binding.get("cms_reserve") == 0
-        if (security_runner is None if compact else command_runner is None):
+        supplemented = item["member"] in (supplement_members or set())
+        if (security_runner is None if compact and not supplemented else command_runner is None):
             require_github_runner()
             record["codesign_binary_sha256"] = file_sha256(Path("/usr/bin/codesign"))
         record["files"].append(item)
@@ -586,7 +697,10 @@ def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[st
         try:
             path.chmod(mode | 0o200)
             path.write_bytes(relocated)
-            if compact:
+            if supplemented:
+                item["signing_backend"] = "verified_frozen_supplement"
+                item["signing_status"] = "skipped_for_verified_exact_frozen_file"
+            elif compact:
                 item["signing_backend"] = "apple_security_framework"
                 item["security_signing"] = security_signing_recipe(page_size)
                 runner = sign_macho_with_security if security_runner is None else security_runner
@@ -605,8 +719,13 @@ def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[st
             item["normalized_sha256"] = file_sha256(path)
             item["normalized_layout"] = macho_layout(path.read_bytes())
             item["status"] = "passed"
-        except ProvisionError:
+        except ProvisionError as error:
             item["status"] = record["status"] = "failed"
+            item["error"] = error_record(error)
+            try:
+                item["failed_layout"] = macho_layout(path.read_bytes())
+            except (OSError, ProvisionError, ValueError, struct.error):
+                pass
             raise
         except (OSError, subprocess.TimeoutExpired):
             item["status"] = record["status"] = "failed"
@@ -654,6 +773,11 @@ def macho_layout(raw: bytes) -> dict[str, Any]:
         kind, size = struct.unpack_from("<II", raw, cursor)
         need(size >= 8 and cursor + size <= 32 + header[5], "macho_invalid", "A signed load command is invalid.")
         item = {"command": kind, "size": size, "sha256": hashlib.sha256(raw[cursor:cursor + size]).hexdigest()}
+        if kind == 0x19 and size >= 72:
+            name = raw[cursor + 8:cursor + 24].split(b"\0", 1)[0].decode("ascii")
+            vm_address, vm_size, file_offset, file_size = struct.unpack_from("<4Q", raw, cursor + 24)
+            item["segment"] = {"name": name, "vm_address": vm_address, "vm_size": vm_size,
+                               "file_offset": file_offset, "file_size": file_size}
         if kind in (0xC, 0xD, 0x80000018, 0x8000001F, 0x20, 0x80000023, 0x8000001C):
             name_offset = struct.unpack_from("<I", raw, cursor + 8)[0]
             item["name"] = raw[cursor + name_offset:cursor + size].split(b"\0", 1)[0].decode("utf-8")
@@ -674,13 +798,16 @@ def macho_layout(raw: bytes) -> dict[str, Any]:
 def stage_package(entry: dict[str, Any], out: Path, pins: list[dict[str, str]],
                   record: dict[str, Any], *, downloader=download_archive,
                   closure: list[dict[str, Any]] | None = None, normalization: dict[str, Any] | None = None,
-                  macho_runner=None, security_runner=None) -> tuple[dict[str, Any], Path]:
+                  macho_runner=None, security_runner=None,
+                  supplement: dict[str, dict[str, Any]] | None = None) -> tuple[dict[str, Any], Path]:
     keg = PurePosixPath(entry["expected_keg_directory"])
     relevant = [pin for pin in pins if PurePosixPath(pin["path"]).is_relative_to(keg)]
     # PostgreSQL's frozen paths go through opt; map them to the staged keg too.
     opt = PurePosixPath(entry["opt_symlink"])
     relevant += [pin for pin in pins if PurePosixPath(pin["path"]).is_relative_to(opt)]
     signing_targets = installed_signing_targets(entry, pins, normalization) if normalization is not None else {}
+    selected_supplement = {path: row for path, row in (supplement or {}).items() if PurePosixPath(path).is_relative_to(keg)}
+    supplement_members = {PurePosixPath(path).relative_to(keg).as_posix() for path in selected_supplement}
     candidates = [entry, *({**entry, **alternative} for alternative in entry.get("alternatives", []))]
     for index, candidate in enumerate(candidates):
         attempt = {"archive_sha256": candidate["archive_sha256"], "target": candidate["target"],
@@ -707,7 +834,29 @@ def stage_package(entry: dict[str, Any], out: Path, pins: list[dict[str, str]],
             if normalization is not None:
                 attempt["normalization"] = {}
                 normalize_staged_macho(staged, normalization, attempt["normalization"], command_runner=macho_runner,
-                                       installed_signing=signing_targets, security_runner=security_runner)
+                                       installed_signing=signing_targets, security_runner=security_runner,
+                                       supplement_members=supplement_members)
+            attempt["supplement_files"] = []
+            for installed, row in selected_supplement.items():
+                relative = PurePosixPath(installed).relative_to(keg)
+                path = staged.joinpath(*relative.parts)
+                need(path.is_file() and not path.is_symlink(), "supplement_target_refused", "A frozen supplement target is not a regular bottle file.")
+                prior = file_sha256(path)
+                need((installed, row["sha256"]) in {(pin["path"], pin["sha256"]) for pin in relevant}
+                     and hashlib.sha256(row["data"]).hexdigest() == row["sha256"],
+                     "supplement_file_hash_mismatch", "A verified public file lost its exact frozen binding.")
+                item = {key: row[key] for key in ("path", "installed_path", "sha256", "formula", "archive_sha256", "bytes", "mode")}
+                item["pre_supplement_sha256"] = prior
+                if prior != row["sha256"]:
+                    path.chmod(0o600)
+                    path.write_bytes(row["data"])
+                    path.chmod(row["mode"])
+                    item["status"] = "applied_after_installed_hash_mismatch"
+                else:
+                    item["status"] = "already_matched"
+                item["supplemented_sha256"] = file_sha256(path)
+                need(item["supplemented_sha256"] == row["sha256"], "supplement_file_hash_mismatch", "A supplemented file differs from its frozen hash.")
+                attempt["supplement_files"].append(item)
             for pin in relevant:
                 path = PurePosixPath(pin["path"])
                 relative = path.relative_to(keg if path.is_relative_to(keg) else opt)
@@ -849,11 +998,18 @@ def cleanup_provision_staging(out: Path) -> dict[str, Any]:
 def provision(document: dict[str, Any], contracts: dict[str, dict[str, Any]], out: Path,
               report: dict[str, Any], *, prefix: Path = PREFIX, downloader=download_archive,
               expected_count: int | None = FULL_BOTTLE_COUNT, python_runner=None, macho_runner=None,
-              security_runner=None) -> None:
+              security_runner=None, supplement_reader=None) -> None:
     if prefix == PREFIX:
         require_github_runner()
     entries = validate_manifest(document, expected_count=expected_count)
     pins = pin_specs(contracts)
+    supplement = {}
+    if "frozen_file_supplement" in document:
+        report["stage"] = "frozen_file_supplement"
+        report["frozen_file_supplement"] = {}
+        supplement = load_frozen_file_supplement(document["frozen_file_supplement"], entries, pins,
+                                                document.get("macho_normalization", {}), report["frozen_file_supplement"],
+                                                blob_reader=supplement_reader)
     selections = []
     failures = []
     report["stage"] = "download_and_stage"
@@ -864,7 +1020,7 @@ def provision(document: dict[str, Any], contracts: dict[str, dict[str, Any]], ou
         try:
             selections.append(stage_package(entry, out, pins, record, downloader=downloader, closure=entries,
                                             normalization=document.get("macho_normalization"), macho_runner=macho_runner,
-                                            security_runner=security_runner))
+                                            security_runner=security_runner, supplement=supplement))
             record["status"] = "passed"
         except ProvisionError as error:
             record.update(status="failed", error=error_record(error))

@@ -132,6 +132,113 @@ class ProvisionMacosTests(unittest.TestCase):
         destination.write_bytes(self.node_archive)
         return {"archive_sha256": digest(self.node_archive), "archive_size_bytes": len(self.node_archive)}
 
+    def supplement_fixture(self):
+        files = []
+        blobs = {}
+        pins = []
+        bindings = []
+        for index in range(11):
+            installed = f"/opt/homebrew/Cellar/node/1.0/bin/tool{index}"
+            raw = f"public frozen fixture {index}\n".encode()
+            path = f"frozen-tools/files/node/1.0/bin/tool{index}"
+            pin = {"label": f"fixture/{index}", "path": installed, "sha256": digest(raw)}
+            pins.append(pin)
+            bindings.append({"path": installed, "sha256": pin["sha256"], "page_size": 4096, "cms_reserve": 0})
+            files.append({"path": path, "installed_path": installed, "sha256": pin["sha256"],
+                          "formula": "node", "archive_sha256": self.node["archive_sha256"],
+                          "license_path": "frozen-tools/licenses/node.txt", "bytes": len(raw), "mode": 0o755})
+            blobs[path] = raw
+        manifest = {"version": provisioner.SUPPLEMENT_VERSION, "repository": "faberline/som", "files": files}
+        manifest_raw = json.dumps(manifest).encode()
+        blobs["frozen-tools/manifest.json"] = manifest_raw
+        specification = {"repository": "faberline/som", "commit": "a" * 40,
+                         "manifest_path": "frozen-tools/manifest.json", "manifest_sha256": digest(manifest_raw)}
+        policy = {**normalization_policy(), "installed_signing_page_sizes": bindings}
+        return specification, manifest, blobs, pins, policy
+
+    def test_public_supplement_verifies_all_eleven_blobs_before_use(self):
+        specification, _, blobs, pins, policy = self.supplement_fixture()
+        reader = mock.Mock(side_effect=lambda commit, path: blobs[path])
+        report = {}
+        verified = provisioner.load_frozen_file_supplement(specification, [self.node], pins, policy, report, blob_reader=reader)
+        self.assertEqual(reader.call_count, 12)
+        self.assertTrue(all(call.args[0] == "a" * 40 for call in reader.call_args_list))
+        self.assertEqual(set(verified), {pin["path"] for pin in pins})
+        self.assertEqual(report["status"], "verified")
+        self.assertNotIn("data", json.dumps(report))
+
+    def test_supplement_rejects_manifest_hash_unknown_paths_bottle_size_and_mode(self):
+        changes = ({"installed_path": "/opt/homebrew/Cellar/node/1.0/bin/unknown"},
+                   {"sha256": "0" * 64}, {"archive_sha256": "0" * 64},
+                   {"path": "frozen-tools/files/node/1.0/../other"},
+                   {"bytes": provisioner.SUPPLEMENT_FILE_LIMIT + 1}, {"mode": 0o777})
+        for change in changes:
+            with self.subTest(change=change):
+                specification, manifest, blobs, pins, policy = self.supplement_fixture()
+                manifest["files"][0].update(change)
+                encoded = json.dumps(manifest).encode()
+                specification["manifest_sha256"] = digest(encoded)
+                blobs["frozen-tools/manifest.json"] = encoded
+                with self.assertRaises(provisioner.ProvisionError):
+                    provisioner.load_frozen_file_supplement(specification, [self.node], pins, policy, {},
+                                                            blob_reader=lambda commit, path: blobs[path])
+        specification, _, blobs, pins, policy = self.supplement_fixture()
+        specification["manifest_sha256"] = "0" * 64
+        reader = mock.Mock(side_effect=lambda commit, path: blobs[path])
+        with self.assertRaises(provisioner.ProvisionError) as found:
+            provisioner.load_frozen_file_supplement(specification, [self.node], pins, policy, {}, blob_reader=reader)
+        self.assertEqual(found.exception.code, "supplement_manifest_hash_mismatch")
+        self.assertEqual(reader.call_count, 1)
+
+    def test_last_bad_supplement_blob_blocks_all_staging_and_installation(self):
+        specification, manifest, blobs, pins, policy = self.supplement_fixture()
+        blobs[manifest["files"][-1]["path"]] = b"wrong last blob"
+        document = {**self.manifest, "macho_normalization": policy, "frozen_file_supplement": specification}
+        with mock.patch.object(provisioner, "pin_specs", return_value=pins), \
+                mock.patch.object(provisioner, "stage_package") as stage, \
+                mock.patch.object(provisioner, "install_closure") as install:
+            with self.assertRaises(provisioner.ProvisionError) as found:
+                provisioner.provision(document, {}, self.out, provisioner.new_report(), prefix=self.prefix,
+                                      expected_count=None, supplement_reader=lambda commit, path: blobs[path])
+        self.assertEqual(found.exception.code, "supplement_file_hash_mismatch")
+        stage.assert_not_called()
+        install.assert_not_called()
+
+    def test_verified_supplement_keeps_raw_relocated_and_final_hashes_and_skips_signing(self):
+        specification, manifest, blobs, pins, policy = self.supplement_fixture()
+        members = {f"bin/tool{index}": f"raw bottle fixture {index}".encode() for index in range(11)}
+        raw_macho = macho_fixture([macho_link_command("@@HOMEBREW_PREFIX@@/opt/fixture/lib/libfixture.dylib")])
+        members["bin/tool0"] = raw_macho
+        raw_archive = archive_bytes("node/1.0", members)
+        node = entry("node", "1.0", raw_archive)
+        for row in manifest["files"]:
+            row["archive_sha256"] = node["archive_sha256"]
+        encoded = json.dumps(manifest).encode()
+        specification["manifest_sha256"] = digest(encoded)
+        blobs["frozen-tools/manifest.json"] = encoded
+        verified = provisioner.load_frozen_file_supplement(specification, [node], pins, policy, {},
+                                                           blob_reader=lambda commit, path: blobs[path])
+        def download(candidate, destination):
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(raw_archive)
+            return {"archive_sha256": digest(raw_archive)}
+        cli, bridge = mock.Mock(), mock.Mock()
+        record = {"attempts": []}
+        _, staged = provisioner.stage_package(node, self.out, pins, record, downloader=download,
+                                               normalization=policy, macho_runner=cli, security_runner=bridge,
+                                               supplement=verified)
+        cli.assert_not_called()
+        bridge.assert_not_called()
+        attempt = record["attempts"][0]
+        self.assertEqual(attempt["raw_hash_checks"][0]["actual_sha256"], digest(raw_macho))
+        relocated, _ = provisioner.relocate_macho_bytes(raw_macho)
+        self.assertEqual(attempt["normalization"]["files"][0]["normalized_sha256"], digest(relocated))
+        first = attempt["supplement_files"][0]
+        self.assertEqual(first["pre_supplement_sha256"], digest(relocated))
+        self.assertEqual(first["supplemented_sha256"], pins[0]["sha256"])
+        self.assertEqual((staged / "bin/tool0").read_bytes(), blobs[manifest["files"][0]["path"]])
+        self.assertTrue(all(check["status"] == "passed" for check in attempt["hash_checks"]))
+
     def test_runner_guard_requires_hosted_arm64_macos_26_and_all_flags(self):
         good = {"GITHUB_ACTIONS": "true", "RUNNER_ENVIRONMENT": "github-hosted", "RUNNER_OS": "macOS"}
         provisioner.require_github_runner(good, system="Darwin", machine="arm64", macos_version="26.1")
@@ -240,6 +347,71 @@ class ProvisionMacosTests(unittest.TestCase):
         self.assertEqual((staged / "bin/node").stat().st_mode & 0o777, 0o755)
         self.assertTrue((staged / "bin/tool").is_symlink())
         self.assertEqual(provisioner.os.readlink(staged / "bin/tool"), "node")
+
+    def test_postgresql_timezone_hardlinks_become_independent_regular_copies(self):
+        root = "postgresql@17/17.7_1"
+        source = "share/postgresql/timezone/Etc/UTC"
+        alias = "share/postgresql/timezone/UTC"
+        raw = archive_bytes(root, {source: b"timezone bytes", alias: ("hardlink", root + "/" + source)})
+        pg = entry("postgresql@17", "17.7", raw, revision=1)
+        pg["hardlink_copy_prefixes"] = ["share/postgresql/timezone"]
+        archive = self.out / "pg-timezone.tar.gz"
+        archive.write_bytes(raw)
+        staged = provisioner.extract_archive(archive, self.out / "pg-timezone-stage", pg)
+        self.assertEqual((staged / alias).read_bytes(), b"timezone bytes")
+        self.assertNotEqual((staged / alias).stat().st_ino, (staged / source).stat().st_ino)
+        (staged / alias).write_bytes(b"independent mutation")
+        self.assertEqual((staged / source).read_bytes(), b"timezone bytes")
+
+    def test_timezone_hardlink_policy_refuses_outside_targets_and_link_chains(self):
+        root = "postgresql@17/17.7_1"
+        timezone = "share/postgresql/timezone/"
+        cases = {
+            "absolute": (timezone + "bad", "/tmp/outside"),
+            "traversal": (timezone + "bad", root + "/" + timezone + "../outside"),
+            "outside-keg": (timezone + "bad", "other/1.0/share/postgresql/timezone/regular"),
+            "outside-timezone": (timezone + "bad", root + "/bin/tool"),
+            "outside-member": ("bin/bad", root + "/" + timezone + "regular"),
+            "chain": (timezone + "bad", root + "/" + timezone + "alias"),
+            "symlink-source": (timezone + "bad", root + "/" + timezone + "symbolic"),
+            "missing-source": (timezone + "bad", root + "/" + timezone + "missing"),
+        }
+        for name, (member, target) in cases.items():
+            with self.subTest(name=name):
+                raw = archive_bytes(root, {timezone + "regular": b"zone", "bin/tool": b"tool",
+                    timezone + "alias": ("hardlink", root + "/" + timezone + "regular"),
+                    timezone + "symbolic": ("symlink", "regular"), member: ("hardlink", target)})
+                pg = entry("postgresql@17", "17.7", raw, revision=1)
+                pg["hardlink_copy_prefixes"] = ["share/postgresql/timezone"]
+                archive = self.out / (name + "-timezone.tar.gz")
+                archive.write_bytes(raw)
+                staging = self.out / (name + "-timezone-stage")
+                with self.assertRaises(provisioner.ProvisionError):
+                    provisioner.extract_archive(archive, staging, pg)
+                self.assertFalse(staging.exists())
+
+    def test_only_the_exact_llvm_global_link_is_allowed_and_cannot_have_children(self):
+        declaration = {"etc/clang": {"link_target": "../../../../etc/clang", "resolved_target": "/opt/homebrew/etc/clang"}}
+        for name, members in {
+            "valid": {"etc/clang": ("symlink", "../../../../etc/clang")},
+            "target-change": {"etc/clang": ("symlink", "../../../../etc/other")},
+            "member-change": {"etc/other": ("symlink", "../../../../etc/clang")},
+            "write-through": {"etc/clang": ("symlink", "../../../../etc/clang"), "etc/clang/file": b"bad"},
+        }.items():
+            with self.subTest(name=name):
+                raw = archive_bytes("llvm/22.1.8", members)
+                llvm = entry("llvm", "22.1.8", raw)
+                llvm["global_symlinks"] = declaration
+                archive = self.out / (name + "-llvm.tar.gz")
+                archive.write_bytes(raw)
+                staging = self.out / (name + "-llvm-stage")
+                if name == "valid":
+                    staged = provisioner.extract_archive(archive, staging, llvm)
+                    self.assertEqual(provisioner.os.readlink(staged / "etc/clang"), "../../../../etc/clang")
+                else:
+                    with self.assertRaises(provisioner.ProvisionError):
+                        provisioner.extract_archive(archive, staging, llvm)
+                    self.assertFalse(staging.exists())
 
     def test_declared_cross_keg_links_resolve_from_the_public_cellar_path(self):
         node = json.loads(json.dumps(self.node))

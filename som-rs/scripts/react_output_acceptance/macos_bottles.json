@@ -9,6 +9,12 @@
     "reason": "Read-only LC_BUILD_VERSION metadata on the pinned rustc and postgres executables declares minos 26.0. Node declares minos 13.5. The exact Rust and PostgreSQL binaries require macOS 26 or newer."
   },
   "scope": "Provision the existing frozen React acceptance toolchain and its non-system dynamic library closure on a disposable GitHub macOS VM. This is acceptance infrastructure for issue 130.",
+  "frozen_file_supplement": {
+    "repository": "faberline/som",
+    "commit": "addbb3391966ad668769b979795b5f81f9cdc581",
+    "manifest_path": "frozen-tools/manifest.json",
+    "manifest_sha256": "e2c2b1f08da04255843ecac223221874e120cc9311fc8dbd7ae62007eb4b6e5f"
+  },
   "provenance": {
     "sources": [
       "Installed Homebrew INSTALL_RECEIPT.json and sbom.spdx.json metadata",
@@ -160,6 +166,9 @@
       "target": "arm64_tahoe",
       "expected_keg_directory": "/opt/homebrew/Cellar/postgresql@17/17.7_1",
       "opt_symlink": "/opt/homebrew/opt/postgresql@17",
+      "hardlink_copy_prefixes": [
+        "share/postgresql/timezone"
+      ],
       "url": "https://ghcr.io/v2/homebrew/core/postgresql/17/blobs/sha256:2656f7aa606f549c30590d6ef7af593efefb354d9e570164bf54c90db0e5680d",
       "archive_sha256": "2656f7aa606f549c30590d6ef7af593efefb354d9e570164bf54c90db0e5680d",
       "archive_size_bytes": 19885160,
@@ -203,6 +212,12 @@
       "target": "arm64_tahoe",
       "expected_keg_directory": "/opt/homebrew/Cellar/llvm/22.1.8",
       "opt_symlink": "/opt/homebrew/opt/llvm",
+      "global_symlinks": {
+        "etc/clang": {
+          "link_target": "../../../../etc/clang",
+          "resolved_target": "/opt/homebrew/etc/clang"
+        }
+      },
       "url": "https://ghcr.io/v2/homebrew/core/llvm/blobs/sha256:d83ee9d03be9f9a5e5795b3ada6b67847735615f4721d19f424dce3632075d19",
       "archive_sha256": "d83ee9d03be9f9a5e5795b3ada6b67847735615f4721d19f424dce3632075d19",
       "archive_size_bytes": 451019170,
@@ -1297,7 +1312,8 @@
     }
   ],
   "relocation": {
-    "symlink_rule": "Preserve symlink target bytes. A bottle can link only within its own exact keg or the exact Cellar kegs and opt paths of its declared transitive dependency closure. Resolve relative links from the final public Cellar member path. Refuse unknown global prefix links and report only their public bottle member and target. No archive member can write through a symlink parent.",
+    "symlink_rule": "Preserve symlink target bytes. A bottle can link only within its own exact keg or the exact Cellar kegs and opt paths of its declared transitive dependency closure. Resolve relative links from the final public Cellar member path. The sole declared global exception is LLVM 22.1.8 etc/clang with literal ../../../../etc/clang and resolved /opt/homebrew/etc/clang, confirmed in GitHub run 40731847053 artifact 12834389138 and the installed keg's metadata. Refuse every unknown global prefix link and report only its public bottle member and target. No archive member can write through a symlink or hardlink parent.",
+    "hardlink_rule": "PostgreSQL 17.7_1 alone permits archive hardlink members within share/postgresql/timezone. Primary metadata identifies 368 multiply-linked regular files there and none elsewhere in that keg. Materialize an independent byte copy only when the target is a validated regular member in the same exact keg/timezone subtree. Never create a filesystem hardlink. Refuse absolute targets, traversal, missing targets, chains, other subtrees and every hardlink in other formulae. The immutable archive SHA and frozen executable hashes stay required; exact archive member diagnostics remain in failed reports.",
     "strategy": "Extract the exact official archives into stage directories, preserve raw hash records, apply only the declared historical Mach-O placeholder normalization and ad-hoc signature, require every frozen installed hash, then install exact kegs and opt links on the disposable GitHub VM.",
     "prohibited_before_frozen_hash_checks": [
       "Do not run brew install or brew upgrade to select current formula versions.",
@@ -1372,6 +1388,8 @@
     "signing_page_size": "For the listed exact frozen path and installed SHA-256, use its observed installed CodeDirectory page size with explicit codesign --pagesize. The raw bottle's page size can differ from the installed file: both Node files use 16384 in the bottle and 4096 after historical installation. Unlisted support files retain the source CodeDirectory size. Keep source and selected sizes, the exact frozen binding and signing arguments in the report. Every unchanged frozen file hash must still pass.",
     "installed_signing_page_size_evidence": "Read-only codesign display and full-file SHA-256 reads independently confirmed all 32 listed installed files against the frozen contracts. These are signing parameters, not replacement hashes. Rust's six frozen hashes passed on GitHub run 40727628136 at 13ab75be1652e6ad4562330879cb5216be4c55d9. That run's artifact 12833132938 recorded Node's raw 16384-byte signing pages; signing with the observed installed 4096-byte pages remains unverified until GitHub passes its unchanged frozen hashes.",
     "compact_signature_reservation": "Read-only load-command and SuperBlob-header reads from the same hash-matched primary files identified 12 exact compact allocations, listed with cms_reserve=0. In GitHub run 40728871323 at 6e45ae2ab14fb8d14efe1e957c5a736cb966a911, artifact 12832874811 records Node's correct page size but 18000 excess signature bytes for both files. The primary Node allocation is 672 bytes for a 670-byte SuperBlob; libnode is 582528 for 582524. Apple's source defaults the CMS reservation to 18000. Its CLI omits a zero-valued override. The bounded ctypes bridge calls that same Apple Security signing API with explicit CFNumber cmssize=0, ad-hoc identity kCFNull, preserve-metadata bits 278, strict-preflight create flag 128, and add-signature flags 0. It applies only to exact frozen path and SHA bindings, and keeps the normal CLI for other files. It never rewrites signature structures. Bridge/API parameters and OSStatus are retained. Exact frozen output hashes remain unverified until GitHub passes them.",
+    "current_signature_limit": "GitHub run 40731847053 at 167743d1c0ba7f643fd3444d2cfb2a8df28aa62f, artifact 12834389138, exercised the bridge and passed libnode's exact frozen hash. It did not pass every compact file. Apple's zero-reserve estimator can omit the empty CMS slot before signing adds it, producing errSecCSCMSTooLarge (-67036). For bin/node the final signature size and code body match, but Apple's current allocator changes __LINKEDIT.vmsize from the frozen 32768 to 16384. An API-only reservation change cannot reproduce that frozen file. These failures still block installation; no frozen hash has been changed or substituted.",
+    "frozen_supplement_rule": "The separately pinned public third-party tool commit contains only the eleven still-failing exact frozen compact files, totaling 1986112 bytes, with preserved license texts and formula provenance. Libnode is excluded because GitHub already reproduced its exact frozen bytes. Verify the supplement manifest and all eleven file blobs before normalization or installation. Every row must match an unchanged contract path and SHA-256, the exact official bottle digest and keg, its public source path, byte count and mode. For those verified paths only, retain raw and unsigned-relocated hashes, skip the known incompatible signing attempt, then copy the verified bytes only if the staged installed hash still fails. Record pre-supplement and supplemented hashes separately. Unknown paths cannot use the supplement. All final frozen checks remain mandatory. The real GitHub runner must verify this complete path before any provisioning success is claimed.",
     "installed_signing_page_sizes": [
       {
         "path": "/opt/homebrew/Cellar/rust/1.96.1/bin/rustc",

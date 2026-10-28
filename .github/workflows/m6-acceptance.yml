@@ -49,7 +49,22 @@ jobs:
         run: |
           printf '%s\n' "$TESTED_SHA" > "$RUNNER_TEMP/m6-tested-sha.txt"
           python3 --version
-      - name: Provision and check the frozen tools
+      - name: Fetch the pinned public tool supplement
+        # The public supplement is separate from the approved project inputs.
+        # Its exact files still have to match every frozen tool hash.
+        # Fetch it before installing tools changes any runner library links.
+        # No secret is needed for these public third-party files.
+        # Keep the fetch and the provision as separate failure stages.
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, re, subprocess
+          config = json.loads(pathlib.Path('som-rs/scripts/react_output_acceptance/macos_bottles.json').read_bytes())
+          supplement = config['frozen_file_supplement']
+          if supplement['repository'] != 'faberline/som' or not re.fullmatch(r'[0-9a-f]{40}', supplement['commit']):
+              raise SystemExit('invalid public tool supplement')
+          subprocess.run(['git', 'fetch', '--no-tags', '--depth=1', 'origin', supplement['commit']], check=True)
+          PY
+      - name: Verify and install the frozen tool closure
         run: |
           python3 som-rs/scripts/react_output_acceptance/provision_macos.py --out "$RUNNER_TEMP/m6-provision"
       - name: Prepare the product Python environment
@@ -110,7 +125,7 @@ jobs:
           source = pathlib.Path('.local/m6-hosted/acceptance/summary.json')
           if source.is_file():
               record = json.loads(source.read_bytes())
-          names = ('version', 'passed', 'status', 'failed_stage', 'product_suites', 'head_before', 'head_after', 'baseline_binary_sha256', 'candidate_binary_sha256', 'reconstructed_inputs_receipt_sha256', 'step_count', 'audit_totals', 'acceptance_exit_code', 'audit_exit_code', 'cleanup')
+          names = ('version', 'passed', 'status', 'failed_stage', 'product_suites', 'head_before', 'head_after', 'baseline_binary_sha256', 'candidate_binary_sha256', 'reconstructed_inputs_receipt_sha256', 'bootstrap_assets_receipt_sha256', 'step_count', 'audit_totals', 'acceptance_exit_code', 'audit_exit_code', 'cleanup')
               target = pathlib.Path(os.environ['RUNNER_TEMP']) / 'm6-acceptance-summary.json'
               target.write_text(json.dumps({name: record[name] for name in names if name in record}, indent=2) + '\n')
           PY

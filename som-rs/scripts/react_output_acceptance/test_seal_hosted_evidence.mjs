@@ -75,7 +75,7 @@ async function decryptOutput(out, key = selectedKey) {
 
 test("all raw run inputs and named candidate files survive encryption", async (t) => {
   const data = await fixture(t);
-  for (const name of ["summary.json", "audit.json", "driver.stdout", "driver.stderr", "driver-128.stdout", "driver-128.stderr",
+  for (const name of ["summary.json", "audit.json", "bootstrap-assets.json", "driver.stdout", "driver.stderr", "driver-128.stdout", "driver-128.stderr",
     "baseline.stdout", "baseline.stderr", "prepare.stdout", "prepare.stderr", "acceptance.stdout", "acceptance.stderr",
     "audit.stdout", "audit.stderr", "head-before.stdout", "head-after.stdout", "candidate-ps.stdout", "cleanup.stdout", "cleanup.stderr",
     "reconstructed-inputs/receipt.json", "reconstructed-inputs/names/RN01.request.raw",

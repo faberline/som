@@ -3,11 +3,13 @@ from __future__ import annotations
 
 import contextlib
 import errno
+import hashlib
 import importlib.util
 import io
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -32,6 +34,13 @@ class Fixture:
         (self.frozen / "som").write_bytes(b"fake pinned baseline")
         self.pin = driver.sha(self.frozen / "som")
         save(self.frozen / "runtime.json", {"health": {"status": "ok"}})
+        assets = self.frozen / "assets"
+        assets.mkdir()
+        for name in sorted(driver.ASSET_NAMES - {"manifest.json"}):
+            (assets / name).write_bytes(("synthetic frozen asset: " + name).encode())
+        (assets / "ruff").chmod(0o755)
+        save(assets / "manifest.json", {"version": "som.compiler-assets.v1",
+             "files": {name: driver.sha(assets / name) for name in sorted(driver.ASSET_NAMES - {"manifest.json"})}})
         save(self.repo / "som-rs/contracts/react-output-v1/acceptance-plan.json", {"baseline": self.pin})
         (self.repo / ".local/m6-hosted/prettier").mkdir()
         self.out = self.repo / ".local/m6-hosted/check"
@@ -40,6 +49,7 @@ class Fixture:
         self.bad_cwd = self.changed_head = self.omit_run = False
         self.run_overrides, self.audit_overrides = {}, {}
         self.reconstruction_overrides = {}
+        self.asset_drift = None
 
     def run(self, command, **kwargs):
         self.calls.append(command)
@@ -76,11 +86,17 @@ class Fixture:
                     "rust_reference": {"destination": "rust-baseline", "source_tree_sha256": "f" * 64,
                                        "copy_tree_sha256": "f" * 64}, **self.reconstruction_overrides})
         elif command[1].endswith("prepare_candidate.py"):
+            assert (self.repo / "som-rs/compiler-assets/current/manifest.json").is_file()
             code = self.prepare_exit
             if not code:
                 candidate = self.out / "candidate"
                 candidate.mkdir()
                 (candidate / "som").write_bytes(b"fake candidate")
+                shutil.copytree(self.frozen / "assets", candidate / "assets")
+                if self.asset_drift == "changed":
+                    (candidate / "assets/blocks.json").write_bytes(b"changed packaged bytes")
+                elif self.asset_drift == "extra":
+                    (candidate / "assets/unexpected").write_bytes(b"extra packaged asset")
                 pin = driver.sha(candidate / "som")
                 self.runtime = {"pid": 4321, "port": 18919, "binary_sha256": pin, "accepted": False,
                     "argv": [str(candidate / "som"), "serve", "--assets", str(candidate / "assets"), "--port", "18919"]}
@@ -164,6 +180,9 @@ class HostedDriverTests(unittest.TestCase):
         code, summary = self.invoke()
         self.assertEqual((code, summary["passed"], summary["step_count"]), (0, True, 12))
         self.assertEqual(summary["cleanup"]["candidate"]["ownership_verified"], True)
+        self.assertTrue(summary["candidate_assets_match_bootstrap"])
+        self.assertEqual(summary["bootstrap_assets_receipt_sha256"], driver.sha(self.fixture.out / "bootstrap-assets.json"))
+        self.assertEqual(driver.asset_files(self.fixture.repo / "som-rs/compiler-assets/current"), driver.asset_files(self.fixture.frozen / "assets"))
         self.assertEqual(self.start.call_args.kwargs["env"]["PYTHONDONTWRITEBYTECODE"], "1")
         self.assertEqual((self.fixture.out / "acceptance.stdout").read_bytes(), b"private raw output\n")
         command = next(command for command in self.fixture.calls if len(command) > 1 and command[1].endswith("run_acceptance.py"))
@@ -208,7 +227,9 @@ class HostedDriverTests(unittest.TestCase):
                 self.fixture.out = self.fixture.repo / f".local/m6-hosted/check-{name}"
                 self.fixture.audit_overrides = {"totals": {"failed": 0, "unrun": 0, name: False}}
                 self.kill.side_effect = [None, ProcessLookupError()]
-                self.assertEqual(self.invoke()[0], 1)
+                code, summary = self.invoke()
+                self.assertEqual((code, summary["failed_stage"]), (1, "verdict"))
+                shutil.rmtree(self.fixture.repo / "som-rs/compiler-assets/current")
 
     def test_invalid_run_metadata_is_refused(self):
         for field, value in (("version", "unrelated.run.v1"), ("identity_passed", False),
@@ -217,7 +238,30 @@ class HostedDriverTests(unittest.TestCase):
                 self.fixture.out = self.fixture.repo / f".local/m6-hosted/check-{field}"
                 self.fixture.run_overrides = {field: value}
                 self.kill.side_effect = [None, ProcessLookupError()]
-                self.assertEqual(self.invoke()[0], 1)
+                code, summary = self.invoke()
+                self.assertEqual((code, summary["failed_stage"]), (1, "verdict"))
+                shutil.rmtree(self.fixture.repo / "som-rs/compiler-assets/current")
+
+    def test_different_or_extra_packaged_assets_stop_before_acceptance(self):
+        for drift in ("changed", "extra"):
+            with self.subTest(drift=drift):
+                self.fixture.out = self.fixture.repo / f".local/m6-hosted/check-assets-{drift}"
+                self.fixture.asset_drift = drift
+                self.kill.side_effect = [None, ProcessLookupError()]
+                code, summary = self.invoke()
+                self.assertEqual((code, summary["failed_stage"], summary["product_suites"]), (1, "candidate-assets", "not_run"))
+                shutil.rmtree(self.fixture.repo / "som-rs/compiler-assets/current")
+        self.assertFalse(any(len(command) > 1 and command[1].endswith("run_acceptance.py") for command in self.fixture.calls))
+
+    def test_existing_bootstrap_fixture_is_not_overwritten(self):
+        staged = self.fixture.repo / "som-rs/compiler-assets/current"
+        staged.mkdir(parents=True)
+        sentinel = staged / "preserve"
+        sentinel.write_bytes(b"existing fixture")
+        code, summary = self.invoke()
+        self.assertEqual((code, summary["failed_stage"]), (1, "bootstrap-assets"))
+        self.assertEqual(sentinel.read_bytes(), b"existing fixture")
+        self.assertFalse(any(len(command) > 1 and command[1].endswith("prepare_candidate.py") for command in self.fixture.calls))
 
     def test_failed_prepare_records_suites_as_unrun(self):
         self.fixture.prepare_exit = 1
@@ -265,6 +309,78 @@ class HostedDriverTests(unittest.TestCase):
 
 
 ORIGINAL_HOST = driver.require_hosted
+
+
+class BootstrapAssetTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.fixture = Fixture(self.root)
+        self.source = self.fixture.frozen / "assets"
+        self.target = self.fixture.repo / "som-rs/compiler-assets/current"
+        self.fixture.out.mkdir(parents=True)
+        patch = mock.patch.object(driver, "REPO", self.fixture.repo)
+        patch.start()
+        self.addCleanup(patch.stop)
+
+    def copy(self):
+        return driver.bootstrap_assets(self.source, self.target, self.fixture.out)
+
+    def test_copy_is_physical_byte_identical_and_hash_bound(self):
+        before = {path.name: path.read_bytes() for path in self.source.iterdir()}
+        expected = {name: hashlib.sha256(raw).hexdigest() for name, raw in before.items()}
+        receipt = self.copy()
+        self.assertEqual(receipt["version"], "som.m6-bootstrap-assets.v1")
+        self.assertEqual(receipt["source_files"], expected)
+        self.assertEqual(receipt["staged_files"], expected)
+        self.assertEqual(receipt["file_count"], 7)
+        self.assertEqual(receipt["product_suites"], "not_run")
+        self.assertEqual(json.loads((self.fixture.out / "bootstrap-assets.json").read_bytes()), receipt)
+        for name, raw in before.items():
+            source, copied = self.source / name, self.target / name
+            self.assertEqual(copied.read_bytes(), raw)
+            self.assertFalse(copied.is_symlink())
+            self.assertNotEqual((source.stat().st_dev, source.stat().st_ino), (copied.stat().st_dev, copied.stat().st_ino))
+        self.assertTrue((self.target / "ruff").stat().st_mode & 0o111)
+        (self.target / "blocks.json").write_bytes(b"changed fixture copy")
+        self.assertEqual({path.name: path.read_bytes() for path in self.source.iterdir()}, before)
+
+    def test_existing_target_and_baseline_bytes_are_preserved(self):
+        self.target.mkdir(parents=True)
+        (self.target / "preserve").write_bytes(b"existing bytes")
+        before = {path.name: path.read_bytes() for path in self.source.iterdir()}
+        with self.assertRaises(ValueError):
+            self.copy()
+        self.assertEqual((self.target / "preserve").read_bytes(), b"existing bytes")
+        self.assertEqual({path.name: path.read_bytes() for path in self.source.iterdir()}, before)
+
+    def test_symlink_target_is_refused_without_writing_through_it(self):
+        external = self.root / "external"
+        external.mkdir()
+        self.target.parent.mkdir(parents=True)
+        self.target.symlink_to(external)
+        with self.assertRaises(ValueError):
+            self.copy()
+        self.assertEqual(list(external.iterdir()), [])
+
+    def test_linked_parent_is_refused_before_directory_creation(self):
+        external = self.root / "external"
+        external.mkdir()
+        self.target.parent.symlink_to(external)
+        with self.assertRaises(ValueError):
+            self.copy()
+        self.assertEqual(list(external.iterdir()), [])
+
+    def test_linked_source_file_is_refused(self):
+        external = self.root / "external-ruff"
+        external.write_bytes(b"external binary")
+        (self.source / "ruff").unlink()
+        (self.source / "ruff").symlink_to(external)
+        with self.assertRaises(ValueError):
+            self.copy()
+        self.assertFalse(self.target.exists())
+        self.assertEqual(external.read_bytes(), b"external binary")
 
 
 class TransportGuardTests(unittest.TestCase):

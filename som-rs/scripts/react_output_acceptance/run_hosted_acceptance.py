@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import platform
 import re
+import shutil
 import signal
 import socket
 import subprocess
@@ -24,6 +25,8 @@ STEPS = ("contract", "react-target", "react-python-controls", "python-baseline",
          "rust-baseline", "rust-python-controls", "rt-diagnostics", "ts-target",
          "ts-baseline", "ts-python-controls", "bundles", "products")
 BASELINE_PORT, CANDIDATE_PORT = 18917, 18919
+ASSET_NAMES = {"blocks.json", "legacy-blocks.json", "quality-blocks.json", "quality.json",
+               "ruff", "pyproject.toml", "manifest.json"}
 OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
@@ -61,6 +64,45 @@ def output_path(value: Path) -> Path:
         if path == REPO:
             break
     return out
+
+
+def physical_directories(path: Path) -> None:
+    """Check original paths before mkdir/copy can follow a linked parent."""
+    need(path.is_relative_to(REPO))
+    for directory in (path, *path.parents):
+        need(not directory.is_symlink() and (not directory.exists() or directory.is_dir()))
+        if directory == REPO:
+            break
+
+
+def asset_files(root: Path) -> dict[str, str]:
+    physical_directories(root)
+    need(root.is_dir())
+    files = {}
+    for path in sorted(root.iterdir()):
+        need(not path.is_symlink() and path.is_file())
+        files[path.name] = sha(path)
+    need(set(files) == ASSET_NAMES)
+    return files
+
+
+def bootstrap_assets(source: Path, destination: Path, out: Path) -> dict:
+    physical_directories(destination)
+    need(not destination.exists())
+    before = asset_files(source)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.mkdir()
+    for name in before:
+        shutil.copy2(source / name, destination / name, follow_symlinks=False)
+    copied = asset_files(destination)
+    need(before == copied == asset_files(source))
+    receipt = {"version": "som.m6-bootstrap-assets.v1", "status": "passed", "product_suites": "not_run",
+               "source": source.relative_to(REPO).as_posix(), "destination": destination.relative_to(REPO).as_posix(),
+               "file_count": len(before), "source_files": before, "staged_files": copied}
+    with (out / "bootstrap-assets.json").open("x") as stream:
+        json.dump(receipt, stream, indent=2, sort_keys=True)
+        stream.write("\n")
+    return receipt
 
 
 def clean_env() -> dict[str, str]:
@@ -153,6 +195,7 @@ def verdict(out: Path, summary: dict) -> bool:
     summary["step_count"] = len(run["steps"])
     summary["audit_totals"] = audit["totals"]
     return (build.get("complete") is True and runtime.get("accepted") is False
+            and summary.get("candidate_assets_match_bootstrap") is True
             and build.get("source_unchanged") is True
             and actual == build.get("binary_sha256") == runtime.get("binary_sha256")
             and build.get("tree_before", {}).get("head") == summary["head_before"]
@@ -224,10 +267,18 @@ def main(argv: list[str] | None = None) -> int:
              and re.fullmatch(r"[0-9a-f]{64}", reference["source_tree_sha256"]) is not None
              and reference["source_tree_sha256"] == reference["copy_tree_sha256"])
         summary["reconstructed_inputs_receipt_sha256"] = sha(reconstructed / "receipt.json")
+        stage = "bootstrap-assets"
+        staged_assets = REPO / "som-rs/compiler-assets/current"
+        bootstrap = bootstrap_assets(frozen / "assets", staged_assets, out)
+        summary["bootstrap_assets_receipt_sha256"] = sha(out / "bootstrap-assets.json")
         stage = "candidate"
         need(logged(out, "prepare", [sys.executable, str(HERE.parent / "rust_output_acceptance/prepare_candidate.py"),
                      "--out", str(out / "candidate"), "--port", str(CANDIDATE_PORT), "--package-assets",
                      str(frozen / "assets/ruff"), "--prettier", env["SOM_TS_PRETTIER"]], env) == 0)
+        stage = "candidate-assets"
+        candidate_assets = asset_files(out / "candidate/assets")
+        need(candidate_assets == bootstrap["source_files"] == asset_files(staged_assets) == asset_files(frozen / "assets"))
+        summary["candidate_assets_match_bootstrap"] = True
         stage = "acceptance"
         try:
             summary["acceptance_exit_code"] = logged(out, "acceptance", [sys.executable, str(HERE / "run_acceptance.py"),
