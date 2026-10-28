@@ -1,0 +1,37 @@
+{
+  "version": "som.react-output-release-independent-review.v1",
+  "issue": 131,
+  "observed_at_utc": "2026-10-28T21:09:41.537442+00:00",
+  "status": "hosted_rehearsal_accepted; production_release_pending",
+  "reviewer": "Independent Codex raw-evidence reviewer; separate deployment-data reviewer",
+  "source_commit": "f76d8af5f49c7848b9fe5609d4975c679640b553",
+  "run_id": 40766965664,
+  "job_id": 123093585665,
+  "summary_sha256": "2521ef6bcd66ee029275593e67dac68480c92f4b7125ef449abed5f6a6e51910",
+  "rehearsal_sha256": "c5b0bbe3c4ac902a78e92c91df26877fcea4b606d9528675093672df12f2eb9d",
+  "checks": {
+    "offline_resume_chains": 5,
+    "resumed_previous_canary_events": 30,
+    "http_request_response_pairs": 476,
+    "cli_stdout_files": 238,
+    "bound_canary_input_files": 84,
+    "script_file_hashes": 17,
+    "outer_stream_hashes": 34,
+    "independent_default_checks": 6,
+    "started_compiler_children_with_verified_stop_paths": 24,
+    "final_pointer_sidecars": 10,
+    "byte_mismatches": 0,
+    "evidence_or_cleanup_errors": 0
+  },
+  "scope": [
+    "All five actual seed/resume/switch/restore-or-rollback chains match the accepted inputs.",
+    "Every accepted HTTP and CLI expectation matches the retained actual bytes.",
+    "The protected-port guard uses read-only lsof; all service and client ports are QA ports.",
+    "All final pointer sidecars restore the previous binary/assets. All owned processes have verified stop paths.",
+    "The earlier deeb run is excluded because its protected-port claim was false.",
+    "Deployment data review matches all 163 manifest files and 97 active bindings. Only absolute path strings changed."
+  ],
+  "local_project_imports_tests_builds_and_services": "not_run",
+  "production_start_switch_tag_release": "not authorized or executed",
+  "primary_write_ownership": "pending explicit release by its owning session"
+}

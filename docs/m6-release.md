@@ -75,12 +75,19 @@ Process checks use the binary hash, command, start time, user, working directory
 The workflow saves `m6-release-summary` and encrypted `m6-release-evidence` artifacts.
 The summary must show all five scenarios passed.
 An independent reviewer must read the raw journals and default-check results before release approval is requested.
-The corrected rehearsal result is pending.
+The corrected rehearsal passed independent raw-evidence review.
+See [run 40766965664](https://github.com/faberline/som/actions/runs/40766965664), the [rehearsal receipt](../som-rs/evidence/react-output-release-rehearsal-2026-10-29-issue131.json), and the [independent review](../som-rs/evidence/react-output-release-independent-review-2026-10-29-issue131.json).
+Its tested controller source is `f76d8af5f49c7848b9fe5609d4975c679640b553`.
+All 441 [tooling checks](https://github.com/faberline/som/actions/runs/40766965597) passed.
+Each of the five scenarios first resumed a stopped previous compiler.
+The reviewer matched 476 HTTP request/reply pairs and 238 CLI outputs.
+All final processes stopped.
+The protected-port checks only read listener metadata.
 The first [hosted run 40764095844](https://github.com/faberline/som/actions/runs/40764095844) passed its five switch and rollback scenarios.
 Its protected-port guard called a function that briefly bound `8765` and `18765` on the runner.
 The summary's `protected_ports_unused` claim was incorrect.
 That run is not final release acceptance.
-The next run must use read-only listener checks and include the offline-start rehearsal.
+The corrected run above replaces that evidence.
 
 ## Production change
 
@@ -89,7 +96,7 @@ Bind the exact candidate binary, assets, formatter tree, accepted receipts, rele
 Resolve write ownership of the production checkout before changing it.
 The current production checkout is `/Users/chrischeng/faberlines/som`.
 The managed development worktree does not hold the production default receipt.
-Read-only process inspection found no listener on port `8765` and no process with the recorded PID `16959`.
+Read-only process inspection found no listener on port `8765` and no process with the receipt's recorded PID.
 The deployment plan must first start the same accepted previous compiler.
 It must save and check its fresh process identity before the normal switch can proceed.
 Starting that production service is part of the pending explicit approval.
@@ -103,7 +110,42 @@ Keep the previous binary, assets, and switch evidence for recovery.
 Do not change the 127 public or 544 legacy product files.
 Do not change the frozen React contract.
 
-The exact production command and approval receipt are pending the hosted rehearsal and deployment package review.
+The deployment package passed independent data review.
+Its 163 file records and 97 active file bindings match their hashes.
+The prepared production prerequisites hash is `2ca65ac03f0aec41abc9be3e7264005e3b4555e8c297919e3ab6928afe0cda5c`.
+This differs from the hosted prerequisites because the file paths name the production checkout.
+The data review confirmed that only those paths changed.
+
+Install the prepared payload at `/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/react-131-release-001` after primary ownership is clear.
+Install only the tested `release_common.py`, `switch.py`, `check_default.py`, and `resume_default.py` helper bytes.
+Check each recorded old file hash before installation.
+Keep byte and mode backups.
+Check each new hash before any service action.
+Keep the frozen `compiler_default_switch.py` unchanged.
+
+The operator commands are listed below.
+The approval files do not exist until the user explicitly approves the start, switch, and recovery plan.
+After a verified resume, bind the switch approval to the fresh receipt that the resume wrote.
+
+```sh
+SOM_RELEASE_ROOT=/Users/chrischeng/faberlines/som
+SOM_RELEASE_DATA="$SOM_RELEASE_ROOT/.local/rust-compiler-goal/acceptance/react-131-release-001"
+SOM_RELEASE_TOOLS="$SOM_RELEASE_ROOT/som-rs/scripts/rust_output_release"
+SOM_RELEASE_PYTHON=/opt/homebrew/opt/python@3.12/bin/python3.12
+
+"$SOM_RELEASE_PYTHON" "$SOM_RELEASE_TOOLS/resume_default.py" --prerequisites "$SOM_RELEASE_DATA/prerequisites.json" --root "$SOM_RELEASE_ROOT" --port 8765 --execute --output "$SOM_RELEASE_DATA/resume-001" --approval "$SOM_RELEASE_DATA/resume-approval.json"
+"$SOM_RELEASE_PYTHON" "$SOM_RELEASE_TOOLS/switch.py" --prerequisites "$SOM_RELEASE_DATA/prerequisites.json" --root "$SOM_RELEASE_ROOT" --port 8765 --execute --output "$SOM_RELEASE_DATA/switch-001" --approval "$SOM_RELEASE_DATA/switch-approval.json"
+"$SOM_RELEASE_PYTHON" "$SOM_RELEASE_TOOLS/check_default.py" --prerequisites "$SOM_RELEASE_DATA/prerequisites.json" --root "$SOM_RELEASE_ROOT" --port 8765 --expect-binary-sha256 59dab78a0f401a86e028c186285a888cfdf304b2d077e167d46b20d1131a3308 --output "$SOM_RELEASE_DATA/check-default-001"
+```
+
+The recovery command uses the committed switch evidence.
+Bind its approval to the actual current receipt before recovery.
+
+```sh
+"$SOM_RELEASE_PYTHON" "$SOM_RELEASE_TOOLS/switch.py" --prerequisites "$SOM_RELEASE_DATA/prerequisites.json" --root "$SOM_RELEASE_ROOT" --port 8765 --restore "$SOM_RELEASE_DATA/switch-001" --output "$SOM_RELEASE_DATA/restore-001" --approval "$SOM_RELEASE_DATA/restore-approval.json"
+```
+
+Primary ownership and explicit service approval remain pending.
 The approval check requires the exact prerequisites, script, current default, and candidate hashes.
 A QA approval file cannot stand in for a production approval file.
 
