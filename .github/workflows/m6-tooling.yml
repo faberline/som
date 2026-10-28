@@ -6,6 +6,10 @@ on:
       - .github/workflows/m6-tooling.yml
       - som-rs/scripts/react_output_acceptance/**
       - som-rs/scripts/rust_output_release/**
+      - som-rs/scripts/react_quickstart/**
+      - docs/react-fe.md
+      - docs/goal.md
+      - docs/roadmap.md
   workflow_dispatch:
 
 permissions:
@@ -20,6 +24,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  quickstart:
+    name: M6 React quickstart fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Record tested revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 --version
+          printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+      - name: Run issue 139 unit gate
+        run: |
+          python3 -m unittest discover -s som-rs/scripts/react_quickstart -p 'test_*.py' -v 2>&1 | tee quickstart-tests.log
+          python3 som-rs/scripts/react_quickstart/smoke.py --help | tee quickstart-help.txt
+      - name: Keep quickstart unit gate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: m6-quickstart-fixtures
+          path: |
+            tested-sha.txt
+            quickstart-tests.log
+            quickstart-help.txt
+          if-no-files-found: error
+          retention-days: 30
+
   runner:
     name: M6 acceptance runner fixtures
     runs-on: ubuntu-24.04
