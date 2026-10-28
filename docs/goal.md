@@ -33,3 +33,4 @@ The [roadmap](roadmap.md) lists the tracks, their open decisions, and their issu
 The [Python backend quickstart](python-be.md) shows how to generate and run a Python backend project.
 The [Rust backend quickstart](rust-be.md) shows how to generate and build a Rust backend project offline.
 The [TypeScript backend quickstart](typescript-be.md) shows how to generate and run a TypeScript backend project offline.
+The [React frontend quickstart](react-fe.md) shows how to generate a React client for the matching Python service.
