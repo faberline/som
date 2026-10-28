@@ -388,6 +388,21 @@ class ProvisionMacosTests(unittest.TestCase):
             provisioner.relocate_macho_bytes(no_padding)
         self.assertEqual(found.exception.code, "macho_header_padding_missing")
 
+    def test_source_signature_page_size_is_preserved_and_invalid_size_refused(self):
+        for bits in (12, 14):
+            directory = bytearray(40)
+            struct.pack_into(">II", directory, 0, 0xFADE0C02, 40)
+            directory[39] = bits
+            signature = struct.pack(">IIIII", 0xFADE0CC0, 60, 1, 0, 20) + directory
+            command = struct.pack("<IIII", 0x1D, 16, 48, len(signature))
+            raw = macho_fixture([command], signature)
+            self.assertEqual(provisioner.signing_page_size(raw), 1 << bits)
+            broken = bytearray(raw)
+            broken[-1] = 9
+            with self.assertRaises(provisioner.ProvisionError):
+                provisioner.signing_page_size(bytes(broken))
+        self.assertIsNone(provisioner.signing_page_size(macho_fixture([macho_link_command("/usr/lib/a.dylib")])))
+
     def test_macho_without_placeholder_linkage_is_byte_identical(self):
         raw = macho_fixture([macho_link_command("@rpath/libfixture.dylib")],
                             body=b"@@HOMEBREW_PREFIX@@ data is not a linkage command")

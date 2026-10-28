@@ -461,13 +461,17 @@ def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[st
         item = {"member": path.relative_to(staged).as_posix(), "raw_sha256": hashlib.sha256(raw).hexdigest(),
                 "unsigned_relocated_sha256": hashlib.sha256(relocated).hexdigest(), "operations": operations,
                 "status": "started"}
+        page_size = signing_page_size(raw)
+        item["source_signing_page_size"] = page_size
         record["files"].append(item)
         mode = path.stat().st_mode & 0o777
         try:
             path.chmod(mode | 0o200)
             path.write_bytes(relocated)
             runner = subprocess.run if command_runner is None else command_runner
-            done = runner(["/usr/bin/codesign", *CODESIGN_ARGUMENTS, str(path)],
+            arguments = [*CODESIGN_ARGUMENTS, *(["--pagesize", str(page_size)] if page_size is not None else [])]
+            item["codesign_arguments"] = arguments
+            done = runner(["/usr/bin/codesign", *arguments, str(path)],
                           capture_output=True, text=True, timeout=120, check=False)
             item["codesign_exit_code"] = done.returncode
             need(done.returncode == 0, "macho_codesign_failed", "Historical ad-hoc signing failed.")
@@ -483,6 +487,34 @@ def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[st
         finally:
             path.chmod(mode)
     record["status"] = "passed"
+
+
+def signing_page_size(raw: bytes) -> int | None:
+    """Keep the source CodeDirectory granularity across OS signer versions."""
+    cursor = 32
+    for _ in range(struct.unpack_from("<I", raw, 16)[0]):
+        kind, size = struct.unpack_from("<II", raw, cursor)
+        if kind == 0x1D:
+            offset, length = struct.unpack_from("<II", raw, cursor + 8)
+            need(length >= 12 and offset + length <= len(raw), "macho_signature_invalid", "A source signature region is invalid.")
+            magic, declared, count = struct.unpack_from(">III", raw, offset)
+            need(magic == 0xFADE0CC0 and 12 + 8 * count <= declared <= length and count <= 64,
+                 "macho_signature_invalid", "A source signature index is invalid.")
+            sizes = set()
+            for index in range(count):
+                _, relative = struct.unpack_from(">II", raw, offset + 12 + 8 * index)
+                need(relative + 8 <= declared, "macho_signature_invalid", "A source signature member is invalid.")
+                member_magic, member_size = struct.unpack_from(">II", raw, offset + relative)
+                need(relative + member_size <= declared, "macho_signature_invalid", "A source signature member is truncated.")
+                if member_magic == 0xFADE0C02:
+                    need(member_size >= 40, "macho_signature_invalid", "A source CodeDirectory is truncated.")
+                    bits = raw[offset + relative + 39]
+                    need(bits in (12, 14), "macho_signature_invalid", "An unsupported source signing granularity needs review.")
+                    sizes.add(1 << bits)
+            need(len(sizes) == 1, "macho_signature_invalid", "Source CodeDirectory signing granularities differ or are absent.")
+            return sizes.pop()
+        cursor += size
+    return None
 
 
 def macho_layout(raw: bytes) -> dict[str, Any]:

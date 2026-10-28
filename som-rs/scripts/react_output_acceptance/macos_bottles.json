@@ -1369,6 +1369,7 @@
       "--preserve-metadata=entitlements,requirements,flags,runtime"
     ],
     "implementation": "The provisioner ports ruby-macho 5.0.0's aligned load-command replacement in Python. It changes only placeholder-prefixed library IDs, library loads and rpaths in supported arm64 Mach-O files. It does not use install_name_tool or replace arbitrary strings.",
+    "signing_page_size": "Preserve the source CodeDirectory page size (4096 or 16384 bytes) with an explicit codesign --pagesize argument. The macOS runner's default can differ from the historical signer. This changes no frozen file hash requirement. Keep source size and exact invoked signing arguments in the report.",
     "raw_and_installed_hashes": "The official archive SHA-256 and raw extracted file hashes identify the source. The existing frozen toolchain hashes identify installed bytes. The report retains raw, unsigned-relocated and signed-normalized hashes separately. Only exact frozen installed hashes can pass.",
     "github_only": "The real ad-hoc signing command can run only after the hosted macOS 26 arm64 guard. Unit fixtures use a fake command runner.",
     "status": "normalization_unverified_until_exact_frozen_hashes_pass_on_github",
