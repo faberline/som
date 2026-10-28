@@ -1,0 +1,14 @@
+{
+  "version": "som.m6-sealed-inputs-manifest.v1",
+  "cipher_sha256": "95a2f422216a7bc91801f31865ee2a61324e97074e58c0b2a8b387def97eb610",
+  "uncompressed_bytes": 101243290,
+  "total_files": 1,
+  "files": [
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/result.json",
+      "sha256": "445b34112c974b2bcc70472f374b22ac8289e073d12e9c7042c7f8e252e89e56",
+      "bytes": 75932357,
+      "mode": 420
+    }
+  ]
+}

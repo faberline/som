@@ -1,0 +1,56 @@
+{
+  "version": "som.m6-sealed-inputs-manifest.v1",
+  "cipher_sha256": "df8b18a72691cd2a44c6708937da7ee91bffd46532c11210152214ab977e9709",
+  "uncompressed_bytes": 44561615,
+  "total_files": 8,
+  "files": [
+    {
+      "path": ".local/typescript-output/npm-cache-001/_cacache/content-v2/sha512/22/30/8521f7d5cc3bcae7b29ebaa15c967aa188db816b1438f80011329a98aa7563be9f888205dbdb244109856fcb92d471eabcdd925241998ded9321a8eb1454",
+      "sha256": "7704eac714e635469d940041a1946410d995dcc689e671e441b174887eb1feb7",
+      "bytes": 15832105,
+      "mode": 420
+    },
+    {
+      "path": ".local/typescript-output/npm-cache-001/_cacache/content-v2/sha512/22/be/7c19f8341ae2e5a76ad3d6e0d6467450aa88a08a7e5e6c6e6c4ef3c677f351799b6099664b74d5f3f08fb6016446ad9f0e21a312f5d7f53b0e6fee5a17a9",
+      "sha256": "ec842f62ec44c50b5330dd42460aa246356400f21ac7bca0ae4c003b250fe4fa",
+      "bytes": 6311465,
+      "mode": 420
+    },
+    {
+      "path": ".local/typescript-output/npm-cache-001/_cacache/content-v2/sha512/26/5d/317ad0425fe10953fd1a35d367c6dc760a2f611ad5417f081a85dd71f56d75989cebdcf22ff25b33b70e4a403ba1adb550a64fd8f067b01d1bb4f5876621",
+      "sha256": "d181733189f7e945ee547e5f9fd2d09f8e7f8145719d8e9b802ef22039022bd9",
+      "bytes": 21967,
+      "mode": 420
+    },
+    {
+      "path": ".local/typescript-output/npm-cache-001/_cacache/content-v2/sha512/29/30/f2453617f2c5a629702290f1c74b273adc244f11331cb728ca16ea5c0ba3812d74f7c6c3747bd685ee6fa6217bad156a545ee79db68c06ee22cece9d2442",
+      "sha256": "3a587851ccbf1021b20eac8a38eb819d7e2a1ab77aa477cb24cae5473a3e78c6",
+      "bytes": 29764,
+      "mode": 420
+    },
+    {
+      "path": ".local/typescript-output/npm-cache-001/_cacache/content-v2/sha512/2c/a6/14d620172575200179fd5118e2bbe3168725171ecbdfa7b99cb989bd75250a2b4fc28edad4c050310fcdbf98259bb4bb068c521a774c08b28778ceb4c011",
+      "sha256": "bd22a01d43c799be7bb53dfa9e775b132045e39525e51efb977528a00041ba48",
+      "bytes": 2529,
+      "mode": 420
+    },
+    {
+      "path": ".local/typescript-output/npm-cache-001/_cacache/content-v2/sha512/32/03/ff234e8676fb22943b29324fea991ce993c2ce512b4fea31406d2462e345b4f43868c949fe323edec8a2023ea7982b26ce8d514b548010cefbb56df21aed",
+      "sha256": "bbe77a0002b58c161a7a040312b39307c6b0ba1f8604c4ab590d4ed77d01fdbb",
+      "bytes": 37872,
+      "mode": 420
+    },
+    {
+      "path": ".local/typescript-output/npm-cache-001/_cacache/content-v2/sha512/3c/55/52f271eaf0f83a4e9c3e23ceee990c74874330e1f6e4e7a7bbf64993cb295a68f5a03e35afef6e70808efff33e1a5ab865ffe6ec29de50f331e8cded5736",
+      "sha256": "ca6bd5e530819935a1ada29877fc227e3869367e433dd33460fa00d9355890f4",
+      "bytes": 11180437,
+      "mode": 420
+    },
+    {
+      "path": ".local/typescript-output/npm-cache-001/_cacache/content-v2/sha512/3e/86/eccaacad2cb7e6ad72938307560d2d19781eb6a853b0039c40e931684501b7ad5599671ead647196a16e1efbf40d2c6b24625d404f8f9c2a0b4084df60c0",
+      "sha256": "fc24b7443ee7d686733deda83b1d65e5d40171721b20d314e7ef68cc77431dec",
+      "bytes": 3652,
+      "mode": 420
+    }
+  ]
+}

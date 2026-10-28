@@ -1,0 +1,86 @@
+{
+  "version": "som.m6-sealed-inputs-manifest.v1",
+  "cipher_sha256": "8eb60c7753d94925ba3f3014a3b0809e79fdf76fe49b862efcafd8e63838c17c",
+  "uncompressed_bytes": 28005751,
+  "total_files": 13,
+  "files": [
+    {
+      "path": ".local/react-output/npm-cache-001/_cacache/content-v2/sha512/3c/55/52f271eaf0f83a4e9c3e23ceee990c74874330e1f6e4e7a7bbf64993cb295a68f5a03e35afef6e70808efff33e1a5ab865ffe6ec29de50f331e8cded5736",
+      "sha256": "ca6bd5e530819935a1ada29877fc227e3869367e433dd33460fa00d9355890f4",
+      "bytes": 11180437,
+      "mode": 420
+    },
+    {
+      "path": ".local/react-output/npm-cache-001/_cacache/content-v2/sha512/3d/1a/cca16dba880f1730ca1a0827ea2d0c1b160f3b5dbef3b65f97c755bfe03ff8e139948486463cbc4de7a376b004577157cfbbc6b2d17df92ff99bd2290cde",
+      "sha256": "77baf5cb58173dd1d3e446493e075835aa22f1daf87431b23fc6674bf7fd03b6",
+      "bytes": 33578,
+      "mode": 420
+    },
+    {
+      "path": ".local/react-output/npm-cache-001/_cacache/content-v2/sha512/3e/25/2e67cc6cdae40707fbc4fffaf4fa57bee87fbebd3e5d1336201c77fd6dc470b4dfb637df4be6b345e6cb4082c10c905e213a09f3f329f98b8852dcb80afb",
+      "sha256": "80c3a03597f7e0d5d9b320a3d6b20b312bf93d9d5dce0cfe08eb740b67e02050",
+      "bytes": 750435,
+      "mode": 420
+    },
+    {
+      "path": ".local/react-output/npm-cache-001/_cacache/content-v2/sha512/40/d8/5676dee7ae05565901b9f10b86b004778efdc76dee266f8bf3ef0d9cb271dabdc89926075ad423cd6a5745e9e571bfdd2e7778d45e92a51cbebd80edfccb",
+      "sha256": "56936913918dcf1f7a6fe58784e79df54b18200a88655ce809cf5e9c4ef871aa",
+      "bytes": 26394,
+      "mode": 420
+    },
+    {
+      "path": ".local/react-output/npm-cache-001/_cacache/content-v2/sha512/41/bd/60cb93ab3f9fb30dfd81be7cdd9778ec4dfd6a5d531acdbbc2a0a86d2aa56ce3f60ae28cd7e2029024957235ef9c6a334f9f42a80b4302dc552668758499",
+      "sha256": "f90be2c91dc52176e383b2fbf706f9c938bb6022f823ec7a45bdff3347a34103",
+      "bytes": 15790,
+      "mode": 420
+    },
+    {
+      "path": ".local/react-output/npm-cache-001/_cacache/content-v2/sha512/42/b5/805c6a7d3ae185e09fa309d039b510d56617c2a4dfc34db364765d6cf6298d13600badf20ca702c385437b408e869335051ab5a4149d168d20b795be97be",
+      "sha256": "7b98e9486d113f3b1f08e7daed759708e8d12cca19e6484bb3f731f1ed07e77f",
+      "bytes": 57361,
+      "mode": 420
+    },
+    {
+      "path": ".local/react-output/npm-cache-001/_cacache/content-v2/sha512/42/fe/06b6fdf4eb83c5fbfa94b9c31a271211608ee2b0f36f11a9e9479131cced66f39b59261cc290487428352f25831d2d68887755854cce5aad8b30a103dbce",
+      "sha256": "7704fced1c621618f631d207361b2fc77f8a9b4214a059a9af9b5ae4b4a109f6",
+      "bytes": 7073674,
+      "mode": 420
+    },
+    {
+      "path": ".local/react-output/npm-cache-001/_cacache/content-v2/sha512/43/b8/a879e6abd3b1f08b17488ad227f4a4b52d98bdec21031424a33cd9bdbfecbc28d6ecbbdab82eb778cd4416e1f6840fe13bab1bdf7959db3515b8eb014abb",
+      "sha256": "2bcf8d659d6ebb22181e5f82bc2cefea50a6b123ff128d2ce72a5e0735c925bf",
+      "bytes": 82003,
+      "mode": 420
+    },
+    {
+      "path": ".local/react-output/npm-cache-001/_cacache/content-v2/sha512/43/eb/6ff4cdf21adc05bf853068cef91159853cc36b349b754bae7fa58b26de1ee14a49e869faa2f385ba3a96f0673f8ee7bc62baed8865d585577d9dee3ead43",
+      "sha256": "ad03e8b00abd68e2f890da730291d9c7178baa3cb5550b203bf69e08b986c36c",
+      "bytes": 1443986,
+      "mode": 420
+    },
+    {
+      "path": ".local/react-output/npm-cache-001/_cacache/content-v2/sha512/44/1a/8e683cd5d2ecb3dcbe64ecb40f6f27eb94b8ef61bca83f4f35f2578ab36632b115c077dd9f14b23f6b4b214c6f3ea65e23547002274519ba2162d37ffad9",
+      "sha256": "dbdfc6fa8b95266d4f58b878f8f4eaaf798b7a069bd7d4531a00d4dc43d2069b",
+      "bytes": 164802,
+      "mode": 420
+    },
+    {
+      "path": ".local/react-output/npm-cache-001/_cacache/content-v2/sha512/44/1b/b7b20d667506d68e591da8d716aefdc0e98e112bed24987f9990f22538e8858fc100eaad6f67d30a8b6320d82898b12b9446ee627958262b39fa34cedb3c",
+      "sha256": "44a25db44926a3872566dddadcffba1abc4a314440f5fedc283bfc558d6e9dde",
+      "bytes": 85730,
+      "mode": 420
+    },
+    {
+      "path": ".local/react-output/npm-cache-001/_cacache/content-v2/sha512/45/d2/547e5704ddc5332a232a420b02bb4e853eef5474824ed1b7986cf84737893a6a9809b627dca02b53f5b7313a9601b690f690233a49bce0e026aeb16fcf29",
+      "sha256": "d884c7a2d8adb5568c1272d92b4f9c62707f4226cf9e7b22e7b957c7361e3c53",
+      "bytes": 6542,
+      "mode": 420
+    },
+    {
+      "path": ".local/react-output/npm-cache-001/_cacache/content-v2/sha512/47/ca/79ccf550e9e97f4b09e3f8999ad7caeaa2a0538e4ff440e24a89cc696216eb6a796f1950dc52c7f3156d3a85e30a356c42290daee64ac1d2ffd4e74acfa3",
+      "sha256": "c4579a35756dd62e6c3160c7c99099b969bb76b4cc56a0fdac60518db98a03f5",
+      "bytes": 81347,
+      "mode": 420
+    }
+  ]
+}

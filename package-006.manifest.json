@@ -1,0 +1,14 @@
+{
+  "version": "som.m6-sealed-inputs-manifest.v1",
+  "cipher_sha256": "2c8323116eae800207951ea23b652b25c032b084f8aa4da17a33534142f32ac7",
+  "uncompressed_bytes": 51999647,
+  "total_files": 1,
+  "files": [
+    {
+      "path": ".local/react-output/npm-cache-001/_cacache/content-v2/sha512/5f/77/66b04e049004819d26c0c5f62164ba57d6cf416d33fc00d338ef17c32ae14c85c66d022953cf93523e26e32300d996997307897277ec076fc84a4f7d1c22",
+      "sha256": "e296b0e2b75aa85a434999e9317b145b51d4797dd09b402c6b98d86e64ed0b23",
+      "bytes": 38999531,
+      "mode": 420
+    }
+  ]
+}

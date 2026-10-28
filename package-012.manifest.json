@@ -1,0 +1,1826 @@
+{
+  "version": "som.m6-sealed-inputs-manifest.v1",
+  "cipher_sha256": "e4da2abda8e5cf285e417dfedc39f3946384c06a346657029aa9ddb7f1db9dbe",
+  "uncompressed_bytes": 44187334,
+  "total_files": 303,
+  "files": [
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_firebase_s3_statistics.outcome.json",
+      "sha256": "a5f7939472a017153c40a731d865860f8c400976c14701f5a5f293cf6d8310b0",
+      "bytes": 385482,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_gcs_csv.json",
+      "sha256": "1966d7d2181ca73988ad841649e31e7681c9b04d0bb98ceb5664d0fe390aac5c",
+      "bytes": 1102,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_gcs_csv.outcome.json",
+      "sha256": "665e672ea23ae726661b9b6a0727315c65d5484b4a2d7bd7daae9146df80e968",
+      "bytes": 399535,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_gcs_decimal_summary.json",
+      "sha256": "91356295d2aef1fba8863f322f8b188db2d50aea0aca2b846a09b31c56409b20",
+      "bytes": 1114,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_gcs_decimal_summary.outcome.json",
+      "sha256": "3c099d56b84d2bb9b1e0123f59fb303c6cc14d4885b1030ea986967fd30e7415",
+      "bytes": 379037,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_gcs_gzip_export.json",
+      "sha256": "2ba6d0423a99191b0dfec08858ea97985c96b0df27b1a333ed9e1af31a405c63",
+      "bytes": 1110,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_gcs_gzip_export.outcome.json",
+      "sha256": "69280233fbf7b649e46846e366a048cb1945507930df871511f0ca6c114d3cd8",
+      "bytes": 418757,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_gcs_json_export.json",
+      "sha256": "65f2700990a84e0fe46533c76c0ed1e8129a783fd243677669fa91c749a43ab3",
+      "bytes": 1110,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_gcs_json_export.outcome.json",
+      "sha256": "80944d7696686d198f7e7b70fcc1f96da9af14c235e8e24bd00eb0e99ea4cba3",
+      "bytes": 412616,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_gcs_statistics.json",
+      "sha256": "c2373a7c75659222f85a52b4d5e29dc040fef1c1d28b556252c4e527bd9a9286",
+      "bytes": 1109,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_gcs_statistics.outcome.json",
+      "sha256": "b79c5a02bb70dbf0b886036baa2d0e7709777c7543ee897df71bd9b0cdc45b68",
+      "bytes": 383652,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_none_csv.json",
+      "sha256": "79a0041e1a5eed56037be1854486921aa8a074a4aa6649283aa5433a1b620d60",
+      "bytes": 1103,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_none_csv.outcome.json",
+      "sha256": "37efc2f1d0e326f1e578fe7dfc561edcd417593eee1abc3e3f7236cf87b0b981",
+      "bytes": 227484,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_none_decimal_summary.json",
+      "sha256": "2187a896c13d6c352cb39f3bc7fed5f884907dd6c6e8a007a13b6ea32e855691",
+      "bytes": 1115,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_none_decimal_summary.outcome.json",
+      "sha256": "e1c74a7b45dd41a32727b8f1f8961dbe1e06dc108a81b3a77145c8aa474c5228",
+      "bytes": 222531,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_none_gzip_export.json",
+      "sha256": "b969b2b0b23430253e142d578a1ab6599034731dbdb3563dcf41b2e8911e96ab",
+      "bytes": 1111,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_none_gzip_export.outcome.json",
+      "sha256": "08d430e4bf813b87f68362da593abab535b20ba9363f6336048180a110034d29",
+      "bytes": 230977,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_none_json_export.json",
+      "sha256": "4e8444d0820c39c4f6c8f497f0f8b911d020a6c36094aa944c62d11d6bd105bb",
+      "bytes": 1111,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_none_json_export.outcome.json",
+      "sha256": "20eb0269559036883cc700aba826b6f84b49ec1e1f8e7edcb8c166682d663916",
+      "bytes": 232833,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_none_statistics.json",
+      "sha256": "a00513f389a221171259b47cc6c6ab80ca3dbb5aadd363a62b81f34d50b950fd",
+      "bytes": 1110,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_none_statistics.outcome.json",
+      "sha256": "0009dfef20d8395a694908677de6a45814f4f742c9d28fcbbca0f86955f845e3",
+      "bytes": 224063,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_s3_csv.json",
+      "sha256": "4d5d9c4df110603d73c515230523d8a6f94806d92f4bb355cd74778c4992b366",
+      "bytes": 1101,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_s3_csv.outcome.json",
+      "sha256": "1a3684c6df14c0f3dca8bb598ab21936f80ac7c8c3e1d7366d7a36829b2fddca",
+      "bytes": 401407,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_s3_decimal_summary.json",
+      "sha256": "52b55167b37710d4bdd2728aaedb85880d4994e5d279f5861c22aa6625627c3f",
+      "bytes": 1113,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_s3_decimal_summary.outcome.json",
+      "sha256": "f0a2733abe1fc1320557b5a81228e1a478a4e58bd21f21f492f0f198690bc05f",
+      "bytes": 383421,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_s3_gzip_export.json",
+      "sha256": "65fac286694f785d98e723b5502200d7c068fcf022cd414398b191683e99e900",
+      "bytes": 1109,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_s3_gzip_export.outcome.json",
+      "sha256": "619efff6220c9f953a97ce9391ced8d7c8f8cbbaac3d78ecabd3540568326f95",
+      "bytes": 405555,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_s3_json_export.json",
+      "sha256": "6ac909e7269f44961d0baafcf2d6d288f041aaad4870055bd2091307998ab127",
+      "bytes": 1109,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_s3_json_export.outcome.json",
+      "sha256": "b8c965f36f68c31e8349037831d762a29362c9f36a3108814b18f3ae83fc5f23",
+      "bytes": 411979,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_s3_statistics.json",
+      "sha256": "4906b8b339f46286a5af0d7b7bfe40be3b135f13d18ea281b14e3d03858a6437",
+      "bytes": 1108,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_google_oauth_s3_statistics.outcome.json",
+      "sha256": "89cd4f60f37c667142b2b10bfc1c325f54a1bf09517794ebd0aedd61ec6a62b3",
+      "bytes": 385525,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_gcs_csv.json",
+      "sha256": "cdd2af19364b716a1f150e0ce13854c22ce501077e1aad01b64e74a366eaa47d",
+      "bytes": 1093,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_gcs_csv.outcome.json",
+      "sha256": "3dbbe3f755985f023f00e49f7aa5b87de636fedb290637bb67ea7643975a9f25",
+      "bytes": 412026,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_gcs_decimal_summary.json",
+      "sha256": "2ebd994234be258f5249ab14366007d401d05cdbc62b506f2f9e08284eb051ad",
+      "bytes": 1105,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_gcs_decimal_summary.outcome.json",
+      "sha256": "146e324c0b47ecd4cf63347a9328a39b339c7e69dfd712a1af531538bca83cd3",
+      "bytes": 391532,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_gcs_gzip_export.json",
+      "sha256": "10110a5ebe5e5a198b946260a2d1dd64e0ff60442624858716fb9843053de6a1",
+      "bytes": 1101,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_gcs_gzip_export.outcome.json",
+      "sha256": "acf16943648009ff696b9d635958ecc7726675244e1986ca86013229989cf3bb",
+      "bytes": 416118,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_gcs_json_export.json",
+      "sha256": "1cc276e44dbb6f33ab4448846c2054753eefb2480c15d277bce0867ffea3feff",
+      "bytes": 1101,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_gcs_json_export.outcome.json",
+      "sha256": "917a6c9356ea8d53a3c1c30224d824547daa8bcf7ff1de6c567084a2569bb996",
+      "bytes": 425110,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_gcs_statistics.json",
+      "sha256": "91dfc035041c8ac3cc3d1ca190dadad8933be16652030dee89ba2f3302199613",
+      "bytes": 1100,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_gcs_statistics.outcome.json",
+      "sha256": "4fbc4bc415228c8be8a2d993fc4c84d49e5e6793058357cf501c685cd937c5d9",
+      "bytes": 398652,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_none_csv.json",
+      "sha256": "db3473b50725814759497153b550d3e8e6fd72494c6da62f150152825685eede",
+      "bytes": 1094,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_none_csv.outcome.json",
+      "sha256": "9c9fed76b950301b25a1d0e084b4f35478c743cced0b54a358d2adeca585e6bc",
+      "bytes": 242310,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_none_decimal_summary.json",
+      "sha256": "54db5ee382698009f86dc4499e648ebfa4bf5f150f2a8e9b6464266bc0dcd5c5",
+      "bytes": 1106,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_none_decimal_summary.outcome.json",
+      "sha256": "7aea054fc797b01a1ac7d699b87e6f12723978b71dab623975bad2c63a019ded",
+      "bytes": 234880,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_none_gzip_export.json",
+      "sha256": "76554bb5e36ac1075806aba73382c3870fdafcb50bf0a4f4c451fa7886d9cf26",
+      "bytes": 1102,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_none_gzip_export.outcome.json",
+      "sha256": "ea859b674ac6f679d7e87a7ab51f5418f82f2ab444c9e12c52cd3b8132db1543",
+      "bytes": 228455,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_none_json_export.json",
+      "sha256": "767fa6572e6e740911f8e52b7adb01e507355c7da90880f91b5711f7018ca79b",
+      "bytes": 1102,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_none_json_export.outcome.json",
+      "sha256": "3ce5c176abc9a607c28227a61dcb6ef28df9197707ab218ba466f5b980db0400",
+      "bytes": 230300,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_none_statistics.json",
+      "sha256": "d6bf95dfc056e4497d5d0b4d3c02a48be2fcddc32828c798be4d558df946fec9",
+      "bytes": 1101,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_none_statistics.outcome.json",
+      "sha256": "cb9299585dcca9d1691cb9adea19e55c64a5d3e2ba76120a70190fa35e7968d1",
+      "bytes": 236409,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_s3_csv.json",
+      "sha256": "db43b5b8e84bbdede306fd728a77ef4f883c0cc4f99f7c18deccfc34ba62e250",
+      "bytes": 1092,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_s3_csv.outcome.json",
+      "sha256": "de177dbb9967a3d40ad70c51cc1b06776f0fa5e43df74a364ea3f8d6a4b65d63",
+      "bytes": 416411,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_s3_decimal_summary.json",
+      "sha256": "fc335151f998271fdb84871e1acccfe81b8c9955eb95219d74f97bbc494a003a",
+      "bytes": 1104,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_s3_decimal_summary.outcome.json",
+      "sha256": "111e2f071e3218af8073f5cf61fc296e6928237eee67c1384884b942fcb4b9a4",
+      "bytes": 380861,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_s3_gzip_export.json",
+      "sha256": "bd64dfe1c34a594532adad8086dc03ff67dc11463c710896abdf003346364690",
+      "bytes": 1100,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_s3_gzip_export.outcome.json",
+      "sha256": "6634955627822179bffca053192fae86c5e0f20e8f32353d3a31ec800cc7d51a",
+      "bytes": 418026,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_s3_json_export.json",
+      "sha256": "bf4ad714ebcbcad3b2a461d67f85e9e95afad6619cc54dcc67bee02bc355b825",
+      "bytes": 1100,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_s3_json_export.outcome.json",
+      "sha256": "73731460ef8ae5cd45228887c0d714ccf0848cf0570f109bff93d9f653b1fad4",
+      "bytes": 426971,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_s3_statistics.json",
+      "sha256": "5771eee95ec8fbe667b5b3104b71a422e63436b5656eeb8d4a04c7f37c34f6f5",
+      "bytes": 1099,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_mongodb_jwt_s3_statistics.outcome.json",
+      "sha256": "8c688aebbfee58c1517961c775f492fb6ec5e5ef67acf2b3e91c0a03f6db3261",
+      "bytes": 398016,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_gcs_csv.json",
+      "sha256": "ffd1bc33cd7c90af3e61f943823346f5864bdb9535773ad7c3c40e5898d8cee3",
+      "bytes": 1100,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_gcs_csv.outcome.json",
+      "sha256": "24a02e2739b31edc0c2aec68d3dee6d7a1d3f54e426df589de418e59c1c90cae",
+      "bytes": 354762,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_gcs_decimal_summary.json",
+      "sha256": "2fc7ac159459d6409e6af3b7f581aad223cd664f258bcac87a64ea013abad3b8",
+      "bytes": 1112,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_gcs_decimal_summary.outcome.json",
+      "sha256": "3cc280ad0133e5f32bcfdd403c8b4aed73ae33689d2080fca04ba868719b6fe1",
+      "bytes": 334223,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_gcs_gzip_export.json",
+      "sha256": "e022941ade71c005a060601f2e16ec76afb0c140dafa26d3ab47b6f7a390d5c8",
+      "bytes": 1108,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_gcs_gzip_export.outcome.json",
+      "sha256": "d2d182395635637b3aab6d0a806c36f3dd2375eced3fbb98305c5ba79ae04777",
+      "bytes": 358942,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_gcs_json_export.json",
+      "sha256": "6ff1a188db1c1c36e6d8154480bd2df8126d0a0947a06764973d77c3875698a8",
+      "bytes": 1108,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_gcs_json_export.outcome.json",
+      "sha256": "590bea134c974aaf3c2069b0edda356f7192984c933938f34b752b7ab170a8a8",
+      "bytes": 365436,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_gcs_statistics.json",
+      "sha256": "456af9097134179d0c949c3bee71b3fe0cd5624640b9e16001061837ef5fdeee",
+      "bytes": 1107,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_gcs_statistics.outcome.json",
+      "sha256": "75a04c59536fe596039ed63f2185a55907760641a10145662dd2a92732e2cb4d",
+      "bytes": 338834,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_none_csv.json",
+      "sha256": "47f8a010777832a6dec04d9e9f7f5f1db75db29f759390a4d0556db2639970e6",
+      "bytes": 1101,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_none_csv.outcome.json",
+      "sha256": "fdb2e2e1c6a4ca0b6d1db12c9d847aef8294a7ce6288a61f70f11d7fd5d59cb0",
+      "bytes": 189190,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_none_decimal_summary.json",
+      "sha256": "4a142206e9e114b3ac38ff32655e0c025fac4cf10e4d2bbc6faffb9d101dadf0",
+      "bytes": 1113,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_none_decimal_summary.outcome.json",
+      "sha256": "8fe9e0660c0611effe81b43340da82343b5c816a9882236bd3880505918a421e",
+      "bytes": 181896,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_none_gzip_export.json",
+      "sha256": "d8ea1392c7d46ff68f43ecd0d35f93bf4d7a23d12d4f71547e3ace1a7a5808da",
+      "bytes": 1109,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_none_gzip_export.outcome.json",
+      "sha256": "4632861339664ff6556fe793d4313b2412d7178e5d04bc8d2222da112071a389",
+      "bytes": 190240,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_none_json_export.json",
+      "sha256": "175e6c22f0bf2e45f0007990647dae6ac2348699e738f55c27cdb86878948d88",
+      "bytes": 1109,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_none_json_export.outcome.json",
+      "sha256": "9ff1167f4bb03b8caa914c2950e6d0d339c333b00c8bcfb053cfa85dd050f73e",
+      "bytes": 192204,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_none_statistics.json",
+      "sha256": "b649d515f6a7d92629ee4d3cc78bca79c9076ed88aec6c6e10dee8c10fca4eb0",
+      "bytes": 1108,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_none_statistics.outcome.json",
+      "sha256": "7c8a6182678b27ac0d727268f2076549bd8d873020a28c549138857eded263e1",
+      "bytes": 183287,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_s3_csv.json",
+      "sha256": "1aa426727e48c39aaecf5df45c8277705af31af9c8fb8c11c058207c050def4f",
+      "bytes": 1099,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_s3_csv.outcome.json",
+      "sha256": "ab0636465b701dfefcdea9c40db503fa2535027654e3536a9e45f3afce97a7e8",
+      "bytes": 356632,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_s3_decimal_summary.json",
+      "sha256": "70ed08674d9c7bb01b1018c27b2a3bd9833d6c55aa14679c2b74966f726191dd",
+      "bytes": 1111,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_s3_decimal_summary.outcome.json",
+      "sha256": "1540be08171d1a83fa6085bd3cad0c86350806dcae2c27cf7468f22a102cc066",
+      "bytes": 336141,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_s3_gzip_export.json",
+      "sha256": "0042743655b1422e40629bfb249b35dd0fa5b45cbbd5c9b62ebb82216cd07357",
+      "bytes": 1107,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_s3_gzip_export.outcome.json",
+      "sha256": "fb31b876fb6cf86be3208f06eae012daecddc11b661c9188ddc643900a356457",
+      "bytes": 360796,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_s3_json_export.json",
+      "sha256": "13f48849645d9c28732104d9e631700f795608108a3d0b60c43c508d92abbd1b",
+      "bytes": 1107,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_s3_json_export.outcome.json",
+      "sha256": "fdacc81e25766d252643a15a75a3724a70f9f5c6cb24d3545bdc9164594a70cc",
+      "bytes": 367364,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_s3_statistics.json",
+      "sha256": "fc0d8f29dad4553f0fdc8fe9b8e64f18b6c94b1bc551d05519ebed0d48f4f383",
+      "bytes": 1106,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_firebase_s3_statistics.outcome.json",
+      "sha256": "7acbdc80fa28b09f2369e7bdc5ad1d646db948e2b68c6c16885de6f670f72f66",
+      "bytes": 340749,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_gcs_csv.json",
+      "sha256": "d3bf5b4f84261809cc4867d400e1f527e7a379e625a20ae81491d74a95b47bab",
+      "bytes": 1104,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_gcs_csv.outcome.json",
+      "sha256": "96502edf73d8aeadd01dd291397a3eeab7d5e34dacea981a550160c87b2b6305",
+      "bytes": 354760,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_gcs_decimal_summary.json",
+      "sha256": "13135f95719c3970002b6e4e0e77dee3f2de92519312b7bd6ff7ac362d21d87b",
+      "bytes": 1116,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_gcs_decimal_summary.outcome.json",
+      "sha256": "0a4022881232649675c327f0202eae3150ea21b2c215873fa2dace8b9d1caa10",
+      "bytes": 334262,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_gcs_gzip_export.json",
+      "sha256": "a3d2c91fab80aca88d78a8f0b2f2149623fc86adad6f9cbc8aa1955bbb0696bd",
+      "bytes": 1112,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_gcs_gzip_export.outcome.json",
+      "sha256": "b25fc0208b4f2fb1b667b4d8a76a0dd321d7c9b9e8dee853c17bdc6aaa4957cb",
+      "bytes": 359101,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_gcs_json_export.json",
+      "sha256": "b6369f45af9d335d443fa982ccae0067c4a06e321155b08635531919ede00344",
+      "bytes": 1112,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_gcs_json_export.outcome.json",
+      "sha256": "38ea8a8477a8d786bfebf93404aff5e34c436a441611eef6e10c469b6e08544c",
+      "bytes": 365335,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_gcs_statistics.json",
+      "sha256": "3209a87f419e98ffa0f556ee6fc1122e78215ec16e275e1985866c3c8402025c",
+      "bytes": 1111,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_gcs_statistics.outcome.json",
+      "sha256": "a0971747c50578ded8ee8854dda79010294a4cef9854bbb92f54247f896de622",
+      "bytes": 338982,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_none_csv.json",
+      "sha256": "291e5285d80b0b7afe451d1ec134ec762876d2d30aa9a3a80998b9d5d01387e6",
+      "bytes": 1105,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_none_csv.outcome.json",
+      "sha256": "181af19b8e8a1a57881f6f9268f664eaf070871ec4e1f5a9d37987393369cafc",
+      "bytes": 189228,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_none_decimal_summary.json",
+      "sha256": "6128beed148bd04991bd379e3b1c82134afc1c95edaf60d36e183b2893a3ffad",
+      "bytes": 1117,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_none_decimal_summary.outcome.json",
+      "sha256": "61871a3f512fbd0afc4a4cf29f2c25731506f9f98ee9303cb80de2b437a8a3b5",
+      "bytes": 181839,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_none_gzip_export.json",
+      "sha256": "fc4519bdffa9f606c321c7a46f12f85bf9b73bb1ba50b99de6a0b660d62fc267",
+      "bytes": 1113,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_none_gzip_export.outcome.json",
+      "sha256": "e17858908748764dd1c484460f8bea37fdb9aef49257a3e9dd519401dfce30ca",
+      "bytes": 190370,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_none_json_export.json",
+      "sha256": "206354e2f808a8f87ec71855e77178e564cfd808cfa3106a9c73046a176b51ee",
+      "bytes": 1113,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_none_json_export.outcome.json",
+      "sha256": "8aeaa9fe7047dfa35c63c71f89031d23bb0922590920ec1686d49e0c6c961421",
+      "bytes": 192097,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_none_statistics.json",
+      "sha256": "f1b1c9c87508a4aa0125fe4582fe1802fefd7bafed2325cfd512a0e86d010f01",
+      "bytes": 1112,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_none_statistics.outcome.json",
+      "sha256": "af858ddce2a1f80a7e1fee15db5deaafe9aae53383496cd5e30f07a077d5e404",
+      "bytes": 183326,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_s3_csv.json",
+      "sha256": "e57e3fd41aa0d479f8f69d0cbcb95505317dedb2c47be29f86d785bf492ae415",
+      "bytes": 1103,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_s3_csv.outcome.json",
+      "sha256": "c7a6979c09405372bd82f59ff713d4f4c9604722583442774e996bd281182ddb",
+      "bytes": 356637,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_s3_decimal_summary.json",
+      "sha256": "5342325a20bef300831013fb3b2227eb5118c71bb23898f7a9247462df37fb5d",
+      "bytes": 1115,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_s3_decimal_summary.outcome.json",
+      "sha256": "343652656897d7f0161055211d832e1bdb091503df44e5c69fb6d675ec806ecf",
+      "bytes": 336139,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_s3_gzip_export.json",
+      "sha256": "a53c8e10405eab003912e108bdd7c5dcfb2deada1c9bac2026b0594e028664ba",
+      "bytes": 1111,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_s3_gzip_export.outcome.json",
+      "sha256": "15c2571968334a3ebad28bcf1e842db93ee9fe3f7cc322f849392d55b6823fb5",
+      "bytes": 360864,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_s3_json_export.json",
+      "sha256": "25e616271b3f50b7a91a2d8e7a46ec227e17802ec25b2b61c2d937e3d226ccc7",
+      "bytes": 1111,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_s3_json_export.outcome.json",
+      "sha256": "f24d70ef3401a562062be9cb920a6ae7ba9f07e2fb24d16cdb07a1b20f76eec9",
+      "bytes": 367316,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_s3_statistics.json",
+      "sha256": "7b92908360d9d658602e7e89371cae5b6044997b6ecb7a4094518133f80c87c1",
+      "bytes": 1110,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_google_oauth_s3_statistics.outcome.json",
+      "sha256": "e4932d2bd2f462128523a80d5cdd0efcfd6b609f5a01919e2379cc4398b8014f",
+      "bytes": 340747,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_gcs_csv.json",
+      "sha256": "b807e9c73c7f68b9c316a815e609b9a2865f0b2fa5945978a1419f288759fe4a",
+      "bytes": 1095,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_gcs_csv.outcome.json",
+      "sha256": "d737060443ce16a813ad891d7c39634575702deeb91934c7cf817e90589955c2",
+      "bytes": 354709,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_gcs_decimal_summary.json",
+      "sha256": "c084791f8dbf8f835a47ee2172efd840cbda4ca99b2bd5ab36a94a88f19dcad5",
+      "bytes": 1107,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_gcs_decimal_summary.outcome.json",
+      "sha256": "b65172a95009958fa87d97809194d3662e928262342cb16540ab451b57f6600b",
+      "bytes": 334212,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_gcs_gzip_export.json",
+      "sha256": "2ad641650fef913b7ef5fce631213facc1353d318214258abf3b3770447557e4",
+      "bytes": 1103,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_gcs_gzip_export.outcome.json",
+      "sha256": "a7e70c80cdbaad5326285c5cbea6066c2fa2709a324cbbd02d09c66fa94ce319",
+      "bytes": 358980,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_gcs_json_export.json",
+      "sha256": "c81ff94e7a4ae5338f06f7ba8196806fccba92e1dc913c6fc78eb510518f3d46",
+      "bytes": 1103,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_gcs_json_export.outcome.json",
+      "sha256": "34aae65c646b5f194f624f0763aeb0d69f62092246df0928e9cdca7753d326a5",
+      "bytes": 365326,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_gcs_statistics.json",
+      "sha256": "5a4d776dd51494eba076e649e837400771e59882a29e19fa7dd74aaabd4e623e",
+      "bytes": 1102,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_gcs_statistics.outcome.json",
+      "sha256": "efa0b2b7f9131bb6cd5d9be5425fe0caed8334cbe7113fa6fd8d899a11b29d03",
+      "bytes": 338822,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_none_csv.json",
+      "sha256": "9fb9c4247c4321a77589bdedce87947b1c1da4d1f5ef35e681f8ff297109b1b2",
+      "bytes": 1096,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_none_csv.outcome.json",
+      "sha256": "4d2f2f8dff0492adce56c5a5d35396c1451105a61c40980985b3a43f4a7be23e",
+      "bytes": 189180,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_none_decimal_summary.json",
+      "sha256": "7c3aa9b1857be5c3d07e842260ec95e0d6cf60cb09028bc673259d7622ebd12a",
+      "bytes": 1108,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_none_decimal_summary.outcome.json",
+      "sha256": "4e54bae1902a62ddaed87992625d5dc547dc398f398dc35523a2f42b01434498",
+      "bytes": 181748,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_none_gzip_export.json",
+      "sha256": "b5e0d4d0dbee2ff09be83343ef21b2cc86bfc8c59fab3a67a974b1fbd8591c1c",
+      "bytes": 1104,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_none_gzip_export.outcome.json",
+      "sha256": "5650dc19a09807e458be4bc38e3d9e51a5aac2ee36d6630f3907a320dd0fae07",
+      "bytes": 190231,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_none_json_export.json",
+      "sha256": "5cc9d01beab89ad23aa5e89b188433592afb33f635a000215311002de4f28d88",
+      "bytes": 1104,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_none_json_export.outcome.json",
+      "sha256": "1d36cf0b2be9f935d93e6c88cc07f272e85db755fcd38670144f5ae7e5106207",
+      "bytes": 192047,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_none_statistics.json",
+      "sha256": "2de16608ad69428f8058844f28c77c7cc7028370ac0f42d01a321957d835870c",
+      "bytes": 1103,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_none_statistics.outcome.json",
+      "sha256": "509fdb091ae268f74556c5cadf640148cdd02fdbe6b2be2d0bc6fee9152c6a4b",
+      "bytes": 183277,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_s3_csv.json",
+      "sha256": "f51b8543da5393bac58e74ab90ba079f84de1b6a7a95846a905030dc774c5c41",
+      "bytes": 1094,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_s3_csv.outcome.json",
+      "sha256": "b0765d5db265fe58393d396651bf506973891319fc7041e54e35292f696516c8",
+      "bytes": 356579,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_s3_decimal_summary.json",
+      "sha256": "13250e70a7034dc2671d1c2a49892dc29c847943281a49b5a3a8569fab4c7d3e",
+      "bytes": 1106,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_s3_decimal_summary.outcome.json",
+      "sha256": "e1dab72ce9edb421ab9d449bd59a88262e068fda3eeebb0c12d5a93731a8515f",
+      "bytes": 336083,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_s3_gzip_export.json",
+      "sha256": "c4281813fb46b3bf931819363d08d3661996076df22920f3f3d51719bf853eb3",
+      "bytes": 1102,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_s3_gzip_export.outcome.json",
+      "sha256": "b2461aa9d823c80526b795452e5b345cbe143983e5f52982dc3f3cd77fcc5fd6",
+      "bytes": 360817,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_s3_json_export.json",
+      "sha256": "3ae6ca8f96ba8c6b7d30404cf2c799061d2cf572872966a4568dcb2bf911bd3b",
+      "bytes": 1102,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_s3_json_export.outcome.json",
+      "sha256": "28cbedcfef179547218af5de21fa5ff76153b28072279277c47789af514a75f2",
+      "bytes": 367156,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_s3_statistics.json",
+      "sha256": "778a69ca554a3a0e3b872c5fd63420a3633ac05f4aeab739149abae0af3e5991",
+      "bytes": 1101,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_maximum_postgresql_jwt_s3_statistics.outcome.json",
+      "sha256": "7b539e37ab0e7312319104bfe595463995351451cfe11299497872ce86288552",
+      "bytes": 340697,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_00.json",
+      "sha256": "cde5be44fa5ef42da4c650223c9f373d66ccd3641bcda5787b3f6bf001eaf232",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_00.outcome.json",
+      "sha256": "3aa802380fa3afcf6dfb9d8ce2bef6113c82ef02aee7e1c74224d88998eb8ae7",
+      "bytes": 202612,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_01.json",
+      "sha256": "9b52b57efa3813510236e7ed783a5d6602a22ac16555a3e9beff070c2b7703b1",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_01.outcome.json",
+      "sha256": "b92662da37d6094847482f7673076d77041b5b86b18d81ebe83a588374340eb7",
+      "bytes": 284702,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_02.json",
+      "sha256": "e42be93269458a3498f7375468680f6787e1db5f42683c1dc24a3a530c4082cd",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_02.outcome.json",
+      "sha256": "46533d26fc0d3db139cf7712eea81d41299a09a6f787a59cedd5f50e811a28bc",
+      "bytes": 210432,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_03.json",
+      "sha256": "329309200ca190adda1b254e8da189b2b5c851fd0e65bd7b9415c92b0e8de897",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_03.outcome.json",
+      "sha256": "23d263130da46ac44caa7df2bb5a3a7ee168f7e39c39c6ad266af6c42b59e6bf",
+      "bytes": 211585,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_04.json",
+      "sha256": "12b0fc19b8c46fe9958ee1a4f8555fa8705e931f57df6d3267e846d861317e8a",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_04.outcome.json",
+      "sha256": "782c3927060527527129071d3cfb11e516637d2953e10fbedd7e783757c66fe7",
+      "bytes": 212416,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_05.json",
+      "sha256": "8e6f221306cdedd59a32bcae09263dbf8cbcc0c3f0f9a8466b9594f3bd7608ef",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_05.outcome.json",
+      "sha256": "54512e0bce3aad35801cb7720d2d71d4ee896e1cd8e991d349f680b720c1fa8c",
+      "bytes": 272746,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_06.json",
+      "sha256": "93cef64c7f6dc4e1a8cdfd4b1afb03e3c368f877a0829b71aecb56336be38626",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_06.outcome.json",
+      "sha256": "eb760374b2efedd2b5769dbdf6bfd59fb472ceacd097a2cbdfae035ee52793b4",
+      "bytes": 204246,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_07.json",
+      "sha256": "7df291e0616d833f42627b2c160c61c892a30ace34d8cecd093c1f251d77d7bb",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_07.outcome.json",
+      "sha256": "fe83bdd4f4dce58e67e1e8ce137b57bb897e0ad97aa9eca86630903a1cf30150",
+      "bytes": 186246,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_08.json",
+      "sha256": "3c51f84ed9fd10bb6a0070e94e54b12da94234c7450f1272452b0f2284f5a328",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_08.outcome.json",
+      "sha256": "d7aa139c960ffc90866ee4ab5345f5bb2662c851651386e2a206d0c4e931cdea",
+      "bytes": 186547,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_09.json",
+      "sha256": "05b5375aa9a327e8362e0b20eb85483aa6f27a444e81c729760de00f650d80ec",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_09.outcome.json",
+      "sha256": "4f33a5e391a73e60b95467ab5b6b159964129a7ff78fd6f9fe757cc3262e3d69",
+      "bytes": 314910,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_10.json",
+      "sha256": "e63fbb8ee207cc831aee3d396e0dc6f20f9dd6fa66a9a90c85b34be9b1d24f29",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_10.outcome.json",
+      "sha256": "a7856e9540b23d1bb2c413a20655c36b0b56f2e9cf10378749d597c19cfdb044",
+      "bytes": 204204,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_11.json",
+      "sha256": "30973e4fac20cf83481343f52f5bfbd0b11a903898e0624b5c066320c3b98470",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_11.outcome.json",
+      "sha256": "bda64febb3a6d59c523ab984252d456dde20543de484f36c98e52a009f93209f",
+      "bytes": 190859,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_12.json",
+      "sha256": "9df6039185af50ee43b302dcb46878e7150b621aeb332e8ff8a3638fce3f6ddf",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_12.outcome.json",
+      "sha256": "0fdede786ef2346736cb36a724f6ac47ce18c5c369eaaddc7444d18d90d1a2a7",
+      "bytes": 190927,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_13.json",
+      "sha256": "2b4d8a852b175c972ea6caec5270e679480d5be093d92d53f2e818c1bca928f7",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_13.outcome.json",
+      "sha256": "e4bccd50d28f88afed6193b67fcaa5ab52561fa41c4a51d3e6796ab5e2558890",
+      "bytes": 275960,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_14.json",
+      "sha256": "7a01c10d56d5edbc1a0484408491f73d80efea3ec9f5cd7ea5daf4e0253fc12e",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_14.outcome.json",
+      "sha256": "35e6f87a545a4139d22e69b20b995bfc109e10d757ad8e38bdd455240f365c45",
+      "bytes": 208746,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_15.json",
+      "sha256": "cdd2ca7d577b33619445ce7844690dfcddb4d0275031ca09702d5c3d66ed2efd",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_15.outcome.json",
+      "sha256": "02b14a7e76457464d1111c2259b32e82167c7faca094db1305c8061a313b37ef",
+      "bytes": 190955,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_16.json",
+      "sha256": "ddf0d4d5f12ddc7124f2bc3c7d51cfd0fe063305faabb63d4848a7f45ab8060d",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_16.outcome.json",
+      "sha256": "80f389b2fb193f6e479ceb5ea4b196a0392c6ab031a82b3873ba21b6c1ed755f",
+      "bytes": 190934,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_17.json",
+      "sha256": "39b85dc6c4c7eb4cf7f9ec2b8c2f5efcc37c31ef93f3b72e98955a082694ab0d",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_17.outcome.json",
+      "sha256": "5f13e7f179475c12a70aacb0d4ba41837b5251e2064aa15c296a47de660f97fa",
+      "bytes": 276126,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_18.json",
+      "sha256": "c0233517f1d49c968adb6dad100d751e1335ca96a0e6654c0b800d98f48ca3b8",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_18.outcome.json",
+      "sha256": "261bfbefd318bbcac43a5564ab6ee44104a73f6876e3e2b3f95628c8f1017f24",
+      "bytes": 208739,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_19.json",
+      "sha256": "2e9e23053167d3279679aef98b998f480fb3e33f78deb6cb2d5e2ed6650fcfd1",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_19.outcome.json",
+      "sha256": "c25d209799a42a7d08080c993a150a3f7d5baeb6502588b3b996dccfc283444c",
+      "bytes": 311527,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_20.json",
+      "sha256": "f53271eaea983762c0e3d5ce654b41ffbf95afc3c4f34dee9e1488171474cdce",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_20.outcome.json",
+      "sha256": "edc4c340746ae4425626c644756d612502614f129562c91877db8795da71b76f",
+      "bytes": 306871,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_21.json",
+      "sha256": "a124931c6a8329678d1ac90df4b91753367b0a548adca6b8c4c0988fbb8e9feb",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_21.outcome.json",
+      "sha256": "a73557b749bdcc0b0e0fdeb9d593c57b91b79e7e17d760b95d789bd26a888d69",
+      "bytes": 460642,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_22.json",
+      "sha256": "15d533c9751914b1b43787a9b479143822fd4e7fe9bef8b8da7746fe4df7bcc4",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_22.outcome.json",
+      "sha256": "c86fc3b0e846173feb233aa21674c72dca071b6c395a0505e82ddfda8dd26bcf",
+      "bytes": 208733,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_23.json",
+      "sha256": "09a8b8ef1ecd1babd3f756fb9541f4f6946cfc42cf3a7c617c79b31ef77e9b5d",
+      "bytes": 1076,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_semantic_23.outcome.json",
+      "sha256": "87ee94449a5a6a9dc2d9010804981392f08a5b158ec26f45843719587055cb90",
+      "bytes": 311472,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_00.json",
+      "sha256": "d851a2e1ca8da9a5b49ca085f19d2108e48add880d4acc3f7e1b31adb280052e",
+      "bytes": 1073,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_00.outcome.json",
+      "sha256": "df24e7ef7000567f389764a22c234ebda5426c600adb1cc34c292b8e221f774d",
+      "bytes": 17757,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_01.json",
+      "sha256": "e0538bf02f01b0eddd006fe171feadf127a12bddfd5e76db8d85d02033ff2d0d",
+      "bytes": 1073,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_01.outcome.json",
+      "sha256": "ce106f52321ff86ca021755771546e13de9f8d9d9e355579772434a92b1f7b85",
+      "bytes": 18184,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_02.json",
+      "sha256": "7b9bda24d702574c0a3023a9dc11a50c86da1cb29cf26db9ae640f087175425b",
+      "bytes": 1073,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_02.outcome.json",
+      "sha256": "5d866bcdffca415722ca7f31e94e39ecd9721bd13e76c72a5ee0361e558e5fcd",
+      "bytes": 17801,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_03.json",
+      "sha256": "4044341d8978dce9eeec8bac16090d5405b3a2d2ab420afff81b535a971e4ef7",
+      "bytes": 1073,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_03.outcome.json",
+      "sha256": "3080778ca9c3d827008df94caa3f1bb9b9d894a79f0350cb10db5ec80264b2ea",
+      "bytes": 18152,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_04.json",
+      "sha256": "6bc86402738e9b1e40506b0e6548fb1b461a1cf1dbf1dfb6075c4169b7982d08",
+      "bytes": 1073,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_04.outcome.json",
+      "sha256": "befd26a46c63c434af622f77230a229b3b85664012b8afd04b0e4e01738c3136",
+      "bytes": 17764,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_05.json",
+      "sha256": "341c0d85770c3beb4971f824102e44b7d9fb02396fdf85187ef13677f9326cfa",
+      "bytes": 1073,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_05.outcome.json",
+      "sha256": "e67af10a5942ece9ef31d611db72e4207334be5266d5985deeebcb145cfb065a",
+      "bytes": 18174,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_06.json",
+      "sha256": "7bbf9748c8835613448e737d0a40039215c5f24a0f880b01ca9bcf365096a70f",
+      "bytes": 1073,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_06.outcome.json",
+      "sha256": "e19a4a2548073bfb91aa377c962b90ea26a5af49ab39520f6515568d27dbf0ea",
+      "bytes": 17793,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_07.json",
+      "sha256": "2ef148df65194f19edca57cf67f9747d92895495f20dfc63fa6901f08f4274a3",
+      "bytes": 1073,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_07.outcome.json",
+      "sha256": "c523ac95e26abd0c4013ac58a84061f486b2500dc14b58fbee154554ef566a89",
+      "bytes": 18221,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_08.json",
+      "sha256": "581828799497167e032bf4209b99c780f6fca45f56919a99f83f8c53ff8fdb39",
+      "bytes": 1073,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_08.outcome.json",
+      "sha256": "f660905b9dc82a1d349c582851778fa5bc65f8b399855137a78b24f03ad68424",
+      "bytes": 17880,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_09.json",
+      "sha256": "3ffd45aa4efd116b0235f1e9f27f450a12a90ed119a4f2e18a70fd42d76cc6db",
+      "bytes": 1073,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_09.outcome.json",
+      "sha256": "6e59d426621326aa8e97d83e6da3456944e0cb36a571de9d4c988c503da6ce16",
+      "bytes": 18190,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_10.json",
+      "sha256": "b75e52ab572988c6d5b900701c15d9bd72a6a3a5796d62a7fa4ef34a0789c240",
+      "bytes": 1073,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_10.outcome.json",
+      "sha256": "3ab063951bfc7b4584ed2d35be10df4d40d8f6fb149a9549c36559c95ed1871d",
+      "bytes": 17800,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_11.json",
+      "sha256": "a81c38a2e6c6ba57ce5906860b76fddde2c3398bbbc84e223969ff84ec97eb8a",
+      "bytes": 1073,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/m2_smoke_11.outcome.json",
+      "sha256": "c68d6e3c01afb0487df621e0563e3fea91cf6c9e739f236c14a6e8ae5b37d156",
+      "bytes": 18210,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0000.json",
+      "sha256": "f5ee24d878f24f346119964c7083b2f7db0993cd2fa5578c036bde7218f92cf8",
+      "bytes": 1078,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0000.outcome.json",
+      "sha256": "e8082d8b5eaadd550713a71803afeb02ce3782054aabb705eebc1ed55037e718",
+      "bytes": 6257,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0001.json",
+      "sha256": "3d101778fa852649b5b09a577d16820108eed913f1ae0e960cbceac1bda1986e",
+      "bytes": 1078,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0001.outcome.json",
+      "sha256": "3d186cb7ce28be73856f54acf432b17b24bb3014b09b00eae501d133f0966b48",
+      "bytes": 6415,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0002.json",
+      "sha256": "ce4251ac29b2c00bd42608f8b22e36cc126ee08428ca41f4c68f4ed93588077b",
+      "bytes": 1078,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0002.outcome.json",
+      "sha256": "1194e123612e95ee07fac1c1694440ecd538b9fa5fd7306337eb5c32d7414e0b",
+      "bytes": 6375,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0003.json",
+      "sha256": "81738485a4e9a3caf41086fdd7909eccd757d5f2bf7d9b44f3da3bc15f4ee210",
+      "bytes": 1077,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0003.outcome.json",
+      "sha256": "316a4e509916fab4c7f22105930a19c1ff73b2ea88d8679239dd1b288a7eab44",
+      "bytes": 6209,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0004.json",
+      "sha256": "eaece14a5cec0c544e7e500fa34234fc0bef04358d92627dfdcf64399100855e",
+      "bytes": 1077,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0004.outcome.json",
+      "sha256": "1d126316febc7457200e5d9fa67b13a6bec92d8f1e24a674aedf2034d2578649",
+      "bytes": 6361,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0005.json",
+      "sha256": "2c556ed11113dbb9ec12fd4c1cc7e8eb6aa27704d939daaae5a3d503cc6009b2",
+      "bytes": 1077,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0005.outcome.json",
+      "sha256": "6a662455dc26533397884bede386e1d181982562dbd042a6622272b77d967bbd",
+      "bytes": 6356,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0006.json",
+      "sha256": "f1b1f39c5d8f10202371bdd2dc4a212ce25f44725db49fdc5944838ac727264f",
+      "bytes": 1077,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0006.outcome.json",
+      "sha256": "0dbafbab31aa2f2865d3b9dcd2b3227d6d5b211c15183e07d5164bfadaff9ade",
+      "bytes": 6466,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0007.json",
+      "sha256": "75bedde8056c06c952e2259c9513960e69a9252604cf9af468bb6f16aea28968",
+      "bytes": 1077,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0007.outcome.json",
+      "sha256": "d0bc45a32ab4cf47b277f40ce151eb0c79e324b35bce9e6c1d6b5e1148c6960d",
+      "bytes": 6348,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0008.json",
+      "sha256": "525fd2338e8ce99a5d2122e2157ec39372b35105991e06f0ab2cc0b1253bd793",
+      "bytes": 1077,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0008.outcome.json",
+      "sha256": "3ddf1fff75a1fa20806f8d7cee25b8c5fa88123066f9c29c85dab28ac674dacd",
+      "bytes": 6512,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0009.json",
+      "sha256": "e47001d7455446e21151560d12f14294e234118bc2858cd65a65688d83c2a5c6",
+      "bytes": 1077,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0009.outcome.json",
+      "sha256": "c25ffe2c0ae5e81d648a777e3390c55f88730a097ecc93f61beb07ee8829385a",
+      "bytes": 6387,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0010.json",
+      "sha256": "215cbf52449105744a8639ab676359f8b48e698b120cc2d6060cd7a231d3e9d6",
+      "bytes": 1078,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0010.outcome.json",
+      "sha256": "7c1bfe3cc008344a8a9d8b2a9db62803d8dfe4e4bc63268781417bea69274dd0",
+      "bytes": 6292,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0011.json",
+      "sha256": "f9f5c30e33dd341cb34d43d146d518afe45d8c40423850fdac79a03621507d6e",
+      "bytes": 1078,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0011.outcome.json",
+      "sha256": "f23a7cab49c541ebb81d2ca930536d6ecaff4ab15a841dfcde3e451305d5bc65",
+      "bytes": 6292,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0012.json",
+      "sha256": "b1f26fccdc11894d8fb72ef1f5a86c5892232616d5341da7473370dd6783b1a5",
+      "bytes": 1078,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0012.outcome.json",
+      "sha256": "33da7504ca24ff97c10ef22b1e4747bc855f5ab1081a1f9034f7425ceb4d6864",
+      "bytes": 6493,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0013.json",
+      "sha256": "cb5b9ec87f31dab9508b6d1cf53a619f89807183deff74047289fb6dc9b768b8",
+      "bytes": 1078,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/services14_0013.outcome.json",
+      "sha256": "11dc096726123da00f4cf0474d272b1bc918a1423c5123fa1fa5db470ca01a37",
+      "bytes": 6493,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_gcs_object_read.json",
+      "sha256": "16d5dd2fb6641c295d8ac8aabdae7888673aeb7c3102a6454043b58c6118a202",
+      "bytes": 1092,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_gcs_object_read.outcome.json",
+      "sha256": "ead90759905bc436af2d46237871bb4ac7450a2a36ac9ea49a09d540f97f2b7d",
+      "bytes": 271183,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_batch.json",
+      "sha256": "782e0e1aa3e322e681c355574c21853d8d75de5f3803e5783d1fa348850771a6",
+      "bytes": 1091,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_batch.outcome.json",
+      "sha256": "06636b90c4c7b0f7bcc15cae3d806b82f4f51a6eade73243c1132f38bb0b6b69",
+      "bytes": 341067,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_child_patch_read.json",
+      "sha256": "0df8b69bef9f39df0385b5b6e95f8cd4b1d8ae4d107eabfcecd916dc263ca6d8",
+      "bytes": 1102,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_child_patch_read.outcome.json",
+      "sha256": "efd48852b0e29d1895e277d47a416648c464ca7542b8105f3b3e9a5505204104",
+      "bytes": 260451,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_child_patch_read_checked.json",
+      "sha256": "8af8cfee2d77aa02fe7fc5028b93d8bfc8e3e347aed3fe09d36fa035dfef7df4",
+      "bytes": 1110,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_child_patch_read_checked.outcome.json",
+      "sha256": "5bd0da0b6812130be698d8563569a92145a32fc4a07c90a576bda44cd390fd77",
+      "bytes": 260476,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_csv_import.json",
+      "sha256": "08061d7e9cc3ef0881c5bb07b87dc4241830d9866d1984bdf24936fbe1504757",
+      "bytes": 1096,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_csv_import.outcome.json",
+      "sha256": "96d9437196c0f218daea1f17b180ff819285cdd3f91021a5463f17ca7328071e",
+      "bytes": 254933,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_parent_list.json",
+      "sha256": "c02f657e1d902e4f4368663dfff305519cd463c9abbf7d04af060bd5e8474d15",
+      "bytes": 1097,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_parent_list.outcome.json",
+      "sha256": "fca1a7e571ff7f6ce30d2aabc891c3736b70f0f816ba21f6d2db85b6fda6ed42",
+      "bytes": 249749,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_parent_patch.json",
+      "sha256": "8c8fae201fc675e747ecddfe941c8c5ed076c93923123f40e0647b50653bd7ba",
+      "bytes": 1098,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_parent_patch.outcome.json",
+      "sha256": "cd77fd59a5aa723d63125c3331cf9c645321a81486d4902392fb15b209ac7f5c",
+      "bytes": 251522,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_query_boolean.json",
+      "sha256": "dcda1eaf246cbe599b178c9320c8cae292fc26b2313ef0eeba62faee2e6833da",
+      "bytes": 1098,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_query_boolean.outcome.json",
+      "sha256": "a29570d02f60bc1bc84e356fd876988df96f1a3a41a8fff6f3449a9f17702eca",
+      "bytes": 18060,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_query_plain.json",
+      "sha256": "5222cf4367417bfff97f48834dd480a0d9fefc3f495bf298a31f00ebf35ad50d",
+      "bytes": 1096,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_mongodb_query_plain.outcome.json",
+      "sha256": "2abebe92df49fc1416d2f182c2a1b738c7bca7a8d2f21dbb54c3125b60ecee48",
+      "bytes": 18035,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_postgresql_child_read_checked.json",
+      "sha256": "c4f2e309fc0e6ac511c630fb60a1159d25787bc378ea2183e59d3abaf9efef1d",
+      "bytes": 1106,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_postgresql_child_read_checked.outcome.json",
+      "sha256": "a7962f7e9c49614525fbce1952d0b1c8dab935daa97d72cc30b4c088aff881d3",
+      "bytes": 210676,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_postgresql_query_boolean.json",
+      "sha256": "ca349a5ed190194ea6915d164d9d32140c9dde98dfc755270c72d96e7caf50de",
+      "bytes": 1101,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_postgresql_query_boolean.outcome.json",
+      "sha256": "8a4b6d78ef408ed6210d0c6f348fb50aec5e39ce94fbdbf97609a6cf17b9917d",
+      "bytes": 17641,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_postgresql_query_plain.json",
+      "sha256": "ae5208e487a825777a28f3711a36553871f96ed707eb4c71a202388683b1b09b",
+      "bytes": 1099,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/cases/supplement_postgresql_query_plain.outcome.json",
+      "sha256": "6770c880a0fe15032283607a37fb3d7d4633a7e5b6b0c3da5aaf0e029b0b6f4d",
+      "bytes": 17564,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/phase2/summary.json",
+      "sha256": "01cdabce0d3b9ca8d0611bb90682ddf8f0f01a102e76acb38136df7b56299a4f",
+      "bytes": 58022,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/rust-products.json",
+      "sha256": "d0965b72912741eaff9cfc76906e0c12d7bff194010745d0e55f046f11da9c19",
+      "bytes": 148382,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS01_CNL_V6/prompt.json",
+      "sha256": "33d902b113a2cf203250cc6b5e6b41cea5b02225890ad53e96019114a2bf3722",
+      "bytes": 2759,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS02_CNL_V7/prompt.json",
+      "sha256": "d46a01dfb1cd5fa4d7c292210bc2046409cd8ba6fe8beb86a0db1d7fedc2d6fb",
+      "bytes": 4860,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS03_JSON_V6/prompt.json",
+      "sha256": "33d902b113a2cf203250cc6b5e6b41cea5b02225890ad53e96019114a2bf3722",
+      "bytes": 2759,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS04_JSON_V7/prompt.json",
+      "sha256": "d46a01dfb1cd5fa4d7c292210bc2046409cd8ba6fe8beb86a0db1d7fedc2d6fb",
+      "bytes": 4860,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS05_CNL_FIELD_UPPERCASE/prompt.json",
+      "sha256": "afd86ef401f62db91e18cbeff2355343d3bc6e1872e06f3e7df0440c85762d03",
+      "bytes": 722,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS06_JSON_FIELD_UPPERCASE/prompt.json",
+      "sha256": "afd86ef401f62db91e18cbeff2355343d3bc6e1872e06f3e7df0440c85762d03",
+      "bytes": 722,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS07_CNL_FIELD_SELF/prompt.json",
+      "sha256": "9783c0115be489bf162fe5e4d4abf11b000d11087ab5a9fe0ba8644500b3f8a5",
+      "bytes": 1193,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS08_JSON_CHILD_FIELD_DOUBLE_UNDERSCORE/prompt.json",
+      "sha256": "bc75c039c0bb97bbce8475ef5f63dfb71b3ccbb0dba471648e921b58416908d4",
+      "bytes": 3021,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS09_CNL_PATH_TRAILING_SLASH/prompt.json",
+      "sha256": "a7d0b916bcc465ce7519e7627b6d1ae41ac6a0a55d8091736e33d7a5425121e1",
+      "bytes": 723,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS10_JSON_PATH_DOUBLE_SLASH/prompt.json",
+      "sha256": "868c6dc1a6b9ef3ebbdd352f659bf82cff9af48194e27b626ed480527c7ab90c",
+      "bytes": 875,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS11_CNL_PATH_HEALTHZ/prompt.json",
+      "sha256": "0e03ab54b0531cef02d64f470e9768c2250b2b0204bb3eb43b671801190cf95b",
+      "bytes": 1417,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS12_CNL_V3_FILTER_LIMIT/prompt.json",
+      "sha256": "01b4e9e708277d8c3323c073cd1ecb7caf0cf74c66868d41f94521c71fe76125",
+      "bytes": 1186,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS13_JSON_V3_FILTER_OFFSET/prompt.json",
+      "sha256": "a19110fef72c43ffef1d0d8ea572271de3da40185e2ce079645b6b9e9efa718d",
+      "bytes": 1188,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS14_CNL_V5_FOREIGN_KEY_SELF/prompt.json",
+      "sha256": "3eb9305a12ad0ed5ef6320fbabbdcd29e5985ff2ec26fde0f2a80c72beb82ec9",
+      "bytes": 3016,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS15_JSON_V5_FOREIGN_KEY_CRATE/prompt.json",
+      "sha256": "7b48bf50a7c68d0713533a313a59ee977b8802b7fc48068aad1f2b9c620c84f0",
+      "bytes": 3017,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS16_CNL_V5_FIRST_REFUSAL/prompt.json",
+      "sha256": "06b6ec5d4d720fd6b3a9b8a4be857b0af486ecfc1d0a3217b861f57e006ef63d",
+      "bytes": 3015,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS17_CNL_PATH_BEFORE_FIELD/prompt.json",
+      "sha256": "e18eea740733c8ec3fae288160e9af91eb95f76ee3d06540b4fbd0d12f70efa6",
+      "bytes": 723,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS18_CNL_V5_CAPABILITIES/prompt.json",
+      "sha256": "0573bf4ecb885c7b8af3ce25b7f280254750d1a2c51c3a9acc3cd8bd2c969e33",
+      "bytes": 3199,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS19_JSON_V5_CAPABILITIES/prompt.json",
+      "sha256": "0573bf4ecb885c7b8af3ce25b7f280254750d1a2c51c3a9acc3cd8bd2c969e33",
+      "bytes": 3199,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS20_CNL_V5_CAPABILITIES_FIRST/prompt.json",
+      "sha256": "4f8851e4c4704e52db3fe8d2b89c5344dddcc07d2397e973d0e5feacd1718023",
+      "bytes": 3198,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS21_CNL_TABLE_SQLX_MIGRATIONS/prompt.json",
+      "sha256": "7dfb9f5508a6167f912f990b35bdeb460e1d440d0e86a4e6128680711dd30ead",
+      "bytes": 733,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-output-phase2/rs-products-001/RS22_JSON_TABLE_BEFORE_FIELD/prompt.json",
+      "sha256": "76ac0ab434e2a9c2c42f633d6b7d2b1a1303f17d00b0b7eccd064eca61e5d9ba",
+      "bytes": 733,
+      "mode": 420
+    },
+    {
+      "path": ".local/typescript-output/npm-cache-001/_cacache/content-v2/sha512/09/0e/3a53466400699b4ffe14c5dcf3189a5a70fd8878a818e1ae7fb4e23d00005ba4e31f2bbdfdc1f0d79afd6eb0293edd190a8f5850cb8fdf8e18b06b6c65ac",
+      "sha256": "3c656fb527641e841e1c4dae1d2faa238a4e17dde37f1620d5b72172caaddac0",
+      "bytes": 245272,
+      "mode": 420
+    },
+    {
+      "path": ".local/typescript-output/npm-cache-001/_cacache/content-v2/sha512/0e/8c/6581228925c94df6dce32fb1a7cf25b7d231595f79c97b58e1178d502369b81054ffac0f10598a701913b0d344b8e0d1fcba0f65ff55cd6064d6d92433d2",
+      "sha256": "ba1f794dad16a8cc25b38551ddf6980dca28714c77786a8a6a58ad73a13a8e54",
+      "bytes": 33033,
+      "mode": 420
+    },
+    {
+      "path": ".local/typescript-output/npm-cache-001/_cacache/content-v2/sha512/14/80/e16f348fba9a5ed5da027207db270381ff5b5f1a584b8890c5fc3b6988a93febb9b532b657f038fb9ea7543835e34b881954bd85a4caf33354e81c9faf8e",
+      "sha256": "8f967db582e776246c52be5665bd856b3f87d9866e3125abd47a4bd908b8b2cb",
+      "bytes": 8854,
+      "mode": 420
+    },
+    {
+      "path": ".local/typescript-output/npm-cache-001/_cacache/content-v2/sha512/15/d5/bdaff8d066149ea21b35677b08d72c4540d16f31c9e67ee8f85813144f13ab0322cc693704d5a00c0624e56cc35a5ef04242e562d11ee177cb9d0d23fbba",
+      "sha256": "ff794c956186430afd600b5bc4500f3f0faf34b62be6ff98494f4c7f4a6d8597",
+      "bytes": 4280,
+      "mode": 420
+    }
+  ]
+}

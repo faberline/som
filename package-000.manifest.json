@@ -1,0 +1,62 @@
+{
+  "version": "som.m6-sealed-inputs-manifest.v1",
+  "cipher_sha256": "8743173156615030ff6d65947eaf581ed997b8fceb57b0d6d4144c6c108565fb",
+  "uncompressed_bytes": 29784160,
+  "total_files": 9,
+  "files": [
+    {
+      "path": ".local/m6-hosted/baseline/assets/blocks.json",
+      "sha256": "c7269e89d5f7b8fb2b36703cc2ccb6ef8201eccfc62fbffe526714fbd570311e",
+      "bytes": 486491,
+      "mode": 420
+    },
+    {
+      "path": ".local/m6-hosted/baseline/assets/legacy-blocks.json",
+      "sha256": "6dd5359cc320cb804f87f3d16fa5899b5ae801f37c970e3b9ac4fced0cc0170f",
+      "bytes": 120181,
+      "mode": 420
+    },
+    {
+      "path": ".local/m6-hosted/baseline/assets/manifest.json",
+      "sha256": "c406d03c0edd98ab703a616c1c2be5d81f001966ac9c84280edce5765f91a138",
+      "bytes": 3108,
+      "mode": 420
+    },
+    {
+      "path": ".local/m6-hosted/baseline/assets/pyproject.toml",
+      "sha256": "4cac7c6758372d4608895c53f1f427992d86988c85ff348c4eed7882efa762b4",
+      "bytes": 880,
+      "mode": 420
+    },
+    {
+      "path": ".local/m6-hosted/baseline/assets/quality-blocks.json",
+      "sha256": "0bfbf2a452a559a2661ac5c0c8355d0dfb9ce21cc310e505f121a51bb63e85cc",
+      "bytes": 154019,
+      "mode": 420
+    },
+    {
+      "path": ".local/m6-hosted/baseline/assets/quality.json",
+      "sha256": "6ef259440b0965ed97c86a6a46bca743c1a2adf8ec9c1365c82e84dcbd67bd21",
+      "bytes": 235,
+      "mode": 420
+    },
+    {
+      "path": ".local/m6-hosted/baseline/assets/ruff",
+      "sha256": "cb0cdeba051c5c5bdc85c22dc31440ac1ea17651366bf188d4df1f8fe985933a",
+      "bytes": 21566064,
+      "mode": 493
+    },
+    {
+      "path": ".local/m6-hosted/baseline/build.json",
+      "sha256": "0918984e7c9c00c5299d62d38209658385b960f996d84bf0514b52c04c528d73",
+      "bytes": 3057,
+      "mode": 420
+    },
+    {
+      "path": ".local/m6-hosted/baseline/runtime.json",
+      "sha256": "7c4ba46a498bb0f601bd67ff77f99dfe75e4ee1669d6af3c53f3b338a550b970",
+      "bytes": 3521,
+      "mode": 420
+    }
+  ]
+}
