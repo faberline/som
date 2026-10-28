@@ -201,6 +201,25 @@ def main(argv: list[str] | None = None) -> int:
                                          "--port", str(BASELINE_PORT)], cwd=frozen, env=env,
                                         stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr, shell=False)
         wait_health(baseline, expected)
+        stage = "reconstruct-inputs"
+        reconstructed = out / "reconstructed-inputs"
+        need(logged(out, "reconstruct", [sys.executable, str(HERE / "reconstruct_hosted_inputs.py"),
+                     "--repo", str(REPO), "--baseline", f"http://127.0.0.1:{BASELINE_PORT}",
+                     "--out", str(reconstructed)], env) == 0)
+        need((reconstructed / "rust-baseline").is_dir())
+        receipt = load(reconstructed / "receipt.json")
+        need(receipt.get("version") == "som.m6-hosted-reconstruction.v1"
+             and receipt.get("stage") == "input_reconstruction" and receipt.get("status") == "passed"
+             and receipt.get("passed") is True and receipt.get("product_suites") == "not_run"
+             and receipt.get("legacy_assemble_requests") == "not_reconstructed")
+        need(all(type(receipt.get(name)) is int and receipt[name] == expected for name, expected in (
+            ("name_prompt_count", 9), ("rust_file_count", 1170),
+            ("rust_phase1_case_count", 115), ("rust_phase2_case_count", 584))))
+        reference = receipt["rust_reference"]
+        need(reference["destination"] == "rust-baseline"
+             and re.fullmatch(r"[0-9a-f]{64}", reference["source_tree_sha256"]) is not None
+             and reference["source_tree_sha256"] == reference["copy_tree_sha256"])
+        summary["reconstructed_inputs_receipt_sha256"] = sha(reconstructed / "receipt.json")
         stage = "candidate"
         need(logged(out, "prepare", [sys.executable, str(HERE.parent / "rust_output_acceptance/prepare_candidate.py"),
                      "--out", str(out / "candidate"), "--port", str(CANDIDATE_PORT), "--package-assets",
@@ -210,6 +229,7 @@ def main(argv: list[str] | None = None) -> int:
             summary["acceptance_exit_code"] = logged(out, "acceptance", [sys.executable, str(HERE / "run_acceptance.py"),
                 "--candidate", str(out / "candidate"), "--out", str(out / "run"), "--baseline",
                 f"http://127.0.0.1:{BASELINE_PORT}", "--python", str(args.python),
+                "--rust-baseline-run", str(reconstructed / "rust-baseline"),
                 "--protected-default", "absent", "--cleanup-products-runtime"], env)
         except (OSError, subprocess.SubprocessError):
             pass

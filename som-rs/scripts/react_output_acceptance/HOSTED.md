@@ -37,6 +37,17 @@ It verifies hashes, paths, sizes, modes, counts, and the exact keyring.
 It restores only files under `.local/` in a fresh staging tree.
 Its success result is input provisioning, not product acceptance.
 
+The approved payload has sixteen encrypted packages.
+The last package keeps all 544 original legacy assembly requests.
+Do not replace these requests with newly generated historical records.
+
+The hosted helper rebuilds the nine public name prompts from the frozen baseline.
+Their exact file hashes must match the frozen name-case evidence.
+It copies the accepted Rust records into a separate physical directory.
+This selects the existing checker's saved-record input mode.
+The copy keeps each file's exact bytes. A receipt records each hash.
+The helper logs and receipt stay with the encrypted raw evidence.
+
 ## Run and retain evidence
 
 Public crates and Python packages are fetched before offline verification.

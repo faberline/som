@@ -77,9 +77,25 @@
           "url": "https://ghcr.io/v2/homebrew/core/rust/manifests/1.96.1",
           "ref_name": "1.96.1.arm64_tahoe",
           "archive_sha256": "d925479583e45556833b1b4f29d9a303593d65b67d04eb0802f0f480b32a6d5f"
+        },
+        {
+          "kind": "github_raw_bottle_observation",
+          "run_id": 40721350604,
+          "artifact_id": 12829424248,
+          "source_commit": "6f28dd146ae39749881ab8fbe5277075794c1a7c",
+          "archive_sha256": "d925479583e45556833b1b4f29d9a303593d65b67d04eb0802f0f480b32a6d5f",
+          "rule": "The safe provisioning report confirmed this archive SHA and size and recorded these six raw file hashes. Five differed from the frozen installed hashes; cargo-fmt matched. The report did not retain raw load commands, so exact normalization remains unverified."
         }
       ],
-      "installed_frozen_hash_match": "unverified_until_github"
+      "installed_frozen_hash_match": "raw_bytes_mismatch_confirmed_normalization_unverified",
+      "raw_file_sha256": {
+        "bin/rustc": "5baef59afe4e42ba900e24a2bdad40c6e9dd5ecb2cc82c629c5e37c936c43a02",
+        "bin/cargo": "2794958b826a382dab7f495dafb1d17081480f24411685009f8523d78ea518a8",
+        "bin/rustfmt": "c3bee64ee36ce210dad4b099b4bdb31d50fb0053ead558b5b6d1bdcaee205596",
+        "bin/cargo-fmt": "2cb29d5f8d82881b5b4435d196d7053df0172950dfbe0a07db326ea13c076ee4",
+        "bin/cargo-clippy": "9fbddfa5fa31d8c14cec13b42564679bd27b52aa40fc71aade2b4574dd0b97c7",
+        "bin/clippy-driver": "2b83e6081be6ed869f998a6ebdff7336181cc4a70721c636c687f2b0ec78dfa1"
+      }
     },
     {
       "formula": "node",
@@ -1281,13 +1297,15 @@
     }
   ],
   "relocation": {
-    "strategy": "Extract the selected archives into /opt/homebrew/Cellar on the disposable GitHub VM and set each recorded opt symlink to its expected keg. Preserve archive bytes, executable modes and symlinks.",
+    "symlink_rule": "Preserve symlink target bytes. A bottle can link only within its own exact keg or the exact Cellar kegs and opt paths of its declared transitive dependency closure. Resolve relative links from the final public Cellar member path. Refuse unknown global prefix links and report only their public bottle member and target. No archive member can write through a symlink parent.",
+    "strategy": "Extract the exact official archives into stage directories, preserve raw hash records, apply only the declared historical Mach-O placeholder normalization and ad-hoc signature, require every frozen installed hash, then install exact kegs and opt links on the disposable GitHub VM.",
     "prohibited_before_frozen_hash_checks": [
       "Do not run brew install or brew upgrade to select current formula versions.",
-      "Do not call install_name_tool, codesign, strip or any other binary rewrite.",
+      "Do not call install_name_tool, strip or any binary rewrite outside the declared historical normalization policy.",
+      "Do not replace a frozen hash with a raw archive hash or a normalized hash that differs from the contract.",
       "Do not replace a frozen library with another bottle target or rebuild merely because its version matches."
     ],
-    "unverified": "Raw archive extraction may differ from the historical Homebrew installed bytes. The receipt metadata does not prove that no Mach-O relocation or signing step occurred. Fail provisioning if any frozen hash differs. Record the actual mismatch before deciding on an explicit repair.",
+    "unverified": "A real GitHub run proved that raw Rust bottle files and frozen installed files are different for five of six executables. Historical Homebrew 6.0.6 source specifies bounded Mach-O linkage placeholder replacement and ad-hoc signing. The provisioner records that operation separately and still fails if any resulting byte hash differs from the unchanged frozen contract.",
     "node_npm": {
       "copy_from": "/opt/homebrew/Cellar/node/26.5.0/libexec/lib/node_modules/npm",
       "copy_to": "/opt/homebrew/lib/node_modules/npm",
@@ -1318,6 +1336,7 @@
   "required_github_verification": [
     "Verify each downloaded archive SHA-256 before extraction.",
     "Inspect archive paths and require the expected formula/version keg before extraction.",
+    "Retain raw file hashes before the declared historical Mach-O normalization and the unsigned-relocated and signed-normalized hashes afterward. Require the unchanged frozen installed hashes.",
     "Verify the six Rust binary hashes in the frozen Rust toolchain contract.",
     "Verify the frozen Node executable, libnode and all frozen Homebrew library file hashes.",
     "Verify the frozen npm tree hash, file count and symlink count.",
@@ -1336,5 +1355,49 @@
     "Receipt dependency lists describe the installation event. Current opt links can point to newer compatible dependency kegs. This file uses the inspected runtime closure and preserves the explicit OpenSSL metadata conflict.",
     "Build-only tools and optional LLVM Python bindings are outside the inspected dynamic runtime closure. The GitHub VM still needs its normal Xcode command line tools, linker, lsof and time utilities.",
     "The primary venv is a pyenv installation. No personal interpreter path is included here, and its version does not establish the selected Homebrew Python bottle's readiness."
-  ]
+  ],
+  "macho_normalization": {
+    "policy": "homebrew-6.0.6-ruby-macho-5.0.0-v1",
+    "prefixes": {
+      "@@HOMEBREW_PREFIX@@": "/opt/homebrew",
+      "@@HOMEBREW_CELLAR@@": "/opt/homebrew/Cellar"
+    },
+    "codesign_arguments": [
+      "--sign",
+      "-",
+      "--force",
+      "--preserve-metadata=entitlements,requirements,flags,runtime"
+    ],
+    "implementation": "The provisioner ports ruby-macho 5.0.0's aligned load-command replacement in Python. It changes only placeholder-prefixed library IDs, library loads and rpaths in supported arm64 Mach-O files. It does not use install_name_tool or replace arbitrary strings.",
+    "raw_and_installed_hashes": "The official archive SHA-256 and raw extracted file hashes identify the source. The existing frozen toolchain hashes identify installed bytes. The report retains raw, unsigned-relocated and signed-normalized hashes separately. Only exact frozen installed hashes can pass.",
+    "github_only": "The real ad-hoc signing command can run only after the hosted macOS 26 arm64 guard. Unit fixtures use a fake command runner.",
+    "status": "normalization_unverified_until_exact_frozen_hashes_pass_on_github",
+    "sources": [
+      {
+        "url": "https://raw.githubusercontent.com/Homebrew/brew/6.0.6/Library/Homebrew/extend/os/mac/keg_relocate.rb",
+        "sha256": "5cd540aa13871158dd27faa65a17db0f772237dc497d65f025593af40f9d0bc2",
+        "role": "Homebrew placeholder linkage rules"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/Homebrew/brew/6.0.6/Library/Homebrew/extend/os/mac/keg.rb",
+        "sha256": "568f8090555db7bf42b5f8c78f126f02a2337ec2f8704c3ac8d7d9badb7c6469",
+        "role": "Historical ad-hoc codesign arguments"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/Homebrew/ruby-macho/v5.0.0/lib/macho/macho_file.rb",
+        "sha256": "cc4ffbce193e1dd6d21a92071cfcebbfc1e3744b121fbdd0fec8bfe7e3f726b8",
+        "role": "Delete and insert commands while preserving file offsets"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/Homebrew/ruby-macho/v5.0.0/lib/macho/load_commands.rb",
+        "sha256": "2e2518c3a4419d8a154a7d20814d32c83b1278a0168e8c8628b8ad6d56b1c6ca",
+        "role": "Library and rpath command serialization"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/Homebrew/ruby-macho/v5.0.0/lib/macho/utils.rb",
+        "sha256": "e33c6c348be1ac4873d2c894053f70dff0ed0b6152c5f310ab58f741b3a5b682",
+        "role": "String termination and alignment padding"
+      }
+    ]
+  }
 }

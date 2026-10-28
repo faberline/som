@@ -11,7 +11,7 @@ must get the OS connection-refused error. This mode does not prove default-serve
 
 usage:
   run_acceptance.py --candidate DIR --out NEW_DIR [--baseline URL] [--legacy-run DIR]
-                    [--python PATH] [--protected-default healthy|absent]
+                    [--rust-baseline-run DIR] [--python PATH] [--protected-default healthy|absent]
 """
 from __future__ import annotations
 
@@ -355,6 +355,7 @@ def build_steps(
     out_dir: pathlib.Path,
     contract_receipt: str,
     cleanup_products_runtime: bool = False,
+    rust_baseline_run: str | None = None,
 ) -> list[dict[str, Any]]:
     """Construct the 12 ordered step definitions."""
     som_binary = str(candidate_dir / "som")
@@ -437,6 +438,7 @@ def build_steps(
                 baseline_url,
                 "--out",
                 str(out_dir / "rust-baseline"),
+                *(["--run", rust_baseline_run] if rust_baseline_run is not None else []),
             ],
             "report": out_dir / "rust-baseline" / "report.json",
             "kind": "report",
@@ -887,6 +889,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help=f"Recorded legacy544 run directory (default: {DEFAULT_LEGACY_RUN_REL})",
     )
     parser.add_argument(
+        "--rust-baseline-run",
+        type=pathlib.Path,
+        default=None,
+        help="Recorded Rust baseline run directory (default: check_rust_baseline.py's existing default).",
+    )
+    parser.add_argument(
         "--python",
         type=pathlib.Path,
         default=None,
@@ -946,6 +954,10 @@ def main(argv: list[str] | None = None) -> int:
     latest_receipt_path = find_latest_contract_receipt(repo)
     contract_receipt_arg = format_repo_arg(latest_receipt_path, repo)
     legacy_run_arg = format_repo_arg(legacy_run_path, repo) if args.legacy_run is None else str(legacy_run_path)
+    rust_baseline_run_arg = (
+        str(resolve_repo_path(args.rust_baseline_run, repo))
+        if args.rust_baseline_run is not None else None
+    )
     python_arg = str(python_path)
 
     started_at = now_iso()
@@ -1001,6 +1013,7 @@ def main(argv: list[str] | None = None) -> int:
         out_dir=out_dir,
         contract_receipt=contract_receipt_arg,
         cleanup_products_runtime=args.cleanup_products_runtime,
+        rust_baseline_run=rust_baseline_run_arg,
     )
 
     receipts: list[dict[str, Any]] = []
@@ -1079,6 +1092,7 @@ def main(argv: list[str] | None = None) -> int:
         "candidate_url": candidate_url,
         "baseline_url": baseline_url,
         "legacy_run": legacy_run_arg,
+        **({"rust_baseline_run": rust_baseline_run_arg} if rust_baseline_run_arg is not None else {}),
         "python": python_arg,
         "contract_receipt": contract_receipt_arg,
         "identity": str(identity_path),

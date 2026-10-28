@@ -36,9 +36,10 @@ class Fixture:
         (self.repo / ".local/m6-hosted/prettier").mkdir()
         self.out = self.repo / ".local/m6-hosted/check"
         self.calls = []
-        self.acceptance_exit = self.audit_exit = self.prepare_exit = 0
+        self.acceptance_exit = self.audit_exit = self.prepare_exit = self.reconstruct_exit = 0
         self.bad_cwd = self.changed_head = self.omit_run = False
         self.run_overrides, self.audit_overrides = {}, {}
+        self.reconstruction_overrides = {}
 
     def run(self, command, **kwargs):
         self.calls.append(command)
@@ -62,6 +63,18 @@ class Fixture:
             kwargs["stdout"].truncate()
             cwd = self.repo if self.bad_cwd else self.out / "candidate"
             kwargs["stdout"].write(f"p4321\nfcwd\nn{cwd}\n".encode())
+        elif command[1].endswith("reconstruct_hosted_inputs.py"):
+            code = self.reconstruct_exit
+            if not code:
+                reconstructed = self.out / "reconstructed-inputs"
+                (reconstructed / "rust-baseline").mkdir(parents=True)
+                save(reconstructed / "receipt.json", {"version": "som.m6-hosted-reconstruction.v1",
+                    "stage": "input_reconstruction", "status": "passed", "passed": True,
+                    "name_prompt_count": 9, "rust_file_count": 1170,
+                    "rust_phase1_case_count": 115, "rust_phase2_case_count": 584,
+                    "product_suites": "not_run", "legacy_assemble_requests": "not_reconstructed",
+                    "rust_reference": {"destination": "rust-baseline", "source_tree_sha256": "f" * 64,
+                                       "copy_tree_sha256": "f" * 64}, **self.reconstruction_overrides})
         elif command[1].endswith("prepare_candidate.py"):
             code = self.prepare_exit
             if not code:
@@ -154,6 +167,13 @@ class HostedDriverTests(unittest.TestCase):
         command = next(command for command in self.fixture.calls if len(command) > 1 and command[1].endswith("run_acceptance.py"))
         self.assertIn("--cleanup-products-runtime", command)
         self.assertEqual(command[command.index("--baseline") + 1], "http://127.0.0.1:18917")
+        self.assertEqual(command[command.index("--rust-baseline-run") + 1], str(self.fixture.out / "reconstructed-inputs/rust-baseline"))
+        reconstruct = next(command for command in self.fixture.calls if len(command) > 1 and command[1].endswith("reconstruct_hosted_inputs.py"))
+        self.assertEqual(reconstruct[reconstruct.index("--baseline") + 1], "http://127.0.0.1:18917")
+        self.assertEqual(reconstruct[reconstruct.index("--out") + 1], str(self.fixture.out / "reconstructed-inputs"))
+        prepare = next(command for command in self.fixture.calls if len(command) > 1 and command[1].endswith("prepare_candidate.py"))
+        self.assertLess(self.fixture.calls.index(reconstruct), self.fixture.calls.index(prepare))
+        self.assertEqual(summary["reconstructed_inputs_receipt_sha256"], driver.sha(self.fixture.out / "reconstructed-inputs/receipt.json"))
         audit = next(command for command in self.fixture.calls if len(command) > 1 and command[1].endswith("audit130.py"))
         self.assertEqual(audit[audit.index("--out") + 1], str(self.fixture.out / "audit.json"))
 
@@ -193,6 +213,24 @@ class HostedDriverTests(unittest.TestCase):
         code, summary = self.invoke()
         self.assertEqual((code, summary["failed_stage"], summary["product_suites"]), (1, "candidate", "not_run"))
         self.assertFalse(any(len(command) > 1 and command[1].endswith("run_acceptance.py") for command in self.fixture.calls))
+
+    def test_failed_input_reconstruction_stops_before_candidate(self):
+        self.fixture.reconstruct_exit = 1
+        code, summary = self.invoke()
+        self.assertEqual((code, summary["failed_stage"], summary["product_suites"]), (1, "reconstruct-inputs", "not_run"))
+        self.assertFalse(any(len(command) > 1 and command[1].endswith("prepare_candidate.py") for command in self.fixture.calls))
+        self.start.return_value.terminate.assert_called_once()
+
+    def test_incomplete_input_receipt_stops_before_candidate(self):
+        for name, value in (("passed", False), ("rust_phase2_case_count", 583),
+                            ("rust_reference", {"destination": "rust-baseline",
+                             "source_tree_sha256": "f" * 64, "copy_tree_sha256": "e" * 64})):
+            with self.subTest(field=name):
+                self.fixture.out = self.fixture.repo / f".local/m6-hosted/check-{name}"
+                self.fixture.reconstruction_overrides = {name: value}
+                code, summary = self.invoke()
+                self.assertEqual((code, summary["failed_stage"], summary["product_suites"]), (1, "reconstruct-inputs", "not_run"))
+        self.assertFalse(any(len(command) > 1 and command[1].endswith("prepare_candidate.py") for command in self.fixture.calls))
 
     def test_cleanup_refuses_process_with_wrong_working_directory(self):
         self.fixture.bad_cwd = True

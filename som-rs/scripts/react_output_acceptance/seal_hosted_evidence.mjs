@@ -111,7 +111,7 @@ async function readSource(filename, expected = null, keepBytes = false) {
   }
 }
 
-/** Read only the named top-level files, raw run tree, and candidate identity. */
+/** Read only the named logs, input reconstruction, raw run, and candidate identity. */
 export async function collectEvidence(root) {
   try {
     canonicalAbsolute(root);
@@ -145,7 +145,7 @@ export async function collectEvidence(root) {
       const filename = path.join(root, entry.name);
       if (["summary.json", "audit.json"].includes(entry.name) || /^[A-Za-z0-9][A-Za-z0-9_.-]*\.(stdout|stderr)$/.test(entry.name)) {
         await addFile(filename);
-      } else if (entry.name === "run") {
+      } else if (["run", "reconstructed-inputs"].includes(entry.name)) {
         await walk(filename);
       } else if (entry.name === "candidate") {
         await physicalDirectory(filename);

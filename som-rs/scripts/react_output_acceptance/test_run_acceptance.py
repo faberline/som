@@ -880,6 +880,38 @@ raise SystemExit(int(step_cfg.get("exit_code", 0)))
         ])
         self.assertTrue(parsed.cleanup_products_runtime)
 
+    def test_rust_baseline_run_override_changes_only_its_gate(self) -> None:
+        options = {
+            "python_bin": "python3", "candidate_dir": self.candidate_dir,
+            "candidate_url": "http://127.0.0.1:18919", "baseline_url": "http://127.0.0.1:18917",
+            "legacy_run": str(self.legacy_run), "out_dir": self.root / ".local/run",
+            "contract_receipt": "receipt.json",
+        }
+        alternate = self.root / ".local/m6-hosted/restored-rust-baseline"
+        original = run_acceptance.build_steps(**options)
+        changed = run_acceptance.build_steps(**options, rust_baseline_run=str(alternate))
+        self.assertEqual(len(changed), 12)
+        for before, after in zip(original, changed):
+            if before["step"] == "rust-baseline":
+                self.assertEqual(after, {**before, "argv": [*before["argv"], "--run", str(alternate)]})
+            else:
+                self.assertEqual(before, after)
+        base_args = ["--candidate", str(self.candidate_dir), "--out", str(self.root / ".local/run")]
+        self.assertIsNone(run_acceptance.parse_args(base_args).rust_baseline_run)
+        self.assertEqual(run_acceptance.parse_args([*base_args, "--rust-baseline-run", str(alternate)]).rust_baseline_run, alternate)
+
+        out_dir = self.root / ".local/run-rust-override"
+        rc, _out, err = self._run_main([
+            "--candidate", str(self.candidate_dir), "--out", str(out_dir),
+            "--baseline", self.base_server.url, "--rust-baseline-run", str(alternate),
+        ])
+        self.assertEqual(rc, 0, msg=err)
+        invocations = self._read_invocations()
+        self.assertEqual(len(invocations), 12)
+        self.assertEqual(invocations[4]["argv"][-2:], ["--run", str(alternate)])
+        self.assertFalse(any("--run" in item["argv"] for item in invocations if item["step"] != "rust-baseline"))
+        self.assertEqual(json.loads((out_dir / "run.json").read_text())["rust_baseline_run"], str(alternate))
+
     def test_10_loopback_url_validation_preserves_ipv6(self) -> None:
         self.assertEqual(
             run_acceptance.parse_and_validate_url("http://[::1]:18960", "--baseline"),

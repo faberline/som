@@ -7,6 +7,7 @@ import importlib.util
 import io
 import json
 from pathlib import Path
+import struct
 import tarfile
 import tempfile
 import types
@@ -53,6 +54,27 @@ def entry(formula, version, raw, revision=0, rebuild=0, target="arm64_tahoe"):
             "url": f"https://ghcr.io/v2/homebrew/core/{formula.replace('@', '/')}/blobs/sha256:{sha}",
             "archive_sha256": sha, "archive_size_bytes": len(raw),
             "non_system_dynamic_dependencies": []}
+
+
+def macho_link_command(name, kind=0xC):
+    fixed = 12 if kind == 0x8000001C else 24
+    payload = name.encode() + b"\0"
+    size = (fixed + len(payload) + 7) // 8 * 8
+    header = struct.pack("<3I", kind, size, fixed)
+    if fixed == 24:
+        header += struct.pack("<3I", 2, 0x10000, 0x10000)
+    return header + payload + b"\0" * (size - fixed - len(payload))
+
+
+def macho_fixture(commands, body=b"unchanged body", padding=0):
+    region = b"".join(commands)
+    return struct.pack("<8I", 0xFEEDFACF, 0x0100000C, 0, 2, len(commands), len(region), 0, 0) + region + b"\0" * padding + body
+
+
+def normalization_policy():
+    return {"policy": "homebrew-6.0.6-ruby-macho-5.0.0-v1",
+            "prefixes": {"@@HOMEBREW_PREFIX@@": "/opt/homebrew", "@@HOMEBREW_CELLAR@@": "/opt/homebrew/Cellar"},
+            "codesign_arguments": ["--sign", "-", "--force", "--preserve-metadata=entitlements,requirements,flags,runtime"]}
 
 
 class FakeOpener:
@@ -318,6 +340,124 @@ class ProvisionMacosTests(unittest.TestCase):
         (root / "b").symlink_to("a")
         expected = digest(f"a\0{digest(b'content')}\nb\0symlink:a\n".encode())
         self.assertEqual(provisioner.tree_sha256(root), (expected, 1, 1))
+
+    def test_macho_port_changes_only_linkage_commands_and_keeps_body_offsets(self):
+        old_names = ("@@HOMEBREW_PREFIX@@/opt/node/lib/libnode.dylib",
+                     "@@HOMEBREW_PREFIX@@/opt/llvm/lib/libLLVM.dylib",
+                     "@@HOMEBREW_CELLAR@@/rust/1.96.1/lib")
+        new_names = ("/opt/homebrew/opt/node/lib/libnode.dylib",
+                     "/opt/homebrew/opt/llvm/lib/libLLVM.dylib", "/opt/homebrew/Cellar/rust/1.96.1/lib")
+        kinds = (0xD, 0xC, 0x8000001C)
+        old_commands = [macho_link_command(name, kind) for name, kind in zip(old_names, kinds)]
+        new_commands = [macho_link_command(name, kind) for name, kind in zip(new_names, kinds)]
+        body = b"literal @@HOMEBREW_PREFIX@@ outside linkage must remain unchanged"
+        raw = macho_fixture(old_commands, body, padding=32)
+        expected = macho_fixture(new_commands, body,
+                                 padding=32 + sum(map(len, old_commands)) - sum(map(len, new_commands)))
+        relocated, operations = provisioner.relocate_macho_bytes(raw)
+        self.assertEqual(relocated, expected)
+        self.assertEqual(len(relocated), len(raw))
+        self.assertEqual([(row["from"], row["to"]) for row in operations], list(zip(old_names, new_names)))
+        self.assertEqual(relocated[-len(body):], body)
+
+    def test_macho_growth_uses_verified_header_padding_and_keeps_sections(self):
+        section_offset = 512
+        segment = struct.pack("<II16sQQQQIIII", 0x19, 152, b"__TEXT", 0x100000000, 4096,
+                              0, 520, 7, 5, 1, 0)
+        segment += struct.pack("<16s16sQQ8I", b"__text", b"__TEXT", 0x100000200, 8,
+                               section_offset, 2, 0, 0, 0, 0, 0, 0)
+        old_command = macho_link_command("@@HOMEBREW_CELLAR@@/abc")
+        new_command = macho_link_command("/opt/homebrew/Cellar/abc")
+        self.assertGreater(len(new_command), len(old_command))
+        raw = macho_fixture([segment, old_command], b"BODYDATA",
+                            padding=section_offset - 32 - len(segment) - len(old_command))
+        relocated, _ = provisioner.relocate_macho_bytes(raw)
+        self.assertEqual(relocated[section_offset:], b"BODYDATA")
+        self.assertEqual(struct.unpack_from("<I", relocated, 20)[0], len(segment) + len(new_command))
+        self.assertEqual(len(relocated), len(raw))
+        no_padding = macho_fixture([old_command])
+        with self.assertRaises(provisioner.ProvisionError) as found:
+            provisioner.relocate_macho_bytes(no_padding)
+        self.assertEqual(found.exception.code, "macho_header_padding_missing")
+
+    def test_macho_without_placeholder_linkage_is_byte_identical(self):
+        raw = macho_fixture([macho_link_command("@rpath/libfixture.dylib")],
+                            body=b"@@HOMEBREW_PREFIX@@ data is not a linkage command")
+        self.assertEqual(provisioner.relocate_macho_bytes(raw), (raw, []))
+
+    def test_macho_normalization_keeps_raw_unsigned_and_signed_hashes_separate(self):
+        staged = self.out / "macho-stage"
+        (staged / "bin").mkdir(parents=True)
+        path = staged / "bin/tool"
+        old = macho_link_command("@@HOMEBREW_PREFIX@@/opt/llvm/lib/libLLVM.dylib")
+        new = macho_link_command("/opt/homebrew/opt/llvm/lib/libLLVM.dylib")
+        raw = macho_fixture([old])
+        unsigned = macho_fixture([new], padding=len(old) - len(new))
+        path.write_bytes(raw)
+        calls = []
+        def sign(command, **kwargs):
+            calls.append(command)
+            target = Path(command[-1])
+            target.write_bytes(target.read_bytes() + b"fixture ad-hoc signature")
+            return types.SimpleNamespace(returncode=0, stdout="", stderr="")
+        report = {}
+        provisioner.normalize_staged_macho(staged, normalization_policy(), report, command_runner=sign)
+        item = report["files"][0]
+        self.assertEqual(item["raw_sha256"], digest(raw))
+        self.assertEqual(item["unsigned_relocated_sha256"], digest(unsigned))
+        self.assertEqual(item["normalized_sha256"], digest(unsigned + b"fixture ad-hoc signature"))
+        self.assertEqual(calls[0][:-1], ["/usr/bin/codesign", "--sign", "-", "--force",
+                                       "--preserve-metadata=entitlements,requirements,flags,runtime"])
+        self.assertEqual(report["status"], "passed")
+
+    def test_real_macho_signing_is_guarded_before_any_file_mutation(self):
+        staged = self.out / "guarded-macho-stage"
+        staged.mkdir()
+        path = staged / "tool"
+        raw = macho_fixture([macho_link_command("@@HOMEBREW_PREFIX@@/opt/llvm/lib/libLLVM.dylib")])
+        path.write_bytes(raw)
+        with mock.patch.dict(provisioner.os.environ, {}, clear=True), \
+                mock.patch.object(provisioner.subprocess, "run") as run:
+            with self.assertRaises(provisioner.ProvisionError) as found:
+                provisioner.normalize_staged_macho(staged, normalization_policy(), {})
+        self.assertEqual(found.exception.code, "runner_refused")
+        self.assertEqual(path.read_bytes(), raw)
+        run.assert_not_called()
+
+    def test_normalized_file_still_must_match_the_unchanged_frozen_pin(self):
+        old = macho_link_command("@@HOMEBREW_PREFIX@@/opt/llvm/lib/libLLVM.dylib")
+        raw_binary = macho_fixture([old])
+        raw_archive = archive_bytes("node/1.0", {"bin/node": raw_binary})
+        node = entry("node", "1.0", raw_archive)
+        node["raw_file_sha256"] = {"bin/node": digest(raw_binary)}
+        def download(candidate, destination):
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(raw_archive)
+            return {"archive_sha256": digest(raw_archive)}
+        pin = {"label": "node/binary", "path": "/opt/homebrew/Cellar/node/1.0/bin/node", "sha256": "0" * 64}
+        record = {"attempts": []}
+        sign = mock.Mock(return_value=types.SimpleNamespace(returncode=0, stdout="", stderr=""))
+        with self.assertRaises(provisioner.ProvisionError) as found:
+            provisioner.stage_package(node, self.out, [pin], record, downloader=download,
+                                      normalization=normalization_policy(), macho_runner=sign)
+        self.assertEqual(found.exception.code, "frozen_bottle_bytes_mismatch")
+        attempt = record["attempts"][0]
+        self.assertEqual(attempt["raw_hash_checks"][0]["actual_sha256"], digest(raw_binary))
+        self.assertEqual(attempt["hash_checks"][0]["expected_sha256"], "0" * 64)
+        self.assertEqual(attempt["hash_checks"][0]["status"], "failed")
+        self.assertNotEqual(attempt["hash_checks"][0]["actual_sha256"], digest(raw_binary))
+        self.assertEqual(sign.call_count, 1)
+
+    def test_wrong_recorded_raw_file_hash_blocks_normalization(self):
+        node = json.loads(json.dumps(self.node))
+        node["raw_file_sha256"] = {"bin/node": "0" * 64}
+        record = {"attempts": []}
+        with mock.patch.object(provisioner, "normalize_staged_macho") as normalize:
+            with self.assertRaises(provisioner.ProvisionError) as found:
+                provisioner.stage_package(node, self.out, [], record, downloader=self.downloader,
+                                          normalization=normalization_policy())
+        self.assertEqual(found.exception.code, "raw_bottle_file_mismatch")
+        normalize.assert_not_called()
 
     def test_pin_inventory_includes_all_six_rust_tools_and_both_library_paths(self):
         document = json.loads(json.dumps(self.contracts["fixture"]))

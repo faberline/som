@@ -78,6 +78,8 @@ test("all raw run inputs and named candidate files survive encryption", async (t
   for (const name of ["summary.json", "audit.json", "driver.stdout", "driver.stderr", "driver-128.stdout", "driver-128.stderr",
     "baseline.stdout", "baseline.stderr", "prepare.stdout", "prepare.stderr", "acceptance.stdout", "acceptance.stderr",
     "audit.stdout", "audit.stderr", "head-before.stdout", "head-after.stdout", "candidate-ps.stdout", "cleanup.stdout", "cleanup.stderr",
+    "reconstructed-inputs/receipt.json", "reconstructed-inputs/names/RN01.request.raw",
+    "reconstructed-inputs/names/RN01.reply.raw", "reconstructed-inputs/rust-reference/phase2/cases/fake.json",
     "run/receipts/01-contract.json", "run/logs/raw.stderr", "run/inputs/request.raw", "run/products/fixture/src/api.ts",
     "candidate/som", "candidate/build.json", "candidate/runtime.json", "candidate/source.json", "candidate/source.tar",
     "candidate/server.log", "candidate/assets/manifest.json", "candidate/assets/library.bin", "candidate/assets-package.stdout",

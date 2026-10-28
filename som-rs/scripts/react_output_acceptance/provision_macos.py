@@ -15,6 +15,7 @@ import platform
 import posixpath
 import re
 import shutil
+import struct
 import subprocess
 import sys
 import tarfile
@@ -31,6 +32,9 @@ FORMULA = re.compile(r"^[a-z0-9][a-z0-9+._@-]*$")
 VERSION = re.compile(r"^[0-9][A-Za-z0-9.+-]*$")
 RUST_BINARIES = ("rustc", "cargo", "rustfmt", "cargo-fmt", "cargo-clippy", "clippy-driver")
 FULL_BOTTLE_COUNT = 33
+MACHO_NORMALIZATION_POLICY = "homebrew-6.0.6-ruby-macho-5.0.0-v1"
+MACHO_PREFIXES = {"@@HOMEBREW_PREFIX@@": "/opt/homebrew", "@@HOMEBREW_CELLAR@@": "/opt/homebrew/Cellar"}
+CODESIGN_ARGUMENTS = ("--sign", "-", "--force", "--preserve-metadata=entitlements,requirements,flags,runtime")
 PYTHON_BINARY = "/opt/homebrew/opt/python@3.12/bin/python3.12"
 PYTHON_RUNTIME_PROBE = (
     "import _decimal, _lzma, ensurepip, sqlite3, ssl, venv; from pathlib import Path; "
@@ -150,6 +154,8 @@ def validate_manifest(document: dict[str, Any], *, expected_count: int | None = 
         need("python@3.12" in seen and isinstance(python, dict)
              and python.get("version") == "3.12.11" and python.get("binary") == PYTHON_BINARY,
              "manifest_invalid", "The complete Python bottle configuration is missing.")
+        need(document.get("macho_normalization", {}).get("policy") == MACHO_NORMALIZATION_POLICY,
+             "manifest_invalid", "The historical Mach-O normalization policy is missing.")
     return entries
 
 
@@ -340,9 +346,148 @@ def hash_check(pin: dict[str, str], actual_path: Path) -> dict[str, Any]:
             "actual_sha256": actual, "status": "passed" if actual == pin["sha256"] else "failed"}
 
 
+def relocate_macho_bytes(raw: bytes) -> tuple[bytes, list[dict[str, Any]]]:
+    """Port ruby-macho 5.0.0's 64-bit aligned command replacement, not install_name_tool."""
+    magic = raw[:4]
+    if magic != b"\xcf\xfa\xed\xfe":
+        other_macho = {b"\xfe\xed\xfa\xcf", b"\xce\xfa\xed\xfe", b"\xfe\xed\xfa\xce",
+                       b"\xca\xfe\xba\xbe", b"\xbe\xba\xfe\xca", b"\xca\xfe\xba\xbf", b"\xbf\xba\xfe\xca"}
+        need(magic not in other_macho or b"@@HOMEBREW_" not in raw,
+             "macho_format_unsupported", "A placeholder-bearing Mach-O format is unsupported.")
+        return raw, []
+    need(len(raw) >= 32, "macho_invalid", "A Mach-O header is truncated.")
+    _, cpu, _, file_type, count, command_bytes, _, _ = struct.unpack_from("<8I", raw)
+    if file_type not in (2, 6, 8):
+        return raw, []
+    need(cpu == 0x0100000C and 32 + command_bytes <= len(raw),
+         "macho_format_unsupported", "A Mach-O architecture or load-command region is unsupported.")
+    commands = []
+    operations = []
+    cursor = 32
+    low_fileoff = None
+    dylib_commands = {0xC, 0xD, 0x80000018, 0x8000001F, 0x20, 0x80000023}
+    seen_names = set()
+    for _ in range(count):
+        need(cursor + 8 <= 32 + command_bytes, "macho_invalid", "A Mach-O load command is truncated.")
+        kind, size = struct.unpack_from("<2I", raw, cursor)
+        need(size >= 8 and size % 8 == 0 and cursor + size <= 32 + command_bytes,
+             "macho_invalid", "A Mach-O load-command size is invalid.")
+        command = raw[cursor:cursor + size]
+        if kind == 0x19:  # LC_SEGMENT_64 supplies the boundary of real file data.
+            need(size >= 72, "macho_invalid", "A Mach-O segment command is truncated.")
+            fileoff = struct.unpack_from("<Q", command, 40)[0]
+            sections = struct.unpack_from("<I", command, 64)[0]
+            need(72 + 80 * sections <= size, "macho_invalid", "A Mach-O section table is truncated.")
+            offsets = ([fileoff] if fileoff else []) + [
+                struct.unpack_from("<I", command, 72 + 80 * index + 48)[0] for index in range(sections)
+            ]
+            for offset in offsets:
+                if offset:
+                    low_fileoff = offset if low_fileoff is None else min(low_fileoff, offset)
+        if kind in dylib_commands or kind == 0x8000001C:
+            fixed_size = 24 if kind in dylib_commands else 12
+            need(size >= fixed_size, "macho_invalid", "A Mach-O linkage command is truncated.")
+            name_offset = struct.unpack_from("<I", command, 8)[0]
+            need(name_offset == fixed_size and b"\0" in command[name_offset:],
+                 "macho_format_unsupported", "A Mach-O linkage string layout is unsupported.")
+            try:
+                old = command[name_offset:].split(b"\0", 1)[0].decode("utf-8")
+            except UnicodeDecodeError:
+                raise ProvisionError("macho_invalid", "A Mach-O linkage string is not UTF-8.") from None
+            new = old
+            for placeholder, prefix in MACHO_PREFIXES.items():
+                if old.startswith(placeholder):
+                    new = prefix + old[len(placeholder):]
+                    break
+            if new != old:
+                need((kind, old) not in seen_names, "macho_format_unsupported",
+                     "A repeated placeholder linkage command needs an explicit policy.")
+                seen_names.add((kind, old))
+                payload = new.encode("utf-8") + b"\0"
+                new_size = (fixed_size + len(payload) + 7) // 8 * 8
+                if kind in dylib_commands:
+                    timestamp, current, compatibility = struct.unpack_from("<3I", command, 12)
+                    command = struct.pack("<6I", kind, new_size, fixed_size, timestamp, current, compatibility)
+                else:
+                    command = struct.pack("<3I", kind, new_size, fixed_size)
+                command += payload + b"\0" * (new_size - fixed_size - len(payload))
+                operations.append({"command": kind, "from": old, "to": new})
+        commands.append(command)
+        cursor += size
+    need(cursor == 32 + command_bytes, "macho_invalid", "The Mach-O command count differs from its byte region.")
+    if not operations:
+        return raw, []
+    serialized = b"".join(commands)
+    new_end, old_end = 32 + len(serialized), 32 + command_bytes
+    if new_end > old_end:
+        need(low_fileoff is not None and new_end <= low_fileoff
+             and raw[old_end:new_end] == b"\0" * (new_end - old_end),
+             "macho_header_padding_missing", "A Mach-O linkage replacement exceeds verified header padding.")
+    result = bytearray(raw)
+    result[32:new_end] = serialized
+    if new_end < old_end:
+        result[new_end:old_end] = b"\0" * (old_end - new_end)
+    struct.pack_into("<I", result, 20, len(serialized))
+    need(len(result) == len(raw), "macho_invalid", "Mach-O replacement changed the file size before signing.")
+    return bytes(result), operations
+
+
+def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[str, Any], *, command_runner=None) -> None:
+    need(policy.get("policy") == MACHO_NORMALIZATION_POLICY and policy.get("prefixes") == MACHO_PREFIXES
+         and policy.get("codesign_arguments") == list(CODESIGN_ARGUMENTS),
+         "manifest_invalid", "The Mach-O normalization recipe differs from the reviewed policy.")
+    record.update(policy=MACHO_NORMALIZATION_POLICY, status="started", files=[])
+    for path in sorted(staged.rglob("*")):
+        if path.is_symlink() or not path.is_file():
+            continue
+        with path.open("rb") as stream:
+            magic = stream.read(4)
+        if magic not in (b"\xcf\xfa\xed\xfe", b"\xfe\xed\xfa\xcf", b"\xce\xfa\xed\xfe", b"\xfe\xed\xfa\xce",
+                         b"\xca\xfe\xba\xbe", b"\xbe\xba\xfe\xca", b"\xca\xfe\xba\xbf", b"\xbf\xba\xfe\xca"):
+            continue
+        raw = path.read_bytes()
+        try:
+            relocated, operations = relocate_macho_bytes(raw)
+        except ProvisionError as error:
+            details = {"member": path.relative_to(staged).as_posix(), "raw_sha256": hashlib.sha256(raw).hexdigest()}
+            record["files"].append({**details, "status": "failed", "error": error_record(error)})
+            record["status"] = "failed"
+            raise ProvisionError(error.code, str(error), details) from None
+        if not operations:
+            continue
+        if command_runner is None:
+            require_github_runner()
+            record["codesign_binary_sha256"] = file_sha256(Path("/usr/bin/codesign"))
+        item = {"member": path.relative_to(staged).as_posix(), "raw_sha256": hashlib.sha256(raw).hexdigest(),
+                "unsigned_relocated_sha256": hashlib.sha256(relocated).hexdigest(), "operations": operations,
+                "status": "started"}
+        record["files"].append(item)
+        mode = path.stat().st_mode & 0o777
+        try:
+            path.chmod(mode | 0o200)
+            path.write_bytes(relocated)
+            runner = subprocess.run if command_runner is None else command_runner
+            done = runner(["/usr/bin/codesign", *CODESIGN_ARGUMENTS, str(path)],
+                          capture_output=True, text=True, timeout=120, check=False)
+            item["codesign_exit_code"] = done.returncode
+            need(done.returncode == 0, "macho_codesign_failed", "Historical ad-hoc signing failed.")
+            item["normalized_sha256"] = file_sha256(path)
+            item["status"] = "passed"
+        except ProvisionError:
+            item["status"] = record["status"] = "failed"
+            raise
+        except (OSError, subprocess.TimeoutExpired):
+            item["status"] = record["status"] = "failed"
+            raise ProvisionError("macho_codesign_failed", "Historical ad-hoc signing could not run.") from None
+        finally:
+            path.chmod(mode)
+    record["status"] = "passed"
+
+
 def stage_package(entry: dict[str, Any], out: Path, pins: list[dict[str, str]],
                   record: dict[str, Any], *, downloader=download_archive,
-                  closure: list[dict[str, Any]] | None = None) -> tuple[dict[str, Any], Path]:
+                  closure: list[dict[str, Any]] | None = None, normalization: dict[str, Any] | None = None,
+                  macho_runner=None) -> tuple[dict[str, Any], Path]:
     keg = PurePosixPath(entry["expected_keg_directory"])
     relevant = [pin for pin in pins if PurePosixPath(pin["path"]).is_relative_to(keg)]
     # PostgreSQL's frozen paths go through opt; map them to the staged keg too.
@@ -360,6 +505,20 @@ def stage_package(entry: dict[str, Any], out: Path, pins: list[dict[str, str]],
             need(file_sha256(archive) == candidate["archive_sha256"],
                  "archive_hash_mismatch", "A bottle hash differs before extraction.")
             staged = extract_archive(archive, out / "stage" / f"{entry['formula']}-{index}", entry, closure=closure)
+            for relative, expected in entry.get("raw_file_sha256", {}).items():
+                path = PurePosixPath(relative)
+                need(not path.is_absolute() and ".." not in path.parts and HEX.fullmatch(expected),
+                     "manifest_invalid", "A recorded raw bottle file pin is invalid.")
+                need(file_sha256(staged.joinpath(*path.parts)) == expected,
+                     "raw_bottle_file_mismatch", "An extracted bottle file differs from recorded raw evidence.")
+            attempt["raw_hash_checks"] = []
+            for pin in relevant:
+                path = PurePosixPath(pin["path"])
+                relative = path.relative_to(keg if path.is_relative_to(keg) else opt)
+                attempt["raw_hash_checks"].append(hash_check(pin, staged.joinpath(*relative.parts)))
+            if normalization is not None:
+                attempt["normalization"] = {}
+                normalize_staged_macho(staged, normalization, attempt["normalization"], command_runner=macho_runner)
             for pin in relevant:
                 path = PurePosixPath(pin["path"])
                 relative = path.relative_to(keg if path.is_relative_to(keg) else opt)
@@ -375,7 +534,7 @@ def stage_package(entry: dict[str, Any], out: Path, pins: list[dict[str, str]],
             return candidate, staged
         attempt["status"] = "frozen_hash_mismatch"
     raise ProvisionError("frozen_bottle_bytes_mismatch",
-                         "Staged bottle bytes differ from frozen files. Historical relocation remains unverified.")
+                         "Staged installed bytes differ from frozen files after the declared normalization policy.")
 
 
 def remove_exact(path: Path) -> None:
@@ -480,7 +639,7 @@ def verify_installed(contracts: dict[str, dict[str, Any]], pins: list[dict[str, 
 
 def provision(document: dict[str, Any], contracts: dict[str, dict[str, Any]], out: Path,
               report: dict[str, Any], *, prefix: Path = PREFIX, downloader=download_archive,
-              expected_count: int | None = FULL_BOTTLE_COUNT, python_runner=None) -> None:
+              expected_count: int | None = FULL_BOTTLE_COUNT, python_runner=None, macho_runner=None) -> None:
     if prefix == PREFIX:
         require_github_runner()
     entries = validate_manifest(document, expected_count=expected_count)
@@ -491,7 +650,8 @@ def provision(document: dict[str, Any], contracts: dict[str, dict[str, Any]], ou
         record = {key: entry[key] for key in ("formula", "version", "revision", "expected_keg_directory")}
         record["attempts"] = []
         report["packages"].append(record)
-        selections.append(stage_package(entry, out, pins, record, downloader=downloader, closure=entries))
+        selections.append(stage_package(entry, out, pins, record, downloader=downloader, closure=entries,
+                                        normalization=document.get("macho_normalization"), macho_runner=macho_runner))
     report["stage"] = "install"
     install_closure(selections, prefix)
     report["stage"] = "frozen_hashes"
@@ -510,7 +670,7 @@ def new_report() -> dict[str, Any]:
     return {"version": "som.react-output-macos-provision.v1", "status": "failed",
             "product_suites": "not_run", "stage": "guard", "packages": [], "hash_checks": [],
             "python": {"status": "not_run", "venv_creation": "not_run"},
-            "relocation": "No binary relocation or signing is performed. Frozen file hashes decide whether raw bottle bytes are usable."}
+            "relocation": "Only the reviewed Homebrew placeholder load-command normalization and ad-hoc signing are allowed. Raw and normalized hashes remain separate. Frozen installed file hashes decide success."}
 
 
 def main(argv: list[str] | None = None) -> int:
