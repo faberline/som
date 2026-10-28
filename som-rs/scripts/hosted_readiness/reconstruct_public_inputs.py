@@ -19,6 +19,28 @@ from export_goldens import (DIRECT_PATHS, EXAMPLES, FIXTURES, PUBLIC_REVISION,
 # Seal this to the independently reviewed hash-only export before enabling CI.
 # A CLI argument or environment variable cannot change the trusted digest.
 GOLDENS_SHA256 = "ea573d3c842d367b32538ad8b9fec01608b4f05f676a07a80d9b9acf81a69a8b"
+SUPPLEMENT_FILE = "som-rs/scripts/hosted_readiness/inputs/supplement-fixtures-v1.json"
+SUPPLEMENT_SHA256 = "fe68f59c26554510c87b94eae81fec3da7202e22bb8a158606dc1b869f9af711"
+LEGACY_RESULT_SHA256 = "445b34112c974b2bcc70472f374b22ac8289e073d12e9c7042c7f8e252e89e56"
+CHECKED_DSL_SHA256 = {
+    "supplement-mongodb-child-patch-read-checked": "25f43b7b38c70f8fcc778915c45a5b63268266274aad37f5d2bc296623c85843",
+    "supplement-postgresql-child-read-checked": "f2719da9e0ddff075850925d0ba0b9ec545261ecd3ba9476c1c2b1b6c4c7726c",
+}
+# These request pins come from independently indexed accepted recordings.
+# They are not derived from the new public request during verification.
+SUPPLEMENT_REQUEST_PINS = {
+    "supplement-gcs-object-read": ("8afe599ebc4d7852577839a89245d097864bb6ed9a83599a2f9484f40510595a", "2b82f18cf7e33c00509715a356657da2886f58f3c9e4c781b85416aeb972671c"),
+    "supplement-mongodb-batch": ("6f6c9ec123c8a5edc9c4c731e33fbfac5ee550a906dfc9b167418ee674fe2699", "cb943db66597071af68414db281362f1393f91c2b557907761a599c73265fcac"),
+    "supplement-mongodb-child-patch-read": ("c824388ed285fb494412e91aeb28deaa9aa4a8b2d6bb81de80a1390b8d201832", "a3e95ae2979144d6e2354ab70653d5364c04b3fa09bbf63a36cd642a4132d22e"),
+    "supplement-mongodb-child-patch-read-checked": ("c824388ed285fb494412e91aeb28deaa9aa4a8b2d6bb81de80a1390b8d201832", "a3e95ae2979144d6e2354ab70653d5364c04b3fa09bbf63a36cd642a4132d22e"),
+    "supplement-mongodb-csv-import": ("bec47fd20ef6070ade85823387497b15a5c8503a5aa74eae491911de679baf86", "2c23dec95a85cb61cdb7619e827c3df152d33d0eb76c6123cfa98e9ba5a2df80"),
+    "supplement-mongodb-parent-list": ("5f2fd8759627e681868254d07856b4839a4a592cf57886674c039c267dfec751", "4f84b339600f0ce276288d610b45c1c69b3377564a6434db78b10e17e4f255f7"),
+    "supplement-mongodb-parent-patch": ("0c09c8713fc1143e323dba76a42e0d5d3fd60f24de7dc63929891c50c8943e7a", "8623e5bf50a9f6e53a3d32ff92136e61869509037d2423ab24841a896945ceb6"),
+    "supplement-mongodb-query-boolean": ("38489b5b37c71e1d2825a4a3b2933c535b647c42451b403140b6dc348307c627", "6d31a8ceb4b21ac03b82d64ef55911279e8ead6567e140a4d933e11c1c0ca5e8"),
+    "supplement-mongodb-query-plain": ("6efca395e28bc09507c115014e02c6facc131d21642230edc27157d54cfdca00", "44848af1fe17b8cb185096dabd1d8ee6672c1fac14ad049d90c3ffcc9440b7d8"),
+    "supplement-postgresql-query-boolean": ("17e5d85737069fc76b442f834be738d9146b9541e39170b1936d2efed2467b2a", "c01740222c3293bfa3ec6b044e8f4621cdbe0652f1b4125a6a3d681a72cc36eb"),
+    "supplement-postgresql-query-plain": ("ccfbfa63a152703d9e68778f987cfae718d63166d0bb5da7129bdeff587e4fd3", "3555d48c7a6053b26ee1f31cd725d4fde02bb77c2c2ce28720f2fe3e42dde9d4"),
+}
 SOURCE_COUNT = 35
 PROBE = "som-core/scripts/probe_flow_maximum_matrix.py"
 FREEZE = "som-core/scripts/freeze_flow_cases.py"
@@ -88,6 +110,74 @@ class Sources:
             require(sha(file.read_bytes()) == expected, "public recipe dependency digest differs")
             if path in self.pins:
                 require(self.pins[path] == expected, "public recipe source pins conflict")
+
+
+class Supplements:
+    """Load the exact user-approved public asset. Read no private input path."""
+    def __init__(self, repo, legacy):
+        self.file = repo / SUPPLEMENT_FILE
+        no_symlinks(self.file)
+        self.raw = self.file.read_bytes()
+        require(sha(self.raw) == SUPPLEMENT_SHA256, "public supplement asset digest differs")
+        document = parse(self.raw)
+        require(set(document) == {"version", "state", "source_review_packet_sha256", "public_golden_export_sha256",
+                                  "accepted_legacy_result_sha256", "counts", "typed_inputs", "checked_dsl_inputs"},
+                "public supplement asset fields differ")
+        require(document["version"] == "som.supplement-fixtures.publication-candidate.v1"
+                and document["public_golden_export_sha256"] == GOLDENS_SHA256
+                and document["accepted_legacy_result_sha256"] == LEGACY_RESULT_SHA256,
+                "public supplement acceptance binding differs")
+        digest_text(document["source_review_packet_sha256"])
+        require(document["counts"] == {"typed_input_rows": 11, "distinct_typed_prompts": 10, "checked_dsl_rows": 2},
+                "public supplement counts differ")
+        expected = [row for row in legacy if row["input_provenance"] == "blocked_no_public_source"]
+        typed = document["typed_inputs"]
+        require(len(typed) == len(expected) == 11 and {row["id"] for row in expected} == set(SUPPLEMENT_REQUEST_PINS),
+                "public supplement typed scope differs")
+        self.typed = {}
+        for index, (item, frozen) in enumerate(zip(typed, expected)):
+            require(set(item) == {"id", "legacy_index", "family", "variant", "typed_input", "prompt_sha256",
+                                  "cnl_sha256", "product_sha256"}, "public supplement typed fields differ")
+            require(item["id"] == frozen["id"] and type(item["legacy_index"]) is int
+                    and item["legacy_index"] == frozen["index"] and item["family"] == frozen["family"] == "supplement12"
+                    and item["variant"] == frozen["variant"], "public supplement typed identity differs")
+            require(item["prompt_sha256"] == frozen["prompt_sha256"]
+                    and item["cnl_sha256"] == frozen["cnl_sha256"]
+                    and item["product_sha256"] == frozen["files_map_sha256"], "public supplement frozen digest differs")
+            require(type(item["typed_input"]) is dict and value_sha(item["typed_input"]) == digest_text(item["prompt_sha256"]),
+                    "public supplement typed prompt digest differs")
+            prompt_pin, request_pin = SUPPLEMENT_REQUEST_PINS[item["id"]]
+            require(digest_text(prompt_pin) == item["prompt_sha256"], "accepted supplement request prompt binding differs")
+            digest_text(request_pin)
+            require(item["id"] not in self.typed, "duplicate public supplement typed identity")
+            self.typed[item["id"]] = {"prompt": item["typed_input"], "pointer": f"/typed_inputs/{index}/typed_input",
+                                      "typed_request_sha256": request_pin}
+        require(len({row["prompt_sha256"] for row in typed}) == 10, "public supplement duplicate scope differs")
+        expected_checked = [row for row in legacy if row.get("checked_dsl_provenance") == "blocked_no_public_source"]
+        checked = document["checked_dsl_inputs"]
+        require(len(checked) == len(expected_checked) == 2
+                and {row["id"] for row in expected_checked} == set(CHECKED_DSL_SHA256),
+                "public supplement checked DSL scope differs")
+        self.checked = {}
+        for index, (item, frozen) in enumerate(zip(checked, expected_checked)):
+            require(set(item) == {"id", "legacy_index", "family", "variant", "prompt_sha256", "checked_dsl_input", "dsl_sha256"},
+                    "public supplement checked DSL fields differ")
+            require(item["id"] == frozen["id"] and type(item["legacy_index"]) is int and item["legacy_index"] == frozen["index"]
+                    and item["family"] == frozen["family"] == "supplement12" and item["variant"] == frozen["variant"] == "checked"
+                    and item["prompt_sha256"] == frozen["prompt_sha256"], "public supplement checked DSL identity differs")
+            require(type(item["checked_dsl_input"]) is dict
+                    and value_sha(item["checked_dsl_input"]) == item["dsl_sha256"] == CHECKED_DSL_SHA256[item["id"]],
+                    "public supplement checked DSL digest differs")
+            require(item["id"] not in self.checked, "duplicate public supplement checked DSL identity")
+            self.checked[item["id"]] = {"body": item["checked_dsl_input"], "canonical_sha256": item["dsl_sha256"],
+                                        "pointer": f"/checked_dsl_inputs/{index}/checked_dsl_input"}
+
+    def verify(self):
+        no_symlinks(self.file)
+        require(self.file.read_bytes() == self.raw, "public supplement asset changed during reconstruction")
+
+    def locator(self, pointer):
+        return {"path": SUPPLEMENT_FILE, "raw_sha256": SUPPLEMENT_SHA256, "pointer": pointer}
 
 
 class PinnedSourceModules(importlib.abc.MetaPathFinder, importlib.abc.Loader):
@@ -261,6 +351,7 @@ def reconstruct(document, repo, out):
     require(dict(Counter(row["input_provenance"] for row in legacy)) == expected_routes,
             "legacy reconstruction scope differs")
     require(len({row["prompt_sha256"] for row in legacy}) == 540, "legacy duplicate scope differs")
+    supplements = Supplements(repo, legacy)
     out.mkdir(parents=True, exist_ok=False)
     public_rows, legacy_rows = [], []
     for row in public:
@@ -283,12 +374,19 @@ def reconstruct(document, repo, out):
         require(len(generated) == 90 and set(generated) == expected_ids, "generator named cohort differs")
         for row in legacy:
             entry = {"id": row["id"], "index": row["index"], "prompt_sha256": row["prompt_sha256"],
-                     "cnl_sha256": row["cnl_sha256"], "checked_dsl_state": row.get("checked_dsl_provenance", "not_applicable")}
+                     "cnl_sha256": row["cnl_sha256"], "historical_input_provenance": row["input_provenance"],
+                     "checked_dsl_state": row.get("checked_dsl_provenance", "not_applicable")}
             if row["input_provenance"] == "blocked_no_public_source":
-                entry["state"] = "blocked_no_public_source"
-                legacy_rows.append(entry)
-                continue
-            prompt = direct_prompt(sources, row) if row["input_provenance"] == "verified_tracked" else generated[row["id"]]
+                supplied = supplements.typed[row["id"]]
+                prompt = supplied["prompt"]
+                entry.update(input_provenance="verified_public_supplement",
+                             public_source=supplements.locator(supplied["pointer"]))
+            elif row["input_provenance"] == "verified_tracked":
+                prompt = direct_prompt(sources, row)
+                entry["input_provenance"] = "verified_tracked"
+            else:
+                prompt = generated[row["id"]]
+                entry["input_provenance"] = "verified_public_generator"
             require(value_sha(prompt) == row["prompt_sha256"], "reconstructed legacy prompt differs")
             if row["input_provenance"] == "public_generator_unrun":
                 recipe = row["public_recipe"]
@@ -299,26 +397,57 @@ def reconstruct(document, repo, out):
             cnl = serialize_prompt(prompt, contract_dir=repo / "som-rs/contracts/compiler-v1")
             require(sha(cnl.encode()) == row["cnl_sha256"], "reconstructed legacy CNL differs")
             requests = save_inputs(out, "python_legacy", row["index"], prompt, cnl, public=False)
-            if row["input_provenance"] == "verified_tracked":
+            if "typed_request_sha256" in row:
                 require(requests["compile-json"]["sha256"] == row["typed_request_sha256"],
-                        "direct legacy request bytes differ")
+                        "known legacy request bytes differ")
+            recorded_request = row.get("typed_request_sha256")
+            if row["id"] in supplements.typed:
+                recorded_request = supplements.typed[row["id"]]["typed_request_sha256"]
+                require(requests["compile-json"]["sha256"] == recorded_request, "known legacy request bytes differ")
+            entry["recorded_typed_request_sha256"] = recorded_request
+            entry["request_byte_proof"] = ("known frozen typed request hash matched" if recorded_request is not None
+                                           else "authored public request; historical typed request hash absent from golden export")
+            if "checked_dsl_provenance" in row:
+                entry["historical_checked_dsl_provenance"] = row["checked_dsl_provenance"]
+            if row["id"] in supplements.checked:
+                checked = supplements.checked[row["id"]]
+                checked_path = out / "python_legacy" / f"{row['index']:04d}" / "checked.dsl.json"
+                checked_raw = (json.dumps(checked["body"], ensure_ascii=False, indent=2, allow_nan=False) + "\n").encode()
+                with checked_path.open("xb") as stream:
+                    stream.write(checked_raw)
+                entry["checked_dsl_state"] = "supplied_public_dsl_verified"
+                entry["checked_dsl"] = {"path": checked_path.relative_to(out).as_posix(), "raw_sha256": sha(checked_raw),
+                                        "canonical_sha256": checked["canonical_sha256"],
+                                        "public_source": supplements.locator(checked["pointer"])}
             entry.update(state="reconstructed", requests=requests)
             legacy_rows.append(entry)
     sources.verify()
+    supplements.verify()
     require(len(public_rows) == 127 and len(legacy_rows) == 544, "input manifest is incomplete")
     blocked_checked = [row["id"] for row in legacy_rows if row["checked_dsl_state"] == "blocked_no_public_source"]
     unrun_checked = [row["id"] for row in legacy_rows if row["checked_dsl_state"] == "public_reference_recipe_unrun"]
-    require(len(blocked_checked) == 2 and len(unrun_checked) == 1, "checked DSL scope differs")
-    report = {"version": "som.public-input-reconstruction.v1", "golden_export_sha256": GOLDENS_SHA256,
+    supplied_checked = [row["id"] for row in legacy_rows if row["checked_dsl_state"] == "supplied_public_dsl_verified"]
+    require(not blocked_checked and len(supplied_checked) == 2 and len(unrun_checked) == 1, "checked DSL scope differs")
+    require(all(row["state"] == "reconstructed" for row in legacy_rows), "current legacy typed input scope is incomplete")
+    known_request_count = sum(row["recorded_typed_request_sha256"] is not None for row in legacy_rows)
+    require(known_request_count == 454, "known accepted typed request byte scope differs")
+    report = {"version": "som.public-input-reconstruction.v2", "golden_export_sha256": GOLDENS_SHA256,
               "source_revision": PUBLIC_REVISION, "product_acceptance_passed": False,
-              "state": "partial public input reconstruction; full products and private inputs remain blocked",
+              "state": "all named typed inputs reconstructed; one public checked DSL recipe and all product gates remain unrun",
               "product_suites": "unrun", "behavior_gates": "unrun", "raw_compile_reply_comparison": "unrun",
-              "full_input_set_ready": False, "generator_prompt_proof": "90 exact named prompt and CNL hashes matched",
-              "counts": {"public_reconstructed": 127, "legacy_reconstructed": 533, "legacy_blocked": 11,
+              "typed_input_set_ready": True, "full_input_set_ready": False,
+              "full_input_blockers": ["one public checked DSL reference recipe remains unrun"],
+              "generator_prompt_proof": "90 exact named prompt and CNL hashes matched",
+              "supplement_asset": {"path": SUPPLEMENT_FILE, "raw_sha256": SUPPLEMENT_SHA256},
+              "counts": {"public_reconstructed": 127, "legacy_reconstructed": 544, "legacy_blocked": 0,
                          "legacy_named_total": 544, "legacy_generator_reconstructed": 90,
-                         "checked_dsl_blocked": 2, "checked_dsl_public_recipe_unrun": 1},
+                         "legacy_public_supplement_reconstructed": 11, "historical_legacy_blocked": 11,
+                         "legacy_recorded_typed_request_bytes_verified": known_request_count,
+                         "checked_dsl_blocked": 0, "checked_dsl_supplied_verified": 2, "historical_checked_dsl_blocked": 2,
+                         "checked_dsl_public_recipe_unrun": 1},
               "public_source_files": document["public_source_files"], "recipe_dependencies": RUNTIME_PINS,
-              "blocked_checked_dsl_ids": blocked_checked, "unrun_checked_dsl_ids": unrun_checked,
+              "blocked_checked_dsl_ids": blocked_checked, "supplied_checked_dsl_ids": supplied_checked,
+              "unrun_checked_dsl_ids": unrun_checked,
               "cohorts": {"python_public": public_rows, "python_legacy": legacy_rows}}
     with (out / "manifest.json").open("x", encoding="utf-8") as stream:
         json.dump(report, stream, ensure_ascii=False, indent=2, allow_nan=False)

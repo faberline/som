@@ -1,0 +1,286 @@
+{
+  "version": "som.public-checked-dsl-recipe.v1",
+  "state": "hash-only recipe candidate; GitHub reconstruction and digest proof unrun",
+  "product_acceptance_passed": false,
+  "case_count": 1,
+  "public_repository": "faberline/som",
+  "public_source_revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+  "cohort": {
+    "name": "python_legacy",
+    "id": "m2-alternative-checked",
+    "index": 531,
+    "family": "quality218",
+    "group": "m2-quality218",
+    "partition": "alternative-plans",
+    "assembly_variant": "checked",
+    "behavior_expected": false,
+    "preserve_named_row": true
+  },
+  "input": {
+    "path": "som-core/data/flow-v7-r10/dev.jsonl",
+    "raw_sha256": "935bf5f5c66a2f4a43633d34e6743743bef25830bd9774e180090076dea614f5",
+    "line_1based": 1,
+    "pointer": "/prompt",
+    "prompt_sha256": "964c0f77e772a69ce62a9b6d823b4f42e3da5d5d3ae8d14ebbdc4dd846b0b030",
+    "source_rule": "first development JSONL row, selected directly; no training or acceptance script invocation"
+  },
+  "recipe": {
+    "call": "som_core.flow_compact.reference(prompt, blocks, \"checked\")",
+    "function_path": "som-core/src/som_core/flow_compact.py",
+    "function": "reference",
+    "line": 95,
+    "blocks_loader": "som_core.v1.load_blocks",
+    "blocks_directory": "som-code-python/data/blocks/flow-v7-compact",
+    "exact_recursive_json_members": [
+      "blocks.json"
+    ],
+    "validation_call": "som_core.flow.validate_plan(prompt, dsl, som_core.flow_compact.metadata())",
+    "canonical_dsl_sha256": "a8c192e00af95355ab9cdc8dafd444f386caf6116a1c298a44326fa242b7e34a",
+    "hash_rule": {
+      "function_path": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+      "function": "canonical",
+      "digest": "sha256 of UTF-8 canonical(dsl)",
+      "scope": "complete DSL value; preserve list order and exact scalar types",
+      "raw_pretty_json_is_not_the_canonical_hash": true
+    },
+    "execution_host": "GitHub runner only",
+    "runtime_loader": "reuse existing PinnedSourceModules; execute only exact hash-checked source bytes; reject unbound som_core modules, cached bytecode and extension shadows",
+    "new_module_dependencies": [],
+    "additional_runtime_imports": [
+      "som_core.flow_compact"
+    ],
+    "do_not_call": [
+      "prepare_flow_training.cases",
+      "prepare_flow_training.main",
+      "train_flow",
+      "flow_compact.assemble",
+      "flow_compact.resolve",
+      "quality formatter functions",
+      "subprocess or service functions"
+    ],
+    "on_digest_mismatch": "fail closed; retain public_reference_recipe_unrun; do not change the accepted digest or substitute another plan"
+  },
+  "public_runtime_module_pins": [
+    {
+      "path": "som-core/src/som_core/__init__.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "654787391f426548a06af79d6ae1d2eb7e989a2f5c81cfecb8498d0d2a335042",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/flow.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "92a7228ed3c96965c8326e70fa9edfec90fe0150e56cbeae7131de1f11f057fe",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/composed.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "a65fd965d1e56b050d900961768176835aba97d994d1793a27f6a66a3e05a58b",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/related.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "3b19fbbfb7026b1e287622c6bf04def69e7080025c2f12c48ce2c1abf6e47dd7",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/v1.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "fc82db5016eb1befc4b076e1f611f99f25e89c71a9f6e10cddedae29693d32ce",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/business.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "c07af14470c165fb5496d019179ee5c1951a3d2ddfef98354a267062e4747e97",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/flow_compact.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "6e57b94b5fa5665b819a0e66f25af98e073712736b8c06d229b8b7ccfcd101c1",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/flow_codec.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "4f85a70fe04ad1fb35bf9846088f599fca4052aff554295222e5d2b9cff632d2",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/quality.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "04fcfaf21b564f613c0d3395796bb28ae93601c5d2be1dde988c6f243aa483c4",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    },
+    {
+      "path": "som-core/src/som_core/compact_names.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "5131a4d92b95f78e9a89c00d0508b7189be11b02c4e9afbb46ed888a2a601928",
+      "role": "existing pinned source module; no extension or cached bytecode"
+    }
+  ],
+  "public_data_pins": [
+    {
+      "path": "som-core/data/flow-v7-r10/dev.jsonl",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "935bf5f5c66a2f4a43633d34e6743743bef25830bd9774e180090076dea614f5",
+      "role": "reference-only file read; verify raw bytes before and after"
+    },
+    {
+      "path": "som-code-python/data/blocks/flow-v7-compact/blocks.json",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "5a75971536ae02f627bb4a4e97737604cefc120e71293b8c10f7dcc442c460ea",
+      "role": "reference-only file read; verify raw bytes before and after"
+    },
+    {
+      "path": "som-code-python/data/block-contracts/flow-v7.json",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "d0ffbe92abbf8666e5e562022617e6eb81f4ef1c9fcc73b92fca8c718bba3f47",
+      "role": "reference-only file read; verify raw bytes before and after"
+    },
+    {
+      "path": "som-code-python/data/block-contracts/flow-v7-compact.json",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "a2b96804e6f1c52a2ebf9e6310c6624b8b1b33d86b4f4763f07ffbeb645e103a",
+      "role": "reference-only file read; verify raw bytes before and after"
+    },
+    {
+      "path": "som-rs/contracts/related-flow.v1.md",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091",
+      "role": "reference-only file read; verify raw bytes before and after"
+    },
+    {
+      "path": "som-rs/contracts/related-business.v1.md",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380",
+      "role": "reference-only file read; verify raw bytes before and after"
+    }
+  ],
+  "public_provenance_source_pins": [
+    {
+      "path": "som-rs/scripts/compiler_acceptance/legacy544/runner.py",
+      "revision": "4ffa2a0f34fdf0cd96e94a3399e9745040be4e5e",
+      "raw_sha256": "35df9239135bddce5e50e6068b62f8b7d34c66301d0359c8e1f083d046eca3a0",
+      "role": "accepted historical runner provenance only; do not import or execute",
+      "functions": [
+        "build_jobs",
+        "independent_bundle"
+      ],
+      "key_lines": {
+        "blocks_path": 393,
+        "load_blocks": 395,
+        "reference_checked": 401,
+        "hash_recomputation": 635
+      }
+    },
+    {
+      "path": "som-core/scripts/prepare_flow_training.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "78a9d7ea6185d0f5c18fc3f8dfa28d933429f4ce2fad44b7c27323ebf701a638",
+      "role": "cases() maps alternative-checked to first development prompt; do not import this module"
+    },
+    {
+      "path": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+      "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+      "raw_sha256": "f0c1cf96e1cf60ee692c7e9c3272757efef92498b52f4ac426e40b54142851a2",
+      "role": "canonical JSON primitive hash rule; do not import the full QA harness"
+    }
+  ],
+  "historical_blocks_scope": {
+    "accepted_library": "som-code-python/data/blocks/flow-v7-compact/blocks.json",
+    "accepted_library_raw_sha256": "5a75971536ae02f627bb4a4e97737604cefc120e71293b8c10f7dcc442c460ea",
+    "later_runner_change_commit": "6116fed549d458f6ac06f51541c93c5de6514385",
+    "later_runner_library": "som-code-python/data/blocks/flow-v7-compact-self/blocks.json",
+    "later_runner_library_raw_sha256": "c7269e89d5f7b8fb2b36703cc2ccb6ef8201eccfc62fbffe526714fbd570311e",
+    "proof_scope": "prove the exact accepted historical DSL first; any candidate assembly adapter keeps its own current contract checks"
+  },
+  "accepted_hash_chain": {
+    "public_anchors": [
+      {
+        "path": "som-rs/evidence/rust-compiler-acceptance-2026-10-14.json",
+        "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+        "raw_sha256": "286a9a989d47e6a68a88b7a74fe62695b120e6f6eccd43bef233528163dfeab6",
+        "accepted_result_pointer": "/gate_receipts/legacy544/sha256",
+        "accepted_result_raw_sha256": "445b34112c974b2bcc70472f374b22ac8289e073d12e9c7042c7f8e252e89e56"
+      },
+      {
+        "path": "som-rs/evidence/rust-output-acceptance-2026-10-16.json",
+        "revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+        "raw_sha256": "6aedd83e3fc902e4e7cab33c9e951ea9692d8a9f70e751de5e84896dbfba25d1",
+        "accepted_result_pointer": "/results/python_replay/inputs/legacy_result_sha256",
+        "accepted_result_raw_sha256": "445b34112c974b2bcc70472f374b22ac8289e073d12e9c7042c7f8e252e89e56"
+      }
+    ],
+    "legacy_result": {
+      "raw_sha256": "445b34112c974b2bcc70472f374b22ac8289e073d12e9c7042c7f8e252e89e56",
+      "record_pointer": "/records/531",
+      "accepted_passed": true,
+      "canonical_bundle_sha256": "f481a93be36e8988747b02e2da8c1c84d8ec0d6c3f4b725d7fe833dff80a0d55",
+      "inventory_canonical_sha256": "c55b41a25194572921607bab26040e80a7abb4bd6be278a400c3ec8b77e0a324"
+    },
+    "legacy_inventory": {
+      "raw_sha256": "c1d4e9bc5bbbee7ad5f5cb238bcf194e258da252bba1f7877169783e6cf46d96",
+      "canonical_sha256": "c55b41a25194572921607bab26040e80a7abb4bd6be278a400c3ec8b77e0a324",
+      "checked_prevalidation_pointer": "/planned_run/checked_plan_prevalidation/0",
+      "checked_prevalidation_dsl_sha256": "a8c192e00af95355ab9cdc8dafd444f386caf6116a1c298a44326fa242b7e34a",
+      "source_map_key_rule": "unique source_hashes key ending with / plus the public repository-relative path; private prefix excluded",
+      "public_source_matches": {
+        "som-core/src/som_core/flow.py": "92a7228ed3c96965c8326e70fa9edfec90fe0150e56cbeae7131de1f11f057fe",
+        "som-core/src/som_core/composed.py": "a65fd965d1e56b050d900961768176835aba97d994d1793a27f6a66a3e05a58b",
+        "som-core/src/som_core/v1.py": "fc82db5016eb1befc4b076e1f611f99f25e89c71a9f6e10cddedae29693d32ce",
+        "som-core/src/som_core/flow_compact.py": "6e57b94b5fa5665b819a0e66f25af98e073712736b8c06d229b8b7ccfcd101c1",
+        "som-core/src/som_core/flow_codec.py": "4f85a70fe04ad1fb35bf9846088f599fca4052aff554295222e5d2b9cff632d2",
+        "som-core/src/som_core/quality.py": "04fcfaf21b564f613c0d3395796bb28ae93601c5d2be1dde988c6f243aa483c4",
+        "som-core/src/som_core/compact_names.py": "5131a4d92b95f78e9a89c00d0508b7189be11b02c4e9afbb46ed888a2a601928",
+        "som-core/data/flow-v7-r10/dev.jsonl": "935bf5f5c66a2f4a43633d34e6743743bef25830bd9774e180090076dea614f5",
+        "som-code-python/data/blocks/flow-v7-compact/blocks.json": "5a75971536ae02f627bb4a4e97737604cefc120e71293b8c10f7dcc442c460ea",
+        "som-code-python/data/block-contracts/flow-v7-compact.json": "a2b96804e6f1c52a2ebf9e6310c6624b8b1b33d86b4f4763f07ffbeb645e103a",
+        "som-core/scripts/prepare_flow_training.py": "78a9d7ea6185d0f5c18fc3f8dfa28d933429f4ce2fad44b7c27323ebf701a638",
+        "som-rs/scripts/compiler_acceptance/qa_harness.py": "f0c1cf96e1cf60ee692c7e9c3272757efef92498b52f4ac426e40b54142851a2"
+      }
+    },
+    "accepted_variant_bundle": {
+      "raw_sha256": "ebcc3399bfb2fb025d23f574a3b1a0076c2acf5f100c8c8de0697248b6f52f68",
+      "canonical_sha256": "f481a93be36e8988747b02e2da8c1c84d8ec0d6c3f4b725d7fe833dff80a0d55",
+      "dsl_pointer": "/dsl",
+      "dsl_sha256_pointer": "/hashes/dsl_sha256",
+      "canonical_dsl_sha256": "a8c192e00af95355ab9cdc8dafd444f386caf6116a1c298a44326fa242b7e34a",
+      "prompt_sha256_pointer": "/hashes/prompt_sha256",
+      "prompt_sha256": "964c0f77e772a69ce62a9b6d823b4f42e3da5d5d3ae8d14ebbdc4dd846b0b030"
+    },
+    "sealed_public_goldens": {
+      "path": "som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json",
+      "raw_sha256": "ea573d3c842d367b32538ad8b9fec01608b4f05f676a07a80d9b9acf81a69a8b",
+      "case_pointer": "/cohorts/python_legacy/531",
+      "files_map_sha256": "d22e4e27353b40887b64a47a3bc7d07cd73269dcebab01ca4c85d4f9900eabe3"
+    }
+  },
+  "github_proof_requirements": [
+    "Verify every listed source and data raw hash before importing any core module.",
+    "Require the blocks directory to contain exactly the listed recursive JSON file and reject symlinks.",
+    "Load the typed prompt from its public locator and require its canonical prompt SHA before generation.",
+    "Use the existing pinned source loader for flow_compact and its closed module dependencies.",
+    "Generate only the independent checked DSL and require the complete canonical DSL SHA to equal the accepted hash.",
+    "Run the existing semantic validator; do not derive or choose production compiler output from this case ID.",
+    "Verify all listed source/data hashes and exact directory members again after generation.",
+    "Record candidate commit, complete pin checks, accepted/generated DSL hashes and equality; keep product acceptance unrun."
+  ],
+  "proof_execution": {
+    "local_core_imports_generation_tests_builds_products_services": "not_run",
+    "github_dsl_generation": "unrun",
+    "github_exact_dsl_hash_proof": "unrun",
+    "full_product_behavior_and_byte_gates": "unrun"
+  },
+  "privacy": {
+    "raw_prompts": false,
+    "raw_dsl": false,
+    "raw_http_responses": false,
+    "raw_products": false,
+    "private_absolute_paths": false,
+    "models_or_training_data": false
+  }
+}
