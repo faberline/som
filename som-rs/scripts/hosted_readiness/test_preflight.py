@@ -27,18 +27,40 @@ class PreflightTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.repo = Path(self.temp.name).resolve() / "repo"
         self.repo.mkdir()
-        self.source = self.repo / "inventory.json"
-        self.source.write_text(json.dumps({"cases": [{"id": "first"}, {"id": "second"}]}))
+        self.source = self.repo / preflight.REQUIRED_INVENTORIES["phase1-public_examples"][0]
+        self.source.parent.mkdir(parents=True)
+        records = [{"id": "first"}, {"id": "second"}]
+        self.source.write_text(json.dumps({
+            group: records for group in ("public_examples", "version_positive_fixtures", "coverage_cases", "legacy_in_scope")
+        }))
+        sources = {}
+        inventories = []
+        for name, (path, pointer) in preflight.REQUIRED_INVENTORIES.items():
+            file = self.repo / path
+            if not file.exists():
+                file.parent.mkdir(parents=True, exist_ok=True)
+                file.write_text(json.dumps({pointer[1:]: records}))
+            sources[path] = sha(file)
+            inventories.append({"name": name, "path": path, "pointer": pointer, "id_key": "id", "ids": ["first", "second"]})
+        self.plan = self.repo / preflight.PLAN_PATH
+        plan = {name: {"checks": ["first", "second"]} for name in preflight.GATE_SECTIONS}
+        self.plan.write_text(json.dumps(plan))
+        sources[preflight.PLAN_PATH] = sha(self.plan)
         self.asset = self.repo / "asset.txt"
         self.asset.write_text("public fixture asset\n")
         self.data = {
             "version": preflight.VERSION,
             "source_commit": "a" * 40,
-            "source_files": {"inventory.json": sha(self.source)},
-            "inventories": [{"name": "fixture", "path": "inventory.json", "pointer": "/cases", "id_key": "id", "ids": ["first", "second"]}],
-            "runner": {"host": "fixture-host"},
-            "assets": [{"name": "public", "path": "asset.txt", "sha256": sha(self.asset)}],
+            "source_files": sources,
+            "inventories": inventories,
+            "runner": {"hosts": ["fixture-host"]},
+            "assets": [{"name": name, "path": "asset.txt", "sha256": sha(self.asset)} for name in sorted(preflight.REQUIRED_ASSETS)],
             "blockers": [],
+            "product_acceptance_enabled": False,
+            "gate_plan": {
+                **{name: list(steps) for name, steps in preflight.GATE_STEPS.items()},
+                "contract_sections": {name: preflight.section_digest(value) for name, value in plan.items()},
+            },
         }
         self.manifest = self.repo / "manifest.json"
         self.out = self.repo / ".local/hosted-readiness/report.json"
@@ -86,7 +108,7 @@ class PreflightTests(unittest.TestCase):
         self.assertEqual(self.report()["source_files"][0]["reason"], "sha256 mismatch")
 
     def test_unsupported_platform(self):
-        self.data["runner"]["host"] = "aarch64-apple-darwin"
+        self.data["runner"]["hosts"] = ["unsupported-host"]
         self.assertEqual(self.run_cli()[0], 1)
         self.assertEqual(self.report()["runner"]["status"], "blocked")
 
@@ -95,30 +117,28 @@ class PreflightTests(unittest.TestCase):
             with self.subTest(ids=ids):
                 if self.out.exists():
                     self.out.unlink()
-                self.source.write_text(json.dumps({"cases": [{"id": value} for value in ids]}))
-                self.data["source_files"]["inventory.json"] = sha(self.source)
+                self.source.write_text(json.dumps({"public_examples": [{"id": value} for value in ids]}))
+                self.data["source_files"][self.source.relative_to(self.repo).as_posix()] = sha(self.source)
                 self.assertEqual(self.run_cli()[0], 1)
                 self.assertEqual(self.report()["inventories"][0]["status"], "blocked")
 
     def test_inventory_malformed_reports_blocked(self):
-        for body in ({"cases": [None]}, {"cases": {}}, {}, {"cases": [{"different": "key"}]}):
+        for body in ({"public_examples": [None]}, {"public_examples": {}}, {}, {"public_examples": [{"different": "key"}]}):
             with self.subTest(body=body):
                 if self.out.exists():
                     self.out.unlink()
                 self.source.write_text(json.dumps(body))
-                self.data["source_files"]["inventory.json"] = sha(self.source)
+                self.data["source_files"][self.source.relative_to(self.repo).as_posix()] = sha(self.source)
                 self.assertEqual(self.run_cli()[0], 1)
                 self.assertEqual(self.report()["inventories"][0]["status"], "blocked")
 
     def test_private_asset_is_never_read(self):
-        self.data["assets"] = [{"name": "private", "blocked_reason": "No approved hosted source"}]
-        self.data["blockers"] = ["Runner decision pending"]
+        name = self.data["assets"][0]["name"]
+        self.data["assets"][0] = {"name": name, "blocked_reason": "No approved hosted source"}
+        self.data["blockers"] = ["Asset route pending"]
         with patch.object(preflight, "digest", side_effect=lambda path: sha(path)) as reader:
             self.assertEqual(self.run_cli()[0], 1)
-        self.assertEqual(
-            [call.args[0] for call in reader.call_args_list],
-            [self.source, self.manifest, Path(preflight.__file__)],
-        )
+        self.assertNotIn(self.repo / "private", [call.args[0] for call in reader.call_args_list])
         self.assertEqual(self.report()["assets"][0]["reason"], "No approved hosted source")
 
     def test_duplicate_inventory_and_asset_names_refused(self):
@@ -153,7 +173,7 @@ class PreflightTests(unittest.TestCase):
                     self.assertFalse(self.out.exists())
 
     def test_source_and_asset_symlinks_refused(self):
-        for name in ("inventory.json", "asset.txt"):
+        for name in (self.source.relative_to(self.repo).as_posix(), "asset.txt"):
             with self.subTest(name=name):
                 target = self.repo / name
                 body = target.read_text()
@@ -208,6 +228,56 @@ class PreflightTests(unittest.TestCase):
                 data = copy.deepcopy(self.data)
                 data["inventories"][0].update(change)
                 self.assertEqual(self.run_cli(data)[0], 2)
+
+    def test_whole_inventory_or_asset_group_cannot_be_omitted(self):
+        for field in ("inventories", "assets"):
+            for index in range(len(self.data[field])):
+                with self.subTest(field=field, index=index):
+                    data = copy.deepcopy(self.data)
+                    data[field].pop(index)
+                    self.assertEqual(self.run_cli(data)[0], 2)
+                    self.assertFalse(self.out.exists())
+
+    def test_inventory_cannot_point_at_another_group(self):
+        self.data["inventories"][0]["pointer"] = "/coverage_cases"
+        self.assertEqual(self.run_cli()[0], 2)
+
+    def test_gate_section_and_step_omissions_refused(self):
+        for name in preflight.GATE_SECTIONS:
+            with self.subTest(section=name):
+                data = copy.deepcopy(self.data)
+                del data["gate_plan"]["contract_sections"][name]
+                self.assertEqual(self.run_cli(data)[0], 2)
+        for name in preflight.GATE_STEPS:
+            for change in ([], list(reversed(self.data["gate_plan"][name]))):
+                with self.subTest(group=name, change=change):
+                    data = copy.deepcopy(self.data)
+                    data["gate_plan"][name] = change
+                    self.assertEqual(self.run_cli(data)[0], 2)
+
+    def test_changed_current_amendment_remains_blocked_with_new_source_hash(self):
+        plan = json.loads(self.plan.read_text())
+        plan["amendment006"]["checks"].append("new required regression")
+        self.plan.write_text(json.dumps(plan))
+        self.data["source_files"][preflight.PLAN_PATH] = sha(self.plan)
+        self.assertEqual(self.run_cli()[0], 1)
+        row = next(row for row in self.report()["gate_sections"] if row["name"] == "amendment006")
+        self.assertEqual(row["reason"], "frozen gate section sha256 mismatch")
+
+    def test_unmapped_future_gate_remains_blocked(self):
+        plan = json.loads(self.plan.read_text())
+        plan["new_required_gates"] = ["must not disappear"]
+        self.plan.write_text(json.dumps(plan))
+        self.data["source_files"][preflight.PLAN_PATH] = sha(self.plan)
+        self.assertEqual(self.run_cli()[0], 1)
+        self.assertTrue(any(row.get("reason") == "unmapped frozen gate section" for row in self.report()["gate_sections"]))
+
+    def test_product_acceptance_cannot_be_enabled_by_manifest(self):
+        for value in (None, True, 0, "false"):
+            with self.subTest(value=value):
+                self.data["product_acceptance_enabled"] = value
+                self.assertEqual(self.run_cli()[0], 2)
+
 
     def test_manifest_symlink_and_outside_path_refused(self):
         self.manifest.symlink_to(self.asset)

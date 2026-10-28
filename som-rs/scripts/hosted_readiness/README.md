@@ -1,142 +1,119 @@
-# Rust hosted readiness (#141)
+# Rust hosted tests and readiness (#141, M12)
 
-This proposal prepares GitHub tests for the existing Rust products.
-It does not change the frozen acceptance contracts.
-All tests for this change run on GitHub-hosted runners.
-No build, product test, service or emulator runs on the developer's computer.
+SOM uses fixed rules for `CNL -> DSL -> Code`.
+It needs no model, weights or training.
+Apple Silicon is not a requirement.
+[M12](https://github.com/faberline/som/milestone/18) owns this work.
 
-## What runs now
+Develop source in a local worktree. Push it to GitHub.
+Run all builds and tests on GitHub runners.
+Do not run them on the developer host.
 
-The `Rust hosted readiness` workflow has two jobs:
+## What runs on GitHub
 
-1. `Readiness fixture tests` tests the new tool against temporary fake files.
-   It uses only Python's standard library on `ubuntu-24.04`.
-   The Python interpreter on this runner is a test tool.
-   It is not the pinned interpreter for product acceptance.
-2. `Frozen product prerequisites (blocked until provisioned)` reads the manifest
-   and source files. It does not start any command, network request or service.
-   It fails when a prerequisite is blocked. This failure remains visible in CI.
+The `Rust hosted readiness` workflow has four jobs:
 
-The workflow records the tested PR head and saves the test log and JSON report
-as separate artifacts. A green fixture job proves only the readiness tool.
-The product suites remain `not_run`, including when all readiness checks pass.
+- Two Cargo jobs run the complete default-feature suites on Ubuntu 24.04.
+  One tests `som-rs/Cargo.toml`. The other tests `som-rs/som-targets/Cargo.toml`.
+  The normal `cargo test` command also includes documentation tests.
+  The retired `legacy-model` feature stays disabled.
+- The fixture job tests the readiness tool against temporary fake files.
+- The product readiness job reads source hashes and named inventories.
+  It starts no product, service or emulator.
 
-The workflow runs these commands on GitHub:
+The Cargo jobs install Rust 1.96.1 and record versions and binary hashes.
+They fetch public crates from the committed locks.
+They then run `cargo test --locked --offline` without test filters.
+A failure stays a failed job. No test is ignored to make the job pass.
+Each job saves its tested commit and raw logs.
 
-```sh
-python3 -m unittest discover -s som-rs/scripts/hosted_readiness -p 'test_*.py' -v
-python3 som-rs/scripts/hosted_readiness/preflight.py \
-  --repo . \
-  --manifest som-rs/scripts/hosted_readiness/readiness.json \
-  --out .local/hosted-readiness/report.json
-```
+Some current tests still use hardcoded Homebrew formatter paths or old asset
+locations. The workflow exposes those failures. They are tool adaptation work.
+They do not mean that the fixed compiler needs Apple hardware or a model.
+Native Ruff, rustfmt, Node and Prettier still need version and integrity checks.
+Removing a platform limit must preserve formatter checks and product behavior.
 
-Exit 0 means that the declared readiness checks pass.
-Exit 1 means that a prerequisite is blocked.
-Exit 2 means that an argument, manifest or path is unsafe or invalid.
-The report must be new. Output inside the repository is allowed only under
-`.local/hosted-readiness/`. Ports 8765 and 18765 are refused.
+## What readiness means
+
+The manifest and report use version 2.
+The tool refuses a missing whole inventory group, asset group or gate section.
+It also refuses a changed inventory selector or a missing or reordered runner step.
+The report hashes each complete gate section from the frozen acceptance plan.
+It reports a changed or new unmapped section as blocked.
+Changing only a source hash cannot hide a changed gate.
+
+The tool compares every ordered case ID. Equal counts alone do not pass.
+The current manifest binds 207 public source files at the recorded main baseline.
+The manifest's `source_commit` names that baseline.
+The workflow's `tested-sha.txt` names the actual tested PR commit.
+These serve different purposes.
+
+| Inventory | Complete set |
+|---|---|
+| Phase 1 public examples | 8 rows; 5 accepted |
+| Phase 1 positive fixtures | 7 rows; 4 accepted |
+| Phase 1 coverage | 6 accepted rows |
+| Phase 1 legacy | 100 accepted rows |
+| Phase 2 | 584 rows: 582 products and 2 compiler refusals |
+| Negative cases | 32 rows |
+| Target examples | 24 rows |
+
+Phase 1 has 115 accepted cases.
+The Python regression scope has 127 public products and 544 historical jobs.
+Their accepted recordings need an approved distribution route.
+The tool does not invent missing IDs, response bytes or results.
+It does not read local models, private data or host caches.
+
+Exit 0 means the declared readiness checks pass.
+Exit 1 means a required input or mapped gate is blocked.
+Exit 2 means an argument, manifest or path is invalid.
+Readiness never means product acceptance.
+The report always states `acceptance_passed: false` and `product_suites: not_run`.
+The manifest cannot enable product acceptance.
+
+Reports must be new files.
+Inside the repository, outputs must be under `.local/hosted-readiness/`.
+Ports 8765 and 18765 are refused.
 The port argument is checked but never opened.
 
-## Source and complete inventories
+## Current gates and ownership
 
-`readiness.json` binds the public source at commit
-`b78da02ba5746d1992d876915bcd64e3feb16685` by SHA-256.
-SHA-256 is a digest that changes when file bytes change.
-The source commit names the inventory baseline, not the later PR head.
-The tool compares current file bytes with the manifest hashes.
-It also compares every ordered case ID. Equal counts alone do not pass.
+The manifest binds all eleven gate sections of the current Rust plan.
+It retains the full phase 1, phase 2 and issue57 step order.
+It maps each of the ten amendment006 checks to its public tool source.
 
-The source map includes the current frozen file map in
-`som-rs/evidence/rust-output-contract-amendment-006.json`, the amendment receipts,
-acceptance tools, behavior tools, public fixtures and emulator source.
-Historical `sources` maps can retain hashes from earlier amendments.
-The latest sealed receipt, not a stale historical map, supplies current pins.
+Amendment005 records the earlier TypeScript acceptance and its baseline.
+Its historical diagnostic texts must not replace the current texts.
+Amendment006 requires regression checks on the same React candidate as M6 #130.
+React owns that integration and the #137 independent audit.
+Rust owns this readiness tool, portable tool provisioning and Rust test evidence.
+A Rust unit test run does not close M6.
 
-| Inventory | Source | Complete set |
-|---|---|---|
-| Phase 1 public examples | `contracts/rust-output-v1/case-inventory.json` | 8 rows; 5 accepted |
-| Phase 1 positive fixtures | Same file | 7 rows; 4 accepted |
-| Phase 1 coverage | Same file | 6 rows; 6 accepted |
-| Phase 1 legacy | Same file | 100 accepted rows |
-| Phase 2 | `contracts/rust-output-v1/phase2/case-inventory.json` | 584 rows: 582 products and 2 compiler refusals |
-| Negative cases | `contracts/rust-output-v1/negative-cases.json` | 32 rows |
-| Target examples | `contracts/rust-output-v1/target-examples.json` | 24 rows |
+Historical receipts keep their original host and tool hashes.
+They record what ran then.
+They do not impose Apple Silicon on the current fixed algorithm.
+Use reviewed native tool pins for each supported host.
+Keep generated file bytes and behavior tests unchanged.
+Record changed asset descriptors and backend hashes explicitly.
 
-Paths in this table are relative to `som-rs/`.
-Phase 1 has 115 accepted cases in total.
-Phase 2 covers 444 legacy jobs, 118 public cases and 22 RS cases.
-Its checker families are `verify_all` (312), `flow` (257) and `phase1_suite` (15).
-The frozen plan also requires 127 public Python products and 544 historical
-Python jobs. Their complete named recordings are unavailable in this checkout.
-They remain blocked. The manifest does not invent their IDs or expected bytes.
+## Full product acceptance
 
-## Runner and asset decisions
+The product suites remain disabled here.
+Before enabling them, provision the required tools, offline dependencies,
+baseline compiler and accepted response recordings.
+Keep source, binary, formatter, lockfile and asset hashes.
+Use one candidate for every applicable gate.
+Keep every case result, argv, environment change, time, exit code and raw log.
+A failure, timeout, skipped check or missing result blocks acceptance.
+An independent audit must find zero failures and zero unrun checks.
 
-| Requirement | Owning source | Hosted state |
-|---|---|---|
-| Apple Silicon macOS; Homebrew Rust 1.96.1; exact cargo, rustfmt and clippy hashes | `som-rs/contracts/rust-output-v1/toolchain.json` | Not provisioned |
-| PostgreSQL 17.7 with exact executable hashes | Same file | Not provisioned |
-| Python 3.12.11, interpreter hash and package versions | `som-rs/contracts/rust-output-v1/phase2/pins.json` | No approved offline package source |
-| MongoDB 7.0.28, Redis 8.4.0, moto 5.2.3 and uv 0.9.9 | Same file | Not provisioned |
-| Complete crate union for both reference Cargo.lock files | `toolchain.json` and `scripts/rust_output_acceptance/vendor_crates.py` | Local cache is not a hosted source |
-| Accepted Python and Rust recordings, asset index and baseline compiler | Existing acceptance runners and sealed acceptance evidence | No approved hosted distribution route |
-| S3, GCS, Firebase and OIDC stand-ins | Public `som-core/scripts/` sources and phase 2 pins | Source is present; runtime prerequisites remain blocked |
+Create each database and emulator in an isolated run directory.
+Use owned QA baseline processes on loopback ports.
+Do not send QA traffic to 8765 or 18765.
+Stop only processes started by that run.
+Never stop a listener merely because it uses a port.
+Keep logs and mark remaining checks unrun after a timeout.
 
-The frozen host is `aarch64-apple-darwin`.
-The candidate builder also uses macOS `/usr/bin/time -l`.
-An Ubuntu fixture test cannot count as that product acceptance run.
-A different platform or tool identity needs a numbered contract amendment and
-independent review before it can supply formal acceptance evidence.
-
-The repository's source license is MIT.
-Dependency archives and redistributed binaries need their own provenance and
-license checks. Crate archives must match every checksum in the two lockfiles.
-The current vendor tool can create compile-failing stubs for other platforms.
-Those stubs do not establish support for a new platform.
-
-Local recordings, models, raw prompts, secrets, runtime links and caches must not
-be uploaded by this workflow. Their absence does not prove that they are private.
-It proves that this checkout has no verified distribution route for them.
-The report records an asset's blocking reason without probing local host paths.
-
-## Proposed full gate run
-
-This section records the required follow-up. It does not enable product tests.
-`readiness.json` records the ordered step names.
-The hashed existing runners remain the authority for each argv and case list.
-Do not replace a full gate with a fixture, sample or mocked service response.
-
-| Gate | Existing entry point | Required order |
-|---|---|---|
-| Phase 1 | `som-rs/scripts/rust_output_acceptance/run_acceptance.py --candidate CANDIDATE --vendor VENDOR --out NEW_DIR` | contract, python-controls, validate-cases, targets, cli, python-replay, asset-index, runtime-acceptance, behavior-python, behavior-faults, behavior-parity, rust-products, perf |
-| Phase 2 | Same entry point with `--phase 2`; the baseline and Python recording paths are fixed in that runner | The first 12 phase 1 steps, then phase1-unchanged, phase2-products, phase2-summary |
-| Name and asset changes | `som-rs/scripts/rust_output_acceptance/run_issue57.py --candidate CANDIDATE --vendor VENDOR --out NEW_DIR` | contract, python-replay, python-controls, validate-cases, targets, cli, rust-products, rust-unchanged, issue57, name-collisions |
-| Independent audits | `som-rs/scripts/rust_output_acceptance/audit/audit055.py` and `audit057.py` | Read the frozen plan and raw results after the complete run |
-
-The plan's later amendments also require the applicable unchanged Python and
-Rust baseline checks. Their baseline assets remain blocked here.
-React development and React product acceptance remain on hold.
-
-The future runner must use one recorded candidate for all applicable gates.
-It must keep source, binary, formatter, lockfile and asset hashes.
-It must keep every case result, raw stdout and stderr, argv, working directory,
-environment changes, UTC times, elapsed time, exit code and output hashes.
-It must record each failed, missing, skipped or timed-out case as blocking.
-It must preserve refusal diagnostics and compare product bytes unchanged.
-An independent audit must report zero failures and zero unrun checks.
-
-The future provisioner must create each database and emulator in its own
-temporary run directory. It must use loopback QA ports, with no test traffic to
-8765 or 18765. Existing baseline calls must be routed to an owned QA baseline
-through a reviewed runner change. Only a process started by that run may be
-stopped. A timeout must keep logs, mark remaining checks unrun and stop those
-owned processes. It must never stop a listener found by port alone.
-The current preflight starts no child process and needs no process cleanup.
-
-Before full online testing can start, record the runner and distribution
-decisions, the appropriate milestone, any required platform amendment, and a
-complete public or access-controlled asset inventory with licenses and hashes.
-Then implement provisioning and a runner that preserves the frozen gate set.
-Keep #141 open until those decisions and readiness checks are independently
-accepted. Do not reopen the completed historical Rust release milestones.
+Keep #141 and M12 open until their applicable checks pass independent review.
+Do not reopen the completed historical Rust release milestones.
+Default changes, tags and releases retain their separate user approval gates.

@@ -13,10 +13,45 @@ import sys
 from datetime import datetime, timezone
 
 
-VERSION = "som.hosted-readiness.v1"
+VERSION = "som.hosted-readiness.v2"
 SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 COMMIT = re.compile(r"[0-9a-f]{40}\Z")
 PROTECTED_PORTS = {8765, 18765}
+CONTRACT_ROOT = "som-rs/contracts/rust-output-v1/"
+PLAN_PATH = CONTRACT_ROOT + "acceptance-plan.json"
+REQUIRED_INVENTORIES = {
+    **{
+        "phase1-" + group: (CONTRACT_ROOT + "case-inventory.json", "/" + group)
+        for group in ("public_examples", "version_positive_fixtures", "coverage_cases", "legacy_in_scope")
+    },
+    "phase2": (CONTRACT_ROOT + "phase2/case-inventory.json", "/rows"),
+    "negative-cases": (CONTRACT_ROOT + "negative-cases.json", "/cases"),
+    "target-examples": (CONTRACT_ROOT + "target-examples.json", "/examples"),
+}
+REQUIRED_ASSETS = {
+    "public-regression-recordings", "legacy-regression-recordings", "phase1-recordings",
+    "phase2-recordings", "compiler-assets", "rust-toolchain", "postgresql",
+    "phase2-emulators", "python-environment", "crate-vendor", "baseline-compiler",
+}
+GATE_SECTIONS = (
+    "python_unchanged", "target_selection_checks", "scope_checks", "bundle_checks",
+    "assemble_refusals", "product_gates", "issue_gates", "phase2", "issue57",
+    "amendment005", "amendment006",
+)
+PLAN_METADATA = {"version", "case_inventory", "negative_cases", "target_examples", "amendments"}
+BASE_STEPS = (
+    "contract", "python-controls", "validate-cases", "targets", "cli", "python-replay",
+    "asset-index", "runtime-acceptance", "behavior-python", "behavior-faults",
+    "behavior-parity", "rust-products",
+)
+GATE_STEPS = {
+    "phase1": (*BASE_STEPS, "perf"),
+    "phase2": (*BASE_STEPS, "phase1-unchanged", "phase2-products", "phase2-summary"),
+    "issue57": (
+        "contract", "python-replay", "python-controls", "validate-cases", "targets",
+        "cli", "rust-products", "rust-unchanged", "issue57", "name-collisions",
+    ),
+}
 
 
 class Refusal(ValueError):
@@ -79,6 +114,12 @@ def digest(path: Path) -> str:
     return result.hexdigest()
 
 
+def section_digest(value: object) -> str:
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    ).hexdigest()
+
+
 def host_identity() -> str:
     machine = platform.machine().lower()
     machine = {"arm64": "aarch64", "amd64": "x86_64"}.get(machine, machine)
@@ -91,6 +132,7 @@ def host_identity() -> str:
 def validate_manifest(repo: Path, data: object) -> dict:
     require(isinstance(data, dict), "manifest must be an object")
     require(data.get("version") == VERSION, "unsupported manifest version")
+    require(data.get("product_acceptance_enabled") is False, "product acceptance must stay disabled")
     require(
         isinstance(data.get("source_commit"), str)
         and COMMIT.fullmatch(data["source_commit"]) is not None,
@@ -104,9 +146,11 @@ def validate_manifest(repo: Path, data: object) -> dict:
     runner = data.get("runner")
     require(
         isinstance(runner, dict)
-        and isinstance(runner.get("host"), str)
-        and bool(runner["host"]),
-        "runner.host must be a non-empty string",
+        and isinstance(runner.get("hosts"), list)
+        and bool(runner["hosts"])
+        and all(isinstance(host, str) and host for host in runner["hosts"])
+        and len(set(runner["hosts"])) == len(runner["hosts"]),
+        "runner.hosts must list supported native hosts",
     )
     inventories = data.get("inventories")
     require(isinstance(inventories, list) and bool(inventories), "inventories must be non-empty")
@@ -116,6 +160,12 @@ def validate_manifest(repo: Path, data: object) -> dict:
         name = item.get("name")
         require(isinstance(name, str) and name and name not in names, "duplicate or invalid inventory name")
         names.add(name)
+        require(name in REQUIRED_INVENTORIES, "unknown inventory group")
+        require(
+            (item.get("path"), item.get("pointer")) == REQUIRED_INVENTORIES[name]
+            and item.get("id_key") == "id",
+            "inventory selector differs from the frozen group",
+        )
         relative_path(repo, item.get("path"))
         require(item["path"] in sources, "inventory file must also be bound in source_files")
         pointer = item.get("pointer")
@@ -129,6 +179,18 @@ def validate_manifest(repo: Path, data: object) -> dict:
             and len(set(ids)) == len(ids),
             "inventory ids must be unique non-empty strings",
         )
+    require(names == set(REQUIRED_INVENTORIES), "a complete frozen inventory group is missing")
+    gates = data.get("gate_plan")
+    require(isinstance(gates, dict), "gate_plan must be an object")
+    sections = gates.get("contract_sections")
+    require(
+        isinstance(sections, dict) and set(sections) == set(GATE_SECTIONS)
+        and all(isinstance(value, str) and SHA256.fullmatch(value) for value in sections.values()),
+        "every frozen gate section must have a sha256",
+    )
+    require(PLAN_PATH in sources, "acceptance plan must be bound in source_files")
+    for name, steps in GATE_STEPS.items():
+        require(gates.get(name) == list(steps), f"incomplete or reordered {name} gate steps")
     assets = data.get("assets")
     require(isinstance(assets, list), "assets must be a list")
     names = set()
@@ -149,6 +211,7 @@ def validate_manifest(repo: Path, data: object) -> dict:
             relative_path(repo, asset.get("path"))
             expected = asset.get("sha256")
             require(isinstance(expected, str) and SHA256.fullmatch(expected), "invalid asset sha256")
+    require(REQUIRED_ASSETS <= names, "a required asset group is missing")
     blockers = data.get("blockers")
     require(
         isinstance(blockers, list)
@@ -205,6 +268,28 @@ def inspect(repo: Path, data: dict, port: int) -> dict:
         except (OSError, ValueError, KeyError, TypeError, IndexError) as exc:
             row["reason"] = f"inventory unavailable or malformed: {exc.__class__.__name__}"
         inventories.append(row)
+    gate_sections = []
+    try:
+        plan = load_json(relative_path(repo, PLAN_PATH))
+        require(isinstance(plan, dict), "acceptance plan must be an object")
+        actual_sections = set(plan) - PLAN_METADATA
+        for name in sorted(actual_sections | set(GATE_SECTIONS)):
+            row = {"name": name, "path": PLAN_PATH, "pointer": "/" + name, "status": "blocked"}
+            if name not in GATE_SECTIONS:
+                row["reason"] = "unmapped frozen gate section"
+            elif name not in plan:
+                row["reason"] = "frozen gate section is missing"
+            else:
+                row["expected_sha256"] = data["gate_plan"]["contract_sections"][name]
+                row["actual_sha256"] = section_digest(plan[name])
+                if row["actual_sha256"] == row["expected_sha256"]:
+                    row["status"] = "verified"
+                else:
+                    row["reason"] = "frozen gate section sha256 mismatch"
+            gate_sections.append(row)
+    except (OSError, ValueError, TypeError) as exc:
+        gate_sections.append({"name": "acceptance-plan", "path": PLAN_PATH, "status": "blocked",
+                              "reason": f"frozen gates unavailable or malformed: {exc.__class__.__name__}"})
     assets = []
     for asset in data["assets"]:
         if "blocked_reason" in asset:
@@ -212,12 +297,12 @@ def inspect(repo: Path, data: dict, port: int) -> dict:
         else:
             assets.append(file_row(repo, asset["name"], asset["path"], asset["sha256"]))
     actual_host = host_identity()
-    runner = {"expected_host": data["runner"]["host"], "actual_host": actual_host, "status": "verified"}
-    if actual_host != runner["expected_host"]:
-        runner.update(status="blocked", reason="unsupported platform for the frozen host pin")
-    blocked = bool(data["blockers"]) or any(row["status"] == "blocked" for row in [*sources, *inventories, *assets, runner])
+    runner = {"supported_hosts": data["runner"]["hosts"], "actual_host": actual_host, "status": "verified"}
+    if actual_host not in runner["supported_hosts"]:
+        runner.update(status="blocked", reason="native tool provisioning is not declared for this host")
+    blocked = bool(data["blockers"]) or any(row["status"] == "blocked" for row in [*sources, *inventories, *gate_sections, *assets, runner])
     return {
-        "version": "som.hosted-readiness-report.v1",
+        "version": "som.hosted-readiness-report.v2",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source_commit": data["source_commit"],
         "source_commit_role": "declared inventory baseline; source_files hashes are verified",
@@ -227,6 +312,7 @@ def inspect(repo: Path, data: dict, port: int) -> dict:
         "qa_port": port,
         "source_files": sources,
         "inventories": inventories,
+        "gate_sections": gate_sections,
         "runner": runner,
         "assets": assets,
         "blockers": data["blockers"],

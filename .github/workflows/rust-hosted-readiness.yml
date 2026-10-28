@@ -5,6 +5,14 @@ on:
     paths:
       - .github/workflows/rust-hosted-readiness.yml
       - som-rs/scripts/hosted_readiness/**
+      - som-rs/Cargo.toml
+      - som-rs/Cargo.lock
+      - som-rs/src/**
+      - som-rs/som-targets/Cargo.toml
+      - som-rs/som-targets/Cargo.lock
+      - som-rs/som-targets/src/**
+      - som-code-python/data/blocks/**
+      - som-code-python/data/block-contracts/**
       - som-rs/scripts/rust_output_acceptance/**
       - som-rs/scripts/compiler_acceptance/**
       - som-rs/contracts/**
@@ -28,6 +36,65 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  cargo-tests:
+    name: Cargo tests (${{ matrix.package }}, Linux)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package: compiler
+            manifest: som-rs/Cargo.toml
+          - package: targets
+            manifest: som-rs/som-targets/Cargo.toml
+    env:
+      RUSTUP_TOOLCHAIN: 1.96.1
+      CARGO_TERM_COLOR: never
+      CARGO_BUILD_JOBS: 2
+      RUST_BACKTRACE: 1
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Record tested revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+      - name: Install native Rust tools
+        run: |
+          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt --component clippy 2>&1 | tee tool-install.log
+          rustc -vV | tee tool-identity.log
+          cargo -vV | tee -a tool-identity.log
+          rustfmt --version | tee -a tool-identity.log
+          sha256sum "$(rustup which rustc)" "$(rustup which cargo)" "$(rustup which rustfmt)" | tee -a tool-identity.log
+      - name: Fetch locked public crates
+        env:
+          MANIFEST: ${{ matrix.manifest }}
+        run: cargo fetch --locked --manifest-path "$MANIFEST" 2>&1 | tee cargo-fetch.log
+      - name: Run the complete default-feature Cargo suite
+        env:
+          MANIFEST: ${{ matrix.manifest }}
+        run: |
+          cargo test --locked --offline --manifest-path "$MANIFEST" -- --test-threads=1 2>&1 | tee cargo-tests.log
+      - name: Check tracked dependency locks
+        if: always()
+        run: git diff --exit-code -- som-rs/Cargo.lock som-rs/som-targets/Cargo.lock
+      - name: Keep Cargo test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cargo-${{ matrix.package }}-linux
+          path: |
+            tested-sha.txt
+            tool-install.log
+            tool-identity.log
+            cargo-fetch.log
+            cargo-tests.log
+          if-no-files-found: error
+          retention-days: 30
+
   fixture-tests:
     name: Readiness fixture tests
     runs-on: ubuntu-24.04
