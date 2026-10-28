@@ -1,0 +1,82 @@
+name: M6 tooling
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/m6-tooling.yml
+      - som-rs/scripts/react_output_acceptance/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: m6-tooling-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  runner:
+    name: M6 acceptance runner fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Record tested revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 --version
+          printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+      - name: Run issue 136 unit gate
+        run: |
+          python3 -m unittest som-rs/scripts/react_output_acceptance/test_run_acceptance.py -v 2>&1 | tee runner-tests.log
+          python3 som-rs/scripts/react_output_acceptance/run_acceptance.py --help | tee runner-help.txt
+      - name: Keep unit gate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: m6-runner-fixtures
+          path: |
+            tested-sha.txt
+            runner-tests.log
+            runner-help.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  audit:
+    name: M6 independent audit fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Record tested revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 --version
+          printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+      - name: Run issue 137 unit gate
+        run: |
+          python3 -m unittest discover -s som-rs/scripts/react_output_acceptance/audit -p 'test_*.py' -v 2>&1 | tee audit-tests.log
+          python3 som-rs/scripts/react_output_acceptance/audit/audit130.py --help | tee audit-help.txt
+      - name: Keep audit unit gate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: m6-audit-fixtures
+          path: |
+            tested-sha.txt
+            audit-tests.log
+            audit-help.txt
+          if-no-files-found: error
+          retention-days: 30
