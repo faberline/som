@@ -75,7 +75,12 @@ Process checks use the binary hash, command, start time, user, working directory
 The workflow saves `m6-release-summary` and encrypted `m6-release-evidence` artifacts.
 The summary must show all five scenarios passed.
 An independent reviewer must read the raw journals and default-check results before release approval is requested.
-The rehearsal result is pending.
+The corrected rehearsal result is pending.
+The first [hosted run 40764095844](https://github.com/faberline/som/actions/runs/40764095844) passed its five switch and rollback scenarios.
+Its protected-port guard called a function that briefly bound `8765` and `18765` on the runner.
+The summary's `protected_ports_unused` claim was incorrect.
+That run is not final release acceptance.
+The next run must use read-only listener checks and include the offline-start rehearsal.
 
 ## Production change
 
@@ -84,6 +89,10 @@ Bind the exact candidate binary, assets, formatter tree, accepted receipts, rele
 Resolve write ownership of the production checkout before changing it.
 The current production checkout is `/Users/chrischeng/faberlines/som`.
 The managed development worktree does not hold the production default receipt.
+Read-only process inspection found no listener on port `8765` and no process with the recorded PID `16959`.
+The deployment plan must first start the same accepted previous compiler.
+It must save and check its fresh process identity before the normal switch can proceed.
+Starting that production service is part of the pending explicit approval.
 
 Present the tested candidate, current default, QA evidence, deployment paths, and rollback command to the user.
 Request approval only when these exact items are ready.

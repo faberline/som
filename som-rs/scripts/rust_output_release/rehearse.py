@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -101,6 +102,44 @@ def sandbox(out, live, port, source_sha=None):
     return root
 
 
+def offline_sandbox(out, seed, port, source_sha):
+    """Make a QA-only stale receipt with a reaped positive PID, then resume it."""
+    rc.require(os.environ.get('GITHUB_ACTIONS') == 'true' and os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted'
+               and os.environ.get('RUNNER_OS') == 'macOS', 'offline PID seed runs on hosted GitHub macOS only')
+    rc.harness_port(port)
+    rc.port_free(port)
+    root = out / 'root'
+    (root / 'som-rs/runtime').mkdir(parents=True)
+    (root / 'som-rs/compiler-assets').mkdir(parents=True)
+    (root / 'som-rs/runtime/current').symlink_to(str(Path(seed['command'][0]).parent))
+    (root / 'som-rs/compiler-assets/current').symlink_to(seed['command'][3])
+    stand_in = out / 'stand-in'
+    stand_in.mkdir()
+    argv = [PYTHON, '-c', 'import os; print(os.getpid())']
+    done = subprocess.run(argv, capture_output=True, text=True, check=True, timeout=30, cwd=rc.REPO)
+    (stand_in / 'seed.stdout').write_text(done.stdout)
+    (stand_in / 'seed.stderr').write_text(done.stderr)
+    rc.require(done.stdout.strip().isdigit(), 'dead seed did not return a PID')
+    pid = int(done.stdout.strip())
+    rc.require(pid > 1 and pid != os.getpid() and not rc.alive(pid), 'seed PID is not a reaped child')
+    command = seed['command'][:-1] + [str(port)]
+    owner = {'pid': pid, 'uid': os.getuid(), 'argv': command, 'port': port,
+             'start': 'known-dead-rehearsal-seed', 'cwd': str(rc.REPO),
+             'binary_sha256': seed['identity']['binary_sha256']}
+    receipt = {**seed, 'pid': pid, 'command': command, 'identity': owner,
+               'evidence': str(stand_in), 'rehearsal_stand_in_of': source_sha,
+               'rehearsal_offline_seed': True}
+    raw = (json.dumps(receipt, indent=2) + '\n').encode()
+    (stand_in / 'stale-default.json').write_bytes(raw)
+    (root / 'som-rs/runtime/default.json').write_bytes(raw)
+    record = {'pid': pid, 'old_pid_alive': False, 'argv': argv, 'exit_code': done.returncode,
+              'stdout_file': 'stand-in/seed.stdout', 'stderr_file': 'stand-in/seed.stderr',
+              'stdout_sha256': rc.digest(stand_in / 'seed.stdout'), 'stderr_sha256': rc.digest(stand_in / 'seed.stderr'),
+              'receipt': 'stand-in/stale-default.json', 'default_sha256': rc.sha_bytes(raw)}
+    (stand_in / 'seed.json').write_text(json.dumps(record, indent=2) + '\n')
+    return root, record
+
+
 def stop_sandbox(root, port):
     receipt = rc.load(root / 'som-rs/runtime/default.json')
     if rc.alive(receipt['pid']):
@@ -138,11 +177,18 @@ def main():
         directory = out / name
         directory.mkdir()
         port = rc.free_harness_port()
-        root = (sandbox(directory, live, port, source_sha=rc.receipt_sha(config['previous'])) if compiler
-                else sandbox(directory, live, port))
+        offline_seed = None
+        if compiler:
+            root, offline_seed = offline_sandbox(directory, live, port, rc.receipt_sha(config['previous']))
+        else:
+            root = sandbox(directory, live, port)
         common = ['--prerequisites', str(prerequisites), '--root', str(root), '--port', str(port)]
-        calls, problems = [], []
+        calls, problems, resumed = [], [], None
         try:
+            if compiler:
+                resumed = call([PYTHON, str(HERE / 'resume_default.py'), *common, '--rehearsal', '--execute',
+                                '--output', str(directory / 'resume')], directory, 'resume')
+                rc.require(resumed['exit_code'] == 0, 'offline previous compiler resume failed')
             switch = [PYTHON, str(HERE / 'switch.py'), *common, '--rehearsal', '--execute',
                       '--output', str(directory / 'switch')]
             if name != 'switch':
@@ -176,6 +222,7 @@ def main():
         finally:
             stopped = stop_sandbox(root, port)
         scenarios.append({'name': name, 'port': port, 'root': str(root), 'calls': calls,
+                          **({'offline_seed': offline_seed, 'resume': resumed} if compiler else {}),
                           'switch_stages': journal_stages(directory / 'switch') if (directory / 'switch/journal.json').exists() else None,
                           'stopped_pid': stopped, 'problems': problems, 'passed': not problems})
     if compiler:

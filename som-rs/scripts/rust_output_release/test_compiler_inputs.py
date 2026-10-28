@@ -61,6 +61,20 @@ class CompilerInputTests(unittest.TestCase):
         self.root = Path(temporary.name).resolve()
         self.rc, self.producer, self.runner = modules()
 
+    def test_protected_port_guard_only_reads_listener_metadata(self):
+        with mock.patch.object(self.runner.subprocess, 'run', return_value=types.SimpleNamespace(
+                returncode=1, stdout=b'', stderr=b'')) as command, \
+                mock.patch.object(self.rc, 'port_free', side_effect=forbidden):
+            result = self.runner.protected_ports_absent()
+        self.assertEqual([r['port'] for r in result], [8765, 18765])
+        self.assertEqual([c.args[0] for c in command.call_args_list], [
+            ['/usr/sbin/lsof', '-nP', '-a', '-iTCP:8765', '-sTCP:LISTEN', '-Fp'],
+            ['/usr/sbin/lsof', '-nP', '-a', '-iTCP:18765', '-sTCP:LISTEN', '-Fp']])
+        for code, stdout, stderr in [(0, b'p123\n', b''), (1, b'', b'permission denied'), (2, b'', b'')]:
+            with self.subTest(code=code, stderr=stderr), mock.patch.object(self.runner.subprocess, 'run',
+                    return_value=types.SimpleNamespace(returncode=code, stdout=stdout, stderr=stderr)), self.assertRaises(RuntimeError):
+                self.runner.protected_ports_absent()
+
     def test_cli_pretty_keeps_number_tokens_unicode_and_nested_types(self):
         raw = b'{"status":"ok","bundle":{"z":1e-07,"a":-0.0,"big":9007199254740993,"string":"1e-07","nested":[true,null,{},[]],"text":"\u00e9\ud83d\ude00\u0001"}}'
         expected = ('{\n  "a": -0.0,\n  "big": 9007199254740993,\n  "nested": [\n'
@@ -200,10 +214,42 @@ class CompilerInputTests(unittest.TestCase):
     def rehearsal(self, name):
         directory = self.root / name
         config = {role: {'binary': {'sha256': char * 64}} for role, char in (('candidate', 'a'), ('previous', 'b'))}
+        config['previous_canaries'] = {family: [{'name': family + '-1'}, {'name': family + '-2'}]
+                                      for family in ('python', 'rust', 'typescript')}
         rows = []
         for index, scenario in enumerate(self.runner.SCENARIOS):
             root = directory / scenario
             pid = 5000 + index
+            seed_pid, resumed_pid = 7000 + index, 6000 + index
+            stale = {'pid': seed_pid, 'identity': {'binary_sha256': config['previous']['binary']['sha256']}}
+            write(root / 'stand-in/stale-default.json', stale)
+            seed = {'pid': seed_pid, 'old_pid_alive': False, 'exit_code': 0,
+                    'argv': ['/fake/python', '-c', 'import os; print(os.getpid())'],
+                    'receipt': 'stand-in/stale-default.json', 'default_sha256': digest(root / 'stand-in/stale-default.json')}
+            for stream in ('stdout', 'stderr'):
+                path = root / f'stand-in/seed.{stream}'
+                write(path, f'{seed_pid}\n'.encode() if stream == 'stdout' else b'')
+                seed[stream + '_file'] = f'stand-in/seed.{stream}'
+                seed[stream + '_sha256'] = digest(path)
+            resume_call = {'name': 'resume', 'exit_code': 0}
+            for stream in ('stdout', 'stderr'):
+                path = root / f'resume.{stream}'
+                write(path, b'fake resume stream\n')
+                resume_call[stream + '_sha256'] = digest(path)
+            resumed_owner = {'pid': resumed_pid, 'binary_sha256': config['previous']['binary']['sha256']}
+            fresh = {'pid': resumed_pid, 'identity': resumed_owner}
+            snapshot = root / 'switch/0002-previous-default.json'
+            write(snapshot, fresh)
+            resume_result = {'passed': True, 'status': 'passed', 'old_pid': seed_pid, 'old_pid_alive': False,
+                             'previous_binary_sha256': config['previous']['binary']['sha256'],
+                             'stale_snapshot_sha256': seed['default_sha256'], 'default_sha256': digest(snapshot),
+                             'owner': resumed_owner}
+            write(root / 'resume/result.json', resume_result)
+            resume_journal = [{'stage': 'stale_owner_absent', 'pid': seed_pid, 'alive': False, 'port': 18940 + index}]
+            resume_journal += [{'stage': 'canary_passed', 'name': case['name'], 'label': 'resumed-previous-default'}
+                               for cases in config['previous_canaries'].values() for case in cases]
+            resume_journal += [{'stage': 'resume_verified', 'owner': resumed_owner, 'evidence_errors': []}]
+            write(root / 'resume/journal.json', resume_journal)
             calls = []
             names = ('switch', 'check', 'restore', 'check-restored') if scenario == 'switch' else ('switch', 'check')
             for operation in names:
@@ -223,7 +269,8 @@ class CompilerInputTests(unittest.TestCase):
                 write(root / 'check-restored/result.json', self.check_result(config['previous']['binary']['sha256']))
             write(root / 'root/som-rs/runtime/default.json', {'pid': pid, 'identity': {'binary_sha256': config['previous']['binary']['sha256']}})
             rows.append({'name': scenario, 'passed': True, 'problems': [], 'port': 18940 + index,
-                         'root': str(root / 'root'), 'calls': calls, 'stopped_pid': pid})
+                         'root': str(root / 'root'), 'calls': calls, 'stopped_pid': pid,
+                         'offline_seed': seed, 'resume': resume_call})
         report = {'passed': True, 'profile': 'compiler-only', 'live_default_accessed': False, 'scenarios': rows}
         write(directory / 'rehearsal.json', report)
         return directory, config, report
@@ -233,13 +280,42 @@ class CompilerInputTests(unittest.TestCase):
              mock.patch.object(self.rc, 'port_free') as ports, \
              mock.patch.object(self.rc, 'identity', side_effect=forbidden):
             result = self.runner.verify_report(directory, config)
-        self.assertEqual(owners.call_count, 5)
+        self.assertEqual(owners.call_count, 10)
         self.assertEqual([call.args[0] for call in ports.call_args_list], list(range(18940, 18945)))
         return result
 
     def test_complete_five_scenario_report_binds_streams_checks_and_stopped_owners(self):
         directory, config, report = self.rehearsal('valid')
         self.assertEqual(self.verify(directory, config), report)
+
+    def test_resume_proof_mutations_refuse_even_when_switch_and_checks_pass(self):
+        for mutation in ('exit', 'seed_zero', 'seed_command', 'seed_stream', 'stale_receipt',
+                         'resume_stream', 'journal', 'failed_event', 'evidence_errors', 'result', 'snapshot', 'canaries'):
+            with self.subTest(mutation=mutation):
+                directory, config, report = self.rehearsal('resume-' + mutation)
+                row = report['scenarios'][0]
+                root = directory / 'switch'
+                if mutation == 'exit': row['resume']['exit_code'] = 1
+                elif mutation == 'seed_zero': row['offline_seed']['pid'] = 0
+                elif mutation == 'seed_command': row['offline_seed']['argv'][-1] = 'other code'
+                elif mutation == 'seed_stream': write(root / 'stand-in/seed.stdout', b'999\n')
+                elif mutation == 'stale_receipt': write(root / 'stand-in/stale-default.json', b'{}')
+                elif mutation == 'resume_stream': write(root / 'resume.stdout', b'changed')
+                elif mutation == 'snapshot': write(root / 'switch/0002-previous-default.json', b'{}')
+                elif mutation == 'result':
+                    result = json.loads((root / 'resume/result.json').read_bytes())
+                    result['passed'] = False
+                    write(root / 'resume/result.json', result)
+                else:
+                    journal = json.loads((root / 'resume/journal.json').read_bytes())
+                    if mutation == 'journal': journal[-1]['stage'] = 'resume_committed'
+                    elif mutation == 'failed_event': journal.insert(0, {'stage': 'resume_failed'})
+                    elif mutation == 'evidence_errors': journal[-1]['evidence_errors'] = ['lost raw bytes']
+                    else: journal.pop(1)
+                    write(root / 'resume/journal.json', journal)
+                write(directory / 'rehearsal.json', report)
+                with self.assertRaises(RuntimeError):
+                    self.verify(directory, config)
 
     def test_scenario_set_calls_qa_root_and_stop_receipt_mutations_refuse(self):
         for mutation in ('missing', 'extra', 'order', 'calls', 'exit', 'root', 'pid', 'port'):

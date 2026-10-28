@@ -290,13 +290,23 @@ class CompilerProfileTests(unittest.TestCase):
         output = self.root / ".local/rust-compiler-goal/acceptance/rehearsal"
         launched, calls = [], []
 
-        def launch(argv, log, port, health):
+        def offline(directory, seed, port, source_sha):
             self.assertIn(port, self.rc.HARNESS_PORTS)
-            self.assertEqual(argv[0], fixture.config["previous"]["binary"]["path"])
-            self.assertEqual(health, fixture.runtimes["previous"]["health"])
+            self.assertEqual(seed['command'][0], fixture.config["previous"]["binary"]["path"])
+            self.assertEqual(seed['health'], fixture.runtimes["previous"]["health"])
             launched.append(port)
-            return {"pid": 9000 + port, "argv": argv, "binary_sha256": fixture.config["previous"]["binary"]["sha256"],
-                    "cwd": str(self.root)}
+            root = directory / 'root'
+            (root / 'som-rs/runtime').mkdir(parents=True)
+            (root / 'som-rs/compiler-assets').mkdir(parents=True)
+            (root / 'som-rs/runtime/current').symlink_to(Path(seed['command'][0]).parent)
+            (root / 'som-rs/compiler-assets/current').symlink_to(seed['command'][3])
+            command = seed['command'][:-1] + [str(port)]
+            receipt = {**seed, 'pid': 9000 + port, 'command': command,
+                       'identity': {**seed['identity'], 'pid': 9000 + port, 'argv': command, 'port': port}}
+            fixture.write(root / 'som-rs/runtime/default.json', receipt)
+            fixture.write(directory / 'stand-in/stale-default.json', receipt)
+            return root, {'pid': receipt['pid'], 'old_pid_alive': False,
+                          'receipt': 'stand-in/stale-default.json', 'default_sha256': digest(directory / 'stand-in/stale-default.json')}
 
         def call(argv, directory, name):
             port = int(argv[argv.index("--port") + 1])
@@ -305,13 +315,19 @@ class CompilerProfileTests(unittest.TestCase):
             destination = Path(argv[argv.index("--output") + 1])
             destination.mkdir()
             selected = argv[argv.index("--inject-failure") + 1] if "--inject-failure" in argv else None
-            if name in ("switch", "restore"):
-                stage = "restore_verified" if name == "restore" else "rollback_verified" if selected else "committed"
+            if name in ("switch", "restore", "resume"):
+                stage = "resume_verified" if name == "resume" else "restore_verified" if name == "restore" else "rollback_verified" if selected else "committed"
                 fixture.write(destination / "journal.json", [{"stage": stage,
                               "message": f"injected failure at {selected}" if selected else "fake completed stage"}])
+                if name == 'resume':
+                    path = Path(argv[argv.index('--root') + 1]) / 'som-rs/runtime/default.json'
+                    receipt = json.loads(path.read_bytes())
+                    receipt['pid'] += 100
+                    receipt['identity']['pid'] = receipt['pid']
+                    fixture.write(path, receipt)
             return {"name": name, "argv": argv, "exit_code": 1 if selected else 0}
 
-        with mock.patch.object(rehearsal, "launch_detached", side_effect=launch), \
+        with mock.patch.object(rehearsal, "offline_sandbox", side_effect=offline), \
              mock.patch.object(rehearsal, "call", side_effect=call), \
              mock.patch.object(self.rc, "free_harness_port", side_effect=range(18940, 18945)), \
              mock.patch.object(self.rc, "alive", return_value=False), \
@@ -327,6 +343,8 @@ class CompilerProfileTests(unittest.TestCase):
         self.assertTrue(all(row["passed"] for row in report["scenarios"]))
         self.assertIs(report["live_default_accessed"], False)
         self.assertEqual(len(launched), 5)
+        self.assertTrue(all(row['resume']['exit_code'] == 0 and row['offline_seed']['old_pid_alive'] is False
+                            for row in report['scenarios']))
         self.assertEqual(live.read_bytes(), b"invalid live receipt: must never be read\n")
         previous_sha = fixture.config["previous"]["binary"]["sha256"]
         for name, argv in calls:

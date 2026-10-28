@@ -80,6 +80,12 @@ jobs:
             python3 som-rs/scripts/rust_output_release/stage_release_evidence.py --root "$GITHUB_WORKSPACE/.local/rust-compiler-goal/acceptance/react-131" --out "$RUNNER_TEMP/m6-release-staged" > "$RUNNER_TEMP/m6-release-staging.stdout"
             /opt/homebrew/Cellar/node/26.5.0/bin/node som-rs/scripts/react_output_acceptance/seal_hosted_evidence.mjs --root "$RUNNER_TEMP/m6-release-staged" --out "$RUNNER_TEMP/m6-release-sealed"
           fi
+      - name: Copy the rehearsal summary out of the hidden QA directory
+        if: always()
+        run: |
+          if [ -f .local/rust-compiler-goal/acceptance/react-131/summary.json ]; then
+            cp .local/rust-compiler-goal/acceptance/react-131/summary.json "$RUNNER_TEMP/m6-release-summary.json"
+          fi
       - name: Keep the source, tool, and rehearsal summaries
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -93,7 +99,7 @@ jobs:
             ${{ runner.temp }}/m6-release-restore-original.stdout
             ${{ runner.temp }}/m6-release-restore-audit.stdout
             ${{ runner.temp }}/m6-release-staging.stdout
-            .local/rust-compiler-goal/acceptance/react-131/summary.json
+            ${{ runner.temp }}/m6-release-summary.json
           if-no-files-found: error
           retention-days: 30
       - name: Keep the encrypted raw rehearsal
