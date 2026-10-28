@@ -567,11 +567,15 @@ class Audit:
                 expected.append((case, body, True))
         need(expected, "no named CLI cases in raw evidence", "unrun")
         for case, body, refusal in expected:
-            found = [row for row in rows if row.get("id") == case["id"] or Path(str(row.get("input", ""))).stem == case["id"]]
+            found = [row for row in rows if row.get("id") == case["id"] or row.get("input") == case["id"]]
             need(len(found) == 1, f"missing CLI case {case['id']}", "unrun" if not found else "failed")
             row = found[0]
             need(row.get("target") == body.get("target"), "CLI target changed")
-            need(row.get("expected_request_sha256") == row.get("request_sha256") and isinstance(row.get("request_sha256"), str) and HEX.fullmatch(row["request_sha256"]), "CLI forwarded request hash differs or is absent")
+            captured_request = {"format": "som.cnl.v1", "source": body["source"]}
+            if body.get("target") is not None:
+                captured_request["target"] = body["target"]
+            expected_hash = sha(json.dumps(captured_request, ensure_ascii=False, separators=(",", ":")).encode())
+            need(row.get("expected_request_sha256") == row.get("request_sha256") == expected_hash, "CLI captured request hash differs from the independently derived frozen request")
             need(row.get("exit_code") == (2 if refusal else 0), "CLI exit code differs")
             if refusal:
                 need(row.get("code") == case["expected"]["code"] and row.get("http_status") == case["http_status"], "CLI refusal differs")
@@ -579,27 +583,200 @@ class Audit:
         return "attested", "forwarded request hashes and exit codes match; raw CLI stdout equality is a per-case attestation"
 
     def scope_cases(self) -> None:
-        rows = self.cases("react-target")
-        expected = []
-        for group in ("public_examples", "version_positive_fixtures", "coverage_cases", "name_cases", "public_products_in_scope", "legacy_in_scope"):
-            for case in self.inventory.get(group, []):
-                expected.append(case)
-        for case in expected:
-            def check(case: dict = case) -> tuple[str, str]:
-                cid = case["id"]
-                allowed = {cid, f"{cid}-cnl-react", f"{cid}-json-react"}
-                candidates = [row for row in rows if row.get("section") in ("in_scope", "out_of_scope", "legacy", "name_cases") and row.get("id") in allowed]
-                need(candidates, f"missing scope case {cid}", "unrun")
-                admitted = case.get("react", "in_scope") == "in_scope"
-                for row in candidates:
-                    _, doc = self.response("react-target", row)
-                    if admitted:
-                        need(row.get("http_status") == 200 and doc.get("bundle", {}).get("target") == "react", f"in-scope case {cid} was refused")
-                    else:
-                        need(row.get("http_status") == 422 and doc.get("code") == "UNSUPPORTED_TARGET", f"out-of-scope case {cid} was admitted or refused differently")
-                    self.per_case_attestation(row, f"scope oracle for {cid}; the request prompt is not retained in this report")
-                return "attested", f"scope result is consistent; independent prompt-profile evidence is only per-case tool data for {cid}"
-            self.row(f"scope_case/{case['id']}", check)
+        for case in self.inventory.get("public_examples", []):
+            def public(case: dict = case) -> None:
+                prompt = object_value(self.pinned_json(case["prompt"], case["prompt_file_sha256"]), "public example prompt")
+                forms = {"json": {"format": "som.prompt-json.v1", "prompt": prompt, "target": "react"}}
+                if case.get("cnl"):
+                    raw = self.reader.bytes(case["cnl"])
+                    need(sha(raw) == case.get("cnl_sha256"), "public CNL source hash differs")
+                    forms["cnl"] = {"format": "som.cnl.v1", "source": raw.decode(), "target": "react"}
+                self.scope_case(case["id"], prompt, forms, case.get("react"))
+            self.row(f"scope_case/{case['id']}", public)
+
+        def fixtures() -> None:
+            path = "som-rs/tests/compiler-v1/cnl-positive-fixtures.json"
+            pins = self.inventory.get("sources", {}).get("cnl_positive_fixtures", {})
+            document = object_value(self.pinned_json(path, pins.get(path)), "positive fixture inventory")
+            cases = list_value(document.get("cases"), "all positive CNL fixtures")
+            ids = [case["id"] for case in cases]
+            need(len(set(ids)) == len(ids), "positive fixture inventory repeats an id")
+            for case in cases:
+                def check(case: dict = case) -> None:
+                    prompt = object_value(case.get("expected_prompt"), "fixture prompt")
+                    need(case.get("prompt_sha256") == sha(canonical(prompt)), "fixture prompt hash differs")
+                    need(case.get("cnl_sha256") == sha(case["cnl"].encode()), "fixture CNL hash differs")
+                    forms = {"cnl": {"format": "som.cnl.v1", "source": case["cnl"], "target": "react"}}
+                    if case.get("category") == "version_positive":
+                        forms["json"] = {"format": "som.prompt-json.v1", "prompt": prompt, "target": "react"}
+                    self.scope_case(case["id"], prompt, forms)
+                self.row(f"scope_case/{case['id']}", check)
+        self.row("scope_case/source-fixtures", fixtures)
+
+        def coverage() -> None:
+            path = "som-rs/tests/rust-output-v1/cases/index.json"
+            pins = self.inventory.get("sources", {}).get("coverage_index", {})
+            document = object_value(self.pinned_json(path, pins.get(path)), "coverage source inventory")
+            inventory = {case["id"]: case for case in self.inventory.get("coverage_cases", [])}
+            for case in list_value(document.get("cases"), "all coverage cases"):
+                def check(case: dict = case) -> None:
+                    need(case["id"] in inventory, "coverage case absent from frozen inventory")
+                    pin = inventory[case["id"]]
+                    base = Path("som-rs/tests/rust-output-v1/cases")
+                    prompt = self.pinned_json(base / case["prompt"], pin["prompt_file_sha256"])
+                    raw = self.reader.bytes(base / case["cnl"])
+                    need(sha(raw) == pin["cnl_sha256"], "coverage CNL source hash differs")
+                    forms = {"json": {"format": "som.prompt-json.v1", "prompt": prompt, "target": "react"}, "cnl": {"format": "som.cnl.v1", "source": raw.decode(), "target": "react"}}
+                    self.scope_case(case["id"], prompt, forms, pin.get("react"))
+                self.row(f"scope_case/{case['id']}", check)
+        self.row("scope_case/source-coverage", coverage)
+
+        for case in self.inventory.get("name_cases", []):
+            def name_case(case: dict = case) -> None:
+                row = self.find("react-target", case["id"], "name_cases")
+                _, response = self.response("react-target", row)
+                prompt = object_value(response.get("bundle", {}).get("prompt"), "name-case raw prompt")
+                need(row.get("request_sha256") == case.get("body_sha256"), "name case request hash differs")
+                need(self.scope_oracle(prompt) is None and row.get("http_status") == 200, "name case is outside the frozen profile")
+            self.row(f"scope_case/{case['id']}", name_case)
+
+        public_source = self.inventory.get("sources", {}).get("public_products")
+        if public_source is not None:
+            self.row("scope_case/source-public-products", lambda: self.public_product_scope(public_source))
+        elif self.inventory.get("public_products_in_scope"):
+            self.row("scope_case/source-public-products", lambda: need(False, "public product source universe missing", "unrun"))
+
+        source = self.inventory.get("sources", {}).get("legacy_inventory")
+        if source is not None:
+            self.row("scope_case/source-legacy", lambda: self.legacy_scope(source))
+        elif self.inventory.get("legacy_in_scope"):
+            self.row("scope_case/source-legacy", lambda: need(False, "legacy source universe missing", "unrun"))
+
+    def pinned_json(self, path: str | Path, expected: Any) -> Any:
+        raw = self.reader.bytes(path)
+        need(isinstance(expected, str) and HEX.fullmatch(expected), f"source pin missing: {path}", "unrun")
+        need(sha(raw) == expected, f"frozen source hash differs: {path}")
+        return json.loads(raw)
+
+    def scope_oracle(self, prompt: dict) -> dict | None:
+        scope = self.contracts["scope.json"]
+        version = prompt["version"]
+        rule, pointer, values = None, None, {}
+        if version not in scope["prompt_versions"]["in_scope"]:
+            rule, pointer = "prompt_version", "/version"
+            values = {"version": version.removeprefix("som.prompt.v"), "family": scope["prompt_versions"]["out_of_scope"][version]}
+        elif any(segment == "" for segment in prompt["resource"]["path"].split("/")[1:]):
+            rule, pointer, values = "path_empty_segment", "/resource/path", {"path": prompt["resource"]["path"]}
+        else:
+            for index, field in enumerate(prompt["resource"]["fields"]):
+                if field["name"] in scope["identifiers"]["reserved_names"]:
+                    rule, pointer, values = "identifier_reserved", f"/resource/fields/{index}/name", {"name": field["name"]}
+                    break
+        if rule is None:
+            return None
+        refusal = scope["refusals"][rule]
+        return {"rule": rule, "code": refusal["code"], "pointer": pointer, "cause": refusal["cause"].format(**values), "allowed_form": refusal["allowed_form"], "http_status": refusal["http_status"]}
+
+    def scope_case(self, cid: str, prompt: dict, forms: dict[str, dict], inventory_rule: str | None = None, *, legacy: bool = False) -> None:
+        expected = self.scope_oracle(prompt)
+        rule = "in_scope" if expected is None else expected["rule"]
+        if inventory_rule is not None:
+            need(rule == inventory_rule, f"{cid} frozen selection differs from independent profile")
+        raw_replies = []
+        for form, request in forms.items():
+            row_id = cid if legacy else f"{cid}-{form}-react"
+            section = "legacy" if legacy else "in_scope" if expected is None else "out_of_scope"
+            row = self.find("react-target", row_id, section)
+            raw, response = self.response("react-target", row)
+            body = json.dumps(request, ensure_ascii=False, separators=(",", ":"))
+            need(row.get("request_sha256") == sha(body.encode()), f"{cid} {form} scope request differs from frozen source")
+            if expected is None:
+                need(row.get("http_status") == 200, f"in-scope case {cid} was refused")
+                bundle = object_value(response.get("bundle"), "in-scope raw bundle")
+                need(bundle.get("target") == "react" and bundle.get("prompt") == prompt, f"{cid} admitted bundle target or prompt differs")
+                raw_replies.append(raw)
+            else:
+                diagnostic = {key: expected[key] for key in ("code", "cause", "allowed_form")}
+                diagnostic["prompt_pointer"] = expected["pointer"] if form == "cnl" else "/prompt" + expected["pointer"]
+                self.diagnostic(row, diagnostic, expected["http_status"], "react-target", body)
+        need(not raw_replies or all(raw == raw_replies[0] for raw in raw_replies), f"{cid} CNL and JSON admitted response bytes differ")
+
+    def legacy_scope(self, source: dict) -> None:
+        # The source inventory pins the complete legacy universe, including all
+        # out-of-scope jobs. The selected 100 rows alone cannot prove this gate.
+        pinned_cases = []
+        for path, expected in source.items():
+            if isinstance(expected, str) and HEX.fullmatch(expected):
+                pinned = object_value(self.pinned_json(path, expected), "pinned complete legacy inventory")
+                pinned_cases.extend(list_value(pinned.get("groups"), "pinned legacy groups"))
+        directory = self.reader.path(source["run"])
+        result = object_value(self.reader.json(directory / "result.json"), "complete legacy result inventory")
+        records = list_value(result.get("records"), "complete legacy records")
+        ids = [str(record.get("id", f"legacy-{index:04d}")) for index, record in enumerate(records)]
+        need(records and len(set(ids)) == len(ids), "complete legacy universe is empty or repeats an id")
+        need(pinned_cases, "complete legacy source has no pinned named inventory", "unrun")
+        need(ids == [case["id"] for case in pinned_cases], "legacy result drops, changes or reorders the pinned complete named inventory")
+        selected = {case["id"]: case for case in self.inventory.get("legacy_in_scope", [])}
+        need(set(selected) <= set(ids), "selected legacy cases absent from complete source universe")
+        for index, (cid, record) in enumerate(zip(ids, records)):
+            def check(index: int = index, cid: str = cid, record: dict = record) -> None:
+                candidates = []
+                if record.get("prompt_sha256"):
+                    candidates.append(directory / "compile" / str(record["prompt_sha256"]))
+                candidates.append(directory / f"{index:04d}")
+                request = None
+                for candidate in candidates:
+                    for filename in ("compile-json.request.json", "compile.request.json"):
+                        path = self.reader.path(candidate / filename)
+                        if path.is_file():
+                            request = object_value(self.reader.json(path), "legacy compile input")
+                            break
+                    if request is not None:
+                        break
+                need(request is not None, f"legacy raw compile input missing: {cid}", "unrun")
+                need("target" not in request, "accepted legacy input already contains a target")
+                prompt = object_value(request.get("prompt"), "legacy prompt")
+                if record.get("prompt_sha256"):
+                    compact = json.dumps(prompt, ensure_ascii=False, separators=(",", ":")).encode()
+                    need(record["prompt_sha256"] in (sha(canonical(prompt)), sha(compact)), "legacy recorded prompt hash differs")
+                need(record.get("prompt_sha256") == pinned_cases[index].get("prompt_sha256"), "legacy result prompt identity differs from pinned complete inventory")
+                selected_case = selected.get(cid)
+                if selected_case is not None:
+                    need(selected_case.get("inventory_index") == index and selected_case.get("prompt_sha256") == record.get("prompt_sha256"), "selected legacy identity differs")
+                actual_rule = "in_scope" if self.scope_oracle(prompt) is None else self.scope_oracle(prompt)["rule"]
+                need((actual_rule == "in_scope") == (cid in selected), "complete legacy source profile differs from frozen selected inventory")
+                self.scope_case(cid, prompt, {"json": {**request, "target": "react"}}, actual_rule, legacy=True)
+            self.row(f"scope_case/{cid}", check)
+
+    def public_product_scope(self, source: dict) -> None:
+        directory = self.reader.path(source["directory"])
+        result = object_value(self.reader.json(directory / "result.json"), "complete public product source inventory")
+        records = list_value(result.get("records"), "complete public source records")
+        histogram = list_value(self.inventory.get("counts", {}).get("public_products"), "frozen complete public product histogram")
+        expected = {(entry["prompt_version"], entry["react"]): entry["count"] for entry in histogram}
+        need(len(records) == sum(expected.values()), "complete public source record count differs from frozen universe")
+        selected = {case["id"]: case for case in self.inventory.get("public_products_in_scope", [])}
+        observed: dict[tuple[str, str], int] = {}
+        for index, record in enumerate(records):
+            cid = f"public-product-{index:03d}"
+            def check(index: int = index, cid: str = cid) -> None:
+                base = directory / f"{index:03d}"
+                raw = self.reader.bytes(base / "prompt.json")
+                prompt = object_value(json.loads(raw), "public product prompt")
+                refusal = self.scope_oracle(prompt)
+                rule = "in_scope" if refusal is None else refusal["rule"]
+                key = (prompt["version"], rule)
+                observed[key] = observed.get(key, 0) + 1
+                need((cid in selected) == (rule == "in_scope"), "public product profile differs from selected frozen inventory")
+                if cid in selected:
+                    need(selected[cid].get("index") == f"{index:03d}" and selected[cid].get("prompt_file_sha256") == sha(raw), "selected public prompt identity differs")
+                forms = {"json": {"format": "som.prompt-json.v1", "prompt": prompt, "target": "react"}}
+                cnl = self.reader.path(base / "source.cnl")
+                if cnl.is_file():
+                    forms["cnl"] = {"format": "som.cnl.v1", "source": self.reader.bytes(cnl).decode(), "target": "react"}
+                self.scope_case(cid, prompt, forms, rule)
+            self.row(f"scope_case/{cid}", check)
+        need(observed == expected, "complete public source profile histogram differs from frozen contract")
 
     def bundle_data(self, case_id: str) -> tuple[dict, dict, dict]:
         row = self.find("bundles", case_id, "bundle_checks")
@@ -746,8 +923,13 @@ class Audit:
         for index, process in enumerate(processes):
             need(true_integer(process.get("pid")) and process["pid"] > 0, "owned process id missing")
             need(isinstance(process.get("command"), list) and process["command"], "owned process command missing")
-            need(process.get("initial_cwd_verified") is True and process.get("stop_cwd_verified") is True, "owned process cwd checks missing or false")
-            need(isinstance(process.get("expected_cwd"), str) and process.get("initial_cwd") == process["expected_cwd"], "owned process initial cwd differs")
+            need(isinstance(process.get("expected_cwd"), str), "owned process expected cwd missing")
+            if process.get("initial_cwd_verified") is True:
+                need(process.get("initial_cwd") == process["expected_cwd"], "owned process initial cwd differs")
+            else:
+                need(process.get("initial_cwd") is None, "owned process started in a different cwd")
+            stop_verified = process.get("stop_cwd_verified")
+            need(stop_verified is True or (stop_verified is None and true_integer(process.get("exit_code"))), "active process stop ownership is unverified")
             self.reader.path(process["expected_cwd"])
             self.attestations.append({"file": (work / "api/report.json").relative_to(self.repo).as_posix(), "record": f"/processes/{index}/stopped", "value": True, "reason": f"{cid}: process {process['pid']}; OS ownership/cleanup snapshot not retained"})
         return "attested", "API case facts, exact step inventory and conditional skips recomputed; successful API exchanges and process cleanup are per-case booleans because raw HTTP and OS ownership snapshots were not retained"

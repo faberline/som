@@ -129,8 +129,18 @@ class RecordedRun:
         shutil.copytree(examples, self.repo / "som-rs/contracts/compiler-v1/examples")
         for path in (SOURCE_REPO / "som-rs/contracts/compiler-v1").glob("*.schema.json"):
             shutil.copyfile(path, self.repo / "som-rs/contracts/compiler-v1" / path.name)
-        save_json(self.repo / "som-rs/tests/compiler-v1/cnl-positive-fixtures.json", {"fixtures": [], "version_positive": []})
+        save_json(self.repo / "som-rs/tests/compiler-v1/cnl-positive-fixtures.json", {"cases": []})
         save_json(self.repo / "som-rs/tests/rust-output-v1/cases/index.json", {"cases": []})
+        # This fake repository declares no public-product or historical-job
+        # source universe. Its one public example still has both real forms.
+        inventory["sources"].pop("legacy_inventory", None)
+        inventory["sources"].pop("public_products", None)
+        for key, relative in (
+            ("cnl_positive_fixtures", "som-rs/tests/compiler-v1/cnl-positive-fixtures.json"),
+            ("coverage_index", "som-rs/tests/rust-output-v1/cases/index.json"),
+        ):
+            inventory["sources"][key] = {relative: sha_file(self.repo / relative)}
+        save_json(self.contract / "case-inventory.json", inventory)
         for name in ("package.json", "package-lock.json"):
             target = self.contract / "reference" / name
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -248,12 +258,17 @@ class RecordedRun:
             row = self._raw_row("react-target", "negative_cases", case["id"], case["body"], response, case["http_status"])
             row["expected"] = copy.deepcopy(case["expected"])
             target_rows.append(row)
-        pair_id = self.cid + "-json-python-equivalence"
         python_doc = {"status": "ok", "bundle": {"version": "som.dsl-bundle.v1"}}
-        pair = self._raw_row("react-target", "python_equivalence", pair_id, "{}", python_doc,
-                             stem="python_equivalence__" + pair_id + "__python")
-        save_json(self.run / "react-target/responses" / f"python_equivalence__{pair_id}__no_target.json", python_doc)
-        target_rows.append(pair)
+        for example in self.docs["target-examples.json"]["examples"]:
+            request = json.loads(example["body"])
+            form = "cnl" if request["format"] == "som.cnl.v1" else "json"
+            pair_id = self.cid + f"-{form}-python-equivalence"
+            request["target"] = "python"
+            pair = self._raw_row("react-target", "python_equivalence", pair_id,
+                                 canonical(request).decode(), python_doc,
+                                 stem="python_equivalence__" + pair_id + "__python")
+            save_json(self.run / "react-target/responses" / f"python_equivalence__{pair_id}__no_target.json", python_doc)
+            target_rows.append(pair)
         cli = []
         for case in [*self.docs["target-examples.json"]["examples"], *self.docs["negative-cases.json"]["cases"]]:
             body = json.loads(case["body"])
@@ -498,6 +513,36 @@ class Audit130Tests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertTrue(any(row["status"] == "failed" and "product_gates" in row["id"] for row in report["rows"]))
 
+    def test_agreeing_cli_hashes_must_match_frozen_request_bytes(self):
+        row = self.fixture.reports["react-target"]["cli"]["rows"][0]
+        row["request_sha256"] = "e" * 64
+        row["expected_request_sha256"] = "e" * 64
+        self.fixture.refresh_receipts()
+        code, report, _, _ = self.run_audit()
+        self.assertEqual(code, 1)
+        result = next(row for row in report["rows"] if row["id"] == "target_selection_checks/4")
+        self.assertEqual(result["status"], "failed")
+
+    def test_already_exited_owned_process_needs_no_stop_cwd_snapshot(self):
+        api = read_json(self.fixture.api_path)
+        api["processes"][0].update(stopped=True, exit_code=0, stop_cwd_verified=None)
+        save_json(self.fixture.api_path, api)
+        self.fixture.refresh_receipts()
+        code, report, _, error = self.run_audit()
+        self.assertEqual(code, 0, error or json.dumps(report, indent=2))
+        result = next(row for row in report["rows"] if row["id"] == f"product_gates/{self.fixture.cid}/7")
+        self.assertEqual(result["status"], "attested")
+
+    def test_active_process_stop_without_owner_snapshot_fails(self):
+        api = read_json(self.fixture.api_path)
+        api["processes"][0].update(stopped=True, exit_code=None, stop_cwd_verified=False)
+        save_json(self.fixture.api_path, api)
+        self.fixture.refresh_receipts()
+        code, report, _, _ = self.run_audit()
+        self.assertEqual(code, 1)
+        result = next(row for row in report["rows"] if row["id"] == f"product_gates/{self.fixture.cid}/7")
+        self.assertEqual(result["status"], "failed")
+
     def test_missing_expected_inventory_case_is_unrun(self):
         self.fixture.reports["bundles"]["cases"] = [row for row in self.fixture.reports["bundles"]["cases"]
                                                        if row["section"] != "bundle_checks"]
@@ -513,6 +558,72 @@ class Audit130Tests(unittest.TestCase):
         code, report, _, _ = self.run_audit()
         self.assertEqual(code, 1)
         self.assertGreater(report["totals"]["unrun"], 0)
+
+    def test_omitted_out_of_scope_cnl_fixture_has_its_own_unrun_row(self):
+        relative = "som-rs/tests/compiler-v1/cnl-positive-fixtures.json"
+        prompt = read_json(self.fixture.repo / "som-rs/contracts/compiler-v1/examples/v5.prompt.json")
+        source = (self.fixture.repo / "som-rs/contracts/compiler-v1/examples/v5.cnl").read_text()
+        case = {"id": "OOS_FIXTURE", "category": "boundary_positive",
+                "expected": {"status": "accept"}, "expected_prompt": prompt, "cnl": source,
+                "prompt_sha256": sha_bytes(canonical(prompt)), "cnl_sha256": sha_bytes(source.encode())}
+        save_json(self.fixture.repo / relative, {"cases": [case]})
+        inventory = self.fixture.docs["case-inventory.json"]
+        inventory["sources"]["cnl_positive_fixtures"] = {relative: sha_file(self.fixture.repo / relative)}
+        save_json(self.fixture.contract / "case-inventory.json", inventory)
+        # Supply its required Python pair. Only its React scope result is absent.
+        row_id = case["id"] + "-cnl-python-equivalence"
+        body = canonical({"format": "som.cnl.v1", "source": source, "target": "python"}).decode()
+        python_response = {"status": "ok", "bundle": {"version": "som.dsl-bundle.v1", "prompt": prompt}}
+        row = self.fixture._raw_row("react-target", "python_equivalence", row_id, body, python_response,
+                                    stem=f"python_equivalence__{row_id}__python")
+        save_json(self.fixture.run / "react-target/responses" / f"python_equivalence__{row_id}__no_target.json",
+                  python_response)
+        self.fixture.reports["react-target"]["cases"].append(row)
+        self.fixture.replace_plan(self.fixture.plan)
+        code, report, _, _ = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertEqual(report["totals"]["failed"], 0, json.dumps(report, indent=2))
+        scope = next(row for row in report["rows"] if row["id"] == "scope_case/OOS_FIXTURE")
+        self.assertEqual(scope["status"], "unrun")
+        python = next(row for row in report["rows"] if row["id"] == f"python_pair/{row_id}")
+        self.assertEqual(python["status"], "passed")
+        self.assert_totals(report)
+
+    def test_omitted_out_of_scope_legacy_job_has_its_own_unrun_row(self):
+        prompt = read_json(self.fixture.repo / "som-rs/contracts/compiler-v1/examples/v5.prompt.json")
+        directory = self.fixture.repo / ".local/legacy-universe/run"
+        record = {"id": "OOS_LEGACY", "prompt_sha256": sha_bytes(canonical(prompt))}
+        save_json(directory / "result.json", {"records": [record]})
+        save_json(directory / "0000/compile-json.request.json", {"format": "som.prompt-json.v1", "prompt": prompt})
+        relative = (directory / "result.json").relative_to(self.fixture.repo).as_posix()
+        inventory = self.fixture.docs["case-inventory.json"]
+        inventory["sources"]["legacy_inventory"] = {
+            relative: sha_file(directory / "result.json"),
+            "run": directory.relative_to(self.fixture.repo).as_posix(),
+        }
+        save_json(self.fixture.contract / "case-inventory.json", inventory)
+        self.fixture.replace_plan(self.fixture.plan)
+        code, report, _, _ = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertEqual(report["totals"]["failed"], 0, json.dumps(report, indent=2))
+        scope = next(row for row in report["rows"] if row["id"] == "scope_case/OOS_LEGACY")
+        self.assertEqual(scope["status"], "unrun")
+        self.assert_totals(report)
+
+    def test_response_from_another_run_cannot_supply_this_case(self):
+        row = self.fixture.reports["react-target"]["cases"][0]
+        source = self.fixture.run / "react-target" / row["response_file"]
+        other = self.fixture.repo / ".local/another-run/react-target/responses/copied.json"
+        other.parent.mkdir(parents=True)
+        shutil.copyfile(source, other)
+        row["response_file"] = str(other)
+        row["response_sha256"] = sha_file(other)
+        self.fixture.refresh_receipts()
+        code, report, _, _ = self.run_audit()
+        self.assertEqual(code, 1)
+        target = next(row for row in report["rows"]
+                      if row["id"] == "target_case/target_examples/example-v1-cnl-react")
+        self.assertEqual(target["status"], "failed")
 
     def test_duplicate_case_ids_cannot_replace_complete_results(self):
         rows = self.fixture.reports["bundles"]["cases"]
