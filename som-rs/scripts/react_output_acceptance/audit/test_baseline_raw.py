@@ -121,11 +121,14 @@ class BaselineRawTests(unittest.TestCase):
         for source, identity, value, directory in (("public", "PUBLIC_FAKE", pub, public_run + "/000"),
                                                    ("legacy", "legacy-fake", leg, legacy_run + "/compile/" + legacy[0]["prompt_sha256"])):
             body = {"format": "som.prompt-json.v1", "prompt": value}
-            data.json(directory + "/compile-json.request.json", body)
+            stored_request = data.json(directory + "/compile-json.request.json", body)
+            # The stored JSON and original raw body deliberately use different
+            # member orders. Only the omitted-target variant keeps raw bytes.
+            stored_body = json.loads(stored_request.read_bytes())
             original = json.dumps(body, ensure_ascii=False, indent=2).encode() + b"\n"
             data.write(directory + "/compile-json.request.raw", original)
             for variant in ("none", "python"):
-                request = original if variant == "none" else raw_audit.compact({**body, "target": "python"})
+                request = original if variant == "none" else raw_audit.compact({**stored_body, "target": "python"})
                 row = {"source": source, "id": identity, "variant": variant, "passed": False}
                 compiled = bundle(value)
                 reply = compile_reply(compiled)
