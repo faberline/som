@@ -1,0 +1,157 @@
+{
+  "files": [
+    {
+      "bytes": 9668,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/MSVSUtil.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/MSVSUtil.cpython-312.pyc",
+      "sha256": "3816a5598fb05bac88a60df5305467cffc3e96991acaa987ab0099fb8412e9a8"
+    },
+    {
+      "bytes": 18741,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/MSVSVersion.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/MSVSVersion.cpython-312.pyc",
+      "sha256": "c5def451e080536fd14b6b955c7d5223c9fc70d7de0d3025b844b3fc96744ebf"
+    },
+    {
+      "bytes": 23389,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/__init__.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/__init__.cpython-312.pyc",
+      "sha256": "0938a0a14c4f3bbe2e3236055bbe0311493514e5cb62a89d6e3fabba1cf8f926"
+    },
+    {
+      "bytes": 27470,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/common.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/common.cpython-312.pyc",
+      "sha256": "f9859152679083bf543293dfbeda81654b848a1ab1b0d10f5f07cd409481d0a3"
+    },
+    {
+      "bytes": 85120,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/input.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/input.cpython-312.pyc",
+      "sha256": "fa6418dbd8ed81e959a8ec0caaee05c1018dad106ac7059ec582b7a8188b1e53"
+    },
+    {
+      "bytes": 58272,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/msvs_emulation.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/msvs_emulation.cpython-312.pyc",
+      "sha256": "045bfe86356010fc10aa907d5263073e1306e742d3604b1bd438ef85afecccea"
+    },
+    {
+      "bytes": 7615,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/ninja_syntax.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/ninja_syntax.cpython-312.pyc",
+      "sha256": "4ab045a8da36e0a6bcea56e5e831ad20dd0e4b8b19be1a863a884a485870ebcc"
+    },
+    {
+      "bytes": 2082,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/simple_copy.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/simple_copy.cpython-312.pyc",
+      "sha256": "681e1f0a8750ac9ad3c4e9b4f8ef6c7065c36f81d1a894411bc430e16a17ef07"
+    },
+    {
+      "bytes": 88222,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/xcode_emulation.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/xcode_emulation.cpython-312.pyc",
+      "sha256": "05b2b6e05221b6ad20e6b98a36487a4c9b261c1874c955f7f24a4626704a224c"
+    },
+    {
+      "bytes": 11486,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/xcode_ninja.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/xcode_ninja.cpython-312.pyc",
+      "sha256": "641ba6eeda000ec73c61b6f5dce91f9c77421e0349747294d064fc36cf46abaf"
+    },
+    {
+      "bytes": 114799,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/xcodeproj_file.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/__pycache__/xcodeproj_file.cpython-312.pyc",
+      "sha256": "7189393cd3ddc8d738c9d9a144caa080059306e5e5d8379ff3839090a46e4442"
+    },
+    {
+      "bytes": 189,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/generator/__pycache__/__init__.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/generator/__pycache__/__init__.cpython-312.pyc",
+      "sha256": "e0dd7d8fcd54f18ac431a2db9e0c0d3e2b478a14b12473f4aa8b882797f2d758"
+    },
+    {
+      "bytes": 103608,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/generator/__pycache__/make.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/generator/__pycache__/make.cpython-312.pyc",
+      "sha256": "f34e2cb97c965330eb765b29fd0394991f4f88c3e80d1fed1f4f460c020a7162"
+    },
+    {
+      "bytes": 110329,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/generator/__pycache__/ninja.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/generator/__pycache__/ninja.cpython-312.pyc",
+      "sha256": "d9c1e210a6ef837dd5a59fabe583977bde69cb8a976da50fa05783a1f48b5a62"
+    },
+    {
+      "bytes": 40459,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/gyp/generator/__pycache__/xcode.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/gyp/generator/__pycache__/xcode.cpython-312.pyc",
+      "sha256": "40e1a8994c6d5f3fc50f83a55d4755733d988db35adedd3cf8400a9b3dabacec"
+    },
+    {
+      "bytes": 555,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/packaging/__pycache__/__init__.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/packaging/__pycache__/__init__.cpython-312.pyc",
+      "sha256": "9fa4a141c5b963d00ce49ea1366d8a97acb0ad06117242a381978a8f6a01b17c"
+    },
+    {
+      "bytes": 3233,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/packaging/__pycache__/_structures.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/packaging/__pycache__/_structures.cpython-312.pyc",
+      "sha256": "78adc477dabc2327b901c29344b048f5519f96a476ac2438e0b9f92efadc314f"
+    },
+    {
+      "bytes": 19994,
+      "installed_path": "/opt/homebrew/lib/node_modules/npm/node_modules/node-gyp/gyp/pylib/packaging/__pycache__/version.cpython-312.pyc",
+      "license_path": "frozen-tools/licenses/npm.txt",
+      "mode": 420,
+      "path": "frozen-tools/npm-cache/node_modules/node-gyp/gyp/pylib/packaging/__pycache__/version.cpython-312.pyc",
+      "sha256": "3c1f5b9600faedf86b741e5b2fbd0536e6ac420539d3c137ab32bc8dee63fbd4"
+    }
+  ],
+  "repository": "faberline/som",
+  "source_archive_sha256": "05357c510f3dd0330b4cdea26e7ae406cfb55d88834ef83ecd5e3b7418b6ff37",
+  "tree": {
+    "files": 1957,
+    "root": "/opt/homebrew/lib/node_modules/npm",
+    "sha256": "3a9e0a20999d2a5c9727e911c554cd66230dba9a169fe0f0a6a54bd3dc7f9186",
+    "symlinks": 9
+  },
+  "version": "som.m6-npm-tree-files.v1"
+}

@@ -10,7 +10,7 @@ These installed bytes are not claimed to be raw bottle bytes.
 
 The GitHub runner still verifies the official bottles and the full tool closure.
 It uses this supplement only for the eleven exact installed path and hash bindings.
-The other files, including libnode, still come from the verified bottle path.
+The other executable files, including libnode, still come from the verified bottle path.
 No installed hash requirement changes. A missing or wrong file stops provisioning.
 
 The current macOS signer cannot reproduce every historical signature allocation.
@@ -32,3 +32,11 @@ The official bottle URLs and source formulas remain available through Homebrew.
 - `libnghttp3`: `/opt/homebrew/Cellar/libnghttp3/1.17.0/lib/libnghttp3.9.8.0.dylib`; SHA-256 `02f5cd0648e3c812c3f15573055b12ffd9a6447bd781286198ca6272140e2d6d`; license `frozen-tools/licenses/libnghttp3.txt`.
 - `libngtcp2`: `/opt/homebrew/Cellar/libngtcp2/1.24.0/lib/libngtcp2.16.dylib`; SHA-256 `c55cbdb643db897ea328a5c1a8cac9f802e165bc4499bd9f823fc65e932769a9`; license `frozen-tools/licenses/libngtcp2.txt`.
 - `libffi`: `/opt/homebrew/Cellar/libffi/3.7.1/lib/libffi.8.dylib`; SHA-256 `8def831bad531fb16a8dcb35ec89da501fa4d797478af8e69fc6aac7b6eda18a`; license `frozen-tools/licenses/libffi.txt`.
+
+## Frozen npm tree supplement
+
+The separate `npm-tree-manifest.json` retains eighteen CPython 3.12 bytecode files from npm 11.17.0's bundled public node-gyp/gyp and packaging dependencies. The frozen full npm tree includes these historical cache files. The official Node bottle has the same source bytes but lacks these caches. This supplement keeps the original bytes and does not run or regenerate them.
+
+Every cache path, complete hash, size and mode is pinned. The source bottle association and the unchanged full npm tree hash, 1957 file count and nine symlinks remain required. Copy only missing named files after the verified bottle's npm tree and expected npmrc are installed. A conflicting existing file stops provisioning.
+
+Matching public Python source is under `provenance/npm/`. Original npm, node-gyp, gyp and packaging license text is under `licenses/npm*.txt`. The bytecode source filenames refer only to the public `/opt/homebrew/lib/node_modules/npm` installation. This directory contains no SOM inputs, user documents or credentials. The supplement does not prove product acceptance.
