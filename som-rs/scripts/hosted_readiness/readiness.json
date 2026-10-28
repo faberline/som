@@ -1,6 +1,6 @@
 {
-  "version": "som.hosted-readiness.v1",
-  "source_commit": "b78da02ba5746d1992d876915bcd64e3feb16685",
+  "version": "som.hosted-readiness.v2",
+  "source_commit": "118852f1e81edc389bd00d05641b781227b82169",
   "source_files": {
     "LICENSE": "2c04e52c0809695aaee4062e94ed17249f54d96f6c9ef0a09925640581fa913b",
     "som-core/scripts/flow_gcs_fixture.py": "b54d1b3b27fddd457ddcd075ebf8f7fccc485434d8aca48cf42abe1fa3aa9856",
@@ -155,6 +155,8 @@
     "som-rs/scripts/compiler_acceptance/renderer_behavior/references/shared-544-flow-map.json": "5edf190f6037c383f9e3d76db8871ad0c5bd2946a7ec82911b4c4a4940531eed",
     "som-rs/scripts/compiler_acceptance/renderer_behavior/run.py": "f2135447f87081735dbf49bad03eaa2aae9deb21fbf5ba5bf99719d135d50511",
     "som-rs/scripts/compiler_acceptance/runtime_acceptance.py": "e9ff762ab2ee43f099497b23869bf5eff7d8ab9dc49e309be320cac937631c93",
+    "som-rs/scripts/react_output_acceptance/audit/audit130.py": "0c0ab949fc4e88335320f23857a4f34c4212aae4717a70c27d9260b6f7a8b1dc",
+    "som-rs/scripts/react_output_acceptance/check_target.py": "c1a6386da79be3fe5a8fa2a1f46fb61f62f845d78050c4f32dbdc716e175e33c",
     "som-rs/scripts/rust_output_acceptance/README.md": "7bec5b1b97cd630afc3dc1732ef5294e172ae1a82398f2b76ab6d5036069a386",
     "som-rs/scripts/rust_output_acceptance/audit/audit055.py": "3a28bf17bfd77296cae5e07788081fd839e7e89abfc00b108feef1bdb5f2e602",
     "som-rs/scripts/rust_output_acceptance/audit/audit057.py": "01e3517860cbf9d77939725791d6c0cb99a7a55d9574b761202b0f459acfdc9b",
@@ -170,6 +172,9 @@
     "som-rs/scripts/rust_output_acceptance/test_check_cli.py": "fc0f2d04294b3381315bdd7a26268dfc6bb7a3c3382f0588e39d45a8b39073fc",
     "som-rs/scripts/rust_output_acceptance/test_prepare_candidate.py": "1388f86afea34335d7c187d1656e55c8387b13c9cdd287f27bfcfc3ed2ffa9de",
     "som-rs/scripts/rust_output_acceptance/vendor_crates.py": "10931d7ad4413da206ed1c80f47781195429b19320553e8ba032130ce33ede69",
+    "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py": "ebe4fbe58d54ac6e89ea48f11a6a2b622ed450589864e289327ecb6fd8f51180",
+    "som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py": "157ea2a0c1a5c442674ba0b87ff02e7812e8ca69ca65bab329b7525babbcffbe",
+    "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py": "f99ff77f78ef80a1e9ff010e9cb669d0219b7ba3b8a4082b29ebbd267c7d309a",
     "som-rs/som-targets/qa/check_phase2_products.py": "1f747112bad2cf0f146ab478d858eac2337e3e51b2d526380e9a09dca7fe8c48",
     "som-rs/som-targets/qa/check_react_render.py": "368f93978702b8d2a7ed1cfc9577265ec7d5d86646324c32f4b37759660eb7f4",
     "som-rs/som-targets/qa/check_rust_products.py": "45a43e9bc86fbc7d5112c6add0f39154dc0ab2cb9bdf1499948ae5a2e4749e60",
@@ -1025,9 +1030,15 @@
     }
   ],
   "runner": {
-    "host": "aarch64-apple-darwin",
     "toolchain": "som-rs/contracts/rust-output-v1/toolchain.json",
-    "phase2_pins": "som-rs/contracts/rust-output-v1/phase2/pins.json"
+    "phase2_pins": "som-rs/contracts/rust-output-v1/phase2/pins.json",
+    "hosts": [
+      "x86_64-unknown-linux-gnu",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin"
+    ],
+    "policy": "Use native versioned tools and committed artifact hashes for each host. Historical Homebrew hashes do not make Apple Silicon a runtime requirement."
   },
   "assets": [
     {
@@ -1048,15 +1059,15 @@
     },
     {
       "name": "compiler-assets",
-      "blocked_reason": "Versioned compiler assets and per-version asset index need a reproducible, licensed, hash-verified hosted provisioning route."
+      "blocked_reason": "Generate compiler blocks/profile from tracked source with native Ruff 0.16.6. No model or training assets are needed. Portable formatter verification still needs adaptation."
     },
     {
       "name": "rust-toolchain",
-      "blocked_reason": "Exact Homebrew Rust, cargo, rustfmt and clippy binary hashes in toolchain.json are not provisioned on a hosted runner."
+      "blocked_reason": "Portable Rust/rustfmt installation needs versioned public artifacts with verified hashes. Legacy Homebrew paths still require adaptation."
     },
     {
       "name": "postgresql",
-      "blocked_reason": "Exact PostgreSQL 17.7 binaries in toolchain.json are not provisioned on a hosted runner."
+      "blocked_reason": "PostgreSQL 17.7 must be provisioned on the product runner with recorded version and artifact hashes."
     },
     {
       "name": "phase2-emulators",
@@ -1064,7 +1075,7 @@
     },
     {
       "name": "python-environment",
-      "blocked_reason": "Exact Python 3.12.11 binary and package pins need a verified offline dependency source."
+      "blocked_reason": "Python 3.12.11 and package versions need a reproducible dependency source for the selected runner."
     },
     {
       "name": "crate-vendor",
@@ -1076,9 +1087,10 @@
     }
   ],
   "blockers": [
-    "This inventory is a proposal for issue #141. Runner, asset distribution and milestone decisions remain open.",
-    "The frozen host is aarch64-apple-darwin. A different host or tool binary requires a numbered contract amendment and independent review.",
-    "Full product suites remain disabled. Isolated fixture tests do not establish product acceptance."
+    "M12 is assigned. Native formatter/tool adapters and reproducible asset provisioning remain implementation work.",
+    "The repository still contains hardcoded Homebrew formatter paths and a Mach-O-only Ruff check. These are tool portability defects, not architecture requirements.",
+    "Full product suites remain disabled until the complete applicable data, tools and gates are provisioned. Compiler unit tests do not establish product acceptance.",
+    "Amendment006 regression evidence must use the same React candidate as M6 issue130. Rust readiness does not close that milestone."
   ],
   "gate_plan": {
     "status": "blocked",
@@ -1142,7 +1154,127 @@
     "commands_source": [
       "som-rs/scripts/rust_output_acceptance/run_acceptance.py",
       "som-rs/scripts/rust_output_acceptance/run_issue57.py"
-    ]
+    ],
+    "contract_sections": {
+      "python_unchanged": "a106be683493140970e6e44683243512aeb9ff1a81db9546d5c7ed0eb13d5dd9",
+      "target_selection_checks": "e6fcae9202777cc64aa72b92334c66b3b7edb1587600c5c2f6919f58ec037666",
+      "scope_checks": "9ed04c214c57c422e1154b33b2fcebdf67a10a9e0da9b6e517520c8e5a9a11e4",
+      "bundle_checks": "26fe6b066c5d39f1619196bd2bebe2ffa6b8557c7874f02c351a411410308f2b",
+      "assemble_refusals": "05f7ccc3024e42ee58c72ca9c7ba906076b851feb646d16836f92a5a574e6458",
+      "product_gates": "a779b0c4281f9cc871edc8aad26243b7424a9fa52743326425303f4672ec60dd",
+      "issue_gates": "0b1696ca466de6b286028482a0ede334f07983607c04151219331b7049cbb5fe",
+      "phase2": "dde5bcd8ca62e4a697624522efc7e801f55b8505dd5ca99ae899d7bdf2e09bac",
+      "issue57": "5732f4a3589f025045c8b5b1ad41aded79826321bc02dfe9c81b6a131de19e00",
+      "amendment005": "3fe6b17217c1055242ac3e0e066f1342e58eadeea40495c660a75efbca795e4d",
+      "amendment006": "d8c16321a33edf405bf02a7c8fece2bc5a548b84e1122b10bc6ca8b93e4c9000"
+    },
+    "amendment_context": {
+      "amendment005": {
+        "role": "historical TypeScript candidate acceptance; preserve original evidence and baseline",
+        "issue": 65,
+        "baseline": "the current default compiler: rust-output-candidate-006, binary 52658e13af1ac08659ef1dda7e333634f4ae3893731304e09edec6ca5f9b87c2, build commit 6116fed549d458f6ac06f51541c93c5de6514385, the #57 release (som-rs/evidence/rust-output-release-2026-10-20-issue57.json), read only"
+      },
+      "amendment006": {
+        "role": "current React candidate regression; all ten checks stay explicit and unrun here",
+        "integration_owner": "React M6 issue130",
+        "audit_owner": "React issue137",
+        "baseline": "the current default compiler: typescript-output candidate-001, binary 2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c, build commit 8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af, the #65 release (som-rs/evidence/typescript-output-release-2026-10-22-issue65.json), read only",
+        "checks": [
+          {
+            "pointer": "/amendment006/checks/0",
+            "requirement": "RT diagnostics: every RT case of negative-cases.json, sent as written, gives exactly its expected code, status, pointer, cause, allowed form and span located in the raw request body: RT01 to RT06 with the amendment 006 texts, RT07 unchanged.",
+            "tools": [
+              "som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py"
+            ],
+            "execution": "not_run"
+          },
+          {
+            "pointer": "/amendment006/checks/1",
+            "requirement": "check_python_controls.py passes for every negative case of negative-cases.json.",
+            "tools": [
+              "som-rs/tests/rust-output-v1/check_python_controls.py"
+            ],
+            "execution": "not_run"
+          },
+          {
+            "pointer": "/amendment006/checks/2",
+            "requirement": "Python against the baseline: every typed prompt of the 127 public products (public-products-003b) and the 544 legacy jobs (legacy544 run-005), sent without target and with target python, gives a compile response equal byte for byte to the baseline's response, and assembling that bundle gives response bytes equal to the baseline's.",
+            "tools": [
+              "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py"
+            ],
+            "execution": "not_run"
+          },
+          {
+            "pointer": "/amendment006/checks/3",
+            "requirement": "Python recordings: python_unchanged with its amendment_004 rule, python_replay.py --asset-break over public-products-003b and legacy544 run-005, passes with no failure; validate_cases.py gives the frozen Python file hashes.",
+            "tools": [
+              "som-rs/scripts/rust_output_acceptance/python_replay.py",
+              "som-rs/tests/rust-output-v1/validate_cases.py"
+            ],
+            "execution": "not_run"
+          },
+          {
+            "pointer": "/amendment006/checks/4",
+            "requirement": "Rust compile against the baseline: every case of the rust-output-055 run-003 inventory (the accepted run of rust-output-acceptance-2026-10-20-phase2.json), compiled with target rust, gives a response equal to the baseline's response for the same request except bundle.assets.backend, bundle.assets.target_contract and bundle.hashes.payload_sha256; RS12 and RS13 give the baseline's compiler-v1 refusal bytes.",
+            "tools": [
+              "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py"
+            ],
+            "execution": "not_run"
+          },
+          {
+            "pointer": "/amendment006/checks/5",
+            "requirement": "check_rust_unchanged.py: every phase 1 and phase 2 Rust product of rust-output-055 run-003 assembles to byte-identical files on the candidate; phase 1 compares a check_rust_products.py --no-gates report made on the candidate.",
+            "tools": [
+              "som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py",
+              "som-rs/som-targets/qa/check_rust_products.py"
+            ],
+            "execution": "not_run"
+          },
+          {
+            "pointer": "/amendment006/checks/6",
+            "requirement": "Rust bundles of the baseline: every Rust bundle the baseline returns for that inventory is refused by the candidate at assemble with ASSET_HASH_MISMATCH, and the same bundle rebased on the candidate's backend and target_contract descriptors assembles to the files_sha256 run-003 recorded.",
+            "tools": [
+              "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py"
+            ],
+            "execution": "not_run"
+          },
+          {
+            "pointer": "/amendment006/checks/7",
+            "requirement": "check_rust_products.py with --refusals phase2 passes assemble_refusals, with A6_amendment_004; A4 (target python in a Rust bundle) keeps INVALID_SCHEMA at /bundle/target.",
+            "tools": [
+              "som-rs/som-targets/qa/check_rust_products.py"
+            ],
+            "execution": "not_run"
+          },
+          {
+            "pointer": "/amendment006/checks/8",
+            "requirement": "check_cli.py passes, and a case added with react-output-v1 phase 1 shows that `som compile --target react` forwards the string unchanged.",
+            "tools": [
+              "som-rs/scripts/rust_output_acceptance/check_cli.py",
+              "som-rs/scripts/react_output_acceptance/check_target.py"
+            ],
+            "execution": "not_run"
+          },
+          {
+            "pointer": "/amendment006/checks/9",
+            "requirement": "An independent audit, written from this plan and the raw outputs only, reports no failure and nothing unrun.",
+            "tools": [
+              "som-rs/scripts/react_output_acceptance/audit/audit130.py"
+            ],
+            "execution": "not_run"
+          }
+        ]
+      }
+    }
   },
-  "product_acceptance_enabled": false
+  "product_acceptance_enabled": false,
+  "milestone": "https://github.com/faberline/som/milestone/18",
+  "architecture": {
+    "path": "CNL -> DSL -> Code",
+    "planning": "fixed deterministic rules",
+    "models_required": false,
+    "training_required": false,
+    "apple_silicon_required": false,
+    "authority": "Human correction, 2026-10-28"
+  }
 }
