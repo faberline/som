@@ -1,0 +1,180 @@
+name: M6 retained raw audit
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled]
+    paths:
+      - .github/workflows/m6-retained-audit.yml
+      - som-rs/scripts/react_output_acceptance/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: m6-retained-audit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Recompute the complete audit from the recorded candidate
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.head.repo.full_name == github.repository && contains(github.event.pull_request.labels.*.name, 'm6:replay-audit'))
+    # Retained paths use the original hosted macOS workspace. No candidate,
+    # product or service is started. The auditor runs outside the source tree.
+    runs-on: macos-26
+    timeout-minutes: 45
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Preserve the corrected auditor and its exact source identity
+        env:
+          TESTED_AUDITOR_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          export M6_REPLAY_TOOLS="$RUNNER_TEMP/m6-retained-tools"
+          export M6_REPLAY_OUT="$RUNNER_TEMP/m6-replay-output"
+          printf 'M6_REPLAY_TOOLS=%s\nM6_REPLAY_OUT=%s\n' "$M6_REPLAY_TOOLS" "$M6_REPLAY_OUT" >> "$GITHUB_ENV"
+          python3 --version
+          node --version
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, re, shutil, subprocess
+          repo = pathlib.Path(os.environ['GITHUB_WORKSPACE']).resolve()
+          head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          if head != os.environ['TESTED_AUDITOR_SHA'] or not re.fullmatch(r'[0-9a-f]{40}', head):
+              raise SystemExit('auditor source identity refused')
+          if subprocess.check_output(['git', 'status', '--porcelain'], text=True):
+              raise SystemExit('auditor checkout is not clean')
+          tools = pathlib.Path(os.environ['M6_REPLAY_TOOLS'])
+          tools.mkdir(mode=0o700)
+          source = repo / 'som-rs/scripts/react_output_acceptance'
+          shutil.copytree(source / 'audit', tools / 'audit', ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+          for name in ('replay_audit_inputs.py', 'restore_hosted_evidence.mjs', 'sealed_inputs.mjs', 'seal_hosted_evidence.mjs', 'retained_audit.json'):
+              shutil.copyfile(source / name, tools / name)
+          files = {p.relative_to(tools).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+                   for p in sorted(tools.rglob('*')) if p.is_file()}
+          receipt = {'version': 'som.m6-auditor-source.v1', 'commit': head, 'files': files}
+          (tools / 'auditor-source.json').write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
+          out = pathlib.Path(os.environ['M6_REPLAY_OUT'])
+          out.mkdir(mode=0o700)
+          shutil.copyfile(tools / 'auditor-source.json', out / 'auditor-source.stdout')
+          PY
+      - name: Restore the immutable source checkout used by the recorded build
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re, subprocess
+          config = json.loads((pathlib.Path(os.environ['M6_REPLAY_TOOLS']) / 'retained_audit.json').read_bytes())
+          if config['repository'] != 'faberline/som' or not all(re.fullmatch(r'[0-9a-f]{40}', config[key]) for key in ('source_commit', 'input_commit')):
+              raise SystemExit('recorded source pin refused')
+          subprocess.run(['git', 'fetch', '--no-tags', '--depth=1', 'origin', config['source_commit'], config['input_commit']], check=True)
+          subprocess.run(['git', 'checkout', '--detach', config['source_commit']], check=True)
+          inputs = json.loads(pathlib.Path('som-rs/scripts/react_output_acceptance/hosted_inputs.json').read_bytes())
+          if inputs['commit'] != config['input_commit'] or inputs['index_sha256'] != config['input_index_sha256']:
+              raise SystemExit('recorded input pin refused')
+          PY
+      - name: Download and verify the original encrypted artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/faberline/som/actions/artifacts/12843589912 > "$RUNNER_TEMP/m6-artifact-metadata.json"
+          gh api repos/faberline/som/actions/artifacts/12843589912/zip > "$RUNNER_TEMP/m6-original-evidence.zip"
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, re, stat, zipfile
+          temp = pathlib.Path(os.environ['RUNNER_TEMP'])
+          config = json.loads((pathlib.Path(os.environ['M6_REPLAY_TOOLS']) / 'retained_audit.json').read_bytes())
+          metadata = json.loads((temp / 'm6-artifact-metadata.json').read_bytes())
+          run = metadata.get('workflow_run', {})
+          expected = (config['artifact_id'], config['artifact_name'], config['artifact_bytes'], 'sha256:' + config['artifact_sha256'])
+          if tuple(metadata.get(k) for k in ('id', 'name', 'size_in_bytes', 'digest')) != expected or metadata.get('expired') is not False:
+              raise SystemExit('original artifact metadata refused')
+          if run.get('id') != config['run_id'] or run.get('head_sha') != config['source_commit'] or run.get('repository_id') != 1390374878:
+              raise SystemExit('original artifact source refused')
+          archive = temp / 'm6-original-evidence.zip'
+          with archive.open('rb') as stream:
+              digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+          if archive.stat().st_size != config['artifact_bytes'] or digest != config['artifact_sha256']:
+              raise SystemExit('original artifact bytes refused')
+          destination = temp / 'm6-original-sealed'
+          destination.mkdir(mode=0o700)
+          with zipfile.ZipFile(archive) as bundle:
+              members = bundle.infolist()
+              names = [p.filename for p in members]
+              expected_names = {'evidence-index.json'} | {f'package-{i:03d}.{suffix}' for i in range(config['package_count']) for suffix in ('sealed', 'manifest.json')}
+              if len(names) != len(set(names)) or set(names) != expected_names or sum(p.file_size for p in members) > 512 * 1024 * 1024:
+                  raise SystemExit('original artifact members refused')
+              for member in members:
+                  mode = stat.S_IFMT(member.external_attr >> 16)
+                  if mode not in (0, stat.S_IFREG) or not 0 <= member.file_size <= 128 * 1024 * 1024:
+                      raise SystemExit('original artifact member type or size refused')
+                  with bundle.open(member) as source, (destination / member.filename).open('xb') as target:
+                      count = 0
+                      while chunk := source.read(1024 * 1024):
+                          count += len(chunk)
+                          if count > member.file_size:
+                              raise SystemExit('original artifact member length refused')
+                          target.write(chunk)
+                      if count != member.file_size:
+                          raise SystemExit('original artifact member is incomplete')
+          index = destination / 'evidence-index.json'
+          if hashlib.sha256(index.read_bytes()).hexdigest() != config['index_sha256']:
+              raise SystemExit('original encrypted index refused')
+          record = {'version': 'som.m6-retained-artifact.v1', 'run_id': config['run_id'], 'source_commit': config['source_commit'], 'artifact_id': config['artifact_id'], 'artifact_sha256': digest, 'index_sha256': config['index_sha256'], 'encrypted_files': len(names)}
+          (pathlib.Path(os.environ['M6_REPLAY_OUT']) / 'download.stdout').write_text(json.dumps(record, indent=2) + '\n')
+          PY
+      - name: Restore the approved inputs and the complete recorded evidence
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          M6_BOOTSTRAP_NODE=$(command -v node)
+          python3 som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py --repo-root "$GITHUB_WORKSPACE" --config "$GITHUB_WORKSPACE/som-rs/scripts/react_output_acceptance/hosted_inputs.json" --out "$RUNNER_TEMP/m6-replayed-inputs" --node "$M6_BOOTSTRAP_NODE"
+          test ! -e .local
+          test ! -L .local
+          mv "$RUNNER_TEMP/m6-replayed-inputs/.local" .local
+          cp "$RUNNER_TEMP/m6-replayed-inputs/provision.json" "$M6_REPLAY_OUT/restore-inputs.stdout"
+          node "$M6_REPLAY_TOOLS/restore_hosted_evidence.mjs" --root "$RUNNER_TEMP/m6-original-sealed" --out "$GITHUB_WORKSPACE/.local/m6-hosted/acceptance" --index-sha256 3759239392208eab81bf740ca9ca2a41465be3e3e4995de2bd255774f4596bea > "$M6_REPLAY_OUT/restore-raw.stdout"
+      - name: Verify the original complete run and hydrate its frozen name inputs
+        run: |
+          python3 "$M6_REPLAY_TOOLS/replay_audit_inputs.py" prepare --repo "$GITHUB_WORKSPACE" --raw-root "$GITHUB_WORKSPACE/.local/m6-hosted/acceptance" --out "$M6_REPLAY_OUT/restore-names.stdout"
+      - name: Recompute every audit row from the unchanged recorded bytes
+        run: |
+          set +e
+          python3 "$M6_REPLAY_TOOLS/audit/audit130.py" --repo "$GITHUB_WORKSPACE" --run "$GITHUB_WORKSPACE/.local/m6-hosted/acceptance/run" --out "$M6_REPLAY_OUT/audit.json" > "$M6_REPLAY_OUT/audit.stdout" 2> "$M6_REPLAY_OUT/audit.stderr"
+          M6_AUDIT_CODE=$?
+          set -e
+          python3 "$M6_REPLAY_TOOLS/replay_audit_inputs.py" finalize --repo "$GITHUB_WORKSPACE" --raw-root "$GITHUB_WORKSPACE/.local/m6-hosted/acceptance" --audit "$M6_REPLAY_OUT/audit.json" --auditor-source "$M6_REPLAY_TOOLS/auditor-source.json" --audit-exit-code "$M6_AUDIT_CODE" --out "$M6_REPLAY_OUT/summary.json"
+      - name: Seal the replay audit and source receipts
+        if: always()
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          if [ -f "$M6_REPLAY_TOOLS/seal_hosted_evidence.mjs" ] && [ -d "$M6_REPLAY_OUT" ]; then
+            node "$M6_REPLAY_TOOLS/seal_hosted_evidence.mjs" --root "$M6_REPLAY_OUT" --out "$RUNNER_TEMP/m6-replayed-sealed"
+          fi
+      - name: Keep the safe replay provenance and summary
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: m6-retained-audit-summary
+          path: |
+            ${{ runner.temp }}/m6-replay-output/summary.json
+            ${{ runner.temp }}/m6-replay-output/auditor-source.stdout
+            ${{ runner.temp }}/m6-replay-output/download.stdout
+            ${{ runner.temp }}/m6-replay-output/restore-inputs.stdout
+            ${{ runner.temp }}/m6-replay-output/restore-raw.stdout
+          if-no-files-found: error
+          retention-days: 30
+      - name: Keep the encrypted replay audit
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: m6-retained-audit-evidence
+          path: ${{ runner.temp }}/m6-replayed-sealed/
+          if-no-files-found: warn
+          retention-days: 30

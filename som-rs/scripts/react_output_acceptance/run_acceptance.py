@@ -6,13 +6,19 @@ against one candidate compiler (from prepare_candidate.py) and one baseline comp
 records a per-step receipt under <out>/receipts/, records candidate / baseline / 8765 /
 tool identity before and after in <out>/identity.json, and writes <out>/run.json.
 
+An isolated hosted VM can use --protected-default absent. Both read-only GETs
+must get the OS connection-refused error. This mode does not prove default-server health.
+
 usage:
-  run_acceptance.py --candidate DIR --out NEW_DIR [--baseline URL] [--legacy-run DIR] [--python PATH]
+  run_acceptance.py --candidate DIR --out NEW_DIR [--baseline URL] [--legacy-run DIR]
+                    [--rust-baseline-run DIR] [--python PATH] [--protected-default healthy|absent]
+                    [--record-raw-http] [--cleanup-products-runtime]
 """
 from __future__ import annotations
 
 import argparse
 import datetime
+import errno
 import hashlib
 import json
 import os
@@ -191,6 +197,17 @@ def fetch_healthz(base_or_healthz_url: str) -> dict[str, Any]:
             status = err.code
             raw = err.read()
     except OSError as exc:
+        reason = exc.reason if isinstance(exc, urllib.error.URLError) else exc
+        if isinstance(reason, OSError) and reason.errno == errno.ECONNREFUSED:
+            error_kind = "connection_refused"
+        elif isinstance(reason, TimeoutError) or (
+            isinstance(reason, OSError) and reason.errno == errno.ETIMEDOUT
+        ):
+            error_kind = "timeout"
+        elif isinstance(reason, OSError):
+            error_kind = "network_error"
+        else:
+            error_kind = "unknown_error"
         return {
             "url": url,
             "status": None,
@@ -198,6 +215,9 @@ def fetch_healthz(base_or_healthz_url: str) -> dict[str, Any]:
             "raw": None,
             "sha256": None,
             "error": f"{type(exc).__name__}: {exc}",
+            "error_kind": error_kind,
+            "error_type": type(reason).__name__,
+            "error_errno": reason.errno if isinstance(reason, OSError) else None,
         }
 
     text = raw.decode("utf-8", errors="replace")
@@ -213,6 +233,19 @@ def fetch_healthz(base_or_healthz_url: str) -> dict[str, Any]:
         "sha256": sha_bytes(raw),
         "error": None,
     }
+
+
+def healthz_connection_refused(record: dict[str, Any]) -> bool:
+    """Accept absence only from a GET that failed with the OS connection-refused error."""
+    return (
+        record.get("error_kind") == "connection_refused"
+        and record.get("error_type") in ("ConnectionRefusedError", "OSError")
+        and type(record.get("error_errno")) is int
+        and record["error_errno"] == errno.ECONNREFUSED
+        and isinstance(record.get("error"), str)
+        and bool(record["error"])
+        and all(key in record and record[key] is None for key in ("status", "body", "raw", "sha256"))
+    )
 
 
 def validate_preconditions(
@@ -322,11 +355,14 @@ def build_steps(
     legacy_run: str,
     out_dir: pathlib.Path,
     contract_receipt: str,
+    cleanup_products_runtime: bool = False,
+    rust_baseline_run: str | None = None,
+    record_raw_http: bool = False,
 ) -> list[dict[str, Any]]:
     """Construct the 12 ordered step definitions."""
     som_binary = str(candidate_dir / "som")
     bundles_manifest = out_dir / "bundles" / "products" / "manifest.json"
-    return [
+    steps = [
         {
             "index": 1,
             "step": "contract",
@@ -404,6 +440,7 @@ def build_steps(
                 baseline_url,
                 "--out",
                 str(out_dir / "rust-baseline"),
+                *(["--run", rust_baseline_run] if rust_baseline_run is not None else []),
             ],
             "report": out_dir / "rust-baseline" / "report.json",
             "kind": "report",
@@ -512,12 +549,19 @@ def build_steps(
                 str(bundles_manifest),
                 "--out",
                 str(out_dir / "products"),
+                *(["--cleanup-runtime"] if cleanup_products_runtime else []),
             ],
             "report": out_dir / "products" / "report.json",
             "kind": "report",
             "requires_manifest": bundles_manifest,
         },
     ]
+    if record_raw_http:
+        for step in steps:
+            if step["step"] in {"react-python-controls", "python-baseline", "rust-baseline", "rust-python-controls", "ts-python-controls"}:
+                step["argv"] = [python_bin, str(HERE / "record_http.py"), "--out", str(out_dir / f"{step['step']}-raw"),
+                                "--", *step["argv"][1:]]
+    return steps
 
 
 def judge_contract_stdout(exit_code: int, stdout_path: pathlib.Path) -> tuple[str, str]:
@@ -718,6 +762,7 @@ def evaluate_identity(
     port_8765_url: str,
     before: dict[str, Any],
     after: dict[str, Any],
+    protected_default: str = "healthy",
 ) -> dict[str, Any]:
     problems: list[str] = []
 
@@ -743,12 +788,34 @@ def evaluate_identity(
 
     p8765_before = before["port_8765_healthz"]
     p8765_after = after["port_8765_healthz"]
-    if p8765_before["status"] != 200:
-        problems.append(f"8765 /healthz before returned status {p8765_before['status']}")
-    if p8765_after["status"] != 200:
-        problems.append(f"8765 /healthz after returned status {p8765_after['status']}")
-    if p8765_before["sha256"] != p8765_after["sha256"] or p8765_before["raw"] != p8765_after["raw"]:
-        problems.append("8765 /healthz body changed between before and after")
+    if protected_default == "absent":
+        for label, record in (("before", p8765_before), ("after", p8765_after)):
+            if not healthz_connection_refused(record):
+                problems.append(f"8765 /healthz {label} did not return an OS connection-refused error")
+        protected_unchanged = healthz_connection_refused(p8765_before) and healthz_connection_refused(p8765_after)
+    else:
+        if p8765_before["status"] != 200:
+            problems.append(f"8765 /healthz before returned status {p8765_before['status']}")
+        if p8765_after["status"] != 200:
+            problems.append(f"8765 /healthz after returned status {p8765_after['status']}")
+        if p8765_before["sha256"] != p8765_after["sha256"] or p8765_before["raw"] != p8765_after["raw"]:
+            problems.append("8765 /healthz body changed between before and after")
+        protected_unchanged = (
+            p8765_before["status"] == 200
+            and p8765_after["status"] == 200
+            and p8765_before["sha256"] == p8765_after["sha256"]
+        )
+
+    protected_identity: dict[str, Any] = {
+        "url": port_8765_url,
+        "healthz": {
+            "before": p8765_before,
+            "after": p8765_after,
+            "unchanged": protected_unchanged,
+        },
+    }
+    if protected_default == "absent":
+        protected_identity["expected_state"] = "absent"
 
     if before["git_head"] != after["git_head"]:
         problems.append("git HEAD changed between before and after")
@@ -788,18 +855,7 @@ def evaluate_identity(
                 ),
             },
         },
-        "8765": {
-            "url": port_8765_url,
-            "healthz": {
-                "before": p8765_before,
-                "after": p8765_after,
-                "unchanged": (
-                    p8765_before["status"] == 200
-                    and p8765_after["status"] == 200
-                    and p8765_before["sha256"] == p8765_after["sha256"]
-                ),
-            },
-        },
+        "8765": protected_identity,
         "git_head": {
             "before": before["git_head"],
             "after": after["git_head"],
@@ -841,11 +897,32 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help=f"Recorded legacy544 run directory (default: {DEFAULT_LEGACY_RUN_REL})",
     )
     parser.add_argument(
+        "--rust-baseline-run",
+        type=pathlib.Path,
+        default=None,
+        help="Recorded Rust baseline run directory (default: check_rust_baseline.py's existing default).",
+    )
+    parser.add_argument(
         "--python",
         type=pathlib.Path,
         default=None,
         help=f"Python interpreter for step subprocesses (default: {DEFAULT_PYTHON_REL})",
     )
+    parser.add_argument(
+        "--protected-default",
+        choices=("healthy", "absent"),
+        default="healthy",
+        help=(
+            "Expected state of protected port 8765 (default: healthy). "
+            "Use absent only on an isolated hosted VM; both read-only GETs must get connection refused."
+        ),
+    )
+    parser.add_argument(
+        "--cleanup-products-runtime", action="store_true",
+        help="Remove owned node_modules and stopped PostgreSQL scratch data after each complete product check.",
+    )
+    parser.add_argument("--record-raw-http", action="store_true",
+                        help="Retain every baseline and Python control HTTP exchange for independent acceptance.")
     return parser.parse_args(argv)
 
 
@@ -887,6 +964,10 @@ def main(argv: list[str] | None = None) -> int:
     latest_receipt_path = find_latest_contract_receipt(repo)
     contract_receipt_arg = format_repo_arg(latest_receipt_path, repo)
     legacy_run_arg = format_repo_arg(legacy_run_path, repo) if args.legacy_run is None else str(legacy_run_path)
+    rust_baseline_run_arg = (
+        str(resolve_repo_path(args.rust_baseline_run, repo))
+        if args.rust_baseline_run is not None else None
+    )
     python_arg = str(python_path)
 
     started_at = now_iso()
@@ -928,6 +1009,8 @@ def main(argv: list[str] | None = None) -> int:
         "problems": [],
         "passed": None,
     }
+    if args.protected_default == "absent":
+        initial_identity["8765"]["expected_state"] = "absent"
     identity_path = out_dir / "identity.json"
     write_json(identity_path, initial_identity)
 
@@ -939,6 +1022,9 @@ def main(argv: list[str] | None = None) -> int:
         legacy_run=legacy_run_arg,
         out_dir=out_dir,
         contract_receipt=contract_receipt_arg,
+        cleanup_products_runtime=args.cleanup_products_runtime,
+        rust_baseline_run=rust_baseline_run_arg,
+        record_raw_http=args.record_raw_http,
     )
 
     receipts: list[dict[str, Any]] = []
@@ -963,6 +1049,7 @@ def main(argv: list[str] | None = None) -> int:
         port_8765_url=DEFAULT_8765_URL,
         before=before_snapshot,
         after=after_snapshot,
+        protected_default=args.protected_default,
     )
     write_json(identity_path, final_identity)
 
@@ -1016,6 +1103,8 @@ def main(argv: list[str] | None = None) -> int:
         "candidate_url": candidate_url,
         "baseline_url": baseline_url,
         "legacy_run": legacy_run_arg,
+        "record_raw_http": args.record_raw_http,
+        **({"rust_baseline_run": rust_baseline_run_arg} if rust_baseline_run_arg is not None else {}),
         "python": python_arg,
         "contract_receipt": contract_receipt_arg,
         "identity": str(identity_path),

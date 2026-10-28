@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - .github/workflows/m6-tooling.yml
+      - .github/workflows/m6-acceptance.yml
+      - .github/workflows/m6-retained-audit.yml
       - som-rs/scripts/react_output_acceptance/**
       - som-rs/scripts/rust_output_release/**
       - som-rs/scripts/react_quickstart/**
@@ -70,10 +72,15 @@ jobs:
         run: |
           python3 --version
           printf '%s\n' "$TESTED_SHA" > tested-sha.txt
-      - name: Run issue 136 unit gate
+      - name: Run acceptance runner and evidence collector unit gates
         run: |
-          python3 -m unittest som-rs/scripts/react_output_acceptance/test_run_acceptance.py -v 2>&1 | tee runner-tests.log
+          python3 -m unittest discover -s som-rs/scripts/react_output_acceptance -p 'test_*.py' -v 2>&1 | tee runner-tests.log
           python3 som-rs/scripts/react_output_acceptance/run_acceptance.py --help | tee runner-help.txt
+          python3 som-rs/scripts/react_output_acceptance/check_typescript_baseline.py --help | tee collector-help.txt
+      - name: Test encrypted input carrier with fake files
+        run: |
+          node --version
+          node --test som-rs/scripts/react_output_acceptance/test_*.mjs 2>&1 | tee sealed-inputs-tests.log
       - name: Keep unit gate evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -83,6 +90,8 @@ jobs:
             tested-sha.txt
             runner-tests.log
             runner-help.txt
+            collector-help.txt
+            sealed-inputs-tests.log
           if-no-files-found: error
           retention-days: 30
 
