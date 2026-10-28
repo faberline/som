@@ -3,18 +3,21 @@
 from __future__ import annotations
 
 import contextlib
+import errno
 import hashlib
 import http.server
 import io
 import json
 import os
 import pathlib
+import socket
 import stat
 import subprocess
 import sys
 import tempfile
 import threading
 import unittest
+import urllib.error
 from typing import Any
 from unittest import mock
 
@@ -304,6 +307,28 @@ raise SystemExit(int(step_cfg.get("exit_code", 0)))
             except SystemExit as exc:
                 rc = int(exc.code) if isinstance(exc.code, int) else 2
         return rc, stdout_buf.getvalue(), stderr_buf.getvalue()
+
+    def _run_main_with_protected_errors(
+        self,
+        argv: list[str],
+        errors: list[OSError | None],
+    ) -> tuple[int, int]:
+        original_open = run_acceptance.NO_PROXY_OPENER.open
+        probes = iter(errors)
+        protected_requests = []
+
+        def probe(request: Any, *args: Any, **kwargs: Any) -> Any:
+            if request.full_url == f"{self.p8765_server.url}/healthz":
+                protected_requests.append(request)
+                error = next(probes)
+                if error is not None:
+                    raise error
+            return original_open(request, *args, **kwargs)
+
+        with mock.patch.object(run_acceptance.NO_PROXY_OPENER, "open", side_effect=probe):
+            rc, _out, _err = self._run_main(argv)
+        self.assertTrue(all(request.get_method() == "GET" for request in protected_requests))
+        return rc, len(protected_requests)
 
     def test_1_happy_path_all_12_steps(self) -> None:
         out_dir = self.root / ".local" / "run-happy"
@@ -835,6 +860,26 @@ raise SystemExit(int(step_cfg.get("exit_code", 0)))
         report.write_text(json.dumps({"passed": True}))
         self.assertEqual(run_acceptance.judge_json_report(0, report)[0], "passed")
 
+    def test_product_cleanup_option_preserves_all_twelve_gate_commands(self) -> None:
+        options = {
+            "python_bin": "python3", "candidate_dir": self.candidate_dir,
+            "candidate_url": "http://127.0.0.1:18919",
+            "baseline_url": "http://127.0.0.1:18917",
+            "legacy_run": str(self.legacy_run), "out_dir": self.root / ".local/run",
+            "contract_receipt": "receipt.json",
+        }
+        original = run_acceptance.build_steps(**options)
+        cleaned = run_acceptance.build_steps(**options, cleanup_products_runtime=True)
+        self.assertEqual(len(cleaned), 12)
+        self.assertEqual(cleaned[:-1], original[:-1])
+        self.assertEqual(cleaned[-1]["step"], "products")
+        self.assertEqual(cleaned[-1]["argv"], [*original[-1]["argv"], "--cleanup-runtime"])
+        parsed = run_acceptance.parse_args([
+            "--candidate", str(self.candidate_dir), "--out", str(self.root / ".local/run"),
+            "--cleanup-products-runtime",
+        ])
+        self.assertTrue(parsed.cleanup_products_runtime)
+
     def test_10_loopback_url_validation_preserves_ipv6(self) -> None:
         self.assertEqual(
             run_acceptance.parse_and_validate_url("http://[::1]:18960", "--baseline"),
@@ -848,6 +893,156 @@ raise SystemExit(int(step_cfg.get("exit_code", 0)))
         ):
             with self.subTest(url=url), self.assertRaises(ValueError):
                 run_acceptance.parse_and_validate_url(url, "--baseline")
+
+    def test_11_explicit_absent_mode_runs_all_12_steps_and_records_refused_gets(self) -> None:
+        out_dir = self.root / ".local" / "run-protected-absent"
+        refused = urllib.error.URLError(ConnectionRefusedError(errno.ECONNREFUSED, "Connection refused"))
+        original_write_json = run_acceptance.write_json
+        with mock.patch.object(run_acceptance, "write_json", wraps=original_write_json) as write_json:
+            rc, protected_gets = self._run_main_with_protected_errors(
+                [
+                    "--candidate", str(self.candidate_dir), "--out", str(out_dir),
+                    "--baseline", self.base_server.url, "--protected-default", "absent",
+                ],
+                [refused, refused],
+            )
+        self.assertEqual(rc, 0)
+        self.assertEqual(protected_gets, 2)
+        self.assertEqual(len(self._read_invocations()), 12)
+        initial_identity = write_json.call_args_list[0].args[1]
+        self.assertEqual(initial_identity["8765"]["expected_state"], "absent")
+        self.assertIsNone(initial_identity["8765"]["healthz"]["after"])
+        identity_doc = json.loads((out_dir / "identity.json").read_text())
+        self.assertTrue(identity_doc["passed"])
+        self.assertEqual(identity_doc["8765"]["expected_state"], "absent")
+        self.assertTrue(identity_doc["8765"]["healthz"]["unchanged"])
+        for label in ("before", "after"):
+            record = identity_doc["8765"]["healthz"][label]
+            self.assertEqual(record["url"], f"{self.p8765_server.url}/healthz")
+            self.assertEqual(record["error_kind"], "connection_refused")
+            self.assertEqual(record["error_type"], "ConnectionRefusedError")
+            self.assertEqual(record["error_errno"], errno.ECONNREFUSED)
+            self.assertTrue(record["error"])
+            for field in ("status", "body", "raw", "sha256"):
+                self.assertIsNone(record[field])
+        for role in ("candidate", "baseline"):
+            self.assertTrue(identity_doc[role]["healthz"]["unchanged"])
+            self.assertNotIn("expected_state", identity_doc[role])
+        run_doc = json.loads((out_dir / "run.json").read_text())
+        self.assertTrue(run_doc["passed"])
+        self.assertEqual(len(run_doc["steps"]), 12)
+        self.assertEqual(run_doc["failed"], [])
+        self.assertEqual(run_doc["not_run"], [])
+
+    def test_12_default_healthy_mode_fails_when_protected_default_is_absent(self) -> None:
+        out_dir = self.root / ".local" / "run-protected-unexpected-absence"
+        refused = urllib.error.URLError(ConnectionRefusedError(errno.ECONNREFUSED, "Connection refused"))
+        rc, protected_gets = self._run_main_with_protected_errors(
+            ["--candidate", str(self.candidate_dir), "--out", str(out_dir), "--baseline", self.base_server.url],
+            [refused, refused],
+        )
+        self.assertEqual(rc, 1)
+        self.assertEqual(protected_gets, 2)
+        self.assertEqual(len(self._read_invocations()), 12)
+        identity_doc = json.loads((out_dir / "identity.json").read_text())
+        self.assertFalse(identity_doc["passed"])
+        self.assertFalse(identity_doc["8765"]["healthz"]["unchanged"])
+        self.assertNotIn("expected_state", identity_doc["8765"])
+        self.assertIn("8765 /healthz before returned status None", identity_doc["problems"])
+        self.assertIn("8765 /healthz after returned status None", identity_doc["problems"])
+
+    def test_13_absent_mode_fails_on_alive_transition_or_timeout(self) -> None:
+        refused = urllib.error.URLError(ConnectionRefusedError(errno.ECONNREFUSED, "Connection refused"))
+        timed_out = urllib.error.URLError(TimeoutError("timed out"))
+        for name, errors in (
+            ("absent-then-healthy", [refused, None]),
+            ("healthy-then-absent", [None, refused]),
+            ("healthy", [None, None]),
+            ("timeout", [timed_out, timed_out]),
+        ):
+            with self.subTest(state=name):
+                before_invocations = len(self._read_invocations())
+                out_dir = self.root / ".local" / f"run-protected-{name}"
+                rc, protected_gets = self._run_main_with_protected_errors(
+                    [
+                        "--candidate", str(self.candidate_dir), "--out", str(out_dir),
+                        "--baseline", self.base_server.url, "--protected-default", "absent",
+                    ],
+                    errors,
+                )
+                self.assertEqual(rc, 1)
+                self.assertEqual(protected_gets, 2)
+                self.assertEqual(len(self._read_invocations()) - before_invocations, 12)
+                identity_doc = json.loads((out_dir / "identity.json").read_text())
+                self.assertFalse(identity_doc["passed"])
+                self.assertFalse(identity_doc["8765"]["healthz"]["unchanged"])
+                self.assertEqual(identity_doc["8765"]["expected_state"], "absent")
+                self.assertTrue(any("OS connection-refused" in item for item in identity_doc["problems"]))
+                run_doc = json.loads((out_dir / "run.json").read_text())
+                self.assertFalse(run_doc["passed"])
+                self.assertEqual(run_doc["failed"], [])
+                self.assertEqual(run_doc["not_run"], [])
+
+
+class FetchHealthzErrorTestCase(unittest.TestCase):
+    def test_only_os_econnrefused_can_record_absence(self) -> None:
+        for error in (
+            ConnectionRefusedError(errno.ECONNREFUSED, "Connection refused"),
+            urllib.error.URLError(OSError(errno.ECONNREFUSED, "Connection refused")),
+        ):
+            with self.subTest(error=error):
+                with mock.patch.object(run_acceptance.NO_PROXY_OPENER, "open", side_effect=error) as open_url:
+                    record = run_acceptance.fetch_healthz("http://127.0.0.1:8765")
+                request = open_url.call_args.args[0]
+                self.assertEqual(request.get_method(), "GET")
+                self.assertEqual(request.full_url, "http://127.0.0.1:8765/healthz")
+                self.assertEqual(record["error_kind"], "connection_refused")
+                self.assertEqual(record["error_errno"], errno.ECONNREFUSED)
+                self.assertTrue(run_acceptance.healthz_connection_refused(record))
+
+    def test_timeout_dns_and_unknown_errors_do_not_record_absence(self) -> None:
+        for error, expected_kind in (
+            (TimeoutError("timed out"), "timeout"),
+            (urllib.error.URLError(TimeoutError("timed out")), "timeout"),
+            (urllib.error.URLError(OSError(errno.ETIMEDOUT, "Connection timed out")), "timeout"),
+            (urllib.error.URLError(socket.gaierror(socket.EAI_AGAIN, "Name lookup failed")), "network_error"),
+            (urllib.error.URLError("Connection refused"), "unknown_error"),
+            (OSError("Unknown connection error"), "network_error"),
+        ):
+            with self.subTest(error=error):
+                with mock.patch.object(run_acceptance.NO_PROXY_OPENER, "open", side_effect=error):
+                    record = run_acceptance.fetch_healthz("http://127.0.0.1:8765")
+                self.assertEqual(record["error_kind"], expected_kind)
+                self.assertFalse(run_acceptance.healthz_connection_refused(record))
+
+    def test_http_error_does_not_record_absence(self) -> None:
+        error = urllib.error.HTTPError(
+            "http://127.0.0.1:8765/healthz", 503, "Service unavailable", None, io.BytesIO(b'{"ok": false}')
+        )
+        with mock.patch.object(run_acceptance.NO_PROXY_OPENER, "open", side_effect=error):
+            record = run_acceptance.fetch_healthz("http://127.0.0.1:8765")
+        self.assertEqual(record["status"], 503)
+        self.assertEqual(record["body"], {"ok": False})
+        self.assertEqual(record["raw"], '{"ok": false}')
+        self.assertEqual(record["sha256"], _sha_bytes(b'{"ok": false}'))
+        self.assertIsNone(record["error"])
+        self.assertNotIn("error_kind", record)
+        self.assertFalse(run_acceptance.healthz_connection_refused(record))
+
+    def test_healthy_response_keeps_existing_record_fields(self) -> None:
+        response = mock.MagicMock()
+        response.status = 200
+        response.read.return_value = b'{"ok": true}'
+        response.__enter__.return_value = response
+        with mock.patch.object(run_acceptance.NO_PROXY_OPENER, "open", return_value=response):
+            record = run_acceptance.fetch_healthz("http://127.0.0.1:8765")
+        self.assertEqual(
+            record,
+            {
+                "url": "http://127.0.0.1:8765/healthz", "status": 200, "body": {"ok": True},
+                "raw": '{"ok": true}', "sha256": _sha_bytes(b'{"ok": true}'), "error": None,
+            },
+        )
 
 
 if __name__ == "__main__":

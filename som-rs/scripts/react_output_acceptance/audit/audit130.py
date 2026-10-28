@@ -384,6 +384,25 @@ class Audit:
                 data = object_value(identity.get(role), role)
                 pair = object_value(data.get("healthz"), f"{role} healthz")
                 before, after = object_value(pair.get("before"), "health before"), object_value(pair.get("after"), "health after")
+                if role == "8765" and "expected_state" in data:
+                    need(data["expected_state"] == "absent", "8765 expected state is invalid")
+                    base_url = "http://127.0.0.1:8765"
+                    health_url = f"{base_url}/healthz"
+                    if "url" in data:
+                        need(data["url"] == base_url, "8765 protected URL differs")
+                    urls = []
+                    for point in (before, after):
+                        url = point.get("url", health_url if data.get("url") == base_url else None)
+                        need(url == health_url, "8765 absent health URL differs")
+                        urls.append(url)
+                        need(point.get("error_kind") == "connection_refused", "8765 absence has no connection refusal")
+                        number = point.get("error_errno")
+                        need(true_integer(number) and number in (61, 111), "8765 absence has no ECONNREFUSED error number")
+                        need(point.get("error_type") in ("ConnectionRefusedError", "OSError"), "8765 absence error type differs")
+                        need(isinstance(point.get("error"), str) and point["error"].strip(), "8765 absence error is missing")
+                        need(all(key in point and point[key] is None for key in ("status", "body", "raw", "sha256")), "8765 absent health snapshot contains an HTTP response")
+                    need(urls[0] == urls[1], "8765 absent health URL changed")
+                    return
                 for point in (before, after):
                     need(point.get("status") == 200, f"{role} health HTTP status is not 200")
                     need(isinstance(point.get("raw"), str), f"{role} raw health body missing", "unrun")

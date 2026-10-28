@@ -1,0 +1,137 @@
+name: M6 hosted acceptance
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled]
+    paths:
+      - .github/workflows/m6-acceptance.yml
+      - som-rs/scripts/react_output_acceptance/**
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Provision tools only, or run the full acceptance after input approval
+        required: true
+        default: provision
+        type: choice
+        options: [provision, acceptance]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: m6-hosted-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    name: Frozen M6 tools and optional full acceptance
+    # The retained baseline and these frozen bottles require macOS 26.
+    # This is a compatibility run. Linux tool adaptation belongs to M12.
+    runs-on: macos-26
+    timeout-minutes: 360
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      # A label schedules a run. It does not grant permission to transfer data.
+      # The controller applies it only after explicit human input approval.
+      M6_ACCEPTANCE_REQUESTED: ${{ (github.event_name == 'workflow_dispatch' && inputs.mode == 'acceptance') || (github.event.pull_request.head.repo.full_name == github.repository && contains(github.event.pull_request.labels.*.name, 'm6:run-full-acceptance')) }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12.11'
+      - name: Record the source revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          printf '%s\n' "$TESTED_SHA" > "$RUNNER_TEMP/m6-tested-sha.txt"
+          python3 --version
+      - name: Provision and check the frozen tools
+        run: |
+          python3 som-rs/scripts/react_output_acceptance/provision_macos.py --out "$RUNNER_TEMP/m6-provision"
+      - name: Prepare the product Python environment
+        run: |
+          python3 -m venv som-rs/runtime/acceptance-m3-venv
+          som-rs/runtime/acceptance-m3-venv/bin/python -m pip install -r som-rs/scripts/react_output_acceptance/hosted_python_requirements.txt
+          som-rs/runtime/acceptance-m3-venv/bin/python -m pip check
+          som-rs/runtime/acceptance-m3-venv/bin/python -m pip freeze > "$RUNNER_TEMP/m6-python-dependencies.txt"
+      - name: Fetch the pinned encrypted input commit
+        if: env.M6_ACCEPTANCE_REQUESTED == 'true'
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, re, subprocess
+          config = json.loads(pathlib.Path('som-rs/scripts/react_output_acceptance/hosted_inputs.json').read_bytes())
+          commit = config['commit']
+          if not re.fullmatch(r'[0-9a-f]{40}', commit):
+              raise SystemExit('invalid input commit')
+          subprocess.run(['git', 'fetch', '--no-tags', '--depth=1', 'origin', commit], check=True)
+          PY
+      - name: Restore the approved inputs
+        if: env.M6_ACCEPTANCE_REQUESTED == 'true'
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py --repo-root "$GITHUB_WORKSPACE" --config "$GITHUB_WORKSPACE/som-rs/scripts/react_output_acceptance/hosted_inputs.json" --out "$RUNNER_TEMP/m6-inputs"
+          test ! -e .local
+          test ! -L .local
+          mv "$RUNNER_TEMP/m6-inputs/.local" .local
+          chmod -R a-w .local/react-output/npm-cache-001 .local/typescript-output/npm-cache-001
+      - name: Fetch public crates before offline verification
+        if: env.M6_ACCEPTANCE_REQUESTED == 'true'
+        env:
+          CARGO_NET_OFFLINE: 'false'
+        run: |
+          for manifest in som-rs/Cargo.toml som-rs/som-targets/Cargo.toml som-rs/contracts/rust-output-v1/reference/Cargo.toml som-rs/contracts/rust-output-v1/reference-phase2/Cargo.toml; do
+            /opt/homebrew/Cellar/rust/1.96.1/bin/cargo fetch --locked --manifest-path "$manifest"
+          done
+      - name: Run one candidate and the independent audit
+        if: env.M6_ACCEPTANCE_REQUESTED == 'true'
+        run: |
+          som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py --out .local/m6-hosted/acceptance
+      - name: Seal the raw evidence
+        if: always() && env.M6_ACCEPTANCE_REQUESTED == 'true'
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          if [ -d .local/m6-hosted/acceptance ]; then
+            node som-rs/scripts/react_output_acceptance/seal_hosted_evidence.mjs --root "$GITHUB_WORKSPACE/.local/m6-hosted/acceptance" --out "$RUNNER_TEMP/m6-sealed-evidence"
+          fi
+      - name: Prepare the safe acceptance summary
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          source = pathlib.Path('.local/m6-hosted/acceptance/summary.json')
+          if source.is_file():
+              record = json.loads(source.read_bytes())
+              names = ('version', 'passed', 'status', 'failed_stage', 'product_suites', 'head_before', 'head_after', 'baseline_binary_sha256', 'candidate_binary_sha256', 'step_count', 'audit_totals', 'acceptance_exit_code', 'audit_exit_code', 'cleanup')
+              target = pathlib.Path(os.environ['RUNNER_TEMP']) / 'm6-acceptance-summary.json'
+              target.write_text(json.dumps({name: record[name] for name in names if name in record}, indent=2) + '\n')
+          PY
+      - name: Keep the safe stage summaries
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: m6-hosted-summaries
+          path: |
+            ${{ runner.temp }}/m6-tested-sha.txt
+            ${{ runner.temp }}/m6-provision/report.json
+            ${{ runner.temp }}/m6-python-dependencies.txt
+            ${{ runner.temp }}/m6-inputs/provision.json
+            ${{ runner.temp }}/m6-acceptance-summary.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Keep encrypted raw evidence
+        if: always() && env.M6_ACCEPTANCE_REQUESTED == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: m6-sealed-raw-evidence
+          path: ${{ runner.temp }}/m6-sealed-evidence/
+          if-no-files-found: warn
+          retention-days: 30

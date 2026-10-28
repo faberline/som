@@ -1006,6 +1006,110 @@ class Audit130Tests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertGreater(report["totals"]["failed"], 0)
 
+    def _absent_protected_port(self):
+        point = {"url": "http://127.0.0.1:8765/healthz", "status": None,
+                 "body": None, "raw": None, "sha256": None,
+                 "error": "ConnectionRefusedError: synthetic connection refused",
+                 "error_kind": "connection_refused", "error_type": "ConnectionRefusedError",
+                 "error_errno": 111}
+        role = {"url": "http://127.0.0.1:8765", "expected_state": "absent",
+                "healthz": {"before": copy.deepcopy(point), "after": copy.deepcopy(point),
+                            "unchanged": True}}
+        self.fixture.identity["8765"] = role
+        return role
+
+    def _protected_port_result(self):
+        save_json(self.fixture.run / "identity.json", self.fixture.identity)
+        self.fixture.refresh_receipts()
+        self._protected_port_audit_count = getattr(self, "_protected_port_audit_count", 0) + 1
+        out = self.fixture.output.with_name(f"protected-port-{self._protected_port_audit_count}.json")
+        code, report, _, _ = self.run_audit(out=out)
+        return code, next(row for row in report["rows"] if row["id"] == "integrity/health/8765")
+
+    def test_explicit_absent_protected_port_passes_from_both_refusal_snapshots(self):
+        role = self._absent_protected_port()
+        # The audit derives the result instead of using the runner's verdict.
+        role["healthz"]["unchanged"] = False
+        for number, error_type in ((61, "ConnectionRefusedError"), (111, "OSError")):
+            with self.subTest(number=number, error_type=error_type):
+                for point in (role["healthz"]["before"], role["healthz"]["after"]):
+                    point["error_errno"], point["error_type"] = number, error_type
+                code, row = self._protected_port_result()
+                self.assertEqual(code, 0, row)
+                self.assertEqual(row["status"], "passed", row)
+        for point in (role["healthz"]["before"], role["healthz"]["after"]):
+            del point["url"]
+        code, row = self._protected_port_result()
+        self.assertEqual(code, 0, row)
+        self.assertEqual(row["status"], "passed", row)
+
+    def test_absent_protected_port_becoming_http_200_fails(self):
+        role = self._absent_protected_port()
+        raw = '{"status":"ok"}'
+        role["healthz"]["after"] = {"url": "http://127.0.0.1:8765/healthz", "status": 200,
+            "body": json.loads(raw), "raw": raw, "sha256": sha_bytes(raw.encode()), "error": None}
+        code, row = self._protected_port_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+
+    def test_absent_protected_port_timeout_is_not_connection_refusal(self):
+        role = self._absent_protected_port()
+        role["healthz"]["after"].update(error_kind="timeout", error_type="TimeoutError",
+                                        error_errno=None, error="TimeoutError: synthetic timeout")
+        code, row = self._protected_port_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("connection refusal", row["reason"])
+
+    def test_absent_protected_port_cannot_use_only_a_forged_unchanged_boolean(self):
+        role = self._absent_protected_port()
+        for point in (role["healthz"]["before"], role["healthz"]["after"]):
+            for key in ("error_kind", "error_errno", "error_type"):
+                del point[key]
+        code, row = self._protected_port_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("connection refusal", row["reason"])
+
+    def test_healthy_protected_port_mode_rejects_connection_refusal(self):
+        role = self._absent_protected_port()
+        del role["expected_state"]
+        code, row = self._protected_port_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("HTTP status is not 200", row["reason"])
+
+    def test_absent_protected_port_requires_the_exact_loopback_url(self):
+        for place, value in (("role", "http://example.invalid:8765"),
+                             ("before", "http://127.0.0.1:8766/healthz"),
+                             ("after", "http://localhost:8765/healthz"),
+                             ("after", None)):
+            with self.subTest(place=place, value=value):
+                role = self._absent_protected_port()
+                target = role if place == "role" else role["healthz"][place]
+                target["url"] = value
+                code, row = self._protected_port_result()
+                self.assertEqual(code, 1)
+                self.assertEqual(row["status"], "failed", row)
+                self.assertIn("URL differs", row["reason"])
+
+    def test_absent_protected_port_requires_exact_error_and_null_response_fields(self):
+        mutations = (("error_errno", True), ("error_errno", 111.0), ("error_errno", 110),
+                     ("error_type", "TimeoutError"), ("error", ""), ("status", 200),
+                     ("body", {}), ("raw", ""), ("sha256", "0" * 64))
+        for field, value in mutations:
+            with self.subTest(field=field, value=value):
+                role = self._absent_protected_port()
+                role["healthz"]["after"][field] = value
+                code, row = self._protected_port_result()
+                self.assertEqual(code, 1)
+                self.assertEqual(row["status"], "failed", row)
+        role = self._absent_protected_port()
+        del role["healthz"]["after"]["raw"]
+        code, row = self._protected_port_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+
     def test_log_checksum_mismatch_fails(self):
         log = self.fixture.run / "logs/02-react-target.stdout"
         log.write_text("tampered after receipt\n")

@@ -17,22 +17,28 @@ products/manifest.json that check_bundles.py wrote:
 
 No sampling: every manifest entry runs every gate, one case at a time.
 Writes <out>/report.json and exits 0 when every case passes.
+With --cleanup-runtime, each completed case keeps its evidence and removes only
+its installed node_modules and its PostgreSQL data after a verified stop.
 
-usage: check_products.py --url URL --manifest MANIFEST --out DIR [--cache DIR] [--only ID ...]
+usage: check_products.py --url URL --manifest MANIFEST --out DIR [--cache DIR] [--only ID ...] [--cleanup-runtime]
 """
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
+import os
 import pathlib
+import shutil
+import stat
 import subprocess
 import sys
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Any
+from typing import Any, Iterator
 
 HERE = pathlib.Path(__file__).resolve().parent
 SOM_RS = HERE.parents[1]
@@ -167,6 +173,118 @@ def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: p
     return row
 
 
+def cleanup_root_path(path: pathlib.Path) -> pathlib.Path:
+    """Keep the original path so a symlink cannot disappear through resolve()."""
+    if ".." in path.parts:
+        raise ValueError("runtime cleanup refuses an output path with '..'")
+    return path if path.is_absolute() else pathlib.Path.cwd() / path
+
+
+def _open_cleanup_child(parent_fd: int, name: str) -> int:
+    info = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+    if stat.S_ISLNK(info.st_mode):
+        raise ValueError(f"runtime cleanup refuses symlink directory {name!r}")
+    if not stat.S_ISDIR(info.st_mode):
+        raise ValueError(f"runtime cleanup requires a directory at {name!r}")
+    return os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=parent_fd)
+
+
+@contextlib.contextmanager
+def _cleanup_directory(path: pathlib.Path) -> Iterator[int]:
+    """Open every directory without following a symlink, and hold its file descriptor."""
+    with contextlib.ExitStack() as stack:
+        fd = os.open(path.anchor, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        stack.callback(os.close, fd)
+        for name in path.parts[1:]:
+            fd = _open_cleanup_child(fd, name)
+            stack.callback(os.close, fd)
+        yield fd
+
+
+def validate_cleanup_root(path: pathlib.Path) -> pathlib.Path:
+    """Check existing output ancestors before main creates a new output directory."""
+    path = cleanup_root_path(path)
+    try:
+        with _cleanup_directory(path):
+            pass
+    except FileNotFoundError:
+        pass
+    return path
+
+
+def _postgres_cleanup_proof(api_fd: int, pg_fd: int, pgdata: pathlib.Path) -> dict[str, Any]:
+    try:
+        os.stat("postmaster.pid", dir_fd=pg_fd, follow_symlinks=False)
+    except FileNotFoundError:
+        pass
+    else:
+        raise ValueError("PostgreSQL cleanup refuses an existing postmaster.pid")
+
+    report_fd = os.open("report.json", os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=api_fd)
+    with os.fdopen(report_fd, "rb") as report_file:
+        if not stat.S_ISREG(os.fstat(report_file.fileno()).st_mode):
+            raise ValueError("PostgreSQL cleanup requires a regular api/report.json")
+        raw = report_file.read()
+    report = json.loads(raw)
+    processes = report.get("processes") if isinstance(report, dict) else None
+    if not isinstance(processes, list):
+        raise ValueError("PostgreSQL cleanup requires api/report.json process records")
+    postgres = [record for record in processes if isinstance(record, dict) and record.get("role") == "postgres"]
+    if len(postgres) != 1:
+        raise ValueError("PostgreSQL cleanup requires exactly one owned postgres process record")
+    record = postgres[0]
+    if record.get("expected_cwd") != str(pgdata):
+        raise ValueError("PostgreSQL cleanup expected_cwd does not match this case's pgdata")
+    if record.get("stopped") is not True:
+        raise ValueError("PostgreSQL cleanup requires stopped=True")
+    if record.get("stop_cwd_verified") is not True or record.get("stop_cwd") != str(pgdata):
+        raise ValueError("PostgreSQL cleanup requires a verified stop_cwd matching this case's pgdata")
+    return {"report": "api/report.json", "report_sha256": hashlib.sha256(raw).hexdigest()}
+
+
+def cleanup_case_runtime(out: pathlib.Path, cid: str) -> dict[str, Any]:
+    """Remove only the two owned runtime directories after all case evidence is saved."""
+    targets = (pathlib.Path("gates/product/node_modules"), pathlib.Path("api/pgdata"))
+    result: dict[str, Any] = {"passed": False, "targets": [], "problems": []}
+    try:
+        if not isinstance(cid, str) or cid in ("", ".", "..") or "/" in cid or "\\" in cid:
+            raise ValueError("runtime cleanup requires a single case directory name")
+        if not getattr(shutil.rmtree, "avoids_symlink_attacks", False):
+            raise ValueError("runtime cleanup requires file-descriptor-safe directory removal")
+        root = cleanup_root_path(out)
+        with _cleanup_directory(root) as root_fd, contextlib.ExitStack() as case_stack:
+            case_fd = _open_cleanup_child(root_fd, cid)
+            case_stack.callback(os.close, case_fd)
+            for relative in targets:
+                target: dict[str, Any] = {"path": (pathlib.Path(cid) / relative).as_posix()}
+                result["targets"].append(target)
+                target_found = False
+                try:
+                    with contextlib.ExitStack() as target_stack:
+                        parent_fd = case_fd
+                        for part in relative.parts[:-1]:
+                            parent_fd = _open_cleanup_child(parent_fd, part)
+                            target_stack.callback(os.close, parent_fd)
+                        target_fd = _open_cleanup_child(parent_fd, relative.name)
+                        target_stack.callback(os.close, target_fd)
+                        target_found = True
+                        if relative == pathlib.Path("api/pgdata"):
+                            target["stop_proof"] = _postgres_cleanup_proof(parent_fd, target_fd, root / cid / relative)
+                        shutil.rmtree(relative.name, dir_fd=parent_fd)
+                        target["status"] = "removed"
+                except Exception as exc:  # noqa: BLE001
+                    if isinstance(exc, FileNotFoundError) and not target_found:
+                        target["status"] = "missing"
+                    else:
+                        target["status"] = "refused"
+                        target["problem"] = f"{type(exc).__name__}: {exc}"
+                        result["problems"].append(f"{target['path']}: {target['problem']}")
+    except Exception as exc:  # noqa: BLE001
+        result["problems"].append(f"{type(exc).__name__}: {exc}")
+    result["passed"] = not result["problems"]
+    return result
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", required=True)
@@ -175,12 +293,21 @@ def main() -> int:
     toolchain = json.loads((CONTRACT / "toolchain.json").read_text())
     parser.add_argument("--cache", type=pathlib.Path, default=REPO / toolchain["vendored_cache"]["path"])
     parser.add_argument("--only", nargs="*", default=None)
+    parser.add_argument("--cleanup-runtime", action="store_true",
+                        help="Remove only each completed case's node_modules and verified stopped PostgreSQL data")
     args = parser.parse_args()
     port = urllib.parse.urlsplit(args.url).port
     if port in FORBIDDEN_PORTS:
         print(f"refused: port {port} is not a QA port", file=sys.stderr)
         return 2
-    out = args.out.resolve()
+    if args.cleanup_runtime:
+        try:
+            out = validate_cleanup_root(args.out)
+        except (OSError, ValueError) as exc:
+            print(f"refused: {exc}", file=sys.stderr)
+            return 2
+    else:
+        out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
     manifest_path = args.manifest.resolve()
     manifest = json.loads(manifest_path.read_text())
@@ -193,6 +320,15 @@ def main() -> int:
     for index, entry in enumerate(entries, 1):
         t0 = time.time()
         row = check_case(args.url, entry, out, args.cache.resolve(), api)
+        if args.cleanup_runtime:
+            try:
+                cleanup = cleanup_case_runtime(out, entry["id"])
+            except Exception as exc:  # noqa: BLE001
+                cleanup = {"passed": False, "targets": [], "problems": [f"{type(exc).__name__}: {exc}"]}
+            row["cleanup_runtime"] = cleanup
+            if cleanup["passed"] is not True:
+                row["problems"].extend(f"runtime cleanup: {problem}" for problem in cleanup["problems"])
+                row["passed"] = False
         row["seconds"] = round(time.time() - t0, 1)
         rows.append(row)
         print(f"[{index}/{len(entries)}] {row['id']} passed={row['passed']} {row['seconds']}s "

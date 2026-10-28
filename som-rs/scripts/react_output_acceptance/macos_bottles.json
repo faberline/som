@@ -1,0 +1,1179 @@
+{
+  "version": "som.react-output-macos-bottles.v1",
+  "issue": 130,
+  "observed_date": "2026-10-28",
+  "status": "metadata_recovered_runtime_and_binary_identity_unverified",
+  "runner": {
+    "label": "macos-26",
+    "architecture": "arm64",
+    "reason": "Read-only LC_BUILD_VERSION metadata on the pinned rustc and postgres executables declares minos 26.0. Node declares minos 13.5. The exact Rust and PostgreSQL binaries require macOS 26 or newer."
+  },
+  "scope": "Provision the existing frozen React acceptance toolchain and its non-system dynamic library closure on a disposable GitHub macOS VM. This is acceptance infrastructure for issue 130.",
+  "provenance": {
+    "sources": [
+      "Installed Homebrew INSTALL_RECEIPT.json and sbom.spdx.json metadata",
+      "Official Homebrew GHCR OCI indexes and manifests",
+      "Read-only otool -L and otool -l inspection of installed binaries and dynamic libraries",
+      "Frozen repository toolchain contracts"
+    ],
+    "local_binary_downloads": false,
+    "local_tool_installations": false,
+    "local_tests_builds_imports_or_services": false,
+    "archive_sha256_rule": "These hashes identify official archive blobs. No archive was downloaded or hashed locally. GitHub must download each blob, verify the archive hash and then verify all required installed file hashes.",
+    "source_privacy": "Receipt and SBOM paths are relative to the public Homebrew Cellar layout. No host account name, private cache path or credential is included.",
+    "public_documentation": [
+      "https://docs.brew.sh/Bottles",
+      "https://github.com/actions/setup-python/blob/main/docs/advanced-usage.md"
+    ]
+  },
+  "frozen_contracts": [
+    "som-rs/contracts/rust-output-v1/toolchain.json",
+    "som-rs/contracts/typescript-output-v1/toolchain.json",
+    "som-rs/contracts/react-output-v1/toolchain.json"
+  ],
+  "python": {
+    "version": "3.12.11",
+    "architecture": "arm64",
+    "provisioner": "actions/setup-python",
+    "binary_sha256": null,
+    "rule": "The contracts pin the Python version. They do not pin a Python executable hash. Create som-rs/runtime/acceptance-m3-venv on the GitHub VM and install the required Python packages there before offline acceptance."
+  },
+  "bottle_count": 29,
+  "bottles": [
+    {
+      "formula": "rust",
+      "version": "1.96.1",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/rust/1.96.1",
+      "opt_symlink": "/opt/homebrew/opt/rust",
+      "url": "https://ghcr.io/v2/homebrew/core/rust/blobs/sha256:d925479583e45556833b1b4f29d9a303593d65b67d04eb0802f0f480b32a6d5f",
+      "archive_sha256": "d925479583e45556833b1b4f29d9a303593d65b67d04eb0802f0f480b32a6d5f",
+      "archive_size_bytes": 99990323,
+      "non_system_dynamic_dependencies": [
+        "llvm",
+        "libgit2",
+        "libssh2",
+        "openssl@3",
+        "sqlite"
+      ],
+      "source_evidence": [
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "rust/1.96.1/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/rust/manifests/1.96.1",
+          "ref_name": "1.96.1.arm64_tahoe",
+          "archive_sha256": "d925479583e45556833b1b4f29d9a303593d65b67d04eb0802f0f480b32a6d5f"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "node",
+      "version": "26.5.0",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/node/26.5.0",
+      "opt_symlink": "/opt/homebrew/opt/node",
+      "url": "https://ghcr.io/v2/homebrew/core/node/blobs/sha256:05357c510f3dd0330b4cdea26e7ae406cfb55d88834ef83ecd5e3b7418b6ff37",
+      "archive_sha256": "05357c510f3dd0330b4cdea26e7ae406cfb55d88834ef83ecd5e3b7418b6ff37",
+      "archive_size_bytes": 21186120,
+      "non_system_dynamic_dependencies": [
+        "llhttp",
+        "libuv",
+        "ada-url",
+        "simdjson",
+        "brotli",
+        "c-ares",
+        "hdrhistogram_c",
+        "merve",
+        "nbytes",
+        "libnghttp2",
+        "libnghttp3",
+        "libngtcp2",
+        "sqlite",
+        "libffi",
+        "uvwasi",
+        "zstd",
+        "openssl@3",
+        "icu4c@78"
+      ],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "node/26.5.0/sbom.spdx.json",
+          "archive_sha256": "05357c510f3dd0330b4cdea26e7ae406cfb55d88834ef83ecd5e3b7418b6ff37"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "node/26.5.0/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/node/manifests/26.5.0",
+          "ref_name": "26.5.0.arm64_tahoe",
+          "archive_sha256": "05357c510f3dd0330b4cdea26e7ae406cfb55d88834ef83ecd5e3b7418b6ff37"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "postgresql@17",
+      "version": "17.7",
+      "revision": 1,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/postgresql@17/17.7_1",
+      "opt_symlink": "/opt/homebrew/opt/postgresql@17",
+      "url": "https://ghcr.io/v2/homebrew/core/postgresql/17/blobs/sha256:2656f7aa606f549c30590d6ef7af593efefb354d9e570164bf54c90db0e5680d",
+      "archive_sha256": "2656f7aa606f549c30590d6ef7af593efefb354d9e570164bf54c90db0e5680d",
+      "archive_size_bytes": 19885160,
+      "non_system_dynamic_dependencies": [
+        "gettext",
+        "zstd",
+        "lz4",
+        "openssl@3",
+        "krb5",
+        "icu4c@78"
+      ],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "postgresql@17/17.7_1/sbom.spdx.json",
+          "archive_sha256": "2656f7aa606f549c30590d6ef7af593efefb354d9e570164bf54c90db0e5680d"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "postgresql@17/17.7_1/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/postgresql/17/manifests/17.7_1",
+          "ref_name": "17.7_1.arm64_tahoe",
+          "archive_sha256": "2656f7aa606f549c30590d6ef7af593efefb354d9e570164bf54c90db0e5680d"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "llvm",
+      "version": "22.1.8",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/llvm/22.1.8",
+      "opt_symlink": "/opt/homebrew/opt/llvm",
+      "url": "https://ghcr.io/v2/homebrew/core/llvm/blobs/sha256:d83ee9d03be9f9a5e5795b3ada6b67847735615f4721d19f424dce3632075d19",
+      "archive_sha256": "d83ee9d03be9f9a5e5795b3ada6b67847735615f4721d19f424dce3632075d19",
+      "archive_size_bytes": 451019170,
+      "non_system_dynamic_dependencies": [
+        "z3",
+        "zstd"
+      ],
+      "source_evidence": [
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "llvm/22.1.8/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/llvm/manifests/22.1.8",
+          "ref_name": "22.1.8.arm64_tahoe",
+          "archive_sha256": "d83ee9d03be9f9a5e5795b3ada6b67847735615f4721d19f424dce3632075d19"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github",
+      "extraction_note": "The audited rustc/rustfmt loader chain needs lib/libLLVM.dylib, its symlinks and this entry's dynamic dependencies. LLVM's Python bindings and executables are outside this runtime closure."
+    },
+    {
+      "formula": "z3",
+      "version": "4.16.0",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/z3/4.16.0",
+      "opt_symlink": "/opt/homebrew/opt/z3",
+      "url": "https://ghcr.io/v2/homebrew/core/z3/blobs/sha256:ee99aab378c77dfd90c002bcceb28164c1c78d9705df789151e781dfa26f0177",
+      "archive_sha256": "ee99aab378c77dfd90c002bcceb28164c1c78d9705df789151e781dfa26f0177",
+      "archive_size_bytes": 13058725,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "z3/4.16.0/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/z3/manifests/4.16.0",
+          "ref_name": "4.16.0.arm64_tahoe",
+          "archive_sha256": "ee99aab378c77dfd90c002bcceb28164c1c78d9705df789151e781dfa26f0177"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "libgit2",
+      "version": "1.9.4",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/libgit2/1.9.4",
+      "opt_symlink": "/opt/homebrew/opt/libgit2",
+      "url": "https://ghcr.io/v2/homebrew/core/libgit2/blobs/sha256:bf2ddbba78112618223f7569b64d3010503bd54c8947dacd9efaa04ff9db44eb",
+      "archive_sha256": "bf2ddbba78112618223f7569b64d3010503bd54c8947dacd9efaa04ff9db44eb",
+      "archive_size_bytes": 1944862,
+      "non_system_dynamic_dependencies": [
+        "llhttp",
+        "libssh2"
+      ],
+      "source_evidence": [
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "libgit2/1.9.4/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/libgit2/manifests/1.9.4",
+          "ref_name": "1.9.4.arm64_tahoe",
+          "archive_sha256": "bf2ddbba78112618223f7569b64d3010503bd54c8947dacd9efaa04ff9db44eb"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "libssh2",
+      "version": "1.11.1",
+      "revision": 1,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/libssh2/1.11.1_1",
+      "opt_symlink": "/opt/homebrew/opt/libssh2",
+      "url": "https://ghcr.io/v2/homebrew/core/libssh2/blobs/sha256:b435df4f6ec7e67cff3f37ebac8cad358d3ca42711a818530530470cc65595fc",
+      "archive_sha256": "b435df4f6ec7e67cff3f37ebac8cad358d3ca42711a818530530470cc65595fc",
+      "archive_size_bytes": 422877,
+      "non_system_dynamic_dependencies": [
+        "openssl@3"
+      ],
+      "source_evidence": [
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "libssh2/1.11.1_1/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/libssh2/manifests/1.11.1_1",
+          "ref_name": "1.11.1_1.arm64_tahoe",
+          "archive_sha256": "b435df4f6ec7e67cff3f37ebac8cad358d3ca42711a818530530470cc65595fc"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "ada-url",
+      "version": "3.4.4",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/ada-url/3.4.4",
+      "opt_symlink": "/opt/homebrew/opt/ada-url",
+      "url": "https://ghcr.io/v2/homebrew/core/ada-url/blobs/sha256:14bf3540eb0d168084ff5e748077717f2824badf4697205a2f13135070b1816f",
+      "archive_sha256": "14bf3540eb0d168084ff5e748077717f2824badf4697205a2f13135070b1816f",
+      "archive_size_bytes": 345605,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "node/26.5.0/sbom.spdx.json",
+          "archive_sha256": "14bf3540eb0d168084ff5e748077717f2824badf4697205a2f13135070b1816f"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "ada-url/3.4.4/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/ada-url/manifests/3.4.4",
+          "ref_name": "3.4.4.arm64_tahoe",
+          "archive_sha256": "14bf3540eb0d168084ff5e748077717f2824badf4697205a2f13135070b1816f"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "brotli",
+      "version": "1.2.0",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/brotli/1.2.0",
+      "opt_symlink": "/opt/homebrew/opt/brotli",
+      "url": "https://ghcr.io/v2/homebrew/core/brotli/blobs/sha256:71ffd30ccd74a9f28cfb210c21fcdc1aa5fec79e23ad2264b6dbceb73437601f",
+      "archive_sha256": "71ffd30ccd74a9f28cfb210c21fcdc1aa5fec79e23ad2264b6dbceb73437601f",
+      "archive_size_bytes": 793489,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "brotli/1.2.0/sbom.spdx.json",
+          "archive_sha256": "71ffd30ccd74a9f28cfb210c21fcdc1aa5fec79e23ad2264b6dbceb73437601f"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "brotli/1.2.0/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/brotli/manifests/1.2.0",
+          "ref_name": "1.2.0.arm64_tahoe",
+          "archive_sha256": "71ffd30ccd74a9f28cfb210c21fcdc1aa5fec79e23ad2264b6dbceb73437601f"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "c-ares",
+      "version": "1.34.8",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/c-ares/1.34.8",
+      "opt_symlink": "/opt/homebrew/opt/c-ares",
+      "url": "https://ghcr.io/v2/homebrew/core/c-ares/blobs/sha256:44bcc2e67b97daa265e168281875129161ddbbc964ab16ec0db1846c289cc376",
+      "archive_sha256": "44bcc2e67b97daa265e168281875129161ddbbc964ab16ec0db1846c289cc376",
+      "archive_size_bytes": 307269,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "c-ares/1.34.8/sbom.spdx.json",
+          "archive_sha256": "44bcc2e67b97daa265e168281875129161ddbbc964ab16ec0db1846c289cc376"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "c-ares/1.34.8/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/c-ares/manifests/1.34.8",
+          "ref_name": "1.34.8.arm64_tahoe",
+          "archive_sha256": "44bcc2e67b97daa265e168281875129161ddbbc964ab16ec0db1846c289cc376"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "hdrhistogram_c",
+      "version": "0.11.10",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/hdrhistogram_c/0.11.10",
+      "opt_symlink": "/opt/homebrew/opt/hdrhistogram_c",
+      "url": "https://ghcr.io/v2/homebrew/core/hdrhistogram_c/blobs/sha256:82d614866ee4351be8d84502e69e74efb972fcaa55e2e77ea8eff259ee9f1d56",
+      "archive_sha256": "82d614866ee4351be8d84502e69e74efb972fcaa55e2e77ea8eff259ee9f1d56",
+      "archive_size_bytes": 43587,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "node/26.5.0/sbom.spdx.json",
+          "archive_sha256": "82d614866ee4351be8d84502e69e74efb972fcaa55e2e77ea8eff259ee9f1d56"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "hdrhistogram_c/0.11.10/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/hdrhistogram_c/manifests/0.11.10",
+          "ref_name": "0.11.10.arm64_tahoe",
+          "archive_sha256": "82d614866ee4351be8d84502e69e74efb972fcaa55e2e77ea8eff259ee9f1d56"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "icu4c@78",
+      "version": "78.3",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/icu4c@78/78.3",
+      "opt_symlink": "/opt/homebrew/opt/icu4c@78",
+      "url": "https://ghcr.io/v2/homebrew/core/icu4c/78/blobs/sha256:0476be299494b97e50a48b0ba08811255300228aef664058e555480d6aee4fb5",
+      "archive_sha256": "0476be299494b97e50a48b0ba08811255300228aef664058e555480d6aee4fb5",
+      "archive_size_bytes": 31796939,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "icu4c@78/78.3/sbom.spdx.json",
+          "archive_sha256": "0476be299494b97e50a48b0ba08811255300228aef664058e555480d6aee4fb5"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "icu4c@78/78.3/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/icu4c/78/manifests/78.3",
+          "ref_name": "78.3.arm64_tahoe",
+          "archive_sha256": "0476be299494b97e50a48b0ba08811255300228aef664058e555480d6aee4fb5"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "libffi",
+      "version": "3.7.1",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/libffi/3.7.1",
+      "opt_symlink": "/opt/homebrew/opt/libffi",
+      "url": "https://ghcr.io/v2/homebrew/core/libffi/blobs/sha256:083d67dec69dc4366f58310a6b3a333ca04b4a56ddf0822c03cdd485b350ee20",
+      "archive_sha256": "083d67dec69dc4366f58310a6b3a333ca04b4a56ddf0822c03cdd485b350ee20",
+      "archive_size_bytes": 258361,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "libffi/3.7.1/sbom.spdx.json",
+          "archive_sha256": "083d67dec69dc4366f58310a6b3a333ca04b4a56ddf0822c03cdd485b350ee20"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "libffi/3.7.1/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/libffi/manifests/3.7.1",
+          "ref_name": "3.7.1.arm64_tahoe",
+          "archive_sha256": "083d67dec69dc4366f58310a6b3a333ca04b4a56ddf0822c03cdd485b350ee20"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "libnghttp2",
+      "version": "1.69.0",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/libnghttp2/1.69.0",
+      "opt_symlink": "/opt/homebrew/opt/libnghttp2",
+      "url": "https://ghcr.io/v2/homebrew/core/libnghttp2/blobs/sha256:55b9dc076497af5b4ccfcf35a3a9d1957d60ae8ea0f6a0009b5d418c753b60ec",
+      "archive_sha256": "55b9dc076497af5b4ccfcf35a3a9d1957d60ae8ea0f6a0009b5d418c753b60ec",
+      "archive_size_bytes": 231364,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "libnghttp2/1.69.0/sbom.spdx.json",
+          "archive_sha256": "55b9dc076497af5b4ccfcf35a3a9d1957d60ae8ea0f6a0009b5d418c753b60ec"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "libnghttp2/1.69.0/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/libnghttp2/manifests/1.69.0",
+          "ref_name": "1.69.0.arm64_tahoe",
+          "archive_sha256": "55b9dc076497af5b4ccfcf35a3a9d1957d60ae8ea0f6a0009b5d418c753b60ec"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "libnghttp3",
+      "version": "1.17.0",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/libnghttp3/1.17.0",
+      "opt_symlink": "/opt/homebrew/opt/libnghttp3",
+      "url": "https://ghcr.io/v2/homebrew/core/libnghttp3/blobs/sha256:1acc6f9318f853f1fc4d7c5f7f6ebb0c759c6a4ab6c200db30b8ea4beae8525a",
+      "archive_sha256": "1acc6f9318f853f1fc4d7c5f7f6ebb0c759c6a4ab6c200db30b8ea4beae8525a",
+      "archive_size_bytes": 190597,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "node/26.5.0/sbom.spdx.json",
+          "archive_sha256": "1acc6f9318f853f1fc4d7c5f7f6ebb0c759c6a4ab6c200db30b8ea4beae8525a"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "libnghttp3/1.17.0/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/libnghttp3/manifests/1.17.0",
+          "ref_name": "1.17.0.arm64_tahoe",
+          "archive_sha256": "1acc6f9318f853f1fc4d7c5f7f6ebb0c759c6a4ab6c200db30b8ea4beae8525a"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "libngtcp2",
+      "version": "1.24.0",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/libngtcp2/1.24.0",
+      "opt_symlink": "/opt/homebrew/opt/libngtcp2",
+      "url": "https://ghcr.io/v2/homebrew/core/libngtcp2/blobs/sha256:fef0498ca38e3ed15d2c7bae07646db1a9bbe3fac71e672d8e0cb1e4e5b1c741",
+      "archive_sha256": "fef0498ca38e3ed15d2c7bae07646db1a9bbe3fac71e672d8e0cb1e4e5b1c741",
+      "archive_size_bytes": 422605,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "node/26.5.0/sbom.spdx.json",
+          "archive_sha256": "fef0498ca38e3ed15d2c7bae07646db1a9bbe3fac71e672d8e0cb1e4e5b1c741"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "libngtcp2/1.24.0/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/libngtcp2/manifests/1.24.0",
+          "ref_name": "1.24.0.arm64_tahoe",
+          "archive_sha256": "fef0498ca38e3ed15d2c7bae07646db1a9bbe3fac71e672d8e0cb1e4e5b1c741"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "libuv",
+      "version": "1.52.1",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/libuv/1.52.1",
+      "opt_symlink": "/opt/homebrew/opt/libuv",
+      "url": "https://ghcr.io/v2/homebrew/core/libuv/blobs/sha256:6e8478545dc49bd505a4fac61617cd15d8fec4475d2add5ea1cc92f7281818bf",
+      "archive_sha256": "6e8478545dc49bd505a4fac61617cd15d8fec4475d2add5ea1cc92f7281818bf",
+      "archive_size_bytes": 375668,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "node/26.5.0/sbom.spdx.json",
+          "archive_sha256": "6e8478545dc49bd505a4fac61617cd15d8fec4475d2add5ea1cc92f7281818bf"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "libuv/1.52.1/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/libuv/manifests/1.52.1",
+          "ref_name": "1.52.1.arm64_tahoe",
+          "archive_sha256": "6e8478545dc49bd505a4fac61617cd15d8fec4475d2add5ea1cc92f7281818bf"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "llhttp",
+      "version": "9.4.2",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/llhttp/9.4.2",
+      "opt_symlink": "/opt/homebrew/opt/llhttp",
+      "url": "https://ghcr.io/v2/homebrew/core/llhttp/blobs/sha256:3514845e73dd4a73da75c3d1987bdc9f1fd2fe5fe105802949637d121574ba0e",
+      "archive_sha256": "3514845e73dd4a73da75c3d1987bdc9f1fd2fe5fe105802949637d121574ba0e",
+      "archive_size_bytes": 38280,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "node/26.5.0/sbom.spdx.json",
+          "archive_sha256": "3514845e73dd4a73da75c3d1987bdc9f1fd2fe5fe105802949637d121574ba0e"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "llhttp/9.4.2/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/llhttp/manifests/9.4.2",
+          "ref_name": "9.4.2.arm64_tahoe",
+          "archive_sha256": "3514845e73dd4a73da75c3d1987bdc9f1fd2fe5fe105802949637d121574ba0e"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "merve",
+      "version": "1.2.2",
+      "revision": 1,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/merve/1.2.2_1",
+      "opt_symlink": "/opt/homebrew/opt/merve",
+      "url": "https://ghcr.io/v2/homebrew/core/merve/blobs/sha256:762282750ff31f5f38c273aa346bcaefe71d9f488b222e0e67686eb55a5187fc",
+      "archive_sha256": "762282750ff31f5f38c273aa346bcaefe71d9f488b222e0e67686eb55a5187fc",
+      "archive_size_bytes": 32978,
+      "non_system_dynamic_dependencies": [
+        "simdutf"
+      ],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "node/26.5.0/sbom.spdx.json",
+          "archive_sha256": "762282750ff31f5f38c273aa346bcaefe71d9f488b222e0e67686eb55a5187fc"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "merve/1.2.2_1/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/merve/manifests/1.2.2_1",
+          "ref_name": "1.2.2_1.arm64_tahoe",
+          "archive_sha256": "762282750ff31f5f38c273aa346bcaefe71d9f488b222e0e67686eb55a5187fc"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "nbytes",
+      "version": "0.1.4",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/nbytes/0.1.4",
+      "opt_symlink": "/opt/homebrew/opt/nbytes",
+      "url": "https://ghcr.io/v2/homebrew/core/nbytes/blobs/sha256:bc0a989ffab822c0ef0b5122cfc9f046be9b8c6b681dd09a3691c9963c44a282",
+      "archive_sha256": "bc0a989ffab822c0ef0b5122cfc9f046be9b8c6b681dd09a3691c9963c44a282",
+      "archive_size_bytes": 13345,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "node/26.5.0/sbom.spdx.json",
+          "archive_sha256": "bc0a989ffab822c0ef0b5122cfc9f046be9b8c6b681dd09a3691c9963c44a282"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "nbytes/0.1.4/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/nbytes/manifests/0.1.4",
+          "ref_name": "0.1.4.arm64_tahoe",
+          "archive_sha256": "bc0a989ffab822c0ef0b5122cfc9f046be9b8c6b681dd09a3691c9963c44a282"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "openssl@3",
+      "version": "3.6.3",
+      "revision": 0,
+      "bottle_rebuild": 1,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/openssl@3/3.6.3",
+      "opt_symlink": "/opt/homebrew/opt/openssl@3",
+      "url": "https://ghcr.io/v2/homebrew/core/openssl/3/blobs/sha256:2d995a1bbbd8e6ee6a9042990dde87e7321d1ddd5716ffee53b140d23cb9f92f",
+      "archive_sha256": "2d995a1bbbd8e6ee6a9042990dde87e7321d1ddd5716ffee53b140d23cb9f92f",
+      "archive_size_bytes": 10916538,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "openssl@3/3.6.3/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS",
+            "homebrew_version=6.0.6-117-g20ce576 matches rebuild 1 OCI sh.brew.tab",
+            "changed_files and built_on match rebuild 1 OCI sh.brew.tab"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/openssl/3/manifests/3.6.3-1",
+          "ref_name": "3.6.3.arm64_tahoe.1",
+          "archive_sha256": "2d995a1bbbd8e6ee6a9042990dde87e7321d1ddd5716ffee53b140d23cb9f92f"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github",
+      "selection_note": "Rebuild 1 is inferred from the installed receipt and dependency receipts. The installed self-SBOM names rebuild 0. Only the frozen libcrypto and libssl hashes on GitHub can confirm the required byte identity.",
+      "alternatives": [
+        {
+          "bottle_rebuild": 0,
+          "target": "arm64_tahoe",
+          "url": "https://ghcr.io/v2/homebrew/core/openssl/3/blobs/sha256:235c30e706c96896ce2be9a38032bf54f46b2aaa1e7193d3cdd73446124fc7be",
+          "archive_sha256": "235c30e706c96896ce2be9a38032bf54f46b2aaa1e7193d3cdd73446124fc7be",
+          "archive_size_bytes": 10916109,
+          "source_evidence": [
+            {
+              "kind": "installed_sbom",
+              "path_relative_to_cellar": "openssl@3/3.6.3/sbom.spdx.json"
+            },
+            {
+              "kind": "official_oci_index",
+              "url": "https://ghcr.io/v2/homebrew/core/openssl/3/manifests/3.6.3",
+              "ref_name": "3.6.3.arm64_tahoe"
+            }
+          ],
+          "status": "recorded_conflicting_metadata_not_verified_against_frozen_hashes"
+        }
+      ]
+    },
+    {
+      "formula": "simdjson",
+      "version": "4.6.4",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/simdjson/4.6.4",
+      "opt_symlink": "/opt/homebrew/opt/simdjson",
+      "url": "https://ghcr.io/v2/homebrew/core/simdjson/blobs/sha256:78c41aca5e97f628caf04ff851e161e8a08fb8dd0876a6e5919806a639e97228",
+      "archive_sha256": "78c41aca5e97f628caf04ff851e161e8a08fb8dd0876a6e5919806a639e97228",
+      "archive_size_bytes": 1443276,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "node/26.5.0/sbom.spdx.json",
+          "archive_sha256": "78c41aca5e97f628caf04ff851e161e8a08fb8dd0876a6e5919806a639e97228"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "simdjson/4.6.4/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/simdjson/manifests/4.6.4",
+          "ref_name": "4.6.4.arm64_tahoe",
+          "archive_sha256": "78c41aca5e97f628caf04ff851e161e8a08fb8dd0876a6e5919806a639e97228"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "simdutf",
+      "version": "9.0.0",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/simdutf/9.0.0",
+      "opt_symlink": "/opt/homebrew/opt/simdutf",
+      "url": "https://ghcr.io/v2/homebrew/core/simdutf/blobs/sha256:a38c1bba8d023f968b80abdb392c149c2f5ae6930ddc1c929fb802a722c6aa54",
+      "archive_sha256": "a38c1bba8d023f968b80abdb392c149c2f5ae6930ddc1c929fb802a722c6aa54",
+      "archive_size_bytes": 391090,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "node/26.5.0/sbom.spdx.json",
+          "archive_sha256": "a38c1bba8d023f968b80abdb392c149c2f5ae6930ddc1c929fb802a722c6aa54"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "simdutf/9.0.0/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/simdutf/manifests/9.0.0",
+          "ref_name": "9.0.0.arm64_tahoe",
+          "archive_sha256": "a38c1bba8d023f968b80abdb392c149c2f5ae6930ddc1c929fb802a722c6aa54"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "sqlite",
+      "version": "3.53.3",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/sqlite/3.53.3",
+      "opt_symlink": "/opt/homebrew/opt/sqlite",
+      "url": "https://ghcr.io/v2/homebrew/core/sqlite/blobs/sha256:31568d1c8cdabc459b16f582887e6b28613970422c9769253c9fa67cc6356349",
+      "archive_sha256": "31568d1c8cdabc459b16f582887e6b28613970422c9769253c9fa67cc6356349",
+      "archive_size_bytes": 2450810,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "node/26.5.0/sbom.spdx.json",
+          "archive_sha256": "31568d1c8cdabc459b16f582887e6b28613970422c9769253c9fa67cc6356349"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "sqlite/3.53.3/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/sqlite/manifests/3.53.3",
+          "ref_name": "3.53.3.arm64_tahoe",
+          "archive_sha256": "31568d1c8cdabc459b16f582887e6b28613970422c9769253c9fa67cc6356349"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "uvwasi",
+      "version": "0.0.23",
+      "revision": 0,
+      "bottle_rebuild": 1,
+      "target": "arm64_sequoia",
+      "expected_keg_directory": "/opt/homebrew/Cellar/uvwasi/0.0.23",
+      "opt_symlink": "/opt/homebrew/opt/uvwasi",
+      "url": "https://ghcr.io/v2/homebrew/core/uvwasi/blobs/sha256:3bbe2380eb184f540f5b23a9cd2f92ef21a4779b04ff6068b6c3a0b4e7865c7e",
+      "archive_sha256": "3bbe2380eb184f540f5b23a9cd2f92ef21a4779b04ff6068b6c3a0b4e7865c7e",
+      "archive_size_bytes": 70145,
+      "non_system_dynamic_dependencies": [
+        "libuv"
+      ],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "uvwasi/0.0.23/sbom.spdx.json",
+          "archive_sha256": "3bbe2380eb184f540f5b23a9cd2f92ef21a4779b04ff6068b6c3a0b4e7865c7e"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "uvwasi/0.0.23/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/uvwasi/manifests/0.0.23-1",
+          "ref_name": "0.0.23.arm64_sequoia.1",
+          "archive_sha256": "3bbe2380eb184f540f5b23a9cd2f92ef21a4779b04ff6068b6c3a0b4e7865c7e"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github",
+      "selection_note": "The installed receipt was built on macOS 15.4. The installed self-SBOM and official rebuild-1 index both identify the arm64_sequoia bottle. Keep this target to preserve the frozen library bytes."
+    },
+    {
+      "formula": "zstd",
+      "version": "1.5.7",
+      "revision": 1,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/zstd/1.5.7_1",
+      "opt_symlink": "/opt/homebrew/opt/zstd",
+      "url": "https://ghcr.io/v2/homebrew/core/zstd/blobs/sha256:628a4ef53428d0078e3d76d297171ce8d0294f5ec1de3f20305e08c4dd333565",
+      "archive_sha256": "628a4ef53428d0078e3d76d297171ce8d0294f5ec1de3f20305e08c4dd333565",
+      "archive_size_bytes": 793560,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "zstd/1.5.7_1/sbom.spdx.json",
+          "archive_sha256": "628a4ef53428d0078e3d76d297171ce8d0294f5ec1de3f20305e08c4dd333565"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "zstd/1.5.7_1/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/zstd/manifests/1.5.7_1",
+          "ref_name": "1.5.7_1.arm64_tahoe",
+          "archive_sha256": "628a4ef53428d0078e3d76d297171ce8d0294f5ec1de3f20305e08c4dd333565"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "gettext",
+      "version": "1.0",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/gettext/1.0",
+      "opt_symlink": "/opt/homebrew/opt/gettext",
+      "url": "https://ghcr.io/v2/homebrew/core/gettext/blobs/sha256:1f98400343132c8e469ed475157f8f4d0f516ea86bd4600552e8b75ab638fcf9",
+      "archive_sha256": "1f98400343132c8e469ed475157f8f4d0f516ea86bd4600552e8b75ab638fcf9",
+      "archive_size_bytes": 10229347,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "gettext/1.0/sbom.spdx.json",
+          "archive_sha256": "1f98400343132c8e469ed475157f8f4d0f516ea86bd4600552e8b75ab638fcf9"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "gettext/1.0/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/gettext/manifests/1.0",
+          "ref_name": "1.0.arm64_tahoe",
+          "archive_sha256": "1f98400343132c8e469ed475157f8f4d0f516ea86bd4600552e8b75ab638fcf9"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "krb5",
+      "version": "1.22.1",
+      "revision": 0,
+      "bottle_rebuild": 1,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/krb5/1.22.1",
+      "opt_symlink": "/opt/homebrew/opt/krb5",
+      "url": "https://ghcr.io/v2/homebrew/core/krb5/blobs/sha256:ba7292c48faba4e1316a134b578075438a4a5fd68ce7a26a078c01299a5ad567",
+      "archive_sha256": "ba7292c48faba4e1316a134b578075438a4a5fd68ce7a26a078c01299a5ad567",
+      "archive_size_bytes": 1330972,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "krb5/1.22.1/sbom.spdx.json",
+          "archive_sha256": "ba7292c48faba4e1316a134b578075438a4a5fd68ce7a26a078c01299a5ad567"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "krb5/1.22.1/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/krb5/manifests/1.22.1-1",
+          "ref_name": "1.22.1.arm64_tahoe.1",
+          "archive_sha256": "ba7292c48faba4e1316a134b578075438a4a5fd68ce7a26a078c01299a5ad567"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "lz4",
+      "version": "1.10.0",
+      "revision": 0,
+      "bottle_rebuild": 1,
+      "target": "arm64_sonoma",
+      "expected_keg_directory": "/opt/homebrew/Cellar/lz4/1.10.0",
+      "opt_symlink": "/opt/homebrew/opt/lz4",
+      "url": "https://ghcr.io/v2/homebrew/core/lz4/blobs/sha256:6590245dc4a919c46afa16366914cd4b5c0c4a8f4fb35a4f6ab89053f289ae5d",
+      "archive_sha256": "6590245dc4a919c46afa16366914cd4b5c0c4a8f4fb35a4f6ab89053f289ae5d",
+      "archive_size_bytes": 275196,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "lz4/1.10.0/sbom.spdx.json",
+          "archive_sha256": "6590245dc4a919c46afa16366914cd4b5c0c4a8f4fb35a4f6ab89053f289ae5d"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "lz4/1.10.0/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/lz4/manifests/1.10.0-1",
+          "ref_name": "1.10.0.arm64_sonoma.1",
+          "archive_sha256": "6590245dc4a919c46afa16366914cd4b5c0c4a8f4fb35a4f6ab89053f289ae5d"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github",
+      "selection_note": "The installed receipt was built on macOS 14.4. The installed self-SBOM and official rebuild-1 index both identify the arm64_sonoma bottle."
+    }
+  ],
+  "relocation": {
+    "strategy": "Extract the selected archives into /opt/homebrew/Cellar on the disposable GitHub VM and set each recorded opt symlink to its expected keg. Preserve archive bytes, executable modes and symlinks.",
+    "prohibited_before_frozen_hash_checks": [
+      "Do not run brew install or brew upgrade to select current formula versions.",
+      "Do not call install_name_tool, codesign, strip or any other binary rewrite.",
+      "Do not replace a frozen library with another bottle target or rebuild merely because its version matches."
+    ],
+    "unverified": "Raw archive extraction may differ from the historical Homebrew installed bytes. The receipt metadata does not prove that no Mach-O relocation or signing step occurred. Fail provisioning if any frozen hash differs. Record the actual mismatch before deciding on an explicit repair.",
+    "node_npm": {
+      "copy_from": "/opt/homebrew/Cellar/node/26.5.0/libexec/lib/node_modules/npm",
+      "copy_to": "/opt/homebrew/lib/node_modules/npm",
+      "preserve_symlinks": true,
+      "write_file": "/opt/homebrew/lib/node_modules/npm/npmrc",
+      "write_content": "prefix = /opt/homebrew\n",
+      "source": "node/26.5.0/.brew/node.rb post_install and the installed npmrc",
+      "verification": "Require the npm tree hash, file count and symlink count from the frozen React and TypeScript toolchain contracts after this setup."
+    },
+    "postgresql_links": [
+      {
+        "link": "/opt/homebrew/share/postgresql@17",
+        "target": "/opt/homebrew/Cellar/postgresql@17/17.7_1/share/postgresql"
+      },
+      {
+        "link": "/opt/homebrew/lib/postgresql@17",
+        "target": "/opt/homebrew/Cellar/postgresql@17/17.7_1/lib/postgresql"
+      }
+    ],
+    "postgresql_note": "Do not run Homebrew post_install or start a global database service. The acceptance host makes a fresh cluster with the pinned initdb and pg_ctl executables and LC_ALL=C."
+  },
+  "required_github_verification": [
+    "Verify each downloaded archive SHA-256 before extraction.",
+    "Inspect archive paths and require the expected formula/version keg before extraction.",
+    "Verify the six Rust binary hashes in the frozen Rust toolchain contract.",
+    "Verify the frozen Node executable, libnode and all frozen Homebrew library file hashes.",
+    "Verify the frozen npm tree hash, file count and symlink count.",
+    "Verify the three frozen PostgreSQL executable hashes.",
+    "Verify Python reports version 3.12.11 on arm64.",
+    "Verify the transported npm cache tree and its frozen file count.",
+    "Check loader availability for the installed compiler, Node and PostgreSQL closure.",
+    "Complete dependency downloads on GitHub, then use the existing offline build and acceptance settings. Do not treat successful provisioning as product acceptance."
+  ],
+  "closure_notes": [
+    "The 29 selected bottles cover the inspected Rust compiler/formatter, Node/libnode and PostgreSQL loader chains outside macOS system libraries.",
+    "System libraries and frameworks under /usr/lib and /System/Library are provided by the macOS runner. The contracts do not hash them.",
+    "The Node loader chain also needs simdutf through merve even though simdutf is not a direct frozen node.homebrew_libraries entry.",
+    "The Rust loader chain needs the matching Rust driver library and sysroot from the Rust keg, libLLVM from LLVM, z3, libgit2, libssh2, llhttp, OpenSSL, sqlite and zstd.",
+    "PostgreSQL needs its own libpq and share data in addition to the executable files. Its loader chain also uses gettext, krb5, lz4, ICU, OpenSSL and zstd.",
+    "Receipt dependency lists describe the installation event. Current opt links can point to newer compatible dependency kegs. This file uses the inspected runtime closure and preserves the explicit OpenSSL metadata conflict.",
+    "Build-only tools and optional LLVM Python bindings are outside the inspected dynamic runtime closure. The GitHub VM still needs its normal Xcode command line tools, linker, lsof and time utilities."
+  ]
+}
