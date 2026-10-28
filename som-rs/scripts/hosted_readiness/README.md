@@ -201,3 +201,24 @@ Its saved artifacts passed source, license, version, binary-byte and log checks.
 Artifact upload follows aliases and changes modes. A reuse installer must restore
 only the recorded internal links and modes, then check the tools again on GitHub.
 Services, dependency closure and product behavior remain separate unrun gates.
+
+The Python environment consumer checks all 671 product slots and both compile variants.
+It requires each exact frozen raw assembly reply and complete saved file map.
+It keeps observer and product requirements separate. It emits environment inputs.
+The full transitive wheel source and offline environment tests are still required.
+
+The Cargo closure job uses two real products from the complete assembly artifact.
+It verifies their exact frozen manifests, locks, complete files and compile proofs.
+Cargo supplies the full 352-package union from both unchanged locks.
+The helper checks every publisher archive, vendor checksum and license file.
+It preserves the complete failure tree. An unknown byte change fails the job.
+This prepares dependency files. Full product builds and behavior remain unrun.
+
+The separate TS125 historical export preserves all 125 cases and 1,375 product file hashes.
+It keeps 246 compile forms, 791 historical target rows and exact response roles.
+Missing directly recorded request hashes stay null. Canary operations stay separate.
+A second source-bound artifact reconstructs 146 compile and 125 assembly request hashes.
+It calibrates all 140 recorded compile hashes and both known canary assembly bodies.
+The accepted header binds both HTTP writers. Its old product checker differs from the current one.
+All 100 legacy CNL request member-order gaps remain null and unrun.
+These artifacts provide historical evidence. They do not pass full TypeScript acceptance.

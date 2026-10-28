@@ -1,0 +1,83 @@
+{
+  "version": "som.m12-cargo-registry-closure-independent-source-review.v1",
+  "reviewer": "independent compile_driver_review agent; not the Cargo author",
+  "candidate_base_head": "3fee9c204315518b3ea0ee4582351d5f5cca80dc",
+  "scope": "Source-only review of the full352 frozen registry dependency closure, two real generated reference product consumers,19 synthetic definitions and GitHub job fragment. No product acceptance.",
+  "source_review_passed": true,
+  "actionable_findings_remaining": [],
+  "reviewed_patch_sha256": "83fab787ff7657ca901028fcec904b32347a15dba7b946f87d1db2f35e7bbb77",
+  "files": {
+    "som-rs/scripts/hosted_readiness/product_runtime/provision_cargo.py": "bf1fb6b19eae41515ea9a44fe4aaf143b0c3105ecd75360107b6433e6eb28f91",
+    "som-rs/scripts/hosted_readiness/product_runtime/test_provision_cargo.py": "04bc4f482fa6cc13f5b37633323ecf7c87cfbf66b06a95938a9418a43ba15d82",
+    "som-rs/scripts/hosted_readiness/product_runtime/CARGO_CLOSURE.md": "f3f7c87f8cf5ad7cc54fa8da528d6b0821bba7a5e31f4314045ba4bf33cc5626"
+  },
+  "workflow_fragment_sha256": "6fb6288288ab3735cdf63fab0cb2c2e7306c53cfe25831bb578b60566ddf2a2c",
+  "checked": [
+    "The helper binds itself, shared runtime support, frozen manifests/locks, toolchain record and compile/file-map authorities to exact regular Git blobs at the declared HEAD. Complete working bytes, repository root, blob identity and bounds are checked. Expected artifact hashes do not come from environment overrides.",
+    "Both frozen locks retain exact raw hashes and one real som_app local package. Only locked crates.io registry tuples are admitted. Duplicate/conflicting identities, checksums or alternate registries fail. The union is exactly352 packages.",
+    "The consumer checks complete ordered2041 compile receipt identities/states and697 Rust assembly product names. It selects only real phase1 example-v1 and phase2 services14-0000 for dependency closure. It does not claim to rerun all product gates.",
+    "Both selected complete text maps match independent frozen golden hashes and all recorded per-file bytes. Real src/main.rs,Cargo.toml,Cargo.lock are required. Each manifest/lock is byte-identical to its frozen reference. Copied roots, stubs and changed source fail.",
+    "The selected raw compile and assembly records bind the exact current bundle, payload and complete returned file map. A single bound ExperimentalChecker at the declared HEAD independently verifies both selected raw compile replies again against committed TS065 and source-derived metadata. Mutable checker.json reports cannot replace that authority.",
+    "Cargo/rustc paths must be regular executable native ELF files. Exact1.96.1 versions, GNU Linux host and frozen rustc upstream commit are required. Their hashes are observed, explicitly not independently admitted future binary pins.",
+    "Every publisher archive is downloaded from an allowed official crates.io host and checked against its exact locked checksum before bounded tar inspection. Root paths, links, special types, duplicates, manifest identity, member sizes, trailing data and complete file hashes are checked. Original archives, license expressions and collected license/notice bytes are retained.",
+    "Cargo itself creates the vendor source and checksum metadata using both real manifests with --locked,--versioned-dirs and --sync. The helper never fabricates an index or replacement checksum map. Exact vendor directory names, package checksums, complete actual file hashes and publisher bytes must agree.",
+    "Only the explicit Cargo metadata/patch-backup omissions are allowed. This list agrees with the cited pinned upstream vendor source. Any changed publisher byte or another omission fails and leaves concrete review evidence.",
+    "A fresh Cargo home uses Cargo's own emitted source replacement configuration and offline mode. Both real projects must pass metadata --locked --offline. Frozen Cargo files and staged source remain unchanged. These commands do not build or test products.",
+    "A safe relative tar preserves complete vendor checksum/source files and their recorded modes, collected licenses and all original crate archives. It binds the archive hash. The absolute source path configuration is for the owned run; relocation requires a separate checked configuration step.",
+    "Inputs and output must be owned paths below RUNNER_TEMP with a new output outside input/source trees. Inherited Cargo configuration is refused. The shared runner uses a fixed child environment, process session, logs, timeout cleanup and signal handling.",
+    "The job preserves the complete bounded closure tree on failure, including publisher downloads, complete vendor sources and Cargo cache. This makes unknown transformations or checksum failures independently reviewable.",
+    "All19 synthetic definitions were read, including complete real lock union, Git binding, archive hash/path/link/duplicate checks, license data, complete Cargo checksum/publisher comparisons, rehashed stub refusal, unsafe config, real reference products, independent rehashed compile proof refusal, source staging, tar modes and missing inputs."
+  ],
+  "independent_existing_lock_data_analysis": {
+    "execution_kind": "Standard-library reads,TOML/JSON metadata parsing,hashes and AST only. No proposed module imported or executed.",
+    "phase1_registry_packages": 203,
+    "phase2_registry_packages": 334,
+    "overlap": 185,
+    "union": 352,
+    "phase1_lock_sha256": "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20",
+    "phase2_lock_sha256": "0483374722515e3daa7f8509708abb9c551f1bc1815f9110e6662b893db443ad",
+    "phase1_manifest_sha256": "8b708c38686b77e6740171e24c28793c4a40b54a8e9807f8e147a9ef3b44591d",
+    "phase2_manifest_sha256": "d06a474e62ab474465c73f4ad99ddcf5d0e33a750684e3a8cfa83714949cd430"
+  },
+  "resolved_findings": [
+    "The initial selected compile proof trusted mutable checker metadata. The fix instantiates the bound independent checker once and verifies both actual raw replies against fixed authority. A rehashed altered-DSL/checker/request fixture proves the intended refusal path.",
+    "The initial failure upload lost original archives and non-manifest vendor source bytes. The fixed fragment retains the complete owned closure tree even when qualification stops before creating the final archive."
+  ],
+  "primary_source_checks": [
+    {
+      "claim": "Cargo's command supports the selected additional-manifest,versioned-directory,locked and offline resolution approach.",
+      "source": "https://doc.rust-lang.org/cargo/commands/cargo-vendor.html"
+    },
+    {
+      "claim": "The helper's explicit metadata and patch-backup omission list agrees with cp_sources at this pinned upstream Cargo source. Actual hosted1.96.1 byte behavior remains to be qualified.",
+      "source": "https://rust.googlesource.com/cargo/+/f8984e1169dc670fd1c002d68c8c5efee63ff514/src/cargo/ops/vendor.rs"
+    }
+  ],
+  "static_checks": {
+    "AST_syntax": "passed; syntax parsing only",
+    "read_only_git_apply_check": "passed",
+    "patch_file_hashes": "independently reconstructed and matched",
+    "synthetic_test_definitions": 19,
+    "test_execution": "unrun"
+  },
+  "integration_guidance": [
+    "Use the same candidate's complete compile/assembly artifact with both real named reference products. Confirm the actual artifact root before using the fragment's input/_temp/som-unsealed-native-compile route.",
+    "Keep the fragment's complete closure failure upload and hidden files. The Cargo toolchain and every native operation run only on GitHub.",
+    "The current archive configuration includes the owned absolute vendor path. Any moved archive needs an explicit checked configuration step; do not claim portable offline readiness before that step and actual offline builds.",
+    "Independently audit actual crate/vendor/checksum/license/archive and offline-resolution outputs. Source review, dependency resolution and a two-reference closure cannot substitute for all unchanged product,clippy,test,behavior and release gates."
+  ],
+  "local_execution": {
+    "source_metadata_hash_AST_and_read_only_patch_checks": true,
+    "proposed_helper_or_checker_imports_runs": false,
+    "tests": false,
+    "Cargo_or_rustc_commands": false,
+    "crate_download_or_native_candidate_programs": false,
+    "builds": false,
+    "services_or_products": false
+  },
+  "hosted_closure_execution": "unrun",
+  "product_builds_and_behavior": "unrun",
+  "toolchain_binary_authority": "observed hashes only; not independently admitted",
+  "product_acceptance_passed": false,
+  "next_step": "Root may commit the exact reviewed patch and integrated job, run all19 fixtures plus the complete352 registry qualification on GitHub, then independently audit the actual saved evidence. Preserve all unrun gates and separate platform/policy acceptance."
+}

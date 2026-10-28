@@ -1,0 +1,196 @@
+{
+  "actionable_findings": [],
+  "classification": "public_hash_only_review_metadata",
+  "drift": {
+    "accepted_header_and_candidate_git_sha256": "90930bdee4257f0eb4ca7f627547b2314aea0f798d238ecb1aa42d224291c96b",
+    "authority": "Accepted header-pinned source is used. Current public dependency is not substituted.",
+    "compact_dependency_path": "som-rs/tests/rust-output-v1/build_negative_cases.py",
+    "product_checker": "Current product checker differs from accepted before checker. Neither checker is used to prove these request encodings.",
+    "public_ed56_source_sha256": "6c0d9313452a8e44f93b981babadf3b7ab433a96d3d9020e56f1004a62f7c7c7"
+  },
+  "immutable_previous_artifacts": [
+    {
+      "path": "som-rs/scripts/hosted_readiness/inputs/ts125-baseline-hashes-v1.json",
+      "raw_sha256": "7009c29b93714dc1a827236b4ebeb255efc99c91c61460bc7a5ded49c902c868",
+      "state": "unchanged"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json",
+      "raw_sha256": "650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9",
+      "state": "unchanged"
+    }
+  ],
+  "input_closure": {
+    "accepted_candidate": "Exact 8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af and binary 2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c retained; no new candidate inputs or results used.",
+    "accepted_compile_replies": "All selected raw response digests, repeated reply bytes and bundle canonical hashes match. Entire 881-file bundles/responses tree matches its accepted receipt.",
+    "coverage": "Header and inventory pin the coverage index. All selected prompt/CNL file raw hashes match frozen inventory.",
+    "frozen_inventory_and_target_examples": "Exact source archive member bytes and accepted candidate source manifest hashes verified.",
+    "legacy_result": "Raw 445b34112c974b2bcc70472f374b22ac8289e073d12e9c7042c7f8e252e89e56 matches both accepted python-baseline report bindings. All selected indexes, IDs, prompt hashes and source CNL bytes match.",
+    "legacy_typed_request": "Observed raw-file hashes are explicitly observed. All 100 compact complete TS request hashes match independent historical request hashes, binding the used object order.",
+    "positive_fixtures": "The complete fixture file matches the frozen inventory source hash. Each selected canonical prompt/CNL value hash and complete recorded request calibration also matches."
+  },
+  "next_step": "Root may publish these exact reviewed source and metadata bytes and run the 16 synthetic tests on GitHub. Keep all recorded null fields and the 100 legacy CNL member-order gaps explicit.",
+  "policy_state": "unsealed",
+  "primary_data_audit": {
+    "raw_sha256": "da88b88ba26c81d6cfc4bef354fd2c0ec8436f08a9f46f5a4a24ede7f1a6a7f2",
+    "result": {
+      "accepted_bundle_response_tree": {
+        "files": 881,
+        "raw_tree_sha256": "7fdfde2f2c575ec081f40182e649b7e1fe61fb39dfb84a5d9aab76ae7ce21c42"
+      },
+      "accepted_header_raw_sha256": "086d83c57e90ec3c2da85b23d450987bbe2e9b2a6a2bb955ab2cb9d67119355a",
+      "accepted_source_archive_files_verified": 150,
+      "all_371_operation_metadata_and_input_bindings": "matched",
+      "counts": {
+        "assemble_reconstructed": 125,
+        "compile_reconstructed": 146,
+        "compile_unrun": 100,
+        "direct_compile_calibrations": 140,
+        "reconstructed_cnl": 21,
+        "reconstructed_json": 125
+      },
+      "immutable_recorded_request_fields": "unchanged; missing hashes remain null",
+      "legacy_cnl_gap": "100 unrun/null; source text hash does not bind loaded request-object member order",
+      "method": "Independent stdlib JSON/hash, AST, accepted archive reads and fixed Git blob reads only. No proposed helper or historical writer was imported or executed. Fixed JSON encodings were hashed only as data; no request artifacts were emitted.",
+      "policy_state": "unsealed",
+      "primary_accepted_files_verified": 97,
+      "product_acceptance_passed": false,
+      "reviewed_artifact_bytes": 863714,
+      "reviewed_artifact_raw_sha256": "fe0408c4449a019d8c81efe72f8930db117f4a027896609924d28ad87b4642e9",
+      "separate_canary_assemble_whole_body_calibrations": 2,
+      "synthetic_test_definitions": 16,
+      "synthetic_tests": "unrun; GitHub runner required",
+      "verdict": "MATCHED_PRIMARY_HISTORICAL_DATA",
+      "version": "som.ts125-reconstructed-before-independent-metadata-audit.v1",
+      "writer_source_bindings": [
+        {
+          "path": "som-rs/scripts/typescript_output_acceptance/check_bundles.py",
+          "raw_sha256": "8a00d50826f3e0cc74ada9c9ab5d0e93e3bdd591e1f35629e660b613bf619a44",
+          "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+        },
+        {
+          "path": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+          "raw_sha256": "d58aceb3139f714f8659fc7a13de1a4c06b170a23b5ec6aeabb197e9ff666203",
+          "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+        },
+        {
+          "path": "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py",
+          "raw_sha256": "ebe4fbe58d54ac6e89ea48f11a6a2b622ed450589864e289327ecb6fd8f51180",
+          "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+        },
+        {
+          "path": "som-rs/scripts/typescript_output_acceptance/run_acceptance.py",
+          "raw_sha256": "54ee04d9c0e514f1dd3d2df384818aa594a4aadb21616996ba64554dca1f4119",
+          "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+        },
+        {
+          "path": "som-rs/tests/typescript-output-v1/common.py",
+          "raw_sha256": "77b92f00cdf13d66c54c1069e215bc8de479953887bc853e4316275b02a24497",
+          "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+        },
+        {
+          "path": "som-rs/tests/rust-output-v1/build_negative_cases.py",
+          "raw_sha256": "90930bdee4257f0eb4ca7f627547b2314aea0f798d238ecb1aa42d224291c96b",
+          "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+        }
+      ]
+    }
+  },
+  "product_acceptance_passed": false,
+  "public_projection": "Only public case IDs, tracked relative paths, source/input/recipe hash bindings, method/endpoint/format/status metadata, byte counts and explicit null/unrun gaps. No absolute local paths, request/reply/source/product bodies, credentials or session identity.",
+  "reviewed": {
+    "artifact": {
+      "bytes": 863714,
+      "path": "som-rs/scripts/hosted_readiness/inputs/ts125-source-reconstructed-before-requests-v1.json",
+      "raw_sha256": "fe0408c4449a019d8c81efe72f8930db117f4a027896609924d28ad87b4642e9"
+    },
+    "author_review": {
+      "bytes": 13574,
+      "path": "som-rs/scripts/hosted_readiness/evidence/ts125-reconstructed-request-authoring-review-v1.json",
+      "raw_sha256": "953acb4fb6eb4fc08c7a6d044a9a2c5c9046a1a224946ab48072467abeb98f5c"
+    },
+    "base_exporter": {
+      "path": "som-rs/scripts/hosted_readiness/export_ts065_goldens.py",
+      "raw_sha256": "174aadaa92a53c3e58d0315fbc04a75d296f1a0a09413ff2a9e1542d151ec61c"
+    },
+    "helper": {
+      "bytes": 19954,
+      "path": "som-rs/scripts/hosted_readiness/reconstruct_ts125_requests.py",
+      "raw_sha256": "2a44d7171562d25b18f81d4015ea0b1aef72d68ef10aa00ee412ae65a75deaa0"
+    },
+    "patch": {
+      "bytes": 930196,
+      "raw_sha256": "69e853c517c06267d292e1e7e96a6a763d7696d8099aecdb6bb314b0054ee0c7"
+    },
+    "synthetic_tests": {
+      "bytes": 13079,
+      "execution": "unrun; GitHub runner required",
+      "path": "som-rs/scripts/hosted_readiness/test_reconstruct_ts125_requests.py",
+      "raw_sha256": "9f4423d80b0fb4a14c2383f52e93b1e4c25924d976408843d625cfedcffbf9ce",
+      "test_definitions": 16
+    }
+  },
+  "scope_and_limits": {
+    "canaries": "Two separate accepted raw canary requests calibrate whole-body encoding only. No canary request is relabeled as a bundle-run capture. No missing canary HTTP status is invented or transferred.",
+    "direct_recorded_compile_calibrations": 140,
+    "historical_writer_execution": "unrun",
+    "new_fields": "All 271 new request hashes are source-reconstructed, not recorded HTTP captures.",
+    "product_acceptance": "Not granted. This bounded review does not establish full TypeScript, M6 or M12 acceptance.",
+    "project_imports_compilers_builds_servers_native_execution": "unrun",
+    "reconstructed_assemble_hashes": 125,
+    "reconstructed_cnl_hashes": 21,
+    "reconstructed_compile_hashes": 146,
+    "reconstructed_json_hashes": 125,
+    "recorded_fields": "All original request fields remain unchanged, including all 125 null bundle-run assemble request hashes and all 106 null compile request hashes.",
+    "remaining_legacy_cnl_requests": 100,
+    "remaining_legacy_cnl_state": "Unrun/null. Source-text hashes alone do not bind the loaded compile-cnl.request.json member order or possible extra members.",
+    "separate_whole_body_canary_assemble_calibrations": 2,
+    "status_and_response_roles": "Accepted compile status is from passed bundle checks; assemble status/response is from the bundle report. First-compile request SHA is never relabeled as an assemble request SHA.",
+    "tests": "All 16 synthetic tests remain unrun locally. GitHub tests are still required."
+  },
+  "source_review": {
+    "Git_read": "Fixed argument list; fixed revision and allowlisted paths; source bytes hashed before use; no shell or writer import.",
+    "accepted_header_before_after_authority": "All six exact source blobs match all five accepted header tool maps. Archive omission does not imply missing writer authority.",
+    "helper_and_tests": "AST parsed and all function/test definitions inspected; neither imported nor executed",
+    "historical_http_writer": "The accepted POST function sends body.encode(utf-8) without a further body transformation.",
+    "output_safety": "Exclusive output creation, safe path checks and refusal on existing output are present.",
+    "patch_apply_check": "passed; no repository changes made by reviewer",
+    "request_encoding": "Accepted compact serializer preserves object member order and uses UTF-8, ensure_ascii=False and compact separators. Accepted assembly serializer recursively sorts object keys. Arrays retain their order.",
+    "separate_name_json_companions": "All six JSON companions use the prompt member order from the accepted old raw CNL compile reply, as the accepted writer does.",
+    "source_closure": "check_bundles.compact_json -> common.rust_cases -> build_negative_cases.compact is closed through exact header-pinned source. Legacy typed inputs close through check_python_baseline._load_request_file and complete recorded TS request-hash calibration.",
+    "writer_source_bindings": [
+      {
+        "path": "som-rs/scripts/typescript_output_acceptance/check_bundles.py",
+        "raw_sha256": "8a00d50826f3e0cc74ada9c9ab5d0e93e3bdd591e1f35629e660b613bf619a44",
+        "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+      },
+      {
+        "path": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "raw_sha256": "d58aceb3139f714f8659fc7a13de1a4c06b170a23b5ec6aeabb197e9ff666203",
+        "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+      },
+      {
+        "path": "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py",
+        "raw_sha256": "ebe4fbe58d54ac6e89ea48f11a6a2b622ed450589864e289327ecb6fd8f51180",
+        "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+      },
+      {
+        "path": "som-rs/scripts/typescript_output_acceptance/run_acceptance.py",
+        "raw_sha256": "54ee04d9c0e514f1dd3d2df384818aa594a4aadb21616996ba64554dca1f4119",
+        "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+      },
+      {
+        "path": "som-rs/tests/typescript-output-v1/common.py",
+        "raw_sha256": "77b92f00cdf13d66c54c1069e215bc8de479953887bc853e4316275b02a24497",
+        "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+      },
+      {
+        "path": "som-rs/tests/rust-output-v1/build_negative_cases.py",
+        "raw_sha256": "90930bdee4257f0eb4ca7f627547b2314aea0f798d238ecb1aa42d224291c96b",
+        "revision": "bfdb678c7798d40ac067e456ae6bc76b6604b3a4"
+      }
+    ]
+  },
+  "verdict": "APPROVED_BOUNDED_SOURCE_AND_HISTORICAL_REQUEST_DERIVATION",
+  "version": "som.ts125-reconstructed-before-independent-source-data-review.v1"
+}
