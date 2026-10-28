@@ -13,6 +13,9 @@ on:
       - som-rs/som-targets/src/**
       - som-code-python/data/blocks/**
       - som-code-python/data/block-contracts/**
+      - som-core/data/**
+      - som-core/block_templates/**
+      - som-rs/examples/**
       - som-rs/scripts/rust_output_acceptance/**
       - som-rs/scripts/compiler_acceptance/**
       - som-rs/contracts/**
