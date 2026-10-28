@@ -1384,7 +1384,8 @@
       "--force",
       "--preserve-metadata=entitlements,requirements,flags,runtime"
     ],
-    "implementation": "The provisioner ports ruby-macho 5.0.0's aligned load-command replacement in Python. It changes only placeholder-prefixed library IDs, library loads and rpaths in supported arm64 Mach-O files. It does not use install_name_tool or replace arbitrary strings.",
+    "implementation": "The provisioner ports ruby-macho 5.0.0's aligned load-command replacement in Python. It changes only placeholder-prefixed library IDs, library loads and rpaths in supported little-endian 64-bit ARM64 and x86_64 Mach-O files. Validated universal fat32/fat64 containers apply that same replacement separately to each matching architecture slice. Container tables, slice offsets, slice sizes, inter-slice padding and body file offsets stay unchanged before signing. It does not use install_name_tool, lipo, arbitrary string replacement or slice removal.",
+    "universal_macho_rule": "Read-only metadata of LLVM 22.1.8 identified 185 Mach-O or universal files: 162 thin ARM64 files, eight big-endian fat32 dynamic libraries with x86_64/subtype3, x86_64h/subtype8 and ARM64/subtype0, plus fifteen fat32 static ar archives. The failing raw asan dylib in GitHub run 40735074123 had SHA-256 5aaaff99ece72e58162357206e2ce00b1afc3a3183a9f1d67200db720890a043. Validate table bounds, alignment, non-overlap and inner/outer CPU identity before relocation. All-archive universal payloads remain byte-identical no-ops, including their i386 and ARM64e archive entries. Mixed archive/Mach-O containers or unsupported code slice formats fail. Native whole-container signing follows the historical Homebrew command without one global page-size override: installed Intel slices use4096 and ARM64 slices16384. Record each raw slice size, treating unsigned raw Intel slices as absent, then require the same architecture inventory and preserve every existing slice's signing page size. Native signing can allocate signature space and update container ranges; the unsigned relocation itself never repacks the file. Final frozen pins remain unchanged.",
     "signing_page_size": "For the listed exact frozen path and installed SHA-256, use its observed installed CodeDirectory page size with explicit codesign --pagesize. The raw bottle's page size can differ from the installed file: both Node files use 16384 in the bottle and 4096 after historical installation. Unlisted support files retain the source CodeDirectory size. Keep source and selected sizes, the exact frozen binding and signing arguments in the report. Every unchanged frozen file hash must still pass.",
     "installed_signing_page_size_evidence": "Read-only codesign display and full-file SHA-256 reads independently confirmed all 32 listed installed files against the frozen contracts. These are signing parameters, not replacement hashes. Rust's six frozen hashes passed on GitHub run 40727628136 at 13ab75be1652e6ad4562330879cb5216be4c55d9. That run's artifact 12833132938 recorded Node's raw 16384-byte signing pages; signing with the observed installed 4096-byte pages remains unverified until GitHub passes its unchanged frozen hashes.",
     "compact_signature_reservation": "Read-only load-command and SuperBlob-header reads from the same hash-matched primary files identified 12 exact compact allocations, listed with cms_reserve=0. In GitHub run 40728871323 at 6e45ae2ab14fb8d14efe1e957c5a736cb966a911, artifact 12832874811 records Node's correct page size but 18000 excess signature bytes for both files. The primary Node allocation is 672 bytes for a 670-byte SuperBlob; libnode is 582528 for 582524. Apple's source defaults the CMS reservation to 18000. Its CLI omits a zero-valued override. The bounded ctypes bridge calls that same Apple Security signing API with explicit CFNumber cmssize=0, ad-hoc identity kCFNull, preserve-metadata bits 278, strict-preflight create flag 128, and add-signature flags 0. It applies only to exact frozen path and SHA bindings, and keeps the normal CLI for other files. It never rewrites signature structures. Bridge/API parameters and OSStatus are retained. Exact frozen output hashes remain unverified until GitHub passes them.",
@@ -1568,6 +1569,21 @@
     "github_only": "The real ad-hoc signing command and Apple Security framework bridge can run only after the hosted macOS 26 arm64 guard. Unit fixtures use fake command and bridge runners.",
     "status": "normalization_unverified_until_exact_frozen_hashes_pass_on_github",
     "sources": [
+      {
+        "url": "https://raw.githubusercontent.com/Homebrew/ruby-macho/v5.0.0/lib/macho/fat_file.rb",
+        "sha256": "16bd2ab8b714dcca8b9bff415ff385d430254473ff2e98aa3cc71bb8713c318b",
+        "role": "Validate universal architecture identity and replace each serialized slice at its original offset and size"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/apple-oss-distributions/cctools/e0d56624eca2a76c2ace4c21850df9e666de4ca5/include/mach-o/fat.h",
+        "sha256": "19925cdb5fed9b5b7981b05420856f65b99abb54bca34ea95e0e581da8cc580f",
+        "role": "Official universal fat32/fat64 header and architecture range structures"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/machorep.cpp",
+        "sha256": "a4bad9b5376334efef9f87e00e740a6c336b0ca70dee4263a123995ef51ba9d6",
+        "role": "Native per-architecture signing pages: Intel 4096 and macOS ARM64 16384"
+      },
       {
         "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/CodeSigner.cpp",
         "sha256": "3e795cead85abbc48aa665875b7540073212339222af1950b3631922ab425807",

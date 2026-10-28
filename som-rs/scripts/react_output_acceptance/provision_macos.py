@@ -383,8 +383,66 @@ def hash_check(pin: dict[str, str], actual_path: Path) -> dict[str, Any]:
             "actual_sha256": actual, "status": "passed" if actual == pin["sha256"] else "failed"}
 
 
+def fat_macho_slices(raw: bytes) -> list[dict[str, int]] | None:
+    formats = {b"\xca\xfe\xba\xbe": (">", False), b"\xbe\xba\xfe\xca": ("<", False),
+               b"\xca\xfe\xba\xbf": (">", True), b"\xbf\xba\xfe\xca": ("<", True)}
+    if raw[:4] not in formats:
+        return None
+    endian, wide = formats[raw[:4]]
+    need(len(raw) >= 8, "macho_invalid", "A universal Mach-O header is truncated.")
+    count = struct.unpack_from(endian + "I", raw, 4)[0]
+    width = 32 if wide else 20
+    header_end = 8 + width * count
+    need(0 < count <= 30 and header_end <= len(raw), "macho_invalid", "A universal architecture table is invalid.")
+    slices = []
+    for index in range(count):
+        values = struct.unpack_from(endian + ("IIQQII" if wide else "IIIII"), raw, 8 + index * width)
+        cpu, subtype, offset, size, alignment = values[:5]
+        need((not wide or values[5] == 0) and alignment <= 31 and offset >= header_end
+             and size >= 8 and offset + size <= len(raw) and offset % (1 << alignment) == 0,
+             "macho_invalid", "A universal architecture range or alignment is invalid.")
+        slices.append({"cpu": cpu, "cpu_subtype": subtype, "offset": offset, "size": size, "alignment": alignment})
+    ordered = sorted(slices, key=lambda item: item["offset"])
+    need(all(left["offset"] + left["size"] <= right["offset"] for left, right in zip(ordered, ordered[1:])),
+         "macho_invalid", "Universal architecture slices overlap.")
+    need(len({(item["cpu"], item["cpu_subtype"]) for item in slices}) == count,
+         "macho_invalid", "A universal architecture is repeated.")
+    return slices
+
+
+def universal_kind(raw: bytes, slices: list[dict[str, int]]) -> str:
+    kinds = set()
+    for item in slices:
+        offset, size = item["offset"], item["size"]
+        if raw[offset:offset + 8] == b"!<arch>\n":
+            kinds.add("archive")
+            continue
+        need(size >= 32 and raw[offset:offset + 4] == b"\xcf\xfa\xed\xfe",
+             "macho_format_unsupported", "A universal slice is not a supported little-endian 64-bit Mach-O or static archive.")
+        cpu, subtype = struct.unpack_from("<II", raw, offset + 4)
+        need(cpu in (0x01000007, 0x0100000C) and (cpu, subtype) == (item["cpu"], item["cpu_subtype"]),
+             "macho_format_unsupported", "A universal slice architecture differs from its table or is unsupported.")
+        kinds.add("macho")
+    need(len(kinds) == 1, "macho_format_unsupported", "A universal file mixes Mach-O slices and static archives.")
+    return kinds.pop()
+
+
 def relocate_macho_bytes(raw: bytes) -> tuple[bytes, list[dict[str, Any]]]:
     """Port ruby-macho 5.0.0's 64-bit aligned command replacement, not install_name_tool."""
+    slices = fat_macho_slices(raw)
+    if slices is not None:
+        if universal_kind(raw, slices) == "archive":
+            return raw, []  # Static archives are not runtime Mach-O load-command files.
+        result = bytearray(raw)
+        operations = []
+        for index, item in enumerate(slices):
+            offset, size = item["offset"], item["size"]
+            relocated, changes = relocate_macho_bytes(raw[offset:offset + size])
+            need(len(relocated) == size, "macho_invalid", "A universal slice changed size before signing.")
+            result[offset:offset + size] = relocated
+            operations.extend({**change, "slice_index": index, "cpu": item["cpu"],
+                               "cpu_subtype": item["cpu_subtype"], "slice_offset": offset} for change in changes)
+        return bytes(result), operations
     magic = raw[:4]
     if magic != b"\xcf\xfa\xed\xfe":
         other_macho = {b"\xfe\xed\xfa\xcf", b"\xce\xfa\xed\xfe", b"\xfe\xed\xfa\xce",
@@ -396,7 +454,7 @@ def relocate_macho_bytes(raw: bytes) -> tuple[bytes, list[dict[str, Any]]]:
     _, cpu, _, file_type, count, command_bytes, _, _ = struct.unpack_from("<8I", raw)
     if file_type not in (2, 6, 8):
         return raw, []
-    need(cpu == 0x0100000C and 32 + command_bytes <= len(raw),
+    need(cpu in (0x01000007, 0x0100000C) and 32 + command_bytes <= len(raw),
          "macho_format_unsupported", "A Mach-O architecture or load-command region is unsupported.")
     commands = []
     operations = []
@@ -680,11 +738,18 @@ def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[st
                 "unsigned_relocated_sha256": hashlib.sha256(relocated).hexdigest(), "operations": operations,
                 "status": "started"}
         source_page_size = signing_page_size(raw)
+        source_slices = fat_macho_slices(raw)
+        if source_slices is not None:
+            item["source_slice_signing_page_sizes"] = [
+                {**part, "page_size": signing_page_size(raw[part["offset"]:part["offset"] + part["size"]])}
+                for part in source_slices]
+            item["unsigned_relocated_layout"] = macho_layout(relocated)
         binding = (installed_signing or {}).get(item["member"])
         page_size = binding["page_size"] if binding is not None else source_page_size
         item["source_signing_page_size"] = source_page_size
         item["selected_signing_page_size"] = page_size
-        item["signing_page_size_source"] = "frozen_installed_file" if binding is not None else "raw_bottle_file"
+        item["signing_page_size_source"] = ("frozen_installed_file" if binding is not None else
+                                            "per_architecture_apple_default" if source_slices is not None else "raw_bottle_file")
         if binding is not None:
             item["installed_signing_pin"] = dict(binding)
         compact = binding is not None and binding.get("cms_reserve") == 0
@@ -717,7 +782,22 @@ def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[st
                 item["codesign_exit_code"] = done.returncode
                 need(done.returncode == 0, "macho_codesign_failed", "Historical ad-hoc signing failed.")
             item["normalized_sha256"] = file_sha256(path)
-            item["normalized_layout"] = macho_layout(path.read_bytes())
+            signed = path.read_bytes()
+            item["normalized_layout"] = macho_layout(signed)
+            if source_slices is not None:
+                signed_slices = fat_macho_slices(signed)
+                need(signed_slices is not None and
+                     [(part["cpu"], part["cpu_subtype"]) for part in signed_slices] ==
+                     [(part["cpu"], part["cpu_subtype"]) for part in source_slices],
+                     "macho_signing_architecture_mismatch", "Apple signing changed the universal architecture inventory.")
+                item["normalized_slice_signing_page_sizes"] = [
+                    {**part, "page_size": signing_page_size(signed[part["offset"]:part["offset"] + part["size"]])}
+                    for part in signed_slices]
+                for original, current in zip(source_slices, signed_slices):
+                    before = signing_page_size(raw[original["offset"]:original["offset"] + original["size"]])
+                    after = signing_page_size(signed[current["offset"]:current["offset"] + current["size"]])
+                    need(before is None or before == after, "macho_signing_page_size_mismatch",
+                         "Apple signing changed an existing universal slice's signing page size.")
             item["status"] = "passed"
         except ProvisionError as error:
             item["status"] = record["status"] = "failed"
@@ -737,6 +817,8 @@ def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[st
 
 def signing_page_size(raw: bytes) -> int | None:
     """Read the source CodeDirectory granularity as distinct raw evidence."""
+    if fat_macho_slices(raw) is not None:
+        return None  # A single override would flatten distinct architecture defaults.
     cursor = 32
     for _ in range(struct.unpack_from("<I", raw, 16)[0]):
         kind, size = struct.unpack_from("<II", raw, cursor)
@@ -765,6 +847,13 @@ def signing_page_size(raw: bytes) -> int | None:
 
 def macho_layout(raw: bytes) -> dict[str, Any]:
     """Public, read-only region hashes to locate an exact-byte mismatch."""
+    slices = fat_macho_slices(raw)
+    if slices is not None:
+        kind = universal_kind(raw, slices)
+        return {"format": "universal_" + kind, "bytes": len(raw), "slices": [
+            {**item, "layout": macho_layout(raw[item["offset"]:item["offset"] + item["size"]])}
+            if kind == "macho" else {**item, "sha256": hashlib.sha256(raw[item["offset"]:item["offset"] + item["size"]]).hexdigest()}
+            for item in slices]}
     header = struct.unpack_from("<8I", raw)
     cursor = 32
     signature_offset, signature_bytes = len(raw), 0

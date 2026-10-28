@@ -66,9 +66,34 @@ def macho_link_command(name, kind=0xC):
     return header + payload + b"\0" * (size - fixed - len(payload))
 
 
-def macho_fixture(commands, body=b"unchanged body", padding=0):
+def macho_fixture(commands, body=b"unchanged body", padding=0, cpu=0x0100000C, subtype=0):
     region = b"".join(commands)
-    return struct.pack("<8I", 0xFEEDFACF, 0x0100000C, 0, 2, len(commands), len(region), 0, 0) + region + b"\0" * padding + body
+    return struct.pack("<8I", 0xFEEDFACF, cpu, subtype, 2, len(commands), len(region), 0, 0) + region + b"\0" * padding + body
+
+
+def fat_fixture(slices, *, wide=False, endian=">"):
+    width = 32 if wide else 20
+    raw = bytearray(8 + width * len(slices))
+    table = []
+    for cpu, subtype, content in slices:
+        offset = (len(raw) + 15) // 16 * 16
+        raw.extend(b"\0" * (offset - len(raw)))
+        raw.extend(content)
+        values = (cpu, subtype, offset, len(content), 4, 0) if wide else (cpu, subtype, offset, len(content), 4)
+        table.append(struct.pack(endian + ("IIQQII" if wide else "IIIII"), *values))
+    header = struct.pack(endian + "II", 0xCAFEBABF if wide else 0xCAFEBABE, len(slices)) + b"".join(table)
+    raw[:len(header)] = header
+    return bytes(raw)
+
+
+def signed_macho_fixture(commands, bits, cpu, subtype=0):
+    directory = bytearray(40)
+    struct.pack_into(">II", directory, 0, 0xFADE0C02, 40)
+    directory[39] = bits
+    signature = struct.pack(">IIIII", 0xFADE0CC0, 60, 1, 0, 20) + directory
+    offset = 32 + sum(map(len, commands)) + 16
+    signature_command = struct.pack("<IIII", 0x1D, 16, offset, len(signature))
+    return macho_fixture([*commands, signature_command], signature, cpu=cpu, subtype=subtype)
 
 
 def normalization_policy():
@@ -574,6 +599,81 @@ class ProvisionMacosTests(unittest.TestCase):
             with self.assertRaises(provisioner.ProvisionError):
                 provisioner.signing_page_size(bytes(broken))
         self.assertIsNone(provisioner.signing_page_size(macho_fixture([macho_link_command("/usr/lib/a.dylib")])))
+
+    def test_universal_relocation_preserves_table_slice_ranges_and_unchanged_payloads(self):
+        old = macho_link_command("@@HOMEBREW_PREFIX@@/opt/fixture/lib/libfixture.dylib")
+        unchanged = macho_fixture([macho_link_command("/usr/lib/unchanged.dylib")], cpu=0x01000007, subtype=8)
+        parts = [(0x01000007, 3, macho_fixture([old], cpu=0x01000007, subtype=3)),
+                 (0x01000007, 8, unchanged), (0x0100000C, 0, macho_fixture([old]))]
+        for wide, endian in ((False, ">"), (True, ">"), (False, "<"), (True, "<")):
+            with self.subTest(wide=wide, endian=endian):
+                raw = fat_fixture(parts, wide=wide, endian=endian)
+                relocated, operations = provisioner.relocate_macho_bytes(raw)
+                slices = provisioner.fat_macho_slices(raw)
+                self.assertEqual(provisioner.fat_macho_slices(relocated), slices)
+                self.assertEqual(raw[:slices[0]["offset"]], relocated[:slices[0]["offset"]])
+                self.assertEqual(len(raw), len(relocated))
+                for part, original in zip(slices, parts):
+                    offset, size = part["offset"], part["size"]
+                    expected, _ = provisioner.relocate_macho_bytes(original[2])
+                    self.assertEqual(relocated[offset:offset + size], expected)
+                self.assertEqual([operation["slice_index"] for operation in operations], [0, 2])
+                self.assertEqual(provisioner.macho_layout(relocated)["format"], "universal_macho")
+
+    def test_universal_static_archives_are_byte_identical_and_never_signed(self):
+        archive = b"!<arch>\n@@HOMEBREW_PREFIX@@ static object bytes"
+        raw = fat_fixture([(7, 3, archive), (0x01000007, 3, archive), (0x0100000C, 0x80000002, archive)])
+        self.assertEqual(provisioner.relocate_macho_bytes(raw), (raw, []))
+        staged = self.out / "universal-archive-stage"
+        staged.mkdir()
+        (staged / "runtime.a").write_bytes(raw)
+        sign = mock.Mock()
+        report = {}
+        provisioner.normalize_staged_macho(staged, normalization_policy(), report, command_runner=sign)
+        sign.assert_not_called()
+        self.assertEqual((staged / "runtime.a").read_bytes(), raw)
+
+    def test_universal_bad_ranges_architectures_and_mixed_archives_are_refused(self):
+        old = macho_link_command("@@HOMEBREW_PREFIX@@/opt/fixture/lib/libfixture.dylib")
+        intel = macho_fixture([old], cpu=0x01000007, subtype=3)
+        raw = fat_fixture([(0x01000007, 3, intel), (0x0100000C, 0, macho_fixture([old]))])
+        overlap = bytearray(raw)
+        struct.pack_into(">I", overlap, 36, struct.unpack_from(">I", raw, 16)[0])
+        outside = bytearray(raw)
+        struct.pack_into(">I", outside, 20, len(raw))
+        wrong_cpu = bytearray(raw)
+        struct.pack_into(">I", wrong_cpu, 8, 0x0100000C)
+        mixed = fat_fixture([(0x01000007, 3, intel), (0x0100000C, 0, b"!<arch>\narchive")])
+        for malformed in (raw[:30], bytes(overlap), bytes(outside), bytes(wrong_cpu), mixed):
+            with self.subTest(sha=digest(malformed)), self.assertRaises(provisioner.ProvisionError):
+                provisioner.relocate_macho_bytes(malformed)
+
+    def test_universal_signing_keeps_per_slice_pages_and_never_forces_one_page_size(self):
+        old = macho_link_command("@@HOMEBREW_PREFIX@@/opt/fixture/lib/libfixture.dylib")
+        parts = [(0x01000007, 3, signed_macho_fixture([old], 12, 0x01000007, 3)),
+                 (0x01000007, 8, macho_fixture([old], cpu=0x01000007, subtype=8)),
+                 (0x0100000C, 0, signed_macho_fixture([old], 14, 0x0100000C))]
+        raw = fat_fixture(parts)
+        staged = self.out / "universal-signed-stage"
+        staged.mkdir()
+        path = staged / "runtime.dylib"
+        path.write_bytes(raw)
+        sign = mock.Mock(return_value=types.SimpleNamespace(returncode=0))
+        report = {}
+        provisioner.normalize_staged_macho(staged, normalization_policy(), report, command_runner=sign)
+        item = report["files"][0]
+        self.assertEqual([part["page_size"] for part in item["source_slice_signing_page_sizes"]], [4096, None, 16384])
+        self.assertNotIn("--pagesize", sign.call_args.args[0])
+        self.assertEqual(len(item["normalized_layout"]["slices"]), 3)
+        changed = [(cpu, subtype, provisioner.relocate_macho_bytes(content)[0]) for cpu, subtype, content in parts]
+        changed[-1] = (0x0100000C, 0, provisioner.relocate_macho_bytes(signed_macho_fixture([old], 12, 0x0100000C))[0])
+        path.write_bytes(raw)
+        def wrong_pages(command, **kwargs):
+            Path(command[-1]).write_bytes(fat_fixture(changed))
+            return types.SimpleNamespace(returncode=0)
+        with self.assertRaises(provisioner.ProvisionError) as found:
+            provisioner.normalize_staged_macho(staged, normalization_policy(), {}, command_runner=wrong_pages)
+        self.assertEqual(found.exception.code, "macho_signing_page_size_mismatch")
 
     def test_installed_signing_size_uses_exact_frozen_binding_and_keeps_raw_size(self):
         old = macho_link_command("@@HOMEBREW_PREFIX@@/opt/fixture/lib/libfixture.dylib")
