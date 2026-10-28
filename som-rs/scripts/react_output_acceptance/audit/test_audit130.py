@@ -504,6 +504,221 @@ class Audit130Tests(unittest.TestCase):
         row = next(row for row in report["rows"] if row["id"] == "typescript_unchanged/1")
         self.assertEqual(row["status"], "unrun")
 
+    def _typescript_baseline_raw_pair(self):
+        """Retain both request forms and every HTTP body in a reduced run."""
+        inventory = read_json(SOURCE_REPO / "som-rs/contracts/typescript-output-v1/case-inventory.json")
+        case = copy.deepcopy(inventory["public_examples"][0])
+        inventory = {"sources": inventory["sources"], "public_examples": [case],
+                     "version_positive_fixtures": [], "coverage_cases": [],
+                     "name_cases": [], "legacy_in_scope": []}
+        save_json(self.fixture.repo / "som-rs/contracts/typescript-output-v1/case-inventory.json", inventory)
+        root = self.fixture.run / "ts-baseline"
+        source = (self.fixture.repo / case["cnl"]).read_text()
+        bodies = {"json": {"format": "som.prompt-json.v1", "prompt": self.fixture.prompt, "target": "typescript"},
+                  "cnl": {"format": "som.cnl.v1", "source": source, "target": "typescript"}}
+        bundles = {}
+        for side in ("qa", "baseline"):
+            bundle = copy.deepcopy(self.fixture.bundle)
+            bundle["target"] = "typescript"
+            bundle["dsl"]["version"] = "som.dsl.typescript.v1"
+            bundle["assets"]["backend"] = {"id": f"fixture.typescript.{side}", "sha256": sha_bytes(side.encode())}
+            bundle["assets"]["target_contract"] = {"id": f"fixture.contract.{side}", "sha256": sha_bytes(side.encode())}
+            bundle["hashes"]["payload_sha256"] = sha_bytes(canonical(bundle))
+            bundles[side] = bundle
+
+        def retain(record, file_key, hash_key, relative, document):
+            path = root / relative
+            save_json(path, document)
+            record[file_key], record[hash_key] = relative, sha_file(path)
+
+        requests = []
+        files = {"index.ts": "export const fixture = 'same bytes';\n", "unicode.txt": "測試\r\n"}
+        for index, (form, body) in enumerate(bodies.items()):
+            record = {"form": form, "qa_status": 200, "baseline_status": 200,
+                      "qa_assemble_status": 200, "baseline_assemble_status": 200,
+                      "differing_members": [], "passed": True,
+                      "files_sha256": {name: sha_bytes(text.encode()) for name, text in files.items()},
+                      "baseline_files_sha256": {name: sha_bytes(text.encode()) for name, text in files.items()}}
+            stem = f"{case['id']}/{index}-{form}"
+            retain(record, "request_file", "body_sha256", f"requests/{stem}.compile.json", body)
+            for side in ("qa", "baseline"):
+                retain(record, f"{side}_response_file", f"{side}_sha256", f"responses/{stem}.{side}.compile.json",
+                       {"status": "ok", "bundle": bundles[side]})
+                retain(record, f"{side}_assemble_request_file", f"{side}_assemble_request_sha256",
+                       f"requests/{stem}.{side}.assemble.json", {"bundle": bundles[side]})
+                retain(record, f"{side}_assemble_response_file", f"{side}_assemble_sha256",
+                       f"responses/{stem}.{side}.assemble.json", {"status": "ok", "files": files})
+            requests.append(record)
+        row = {"id": case["id"], "group": "public_examples", "status": "passed", "passed": True,
+               "problems": [], "requests": requests}
+        self.fixture.reports["ts-baseline"] = {"version": "som.react-output-typescript-baseline.v1",
+            "passed": True, "status": "passed", "cases": [row]}
+        plan = copy.deepcopy(self.fixture.plan)
+        plan["typescript_unchanged"]["checks"] = ["Compare every TypeScript product with the baseline."]
+        self.fixture.replace_plan(plan)
+        self.fixture.refresh_receipts()
+        return row
+
+    def _typescript_baseline_result(self):
+        self._typescript_audit_count = getattr(self, "_typescript_audit_count", 0) + 1
+        out = self.fixture.output.with_name(f"typescript-{self._typescript_audit_count}.json")
+        code, report, _, _ = self.run_audit(out=out)
+        return code, next(row for row in report["rows"] if row["id"] == "typescript_unchanged/1")
+
+    def test_typescript_raw_compile_and_assemble_pair_is_independently_passed(self):
+        self._typescript_baseline_raw_pair()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 0, row)
+        self.assertEqual(row["status"], "passed", row)
+        self.assertNotIn("attestations", row)
+
+    def test_typescript_raw_compile_drift_fails_with_all_hashes_refreshed(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        path = self.fixture.run / "ts-baseline" / record["baseline_response_file"]
+        document = read_json(path)
+        document["unexpected_member"] = "raw drift"
+        save_json(path, document)
+        record["baseline_sha256"] = sha_file(path)
+        self.fixture.refresh_receipts()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("outside the three allowed", row["reason"])
+
+    def test_typescript_raw_compile_comparison_keeps_exact_json_types(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        for side, value in (("qa", 1), ("baseline", True)):
+            path = self.fixture.run / "ts-baseline" / record[f"{side}_response_file"]
+            document = read_json(path)
+            document["type_check"] = value
+            save_json(path, document)
+            record[f"{side}_sha256"] = sha_file(path)
+        self.fixture.refresh_receipts()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("outside the three allowed", row["reason"])
+
+    def test_typescript_raw_file_drift_fails_with_both_file_maps_refreshed(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        path = self.fixture.run / "ts-baseline" / record["baseline_assemble_response_file"]
+        document = read_json(path)
+        document["files"]["unicode.txt"] = "測試\n"
+        save_json(path, document)
+        record["baseline_assemble_sha256"] = sha_file(path)
+        record["baseline_files_sha256"] = {name: sha_bytes(text.encode()) for name, text in document["files"].items()}
+        self.fixture.refresh_receipts()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("names or bytes differ", row["reason"])
+
+    def test_typescript_missing_raw_exchange_is_unrun(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        fields = ("request_file", "qa_response_file", "baseline_response_file",
+                  "qa_assemble_request_file", "baseline_assemble_request_file",
+                  "qa_assemble_response_file", "baseline_assemble_response_file")
+        for field in fields:
+            with self.subTest(field=field):
+                relative = record.pop(field)
+                self.fixture.refresh_receipts()
+                code, row = self._typescript_baseline_result()
+                self.assertEqual(code, 1)
+                self.assertEqual(row["status"], "unrun", row)
+                record[field] = relative
+        path = self.fixture.run / "ts-baseline" / record["qa_response_file"]
+        path.unlink()
+        self.fixture.refresh_receipts()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "unrun", row)
+
+    def test_typescript_raw_hash_drift_is_failed(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        path = self.fixture.run / "ts-baseline" / record["qa_response_file"]
+        path.write_bytes(path.read_bytes() + b"\n")
+        self.fixture.refresh_receipts()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("sha256 differs", row["reason"])
+
+    def test_typescript_compile_request_must_match_target_and_public_source(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        path = self.fixture.run / "ts-baseline" / record["request_file"]
+        original = read_json(path)
+        for mutation in ("target", "prompt", "format"):
+            with self.subTest(mutation=mutation):
+                document = copy.deepcopy(original)
+                if mutation == "target":
+                    document["target"] = "react"
+                elif mutation == "prompt":
+                    document["prompt"]["resource"]["fields"][0]["name"] = "substituted_name"
+                else:
+                    document["format"] = "som.cnl.v1"
+                save_json(path, document)
+                record["body_sha256"] = sha_file(path)
+                self.fixture.refresh_receipts()
+                code, row = self._typescript_baseline_result()
+                self.assertEqual(code, 1)
+                self.assertEqual(row["status"], "failed", row)
+
+    def test_typescript_assemble_request_must_use_its_own_compiled_bundle(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        root = self.fixture.run / "ts-baseline"
+        path = root / record["qa_assemble_request_file"]
+        save_json(path, read_json(root / record["baseline_assemble_request_file"]))
+        record["qa_assemble_request_sha256"] = sha_file(path)
+        self.fixture.refresh_receipts()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("its own compiled bundle", row["reason"])
+
+    def test_typescript_exchange_statuses_must_all_be_http_200(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        for field in ("qa_status", "baseline_status", "qa_assemble_status", "baseline_assemble_status"):
+            with self.subTest(field=field):
+                record[field] = 201
+                self.fixture.refresh_receipts()
+                code, row = self._typescript_baseline_result()
+                self.assertEqual(code, 1)
+                self.assertEqual(row["status"], "failed", row)
+                record[field] = 200
+
+    def test_typescript_matching_recorded_file_hashes_must_match_raw_bytes(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        record["files_sha256"]["index.ts"] = "e" * 64
+        record["baseline_files_sha256"]["index.ts"] = "e" * 64
+        self.fixture.refresh_receipts()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("hashes differ from raw bytes", row["reason"])
+
+    def test_typescript_raw_exchange_cannot_reference_another_run(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        original = record["qa_response_file"]
+        outside = self.fixture.run.parent / "other-run/ts-baseline/response.json"
+        outside.parent.mkdir(parents=True)
+        shutil.copyfile(self.fixture.run / "ts-baseline" / original, outside)
+        for relative in (str(outside), "../../other-run/ts-baseline/response.json"):
+            with self.subTest(relative=relative):
+                record["qa_response_file"] = relative
+                self.fixture.refresh_receipts()
+                code, row = self._typescript_baseline_result()
+                self.assertEqual(code, 1)
+                self.assertEqual(row["status"], "failed", row)
+
+    def test_typescript_public_source_requires_both_forms(self):
+        row = self._typescript_baseline_raw_pair()
+        row["requests"] = row["requests"][:1]
+        self.fixture.refresh_receipts()
+        code, result = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(result["status"], "unrun", result)
+        self.assertIn("request forms", result["reason"])
+
     def test_raw_product_exit_failure_overrides_passed_aggregates(self):
         gates = read_json(self.fixture.gates_path)
         gates["gates"][1]["exit_code"] = 1

@@ -14,7 +14,8 @@ som-rs/scripts/typescript_output_acceptance/check_bundles.py. A case that has
 only a CNL request also sends the typed JSON request built from the bundle
 prompt, as check_bundles.py does.
 
-Writes <out>/report.json (ids and hashes only). Exit 0 when every case passes.
+Writes <out>/report.json and the exact HTTP request and response bytes.
+Exit 0 when every case passes.
 
 usage: check_typescript_baseline.py --qa URL --baseline URL --out NEW_DIR [--legacy-run DIR]
 """
@@ -24,6 +25,7 @@ import argparse
 import hashlib
 import json
 import pathlib
+import re
 import sys
 import time
 import urllib.error
@@ -75,70 +77,137 @@ def without_allowed(reply: Any) -> Any:
     return value
 
 
-def files_of(url: str, bundle: Any) -> tuple[int, dict[str, str] | None]:
-    status, raw = post(url, "/v1/assemble", compact({"bundle": bundle}))
-    if status != 200:
-        return status, None
-    files = json.loads(raw).get("files")
-    if not isinstance(files, dict):
-        return status, None
-    return status, {path: sha(text.encode()) for path, text in files.items()}
+def retain(out: pathlib.Path, relative: str, raw: bytes) -> str:
+    path = out / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("xb") as stream:
+        stream.write(raw)
+    return relative
 
 
-def check_request(qa: str, baseline: str, body: str) -> tuple[list[str], dict[str, Any]]:
+def check_request(qa: str, baseline: str, body: str, out: pathlib.Path,
+                  stem: str, form: str) -> tuple[list[str], dict[str, Any]]:
     problems: list[str] = []
-    record: dict[str, Any] = {"body_sha256": sha(body.encode())}
+    record: dict[str, Any] = {
+        "form": form,
+        "body_sha256": sha(body.encode("utf-8")),
+        "request_file": retain(out, f"requests/{stem}.compile.json", body.encode("utf-8")),
+    }
     if json.loads(body).get("target") != "typescript":
         return ["the request has no target typescript"], record
-    qa_status, qa_raw = post(qa, "/v1/compile", body)
-    base_status, base_raw = post(baseline, "/v1/compile", body)
-    record.update(qa_status=qa_status, baseline_status=base_status,
-                  qa_sha256=sha(qa_raw), baseline_sha256=sha(base_raw))
+
+    def exchange(side: str, url: str, operation: str, request_body: str) -> tuple[int, bytes] | None:
+        prefix = side if operation == "compile" else f"{side}_assemble"
+        if operation == "assemble":
+            record[f"{prefix}_request_file"] = retain(
+                out, f"requests/{stem}.{side}.assemble.json", request_body.encode("utf-8"))
+            record[f"{prefix}_request_sha256"] = sha(request_body.encode("utf-8"))
+        try:
+            status, raw = post(url, f"/v1/{operation}", request_body)
+        except (OSError, TimeoutError) as error:
+            message = f"{side} {operation}: {type(error).__name__}: {error}"
+            problems.append(message)
+            record.setdefault("not_run_errors", []).append(message)
+            return None
+        record[f"{prefix}_status"] = status
+        record[f"{prefix}_sha256"] = sha(raw)
+        record[f"{prefix}_response_file"] = retain(
+            out, f"responses/{stem}.{side}.{operation}.json", raw)
+        return status, raw
+
+    qa_compile = exchange("qa", qa, "compile", body)
+    base_compile = exchange("baseline", baseline, "compile", body)
+    if qa_compile is None or base_compile is None:
+        return problems, record
+    qa_status, qa_raw = qa_compile
+    base_status, base_raw = base_compile
     if qa_status != base_status:
         problems.append(f"compile status {qa_status} != baseline {base_status}")
-    qa_reply, base_reply = json.loads(qa_raw), json.loads(base_raw)
+    try:
+        qa_reply, base_reply = json.loads(qa_raw), json.loads(base_raw)
+    except (ValueError, UnicodeDecodeError) as error:
+        problems.append(f"invalid compile JSON: {error}")
+        return problems, record
     if compact(without_allowed(qa_reply)) != compact(without_allowed(base_reply)):
         problems.append("compile replies differ outside the allowed members")
     if qa_status != 200 or base_status != 200:
         problems.append("compile did not return a bundle")
         return problems, record
+    if any(not isinstance(reply, dict) or reply.get("status") != "ok"
+           or not isinstance(reply.get("bundle"), dict) for reply in (qa_reply, base_reply)):
+        problems.append("compile response has no successful bundle")
+        return problems, record
+    if any(not isinstance(reply["bundle"].get(section), dict)
+           for reply in (qa_reply, base_reply) for section in ("prompt", "assets", "hashes")):
+        problems.append("compile bundle has no prompt, assets or hashes object")
+        return problems, record
     differs = [f"{section}.{key}" for section, key in ALLOWED
-               if qa_reply["bundle"][section].get(key) != base_reply["bundle"][section].get(key)]
+               if qa_reply["bundle"].get(section, {}).get(key)
+               != base_reply["bundle"].get(section, {}).get(key)]
     record["differing_members"] = differs
-    qa_assemble, qa_files = files_of(qa, qa_reply["bundle"])
-    base_assemble, base_files = files_of(baseline, base_reply["bundle"])
-    record.update(qa_assemble_status=qa_assemble, baseline_assemble_status=base_assemble,
-                  files_sha256=qa_files)
-    if qa_files is None or base_files is None:
-        problems.append(f"assemble status {qa_assemble} / baseline {base_assemble}")
-    elif qa_files != base_files:
+    assembled: dict[str, dict[str, str]] = {}
+    for side, url, reply in (("qa", qa, qa_reply), ("baseline", baseline, base_reply)):
+        result = exchange(side, url, "assemble", compact({"bundle": reply["bundle"]}))
+        if result is None:
+            continue
+        status, raw = result
+        if status != 200:
+            problems.append(f"{side} assemble status {status} != 200")
+            continue
+        try:
+            document = json.loads(raw)
+        except (ValueError, UnicodeDecodeError) as error:
+            problems.append(f"invalid {side} assemble JSON: {error}")
+            continue
+        if not isinstance(document, dict) or document.get("status") != "ok":
+            problems.append(f"{side} assemble response has no successful status")
+            continue
+        files = document.get("files")
+        if (not isinstance(files, dict) or not files
+                or not all(isinstance(path, str) and isinstance(text, str) for path, text in files.items())):
+            problems.append(f"{side} assemble response files is not a nonempty object of strings")
+            continue
+        assembled[side] = files
+        hashes = {path: sha(text.encode("utf-8")) for path, text in files.items()}
+        record["files_sha256" if side == "qa" else "baseline_files_sha256"] = hashes
+    if len(assembled) == 2 and assembled["qa"] != assembled["baseline"]:
+        qa_files = record["files_sha256"]
+        base_files = record["baseline_files_sha256"]
         changed = sorted(set(qa_files.items()) ^ set(base_files.items()))
         problems.append(f"product files differ: {sorted({path for path, _ in changed})}")
     record["bundle"] = qa_reply["bundle"]
     return problems, record
 
 
-def check_case(qa: str, baseline: str, case: dict[str, Any]) -> dict[str, Any]:
+def check_case(qa: str, baseline: str, case: dict[str, Any], out: pathlib.Path) -> dict[str, Any]:
     row: dict[str, Any] = {"id": case["id"], "group": case["group"], "requests": []}
     problems = list(case.get("file_problems") or [])
     if case.get("not_run_error"):
-        row.update(status="not_run", problems=[case["not_run_error"]])
+        row.update(status="not_run", passed=False, problems=[case["not_run_error"]])
         return row
     bundles = []
-    bodies = [body for _, body in case["requests"]]
-    for index, body in enumerate(bodies):
-        found, record = check_request(qa, baseline, body)
+    requests = list(case["requests"])
+    if not requests:
+        row.update(status="not_run", passed=False, problems=[*problems, "case has no compile requests"])
+        return row
+    case_stem = re.sub(r"[^A-Za-z0-9._-]+", "_", case["id"])
+    not_run = False
+    for index, (form, body) in enumerate(requests):
+        stem = f"{case_stem}/{index}-{form}"
+        found, record = check_request(qa, baseline, body, out, stem, form)
+        not_run = not_run or bool(record.get("not_run_errors"))
         bundle = record.pop("bundle", None)
         if bundle is not None:
             bundles.append(bundle)
-            if case.get("derive_json_from_cnl_bundle") and index == 0 and len(bodies) == 1:
-                bodies.append(compact({"format": "som.prompt-json.v1", "prompt": bundle["prompt"],
-                                       "target": "typescript"}))
+            if case.get("derive_json_from_cnl_bundle") and index == 0 and len(requests) == 1:
+                requests.append(("json", compact({"format": "som.prompt-json.v1", "prompt": bundle["prompt"],
+                                                 "target": "typescript"})))
         problems.extend(f"request {index}: {problem}" for problem in found)
         row["requests"].append(record)
     if len({compact(bundle) for bundle in bundles}) > 1:
         problems.append("the request forms gave different bundles")
-    row.update(status="failed" if problems else "passed", problems=problems)
+    row.update(status="not_run" if not_run else "failed" if problems else "passed",
+               passed=not problems, problems=problems)
     return row
 
 
@@ -166,7 +235,7 @@ def main() -> int:
     legacy, legacy_problems = check_bundles.collect_legacy_in_scope_cases(
         inventory, args.legacy_run, check_bundles.EXPECTED_LEGACY_IN_SCOPE)
     cases.extend(legacy)
-    rows = [check_case(qa, baseline, case) for case in cases]
+    rows = [check_case(qa, baseline, case, args.out) for case in cases]
     counts = {status: sum(row["status"] == status for row in rows)
               for status in ("passed", "failed", "not_run")}
     problems = list(legacy_problems)

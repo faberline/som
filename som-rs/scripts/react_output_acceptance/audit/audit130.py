@@ -293,6 +293,8 @@ class Audit:
         self.attestations: list[dict] = []
         self.active_report = ""
         self.baseline_requests: dict[tuple[str, str, str], str] = {}
+        self.ts_baseline_inventory: dict = {}
+        self.ts_baseline_cases: dict[str, tuple[str, dict]] = {}
 
     def row(self, row_id: str, action: Callable[[], Any], *, description: str = "") -> dict:
         before = len(self.reader.accesses)
@@ -1056,15 +1058,138 @@ class Audit:
                 self.per_case_attestation(row, "Rust normalized compile/refusal comparison retains no successful raw response")
                 attested = True
             else:
-                requests = list_value(row.get("requests"), "TypeScript baseline requests")
-                need(requests, "TypeScript baseline requests missing", "unrun")
-                for request in requests:
-                    need(request.get("qa_status") == request.get("baseline_status") == 200, "TypeScript baseline compile status differs")
-                    need(request.get("qa_assemble_status") == request.get("baseline_assemble_status") == 200, "TypeScript baseline assemble status differs")
-                    need(request.get("files_sha256"), "TypeScript product file hashes missing", "unrun")
-                self.per_case_attestation(row, "TypeScript normalized response and baseline product comparisons retain only per-case booleans")
-                attested = True
+                self.typescript_baseline_case(row)
+        if language == "ts":
+            return "passed", "raw TypeScript compile replies and product file bytes match"
         return ("attested", f"{language} comparisons include per-case attestations; no aggregate verdict used") if attested else ("passed", "retained baseline response hashes match")
+
+    def typescript_raw(self, record: dict, file_key: str, hash_key: str) -> dict:
+        """Read one hash-bound exchange from this run's TypeScript step only."""
+        value = record.get(file_key)
+        need(value is not None, f"missing TypeScript raw {file_key}", "unrun")
+        need(isinstance(value, str) and value and not Path(value).is_absolute(), "TypeScript raw path must be relative to this step")
+        root = self.run / "ts-baseline"
+        path = self.reader.path(value, root)
+        need(path.is_relative_to(root), "TypeScript raw exchange is outside this step of the recorded run")
+        raw = self.reader.bytes(path)
+        need(record.get(hash_key) == sha(raw), f"TypeScript raw {hash_key} differs")
+        try:
+            document = object_value(json.loads(raw), "TypeScript raw exchange")
+            canonical(document)
+            return document
+        except (ValueError, UnicodeDecodeError) as exc:
+            raise EvidenceError("invalid JSON in TypeScript raw exchange") from exc
+
+    def typescript_baseline_inputs(self, cid: str) -> tuple[dict, dict | None, str | None]:
+        """Derive request forms from frozen data without loading a collector."""
+        group, case = self.ts_baseline_cases[cid]
+        sources = self.ts_baseline_inventory.get("sources", {})
+        prompt, cnl = None, None
+        if group == "public_examples":
+            prompt = object_value(self.pinned_json(case["prompt"], case.get("prompt_file_sha256")), "TypeScript public prompt")
+            if case.get("cnl"):
+                raw = self.reader.bytes(case["cnl"])
+                need(sha(raw) == case.get("cnl_sha256"), "TypeScript public CNL source hash differs")
+                cnl = raw.decode()
+        elif group in ("version_positive_fixtures", "coverage_cases"):
+            fixture = group == "version_positive_fixtures"
+            path = "som-rs/tests/compiler-v1/cnl-positive-fixtures.json" if fixture else "som-rs/tests/rust-output-v1/cases/index.json"
+            pins = sources.get("cnl_positive_fixtures" if fixture else "coverage_index", {})
+            document = object_value(self.pinned_json(path, pins.get(path)), "TypeScript source inventory")
+            matches = [item for item in list_value(document.get("cases"), "TypeScript source cases") if item.get("id") == cid]
+            need(len(matches) == 1, "TypeScript source case is missing or repeated", "unrun" if not matches else "failed")
+            source = matches[0]
+            if fixture:
+                prompt = object_value(source.get("expected_prompt"), "TypeScript fixture prompt")
+                cnl = source.get("cnl")
+                need(sha(canonical(prompt)) == case.get("prompt_sha256"), "TypeScript fixture prompt hash differs")
+            else:
+                base = Path("som-rs/tests/rust-output-v1/cases")
+                prompt = object_value(self.pinned_json(base / source["prompt"], case.get("prompt_file_sha256")), "TypeScript coverage prompt")
+                cnl = self.reader.bytes(base / source["cnl"]).decode()
+            need(isinstance(cnl, str) and sha(cnl.encode()) == case.get("cnl_sha256"), "TypeScript CNL source hash differs")
+        elif group == "name_cases":
+            document = object_value(self.reader.json("som-rs/contracts/typescript-output-v1/target-examples.json"), "TypeScript name examples")
+            matches = [item for item in list_value(document.get("name_cases"), "TypeScript name cases") if item.get("id") == cid]
+            need(len(matches) == 1, "TypeScript name source is missing or repeated", "unrun" if not matches else "failed")
+            source = matches[0]
+            need(isinstance(source.get("body"), str) and sha(source["body"].encode()) == case.get("body_sha256"), "TypeScript name source request hash differs")
+            body = object_value(json.loads(source["body"]), "TypeScript name request")
+            form = case.get("form")
+            need(source.get("form") == form and form in ("json", "cnl"), "TypeScript name source form differs")
+            forms = {form: body}
+            if form == "cnl":
+                forms["json"] = None
+            return forms, body.get("prompt"), None
+        elif group == "legacy_in_scope":
+            # The frozen legacy inventory keeps prompt hashes, not private prompts.
+            return {"json": None, "cnl": None}, None, case.get("prompt_sha256")
+        else:
+            raise EvidenceError(f"no independent TypeScript source rule for {group}", "unrun")
+        forms = {"json": {"format": "som.prompt-json.v1", "prompt": prompt, "target": "typescript"}}
+        if cnl is not None:
+            forms["cnl"] = {"format": "som.cnl.v1", "source": cnl, "target": "typescript"}
+        return forms, prompt, None
+
+    def typescript_baseline_case(self, row: dict) -> None:
+        cid = row["id"]
+        group, _ = self.ts_baseline_cases[cid]
+        need(row.get("group") == group, "TypeScript baseline source group differs")
+        need(row.get("requests") is not None, "TypeScript baseline requests missing", "unrun")
+        requests = list_value(row.get("requests"), "TypeScript baseline requests")
+        need(requests, "TypeScript baseline requests missing", "unrun")
+        forms, expected_prompt, prompt_hash = self.typescript_baseline_inputs(cid)
+        actual_forms = [record.get("form") for record in requests if isinstance(record, dict)]
+        need(len(actual_forms) == len(requests) and len(set(actual_forms)) == len(actual_forms), "TypeScript request forms are malformed or repeated")
+        need(set(actual_forms) == set(forms), "TypeScript baseline request forms differ from source", "unrun" if set(forms) - set(actual_forms) else "failed")
+        previous_bundles = {}
+        for record in requests:
+            form = record["form"]
+            body = self.typescript_raw(record, "request_file", "body_sha256")
+            need(body.get("target") == "typescript", "TypeScript compile request target differs")
+            member, format_name = ("prompt", "som.prompt-json.v1") if form == "json" else ("source", "som.cnl.v1")
+            need(set(body) == {"format", member, "target"} and body.get("format") == format_name, "TypeScript compile request form differs")
+            need(isinstance(body[member], dict if form == "json" else str), "TypeScript compile input type differs")
+            if forms[form] is not None:
+                need(canonical(body) == canonical(forms[form]), "TypeScript compile request differs from immutable source")
+            bundles, normalized, file_maps = {}, {}, {}
+            for side in ("qa", "baseline"):
+                reply = self.typescript_raw(record, f"{side}_response_file", f"{side}_sha256")
+                status = record.get(f"{side}_status")
+                need(true_integer(status) and status == 200, "TypeScript baseline compile status differs")
+                need(reply.get("status") == "ok", "TypeScript compile response is not successful")
+                bundle = object_value(reply.get("bundle"), "TypeScript compiled bundle")
+                need(bundle.get("target") == "typescript", "TypeScript compiled bundle target differs")
+                prompt = object_value(bundle.get("prompt"), "TypeScript compiled prompt")
+                if expected_prompt is not None:
+                    need(canonical(prompt) == canonical(expected_prompt), "TypeScript compiled prompt differs from immutable source")
+                if prompt_hash is not None:
+                    need(isinstance(prompt_hash, str) and HEX.fullmatch(prompt_hash) and sha(canonical(prompt)) == prompt_hash, "TypeScript legacy compiled prompt differs from frozen hash")
+                if form == "json":
+                    need(canonical(body["prompt"]) == canonical(prompt), "TypeScript JSON request differs from its compiled prompt")
+                normalized[side] = json.loads(canonical(reply))
+                for section, key in (("assets", "backend"), ("assets", "target_contract"), ("hashes", "payload_sha256")):
+                    members = object_value(normalized[side]["bundle"].get(section), f"TypeScript bundle {section}")
+                    if key in members:
+                        members[key] = None
+                bundles[side] = bundle
+                if side in previous_bundles:
+                    need(canonical(bundle) == previous_bundles[side], "TypeScript request forms produce different bundles")
+                assemble_body = self.typescript_raw(record, f"{side}_assemble_request_file", f"{side}_assemble_request_sha256")
+                need(canonical(assemble_body) == canonical({"bundle": bundle}), "TypeScript assemble request differs from its own compiled bundle")
+                assembled = self.typescript_raw(record, f"{side}_assemble_response_file", f"{side}_assemble_sha256")
+                status = record.get(f"{side}_assemble_status")
+                need(true_integer(status) and status == 200, "TypeScript baseline assemble status differs")
+                need(assembled.get("status") == "ok", "TypeScript assemble response is not successful")
+                files = object_value(assembled.get("files"), "TypeScript product files")
+                need(files and all(isinstance(name, str) and isinstance(content, str) for name, content in files.items()), "TypeScript product files are not a nonempty string map")
+                hashes = {name: sha(content.encode()) for name, content in files.items()}
+                hash_key = "files_sha256" if side == "qa" else "baseline_files_sha256"
+                need(canonical(record.get(hash_key)) == canonical(hashes), f"TypeScript {side} product file hashes differ from raw bytes")
+                file_maps[side] = {name: content.encode() for name, content in files.items()}
+            need(canonical(normalized["qa"]) == canonical(normalized["baseline"]), "TypeScript compile replies differ outside the three allowed members")
+            need(file_maps["qa"] == file_maps["baseline"], "TypeScript baseline product file names or bytes differ")
+            previous_bundles = {side: canonical(bundle) for side, bundle in bundles.items()}
 
     def baseline_inventory(self, language: str, rows: list[dict]) -> None:
         if language == "python":
@@ -1123,11 +1248,15 @@ class Audit:
         else:
             expected = set()
             inventory = object_value(self.reader.json("som-rs/contracts/typescript-output-v1/case-inventory.json"), "TypeScript baseline inventory")
+            self.ts_baseline_inventory = inventory
+            self.ts_baseline_cases = {}
             for group in ("public_examples", "version_positive_fixtures", "coverage_cases", "name_cases", "public_products_in_scope", "legacy_in_scope"):
-                for case in list_value(inventory.get(group), f"TypeScript {group}"):
+                for case in list_value(inventory.get(group, []), f"TypeScript {group}"):
                     if group in ("public_examples", "version_positive_fixtures", "coverage_cases") and case.get("typescript") != "in_scope":
                         continue
+                    need(case["id"] not in expected, "TypeScript frozen baseline inventory repeats an id")
                     expected.add(case["id"])
+                    self.ts_baseline_cases[case["id"]] = (group, case)
             actual = {row.get("id") for row in rows}
         need(expected, f"{language} complete baseline inventory is empty", "unrun")
         need(actual == expected, f"{language} baseline named inventory differs: {len(expected - actual)} missing, {len(actual - expected)} unexpected", "unrun" if expected - actual else "failed")
