@@ -1,0 +1,116 @@
+{
+  "version": "som.m6-frozen-tool-files.v1",
+  "repository": "faberline/som",
+  "files": [
+    {
+      "path": "frozen-tools/files/node/26.5.0/bin/node",
+      "installed_path": "/opt/homebrew/Cellar/node/26.5.0/bin/node",
+      "sha256": "70851490e028b3d699a8d6d4e1de909af2a989359ae807974c92af9c6580a8e8",
+      "formula": "node",
+      "archive_sha256": "05357c510f3dd0330b4cdea26e7ae406cfb55d88834ef83ecd5e3b7418b6ff37",
+      "license_path": "frozen-tools/licenses/node.txt",
+      "bytes": 50320,
+      "mode": 493
+    },
+    {
+      "path": "frozen-tools/files/libuv/1.52.1/lib/libuv.1.0.0.dylib",
+      "installed_path": "/opt/homebrew/Cellar/libuv/1.52.1/lib/libuv.1.0.0.dylib",
+      "sha256": "c56f794e7c9dbcf8c45fba6109836196263a4d5e95936eee7601593532c6cfe9",
+      "formula": "libuv",
+      "archive_sha256": "6e8478545dc49bd505a4fac61617cd15d8fec4475d2add5ea1cc92f7281818bf",
+      "license_path": "frozen-tools/licenses/libuv.txt",
+      "bytes": 189408,
+      "mode": 420
+    },
+    {
+      "path": "frozen-tools/files/ada-url/3.4.4/lib/libada.3.4.4.dylib",
+      "installed_path": "/opt/homebrew/Cellar/ada-url/3.4.4/lib/libada.3.4.4.dylib",
+      "sha256": "b39ba5c76cfa9e8d7a37b51daf937414316b671f51360daae62b9885e9d089f8",
+      "formula": "ada-url",
+      "archive_sha256": "14bf3540eb0d168084ff5e748077717f2824badf4697205a2f13135070b1816f",
+      "license_path": "frozen-tools/licenses/ada-url.txt",
+      "bytes": 598704,
+      "mode": 420
+    },
+    {
+      "path": "frozen-tools/files/simdjson/4.6.4/lib/libsimdjson.33.0.0.dylib",
+      "installed_path": "/opt/homebrew/Cellar/simdjson/4.6.4/lib/libsimdjson.33.0.0.dylib",
+      "sha256": "031cfb565154f822e33b9227ef392c257260c5ebb8fbfc9f317c56be82bfa16a",
+      "formula": "simdjson",
+      "archive_sha256": "78c41aca5e97f628caf04ff851e161e8a08fb8dd0876a6e5919806a639e97228",
+      "license_path": "frozen-tools/licenses/simdjson.txt",
+      "bytes": 95296,
+      "mode": 420
+    },
+    {
+      "path": "frozen-tools/files/c-ares/1.34.8/lib/libcares.2.19.7.dylib",
+      "installed_path": "/opt/homebrew/Cellar/c-ares/1.34.8/lib/libcares.2.19.7.dylib",
+      "sha256": "380a4b57ed007eecfd8b31d27feb3ea4749125e49780f8ca55dceb6112993c77",
+      "formula": "c-ares",
+      "archive_sha256": "44bcc2e67b97daa265e168281875129161ddbbc964ab16ec0db1846c289cc376",
+      "license_path": "frozen-tools/licenses/c-ares.txt",
+      "bytes": 227136,
+      "mode": 420
+    },
+    {
+      "path": "frozen-tools/files/hdrhistogram_c/0.11.10/lib/libhdr_histogram.6.3.3.dylib",
+      "installed_path": "/opt/homebrew/Cellar/hdrhistogram_c/0.11.10/lib/libhdr_histogram.6.3.3.dylib",
+      "sha256": "90286f692dd222d09642670523a5ef978f14b553614e6fa2d550dcb179e0d39c",
+      "formula": "hdrhistogram_c",
+      "archive_sha256": "82d614866ee4351be8d84502e69e74efb972fcaa55e2e77ea8eff259ee9f1d56",
+      "license_path": "frozen-tools/licenses/hdrhistogram_c.txt",
+      "bytes": 57920,
+      "mode": 420
+    },
+    {
+      "path": "frozen-tools/files/merve/1.2.2_1/lib/libmerve.1.2.2.dylib",
+      "installed_path": "/opt/homebrew/Cellar/merve/1.2.2_1/lib/libmerve.1.2.2.dylib",
+      "sha256": "cda7651d81af902d5964705451e7bcb3c4769a971e793b33472ccf6c07e2dc58",
+      "formula": "merve",
+      "archive_sha256": "762282750ff31f5f38c273aa346bcaefe71d9f488b222e0e67686eb55a5187fc",
+      "license_path": "frozen-tools/licenses/merve.txt",
+      "bytes": 77776,
+      "mode": 420
+    },
+    {
+      "path": "frozen-tools/files/nbytes/0.1.4/lib/libnbytes.dylib",
+      "installed_path": "/opt/homebrew/Cellar/nbytes/0.1.4/lib/libnbytes.dylib",
+      "sha256": "b063a6b50d0982379e5a78fa22904e9299ac0048d82cae4f90bd4ad11fa40f65",
+      "formula": "nbytes",
+      "archive_sha256": "bc0a989ffab822c0ef0b5122cfc9f046be9b8c6b681dd09a3691c9963c44a282",
+      "license_path": "frozen-tools/licenses/nbytes.txt",
+      "bytes": 35136,
+      "mode": 420
+    },
+    {
+      "path": "frozen-tools/files/libnghttp3/1.17.0/lib/libnghttp3.9.8.0.dylib",
+      "installed_path": "/opt/homebrew/Cellar/libnghttp3/1.17.0/lib/libnghttp3.9.8.0.dylib",
+      "sha256": "02f5cd0648e3c812c3f15573055b12ffd9a6447bd781286198ca6272140e2d6d",
+      "formula": "libnghttp3",
+      "archive_sha256": "1acc6f9318f853f1fc4d7c5f7f6ebb0c759c6a4ab6c200db30b8ea4beae8525a",
+      "license_path": "frozen-tools/licenses/libnghttp3.txt",
+      "bytes": 183904,
+      "mode": 420
+    },
+    {
+      "path": "frozen-tools/files/libngtcp2/1.24.0/lib/libngtcp2.16.dylib",
+      "installed_path": "/opt/homebrew/Cellar/libngtcp2/1.24.0/lib/libngtcp2.16.dylib",
+      "sha256": "c55cbdb643db897ea328a5c1a8cac9f802e165bc4499bd9f823fc65e932769a9",
+      "formula": "libngtcp2",
+      "archive_sha256": "fef0498ca38e3ed15d2c7bae07646db1a9bbe3fac71e672d8e0cb1e4e5b1c741",
+      "license_path": "frozen-tools/licenses/libngtcp2.txt",
+      "bytes": 350016,
+      "mode": 420
+    },
+    {
+      "path": "frozen-tools/files/libffi/3.7.1/lib/libffi.8.dylib",
+      "installed_path": "/opt/homebrew/Cellar/libffi/3.7.1/lib/libffi.8.dylib",
+      "sha256": "8def831bad531fb16a8dcb35ec89da501fa4d797478af8e69fc6aac7b6eda18a",
+      "formula": "libffi",
+      "archive_sha256": "083d67dec69dc4366f58310a6b3a333ca04b4a56ddf0822c03cdd485b350ee20",
+      "license_path": "frozen-tools/licenses/libffi.txt",
+      "bytes": 120496,
+      "mode": 420
+    }
+  ]
+}
