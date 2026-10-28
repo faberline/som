@@ -44,8 +44,14 @@ class PreflightTests(unittest.TestCase):
             inventories.append({"name": name, "path": path, "pointer": pointer, "id_key": "id", "ids": ["first", "second"]})
         self.plan = self.repo / preflight.PLAN_PATH
         plan = {name: {"checks": ["first", "second"]} for name in preflight.GATE_SECTIONS}
+        plan["amendment006"]["checks"] = [f"check {index}" for index in range(10)]
         self.plan.write_text(json.dumps(plan))
         sources[preflight.PLAN_PATH] = sha(self.plan)
+        for path in (*preflight.COMMAND_SOURCES, *preflight.INDEPENDENT_AUDITS, *(path for tools in preflight.AMENDMENT006_TOOLS for path in tools)):
+            file = self.repo / path
+            file.parent.mkdir(parents=True, exist_ok=True)
+            file.write_text("public tool fixture\n")
+            sources[path] = sha(file)
         self.asset = self.repo / "asset.txt"
         self.asset.write_text("public fixture asset\n")
         self.data = {
@@ -60,6 +66,13 @@ class PreflightTests(unittest.TestCase):
             "gate_plan": {
                 **{name: list(steps) for name, steps in preflight.GATE_STEPS.items()},
                 "contract_sections": {name: preflight.section_digest(value) for name, value in plan.items()},
+                "commands_source": list(preflight.COMMAND_SOURCES),
+                "independent_audits": list(preflight.INDEPENDENT_AUDITS),
+                "amendment_context": {"amendment006": {"checks": [
+                    {"pointer": f"/amendment006/checks/{index}", "requirement": plan["amendment006"]["checks"][index],
+                     "tools": list(tools), "execution": "not_run"}
+                    for index, tools in enumerate(preflight.AMENDMENT006_TOOLS)
+                ]}},
             },
         }
         self.manifest = self.repo / "manifest.json"
@@ -258,6 +271,7 @@ class PreflightTests(unittest.TestCase):
     def test_changed_current_amendment_remains_blocked_with_new_source_hash(self):
         plan = json.loads(self.plan.read_text())
         plan["amendment006"]["checks"].append("new required regression")
+        plan["amendment006"]["checks"] = [f"check {index}" for index in range(10)]
         self.plan.write_text(json.dumps(plan))
         self.data["source_files"][preflight.PLAN_PATH] = sha(self.plan)
         self.assertEqual(self.run_cli()[0], 1)
@@ -267,10 +281,41 @@ class PreflightTests(unittest.TestCase):
     def test_unmapped_future_gate_remains_blocked(self):
         plan = json.loads(self.plan.read_text())
         plan["new_required_gates"] = ["must not disappear"]
+        plan["amendment006"]["checks"] = [f"check {index}" for index in range(10)]
         self.plan.write_text(json.dumps(plan))
         self.data["source_files"][preflight.PLAN_PATH] = sha(self.plan)
         self.assertEqual(self.run_cli()[0], 1)
         self.assertTrue(any(row.get("reason") == "unmapped frozen gate section" for row in self.report()["gate_sections"]))
+
+    def test_current_amendment_mapping_cannot_be_omitted_or_substituted(self):
+        original = self.data["gate_plan"]["amendment_context"]["amendment006"]["checks"]
+        changes = [[], original[:-1], list(reversed(original))]
+        for key, value in (("tools", []), ("tools", ["another.py"]), ("execution", "passed"), ("pointer", "/amendment006/checks/1")):
+            changed = copy.deepcopy(original)
+            changed[0][key] = value
+            changes.append(changed)
+        for checks in changes:
+            with self.subTest(checks=checks):
+                data = copy.deepcopy(self.data)
+                data["gate_plan"]["amendment_context"]["amendment006"]["checks"] = checks
+                self.assertEqual(self.run_cli(data)[0], 2)
+
+    def test_audits_and_command_sources_cannot_be_omitted(self):
+        for key in ("independent_audits", "commands_source"):
+            with self.subTest(key=key):
+                data = copy.deepcopy(self.data)
+                data["gate_plan"][key] = []
+                self.assertEqual(self.run_cli(data)[0], 2)
+
+    def test_current_amendment_requirement_must_equal_raw_plan(self):
+        self.data["gate_plan"]["amendment_context"]["amendment006"]["checks"][0]["requirement"] = "weaker check"
+        self.assertEqual(self.run_cli()[0], 1)
+        self.assertEqual(self.report()["gate_mappings"][0]["status"], "blocked")
+
+    def test_current_amendment_tool_must_be_source_bound(self):
+        del self.data["source_files"][preflight.AMENDMENT006_TOOLS[0][0]]
+        self.assertEqual(self.run_cli()[0], 2)
+
 
     def test_product_acceptance_cannot_be_enabled_by_manifest(self):
         for value in (None, True, 0, "false"):

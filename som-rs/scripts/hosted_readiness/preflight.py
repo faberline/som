@@ -52,6 +52,26 @@ GATE_STEPS = {
         "cli", "rust-products", "rust-unchanged", "issue57", "name-collisions",
     ),
 }
+COMMAND_SOURCES = (
+    "som-rs/scripts/rust_output_acceptance/run_acceptance.py",
+    "som-rs/scripts/rust_output_acceptance/run_issue57.py",
+)
+INDEPENDENT_AUDITS = (
+    "som-rs/scripts/rust_output_acceptance/audit/audit055.py",
+    "som-rs/scripts/rust_output_acceptance/audit/audit057.py",
+)
+AMENDMENT006_TOOLS = (
+    ("som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py",),
+    ("som-rs/tests/rust-output-v1/check_python_controls.py",),
+    ("som-rs/scripts/typescript_output_acceptance/check_python_baseline.py",),
+    ("som-rs/scripts/rust_output_acceptance/python_replay.py", "som-rs/tests/rust-output-v1/validate_cases.py"),
+    ("som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py",),
+    ("som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py", "som-rs/som-targets/qa/check_rust_products.py"),
+    ("som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py",),
+    ("som-rs/som-targets/qa/check_rust_products.py",),
+    ("som-rs/scripts/rust_output_acceptance/check_cli.py", "som-rs/scripts/react_output_acceptance/check_target.py"),
+    ("som-rs/scripts/react_output_acceptance/audit/audit130.py",),
+)
 
 
 class Refusal(ValueError):
@@ -191,6 +211,23 @@ def validate_manifest(repo: Path, data: object) -> dict:
     require(PLAN_PATH in sources, "acceptance plan must be bound in source_files")
     for name, steps in GATE_STEPS.items():
         require(gates.get(name) == list(steps), f"incomplete or reordered {name} gate steps")
+    for name, paths in (("commands_source", COMMAND_SOURCES), ("independent_audits", INDEPENDENT_AUDITS)):
+        require(gates.get(name) == list(paths), f"incomplete or substituted {name}")
+        require(all(path in sources for path in paths), f"{name} must be source-bound")
+    context = gates.get("amendment_context")
+    require(isinstance(context, dict), "amendment context is required")
+    current = context.get("amendment006")
+    require(isinstance(current, dict), "current amendment mapping is required")
+    checks = current.get("checks")
+    require(isinstance(checks, list) and len(checks) == len(AMENDMENT006_TOOLS), "all ten current amendment checks are required")
+    for index, (check, tools) in enumerate(zip(checks, AMENDMENT006_TOOLS)):
+        require(
+            isinstance(check, dict) and check.get("pointer") == f"/amendment006/checks/{index}"
+            and isinstance(check.get("requirement"), str) and bool(check["requirement"])
+            and check.get("tools") == list(tools) and check.get("execution") == "not_run",
+            "current amendment check mapping is incomplete, reordered or substituted",
+        )
+        require(all(path in sources for path in tools), "current amendment tools must be source-bound")
     assets = data.get("assets")
     require(isinstance(assets, list), "assets must be a list")
     names = set()
@@ -269,6 +306,7 @@ def inspect(repo: Path, data: dict, port: int) -> dict:
             row["reason"] = f"inventory unavailable or malformed: {exc.__class__.__name__}"
         inventories.append(row)
     gate_sections = []
+    gate_mappings = []
     try:
         plan = load_json(relative_path(repo, PLAN_PATH))
         require(isinstance(plan, dict), "acceptance plan must be an object")
@@ -287,7 +325,14 @@ def inspect(repo: Path, data: dict, port: int) -> dict:
                 else:
                     row["reason"] = "frozen gate section sha256 mismatch"
             gate_sections.append(row)
-    except (OSError, ValueError, TypeError) as exc:
+        requirements = plan["amendment006"]["checks"]
+        require(isinstance(requirements, list) and len(requirements) == len(AMENDMENT006_TOOLS), "current amendment check count changed")
+        for index, check in enumerate(data["gate_plan"]["amendment_context"]["amendment006"]["checks"]):
+            row = {"pointer": check["pointer"], "tools": check["tools"], "execution": "not_run", "status": "verified"}
+            if check["requirement"] != requirements[index]:
+                row.update(status="blocked", reason="mapped requirement differs from the frozen plan")
+            gate_mappings.append(row)
+    except (OSError, ValueError, TypeError, KeyError, IndexError) as exc:
         gate_sections.append({"name": "acceptance-plan", "path": PLAN_PATH, "status": "blocked",
                               "reason": f"frozen gates unavailable or malformed: {exc.__class__.__name__}"})
     assets = []
@@ -300,7 +345,7 @@ def inspect(repo: Path, data: dict, port: int) -> dict:
     runner = {"supported_hosts": data["runner"]["hosts"], "actual_host": actual_host, "status": "verified"}
     if actual_host not in runner["supported_hosts"]:
         runner.update(status="blocked", reason="native tool provisioning is not declared for this host")
-    blocked = bool(data["blockers"]) or any(row["status"] == "blocked" for row in [*sources, *inventories, *gate_sections, *assets, runner])
+    blocked = bool(data["blockers"]) or any(row["status"] == "blocked" for row in [*sources, *inventories, *gate_sections, *gate_mappings, *assets, runner])
     return {
         "version": "som.hosted-readiness-report.v2",
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -313,6 +358,7 @@ def inspect(repo: Path, data: dict, port: int) -> dict:
         "source_files": sources,
         "inventories": inventories,
         "gate_sections": gate_sections,
+        "gate_mappings": gate_mappings,
         "runner": runner,
         "assets": assets,
         "blockers": data["blockers"],
