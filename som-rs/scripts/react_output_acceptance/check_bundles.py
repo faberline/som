@@ -224,6 +224,8 @@ def post_json(
     responses_dir: pathlib.Path,
     file_stem: str,
 ) -> tuple[int | None, bytes | None, str | None, str | None]:
+    # Keep the exact sent body even when transport or JSON parsing fails.
+    (responses_dir / f"{sanitize_filename(file_stem)}.request.raw").write_bytes(body.encode("utf-8"))
     endpoint = base_url.rstrip("/") + route
     req = urllib.request.Request(
         endpoint,

@@ -2,8 +2,8 @@
 """Audit a React acceptance run from frozen contracts and retained raw evidence.
 
 No acceptance tool is imported, parsed or run. Tool files are hashed only.
-Aggregate verdicts are ignored. A narrow per-case boolean with no retained raw
-exchange is labelled attested, never independently passed. Missing evidence is
+Aggregate verdicts are ignored. Operational checks require retained raw bytes.
+Only human review and approval metadata can be attested. Missing evidence is
 unrun. A clean committed checkout is supplied by the caller; this audit checks
 its bytes against the run identity, not the internal Git object database.
 """
@@ -16,6 +16,12 @@ from pathlib import Path
 import re
 import sys
 from typing import Any, Callable
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from render_rules import render_files  # noqa: E402
+from refusal_rules import request_for  # noqa: E402
+from api_raw import validate as validate_api, ApiRawError  # noqa: E402
+from baseline_raw import validate_python, validate_rust, validate_controls, verify_location, BaselineRawError  # noqa: E402
 
 
 VERSION = "som.react-output-audit-130.v1"
@@ -370,13 +376,6 @@ class Audit:
         need(len(matches) == 1, f"duplicate named case {step}/{case_id}")
         return matches[0]
 
-    def per_case_attestation(self, row: dict, reason: str, field: str = "passed") -> tuple[str, str]:
-        need(field in row, f"missing per-case attestation: {reason}", "unrun")
-        need(row[field] is True, f"per-case tool boolean is false or malformed: {reason}")
-        record = {"file": self.active_report, "record": {key: row[key] for key in ("id", "section", "variant", "check") if key in row}, "field": field, "reason": reason}
-        self.attestations.append(record)
-        return "attested", f"{reason}; exact raw record: {record['file']} {record['record']} /{field}"
-
     def identities(self) -> None:
         identity = object_value(self.reader.json(self.run / "identity.json"), "identity")
         for role in ("candidate", "baseline", "8765"):
@@ -603,11 +602,26 @@ class Audit:
                 captured_request["target"] = body["target"]
             expected_hash = sha(json.dumps(captured_request, ensure_ascii=False, separators=(",", ":")).encode())
             need(row.get("expected_request_sha256") == row.get("request_sha256") == expected_hash, "CLI captured request hash differs from the independently derived frozen request")
-            need(row.get("exit_code") == (2 if refusal else 0), "CLI exit code differs")
+            need(true_integer(row.get("exit_code")) and row["exit_code"] == (2 if refusal else 0), "CLI exit code differs")
             if refusal:
                 need(row.get("code") == case["expected"]["code"] and row.get("http_status") == case["http_status"], "CLI refusal differs")
-            self.per_case_attestation(row, f"CLI stdout equality for {case['id']}; raw stdout is not retained")
-        return "attested", "forwarded request hashes and exit codes match; raw CLI stdout equality is a per-case attestation"
+            def raw(name: str) -> bytes:
+                value = row.get(f"{name}_file")
+                need(isinstance(value, str) and value, f"missing CLI raw {name}", "unrun")
+                path = self.reader.path(value, self.run / "react-target")
+                need(path.is_relative_to(self.run / "react-target/cli-inputs"), "CLI raw path leaves this run")
+                data = self.reader.bytes(path)
+                need(row.get(f"{name}_sha256") == sha(data), f"CLI raw {name} hash differs")
+                return data
+            request = raw("request")
+            need(request == json.dumps(captured_request, ensure_ascii=False, separators=(",", ":")).encode(), "CLI raw forwarded request differs")
+            need(true_integer(row.get("capture_count")) and row["capture_count"] == 1
+                 and row.get("request_route") == "/v1/compile", "CLI forwarding inventory differs")
+            reply = object_value(json.loads(raw("http_response")), "CLI HTTP reply")
+            stdout, stderr = raw("stdout"), raw("stderr")
+            stream = stderr if refusal else stdout
+            need(json.loads(stream) == (reply if refusal else reply.get("bundle")), "CLI output differs from raw HTTP reply")
+        return "passed", "exact forwarded request, raw streams, HTTP reply and exit codes match"
 
     def scope_cases(self) -> None:
         for case in self.inventory.get("public_examples", []):
@@ -907,14 +921,46 @@ class Audit:
                 if isinstance(formatter, dict):
                     need(assets.get("formatter") == {"id": formatter["id"], "sha256": formatter["sha256"]}, "formatter descriptor differs")
                 need(assets.get("catalog") == {"id": "som.react-catalog.v1", "sha256": self.reader.hash(f"{CONTRACT}/catalog/react-catalog.v1.json")}, "React catalog descriptor differs")
-                return self.per_case_attestation(row, f"{cid}: dynamic schema/README reference rendering and backend/block-library descriptor construction are per-case attestations; bytes, schema, catalog, hashes, fixed files, shared descriptors and determinism were recomputed")
+                fixed_order = ("index.html", "package.json", "package-lock.json", "tsconfig.json", "vite.config.ts",
+                    "src/main.tsx", "src/App.tsx", "src/api.ts", "src/spec.ts", "src/form.ts", "src/styles.css",
+                    "src/pages/ListPage.tsx", "src/pages/DetailPage.tsx", "src/pages/FormPage.tsx", "src/pages/ErrorView.tsx",
+                    "src/app.test.tsx", "src/form.test.ts")
+                library = self.reader.bytes("som-rs/som-targets/src/react/render.rs") + b"".join(
+                    self.reader.bytes(f"{CONTRACT}/reference/{name}") for name in fixed_order)
+                need(assets.get("block_library") == {"id": "som.react-block-library.v1", "sha256": sha(library)}, "React block library descriptor differs")
+                backend = {f"som-targets/{name}": self.reader.hash(f"som-rs/som-targets/{name}")
+                           for name in ("Cargo.toml", "src/lib.rs", "src/main.rs", "src/profile.rs")}
+                backend.update({f"som-targets/src/react/{name}": value for name, value in
+                                self.reader.tree(self.reader.path("som-rs/som-targets/src/react")).items()})
+                need(assets.get("backend") == {"id": "som.react-backend.v1", "sha256": sha(canonical(
+                    {"version": "som.react-backend.v1", "files": backend}))}, "React backend descriptor differs")
+                for name, expected_text in render_files(bundle["prompt"]).items():
+                    need(files.get(name) == expected_text, f"generated {name} differs from independent frozen rendering rules")
+                return "passed", "raw bundle, product bytes, generated files and all descriptors recomputed"
             self.row(f"bundle_case/{cid}", check)
         recipes = self.contracts["acceptance-plan.json"].get("assemble_refusals", {}).get("recipes", [])
         for recipe in recipes:
             def check(recipe: dict = recipe) -> tuple[str, str]:
                 row = self.find("bundles", recipe["id"], "assemble_refusals")
-                self.diagnostic(row, {key: recipe[key] for key in ("code", "prompt_pointer")}, recipe["http_status"], "bundles")
-                return self.per_case_attestation(row, f"{recipe['id']}: response code/status/pointer recomputed; exact mutated request, rehash and span are only per-case attestations because request bytes were not retained")
+                def base(name: str) -> dict:
+                    return object_value(self.reader.json(self.run / "bundles/responses" / name), "assemble base reply")["bundle"]
+                react = base("bundle_checks__example-v1__compile_json_1.json")
+                rust = base("bundle_checks__example-v1__rust_manifest.json")
+                typescript = base("assemble_refusals__base_typescript_v1.json")
+                python = base("assemble_refusals__base_python_v1.json")
+                v5 = base("assemble_refusals__base_python_v5.json")
+                prompt = self.reader.json("som-rs/contracts/compiler-v1/examples/v5.prompt.json")
+                need(v5["prompt"] == prompt, "v5 refusal base prompt differs from frozen example")
+                raw = request_for(recipe["id"], react, typescript, rust, python, prompt, v5["assets"])
+                retained = self.reader.bytes(self.run / "bundles/responses" / f"assemble_refusals__{recipe['id']}.request.raw")
+                need(retained == raw, "assemble mutation differs from independently rebuilt frozen recipe")
+                self.diagnostic(row, {key: recipe[key] for key in ("code", "prompt_pointer")}, recipe["http_status"], "bundles", raw.decode())
+                _, response = self.response("bundles", row)
+                try:
+                    verify_location(raw, response["diagnostics"][0])
+                except BaselineRawError as error:
+                    raise EvidenceError(str(error), error.status) from error
+                return "passed", "exact mutation, hashes, raw request and refusal span recomputed"
             self.row(f"assemble_refusals/recipes/{recipe['id']}", check)
 
     def product_gate(self, cid: str, gate: int) -> tuple[str, str] | None:
@@ -955,7 +1001,16 @@ class Audit:
             need(lock is not None and lock == gates.get("lock_sha256_before") == gates.get("lock_sha256_after"), "package lock hashes differ")
             before, after_cache = gates.get("vendored_cache_tree_sha256_before"), gates.get("vendored_cache_tree_sha256_after")
             need(isinstance(before, str) and HEX.fullmatch(before) and before == after_cache, "vendored cache before/after tree hashes differ or are absent")
-            return self.per_case_attestation(product_row, "product and lock bytes recomputed; historical cache tree snapshots are not retained byte trees", "vendored_cache_unchanged")
+            snapshots = [object_value(self.reader.json(work / f"cache-{name}.json"), "raw cache file snapshot") for name in ("before", "after")]
+            frozen = self.contracts["toolchain.json"]["vendored_cache"]
+            current = self.reader.tree(self.reader.path(frozen["path"]))
+            digest = sha(b"".join(f"{name}\0{current[name]}\n".encode() for name in sorted(current, key=Path)))
+            for snapshot in snapshots:
+                need(snapshot.get("version") == "som.m6-cache-snapshot.v1" and snapshot.get("files") == current, "cache file snapshot differs from current frozen bytes")
+                need(snapshot.get("tree_sha256") == digest == frozen["tree_sha256"] == before == after_cache, "cache tree hash differs from frozen input")
+                need(type(snapshot.get("file_count")) is int and snapshot["file_count"] == frozen["tree_files"] == len(current)
+                     and type(snapshot.get("symlink_count")) is int and snapshot["symlink_count"] == frozen["tree_symlinks"] == 0, "cache file inventory differs")
+            return "passed", "product, lock and before/after cache file maps match retained frozen bytes"
         api = object_value(self.reader.json(work / "api/report.json"), "raw API report")
         result = object_value(api.get("result"), "raw API result")
         contract = self.contracts["api-contract.json"]
@@ -973,7 +1028,6 @@ class Audit:
             applicable = facts[conditions[name]] if name in conditions else True
             if applicable:
                 need(step.get("ok") is True and not step.get("skipped"), f"API step failed or was skipped: {name}")
-                self.attestations.append({"file": (work / "api/report.json").relative_to(self.repo).as_posix(), "record": f"/result/steps/{index}/ok", "value": True, "reason": f"{cid}: {name}; successful HTTP exchange not retained"})
             else:
                 need(step.get("ok") is None and step.get("skipped") == contract["skip_reasons"][name], f"API conditional skip differs: {name}")
         need(api.get("exit_code") == 0 and product_row.get("exit_codes", {}).get("api_contract") == 0, "API command exited with failure")
@@ -990,8 +1044,12 @@ class Audit:
             stop_verified = process.get("stop_cwd_verified")
             need(stop_verified is True or (stop_verified is None and true_integer(process.get("exit_code"))), "active process stop ownership is unverified")
             self.reader.path(process["expected_cwd"])
-            self.attestations.append({"file": (work / "api/report.json").relative_to(self.repo).as_posix(), "record": f"/processes/{index}/stopped", "value": True, "reason": f"{cid}: process {process['pid']}; OS ownership/cleanup snapshot not retained"})
-        return "attested", "API case facts, exact step inventory and conditional skips recomputed; successful API exchanges and process cleanup are per-case booleans because raw HTTP and OS ownership snapshots were not retained"
+        try:
+            validate_api(self.reader, work / "api-raw", work / "api/report.json", prompt, contract,
+                         self.reader.path(self.manifest[cid]["product"]))
+        except ApiRawError as error:
+            raise EvidenceError(str(error), error.status) from error
+        return "passed", "all applicable API exchanges and OS process ownership/cleanup recomputed from raw evidence"
 
     def products(self) -> None:
         rows = self.cases("products")
@@ -1016,38 +1074,11 @@ class Audit:
         expected = set(expectations)
         ids = [row.get("id") for row in results]
         need(len(set(ids)) == len(ids) and set(ids) == expected, "Python controls named case inventory differs", "unrun" if expected - set(ids) else "failed")
-        baseline = {}
-        if language == "react":
-            frozen = object_value(self.reader.json(f"{EVIDENCE}/react-output-v1/python-controls-2026-10-22.json"), "frozen controls")
-            baseline = {row["id"]: row for row in frozen["results"]}
-        attested = False
-        for row in results:
-            status = row.get("control_status")
-            need(true_integer(status), "control HTTP status missing", "unrun")
-            case = expectations[row["id"]]
-            successful = str(case.get("python_control_expected", "")).startswith("HTTP 200")
-            if successful:
-                need(status == 200, "Python control unexpectedly refused")
-                value = row.get("payload_sha256")
-                need(isinstance(value, str) and HEX.fullmatch(value), "control payload hash missing", "unrun")
-                if row["id"] in baseline:
-                    need(value == baseline[row["id"]].get("payload_sha256"), "Python control payload changed")
-                elif language == "react":
-                    raise EvidenceError(f"frozen React control has no payload hash: {row['id']}", "unrun")
-                elif language != "react":
-                    self.per_case_attestation(row, "recorded Python control response has no retained baseline response")
-                    attested = True
-            elif language == "rust":
-                need(status == case.get("http_status"), "Rust Python control refusal HTTP status differs")
-                self.per_case_attestation(row, "Rust refusal control has no retained raw diagnostic")
-                attested = True
-            else:
-                need(status == case.get("http_status"), "Python control refusal HTTP status differs")
-                expected_diag = object_value(case.get("expected"), "frozen Python control diagnostic")
-                actual_diag = object_value(row.get("diagnostic"), "recorded Python control diagnostic")
-                for key in ("code", "cause", "allowed_form", "byte_start", "byte_end", "line", "column"):
-                    need(actual_diag.get(key) == expected_diag.get(key), f"Python control diagnostic {key} changed")
-        return ("attested", "some control comparisons only retain per-case booleans") if attested else ("passed", "all named Python controls match retained payload/diagnostic data")
+        try:
+            validate_controls(self.reader, self.run / f"{step}-raw", report, language)
+        except BaselineRawError as error:
+            raise EvidenceError(str(error), error.status) from error
+        return "passed", "all named control request/reply bytes, diagnostics and sealed historical payload pins match"
 
     def baseline(self, language: str) -> tuple[str, str]:
         step = f"{language}-baseline"
@@ -1055,32 +1086,20 @@ class Audit:
         rows = self.cases(step, key)
         need(rows, f"missing {language} baseline case results", "unrun")
         self.baseline_inventory(language, rows)
-        attested = False
+        if language in ("python", "rust"):
+            try:
+                validator = validate_python if language == "python" else validate_rust
+                validator(self.reader, self.run / f"{step}-raw", self.get_report(step))
+            except BaselineRawError as error:
+                raise EvidenceError(str(error), error.status) from error
+            return "passed", "complete source-bound compile and assembly raw bytes match accepted references"
         seen = set()
         for row in rows:
             identity = (row.get("source"), row.get("phase"), row.get("id"), row.get("variant"), row.get("check"))
             need(identity not in seen, "baseline case result is repeated")
             seen.add(identity)
-            if language == "python":
-                identity_key = (row.get("source"), row.get("id"), row.get("variant"))
-                if identity_key in self.baseline_requests:
-                    expected_request = self.baseline_requests[identity_key]
-                    need(row.get("qa_compile_request_sha256") == row.get("baseline_compile_request_sha256") == expected_request, "Python baseline request hash differs from source-bound immutable input")
-                for endpoint in ("compile", "assemble"):
-                    a, b = row.get(f"qa_{endpoint}_status"), row.get(f"baseline_{endpoint}_status")
-                    need(a == b == 200, "Python baseline HTTP result differs")
-                    left, right = row.get(f"qa_{endpoint}_response_sha256"), row.get(f"baseline_{endpoint}_response_sha256")
-                    need(isinstance(left, str) and HEX.fullmatch(left) and left == right, "Python baseline response hashes differ or are missing")
-            elif language == "rust" and row.get("check") == "rebased_files":
-                need(row.get("files_sha256") and row["files_sha256"] == row.get("recorded_files_sha256"), "Rust reassembled file hashes differ")
-            elif language == "rust":
-                self.per_case_attestation(row, "Rust normalized compile/refusal comparison retains no successful raw response")
-                attested = True
-            else:
-                self.typescript_baseline_case(row)
-        if language == "ts":
-            return "passed", "raw TypeScript compile replies and product file bytes match"
-        return ("attested", f"{language} comparisons include per-case attestations; no aggregate verdict used") if attested else ("passed", "retained baseline response hashes match")
+            self.typescript_baseline_case(row)
+        return "passed", "raw TypeScript compile replies and product file bytes match"
 
     def typescript_raw(self, record: dict, file_key: str, hash_key: str) -> dict:
         """Read one hash-bound exchange from this run's TypeScript step only."""
@@ -1371,7 +1390,7 @@ class Audit:
         totals = dict.fromkeys(STATUSES, 0)
         for row in self.rows:
             totals[row["status"]] += 1
-        return {"version": VERSION, "run": self.run.relative_to(self.repo).as_posix(), "plan_sha256": self.reader.files.get(f"{CONTRACT}/acceptance-plan.json"), "rows": self.rows, "totals": totals, "files": dict(sorted(self.reader.files.items())), "missing_files": sorted(self.reader.missing), "limitations": ["Current source bytes are checked against recorded before/after identities. The caller supplies a clean committed checkout; Git object storage is not independently inspected.", "Per-case facts that cannot be recomputed from retained raw bytes are explicitly attested. Aggregate tool verdicts are never acceptance evidence."]}
+        return {"version": VERSION, "run": self.run.relative_to(self.repo).as_posix(), "plan_sha256": self.reader.files.get(f"{CONTRACT}/acceptance-plan.json"), "rows": self.rows, "totals": totals, "files": dict(sorted(self.reader.files.items())), "missing_files": sorted(self.reader.missing), "limitations": ["Current source bytes are checked against recorded before/after identities. The caller supplies a clean committed checkout; Git object storage is not independently inspected.", "Only human review and approval metadata is attested. Operational checks require raw evidence. Aggregate tool verdicts are never acceptance evidence."]}
 
 
 def required_command(rows: list[dict], name: str) -> str:

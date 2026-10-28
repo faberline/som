@@ -12,6 +12,7 @@ must get the OS connection-refused error. This mode does not prove default-serve
 usage:
   run_acceptance.py --candidate DIR --out NEW_DIR [--baseline URL] [--legacy-run DIR]
                     [--rust-baseline-run DIR] [--python PATH] [--protected-default healthy|absent]
+                    [--record-raw-http] [--cleanup-products-runtime]
 """
 from __future__ import annotations
 
@@ -356,11 +357,12 @@ def build_steps(
     contract_receipt: str,
     cleanup_products_runtime: bool = False,
     rust_baseline_run: str | None = None,
+    record_raw_http: bool = False,
 ) -> list[dict[str, Any]]:
     """Construct the 12 ordered step definitions."""
     som_binary = str(candidate_dir / "som")
     bundles_manifest = out_dir / "bundles" / "products" / "manifest.json"
-    return [
+    steps = [
         {
             "index": 1,
             "step": "contract",
@@ -554,6 +556,12 @@ def build_steps(
             "requires_manifest": bundles_manifest,
         },
     ]
+    if record_raw_http:
+        for step in steps:
+            if step["step"] in {"react-python-controls", "python-baseline", "rust-baseline", "rust-python-controls", "ts-python-controls"}:
+                step["argv"] = [python_bin, str(HERE / "record_http.py"), "--out", str(out_dir / f"{step['step']}-raw"),
+                                "--", *step["argv"][1:]]
+    return steps
 
 
 def judge_contract_stdout(exit_code: int, stdout_path: pathlib.Path) -> tuple[str, str]:
@@ -913,6 +921,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--cleanup-products-runtime", action="store_true",
         help="Remove owned node_modules and stopped PostgreSQL scratch data after each complete product check.",
     )
+    parser.add_argument("--record-raw-http", action="store_true",
+                        help="Retain every baseline and Python control HTTP exchange for independent acceptance.")
     return parser.parse_args(argv)
 
 
@@ -1014,6 +1024,7 @@ def main(argv: list[str] | None = None) -> int:
         contract_receipt=contract_receipt_arg,
         cleanup_products_runtime=args.cleanup_products_runtime,
         rust_baseline_run=rust_baseline_run_arg,
+        record_raw_http=args.record_raw_http,
     )
 
     receipts: list[dict[str, Any]] = []
@@ -1092,6 +1103,7 @@ def main(argv: list[str] | None = None) -> int:
         "candidate_url": candidate_url,
         "baseline_url": baseline_url,
         "legacy_run": legacy_run_arg,
+        "record_raw_http": args.record_raw_http,
         **({"rust_baseline_run": rust_baseline_run_arg} if rust_baseline_run_arg is not None else {}),
         "python": python_arg,
         "contract_receipt": contract_receipt_arg,

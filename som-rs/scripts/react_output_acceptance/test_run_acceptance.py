@@ -912,6 +912,25 @@ raise SystemExit(int(step_cfg.get("exit_code", 0)))
         self.assertFalse(any("--run" in item["argv"] for item in invocations if item["step"] != "rust-baseline"))
         self.assertEqual(json.loads((out_dir / "run.json").read_text())["rust_baseline_run"], str(alternate))
 
+    def test_raw_recording_wraps_only_five_frozen_http_collectors(self) -> None:
+        options = {"python_bin": "python3", "candidate_dir": self.candidate_dir,
+                   "candidate_url": "http://127.0.0.1:18919", "baseline_url": "http://127.0.0.1:18917",
+                   "legacy_run": str(self.legacy_run), "out_dir": self.root / ".local/run",
+                   "contract_receipt": "receipt.json"}
+        original = run_acceptance.build_steps(**options)
+        recorded = run_acceptance.build_steps(**options, record_raw_http=True)
+        chosen = {"react-python-controls", "python-baseline", "rust-baseline", "rust-python-controls", "ts-python-controls"}
+        self.assertEqual([step["step"] for step in recorded], [step["step"] for step in original])
+        for before, after in zip(original, recorded):
+            with self.subTest(step=before["step"]):
+                if before["step"] in chosen:
+                    self.assertEqual(after["argv"], ["python3", str(run_acceptance.HERE / "record_http.py"),
+                        "--out", str(options["out_dir"] / f"{before['step']}-raw"), "--", *before["argv"][1:]])
+                    self.assertEqual({key: value for key, value in after.items() if key != "argv"},
+                                     {key: value for key, value in before.items() if key != "argv"})
+                else:
+                    self.assertEqual(before, after)
+
     def test_10_loopback_url_validation_preserves_ipv6(self) -> None:
         self.assertEqual(
             run_acceptance.parse_and_validate_url("http://[::1]:18960", "--baseline"),

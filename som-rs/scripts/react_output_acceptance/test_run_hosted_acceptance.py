@@ -100,6 +100,8 @@ class Fixture:
             code = self.audit_exit
             save(self.out / "audit.json", {"version": "som.react-output-audit-130.v1",
                 "run": (self.out / "run").relative_to(self.repo).as_posix(),
+                "rows": [{"id": "contract/sealed", "status": "attested"},
+                         {"id": "product_gates/fake/7", "status": "passed"}],
                 "totals": {"failed": int(code != 0), "unrun": 0}, **self.audit_overrides})
         else:
             raise AssertionError("Unexpected subprocess")
@@ -166,6 +168,7 @@ class HostedDriverTests(unittest.TestCase):
         self.assertEqual((self.fixture.out / "acceptance.stdout").read_bytes(), b"private raw output\n")
         command = next(command for command in self.fixture.calls if len(command) > 1 and command[1].endswith("run_acceptance.py"))
         self.assertIn("--cleanup-products-runtime", command)
+        self.assertIn("--record-raw-http", command)
         self.assertEqual(command[command.index("--baseline") + 1], "http://127.0.0.1:18917")
         self.assertEqual(command[command.index("--rust-baseline-run") + 1], str(self.fixture.out / "reconstructed-inputs/rust-baseline"))
         reconstruct = next(command for command in self.fixture.calls if len(command) > 1 and command[1].endswith("reconstruct_hosted_inputs.py"))
@@ -189,6 +192,14 @@ class HostedDriverTests(unittest.TestCase):
 
     def test_audit_for_another_run_is_refused(self):
         self.fixture.audit_overrides = {"run": ".local/m6-hosted/another-run/run"}
+        self.assertEqual(self.invoke()[0], 1)
+
+    def test_operational_attestation_cannot_accept_a_candidate(self):
+        self.fixture.audit_overrides = {"rows": [{"id": "product_gates/fake/7", "status": "attested"}]}
+        self.assertEqual(self.invoke()[0], 1)
+
+    def test_missing_audit_rows_cannot_accept_empty_zero_totals(self):
+        self.fixture.audit_overrides = {"rows": []}
         self.assertEqual(self.invoke()[0], 1)
 
     def test_boolean_audit_counts_are_refused(self):

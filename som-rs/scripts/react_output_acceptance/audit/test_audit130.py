@@ -444,14 +444,14 @@ class Audit130Tests(unittest.TestCase):
         self.assertEqual(set(report["totals"]), STATUSES)
         self.assertEqual(report["totals"], {status: counted[status] for status in STATUSES})
 
-    def test_supported_fixture_plan_passes_and_tools_are_only_hashed(self):
+    def test_incomplete_legacy_fixture_blocks_acceptance_and_tools_are_only_hashed(self):
         code, report, _, error = self.run_audit()
-        self.assertEqual(code, 0, error or json.dumps(report, indent=2))
+        self.assertEqual(code, 1, error or json.dumps(report, indent=2))
         self.assertEqual(report["version"], "som.react-output-audit-130.v1")
         self.assertEqual(report["run"], self.fixture.run.relative_to(self.fixture.repo).as_posix())
         self.assertEqual(report["plan_sha256"], sha_file(self.fixture.contract / "acceptance-plan.json"))
         self.assertEqual(report["totals"]["failed"], 0)
-        self.assertEqual(report["totals"]["unrun"], 0)
+        self.assertGreater(report["totals"]["unrun"], 0)
         self.assertGreater(report["totals"]["post_acceptance"], 0)
         self.assertGreater(report["totals"]["attested"], 0)
         self.assert_totals(report)
@@ -568,7 +568,7 @@ class Audit130Tests(unittest.TestCase):
     def test_typescript_raw_compile_and_assemble_pair_is_independently_passed(self):
         self._typescript_baseline_raw_pair()
         code, row = self._typescript_baseline_result()
-        self.assertEqual(code, 0, row)
+        self.assertEqual(code, 1, row)  # Other legacy fixture gates lack raw operational evidence.
         self.assertEqual(row["status"], "passed", row)
         self.assertNotIn("attestations", row)
 
@@ -738,15 +738,15 @@ class Audit130Tests(unittest.TestCase):
         result = next(row for row in report["rows"] if row["id"] == "target_selection_checks/4")
         self.assertEqual(result["status"], "failed")
 
-    def test_already_exited_owned_process_needs_no_stop_cwd_snapshot(self):
+    def test_reported_exit_without_raw_os_evidence_is_unrun(self):
         api = read_json(self.fixture.api_path)
         api["processes"][0].update(stopped=True, exit_code=0, stop_cwd_verified=None)
         save_json(self.fixture.api_path, api)
         self.fixture.refresh_receipts()
         code, report, _, error = self.run_audit()
-        self.assertEqual(code, 0, error or json.dumps(report, indent=2))
+        self.assertEqual(code, 1, error or json.dumps(report, indent=2))
         result = next(row for row in report["rows"] if row["id"] == f"product_gates/{self.fixture.cid}/7")
-        self.assertEqual(result["status"], "attested")
+        self.assertEqual(result["status"], "unrun")
 
     def test_active_process_stop_without_owner_snapshot_fails(self):
         api = read_json(self.fixture.api_path)
@@ -1035,12 +1035,12 @@ class Audit130Tests(unittest.TestCase):
                 for point in (role["healthz"]["before"], role["healthz"]["after"]):
                     point["error_errno"], point["error_type"] = number, error_type
                 code, row = self._protected_port_result()
-                self.assertEqual(code, 0, row)
+                self.assertEqual(code, 1, row)  # Other operational fixture evidence is incomplete.
                 self.assertEqual(row["status"], "passed", row)
         for point in (role["healthz"]["before"], role["healthz"]["after"]):
             del point["url"]
         code, row = self._protected_port_result()
-        self.assertEqual(code, 0, row)
+        self.assertEqual(code, 1, row)
         self.assertEqual(row["status"], "passed", row)
 
     def test_absent_protected_port_becoming_http_200_fails(self):

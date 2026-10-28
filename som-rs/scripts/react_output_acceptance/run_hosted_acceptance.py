@@ -163,6 +163,10 @@ def verdict(out: Path, summary: dict) -> bool:
             and all(step.get("judgment") == "passed" for step in run["steps"])
             and audit.get("version") == "som.react-output-audit-130.v1"
             and audit.get("run") == (out / "run").relative_to(REPO).as_posix()
+            and type(audit.get("rows")) is list and bool(audit["rows"])
+            and all(type(row) is dict and (row.get("status") != "attested" or row.get("id") in {
+                "contract/sealed", "issue_gates/phase1-contract", "issue_gates/phase1-target-amendments",
+                "issue_gates/phase1-acceptance"}) for row in audit["rows"])
             and all(type(audit["totals"].get(name)) is int and audit["totals"][name] == 0
                     for name in ("failed", "unrun"))
             and summary["acceptance_exit_code"] == summary["audit_exit_code"] == 0)
@@ -230,7 +234,7 @@ def main(argv: list[str] | None = None) -> int:
                 "--candidate", str(out / "candidate"), "--out", str(out / "run"), "--baseline",
                 f"http://127.0.0.1:{BASELINE_PORT}", "--python", str(args.python),
                 "--rust-baseline-run", str(reconstructed / "rust-baseline"),
-                "--protected-default", "absent", "--cleanup-products-runtime"], env)
+                "--protected-default", "absent", "--cleanup-products-runtime", "--record-raw-http"], env)
         except (OSError, subprocess.SubprocessError):
             pass
         if summary["acceptance_exit_code"] != 0:

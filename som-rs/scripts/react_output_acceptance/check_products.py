@@ -104,6 +104,32 @@ def step(argv: list[str], log: pathlib.Path) -> int:
                               check=False).returncode
 
 
+def cache_snapshot(cache: pathlib.Path, destination: pathlib.Path) -> dict[str, Any]:
+    """Retain a per-file snapshot around the unchanged frozen product gates."""
+    record: dict[str, Any] = {"version": "som.m6-cache-snapshot.v1", "status": "failed", "files": {}}
+    try:
+        if cache.is_symlink() or not cache.is_dir():
+            raise ValueError("cache must be a physical directory")
+        files = {}
+        for path in sorted(cache.rglob("*")):
+            if path.is_symlink():
+                raise ValueError("the frozen cache admits no symlinks")
+            if path.is_file():
+                files[path.relative_to(cache).as_posix()] = sha(path)
+            elif not path.is_dir():
+                raise ValueError("cache has a special file")
+        digest = hashlib.sha256()
+        for name, value in files.items():
+            digest.update(f"{name}\0{value}\n".encode())
+        record.update(status="passed", files=files, tree_sha256=digest.hexdigest(), file_count=len(files), symlink_count=0)
+    except (OSError, ValueError) as error:
+        record["error_type"] = type(error).__name__
+    with destination.open("x") as stream:
+        json.dump(record, stream, sort_keys=True, indent=2)
+        stream.write("\n")
+    return record
+
+
 def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: pathlib.Path,
                api: dict[str, Any]) -> dict[str, Any]:
     cid = entry["id"]
@@ -112,8 +138,12 @@ def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: p
     problems: list[str] = []
     product = pathlib.Path(entry["product"])
     codes: dict[str, int | None] = {"gates": None, "api_contract": None}
+    cache_before = cache_snapshot(cache, work / "cache-before.json")
     codes["gates"] = step([str(REACT_TESTS / "run_gates.py"), str(product), str(work / "gates"),
                            "--cache", str(cache)], work / "gates.log")
+    cache_after = cache_snapshot(cache, work / "cache-after.json")
+    if cache_before.get("status") != "passed" or cache_after.get("status") != "passed" or cache_before != cache_after:
+        problems.append("raw cache file snapshots differ or are missing")
     gates_path = work / "gates" / "gates.json"
     gates = json.loads(gates_path.read_text()) if gates_path.is_file() else None
     if codes["gates"] != 0 or gates is None or gates.get("passed") is not True:
@@ -126,8 +156,8 @@ def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: p
     if python_problem is not None:
         problems.append(python_problem)
     else:
-        codes["api_contract"] = step([str(REACT_TESTS / "run_api_contract.py"), str(python_dir), str(product),
-                                      str(work / "api")], work / "api.log")
+        codes["api_contract"] = step([str(HERE / "record_api.py"), str(python_dir), str(product),
+                                      str(work / "api"), "--raw-out", str(work / "api-raw")], work / "api.log")
         report_path = work / "api" / "report.json"
         report = json.loads(report_path.read_text()) if report_path.is_file() else None
     result = (report or {}).get("result") or {}

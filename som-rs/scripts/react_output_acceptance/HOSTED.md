@@ -12,6 +12,8 @@ Its provisioning result always says `product_suites: not_run`.
 The full run builds one candidate. It runs all twelve acceptance steps.
 It then runs the independent audit against the retained raw output.
 It samples no cases. A missing result blocks acceptance.
+Operational checks require raw evidence. A reported pass flag is not enough.
+Only recorded human review and approval can use the `attested` status.
 
 The recorded baseline and frozen tool bottles require `macos-26`.
 This preserves the existing baseline for this compatibility run.
@@ -65,6 +67,11 @@ It removes PostgreSQL scratch data only after a verified process stop.
 It keeps both static build output trees, source files, replies, reports, and logs.
 
 The driver removes input keys and GitHub tokens from child environments.
+The HTTP recorder wraps the five frozen baseline and Python control scripts.
+It keeps their original files and request behavior unchanged.
+The API recorder keeps each fetch and the operating system process snapshots.
+Its Node hook applies only to the frozen API probe.
+The cache gate keeps per-file snapshots before and after each product check.
 The workflow publishes only safe summaries in plain text.
 It encrypts raw evidence before uploading an Actions artifact.
 Never upload the whole acceptance directory as a plain artifact.
