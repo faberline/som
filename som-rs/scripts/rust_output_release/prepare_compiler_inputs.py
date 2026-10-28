@@ -129,7 +129,7 @@ class Pinner:
         assembly, assembled = parse(assemble_request), parse(assemble_response)
         rc.require(reply.get('status') == assembled.get('status') == 'ok', 'canary reply is not successful')
         rc.require(request.get('target', 'python') == family, 'compile request target differs')
-        rc.require(reply.get('bundle') == assembly.get('bundle'), 'assemble request names another bundle')
+        rc.require(rc.exact_json(reply.get('bundle'), assembly.get('bundle')), 'assemble request names another bundle')
         rc.require(reply['bundle'].get('target', 'python') == family, 'compile bundle target differs')
         steps = []
         for operation, body, response in [('compile', compile_request, compile_response),

@@ -77,7 +77,8 @@ jobs:
           M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
         run: |
           if [ -d .local/rust-compiler-goal/acceptance/react-131 ]; then
-            /opt/homebrew/Cellar/node/26.5.0/bin/node som-rs/scripts/react_output_acceptance/seal_hosted_evidence.mjs --root "$GITHUB_WORKSPACE/.local/rust-compiler-goal/acceptance/react-131" --out "$RUNNER_TEMP/m6-release-sealed"
+            python3 som-rs/scripts/rust_output_release/stage_release_evidence.py --root "$GITHUB_WORKSPACE/.local/rust-compiler-goal/acceptance/react-131" --out "$RUNNER_TEMP/m6-release-staged" > "$RUNNER_TEMP/m6-release-staging.stdout"
+            /opt/homebrew/Cellar/node/26.5.0/bin/node som-rs/scripts/react_output_acceptance/seal_hosted_evidence.mjs --root "$RUNNER_TEMP/m6-release-staged" --out "$RUNNER_TEMP/m6-release-sealed"
           fi
       - name: Keep the source, tool, and rehearsal summaries
         if: always()
@@ -91,6 +92,7 @@ jobs:
             ${{ runner.temp }}/m6-release-inputs/provision.json
             ${{ runner.temp }}/m6-release-restore-original.stdout
             ${{ runner.temp }}/m6-release-restore-audit.stdout
+            ${{ runner.temp }}/m6-release-staging.stdout
             .local/rust-compiler-goal/acceptance/react-131/summary.json
           if-no-files-found: error
           retention-days: 30

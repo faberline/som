@@ -41,7 +41,8 @@ def forbidden(*_args, **_kwargs):
 def modules():
     rc = types.SimpleNamespace(require=require, digest=digest,
         load=lambda path: json.loads(Path(path).read_bytes()), alive=forbidden, port_free=forbidden,
-        identity=forbidden, PROTECTED_PORTS={8765, 18765})
+        identity=forbidden, PROTECTED_PORTS={8765, 18765},
+        exact_json=lambda a, b: json.dumps(a, sort_keys=True) == json.dumps(b, sort_keys=True))
     rc.harness_port = lambda port: require(type(port) is int and 18919 <= port < 19000, 'wrong harness port')
     loaded = []
     with mock.patch.dict(sys.modules, {'release_common': rc}):
@@ -275,6 +276,49 @@ class CompilerInputTests(unittest.TestCase):
                 write(directory / 'after_stop/root/som-rs/runtime/default.json', {'pid': 5001, 'identity': {'binary_sha256': 'a' * 64}})
             with self.subTest(mutation=mutation), self.assertRaises(RuntimeError):
                 self.verify(directory, config, alive=mutation == 'alive')
+
+    def test_successful_final_stages_cannot_hide_earlier_cleanup_or_evidence_errors(self):
+        locations = [(scenario, 'switch') for scenario in self.runner.SCENARIOS] + [('switch', 'restore')]
+        for scenario, operation in locations:
+            for failure in ('evidence_errors', 'OWNED_CLONE_CLEANUP_FAILED', 'ROLLBACK_FAILED_REQUIRES_OPERATOR'):
+                with self.subTest(scenario=scenario, operation=operation, failure=failure):
+                    directory, config, _ = self.rehearsal(f'hidden-{scenario}-{operation}-{failure}')
+                    path = directory / scenario / operation / 'journal.json'
+                    journal = json.loads(path.read_bytes())
+                    event = ({'stage': 'evidence_observed', 'evidence_errors': [{'operation': 'save', 'error': 'fake OSError'}]}
+                             if failure == 'evidence_errors' else {'stage': failure, 'error': 'fake cleanup failure'})
+                    journal.insert(0, event)
+                    write(path, journal)
+                    # The committed/rollback_verified/restore_verified final event
+                    # and all independent postchecks remain successful.
+                    message = 'evidence write errors' if failure == 'evidence_errors' else 'cleanup or rollback failure'
+                    with self.assertRaisesRegex(RuntimeError, message):
+                        self.verify(directory, config)
+
+    def test_every_final_previous_receipt_refuses_rollback_evidence_errors(self):
+        for scenario in self.runner.SCENARIOS:
+            with self.subTest(scenario=scenario):
+                directory, config, _ = self.rehearsal('receipt-error-' + scenario)
+                path = directory / scenario / 'root/som-rs/runtime/default.json'
+                receipt = json.loads(path.read_bytes())
+                receipt['rollback_evidence_errors'] = [{'operation': 'journal', 'error': 'fake OSError'}]
+                write(path, receipt)
+                with self.assertRaisesRegex(RuntimeError, 'restored receipt has evidence write errors'):
+                    self.verify(directory, config)
+
+    def test_empty_recorded_evidence_error_lists_preserve_complete_success(self):
+        directory, config, report = self.rehearsal('empty-error-lists')
+        for scenario in self.runner.SCENARIOS:
+            for operation in (('switch', 'restore') if scenario == 'switch' else ('switch',)):
+                path = directory / scenario / operation / 'journal.json'
+                journal = json.loads(path.read_bytes())
+                journal[-1]['evidence_errors'] = []
+                write(path, journal)
+            path = directory / scenario / 'root/som-rs/runtime/default.json'
+            receipt = json.loads(path.read_bytes())
+            receipt['rollback_evidence_errors'] = []
+            write(path, receipt)
+        self.assertEqual(self.verify(directory, config), report)
 
 
 if __name__ == '__main__':

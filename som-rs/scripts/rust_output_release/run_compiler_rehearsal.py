@@ -16,6 +16,14 @@ HERE = Path(__file__).resolve().parent
 SCENARIOS = ('switch', 'after_stop', 'after_start', 'after_pointer', 'after_commit')
 
 
+def complete_journal(journal):
+    rc.require(isinstance(journal, list) and bool(journal), 'journal is missing')
+    for event in journal:
+        rc.require(not event.get('evidence_errors'), 'journal has evidence write errors')
+        rc.require(event['stage'] not in ('OWNED_CLONE_CLEANUP_FAILED', 'ROLLBACK_FAILED_REQUIRES_OPERATOR'),
+                   'journal reports a cleanup or rollback failure')
+
+
 def verify_checks(path, expected_sha):
     result = rc.load(path)
     rc.require(result['passed'] is True and result['expect_binary_sha256'] == expected_sha,
@@ -37,6 +45,7 @@ def verify_report(directory, config):
         root = directory / name
         rc.require(row['root'] == str(root / 'root'), 'scenario root differs')
         journal = rc.load(root / 'switch/journal.json')
+        complete_journal(journal)
         final = 'committed' if name == 'switch' else 'rollback_verified'
         rc.require(journal[-1]['stage'] == final, 'switch final journal stage differs')
         calls = row['calls']
@@ -51,12 +60,14 @@ def verify_report(directory, config):
         verify_checks(root / 'check/result.json', expected)
         if name == 'switch':
             restore = rc.load(root / 'restore/journal.json')
+            complete_journal(restore)
             rc.require(restore[-1]['stage'] == 'restore_verified', 'restore journal did not verify')
             verify_checks(root / 'check-restored/result.json', config['previous']['binary']['sha256'])
         else:
             rc.require(any(event['stage'] == 'failed' and f'injected failure at {name}' in event['error']
                            for event in journal), 'the intended failure did not occur')
         receipt = rc.load(root / 'root/som-rs/runtime/default.json')
+        rc.require(not receipt.get('rollback_evidence_errors'), 'restored receipt has evidence write errors')
         rc.require(receipt['identity']['binary_sha256'] == config['previous']['binary']['sha256'], 'scenario did not end on previous compiler')
         rc.require(receipt['pid'] == row['stopped_pid'] and not rc.alive(receipt['pid']), 'scenario owner remains alive')
         rc.port_free(row['port'])
