@@ -442,13 +442,17 @@ def installed_signing_targets(entry: dict[str, Any], pins: list[dict[str, str]],
     targets = {}
     seen = set()
     for specification in specifications:
-        need(isinstance(specification, dict) and set(specification) == {"path", "sha256", "page_size"},
+        need(isinstance(specification, dict) and {"path", "sha256", "page_size"} <= set(specification)
+             and not set(specification) - {"path", "sha256", "page_size", "cms_reserve"},
              "manifest_invalid", "An installed signing size binding is invalid.")
         public_path, expected, size = (specification["path"], specification["sha256"], specification["page_size"])
         need(isinstance(public_path, str) and isinstance(expected, str)
              and (public_path, expected) in frozen and public_path not in seen
              and type(size) is int and size in (4096, 16384),
              "manifest_invalid", "An installed signing size binding differs from the frozen file inventory.")
+        if "cms_reserve" in specification:
+            need(type(specification["cms_reserve"]) is int and specification["cms_reserve"] == 0,
+                 "manifest_invalid", "An installed compact signature reservation is invalid.")
         seen.add(public_path)
         path = PurePosixPath(public_path)
         if path.is_relative_to(keg) or path.is_relative_to(opt):
@@ -459,8 +463,87 @@ def installed_signing_targets(entry: dict[str, Any], pins: list[dict[str, str]],
     return targets
 
 
+def security_signing_recipe(page_size: int) -> dict[str, Any]:
+    need(type(page_size) is int and page_size in (4096, 16384),
+         "manifest_invalid", "The compact signature page size is invalid.")
+    return {"bridge": "python-ctypes-apple-security-v1",
+            "framework": "/System/Library/Frameworks/Security.framework/Security",
+            "apis": ["SecStaticCodeCreateWithPath", "SecCodeSignerCreate", "SecCodeSignerAddSignatureWithErrors"],
+            "identity": "kCFNull (ad-hoc)", "page_size": page_size, "cms_reserve": 0,
+            "preserve_metadata": (1 << 1) | (1 << 2) | (1 << 4) | (1 << 8),
+            "create_flags": 1 << 7, "add_signature_flags": 0}
+
+
+def sign_macho_with_security(path: Path, page_size: int) -> int:
+    """Use Apple's signer with explicit zero CMS reserve, which its CLI omits."""
+    require_github_runner()
+    recipe = security_signing_recipe(page_size)
+    import ctypes
+
+    references = []
+    core = None
+    try:
+        core = ctypes.CDLL("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation")
+        security = ctypes.CDLL(recipe["framework"])
+        pointer, index, status = ctypes.c_void_p, ctypes.c_long, ctypes.c_int32
+        def bind(library, name, arguments, result):
+            function = getattr(library, name)
+            function.argtypes, function.restype = arguments, result
+            return function
+        release = bind(core, "CFRelease", [pointer], None)
+        dictionary_create = bind(core, "CFDictionaryCreateMutable", [pointer, index, pointer, pointer], pointer)
+        dictionary_set = bind(core, "CFDictionarySetValue", [pointer, pointer, pointer], None)
+        number_create = bind(core, "CFNumberCreate", [pointer, index, pointer], pointer)
+        string_create = bind(core, "CFStringCreateWithCString", [pointer, ctypes.c_char_p, ctypes.c_uint32], pointer)
+        url_create = bind(core, "CFURLCreateFromFileSystemRepresentation",
+                          [pointer, ctypes.c_char_p, index, ctypes.c_ubyte], pointer)
+        create_code = bind(security, "SecStaticCodeCreateWithPath", [pointer, ctypes.c_uint32, pointer], status)
+        create_signer = bind(security, "SecCodeSignerCreate", [pointer, ctypes.c_uint32, pointer], status)
+        add_signature = bind(security, "SecCodeSignerAddSignatureWithErrors",
+                             [pointer, pointer, ctypes.c_uint32, pointer], status)
+        def own(reference):
+            need(bool(reference), "macho_security_signing_failed", "An Apple signing object could not be created.")
+            references.append(reference)
+            return reference
+        def symbol(library, name):
+            return pointer.in_dll(library, name).value
+        def number(value):
+            encoded = ctypes.c_int64(value)
+            return own(number_create(None, 4, ctypes.byref(encoded)))  # kCFNumberSInt64Type
+        key_callbacks = ctypes.addressof(ctypes.c_byte.in_dll(core, "kCFTypeDictionaryKeyCallBacks"))
+        value_callbacks = ctypes.addressof(ctypes.c_byte.in_dll(core, "kCFTypeDictionaryValueCallBacks"))
+        parameters = own(dictionary_create(None, 0, key_callbacks, value_callbacks))
+        dictionary_set(parameters, symbol(security, "kSecCodeSignerIdentity"), symbol(core, "kCFNull"))
+        dictionary_set(parameters, symbol(security, "kSecCodeSignerPageSize"), number(page_size))
+        dictionary_set(parameters, symbol(security, "kSecCodeSignerPreserveMetadata"), number(recipe["preserve_metadata"]))
+        cms_key = own(string_create(None, b"cmssize", 0x08000100))  # kCFStringEncodingUTF8
+        dictionary_set(parameters, cms_key, number(0))
+        encoded_path = os.fsencode(path)
+        url = own(url_create(None, encoded_path, len(encoded_path), 0))
+        code, signer, error = pointer(), pointer(), pointer()
+        try:
+            for api, call in (("SecStaticCodeCreateWithPath", lambda: create_code(url, 0, ctypes.byref(code))),
+                              ("SecCodeSignerCreate", lambda: create_signer(parameters, recipe["create_flags"], ctypes.byref(signer))),
+                              ("SecCodeSignerAddSignatureWithErrors", lambda: add_signature(signer, code, recipe["add_signature_flags"], ctypes.byref(error)))):
+                result = call()
+                if result != 0:
+                    raise ProvisionError("macho_security_signing_failed", "Apple's compact ad-hoc signing failed.",
+                                         {"api": api, "osstatus": result})
+            return 0
+        finally:
+            for reference in (error, signer, code):
+                if reference.value:
+                    release(reference)
+    except (AttributeError, OSError, ValueError):
+        raise ProvisionError("macho_security_signing_unavailable", "Apple's signing framework could not be used.") from None
+    finally:
+        if core is not None and references:
+            for reference in reversed(references):
+                core.CFRelease(reference)
+
+
 def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[str, Any], *, command_runner=None,
-                           installed_signing: dict[str, dict[str, Any]] | None = None) -> None:
+                           installed_signing: dict[str, dict[str, Any]] | None = None, security_runner=None) -> None:
     need(policy.get("policy") == MACHO_NORMALIZATION_POLICY and policy.get("prefixes") == MACHO_PREFIXES
          and policy.get("codesign_arguments") == list(CODESIGN_ARGUMENTS),
          "manifest_invalid", "The Mach-O normalization recipe differs from the reviewed policy.")
@@ -483,9 +566,6 @@ def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[st
             raise ProvisionError(error.code, str(error), details) from None
         if not operations:
             continue
-        if command_runner is None:
-            require_github_runner()
-            record["codesign_binary_sha256"] = file_sha256(Path("/usr/bin/codesign"))
         item = {"member": path.relative_to(staged).as_posix(), "raw_sha256": hashlib.sha256(raw).hexdigest(),
                 "unsigned_relocated_sha256": hashlib.sha256(relocated).hexdigest(), "operations": operations,
                 "status": "started"}
@@ -497,18 +577,31 @@ def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[st
         item["signing_page_size_source"] = "frozen_installed_file" if binding is not None else "raw_bottle_file"
         if binding is not None:
             item["installed_signing_pin"] = dict(binding)
+        compact = binding is not None and binding.get("cms_reserve") == 0
+        if (security_runner is None if compact else command_runner is None):
+            require_github_runner()
+            record["codesign_binary_sha256"] = file_sha256(Path("/usr/bin/codesign"))
         record["files"].append(item)
         mode = path.stat().st_mode & 0o777
         try:
             path.chmod(mode | 0o200)
             path.write_bytes(relocated)
-            runner = subprocess.run if command_runner is None else command_runner
-            arguments = [*CODESIGN_ARGUMENTS, *(["--pagesize", str(page_size)] if page_size is not None else [])]
-            item["codesign_arguments"] = arguments
-            done = runner(["/usr/bin/codesign", *arguments, str(path)],
-                          capture_output=True, text=True, timeout=120, check=False)
-            item["codesign_exit_code"] = done.returncode
-            need(done.returncode == 0, "macho_codesign_failed", "Historical ad-hoc signing failed.")
+            if compact:
+                item["signing_backend"] = "apple_security_framework"
+                item["security_signing"] = security_signing_recipe(page_size)
+                runner = sign_macho_with_security if security_runner is None else security_runner
+                result = runner(path, page_size)
+                item["security_signing"]["osstatus"] = result
+                need(result == 0, "macho_security_signing_failed", "Apple's compact ad-hoc signing failed.")
+            else:
+                item["signing_backend"] = "apple_codesign_cli"
+                runner = subprocess.run if command_runner is None else command_runner
+                arguments = [*CODESIGN_ARGUMENTS, *(["--pagesize", str(page_size)] if page_size is not None else [])]
+                item["codesign_arguments"] = arguments
+                done = runner(["/usr/bin/codesign", *arguments, str(path)],
+                              capture_output=True, text=True, timeout=120, check=False)
+                item["codesign_exit_code"] = done.returncode
+                need(done.returncode == 0, "macho_codesign_failed", "Historical ad-hoc signing failed.")
             item["normalized_sha256"] = file_sha256(path)
             item["normalized_layout"] = macho_layout(path.read_bytes())
             item["status"] = "passed"
@@ -581,7 +674,7 @@ def macho_layout(raw: bytes) -> dict[str, Any]:
 def stage_package(entry: dict[str, Any], out: Path, pins: list[dict[str, str]],
                   record: dict[str, Any], *, downloader=download_archive,
                   closure: list[dict[str, Any]] | None = None, normalization: dict[str, Any] | None = None,
-                  macho_runner=None) -> tuple[dict[str, Any], Path]:
+                  macho_runner=None, security_runner=None) -> tuple[dict[str, Any], Path]:
     keg = PurePosixPath(entry["expected_keg_directory"])
     relevant = [pin for pin in pins if PurePosixPath(pin["path"]).is_relative_to(keg)]
     # PostgreSQL's frozen paths go through opt; map them to the staged keg too.
@@ -614,7 +707,7 @@ def stage_package(entry: dict[str, Any], out: Path, pins: list[dict[str, str]],
             if normalization is not None:
                 attempt["normalization"] = {}
                 normalize_staged_macho(staged, normalization, attempt["normalization"], command_runner=macho_runner,
-                                       installed_signing=signing_targets)
+                                       installed_signing=signing_targets, security_runner=security_runner)
             for pin in relevant:
                 path = PurePosixPath(pin["path"])
                 relative = path.relative_to(keg if path.is_relative_to(keg) else opt)
@@ -733,21 +826,52 @@ def verify_installed(contracts: dict[str, dict[str, Any]], pins: list[dict[str, 
     return checks
 
 
+def cleanup_provision_staging(out: Path) -> dict[str, Any]:
+    """Remove only this successful run's duplicate archives and extracted trees."""
+    roots = [out / "archives", out / "stage"]
+    need(all(not root.is_symlink() and (not root.exists() or root.is_dir()) for root in roots),
+         "cleanup_refused", "A provisioning temporary directory is not a normal directory.")
+    file_bytes = sum(path.stat().st_size for root in roots if root.exists()
+                     for path in root.rglob("*") if not path.is_symlink() and path.is_file())
+    available_before = shutil.disk_usage(out).free
+    removed = []
+    for root in roots:
+        if root.exists():
+            shutil.rmtree(root)
+            removed.append(root.name)
+    available_after = shutil.disk_usage(out).free
+    return {"status": "passed", "removed_directories": removed, "file_bytes_removed": file_bytes,
+            "available_bytes_before": available_before, "available_bytes_after": available_after,
+            "observed_available_bytes_delta": available_after - available_before,
+            "measurement": "File bytes are logical sizes. The free-space change can include other runner activity."}
+
+
 def provision(document: dict[str, Any], contracts: dict[str, dict[str, Any]], out: Path,
               report: dict[str, Any], *, prefix: Path = PREFIX, downloader=download_archive,
-              expected_count: int | None = FULL_BOTTLE_COUNT, python_runner=None, macho_runner=None) -> None:
+              expected_count: int | None = FULL_BOTTLE_COUNT, python_runner=None, macho_runner=None,
+              security_runner=None) -> None:
     if prefix == PREFIX:
         require_github_runner()
     entries = validate_manifest(document, expected_count=expected_count)
     pins = pin_specs(contracts)
     selections = []
+    failures = []
     report["stage"] = "download_and_stage"
     for entry in entries:
         record = {key: entry[key] for key in ("formula", "version", "revision", "expected_keg_directory")}
         record["attempts"] = []
         report["packages"].append(record)
-        selections.append(stage_package(entry, out, pins, record, downloader=downloader, closure=entries,
-                                        normalization=document.get("macho_normalization"), macho_runner=macho_runner))
+        try:
+            selections.append(stage_package(entry, out, pins, record, downloader=downloader, closure=entries,
+                                            normalization=document.get("macho_normalization"), macho_runner=macho_runner,
+                                            security_runner=security_runner))
+            record["status"] = "passed"
+        except ProvisionError as error:
+            record.update(status="failed", error=error_record(error))
+            failures.append({"formula": entry["formula"], "error": error_record(error)})
+    if failures:
+        raise ProvisionError("package_staging_failed", "One or more bottles failed. No package was installed.",
+                             {"failed_packages": failures})
     report["stage"] = "install"
     install_closure(selections, prefix)
     report["stage"] = "frozen_hashes"
@@ -759,6 +883,8 @@ def provision(document: dict[str, Any], contracts: dict[str, dict[str, Any]], ou
         report["python"] = verify_python(document["python"], contracts, prefix, command_runner=python_runner)
         need(report["python"]["status"] == "passed", "python_runtime_mismatch",
              "The installed Python version or bundled standard library check failed.")
+    report["stage"] = "cleanup"
+    report["cleanup"] = cleanup_provision_staging(out)
     report.update(status="passed", stage="complete")
 
 
@@ -766,6 +892,7 @@ def new_report() -> dict[str, Any]:
     return {"version": "som.react-output-macos-provision.v1", "status": "failed",
             "product_suites": "not_run", "stage": "guard", "packages": [], "hash_checks": [],
             "python": {"status": "not_run", "venv_creation": "not_run"},
+            "cleanup": {"status": "not_run", "reason": "Temporary evidence stays until all provisioning checks pass."},
             "relocation": "Only the reviewed Homebrew placeholder load-command normalization and ad-hoc signing are allowed. Raw and normalized hashes remain separate. Frozen installed file hashes decide success."}
 
 

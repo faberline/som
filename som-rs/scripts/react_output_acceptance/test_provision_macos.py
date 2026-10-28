@@ -440,7 +440,8 @@ class ProvisionMacosTests(unittest.TestCase):
         valid = {**pin, "page_size": 4096}
         policy = {"installed_signing_page_sizes": [valid]}
         self.assertEqual(provisioner.installed_signing_targets(self.node, [pin], policy), {"bin/node": valid})
-        for change in ({"sha256": "b" * 64}, {"path": pin["path"] + "-other"}, {"page_size": 8192}):
+        for change in ({"sha256": "b" * 64}, {"path": pin["path"] + "-other"}, {"page_size": 8192},
+                       {"cms_reserve": 1}):
             invalid = {"installed_signing_page_sizes": [{**valid, **change}]}
             with self.subTest(change=change), self.assertRaises(provisioner.ProvisionError) as found:
                 provisioner.installed_signing_targets(self.node, [pin], invalid)
@@ -455,6 +456,52 @@ class ProvisionMacosTests(unittest.TestCase):
                        for package in manifest["bottles"])
         self.assertEqual(assigned, len(policy["installed_signing_page_sizes"]))
         self.assertEqual(assigned, 32)
+
+    def test_compact_signing_uses_only_the_bound_apple_api_recipe(self):
+        staged = self.out / "compact-macho-stage"
+        (staged / "bin").mkdir(parents=True)
+        path = staged / "bin/node"
+        raw = macho_fixture([macho_link_command("@@HOMEBREW_PREFIX@@/opt/fixture/lib/libfixture.dylib")])
+        path.write_bytes(raw)
+        unsigned, _ = provisioner.relocate_macho_bytes(raw)
+        pin = {"path": "/opt/homebrew/Cellar/node/1.0/bin/node", "sha256": digest(unsigned)}
+        binding = {**pin, "page_size": 4096, "cms_reserve": 0}
+        policy = {**normalization_policy(), "installed_signing_page_sizes": [binding]}
+        targets = provisioner.installed_signing_targets(self.node, [pin], policy)
+        bridge = mock.Mock(return_value=0)
+        cli = mock.Mock()
+        report = {}
+        provisioner.normalize_staged_macho(staged, policy, report, command_runner=cli,
+                                           installed_signing=targets, security_runner=bridge)
+        bridge.assert_called_once_with(path, 4096)
+        cli.assert_not_called()
+        item = report["files"][0]
+        self.assertEqual(item["installed_signing_pin"], binding)
+        self.assertEqual(item["signing_backend"], "apple_security_framework")
+        recipe = item["security_signing"]
+        self.assertEqual((recipe["cms_reserve"], recipe["page_size"], recipe["preserve_metadata"]), (0, 4096, 278))
+        self.assertEqual((recipe["create_flags"], recipe["add_signature_flags"], recipe["osstatus"]), (128, 0, 0))
+        self.assertEqual(item["normalized_sha256"], digest(unsigned))
+
+    def test_compact_signing_failure_is_fatal_and_real_bridge_is_guarded(self):
+        staged = self.out / "failed-compact-macho-stage"
+        staged.mkdir()
+        path = staged / "tool"
+        raw = macho_fixture([macho_link_command("@@HOMEBREW_PREFIX@@/opt/fixture/lib/libfixture.dylib")])
+        path.write_bytes(raw)
+        binding = {"path": "/opt/homebrew/Cellar/fixture/1.0/tool", "sha256": "0" * 64,
+                   "page_size": 4096, "cms_reserve": 0}
+        report = {}
+        with self.assertRaises(provisioner.ProvisionError) as found:
+            provisioner.normalize_staged_macho(staged, normalization_policy(), report,
+                                               installed_signing={"tool": binding}, security_runner=lambda *args: -50)
+        self.assertEqual(found.exception.code, "macho_security_signing_failed")
+        self.assertEqual(report["files"][0]["status"], "failed")
+        with mock.patch.dict(provisioner.os.environ, {}, clear=True), mock.patch("ctypes.CDLL") as load:
+            with self.assertRaises(provisioner.ProvisionError) as guarded:
+                provisioner.sign_macho_with_security(path, 4096)
+        self.assertEqual(guarded.exception.code, "runner_refused")
+        load.assert_not_called()
 
     def test_macho_without_placeholder_linkage_is_byte_identical(self):
         raw = macho_fixture([macho_link_command("@rpath/libfixture.dylib")],
@@ -572,6 +619,25 @@ class ProvisionMacosTests(unittest.TestCase):
         self.assertEqual((npm / "bin/npm-cli.js").read_bytes(), self.npm_bytes)
         self.assertEqual((npm / "npmrc").read_bytes(), b"prefix = /opt/homebrew\n")
         self.assertTrue((npm / "npm-link").is_symlink())
+        self.assertEqual(report["cleanup"]["status"], "passed")
+        self.assertFalse((self.out / "archives").exists())
+        self.assertFalse((self.out / "stage").exists())
+
+    def test_success_cleanup_keeps_reports_and_never_follows_tool_symlinks(self):
+        installed = self.prefix / "Cellar/fixture/1.0"
+        installed.mkdir(parents=True)
+        (installed / "tool").write_bytes(b"installed tool stays")
+        (self.out / "report.json").write_bytes(b"provenance stays")
+        (self.out / "archives").mkdir()
+        (self.out / "archives/bottle.tar.gz").write_bytes(b"archive bytes")
+        (self.out / "stage").mkdir()
+        (self.out / "stage/tool-copy").write_bytes(b"duplicate bytes")
+        (self.out / "stage/installed-link").symlink_to(installed, target_is_directory=True)
+        result = provisioner.cleanup_provision_staging(self.out)
+        self.assertEqual(result["file_bytes_removed"], len(b"archive bytesduplicate bytes"))
+        self.assertEqual(result["removed_directories"], ["archives", "stage"])
+        self.assertEqual((installed / "tool").read_bytes(), b"installed tool stays")
+        self.assertEqual((self.out / "report.json").read_bytes(), b"provenance stays")
 
     def test_openssl_candidates_are_selected_by_both_frozen_library_hashes(self):
         bad = archive_bytes("openssl@3/3.6.3", {"lib/libcrypto.3.dylib": b"wrong", "lib/libssl.3.dylib": b"ssl"})
@@ -602,9 +668,38 @@ class ProvisionMacosTests(unittest.TestCase):
             with self.assertRaises(provisioner.ProvisionError) as found:
                 provisioner.provision(self.manifest, self.contracts, self.out, report,
                                       prefix=self.prefix, downloader=self.downloader, expected_count=None)
-        self.assertEqual(found.exception.code, "frozen_bottle_bytes_mismatch")
+        self.assertEqual(found.exception.code, "package_staging_failed")
+        self.assertEqual(report["packages"][0]["error"]["code"], "frozen_bottle_bytes_mismatch")
         install.assert_not_called()
         self.assertEqual(report["status"], "failed")
+        self.assertEqual(report["product_suites"], "not_run")
+        self.assertEqual(report["cleanup"]["status"], "not_run")
+        self.assertTrue((self.out / "archives").is_dir())
+        self.assertTrue((self.out / "stage").is_dir())
+
+    def test_all_bottles_are_staged_and_errors_retained_before_install_is_refused(self):
+        second = entry("fixture-two", "1.0", b"not downloaded")
+        third = entry("fixture-three", "1.0", b"not downloaded")
+        manifest = {**self.manifest, "bottle_count": 3, "bottles": [self.node, second, third]}
+        errors = [provisioner.ProvisionError("archive_link_refused", "Fixture link refused.",
+                                            {"member": "node/1.0/lib/link", "link_target": "/outside"}),
+                  provisioner.ProvisionError("frozen_bottle_bytes_mismatch", "Fixture bytes differ.")]
+        report = provisioner.new_report()
+        with mock.patch.object(provisioner, "stage_package", side_effect=[errors[0], errors[1], (third, self.out)]) as stage, \
+                mock.patch.object(provisioner, "install_closure") as install, \
+                mock.patch.object(provisioner, "verify_python") as python:
+            with self.assertRaises(provisioner.ProvisionError) as found:
+                provisioner.provision(manifest, self.contracts, self.out, report,
+                                      prefix=self.prefix, expected_count=None)
+        self.assertEqual(found.exception.code, "package_staging_failed")
+        self.assertEqual(stage.call_count, 3)
+        self.assertEqual([package["status"] for package in report["packages"]], ["failed", "failed", "passed"])
+        self.assertEqual(report["packages"][0]["error"]["details"]["link_target"], "/outside")
+        self.assertEqual([item["error"]["code"] for item in found.exception.details["failed_packages"]],
+                         ["archive_link_refused", "frozen_bottle_bytes_mismatch"])
+        install.assert_not_called()
+        python.assert_not_called()
+        self.assertEqual(report["stage"], "download_and_stage")
         self.assertEqual(report["product_suites"], "not_run")
 
     def test_installed_hash_mismatch_is_fatal_and_does_not_claim_acceptance(self):

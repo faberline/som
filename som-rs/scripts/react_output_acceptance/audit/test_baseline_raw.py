@@ -129,7 +129,10 @@ class BaselineRawTests(unittest.TestCase):
                 row = {"source": source, "id": identity, "variant": variant, "passed": False}
                 compiled = bundle(value)
                 reply = compile_reply(compiled)
-                assembled_request = raw_audit.compact({"bundle": compiled})
+                # The frozen checker parses the response before it writes the
+                # assembly request. Preserve that wire object's member order.
+                received_bundle = json.loads(reply)["bundle"]
+                assembled_request = raw_audit.compact({"bundle": received_bundle})
                 assembled = raw_audit.canonical({"files": {"main.py": "fake source bytes\n"}})
                 for role, url in (("qa", QA), ("baseline", BASE)):
                     data.exchange(url, "/v1/compile", request, 200, reply)
@@ -199,6 +202,21 @@ class BaselineRawTests(unittest.TestCase):
                 raw_audit.validate_python(data.reader, data.directory, report)
         self.assertEqual(caught.exception.status, "failed")
 
+    def test_equal_assemble_object_with_other_wire_order_is_refused(self):
+        data, report, sources = self.python_fixture()
+        call = data.manifest["calls"][1]
+        recorded = (data.directory / call["request_file"]).read_bytes()
+        reordered = raw_audit.compact({"bundle": bundle(prompt("public"))})
+        self.assertEqual(json.loads(recorded), json.loads(reordered))
+        self.assertNotEqual(recorded, reordered)
+        data.change(call, "request", reordered)
+        report["rows"][0]["qa_assemble_request_sha256"] = raw_audit.sha(reordered)
+        data.save()
+        with mock.patch.object(raw_audit, "source_inputs", return_value=sources):
+            with self.assertRaises(raw_audit.BaselineRawError) as caught:
+                raw_audit.validate_python(data.reader, data.directory, report)
+        self.assertEqual(caught.exception.status, "failed")
+
     def rust_fixture(self):
         data = Fixture(self.root, "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py")
         value = prompt()
@@ -230,6 +248,10 @@ class BaselineRawTests(unittest.TestCase):
                          "baseline_response_sha256": raw_audit.sha(base_raw), "passed": False})
             if spec["refusal"]:
                 continue
+            # Both refusal assembly and rebasing start from parsed replies in
+            # the unchanged checker, never from a pre-serialization object.
+            qa_bundle = json.loads(qa_raw)["bundle"]
+            base_bundle = json.loads(base_raw)["bundle"]
             old_request = raw_audit.compact({"bundle": base_bundle})
             old_raw = b'{"code":"ASSET_HASH_MISMATCH"}'
             data.exchange(QA, "/v1/assemble", old_request, 400, old_raw)

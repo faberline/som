@@ -1371,6 +1371,7 @@
     "implementation": "The provisioner ports ruby-macho 5.0.0's aligned load-command replacement in Python. It changes only placeholder-prefixed library IDs, library loads and rpaths in supported arm64 Mach-O files. It does not use install_name_tool or replace arbitrary strings.",
     "signing_page_size": "For the listed exact frozen path and installed SHA-256, use its observed installed CodeDirectory page size with explicit codesign --pagesize. The raw bottle's page size can differ from the installed file: both Node files use 16384 in the bottle and 4096 after historical installation. Unlisted support files retain the source CodeDirectory size. Keep source and selected sizes, the exact frozen binding and signing arguments in the report. Every unchanged frozen file hash must still pass.",
     "installed_signing_page_size_evidence": "Read-only codesign display and full-file SHA-256 reads independently confirmed all 32 listed installed files against the frozen contracts. These are signing parameters, not replacement hashes. Rust's six frozen hashes passed on GitHub run 40727628136 at 13ab75be1652e6ad4562330879cb5216be4c55d9. That run's artifact 12833132938 recorded Node's raw 16384-byte signing pages; signing with the observed installed 4096-byte pages remains unverified until GitHub passes its unchanged frozen hashes.",
+    "compact_signature_reservation": "Read-only load-command and SuperBlob-header reads from the same hash-matched primary files identified 12 exact compact allocations, listed with cms_reserve=0. In GitHub run 40728871323 at 6e45ae2ab14fb8d14efe1e957c5a736cb966a911, artifact 12832874811 records Node's correct page size but 18000 excess signature bytes for both files. The primary Node allocation is 672 bytes for a 670-byte SuperBlob; libnode is 582528 for 582524. Apple's source defaults the CMS reservation to 18000. Its CLI omits a zero-valued override. The bounded ctypes bridge calls that same Apple Security signing API with explicit CFNumber cmssize=0, ad-hoc identity kCFNull, preserve-metadata bits 278, strict-preflight create flag 128, and add-signature flags 0. It applies only to exact frozen path and SHA bindings, and keeps the normal CLI for other files. It never rewrites signature structures. Bridge/API parameters and OSStatus are retained. Exact frozen output hashes remain unverified until GitHub passes them.",
     "installed_signing_page_sizes": [
       {
         "path": "/opt/homebrew/Cellar/rust/1.96.1/bin/rustc",
@@ -1405,12 +1406,14 @@
       {
         "path": "/opt/homebrew/Cellar/node/26.5.0/bin/node",
         "sha256": "70851490e028b3d699a8d6d4e1de909af2a989359ae807974c92af9c6580a8e8",
-        "page_size": 4096
+        "page_size": 4096,
+        "cms_reserve": 0
       },
       {
         "path": "/opt/homebrew/Cellar/node/26.5.0/lib/libnode.147.dylib",
         "sha256": "0c2dfacde99b9381ec37fbd222891271c7f455cc0524294928e3e34199d57ec3",
-        "page_size": 4096
+        "page_size": 4096,
+        "cms_reserve": 0
       },
       {
         "path": "/opt/homebrew/Cellar/llhttp/9.4.2/lib/libllhttp.9.4.2.dylib",
@@ -1420,17 +1423,20 @@
       {
         "path": "/opt/homebrew/Cellar/libuv/1.52.1/lib/libuv.1.0.0.dylib",
         "sha256": "c56f794e7c9dbcf8c45fba6109836196263a4d5e95936eee7601593532c6cfe9",
-        "page_size": 4096
+        "page_size": 4096,
+        "cms_reserve": 0
       },
       {
         "path": "/opt/homebrew/Cellar/ada-url/3.4.4/lib/libada.3.4.4.dylib",
         "sha256": "b39ba5c76cfa9e8d7a37b51daf937414316b671f51360daae62b9885e9d089f8",
-        "page_size": 4096
+        "page_size": 4096,
+        "cms_reserve": 0
       },
       {
         "path": "/opt/homebrew/Cellar/simdjson/4.6.4/lib/libsimdjson.33.0.0.dylib",
         "sha256": "031cfb565154f822e33b9227ef392c257260c5ebb8fbfc9f317c56be82bfa16a",
-        "page_size": 4096
+        "page_size": 4096,
+        "cms_reserve": 0
       },
       {
         "path": "/opt/homebrew/Cellar/brotli/1.2.0/lib/libbrotlidec.1.2.0.dylib",
@@ -1445,22 +1451,26 @@
       {
         "path": "/opt/homebrew/Cellar/c-ares/1.34.8/lib/libcares.2.19.7.dylib",
         "sha256": "380a4b57ed007eecfd8b31d27feb3ea4749125e49780f8ca55dceb6112993c77",
-        "page_size": 4096
+        "page_size": 4096,
+        "cms_reserve": 0
       },
       {
         "path": "/opt/homebrew/Cellar/hdrhistogram_c/0.11.10/lib/libhdr_histogram.6.3.3.dylib",
         "sha256": "90286f692dd222d09642670523a5ef978f14b553614e6fa2d550dcb179e0d39c",
-        "page_size": 4096
+        "page_size": 4096,
+        "cms_reserve": 0
       },
       {
         "path": "/opt/homebrew/Cellar/merve/1.2.2_1/lib/libmerve.1.2.2.dylib",
         "sha256": "cda7651d81af902d5964705451e7bcb3c4769a971e793b33472ccf6c07e2dc58",
-        "page_size": 4096
+        "page_size": 4096,
+        "cms_reserve": 0
       },
       {
         "path": "/opt/homebrew/Cellar/nbytes/0.1.4/lib/libnbytes.dylib",
         "sha256": "b063a6b50d0982379e5a78fa22904e9299ac0048d82cae4f90bd4ad11fa40f65",
-        "page_size": 4096
+        "page_size": 4096,
+        "cms_reserve": 0
       },
       {
         "path": "/opt/homebrew/Cellar/libnghttp2/1.69.0/lib/libnghttp2.14.dylib",
@@ -1470,12 +1480,14 @@
       {
         "path": "/opt/homebrew/Cellar/libnghttp3/1.17.0/lib/libnghttp3.9.8.0.dylib",
         "sha256": "02f5cd0648e3c812c3f15573055b12ffd9a6447bd781286198ca6272140e2d6d",
-        "page_size": 4096
+        "page_size": 4096,
+        "cms_reserve": 0
       },
       {
         "path": "/opt/homebrew/Cellar/libngtcp2/1.24.0/lib/libngtcp2.16.dylib",
         "sha256": "c55cbdb643db897ea328a5c1a8cac9f802e165bc4499bd9f823fc65e932769a9",
-        "page_size": 4096
+        "page_size": 4096,
+        "cms_reserve": 0
       },
       {
         "path": "/opt/homebrew/Cellar/sqlite/3.53.3/lib/libsqlite3.3.53.3.dylib",
@@ -1485,7 +1497,8 @@
       {
         "path": "/opt/homebrew/Cellar/libffi/3.7.1/lib/libffi.8.dylib",
         "sha256": "8def831bad531fb16a8dcb35ec89da501fa4d797478af8e69fc6aac7b6eda18a",
-        "page_size": 4096
+        "page_size": 4096,
+        "cms_reserve": 0
       },
       {
         "path": "/opt/homebrew/Cellar/uvwasi/0.0.23/lib/libuvwasi.dylib",
@@ -1534,9 +1547,29 @@
       }
     ],
     "raw_and_installed_hashes": "The official archive SHA-256 and raw extracted file hashes identify the source. The existing frozen toolchain hashes identify installed bytes. The report retains raw, unsigned-relocated and signed-normalized hashes separately. Only exact frozen installed hashes can pass.",
-    "github_only": "The real ad-hoc signing command can run only after the hosted macOS 26 arm64 guard. Unit fixtures use a fake command runner.",
+    "github_only": "The real ad-hoc signing command and Apple Security framework bridge can run only after the hosted macOS 26 arm64 guard. Unit fixtures use fake command and bridge runners.",
     "status": "normalization_unverified_until_exact_frozen_hashes_pass_on_github",
     "sources": [
+      {
+        "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/CodeSigner.cpp",
+        "sha256": "3e795cead85abbc48aa665875b7540073212339222af1950b3631922ab425807",
+        "role": "Explicit CFNumber cmssize, including zero; otherwise default reservation 18000"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/signer.cpp",
+        "sha256": "83c1cd525934c0b7d0c5f08322b02e347a5cbf9f521a67edd36023387a8559a2",
+        "role": "Pass the configured CMS reservation to signature allocation"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/SecCodeSigner.h",
+        "sha256": "37cb30291fbe66352ae22b594b6ac7b61b3d4199573d2e1cfee9b902356a2de6",
+        "role": "Apple signing API, ad-hoc identity, preserve-metadata bits, and strict-preflight flag"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/apple-oss-distributions/security_systemkeychain/21f3ff10bb50f0e1404042b38c1b81564204f322/src/cs_sign.cpp",
+        "sha256": "eb21733e32688fa1b91a99a82f66953405438d2a836b8f02487c90fe9549a4ce",
+        "role": "Apple CLI maps metadata and page size to the same API, but omits a zero cmssize argument"
+      },
       {
         "url": "https://raw.githubusercontent.com/Homebrew/brew/6.0.6/Library/Homebrew/extend/os/mac/keg_relocate.rb",
         "sha256": "5cd540aa13871158dd27faa65a17db0f772237dc497d65f025593af40f9d0bc2",
