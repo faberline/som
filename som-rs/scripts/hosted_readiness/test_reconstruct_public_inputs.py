@@ -27,7 +27,14 @@ class ReconstructionTests(unittest.TestCase):
         self.sources = {}
         self.generated = []
         self.prompt_cnl = {}
+        self.prompt_by_index = {}
         self.fixture()
+        self.supplement_fixture()
+        for name, value in (("GOLDENS_SHA256", self.sealed), ("SUPPLEMENT_SHA256", self.supplement_sha),
+                            ("CHECKED_DSL_SHA256", self.checked_pins), ("SUPPLEMENT_REQUEST_PINS", self.request_pins)):
+            trusted = patch.object(r, name, value)
+            trusted.start()
+            self.addCleanup(trusted.stop)
 
     def source(self, path, raw):
         file = self.repo / path
@@ -54,8 +61,12 @@ class ReconstructionTests(unittest.TestCase):
             prompt = {"version": "som.prompt.v7", "fixture": key}
             cnl = "PUBLIC LEGACY CNL " + str(key)
             self.prompt_cnl[r.value_sha(prompt)] = cnl
+            self.prompt_by_index[index] = prompt
             identity = "m2-maximum-" + str(index) if generated else "legacy-" + str(index)
             row = {"id": identity, "index": index, "prompt_sha256": r.value_sha(prompt), "cnl_sha256": r.sha(cnl.encode()),
+                   "family": "supplement12" if index >= 533 or index == 442 else "quality218",
+                   "variant": "checked" if index in {0, 442, 533} else "standard",
+                   "files_map_sha256": r.sha(("PUBLIC PRODUCT " + str(index)).encode()),
                    "input_provenance": "verified_tracked" if ready_direct else "public_generator_unrun" if generated else "blocked_no_public_source"}
             if ready_direct:
                 direct.append(json.dumps({"prompt": prompt}))
@@ -69,7 +80,7 @@ class ReconstructionTests(unittest.TestCase):
                                                         "source_sha256": r.RUNTIME_PINS[r.FREEZE]}}
             if index == 0:
                 row["checked_dsl_provenance"] = "public_reference_recipe_unrun"
-            elif index in {533, 534}:
+            elif index in {442, 533}:
                 row["checked_dsl_provenance"] = "blocked_no_public_source"
             legacy.append(row)
         self.source(direct_path, ("\n".join(direct) + "\n").encode())
@@ -83,6 +94,38 @@ class ReconstructionTests(unittest.TestCase):
         self.goldens.write_bytes(raw)
         self.sealed = r.sha(raw)
 
+    def write_supplement(self, document):
+        raw = (json.dumps(document, ensure_ascii=False, indent=2) + "\n").encode()
+        file = self.repo / r.SUPPLEMENT_FILE
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.write_bytes(raw)
+        return r.sha(raw)
+
+    def supplement_fixture(self):
+        typed, checked = [], []
+        self.checked_pins = {}
+        self.request_pins = {}
+        for row in self.document["cohorts"]["python_legacy"]:
+            if row["input_provenance"] == "blocked_no_public_source":
+                typed.append({"id": row["id"], "legacy_index": row["index"], "family": row["family"], "variant": row["variant"],
+                              "typed_input": self.prompt_by_index[row["index"]], "prompt_sha256": row["prompt_sha256"],
+                              "cnl_sha256": row["cnl_sha256"], "product_sha256": row["files_map_sha256"]})
+                request = r.request({"format": "som.prompt-json.v1", "prompt": self.prompt_by_index[row["index"]]}, public=False)
+                self.request_pins[row["id"]] = (row["prompt_sha256"], r.sha(request))
+            if row.get("checked_dsl_provenance") == "blocked_no_public_source":
+                dsl = {"version": "som.dsl.v3", "files": [{"path": "PUBLIC.py", "blocks": []}],
+                       "flow": {"steps": [], "public_fixture": row["index"]}}
+                digest = r.value_sha(dsl)
+                checked.append({"id": row["id"], "legacy_index": row["index"], "family": row["family"], "variant": row["variant"],
+                                "prompt_sha256": row["prompt_sha256"], "checked_dsl_input": dsl, "dsl_sha256": digest})
+                self.checked_pins[row["id"]] = digest
+        self.supplement = {"version": "som.supplement-fixtures.publication-candidate.v1", "state": "public synthetic fixtures",
+                           "source_review_packet_sha256": "1" * 64, "public_golden_export_sha256": self.sealed,
+                           "accepted_legacy_result_sha256": r.LEGACY_RESULT_SHA256,
+                           "counts": {"typed_input_rows": 11, "distinct_typed_prompts": 10, "checked_dsl_rows": 2},
+                           "typed_inputs": typed, "checked_dsl_inputs": checked}
+        self.supplement_sha = self.write_supplement(self.supplement)
+
     @contextmanager
     def fake_runtime(self, sources):
         def serialize(prompt, *, contract_dir):
@@ -94,21 +137,33 @@ class ReconstructionTests(unittest.TestCase):
         with patch.object(r, "runtime", self.fake_runtime):
             return r.reconstruct(self.document if document is None else document, self.repo, self.out)
 
-    def test_complete_named_manifest_keeps_blocked_rows_and_duplicate_prompts(self):
+    def test_complete_named_manifest_supplies_public_rows_and_preserves_history(self):
         report = self.reconstruct()
         self.assertFalse(report["product_acceptance_passed"])
         self.assertFalse(report["full_input_set_ready"])
+        self.assertTrue(report["typed_input_set_ready"])
         self.assertEqual(report["product_suites"], "unrun")
-        self.assertEqual(report["counts"]["legacy_reconstructed"], 533)
-        self.assertEqual(report["counts"]["legacy_blocked"], 11)
+        self.assertEqual(report["counts"]["legacy_reconstructed"], 544)
+        self.assertEqual(report["counts"]["legacy_blocked"], 0)
+        self.assertEqual(report["counts"]["historical_legacy_blocked"], 11)
         rows = report["cohorts"]["python_legacy"]
         self.assertEqual([row["id"] for row in rows], [row["id"] for row in self.document["cohorts"]["python_legacy"]])
         self.assertEqual(rows[0]["prompt_sha256"], rows[440]["prompt_sha256"])
         self.assertEqual(rows[0]["requests"]["compile-json"]["sha256"], rows[440]["requests"]["compile-json"]["sha256"])
         self.assertNotEqual(rows[0]["requests"]["compile-json"]["path"], rows[440]["requests"]["compile-json"]["path"])
-        self.assertNotIn("requests", rows[533])
-        self.assertEqual(len(report["blocked_checked_dsl_ids"]), 2)
+        self.assertIn("requests", rows[533])
+        self.assertEqual(rows[533]["historical_input_provenance"], "blocked_no_public_source")
+        self.assertEqual(rows[533]["input_provenance"], "verified_public_supplement")
+        self.assertEqual(rows[533]["recorded_typed_request_sha256"], self.request_pins[rows[533]["id"]][1])
+        self.assertEqual(report["counts"]["legacy_recorded_typed_request_bytes_verified"], 454)
+        self.assertEqual(len(report["blocked_checked_dsl_ids"]), 0)
+        self.assertEqual(len(report["supplied_checked_dsl_ids"]), 2)
         self.assertEqual(len(report["unrun_checked_dsl_ids"]), 1)
+        for index in (442, 533):
+            self.assertEqual(rows[index]["checked_dsl_state"], "supplied_public_dsl_verified")
+            file = self.out / rows[index]["checked_dsl"]["path"]
+            self.assertEqual(r.sha(file.read_bytes()), rows[index]["checked_dsl"]["raw_sha256"])
+            self.assertEqual(r.value_sha(json.loads(file.read_bytes())), self.checked_pins[rows[index]["id"]])
         manifest = json.loads((self.out / "manifest.json").read_text())
         self.assertEqual(manifest["counts"], report["counts"])
 
@@ -168,6 +223,91 @@ class ReconstructionTests(unittest.TestCase):
         doc["cohorts"]["python_legacy"][0]["typed_request_sha256"] = "0" * 64
         with self.assertRaisesRegex(r.Refusal, "request bytes differ"):
             self.reconstruct(doc)
+
+    def test_public_supplement_asset_tamper_refuses_before_output(self):
+        file = self.repo / r.SUPPLEMENT_FILE
+        file.write_bytes(file.read_bytes() + b" ")
+        with self.assertRaisesRegex(r.Refusal, "asset digest differs"):
+            self.reconstruct()
+        self.assertFalse(self.out.exists())
+
+    def test_supplement_typed_scope_and_all_frozen_pins_are_checked(self):
+        changes = {
+            "missing": lambda d: d["typed_inputs"].pop(),
+            "duplicate": lambda d: d["typed_inputs"].__setitem__(1, copy.deepcopy(d["typed_inputs"][0])),
+            "identity": lambda d: d["typed_inputs"][0].__setitem__("id", "unknown-public-case"),
+            "index": lambda d: d["typed_inputs"][0].__setitem__("legacy_index", 0),
+            "family": lambda d: d["typed_inputs"][0].__setitem__("family", "quality218"),
+            "variant": lambda d: d["typed_inputs"][0].__setitem__("variant", "standard"),
+            "prompt": lambda d: d["typed_inputs"][0].__setitem__("prompt_sha256", "0" * 64),
+            "cnl": lambda d: d["typed_inputs"][0].__setitem__("cnl_sha256", "0" * 64),
+            "product": lambda d: d["typed_inputs"][0].__setitem__("product_sha256", "0" * 64),
+            "body": lambda d: d["typed_inputs"][0]["typed_input"].__setitem__("fixture", -1),
+            "golden": lambda d: d.__setitem__("public_golden_export_sha256", "0" * 64),
+            "accepted": lambda d: d.__setitem__("accepted_legacy_result_sha256", "0" * 64),
+        }
+        for name, change in changes.items():
+            document = copy.deepcopy(self.supplement)
+            change(document)
+            digest = self.write_supplement(document)
+            # Re-pin only the synthetic outer asset to exercise independent
+            # frozen identity and content checks after the raw digest guard.
+            with self.subTest(change=name), patch.object(r, "SUPPLEMENT_SHA256", digest), self.assertRaises(r.Refusal):
+                self.reconstruct()
+            self.assertFalse(self.out.exists())
+
+    def test_supplement_checked_dsl_scope_and_independent_hashes_are_checked(self):
+        def changed_body_and_declared_hash(document):
+            row = document["checked_dsl_inputs"][0]
+            row["checked_dsl_input"]["flow"]["public_fixture"] = -1
+            row["dsl_sha256"] = r.value_sha(row["checked_dsl_input"])
+        changes = {
+            "missing": lambda d: d["checked_dsl_inputs"].pop(),
+            "identity": lambda d: d["checked_dsl_inputs"][0].__setitem__("id", "unknown-checked-case"),
+            "index": lambda d: d["checked_dsl_inputs"][0].__setitem__("legacy_index", 0),
+            "prompt": lambda d: d["checked_dsl_inputs"][0].__setitem__("prompt_sha256", "0" * 64),
+            "variant": lambda d: d["checked_dsl_inputs"][0].__setitem__("variant", "standard"),
+            "hash": lambda d: d["checked_dsl_inputs"][0].__setitem__("dsl_sha256", "0" * 64),
+            "body_and_hash": changed_body_and_declared_hash,
+        }
+        for name, change in changes.items():
+            document = copy.deepcopy(self.supplement)
+            change(document)
+            digest = self.write_supplement(document)
+            with self.subTest(change=name), patch.object(r, "SUPPLEMENT_SHA256", digest), self.assertRaises(r.Refusal):
+                self.reconstruct()
+            self.assertFalse(self.out.exists())
+
+    def test_known_request_hash_is_checked_for_supplied_prompt_too(self):
+        document = copy.deepcopy(self.document)
+        document["cohorts"]["python_legacy"][533]["typed_request_sha256"] = "0" * 64
+        with self.assertRaisesRegex(r.Refusal, "known legacy request bytes differ"):
+            self.reconstruct(document)
+
+    def test_independently_recorded_supplement_request_pin_is_enforced(self):
+        pins = copy.deepcopy(self.request_pins)
+        identity = self.document["cohorts"]["python_legacy"][533]["id"]
+        pins[identity] = (pins[identity][0], "0" * 64)
+        with patch.object(r, "SUPPLEMENT_REQUEST_PINS", pins), self.assertRaisesRegex(r.Refusal, "known legacy request bytes differ"):
+            self.reconstruct()
+        self.assertFalse((self.out / "manifest.json").exists())
+
+    def test_supplied_prompt_cnl_is_recomputed_by_verified_serializer(self):
+        digest = self.document["cohorts"]["python_legacy"][533]["prompt_sha256"]
+        self.prompt_cnl[digest] = "WRONG PUBLIC CNL\n"
+        with self.assertRaisesRegex(r.Refusal, "legacy CNL differs"):
+            self.reconstruct()
+        self.assertFalse((self.out / "manifest.json").exists())
+
+    def test_public_supplement_path_refuses_symlink(self):
+        file = self.repo / r.SUPPLEMENT_FILE
+        replacement = self.root / "public-supplement.json"
+        replacement.write_bytes(file.read_bytes())
+        file.unlink()
+        file.symlink_to(replacement)
+        with self.assertRaisesRegex(r.Refusal, "symlink"):
+            self.reconstruct()
+        self.assertFalse(self.out.exists())
 
     def test_unbound_recipe_dependency_refuses_before_import(self):
         sources = r.Sources(self.repo, self.document)
@@ -276,14 +416,16 @@ class ReconstructionTests(unittest.TestCase):
         self.assertNotIn("PRIVATE_SENTINEL", output.getvalue())
         self.assertFalse(self.out.exists())
 
-    def test_cli_reports_partial_scope_without_accepting_products(self):
+    def test_cli_reports_all_typed_inputs_and_pending_checked_recipe(self):
         output = io.StringIO()
         with patch.object(r, "GOLDENS_SHA256", self.sealed), patch.object(r, "runtime", self.fake_runtime), redirect_stdout(output):
             code = r.main(["--repo", str(self.repo), "--goldens", str(self.goldens), "--out", str(self.out)])
         self.assertEqual(code, 0)
         report = json.loads(output.getvalue())
         self.assertFalse(report["product_acceptance_passed"])
-        self.assertEqual(report["counts"]["legacy_blocked"], 11)
+        self.assertEqual(report["counts"]["legacy_blocked"], 0)
+        self.assertEqual(report["counts"]["legacy_reconstructed"], 544)
+        self.assertEqual(report["counts"]["checked_dsl_public_recipe_unrun"], 1)
 
 
 if __name__ == "__main__":

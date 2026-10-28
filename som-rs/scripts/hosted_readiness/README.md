@@ -18,10 +18,10 @@ The `Rust hosted readiness` workflow has five jobs:
   The normal `cargo test` command also includes documentation tests.
   The retired `legacy-model` feature stays disabled.
 - The fixture job tests the readiness tool against temporary fake files.
-- The public input job reconstructs 127 public inputs and 533 historical jobs.
+- The public input job reconstructs 127 public inputs and all 544 historical jobs.
   It checks source, prompt, CNL and known request hashes.
-  It preserves all 544 historical rows, including 11 blocked inputs.
-  Checked DSL inputs and full product acceptance remain separate blockers.
+  It uses the reviewed public fixture file for 11 historical inputs and two DSLs.
+  One public checked DSL recipe and full product acceptance remain unrun.
 - The product readiness job reads source hashes and named inventories.
   It starts no product, service or emulator.
 
@@ -80,17 +80,24 @@ Readiness never means product acceptance.
 The report always states `acceptance_passed: false` and `product_suites: not_run`.
 The manifest cannot enable product acceptance.
 
-The hash exporter reads one reviewed private source index on the developer host.
+The hash exporter reads one reviewed local source index on the developer host.
 It writes hashes and public source locations only.
 It does not run the compiler or any test.
 It preserves all named Python and Rust rows, including duplicates and refusals.
 It records missing public inputs and unrun reconstruction steps.
 It does not export prompts, DSL, response bodies, product files or local paths.
-The private review packet is never an exporter input.
+The body-bearing review packet is never a hash-exporter input.
 The committed hash export has a separate fixed digest in the public input tool.
 GitHub executes the unchanged public generator after checking all source hashes.
 The public input artifact contains only inputs derived from public source.
 No test or product can treat this partial input proof as full acceptance.
+
+The human approved the exact synthetic supplement fixture file for public use.
+Its fixed digest binds all 11 typed rows and two complete checked DSLs.
+The input job checks every named row and all 454 known historical request hashes.
+It records old blocked labels as history and current availability separately.
+Unpublished files and local source paths are not evidence of secret content.
+Hash checks prove data integrity. They are not encryption.
 
 `raw_digest_compat.py` compares raw JSON bytes outside exact digest leaves.
 Its caller must approve each path and obtain both digest values independently.
