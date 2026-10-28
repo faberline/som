@@ -271,7 +271,6 @@ class PreflightTests(unittest.TestCase):
     def test_changed_current_amendment_remains_blocked_with_new_source_hash(self):
         plan = json.loads(self.plan.read_text())
         plan["amendment006"]["checks"].append("new required regression")
-        plan["amendment006"]["checks"] = [f"check {index}" for index in range(10)]
         self.plan.write_text(json.dumps(plan))
         self.data["source_files"][preflight.PLAN_PATH] = sha(self.plan)
         self.assertEqual(self.run_cli()[0], 1)
@@ -281,7 +280,6 @@ class PreflightTests(unittest.TestCase):
     def test_unmapped_future_gate_remains_blocked(self):
         plan = json.loads(self.plan.read_text())
         plan["new_required_gates"] = ["must not disappear"]
-        plan["amendment006"]["checks"] = [f"check {index}" for index in range(10)]
         self.plan.write_text(json.dumps(plan))
         self.data["source_files"][preflight.PLAN_PATH] = sha(self.plan)
         self.assertEqual(self.run_cli()[0], 1)
