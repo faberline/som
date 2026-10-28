@@ -1055,19 +1055,19 @@
   "assets": [
     {
       "name": "public-regression-recordings",
-      "blocked_reason": "127 accepted public Python products have no approved hosted distribution source in this checkout."
+      "blocked_reason": "All 127 public Python inputs, accepted raw-response hashes and complete product file hashes are public and verified. The full product gate adapter and sealed native metadata policy remain required."
     },
     {
       "name": "legacy-regression-recordings",
-      "blocked_reason": "544 accepted historical jobs and their named inventory have no approved hosted distribution source in this checkout."
+      "blocked_reason": "All 544 historical typed inputs, 454 recorded request hashes, accepted product hashes and three checked DSL inputs are available from reviewed public sources. Full product and behavior gates remain unrun."
     },
     {
       "name": "phase1-recordings",
-      "blocked_reason": "Accepted phase1 candidate and product recordings have no approved hosted distribution source in this checkout."
+      "blocked_reason": "All 115 named Rust phase1 inputs and accepted QA request hashes are public. The bf3 GitHub experiment verified their compile replies. Current full CNL, assembly, product and behavior gate bindings remain required."
     },
     {
       "name": "phase2-recordings",
-      "blocked_reason": "Accepted Rust phase2 run-003 and Python behavior recordings have no approved hosted distribution source in this checkout."
+      "blocked_reason": "All 584 named Rust phase2 inputs and accepted QA hashes are public. The bf3 compile experiment verified exact replies, including two HTTP400 refusals. Native-form semantic diagnostics, product and behavior gates remain required."
     },
     {
       "name": "compiler-assets",
@@ -1079,23 +1079,23 @@
     },
     {
       "name": "postgresql",
-      "blocked_reason": "PostgreSQL 17.7 must be provisioned on the product runner with recorded version and artifact hashes."
+      "blocked_reason": "The bf3 GitHub source build qualified PostgreSQL17.7 version, source, license and binary-byte evidence. Verified reuse installation and same-candidate owned service checks remain required."
     },
     {
       "name": "phase2-emulators",
-      "blocked_reason": "Exact MongoDB 7.0.28, Redis 8.4.0, moto 5.2.3 and uv 0.9.9 pins are not provisioned on a hosted runner."
+      "blocked_reason": "MongoDB7.0.28, Redis8.4.0 and uv0.9.9 first-build evidence is verified. Moto5.2.3, complete dependencies, verified reuse and all owned service gates remain unrun."
     },
     {
       "name": "python-environment",
-      "blocked_reason": "Python 3.12.11 and package versions need a reproducible dependency source for the selected runner."
+      "blocked_reason": "Python3.12.11 first-build evidence is verified. Separate observer/product environment inputs, the full transitive wheel closure and offline product checks remain required."
     },
     {
       "name": "crate-vendor",
-      "blocked_reason": "The union of both Cargo.lock files needs licensed archives checked against every registry checksum; compile-failing platform stubs are not sufficient."
+      "blocked_reason": "The exact 352-package union of both frozen Cargo.lock files still needs complete publisher checksums, licenses, verified Cargo vendor files and an offline source package. No product stubs are accepted."
     },
     {
       "name": "baseline-compiler",
-      "blocked_reason": "Existing runners require a recorded read-only baseline compiler on loopback. Hosted baseline provisioning and port routing are unresolved."
+      "blocked_reason": "Public accepted raw hashes support the unsealed Python/Rust experiment. Full applicable TypeScript request authority, numbered native metadata policy and all same-candidate baseline gates remain required."
     }
   ],
   "blockers": [

@@ -401,3 +401,134 @@ jobs:
             ${{ runner.temp }}/som-product-runtime-qualification/install
             ${{ runner.temp }}/som-product-runtime-qualification/installed-files.json
             ${{ runner.temp }}/som-product-runtime-qualification/build-intermediates.json
+
+  product-python-environment-plan:
+    name: Python environment inputs (not wheel or product acceptance)
+    needs: [fixture-tests, experimental-native-compile]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Check synthetic environment inputs on GitHub
+        run: |
+          python3 -B som-rs/scripts/hosted_readiness/product_python/test_qualify_python.py
+      - name: Download this run's complete assembly evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: experimental-unsealed-native-compile
+          path: ${{ runner.temp }}/som-python-input-artifact
+      - name: Bind every product environment to frozen assembled bytes
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -B som-rs/scripts/hosted_readiness/product_python/qualify_python.py \
+            --repo "$GITHUB_WORKSPACE" --source-revision "$TESTED_SHA" \
+            --out "$RUNNER_TEMP/som-product-python-environment-plan" \
+            --assembly "$RUNNER_TEMP/som-python-input-artifact/_temp/som-unsealed-native-compile"
+      - name: Preserve source plan and explicit remaining gates
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: product-python-environment-inputs
+          path: ${{ runner.temp }}/som-product-python-environment-plan
+          if-no-files-found: error
+          retention-days: 30
+
+  product-cargo-closure:
+    name: Complete Rust registry closure (product gates unrun)
+    needs: experimental-native-compile
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Create an owned run and check synthetic integrity fixtures
+        working-directory: ${{ runner.temp }}
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          closure_run="$RUNNER_TEMP/som-cargo-closure-run"
+          mkdir -m 700 "$closure_run"
+          printf 'created\n' > "$closure_run/stage.txt"
+          mkdir -m 700 "$closure_run/tests"
+          cd "$closure_run/tests"
+          TMPDIR="$closure_run/tests" python3 -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_provision_cargo.py"
+      - name: Download this run's compile and assembly evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: experimental-unsealed-native-compile
+          path: ${{ runner.temp }}/som-cargo-closure-run/input
+      - name: Check the required real product consumer route
+        working-directory: ${{ runner.temp }}/som-cargo-closure-run
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          python3 -B - "$PWD" "$TESTED_SHA" <<'PY'
+          import json, pathlib, sys
+          run = pathlib.Path(sys.argv[1])
+          root = run / "input/_temp/som-unsealed-native-compile"
+          manifest = json.loads((root / "assembly/manifest.json").read_text())
+          if manifest["tested_sha"] != sys.argv[2]:
+              raise SystemExit("assembly artifact is not this candidate")
+          products = manifest["products"]["rust"]
+          references = {}
+          for phase, identity in (("phase1", "example-v1"), ("phase2", "services14-0000")):
+              rows = [row for row in products if (row["phase"], row["id"]) == (phase, identity)]
+              if len(rows) != 1:
+                  raise SystemExit("named real Cargo reference is missing")
+              path = root / rows[0]["product_dir"]
+              if not all((path / leaf).is_file() for leaf in ("src/main.rs", "Cargo.toml", "Cargo.lock")):
+                  raise SystemExit("real generated Cargo reference target is missing")
+              references[phase] = str(path)
+          (run / "consumer-roots.json").write_text(json.dumps({"assembly_root": str(root), **references}))
+          PY
+      - name: Install exact Rust tools inside the owned run
+        working-directory: ${{ runner.temp }}/som-cargo-closure-run
+        run: |
+          RUSTUP_HOME="$PWD/rustup" CARGO_HOME="$PWD/bootstrap-cargo" \
+            rustup toolchain install 1.96.1 --profile minimal > rustup-install.log 2>&1
+      - name: Make and verify all 352 registry packages
+        working-directory: ${{ runner.temp }}/som-cargo-closure-run
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          cargo_tool="$(RUSTUP_HOME="$PWD/rustup" CARGO_HOME="$PWD/bootstrap-cargo" rustup which --toolchain 1.96.1 cargo)"
+          rustc_tool="$(RUSTUP_HOME="$PWD/rustup" CARGO_HOME="$PWD/bootstrap-cargo" rustup which --toolchain 1.96.1 rustc)"
+          python3 -B - "$GITHUB_WORKSPACE" "$PWD" "$TESTED_SHA" "$cargo_tool" "$rustc_tool" <<'PY'
+          import json, pathlib, subprocess, sys
+          repo, run = map(pathlib.Path, sys.argv[1:3])
+          refs = json.loads((run / "consumer-roots.json").read_text())
+          subprocess.run([sys.executable, "-B", str(repo / "som-rs/scripts/hosted_readiness/product_runtime/provision_cargo.py"),
+                          "--repo", str(repo), "--source-revision", sys.argv[3], "--out", str(run / "closure"),
+                          "--cargo", sys.argv[4], "--rustc", sys.argv[5], "--assembly-root", refs["assembly_root"],
+                          "--phase1-product-root", refs["phase1"], "--phase2-product-root", refs["phase2"]],
+                         cwd=run, check=True)
+          PY
+      - name: Preserve registry closure candidate and failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: product-cargo-closure-candidate
+          retention-days: 30
+          include-hidden-files: true
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/som-cargo-closure-run/stage.txt
+            ${{ runner.temp }}/som-cargo-closure-run/consumer-roots.json
+            ${{ runner.temp }}/som-cargo-closure-run/rustup-install.log
+            ${{ runner.temp }}/som-cargo-closure-run/closure
