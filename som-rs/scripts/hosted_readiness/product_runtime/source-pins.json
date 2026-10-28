@@ -1,0 +1,129 @@
+{
+  "version": "som.native-product-runtime-source-pins.v1",
+  "status": "prototype_source_pins_only",
+  "host": "ubuntu22.04-x86_64",
+  "authority": "Official archives and license notices read and hashed by the M12 controller. No local executable runs. Source-built binary hashes must be qualified on GitHub and independently reviewed.",
+  "archives": [
+    {
+      "name": "postgresql",
+      "version": "17.7",
+      "kind": "source",
+      "url": "https://ftp.postgresql.org/pub/source/v17.7/postgresql-17.7.tar.bz2",
+      "sha256": "ef9e343302eccd33112f1b2f0247be493cb5768313adeb558b02de8797a2e9b5",
+      "root": "postgresql-17.7",
+      "licenses": {
+        "postgresql-17.7/COPYRIGHT": "5ed3ce5c9373dff7f98b1fae7a6c7ccd98df7d734d46d24c1bcebf1240be8307",
+        "postgresql-17.7/src/backend/regex/COPYRIGHT": "5027cfe4f54842896b01ca6be28becc9a018623aaadc0f5b51350da71118cb0e"
+      },
+      "archive_bytes": 21646334,
+      "provenance": {
+        "url": "https://ftp.postgresql.org/pub/source/v17.7/postgresql-17.7.tar.bz2.sha256",
+        "metadata_sha256": "131f73567988ab9a919d6d9108157640bbc0fdefb6e69a3fed7de01305de62d0"
+      }
+    },
+    {
+      "name": "python",
+      "version": "3.12.11",
+      "kind": "source",
+      "url": "https://www.python.org/ftp/python/3.12.11/Python-3.12.11.tar.xz",
+      "sha256": "c30bb24b7f1e9a19b11b55a546434f74e739bb4c271a3e3a80ff4380d49f7adb",
+      "root": "Python-3.12.11",
+      "licenses": {
+        "Python-3.12.11/LICENSE": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf",
+        "Python-3.12.11/Tools/msi/bundle/bootstrap/LICENSE.txt": "cb95daf98edda8e08a242e1060691b6941f0911692bf468a3f9c5e4b58c09b8f"
+      },
+      "archive_bytes": 20525812,
+      "provenance": {
+        "url": "https://www.python.org/ftp/python/3.12.11/Python-3.12.11.tar.xz.sigstore",
+        "metadata_sha256": "a7a4caead9e0ae52ffa6fece2413653a6c6786c990b8f6e76f2289b5d54c06b1",
+        "signature_verified": false
+      }
+    },
+    {
+      "name": "redis",
+      "version": "8.4.0",
+      "kind": "source",
+      "url": "https://download.redis.io/releases/redis-8.4.0.tar.gz",
+      "sha256": "ca909aa15252f2ecb3a048cd086469827d636bf8334f50bb94d03fba4bfc56e8",
+      "root": "redis-8.4.0",
+      "licenses": {
+        "redis-8.4.0/LICENSE.txt": "4a0e416b9537688f30dfe69ddaceb2ca64d96b7df02a0a6760d376890ddc4e40",
+        "redis-8.4.0/deps/fpconv/LICENSE.txt": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566",
+        "redis-8.4.0/deps/hdr_histogram/LICENSE.txt": "c124afa369aae960fa33f6944c82e161e482f2e998d6f07b37ae2c018f3c6c69",
+        "redis-8.4.0/deps/lua/COPYRIGHT": "ee5e3e82af1e1b543c4f216e399d7c8cfee797711913f349e385101c4ae60a79",
+        "redis-8.4.0/deps/xxhash/LICENSE": "6ffedbc0f7878612d2b23589f1ff2ab15633e1df7963a5d9fc750ec5500c7e7a"
+      },
+      "archive_bytes": 4109585,
+      "provenance": {
+        "url": "https://raw.githubusercontent.com/redis/redis-hashes/master/README",
+        "metadata_sha256": "7219a64b8eaf0bab90973329fde7bdab1c646f580da3958742b1e06b04dffe58"
+      }
+    },
+    {
+      "name": "uv",
+      "version": "0.9.9",
+      "kind": "binary",
+      "url": "https://github.com/astral-sh/uv/releases/download/0.9.9/uv-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "9ec303873e00deed44d1b2b52b85ab7aa55d849588d7242298748390eaea07ef",
+      "root": "uv-x86_64-unknown-linux-gnu",
+      "licenses": {},
+      "executables": {
+        "uv-x86_64-unknown-linux-gnu/uv": {
+          "path": "bin/uv",
+          "sha256": "83f28650272b5543e939debbc7a5578d087952399fd945e9267b1db0ccc27d33"
+        }
+      },
+      "archive_bytes": 21323902,
+      "provenance": {
+        "url": "https://api.github.com/repos/astral-sh/uv/releases/tags/0.9.9",
+        "metadata_sha256": "3aafbb5d8f3c65904e2e053785ffada7db98186e3a321030f8e843b83c66f990",
+        "asset_sha256_field": true
+      }
+    },
+    {
+      "name": "uv-licenses",
+      "version": "0.9.9",
+      "kind": "licenses",
+      "url": "https://github.com/astral-sh/uv/releases/download/0.9.9/source.tar.gz",
+      "sha256": "07439734307426d1a4488ac861a3808f70b96c8be72d52a221716fbd62402168",
+      "root": "uv-0.9.9",
+      "licenses": {
+        "uv-0.9.9/LICENSE-APACHE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "uv-0.9.9/LICENSE-MIT": "860e3d7a86b84e6a7012c7a635fc64df475cebc6cce34dfeb73a5982ec58176c"
+      },
+      "archive_bytes": 4774173,
+      "provenance": {
+        "url": "https://api.github.com/repos/astral-sh/uv/releases/tags/0.9.9",
+        "metadata_sha256": "3aafbb5d8f3c65904e2e053785ffada7db98186e3a321030f8e843b83c66f990",
+        "asset_sha256_field": true
+      }
+    },
+    {
+      "name": "mongodb",
+      "version": "7.0.28",
+      "kind": "binary",
+      "url": "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2204-7.0.28.tgz",
+      "sha256": "7fc16f46fb10753b982ab03bd9d7dd5920d18d181259f825c2462ca903c55d4d",
+      "root": "mongodb-linux-x86_64-ubuntu2204-7.0.28",
+      "licenses": {
+        "mongodb-linux-x86_64-ubuntu2204-7.0.28/LICENSE-Community.txt": "09d99ca61eb07873d5334077acba22c33e7f7d0a9fa08c92734e0ac8430d6e27",
+        "mongodb-linux-x86_64-ubuntu2204-7.0.28/THIRD-PARTY-NOTICES": "6a8a0489e835442b82b7302959a743712f250bee507298d326a64d643c4ca1a4"
+      },
+      "executables": {
+        "mongodb-linux-x86_64-ubuntu2204-7.0.28/bin/mongod": {
+          "path": "bin/mongod",
+          "sha256": "891300d61048fa5694178eeaf1f7a0077fab35d5b9744fedb7a0a30304a3ec12"
+        }
+      },
+      "archive_bytes": 85841849,
+      "provenance": {
+        "url": "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2204-7.0.28.tgz.sha256",
+        "metadata_sha256": "d2695de76821a1972a2af87a05ef0ca90fd14d243e601909084150bb08d55595"
+      }
+    }
+  ],
+  "moto": "unrun; no environment or dependency closure provisioned",
+  "python_wheel_closure": "unrun",
+  "services": "not_started",
+  "product_runtime_ready": false
+}

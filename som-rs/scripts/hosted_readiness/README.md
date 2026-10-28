@@ -11,7 +11,7 @@ Do not run them on the developer host.
 
 ## What runs on GitHub
 
-The `Rust hosted readiness` workflow has five jobs:
+The `Rust hosted readiness` workflow has these jobs:
 
 - Two Cargo jobs run the complete default-feature suites on Ubuntu 24.04.
   One tests `som-rs/Cargo.toml`. The other tests `som-rs/som-targets/Cargo.toml`.
@@ -22,7 +22,19 @@ The `Rust hosted readiness` workflow has five jobs:
   It checks source, prompt, CNL and known request hashes.
   It uses the reviewed public fixture file for 11 historical inputs and two DSLs.
   A separate step proves the remaining public checked DSL against its accepted hash.
-  These steps prepare input data. Rust case construction and full products stay separate.
+  It maps all 699 frozen Rust cases. It preserves all 22 native negative requests.
+  It adds nine typed companions from public examples and five CNL companions.
+  Every Rust baseline JSON request must match its accepted complete request hash.
+  These steps prepare input data. Compiler semantics and full products stay separate.
+- The compile experiment compares all 1,342 Python and 699 Rust compile replies.
+  It starts one owned target-aware candidate and keeps every raw exchange.
+  It checks the child process and local socket before each request.
+  It stops its own child and saves a cleanup receipt.
+  This unsealed experiment does not pass product acceptance.
+- The runtime qualification job builds pinned PostgreSQL, Python and Redis sources.
+  It checks pinned MongoDB and uv archive members on Ubuntu 22.04.
+  It records the first binary hashes and keeps runtime readiness false.
+  It starts no service. Independent review and Python dependencies remain required.
 - The product readiness job reads source hashes and named inventories.
   It starts no product, service or emulator.
 
@@ -70,7 +82,7 @@ These serve different purposes.
 
 Phase 1 has 115 accepted cases.
 The Python regression scope has 127 public products and 544 historical jobs.
-Their accepted recordings need an approved distribution route.
+Their reviewed synthetic input data and accepted hash records are public.
 The tool does not invent missing IDs, response bytes or results.
 It does not read local models, private data or host caches.
 
@@ -114,6 +126,15 @@ The source index binds 13 receipts and 97 source files.
 Four directory digests remain unchecked. Canary payload hashes remain observations.
 No compile response hash is projected or invented.
 These historical hashes support a future byte gate. They do not pass it.
+
+The experimental native compile checker uses those exact accepted response hashes.
+It derives current metadata from complete committed source vectors and native pins.
+It compares every other raw response byte, including spacing and key order.
+It keeps the latest accepted candidate separate from the older control.
+All results stay `experimental-unsealed` with `product_acceptance: false`.
+The checker covers 1,342 Python compile rows and 699 Rust compile rows.
+It does not accept TypeScript samples as a complete TypeScript regression.
+Assembly, product behavior and the numbered compatibility policy stay separate.
 
 `raw_digest_compat.py` compares raw JSON bytes outside exact digest leaves.
 Its caller must approve each path and obtain both digest values independently.

@@ -1,0 +1,54 @@
+{
+  "version": "som.m12-owned-compile-driver-source-review.v1",
+  "reviewer": "independent compile_driver_review agent; not the author",
+  "candidate_base_head": "09ced52261c13e8da5fce2b2b51d59e0c8641d4a",
+  "scope": "Independent source-only review of the complete owned Python/Rust compile experiment and its workflow integration.",
+  "source_review_passed": true,
+  "actionable_findings_remaining": [],
+  "files": {
+    "som-rs/scripts/hosted_readiness/run_experimental_native_compile.py": "b60992771fa47aeb54120a12ef1e573507cbf4315a18c0ad11ff80a399f23014",
+    "som-rs/scripts/hosted_readiness/test_run_experimental_native_compile.py": "efbc86603ea45c4ee1ef787bb2c69caa2b52e17d7f34cf6926c395733bdc76c5"
+  },
+  "submission_artifacts": {
+    "standard_diff_sha256": "fad9440c30416f1f27ba8f6384c9819e4e9a199865b5bb3747db72cec90d3dc5",
+    "author_workflow_fragment_sha256": "63950b99dac6b6af4857dd081b3e86700da7364e3924ef1f8840c1d1191f29e9",
+    "controller_integrated_job_fragment_sha256": "83020f43295b4efbf3cacad72e1aa430abf77776f8cd65f4faab6f7e21fe8187"
+  },
+  "checked": [
+    "All 1342 Python and 699 Rust compile rows are selected from fixed accepted TS065 artifact SHA650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9. Exact identity order, counts, status and request authorities are checked.",
+    "Python original raw and two owner-compatible compact encodings can be selected only by an independently frozen full QA request SHA. Prompt values and envelopes remain exact.",
+    "All Rust baseline-json requests are separate from native RS forms. Their format,target,prompt header and full immutable QA request SHA are checked. Rehashing a mutable locator cannot change accepted bytes.",
+    "The target-aware main source is bound to the committed candidate. The integrated workflow builds som-rs/som-targets/Cargo.toml --bin som and consumes the same run's exact completed input artifact.",
+    "The checker is instantiated once. Initial and final committed source bytes, Git HEAD, executable identity, asset tree and trusted native tool identities are compared.",
+    "Health is only a consistency check. Its asset manifest hash uses the owning canonical manifest algorithm. Raw asset bytes remain independently recorded in the tree snapshot.",
+    "Only a fresh native child in its own process session can receive HTTP. PID start ticks, process group, session, executable inode and the exact 127.0.0.1 listening socket inode are checked before every call.",
+    "Ports8765 and18765, occupied ports, nonloopback listeners, proxies and redirects are refused. No unrelated process or listener is killed.",
+    "Per-row failures retain raw exchanges and continue. Partial recording failures retain their in-memory row in the final manifest and still reach owned cleanup.",
+    "SIGTERM, SIGHUP and SIGINT reach final cleanup and manifest recording. InterruptedError propagates through planning and readiness waiting rather than becoming an input failure or retry.",
+    "Cleanup signals only the owned process group after identity checks. Remaining session members or lost ownership make cleanup fail. No unknown group is signaled.",
+    "All 14 meaningful synthetic test definitions and source syntax were read. Syntax was checked with AST parsing only. Tests were not executed.",
+    "Every outcome remains experimental-unsealed with product acceptance false. Assembly, CNL semantics/refusal checks, TypeScript full scope and product behavior remain explicit unrun work."
+  ],
+  "resolved_findings": [
+    "Changed the workflow from the compiler-only binary to the target-aware binary and corrected the Rust completed-input directory.",
+    "Bound the target-aware entry source instead of the unused compiler-only entry source.",
+    "Replaced the incorrect raw manifest health comparison with the owning canonical manifest hash while retaining the raw snapshot.",
+    "Added cancellation handlers, cleanup/recording fixtures and explicit interruption propagation through broad planning/startup catches."
+  ],
+  "local_execution": {
+    "source_and_metadata_reads": true,
+    "file_hashing_and_ast_syntax_parsing": true,
+    "project_module_imports": false,
+    "driver_or_checker_runs": false,
+    "test_runs": false,
+    "compiler_or_formatter_runs": false,
+    "builds": false,
+    "servers_or_products": false
+  },
+  "tests_defined": 14,
+  "tests_executed": false,
+  "hosted_compile_rows_executed": false,
+  "policy_state": "unsealed",
+  "product_acceptance_passed": false,
+  "next_step": "Commit these exact reviewed sources, run all fixtures and the complete owned compile experiment on GitHub, and independently audit its actual raw evidence. This review grants no numbered compatibility-policy acceptance, full product acceptance or tracker closeout."
+}

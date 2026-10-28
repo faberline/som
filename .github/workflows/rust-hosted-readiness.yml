@@ -183,6 +183,26 @@ jobs:
             --repo . \
             --tested-sha "$TESTED_SHA" \
             --out "$RUNNER_TEMP/som-quality-checked-proof" 2>&1 | tee -a input-runner.log
+      - name: Map all frozen Rust requests without running the compiler
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 som-rs/scripts/hosted_readiness/map_rust_inputs.py \
+            --repo . \
+            --inputs "$RUNNER_TEMP/som-public-inputs" \
+            --goldens som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json \
+            --tested-sha "$TESTED_SHA" \
+            --out "$RUNNER_TEMP/som-rust-inputs" 2>&1 | tee -a input-runner.log
+      - name: Complete paired Rust inputs and prove all accepted baseline request hashes
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 som-rs/scripts/hosted_readiness/complete_rust_inputs.py \
+            --repo . \
+            --inputs "$RUNNER_TEMP/som-public-inputs" \
+            --goldens som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json \
+            --tested-sha "$TESTED_SHA" \
+            --out "$RUNNER_TEMP/som-rust-complete-inputs" 2>&1 | tee -a input-runner.log
       - name: Keep public input proof and remaining blockers
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -193,6 +213,105 @@ jobs:
             input-runner.log
             ${{ runner.temp }}/som-public-inputs
             ${{ runner.temp }}/som-quality-checked-proof
+            ${{ runner.temp }}/som-rust-inputs
+            ${{ runner.temp }}/som-rust-complete-inputs
+          if-no-files-found: error
+          retention-days: 14
+
+  experimental-native-compile:
+    name: All Python and Rust compile bytes (unsealed experiment)
+    needs: [cargo-tests, public-input-reconstruction]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      RUSTUP_TOOLCHAIN: 1.96.1
+      CARGO_TERM_COLOR: never
+      CARGO_BUILD_JOBS: 2
+      RUST_BACKTRACE: 1
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Record tested revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+          printf 'CARGO_TARGET_DIR=%s/som-experimental-cargo-target\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Download this run's complete input proof
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: public-input-reconstruction
+          path: ${{ runner.temp }}/som-input-artifact
+      - name: Check the input artifact revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(cat "$RUNNER_TEMP/som-input-artifact/som/som/tested-sha.txt")" = "$TESTED_SHA"
+          test -f "$RUNNER_TEMP/som-input-artifact/_temp/som-public-inputs/manifest.json"
+          test -f "$RUNNER_TEMP/som-input-artifact/_temp/som-rust-complete-inputs/manifest.json"
+      - name: Install the native Rust toolchain
+        run: |
+          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt 2>&1 | tee experimental-tools.log
+          rustc -vV | tee -a experimental-tools.log
+          cargo -vV | tee -a experimental-tools.log
+          rustfmt --version | tee -a experimental-tools.log
+          sha256sum "$(rustup which rustc)" "$(rustup which cargo)" "$(rustup which rustfmt)" | tee -a experimental-tools.log
+      - name: Fetch the unchanged compiler and target locks
+        run: |
+          cargo fetch --locked --manifest-path som-rs/Cargo.toml 2>&1 | tee experimental-fetch.log
+          cargo fetch --locked --manifest-path som-rs/som-targets/Cargo.toml 2>&1 | tee -a experimental-fetch.log
+      - name: Provision verified native tools
+        run: |
+          python3 som-rs/scripts/hosted_readiness/provision_native.py \
+            --manifest som-rs/contracts/native-tools-v1/artifacts.json \
+            --out "$RUNNER_TEMP/som-native-tools" \
+            --rustfmt "$(rustup which rustfmt)" 2>&1 | tee experimental-native-provision.log
+          cat "$RUNNER_TEMP/som-native-tools/github.env" >> "$GITHUB_ENV"
+      - name: Package compiler assets from the tested source
+        run: |
+          cargo run --locked --offline --manifest-path som-rs/Cargo.toml \
+            --bin som-compiler-assets -- \
+            --destination som-rs/compiler-assets/current \
+            --formatter "$SOM_RUFF" 2>&1 | tee experimental-assets.log
+      - name: Build the target-aware candidate
+        run: |
+          cargo build --locked --offline --manifest-path som-rs/som-targets/Cargo.toml --bin som 2>&1 | tee experimental-build.log
+          sha256sum "$CARGO_TARGET_DIR/debug/som" | tee -a experimental-build.log
+      - name: Compare all 2041 compile replies with the unsealed checker
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 som-rs/scripts/hosted_readiness/run_experimental_native_compile.py \
+            --repo . \
+            --python-inputs "$RUNNER_TEMP/som-input-artifact/_temp/som-public-inputs" \
+            --rust-inputs "$RUNNER_TEMP/som-input-artifact/_temp/som-rust-complete-inputs" \
+            --binary "$CARGO_TARGET_DIR/debug/som" \
+            --assets "$GITHUB_WORKSPACE/som-rs/compiler-assets/current" \
+            --ruff "$SOM_RUFF" --rustfmt "$SOM_RUSTFMT" \
+            --node "$SOM_TS_NODE" --prettier "$SOM_TS_PRETTIER" \
+            --tested-sha "$TESTED_SHA" --port 18976 \
+            --out "$RUNNER_TEMP/som-unsealed-native-compile" 2>&1 | tee experimental-driver.log
+      - name: Verify unchanged dependency locks
+        if: always()
+        run: git diff --exit-code -- som-rs/Cargo.lock som-rs/som-targets/Cargo.lock
+      - name: Keep every exchange and the owned cleanup receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: experimental-unsealed-native-compile
+          path: |
+            tested-sha.txt
+            experimental-tools.log
+            experimental-fetch.log
+            experimental-native-provision.log
+            experimental-assets.log
+            experimental-build.log
+            experimental-driver.log
+            ${{ runner.temp }}/som-native-tools/receipt.json
+            ${{ runner.temp }}/som-unsealed-native-compile
           if-no-files-found: error
           retention-days: 14
 
@@ -227,3 +346,56 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
+
+  product-runtime-source-qualification:
+    name: Product runtime first-build qualification (not acceptance)
+    needs: fixture-tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Check synthetic integrity and path fixtures on GitHub
+        working-directory: ${{ runner.temp }}
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          test_run="$RUNNER_TEMP/som-product-runtime-tests"
+          mkdir -m 700 "$test_run"
+          cd "$test_run"
+          TMPDIR="$test_run" python3 -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_qualify_runtime.py"
+      - name: Build and inspect the pinned native runtime
+        working-directory: ${{ runner.temp }}
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          python3 -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py" \
+            --repo "$GITHUB_WORKSPACE" \
+            --manifest som-rs/scripts/hosted_readiness/product_runtime/source-pins.json \
+            --out "$RUNNER_TEMP/som-product-runtime-qualification" \
+            --source-revision "$TESTED_SHA"
+      - name: Preserve qualification candidate and failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: product-runtime-first-build-qualification
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/som-product-runtime-qualification/source-pins.json
+            ${{ runner.temp }}/som-product-runtime-qualification/receipt.json
+            ${{ runner.temp }}/som-product-runtime-qualification/logs
+            ${{ runner.temp }}/som-product-runtime-qualification/licenses
+            ${{ runner.temp }}/som-product-runtime-qualification/install
+            ${{ runner.temp }}/som-product-runtime-qualification/installed-files.json
+            ${{ runner.temp }}/som-product-runtime-qualification/build-intermediates.json
