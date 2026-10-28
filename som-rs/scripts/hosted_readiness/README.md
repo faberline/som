@@ -32,6 +32,9 @@ locations. The workflow exposes those failures. They are tool adaptation work.
 They do not mean that the fixed compiler needs Apple hardware or a model.
 Native Ruff, rustfmt, Node and Prettier still need version and integrity checks.
 Removing a platform limit must preserve formatter checks and product behavior.
+The [native tool proposal](native-tools.json) records public Linux artifact pins.
+The [provisioning plan](PROVISIONING.md) defines the next implementation step.
+These files do not yet change the runtime or provision a runner.
 
 ## What readiness means
 
