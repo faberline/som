@@ -21,7 +21,8 @@ The `Rust hosted readiness` workflow has five jobs:
 - The public input job reconstructs 127 public inputs and all 544 historical jobs.
   It checks source, prompt, CNL and known request hashes.
   It uses the reviewed public fixture file for 11 historical inputs and two DSLs.
-  One public checked DSL recipe and full product acceptance remain unrun.
+  A separate step proves the remaining public checked DSL against its accepted hash.
+  These steps prepare input data. Rust case construction and full products stay separate.
 - The product readiness job reads source hashes and named inventories.
   It starts no product, service or emulator.
 
@@ -98,6 +99,21 @@ The input job checks every named row and all 454 known historical request hashes
 It records old blocked labels as history and current availability separately.
 Unpublished files and local source paths are not evidence of secret content.
 Hash checks prove data integrity. They are not encryption.
+
+The standalone checked DSL proof uses the accepted historical compact block library.
+It checks ten exact source modules and six data files before and after the run.
+It calls the public checked-plan builder and validator on GitHub.
+It preserves the accepted full DSL hash and writes a separate proof manifest.
+It runs no product compiler, assembler, formatter or service.
+
+The accepted TypeScript #65 baseline hash file keeps 1,342 Python result rows
+and 2,093 Rust check rows. Each row keeps its HTTP status and exact response hash.
+The latest accepted candidate and the older control stay distinct.
+All 697 rebased Rust results retain both complete file-map hashes.
+The source index binds 13 receipts and 97 source files.
+Four directory digests remain unchecked. Canary payload hashes remain observations.
+No compile response hash is projected or invented.
+These historical hashes support a future byte gate. They do not pass it.
 
 `raw_digest_compat.py` compares raw JSON bytes outside exact digest leaves.
 Its caller must approve each path and obtain both digest values independently.
