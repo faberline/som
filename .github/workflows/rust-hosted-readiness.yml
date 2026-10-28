@@ -5,6 +5,7 @@ on:
     paths:
       - .github/workflows/rust-hosted-readiness.yml
       - som-rs/scripts/hosted_readiness/**
+      - '!som-rs/scripts/hosted_readiness/evidence/**'
       - som-rs/Cargo.toml
       - som-rs/Cargo.lock
       - som-rs/src/**
