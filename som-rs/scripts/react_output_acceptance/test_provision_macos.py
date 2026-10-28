@@ -219,6 +219,97 @@ class ProvisionMacosTests(unittest.TestCase):
         self.assertTrue((staged / "bin/tool").is_symlink())
         self.assertEqual(provisioner.os.readlink(staged / "bin/tool"), "node")
 
+    def test_declared_cross_keg_links_resolve_from_the_public_cellar_path(self):
+        node = json.loads(json.dumps(self.node))
+        node["non_system_dynamic_dependencies"] = ["llvm"]
+        llvm = entry("llvm", "22.1.8", b"fixture llvm archive")
+        targets = {
+            "bin/llvm-opt": "../../../../opt/llvm/bin/ld.lld",
+            "bin/llvm-cellar": "../../../llvm/22.1.8/lib/libLLVM.dylib",
+        }
+        archive = self.out / "cross-keg.tar.gz"
+        archive.write_bytes(archive_bytes("node/1.0", {
+            name: ("symlink", target) for name, target in targets.items()
+        }))
+        staged = provisioner.extract_archive(archive, self.out / "cross-keg-stage", node,
+                                             closure=[node, llvm])
+        for name, target in targets.items():
+            self.assertTrue((staged / name).is_symlink())
+            self.assertEqual(provisioner.os.readlink(staged / name), target)
+
+    def test_transitive_declared_dependency_link_is_allowed(self):
+        node = json.loads(json.dumps(self.node))
+        node["non_system_dynamic_dependencies"] = ["llvm"]
+        llvm = entry("llvm", "22.1.8", b"fixture llvm archive")
+        llvm["non_system_dynamic_dependencies"] = ["z3"]
+        z3 = entry("z3", "4.16.0", b"fixture z3 archive")
+        target = "/opt/homebrew/opt/z3/lib/libz3.dylib"
+        archive = self.out / "transitive.tar.gz"
+        archive.write_bytes(archive_bytes("node/1.0", {"lib/z3": ("symlink", target)}))
+        staged = provisioner.extract_archive(archive, self.out / "transitive-stage", node,
+                                             closure=[node, llvm, z3])
+        self.assertEqual(provisioner.os.readlink(staged / "lib/z3"), target)
+
+    def test_manifest_package_outside_this_dependency_closure_is_refused(self):
+        llvm = entry("llvm", "22.1.8", b"fixture llvm archive")
+        archive = self.out / "undeclared.tar.gz"
+        target = "/opt/homebrew/opt/llvm/bin/ld.lld"
+        archive.write_bytes(archive_bytes("node/1.0", {"bin/llvm": ("symlink", target)}))
+        stage = self.out / "undeclared-stage"
+        with self.assertRaises(provisioner.ProvisionError) as found:
+            provisioner.extract_archive(archive, stage, self.node, closure=[self.node, llvm])
+        self.assertEqual(found.exception.code, "archive_link_refused")
+        self.assertEqual(found.exception.details, {
+            "member": "node/1.0/bin/llvm", "link_target": target, "resolved_target": target,
+        })
+        self.assertFalse(stage.exists())
+
+    def test_cross_keg_policy_still_refuses_an_unknown_version_and_outside_prefix(self):
+        node = json.loads(json.dumps(self.node))
+        node["non_system_dynamic_dependencies"] = ["llvm"]
+        llvm = entry("llvm", "22.1.8", b"fixture llvm archive")
+        for index, target in enumerate(("/opt/homebrew/Cellar/llvm/99.0/lib/libLLVM.dylib", "/tmp/outside")):
+            with self.subTest(target=target):
+                archive = self.out / f"wrong-closure-{index}.tar.gz"
+                archive.write_bytes(archive_bytes("node/1.0", {"bin/tool": ("symlink", target)}))
+                stage = self.out / f"wrong-closure-{index}-stage"
+                with self.assertRaises(provisioner.ProvisionError) as found:
+                    provisioner.extract_archive(archive, stage, node, closure=[node, llvm])
+                self.assertEqual(found.exception.code, "archive_link_refused")
+                self.assertEqual(found.exception.details["link_target"], target)
+                self.assertFalse(stage.exists())
+
+    def test_declared_cross_keg_link_cannot_be_a_write_through_parent(self):
+        node = json.loads(json.dumps(self.node))
+        node["non_system_dynamic_dependencies"] = ["llvm"]
+        llvm = entry("llvm", "22.1.8", b"fixture llvm archive")
+        archive = self.out / "cross-keg-parent.tar.gz"
+        archive.write_bytes(archive_bytes("node/1.0", {
+            "lib/llvm": ("symlink", "/opt/homebrew/opt/llvm/lib"),
+            "lib/llvm/child": b"must not be written",
+        }))
+        stage = self.out / "cross-keg-parent-stage"
+        with self.assertRaises(provisioner.ProvisionError) as found:
+            provisioner.extract_archive(archive, stage, node, closure=[node, llvm])
+        self.assertEqual(found.exception.code, "archive_link_refused")
+        self.assertFalse(stage.exists())
+
+    def test_unknown_global_link_keeps_public_details_in_the_failure_record(self):
+        target = "/opt/homebrew/share/unknown-global-path"
+        raw = archive_bytes("node/1.0", {"share/link": ("symlink", target)})
+        node = entry("node", "1.0", raw)
+        def download(candidate, destination):
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(raw)
+            return {"archive_sha256": digest(raw)}
+        record = {"attempts": []}
+        with self.assertRaises(provisioner.ProvisionError) as found:
+            provisioner.stage_package(node, self.out, [], record, downloader=download, closure=[node])
+        details = record["attempts"][0]["error"]["details"]
+        self.assertEqual(details["member"], "node/1.0/share/link")
+        self.assertEqual(details["link_target"], target)
+        self.assertEqual(provisioner.error_record(found.exception)["details"], details)
+
     def test_tree_hash_includes_literal_symlink_targets_and_both_counts(self):
         root = self.out / "tree"
         root.mkdir()

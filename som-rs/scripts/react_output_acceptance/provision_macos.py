@@ -45,9 +45,17 @@ CONTRACTS = (
 
 
 class ProvisionError(Exception):
-    def __init__(self, code: str, message: str):
+    def __init__(self, code: str, message: str, details: dict[str, Any] | None = None):
         super().__init__(message)
         self.code = code
+        self.details = details
+
+
+def error_record(error: ProvisionError) -> dict[str, Any]:
+    record = {"code": error.code, "message": str(error)}
+    if error.details is not None:
+        record["details"] = error.details
+    return record
 
 
 def need(condition: Any, code: str, message: str) -> None:
@@ -190,10 +198,36 @@ def inside(path: PurePosixPath, root: PurePosixPath) -> bool:
     return path == root or root in path.parents
 
 
-def extract_archive(archive: Path, staging: Path, entry: dict[str, Any]) -> Path:
+def package_link_roots(entry: dict[str, Any], closure: list[dict[str, Any]] | None = None) -> set[PurePosixPath]:
+    """Use the exact kegs and opt paths from the validated dependency inventory."""
+    inventory = {package["formula"]: package for package in (closure if closure is not None else [entry])}
+    roots: set[PurePosixPath] = set()
+    visited = set()
+
+    def visit(formula: str) -> None:
+        if formula in visited:
+            return
+        need(formula in inventory, "manifest_invalid", "A package link dependency is missing.")
+        visited.add(formula)
+        package = inventory[formula]
+        version = package["version"] + (f"_{package['revision']}" if package["revision"] else "")
+        keg = PurePosixPath(f"/opt/homebrew/Cellar/{formula}/{version}")
+        opt = PurePosixPath(f"/opt/homebrew/opt/{formula}")
+        need(package["expected_keg_directory"] == str(keg) and package["opt_symlink"] == str(opt),
+             "manifest_invalid", "A package link destination differs from its exact keg.")
+        roots.update((keg, opt))
+        for dependency in package.get("non_system_dynamic_dependencies", []):
+            visit(dependency)
+
+    visit(entry["formula"])
+    return roots
+
+
+def extract_archive(archive: Path, staging: Path, entry: dict[str, Any], *,
+                    closure: list[dict[str, Any]] | None = None) -> Path:
     """Validate all members, then extract files before creating safe symlinks."""
     relative_keg = PurePosixPath(entry["expected_keg_directory"]).relative_to("/opt/homebrew/Cellar")
-    final_keg = PurePosixPath(entry["expected_keg_directory"])
+    link_roots = package_link_roots(entry, closure)
     need(not staging.exists(), "stage_exists", "A bottle staging directory already exists.")
     try:
         with tarfile.open(archive, "r:*") as bundle:
@@ -212,11 +246,14 @@ def extract_archive(archive: Path, staging: Path, entry: dict[str, Any]) -> Path
                 if member.issym():
                     target = PurePosixPath(member.linkname)
                     if target.is_absolute():
-                        allowed = inside(PurePosixPath(posixpath.normpath(str(target))), final_keg)
+                        resolved = PurePosixPath(posixpath.normpath(str(target)))
                     else:
-                        resolved = PurePosixPath(posixpath.normpath(str(path.parent / target)))
-                        allowed = inside(resolved, relative_keg)
-                    need(allowed, "archive_link_refused", "A bottle symlink leaves its exact keg.")
+                        public_parent = PurePosixPath("/opt/homebrew/Cellar") / path.parent
+                        resolved = PurePosixPath(posixpath.normpath(str(public_parent / target)))
+                    if not any(inside(resolved, root) for root in link_roots):
+                        raise ProvisionError("archive_link_refused", "A bottle symlink leaves its declared package closure.",
+                                             {"member": member.name, "link_target": member.linkname,
+                                              "resolved_target": str(resolved)})
             links = {path for path, member in paths.items() if member.issym()}
             need(not any(parent in links for path in paths for parent in path.parents),
                  "archive_link_refused", "A bottle symlink is a parent of another member.")
@@ -304,7 +341,8 @@ def hash_check(pin: dict[str, str], actual_path: Path) -> dict[str, Any]:
 
 
 def stage_package(entry: dict[str, Any], out: Path, pins: list[dict[str, str]],
-                  record: dict[str, Any], *, downloader=download_archive) -> tuple[dict[str, Any], Path]:
+                  record: dict[str, Any], *, downloader=download_archive,
+                  closure: list[dict[str, Any]] | None = None) -> tuple[dict[str, Any], Path]:
     keg = PurePosixPath(entry["expected_keg_directory"])
     relevant = [pin for pin in pins if PurePosixPath(pin["path"]).is_relative_to(keg)]
     # PostgreSQL's frozen paths go through opt; map them to the staged keg too.
@@ -321,13 +359,13 @@ def stage_package(entry: dict[str, Any], out: Path, pins: list[dict[str, str]],
             # An injected downloader must not bypass the trust boundary.
             need(file_sha256(archive) == candidate["archive_sha256"],
                  "archive_hash_mismatch", "A bottle hash differs before extraction.")
-            staged = extract_archive(archive, out / "stage" / f"{entry['formula']}-{index}", entry)
+            staged = extract_archive(archive, out / "stage" / f"{entry['formula']}-{index}", entry, closure=closure)
             for pin in relevant:
                 path = PurePosixPath(pin["path"])
                 relative = path.relative_to(keg if path.is_relative_to(keg) else opt)
                 attempt["hash_checks"].append(hash_check(pin, staged.joinpath(*relative.parts)))
         except ProvisionError as error:
-            attempt.update(status="failed", error={"code": error.code, "message": str(error)})
+            attempt.update(status="failed", error=error_record(error))
             raise
         if all(check["status"] == "passed" for check in attempt["hash_checks"]):
             attempt["status"] = "passed"
@@ -453,7 +491,7 @@ def provision(document: dict[str, Any], contracts: dict[str, dict[str, Any]], ou
         record = {key: entry[key] for key in ("formula", "version", "revision", "expected_keg_directory")}
         record["attempts"] = []
         report["packages"].append(record)
-        selections.append(stage_package(entry, out, pins, record, downloader=downloader))
+        selections.append(stage_package(entry, out, pins, record, downloader=downloader, closure=entries))
     report["stage"] = "install"
     install_closure(selections, prefix)
     report["stage"] = "frozen_hashes"
@@ -497,7 +535,7 @@ def main(argv: list[str] | None = None) -> int:
         provision(document, contracts, args.out, report)
         code = 0
     except ProvisionError as error:
-        report["error"] = {"code": error.code, "message": str(error)}
+        report["error"] = error_record(error)
     except Exception as error:
         report["error"] = {"code": "provision_failed", "message": "Provisioning failed. No product suite ran.",
                            "exception_type": type(error).__name__}
