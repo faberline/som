@@ -627,6 +627,139 @@ class Audit130Tests(unittest.TestCase):
                       if row["id"] == "target_case/target_examples/example-v1-cnl-react")
         self.assertEqual(target["status"], "failed")
 
+    def _python_baseline_source_universes(self, public_ids):
+        """Declare source names and prompts before writing mutable result.records."""
+        public = self.fixture.repo / ".local/baseline-public"
+        legacy = self.fixture.repo / ".local/baseline-legacy/run"
+        fixture_path = self.fixture.repo / "som-rs/tests/compiler-v1/cnl-positive-fixtures.json"
+        source_cases = read_json(SOURCE_REPO / "som-rs/tests/compiler-v1/cnl-positive-fixtures.json")["cases"]
+        first, second = copy.deepcopy(source_cases[0]), copy.deepcopy(source_cases[0])
+        first["id"], second["id"] = "PUBLIC_FIXTURE_A", "PUBLIC_FIXTURE_B"
+        save_json(fixture_path, {"cases": [first, second]})
+        index_path = self.fixture.repo / "som-rs/contracts/compiler-v1/examples/index.json"
+        index = read_json(index_path)
+        index["cases"] = [index["cases"][0]]
+        save_json(index_path, index)
+        prompts = {first["id"]: first["expected_prompt"], second["id"]: second["expected_prompt"],
+                   "PUBLIC_v1": self.fixture.prompt, "legacy-fixture": self.fixture.prompt}
+        for position, cid in enumerate((first["id"], second["id"], "PUBLIC_v1")):
+            save_json(public / f"{position:03d}/prompt.json", prompts[cid])
+            save_json(public / f"{position:03d}/compile-json.request.json",
+                      {"format": "som.prompt-json.v1", "prompt": prompts[cid]})
+        save_json(public / "result.json", {"records": [{"id": cid, "prompt_sha256": sha_bytes(canonical(prompts[cid]))}
+                                                         for cid in public_ids]})
+        legacy_record = {"id": "legacy-fixture", "prompt_sha256": sha_bytes(canonical(self.fixture.prompt))}
+        save_json(legacy / "result.json", {"records": [legacy_record]})
+        save_json(legacy / "0000/compile-json.request.json", {"format": "som.prompt-json.v1", "prompt": self.fixture.prompt})
+        pinned = legacy.parent / "inventory-003.json"
+        save_json(pinned, {"groups": [legacy_record]})
+        inventory = self.fixture.docs["case-inventory.json"]
+        inventory["sources"]["public_products"] = {"directory": public.relative_to(self.fixture.repo).as_posix()}
+        inventory["sources"]["legacy_inventory"] = {
+            pinned.relative_to(self.fixture.repo).as_posix(): sha_file(pinned),
+            "run": legacy.relative_to(self.fixture.repo).as_posix(),
+        }
+        inventory["sources"]["cnl_positive_fixtures"] = {
+            fixture_path.relative_to(self.fixture.repo).as_posix(): sha_file(fixture_path)}
+        inventory["sources"]["examples"][index_path.relative_to(self.fixture.repo).as_posix()] = sha_file(index_path)
+        save_json(self.fixture.contract / "case-inventory.json", inventory)
+        rows = []
+        for source, ids in (("public", sorted(set(public_ids))), ("legacy", ["legacy-fixture"])):
+            for cid in ids:
+                for variant in ("none", "python"):
+                    request = {"format": "som.prompt-json.v1", "prompt": prompts[cid]}
+                    if variant == "python":
+                        request["target"] = "python"
+                    request_sha = sha_bytes(canonical(request))
+                    rows.append({"source": source, "id": cid, "variant": variant,
+                                 "compile_request_sha256": request_sha,
+                                 "qa_compile_request_sha256": request_sha,
+                                 "baseline_compile_request_sha256": request_sha})
+        return rows
+
+    def test_complete_small_python_baseline_source_inventory_is_accepted(self):
+        rows = self._python_baseline_source_universes(["PUBLIC_FIXTURE_A", "PUBLIC_FIXTURE_B", "PUBLIC_v1"])
+        auditor = audit130.Audit(self.fixture.repo, self.fixture.run)
+        auditor.read_contracts()
+        auditor.baseline_inventory("python", rows)
+
+    def test_duplicate_or_truncated_public_source_cannot_reduce_python_baseline(self):
+        for public_ids in (["PUBLIC_FIXTURE_A"] * 3, ["PUBLIC_FIXTURE_A"]):
+            with self.subTest(public_ids=public_ids):
+                rows = self._python_baseline_source_universes(public_ids)
+                auditor = audit130.Audit(self.fixture.repo, self.fixture.run)
+                auditor.read_contracts()
+                with self.assertRaises(audit130.EvidenceError):
+                    auditor.baseline_inventory("python", rows)
+
+    def test_public_baseline_same_version_prompt_substitution_is_rejected(self):
+        ids = ["PUBLIC_FIXTURE_A", "PUBLIC_FIXTURE_B", "PUBLIC_v1"]
+        rows = self._python_baseline_source_universes(ids)
+        directory = self.fixture.repo / ".local/baseline-public"
+        prompt = read_json(directory / "000/prompt.json")
+        prompt["resource"]["fields"][0]["name"] = "substituted_title"
+        save_json(directory / "000/prompt.json", prompt)
+        save_json(directory / "000/compile-json.request.json", {"format": "som.prompt-json.v1", "prompt": prompt})
+        result = read_json(directory / "result.json")
+        result["records"][0]["prompt_sha256"] = sha_bytes(canonical(prompt))
+        save_json(directory / "result.json", result)
+        for row in rows:
+            if row["source"] == "public" and row["id"] == ids[0]:
+                request = {"format": "som.prompt-json.v1", "prompt": prompt}
+                if row["variant"] == "python":
+                    request["target"] = "python"
+                digest = sha_bytes(canonical(request))
+                for field in ("compile_request_sha256", "qa_compile_request_sha256", "baseline_compile_request_sha256"):
+                    row[field] = digest
+        auditor = audit130.Audit(self.fixture.repo, self.fixture.run)
+        auditor.read_contracts()
+        with self.assertRaises(audit130.EvidenceError):
+            auditor.baseline_inventory("python", rows)
+
+    def test_agreeing_python_baseline_request_hashes_must_match_source(self):
+        rows = self._python_baseline_source_universes(["PUBLIC_FIXTURE_A", "PUBLIC_FIXTURE_B", "PUBLIC_v1"])
+        for field in ("compile_request_sha256", "qa_compile_request_sha256", "baseline_compile_request_sha256"):
+            rows[0][field] = "e" * 64
+        auditor = audit130.Audit(self.fixture.repo, self.fixture.run)
+        auditor.read_contracts()
+        with self.assertRaises(audit130.EvidenceError):
+            auditor.baseline_inventory("python", rows)
+
+    def test_mutable_rust_phase1_record_cannot_drop_frozen_baseline_cases(self):
+        frozen_ids = ["RUST_FROZEN_A", "RUST_FROZEN_B"]
+        save_json(self.fixture.repo / "som-rs/contracts/rust-output-v1/case-inventory.json", {
+            "public_examples": [{"id": cid, "rust": "in_scope"} for cid in frozen_ids],
+            "version_positive_fixtures": [], "coverage_cases": [], "legacy_in_scope": [],
+            "counts": {"acceptance_total": 2},
+        })
+        phase2_id = "RUST_PHASE2"
+        save_json(self.fixture.repo / "som-rs/contracts/rust-output-v1/phase2/case-inventory.json",
+                  {"rows": [{"id": phase2_id, "phase2_expected": {"result": "product"}}]})
+        record_path = self.fixture.repo / ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/rust-products.json"
+        for mutable_ids in ([], [frozen_ids[0]], [frozen_ids[0], frozen_ids[0]]):
+            with self.subTest(mutable_ids=mutable_ids):
+                save_json(record_path, {"cases": [{"id": cid} for cid in mutable_ids]})
+                rows = [{"phase": phase, "id": cid, "check": check}
+                        for phase, ids in (("phase1", sorted(set(mutable_ids))), ("phase2", [phase2_id]))
+                        for cid in ids for check in ("compile_equal", "baseline_bundle_refused", "rebased_files")]
+                auditor = audit130.Audit(self.fixture.repo, self.fixture.run)
+                auditor.read_contracts()
+                with self.assertRaises(audit130.EvidenceError):
+                    auditor.baseline_inventory("rust", rows)
+
+    def test_changed_identity_metadata_with_stale_run_hash_fails(self):
+        path = self.fixture.run / "identity.json"
+        identity = read_json(path)
+        health_before = copy.deepcopy(identity["candidate"]["healthz"])
+        identity["metadata_note"] = "changed after run.json was written"
+        save_json(path, identity)
+        # Keep run.identity_sha256 unchanged to isolate its stale identity binding.
+        self.assertEqual(identity["candidate"]["healthz"], health_before)
+        code, report, _, _ = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertTrue(any(row["status"] == "failed" and "identity" in row["id"]
+                            for row in report["rows"]), json.dumps(report, indent=2))
+
     def test_duplicate_case_ids_cannot_replace_complete_results(self):
         rows = self.fixture.reports["bundles"]["cases"]
         rows.append(copy.deepcopy(rows[0]))

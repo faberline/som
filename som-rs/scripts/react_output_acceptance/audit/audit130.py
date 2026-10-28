@@ -292,6 +292,7 @@ class Audit:
         self.latest_receipt: dict = {}
         self.attestations: list[dict] = []
         self.active_report = ""
+        self.baseline_requests: dict[tuple[str, str, str], str] = {}
 
     def row(self, row_id: str, action: Callable[[], Any], *, description: str = "") -> dict:
         before = len(self.reader.accesses)
@@ -420,6 +421,11 @@ class Audit:
 
     def receipts(self) -> None:
         run_doc = object_value(self.reader.json(self.run / "run.json"), "run record")
+        def identity_binding() -> None:
+            path = self.reader.path(run_doc.get("identity"), self.run)
+            need(path == self.run / "identity.json", "run identity path differs from this recorded run")
+            need(self.reader.hash(path) == run_doc.get("identity_sha256"), "run identity sha256 differs")
+        self.row("integrity/identity-binding", identity_binding)
         steps = list_value(run_doc.get("steps"), "run steps")
         self.row("integrity/step-order", lambda: need([step.get("step") for step in steps] == list(STEPS), "step order differs from the 12 required steps"))
         for index, name in enumerate(STEPS, 1):
@@ -752,6 +758,8 @@ class Audit:
         directory = self.reader.path(source["directory"])
         result = object_value(self.reader.json(directory / "result.json"), "complete public product source inventory")
         records = list_value(result.get("records"), "complete public source records")
+        frozen_sources = self.public_sources()
+        need([record.get("id") for record in records] == [case["id"] for case in frozen_sources], "public source ids/order differ from immutable fixture/example identities")
         histogram = list_value(self.inventory.get("counts", {}).get("public_products"), "frozen complete public product histogram")
         expected = {(entry["prompt_version"], entry["react"]): entry["count"] for entry in histogram}
         need(len(records) == sum(expected.values()), "complete public source record count differs from frozen universe")
@@ -763,6 +771,7 @@ class Audit:
                 base = directory / f"{index:03d}"
                 raw = self.reader.bytes(base / "prompt.json")
                 prompt = object_value(json.loads(raw), "public product prompt")
+                need(prompt == frozen_sources[index]["prompt"], "public source prompt differs from immutable fixture/example prompt")
                 refusal = self.scope_oracle(prompt)
                 rule = "in_scope" if refusal is None else refusal["rule"]
                 key = (prompt["version"], rule)
@@ -772,11 +781,40 @@ class Audit:
                     need(selected[cid].get("index") == f"{index:03d}" and selected[cid].get("prompt_file_sha256") == sha(raw), "selected public prompt identity differs")
                 forms = {"json": {"format": "som.prompt-json.v1", "prompt": prompt, "target": "react"}}
                 cnl = self.reader.path(base / "source.cnl")
-                if cnl.is_file():
-                    forms["cnl"] = {"format": "som.cnl.v1", "source": self.reader.bytes(cnl).decode(), "target": "react"}
+                actual_cnl = self.reader.bytes(cnl).decode()
+                need(actual_cnl == frozen_sources[index]["cnl"], "public CNL source differs from immutable fixture/example source")
+                forms["cnl"] = {"format": "som.cnl.v1", "source": actual_cnl, "target": "react"}
                 self.scope_case(cid, prompt, forms, rule)
             self.row(f"scope_case/{cid}", check)
         need(observed == expected, "complete public source profile histogram differs from frozen contract")
+
+    def public_sources(self) -> list[dict]:
+        """Rebuild public-products input identities from immutable contract data."""
+        sources = self.inventory.get("sources", {})
+        fixture_path = "som-rs/tests/compiler-v1/cnl-positive-fixtures.json"
+        fixture_pins = sources.get("cnl_positive_fixtures", {})
+        fixtures = object_value(self.pinned_json(fixture_path, fixture_pins.get(fixture_path)), "frozen public fixture inputs")
+        cases = []
+        for case in list_value(fixtures.get("cases"), "frozen public fixture cases"):
+            prompt = object_value(case.get("expected_prompt"), "frozen public fixture prompt")
+            need(isinstance(case.get("id"), str) and isinstance(case.get("cnl"), str), "frozen public fixture identity/source missing")
+            need(case.get("prompt_sha256") == sha(canonical(prompt)), "frozen public fixture prompt hash differs")
+            need(case.get("cnl_sha256") == sha(case["cnl"].encode()), "frozen public fixture CNL hash differs")
+            cases.append({"id": case["id"], "prompt": prompt, "cnl": case["cnl"]})
+        examples = Path("som-rs/contracts/compiler-v1/examples")
+        pins = sources.get("examples", {})
+        index_path = examples / "index.json"
+        index = object_value(self.pinned_json(index_path, pins.get(index_path.as_posix())), "frozen public example index")
+        for case in list_value(index.get("cases"), "frozen public examples"):
+            prompt_path = examples / case["prompt"]
+            cnl_path = examples / case["cnl"]
+            prompt = object_value(self.pinned_json(prompt_path, pins.get(prompt_path.as_posix())), "frozen public example prompt")
+            raw_cnl = self.reader.bytes(cnl_path)
+            need(sha(raw_cnl) == pins.get(cnl_path.as_posix()), "frozen public example CNL hash differs")
+            cases.append({"id": "PUBLIC_" + case["id"], "prompt": prompt, "cnl": raw_cnl.decode()})
+        ids = [case["id"] for case in cases]
+        need(cases and len(set(ids)) == len(ids), "immutable public input ids are empty or repeated")
+        return cases
 
     def bundle_data(self, case_id: str) -> tuple[dict, dict, dict]:
         row = self.find("bundles", case_id, "bundle_checks")
@@ -1003,6 +1041,10 @@ class Audit:
             need(identity not in seen, "baseline case result is repeated")
             seen.add(identity)
             if language == "python":
+                identity_key = (row.get("source"), row.get("id"), row.get("variant"))
+                if identity_key in self.baseline_requests:
+                    expected_request = self.baseline_requests[identity_key]
+                    need(row.get("qa_compile_request_sha256") == row.get("baseline_compile_request_sha256") == expected_request, "Python baseline request hash differs from source-bound immutable input")
                 for endpoint in ("compile", "assemble"):
                     a, b = row.get(f"qa_{endpoint}_status"), row.get(f"baseline_{endpoint}_status")
                     need(a == b == 200, "Python baseline HTTP result differs")
@@ -1030,19 +1072,49 @@ class Audit:
             sources = self.inventory.get("sources", {})
             public = sources.get("public_products", {}).get("directory", ".local/rust-compiler-goal/acceptance/public-products-003b")
             legacy = sources.get("legacy_inventory", {}).get("run", ".local/rust-compiler-goal/acceptance/legacy544/run-005")
+            public_sources = self.public_sources()
             for source, directory, width in (("public", public, 3), ("legacy", legacy, 4)):
                 document = object_value(self.reader.json(Path(directory) / "result.json"), f"accepted {source} raw inventory")
                 records = list_value(document.get("records"), f"accepted {source} records")
                 need(records, f"accepted {source} inventory empty", "unrun")
+                record_ids = [str(record.get("id", f"{source}-{index:0{width}d}")) for index, record in enumerate(records)]
+                need(len(set(record_ids)) == len(record_ids), f"accepted {source} source ids repeat")
+                if source == "public":
+                    need(record_ids == [case["id"] for case in public_sources], "public baseline source ids/order differ from immutable fixture/example identities")
                 for index, record in enumerate(records):
                     cid = str(record.get("id", f"{source}-{index:0{width}d}"))
                     expected |= {(source, cid, "none"), (source, cid, "python")}
+                    if source == "public":
+                        base = self.reader.path(Path(directory) / f"{index:03d}")
+                        prompt = object_value(self.reader.json(base / "prompt.json"), "public baseline source prompt")
+                        need(prompt == public_sources[index]["prompt"], "public baseline source prompt differs from immutable fixture/example input")
+                        request_path = base / "compile-json.request.json"
+                        if not self.reader.path(request_path).is_file():
+                            request_path = base / "compile.request.json"
+                        request = object_value(self.reader.json(request_path), "public baseline compile input")
+                        need(request == {"format": "som.prompt-json.v1", "prompt": public_sources[index]["prompt"]}, "public baseline compile input differs from immutable prompt")
+                        raw_path = request_path.with_suffix(".raw")
+                        default_raw = json.dumps(request, ensure_ascii=False, separators=(",", ":")).encode()
+                        if self.reader.path(raw_path).is_file():
+                            default_raw = self.reader.bytes(raw_path)
+                            need(json.loads(default_raw) == request, "public baseline raw request differs from immutable input")
+                        python_request = {**request, "target": "python"}
+                        self.baseline_requests[(source, cid, "none")] = sha(default_raw)
+                        self.baseline_requests[(source, cid, "python")] = sha(json.dumps(python_request, ensure_ascii=False, separators=(",", ":")).encode())
             actual = {(row.get("source"), row.get("id"), row.get("variant")) for row in rows}
         elif language == "rust":
             expected = set()
-            phase1 = object_value(self.reader.json(".local/rust-compiler-goal/acceptance/rust-output-055/run-003/rust-products.json"), "accepted Rust phase1 inventory")
+            phase1 = object_value(self.reader.json("som-rs/contracts/rust-output-v1/case-inventory.json"), "frozen Rust phase1 inventory")
             phase2 = object_value(self.reader.json("som-rs/contracts/rust-output-v1/phase2/case-inventory.json"), "Rust phase2 inventory")
-            for phase, cases in (("phase1", phase1.get("cases")), ("phase2", phase2.get("rows"))):
+            phase1_cases = []
+            for group in ("public_examples", "version_positive_fixtures", "coverage_cases", "legacy_in_scope"):
+                for case in list_value(phase1.get(group), f"frozen Rust phase1 {group}"):
+                    if group != "legacy_in_scope" and case.get("rust") != "in_scope":
+                        continue
+                    phase1_cases.append(case)
+            phase1_ids = [case["id"] for case in phase1_cases]
+            need(phase1_ids and len(set(phase1_ids)) == len(phase1_ids), "frozen Rust phase1 ids are empty or repeated")
+            for phase, cases in (("phase1", phase1_cases), ("phase2", phase2.get("rows"))):
                 for case in list_value(cases, f"Rust {phase} cases"):
                     cid = case["id"]
                     checks = ("compile_equal",) if cid.startswith(("RS12", "RS13")) else ("compile_equal", "baseline_bundle_refused", "rebased_files")
@@ -1059,6 +1131,11 @@ class Audit:
             actual = {row.get("id") for row in rows}
         need(expected, f"{language} complete baseline inventory is empty", "unrun")
         need(actual == expected, f"{language} baseline named inventory differs: {len(expected - actual)} missing, {len(actual - expected)} unexpected", "unrun" if expected - actual else "failed")
+        if language == "python":
+            for row in rows:
+                key = (row.get("source"), row.get("id"), row.get("variant"))
+                if key in self.baseline_requests:
+                    need(row.get("qa_compile_request_sha256") == row.get("baseline_compile_request_sha256") == self.baseline_requests[key], "Python baseline request hash differs from source-bound immutable input")
 
     def plan_rows(self) -> None:
         plan = self.contracts["acceptance-plan.json"]
