@@ -1,0 +1,47 @@
+{
+  "attestation_ids": [
+    "contract/sealed",
+    "issue_gates/phase1-contract",
+    "issue_gates/phase1-target-amendments",
+    "issue_gates/phase1-acceptance"
+  ],
+  "audit_sha256": "471a74c77b2d069e05e0e7c7acdef27d40acd3d9af8e642db633e89a070d4c68",
+  "auditor_source_commit": "afd8739faae3e267cc1185d56de1e15831c6a177",
+  "candidate_binary_sha256": "59dab78a0f401a86e028c186285a888cfdf304b2d077e167d46b20d1131a3308",
+  "checks": {
+    "all_runtime_steps_passed": 12,
+    "api_conditional_skips": 178,
+    "api_ok": 2402,
+    "api_steps": 2580,
+    "auditor_files_verified": 14,
+    "frozen_or_product_code_changes_since_compiler_build": [],
+    "missing_files": 0,
+    "negative_cases": 30,
+    "raw_audit_totals": {
+      "attested": 4,
+      "failed": 0,
+      "passed": 2260,
+      "post_acceptance": 1,
+      "unrun": 0
+    },
+    "react_target_unique_section_id_pairs": 1050,
+    "typescript_cases": 125,
+    "typescript_forms": 246,
+    "unique_audit_rows": 2265,
+    "unique_products": 129
+  },
+  "compiler_source_commit": "40cffc13b3bff35e3ea5804b9f43a49cdef7b3c0",
+  "findings": [],
+  "issue": 130,
+  "limits": [
+    "Four rows retain human contract/review metadata attestations; operational checks use raw bytes.",
+    "The release gate is post-acceptance and is not accepted by this review.",
+    "Original failed audit output stays unchanged; the corrected audit checks the same complete run.",
+    "No local project imports, tests, builds or services ran. Local review read source, JSON and hashes."
+  ],
+  "observed_at_utc": "2026-10-28T19:52:14.281539Z",
+  "raw_run_sha256": "69e41d5c44aa9bcb4aa147f297d3ec317f30d88b348f8930c41908ee4671e62b",
+  "review_kind": "independent read-only source and actual GitHub artifact metadata review",
+  "verdict": "accept_issue130_phase1_only",
+  "version": "som.react-output-independent-acceptance-review.v1"
+}
