@@ -31,7 +31,8 @@
     "The earlier deeb run is excluded because its protected-port claim was false.",
     "Deployment data review matches all 163 manifest files and 97 active bindings. Only absolute path strings changed."
   ],
-  "local_project_imports_tests_builds_and_services": "not_run",
+  "local_project_tests_builds_and_services": "not_run",
+  "local_data_handling": "Actual encrypted artifact restoration and file/JSON/hash reads only. The production crypto utility imports the shared crypto module.",
   "production_start_switch_tag_release": "not authorized or executed",
   "primary_write_ownership": "pending explicit release by its owning session"
 }

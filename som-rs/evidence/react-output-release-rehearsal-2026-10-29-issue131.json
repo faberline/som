@@ -164,7 +164,7 @@
   },
   "independent_review": {
     "path": "som-rs/evidence/react-output-release-independent-review-2026-10-29-issue131.json",
-    "sha256": "6fc1d8f81ee4901b7c8f67ea7e4ee8af187bf9f714962a66fdeb114c6a067845"
+    "sha256": "903fd6365e5011882567cdfe0370913b1187bba897591b013d76837bad95739d"
   },
   "deployment_data": {
     "manifest_files": 163,
