@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import contextlib
 import hashlib
-import http.client
 import http.server
 import io
 import json
 import os
 import pathlib
-import socketserver
 import stat
 import subprocess
 import sys
@@ -25,89 +23,6 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 import run_acceptance  # noqa: E402
-
-
-def _install_unified_sandbox_http_connect() -> None:
-    """Route loopback HTTP client connections to in-process HTTPServer instances when sandbox blocks connect."""
-    if getattr(http.client.HTTPConnection, "_som_unified_sandbox_patched", False):
-        return
-    registry: dict[int, socketserver.BaseServer] = getattr(
-        socketserver.TCPServer, "_som_sandbox_registry", {}
-    )
-    setattr(socketserver.TCPServer, "_som_sandbox_registry", registry)
-    orig_init = socketserver.TCPServer.__init__
-    orig_close = socketserver.TCPServer.server_close
-    orig_connect = http.client.HTTPConnection.connect
-
-    def _patched_init(self: socketserver.TCPServer, server_address: Any, RequestHandlerClass: Any, bind_and_activate: bool = True) -> None:
-        orig_init(self, server_address, RequestHandlerClass, bind_and_activate=bind_and_activate)
-        if bind_and_activate and hasattr(self, "server_address"):
-            port = self.server_address[1]
-            if isinstance(port, int) and port > 0:
-                registry[port] = self
-
-    def _patched_close(self: socketserver.TCPServer) -> None:
-        if hasattr(self, "server_address"):
-            port = self.server_address[1]
-            if registry.get(port) is self:
-                registry.pop(port, None)
-        orig_close(self)
-
-    class _InProcessSocket:
-        def __init__(self, server: socketserver.BaseServer, peer_port: int) -> None:
-            self._server = server
-            self._peer_port = peer_port
-            self._out_chunks: list[bytes] = []
-            self._resp_bytes: bytes | None = None
-
-        def sendall(self, data: bytes) -> None:
-            self._out_chunks.append(bytes(data))
-
-        def _ensure_response(self) -> bytes:
-            if self._resp_bytes is None:
-                req_bytes = b"".join(self._out_chunks)
-                rfile = io.BytesIO(req_bytes)
-                wfile = io.BytesIO()
-
-                class _SockShim:
-                    def makefile(self, mode: str = "rb", buffering: int = -1) -> Any:
-                        return rfile if "r" in mode else wfile
-
-                    def sendall(self, data: bytes) -> None:
-                        wfile.write(data)
-
-                    def close(self) -> None:
-                        pass
-
-                self._server.finish_request(_SockShim(), ("127.0.0.1", self._peer_port))
-                self._resp_bytes = wfile.getvalue()
-            return self._resp_bytes
-
-        def makefile(self, mode: str = "rb", buffering: int = -1) -> Any:
-            return io.BytesIO(self._ensure_response())
-
-        def close(self) -> None:
-            pass
-
-    def _patched_connect(self: http.client.HTTPConnection) -> None:
-        if self.host in ("127.0.0.1", "localhost", "::1") and self.port in registry:
-            try:
-                orig_connect(self)
-                return
-            except OSError:
-                self.sock = _InProcessSocket(registry[self.port], self.port)  # type: ignore[assignment]
-                return
-        orig_connect(self)
-
-    if not getattr(socketserver.TCPServer, "_som_unified_init_patched", False):
-        socketserver.TCPServer.__init__ = _patched_init  # type: ignore[assignment]
-        socketserver.TCPServer.server_close = _patched_close  # type: ignore[assignment]
-        setattr(socketserver.TCPServer, "_som_unified_init_patched", True)
-    http.client.HTTPConnection.connect = _patched_connect  # type: ignore[assignment]
-    setattr(http.client.HTTPConnection, "_som_unified_sandbox_patched", True)
-
-
-_install_unified_sandbox_http_connect()
 
 
 def _sha_bytes(data: bytes) -> str:
@@ -286,12 +201,12 @@ if STEP_NAME in ("react-python-controls", "rust-python-controls", "ts-python-con
     report_payload = step_cfg.get("report", {"passed": 32, "failed": [], "results": [{"id": i} for i in range(32)]})
     if step_cfg.get("write_report", True):
         out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(json.dumps(report_payload, indent=2) + "\\n", encoding="utf-8")
+        out_path.write_text(step_cfg.get("raw_report", json.dumps(report_payload, indent=2) + "\\n"), encoding="utf-8")
 else:
     out_path.mkdir(parents=True, exist_ok=True)
     report_payload = step_cfg.get("report", {"passed": True, "status": "passed", "failed": [], "problems": []})
     if step_cfg.get("write_report", True):
-        (out_path / "report.json").write_text(json.dumps(report_payload, indent=2) + "\\n", encoding="utf-8")
+        (out_path / "report.json").write_text(step_cfg.get("raw_report", json.dumps(report_payload, indent=2) + "\\n"), encoding="utf-8")
     if STEP_NAME == "bundles" and step_cfg.get("write_manifest", True):
         manifest_dir = out_path / "products"
         manifest_dir.mkdir(parents=True, exist_ok=True)
@@ -576,9 +491,11 @@ raise SystemExit(int(step_cfg.get("exit_code", 0)))
             self.assertEqual(receipt["index"], idx)
             self.assertEqual(receipt["judgment"], "passed")
             self.assertEqual(receipt["exit_code"], 0)
-            self.assertEqual(len(receipt["stdout_sha256"]), 64)
-            self.assertEqual(len(receipt["stderr_sha256"]), 64)
-            self.assertEqual(len(receipt["report_sha256"]), 64)
+            for field in ("stdout", "stderr", "report"):
+                self.assertEqual(
+                    receipt[f"{field}_sha256"],
+                    _sha_bytes(pathlib.Path(receipt[field]).read_bytes()),
+                )
             self.assertEqual(receipt["argv"][0], expected_python)
 
         identity_doc = json.loads((out_dir / "identity.json").read_text(encoding="utf-8"))
@@ -720,6 +637,19 @@ raise SystemExit(int(step_cfg.get("exit_code", 0)))
         self.runtime_doc["binary_sha256"] = self.binary_sha256
         self._write_candidate_docs()
 
+        self.build_doc["binary_sha256"] = "f" * 64
+        self._write_candidate_docs()
+        out_dir = self.root / ".local" / "out-bad-build-bin-sha"
+        rc, _, err = self._run_main(
+            ["--candidate", str(self.candidate_dir), "--out", str(out_dir), "--baseline", self.base_server.url]
+        )
+        self.assertEqual(rc, 2)
+        self.assertIn("build.json binary_sha256", err)
+        self.assertFalse(out_dir.exists())
+        self.assertEqual(self._read_invocations(), [])
+        self.build_doc["binary_sha256"] = self.binary_sha256
+        self._write_candidate_docs()
+
     def test_4_step_failure_judged_from_report_not_exit_code_alone(self) -> None:
         # rt-diagnostics exits 0, but writes passed: false in report.json
         self._set_step_config(
@@ -818,6 +748,105 @@ raise SystemExit(int(step_cfg.get("exit_code", 0)))
                 run_doc = json.loads((out_dir / "run.json").read_text(encoding="utf-8"))
                 self.assertFalse(run_doc["passed"])
                 self.assertFalse(run_doc["identity_passed"])
+
+    def test_7_missing_and_unparseable_reports_fail_without_stopping_steps(self) -> None:
+        cases = (
+            ("react-target", 2, {"write_report": False}, "missing report"),
+            ("python-baseline", 4, {"raw_report": "{broken"}, "invalid JSON"),
+            ("react-python-controls", 3, {"write_report": False}, "missing report"),
+            ("rust-python-controls", 6, {"raw_report": "{broken"}, "invalid JSON"),
+        )
+        for step_name, index, config, reason in cases:
+            with self.subTest(step=step_name):
+                self._set_step_config({step_name: config})
+                before = len(self._read_invocations())
+                out_dir = self.root / ".local" / f"run-bad-report-{step_name}"
+                rc, _, _ = self._run_main(
+                    ["--candidate", str(self.candidate_dir), "--out", str(out_dir), "--baseline", self.base_server.url]
+                )
+                self.assertEqual(rc, 1)
+                self.assertEqual(len(self._read_invocations()) - before, 12)
+                receipt = json.loads((out_dir / "receipts" / f"{index:02d}-{step_name}.json").read_text())
+                self.assertEqual(receipt["judgment"], "failed")
+                self.assertEqual(receipt["exit_code"], 0)
+                self.assertIn(reason, receipt["reason"])
+                for field in ("stdout", "stderr"):
+                    self.assertEqual(receipt[f"{field}_sha256"], _sha_bytes(pathlib.Path(receipt[field]).read_bytes()))
+                report = pathlib.Path(receipt["report"])
+                self.assertEqual(receipt["report_sha256"], _sha_bytes(report.read_bytes()) if report.is_file() else None)
+                run_doc = json.loads((out_dir / "run.json").read_text())
+                self.assertEqual(run_doc["failed"], [step_name])
+                self.assertEqual(run_doc["not_run"], [])
+
+    def test_8_launch_failure_is_recorded_and_later_steps_continue(self) -> None:
+        original_run = subprocess.run
+        for step_name, index, script in (
+            ("react-target", 2, "som-rs/scripts/react_output_acceptance/check_target.py"),
+            ("bundles", 11, "som-rs/scripts/react_output_acceptance/check_bundles.py"),
+        ):
+            with self.subTest(step=step_name):
+                def fail_launch(argv: list[str], *args: Any, **kwargs: Any) -> Any:
+                    if len(argv) > 1 and argv[1] == script:
+                        raise FileNotFoundError(2, "fixture launch failed", argv[0])
+                    return original_run(argv, *args, **kwargs)
+
+                before = len(self._read_invocations())
+                out_dir = self.root / ".local" / f"run-launch-fail-{step_name}"
+                with mock.patch.object(run_acceptance.subprocess, "run", side_effect=fail_launch):
+                    rc, _, _ = self._run_main(
+                        ["--candidate", str(self.candidate_dir), "--out", str(out_dir), "--baseline", self.base_server.url]
+                    )
+                self.assertEqual(rc, 1)
+                receipt = json.loads((out_dir / "receipts" / f"{index:02d}-{step_name}.json").read_text())
+                self.assertEqual(receipt["judgment"], "failed")
+                self.assertEqual(receipt["exit_code"], 127)
+                self.assertIn("cannot start step", receipt["reason"])
+                self.assertIn("FileNotFoundError", pathlib.Path(receipt["stderr"]).read_text())
+                for field in ("stdout", "stderr"):
+                    self.assertEqual(receipt[f"{field}_sha256"], _sha_bytes(pathlib.Path(receipt[field]).read_bytes()))
+                run_doc = json.loads((out_dir / "run.json").read_text())
+                self.assertEqual(len(run_doc["steps"]), 12)
+                self.assertEqual(run_doc["failed"], [step_name])
+                expected_not_run = ["products"] if step_name == "bundles" else []
+                self.assertEqual(run_doc["not_run"], expected_not_run)
+                invoked = self._read_invocations()[before:]
+                self.assertEqual(len(invoked), 10 if step_name == "bundles" else 11)
+                self.assertEqual(invoked[-1]["step"], "ts-python-controls" if step_name == "bundles" else "products")
+
+    def test_9_controls_require_complete_counts_and_lists(self) -> None:
+        report = self.root / ".local" / "controls-report.json"
+        invalid = (
+            {"passed": True, "failed": [], "results": [{}]},
+            {"passed": 1, "results": [{}]},
+            {"passed": 1, "failed": 0, "results": [{}]},
+            {"passed": 1, "failed": [], "results": None},
+            {"passed": 1, "failed": []},
+            {"passed": 0, "failed": [], "results": []},
+            {"passed": 1, "failed": [], "results": []},
+            {"passed": 1, "failed": ["failed case"], "results": [{}]},
+        )
+        for payload in invalid:
+            with self.subTest(payload=payload):
+                report.write_text(json.dumps(payload))
+                self.assertEqual(run_acceptance.judge_json_report(0, report, "controls")[0], "failed")
+        report.write_text(json.dumps({"passed": 1, "failed": [], "results": [{"id": "case"}]}))
+        self.assertEqual(run_acceptance.judge_json_report(0, report, "controls")[0], "passed")
+        report.write_text(json.dumps({"passed": True}))
+        self.assertEqual(run_acceptance.judge_json_report(0, report)[0], "passed")
+
+    def test_10_loopback_url_validation_preserves_ipv6(self) -> None:
+        self.assertEqual(
+            run_acceptance.parse_and_validate_url("http://[::1]:18960", "--baseline"),
+            ("http://[::1]:18960", 18960),
+        )
+        for url in (
+            "http://user@127.0.0.1:18960",
+            "http://127.0.0.1:18960/other",
+            "http://127.0.0.1:18960?query=value",
+            "http://127.0.0.1:18960#fragment",
+        ):
+            with self.subTest(url=url), self.assertRaises(ValueError):
+                run_acceptance.parse_and_validate_url(url, "--baseline")
 
 
 if __name__ == "__main__":

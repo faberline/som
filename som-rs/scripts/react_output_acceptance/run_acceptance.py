@@ -111,6 +111,14 @@ def parse_and_validate_url(url: str, flag_name: str) -> tuple[str, int]:
         raise ValueError(f"{flag_name} URL must use http or https: {url!r}")
     if parsed.hostname not in LOOPBACK_HOSTS:
         raise ValueError(f"{flag_name} URL must use a loopback host: {url!r}")
+    if (
+        parsed.username is not None
+        or parsed.password is not None
+        or parsed.path not in ("", "/")
+        or parsed.query
+        or parsed.fragment
+    ):
+        raise ValueError(f"{flag_name} URL must not contain credentials, a path, a query or a fragment")
     try:
         port = parsed.port
     except ValueError as exc:
@@ -119,7 +127,8 @@ def parse_and_validate_url(url: str, flag_name: str) -> tuple[str, int]:
         raise ValueError(f"{flag_name} URL must specify an explicit port: {url!r}")
     if port in FORBIDDEN_PORTS:
         raise ValueError(f"{flag_name} port {port} is forbidden (never use 8765 or 18765)")
-    normalized = f"{parsed.scheme}://{parsed.hostname}:{port}"
+    host = f"[{parsed.hostname}]" if ":" in parsed.hostname else parsed.hostname
+    normalized = f"{parsed.scheme}://{host}:{port}"
     return normalized, port
 
 
@@ -531,7 +540,7 @@ def judge_contract_stdout(exit_code: int, stdout_path: pathlib.Path) -> tuple[st
     return "passed", f"{passed_count} passed, 0 failed"
 
 
-def judge_json_report(exit_code: int, report_path: pathlib.Path) -> tuple[str, str]:
+def judge_json_report(exit_code: int, report_path: pathlib.Path, kind: str = "report") -> tuple[str, str]:
     if not report_path.is_file():
         return "failed", f"missing report file: {report_path}"
     try:
@@ -542,6 +551,8 @@ def judge_json_report(exit_code: int, report_path: pathlib.Path) -> tuple[str, s
         return "failed", f"report is not a JSON object: {report_path}"
 
     passed_val = doc.get("passed")
+    if kind == "controls" and (isinstance(passed_val, bool) or not isinstance(passed_val, int)):
+        return "failed", "controls report passed must be a positive integer"
     if isinstance(passed_val, bool):
         if not passed_val:
             return "failed", "report passed is false"
@@ -567,14 +578,14 @@ def judge_json_report(exit_code: int, report_path: pathlib.Path) -> tuple[str, s
 
     if isinstance(passed_val, int):
         failed_field = doc.get("failed")
-        if isinstance(failed_field, list) and len(failed_field) > 0:
-            return "failed", f"controls report has {len(failed_field)} failed case(s)"
-        if isinstance(failed_field, int) and not isinstance(failed_field, bool) and failed_field != 0:
-            return "failed", f"controls report failed={failed_field}"
+        if not isinstance(failed_field, list) or failed_field:
+            return "failed", "controls report failed must be an empty list"
         if passed_val <= 0:
             return "failed", f"controls report passed={passed_val}"
         results_field = doc.get("results")
-        if isinstance(results_field, list) and len(results_field) != passed_val:
+        if not isinstance(results_field, list):
+            return "failed", "controls report results must be a list"
+        if len(results_field) != passed_val:
             return "failed", f"controls report results count ({len(results_field)}) != passed ({passed_val})"
         if exit_code != 0:
             return "failed", f"process exited with code {exit_code}"
@@ -628,24 +639,32 @@ def run_single_step(
     started_iso = now_iso()
     t0 = time.monotonic()
     env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+    launch_error = None
     with stdout_path.open("wb") as out_f, stderr_path.open("wb") as err_f:
-        proc = subprocess.run(
-            step_def["argv"],
-            cwd=repo,
-            env=env,
-            stdin=subprocess.DEVNULL,
-            stdout=out_f,
-            stderr=err_f,
-            check=False,
-        )
+        try:
+            proc = subprocess.run(
+                step_def["argv"],
+                cwd=repo,
+                env=env,
+                stdin=subprocess.DEVNULL,
+                stdout=out_f,
+                stderr=err_f,
+                check=False,
+            )
+            exit_code = proc.returncode
+        except OSError as exc:
+            exit_code = 127
+            launch_error = f"cannot start step: {type(exc).__name__}: {exc}"
+            err_f.write((launch_error + "\n").encode("utf-8"))
     duration = round(time.monotonic() - t0, 3)
     ended_iso = now_iso()
-    exit_code = proc.returncode
 
-    if step_def["kind"] == "contract":
+    if launch_error is not None:
+        judgment, reason = "failed", launch_error
+    elif step_def["kind"] == "contract":
         judgment, reason = judge_contract_stdout(exit_code, stdout_path)
     else:
-        judgment, reason = judge_json_report(exit_code, report_path)
+        judgment, reason = judge_json_report(exit_code, report_path, step_def["kind"])
 
     report_sha = sha_file(report_path) if report_path.is_file() else None
     receipt = {
