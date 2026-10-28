@@ -95,7 +95,8 @@ def main():
 
     def canaries():
         cases = (config['python_canaries'] + config['rust_canaries']
-                 + config.get('typescript_canaries', [])) if candidate else rc.previous_python(config)
+                 + config.get('typescript_canaries', [])
+                 + config.get('react_canaries', [])) if candidate else rc.previous_python(config)
         run.canary(args.port, {'previous': Path(command[0]), 'new': Path(command[0])}, cases, 'post-check')
         return {'cases': [c['name'] for c in cases]}
 

@@ -33,6 +33,8 @@
 - With --ts-run, TypeScript canaries (--ts-cases, default example-v1 and
   example-v5) are compiled and assembled with target typescript on the
   candidate's QA port and compared against <ts-run>/bundles/products/<id>/.
+- With --react-run, React canaries (--react-cases, default example-v1 and
+  example-v4) use target react and must match the accepted React products.
 
 Nothing outside the new output directory is written.
 
@@ -40,13 +42,14 @@ usage: prepare_inputs.py --candidate DIR --acceptance RUN_DIR --audit AUDIT_JSON
                          [--rust-cases ID ...] [--stand-in] [--cargo-home DIR]
                          [--products-run RUN_DIR] [--self-cases ID ...]
                          [--ts-run RUN_DIR] [--ts-cases ID ...]
+                         [--react-run RUN_DIR] [--react-cases ID ...]
 """
 from __future__ import annotations
 
 import argparse
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import shutil
 import subprocess
@@ -66,12 +69,15 @@ SWITCH_001 = rc.REPO / '.local/rust-compiler-goal/acceptance/default-switch-001'
 PINNED_051 = rc.REPO / '.local/rust-compiler-goal/acceptance/rust-output-051/inputs-001/inputs/python'
 RUST_CASES = ('example-v1', 'example-v5')
 TS_CASES = ('example-v1', 'example-v5')
+REACT_CASES = ('example-v1', 'example-v4')
 PHASE2 = rc.REPO / 'som-rs/behavior/phase2/check_phase2.py'
 CLUSTER_GATES = rc.REPO / 'som-rs/scripts/rust_output_acceptance/run_acceptance.py'
 SELF_FIXTURES = rc.REPO / 'som-rs/tests/compiler-v1/self-name-fixtures.json'
 ISSUE57_RUN = 'som.rust-output-issue57-run.v1'
 TS_RUN = 'som.typescript-output-acceptance-run.v1'
 TS_AUDIT_PREFIX = 'som.typescript-output-audit-065.'
+REACT_RUN = 'som.react-output-acceptance-run.v1'
+REACT_AUDIT = 'som.react-output-audit-130.v1'
 
 
 def binding(path):
@@ -315,6 +321,104 @@ def ts_sources(run, ids):
     return out
 
 
+def react_compile_body(case, form):
+    if form == 'cnl':
+        return targets.dump({'format': 'som.cnl.v1', 'source': case['cnl'], 'target': 'react'})
+    return targets.dump({'format': 'som.prompt-json.v1', 'prompt': case['prompt'], 'target': 'react'})
+
+
+def _cli_json_bytes(raw, member=None):
+    """The CLI's serde_json pretty format, retaining the HTTP number bytes."""
+    class Number(str):
+        pass
+
+    document = json.loads(raw, parse_int=Number, parse_float=Number)
+    if member is not None:
+        document = document[member]
+
+    def pretty(value, depth):
+        if isinstance(value, Number):
+            return str(value)
+        indent, child_indent = '  ' * depth, '  ' * (depth + 1)
+        if isinstance(value, dict):
+            if not value:
+                return '{}'
+            entries = [json.dumps(key, ensure_ascii=False) + ': ' + pretty(value[key], depth + 1)
+                       for key in sorted(value)]
+            return '{\n' + child_indent + (',\n' + child_indent).join(entries) + '\n' + indent + '}'
+        if isinstance(value, list):
+            if not value:
+                return '[]'
+            entries = [pretty(item, depth + 1) for item in value]
+            return '[\n' + child_indent + (',\n' + child_indent).join(entries) + '\n' + indent + ']'
+        return json.dumps(value, ensure_ascii=False, allow_nan=False)
+
+    return (pretty(document, 0) + '\n').encode('utf-8')
+
+
+def react_case(pin, case, port, new):
+    relative = f'react/{case["id"]}'
+    cnl = pin.write(f'{relative}/source.cnl', case['cnl'].encode()) if case['cnl'] is not None else None
+    steps = []
+    compile_raw, step = pin.http(port, 'compile-json', relative, '/v1/compile',
+                                 react_compile_body(case, 'json').encode())
+    compiled = _parse_json(compile_raw, 'React compile reply differs')
+    steps.append(step)
+    if cnl is not None:
+        cnl_raw, step = pin.http(port, 'compile-cnl', relative, '/v1/compile',
+                                 react_compile_body(case, 'cnl').encode())
+        rc.require(cnl_raw == compile_raw, 'React CNL and prompt JSON compile differ')
+        steps.append(step)
+    bundle = compiled.get('bundle')
+    rc.require(isinstance(bundle, dict) and bundle.get('target') == 'react', 'bundle target is not react')
+    raw, step = pin.http(port, 'assemble', relative, '/v1/assemble', targets.dump({'bundle': bundle}).encode())
+    assembled = _parse_json(raw, 'React assemble reply differs')
+    files = assembled.get('files')
+    rc.require(isinstance(files, dict), 'React assemble has no files')
+    steps.append(step)
+    rc.require(case['accepted'].is_dir(), f'{case["id"]}: no accepted product at {case["accepted"]}')
+    accepted_files = {p.relative_to(case['accepted']).as_posix() for p in case['accepted'].rglob('*') if p.is_file()}
+    rc.require(set(files) == accepted_files, f'{case["id"]} file set differs from the accepted product')
+    for name, content in files.items():
+        path = PurePosixPath(name)
+        rc.require(name and not path.is_absolute() and '..' not in path.parts
+                   and path.as_posix() == name and '\\' not in name,
+                   f'{case["id"]}: invalid React product path {name!r}')
+        rc.require(isinstance(content, str), f'{case["id"]} {name}: React product is not text')
+        accepted = case['accepted'] / name
+        rc.require(accepted.resolve().is_relative_to(case['accepted'].resolve()),
+                   f'{case["id"]}: React product escapes its directory')
+        rc.require(accepted.read_bytes() == content.encode('utf-8'),
+                   f'{case["id"]} {name} differs from the accepted product')
+    saved = pin.write(f'{relative}/bundle.json', rc.canon(bundle).encode())
+    binaries = {'new': new}
+    if cnl is not None:
+        stdout, step = pin.cli(binaries, port, 'cli-compile', relative,
+                               ['compile', cnl['path'], '--target', 'react'], [cnl])
+        rc.require(rc.exact_json(_parse_json(stdout, 'React CLI bundle differs'), bundle)
+                   and stdout == _cli_json_bytes(compile_raw, 'bundle'), 'React CLI bundle differs')
+        steps.append(step)
+    stdout, step = pin.cli(binaries, port, 'cli-assemble', relative, ['assemble', saved['path']], [saved])
+    rc.require(rc.exact_json(_parse_json(stdout, 'React CLI assemble differs'), assembled)
+               and stdout == _cli_json_bytes(raw), 'React CLI assemble differs')
+    steps.append(step)
+    return {'name': case['id'], 'family': 'react', 'prompt_version': case['prompt']['version'],
+            'accepted_product': str(case['accepted']), 'files': len(files), 'steps': steps}
+
+
+def react_sources(run, ids):
+    """React prompts and CNL with their accepted bundle product directories."""
+    rc.require(len(set(ids)) == len(ids), 'repeated React canary')
+    sources = {case['id']: case for case in targets.sources() if not case.get('rejection')}
+    out = []
+    for name in ids:
+        rc.require(name in sources, f'unknown React canary {name}')
+        accepted = run / 'bundles/products' / name
+        rc.require(accepted.is_dir(), f'{name}: no accepted product at {accepted}')
+        out.append({'id': name, 'prompt': sources[name]['prompt'], 'cnl': sources[name]['cnl'], 'accepted': accepted})
+    return out
+
+
 def rust_sources(run, ids):
     """Each canary with its prompt, CNL (or None) and the accepted product of the acceptance run."""
     sources = {case['id']: case for case in targets.sources() if not case.get('rejection')}
@@ -398,9 +502,40 @@ def default_chain(current, legacy_sha256):
     return chain
 
 
-def gate_assertions(run, audit, binary_sha256, ts_run=None, ts_cases=TS_CASES):
-    summary = rc.load(run / 'summary.json')
-    if summary.get('version') == ISSUE57_RUN:
+def gate_assertions(run, audit, binary_sha256, ts_run=None, ts_cases=TS_CASES,
+                    react_run=None, react_cases=REACT_CASES):
+    acceptance_path = run / 'summary.json'
+    if (react_run is not None or not acceptance_path.is_file()) and (run / 'run.json').is_file():
+        acceptance_path = run / 'run.json'
+    summary = rc.load(acceptance_path)
+    if react_run is not None:
+        rc.require(react_run.resolve() == run.resolve(), 'React acceptance and product runs differ')
+        rc.require(acceptance_path.name == 'run.json' and summary.get('version') == REACT_RUN,
+                   'React products require a React acceptance run')
+    extra_gates = {}
+    if acceptance_path.name == 'run.json' or summary.get('version') == REACT_RUN:
+        rc.require(summary.get('version') == REACT_RUN, 'wrong React acceptance version')
+        rc.require(react_run is not None and len(react_cases) >= 2,
+                   'React acceptance gate requires --react-run and at least two React cases')
+        rc.require(react_run.resolve() == run.resolve(), 'React acceptance and product runs differ')
+        rc.require(len(set(react_cases)) == len(react_cases), 'repeated React canary')
+        steps = summary.get('steps')
+        rc.require(isinstance(steps, list) and bool(steps), 'React acceptance has no steps')
+        rc.require(all(isinstance(step, dict) and step.get('judgment') == 'passed' for step in steps),
+                   'React acceptance has an unpassed step')
+        identity_path = run / 'identity.json'
+        identity_sha256 = rc.digest(identity_path)
+        rc.require(Path(summary.get('identity', '')).resolve() == identity_path.resolve(),
+                   'React acceptance identity path differs')
+        acceptance_assertions = {'/version': REACT_RUN, '/passed': True, '/not_run': [],
+                                 '/failed': [], '/problems': [], '/identity_passed': True,
+                                 '/identity_sha256': identity_sha256,
+                                 **{f'/steps/{index}/judgment': 'passed' for index in range(len(steps))}}
+        extra_gates['react_identity'] = {**binding(identity_path), 'assertions': {
+            '/passed': True, '/problems': [], '/candidate/binary_sha256': binary_sha256,
+            '/candidate/binary_sha256_after': binary_sha256}}
+        header_sha256 = identity_sha256
+    elif summary.get('version') == ISSUE57_RUN:
         acceptance_assertions = {'/passed': True, '/blockers': [],
                                  '/candidate_after/binary_sha256': binary_sha256}
         header_sha256 = rc.digest(run / 'header.json')
@@ -415,14 +550,23 @@ def gate_assertions(run, audit, binary_sha256, ts_run=None, ts_cases=TS_CASES):
     audit_version = str(audit_receipt.get('version', ''))
     if audit_version == 'som.rust-output-audit-055.v1':
         audit_assertions = {'/totals': {'failed': 0, 'unrun': 0}, '/run': str(run)}
+    elif audit_version == REACT_AUDIT:
+        rc.require(run.is_relative_to(rc.REPO), 'React acceptance run must be inside the repository')
+        audit_assertions = {'/version': REACT_AUDIT, '/totals/failed': 0, '/totals/unrun': 0,
+                            '/run': run.relative_to(rc.REPO).as_posix()}
     elif audit_version.startswith(TS_AUDIT_PREFIX):
         expected_run = str(run.relative_to(rc.REPO)) if run.is_relative_to(rc.REPO) else str(run)
         audit_assertions = {'/totals/failed': 0, '/totals/unrun': 0, '/run': expected_run}
     else:
         audit_assertions = {'/status': 'passed', '/run': str(run)}
+    if summary.get('version') == REACT_RUN:
+        rc.require(audit_version == REACT_AUDIT, 'wrong React audit version')
+    if audit_version == REACT_AUDIT:
+        rc.require(summary.get('version') == REACT_RUN, 'React audit requires a React acceptance run')
     return {
-        'acceptance': {**binding(run / 'summary.json'), 'assertions': acceptance_assertions},
+        'acceptance': {**binding(acceptance_path), 'assertions': acceptance_assertions},
         'audit': {**binding(audit), 'assertions': audit_assertions},
+        **extra_gates,
     }, header_sha256
 
 
@@ -439,19 +583,28 @@ def main():
     parser.add_argument('--self-cases', nargs='*', default=[])
     parser.add_argument('--ts-run', type=Path)
     parser.add_argument('--ts-cases', nargs='+', default=list(TS_CASES))
+    parser.add_argument('--react-run', type=Path)
+    parser.add_argument('--react-cases', nargs='+', default=list(REACT_CASES))
     args = parser.parse_args()
     candidate, run, audit, out = (p.resolve() for p in (args.candidate, args.acceptance, args.audit, args.out))
     products_run = args.products_run.resolve() if args.products_run else run
     ts_run = args.ts_run.resolve() if args.ts_run else None
+    react_run = args.react_run.resolve() if args.react_run else None
     rc.require(not out.exists(), f'preserve existing output: {out}')
     rc.require(len(set(args.rust_cases)) == len(args.rust_cases), 'repeated Rust canary')
     rc.require(len(set(args.ts_cases)) == len(args.ts_cases), 'repeated TypeScript canary')
+    rc.require(len(set(args.react_cases)) == len(args.react_cases), 'repeated React canary')
     sources = rust_sources(products_run, args.rust_cases)
     if ts_run is not None:
         rc.require(len(args.ts_cases) >= 2, 'need two TypeScript canaries')
         ts_cases = ts_sources(ts_run, args.ts_cases)
     else:
         ts_cases = []
+    if react_run is not None:
+        rc.require(len(args.react_cases) >= 2, 'need two React canaries')
+        react_cases = react_sources(react_run, args.react_cases)
+    else:
+        react_cases = []
     fixtures = {case['id']: case for case in rc.load(SELF_FIXTURES)['positive']}
     rc.require(set(args.self_cases) <= set(fixtures), 'unknown self-name case')
     runtime = rc.load(candidate / 'runtime.json')
@@ -469,7 +622,8 @@ def main():
         rc.apply_formatter_env({'typescript_formatter': ts_formatter})
     else:
         ts_formatter = None
-    gates, header_sha256 = gate_assertions(run, audit, runtime['binary_sha256'], ts_run, args.ts_cases)
+    gates, header_sha256 = gate_assertions(run, audit, runtime['binary_sha256'], ts_run, args.ts_cases,
+                                          react_run, args.react_cases)
     current = rc.load(rc.REPO / 'som-rs/runtime/default.json')
     previous = Path(current['command'][0])
     rc.require(rc.digest(previous) == current['identity']['binary_sha256'], 'default binary differs')
@@ -507,6 +661,7 @@ def main():
     python += [self_case(pin, fixtures[name], port, {'previous': previous, 'new': new}) for name in args.self_cases]
     rust = [rust_case(pin, case, port, new) for case in sources]
     typescript = [ts_case(pin, case, port, new) for case in ts_cases]
+    react = [react_case(pin, case, port, new) for case in react_cases]
     emulators = emulator_runs(out, sources, port, args.cargo_home.resolve()) if args.cargo_home else None
     config = {
         'version': rc.PREREQUISITES_VERSION,
@@ -524,6 +679,7 @@ def main():
         'rust_products_run': str(products_run),
         **({'typescript_products_run': str(ts_run),
             'typescript_formatter': ts_formatter} if ts_run is not None else {}),
+        **({'react_products_run': str(react_run)} if react_run is not None else {}),
         'rust_emulators': emulators,
         'legacy_default': binding(legacy_path),
         'legacy_binary': binding(Path(legacy['command'][0])),
@@ -533,6 +689,7 @@ def main():
         **({'previous_python_canaries': previous_python} if own_assets else {}),
         'rust_canaries': rust,
         **({'typescript_canaries': typescript} if ts_run is not None else {}),
+        **({'react_canaries': react} if react_run is not None else {}),
         'm2_canaries': m2,
         'acceptance_summary_header_sha256': header_sha256,
     }
@@ -546,6 +703,7 @@ def main():
                       'python_steps': sum(len(c['steps']) for c in python),
                       'rust_steps': sum(len(c['steps']) for c in rust),
                       **({'typescript_steps': sum(len(c['steps']) for c in typescript)} if ts_run is not None else {}),
+                      **({'react_steps': sum(len(c['steps']) for c in react)} if react_run is not None else {}),
                       'm2_cases': len(m2)}))
 
 
