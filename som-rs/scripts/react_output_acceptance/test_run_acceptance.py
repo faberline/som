@@ -831,6 +831,7 @@ raise SystemExit(int(step_cfg.get("exit_code", 0)))
                 self.assertEqual(run_acceptance.judge_json_report(0, report, "controls")[0], "failed")
         report.write_text(json.dumps({"passed": 1, "failed": [], "results": [{"id": "case"}]}))
         self.assertEqual(run_acceptance.judge_json_report(0, report, "controls")[0], "passed")
+        self.assertEqual(run_acceptance.judge_json_report(0, report)[0], "failed")
         report.write_text(json.dumps({"passed": True}))
         self.assertEqual(run_acceptance.judge_json_report(0, report)[0], "passed")
 

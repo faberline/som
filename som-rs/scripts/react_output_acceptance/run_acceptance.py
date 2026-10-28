@@ -576,7 +576,7 @@ def judge_json_report(exit_code: int, report_path: pathlib.Path, kind: str = "re
             return "failed", f"process exited with code {exit_code}"
         return "passed", "ok"
 
-    if isinstance(passed_val, int):
+    if kind == "controls" and isinstance(passed_val, int):
         failed_field = doc.get("failed")
         if not isinstance(failed_field, list) or failed_field:
             return "failed", "controls report failed must be an empty list"
