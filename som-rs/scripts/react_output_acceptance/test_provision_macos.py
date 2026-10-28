@@ -388,7 +388,7 @@ class ProvisionMacosTests(unittest.TestCase):
             provisioner.relocate_macho_bytes(no_padding)
         self.assertEqual(found.exception.code, "macho_header_padding_missing")
 
-    def test_source_signature_page_size_is_preserved_and_invalid_size_refused(self):
+    def test_source_signature_page_size_is_read_and_invalid_size_refused(self):
         for bits in (12, 14):
             directory = bytearray(40)
             struct.pack_into(">II", directory, 0, 0xFADE0C02, 40)
@@ -402,6 +402,59 @@ class ProvisionMacosTests(unittest.TestCase):
             with self.assertRaises(provisioner.ProvisionError):
                 provisioner.signing_page_size(bytes(broken))
         self.assertIsNone(provisioner.signing_page_size(macho_fixture([macho_link_command("/usr/lib/a.dylib")])))
+
+    def test_installed_signing_size_uses_exact_frozen_binding_and_keeps_raw_size(self):
+        old = macho_link_command("@@HOMEBREW_PREFIX@@/opt/fixture/lib/libfixture.dylib")
+        directory = bytearray(40)
+        struct.pack_into(">II", directory, 0, 0xFADE0C02, 40)
+        directory[39] = 14
+        signature = struct.pack(">IIIII", 0xFADE0CC0, 60, 1, 0, 20) + directory
+        signature_offset = 32 + len(old) + 16
+        command = struct.pack("<IIII", 0x1D, 16, signature_offset, len(signature))
+        raw_binary = macho_fixture([old, command], signature)
+        unsigned, _ = provisioner.relocate_macho_bytes(raw_binary)
+        raw_archive = archive_bytes("node/1.0", {"bin/node": raw_binary})
+        node = entry("node", "1.0", raw_archive)
+        pin = {"label": "node/binary", "path": "/opt/homebrew/Cellar/node/1.0/bin/node",
+               "sha256": digest(unsigned)}
+        binding = {"path": pin["path"], "sha256": pin["sha256"], "page_size": 4096}
+        policy = {**normalization_policy(), "installed_signing_page_sizes": [binding]}
+        def download(candidate, destination):
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(raw_archive)
+            return {"archive_sha256": digest(raw_archive)}
+        sign = mock.Mock(return_value=types.SimpleNamespace(returncode=0, stdout="", stderr=""))
+        record = {"attempts": []}
+        provisioner.stage_package(node, self.out, [pin], record, downloader=download,
+                                  normalization=policy, macho_runner=sign)
+        item = record["attempts"][0]["normalization"]["files"][0]
+        self.assertEqual(item["source_signing_page_size"], 16384)
+        self.assertEqual(item["selected_signing_page_size"], 4096)
+        self.assertEqual(item["installed_signing_pin"], binding)
+        self.assertEqual(item["signing_page_size_source"], "frozen_installed_file")
+        self.assertEqual(sign.call_args.args[0][-3:-1], ["--pagesize", "4096"])
+        self.assertEqual(record["attempts"][0]["hash_checks"][0]["actual_sha256"], pin["sha256"])
+
+    def test_installed_signing_size_refuses_an_unbound_path_hash_or_size(self):
+        pin = {"path": "/opt/homebrew/Cellar/node/1.0/bin/node", "sha256": "a" * 64}
+        valid = {**pin, "page_size": 4096}
+        policy = {"installed_signing_page_sizes": [valid]}
+        self.assertEqual(provisioner.installed_signing_targets(self.node, [pin], policy), {"bin/node": valid})
+        for change in ({"sha256": "b" * 64}, {"path": pin["path"] + "-other"}, {"page_size": 8192}):
+            invalid = {"installed_signing_page_sizes": [{**valid, **change}]}
+            with self.subTest(change=change), self.assertRaises(provisioner.ProvisionError) as found:
+                provisioner.installed_signing_targets(self.node, [pin], invalid)
+            self.assertEqual(found.exception.code, "manifest_invalid")
+
+    def test_manifest_signing_sizes_match_the_exact_frozen_contract_inventory(self):
+        manifest = json.loads((HERE / "macos_bottles.json").read_text())
+        contracts = {path: json.loads((provisioner.REPO / path).read_text()) for path in provisioner.CONTRACTS}
+        pins = provisioner.pin_specs(contracts)
+        policy = manifest["macho_normalization"]
+        assigned = sum(len(provisioner.installed_signing_targets(package, pins, policy))
+                       for package in manifest["bottles"])
+        self.assertEqual(assigned, len(policy["installed_signing_page_sizes"]))
+        self.assertEqual(assigned, 32)
 
     def test_macho_without_placeholder_linkage_is_byte_identical(self):
         raw = macho_fixture([macho_link_command("@rpath/libfixture.dylib")],

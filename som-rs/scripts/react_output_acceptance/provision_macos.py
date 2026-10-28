@@ -432,7 +432,35 @@ def relocate_macho_bytes(raw: bytes) -> tuple[bytes, list[dict[str, Any]]]:
     return bytes(result), operations
 
 
-def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[str, Any], *, command_runner=None) -> None:
+def installed_signing_targets(entry: dict[str, Any], pins: list[dict[str, str]],
+                              policy: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Bind observed signing sizes to exact frozen paths and installed hashes."""
+    frozen = {(pin["path"], pin["sha256"]) for pin in pins}
+    specifications = policy.get("installed_signing_page_sizes", [])
+    need(isinstance(specifications, list), "manifest_invalid", "Installed signing size bindings are invalid.")
+    keg, opt = PurePosixPath(entry["expected_keg_directory"]), PurePosixPath(entry["opt_symlink"])
+    targets = {}
+    seen = set()
+    for specification in specifications:
+        need(isinstance(specification, dict) and set(specification) == {"path", "sha256", "page_size"},
+             "manifest_invalid", "An installed signing size binding is invalid.")
+        public_path, expected, size = (specification["path"], specification["sha256"], specification["page_size"])
+        need(isinstance(public_path, str) and isinstance(expected, str)
+             and (public_path, expected) in frozen and public_path not in seen
+             and type(size) is int and size in (4096, 16384),
+             "manifest_invalid", "An installed signing size binding differs from the frozen file inventory.")
+        seen.add(public_path)
+        path = PurePosixPath(public_path)
+        if path.is_relative_to(keg) or path.is_relative_to(opt):
+            relative = path.relative_to(keg if path.is_relative_to(keg) else opt).as_posix()
+            need(relative not in targets or targets[relative] == specification,
+                 "manifest_invalid", "Installed signing aliases have conflicting bindings.")
+            targets[relative] = specification
+    return targets
+
+
+def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[str, Any], *, command_runner=None,
+                           installed_signing: dict[str, dict[str, Any]] | None = None) -> None:
     need(policy.get("policy") == MACHO_NORMALIZATION_POLICY and policy.get("prefixes") == MACHO_PREFIXES
          and policy.get("codesign_arguments") == list(CODESIGN_ARGUMENTS),
          "manifest_invalid", "The Mach-O normalization recipe differs from the reviewed policy.")
@@ -461,8 +489,14 @@ def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[st
         item = {"member": path.relative_to(staged).as_posix(), "raw_sha256": hashlib.sha256(raw).hexdigest(),
                 "unsigned_relocated_sha256": hashlib.sha256(relocated).hexdigest(), "operations": operations,
                 "status": "started"}
-        page_size = signing_page_size(raw)
-        item["source_signing_page_size"] = page_size
+        source_page_size = signing_page_size(raw)
+        binding = (installed_signing or {}).get(item["member"])
+        page_size = binding["page_size"] if binding is not None else source_page_size
+        item["source_signing_page_size"] = source_page_size
+        item["selected_signing_page_size"] = page_size
+        item["signing_page_size_source"] = "frozen_installed_file" if binding is not None else "raw_bottle_file"
+        if binding is not None:
+            item["installed_signing_pin"] = dict(binding)
         record["files"].append(item)
         mode = path.stat().st_mode & 0o777
         try:
@@ -490,7 +524,7 @@ def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[st
 
 
 def signing_page_size(raw: bytes) -> int | None:
-    """Keep the source CodeDirectory granularity across OS signer versions."""
+    """Read the source CodeDirectory granularity as distinct raw evidence."""
     cursor = 32
     for _ in range(struct.unpack_from("<I", raw, 16)[0]):
         kind, size = struct.unpack_from("<II", raw, cursor)
@@ -553,6 +587,7 @@ def stage_package(entry: dict[str, Any], out: Path, pins: list[dict[str, str]],
     # PostgreSQL's frozen paths go through opt; map them to the staged keg too.
     opt = PurePosixPath(entry["opt_symlink"])
     relevant += [pin for pin in pins if PurePosixPath(pin["path"]).is_relative_to(opt)]
+    signing_targets = installed_signing_targets(entry, pins, normalization) if normalization is not None else {}
     candidates = [entry, *({**entry, **alternative} for alternative in entry.get("alternatives", []))]
     for index, candidate in enumerate(candidates):
         attempt = {"archive_sha256": candidate["archive_sha256"], "target": candidate["target"],
@@ -578,7 +613,8 @@ def stage_package(entry: dict[str, Any], out: Path, pins: list[dict[str, str]],
                 attempt["raw_hash_checks"].append(hash_check(pin, staged.joinpath(*relative.parts)))
             if normalization is not None:
                 attempt["normalization"] = {}
-                normalize_staged_macho(staged, normalization, attempt["normalization"], command_runner=macho_runner)
+                normalize_staged_macho(staged, normalization, attempt["normalization"], command_runner=macho_runner,
+                                       installed_signing=signing_targets)
             for pin in relevant:
                 path = PurePosixPath(pin["path"])
                 relative = path.relative_to(keg if path.is_relative_to(keg) else opt)
