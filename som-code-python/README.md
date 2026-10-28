@@ -1,11 +1,15 @@
 # SOM code corpus for Python
 
-> The current service library has 34 approved, typed blocks in
-> [blocks.json](data/blocks/current/blocks.json). The older CRUD and query library has
-> 16 blocks in [its registry](data/blocks/v1/blocks.json). Approval covers the tested
-> behavior. It does not claim the fastest code for every workload. The production Rust assembler
-> and HTTP service are in [som-rs](../som-rs/README.md). The older corpus
-> workflow below is research history.
+The current compiler uses approved code blocks through fixed rules.
+It does not learn from this corpus during generation.
+Read [the current architecture](../docs/architecture.md) and [the compiler guide](../som-rs/RUST_GUIDE.md).
+The compiler embeds versioned block catalogs. The `data/blocks/current` link also serves retained model tools.
+Do not use that link alone to identify the current compiler's assets.
+
+The corpus workflows and layer-model plans below are historical research.
+They remain useful descriptions of the stored data and verification tools.
+They do not require training for the current compiler.
+For development, run builds and tests on GitHub runners after pushing local edits.
 
 ## Brief
 

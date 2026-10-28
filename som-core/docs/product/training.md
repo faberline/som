@@ -1,9 +1,15 @@
-# Current SOM training
+# Historical SOM training — 2026-10-01
+
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../../../docs/architecture.md).
 
 This guide describes the composed development candidate as of 2026-10-01.
-The default service still uses the separate v4 model.
-Python trains the model and supplies the correctness reference.
-Rust runs production inference, validation, assembly and formatting.
+At that time, the default service used the separate v4 model.
+Python trained the model and supplied the correctness reference.
+Rust ran inference, validation, assembly and formatting for that model path.
 
 A block plan lists files, approved code blocks and typed references.
 DSL is the small language that stores these assembly instructions.

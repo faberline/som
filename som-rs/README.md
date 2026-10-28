@@ -1,6 +1,13 @@
 # SOM local service
 
-The new Rust compiler passed independent acceptance and is the local default.
+> Current direction — 2026-10-28: fixed algorithms, `CNL → DSL → Code`.
+> No model training, model weights or Apple chip is required.
+> Develop locally. Run builds and tests on GitHub Actions runners.
+> Homebrew paths and binary hashes below record older accepted tools.
+> M12 owns their platform adaptation. Historical results are not a fresh portable acceptance run.
+> Read [the current architecture](../docs/architecture.md).
+
+The first fixed-rule Rust compiler passed independent acceptance in October 2026.
 It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.
 The root post-switch check passed 76/76. Commit `3ced191137` published it to main.
 Issues #38–#44 are closed as completed, and milestones 7 and 8 are closed.
@@ -11,7 +18,8 @@ The legacy M2 runtime, model and block links remain saved for rollback.
 CNL uses fixed English clauses. Data strings can include Chinese.
 The caller supplies each business choice. The compiler does not guess missing facts.
 The new production path does not load models or start Python.
-Python remains the output language and an independent test tool.
+Python was the first output language and remains an independent test tool.
+Later releases added Rust and TypeScript output. Read [the release record](CURRENT.md).
 
 Read [the guide](RUST_GUIDE.md), [the roadmap](RUST_ROADMAP.md),
 [the report](RUST_REPORT.md), and [the handoff](RUST_HANDOFF.md).
@@ -122,7 +130,7 @@ the local HTTP service and prints this JSON. It exits with code 2 on rejection.
 
 ## Train and check
 
-The [current training guide](../som-core/docs/product/training.md) explains
+The [historical training guide](../som-core/docs/product/training.md) explains
 the composed candidate and its measured scope.
 It also records the remaining research and acceptance work.
 

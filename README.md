@@ -13,9 +13,36 @@ SOM's end goal is code for four scenarios: backend, frontend, SRE, and AI.
 
 FE starts with React only. Read [the goal](docs/goal.md) and [the scenario roadmap](docs/roadmap.md).
 
-## Current state
+## Current architecture
 
-The new Rust compiler passed independent acceptance and is the local default.
+`CNL → DSL → Code`
+
+SOM uses a Rust parser, fixed planning rules and approved code blocks.
+It needs no trained model, model weights, Metal, MLX or Apple chip.
+The caller supplies the business choices. Invalid or incomplete requests fail.
+Python and Rust backend output cover prompts v1–v7.
+TypeScript backend phase 1 covers v1–v5 with PostgreSQL.
+React work belongs to [M6](https://github.com/faberline/som/milestone/12).
+[Rust M12](https://github.com/faberline/som/milestone/18) owns hosted test and platform tool work.
+
+Develop in local worktrees. Push changes to GitHub.
+Run builds and tests, including `cargo test`, on GitHub Actions runners.
+Old Homebrew paths and platform binary hashes need compatible tool records.
+They do not make Apple hardware part of the algorithm.
+Read [the current architecture](docs/architecture.md) for the boundary and remaining work.
+
+| Project | Current role |
+|---|---|
+| [som-rs](som-rs/README.md) | Rust parser, fixed planner, DSL validation, code renderers, CLI and service. |
+| [som-core](som-core/README.md) | Python reference and acceptance tools, plus retained training research. |
+| [som-code-python](som-code-python/README.md) | Approved Python blocks, behavior fixtures and historical corpus tools. |
+
+Read [the current service guide](som-rs/RUST_GUIDE.md) and [release records](som-rs/CURRENT.md).
+Those records describe dated releases. This document audit did not query a running service.
+
+## First compiler release record — 2026-10-15
+
+The new Rust compiler passed independent acceptance and became the local default.
 It was promoted at `2026-10-15T03:08:08.737006+00:00` and serves `127.0.0.1:8765` without loading a model.
 The root post-switch check passed 76/76. Commit `3ced191137` published it to main.
 Issues #38–#44 are closed as completed, and milestones 7 and 8 are closed.
@@ -26,8 +53,8 @@ The legacy M2 runtime, model and block links remain saved for rollback.
 CNL uses fixed English clauses. Data strings can include Chinese.
 The caller supplies each business choice. The compiler does not guess missing facts.
 The new production path does not load models or start Python.
-Python remains the output language and an independent test tool.
-Rust output with axum and sqlx is planned in [milestone 9](https://github.com/faberline/som/milestone/9).
+At that release, Python was the output language and an independent test tool.
+Rust output with axum and sqlx followed in [milestone 9](https://github.com/faberline/som/milestone/9).
 Read [the Rust output roadmap](som-rs/RUST_OUTPUT_ROADMAP.md).
 
 The fresh complete gates passed 127 public products and 544 historical jobs.
@@ -52,7 +79,7 @@ All 114 formal flow cases and 12 capability supplements pass full behavior.
 All old 100 cases and 214 service regressions pass.
 All 314 fresh native legacy outputs match the sealed archive.
 All 12 seen-fixture model chains pass Rust Metal, HTTP and CLI checks.
-These model checks prove the seen-input path. Full model training is M3 work.
+These historical model checks prove the seen-input path. The former M3 training plan was retired.
 Final output bytes are observations. File, block and token limits remain fixed.
 See [the M3 handoff](som-rs/M3_HANDOFF.md).
 The local development default is now the accepted M2 flow candidate.
@@ -64,7 +91,7 @@ All 2,700 training and development reference products passed admission.
 Training stopped after an interruption. The last complete checkpoint is
 step 74,000. Its raw development check passed 3/300 complete sequences.
 The formal model test has not started. The M2 default pointers stay fixed.
-See [the current M3 status](som-rs/M3_STATUS.md) for evidence and next tasks.
+See [the historical M3 status](som-rs/M3_STATUS.md) for that interrupted work.
 
 SOM is a local code generation service. Codex or Claude Code decides the
 program logic and sends a versioned JSON prompt. The default accepts v1–v7.

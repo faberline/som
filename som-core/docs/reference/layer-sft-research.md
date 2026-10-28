@@ -1,8 +1,14 @@
 # Layer SFT 研究掃描（2026-09-23）
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../../../docs/architecture.md).
+
 > 歷史研究：本文保留當時的 LoRA、L1–L3 與原始程式輸出實驗。
 > 本文的方案及數據不代表現行 block-plan 候選。
-> 現行實作與待比較方法請看[訓練文件](../product/training.md)。
+> 後續模型研究請看[歷史訓練文件](../product/training.md)。現行編譯器不需要訓練。
 > 原始研究內容保留在下方。
 
 本文整理 `layer-sft-003` 之後做的文獻掃描。每篇 paper 只記一件事：它量到的結論，以及這個結論對 SOM 下一步有什麼影響。文末是依這些結論排出的實驗順序。record 格式見 [layer-records.md](layer-records.md)，四層架構見 [architecture.md](architecture.md)。

@@ -1,5 +1,11 @@
 # Layer records
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../../../docs/architecture.md).
+
 The records the four SOM layers pass down, and the operation vocabulary the
 assembler executes. `src/som_core/records.py` enforces this document;
 `som-code-python/scripts/decompile_gold.py` measures L2 and L3 from

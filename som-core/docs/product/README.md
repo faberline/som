@@ -1,6 +1,12 @@
 # SOM core product requirements
 
-Read [current training](training.md) for the implemented composed candidate.
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../../../docs/architecture.md).
+
+Read [historical training](training.md) for the former composed candidate.
 It links the five development milestones and fifteen existing issues.
 The sections and horizon tables below preserve the former layer design.
 Its training requirements are in [the historical guide](training-legacy.md).

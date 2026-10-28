@@ -11,11 +11,16 @@ The project is a Python package under `src/som_core/` with the `som` entry
 point declared in `pyproject.toml`, with its tests under `tests/`. Create
 the environment with `uv sync` run inside `som-core`, which also
 installs the `dev` group that carries pytest; every command below runs from
-the repository root against that environment. `som verify` needs Apple
-MLX, so that gate runs on macOS with Apple silicon only.
+the repository root against that environment on a GitHub Actions runner.
+Edit locally and push changes before running builds or tests.
+
+The current compiler uses fixed `CNL → DSL → Code` algorithms.
+It needs no model training, MLX or Apple chip.
+The old `som verify` command probes MLX for historical research only.
+It is not a gate for the current compiler. See [the current architecture](../docs/architecture.md).
 
 There is no `aw` phase ladder for som yet, so a change here is verified
-by hand: run the gates below before and after, and keep the STATUS matrix true
+on a GitHub runner: run the applicable gates below and keep the STATUS matrix true
 to what they observe. `runs/` is local output and never committed.
 
 ## Verification
@@ -24,10 +29,12 @@ to what they observe. `runs/` is local output and never committed.
 |---|---|
 | CLI surface | `som-core/.venv/bin/som --help` |
 | Loader, records, assembler | `som-core/.venv/bin/python -m pytest som-core/tests -q` |
-| MLX device | `som-core/.venv/bin/som verify` |
 | Corpus round trip | `uv run --project som-code-python python som-code-python/scripts/verify_roundtrip.py` |
 | Product document contract | `uv run --python 3.13 --no-project scripts/meta/project_docs_contract.py check som-core --format json` |
 | META-doc contract | `aw metadoc check som-core` |
+
+Run the document checks on the GitHub runner.
+If a checker is unavailable there, report it as unavailable, not passed.
 
 Run the two document checks after editing `README.md`, `STATUS.md`,
 `ROADMAP.md`, or anything under `docs/product/`.

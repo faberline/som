@@ -1,36 +1,23 @@
 # SOM core
 
-> SOM prompt v1 through v4 use this package for training and the Python correctness reference.
-> The production CLI and HTTP service are in [som-rs](../som-rs/README.md).
-> The older `som` and MCP experiments below are historical. The rest of this
-> file records the former design. It does not describe the current service.
+This package contains Python reference and acceptance tools.
+It also retains older training and model research.
+The production compiler is in [som-rs](../som-rs/README.md).
 
-## Current tools
+The current path is `CNL → DSL → Code`, using fixed algorithms.
+It needs no trained model, model weights, MLX or Apple chip.
+Read [the current architecture](../docs/architecture.md).
+The compiler does not use the older training CLI to plan code.
 
-Read [the current training guide](docs/product/training.md) for the composed
-candidate, its input projection, loss, optimizer and acceptance evidence.
-Read [the candidate service guide](../som-rs/COMPOSABLE.md) for prompt v6.
-The [quality candidate](../som-rs/QUALITY.md) reuses those model weights.
-The default v4 model described below remains separate.
+## Reference tools and historical research
 
-`som-train` builds a tokenizer and small model from zero. The current model
-used the validated [combined training corpus](data/crud-query-date-service-v4/manifest.json).
-It includes earlier CRUD, query, and standalone service tasks.
-The original [v1 corpus](data/v1/manifest.json) remains frozen. Training
-exports weights, tokenizer, configuration, and a hash manifest. The time
-limit is 168 hours.
+The Python validators and assemblers support correctness comparisons.
+Their use does not require model training.
+Run development builds and tests on GitHub Actions runners after pushing local edits.
 
-The [date-service corpus](data/date-service-v4/manifest.json) adds an
-optional date field and a `before` list filter. Its combined training set is
-[here](data/crud-query-date-service-v4/manifest.json). The
-[current service record](../som-rs/CURRENT.md) records its separate checks
-and the completed date-task token comparison. Four paired tasks per agent saved
-55.6% for Codex and 75.7% for Claude Code in that measured scope.
-
-`src/som_core/v1.py` validates the versioned DSL and assembles approved
-blocks for correctness comparison. It does not write product files. The
-production Rust implementation and commands are in the
-[service guide](../som-rs/README.md).
+[training.md](docs/product/training.md) preserves the composed model research from 2026-10-01.
+[COMPOSABLE.md](../som-rs/COMPOSABLE.md) and [QUALITY.md](../som-rs/QUALITY.md) preserve related model-era work.
+Those records do not describe the current default or direct new training.
 
 ## Historical design notes
 
@@ -52,9 +39,9 @@ loader that reads the executable oracle corpus
 model is trained yet. The [STATUS](STATUS.md) matrix says exactly which
 surface is which.
 
-## Direction
+## Historical direction — 2026-09-25
 
-Settled 2026-09-25. Where older wording below differs, this section wins.
+The former direction below was replaced by the fixed compiler. It does not override the current architecture.
 
 - **Input is a SOM prompt, not a conversation.** A flagship model (Claude,
   Codex) or a person writes a terse, fixed-order tagged prompt — `intent`,
@@ -84,7 +71,7 @@ Settled 2026-09-25. Where older wording below differs, this section wins.
   an inference option.
 - **The holdout families are never trained on.**
 
-Current state: the `som_generate` path in use today emits terse Python that
+Historical state: the `som_generate` path then in use emits terse Python that
 `compile_dsl` checks and expands, from a LoRA on Qwen3-Coder-30B-A3B. Both
 are stepping stones. The target is a small from-scratch model emitting
 ISA-referencing DSL that `som assemble` assembles.

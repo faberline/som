@@ -1,5 +1,11 @@
 # Query and pagination task family
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../docs/architecture.md).
+
 `som.prompt.v2` adds a `query` object to the CRUD prompt. It keeps the same
 five files and the `som.dsl.v1` output. The model selects the ordered API
 blocks. Rust validates the typed query values and assembles source from

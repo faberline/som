@@ -1,3 +1,7 @@
+> Historical M7 plan from 2026-10-03. The fixed Rust compiler replaced this model-based plan.
+> The model inputs, weights, Python parser and training tasks below are not current requirements.
+> Read [the current architecture](../../../docs/architecture.md) and [the compiler roadmap](../../RUST_ROADMAP.md).
+
 ## 目的
 
 實作 Python 參考 CNL 解析器及 Rust 正式解析器。
