@@ -594,11 +594,13 @@ class Audit130Tests(unittest.TestCase):
         directory = self.fixture.repo / ".local/legacy-universe/run"
         record = {"id": "OOS_LEGACY", "prompt_sha256": sha_bytes(canonical(prompt))}
         save_json(directory / "result.json", {"records": [record]})
+        pinned = directory.parent / "inventory-003.json"
+        save_json(pinned, {"groups": [record]})
         save_json(directory / "0000/compile-json.request.json", {"format": "som.prompt-json.v1", "prompt": prompt})
-        relative = (directory / "result.json").relative_to(self.fixture.repo).as_posix()
+        relative = pinned.relative_to(self.fixture.repo).as_posix()
         inventory = self.fixture.docs["case-inventory.json"]
         inventory["sources"]["legacy_inventory"] = {
-            relative: sha_file(directory / "result.json"),
+            relative: sha_file(pinned),
             "run": directory.relative_to(self.fixture.repo).as_posix(),
         }
         save_json(self.fixture.contract / "case-inventory.json", inventory)
