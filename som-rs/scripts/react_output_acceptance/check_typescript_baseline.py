@@ -137,6 +137,9 @@ def check_request(qa: str, baseline: str, body: str, out: pathlib.Path,
            or not isinstance(reply.get("bundle"), dict) for reply in (qa_reply, base_reply)):
         problems.append("compile response has no successful bundle")
         return problems, record
+    if any(reply["bundle"].get("target") != "typescript" for reply in (qa_reply, base_reply)):
+        problems.append("compile bundle target is not typescript")
+        return problems, record
     if any(not isinstance(reply["bundle"].get(section), dict)
            for reply in (qa_reply, base_reply) for section in ("prompt", "assets", "hashes")):
         problems.append("compile bundle has no prompt, assets or hashes object")

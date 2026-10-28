@@ -293,6 +293,35 @@ test("seal rejects symlink sources, relative sources, duplicate outputs, and exi
   await assert.rejects(fs.lstat(outputs.manifest), { code: "ENOENT" });
 });
 
+test("seal rejects a symlink hidden by a parent segment before opening the source", async (t) => {
+  const root = await temporary(t);
+  const safe = path.join(root, "safe");
+  const other = path.join(root, "other");
+  await fs.mkdir(safe);
+  await fs.mkdir(path.join(other, "nested"), { recursive: true });
+  const safeBytes = "fake-safe-source-bytes";
+  const hiddenBytes = "fake-hidden-source-bytes";
+  await fs.writeFile(path.join(safe, "private.bin"), safeBytes);
+  await fs.writeFile(path.join(other, "private.bin"), hiddenBytes);
+  await fs.symlink(path.join(other, "nested"), path.join(safe, "link"));
+  // Do not use path.join here: it would remove the parent segment in the test.
+  const source = `${safe}/link/../private.bin`;
+  assert.equal(await fs.readFile(source, "utf8"), hiddenBytes);
+  assert.equal(await fs.readFile(path.resolve(source), "utf8"), safeBytes);
+  const selection = path.join(root, "selection.json");
+  await fs.writeFile(selection, JSON.stringify({ files: [{ source, path: "fake.bin", mode: 0o644 }] }));
+  const outputs = { archive: path.join(root, "new.enc"), manifest: path.join(root, "new.json"), keyFile: path.join(root, "new.key") };
+  await assert.rejects(sealSelection({ selection, ...outputs }), refusal);
+  for (const destination of Object.values(outputs)) await assert.rejects(fs.lstat(destination), { code: "ENOENT" });
+  const cli = spawnSync(process.execPath, [SCRIPT, "seal", "--selection", selection, "--archive", outputs.archive,
+    "--manifest", outputs.manifest, "--key-file", outputs.keyFile], { encoding: "utf8" });
+  assert.equal(cli.status, 1);
+  assert.equal(cli.stdout, "");
+  assert.equal(cli.stderr, "sealed input operation refused\n");
+  for (const secret of [root, source, safeBytes, hiddenBytes]) assert.equal(cli.stderr.includes(secret), false);
+  for (const destination of Object.values(outputs)) await assert.rejects(fs.lstat(destination), { code: "ENOENT" });
+});
+
 test("CLI uses the environment key and reports only a generic failure", async (t) => {
   const root = await temporary(t);
   const carrier = await writeCarrier(root);

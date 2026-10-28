@@ -115,6 +115,18 @@ class TypeScriptBaselineCollectorTests(unittest.TestCase):
         self.assertEqual(set(record["differing_members"]),
                          {"assets.backend", "assets.target_contract", "hashes.payload_sha256"})
 
+    def test_matching_wrong_target_replies_fail_before_assembly(self):
+        changed = copy.deepcopy(self.reply)
+        changed["bundle"]["target"] = "react"
+        raw = encoded(changed)
+        for url in (self.qa, self.baseline):
+            self.responses[(url, "/v1/compile")] = (200, raw)
+        row = self.collect()
+        self.assertEqual(row["status"], "failed")
+        self.assertIs(row["passed"], False)
+        self.assertTrue(any("target is not typescript" in problem for problem in row["problems"]))
+        self.assertTrue(all(route == "/v1/compile" for _, route, _ in self.sent))
+
     def test_compile_change_outside_the_allowed_members_fails_and_retains_response(self):
         changed = copy.deepcopy(self.reply)
         changed["bundle"]["assets"]["catalog"]["sha256"] = "f" * 64

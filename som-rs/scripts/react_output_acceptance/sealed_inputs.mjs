@@ -214,7 +214,7 @@ async function safeAncestors(filename, allowMissing = false) {
 }
 
 async function readRegularFile(filename, limit) {
-  need(typeof filename === "string" && path.isAbsolute(filename));
+  need(typeof filename === "string" && path.isAbsolute(filename) && path.resolve(filename) === filename);
   await safeAncestors(path.dirname(filename));
   const handle = await fs.open(filename, constants.O_RDONLY | constants.O_NOFOLLOW);
   try {
