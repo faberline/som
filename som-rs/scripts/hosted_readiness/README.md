@@ -11,13 +11,17 @@ Do not run them on the developer host.
 
 ## What runs on GitHub
 
-The `Rust hosted readiness` workflow has four jobs:
+The `Rust hosted readiness` workflow has five jobs:
 
 - Two Cargo jobs run the complete default-feature suites on Ubuntu 24.04.
   One tests `som-rs/Cargo.toml`. The other tests `som-rs/som-targets/Cargo.toml`.
   The normal `cargo test` command also includes documentation tests.
   The retired `legacy-model` feature stays disabled.
 - The fixture job tests the readiness tool against temporary fake files.
+- The public input job reconstructs 127 public inputs and 533 historical jobs.
+  It checks source, prompt, CNL and known request hashes.
+  It preserves all 544 historical rows, including 11 blocked inputs.
+  Checked DSL inputs and full product acceptance remain separate blockers.
 - The product readiness job reads source hashes and named inventories.
   It starts no product, service or emulator.
 
@@ -75,6 +79,24 @@ Exit 2 means an argument, manifest or path is invalid.
 Readiness never means product acceptance.
 The report always states `acceptance_passed: false` and `product_suites: not_run`.
 The manifest cannot enable product acceptance.
+
+The hash exporter reads one reviewed private source index on the developer host.
+It writes hashes and public source locations only.
+It does not run the compiler or any test.
+It preserves all named Python and Rust rows, including duplicates and refusals.
+It records missing public inputs and unrun reconstruction steps.
+It does not export prompts, DSL, response bodies, product files or local paths.
+The private review packet is never an exporter input.
+The committed hash export has a separate fixed digest in the public input tool.
+GitHub executes the unchanged public generator after checking all source hashes.
+The public input artifact contains only inputs derived from public source.
+No test or product can treat this partial input proof as full acceptance.
+
+`raw_digest_compat.py` compares raw JSON bytes outside exact digest leaves.
+Its caller must approve each path and obtain both digest values independently.
+The helper cannot approve a compatibility policy or validate payload hashes.
+It preserves all bytes outside those leaves, including spacing and key order.
+No product gate uses a new compatibility rule until its numbered policy is sealed.
 
 Reports must be new files.
 Inside the repository, outputs must be under `.local/hosted-readiness/`.

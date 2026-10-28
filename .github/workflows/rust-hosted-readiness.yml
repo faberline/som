@@ -151,6 +151,42 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  public-input-reconstruction:
+    name: Public input reconstruction (partial scope)
+    needs: fixture-tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Record tested revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 --version 2>&1 | tee input-runner.log
+          printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+      - name: Prove public input reconstruction without running products
+        run: |
+          python3 som-rs/scripts/hosted_readiness/reconstruct_public_inputs.py \
+            --repo . \
+            --goldens som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json \
+            --out "$RUNNER_TEMP/som-public-inputs" 2>&1 | tee -a input-runner.log
+      - name: Keep public input proof and remaining blockers
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: public-input-reconstruction
+          path: |
+            tested-sha.txt
+            input-runner.log
+            ${{ runner.temp }}/som-public-inputs
+          if-no-files-found: error
+          retention-days: 14
+
   frozen-readiness:
     name: Frozen product prerequisites (blocked until provisioned)
     needs: fixture-tests
