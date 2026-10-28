@@ -1,7 +1,9 @@
 # Native tool provisioning plan
 
-This is the next M12 step after the #141 readiness review.
-It is a proposal. No runtime code consumes it yet.
+This is the M12 / #146 native implementation that unblocks #141.
+The current candidate uses the versioned pins in `contracts/native-tools-v1`.
+The initial public-artifact proposal remains in `native-tools.json` here.
+GitHub execution receipts qualify the actual tools separately from source review.
 The fixed compiler needs no model or training data.
 
 ## Public artifacts
@@ -28,7 +30,7 @@ Keep all applicable license notices when installing an artifact.
 An archive digest does not replace its license notices.
 The proposal records the notices found in each archive.
 
-## Runtime adaptation
+## Runtime adaptation in the candidate
 
 Rust M12 owns these changes. Coordinate any additional shared path first.
 
@@ -49,10 +51,12 @@ Rust M12 owns these changes. Coordinate any additional shared path first.
 6. Run both complete default Cargo suites on GitHub without filters.
    Keep each failure and every unrun binary or documentation test explicit.
 
-Use a numbered compatibility amendment for the current tool identity changes.
+Rust amendment007 and TypeScript amendment003 record these tool identity changes.
 Preserve the old receipts as evidence of earlier runs.
 The user's platform correction authorizes removing the Apple-only requirement.
 It does not authorize removing integrity or product behavior checks.
+The new receipts record source approval and the actual staged implementation order.
+They do not claim that tool or product execution passed.
 
 Binary digests differ by native platform.
 Bundle formatter descriptors must report the actual selected artifact.

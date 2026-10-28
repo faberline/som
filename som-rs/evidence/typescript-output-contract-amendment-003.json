@@ -1,0 +1,115 @@
+{
+  "version": "som.typescript-output-contract-amendment.v1",
+  "amendment": 3,
+  "issue": [
+    146
+  ],
+  "baseline_commit": "88dd693334c120546ca62c929837cf0d2f202eb9",
+  "target": "typescript",
+  "bundle": "som.dsl-bundle.v2",
+  "status": "amendment_sealed_after_independent_review",
+  "implementation_already_in_progress": true,
+  "implementation_order": "Native adapter source was staged during contract preparation. This receipt does not claim a wholly pre-implementation freeze.",
+  "previous_receipt": "som-rs/evidence/typescript-output-contract-amendment-002.json",
+  "previous_receipt_sha256": "42919c1428aaa009e3ec8a0c0dc87bc86d962113974ddab4d21d890c35790168",
+  "reason": "The current fixed compiler needs no model or Apple Silicon. Add trusted native Linux artifacts while preserving historical macOS artifacts and every product/behavior requirement. Only native-tools.json is added to the old frozen file set. The referenced native contract and artifact manifest are bound transitively by their file digests.",
+  "changed_paths": [],
+  "added_paths": [
+    "som-rs/contracts/typescript-output-v1/native-tools.json"
+  ],
+  "changes": [],
+  "unchanged": "Every prior frozen contract, test and evidence file keeps its exact bytes. The new native-tools.json extends tool selection without changing the old file bytes.",
+  "target_contract": {
+    "id": "som.typescript-output-contract.v1",
+    "previous_sha256": "34eb509d5568ebbf3b2f8117073104f2eb8809bc4f3219c887f05d9ed77d807d",
+    "sha256": "17ffc6028d66657381464a4d6beaecc1e097f54e421168777e5959cfbdaf063f",
+    "rule": "sha256 of canonical JSON of files map"
+  },
+  "files": {
+    "som-rs/contracts/typescript-output-v1/CONTRACT.md": "ed3fbf2182763a43ea8985034d770af3108c30b088b609b8ed40291a2c92ead1",
+    "som-rs/contracts/typescript-output-v1/acceptance-plan.json": "17478469d02bf362e6d394ef9081ff4e842eeab239fbfc89550fba92951d35f5",
+    "som-rs/contracts/typescript-output-v1/api.schema.json": "bef2cb55ec61680eb997429d5290d8ced8ab61f790be751e5608dba3ce28f75f",
+    "som-rs/contracts/typescript-output-v1/behavior-normalization.json": "cc068fe361cfbcb960a299be67143eab06e7a02930a981c122251ff6afb4e8b0",
+    "som-rs/contracts/typescript-output-v1/bundle.schema.json": "c5f69b453562cd2259996994c6e57d8e69745d72109cac52ee746d754fc979b6",
+    "som-rs/contracts/typescript-output-v1/case-inventory.json": "f45572b155c89808bae9153c7a833da779ad043fb4c0a34002de9c9ef26dee0c",
+    "som-rs/contracts/typescript-output-v1/catalog/typescript-catalog.v1.json": "14c87b4421a0b5f015d3e6a7a65321edaa256a37bf24fe50db145ce22b5b4642",
+    "som-rs/contracts/typescript-output-v1/native-tools.json": "c9f4e0418d43996b8b8994eccffb6eb146795ed559277b0875da30bb3b5e0ce0",
+    "som-rs/contracts/typescript-output-v1/negative-cases.json": "858906170db681b95ecfb28cf4f0374157570771250a6dead23b84bbf6bce52d",
+    "som-rs/contracts/typescript-output-v1/product-layout.json": "eec61af43adb02583b86ded51478edb57459098f0899062a69c7591591f7ce47",
+    "som-rs/contracts/typescript-output-v1/reference/package-lock.json": "d5daa744e5efc0c7ad754e42930b34880a077ca2a38b466003786931a9f56606",
+    "som-rs/contracts/typescript-output-v1/reference/package.json": "02b2aa2b167dcf5f9282c8c04a7d8deb8f77888d1fa2c5726ea4e98d17b5eaa7",
+    "som-rs/contracts/typescript-output-v1/reference/tsconfig.json": "e1bb40b56013abf2525a53023ebc1ce455d176fe4c0c5061d18a563f25962fae",
+    "som-rs/contracts/typescript-output-v1/scope.json": "7e4beea87179bb06f3263645dd67ce110ec12d28df7e6239da61d4a3fc106304",
+    "som-rs/contracts/typescript-output-v1/target-examples.json": "fac94a5cb3295c5cb26c39f541ef395f6fa6ca1a99f25ca8cb5b3ff16f1aa6c5",
+    "som-rs/contracts/typescript-output-v1/toolchain.json": "0875aeb7e60aa72a44bc59c9aef89b971dffc5fc5304813e0b04ec5dc26da618",
+    "som-rs/evidence/typescript-output-v1/python-controls-2026-10-21.json": "7e97dceb3a8b20ab19c4c26b7029ebc1541783c1104cb35ebe840e7ac71d2cec",
+    "som-rs/evidence/typescript-output-v1/python-controls-2026-10-23.json": "b5b81e63e3d41dac2358862ccc968b66eeaf5c1d4d0c0d391007788d1f46ccfd",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/README.md": "69dad36d620542832b94fce0e40c2a1dbe8a65332ba200e1cbbbf37da47dd6b6",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/migrations/0001_rev0000.sql": "346dd960b0704ab14229e2d1e87ecbfbd5ddc6030223f1908207527bc72b9704",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/package-lock.json": "d5daa744e5efc0c7ad754e42930b34880a077ca2a38b466003786931a9f56606",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/package.json": "02b2aa2b167dcf5f9282c8c04a7d8deb8f77888d1fa2c5726ea4e98d17b5eaa7",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/app.ts": "89bcd9d11d43d450242e9bff3e65cfe56c116bca6b2df0b4513d2f641b9dc6c9",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/db.ts": "a57e3ead187815f5b3c517184dd419e5831841448d704f85b542fe896d62105b",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/main.ts": "3c2392b474f3dfd369083fb2602ee5d1667bbd29da815f4425ba13530b8682b2",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/migrate.ts": "c3452a5125857ab259bef72af4c42bb9407113613cf0a4fbca2ca620d3af5b65",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/schemas.ts": "f2159727c1156b727c285c42660c53bcd959e22e14c3fcb95847b6145506a174",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/test/api.test.ts": "25c3936cde84cdc5d8e1ec2f99f703c4addee32d7eed7b3964027db7c3abbcd3",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/tsconfig.json": "e1bb40b56013abf2525a53023ebc1ce455d176fe4c0c5061d18a563f25962fae",
+    "som-rs/evidence/typescript-output-v1/reference-verification-2026-10-21.json": "5dd5f94cd6bcd2f6d84bed937c3df83a161c361e9317d9bc9a2bb37141498b42",
+    "som-rs/tests/typescript-output-v1/build_case_inventory.py": "9ae6096a1708c478f19ec75b361e0bc721b12f64646d24ef190fb1b51e92e1f1",
+    "som-rs/tests/typescript-output-v1/build_negative_cases.py": "32158c2324e271d4bfd49a5a45106f046e67a136f91605463b21f87b1fc2d7e4",
+    "som-rs/tests/typescript-output-v1/build_target_examples.py": "9bbc13521fcbf9530aadb8417a45128a20d7b972b3b7460ab51dc21f7bb24efd",
+    "som-rs/tests/typescript-output-v1/check_contract.py": "a26c5c59579b609ff0ffe651f57292efd3eb8e4cce95a841232b2e98c409d376",
+    "som-rs/tests/typescript-output-v1/check_python_controls.py": "3e4bb02ecad2e9ee748de327c1db63813cc4c6dc3c0e5cbfa569f6b02c660172",
+    "som-rs/tests/typescript-output-v1/common.py": "77b92f00cdf13d66c54c1069e215bc8de479953887bc853e4316275b02a24497",
+    "som-rs/tests/typescript-output-v1/tree_sha.py": "6c9bccd1293aa8629f18539ea89fa0b5bb284dc70a579b13bc86f8d0324fa9a2",
+    "som-rs/tests/typescript-output-v1/ts_profile.py": "de964991d0022711e799e7b3dfca4f44fa7eb834e978d2a5ec40b52d93d8f6c4"
+  },
+  "independent_review": {
+    "final_verdict": "APPROVED",
+    "scope": "Contract/pins/hash-chain and source review only. Tool execution, product gates and milestone acceptance are not granted.",
+    "candidate_receipt_sha256": "3ae75868ce2a1b2b7fbcc607fc2f6714dfcd48be9be54a7c96dd052a8b1f8597",
+    "reviewed_source_sha256": {
+      "som-rs/src/compiler.rs": "49c8309e102b1f7c686c8a975ed8b2c81d0133557c0443d8986474ca41cd9f3c",
+      "som-rs/src/quality.rs": "4522527da6a96bfee72365ab0b130c816022194fdff3de386cf604bb7c8e713b",
+      "som-rs/som-targets/src/rust/format.rs": "852d1ff7b7b7a57f7eac564a6d5db248a56ff8e48fe02163aac7fcd960ea1b05",
+      "som-rs/som-targets/src/typescript/format.rs": "b9c9d3025de0263f2010a47d5374869b89a2c752ddc324a3eb99b774df3fbbaf",
+      "som-rs/scripts/hosted_readiness/provision_native.py": "97158732941f4f3cf025b07794dd020636fce6642304bd892445804c123f24bf",
+      "som-rs/scripts/hosted_readiness/test_provision_native.py": "924917d2389139fad0f5d9a7f6e559e69b4331d33551e15384c7b52d42272875",
+      "som-rs/contracts/native-tools-v1/CONTRACT.md": "47d72cabd57bdb380171a54f4dddeeabf25693c3781cabb483c572c162efac6e",
+      "som-rs/contracts/native-tools-v1/artifacts.json": "959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193"
+    },
+    "reviews": [
+      {
+        "reviewer": "rust_readiness_audit",
+        "verdict": "APPROVED",
+        "scope": "Native contract and artifact provenance, both receipt chains, Rust/TypeScript formatter adapters, provider and fixtures. Compiler/quality excluded because this reviewer authored its initial patch.",
+        "resolved": [
+          "Prettier must use an absolute verified root",
+          "Cache identity includes ctime and mode"
+        ]
+      },
+      {
+        "reviewer": "typescript_native_port",
+        "verdict": "APPROVED",
+        "scope": "Independent compiler/quality and root Rustfmt adapter review, native contract and receipt chain. TypeScript adapter excluded because this reviewer authored its initial patch.",
+        "resolved": [
+          "Ruff read/live identity and packaging refuse symlinks",
+          "Cache identity detects same-length writes with restored modification time"
+        ]
+      },
+      {
+        "reviewer": "native_provisioner",
+        "verdict": "APPROVED",
+        "scope": "Workflow/provisioner/asset packager integration and actual manifest shape. Provisioner implementation excluded because this reviewer authored it.",
+        "qualification": "Fetching both manifest locks is reproducibility hardening, not an observed failure."
+      }
+    ],
+    "execution": "No local tests, builds, native executable runs or product acceptance were performed."
+  },
+  "execution": {
+    "cargo_tests": "unrun for this candidate",
+    "full_product_acceptance": "unrun"
+  },
+  "frozen_at": "2026-10-28T14:34:28+00:00"
+}

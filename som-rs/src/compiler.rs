@@ -19,13 +19,31 @@ const CONTRACT: &str = include_str!("../contracts/compiler-v1/CONTRACT.md");
 const POLICY: &str = include_str!("../contracts/compiler-v1/selection-policy.json");
 const SERIALIZER: &str = include_str!("../contracts/compiler-v1/serializer-policy.json");
 const LITERALS: &str = include_str!("../contracts/compiler-v1/literal-policy.json");
+// Trusted native Ruff 0.16.6 artifacts. The expected digest never comes from the caller.
+#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 const FORMATTER_SHA256: &str = "cb0cdeba051c5c5bdc85c22dc31440ac1ea17651366bf188d4df1f8fe985933a";
+#[cfg(all(target_os = "linux", target_arch = "x86_64", target_env = "gnu"))]
+const FORMATTER_SHA256: &str = "03b22709bb8f62028a0732423eaac6f7792235bbcb05b3feaddaac3d992318d8";
+#[cfg(not(any(
+    all(target_os = "macos", target_arch = "aarch64"),
+    all(target_os = "linux", target_arch = "x86_64", target_env = "gnu")
+)))]
+const FORMATTER_SHA256: &str = "";
 
 fn err(code: &'static str, detail: impl Into<String>) -> SomError {
     SomError {
         code,
         detail: detail.into(),
     }
+}
+fn require_formatter_host() -> Result<(), SomError> {
+    if FORMATTER_SHA256.is_empty() {
+        return Err(err(
+            "ASSET_UNAVAILABLE",
+            "native Ruff is not pinned for this target",
+        ));
+    }
+    Ok(())
 }
 pub fn digest(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
@@ -61,6 +79,14 @@ fn backend_manifest() -> Value {
         ("src/flow.rs", include_str!("flow.rs")),
         ("src/flow_compact.rs", include_str!("flow_compact.rs")),
         ("src/quality.rs", include_str!("quality.rs")),
+        (
+            "contracts/native-tools-v1/CONTRACT.md",
+            include_str!("../contracts/native-tools-v1/CONTRACT.md"),
+        ),
+        (
+            "contracts/native-tools-v1/artifacts.json",
+            include_str!("../contracts/native-tools-v1/artifacts.json"),
+        ),
         ("Cargo.toml", include_str!("../Cargo.toml")),
         ("Cargo.lock", include_str!("../Cargo.lock")),
         ("contracts/related-business.v1.md", composed::CONTRACT_TEXT),
@@ -113,6 +139,12 @@ pub fn asset_manifest() -> Value {
 
 /// Package trusted compiler assets. This build command is never part of a request.
 pub fn package_assets(destination: &Path, formatter: &Path) -> Result<Value, SomError> {
+    require_formatter_host()?;
+    let entry = std::fs::symlink_metadata(formatter)
+        .map_err(|e| err("ASSET_UNAVAILABLE", e.to_string()))?;
+    if !entry.is_file() {
+        return Err(err("ASSET_UNAVAILABLE", "formatter must be a regular file, not a symlink"));
+    }
     let binary = std::fs::read(formatter).map_err(|e| err("ASSET_UNAVAILABLE", e.to_string()))?;
     if digest(&binary) != FORMATTER_SHA256 {
         return Err(err(
@@ -166,6 +198,7 @@ pub struct Compiler {
 
 impl Compiler {
     pub fn load(directory: &Path) -> Result<Self, SomError> {
+        require_formatter_host()?;
         let bytes = std::fs::read(directory.join("manifest.json"))
             .map_err(|e| err("ASSET_UNAVAILABLE", e.to_string()))?;
         let text = std::str::from_utf8(&bytes)

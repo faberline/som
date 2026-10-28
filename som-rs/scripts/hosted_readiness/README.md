@@ -27,14 +27,16 @@ They then run `cargo test --locked --offline` without test filters.
 A failure stays a failed job. No test is ignored to make the job pass.
 Each job saves its tested commit and raw logs.
 
-Some current tests still use hardcoded Homebrew formatter paths or old asset
-locations. The workflow exposes those failures. They are tool adaptation work.
-They do not mean that the fixed compiler needs Apple hardware or a model.
+The native adapters use trusted Linux Ruff, rustfmt and Node artifacts.
+Quality tests load generated compiler assets. The old model-directory test path
+is removed. macOS keeps its existing trusted artifacts.
 Native Ruff, rustfmt, Node and Prettier still need version and integrity checks.
 Removing a platform limit must preserve formatter checks and product behavior.
 The [native tool proposal](native-tools.json) records public Linux artifact pins.
 The [provisioning plan](PROVISIONING.md) defines the next implementation step.
-These files do not yet change the runtime or provision a runner.
+The versioned runtime pins are in contracts/native-tools-v1.
+The Cargo jobs provision those tools and generate assets before testing.
+Their execution receipts remain separate from product acceptance.
 
 ## What readiness means
 
@@ -46,7 +48,7 @@ It reports a changed or new unmapped section as blocked.
 Changing only a source hash cannot hide a changed gate.
 
 The tool compares every ordered case ID. Equal counts alone do not pass.
-The current manifest binds 207 public source files at the recorded main baseline.
+The current manifest binds 221 candidate source files.
 The manifest's `source_commit` names that baseline.
 The workflow's `tested-sha.txt` names the actual tested PR commit.
 These serve different purposes.

@@ -23,6 +23,7 @@ on:
       - som-rs/behavior/**
       - som-rs/som-targets/qa/**
       - som-rs/evidence/rust-output-contract-*.json
+      - som-rs/evidence/typescript-output-contract-*.json
       - som-core/scripts/**
       - LICENSE
   workflow_dispatch:
@@ -56,6 +57,7 @@ jobs:
       CARGO_TERM_COLOR: never
       CARGO_BUILD_JOBS: 2
       RUST_BACKTRACE: 1
+      CARGO_TARGET_DIR: ${{ runner.temp }}/som-cargo-target
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -75,12 +77,29 @@ jobs:
       - name: Fetch locked public crates
         env:
           MANIFEST: ${{ matrix.manifest }}
-        run: cargo fetch --locked --manifest-path "$MANIFEST" 2>&1 | tee cargo-fetch.log
+        run: |
+          cargo fetch --locked --manifest-path som-rs/Cargo.toml 2>&1 | tee cargo-fetch.log
+          if [ "$MANIFEST" != som-rs/Cargo.toml ]; then
+            cargo fetch --locked --manifest-path "$MANIFEST" 2>&1 | tee -a cargo-fetch.log
+          fi
+      - name: Provision verified native tools
+        run: |
+          python3 som-rs/scripts/hosted_readiness/provision_native.py \
+            --manifest som-rs/contracts/native-tools-v1/artifacts.json \
+            --out "$RUNNER_TEMP/som-native-tools" \
+            --rustfmt "$(rustup which rustfmt)" 2>&1 | tee native-provision.log
+          cat "$RUNNER_TEMP/som-native-tools/github.env" >> "$GITHUB_ENV"
+      - name: Package compiler assets from tracked source
+        run: |
+          cargo run --locked --offline --manifest-path som-rs/Cargo.toml \
+            --bin som-compiler-assets -- \
+            --destination som-rs/compiler-assets/current \
+            --formatter "$SOM_RUFF" 2>&1 | tee compiler-assets.log
       - name: Run the complete default-feature Cargo suite
         env:
           MANIFEST: ${{ matrix.manifest }}
         run: |
-          cargo test --locked --offline --manifest-path "$MANIFEST" -- --test-threads=1 2>&1 | tee cargo-tests.log
+          cargo test --locked --offline --no-fail-fast --manifest-path "$MANIFEST" -- --test-threads=1 2>&1 | tee cargo-tests.log
       - name: Check tracked dependency locks
         if: always()
         run: git diff --exit-code -- som-rs/Cargo.lock som-rs/som-targets/Cargo.lock
@@ -95,6 +114,9 @@ jobs:
             tool-identity.log
             cargo-fetch.log
             cargo-tests.log
+            native-provision.log
+            compiler-assets.log
+            ${{ runner.temp }}/som-native-tools/receipt.json
           if-no-files-found: error
           retention-days: 30
 
