@@ -15,6 +15,7 @@ import platform
 import posixpath
 import re
 import shutil
+import subprocess
 import sys
 import tarfile
 import urllib.error
@@ -29,6 +30,13 @@ HEX = re.compile(r"^[0-9a-f]{64}$")
 FORMULA = re.compile(r"^[a-z0-9][a-z0-9+._@-]*$")
 VERSION = re.compile(r"^[0-9][A-Za-z0-9.+-]*$")
 RUST_BINARIES = ("rustc", "cargo", "rustfmt", "cargo-fmt", "cargo-clippy", "clippy-driver")
+FULL_BOTTLE_COUNT = 33
+PYTHON_BINARY = "/opt/homebrew/opt/python@3.12/bin/python3.12"
+PYTHON_RUNTIME_PROBE = (
+    "import _decimal, _lzma, ensurepip, sqlite3, ssl, venv; from pathlib import Path; "
+    "assert any((Path(ensurepip.__file__).parent / '_bundled').glob('pip-*.whl')); "
+    "print('python-runtime-ok')"
+)
 CONTRACTS = (
     "som-rs/contracts/rust-output-v1/toolchain.json",
     "som-rs/contracts/react-output-v1/toolchain.json",
@@ -96,7 +104,7 @@ def blob_repository(candidate: dict[str, Any]) -> str:
     return repository
 
 
-def validate_manifest(document: dict[str, Any], *, expected_count: int | None = 29) -> list[dict[str, Any]]:
+def validate_manifest(document: dict[str, Any], *, expected_count: int | None = FULL_BOTTLE_COUNT) -> list[dict[str, Any]]:
     need(document.get("version") == "som.react-output-macos-bottles.v1",
          "manifest_invalid", "The bottle manifest version is invalid.")
     entries = document.get("bottles")
@@ -129,6 +137,11 @@ def validate_manifest(document: dict[str, Any], *, expected_count: int | None = 
     need(all(dependency in seen for entry in entries
              for dependency in entry.get("non_system_dynamic_dependencies", [])),
          "manifest_invalid", "A dynamic library dependency is missing.")
+    if expected_count is not None:
+        python = document.get("python")
+        need("python@3.12" in seen and isinstance(python, dict)
+             and python.get("version") == "3.12.11" and python.get("binary") == PYTHON_BINARY,
+             "manifest_invalid", "The complete Python bottle configuration is missing.")
     return entries
 
 
@@ -369,6 +382,46 @@ def install_closure(selections: list[tuple[dict[str, Any], Path]], prefix: Path 
             need(target.is_dir(), "postgresql_data_missing", "The PostgreSQL bottle lacks required data or libraries.")
             parent = "share" if relative.startswith("share/") else "lib"
             replace_link(prefix / parent / "postgresql@17", target, allow_directory=True)
+    python = next((entry for entry, _ in selections if entry["formula"] == "python@3.12"), None)
+    if python is not None:
+        package = python["version"] + (f"_{python['revision']}" if python["revision"] else "")
+        framework = prefix / "Cellar/python@3.12" / package / "Frameworks/Python.framework/Versions/3.12"
+        need(framework.is_dir(), "python_framework_missing", "The Python bottle has no expected framework.")
+        replace_link(prefix / "Frameworks/Python.framework/Versions/3.12", framework, allow_directory=True)
+
+
+def verify_python(spec: dict[str, Any], contracts: dict[str, dict[str, Any]],
+                  prefix: Path = PREFIX, *, command_runner=None) -> dict[str, Any]:
+    """Run only on GitHub; fake runners and a temporary prefix support unit fixtures."""
+    if prefix == PREFIX:
+        require_github_runner()
+    versions = {document["python"]["version"] for document in contracts.values()
+                if isinstance(document.get("python"), dict)}
+    need(spec.get("binary") == PYTHON_BINARY and spec.get("version") == "3.12.11"
+         and versions == {"3.12.11"}, "contract_invalid", "The Python version pin is invalid.")
+    binary = prefix / "opt/python@3.12/bin/python3.12"
+    need(binary.is_file(), "python_binary_missing", "The installed Python executable is missing.")
+    command_runner = subprocess.run if command_runner is None else command_runner
+    result = {"status": "failed", "binary": PYTHON_BINARY, "expected_version": "Python 3.12.11",
+              "binary_sha256": None, "venv_creation": "not_run", "checks": []}
+    commands = (("version", [str(binary), "--version"], "Python 3.12.11"),
+                ("stdlib_and_bundled_ensurepip", [str(binary), "-I", "-c", PYTHON_RUNTIME_PROBE], "python-runtime-ok"))
+    for label, command, expected in commands:
+        try:
+            done = command_runner(command, capture_output=True, text=True, timeout=60, check=False)
+        except (OSError, subprocess.TimeoutExpired):
+            result["checks"].append({"label": label, "status": "failed", "reason": "Python check could not run."})
+            return result
+        output = (done.stdout or done.stderr or "").strip()
+        passed = done.returncode == 0 and output == expected
+        check = {"label": label, "status": "passed" if passed else "failed", "exit_code": done.returncode}
+        if label == "version" and re.fullmatch(r"Python [0-9]+\.[0-9]+\.[0-9]+", output):
+            check["actual_version"] = output
+        result["checks"].append(check)
+        if not passed:
+            return result
+    result["status"] = "passed"
+    return result
 
 
 def verify_installed(contracts: dict[str, dict[str, Any]], pins: list[dict[str, str]],
@@ -389,7 +442,7 @@ def verify_installed(contracts: dict[str, dict[str, Any]], pins: list[dict[str, 
 
 def provision(document: dict[str, Any], contracts: dict[str, dict[str, Any]], out: Path,
               report: dict[str, Any], *, prefix: Path = PREFIX, downloader=download_archive,
-              expected_count: int | None = 29) -> None:
+              expected_count: int | None = FULL_BOTTLE_COUNT, python_runner=None) -> None:
     if prefix == PREFIX:
         require_github_runner()
     entries = validate_manifest(document, expected_count=expected_count)
@@ -407,12 +460,18 @@ def provision(document: dict[str, Any], contracts: dict[str, dict[str, Any]], ou
     report["hash_checks"] = verify_installed(contracts, pins, prefix)
     need(report["hash_checks"] and all(check["status"] == "passed" for check in report["hash_checks"]),
          "installed_frozen_hash_mismatch", "Installed files differ from the frozen toolchain.")
+    if isinstance(document.get("python"), dict):
+        report["stage"] = "python_runtime"
+        report["python"] = verify_python(document["python"], contracts, prefix, command_runner=python_runner)
+        need(report["python"]["status"] == "passed", "python_runtime_mismatch",
+             "The installed Python version or bundled standard library check failed.")
     report.update(status="passed", stage="complete")
 
 
 def new_report() -> dict[str, Any]:
     return {"version": "som.react-output-macos-provision.v1", "status": "failed",
             "product_suites": "not_run", "stage": "guard", "packages": [], "hash_checks": [],
+            "python": {"status": "not_run", "venv_creation": "not_run"},
             "relocation": "No binary relocation or signing is performed. Frozen file hashes decide whether raw bottle bytes are usable."}
 
 

@@ -43,9 +43,6 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
-        with:
-          python-version: '3.12.11'
       - name: Record the source revision
         env:
           TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -57,7 +54,7 @@ jobs:
           python3 som-rs/scripts/react_output_acceptance/provision_macos.py --out "$RUNNER_TEMP/m6-provision"
       - name: Prepare the product Python environment
         run: |
-          python3 -m venv som-rs/runtime/acceptance-m3-venv
+          /opt/homebrew/opt/python@3.12/bin/python3.12 -m venv som-rs/runtime/acceptance-m3-venv
           som-rs/runtime/acceptance-m3-venv/bin/python -m pip install -r som-rs/scripts/react_output_acceptance/hosted_python_requirements.txt
           som-rs/runtime/acceptance-m3-venv/bin/python -m pip check
           som-rs/runtime/acceptance-m3-venv/bin/python -m pip freeze > "$RUNNER_TEMP/m6-python-dependencies.txt"

@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import tarfile
 import tempfile
+import types
 import unittest
 from unittest import mock
 import urllib.error
@@ -321,6 +322,97 @@ class ProvisionMacosTests(unittest.TestCase):
         keg = self.prefix / "Cellar/postgresql@17/17.7_1"
         self.assertEqual((self.prefix / "share/postgresql@17").resolve(), (keg / "share/postgresql").resolve())
         self.assertEqual((self.prefix / "lib/postgresql@17").resolve(), (keg / "lib/postgresql").resolve())
+
+    def test_python_framework_link_keeps_other_framework_versions_unchanged(self):
+        staged = self.out / "python-keg"
+        framework = staged / "Frameworks/Python.framework/Versions/3.12"
+        framework.mkdir(parents=True)
+        (framework / "Python").write_bytes(b"fixture framework")
+        (staged / "bin").mkdir()
+        (staged / "bin/python3.12").write_bytes(b"fixture interpreter")
+        versions = self.prefix / "Frameworks/Python.framework/Versions"
+        versions.mkdir(parents=True)
+        (versions / "Current").symlink_to("3.13")
+        python = entry("python@3.12", "3.12.11", b"unused", revision=1)
+        provisioner.install_closure([(python, staged)], self.prefix)
+        installed = self.prefix / "Cellar/python@3.12/3.12.11_1/Frameworks/Python.framework/Versions/3.12"
+        self.assertEqual((versions / "3.12").resolve(), installed.resolve())
+        self.assertEqual(provisioner.os.readlink(versions / "Current"), "3.13")
+        self.assertEqual((self.prefix / "opt/python@3.12/bin/python3.12").read_bytes(), b"fixture interpreter")
+
+    def test_python_version_and_bundled_stdlib_checks_use_only_a_fake_command_runner(self):
+        binary = self.prefix / "opt/python@3.12/bin/python3.12"
+        binary.parent.mkdir(parents=True)
+        binary.write_bytes(b"never executed")
+        commands = []
+        def run(command, **kwargs):
+            commands.append(command)
+            output = "Python 3.12.11\n" if command[-1] == "--version" else "python-runtime-ok\n"
+            return types.SimpleNamespace(returncode=0, stdout=output, stderr="")
+        spec = {"binary": provisioner.PYTHON_BINARY, "version": "3.12.11"}
+        contracts = {"fixture": {"python": {"version": "3.12.11"}}}
+        report = provisioner.verify_python(spec, contracts, self.prefix, command_runner=run)
+        self.assertEqual(report["status"], "passed")
+        self.assertEqual(report["binary_sha256"], None)
+        self.assertEqual(report["venv_creation"], "not_run")
+        self.assertEqual(commands[0], [str(binary), "--version"])
+        self.assertEqual(commands[1][:3], [str(binary), "-I", "-c"])
+        self.assertIn("ensurepip", commands[1][3])
+        self.assertTrue(all(check["status"] == "passed" for check in report["checks"]))
+
+    def test_python_wrong_version_fails_before_standard_library_probe(self):
+        binary = self.prefix / "opt/python@3.12/bin/python3.12"
+        binary.parent.mkdir(parents=True)
+        binary.write_bytes(b"never executed")
+        run = mock.Mock(return_value=types.SimpleNamespace(returncode=0, stdout="Python 3.12.12\n", stderr=""))
+        spec = {"binary": provisioner.PYTHON_BINARY, "version": "3.12.11"}
+        contracts = {"fixture": {"python": {"version": "3.12.11"}}}
+        report = provisioner.verify_python(spec, contracts, self.prefix, command_runner=run)
+        self.assertEqual(report["status"], "failed")
+        self.assertEqual(report["checks"][0]["actual_version"], "Python 3.12.12")
+        self.assertEqual(run.call_count, 1)
+
+    def test_python_probe_failure_does_not_retain_command_error_output(self):
+        binary = self.prefix / "opt/python@3.12/bin/python3.12"
+        binary.parent.mkdir(parents=True)
+        binary.write_bytes(b"never executed")
+        run = mock.Mock(side_effect=[
+            types.SimpleNamespace(returncode=0, stdout="Python 3.12.11\n", stderr=""),
+            types.SimpleNamespace(returncode=1, stdout="", stderr="https://signed.invalid/?token=private-fixture"),
+        ])
+        spec = {"binary": provisioner.PYTHON_BINARY, "version": "3.12.11"}
+        contracts = {"fixture": {"python": {"version": "3.12.11"}}}
+        report = provisioner.verify_python(spec, contracts, self.prefix, command_runner=run)
+        self.assertEqual(report["status"], "failed")
+        self.assertNotIn("signed.invalid", json.dumps(report))
+        self.assertNotIn("private-fixture", json.dumps(report))
+
+    def test_complete_fake_provision_keeps_suites_unrun_when_python_version_fails(self):
+        python_raw = archive_bytes("python@3.12/3.12.11_1", {
+            "bin/python3.12": b"never executed",
+            "Frameworks/Python.framework/Versions/3.12/Python": b"fixture framework",
+        })
+        python = entry("python@3.12", "3.12.11", python_raw, revision=1)
+        document = json.loads(json.dumps(self.manifest))
+        document["bottles"].append(python)
+        document["bottle_count"] = 2
+        document["python"] = {"binary": provisioner.PYTHON_BINARY, "version": "3.12.11"}
+        contracts = json.loads(json.dumps(self.contracts))
+        contracts["fixture"]["python"] = {"version": "3.12.11"}
+        archives = {self.node["archive_sha256"]: self.node_archive, python["archive_sha256"]: python_raw}
+        def download(candidate, destination):
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(archives[candidate["archive_sha256"]])
+            return {"archive_sha256": candidate["archive_sha256"]}
+        run = mock.Mock(return_value=types.SimpleNamespace(returncode=0, stdout="Python 3.12.12\n", stderr=""))
+        report = provisioner.new_report()
+        with self.assertRaises(provisioner.ProvisionError) as found:
+            provisioner.provision(document, contracts, self.out, report, prefix=self.prefix,
+                                  downloader=download, expected_count=None, python_runner=run)
+        self.assertEqual(found.exception.code, "python_runtime_mismatch")
+        self.assertEqual(report["status"], "failed")
+        self.assertEqual(report["product_suites"], "not_run")
+        self.assertEqual(report["python"]["status"], "failed")
 
     def test_main_writes_failed_safe_report_for_a_frozen_hash_failure(self):
         manifest = self.out / "manifest.json"

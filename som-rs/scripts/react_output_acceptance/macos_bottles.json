@@ -23,7 +23,8 @@
     "source_privacy": "Receipt and SBOM paths are relative to the public Homebrew Cellar layout. No host account name, private cache path or credential is included.",
     "public_documentation": [
       "https://docs.brew.sh/Bottles",
-      "https://github.com/actions/setup-python/blob/main/docs/advanced-usage.md"
+      "https://formulae.brew.sh/formula/python@3.12",
+      "https://docs.brew.sh/Homebrew-and-Python"
     ]
   },
   "frozen_contracts": [
@@ -34,11 +35,14 @@
   "python": {
     "version": "3.12.11",
     "architecture": "arm64",
-    "provisioner": "actions/setup-python",
+    "provisioner": "official_homebrew_bottle",
+    "binary": "/opt/homebrew/opt/python@3.12/bin/python3.12",
     "binary_sha256": null,
-    "rule": "The contracts pin the Python version. They do not pin a Python executable hash. Create som-rs/runtime/acceptance-m3-venv on the GitHub VM and install the required Python packages there before offline acceptance."
+    "ready": "unverified_until_real_github_version_and_stdlib_checks",
+    "venv_creation": "performed_later_by_the_acceptance_workflow",
+    "rule": "The contracts pin Python version 3.12.11 and no executable hash. The selected immutable Homebrew archive supplies Python. The GitHub provisioner checks the installed version, required standard modules and bundled ensurepip wheel before the workflow creates som-rs/runtime/acceptance-m3-venv."
   },
-  "bottle_count": 29,
+  "bottle_count": 33,
   "bottles": [
     {
       "formula": "rust",
@@ -1124,6 +1128,156 @@
       ],
       "installed_frozen_hash_match": "unverified_until_github",
       "selection_note": "The installed receipt was built on macOS 14.4. The installed self-SBOM and official rebuild-1 index both identify the arm64_sonoma bottle."
+    },
+    {
+      "formula": "python@3.12",
+      "version": "3.12.11",
+      "revision": 1,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/python@3.12/3.12.11_1",
+      "opt_symlink": "/opt/homebrew/opt/python@3.12",
+      "url": "https://ghcr.io/v2/homebrew/core/python/3.12/blobs/sha256:1443684f05205bf2aca7b050fdea79c93fa4f52fdbf2f085c037aef09b19b0a0",
+      "archive_sha256": "1443684f05205bf2aca7b050fdea79c93fa4f52fdbf2f085c037aef09b19b0a0",
+      "archive_size_bytes": 17939196,
+      "non_system_dynamic_dependencies": [
+        "mpdecimal",
+        "openssl@3",
+        "sqlite",
+        "readline",
+        "xz"
+      ],
+      "source_evidence": [
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/python/3.12/manifests/3.12.11_1",
+          "ref_name": "3.12.11_1.arm64_tahoe",
+          "archive_sha256": "1443684f05205bf2aca7b050fdea79c93fa4f52fdbf2f085c037aef09b19b0a0"
+        },
+        {
+          "kind": "official_oci_manifest",
+          "url": "https://ghcr.io/v2/homebrew/core/python/3.12/manifests/sha256:5da0bcb487b909d96f1d20bfe4af71262faceb80edcc7b5843c8778cfda16942",
+          "layer_media_type": "application/vnd.oci.image.layer.v1.tar+gzip",
+          "archive_sha256": "1443684f05205bf2aca7b050fdea79c93fa4f52fdbf2f085c037aef09b19b0a0",
+          "archive_title": "python@3.12--3.12.11_1.arm64_tahoe.bottle.tar.gz"
+        },
+        {
+          "kind": "official_formula_source_annotation",
+          "url": "https://github.com/homebrew/homebrew-core/blob/b4fba460b90dba88e39ab48f3b74d90b6fc4521b/Formula/p/python@3.12.rb",
+          "retrieval_status": "source_annotation_recovered_raw_source_lookup_returned_404"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github",
+      "selection_note": "The primary venv uses pyenv Python 3.12.11. The locally installed Homebrew Python is 3.12.8, so there is no matching local Homebrew receipt or SBOM for this selected Python bottle. This selection comes from the official archived OCI index and manifest. The Python contract pins version 3.12.11 but no executable hash.",
+      "dependency_note": "Official bottle metadata records mpdecimal 4.0.1, OpenSSL 3.5.2, SQLite 3.50.4, xz 5.8.1 and indirect readline 8.3.1. The closure uses the already frozen OpenSSL/SQLite pins and exact installed newer xz/readline archives. Their loader compatibility with this Python bottle must pass on GitHub."
+    },
+    {
+      "formula": "mpdecimal",
+      "version": "4.0.1",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_sequoia",
+      "expected_keg_directory": "/opt/homebrew/Cellar/mpdecimal/4.0.1",
+      "opt_symlink": "/opt/homebrew/opt/mpdecimal",
+      "url": "https://ghcr.io/v2/homebrew/core/mpdecimal/blobs/sha256:e21da583e42e86d5a2f0aedfaf7820e51b8af3065da599cff179d1a39903f3ab",
+      "archive_sha256": "e21da583e42e86d5a2f0aedfaf7820e51b8af3065da599cff179d1a39903f3ab",
+      "archive_size_bytes": 185658,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "mpdecimal/4.0.1/sbom.spdx.json",
+          "archive_sha256": "e21da583e42e86d5a2f0aedfaf7820e51b8af3065da599cff179d1a39903f3ab"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "mpdecimal/4.0.1/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/mpdecimal/manifests/4.0.1",
+          "ref_name": "4.0.1.arm64_sequoia",
+          "archive_sha256": "e21da583e42e86d5a2f0aedfaf7820e51b8af3065da599cff179d1a39903f3ab"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "readline",
+      "version": "8.3.3",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/readline/8.3.3",
+      "opt_symlink": "/opt/homebrew/opt/readline",
+      "url": "https://ghcr.io/v2/homebrew/core/readline/blobs/sha256:1c6234c033c83ea742d50aa45fd60821947fa800d5cadecb0a1aa045564bb7d1",
+      "archive_sha256": "1c6234c033c83ea742d50aa45fd60821947fa800d5cadecb0a1aa045564bb7d1",
+      "archive_size_bytes": 757862,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "readline/8.3.3/sbom.spdx.json",
+          "archive_sha256": "1c6234c033c83ea742d50aa45fd60821947fa800d5cadecb0a1aa045564bb7d1"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "readline/8.3.3/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/readline/manifests/8.3.3",
+          "ref_name": "8.3.3.arm64_tahoe",
+          "archive_sha256": "1c6234c033c83ea742d50aa45fd60821947fa800d5cadecb0a1aa045564bb7d1"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
+    },
+    {
+      "formula": "xz",
+      "version": "5.8.3",
+      "revision": 0,
+      "bottle_rebuild": 0,
+      "target": "arm64_tahoe",
+      "expected_keg_directory": "/opt/homebrew/Cellar/xz/5.8.3",
+      "opt_symlink": "/opt/homebrew/opt/xz",
+      "url": "https://ghcr.io/v2/homebrew/core/xz/blobs/sha256:55c891f5d47142fe923c87df0e3343d7ef2bc7d368c67892b4ad2c80e53069d5",
+      "archive_sha256": "55c891f5d47142fe923c87df0e3343d7ef2bc7d368c67892b4ad2c80e53069d5",
+      "archive_size_bytes": 770804,
+      "non_system_dynamic_dependencies": [],
+      "source_evidence": [
+        {
+          "kind": "installed_sbom",
+          "path_relative_to_cellar": "xz/5.8.3/sbom.spdx.json",
+          "archive_sha256": "55c891f5d47142fe923c87df0e3343d7ef2bc7d368c67892b4ad2c80e53069d5"
+        },
+        {
+          "kind": "installed_receipt",
+          "path_relative_to_cellar": "xz/5.8.3/INSTALL_RECEIPT.json",
+          "facts": [
+            "formula version",
+            "architecture",
+            "build OS"
+          ]
+        },
+        {
+          "kind": "official_oci_index",
+          "url": "https://ghcr.io/v2/homebrew/core/xz/manifests/5.8.3",
+          "ref_name": "5.8.3.arm64_tahoe",
+          "archive_sha256": "55c891f5d47142fe923c87df0e3343d7ef2bc7d368c67892b4ad2c80e53069d5"
+        }
+      ],
+      "installed_frozen_hash_match": "unverified_until_github"
     }
   ],
   "relocation": {
@@ -1153,7 +1307,13 @@
         "target": "/opt/homebrew/Cellar/postgresql@17/17.7_1/lib/postgresql"
       }
     ],
-    "postgresql_note": "Do not run Homebrew post_install or start a global database service. The acceptance host makes a fresh cluster with the pinned initdb and pg_ctl executables and LC_ALL=C."
+    "postgresql_note": "Do not run Homebrew post_install or start a global database service. The acceptance host makes a fresh cluster with the pinned initdb and pg_ctl executables and LC_ALL=C.",
+    "python_framework": {
+      "link": "/opt/homebrew/Frameworks/Python.framework/Versions/3.12",
+      "target": "/opt/homebrew/Cellar/python@3.12/3.12.11_1/Frameworks/Python.framework/Versions/3.12",
+      "rule": "Link only this framework version. Do not change the shared Current link or run Homebrew post_install."
+    },
+    "python_bundled_ensurepip": "Use the ensurepip wheel inside the selected immutable Python bottle. Do not download get-pip.py or install an unpinned global pip. The provisioner checks that the bundled wheel exists; the workflow's later python3.12 -m venv remains the real venv creation check."
   },
   "required_github_verification": [
     "Verify each downloaded archive SHA-256 before extraction.",
@@ -1162,18 +1322,19 @@
     "Verify the frozen Node executable, libnode and all frozen Homebrew library file hashes.",
     "Verify the frozen npm tree hash, file count and symlink count.",
     "Verify the three frozen PostgreSQL executable hashes.",
-    "Verify Python reports version 3.12.11 on arm64.",
+    "Run the installed opt/python@3.12/bin/python3.12 --version and require Python 3.12.11. Check the required standard modules and bundled ensurepip wheel. Keep real venv creation separate.",
     "Verify the transported npm cache tree and its frozen file count.",
     "Check loader availability for the installed compiler, Node and PostgreSQL closure.",
     "Complete dependency downloads on GitHub, then use the existing offline build and acceptance settings. Do not treat successful provisioning as product acceptance."
   ],
   "closure_notes": [
-    "The 29 selected bottles cover the inspected Rust compiler/formatter, Node/libnode and PostgreSQL loader chains outside macOS system libraries.",
+    "The 33 selected bottles cover the known Rust, Node and PostgreSQL closure plus the archived Homebrew Python bottle and its declared non-system dependencies. Python loader compatibility remains unverified until the GitHub runtime checks pass.",
     "System libraries and frameworks under /usr/lib and /System/Library are provided by the macOS runner. The contracts do not hash them.",
     "The Node loader chain also needs simdutf through merve even though simdutf is not a direct frozen node.homebrew_libraries entry.",
     "The Rust loader chain needs the matching Rust driver library and sysroot from the Rust keg, libLLVM from LLVM, z3, libgit2, libssh2, llhttp, OpenSSL, sqlite and zstd.",
     "PostgreSQL needs its own libpq and share data in addition to the executable files. Its loader chain also uses gettext, krb5, lz4, ICU, OpenSSL and zstd.",
     "Receipt dependency lists describe the installation event. Current opt links can point to newer compatible dependency kegs. This file uses the inspected runtime closure and preserves the explicit OpenSSL metadata conflict.",
-    "Build-only tools and optional LLVM Python bindings are outside the inspected dynamic runtime closure. The GitHub VM still needs its normal Xcode command line tools, linker, lsof and time utilities."
+    "Build-only tools and optional LLVM Python bindings are outside the inspected dynamic runtime closure. The GitHub VM still needs its normal Xcode command line tools, linker, lsof and time utilities.",
+    "The primary venv is a pyenv installation. No personal interpreter path is included here, and its version does not establish the selected Homebrew Python bottle's readiness."
   ]
 }
