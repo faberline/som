@@ -6,6 +6,9 @@ runtime/current and compiler-assets/current. A stand-in of the current live
 default command (same binary and assets) serves a harness port, and the
 sandbox receipt names it. The live default on 8765 is only read.
 
+The explicit compiler-only profile seeds each sandbox from the pinned previous
+compiler inputs. It never reads the live default receipt or contacts 8765.
+
 Scenarios:
 - switch: switch.py succeeds, check_default.py passes on the candidate, then
   switch.py --restore puts the stand-in command back and check_default.py
@@ -23,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -70,7 +74,19 @@ def launch_detached(argv, log, port, health):
     raise RuntimeError('stand-in startup timed out')
 
 
-def sandbox(out, live, port):
+def rehearsal_seed(config):
+    """A compiler seed uses saved inputs, with no live receipt or port access."""
+    rc.require(rc.compiler_profile(config), 'compiler seed needs explicit compiler-only prerequisites')
+    previous = rc.profile_runtime(config, candidate=False)
+    argv = [config['previous']['binary']['path'], 'serve', '--assets', config['previous']['assets']['path'],
+            '--port', '18919']
+    rc.validate_argv(argv)
+    return {'version': 'som.default-runtime.v2', 'accepted': True, 'command': argv,
+            'health': previous['health'], 'identity': {'cwd': str(rc.REPO),
+                'binary_sha256': config['previous']['binary']['sha256']}}
+
+
+def sandbox(out, live, port, source_sha=None):
     """A sandbox root whose receipt names a fresh stand-in of the live command on PORT."""
     root = out / 'root'
     (root / 'som-rs/runtime').mkdir(parents=True)
@@ -81,9 +97,47 @@ def sandbox(out, live, port):
     owner = launch_detached(live['command'][:-1] + [str(port)], out / 'stand-in/process.log', port, live['health'])
     receipt = {**live, 'pid': owner['pid'], 'command': owner['argv'], 'identity': owner,
                'process_logs': str(out / 'stand-in/process.log'), 'evidence': str(out / 'stand-in'),
-               'rehearsal_stand_in_of': rc.digest(rc.REPO / 'som-rs/runtime/default.json')}
+               'rehearsal_stand_in_of': source_sha if source_sha is not None else rc.digest(rc.REPO / 'som-rs/runtime/default.json')}
     (root / 'som-rs/runtime/default.json').write_text(json.dumps(receipt, indent=2) + '\n')
     return root
+
+
+def offline_sandbox(out, seed, port, source_sha):
+    """Make a QA-only stale receipt with a reaped positive PID, then resume it."""
+    rc.require(os.environ.get('GITHUB_ACTIONS') == 'true' and os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted'
+               and os.environ.get('RUNNER_OS') == 'macOS', 'offline PID seed runs on hosted GitHub macOS only')
+    rc.harness_port(port)
+    rc.port_free(port)
+    root = out / 'root'
+    (root / 'som-rs/runtime').mkdir(parents=True)
+    (root / 'som-rs/compiler-assets').mkdir(parents=True)
+    (root / 'som-rs/runtime/current').symlink_to(str(Path(seed['command'][0]).parent))
+    (root / 'som-rs/compiler-assets/current').symlink_to(seed['command'][3])
+    stand_in = out / 'stand-in'
+    stand_in.mkdir()
+    argv = [PYTHON, '-c', 'import os; print(os.getpid())']
+    done = subprocess.run(argv, capture_output=True, text=True, check=True, timeout=30, cwd=rc.REPO)
+    (stand_in / 'seed.stdout').write_text(done.stdout)
+    (stand_in / 'seed.stderr').write_text(done.stderr)
+    rc.require(done.stdout.strip().isdigit(), 'dead seed did not return a PID')
+    pid = int(done.stdout.strip())
+    rc.require(pid > 1 and pid != os.getpid() and not rc.alive(pid), 'seed PID is not a reaped child')
+    command = seed['command'][:-1] + [str(port)]
+    owner = {'pid': pid, 'uid': os.getuid(), 'argv': command, 'port': port,
+             'start': 'known-dead-rehearsal-seed', 'cwd': str(rc.REPO),
+             'binary_sha256': seed['identity']['binary_sha256']}
+    receipt = {**seed, 'pid': pid, 'command': command, 'identity': owner,
+               'evidence': str(stand_in), 'rehearsal_stand_in_of': source_sha,
+               'rehearsal_offline_seed': True}
+    raw = (json.dumps(receipt, indent=2) + '\n').encode()
+    (stand_in / 'stale-default.json').write_bytes(raw)
+    (root / 'som-rs/runtime/default.json').write_bytes(raw)
+    record = {'pid': pid, 'old_pid_alive': False, 'argv': argv, 'exit_code': done.returncode,
+              'stdout_file': 'stand-in/seed.stdout', 'stderr_file': 'stand-in/seed.stderr',
+              'stdout_sha256': rc.digest(stand_in / 'seed.stdout'), 'stderr_sha256': rc.digest(stand_in / 'seed.stderr'),
+              'receipt': 'stand-in/stale-default.json', 'default_sha256': rc.sha_bytes(raw)}
+    (stand_in / 'seed.json').write_text(json.dumps(record, indent=2) + '\n')
+    return root, record
 
 
 def stop_sandbox(root, port):
@@ -107,9 +161,15 @@ def main():
     config = rc.load(prerequisites)
     rc.check_prerequisites(config)
     rc.apply_formatter_env(config)
-    live_bytes = (rc.REPO / 'som-rs/runtime/default.json').read_bytes()
-    live = json.loads(live_bytes)
-    rc.require(rc.identity(live['pid'], live['command'], 8765) == live['identity'], 'live default differs')
+    compiler = rc.compiler_profile(config)
+    if compiler:
+        parent = rc.REPO / '.local/rust-compiler-goal/acceptance'
+        rc.require(parent in out.parents, 'compiler rehearsal output must live under .local acceptance')
+        live, live_bytes = rehearsal_seed(config), None
+    else:
+        live_bytes = (rc.REPO / 'som-rs/runtime/default.json').read_bytes()
+        live = json.loads(live_bytes)
+        rc.require(rc.identity(live['pid'], live['command'], 8765) == live['identity'], 'live default differs')
     previous_sha = live['identity']['binary_sha256']
     candidate_sha = config['candidate']['binary']['sha256']
     scenarios = []
@@ -117,10 +177,18 @@ def main():
         directory = out / name
         directory.mkdir()
         port = rc.free_harness_port()
-        root = sandbox(directory, live, port)
+        offline_seed = None
+        if compiler:
+            root, offline_seed = offline_sandbox(directory, live, port, rc.receipt_sha(config['previous']))
+        else:
+            root = sandbox(directory, live, port)
         common = ['--prerequisites', str(prerequisites), '--root', str(root), '--port', str(port)]
-        calls, problems = [], []
+        calls, problems, resumed = [], [], None
         try:
+            if compiler:
+                resumed = call([PYTHON, str(HERE / 'resume_default.py'), *common, '--rehearsal', '--execute',
+                                '--output', str(directory / 'resume')], directory, 'resume')
+                rc.require(resumed['exit_code'] == 0, 'offline previous compiler resume failed')
             switch = [PYTHON, str(HERE / 'switch.py'), *common, '--rehearsal', '--execute',
                       '--output', str(directory / 'switch')]
             if name != 'switch':
@@ -154,14 +222,20 @@ def main():
         finally:
             stopped = stop_sandbox(root, port)
         scenarios.append({'name': name, 'port': port, 'root': str(root), 'calls': calls,
+                          **({'offline_seed': offline_seed, 'resume': resumed} if compiler else {}),
                           'switch_stages': journal_stages(directory / 'switch') if (directory / 'switch/journal.json').exists() else None,
                           'stopped_pid': stopped, 'problems': problems, 'passed': not problems})
-    rc.require((rc.REPO / 'som-rs/runtime/default.json').read_bytes() == live_bytes, 'live receipt changed')
-    rc.require(rc.identity(live['pid'], live['command'], 8765) == live['identity'], 'live default changed')
+    if compiler:
+        rc.check_prerequisites(config)
+    else:
+        rc.require((rc.REPO / 'som-rs/runtime/default.json').read_bytes() == live_bytes, 'live receipt changed')
+        rc.require(rc.identity(live['pid'], live['command'], 8765) == live['identity'], 'live default changed')
     report = {'version': 'som.rust-output-switch-rehearsal.v1', 'prerequisites': {'path': str(prerequisites),
               'sha256': rc.digest(prerequisites)}, 'prerequisites_receipt_sha256': rc.receipt_sha(config),
               'script_sha256': {p.name: rc.digest(p) for p in sorted(HERE.glob('*.py'))},
-              'live_default_sha256': rc.sha_bytes(live_bytes), 'live_default_unchanged': True,
+              **({'profile': 'compiler-only', 'live_default_accessed': False,
+                  'previous_inputs_sha256': rc.receipt_sha(config['previous'])} if compiler else
+                 {'live_default_sha256': rc.sha_bytes(live_bytes), 'live_default_unchanged': True}),
               'scenarios': scenarios, 'passed': all(s['passed'] for s in scenarios)}
     (out / 'rehearsal.json').write_text(json.dumps(report, indent=1) + '\n')
     print(json.dumps({'passed': report['passed'], 'scenarios': {s['name']: s['passed'] for s in scenarios}}))

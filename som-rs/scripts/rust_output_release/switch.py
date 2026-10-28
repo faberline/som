@@ -24,6 +24,10 @@ The live default (ROOT is the repository, PORT 8765) needs --approval. A
 rehearsal (--rehearsal) uses a sandbox ROOT under .local and a harness port and
 may inject a failure. Every byte exchanged is saved in the fresh --output.
 
+The explicit compiler-only prerequisites use Python, Rust, TypeScript and React
+candidate canaries, and Python, Rust and TypeScript previous-default canaries.
+They skip the legacy M2 clone and retain the same ownership and rollback rules.
+
 When prerequisites.json includes typescript_formatter, switch.py sets
 SOM_TS_PRETTIER=<typescript_formatter.path> for every process it starts.
 runtime/default.json does not record the environment, so after a
@@ -126,6 +130,7 @@ def execute(config, root, port, output, approval, rehearsal, selected):
     runtime, legacy = rc.check_prerequisites(config)
     rc.apply_formatter_env(config)
     default_path, snapshot, current, pointers = current_state(root, port)
+    rc.assert_current(config, current)
     if not rehearsal:
         approval = check_approval(approval, 'switch-default-8765-rust-output', config, snapshot)
     candidate = Path(config['candidate']['binary']['path'])
@@ -133,9 +138,7 @@ def execute(config, root, port, output, approval, rehearsal, selected):
     assets = rc.candidate_assets(config, current)
     rc.assets_match(Path(current['command'][3]), current['health'])
     rc.assets_match(assets, runtime['health'])
-    python, rust, previous_python = config['python_canaries'], config['rust_canaries'], rc.previous_python(config)
-    typescript = config.get('typescript_canaries', [])
-    react = config.get('react_canaries', [])
+    cases, previous_cases = rc.candidate_cases(config), rc.previous_cases(config)
     output.mkdir(parents=True, exist_ok=False)
     run = rc.Release(output, current['identity']['cwd'])
     run.save('prerequisites.json', rc.canon(config).encode())
@@ -147,20 +150,22 @@ def execute(config, root, port, output, approval, rehearsal, selected):
         owner = rc.identity(current['pid'], current['command'], port)
         rc.require(owner == current['identity'], 'live owner differs from the receipt')
         run.health(port, current['health'])
-        clients = {'previous': previous_binary, 'new': candidate, 'legacy': Path(config['legacy_binary']['path'])}
-        run.canary(port, clients, previous_python, 'current-default')
+        clients = {'previous': previous_binary, 'new': candidate}
+        run.canary(port, clients, previous_cases, 'current-default')
         harness = set() if not rehearsal else {port}
-        for argv, health, cases in [
-                (legacy['command'][:-1], legacy['health'], None),
-                (current['command'][:-1], current['health'], previous_python),
+        clones = [(current['command'][:-1], current['health'], previous_cases),
                 ([str(candidate), 'serve', '--assets', str(assets), '--port'], runtime['health'],
-                 python + rust + typescript + react)]:
+                 cases)]
+        if not rc.compiler_profile(config):
+            clients['legacy'] = Path(config['legacy_binary']['path'])
+            clones.insert(0, (legacy['command'][:-1], legacy['health'], None))
+        for argv, health, clone_cases in clones:
             clone = run.start(argv + [str(rc.free_harness_port(harness))], health)
             try:
-                if cases is None:
+                if clone_cases is None:
                     run.m2_canary(clone['port'], clients, config['m2_canaries'])
                 else:
-                    run.canary(clone['port'], clients, cases, 'clone')
+                    run.canary(clone['port'], clients, clone_cases, 'clone')
             finally:
                 run.stop_child(clone)
         installed = install(candidate, root)
@@ -179,7 +184,7 @@ def execute(config, root, port, output, approval, rehearsal, selected):
             new_owner = run.start(argv, runtime['health'])
             run.event('new_default_owner', owner=new_owner)
             inject(selected, 'after_start')
-            run.canary(port, served, python + rust + typescript + react, 'new-default')
+            run.canary(port, served, cases, 'new-default')
             rc.require(rc.link_state(root / 'som-rs/runtime/current') == pointers['runtime'], 'pointer changed externally')
             rc.atomic_link(root / 'som-rs/runtime/current', {'kind': 'symlink', 'target': str(installed.parent)})
             run.event('pointer_set', name='runtime', target=str(installed.parent))
@@ -190,7 +195,7 @@ def execute(config, root, port, output, approval, rehearsal, selected):
                 run.event('pointer_set', name='compiler-assets', target=str(new_assets))
             inject(selected, 'after_pointer')
             run.health(port, runtime['health'])
-            run.canary(port, served, python + rust + typescript + react, 'new-default-after-pointer')
+            run.canary(port, served, cases, 'new-default-after-pointer')
             rc.require(rc.identity(new_owner['pid'], argv, port) == new_owner, 'new owner changed')
             rc.require(default_path.read_bytes() == snapshot, 'default receipt changed externally')
             receipt = {'version': 'som.default-runtime.v2', 'pid': new_owner['pid'], 'command': argv,
@@ -216,7 +221,7 @@ def execute(config, root, port, output, approval, rehearsal, selected):
                 try:
                     admitted = [o for o in run.owners.values() if o['port'] == port and o['argv'][0] == str(installed)]
                     restored = bring_back(run, root, port, current, pointers, admitted + [owner],
-                                          {'previous': previous_binary, 'new': candidate}, previous_python)
+                                          {'previous': previous_binary, 'new': candidate}, previous_cases)
                     rc.require(default_path.read_bytes() in (snapshot, committed), 'default receipt changed externally')
                     rollback = {**current, 'pid': restored['pid'], 'identity': restored,
                                 'process_logs': str(output / 'process-*.log'), 'rollback_evidence': str(output),
@@ -236,12 +241,14 @@ def restore(config, root, port, output, approval, rehearsal, evidence):
     rc.check_prerequisites(config)
     rc.apply_formatter_env(config)
     default_path, snapshot, current, pointers = current_state(root, port)
+    rc.assert_current(config, current, candidate=True)
     rc.require(Path(current['evidence']) == evidence, 'the default was not committed by this evidence')
     journal = rc.load(evidence / 'journal.json')
     rc.require(journal[-1]['stage'] == 'committed', 'evidence has no committed switch')
     previous_bytes = next(p for p in sorted(evidence.iterdir()) if p.name.endswith('-previous-default.json')).read_bytes()
     rc.require(rc.sha_bytes(previous_bytes) == current['previous_default_sha256'], 'previous receipt differs')
     previous = json.loads(previous_bytes)
+    rc.assert_current(config, previous)
     previous_pointers = journal[0]['pointers']
     if not rehearsal:
         approval = check_approval(approval, 'restore-default-8765-rust-output', config, snapshot)
@@ -261,7 +268,7 @@ def restore(config, root, port, output, approval, rehearsal, evidence):
         run.recovering = True
         restored = bring_back(run, root, port, previous, previous_pointers, [owner],
                               {'previous': Path(previous['command'][0]), 'new': Path(current['command'][0])},
-                              rc.previous_python(config))
+                              rc.previous_cases(config))
         rc.require(default_path.read_bytes() == snapshot, 'default receipt changed externally')
         receipt = {**previous, 'pid': restored['pid'], 'identity': restored,
                    'process_logs': str(output / 'process-*.log'), 'restore_evidence': str(output),
@@ -289,6 +296,7 @@ def main():
     if not args.execute and args.restore is None:
         rc.check_prerequisites(config)
         _, snapshot, current, pointers = current_state(root, args.port)
+        rc.assert_current(config, current)
         print(json.dumps({'mode': 'plan', 'mutations': 0, 'service_calls': 0,
                           'prerequisites_sha256': rc.receipt_sha(config), 'default_sha256': rc.sha_bytes(snapshot),
                           'script_sha256': rc.digest(__file__), 'common_sha256': rc.digest(rc.__file__),

@@ -60,18 +60,23 @@ def main():
     receipt = rc.load(root / 'som-rs/runtime/default.json')
     command = receipt['command']
     candidate = args.expect_binary_sha256 == config['candidate']['binary']['sha256']
+    compiler = rc.compiler_profile(config)
+    expected = rc.expected_runtime(config, args.expect_binary_sha256) if compiler else runtime
 
     def owner():
         rc.require(rc.digest(command[0]) == args.expect_binary_sha256, 'default binary is not the expected one')
         rc.require(command[-2:] == ['--port', str(args.port)], 'receipt port differs')
         rc.require(rc.identity(receipt['pid'], command, args.port) == receipt['identity'], 'owner differs')
+        rc.assert_current(config, receipt, candidate=candidate)
         return {'pid': receipt['pid'], 'start': receipt['identity']['start']}
 
     def health():
         actual = run.health(args.port, receipt['health'])
+        if compiler or candidate:
+            rc.require(rc.exact_json(actual, expected['health']), 'health differs from the pinned compiler receipt')
+            targets = expected['health']['targets'] if compiler else ['python', 'rust']
+            rc.require(actual['targets'] == targets, 'targets differ')
         if candidate:
-            rc.require(rc.exact_json(actual, runtime['health']), 'health differs from the candidate receipt')
-            rc.require(actual['targets'] == ['python', 'rust'], 'targets differ')
             toolchain = rc.load(rc.REPO / 'som-rs/contracts/rust-output-v1/toolchain.json')
             rustfmt = Path(toolchain['rust']['bin_dir']) / 'rustfmt'
             rc.require(rc.digest(rustfmt) == actual['rust_target']['formatter_sha256'], 'rustfmt hash differs')
@@ -85,6 +90,8 @@ def main():
         rc.assets_match(Path(command[3]), receipt['health'])
 
     def legacy():
+        if compiler:
+            return 'compiler-only profile: previous compiler inputs are hash-bound'
         if root != rc.REPO:
             return 'sandbox root: the M2 pointers live in the repository'
         for relative, state in LEGACY_POINTERS.items():
@@ -94,19 +101,19 @@ def main():
         return None
 
     def canaries():
-        cases = (config['python_canaries'] + config['rust_canaries']
-                 + config.get('typescript_canaries', [])
-                 + config.get('react_canaries', [])) if candidate else rc.previous_python(config)
+        cases = rc.candidate_cases(config) if candidate else rc.previous_cases(config)
         run.canary(args.port, {'previous': Path(command[0]), 'new': Path(command[0])}, cases, 'post-check')
         return {'cases': [c['name'] for c in cases]}
 
+    rollback_check = 'previous_compiler_inputs' if compiler else 'legacy_rollback_assets'
     for name, function in [('owner', owner), ('health', health), ('pointers', pointers),
-                           ('legacy_rollback_assets', legacy), ('canaries', canaries)]:
+                           (rollback_check, legacy), ('canaries', canaries)]:
         check(name, function)
     # The owner must be the same process after the canaries.
     check('owner_after', owner)
     result = {'version': 'som.rust-output-default-check.v1', 'root': str(root), 'port': args.port,
               'expect_binary_sha256': args.expect_binary_sha256, 'candidate': candidate,
+              **({'profile': 'compiler-only'} if compiler else {}),
               'script_sha256': rc.digest(__file__), 'common_sha256': rc.digest(rc.__file__),
               'prerequisites_sha256': rc.receipt_sha(config), 'default_sha256': rc.digest(root / 'som-rs/runtime/default.json'),
               'started_at': started, 'ended_at': time.time(), 'checks': checks,

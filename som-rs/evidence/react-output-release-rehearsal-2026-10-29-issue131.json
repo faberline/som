@@ -1,0 +1,194 @@
+{
+  "version": "som.react-output-release-rehearsal-evidence.v1",
+  "issue": 131,
+  "observed_at_utc": "2026-10-28T21:09:41.537442+00:00",
+  "status": "hosted_rehearsal_accepted; production_release_pending",
+  "candidate": {
+    "source_commit": "40cffc13b3bff35e3ea5804b9f43a49cdef7b3c0",
+    "binary_sha256": "59dab78a0f401a86e028c186285a888cfdf304b2d077e167d46b20d1131a3308"
+  },
+  "previous": {
+    "source_commit": "8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af",
+    "binary_sha256": "2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c"
+  },
+  "accepted_issue130": {
+    "path": "som-rs/evidence/react-output-acceptance-2026-10-29-issue130.json",
+    "sha256": "5a4d6a0271f57605f0209ff0a4697e92694742b167a04895d6f894aa9cbac46d",
+    "full_product_gates": "reused from the exact accepted binary; no rebuild"
+  },
+  "hosted_qa": {
+    "run_id": 40766965664,
+    "job_id": 123093585665,
+    "url": "https://github.com/faberline/som/actions/runs/40766965664",
+    "source_commit": "f76d8af5f49c7848b9fe5609d4975c679640b553",
+    "conclusion": "success",
+    "summary_sha256": "2521ef6bcd66ee029275593e67dac68480c92f4b7125ef449abed5f6a6e51910",
+    "rehearsal_sha256": "c5b0bbe3c4ac902a78e92c91df26877fcea4b606d9528675093672df12f2eb9d",
+    "prerequisites_sha256": "86ca59364e54e9a3e6a3f3bc916bb6eeb16e3280fb466c517ba0753d10540860",
+    "scenarios": {
+      "switch": true,
+      "after_stop": true,
+      "after_start": true,
+      "after_pointer": true,
+      "after_commit": true
+    },
+    "offline_resume": {
+      "passed": true,
+      "scenarios": 5
+    },
+    "candidate_canaries": {
+      "python": 2,
+      "rust": 2,
+      "typescript": 2,
+      "react": 2
+    },
+    "previous_canaries": {
+      "python": 2,
+      "rust": 2,
+      "typescript": 2
+    },
+    "protected_port_check": {
+      "method": "read_only_lsof; no bind/listen/connect",
+      "before": [
+        {
+          "port": 8765,
+          "argv": [
+            "/usr/sbin/lsof",
+            "-nP",
+            "-a",
+            "-iTCP:8765",
+            "-sTCP:LISTEN",
+            "-Fp"
+          ],
+          "exit_code": 1,
+          "stdout_empty": true,
+          "stderr_empty": true
+        },
+        {
+          "port": 18765,
+          "argv": [
+            "/usr/sbin/lsof",
+            "-nP",
+            "-a",
+            "-iTCP:18765",
+            "-sTCP:LISTEN",
+            "-Fp"
+          ],
+          "exit_code": 1,
+          "stdout_empty": true,
+          "stderr_empty": true
+        }
+      ],
+      "after": [
+        {
+          "port": 8765,
+          "argv": [
+            "/usr/sbin/lsof",
+            "-nP",
+            "-a",
+            "-iTCP:8765",
+            "-sTCP:LISTEN",
+            "-Fp"
+          ],
+          "exit_code": 1,
+          "stdout_empty": true,
+          "stderr_empty": true
+        },
+        {
+          "port": 18765,
+          "argv": [
+            "/usr/sbin/lsof",
+            "-nP",
+            "-a",
+            "-iTCP:18765",
+            "-sTCP:LISTEN",
+            "-Fp"
+          ],
+          "exit_code": 1,
+          "stdout_empty": true,
+          "stderr_empty": true
+        }
+      ]
+    },
+    "all_scenario_owners_stopped": true,
+    "script_file_sha256": {
+      "check_default.py": "b13479a60441a2aacdad803d209c6735332f8bae1ab56ab2cad5b464adc9a35f",
+      "fetch_release_evidence.py": "e4916c2828e6371dac49d77a23fdad74bc5e6d62c1c5fa639a8a26e4a713b7e2",
+      "prepare_compiler_inputs.py": "71bfece9c8b1f113ff5d94dcf7be39f150bdd66e83a87dc470b43155943b2246",
+      "prepare_inputs.py": "e7210596b194d68b640acac0f486de0cd99ffc15c31378fa03223a5bdc0ffa7b",
+      "rehearse.py": "587e83f0dc485052faf215d815ce14984e53fc7b12c278c0c7e8ee17625c761c",
+      "release_common.py": "968a5c77dc809f3bb4f76cbdcdbc5d26f447de8a13ce1dc390d6e18124725b75",
+      "resume_default.py": "b8de536b89b23c49df08b82dbc5288d32c2576fd584df308a304a1ff0486f403",
+      "run_compiler_rehearsal.py": "37b86f0b80c95b74c04d788d9e993dff9de0371532b9ba40eb65bcbb4fe961e1",
+      "stage_release_evidence.py": "f096cf6d98068161aad98a79aabe334a41a9c2866b6dad9f81967e2fbd379bc7",
+      "switch.py": "4c28382acf034afcc6d6983de596c564e4f918f96492adcfac823bb4d60d22f9",
+      "test_compiler_inputs.py": "36cf6730ed6b1c6f9fbfbe68bda12979a756afd8aeee7be4e6e6f280b57b5c7e",
+      "test_compiler_profile.py": "4afe699f7ff64a3df6ee289df3c7160dbc004192e438f5113e2488426e11ad25",
+      "test_react_canaries.py": "7857660ffd915ab3d845f20fa7c15bb7d2754e5f9c7c406bd3b600a289e5bc2a",
+      "test_release_evidence.py": "21488d4c30793f332d8517e5c88538167e007fc3cec99999c320aed5f923aeee",
+      "test_resume_default.py": "dd6da4b727b0ed36347b3683018e8038994cb86dd3c026135b7b2a617bd7e4b3",
+      "test_stage_release_evidence.py": "31158dacf242babdd98b697959224ce25491b6539fcdd2273431b46d63b062de",
+      "test_typescript_canaries.py": "e2b153605cfcab51a9415f9f98308dcea1b7b811ec7df8f2deb7295e15055905"
+    }
+  },
+  "tooling": {
+    "run_id": 40766965597,
+    "url": "https://github.com/faberline/som/actions/runs/40766965597",
+    "source_commit": "f76d8af5f49c7848b9fe5609d4975c679640b553",
+    "conclusion": "success",
+    "passed": 441,
+    "python_runner": 202,
+    "node": 53,
+    "independent_audit": 96,
+    "release": 80,
+    "quickstart": 10
+  },
+  "artifacts": {
+    "encrypted_raw": {
+      "id": 12851980984,
+      "name": "m6-release-evidence",
+      "bytes": 111991633,
+      "sha256": "8b97e0b3515c305d24b77f11a08bb97e40dfe074d53c82eb0861a5dd2874e6bf",
+      "index_sha256": "11a010c988c891112b0d8b594eab37f6c1e496e74e06e27f0e53463923010c2c",
+      "packages": 10,
+      "files": 1996,
+      "plaintext_bytes": 227532837,
+      "expires_at": "2026-11-27T21:00:54Z"
+    },
+    "safe_summary": {
+      "id": 12849899572,
+      "name": "m6-release-summary",
+      "bytes": 366913,
+      "sha256": "5720a7b7ba8d547cbf209902f24cde2959b836cc6ed60ebc35e48943f4c4d055"
+    }
+  },
+  "independent_review": {
+    "path": "som-rs/evidence/react-output-release-independent-review-2026-10-29-issue131.json",
+    "sha256": "6fc1d8f81ee4901b7c8f67ea7e4ee8af187bf9f714962a66fdeb114c6a067845"
+  },
+  "deployment_data": {
+    "manifest_files": 163,
+    "manifest_bytes": 75314732,
+    "active_bindings": 97,
+    "plan_sha256": "af8568770bfe95f4669c99eadbc7cccaa18078e9d5f88e60c22c4f4ca41e0490",
+    "production_prerequisites_sha256": "2ca65ac03f0aec41abc9be3e7264005e3b4555e8c297919e3ab6928afe0cda5c",
+    "review_status": "data integrity passed; no primary writes"
+  },
+  "excluded_prior_run": {
+    "run_id": 40764095844,
+    "source_commit": "deeb98c6dee26398a6da7c9df71c0ce2a4930cf1",
+    "reason": "The old protected-port absence helper briefly bound and listened on 8765 and 18765. Its protected_ports_unused claim was false. It also predates the stopped-default resume helper."
+  },
+  "production": {
+    "current_receipt_binary_sha256": "2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c",
+    "recorded_process_state": "read-only inspection found the receipt PID absent and no listener on port 8765",
+    "start_and_switch": "pending explicit human approval and primary write ownership",
+    "tag": "pending separate later approval",
+    "github_release": "pending separate later approval",
+    "issue_lifecycle": "agy:doing; open"
+  },
+  "execution": {
+    "project_tests_builds_and_qa_services": "GitHub-hosted runners only",
+    "local": "source/metadata reads, edits, Git, actual encrypted-data restoration and deployment-file copying/hashing only"
+  }
+}

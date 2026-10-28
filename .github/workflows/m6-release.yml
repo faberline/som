@@ -1,0 +1,112 @@
+name: M6 compiler release rehearsal
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled]
+    paths:
+      - .github/workflows/m6-release.yml
+      - som-rs/scripts/rust_output_release/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: m6-release-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  rehearsal:
+    name: Four-target switch and rollback on QA ports
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.head.repo.full_name == github.repository && contains(github.event.pull_request.labels.*.name, 'm6:rehearse-release'))
+    # Reuse the exact accepted macOS binaries. Portable tools belong to M12.
+    runs-on: macos-26
+    timeout-minutes: 90
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      CARGO_NET_OFFLINE: 'true'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Record the tested source revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$TESTED_SHA"
+          printf '%s\n' "$TESTED_SHA" > "$RUNNER_TEMP/m6-release-tested-sha.txt"
+      - name: Fetch immutable evidence and public tool and approved input commits
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 som-rs/scripts/rust_output_release/fetch_release_evidence.py --out "$RUNNER_TEMP/m6-release-evidence"
+          python3 - <<'PY'
+          import json, pathlib, re, subprocess
+          root = pathlib.Path('som-rs/scripts/react_output_acceptance')
+          tools = json.loads((root / 'macos_bottles.json').read_bytes())['frozen_file_supplement']
+          inputs = json.loads((root / 'hosted_inputs.json').read_bytes())
+          if tools['repository'] != 'faberline/som' or not all(re.fullmatch(r'[0-9a-f]{40}', c) for c in (tools['commit'], inputs['commit'])):
+              raise SystemExit('release provision pins refused')
+          subprocess.run(['git', 'fetch', '--no-tags', '--depth=1', 'origin', tools['commit'], inputs['commit']], check=True)
+          PY
+      - name: Install and verify the frozen runtime tools
+        run: |
+          python3 som-rs/scripts/react_output_acceptance/provision_macos.py --out "$RUNNER_TEMP/m6-release-provision"
+      - name: Restore the approved compiler inputs and immutable evidence
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py --repo-root "$GITHUB_WORKSPACE" --config "$GITHUB_WORKSPACE/som-rs/scripts/react_output_acceptance/hosted_inputs.json" --out "$RUNNER_TEMP/m6-release-inputs" --node /opt/homebrew/Cellar/node/26.5.0/bin/node
+          test ! -e .local
+          test ! -L .local
+          mv "$RUNNER_TEMP/m6-release-inputs/.local" .local
+          /opt/homebrew/Cellar/node/26.5.0/bin/node som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs --root "$RUNNER_TEMP/m6-release-evidence/original" --out "$GITHUB_WORKSPACE/.local/m6-hosted/acceptance" --index-sha256 3759239392208eab81bf740ca9ca2a41465be3e3e4995de2bd255774f4596bea > "$RUNNER_TEMP/m6-release-restore-original.stdout"
+          /opt/homebrew/Cellar/node/26.5.0/bin/node som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs --root "$RUNNER_TEMP/m6-release-evidence/audit" --out "$RUNNER_TEMP/m6-release-audit" --index-sha256 87ae9d65d1f8b643986e69e4f1da93a7f3fa3736cae7cec70a4fcf71290a36d2 > "$RUNNER_TEMP/m6-release-restore-audit.stdout"
+      - name: Rehearse the four targets and five recovery scenarios offline
+        run: |
+          /opt/homebrew/opt/python@3.12/bin/python3.12 som-rs/scripts/rust_output_release/run_compiler_rehearsal.py --raw-root "$GITHUB_WORKSPACE/.local/m6-hosted/acceptance" --audit-root "$RUNNER_TEMP/m6-release-audit" --out "$GITHUB_WORKSPACE/.local/rust-compiler-goal/acceptance/react-131"
+      - name: Seal the raw rehearsal evidence
+        if: always()
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          if [ -d .local/rust-compiler-goal/acceptance/react-131 ]; then
+            python3 som-rs/scripts/rust_output_release/stage_release_evidence.py --root "$GITHUB_WORKSPACE/.local/rust-compiler-goal/acceptance/react-131" --out "$RUNNER_TEMP/m6-release-staged" > "$RUNNER_TEMP/m6-release-staging.stdout"
+            /opt/homebrew/Cellar/node/26.5.0/bin/node som-rs/scripts/react_output_acceptance/seal_hosted_evidence.mjs --root "$RUNNER_TEMP/m6-release-staged" --out "$RUNNER_TEMP/m6-release-sealed"
+          fi
+      - name: Copy the rehearsal summary out of the hidden QA directory
+        if: always()
+        run: |
+          if [ -f .local/rust-compiler-goal/acceptance/react-131/summary.json ]; then
+            cp .local/rust-compiler-goal/acceptance/react-131/summary.json "$RUNNER_TEMP/m6-release-summary.json"
+          fi
+      - name: Keep the source, tool, and rehearsal summaries
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: m6-release-summary
+          path: |
+            ${{ runner.temp }}/m6-release-tested-sha.txt
+            ${{ runner.temp }}/m6-release-evidence/receipt.json
+            ${{ runner.temp }}/m6-release-provision/report.json
+            ${{ runner.temp }}/m6-release-inputs/provision.json
+            ${{ runner.temp }}/m6-release-restore-original.stdout
+            ${{ runner.temp }}/m6-release-restore-audit.stdout
+            ${{ runner.temp }}/m6-release-staging.stdout
+            ${{ runner.temp }}/m6-release-summary.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Keep the encrypted raw rehearsal
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: m6-release-evidence
+          path: ${{ runner.temp }}/m6-release-sealed/
+          if-no-files-found: warn
+          retention-days: 30
