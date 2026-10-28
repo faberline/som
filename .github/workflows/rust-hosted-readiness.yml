@@ -219,10 +219,10 @@ jobs:
           retention-days: 14
 
   experimental-native-compile:
-    name: All Python and Rust compile bytes (unsealed experiment)
+    name: Full Python and Rust compile and assembly (unsealed experiment)
     needs: [cargo-tests, public-input-reconstruction]
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 60
     env:
       RUSTUP_TOOLCHAIN: 1.96.1
       CARGO_TERM_COLOR: never
@@ -280,14 +280,15 @@ jobs:
         run: |
           cargo build --locked --offline --manifest-path som-rs/som-targets/Cargo.toml --bin som 2>&1 | tee experimental-build.log
           sha256sum "$CARGO_TARGET_DIR/debug/som" | tee -a experimental-build.log
-      - name: Compare all 2041 compile replies with the unsealed checker
+      - name: Compare all compile replies and complete product files with the unsealed checker
         env:
           TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          python3 som-rs/scripts/hosted_readiness/run_experimental_native_compile.py \
+          python3 som-rs/scripts/hosted_readiness/run_experimental_native_assembly.py \
             --repo . \
             --python-inputs "$RUNNER_TEMP/som-input-artifact/_temp/som-public-inputs" \
             --rust-inputs "$RUNNER_TEMP/som-input-artifact/_temp/som-rust-complete-inputs" \
+            --checked-proof "$RUNNER_TEMP/som-input-artifact/_temp/som-quality-checked-proof" \
             --binary "$CARGO_TARGET_DIR/debug/som" \
             --assets "$GITHUB_WORKSPACE/som-rs/compiler-assets/current" \
             --ruff "$SOM_RUFF" --rustfmt "$SOM_RUSTFMT" \
@@ -302,6 +303,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: experimental-unsealed-native-compile
+          include-hidden-files: true
           path: |
             tested-sha.txt
             experimental-tools.log
