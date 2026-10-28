@@ -1,0 +1,70 @@
+{
+  "version": "som.m12-native-assembly-independent-source-review.v1",
+  "reviewer": "independent compile_driver_review agent; not the assembly author",
+  "candidate_base_head": "bf3a04a0eee05d633b9b68ffe4e7e2885583dcd5",
+  "scope": "Source-only review of the full Python/Rust assembly experiment after all2041 compile comparisons on the same owned child.",
+  "source_review_passed": true,
+  "actionable_findings": [],
+  "patch_sha256": "f0f6699543eae516d1472890928cdaecc3743073003a53ad38fafe4818b34a4d",
+  "files": {
+    "som-rs/scripts/hosted_readiness/run_experimental_native_compile.py": "bb3653edc9021b1476d659276fbf9a549ba33de594fad9dac3713ac368b37d87",
+    "som-rs/scripts/hosted_readiness/run_experimental_native_assembly.py": "f37eddbcec79963312c936c752fd897d9ed1906c3e2b0adc3241eb0ace4d8eaa",
+    "som-rs/scripts/hosted_readiness/test_run_experimental_native_assembly.py": "e4ca3673b84ba88681c13fece69cab9c2817459a6698a8bc9037389c03943635"
+  },
+  "compile_driver_base_sha256": "b60992771fa47aeb54120a12ef1e573507cbf4315a18c0ad11ff80a399f23014",
+  "checked": [
+    "The hook prepares before candidate snapshots, runs assembly on the same still-owned child only after all2041 exact compile rows pass, and finalizes after owned cleanup and final candidate identity checks.",
+    "The complete plan has1342 default Python observations,6 checked Python observations and697 normal Rust observations. It retains671 named Python frozen product slots, each proven for none/python compile variants, and697 named Rust product slots. Exact400 compile refusals have no assembly.",
+    "Python default assembly verifies the reconstructed accepted before-metadata request against both exact TS065 QA/base assemble request hashes. It compares the actual current assembly response to the fixed accepted QA raw response hash. Request and response authorities remain distinct.",
+    "Every Python frozen product slot checks the accepted historical raw response hash, complete canonical file-map hash, file count and the complete accepted per-file path/content hash set for both compile variants.",
+    "Three checked Python slots use the two exact approved supplement DSLs and the same-candidate public checked-reference proof. Prompt, named index, source/module/data/anchor pins and complete canonical DSL hashes are checked. The normal bundle adapter preserves current prompt/assets and recomputes both DSL and payload hashes.",
+    "Rust always assembles the normal target plan. Python checked provenance remains context. Every Rust product checks its complete frozen file-map hash and both corresponding TS065 rebased_files.files_sha256 and recorded_files_sha256. No older-control raw request or response projection is made.",
+    "Source bindings include the running assembly helper, driver, checked-proof and reconstruction modules plus relevant compiler/target/accepted-owner files. Checked proof inputs are hashed before use and rechecked after assembly.",
+    "Each assembly call uses the existing no-proxy/no-redirect opener and fresh owned PID/session/executable/loopback socket ownership proof. It does not launch a second service or use production ports.",
+    "Every rendered path is checked before writing. Complete UTF-8 bytes are saved without newline conversion, reread and hashed. Finalization rechecks saved requests, replies and all rendered file maps and per-file receipts.",
+    "An interruption propagates to the compile driver's owned cleanup. Unrun, missing, failed, changed, interrupted or cleanup-failed observations cannot set assembly_experiment_complete. All product/readiness flags remain false and policy stays unsealed.",
+    "All13 synthetic test definitions were read. They cover the full2045 observation plan and1368 named slots, compile failure refusal, missing scope, map authority disagreement, checked adapter and proof bindings, raw-byte differences, per-file completeness, unsafe paths, saved-output mutation, cleanup failure and hook ordering."
+  ],
+  "independent_existing_data_comparison": {
+    "execution_kind": "Read and hash existing JSON metadata only; no proposed module imported or executed.",
+    "python_qa_base_raw_assembly_pairs_compared": 1342,
+    "python_qa_base_raw_disagreements": 0,
+    "python_qa_base_assemble_request_disagreements": 0,
+    "python_standard_variant_raw_historical_comparisons": 1336,
+    "python_standard_variant_raw_historical_disagreements": 0,
+    "checked_named_ids": [
+      "m2-alternative-checked",
+      "supplement-mongodb-child-patch-read-checked",
+      "supplement-postgresql-child-read-checked"
+    ],
+    "rust_three_way_frozen_rebased_recorded_map_comparisons": 697,
+    "rust_three_way_map_disagreements": 0
+  },
+  "static_checks": {
+    "git_apply_check": "passed",
+    "new_helper_and_test_AST_syntax": "passed",
+    "compile_driver_patch_context_and_resulting_hash": "independently reconstructed as data and AST-parsed; passed",
+    "tests_defined": 13,
+    "tests_executed": false
+  },
+  "workflow_integration": [
+    "Keep the existing target-aware build, exact tested SHA, native tools/assets, same-run input artifact and owned port/environment arguments.",
+    "Call som-rs/scripts/hosted_readiness/run_experimental_native_assembly.py instead of the compile-only entry point.",
+    "Add --checked-proof $RUNNER_TEMP/som-input-artifact/_temp/som-quality-checked-proof and use a fresh owned output directory.",
+    "Upload the full output tree, including its root manifest, assembly/manifest.json, all compile rows, assembly exchanges, rendered products and cleanup records. Set include-hidden-files:true so any complete generated file map remains exportable.",
+    "Keep sufficient job time for the complete compile and assembly scope. Do not sample, filter, reuse old candidate results or treat this unsealed experiment as product acceptance."
+  ],
+  "local_execution": {
+    "source_and_metadata_reads_hashes_AST_and_read_only_patch_check": true,
+    "project_imports": false,
+    "helper_driver_or_checker_runs": false,
+    "tests": false,
+    "compiler_or_formatter_runs": false,
+    "builds": false,
+    "services_or_products": false
+  },
+  "hosted_execution": "unrun",
+  "policy_state": "unsealed",
+  "product_acceptance_passed": false,
+  "next_step": "Root may commit the exact reviewed patch, run all fixtures and the full compile-plus-assembly stage on GitHub, and independently audit the actual saved raw evidence. This source review grants no numbered compatibility-policy acceptance, full product/behavior acceptance or tracker closeout."
+}

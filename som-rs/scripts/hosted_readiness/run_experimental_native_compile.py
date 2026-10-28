@@ -417,7 +417,7 @@ def run_rows(jobs, checker, service, out, *, start_index=0):
     return records
 
 
-def _run(repo, python_inputs, rust_inputs, binary, assets, tools, port, out, tested_sha, cancellation):
+def _run(repo, python_inputs, rust_inputs, binary, assets, tools, port, out, tested_sha, cancellation, *, extension=None):
     require(re.fullmatch(r"[0-9a-f]{40}", tested_sha) is not None, "exact tested Git SHA required")
     require(not out.exists() and all(out != root and root not in out.parents for root in [repo, python_inputs, rust_inputs, assets, *tools.values()]), "new output outside source/input/asset/tool trees required")
     no_symlinks(out)
@@ -439,6 +439,8 @@ def _run(repo, python_inputs, rust_inputs, binary, assets, tools, port, out, tes
             checker.repo.read("som-rs/scripts/hosted_readiness/" + name)
         jobs, input_record = prepare_jobs(repo, python_inputs, rust_inputs, accepted, tested_sha)
         report["inputs"] = input_record
+        if extension is not None:
+            extension.prepare(checker, document, jobs)
         initial = {"source": source_snapshot(checker), "binary": file_identity(binary), "assets": tree_identity(assets),
                    "tools": {key: tree_identity(path) if key == "SOM_TS_PRETTIER" else file_identity(path) for key, path in tools.items()}}
         artifacts = experiment.parse(checker.repo.read(experiment.ARTIFACTS))["tools"]
@@ -461,6 +463,8 @@ def _run(repo, python_inputs, rust_inputs, binary, assets, tools, port, out, tes
                 and health["formatter_sha256"] == initial["tools"]["SOM_RUFF"]["sha256"], "owned health consistency differs")
         report["health_consistency"] = {"http_status": status, "raw_sha256": sha(raw), "owned_socket": owner, "expected_pin_authority": "committed source/artifacts, never health"}
         records = run_rows(jobs, checker, service, out)
+        if extension is not None:
+            report["assembly_extension"] = extension.run(checker, service, jobs, records, out)
     except BaseException as error:
         if isinstance(error, RowsStopped):
             records, error = error.records, error.cause
@@ -495,14 +499,20 @@ def _run(repo, python_inputs, rust_inputs, binary, assets, tools, port, out, tes
     report["experiment_complete"] = (report["actual_rows"] == EXPECTED and report["passed"] == 2041
                                      and report.get("identity_stability_passed") is True and report["cleanup"]["cleanup_passed"]
                                      and "setup_error" not in report and cancellation["signal"] is None)
+    if extension is not None:
+        try:
+            report["assembly_extension"] = extension.finalize(report, out)
+        except BaseException as error:
+            report["assembly_extension"] = {"assembly_experiment_complete": False, "product_acceptance_passed": False, "finalization_error": type(error).__name__}
+        report["remaining"]["assembly"] = "see unsealed assembly_extension; no product acceptance"
     dump(out / "manifest.json", report)
     print(json.dumps({key: report[key] for key in ["state", "policy_state", "product_acceptance_passed", "actual_rows", "passed", "experiment_complete"]}))
     return report
 
 
-def run(repo, python_inputs, rust_inputs, binary, assets, tools, port, out, tested_sha):
+def run(repo, python_inputs, rust_inputs, binary, assets, tools, port, out, tested_sha, *, extension=None):
     with cancellation_handlers() as cancellation:
-        return _run(repo, python_inputs, rust_inputs, binary, assets, tools, port, out, tested_sha, cancellation)
+        return _run(repo, python_inputs, rust_inputs, binary, assets, tools, port, out, tested_sha, cancellation, extension=extension)
 
 
 def main(argv=None):

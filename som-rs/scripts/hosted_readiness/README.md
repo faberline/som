@@ -30,6 +30,8 @@ The `Rust hosted readiness` workflow has these jobs:
   It starts one owned target-aware candidate and keeps every raw exchange.
   It checks the child process and local socket before each request.
   It stops its own child and saves a cleanup receipt.
+  It then checks 1,342 default Python assemblies, six checked Python plans
+  and all 697 Rust product file maps. It keeps every complete product directory.
   This unsealed experiment does not pass product acceptance.
 - The runtime qualification job builds pinned PostgreSQL, Python and Redis sources.
   It checks pinned MongoDB and uv archive members on Ubuntu 22.04.
@@ -188,3 +190,14 @@ Keep logs and mark remaining checks unrun after a timeout.
 Keep #141 and M12 open until their applicable checks pass independent review.
 Do not reopen the completed historical Rust release milestones.
 Default changes, tags and releases retain their separate user approval gates.
+
+The bf3a04a0ee GitHub run passed all 2,041 compile byte comparisons.
+A separate controller audit recomputed every accepted raw response hash,
+current and reconstructed old payload hash, and exact digest leaf scope.
+It checked all raw request hashes, 146 source pins, child ownership and cleanup.
+The same run passed 169 fixtures, both complete Cargo suites and 27 runtime fixtures.
+The first runtime build retained 10,102 regular installed files and 11 aliases.
+Its saved artifacts passed source, license, version, binary-byte and log checks.
+Artifact upload follows aliases and changes modes. A reuse installer must restore
+only the recorded internal links and modes, then check the tools again on GitHub.
+Services, dependency closure and product behavior remain separate unrun gates.
