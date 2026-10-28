@@ -99,7 +99,7 @@ jobs:
         env:
           CARGO_NET_OFFLINE: 'false'
         run: |
-          for manifest in som-rs/Cargo.toml som-rs/som-targets/Cargo.toml som-rs/contracts/rust-output-v1/reference/Cargo.toml som-rs/contracts/rust-output-v1/reference-phase2/Cargo.toml; do
+          for manifest in som-rs/Cargo.toml som-rs/som-targets/Cargo.toml; do
             /opt/homebrew/Cellar/rust/1.96.1/bin/cargo fetch --locked --manifest-path "$manifest"
           done
       - name: Run one candidate and the independent audit
