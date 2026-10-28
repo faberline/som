@@ -5,6 +5,7 @@ on:
     paths:
       - .github/workflows/m6-tooling.yml
       - som-rs/scripts/react_output_acceptance/**
+      - som-rs/scripts/rust_output_release/**
   workflow_dispatch:
 
 permissions:
@@ -47,6 +48,43 @@ jobs:
             tested-sha.txt
             runner-tests.log
             runner-help.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    name: M6 release canary fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Record tested revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 --version
+          printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+      - name: Install release tool import dependencies
+        run: |
+          python3 -m venv "$RUNNER_TEMP/m6-release-venv"
+          "$RUNNER_TEMP/m6-release-venv/bin/python" -m pip install 'jsonschema==4.25.1' 'psycopg[binary]==3.2.10' 'referencing==0.36.2' 'alembic==1.16.5' 'SQLAlchemy==2.0.44'
+          "$RUNNER_TEMP/m6-release-venv/bin/python" -m pip freeze > release-dependencies.txt
+      - name: Run issue 138 unit gate
+        run: |
+          "$RUNNER_TEMP/m6-release-venv/bin/python" -m unittest discover -s som-rs/scripts/rust_output_release -p 'test_*.py' -v 2>&1 | tee release-tests.log
+          "$RUNNER_TEMP/m6-release-venv/bin/python" som-rs/scripts/rust_output_release/prepare_inputs.py --help | tee release-help.txt
+      - name: Keep release unit gate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: m6-release-fixtures
+          path: |
+            tested-sha.txt
+            release-dependencies.txt
+            release-tests.log
+            release-help.txt
           if-no-files-found: error
           retention-days: 30
 
