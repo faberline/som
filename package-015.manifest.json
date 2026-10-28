@@ -1,0 +1,3272 @@
+{
+  "version": "som.m6-sealed-inputs-manifest.v1",
+  "cipher_sha256": "a1cf8a9e1e6a1f54736c5fe8263ebc1eff37b7648c6cf0f898fbce735c4bfcbc",
+  "uncompressed_bytes": 17665023,
+  "total_files": 544,
+  "files": [
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0000/assemble.request.json",
+      "sha256": "b8b91a30281f3fad6a982e813dd2ae25e35ce7d90ec8c4b1ce26e33bb79c464a",
+      "bytes": 20520,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0001/assemble.request.json",
+      "sha256": "253c49033eefb6569525a79be0cfa047ac280d42cd9b2579709949eb5327e1a6",
+      "bytes": 20405,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0002/assemble.request.json",
+      "sha256": "908cbfee632ee5297b5df513159be180e58aedb45f9e0103afd9226ca88ede31",
+      "bytes": 20032,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0003/assemble.request.json",
+      "sha256": "143c20ac0669d141856184a82c0db295a5d6fec06475e8546ac5fa52640f559d",
+      "bytes": 20057,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0004/assemble.request.json",
+      "sha256": "3b917434e39064c6952aa22330921076b9757ba15b0ad1aa9599cbd1ceaf9774",
+      "bytes": 20212,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0005/assemble.request.json",
+      "sha256": "25a3df02677321107463d34bfcf33b55de505466ed6b66885a10b4792ddae9e8",
+      "bytes": 20921,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0006/assemble.request.json",
+      "sha256": "c7cbd7bb41e4172544df72c2504c308b6f18582173e4218f6681f74ec54a3c51",
+      "bytes": 18611,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0007/assemble.request.json",
+      "sha256": "4dfe2197923880d4564dd4c2df3c605ad9b82aac8a7c99312d38115bf1cb05bc",
+      "bytes": 20900,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0008/assemble.request.json",
+      "sha256": "294890427e250c6214216054f1ceab1687a6024fe6e13ebe76e624b13e68b8a3",
+      "bytes": 18748,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0009/assemble.request.json",
+      "sha256": "172cbacdf35c8fca9cbe4ab2d00995ead1d8b280da905d49649bfcbb47795ea6",
+      "bytes": 21138,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0010/assemble.request.json",
+      "sha256": "365ee57caf1e3d9a1b19ac592353dd6a0d927d0a730213b8377c8d8ff6f141b5",
+      "bytes": 22760,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0011/assemble.request.json",
+      "sha256": "825d4d128cc9d972cf6af67d5ab6b0f1ff0f0a6699ec29fa669e5e30d9c69098",
+      "bytes": 20454,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0012/assemble.request.json",
+      "sha256": "00894dfbee66532b176b7f295bb98a78efde8d5bbac048e379ba9b1bd78abca8",
+      "bytes": 20638,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0013/assemble.request.json",
+      "sha256": "8807906199e2e04e3cb86b4d0a180259385c0a13e97ff9ccc4a42168b2f8807f",
+      "bytes": 18706,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0014/assemble.request.json",
+      "sha256": "4cfd3d33ff5bf976c7dd082d21264297809fc296e8ad3254459afe9800982cc7",
+      "bytes": 17706,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0015/assemble.request.json",
+      "sha256": "ec2afd6bc81cad91703e4521a9969a5b96a55f4a9b27bdef1e49cf3be7b1cfc6",
+      "bytes": 16290,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0016/assemble.request.json",
+      "sha256": "cb5099814d0a070f190a9b1e3e6c975345fb592d1b2abe9da37c072d6807a6b3",
+      "bytes": 20753,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0017/assemble.request.json",
+      "sha256": "e8ef06f6098d2a4792fa5aaddf6b90e8c50b2db348489ca97510099ae4334a43",
+      "bytes": 21994,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0018/assemble.request.json",
+      "sha256": "576eff0dbf17a11980f8a4f0ba9e06bf957d5b53f744a07da66629d2d6e6b250",
+      "bytes": 15071,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0019/assemble.request.json",
+      "sha256": "2e8112447d38428a571a59d588c68501c15e3c2083b390c274dd9b99a276caae",
+      "bytes": 18269,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0020/assemble.request.json",
+      "sha256": "4b1a2faec45d893acb8d322bbeabc14319608d41577af782d1fff4be40d9e8d4",
+      "bytes": 17968,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0021/assemble.request.json",
+      "sha256": "5eab9b32678c1e264cf682824903cf7daae16ae08471c6b196cabba69f03e2d5",
+      "bytes": 20485,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0022/assemble.request.json",
+      "sha256": "0e5585637c61d22af8073d836c3a81035a7cdab1fa8ca2a94980dfdbacf842fe",
+      "bytes": 15568,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0023/assemble.request.json",
+      "sha256": "cb4e3cbb917da5f80b680a9658046f88d368ecd811937d0d980bae65527c483e",
+      "bytes": 15578,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0024/assemble.request.json",
+      "sha256": "617e974ae9eb7754f54280499973951a7d1c1093291567b3fc78882066c961c5",
+      "bytes": 19275,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0025/assemble.request.json",
+      "sha256": "c11003c988d3e310c6448fd1cb9bc1264dc8ff49432a8226406b32c3c15ac885",
+      "bytes": 19270,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0026/assemble.request.json",
+      "sha256": "7cbaf27fd8c2dc312460d907f46ae68dac98f167f8d1dbf906f98efbf7bfe0c9",
+      "bytes": 16519,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0027/assemble.request.json",
+      "sha256": "ca17e8e932f5a6b0f5e468eb2906df01407ac52b9517a71f5304da69aebb0234",
+      "bytes": 18453,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0028/assemble.request.json",
+      "sha256": "47a8a202980efd33ad32d95f6259dfdeba913363070d9cb3f1c9f6898f2276bc",
+      "bytes": 18675,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0029/assemble.request.json",
+      "sha256": "b39054593d1931e34572a431084cabb72ab7b112b20eb37dc93c7b90fafd42ff",
+      "bytes": 20331,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0030/assemble.request.json",
+      "sha256": "3d0d42501f0e319280581bc15c3345eaf3b076b02c225830eaf0a961e039d881",
+      "bytes": 17470,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0031/assemble.request.json",
+      "sha256": "b9640d45a30b901ba44e6cb93f024e16bdfa5523b9ad2855d889d1d664661f29",
+      "bytes": 18887,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0032/assemble.request.json",
+      "sha256": "5a2a59428d08d1225340ed818000c957345e260881ea23bea929f8629b6d5963",
+      "bytes": 19838,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0033/assemble.request.json",
+      "sha256": "fa71b7fbe80ddb0fc9c7ffabfba243b13f4769af56714c276c820247df989665",
+      "bytes": 18836,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0034/assemble.request.json",
+      "sha256": "0ec3d4b98a3473f4d07ea51f4d0d9bab70a3032b028e0796e76b3bee3202200c",
+      "bytes": 16822,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0035/assemble.request.json",
+      "sha256": "76f9fe7956bd36ae5efa1b8f01bd9b72b085f4092456114edd9739af39772fbe",
+      "bytes": 18413,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0036/assemble.request.json",
+      "sha256": "ad23611f71147c8e8abfae173db304dde51850e8c9f8ec6a5f1ba3fadb428aac",
+      "bytes": 19219,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0037/assemble.request.json",
+      "sha256": "9b483f06e6dfe6a12d3e215942c183eb9293ce4b15936b943a7ecfaa655b9af3",
+      "bytes": 20342,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0038/assemble.request.json",
+      "sha256": "978b5a58e12df2e349f4d0773f5939392596daeac8c9aa7b37f2c9032c60306c",
+      "bytes": 17897,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0039/assemble.request.json",
+      "sha256": "7df963b1bf7f9baaabf2ed0e1dfd533dce9b02820cb41a19b2f152077eb6eea3",
+      "bytes": 18719,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0040/assemble.request.json",
+      "sha256": "dd758770491af8425f3ae40fef72be4fd4883316e9937cf3fef5c7cf674934ee",
+      "bytes": 19168,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0041/assemble.request.json",
+      "sha256": "3b2a2bda7c7d668e5abcb654720efa9b38c35bc01df297522eb5cd0b4d9829f7",
+      "bytes": 20006,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0042/assemble.request.json",
+      "sha256": "9e14ccd84571b1b0af75e39e1aef5ca7f90f933f11eaf04bc03f83d947543c83",
+      "bytes": 16692,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0043/assemble.request.json",
+      "sha256": "7bfcd14bb07cd04bbe18881b983ce81d963d24b0a9c4a8b6664c6f67edb66e8c",
+      "bytes": 18455,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0044/assemble.request.json",
+      "sha256": "f267cae1a93e735256c2b26e5c3ab7aaf6d5749d2babe7966a1923ae6af671ec",
+      "bytes": 16072,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0045/assemble.request.json",
+      "sha256": "36d2c3d189e910dc3de3c06e2588ba77d3a3bba42bd1f44c6967f8112720d02c",
+      "bytes": 19671,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0046/assemble.request.json",
+      "sha256": "439d53846401c0b6e5c5de8ee6ae255d4f88e15fe42e74b61ecc2465025c6867",
+      "bytes": 17244,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0047/assemble.request.json",
+      "sha256": "71ebb4c10b4a7ae629147617a06fd3e26be21ace6900f19ced98e9c6a4bee59a",
+      "bytes": 15486,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0048/assemble.request.json",
+      "sha256": "e07bc6febcfdc10e9ed49c66ce7713b769a874840148fa68c1e3a0cf42473d62",
+      "bytes": 18890,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0049/assemble.request.json",
+      "sha256": "cb00e2550fef127d24550416bb7968f63362b1ae57e59e8f93adc90484f749a9",
+      "bytes": 16500,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0050/assemble.request.json",
+      "sha256": "4b114336893e5a82149b8c044b16b5a0472e89687359c6900c9eb412394a2fff",
+      "bytes": 17350,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0051/assemble.request.json",
+      "sha256": "ec743dabbf2aaa14e15deb37e60e1797010f1827e5aad727bb060aa597d21375",
+      "bytes": 18794,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0052/assemble.request.json",
+      "sha256": "698494c8a337a017f78be203e50975f4a1d10609a048bde9b481c995a26a0790",
+      "bytes": 19536,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0053/assemble.request.json",
+      "sha256": "de4ec6a03de2834aa757c1e12943febabb2df04e1a5fe6f4a147a7e03611bbc2",
+      "bytes": 17219,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0054/assemble.request.json",
+      "sha256": "0089f506b1793e64eeac904071699cf6ef88d6cd8eb2df4d4721e75c45ba9d0b",
+      "bytes": 15571,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0055/assemble.request.json",
+      "sha256": "841c8870ba6c342d092cb2f2bc1ee02401db60a3e49d971ff972597b4c9ec6bc",
+      "bytes": 19960,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0056/assemble.request.json",
+      "sha256": "2e3239b99e6637dac3f744f451b1ccbd0418c1ec4996f29ec1f3010ed5013f9d",
+      "bytes": 15137,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0057/assemble.request.json",
+      "sha256": "2e3a9f3b0397beeeb1f8fac8df3b3ab1bf419c478bbfb1d0ccf3e1c235d38132",
+      "bytes": 18511,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0058/assemble.request.json",
+      "sha256": "fa4090549f11b95650fc9cf22319ef0d448613f548359ea302891640c0189275",
+      "bytes": 17020,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0059/assemble.request.json",
+      "sha256": "c08daa96d7a18d307cfc93f00c08c79074cbe7d03ed6bd32d2302fe15656eba0",
+      "bytes": 20089,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0060/assemble.request.json",
+      "sha256": "0ceaafc7fd7b44dadf9fa1938c469d01046d68f6584b5f6dc3b7192746c10147",
+      "bytes": 19471,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0061/assemble.request.json",
+      "sha256": "dca808911b13bff10f0ca09188b456e10f2fe044098b129eb5560a2a2f37dd62",
+      "bytes": 19639,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0062/assemble.request.json",
+      "sha256": "3f86ec19fefa8037a95c55c040e0d0534e6d6b05235efd0b8ce0a634ac9bb4cd",
+      "bytes": 20774,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0063/assemble.request.json",
+      "sha256": "98557e65aa78589ada04e9f6c57c7c2c9257670524cab8738843d1714f6c444f",
+      "bytes": 21520,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0064/assemble.request.json",
+      "sha256": "569d1ff2dc97ae0b4c44e9749e55580dd88d489cbffb70bbbd98e5e496589422",
+      "bytes": 18932,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0065/assemble.request.json",
+      "sha256": "90d57c8049ae54eab54017bddbfbce60cfd028d1074ea2187bea5750ef88c92f",
+      "bytes": 21507,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0066/assemble.request.json",
+      "sha256": "4ebe4154190a821693bfc9bef23e4d136d7b00eeeae8a0baedb5a2290b004918",
+      "bytes": 18265,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0067/assemble.request.json",
+      "sha256": "915b4606acfae5a798a1edb79f9a3ef8f1df3d82883c422118aef3164b2aa4c4",
+      "bytes": 21478,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0068/assemble.request.json",
+      "sha256": "497bd7c322d899e4d08b2476399570d37468411984cb8a4a7ddef2df079ded9a",
+      "bytes": 18371,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0069/assemble.request.json",
+      "sha256": "946a7df7c4273306a32ed95b8497fc5e34c5719531659156d4425878c59f4154",
+      "bytes": 20899,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0070/assemble.request.json",
+      "sha256": "77aa0db0f932f6e518c72ac77b7335a73841a077bee887804ab7a47eeb16d6cb",
+      "bytes": 19744,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0071/assemble.request.json",
+      "sha256": "17043d0c056c4dc8ad1ab1021a7a91646f87c9e820afba8775b20fc625968f1c",
+      "bytes": 20789,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0072/assemble.request.json",
+      "sha256": "1ec3faba65d94e294cff27fd0ba3b3ca23bde65fdf98619d0a2f2dc3c2d0d9e9",
+      "bytes": 20657,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0073/assemble.request.json",
+      "sha256": "51cc2f4ab2f594fc5352c30e9bc2d8aad0186a805452f8a7eeb6e35052c203b4",
+      "bytes": 19296,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0074/assemble.request.json",
+      "sha256": "f4e26151f12698a7cc5e15d80b525f4cc79d8f54533156b848d05288256609f0",
+      "bytes": 19354,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0075/assemble.request.json",
+      "sha256": "8b7043f78b3af5e98d469948745e112af321552483d8ae6ab345efe08a1859b8",
+      "bytes": 23127,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0076/assemble.request.json",
+      "sha256": "dcd0fa64fedcd30cc091bec8ca8fbd61fcb792a136c967a555eb517dd23d141b",
+      "bytes": 19801,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0077/assemble.request.json",
+      "sha256": "7f26b2309378eee9e50b5402c40624d6dde748f139a4365e7bd7ecb869c59d4f",
+      "bytes": 20768,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0078/assemble.request.json",
+      "sha256": "b9c1e62e1af7e9c881e110c63dac34cf170ebee4e3e9d02e5f2f4324638c87ba",
+      "bytes": 20618,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0079/assemble.request.json",
+      "sha256": "56fa27720b6df317f393d8e49763ab6015e5dbbc6366eb6d4d19266aa69c8a60",
+      "bytes": 20899,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0080/assemble.request.json",
+      "sha256": "5dec5d1cf40414144fe467ba88cceeeebfb7cc51429149c48cd613ee334a093d",
+      "bytes": 22381,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0081/assemble.request.json",
+      "sha256": "0563a0f3ea238a80a7fb02a007e0057b26e02ec85e45a21273a01eceaa8f90be",
+      "bytes": 20835,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0082/assemble.request.json",
+      "sha256": "c0ef260de6ba4fe549017ef070a0dc411a288dbddac6052f3ee0457f600c02c1",
+      "bytes": 17694,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0083/assemble.request.json",
+      "sha256": "6f2bab2bbfb693e7287d70d023300ce4c942e02a15ced8b4bd4d3cd4f92bc44e",
+      "bytes": 21437,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0084/assemble.request.json",
+      "sha256": "8312b9009d4f0a2f9a9d6ce24bdd00c0e609b2d881b7606628ab6b8d0a4c2ac5",
+      "bytes": 18439,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0085/assemble.request.json",
+      "sha256": "a6a81b51004f0623e5d2c1f9893d72e57f2f9bd265299e4528e414b444e74742",
+      "bytes": 19238,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0086/assemble.request.json",
+      "sha256": "6bff6c845a4bd3a805ac78f7ce4b000dbac75d0a9b02d5e2bd80b4d4091a54ca",
+      "bytes": 18246,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0087/assemble.request.json",
+      "sha256": "42dfed87fcf44da220805d49d75a968bc2f5b3f050019b9344608b736072cb0c",
+      "bytes": 21147,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0088/assemble.request.json",
+      "sha256": "7fd91b6d63ef10791bde4b8fb4ba697c2204e5485319ee8ee99c1a5d5cc1814d",
+      "bytes": 16899,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0089/assemble.request.json",
+      "sha256": "5b028a0c8f030f5b4bf510e8e4c5e8ee41e827cd702f94a52552bf416fbf19f1",
+      "bytes": 17446,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0090/assemble.request.json",
+      "sha256": "482b935001269ebd3a1adc6152c173099ef563e77cf9320d47ea87fca0cccce1",
+      "bytes": 21705,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0091/assemble.request.json",
+      "sha256": "6a3d2a994b057cc0bc858fab002627ab5deed6d57dbf799a4066f1f74f81a543",
+      "bytes": 19436,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0092/assemble.request.json",
+      "sha256": "cf10e60cee009dbf159c00ddcb4f54f2f2194043b887887e163b5ae41bc180a4",
+      "bytes": 18786,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0093/assemble.request.json",
+      "sha256": "e90cb88758938efaa1ec9ab126dee224b73d925db50526717f92267404683671",
+      "bytes": 17982,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0094/assemble.request.json",
+      "sha256": "39c7c0f2888879a65c4a40aa31c717c4d07e8c0dabb4d33d087a1e1d965ae28a",
+      "bytes": 22018,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0095/assemble.request.json",
+      "sha256": "8330a826d77eb51f863d62b898995954e01c2ee94d25a3b78ef8b551f147cf11",
+      "bytes": 19607,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0096/assemble.request.json",
+      "sha256": "e63333d54869e9fda07733e471e03991205bfb92e000c66de1e96af1e0780e41",
+      "bytes": 18916,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0097/assemble.request.json",
+      "sha256": "01f4bb52952ab4072c995a0a0dab257389c8ccae06d6c4468c9a67daf79c8e18",
+      "bytes": 19473,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0098/assemble.request.json",
+      "sha256": "3b18ba9762725c4b539c740a50310aca2e6b013186db80d8b916b2fd38593c1d",
+      "bytes": 22043,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0099/assemble.request.json",
+      "sha256": "e26028077b9ec72c22c9cea364dab31340b6954253a18fb14d4c476a8a5de171",
+      "bytes": 19708,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0100/assemble.request.json",
+      "sha256": "346e77a82b019282290c7d36f6cd407bf177c196b4cca1b6f00b33a46d8376b0",
+      "bytes": 17986,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0101/assemble.request.json",
+      "sha256": "9a0260f82087ee00437b127c36e0046c25c136f39741ac8907977b392383e089",
+      "bytes": 19320,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0102/assemble.request.json",
+      "sha256": "e5084129a6e82bccd04c725c3af1818de0048ab35be13acfdeeaa3060d5b2747",
+      "bytes": 19973,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0103/assemble.request.json",
+      "sha256": "9a5a4d0f4de0f5bdeec59fc4ce27442c21c883f0651b3d3eb293694cd43846fe",
+      "bytes": 20594,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0104/assemble.request.json",
+      "sha256": "63ba13ada8fab42b6f10dd7043b20dacce8527086fb085d013d668d01dae6453",
+      "bytes": 22477,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0105/assemble.request.json",
+      "sha256": "86adf82f5b4e1b4d2edcb8cabd63daad19da6ac2a11df572523cb09c38195e1f",
+      "bytes": 16008,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0106/assemble.request.json",
+      "sha256": "715eef9b33b33dc1ae47a72228f6b23ec1eab6394c1f29270b81148c752cf167",
+      "bytes": 20133,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0107/assemble.request.json",
+      "sha256": "bcb4bb3f5c225417c41103f67b299624ca042da449f0a073e6b4bbaf6c843bd0",
+      "bytes": 15743,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0108/assemble.request.json",
+      "sha256": "7d858919aaca12820873b2f01e8ee1437757566142b58e112e247a31ae098760",
+      "bytes": 19154,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0109/assemble.request.json",
+      "sha256": "3e7c94bb0ae06f475112dafa6664023c6ec366c99f9f031697faca4d8ecb4903",
+      "bytes": 20039,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0110/assemble.request.json",
+      "sha256": "5e423ffb7f8168c092d18eca64f27113965bf29dff7c9eb7c5df43ed94c8ee42",
+      "bytes": 18720,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0111/assemble.request.json",
+      "sha256": "06f9dc81cde3c0ee91e1d6779ccc2bb1dace8b283e90b1c34d483f0959ab5c3a",
+      "bytes": 15806,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0112/assemble.request.json",
+      "sha256": "0b42e784f04d805d0398324dc92bd329959666a272b33c715576943539cd19b0",
+      "bytes": 17904,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0113/assemble.request.json",
+      "sha256": "4cd6cfcd3265cca96292646a67b4fec1ca4ba4747b3b7db0d1a375333691d064",
+      "bytes": 16618,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0114/assemble.request.json",
+      "sha256": "5a8f1fffb3ac422a409d2c32985911ce1004f8ce142f5f1a92cd4f30a70ee009",
+      "bytes": 20941,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0115/assemble.request.json",
+      "sha256": "8c73d5ca7a3b26f57fa128a9515ba0cb64e4fe82d493354336572954a10c8c61",
+      "bytes": 19027,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0116/assemble.request.json",
+      "sha256": "9e6f4263e196b85fa95c7b418c8ec6668b2cef2bee8389b482bb846563433f46",
+      "bytes": 15180,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0117/assemble.request.json",
+      "sha256": "ec79e99420f26184d5efb1f4e40f6ed0440c653dc629241b68db41a3b582bee2",
+      "bytes": 19324,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0118/assemble.request.json",
+      "sha256": "a9374eec72e7ed101fa0ba28bbe2f7c71c50ac6aa59eda7e70e4c99b361700b2",
+      "bytes": 20172,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0119/assemble.request.json",
+      "sha256": "f4b959b47636e811758adc69c9ef372913c43fffb0c6fb8c9785e976a60ecac1",
+      "bytes": 17027,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0120/assemble.request.json",
+      "sha256": "70e0b7c36b0c53fe20fbd98c956890e250e0e3bfb273274cd87c38cdef3febaa",
+      "bytes": 17152,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0121/assemble.request.json",
+      "sha256": "250e9f0e60acbaa76aca21866c47fb682dea1936cbdec917b7a3fef3cc715dc4",
+      "bytes": 17536,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0122/assemble.request.json",
+      "sha256": "1c9e8d84bddaf909b4b2aa9191856b3b0760bda16117dc9b941bf31b0ac34ba7",
+      "bytes": 19392,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0123/assemble.request.json",
+      "sha256": "b607b012970a64b04e44a4b7ce5d31ca09929e2d547982df3c5e4e3041ce2ec8",
+      "bytes": 18897,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0124/assemble.request.json",
+      "sha256": "ce7cad0c8e5d0377caf5d9f91ac1e8d6641ff710069a1676924dfe9117f2bc3c",
+      "bytes": 18214,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0125/assemble.request.json",
+      "sha256": "d5d0ac7e82ccae507a3815a3b63db6594f094a46e8a93ccc2f91f80746c56f96",
+      "bytes": 15769,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0126/assemble.request.json",
+      "sha256": "0d414e1220f7695d82bc129d6812096e4b1106d802f30506716608f794a98e7e",
+      "bytes": 19146,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0127/assemble.request.json",
+      "sha256": "a15ea26d0a7e0f5fdb38940ce4de3641f51ff796348f8cbd570b83bf7f211343",
+      "bytes": 19323,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0128/assemble.request.json",
+      "sha256": "8044a6b5b26b2b9d39d94eb524713c955cef8736d767a9e226deedca3a1a0a65",
+      "bytes": 17572,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0129/assemble.request.json",
+      "sha256": "64a02bb9d207a3116ff96e44b143b2a4905cbe87919a9910e85dfb20231685a9",
+      "bytes": 19930,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0130/assemble.request.json",
+      "sha256": "300e8f498ba97157f3b642c8cf0e351c289a9a8425e20a8c32d0b5057ceac3b6",
+      "bytes": 17151,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0131/assemble.request.json",
+      "sha256": "dd80f118c1071544210387e17668f35e4b34ab1a18806a92e5be2ce04d06e805",
+      "bytes": 19427,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0132/assemble.request.json",
+      "sha256": "0d205bfff1c346faab7ccf4bd3e9e5713889b5cd5682b3ff644c7d508535413e",
+      "bytes": 16620,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0133/assemble.request.json",
+      "sha256": "6d2113e479829df2566262c6edff64275a825cdf77dc4e15c01c4be9e077bfdc",
+      "bytes": 20299,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0134/assemble.request.json",
+      "sha256": "19ad1e9b1e55f163fbf884a744a5086aa075c438e4704e426c2fcd8a25b678b0",
+      "bytes": 19763,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0135/assemble.request.json",
+      "sha256": "fe03cdadfffc624229020bc65e276d21748f0a2f4612efa484d1ad607ff9ebb8",
+      "bytes": 18326,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0136/assemble.request.json",
+      "sha256": "61f802866e90c3a479cff31842108e849692b6066b1db412188b46839e42c12b",
+      "bytes": 19452,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0137/assemble.request.json",
+      "sha256": "9c8a5233d7b1b960f4c03bd2075b5bd1fd94614030df514edbc1a19a150bf39c",
+      "bytes": 14602,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0138/assemble.request.json",
+      "sha256": "ba9fb0dd12d503c1b62e817ce89cd829ae87e73373515a048f18276cb771b68f",
+      "bytes": 18426,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0139/assemble.request.json",
+      "sha256": "d3335581f2944e81eb4ecf2fa0fccd686547790bb98d8521bf16286e8a8d8839",
+      "bytes": 16792,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0140/assemble.request.json",
+      "sha256": "8944415d7b740937e978ce76d8e85b8ab7257c95f60ef148f6a64db3ccf0a16d",
+      "bytes": 18116,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0141/assemble.request.json",
+      "sha256": "577ca131a729dc41073bd8eee1b97e89763ba32adcd5c267593f28284e47e231",
+      "bytes": 20753,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0142/assemble.request.json",
+      "sha256": "ff9f27ee8270d894af709ede402436a1867aa5d36229e625043f61f991b84517",
+      "bytes": 20270,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0143/assemble.request.json",
+      "sha256": "865471bc657dd1f77686c144260ddba093263d1971f9ad44bd8b53b68649642c",
+      "bytes": 17882,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0144/assemble.request.json",
+      "sha256": "8a84229ef06fbb1f44dcb9e2332521ff7cee0fc192395f883b6ca2ab797f1479",
+      "bytes": 18377,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0145/assemble.request.json",
+      "sha256": "24c8993c9b82a2831ec989d5ebd2b6727b4b39980bab685bbbec81d256768872",
+      "bytes": 17589,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0146/assemble.request.json",
+      "sha256": "ad3c0593d77057a2d32a05d232b10a08d0d4891366a2d6c50383e87a104dbabf",
+      "bytes": 18959,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0147/assemble.request.json",
+      "sha256": "494249693b66956f9a68fa7583a3a5a157c82e737df9cd3d6bad0ee7d2a9220a",
+      "bytes": 19569,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0148/assemble.request.json",
+      "sha256": "5b6ee8ac5419ee53dbf40555c100fb1341bab7b0a680f85d4cc0e0144b7c149c",
+      "bytes": 17456,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0149/assemble.request.json",
+      "sha256": "78cfbd7cc1e526a8146e212e9b93273ed87acda37870fc606132bd8d5ea4bc7e",
+      "bytes": 17721,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0150/assemble.request.json",
+      "sha256": "8068cd0e77ecb6878ad3a653d72a238e547686b278a14ca803afd32ba52409e8",
+      "bytes": 19540,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0151/assemble.request.json",
+      "sha256": "b551f306eda84be3c68c088738d031211d66df1c11dc99c284e66586c761679d",
+      "bytes": 21232,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0152/assemble.request.json",
+      "sha256": "c3dca287d3e074a6fc2d6bff0e4cbe5b41a1b544adbe153712eae3d7a0da1547",
+      "bytes": 18400,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0153/assemble.request.json",
+      "sha256": "242e28705114231de0b87f56417f7fe4be83286251063e3e012f6b712f66756a",
+      "bytes": 17430,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0154/assemble.request.json",
+      "sha256": "88efcdd18d4de3f9d375427f93ce36ef4e7d8ce803df75a08890f0e48fe024a7",
+      "bytes": 18101,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0155/assemble.request.json",
+      "sha256": "0ef44b44d50d6a2e46a8124502986b9200aac90ccaa127172dde6bc3efbe2021",
+      "bytes": 16540,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0156/assemble.request.json",
+      "sha256": "ec1c987a3f584f17c12baa97c4aae9982afe3e933371667d4f2b846cbdba7cc0",
+      "bytes": 18195,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0157/assemble.request.json",
+      "sha256": "f2bdc33e6f236cb8b75567a377914a756ff450eb63215203a158b2b0d0889cde",
+      "bytes": 21149,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0158/assemble.request.json",
+      "sha256": "01b1a13e011fea0d99a64018d8e3c6953db6aceed17b4aa3be11075a85ba371d",
+      "bytes": 19475,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0159/assemble.request.json",
+      "sha256": "4edc3c2e7ec06daff234700a00203065a7c047345d24401dbab568db7af895e3",
+      "bytes": 18128,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0160/assemble.request.json",
+      "sha256": "5b38c7a02646dae153796032c3579b4929783ca4c1c1736041655c4e057f1fff",
+      "bytes": 21159,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0161/assemble.request.json",
+      "sha256": "40f01f115bc73806ccd29f9be6ab6c90810e5857256ccc356c07c1bc8910372d",
+      "bytes": 18050,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0162/assemble.request.json",
+      "sha256": "e4b0dcb13486313f7d4eb08f3aaa9788158adb285ecd96ab42de1905e6eca92f",
+      "bytes": 19294,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0163/assemble.request.json",
+      "sha256": "e8ea2cbb8ed541361a841a6aab1c9c25769ee8071415d7159d228544cc69f0a4",
+      "bytes": 21885,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0164/assemble.request.json",
+      "sha256": "489434349abd8edcfab1b190a23d449ad5bb7f743324f9d399a4a45eaa2fd91f",
+      "bytes": 16980,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0165/assemble.request.json",
+      "sha256": "71b1d322506178e7fe59f1d588f1f2d5fdc0560d93e6397e73824034aad99f92",
+      "bytes": 21528,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0166/assemble.request.json",
+      "sha256": "56f14a6521bc537673e1334a5639938721b12a8325a301eac8f7c90868ca6000",
+      "bytes": 19640,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0167/assemble.request.json",
+      "sha256": "94e8481bf325c52ecf3310a6fe3ccaa7394ac632103a31ab72f2721e81db1c4e",
+      "bytes": 19202,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0168/assemble.request.json",
+      "sha256": "35c2f57564b0ffac513d7674ea93c9466ddab9de72cdffab21bf9e1b711ffa58",
+      "bytes": 19452,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0169/assemble.request.json",
+      "sha256": "921e8600d6fa8d7fb2bef05e269b6f0be83d081bbc1c9da83d02790624d9be77",
+      "bytes": 19888,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0170/assemble.request.json",
+      "sha256": "3e82bc97cdd3d2fe45878d3965f0860caf4aa29c2d72564a85b90039ea341ff3",
+      "bytes": 18129,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0171/assemble.request.json",
+      "sha256": "2cde6cf58929b79908b9f8ca392ff74c77d331a3f22685724c8bd30fb744952e",
+      "bytes": 21982,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0172/assemble.request.json",
+      "sha256": "745283a504d306a045370b9daef0cc508ffce0d66aba964b2cad1a4ade1ae6a3",
+      "bytes": 18304,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0173/assemble.request.json",
+      "sha256": "a755351d49a2e3e42424f3aeb479366d15e97d63ab7c0a8f8a1a1dd6dfd2f46b",
+      "bytes": 16921,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0174/assemble.request.json",
+      "sha256": "34657bcf1602ab302a15a83c28f5cb1dbb12da2de63392c6ca046a9c78f9fecd",
+      "bytes": 17678,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0175/assemble.request.json",
+      "sha256": "20bd87d375c7fccc371f9562fdc48236f144ea4f3b5477a393a3a3de385dd092",
+      "bytes": 19757,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0176/assemble.request.json",
+      "sha256": "d4435d4eabbd52130e42a2d366120eb07093ee726d8541bf4f74754a8b450f71",
+      "bytes": 20240,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0177/assemble.request.json",
+      "sha256": "39a32856bd48161a3fc163281a29453b4b1ecba33337843bca76d1e50e53ba6d",
+      "bytes": 20361,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0178/assemble.request.json",
+      "sha256": "4ce5168551fac84e9e24e0cda0d7ab4a370b28ca33d8fbdac322d8c0508ff685",
+      "bytes": 19664,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0179/assemble.request.json",
+      "sha256": "4f04440f546a19d82030420e68291ac61e44609dc589ba1d31e38da9e4487ba3",
+      "bytes": 18371,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0180/assemble.request.json",
+      "sha256": "eb406c6b1fe4e08e1b9d077c4b7d066431cc61889f112bad435021e51cb627da",
+      "bytes": 16233,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0181/assemble.request.json",
+      "sha256": "85166a9b5911113117a26bc3f67cefebcf8f15d761e9268d20c47fb4c7fff253",
+      "bytes": 16286,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0182/assemble.request.json",
+      "sha256": "7e5dcfe358fe90b4d4374ef7e9240c7d154ce0cc79304027cc2419f7e2210092",
+      "bytes": 16176,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0183/assemble.request.json",
+      "sha256": "a1a92b48f889549b5d4a646548985382fc98b0288f598d04d71a975a67e53661",
+      "bytes": 18174,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0184/assemble.request.json",
+      "sha256": "8155098dac3c21c8d1943bf7a5e9425d7e6a2ce139d4de0785734fe4354704b0",
+      "bytes": 18245,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0185/assemble.request.json",
+      "sha256": "56ea2fef8fc928a120259788d99574a4d07462ef1fea05fdf6e2209060765a25",
+      "bytes": 19002,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0186/assemble.request.json",
+      "sha256": "b0ea5fd2214f37780c2f4018aeb3e4d0f73ecbaa0258277be13150447d28c928",
+      "bytes": 17310,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0187/assemble.request.json",
+      "sha256": "7dfcf3fb2a4a66cff38a6abdef4cff44e43ab91ead5b6c8fb42e427fc94aaac2",
+      "bytes": 15654,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0188/assemble.request.json",
+      "sha256": "6c09d28030a93c09e331e2d3227755b7e2c021f2a3d251d068a9b32c69dc76a1",
+      "bytes": 17070,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0189/assemble.request.json",
+      "sha256": "54fd07a581ea9763a12e5fc0daff179bcb14967cb1477ac23bf714b4cab024fb",
+      "bytes": 17412,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0190/assemble.request.json",
+      "sha256": "91088e2bca1274d7991755d977271bdf2fdc80870ee73da9c3a1f215e09b41fb",
+      "bytes": 18898,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0191/assemble.request.json",
+      "sha256": "71b369dea8ec2c9f34dc740ddf95243af1229ef84691beebe79a437b7712b6f1",
+      "bytes": 17277,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0192/assemble.request.json",
+      "sha256": "4f6dc1147650f33b958247bcd1525f26b2a4690373f270981ca4fb1b4680cefb",
+      "bytes": 15209,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0193/assemble.request.json",
+      "sha256": "24f817cf641834ebe9e7defc1b058a8f3310453cd308b675d1c42b4bbec7fa3f",
+      "bytes": 18027,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0194/assemble.request.json",
+      "sha256": "ce8028cad4f41cd7877da388fb6cf7be55c554657bb97853e7d3c991a505d2a3",
+      "bytes": 16164,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0195/assemble.request.json",
+      "sha256": "cd4bd3b910556a1d3fac55ae065646ac920f21aae02cb7e89c91b44d99db4a09",
+      "bytes": 18820,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0196/assemble.request.json",
+      "sha256": "3656dff32e4c26abda1928df0c4df15f638e09ee95bd078110acaec4cd2bebcc",
+      "bytes": 15912,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0197/assemble.request.json",
+      "sha256": "e6022b3690b78b9e1f0b4b110175dc9fb7da5691d9d2b37bc38414c7b662b63c",
+      "bytes": 16532,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0198/assemble.request.json",
+      "sha256": "097e9e4530b4b16d46c98bb9028b20ff7b96e4f894cdbae4d2a87b3e77e9814e",
+      "bytes": 16333,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0199/assemble.request.json",
+      "sha256": "1a863297db1593f975bf6ac5a9780b23c078200a93f6d294c15e4904a6247d5e",
+      "bytes": 15601,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0200/assemble.request.json",
+      "sha256": "4463adb33acfd2246b3633f4214359b0c77d0d5326fd58252f3762d3bdbd2993",
+      "bytes": 17760,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0201/assemble.request.json",
+      "sha256": "aef89a3555d5128e2d0ee93d6a6b70115b6ab8cd8ad9b7b1c49426e435b25afd",
+      "bytes": 15892,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0202/assemble.request.json",
+      "sha256": "e7f1a0a9e9cfa4175d62d9f4ff6258cb700cd70c7d8b98338e67438e2bc1fa3f",
+      "bytes": 19009,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0203/assemble.request.json",
+      "sha256": "8bfc8d09cdcb7d3b8f4dae4d4204930ed99276ab2f8ac192284ce9e262b73ed0",
+      "bytes": 18929,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0204/assemble.request.json",
+      "sha256": "dd758fdcb673369b41139119eef85d92a633ad995b0289d9a54b930c1dcc9139",
+      "bytes": 16667,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0205/assemble.request.json",
+      "sha256": "c5a97ce2fd71589e9d4cf2cc3aaf18b444b4812391ff71ffcedb0f332d6ba0ac",
+      "bytes": 17384,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0206/assemble.request.json",
+      "sha256": "85a4e9a8743506115de0a423be8b023f4c728e418bf4542b226224de48c851dd",
+      "bytes": 19656,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0207/assemble.request.json",
+      "sha256": "5fc5edf49d88629a21fa55f1e920733cae29f21a3d9b4ec9c508d5aeb7e9edbe",
+      "bytes": 18264,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0208/assemble.request.json",
+      "sha256": "4954579e6ddcc4908e3e94577e7973874510e188670813fb0ea860e770865ed9",
+      "bytes": 17468,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0209/assemble.request.json",
+      "sha256": "de6257bf1ebc6a887cf4927be09252dcf3885e057081c47c473e2a7e1c19c53d",
+      "bytes": 16627,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0210/assemble.request.json",
+      "sha256": "0188aedca151d7ac2972831bbc366d7fb97556967d6ddd4650df1dc84a7063ab",
+      "bytes": 16779,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0211/assemble.request.json",
+      "sha256": "273f9ec36c3ab4e9f59513e239cb6e95c32731b7f8155870bba2ef4604057173",
+      "bytes": 16729,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0212/assemble.request.json",
+      "sha256": "124a143337d42b68080979a77c4978fdbf9e935f1a5be9aa5cdf2591717ae707",
+      "bytes": 15829,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0213/assemble.request.json",
+      "sha256": "e0a04d724fcc68a3c1eadda3aba38c9f5b39c0e96477affdfe4268233b47e859",
+      "bytes": 16653,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0214/assemble.request.json",
+      "sha256": "57f20db0be69a4938e913418fa17146123241140a0079950ec0f6c81a0f54ae7",
+      "bytes": 10365,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0215/assemble.request.json",
+      "sha256": "5e1546539abd6d2299c78523ec71a2b261b85cb72bc9258cf8b5f913304949dd",
+      "bytes": 10386,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0216/assemble.request.json",
+      "sha256": "db8b43c62e473dfb11a72c514d0544ceb9e55314fad234227beae3ad3910dd6a",
+      "bytes": 10388,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0217/assemble.request.json",
+      "sha256": "22199d0b82bb1e39576c46ddabd2dc8f052f462b87cd3bffd2544c08431c1bce",
+      "bytes": 10378,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0218/assemble.request.json",
+      "sha256": "7babc32c043d2dd1f5ce7d830d72f1ff9c2a718aff86703a6635d3718b8a7714",
+      "bytes": 10368,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0219/assemble.request.json",
+      "sha256": "53b765c54823bc1af65c188557e0d7edb079188d342f3eff12ef2f098f5699dd",
+      "bytes": 10374,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0220/assemble.request.json",
+      "sha256": "369aaaddb1275a8dde701c38d57142dc5cd5d6dbbf01fd392338c42319fe5c20",
+      "bytes": 10370,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0221/assemble.request.json",
+      "sha256": "26c2fa308bba3bfbfa8e92de34e983f4fd3b3117a6247d6ff0c1c2b4c4b29c09",
+      "bytes": 10377,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0222/assemble.request.json",
+      "sha256": "dfc88c80f190a1c3ce2bc8cd769cac4abab549e458cd430e3e74168bff8161d0",
+      "bytes": 10374,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0223/assemble.request.json",
+      "sha256": "348a9d84e7819c82a8fc409af47fce3535e18be32d97b4e3230ceba249d10d04",
+      "bytes": 10388,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0224/assemble.request.json",
+      "sha256": "d4dcd38ff02522f8032497383b6784721b44e2f65ec7238e2ad8556f468379d6",
+      "bytes": 10508,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0225/assemble.request.json",
+      "sha256": "beb47d659abbf314ba56b8438f14e4a4200b5443d0cb02f2f19f385dca912455",
+      "bytes": 10555,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0226/assemble.request.json",
+      "sha256": "109edac688d394288cbb693fbd87ae428269ed99f373a9edefa059e775ed1053",
+      "bytes": 10561,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0227/assemble.request.json",
+      "sha256": "c9488ae1b55377655685129ea99578133081dd89c3f686c9e203463b9eee15ff",
+      "bytes": 10512,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0228/assemble.request.json",
+      "sha256": "9c58375f71ca892abfbe2e822d05a342f4505195bb8ff8e83da2715327508519",
+      "bytes": 10514,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0229/assemble.request.json",
+      "sha256": "16f7c383339cd40b1b22fa34b2fec110c009f9ebf9575fb3491ac38c94f73964",
+      "bytes": 10541,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0230/assemble.request.json",
+      "sha256": "6995c04b346be80010ce7f12db1d6a5e268fbfa505783df76a1e02150412c0ef",
+      "bytes": 10544,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0231/assemble.request.json",
+      "sha256": "4c2ff5fa9b8843ed5b38e3d019b9e82f15355fd2ae519c6870b3f1aedc95b319",
+      "bytes": 10549,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0232/assemble.request.json",
+      "sha256": "2b2fe22498b0dabeb83e41e5630a3b2164b5503ddba2cc0e80e783bab1baa465",
+      "bytes": 10516,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0233/assemble.request.json",
+      "sha256": "7a3c3d757a7ee120098340d650f4ae72c50a367dc5bbfde5ef7fcaedc1204a20",
+      "bytes": 10557,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0234/assemble.request.json",
+      "sha256": "179e23e9faffba3818da556a9d8233bda868811377b10fb3f2d08cb5286bf881",
+      "bytes": 10681,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0235/assemble.request.json",
+      "sha256": "57d5830e2a7cd5cce89bab250e35d9c1561960945bd4ae05867dc76ed67d0372",
+      "bytes": 10726,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0236/assemble.request.json",
+      "sha256": "d87b9516dfc2e87a8a4b6f204c166990b7c241cd296074f4bdeaa81c11c4dfac",
+      "bytes": 10695,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0237/assemble.request.json",
+      "sha256": "0821b1e098093b255ad6c47e9274c6ca228163db849e225cbbb5de4cb1b8fe45",
+      "bytes": 10697,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0238/assemble.request.json",
+      "sha256": "d4e02e8046b818144045945f3bf8a6d154aea3224422ec2be6c541d85bcf488c",
+      "bytes": 10677,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0239/assemble.request.json",
+      "sha256": "a83f880e58a3478c2c3943316b6efbb2824db569c894dcb7377889c03e920151",
+      "bytes": 10717,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0240/assemble.request.json",
+      "sha256": "86f66c085e1c9573c0770c91d9b193a7d703cb5faec0fc32d8e1a2add0ef25c1",
+      "bytes": 10716,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0241/assemble.request.json",
+      "sha256": "6852a3c74839f1255711de86422760401223ab5cf73c50b3b9bccba68b7929c5",
+      "bytes": 10652,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0242/assemble.request.json",
+      "sha256": "c78dfae702429586b963fd6a520d2079360eca19936cee2cb806e2324b367ba7",
+      "bytes": 10689,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0243/assemble.request.json",
+      "sha256": "d3cb0f9009f822e966167f4bc2ba628c2d5de52c59c05ade36ce96dde5e1bb5e",
+      "bytes": 10729,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0244/assemble.request.json",
+      "sha256": "3dfcfac465468d205a04da83ff5f87f8158e67ffa41c2d7d2c0f6802bc7a5683",
+      "bytes": 10848,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0245/assemble.request.json",
+      "sha256": "3c2f256dcb8eadf2e25b5602ffbd9dcfa0fa0e1648c6ff03083abe21fc63ab85",
+      "bytes": 10862,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0246/assemble.request.json",
+      "sha256": "cd1900c8f1508e499215b2095461a604184c0609ebe5dbc07b669b9c3f4b7ead",
+      "bytes": 10880,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0247/assemble.request.json",
+      "sha256": "fa17317c6938b8b6fa074f944bc3de73759cd9ffebc48d9677079f16e91f0281",
+      "bytes": 10821,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0248/assemble.request.json",
+      "sha256": "2bbe9cfd061f1b1edcb0441790b18d91fff81beb901576d0b98dc2ec82380866",
+      "bytes": 10857,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0249/assemble.request.json",
+      "sha256": "dac02c917fa24ea201f7be0fe830b068f634fd23626fbb5b452c2ac3c22160fd",
+      "bytes": 10887,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0250/assemble.request.json",
+      "sha256": "d9c4843acbe183d99fc82c2734b65d4c443ccbb3f05314cc2f1096b02f42f148",
+      "bytes": 10819,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0251/assemble.request.json",
+      "sha256": "f22eaafbba77647c3b2cdec5668188ddc82ee9785c9d365e19544354e07c2ebc",
+      "bytes": 10864,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0252/assemble.request.json",
+      "sha256": "541343b1141031732e21100a21b042663ac3919c079539be24c8ff5b6d7c77b0",
+      "bytes": 10857,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0253/assemble.request.json",
+      "sha256": "e9ca72013823eb3f837413891cc4f0130d2e5a9962974d85e2179bca5de794ec",
+      "bytes": 10863,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0254/assemble.request.json",
+      "sha256": "4a96426858d135bd95d8823627b1cecd6aa0d58dc0bf0cb95b5845beec8edca5",
+      "bytes": 10988,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0255/assemble.request.json",
+      "sha256": "c006c3213602e050bfeab1ad48b08c0f897ddff8206cd036dec7b98acfc11a82",
+      "bytes": 11045,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0256/assemble.request.json",
+      "sha256": "c30f121bbd9f4b7a01dafa8d41b6c5d792afce612a432c5ba7a14f76014ef000",
+      "bytes": 11004,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0257/assemble.request.json",
+      "sha256": "11d7f734e996664c66f9b427ce6a1dff293a45a36d398fd37284531fb2e34f8b",
+      "bytes": 11040,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0258/assemble.request.json",
+      "sha256": "2d7e413671bea8ef1a0f22333b7b91423bcbbac47e0b9bac101d8e267e4c6520",
+      "bytes": 11023,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0259/assemble.request.json",
+      "sha256": "ee5e796fcf7872b6603275d2d8285d398f332aa12942bb6c6b28d55f1d1a8acb",
+      "bytes": 10992,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0260/assemble.request.json",
+      "sha256": "0e656e09e175929595290b504343095d4c20f904c8ce79dc02634acdcc1b949c",
+      "bytes": 11031,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0261/assemble.request.json",
+      "sha256": "924d2bf145ca9dcfae9cea01f58ab39b764fa7c4b39a009b06f176f445dc0c8e",
+      "bytes": 10993,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0262/assemble.request.json",
+      "sha256": "504be1abe1611e1494bf4a0c42f012ad06cf3e82525ca4c849e4073a2cbb6b11",
+      "bytes": 10995,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0263/assemble.request.json",
+      "sha256": "62bd76af7263a966af94bba8c1a3bfe82b8fac89bacb6915b671760107a1fa31",
+      "bytes": 11047,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0264/assemble.request.json",
+      "sha256": "96549b2c5f74ea33f0e0a0081888e63c82485fc78f0a363c0571cb38a540db34",
+      "bytes": 11212,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0265/assemble.request.json",
+      "sha256": "75a27626989657cec2e13c2a0afa29ac1b37e77104f1f392f2049f1594ab9ee8",
+      "bytes": 11045,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0266/assemble.request.json",
+      "sha256": "1378e192f784f7b04f2f5b44eb70e07c9fa6af8ed32384a731f2ae28169242be",
+      "bytes": 11051,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0267/assemble.request.json",
+      "sha256": "d7d0ed4936436c2f6b57a20b6fce6f5c965d6be599e72ca2c0892b67dc5845e0",
+      "bytes": 11041,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0268/assemble.request.json",
+      "sha256": "ef1ba5f25a821a35e40b4feb75522015397ec04c3cbfca2b6ae3d7e432649634",
+      "bytes": 11033,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0269/assemble.request.json",
+      "sha256": "453b676f4ab8706a191f5911d9380ae8ec213b38add0cafdfd63d012274f59b7",
+      "bytes": 11041,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0270/assemble.request.json",
+      "sha256": "f50fe39f1de59635c6d832eac6857eb2aecbe3473460002c786c0f0796ebe6e8",
+      "bytes": 11029,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0271/assemble.request.json",
+      "sha256": "bf58cb709e3efabcf9c6a43e489f50a5133ef92b24dca94b5df74dc2875f69f2",
+      "bytes": 11040,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0272/assemble.request.json",
+      "sha256": "d144ccd791730ae16330f0d43b9a5dcc4d60aef4958766b7d0eebf30ca652836",
+      "bytes": 11037,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0273/assemble.request.json",
+      "sha256": "a8228f16f1279d99a7c54ace9ccc56a58ca165bebe808ff97b380d2ca46be8a4",
+      "bytes": 11053,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0274/assemble.request.json",
+      "sha256": "ffa5f78dc76a0cbb951bbe407cff5a12bf6738a4b0a3f7a26bc8e0acd367e7a6",
+      "bytes": 11175,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0275/assemble.request.json",
+      "sha256": "4178a55218a5a7e7f2b7ea4285095b4e00bd020ee8111eca08b758a9fb207d2e",
+      "bytes": 11214,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0276/assemble.request.json",
+      "sha256": "84cf29a607f2560415162daa4baa941499ff0836e22c64da60e56dd25a2086a4",
+      "bytes": 11224,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0277/assemble.request.json",
+      "sha256": "6571edb6b873e930720909649cc569df79fe33181c64820924c460e4288a2fb1",
+      "bytes": 11175,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0278/assemble.request.json",
+      "sha256": "6b241ab31b5eba8bb373de2a212e40a39b41c1b6de81b01264799bd7511050ff",
+      "bytes": 11179,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0279/assemble.request.json",
+      "sha256": "b128614f078e4d405ab1bb003f0d07ad77d0ded5c438bdc6a6e2582fb6b17c6b",
+      "bytes": 11208,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0280/assemble.request.json",
+      "sha256": "db211868291a8afd01845762f7719192fb09a02a52c3514e9abf2b5e78626230",
+      "bytes": 11203,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0281/assemble.request.json",
+      "sha256": "c2e0946d194931322dce5df31606d9e7944ef76012ab2c0f6b7404896d42d12a",
+      "bytes": 11212,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0282/assemble.request.json",
+      "sha256": "c53ea3bf63ecc1e1822411a564e4572677c35b1b28a259f6b4ac88d8e3c0ad38",
+      "bytes": 11179,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0283/assemble.request.json",
+      "sha256": "58e2bb1c20be43d3d895c308fa2726506d364eccdaf7c080d309c1152cbe78b0",
+      "bytes": 11222,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0284/assemble.request.json",
+      "sha256": "745c288b679b63b4b44b2e5c03ddf95b56c59d8f19dc7af9c19344bcb1b492ec",
+      "bytes": 11348,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0285/assemble.request.json",
+      "sha256": "9662c92a6a0cae5a398c6dc60b3ce0afda3a134fac72787820cf8250b83de0dc",
+      "bytes": 11385,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0286/assemble.request.json",
+      "sha256": "3fb6afa652b86b3118ad84e39b3305934b4a73e8ad4a2eadaf64f5dfd55f767d",
+      "bytes": 11358,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0287/assemble.request.json",
+      "sha256": "d406e29bacd0535f5ea57da9e3c95614276b2fe6790709f2babe139ae9284f61",
+      "bytes": 11360,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0288/assemble.request.json",
+      "sha256": "19d5b70b5c210d24cfbac6cd24efeea88871bcd0718a40643b4896a00c3b0818",
+      "bytes": 11342,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0289/assemble.request.json",
+      "sha256": "ef974272aadb4b6d2f8d2f1dc23c1b46a9e9bcf5537c1a2e7e56c2d29d716ffe",
+      "bytes": 11384,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0290/assemble.request.json",
+      "sha256": "57cf378d24ad483fe3ff16c240500a6e20bc0be7fe065a83464dac4c261a3437",
+      "bytes": 11375,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0291/assemble.request.json",
+      "sha256": "cb2a6e6906e9804e96b40e8ba2d95a185deb04e9609d0eeb09f82bdf19d90e91",
+      "bytes": 11315,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0292/assemble.request.json",
+      "sha256": "f04d03460ed3970293cf1d95fce4f36dec75000e888709e3b60ff6feb16d81d3",
+      "bytes": 11352,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0293/assemble.request.json",
+      "sha256": "863df261d246909750686ff4f96fb24e8690f46b6950b195cd06e46fe9d374e8",
+      "bytes": 11394,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0294/assemble.request.json",
+      "sha256": "33a6ffbf6e3b25fe3c38cc5ee2dc2f5315b6a72d5ea7537443da5a698aca0195",
+      "bytes": 11515,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0295/assemble.request.json",
+      "sha256": "d66320fa5f4317b1770ae4cec624243cea3ba98fb6bd2a58d0828e8cf5a94134",
+      "bytes": 11521,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0296/assemble.request.json",
+      "sha256": "194a13fbf5a074b8536e72c45b273d0c976d44e9f473413f38f5cde1a1b6230e",
+      "bytes": 11543,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0297/assemble.request.json",
+      "sha256": "e66b53848294fb7237ac6a6faa01fecaadd04148562cc5589f8e6a8dcb6e155e",
+      "bytes": 11484,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0298/assemble.request.json",
+      "sha256": "77de51aeaf8a66d8941dfb46ac06a9b3f6866abb0cddbd659f58230b88d1c9f2",
+      "bytes": 11522,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0299/assemble.request.json",
+      "sha256": "721f725cb65ac4b623b5b59e9b92e704aa1bd6c672ee24649ef9619c5d0d0a9f",
+      "bytes": 11554,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0300/assemble.request.json",
+      "sha256": "b6200e51e8d21bfecd2549db9f6b68e09f08523955a33a1d5e1575e70ebad16f",
+      "bytes": 11478,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0301/assemble.request.json",
+      "sha256": "4f9df6d811b138b6787a8aade11952396a4c8618cbf3a8dfbe5e2e71ce1b7424",
+      "bytes": 11527,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0302/assemble.request.json",
+      "sha256": "072aad307ff3ef59f05c5e2bac53cb2348dcf47d9bcb86a8abb48519d7346275",
+      "bytes": 11520,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0303/assemble.request.json",
+      "sha256": "3d9a4c88b8956f1daf71a5c8b68de7b59265e8fd2065bd60b11a71d4a976ec22",
+      "bytes": 11528,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0304/assemble.request.json",
+      "sha256": "39323fe898b595131432bd71ec8e586061f20a026208687f2f51157cb49129d0",
+      "bytes": 11655,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0305/assemble.request.json",
+      "sha256": "c41f4f761832d7374ee71c847272e9117cb4a40e1afea01b24b9ee9680759f96",
+      "bytes": 11704,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0306/assemble.request.json",
+      "sha256": "cdf6304c4a2e96184f73700383b4c8af147b57a175299b9d9f9ead669cec2abe",
+      "bytes": 11667,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0307/assemble.request.json",
+      "sha256": "50dc560e0a14eacb9cff574b4d70904d2b42d381de3353c89c035315723997cd",
+      "bytes": 11703,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0308/assemble.request.json",
+      "sha256": "7df5371ea149759e8272278a4f64d289aa7fe18111acb713ea01be114b8a4605",
+      "bytes": 11688,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0309/assemble.request.json",
+      "sha256": "e1f630f7029b10c020eb54711b87b75950c0b912eaf0f154d56dd1140aa1b33f",
+      "bytes": 11659,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0310/assemble.request.json",
+      "sha256": "252949ff1097007c6d3bca8bd00ce144f5170a036847dab7d7a2ef5c495843f5",
+      "bytes": 11690,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0311/assemble.request.json",
+      "sha256": "039f91861825fb98a0e1c231edb0c90562c9c7ab860d3aa60421d2a431cb6cec",
+      "bytes": 11656,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0312/assemble.request.json",
+      "sha256": "edd0c60e73fdc4bcb23dfb02a7e5fb693869a3c696db1e17008acf85ec6035bd",
+      "bytes": 11658,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0313/assemble.request.json",
+      "sha256": "c8c6294f5d98b2e5fdd869a47c84762c6dd3594a5518a876f6022700210f79eb",
+      "bytes": 11712,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0314/assemble.request.json",
+      "sha256": "877b7763cd4c6d44a2397b7508431a1c20e534f7d66e1d59c9c71098967994c0",
+      "bytes": 33237,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0315/assemble.request.json",
+      "sha256": "79acbedebd20aa80282f190ed606076ba432b886089b2bf9f342bf55990d84ec",
+      "bytes": 33237,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0316/assemble.request.json",
+      "sha256": "9a3046b5a04a4fa77e1b2b98624c20a047e40ca1cc00268e52e2657a6879316b",
+      "bytes": 33397,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0317/assemble.request.json",
+      "sha256": "1dfeeb33922a2faa05853db58202df0bf3dcf3a5ef027576e573ff6c6650828c",
+      "bytes": 33483,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0318/assemble.request.json",
+      "sha256": "3e4d4890ed64e78dee43a7fa635390befd3ecea47cc3cf5603729c6541948ac4",
+      "bytes": 33356,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0319/assemble.request.json",
+      "sha256": "b3c0478059422b7bd4d020818b39b74073f17c2ff6ad9a7cd074a7930071effd",
+      "bytes": 35196,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0320/assemble.request.json",
+      "sha256": "628801c950c84d5d73d4481c1101f25efe9eaf4a41412df0154bfc211a4dd426",
+      "bytes": 35196,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0321/assemble.request.json",
+      "sha256": "36fda4a757261718e53d92fb9f5d836883c4942a57583129afff6d9ff8ed5447",
+      "bytes": 35356,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0322/assemble.request.json",
+      "sha256": "1fe00c0c123b2e036fcde4b319858419c82e69aee289099ceef62c094b0b1318",
+      "bytes": 35442,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0323/assemble.request.json",
+      "sha256": "c48747ae5a091aba090e6ce13557d3f9d8e348bafb4759f4502a4f0fa9adfa2d",
+      "bytes": 35315,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0324/assemble.request.json",
+      "sha256": "2de574ebfdc0479f59b781778ee190d6b1c9be390df12537d945d6481bfbef96",
+      "bytes": 35100,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0325/assemble.request.json",
+      "sha256": "cd8c2fe33bb90c511ceaa93803d14871e5f3f6c7cd193a2a3dfc00d385ed9526",
+      "bytes": 35100,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0326/assemble.request.json",
+      "sha256": "1e1df04e22b943278e34ed0863c565a2fb879ddf9a26e067c3150f5d171ddb12",
+      "bytes": 35260,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0327/assemble.request.json",
+      "sha256": "9dc0f982e0feb22160a7c56bb8043ee85f022a158ba8dec2ba7ecfc23cebd910",
+      "bytes": 35346,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0328/assemble.request.json",
+      "sha256": "2cf74706b020135c4cddda3f30f040e4ccb6619edd641dfd84421c3cf8548662",
+      "bytes": 35219,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0329/assemble.request.json",
+      "sha256": "a091bc7caa49e77d9ac432b02cacb05d7a3c1cc1b994167354a5948fef288d07",
+      "bytes": 33253,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0330/assemble.request.json",
+      "sha256": "f71773de876351fcb65e9db804614f90e942ac09e332ca52c003efdff284da1e",
+      "bytes": 33253,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0331/assemble.request.json",
+      "sha256": "d59ce33d1b59274614837d810e4a47dada52d83b18d786d111494c589b062396",
+      "bytes": 33413,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0332/assemble.request.json",
+      "sha256": "0bf144ce069a2c673ff7cef56bfccea6c607feb555f4cab8e53e0f0e1a886526",
+      "bytes": 33499,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0333/assemble.request.json",
+      "sha256": "6122d333a3a0a2dfb05d86d7693a5ae0751d0a6413da2aa4e35d01b421e5d8c4",
+      "bytes": 33372,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0334/assemble.request.json",
+      "sha256": "eddba3437886545c8ed835b3f2551373a7a7c65ffc467206998246af630da00d",
+      "bytes": 35212,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0335/assemble.request.json",
+      "sha256": "94fb5e61e5a50a6b9c07a3d5cb3e1a2f6b4eee73a77cf7dcb80f592b820127f9",
+      "bytes": 35212,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0336/assemble.request.json",
+      "sha256": "f1d8fd8437e421764b89837c02a178e7fe664bb0f2f75c3cb4fad0671134144b",
+      "bytes": 35372,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0337/assemble.request.json",
+      "sha256": "859f23b167e3bfb66d318071a9ca5035c467b1bbc466a575088c54642a4df81b",
+      "bytes": 35458,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0338/assemble.request.json",
+      "sha256": "6e8da2c29a047eaff92cbf7d2f99aafd879272e8286aec59192b7678f957765c",
+      "bytes": 35331,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0339/assemble.request.json",
+      "sha256": "e6f0b604f4451120daa6ff4f2972dc10a3dadd41ddf307f983e2476a1fd9cc64",
+      "bytes": 35115,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0340/assemble.request.json",
+      "sha256": "90cb27fb519574314340fba3af429dd81fba6eba172b3e23d639e3cbd24ddfa0",
+      "bytes": 35115,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0341/assemble.request.json",
+      "sha256": "fe0a5d963c4eecace0688c9afe524d86883679df6d5553b1b1974605d884e5ac",
+      "bytes": 35275,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0342/assemble.request.json",
+      "sha256": "fd733e5acee86d3ab3a0fcf0daece6223fb25f212fd2b2cf1b3cfa377edd4187",
+      "bytes": 35361,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0343/assemble.request.json",
+      "sha256": "5ca5189f95c0763e320653850d5a01927a1a3ea7337c67f94a8c4249cc1f9c3f",
+      "bytes": 35234,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0344/assemble.request.json",
+      "sha256": "790afbff51d136d19ddf91dbb5349b43d0318cc3974e082eb0b49622330f1ed1",
+      "bytes": 33265,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0345/assemble.request.json",
+      "sha256": "4404fad406f38e7a253b0feb147896da87b89ef3c5affd640dad8acf2d3509ce",
+      "bytes": 33265,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0346/assemble.request.json",
+      "sha256": "fe9eea349d098d5dca87712482aea44f88d121be18f6620d1a25e2df2219429a",
+      "bytes": 33425,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0347/assemble.request.json",
+      "sha256": "47510e95a34b086e9d71e622d720ad86b5e58c30e2986e6e3f0d5fc88bf1689e",
+      "bytes": 33511,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0348/assemble.request.json",
+      "sha256": "310372f11c4a6034e46876cf227f4e8e4c689b6acbe84be222e1ea5c593e0e2b",
+      "bytes": 33384,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0349/assemble.request.json",
+      "sha256": "d3731166de45f89a95098c79ae7131accc0fc46f6e8aee2d74a44d93260cc360",
+      "bytes": 35224,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0350/assemble.request.json",
+      "sha256": "7f0f7eac610a7eaa81d2a0abf0ac1c3dd28281b8a872c3adfbb70ab6f7b9632c",
+      "bytes": 35224,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0351/assemble.request.json",
+      "sha256": "68567a12688e99f97ee2f24297b0e4e71a922e7f9a1c9352a11979125d787d23",
+      "bytes": 35384,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0352/assemble.request.json",
+      "sha256": "7287d2aea339bfdc80775c841ae8b2df7d869f3b53d32ef197c06f24c0b82d6e",
+      "bytes": 35470,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0353/assemble.request.json",
+      "sha256": "a635510c43a84d65d470d6694cc4d1f727a88c1950a4ddf64a0192bcc3078f76",
+      "bytes": 35343,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0354/assemble.request.json",
+      "sha256": "ea80efd18433f55a3524077a486c68d1967470560dca208d5fe45dc987282990",
+      "bytes": 35127,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0355/assemble.request.json",
+      "sha256": "bb7d488763f16ef4297b0abe7f2fee3b98850d0be7353663e0c8f8e5e9740845",
+      "bytes": 35127,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0356/assemble.request.json",
+      "sha256": "0b0351b90891f4aec54bbdc8964a6929da9e69846008d730d774448f2e8eece1",
+      "bytes": 35287,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0357/assemble.request.json",
+      "sha256": "386ee51ed8b808e4fb7e09e2057f72f0458942b1a30afe73cb2220e505688591",
+      "bytes": 35373,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0358/assemble.request.json",
+      "sha256": "5a25b3314c498a3dd426bc21286a3c8eb8691d5059061f5ffc1b17564142a858",
+      "bytes": 35246,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0359/assemble.request.json",
+      "sha256": "fe4046e998a4842a580cf8c6663e138c670759dcf1419822ba4b04cec6d952c3",
+      "bytes": 30958,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0360/assemble.request.json",
+      "sha256": "92e6215eb15ee53d22e0fc82ad7d477a8f1886f437ef0c656d241b2650df0eaf",
+      "bytes": 30958,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0361/assemble.request.json",
+      "sha256": "991f25bc21396628c7612e8e2ee5d199bd8aff05702c087a5ef844fbade63828",
+      "bytes": 31118,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0362/assemble.request.json",
+      "sha256": "c6655af561d1ef258ee9656e8bdcdee2fc327b63d6eb9fc06778baa1728be6e9",
+      "bytes": 31204,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0363/assemble.request.json",
+      "sha256": "ef4b870af5de5167c5e5dfcfdb9db71f76d070a512678bdbe04955714829d5ae",
+      "bytes": 31077,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0364/assemble.request.json",
+      "sha256": "c9f476e56043a3f05288f2729d934bf726650e88e25f3feaff7061b7003fa55b",
+      "bytes": 32917,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0365/assemble.request.json",
+      "sha256": "752d8a8443888d2b9a7019558f96d2ccf784c3fac68725c656005c4f5534d328",
+      "bytes": 32917,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0366/assemble.request.json",
+      "sha256": "4e1d14c2f6e693b0c18b0fb84e46bf18e10034a8bc6c79db788ebbb27c1a3fe3",
+      "bytes": 33077,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0367/assemble.request.json",
+      "sha256": "b8b697e959222888562989a580cf12d9e7fd9e7c8f9c77c9f52a3f840b0b0432",
+      "bytes": 33163,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0368/assemble.request.json",
+      "sha256": "9cf462c17b37f2f86acada1190d30f7265215188387a9601aff75326f7c23e41",
+      "bytes": 33036,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0369/assemble.request.json",
+      "sha256": "a83f2bea12a00a68f97aa4c166bdfb80a8c12f0352b724fdac213cd51e74d4bc",
+      "bytes": 32820,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0370/assemble.request.json",
+      "sha256": "e098c7e8029c1a197dd20441a65a98df1bbff57daf4942d40b872d36522528e0",
+      "bytes": 32820,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0371/assemble.request.json",
+      "sha256": "89919c97b057efb0d9f48e261375cc9d7cdb10f42629456f3ccb38a449773850",
+      "bytes": 32980,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0372/assemble.request.json",
+      "sha256": "7cb79211c720e7edb69f7dcb30d13e96ec3526282ac704c0e1903aa248992221",
+      "bytes": 33066,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0373/assemble.request.json",
+      "sha256": "1f1af5d3afc50f7fec9fc7404b6fb55b929e60753c6fd6d4d4fdabacf3830aa2",
+      "bytes": 32939,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0374/assemble.request.json",
+      "sha256": "2923e7f2140f795fc411c0cf169c18baa697a55890d816cd3161e37c9b59d566",
+      "bytes": 30973,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0375/assemble.request.json",
+      "sha256": "b92def99e223de44552f3e384178c7ef004fa81ceadd671a82b28dc3be61d5c3",
+      "bytes": 30973,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0376/assemble.request.json",
+      "sha256": "0726ca6894083956dd95dd29fcf468a8769142e4be4abad0dad16c55c585f9c0",
+      "bytes": 31133,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0377/assemble.request.json",
+      "sha256": "a56add4bb76cd7ecd6d538b6b970042925be46ccf0bd4c250f5df365d98f6d8f",
+      "bytes": 31219,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0378/assemble.request.json",
+      "sha256": "1affc0a2cec1814abb7286b6917098a4db2827052dec23a5441d5ef6f98f6e5c",
+      "bytes": 31092,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0379/assemble.request.json",
+      "sha256": "7c2eab40c66044c2a44bdc91d5f7c8cdbb7a8636bd1bda9c77d33607082896be",
+      "bytes": 32932,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0380/assemble.request.json",
+      "sha256": "0bd4d14a8fb994db19bca71823a24f7a3307a49486d060dea8215ed6a344ebd3",
+      "bytes": 32932,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0381/assemble.request.json",
+      "sha256": "6b617968a3ee61ac031a16d3c702db5a3dfaa13954b0c026f7f0c80b96de3344",
+      "bytes": 33092,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0382/assemble.request.json",
+      "sha256": "eddba34f1e63b4793fbb761b99bfb710d3ddb3766248383d1a97c6a581b091ed",
+      "bytes": 33178,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0383/assemble.request.json",
+      "sha256": "187a4aa95d55f0fdc3ddf6ebc7f3a18a038bc35734d4e1a06c22aca8fc8cc36c",
+      "bytes": 33051,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0384/assemble.request.json",
+      "sha256": "3f055bc376208736dbd8a1b82e270a5c4117398039bb3882b09bbe327a3c20aa",
+      "bytes": 32835,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0385/assemble.request.json",
+      "sha256": "43c89bfb08490ffeedea2ad25ca205ad523392265302f75937a9b7150601da1a",
+      "bytes": 32835,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0386/assemble.request.json",
+      "sha256": "7a7502eba2497be4be25712bd7c108657c6a7545d625bf59bae70e2dc096add1",
+      "bytes": 32995,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0387/assemble.request.json",
+      "sha256": "100b7ed4fe66830d87577ea098c3ee8121889458e22f551235f62562eafa125c",
+      "bytes": 33081,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0388/assemble.request.json",
+      "sha256": "8484526d81ae9bd7e3b0b2e34db25fa8ae862f3544181f0fa9e090525f38d4a4",
+      "bytes": 32954,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0389/assemble.request.json",
+      "sha256": "4d9e5302b5baf52fc896ead51934096f2a68a8ddda0ee6df491147550dffbcea",
+      "bytes": 30985,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0390/assemble.request.json",
+      "sha256": "0ea15d77af404f02ff1759ddbe33b551bb64e96e5fd03e8d1e0277ee2a06551e",
+      "bytes": 30985,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0391/assemble.request.json",
+      "sha256": "3eefe3921160a4461b1a1e5b3e6986c900327a45246949d6abb4679d0451725f",
+      "bytes": 31145,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0392/assemble.request.json",
+      "sha256": "d6581083a9bac0c6efcbec2e6ea85ba321ce1c704c5d896324f3dae61254811d",
+      "bytes": 31231,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0393/assemble.request.json",
+      "sha256": "4713867f8baefc1ad5284c5e66e0b449d7c780da3b7dda9afcdb4e96d43fe401",
+      "bytes": 31104,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0394/assemble.request.json",
+      "sha256": "74b9ac1ae4c59b18be2573861cae62173783cfe87a8dac1da4c9a5ba81725a03",
+      "bytes": 32944,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0395/assemble.request.json",
+      "sha256": "5dd723a21414f358168cfc6aa8f5584ce5c81c82d1a6ac33be8c14d94b4256ea",
+      "bytes": 32944,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0396/assemble.request.json",
+      "sha256": "b1349c5d12da658571b79153014e6093d5c0c51682a002813c5097b222eea9d2",
+      "bytes": 33104,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0397/assemble.request.json",
+      "sha256": "42db428420a59e76fa42a606eaccc0776a96b5be1030bf1af29fb8826e1eb62b",
+      "bytes": 33190,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0398/assemble.request.json",
+      "sha256": "ae4637bb9b9f4ecea18ef0a365e567ababa8cc8e72a33a528d746218189b239e",
+      "bytes": 33063,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0399/assemble.request.json",
+      "sha256": "15bf4e155ca6d65437b20d9a5ce0b4fd1a4cc4b8c9eb5d47a01a7ee80301e16b",
+      "bytes": 32847,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0400/assemble.request.json",
+      "sha256": "217e53744b2eb1be0a9bd13a14b2af8063d606525ea9c46461ce85ca173eb4b3",
+      "bytes": 32847,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0401/assemble.request.json",
+      "sha256": "5d7b8dc5f7a3562cc4f5ff898456e9d63d226a219498fcdb0f7e60c00def5ac6",
+      "bytes": 33007,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0402/assemble.request.json",
+      "sha256": "3d1fb801a82902b567ace144473210007370e364522761892a65f8387580f6cb",
+      "bytes": 33093,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0403/assemble.request.json",
+      "sha256": "477400cb53b83bb9512f9c83a7b63e7db830583bc83a769fe578f877d28b0b0e",
+      "bytes": 32966,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0404/assemble.request.json",
+      "sha256": "8b4e4ad27fab5c37de3ce253e9a220705d362acdbe5f6d0f812a5d186cc4af7f",
+      "bytes": 37267,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0405/assemble.request.json",
+      "sha256": "7ad744cba4735904ba5e2e490abdd840fc1f0ca0808de4e06d4a3858f4f7492a",
+      "bytes": 36253,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0406/assemble.request.json",
+      "sha256": "c9c4bf18b731eddac21b89c63f77d893ab410bdbf8f1e5adb92de19403a5f6f3",
+      "bytes": 38293,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0407/assemble.request.json",
+      "sha256": "b08749c3bea08330b9db3ad408762418858fd2a1e5babb1d9ab16ad92de84290",
+      "bytes": 36034,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0408/assemble.request.json",
+      "sha256": "bc43c0ce6b5cb21ac2d3c19d811fe7aeae94173386e842f5197a51c320bcf541",
+      "bytes": 35711,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0409/assemble.request.json",
+      "sha256": "c1c1d7216230a61bab37cc24b901dafbf31e2234d0b07412d7206fa62b044e63",
+      "bytes": 36133,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0410/assemble.request.json",
+      "sha256": "32d9c654f8c8c89c0197c927e8b1f9c31e68f7a61cb8b481db905290c51589cb",
+      "bytes": 37239,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0411/assemble.request.json",
+      "sha256": "fb284a10b8307e3c9879eda322fa9662f5bafae0f87b63dda28686f8143b4c22",
+      "bytes": 35456,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0412/assemble.request.json",
+      "sha256": "8a4a538b27773b33d00863d14b07b3d61865df5f9f722b958154c609f87f611e",
+      "bytes": 35596,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0413/assemble.request.json",
+      "sha256": "59dc6ba31637839c629266629c8995c7d930b0e63ceca0a876de8b2e5773a8a5",
+      "bytes": 35515,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0414/assemble.request.json",
+      "sha256": "35ddcee5b3a1877f3f8105e6e8fc6761b923106bf467aa8df71e3a3a422ef5d6",
+      "bytes": 37245,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0415/assemble.request.json",
+      "sha256": "0dcbb762e51e6c215d2d12909e87f63a0dbe227ec779bc1ac1ec3a0abf25ff02",
+      "bytes": 36286,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0416/assemble.request.json",
+      "sha256": "9ae05f04f01a814b573703ad7bcb0e46a908a407408b37c9aa9e6055f5a64df5",
+      "bytes": 36556,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0417/assemble.request.json",
+      "sha256": "93293edc33f83714726972d623c7793056a9b371b9f15e7c7ab34ca189dff77a",
+      "bytes": 35977,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0418/assemble.request.json",
+      "sha256": "a2756079899231eada7a6db27f62756b2cf670a9e0ea1fd2a6665a7cf25c8b7e",
+      "bytes": 38075,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0419/assemble.request.json",
+      "sha256": "c166d5db3820c8d63d0235c59fd206fbd390f5b2e688ac916b928b7f031cf0e0",
+      "bytes": 36280,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0420/assemble.request.json",
+      "sha256": "a263d64629a29a368b40e4fbb51ae47edf5060348b21a54228ac473d2d355bc5",
+      "bytes": 36550,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0421/assemble.request.json",
+      "sha256": "991c473fc1c8c6b5e85c65600cc1c72e7d4db86990f95acc610d7232d1247948",
+      "bytes": 35971,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0422/assemble.request.json",
+      "sha256": "bf3921af0619d17edc6889ca139adb367a873000ede7af4897490422d86f582b",
+      "bytes": 38069,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0423/assemble.request.json",
+      "sha256": "88167fa79ceaed680c33657af4a97eb8712b992be90eac906583849485d3af61",
+      "bytes": 38931,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0424/assemble.request.json",
+      "sha256": "8bb5409bd280b0290daef0d86ea41c716f84b5c982e8f64db46849a884ea8215",
+      "bytes": 39201,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0425/assemble.request.json",
+      "sha256": "ca8f4e70ff0111bdc4b73f2ed9fade6ef6ad18f3c68e6b235ca4a922e92a13f6",
+      "bytes": 38622,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0426/assemble.request.json",
+      "sha256": "480e8f86d28cb8e840afa9d8b4eea3a25f89f35230e2a936d57e7d09948a75a4",
+      "bytes": 38071,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0427/assemble.request.json",
+      "sha256": "90d4591cd3e239ab2a13937f07c8f595f6f9323a8778b62898267ed2a1b719e7",
+      "bytes": 38927,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0428/assemble.request.json",
+      "sha256": "79ac5601c129fade39853ab69ecba3f02d16886b2694e09c4b542b3739b88a71",
+      "bytes": 27672,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0429/assemble.request.json",
+      "sha256": "1ce8207c0f3303efe964e197d60bf04c3fd3e30a4f24923a818585b3612125aa",
+      "bytes": 25455,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0430/assemble.request.json",
+      "sha256": "ee59d15878a98ccd6fcac0b6d5b4fa7c344d5a3d2e07f4b4f301c536bb9773b4",
+      "bytes": 27711,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0431/assemble.request.json",
+      "sha256": "7fc1b8e466f2db8adbe5f25e4e14d6d9019cbb606dcd10d067f8dc6b12311eb1",
+      "bytes": 25442,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0432/assemble.request.json",
+      "sha256": "c0702dbca417e9100bbe6680303d496b62fd2bc7e317340491a6fb9a09d22fe1",
+      "bytes": 27689,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0433/assemble.request.json",
+      "sha256": "d46bef304337c00c30b735cad405ffd6f9571bb219e4e2b1a2e9e7af264411a5",
+      "bytes": 25465,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0434/assemble.request.json",
+      "sha256": "6facbc075116245ad5f69a6ec2e7bbff48a5f6255b2b238da74b1b040756e0ca",
+      "bytes": 28474,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0435/assemble.request.json",
+      "sha256": "2e8b0674d51d97d3954ebaa2e6c1e1d48557f72d97a263e71248a16b26403531",
+      "bytes": 26248,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0436/assemble.request.json",
+      "sha256": "b34d00e9946fb0772afde088b1800a2fc597d07a062a15d2b701d8e185a6be2f",
+      "bytes": 28513,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0437/assemble.request.json",
+      "sha256": "b0cf5fc957572404f7fb26f5b8b8fbf07a938da6ff335e2249f9b99147a4bcf5",
+      "bytes": 26235,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0438/assemble.request.json",
+      "sha256": "01cf070b87794f24bade6ea390957348bbab17a23e7489cf5bf8bfbfb64b28e3",
+      "bytes": 28491,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0439/assemble.request.json",
+      "sha256": "28fcf4409e9d89cf42be2b7d16a1a2874b5c15ef79d841ca663157db0ef0a55d",
+      "bytes": 26258,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0440/assemble.request.json",
+      "sha256": "349fc968bd9667e637bb2f934fa6b887ec60924f809f91dff123530bd0619ede",
+      "bytes": 38550,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0441/assemble.request.json",
+      "sha256": "a24efcc4002222b13404984cb85c7cdd78172f268b51d610cff2f15ea2b919ee",
+      "bytes": 38550,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0442/assemble.request.json",
+      "sha256": "4086981f80aeca4b06cb79fac20bdd3a9fc0ae037df362523f89697d1e3fcfb7",
+      "bytes": 38710,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0443/assemble.request.json",
+      "sha256": "98db31333718ee7c0d71fdf81dc41b8e4d2b000995c59ce8a03078bb289a340a",
+      "bytes": 38796,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0444/assemble.request.json",
+      "sha256": "eddf4d7f002802932d996079b87b76a0fb78adce89f96e6390deb5eecdfd87eb",
+      "bytes": 38669,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0445/assemble.request.json",
+      "sha256": "ad757f17ce6015e19653e3ff6ea8b16665f3ff1726ea9b1cec24624a93ed8a96",
+      "bytes": 39449,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0446/assemble.request.json",
+      "sha256": "81cc8a001a4670ade261cd7373fff46d5eb5534036245ba4a42a9eaa372e0b4b",
+      "bytes": 39449,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0447/assemble.request.json",
+      "sha256": "d041e347d8b530be80b1e8f031d73bbe2327aab152903a5459b1d0d6971ecfe3",
+      "bytes": 39609,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0448/assemble.request.json",
+      "sha256": "57ed19922e8b89e398b824402798fca281c6544975c0f17f4248f9f278b8a179",
+      "bytes": 39695,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0449/assemble.request.json",
+      "sha256": "42d0d8b2ab80f185fdf274e519c369bf16b4758e5fc2dd0e8f5c288169c99be8",
+      "bytes": 39568,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0450/assemble.request.json",
+      "sha256": "65d0490f114c96c29a234c43aeab057c1a6894890523b0ac0d54e9859211cae1",
+      "bytes": 39352,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0451/assemble.request.json",
+      "sha256": "ed3eb661bf6e47d4db5a7766969ec09c0d5013e7e7f0df7fdda96a0995a2fab3",
+      "bytes": 39352,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0452/assemble.request.json",
+      "sha256": "aa26a20f85e3c0e14b37f0faaeeb76d2d09c2b555c94d35b7b8f66040111f086",
+      "bytes": 39512,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0453/assemble.request.json",
+      "sha256": "ef15ba274a593aa9a51991d13d515a7cc05e70eb1db1ff5bcf15b3c53e3e4ae9",
+      "bytes": 39598,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0454/assemble.request.json",
+      "sha256": "2088d2ed3d2b2f00f933ad602e0d180b100c3886273b158626f3142edc7c4264",
+      "bytes": 39471,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0455/assemble.request.json",
+      "sha256": "5ad9042d75bfa3fce2393521cda98cd48ee400cbc2769b3e991262ef4162a986",
+      "bytes": 38565,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0456/assemble.request.json",
+      "sha256": "e0b28d4d9f8b9a5e91379140744f21da03707b4812360bfd591807b995d6e124",
+      "bytes": 38565,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0457/assemble.request.json",
+      "sha256": "d815e694d6e5c0ed97773c96f7432f1d9fd4fbe74e58611f92fdbe110680d994",
+      "bytes": 38725,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0458/assemble.request.json",
+      "sha256": "6df45b3e92d06aa77b223bb26c5d23512dd7975949e207b1f491755a3a5f04b2",
+      "bytes": 38811,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0459/assemble.request.json",
+      "sha256": "4ccc169b87f11ac299abe88fb2436d8261889f35862ae90ec42fc669c6a2ca20",
+      "bytes": 38684,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0460/assemble.request.json",
+      "sha256": "61c1fa3b0cbc6d2accea6bc3cf93ef1697f2d09406a2227e68cdb8f2ad813553",
+      "bytes": 39464,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0461/assemble.request.json",
+      "sha256": "3f401f1a31c08a75fdeb8b3bee4c6b1ba7674b4e5f33fbe61fef285ae107b322",
+      "bytes": 39464,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0462/assemble.request.json",
+      "sha256": "3d7cb2a22d6769e6c588d404e6ed3ec65e5fef9eb586d3449e055b4ca9967637",
+      "bytes": 39624,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0463/assemble.request.json",
+      "sha256": "3ca1b7c0b3612dea0065aa5f99672e08ef4000660f9a67226d2a847e6f4acc3d",
+      "bytes": 39710,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0464/assemble.request.json",
+      "sha256": "3f40eda357194c57da1505c90355ded6eb05e057b5798ba28186b78df63655ed",
+      "bytes": 39583,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0465/assemble.request.json",
+      "sha256": "1185731cff60d5dc5e926b638ca6b1cde0e8240dcd17f08f17d626db6b0a8628",
+      "bytes": 39367,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0466/assemble.request.json",
+      "sha256": "0b5f48e7222107e5ca0b9e8de3a6d5e16f6cec9d16921c76a4fbb7403be675d0",
+      "bytes": 39367,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0467/assemble.request.json",
+      "sha256": "28d2a473a485d100fb8bb062ca2e20cb09fd89aeef84363a024846d40656e162",
+      "bytes": 39527,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0468/assemble.request.json",
+      "sha256": "827381d80423dd2811ae90940293fbd8ea62303444714ccce29d2b8957b66802",
+      "bytes": 39613,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0469/assemble.request.json",
+      "sha256": "51d93020416b78f7cc3c5a5ca6b3725e5d07eb40481d6e71e5fee16126c7c6bb",
+      "bytes": 39486,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0470/assemble.request.json",
+      "sha256": "ed250a14f093b8e9411d1c1df6ecc3d49ee5bda776827c15ee2acabc7b51d6ac",
+      "bytes": 38577,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0471/assemble.request.json",
+      "sha256": "326ae5ea90371689b1a8dce375ef5ce7fbf9606d58cb27a0bf27209719226b71",
+      "bytes": 38577,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0472/assemble.request.json",
+      "sha256": "42febbe482d0eb58a61847131a78e70cc3fb2fc91736d6232a849b3e3c295f27",
+      "bytes": 38737,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0473/assemble.request.json",
+      "sha256": "d1bc8d31d4f0d8ec7ece769ddaece9899ec65f76adc3af8f14b882d0a8290fc6",
+      "bytes": 38823,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0474/assemble.request.json",
+      "sha256": "4139b99b2b6e295eaf3f42c72dc9c08e8d7a705f48d7ba96028baa664df1360a",
+      "bytes": 38696,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0475/assemble.request.json",
+      "sha256": "15d72a7bdcbbe5cbe53be5c059687e4000f75539dc8bc40122aa9322e27de493",
+      "bytes": 39476,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0476/assemble.request.json",
+      "sha256": "c5d53114105a5a4453081c356d4d9ef3fe4556091f2609ce3d11ff19b21a826d",
+      "bytes": 39476,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0477/assemble.request.json",
+      "sha256": "821e77efdc0b8588b495951b5d1d40d05c1bc842d7b6c664eb7c490870db587e",
+      "bytes": 39636,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0478/assemble.request.json",
+      "sha256": "d671d431c9c24b4153f06742a0d85b2b91e446650271e7429df0531cae317c6b",
+      "bytes": 39722,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0479/assemble.request.json",
+      "sha256": "b1646ac65ff50188c05e405af144b425dfe47bfa031d87980c7c4c739e7eefd2",
+      "bytes": 39595,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0480/assemble.request.json",
+      "sha256": "8405ffda6db629bb582484e7f1d2317951965b5bedc25317a745dcb14294aa05",
+      "bytes": 39379,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0481/assemble.request.json",
+      "sha256": "ba028f8db41933ff1f4f6177ada1c22623521bc2ee4263b883fc9f4bcd80d52d",
+      "bytes": 39379,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0482/assemble.request.json",
+      "sha256": "7ba21aa9824a1bd840743eefb69925d9a24afe705f047ecdf5c476ffe2915245",
+      "bytes": 39539,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0483/assemble.request.json",
+      "sha256": "41e7a730617ca32f674bf0497e5fa5c652668133a5b255efc58d1725066694eb",
+      "bytes": 39625,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0484/assemble.request.json",
+      "sha256": "acac234df80fb9554cfa9fc847567193bd6c3e9c3d25cc6f98c4692300d37b31",
+      "bytes": 39498,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0485/assemble.request.json",
+      "sha256": "cf284361b7806cdffb5cb2f77d89b8d2ee59abc41e9a9e7c7d72bdff601cf1b1",
+      "bytes": 36246,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0486/assemble.request.json",
+      "sha256": "a1863e3009cdc636005fe532f4a579bb5b9734c36ae8076da95d57b067aee7d1",
+      "bytes": 36246,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0487/assemble.request.json",
+      "sha256": "eec4599f247b7204d6fed4a50225a900ef4562913751693dd230065185c99eca",
+      "bytes": 36406,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0488/assemble.request.json",
+      "sha256": "8e26ffd1b93163502604dfa6bcc5ebfb3e9415b57059805b58d0c8c6abe6a938",
+      "bytes": 36492,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0489/assemble.request.json",
+      "sha256": "3d6d4d59f359f8ad623cde5bedcafe8c1413d6a6ff29c217dd26bf9e44c886a6",
+      "bytes": 36365,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0490/assemble.request.json",
+      "sha256": "cbb391154bd9cfe1baea5307015128b821197518be3e57da2915818f006e036d",
+      "bytes": 37154,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0491/assemble.request.json",
+      "sha256": "26001e792b955f4bad7f90d0d86fb21bb5c4e2d6a8a66d393bcc46b134030890",
+      "bytes": 37154,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0492/assemble.request.json",
+      "sha256": "92bd814b457e44664f390b87958ff4f46de727a31dc4a10fdcb18dc0389628ef",
+      "bytes": 37314,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0493/assemble.request.json",
+      "sha256": "5d66775df2032337d252bc7a08273fa636c466cb056cd2f5c83a478f442b9ee0",
+      "bytes": 37400,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0494/assemble.request.json",
+      "sha256": "3b4149a797432fe624877012630d08762fa2a6d1df3eb5b694ccc5064b1a336d",
+      "bytes": 37273,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0495/assemble.request.json",
+      "sha256": "6cdcefca9074cc4445149e5376a6f75a5125f2e8c7fbbeb799d753b1b87db530",
+      "bytes": 37057,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0496/assemble.request.json",
+      "sha256": "2420148be5ea46c79307ff08a98a00ea6cafd0574b80d34dc4f0630ab6aae931",
+      "bytes": 37057,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0497/assemble.request.json",
+      "sha256": "5ca3db9fa85d7fa270e3a758a10f311005efce5463d761ae3a10f163db006fa3",
+      "bytes": 37217,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0498/assemble.request.json",
+      "sha256": "a74bcd3dc8103825af3835ad1ca1e2c8db1c1d41229481f07cc5337ef6c4cfdc",
+      "bytes": 37303,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0499/assemble.request.json",
+      "sha256": "b06a2bbfa540f2e87f20e3ac5e0a6fd1dae596d9b689279ccbdc2ffc771dab38",
+      "bytes": 37176,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0500/assemble.request.json",
+      "sha256": "008c426469a79e987b285aae7b3039b777dd27ade765255472d2be37831d4703",
+      "bytes": 36261,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0501/assemble.request.json",
+      "sha256": "25b168708a62f4938576056471b5f5ef6039a0278d346d281d216d6dc2282fbe",
+      "bytes": 36261,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0502/assemble.request.json",
+      "sha256": "2108603f48f687ff6573aa77c854b2c1629557ba99d5d852404bbe5564a6ec09",
+      "bytes": 36421,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0503/assemble.request.json",
+      "sha256": "1644ef4d2f8521a06d077e3870f5e79caeb5e661512e0e4c534a81d51c4c362a",
+      "bytes": 36507,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0504/assemble.request.json",
+      "sha256": "75f87a110d6cb6351ec2a8b8d20fc2905ac89ef0bb750885fd8063055affc2b5",
+      "bytes": 36380,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0505/assemble.request.json",
+      "sha256": "51394f3bc4588738143a3d7ad4d3c7a8613b40d74d7dab4aba1e275721ab7ca0",
+      "bytes": 37169,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0506/assemble.request.json",
+      "sha256": "33ad022942be827c6ff03f2bc6750e8c2457e5e86672c013a8bb3642d31966ff",
+      "bytes": 37169,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0507/assemble.request.json",
+      "sha256": "418210f87cecfb3078307f754a975f3382d961c06ad03df2fcf807b27bc74796",
+      "bytes": 37329,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0508/assemble.request.json",
+      "sha256": "4957ac2b4766353deb6c16aef953c990d1a9e6837977be249192c2be8f92549f",
+      "bytes": 37415,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0509/assemble.request.json",
+      "sha256": "e926c7b1235c385f25d1afddfd0e49e40967c89f0c67f860c426bda384df83e8",
+      "bytes": 37288,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0510/assemble.request.json",
+      "sha256": "b537f97cbcdbb921bf22cb50fe0e6d0859800a789f3b5bacaea913d12c8cfa44",
+      "bytes": 37072,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0511/assemble.request.json",
+      "sha256": "53814fe22a98ee29d1ca698f2fd87a955cab34623402a0ae810352ff19f1c27d",
+      "bytes": 37072,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0512/assemble.request.json",
+      "sha256": "d97a93f393820e1d20c999e27f2eca4d5bb472585945cd92098e2e752564cdc2",
+      "bytes": 37232,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0513/assemble.request.json",
+      "sha256": "96dcc0dbdb41178b708920494f2a39272cb78c857459f12433cdab0e24b72421",
+      "bytes": 37318,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0514/assemble.request.json",
+      "sha256": "af0f95c809eebef06dfc8e2ea5f2ec5e73cc51ca0590533dad28c68b0a2094b7",
+      "bytes": 37191,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0515/assemble.request.json",
+      "sha256": "73203c4047b486794368cf9db0cd4a8816c462a3a680b33fe688a8d2c58a083a",
+      "bytes": 36273,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0516/assemble.request.json",
+      "sha256": "81dc4c5814230a2033d59f9292d0cfcdefb014cc059ed31fd1fcec3ae99ea177",
+      "bytes": 36273,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0517/assemble.request.json",
+      "sha256": "394b77f4fcb9eb24d53519753af9af10664e903141488f8657a77711d07319e7",
+      "bytes": 36433,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0518/assemble.request.json",
+      "sha256": "617b4f0ce86c276bc70817bb5402a72157d53f09e86e8ab3e50dafe16f72e5ea",
+      "bytes": 36519,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0519/assemble.request.json",
+      "sha256": "34b3a2b0b9345ba66901e56ad724c093cf0c91331587348813466f5972f3743f",
+      "bytes": 36392,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0520/assemble.request.json",
+      "sha256": "4f999a1401ad1fa166bd1a52579a2bba8ff1fdaae324d83792baeaf2b891f97e",
+      "bytes": 37181,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0521/assemble.request.json",
+      "sha256": "b2a83703ff4599c58d38ec168965f39b55bf2fc930a5e2709cfe2db373c05e65",
+      "bytes": 37181,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0522/assemble.request.json",
+      "sha256": "90b391845ca54b729f7e4e0f5b707189236c33c719c45feb10f30f5e8fda75bb",
+      "bytes": 37341,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0523/assemble.request.json",
+      "sha256": "6c361cb1eff2df30f7f834d6aad28463f5b9926832d1db8e97172f0950a083a9",
+      "bytes": 37427,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0524/assemble.request.json",
+      "sha256": "4cb40aabfe3c086d038ed12279383fbd9d064739af53f16257bcdcd782472482",
+      "bytes": 37300,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0525/assemble.request.json",
+      "sha256": "e6364c1ec4b108118cb7fe214def3dc15793189ab83a253d644946266b80a353",
+      "bytes": 37084,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0526/assemble.request.json",
+      "sha256": "fb31d5d32551671c8d56fa789b1f45fd3d5cfb4f5e8d997986c96b3d273577a3",
+      "bytes": 37084,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0527/assemble.request.json",
+      "sha256": "22c43ee53941ed72a62f314dcadb1e45cd8c8978f7622d231b1f7e931667da88",
+      "bytes": 37244,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0528/assemble.request.json",
+      "sha256": "00220778dbb9ca6ec05317f749599bdb679772e78c39e2ecf8104caa58576bf9",
+      "bytes": 37330,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0529/assemble.request.json",
+      "sha256": "b05e5a4a526489728e1da17cb3b67ef7658e4034e82d2772ed98c69ddd56e2b1",
+      "bytes": 37203,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0530/assemble.request.json",
+      "sha256": "79ac5601c129fade39853ab69ecba3f02d16886b2694e09c4b542b3739b88a71",
+      "bytes": 27672,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0531/assemble.request.json",
+      "sha256": "a7b43f782343e739f60cd2ad472a532566e764f143f5285d8fdd0ff368cdec1a",
+      "bytes": 27696,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0532/assemble.request.json",
+      "sha256": "48b65f10a1c9d2441f4ec3db63cf97b4be196ec1ba69f0ec19c54134b4f1a661",
+      "bytes": 36039,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0533/assemble.request.json",
+      "sha256": "1509a2747c683d6292077d7e38ffc0c724b7c10b7766d372d084ce874db288fc",
+      "bytes": 33967,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0534/assemble.request.json",
+      "sha256": "d8a91a7d64cc5b3782d0ef25bed69cc4d63b394df41d0d01d641003f3c4bf269",
+      "bytes": 35986,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0535/assemble.request.json",
+      "sha256": "1ce439c4393baaf312e7535b52e53c34901cc57ca939f6feb6265170a53ee1cf",
+      "bytes": 36010,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0536/assemble.request.json",
+      "sha256": "18b08d4f8b2b89634c65bc9c24f04b132fce0af6a56a9b232527e8bb743818f5",
+      "bytes": 33428,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0537/assemble.request.json",
+      "sha256": "db2e4c19e6c690ca770eb13ed9849a781cd38dff79609f03a8e3b00a5bd1a924",
+      "bytes": 33745,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0538/assemble.request.json",
+      "sha256": "6c50f2a518c77a7123666d1678736b34dd623e7a4248574fb83b45654f27086f",
+      "bytes": 34966,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0539/assemble.request.json",
+      "sha256": "7e09e3c36de8289bdbe85a676400f7c7e22a629a113167f1d8b3b631514e93b4",
+      "bytes": 25095,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0540/assemble.request.json",
+      "sha256": "f85d6ce15660491e81b18e4d5e6f3d3aae76a4f272e9f61f3541c8b0b17ea701",
+      "bytes": 25083,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0541/assemble.request.json",
+      "sha256": "a5f9d8b6f389ec6055c81a71095bf30b6b4d252f1bff83c81e4a04ca2f41f702",
+      "bytes": 38317,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0542/assemble.request.json",
+      "sha256": "c9bbea1c9f83dba2b12b127aa543d77c8cd87bbc4c564aeb7667b9b2af17b505",
+      "bytes": 27131,
+      "mode": 420
+    },
+    {
+      "path": ".local/rust-compiler-goal/acceptance/legacy544/run-005/0543/assemble.request.json",
+      "sha256": "57bf1e25c57db1f95025d849e8a38d0dc542bfa545892f363b8d9c3cfc070bb4",
+      "bytes": 26910,
+      "mode": 420
+    }
+  ]
+}
