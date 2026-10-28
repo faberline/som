@@ -181,6 +181,108 @@ class ProvisionMacosTests(unittest.TestCase):
         policy = {**normalization_policy(), "installed_signing_page_sizes": bindings}
         return specification, manifest, blobs, pins, policy
 
+    def npm_supplement_fixture(self):
+        rows, blobs = [], {}
+        tree = {"bin/npm-cli.js": digest(self.npm_bytes), "npm-link": "symlink:bin/npm-cli.js",
+                "npmrc": digest(b"prefix = /opt/homebrew\n")}
+        for index, relative in enumerate(sorted(provisioner.NPM_CACHE_FILES)):
+            raw = b"\xcb\x0d\x0d\x0a" + b"\0" * 4 + struct.pack("<II", 1784207837, index) + b"public bytecode fixture"
+            path = "frozen-tools/npm-cache/" + relative
+            rows.append({"path": path, "installed_path": provisioner.NPM_ROOT + "/" + relative,
+                         "sha256": digest(raw), "bytes": len(raw), "mode": 0o644,
+                         "license_path": "frozen-tools/licenses/npm.txt"})
+            blobs[path] = raw
+            tree[relative] = digest(raw)
+        tree_hash = digest(b"".join(f"{path}\0{value}\n".encode() for path, value in sorted(tree.items())))
+        contracts = json.loads(json.dumps(self.contracts))
+        contracts["fixture"]["npm"].update(tree_sha256=tree_hash, tree_files=20, tree_symlinks=1)
+        manifest = {"version": "som.m6-npm-tree-files.v1", "repository": "faberline/som",
+                    "source_archive_sha256": self.node["archive_sha256"],
+                    "tree": {"root": provisioner.NPM_ROOT, "sha256": tree_hash, "files": 20, "symlinks": 1},
+                    "files": rows}
+        raw_manifest = json.dumps(manifest).encode()
+        blobs["frozen-tools/npm-tree-manifest.json"] = raw_manifest
+        specification = {"repository": "faberline/som", "commit": "b" * 40,
+                         "manifest_path": "frozen-tools/npm-tree-manifest.json", "manifest_sha256": digest(raw_manifest)}
+        return specification, manifest, blobs, contracts
+
+    def test_npm_supplement_verifies_all_blobs_first_and_keeps_the_complete_tree_gate(self):
+        specification, manifest, blobs, contracts = self.npm_supplement_fixture()
+        document = {**self.manifest, "npm_tree_supplement": specification}
+        events = []
+        def read(commit, path):
+            events.append("read:" + path)
+            return blobs[path]
+        def download(candidate, destination):
+            events.append("download")
+            return self.downloader(candidate, destination)
+        report = provisioner.new_report()
+        provisioner.provision(document, contracts, self.out, report, prefix=self.prefix,
+                              expected_count=None, downloader=download, supplement_reader=read)
+        self.assertEqual(events.index("download"), 19)
+        self.assertEqual(report["npm_tree_supplement"]["added_files"], 18)
+        self.assertEqual(report["npm_tree_supplement"]["post_supplement_tree"],
+                         [manifest["tree"]["sha256"], 20, 1])
+        self.assertEqual(report["status"], "passed")
+        self.assertTrue(all(check["status"] == "passed" for check in report["hash_checks"]))
+        self.assertEqual(report["product_suites"], "not_run")
+
+    def test_npm_supplement_refuses_wrong_bottle_tree_path_and_last_blob_before_staging(self):
+        for change in ("bottle", "tree", "path", "last-blob"):
+            with self.subTest(change=change):
+                specification, manifest, blobs, contracts = self.npm_supplement_fixture()
+                if change == "bottle":
+                    manifest["source_archive_sha256"] = "0" * 64
+                elif change == "tree":
+                    manifest["tree"]["sha256"] = "0" * 64
+                elif change == "path":
+                    manifest["files"][0]["installed_path"] = provisioner.NPM_ROOT + "/unknown.pyc"
+                else:
+                    blobs[manifest["files"][-1]["path"]] = b"wrong final blob"
+                raw_manifest = json.dumps(manifest).encode()
+                specification["manifest_sha256"] = digest(raw_manifest)
+                blobs["frozen-tools/npm-tree-manifest.json"] = raw_manifest
+                document = {**self.manifest, "npm_tree_supplement": specification}
+                with mock.patch.object(provisioner, "stage_package") as stage, \
+                        mock.patch.object(provisioner, "install_closure") as install:
+                    with self.assertRaises(provisioner.ProvisionError):
+                        provisioner.provision(document, contracts, self.out, provisioner.new_report(), prefix=self.prefix,
+                                              expected_count=None, supplement_reader=lambda commit, path: blobs[path])
+                stage.assert_not_called()
+                install.assert_not_called()
+
+    def test_npm_supplement_preflights_differing_targets_and_regular_file_parents(self):
+        specification, _, blobs, contracts = self.npm_supplement_fixture()
+        verified = provisioner.load_npm_tree_supplement(specification, [self.node], contracts, {},
+                                                       blob_reader=lambda commit, path: blobs[path])
+        for case in ("target", "parent"):
+            with self.subTest(case=case):
+                prefix = self.prefix / case
+                root = prefix / "lib/node_modules/npm"
+                root.mkdir(parents=True)
+                first, last = list(verified)[0], list(verified)[-1]
+                target = root / last
+                blocked = target if case == "target" else target.parent
+                blocked.parent.mkdir(parents=True)
+                blocked.write_bytes(b"existing different bytes")
+                with self.assertRaises(provisioner.ProvisionError) as found:
+                    provisioner.apply_npm_tree_supplement(verified, prefix, {})
+                self.assertEqual(found.exception.code, "npm_supplement_target_mismatch" if case == "target"
+                                 else "npm_supplement_target_refused")
+                self.assertEqual(blocked.read_bytes(), b"existing different bytes")
+                self.assertFalse((root / first).exists())
+
+    def test_npm_tree_mismatch_records_public_file_hashes_and_literal_symlinks(self):
+        root = self.prefix / "lib/node_modules/npm"
+        root.mkdir(parents=True)
+        (root / "file.js").write_bytes(b"public package source")
+        (root / "link").symlink_to("file.js")
+        checks = provisioner.verify_installed(self.contracts, [], self.prefix)
+        check = next(check for check in checks if check["label"] == "npm/tree")
+        self.assertEqual(check["status"], "failed")
+        self.assertEqual(check["file_sha256"], {"file.js": digest(b"public package source")})
+        self.assertEqual(check["symlink_targets"], {"link": "file.js"})
+
     def test_public_supplement_verifies_all_eleven_blobs_before_use(self):
         specification, _, blobs, pins, policy = self.supplement_fixture()
         reader = mock.Mock(side_effect=lambda commit, path: blobs[path])

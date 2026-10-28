@@ -40,6 +40,17 @@ PYTHON_BINARY = "/opt/homebrew/opt/python@3.12/bin/python3.12"
 SUPPLEMENT_VERSION = "som.m6-frozen-tool-files.v1"
 REPRODUCED_COMPACT_FILE = "/opt/homebrew/Cellar/node/26.5.0/lib/libnode.147.dylib"
 SUPPLEMENT_FILE_LIMIT = 128 * 1024 * 1024
+NPM_ROOT = "/opt/homebrew/lib/node_modules/npm"
+NPM_CACHE_BASE = "node_modules/node-gyp/gyp/pylib/"
+NPM_CACHE_FILES = {
+    NPM_CACHE_BASE + directory + "/__pycache__/" + name + ".cpython-312.pyc"
+    for directory, names in (
+        ("gyp", ("__init__", "common", "input", "msvs_emulation", "MSVSUtil", "MSVSVersion",
+                 "ninja_syntax", "simple_copy", "xcode_emulation", "xcode_ninja", "xcodeproj_file")),
+        ("gyp/generator", ("__init__", "make", "ninja", "xcode")),
+        ("packaging", ("__init__", "_structures", "version")),
+    ) for name in names
+}
 PYTHON_RUNTIME_PROBE = (
     "import _decimal, _lzma, ensurepip, sqlite3, ssl, venv; from pathlib import Path; "
     "assert any((Path(ensurepip.__file__).parent / '_bundled').glob('pip-*.whl')); "
@@ -643,6 +654,95 @@ def load_frozen_file_supplement(specification: dict[str, Any], entries: list[dic
     return verified
 
 
+def npm_tree_contract(contracts: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    specifications = [{"root": document["npm"]["root"], "sha256": document["npm"]["tree_sha256"],
+                       "files": document["npm"]["tree_files"], "symlinks": document["npm"]["tree_symlinks"]}
+                      for document in contracts.values() if isinstance(document.get("npm"), dict)]
+    need(specifications and specifications[0]["root"] == NPM_ROOT
+         and all(value == specifications[0] for value in specifications),
+         "supplement_invalid", "The frozen npm tree contracts are missing or disagree.")
+    return specifications[0]
+
+
+def load_npm_tree_supplement(specification: dict[str, Any], entries: list[dict[str, Any]],
+                             contracts: dict[str, dict[str, Any]], record: dict[str, Any], *,
+                             blob_reader=None) -> dict[str, dict[str, Any]]:
+    need(isinstance(specification, dict)
+         and set(specification) == {"repository", "commit", "manifest_path", "manifest_sha256"}
+         and specification.get("repository") == "faberline/som"
+         and isinstance(specification.get("commit"), str) and COMMIT.fullmatch(specification["commit"])
+         and specification.get("manifest_path") == "frozen-tools/npm-tree-manifest.json"
+         and isinstance(specification.get("manifest_sha256"), str) and HEX.fullmatch(specification["manifest_sha256"]),
+         "supplement_invalid", "The public npm supplement commit or manifest pin is invalid.")
+    reader = read_supplement_blob if blob_reader is None else blob_reader
+    record.update(status="started", **specification, files=[])
+    raw_manifest = reader(specification["commit"], specification["manifest_path"])
+    need(len(raw_manifest) <= 2 * 1024 * 1024 and hashlib.sha256(raw_manifest).hexdigest() == specification["manifest_sha256"],
+         "supplement_manifest_hash_mismatch", "The public npm manifest differs from its pin.")
+    try:
+        manifest = json.loads(raw_manifest)
+    except (ValueError, UnicodeError):
+        raise ProvisionError("supplement_invalid", "The pinned public npm manifest is not valid JSON.") from None
+    node = next((entry for entry in entries if entry["formula"] == "node"), None)
+    need(isinstance(manifest, dict) and set(manifest) == {"version", "repository", "source_archive_sha256", "tree", "files"}
+         and manifest.get("version") == "som.m6-npm-tree-files.v1" and manifest.get("repository") == "faberline/som"
+         and node is not None and manifest.get("source_archive_sha256") == node["archive_sha256"]
+         and manifest.get("tree") == npm_tree_contract(contracts)
+         and isinstance(manifest.get("files"), list) and len(manifest["files"]) == 18,
+         "supplement_invalid", "The npm supplement differs from its exact bottle or frozen tree contract.")
+    record["source_archive_sha256"] = manifest["source_archive_sha256"]
+    record["tree"] = manifest["tree"]
+    verified = {}
+    for row in manifest["files"]:
+        need(isinstance(row, dict) and set(row) == {"path", "installed_path", "sha256", "bytes", "mode", "license_path"}
+             and isinstance(row.get("installed_path"), str) and row["installed_path"].startswith(NPM_ROOT + "/"),
+             "supplement_invalid", "An npm supplement row is invalid.")
+        relative = row["installed_path"][len(NPM_ROOT) + 1:]
+        need(relative in NPM_CACHE_FILES and relative not in verified
+             and row["path"] == "frozen-tools/npm-cache/" + relative
+             and row["license_path"] == "frozen-tools/licenses/npm.txt"
+             and isinstance(row["sha256"], str) and HEX.fullmatch(row["sha256"])
+             and type(row["bytes"]) is int and 16 <= row["bytes"] <= SUPPLEMENT_FILE_LIMIT
+             and type(row["mode"]) is int and row["mode"] == 0o644,
+             "supplement_invalid", "An npm supplement path, hash, size or mode is outside the reviewed cache inventory.")
+        raw = reader(specification["commit"], row["path"])
+        need(len(raw) == row["bytes"] and hashlib.sha256(raw).hexdigest() == row["sha256"]
+             and raw[:4] == b"\xcb\x0d\x0d\x0a" and raw[4:8] == b"\0" * 4,
+             "supplement_file_hash_mismatch", "An npm cache file differs from its pinned CPython 3.12 bytes.")
+        verified[relative] = {**row, "data": raw}
+        record["files"].append({**row, "status": "verified"})
+    need(set(verified) == NPM_CACHE_FILES, "supplement_invalid", "The npm cache supplement inventory is incomplete.")
+    record["status"] = "verified"
+    return verified
+
+
+def apply_npm_tree_supplement(supplement: dict[str, dict[str, Any]], prefix: Path,
+                              record: dict[str, Any]) -> None:
+    root = prefix / "lib/node_modules/npm"
+    need(root.is_dir() and not root.is_symlink(), "npm_supplement_target_refused", "The installed npm tree is not a regular directory.")
+    pending = []
+    record["pre_supplement_tree"] = list(tree_sha256(root))
+    for relative, row in supplement.items():
+        target = root.joinpath(*PurePosixPath(relative).parts)
+        need(relative in NPM_CACHE_FILES and hashlib.sha256(row["data"]).hexdigest() == row["sha256"]
+             and all(not parent.is_symlink() and (not parent.exists() or parent.is_dir())
+                     for parent in target.parents if parent == root or root in parent.parents)
+             and not target.is_symlink(), "npm_supplement_target_refused", "An npm cache target lost its verified path or hash.")
+        if target.exists():
+            need(target.is_file() and file_sha256(target) == row["sha256"],
+                 "npm_supplement_target_mismatch", "An existing npm cache file differs from the public supplement.")
+        else:
+            pending.append((target, row))
+    for target, row in pending:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with target.open("xb") as stream:
+            stream.write(row["data"])
+        target.chmod(row["mode"])
+    record["added_files"] = len(pending)
+    record["post_supplement_tree"] = list(tree_sha256(root))
+    record["status"] = "applied"
+
+
 def sign_macho_with_security(path: Path, page_size: int) -> int:
     """Use Apple's signer with explicit zero CMS reserve, which its CLI omits."""
     require_github_runner()
@@ -1060,9 +1160,19 @@ def verify_installed(contracts: dict[str, dict[str, Any]], pins: list[dict[str, 
             root = prefix.joinpath(*PurePosixPath(npm["root"]).relative_to("/opt/homebrew").parts)
             actual = tree_sha256(root) if root.is_dir() else None
             expected = (npm["tree_sha256"], npm["tree_files"], npm["tree_symlinks"])
-            checks.append({"label": "npm/tree", "path": npm["root"], "expected": list(expected),
-                           "actual": list(actual) if actual is not None else None,
-                           "status": "passed" if actual == expected else "failed"})
+            check = {"label": "npm/tree", "path": npm["root"], "expected": list(expected),
+                     "actual": list(actual) if actual is not None else None,
+                     "status": "passed" if actual == expected else "failed"}
+            if check["status"] == "failed" and root.is_dir():
+                check["file_sha256"] = {}
+                check["symlink_targets"] = {}
+                for path in sorted(root.rglob("*")):
+                    relative = path.relative_to(root).as_posix()
+                    if path.is_symlink():
+                        check["symlink_targets"][relative] = os.readlink(path)
+                    elif path.is_file():
+                        check["file_sha256"][relative] = file_sha256(path)
+            checks.append(check)
     return checks
 
 
@@ -1101,6 +1211,12 @@ def provision(document: dict[str, Any], contracts: dict[str, dict[str, Any]], ou
         supplement = load_frozen_file_supplement(document["frozen_file_supplement"], entries, pins,
                                                 document.get("macho_normalization", {}), report["frozen_file_supplement"],
                                                 blob_reader=supplement_reader)
+    npm_supplement = {}
+    if "npm_tree_supplement" in document:
+        report["stage"] = "verify_npm_tree_supplement"
+        report["npm_tree_supplement"] = {}
+        npm_supplement = load_npm_tree_supplement(document["npm_tree_supplement"], entries, contracts,
+                                                 report["npm_tree_supplement"], blob_reader=supplement_reader)
     selections = []
     failures = []
     report["stage"] = "download_and_stage"
@@ -1121,6 +1237,9 @@ def provision(document: dict[str, Any], contracts: dict[str, dict[str, Any]], ou
                              {"failed_packages": failures})
     report["stage"] = "install"
     install_closure(selections, prefix)
+    if npm_supplement:
+        report["stage"] = "npm_tree_supplement"
+        apply_npm_tree_supplement(npm_supplement, prefix, report["npm_tree_supplement"])
     report["stage"] = "frozen_hashes"
     report["hash_checks"] = verify_installed(contracts, pins, prefix)
     need(report["hash_checks"] and all(check["status"] == "passed" for check in report["hash_checks"]),

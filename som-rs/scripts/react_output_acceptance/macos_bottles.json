@@ -11,10 +11,17 @@
   "scope": "Provision the existing frozen React acceptance toolchain and its non-system dynamic library closure on a disposable GitHub macOS VM. This is acceptance infrastructure for issue 130.",
   "frozen_file_supplement": {
     "repository": "faberline/som",
-    "commit": "addbb3391966ad668769b979795b5f81f9cdc581",
+    "commit": "806ab0fae7a5b8433fab978f35730c28fdc91abc",
     "manifest_path": "frozen-tools/manifest.json",
     "manifest_sha256": "e2c2b1f08da04255843ecac223221874e120cc9311fc8dbd7ae62007eb4b6e5f"
   },
+  "npm_tree_supplement": {
+    "repository": "faberline/som",
+    "commit": "806ab0fae7a5b8433fab978f35730c28fdc91abc",
+    "manifest_path": "frozen-tools/npm-tree-manifest.json",
+    "manifest_sha256": "aecb0a204b969f17ff28f7ac600829f8298e9f14b0cef69cb6bee406c151e260"
+  },
+  "npm_tree_provenance": "GitHub run 40740055330 installed all 33 packages and passed every frozen file hash. Its npm tree had 1939 regular files and nine symlinks; the unchanged contract requires 1957 and nine. Read-only comparison of the primary Node keg npm and frozen global npm identified exactly eighteen additional CPython 3.12 bytecode files under node-gyp/gyp/pylib/{gyp,gyp/generator,packaging}/__pycache__, plus the already-declared npmrc. Every bytecode header has magic cb0d0d0a, timestamp flags zero and source timestamp 1784207837. All embedded source filenames point into the public /opt/homebrew npm package; no private account or temporary path was found. The separately pinned npm manifest binds these eighteen exact file hashes, byte counts and modes to the unchanged complete npm tree hash/counts and official Node archive digest. Verify all blobs before any staging. After bottle npm copy and npmrc, create missing regular cache files only. Refuse any existing differing file or symlink parent. The final complete frozen npm tree remains mandatory; no file is excluded from that hash. On a mismatch retain the public relative file hashes and literal symlink targets.",
   "provenance": {
     "sources": [
       "Installed Homebrew INSTALL_RECEIPT.json and sbom.spdx.json metadata",
