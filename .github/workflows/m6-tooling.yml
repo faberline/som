@@ -6,10 +6,12 @@ on:
       - .github/workflows/m6-tooling.yml
       - .github/workflows/m6-acceptance.yml
       - .github/workflows/m6-retained-audit.yml
+      - .github/workflows/m6-release.yml
       - som-rs/scripts/react_output_acceptance/**
       - som-rs/scripts/rust_output_release/**
       - som-rs/scripts/react_quickstart/**
       - docs/react-fe.md
+      - docs/m6-release.md
       - docs/goal.md
       - docs/roadmap.md
   workflow_dispatch:
@@ -119,6 +121,8 @@ jobs:
         run: |
           "$RUNNER_TEMP/m6-release-venv/bin/python" -m unittest discover -s som-rs/scripts/rust_output_release -p 'test_*.py' -v 2>&1 | tee release-tests.log
           "$RUNNER_TEMP/m6-release-venv/bin/python" som-rs/scripts/rust_output_release/prepare_inputs.py --help | tee release-help.txt
+          "$RUNNER_TEMP/m6-release-venv/bin/python" som-rs/scripts/rust_output_release/check_default.py --help | tee default-check-help.txt
+          "$RUNNER_TEMP/m6-release-venv/bin/python" som-rs/scripts/rust_output_release/prepare_compiler_inputs.py --help | tee compiler-release-help.txt
       - name: Keep release unit gate evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -129,6 +133,8 @@ jobs:
             release-dependencies.txt
             release-tests.log
             release-help.txt
+            default-check-help.txt
+            compiler-release-help.txt
           if-no-files-found: error
           retention-days: 30
 
