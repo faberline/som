@@ -351,9 +351,17 @@ class ProvisionMacosTests(unittest.TestCase):
         old_commands = [macho_link_command(name, kind) for name, kind in zip(old_names, kinds)]
         new_commands = [macho_link_command(name, kind) for name, kind in zip(new_names, kinds)]
         body = b"literal @@HOMEBREW_PREFIX@@ outside linkage must remain unchanged"
-        raw = macho_fixture(old_commands, body, padding=32)
+        # A real segment proves where header padding ends. The Cellar rpath
+        # can grow by one alignment unit even when other commands shrink.
+        body_offset = 1024
+        segment = struct.pack("<II16sQQQQIIII", 0x19, 72, b"__DATA", 0, 4096,
+                              body_offset, len(body), 7, 3, 0, 0)
+        old_commands.insert(0, segment)
+        new_commands.insert(0, segment)
+        padding = body_offset - 32 - sum(map(len, old_commands))
+        raw = macho_fixture(old_commands, body, padding=padding)
         expected = macho_fixture(new_commands, body,
-                                 padding=32 + sum(map(len, old_commands)) - sum(map(len, new_commands)))
+                                 padding=padding + sum(map(len, old_commands)) - sum(map(len, new_commands)))
         relocated, operations = provisioner.relocate_macho_bytes(raw)
         self.assertEqual(relocated, expected)
         self.assertEqual(len(relocated), len(raw))

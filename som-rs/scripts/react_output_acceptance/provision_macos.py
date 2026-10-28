@@ -472,6 +472,7 @@ def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[st
             item["codesign_exit_code"] = done.returncode
             need(done.returncode == 0, "macho_codesign_failed", "Historical ad-hoc signing failed.")
             item["normalized_sha256"] = file_sha256(path)
+            item["normalized_layout"] = macho_layout(path.read_bytes())
             item["status"] = "passed"
         except ProvisionError:
             item["status"] = record["status"] = "failed"
@@ -482,6 +483,33 @@ def normalize_staged_macho(staged: Path, policy: dict[str, Any], record: dict[st
         finally:
             path.chmod(mode)
     record["status"] = "passed"
+
+
+def macho_layout(raw: bytes) -> dict[str, Any]:
+    """Public, read-only region hashes to locate an exact-byte mismatch."""
+    header = struct.unpack_from("<8I", raw)
+    cursor = 32
+    signature_offset, signature_bytes = len(raw), 0
+    commands = []
+    for _ in range(header[4]):
+        kind, size = struct.unpack_from("<II", raw, cursor)
+        need(size >= 8 and cursor + size <= 32 + header[5], "macho_invalid", "A signed load command is invalid.")
+        item = {"command": kind, "size": size, "sha256": hashlib.sha256(raw[cursor:cursor + size]).hexdigest()}
+        if kind in (0xC, 0xD, 0x80000018, 0x8000001F, 0x20, 0x80000023, 0x8000001C):
+            name_offset = struct.unpack_from("<I", raw, cursor + 8)[0]
+            item["name"] = raw[cursor + name_offset:cursor + size].split(b"\0", 1)[0].decode("utf-8")
+        if kind == 0x1D:
+            signature_offset, signature_bytes = struct.unpack_from("<II", raw, cursor + 8)
+        commands.append(item)
+        cursor += size
+    need(32 + header[5] == cursor and signature_offset + signature_bytes <= len(raw),
+         "macho_invalid", "A signed file region is invalid.")
+    return {"bytes": len(raw), "header": list(header), "commands": commands,
+            "load_commands_sha256": hashlib.sha256(raw[32:cursor]).hexdigest(),
+            "prefix_4k_sha256": hashlib.sha256(raw[:4096]).hexdigest(),
+            "body_after_4k_sha256": hashlib.sha256(raw[4096:signature_offset]).hexdigest(),
+            "signature_offset": signature_offset, "signature_bytes": signature_bytes,
+            "signature_sha256": hashlib.sha256(raw[signature_offset:signature_offset + signature_bytes]).hexdigest()}
 
 
 def stage_package(entry: dict[str, Any], out: Path, pins: list[dict[str, str]],
