@@ -57,7 +57,6 @@ jobs:
       CARGO_TERM_COLOR: never
       CARGO_BUILD_JOBS: 2
       RUST_BACKTRACE: 1
-      CARGO_TARGET_DIR: ${{ runner.temp }}/som-cargo-target
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -66,7 +65,9 @@ jobs:
       - name: Record tested revision
         env:
           TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+        run: |
+          printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+          printf 'CARGO_TARGET_DIR=%s/som-cargo-target\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
       - name: Install native Rust tools
         run: |
           rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt --component clippy 2>&1 | tee tool-install.log
