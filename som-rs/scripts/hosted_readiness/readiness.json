@@ -1,6 +1,6 @@
 {
   "version": "som.hosted-readiness.v2",
-  "source_commit": "118852f1e81edc389bd00d05641b781227b82169",
+  "source_commit": "88dd693334c120546ca62c929837cf0d2f202eb9",
   "source_files": {
     "LICENSE": "2c04e52c0809695aaee4062e94ed17249f54d96f6c9ef0a09925640581fa913b",
     "som-core/scripts/flow_gcs_fixture.py": "b54d1b3b27fddd457ddcd075ebf8f7fccc485434d8aca48cf42abe1fa3aa9856",
@@ -49,12 +49,15 @@
     "som-rs/contracts/compiler-v1/examples/v7-branch-null.prompt.json": "4e3c80e264d13e83c894418f2d011f4dc3b26f94fb5dc094efb719b1b503e522",
     "som-rs/contracts/compiler-v1/examples/v7.cnl": "644149192bc7bc65d7b28100d518fc9cbfa0d2d35a27b022452d02ab6138e262",
     "som-rs/contracts/compiler-v1/examples/v7.prompt.json": "2d4a92302f99c30723f49f2ccc642f2c7bf58daf25c8f991002df93746cb5db7",
+    "som-rs/contracts/native-tools-v1/CONTRACT.md": "47d72cabd57bdb380171a54f4dddeeabf25693c3781cabb483c572c162efac6e",
+    "som-rs/contracts/native-tools-v1/artifacts.json": "959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193",
     "som-rs/contracts/rust-output-v1/CONTRACT.md": "067c6392b78dab379abd0688b2291a21349be66db384834e769e9ab0eb082897",
     "som-rs/contracts/rust-output-v1/acceptance-plan.json": "bea96ef0e19eb5d2e9923cba5e8a41d05df2ac95e0d55baf2d080a5f9f76a83d",
     "som-rs/contracts/rust-output-v1/api.schema.json": "fb97891d28a1c757f3cbcad1a82a0d4ab286cfa4478f435309505282477d113f",
     "som-rs/contracts/rust-output-v1/behavior-normalization.json": "c75b29346d605af7e6ec8ad5d856381f4f8e0e0d321f1d236a5d93b545be97bf",
     "som-rs/contracts/rust-output-v1/bundle.schema.json": "0d9e9db5495c0d9121b3213ed0eb15b18af6de462ee16ef3e91561414f4547bd",
     "som-rs/contracts/rust-output-v1/case-inventory.json": "fc6fbec822623cb9bdc0a6e11c2a72b6f0dfac3c41e8b7c1e35830090eb7d2a5",
+    "som-rs/contracts/rust-output-v1/native-tools.json": "d04d2d78f0ab64b855ee9d990b89c69b03113e8f808ce0225b8e11e45caaf1f4",
     "som-rs/contracts/rust-output-v1/negative-cases.json": "9bb36d689ad4be26e608ac8be779a1a8bb8db043d37788b5819c9fe1bf402e22",
     "som-rs/contracts/rust-output-v1/phase2/behavior.json": "d2007cc091a5f3ff22a2d0aeeef2c6cfe0e8f620caa255b5dc14c06efdf82ece",
     "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6",
@@ -70,12 +73,14 @@
     "som-rs/contracts/rust-output-v1/scope.json": "0f31b4c0290afda9b4c4ccf99b575edec81c3361ae31c74b44bc16d5ff20e51d",
     "som-rs/contracts/rust-output-v1/target-examples.json": "4d91b175e9c75cadb61ae335dc1540582b3d89c01815abe651b02d57ac6889ae",
     "som-rs/contracts/rust-output-v1/toolchain.json": "9a05dd1953defc89c4a44eada333cbfc41570e4728295ab1a2be060c76b7029d",
+    "som-rs/contracts/typescript-output-v1/native-tools.json": "c9f4e0418d43996b8b8994eccffb6eb146795ed559277b0875da30bb3b5e0ce0",
     "som-rs/evidence/rust-output-contract-amendment-001.json": "4a25314bcd15fe04afdb06c8ebc0423ac98c6ac45119a834bed21e72ffedaba1",
     "som-rs/evidence/rust-output-contract-amendment-002.json": "91314216f629d802a19c9232aa33223d3c456a2f04e86e17b8e351650c21bd1f",
     "som-rs/evidence/rust-output-contract-amendment-003.json": "147a3bf8885e64fb511f9d6973d9b42f608ceda80b13d9fcac504582fdde1b21",
     "som-rs/evidence/rust-output-contract-amendment-004.json": "f425bf95dfde2f6ae3bfdc30ab9aced8a6e45955ca15543a0662cb8a9416c537",
     "som-rs/evidence/rust-output-contract-amendment-005.json": "01ad9019e58a0c82c2eeb5fb31a62dde65055c2ce5c588537a854f62c191a896",
     "som-rs/evidence/rust-output-contract-amendment-006.json": "502da0c71d8215361d22fa5765f86a5038bbf821ad94b57b388e9cf79d7dc08a",
+    "som-rs/evidence/rust-output-contract-amendment-007.json": "225b98c2bc01e79c5c6e13ad17f93adda68717498d70fa7577e65930813f9144",
     "som-rs/evidence/rust-output-contract-freeze-2026-10-15.json": "1f652bd6262c2c927490ef713321a40c2833e1d7ed84363e6e12015ffe8267dd",
     "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
     "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-15.json": "b83e01caf26dbd403d04dac4948a04b97f059accd22edceae78f8c2519438462",
@@ -84,6 +89,7 @@
     "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-23.json": "7f6ddae1dbc9c14ca3d9c25437dc6721f54d9693de43bc178ae1a73a27957b8a",
     "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-16.json": "64eb707bdecdcacb878240ca87094834015cb3dd1a77c2050e852335b18932da",
     "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-17.json": "24cee7a81cf46379c318efd9271dfb18b15acddbde03e549208df162b538f383",
+    "som-rs/evidence/typescript-output-contract-amendment-003.json": "7052daacfc89bf468e399e09f635e6d773187177eb684a0399d46d8ddf650089",
     "som-rs/scripts/compiler_acceptance/README.md": "840debcb1798b89420f2e4b870d4fbd42efb9b9c063a8cfcb9e95a0acfd8e200",
     "som-rs/scripts/compiler_acceptance/__init__.py": "0fb73e3944e254e23aaa2cf4d908132e2187d65b7c60128f70b4065d1122e0d1",
     "som-rs/scripts/compiler_acceptance/acceptance_cleanup.py": "895c8ce8384007a4288b877e9871694722281ca7c28c3b9ee82813e4007837d6",
@@ -155,6 +161,8 @@
     "som-rs/scripts/compiler_acceptance/renderer_behavior/references/shared-544-flow-map.json": "5edf190f6037c383f9e3d76db8871ad0c5bd2946a7ec82911b4c4a4940531eed",
     "som-rs/scripts/compiler_acceptance/renderer_behavior/run.py": "f2135447f87081735dbf49bad03eaa2aae9deb21fbf5ba5bf99719d135d50511",
     "som-rs/scripts/compiler_acceptance/runtime_acceptance.py": "e9ff762ab2ee43f099497b23869bf5eff7d8ab9dc49e309be320cac937631c93",
+    "som-rs/scripts/hosted_readiness/provision_native.py": "97158732941f4f3cf025b07794dd020636fce6642304bd892445804c123f24bf",
+    "som-rs/scripts/hosted_readiness/test_provision_native.py": "924917d2389139fad0f5d9a7f6e559e69b4331d33551e15384c7b52d42272875",
     "som-rs/scripts/react_output_acceptance/audit/audit130.py": "0c0ab949fc4e88335320f23857a4f34c4212aae4717a70c27d9260b6f7a8b1dc",
     "som-rs/scripts/react_output_acceptance/check_target.py": "c1a6386da79be3fe5a8fa2a1f46fb61f62f845d78050c4f32dbdc716e175e33c",
     "som-rs/scripts/rust_output_acceptance/README.md": "7bec5b1b97cd630afc3dc1732ef5294e172ae1a82398f2b76ab6d5036069a386",
@@ -180,6 +188,12 @@
     "som-rs/som-targets/qa/check_rust_products.py": "45a43e9bc86fbc7d5112c6add0f39154dc0ab2cb9bdf1499948ae5a2e4749e60",
     "som-rs/som-targets/qa/check_targets.py": "59057734e5085cb8b78f62e63c607bd7da5da84e9e1c3334dc580e3ccaf236d2",
     "som-rs/som-targets/qa/check_ts_products.py": "fb52e35d465779a31affad4078e9209050f55ade3803e6931881bc523e2271d1",
+    "som-rs/som-targets/src/rust/format.rs": "852d1ff7b7b7a57f7eac564a6d5db248a56ff8e48fe02163aac7fcd960ea1b05",
+    "som-rs/som-targets/src/rust/mod.rs": "78130eab4e7f51e0c51b4ebfb8fb5c31e2388e9fbc264dc282e811ffa059380d",
+    "som-rs/som-targets/src/typescript/format.rs": "b9c9d3025de0263f2010a47d5374869b89a2c752ddc324a3eb99b774df3fbbaf",
+    "som-rs/som-targets/src/typescript/mod.rs": "dd164529ba7b321cf6d3ba491cbd2ddd9aa0b2f65d04401849f0259bbc2eb793",
+    "som-rs/src/compiler.rs": "49c8309e102b1f7c686c8a975ed8b2c81d0133557c0443d8986474ca41cd9f3c",
+    "som-rs/src/quality.rs": "4522527da6a96bfee72365ab0b130c816022194fdff3de386cf604bb7c8e713b",
     "som-rs/tests/compiler-v1/cnl-positive-fixtures.json": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475",
     "som-rs/tests/compiler-v1/self-name-fixtures.json": "821b4ef626e42805dc96537dda1ac7cf6ba3de85d7a67f1ca04cdc8cc37f46ed",
     "som-rs/tests/compiler-v1/typed-json-fixtures.json": "5eebf784317e6611451092d286fc589bb90e6999f21c7390b56f74545da9e1bc",
@@ -1034,8 +1048,6 @@
     "phase2_pins": "som-rs/contracts/rust-output-v1/phase2/pins.json",
     "hosts": [
       "x86_64-unknown-linux-gnu",
-      "aarch64-unknown-linux-gnu",
-      "x86_64-apple-darwin",
       "aarch64-apple-darwin"
     ],
     "policy": "Use native versioned tools and committed artifact hashes for each host. Historical Homebrew hashes do not make Apple Silicon a runtime requirement."
@@ -1059,11 +1071,11 @@
     },
     {
       "name": "compiler-assets",
-      "blocked_reason": "Generate compiler blocks/profile from tracked source with native Ruff 0.16.6. No model or training assets are needed. Portable formatter verification still needs adaptation."
+      "blocked_reason": "Compiler assets can now be generated from tracked source and approved native Ruff in the Cargo jobs. Full product readiness still needs the same-candidate asset package and complete per-version index bound to its run."
     },
     {
       "name": "rust-toolchain",
-      "blocked_reason": "Portable Rust/rustfmt installation needs versioned public artifacts with verified hashes. Legacy Homebrew paths still require adaptation."
+      "blocked_reason": "Native Rust/rustfmt is provisioned and hash-checked by the Cargo jobs. This independent full-product preflight still needs their exact receipt and complete locked offline product toolchain inputs."
     },
     {
       "name": "postgresql",
@@ -1087,9 +1099,9 @@
     }
   ],
   "blockers": [
-    "M12 is assigned. Native formatter/tool adapters and reproducible asset provisioning remain implementation work.",
-    "The repository still contains hardcoded Homebrew formatter paths and a Mach-O-only Ruff check. These are tool portability defects, not architecture requirements.",
-    "Full product suites remain disabled until the complete applicable data, tools and gates are provisioned. Compiler unit tests do not establish product acceptance.",
+    "The native Linux adapter candidate needs exact-head GitHub execution and full unchanged-output/product qualification. Source review is not product acceptance.",
+    "This preflight does not import the Cargo job provisioning receipt; required full product inputs remain unbound here.",
+    "Full product suites remain disabled until all applicable baseline recordings, emulator tools and data are available.",
     "Amendment006 regression evidence must use the same React candidate as M6 issue130. Rust readiness does not close that milestone."
   ],
   "gate_plan": {
