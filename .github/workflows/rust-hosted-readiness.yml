@@ -1,0 +1,86 @@
+name: Rust hosted readiness
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/rust-hosted-readiness.yml
+      - som-rs/scripts/hosted_readiness/**
+      - som-rs/scripts/rust_output_acceptance/**
+      - som-rs/scripts/compiler_acceptance/**
+      - som-rs/contracts/**
+      - som-rs/tests/**
+      - som-rs/behavior/**
+      - som-rs/som-targets/qa/**
+      - som-rs/evidence/rust-output-contract-*.json
+      - som-core/scripts/**
+      - LICENSE
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust-hosted-readiness-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fixture-tests:
+    name: Readiness fixture tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Record tested revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 --version
+          printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+      - name: Run isolated unit tests on GitHub
+        run: |
+          python3 -m unittest discover -s som-rs/scripts/hosted_readiness -p 'test_*.py' -v 2>&1 | tee unit-tests.log
+      - name: Save fixture test logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: readiness-fixture-tests
+          path: |
+            tested-sha.txt
+            unit-tests.log
+          if-no-files-found: error
+          retention-days: 14
+
+  frozen-readiness:
+    name: Frozen product prerequisites (blocked until provisioned)
+    needs: fixture-tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Record tested revision
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: printf '%s\n' "$TESTED_SHA" > tested-sha.txt
+      - name: Inspect frozen inputs without running products
+        run: |
+          python3 som-rs/scripts/hosted_readiness/preflight.py \
+            --repo . \
+            --manifest som-rs/scripts/hosted_readiness/readiness.json \
+            --out .local/hosted-readiness/report.json
+      - name: Save readiness report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: frozen-product-readiness
+          path: |
+            .local/hosted-readiness/report.json
+            tested-sha.txt
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
