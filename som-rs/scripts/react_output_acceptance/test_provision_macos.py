@@ -644,9 +644,24 @@ class ProvisionMacosTests(unittest.TestCase):
         wrong_cpu = bytearray(raw)
         struct.pack_into(">I", wrong_cpu, 8, 0x0100000C)
         mixed = fat_fixture([(0x01000007, 3, intel), (0x0100000C, 0, b"!<arch>\narchive")])
-        for malformed in (raw[:30], bytes(overlap), bytes(outside), bytes(wrong_cpu), mixed):
+        for malformed in (raw[:30] + b"@@HOMEBREW_PREFIX@@", bytes(overlap), bytes(outside), bytes(wrong_cpu), mixed):
             with self.subTest(sha=digest(malformed)), self.assertRaises(provisioner.ProvisionError):
                 provisioner.relocate_macho_bytes(malformed)
+
+    def test_files_without_supported_placeholders_are_byte_identical_including_java_magic(self):
+        java_class = bytes.fromhex("cafebabe0000002e001d") + b"Java documentation fixture"
+        with mock.patch.object(provisioner, "fat_macho_slices", side_effect=AssertionError("No format parsing is needed")):
+            for raw in (java_class, b"\xca\xfe\xba\xbe\0\0\0\x02truncated", b"ordinary documentation"):
+                self.assertEqual(provisioner.relocate_macho_bytes(raw), (raw, []))
+        staged = self.out / "java-documentation-stage"
+        staged.mkdir()
+        (staged / "TestAWT.class").write_bytes(java_class)
+        sign = mock.Mock()
+        provisioner.normalize_staged_macho(staged, normalization_policy(), {}, command_runner=sign)
+        sign.assert_not_called()
+        self.assertEqual((staged / "TestAWT.class").read_bytes(), java_class)
+        with self.assertRaises(provisioner.ProvisionError):
+            provisioner.relocate_macho_bytes(java_class + b"@@HOMEBREW_PREFIX@@")
 
     def test_universal_signing_keeps_per_slice_pages_and_never_forces_one_page_size(self):
         old = macho_link_command("@@HOMEBREW_PREFIX@@/opt/fixture/lib/libfixture.dylib")

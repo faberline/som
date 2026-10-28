@@ -429,6 +429,8 @@ def universal_kind(raw: bytes, slices: list[dict[str, int]]) -> str:
 
 def relocate_macho_bytes(raw: bytes) -> tuple[bytes, list[dict[str, Any]]]:
     """Port ruby-macho 5.0.0's 64-bit aligned command replacement, not install_name_tool."""
+    if not any(placeholder.encode("ascii") in raw for placeholder in MACHO_PREFIXES):
+        return raw, []
     slices = fat_macho_slices(raw)
     if slices is not None:
         if universal_kind(raw, slices) == "archive":
