@@ -252,7 +252,13 @@ class ProductArtifactBindingTests(unittest.TestCase):
             (http/'manifest.json').write_text(json.dumps({'owners':[{'case':'example','target':'python','pid':proc.pid,'base':'http://127.0.0.1:'+str(port),'start_event':start}]}))
             with mock.patch.object(audit,'REPO',root):
                 version='.'.join(map(str,sys.version_info[:3]))
-                self.assertEqual(audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version)['cases'],1)
+                try:
+                    observed=audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version)
+                except ValueError as exc:
+                    fake_info=json.loads((life/'python-authority.stdout').read_bytes())
+                    fake_ps=(life/proof['ps']['stdout']['file']).read_text()
+                    raise AssertionError('fixture authority='+json.dumps(fake_info,sort_keys=True)+' ps='+fake_ps) from exc
+                self.assertEqual(observed['cases'],1)
                 saved=json.loads((life/'receipt.json').read_text())
                 child=next(e for e in saved['events'] if e.get('kind')=='child-start' and e.get('pid')==proc.pid)
                 child['environment']['PYTHONPATH']='/wrong';(life/'receipt.json').write_text(json.dumps(saved))
