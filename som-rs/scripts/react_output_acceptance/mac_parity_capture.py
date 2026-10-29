@@ -9,6 +9,7 @@ import subprocess
 import sys
 import threading
 import importlib
+import contextlib
 from unittest import mock
 from record_api import Recorder
 
@@ -71,15 +72,40 @@ def main():
     sys.path.insert(0, str(CHECKER.parent))
     try:
         suite=importlib.import_module('suite')
+        hosts=importlib.import_module('hosts')
     finally:
         sys.path.pop(0)
     import product_http_recorder
     product=product_http_recorder.ProductRecorder(lifecycle/'product-http',suite)
+    original_serve=hosts.serve
+    @contextlib.contextmanager
+    def observed_serve(*a,**kw):
+        original=original_serve(*a,**kw); owner=None; identity=None; pid=None; port=None
+        try:
+            with original as base:
+                try:
+                    identity=product.context(); process=original.gen.gi_frame.f_locals['process']; pid=process.pid
+                    port=int(base.rsplit(':',1)[1])
+                    with observer.lock:
+                        observer.snapshot(pid,'product-ready',port); start_event=len(observer.events)-1
+                        owner=product.bind(identity,base,pid,start_event)
+                except Exception as exc:
+                    with observer.lock: observer.errors.append('ProductOwnerStart'+type(exc).__name__)
+                yield base
+        finally:
+            if owner is not None:
+                try:
+                    with observer.lock:
+                        observer.snapshot(pid,'product-stopped',port); stop_event=len(observer.events)-1
+                        product.release(identity,owner,stop_event)
+                except Exception as exc:
+                    with observer.lock: observer.errors.append('ProductOwnerStop'+type(exc).__name__)
     code=1
     try:
         with mock.patch.object(subprocess,'run',observer.run), mock.patch.object(subprocess,'Popen',observer.popen), \
              mock.patch.object(suite,'http_send',product.send), mock.patch.object(suite,'run',product.run), \
-             mock.patch.object(suite.Run,'strict',lambda owner: product.strict(owner)):
+             mock.patch.object(suite.Run,'strict',lambda owner: product.strict(owner)), \
+             mock.patch.object(hosts,'serve',observed_serve):
             code=record_rust006_http.run_checker(raw,CHECKER,['parity','--qa','http://127.0.0.1:18919',
                  '--out',str(parity),'--target-dir',str(target),'--python',str(python),'--jobs','4'])
     finally:

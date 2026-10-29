@@ -368,7 +368,7 @@ class ProductHTTPBytesTests(unittest.TestCase):
         prompt={'version':'som.prompt.v1','resource':{'table':'things','path':'/things','fields':[]}}
         with tempfile.TemporaryDirectory() as temp, mock.patch.object(suite,'http_send',transport), \
              mock.patch.object(suite.Run,'script',script), mock.patch.object(suite.Run,'strict',script):
-            out=Path(temp).resolve()/'http'; observer=product_http_recorder.ProductRecorder(out,suite)
+            out=Path(temp).resolve()/'http'; observer=product_http_recorder.ProductRecorder(out,suite,require_owner=False)
             def parity_case(case):
                 python=suite.run(prompt,'http://127.0.0.1:19021')
                 rust=suite.run(prompt,'http://127.0.0.1:19022'); rust.strict()
@@ -412,7 +412,7 @@ class ProductHTTPBytesTests(unittest.TestCase):
         suite.Run=Run; suite.run=run; suite.http_send=send
         try:
             with tempfile.TemporaryDirectory() as temp:
-                out=Path(temp).resolve()/'http'; observer=product_http_recorder.ProductRecorder(out,suite)
+                out=Path(temp).resolve()/'http'; observer=product_http_recorder.ProductRecorder(out,suite,require_owner=False)
                 def parity_case(case):
                     python=suite.run({},base); rust=suite.run({},base); rust.strict()
                 with mock.patch.object(suite,'http_send',observer.send), mock.patch.object(suite,'run',observer.run), \
@@ -436,16 +436,16 @@ class ProductHTTPBytesTests(unittest.TestCase):
                     key=(row['case'],row['target'])
                     req=(out/row['request_file']).read_bytes().decode('utf-8','replace')
                     res=(out/row['response_file']).read_bytes().decode('utf-8','replace')
-                    transcripts.setdefault(key,[]).append({'step':row['step'],'method':row['method'],'path':row['path'],
+                    transcripts.setdefault(key,[]).append(({'step':row['step'],'method':row['method'],'path':row['path'],
                         'content_type':row['content_type'],'body':req,'status':row['status'],
-                        'response_content_type':row['response_content_type'],'response':res})
-                self.assertEqual(audit.audit_product_http(out,transcripts)['calls'],12)
+                        'response_content_type':row['response_content_type'],'response':res},{'step':row['step'],'category':row['category']}))
+                self.assertEqual(audit.audit_product_http(out,transcripts,require_owners=False)['calls'],12)
                 first=result['calls'][0]; tamper=out/first['response_file']; original=tamper.read_bytes()
                 tamper.write_bytes(original+b'!')
-                with self.assertRaises(ValueError):audit.audit_product_http(out,transcripts)
+                with self.assertRaises(ValueError):audit.audit_product_http(out,transcripts,require_owners=False)
                 tamper.write_bytes(original)
-                key=(first['case'],first['target']);transcripts[key][0]['status']=201
-                with self.assertRaises(ValueError):audit.audit_product_http(out,transcripts)
+                key=(first['case'],first['target']);transcripts[key][0][0]['status']=201
+                with self.assertRaises(ValueError):audit.audit_product_http(out,transcripts,require_owners=False)
         finally:
             server.shutdown();server.server_close();thread.join(timeout=5)
 
@@ -465,6 +465,42 @@ class ParityIndependentChecks(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(ValueError): audit.check_record(raw,clone)
         clone=json.loads(json.dumps(normalized)); clone['body']={'422_loc0':['query']}
         with self.assertRaises(ValueError): audit.check_record(raw,clone)
+
+    def test_product_owner_raw_listener_and_wait(self):
+        import hashlib
+        import audit_mac_parity as audit
+        with tempfile.TemporaryDirectory() as temp:
+            life=Path(temp).resolve(); http=life/'product-http';http.mkdir()
+            number=[0]
+            def command(argv,exit_code,stdout):
+                number[0]+=1;stem='os-%04d'%number[0]; out=(stem+'.stdout');err=(stem+'.stderr')
+                (life/out).write_bytes(stdout);(life/err).write_bytes(b'')
+                return {'argv':argv,'exit_code':exit_code,'stdout':{'file':out,'sha256':hashlib.sha256(stdout).hexdigest()},
+                        'stderr':{'file':err,'sha256':hashlib.sha256(b'').hexdigest()}}
+            pid=1234;port=19021
+            ps=['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command=']
+            listener=['/usr/sbin/lsof','-nP',f'-iTCP:{port}','-sTCP:LISTEN','-t']
+            start={'kind':'process','phase':'product-ready','pid':pid,'port':port,
+                   'ps':command(ps,0,b'1234 1 1234 fake-product\n'),'listener':command(listener,0,b'1234\n')}
+            stop={'kind':'process','phase':'product-stopped','pid':pid,'port':port,
+                  'ps':command(ps,1,b''),'listener':command(listener,1,b'')}
+            events=[{'kind':'child-start','identity':7,'pid':pid},start,
+                    {'kind':'child-wait','identity':7,'pid':pid,'state':'completed','exit_code':-15},stop]
+            (life/'receipt.json').write_text(json.dumps({'version':'som.m6-mac-parity-capture.v1','recording_errors':[],'events':events}))
+            owner={'id':1,'case':'example','target':'python','base':'http://127.0.0.1:19021','pid':pid,'start_event':1,'stop_event':3}
+            manifest={'owners':[owner]};groups={('example','python'):[{'owner':1,'base':owner['base']}]}
+            self.assertEqual(audit.audit_product_owners(http,manifest,groups),1)
+            (life/start['listener']['stdout']['file']).write_bytes(b'9999\n')
+            with self.assertRaises(ValueError):audit.audit_product_owners(http,manifest,groups)
+            (life/start['listener']['stdout']['file']).write_bytes(b'1234\n')
+            events[2]['state']='unverified';(life/'receipt.json').write_text(json.dumps({'version':'som.m6-mac-parity-capture.v1','recording_errors':[],'events':events}))
+            with self.assertRaises(ValueError):audit.audit_product_owners(http,manifest,groups)
+
+    def test_missing_product_capture_refused(self):
+        import audit_mac_parity as audit
+        from unittest import mock
+        with mock.patch.object(sys,'argv',['audit','--raw','/a','--parity-out','/b','--public-run','/c','--legacy-run','/d','--out','/e']):
+            with self.assertRaises(SystemExit): audit.main()
 
     def test_empty_and_full_error_bodies(self):
         import audit_mac_parity as audit

@@ -115,7 +115,45 @@ def check_record(raw, normalized):
         return 'error'
     return 'success-unverified'
 
-def audit_product_http(root, transcripts):
+def audit_product_owners(root, manifest, groups):
+    """Check case-owned process/listener observations and direct child waits."""
+    receipt=a.json_file(root.parent/'receipt.json'); events=receipt.get('events'); owners=manifest.get('owners')
+    need(receipt.get('version')=='som.m6-mac-parity-capture.v1' and receipt.get('recording_errors')==[]
+         and type(events) is list and type(owners) is list, 'product lifecycle missing')
+    by_key={}; owner_ids=set()
+    for index,owner in enumerate(owners,1):
+        key=(owner.get('case'),owner.get('target')); pid=owner.get('pid');base=owner.get('base')
+        need(owner.get('id')==index and key not in by_key and type(pid) is int and pid>1, 'product owner identity differs')
+        before,after=owner.get('start_event'),owner.get('stop_event')
+        need(type(before) is int and type(after) is int and 0<=before<after<len(events), 'product owner sequence differs')
+        start,stop=events[before],events[after];port=__import__('urllib.parse',fromlist=['urlsplit']).urlsplit(base).port
+        need(type(port) is int and all(e.get('kind')=='process' and e.get('pid')==pid and e.get('port')==port
+             for e in (start,stop)) and start.get('phase')=='product-ready' and stop.get('phase')=='product-stopped',
+             'product owner snapshots differ')
+        prior=[(i,e) for i,e in enumerate(events[:before]) if e.get('kind')=='child-start' and e.get('pid')==pid]
+        need(len(prior)==1,'product child start missing'); child=prior[0][1]
+        need(any(e.get('kind')=='child-wait' and e.get('identity')==child.get('identity') and e.get('pid')==pid
+                 and e.get('state')=='completed' and type(e.get('exit_code')) is int for e in events[before:after]),
+             'product child wait missing')
+        listener=['/usr/sbin/lsof','-nP',f'-iTCP:{port}','-sTCP:LISTEN','-t']
+        code,raw=a.command_raw(root.parent,start['listener'],listener)
+        need(code==0 and set(raw.decode().split())=={str(pid)}, 'product listening PID differs')
+        code,raw=a.command_raw(root.parent,stop['listener'],listener)
+        need(code==1 and not raw, 'product listener still present or unknown')
+        ps=['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command=']
+        code,raw=a.command_raw(root.parent,start['ps'],ps)
+        need(code==0 and raw.decode().split(None,1)[0]==str(pid), 'product process snapshot differs')
+        code,raw=a.command_raw(root.parent,stop['ps'],ps)
+        need(code==1 and not raw, 'product process still present or unknown')
+        by_key[key]=owner;owner_ids.add(index)
+    need(set(by_key)==set(groups),'product owner inventory differs')
+    for key,calls in groups.items():
+        owner=by_key[key]
+        need(all(row.get('owner')==owner['id'] and row.get('base')==owner['base'] for row in calls),
+             'product call is not bound to case process')
+    return len(owners)
+
+def audit_product_http(root, transcripts, *, require_owners=True):
     """Join retained byte-exact product exchanges to each saved suite transcript."""
     from urllib.parse import urlsplit
     manifest=a.json_file(root/'manifest.json')
@@ -138,20 +176,22 @@ def audit_product_http(root, transcripts):
         need(a.sha(request)==row.get('request_sha256') and a.sha(response)==row.get('response_sha256')
              and type(row.get('body_present')) is bool and (row['body_present'] or not request), 'product raw bytes differ')
     need(manifest.get('bytes')==byte_count and set(groups)==set(transcripts),'product call inventory differs')
+    owner_count=audit_product_owners(root,manifest,groups) if require_owners else None
     for key,records in transcripts.items():
         calls=groups[key];need(len(calls)==len(records),'product call count differs')
-        for row,record in zip(calls,records):
+        for row,(record,normalized) in zip(calls,records):
             request=a.read(root/row['request_file']);response=a.read(root/row['response_file'])
             body=request.decode('utf-8','replace') if row['body_present'] else None
-            need(row.get('step')==record.get('step') and row.get('method')==record.get('method')
+            need(row.get('category')==normalized.get('category') and row.get('step')==normalized.get('step')
+                 and row.get('step')==record.get('step') and row.get('method')==record.get('method')
                  and row.get('path')==record.get('path') and row.get('content_type')==record.get('content_type')
                  and row.get('status')==record.get('status') and row.get('response_content_type')==record.get('response_content_type')
                  and body==record.get('body') and response.decode('utf-8','replace')==record.get('response'),
                  'product raw call and transcript differ')
-    return {'case_targets':len(groups),'calls':len(manifest['calls']),'bytes':byte_count,
+    return {'case_targets':len(groups),'calls':len(manifest['calls']),'bytes':byte_count,'observed_owners':owner_count,
             'source_origin':'pending','normalization':'partially-verified','behavior_oracle':'unverified'}
 
-def audit_wire(root,parity_out,legacy,bound,product_http=None):
+def audit_wire(root,parity_out,legacy,bound,product_http):
     cases=source_cases(legacy,bound)
     keys=[case_key(name) for name,_ in cases]
     need(len(set(keys))==len(keys),'raw transcript filename collision')
@@ -183,7 +223,7 @@ def audit_wire(root,parity_out,legacy,bound,product_http=None):
             need(type(data[target].get('raw')) is list and type(data[target].get('transcript')) is list
                  and type(data[target].get('failures')) is list,'parity raw structure differs')
         py,rs=data['python'],data['rust']
-        transcripts[(identity,'python')]=py['raw']; transcripts[(identity,'rust')]=rs['raw']
+        transcripts[(identity,'python')]=list(zip(py['raw'],py['transcript'])); transcripts[(identity,'rust')]=list(zip(rs['raw'],rs['transcript']))
         need(not py['failures'] and not rs['failures'] and row.get('passed') is True and
              all(row.get(k)==0 for k in ('python_failures','rust_failures','strict_failures','differences')),
              'parity run or oracle reported failure')
@@ -213,14 +253,14 @@ def audit_wire(root,parity_out,legacy,bound,product_http=None):
                 need(record['status']==200,'post-strict check failed')
         transcript_steps+=steps;strict_steps+=strict
     need(not any(indexed.values()),'unexpected parity compiler calls')
-    product_evidence=audit_product_http(product_http,transcripts) if product_http else None
+    product_evidence=audit_product_http(product_http,transcripts)
     return {'product_http':product_evidence,'cases':len(cases),'compiler_calls':total,'parity_steps':transcript_steps,'strict_steps':strict_steps,
             'checked_error_or_empty_bodies':checked_errors,'success_body_normalization':'unverified','behavior_oracle':'unverified'}
 
 def main():
     p=argparse.ArgumentParser()
     for x in ('raw','parity-out','public-run','legacy-run','out'):p.add_argument('--'+x,type=Path,required=True)
-    p.add_argument('--product-http',type=Path)
+    p.add_argument('--product-http',type=Path,required=True)
     args=p.parse_args();need(not args.out.exists(),'new report required')
     result={'version':'som.m6-mac-parity-audit.draft.v1','status':'unrun','product_acceptance_passed':False,'rows':[]}
     try:

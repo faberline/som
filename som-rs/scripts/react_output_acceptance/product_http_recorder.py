@@ -16,10 +16,10 @@ TOTAL_LIMIT = 2 * 1024 * 1024 * 1024
 def sha(data): return hashlib.sha256(data).hexdigest()
 
 class ProductRecorder:
-    def __init__(self, out, suite):
+    def __init__(self, out, suite, require_owner=True):
         self.out=Path(out); self.out.mkdir(mode=0o700); (self.out/'calls').mkdir(mode=0o700)
         self.suite=suite; self.old_send=suite.http_send; self.old_run=suite.run; self.old_strict=suite.Run.strict
-        self.lock=threading.RLock(); self.local=threading.local(); self.calls=[]; self.errors=[]; self.runs={}; self.sequences={}; self.bytes=0
+        self.lock=threading.RLock(); self.local=threading.local(); self.calls=[]; self.errors=[]; self.runs={}; self.sequences={}; self.bytes=0; self.require_owner=require_owner; self.owners={}; self.owner_events=[]
     def context(self):
         frame=inspect.currentframe().f_back
         while frame:
@@ -29,6 +29,18 @@ class ProductRecorder:
                     return case['id'], ('rust' if 'python' in frame.f_locals else 'python')
             frame=frame.f_back
         raise ValueError('parity case context missing')
+    def bind(self, identity, base, pid, start_event):
+        with self.lock:
+            if identity in self.owners or type(pid) is not int or pid <= 0: raise ValueError('product owner differs')
+            owner={'id':len(self.owner_events)+1,'case':identity[0],'target':identity[1],'base':base,
+                   'pid':pid,'start_event':start_event,'stop_event':None}
+            self.owner_events.append(owner); self.owners[identity]=owner
+            return owner
+    def release(self, identity, owner, stop_event):
+        with self.lock:
+            if self.owners.get(identity) is not owner: raise ValueError('product owner missing')
+            owner['stop_event']=stop_event; del self.owners[identity]
+
     def run(self,prompt,base,send=None):
         case,target=self.context(); prior=getattr(self.local,'identity',None); self.local.identity=(case,target)
         try:
@@ -75,17 +87,21 @@ class ProductRecorder:
         with self.lock:
             self.bytes+=len(request)+len(response)
             if self.bytes>TOTAL_LIMIT: raise ValueError('capture exceeds total limit')
+            owner=self.owners.get(identity)
+            if self.require_owner and (owner is None or owner['base'] != base): raise ValueError('product process owner missing')
             number=len(self.calls)+1; seq=self.sequences.get(identity,0)+1; self.sequences[identity]=seq
             req=f'calls/{number:06d}.request.raw'; res=f'calls/{number:06d}.response.raw'
             for name,data in ((req,request),(res,response)):
                 with (self.out/name).open('xb') as f:f.write(data)
             self.calls.append({'id':number,'case':identity[0],'target':identity[1],'sequence':seq,'step':step,'category':category,
-                'base':base,'method':method,'path':path,'body_present':body is not None,'content_type':content_type,
+                'base':base,'owner':owner['id'] if owner else None,'method':method,'path':path,'body_present':body is not None,'content_type':content_type,
                 'status':status,'response_content_type':media,'request_file':req,'request_sha256':sha(request),
                 'response_file':res,'response_sha256':sha(response),'complete':True})
     def finish(self):
         with self.lock:
-            document={'version':'som.m6-mac-product-http.v1','calls':self.calls,'recording_errors':self.errors,
+            if self.require_owner and (self.owners or any(o['stop_event'] is None for o in self.owner_events)):
+                self.errors.append('product_owners_not_stopped')
+            document={'version':'som.m6-mac-product-http.v1','calls':self.calls,'owners':self.owner_events,'recording_errors':self.errors,
                       'bytes':self.bytes,'product_acceptance_passed':False}
             with (self.out/'manifest.json').open('x') as f:json.dump(document,f,indent=2,sort_keys=True);f.write('\n')
         return not self.errors

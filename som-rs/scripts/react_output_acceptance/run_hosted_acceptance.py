@@ -326,6 +326,18 @@ def main(argv: list[str] | None = None) -> int:
                 summary["rust006_parity_exit_code"] = None
             if summary["rust006_parity_exit_code"] != 0:
                 summary["failed_stage"] = summary["failed_stage"] or stage
+            stage = "rust006-parity-independent-audit"
+            try:
+                summary["rust006_parity_audit_exit_code"] = logged(out, "rust006-parity-audit", [
+                    str(args.python), str(HERE / "audit/audit_mac_parity.py"),
+                    "--raw", str(out / "run/rust006-parity-http"), "--parity-out", str(parity.parent),
+                    "--product-http", str(out / "run/rust006-parity-lifecycle/product-http"),
+                    "--public-run", str(public), "--legacy-run", str(legacy),
+                    "--out", str(out / "run/rust006-parity-audit.json")], env)
+            except (OSError, subprocess.SubprocessError):
+                summary["rust006_parity_audit_exit_code"] = None
+            if summary["rust006_parity_audit_exit_code"] != 0:
+                summary["failed_stage"] = summary["failed_stage"] or stage
             stage = "rust006-extra"
             try:
                 need(summary["rust006_parity_exit_code"] == 0 and parity.is_file())
@@ -360,7 +372,8 @@ def main(argv: list[str] | None = None) -> int:
         stage = "verdict"
         need(verdict(out, summary))
         if args.candidate_revision is not None:
-            need(summary.get("rust006_parity_exit_code") == 0 and summary.get("rust006_extra_exit_code") == 0
+            need(summary.get("rust006_parity_exit_code") == 0 and summary.get("rust006_parity_audit_exit_code") == 0
+                 and summary.get("rust006_extra_exit_code") == 0
                  and summary.get("rust006_audit_exit_code") == 0)
         summary["passed"] = True
     except (OSError, ValueError, KeyError, TypeError, AttributeError, subprocess.SubprocessError):
