@@ -382,7 +382,7 @@ class ProductHTTPBytesTests(unittest.TestCase):
         suite.Run=Run; suite.run=run; suite.http_send=send
         try:
             with tempfile.TemporaryDirectory() as temp:
-                out=Path(temp)/'http'; observer=product_http_recorder.ProductRecorder(out,suite)
+                out=Path(temp).resolve()/'http'; observer=product_http_recorder.ProductRecorder(out,suite)
                 def parity_case(case):
                     python=suite.run({},base); rust=suite.run({},base); rust.strict()
                 with mock.patch.object(suite,'http_send',observer.send), mock.patch.object(suite,'run',observer.run), \
@@ -400,6 +400,22 @@ class ProductHTTPBytesTests(unittest.TestCase):
                     self.assertEqual(row['response_sha256'],hashlib.sha256(response).hexdigest())
                 self.assertEqual(len(groups),8)
                 for (case,target),seq in groups.items():self.assertEqual(seq,[1] if target=='python' else [1,2])
+                import audit_mac_parity as audit
+                transcripts={}
+                for row in result['calls']:
+                    key=(row['case'],row['target'])
+                    req=(out/row['request_file']).read_bytes().decode('utf-8','replace')
+                    res=(out/row['response_file']).read_bytes().decode('utf-8','replace')
+                    transcripts.setdefault(key,[]).append({'step':row['step'],'method':row['method'],'path':row['path'],
+                        'content_type':row['content_type'],'body':req,'status':row['status'],
+                        'response_content_type':row['response_content_type'],'response':res})
+                self.assertEqual(audit.audit_product_http(out,transcripts)['calls'],12)
+                first=result['calls'][0]; tamper=out/first['response_file']; original=tamper.read_bytes()
+                tamper.write_bytes(original+b'!')
+                with self.assertRaises(ValueError):audit.audit_product_http(out,transcripts)
+                tamper.write_bytes(original)
+                key=(first['case'],first['target']);transcripts[key][0]['status']=201
+                with self.assertRaises(ValueError):audit.audit_product_http(out,transcripts)
         finally:
             server.shutdown();server.server_close();thread.join(timeout=5)
 

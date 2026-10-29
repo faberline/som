@@ -115,7 +115,43 @@ def check_record(raw, normalized):
         return 'error'
     return 'success-unverified'
 
-def audit_wire(root,parity_out,legacy,bound):
+def audit_product_http(root, transcripts):
+    """Join retained byte-exact product exchanges to each saved suite transcript."""
+    from urllib.parse import urlsplit
+    manifest=a.json_file(root/'manifest.json')
+    need(manifest.get('version')=='som.m6-mac-product-http.v1' and manifest.get('recording_errors')==[]
+         and manifest.get('product_acceptance_passed') is False and type(manifest.get('calls')) is list,
+         'product raw recording differs')
+    groups=defaultdict(list); byte_count=0
+    for number,row in enumerate(manifest['calls'],1):
+        need(row.get('id')==number and row.get('complete') is True and row.get('target') in ('python','rust')
+             and type(row.get('case')) is str, 'product call identity differs')
+        key=(row['case'],row['target']); groups[key].append(row)
+        need(row.get('sequence')==len(groups[key]), 'product sequence differs')
+        base=urlsplit(row.get('base',''))
+        need(base.scheme=='http' and base.hostname=='127.0.0.1' and base.port and base.port not in (8765,18765,18917,18919)
+             and base.path in ('','/') and not base.query and not base.fragment and not base.username and not base.password,
+             'product endpoint differs')
+        req=f'calls/{number:06d}.request.raw';res=f'calls/{number:06d}.response.raw'
+        need(row.get('request_file')==req and row.get('response_file')==res,'product raw paths differ')
+        request=a.read(root/req); response=a.read(root/res);byte_count+=len(request)+len(response)
+        need(a.sha(request)==row.get('request_sha256') and a.sha(response)==row.get('response_sha256')
+             and type(row.get('body_present')) is bool and (row['body_present'] or not request), 'product raw bytes differ')
+    need(manifest.get('bytes')==byte_count and set(groups)==set(transcripts),'product call inventory differs')
+    for key,records in transcripts.items():
+        calls=groups[key];need(len(calls)==len(records),'product call count differs')
+        for row,record in zip(calls,records):
+            request=a.read(root/row['request_file']);response=a.read(root/row['response_file'])
+            body=request.decode('utf-8','replace') if row['body_present'] else None
+            need(row.get('step')==record.get('step') and row.get('method')==record.get('method')
+                 and row.get('path')==record.get('path') and row.get('content_type')==record.get('content_type')
+                 and row.get('status')==record.get('status') and row.get('response_content_type')==record.get('response_content_type')
+                 and body==record.get('body') and response.decode('utf-8','replace')==record.get('response'),
+                 'product raw call and transcript differ')
+    return {'case_targets':len(groups),'calls':len(manifest['calls']),'bytes':byte_count,
+            'source_origin':'pending','normalization':'partially-verified','behavior_oracle':'unverified'}
+
+def audit_wire(root,parity_out,legacy,bound,product_http=None):
     cases=source_cases(legacy,bound)
     keys=[case_key(name) for name,_ in cases]
     need(len(set(keys))==len(keys),'raw transcript filename collision')
@@ -127,7 +163,7 @@ def audit_wire(root,parity_out,legacy,bound):
          and summary.get('complete') is True and len(rows)==len(cases),'parity report incomplete')
     result={r['id']:r for r in rows}
     need(len(result)==len(rows) and set(result)=={x[0] for x in cases},'parity IDs differ')
-    transcript_steps=0;strict_steps=0;checked_errors=0
+    transcript_steps=0;strict_steps=0;checked_errors=0; transcripts={}
     for identity,prompt in cases:
         row=result[identity]
         for target in ('python','rust'):
@@ -147,6 +183,7 @@ def audit_wire(root,parity_out,legacy,bound):
             need(type(data[target].get('raw')) is list and type(data[target].get('transcript')) is list
                  and type(data[target].get('failures')) is list,'parity raw structure differs')
         py,rs=data['python'],data['rust']
+        transcripts[(identity,'python')]=py['raw']; transcripts[(identity,'rust')]=rs['raw']
         need(not py['failures'] and not rs['failures'] and row.get('passed') is True and
              all(row.get(k)==0 for k in ('python_failures','rust_failures','strict_failures','differences')),
              'parity run or oracle reported failure')
@@ -176,17 +213,19 @@ def audit_wire(root,parity_out,legacy,bound):
                 need(record['status']==200,'post-strict check failed')
         transcript_steps+=steps;strict_steps+=strict
     need(not any(indexed.values()),'unexpected parity compiler calls')
-    return {'cases':len(cases),'compiler_calls':total,'parity_steps':transcript_steps,'strict_steps':strict_steps,
+    product_evidence=audit_product_http(product_http,transcripts) if product_http else None
+    return {'product_http':product_evidence,'cases':len(cases),'compiler_calls':total,'parity_steps':transcript_steps,'strict_steps':strict_steps,
             'checked_error_or_empty_bodies':checked_errors,'success_body_normalization':'unverified','behavior_oracle':'unverified'}
 
 def main():
     p=argparse.ArgumentParser()
     for x in ('raw','parity-out','public-run','legacy-run','out'):p.add_argument('--'+x,type=Path,required=True)
+    p.add_argument('--product-http',type=Path)
     args=p.parse_args();need(not args.out.exists(),'new report required')
     result={'version':'som.m6-mac-parity-audit.draft.v1','status':'unrun','product_acceptance_passed':False,'rows':[]}
     try:
         bound=a.approved_inputs(args.public_run,args.legacy_run)
-        result['rows'].append({'id':'raw-structure','status':'observed','evidence':audit_wire(args.raw,args.parity_out,args.legacy_run,bound)})
+        result['rows'].append({'id':'raw-structure','status':'observed','evidence':audit_wire(args.raw,args.parity_out,args.legacy_run,bound,args.product_http)})
     except Exception as exc:result['rows'].append({'id':'raw-structure','status':'unrun','error':type(exc).__name__+': '+str(exc)})
     for identity in ('body-normalization','behavior-oracle','process-cleanup','workflow-origin'):
         result['rows'].append({'id':identity,'status':'unrun'})
