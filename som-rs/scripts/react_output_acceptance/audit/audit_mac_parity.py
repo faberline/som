@@ -152,11 +152,28 @@ def audit_product_owners(root, manifest, groups):
         need(code==0 and set(raw.decode().split())=={str(pid)}, 'product listening PID differs')
         code,raw=a.command_raw(root.parent,stop['listener'],listener)
         need(code==1 and not raw, 'product listener still present or unknown')
-        ps=['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command=']
-        code,raw=a.command_raw(root.parent,start['ps'],ps)
-        need(code==0 and raw.decode().split(None,1)[0]==str(pid), 'product process snapshot differs')
-        code,raw=a.command_raw(root.parent,stop['ps'],ps)
-        need(code==1 and not raw, 'product process still present or unknown')
+        ps=['/bin/ps','-axo','pid=,ppid=,pgid=,command=']
+        def table(event):
+            code,raw=a.command_raw(root.parent,event['table'],ps);need(code==0, 'product process table missing')
+            result={}
+            for line in raw.decode().splitlines():
+                fields=line.strip().split(None,3)
+                need(len(fields)==4 and all(x.isdigit() for x in fields[:3]) and int(fields[0]) not in result,
+                     'product process table invalid')
+                result[int(fields[0])]=(int(fields[1]),int(fields[2]),fields[3])
+            return result
+        seen=table(start); after_table=table(stop)
+        need(pid in seen and pid not in after_table, 'product process missing or still present')
+        command=seen[pid][2]
+        need((str(Path(cwd)/'som_app') in command if key[1]=='rust' else 'uvicorn' in command),
+             'observed process command differs')
+        descendants={pid}
+        while True:
+            found={child_pid for child_pid,(ppid,_,_) in seen.items() if ppid in descendants}
+            updated=descendants|found
+            if updated==descendants:break
+            descendants=updated
+        need(not descendants.intersection(after_table),'observed product descendant still present')
         by_key[key]=owner;owner_ids.add(index)
     need(set(by_key)==set(groups),'product owner inventory differs')
     for key,calls in groups.items():
@@ -201,7 +218,8 @@ def audit_product_http(root, transcripts, *, require_owners=True):
                  and body==record.get('body') and response.decode('utf-8','replace')==record.get('response'),
                  'product raw call and transcript differ')
     return {'case_targets':len(groups),'calls':len(manifest['calls']),'bytes':byte_count,'observed_owners':owner_count,
-            'source_origin':'pending','normalization':'partially-verified','behavior_oracle':'unverified'}
+            'source_origin':'pending','normalization':'partially-verified','behavior_oracle':'unverified',
+            'unobserved_descendants':'unverified'}
 
 def audit_wire(root,parity_out,legacy,bound,product_http):
     cases=source_cases(legacy,bound)

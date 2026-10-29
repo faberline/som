@@ -478,13 +478,13 @@ class ParityIndependentChecks(unittest.TestCase):
                 return {'argv':argv,'exit_code':exit_code,'stdout':{'file':out,'sha256':hashlib.sha256(stdout).hexdigest()},
                         'stderr':{'file':err,'sha256':hashlib.sha256(b'').hexdigest()}}
             pid=1234;port=19021
-            ps=['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command=']
+            ps=['/bin/ps','-axo','pid=,ppid=,pgid=,command=']
             listener=['/usr/sbin/lsof','-nP',f'-iTCP:{port}','-sTCP:LISTEN','-t']
             start={'kind':'process','phase':'product-ready','pid':pid,'port':port,
-                   'ps':command(ps,0,b'1234 1 1234 fake-product\n'),'listener':command(listener,0,b'1234\n'),
+                   'table':command(ps,0,b'1234 1 1234 python -m uvicorn\n1235 1234 1234 worker\n'),'listener':command(listener,0,b'1234\n'),
                    'cwd':command(['/usr/sbin/lsof','-a','-p','1234','-d','cwd','-Fn'],0,b'p1234\nn/tmp/py_example\n')}
             stop={'kind':'process','phase':'product-stopped','pid':pid,'port':port,
-                  'ps':command(ps,1,b''),'listener':command(listener,1,b'')}
+                  'table':command(ps,0,b'1 0 1 init\n'),'listener':command(listener,1,b'')}
             events=[{'kind':'child-start','identity':7,'pid':pid,'cwd':'/tmp/py_example',
                      'argv':['python','-m','uvicorn','app','--host','127.0.0.1','--port','19021']},start,
                     {'kind':'child-wait','identity':7,'pid':pid,'state':'completed','exit_code':-15},stop]
@@ -495,6 +495,11 @@ class ParityIndependentChecks(unittest.TestCase):
             (life/start['listener']['stdout']['file']).write_bytes(b'9999\n')
             with self.assertRaises(ValueError):audit.audit_product_owners(http,manifest,groups)
             (life/start['listener']['stdout']['file']).write_bytes(b'1234\n')
+            table=life/stop['table']['stdout']['file']; original=table.read_bytes(); table.write_bytes(original+b'1235 1 1234 worker\n')
+            stop['table']['stdout']['sha256']=hashlib.sha256(table.read_bytes()).hexdigest()
+            (life/'receipt.json').write_text(json.dumps({'version':'som.m6-mac-parity-capture.v1','recording_errors':[],'events':events}))
+            with self.assertRaises(ValueError):audit.audit_product_owners(http,manifest,groups)
+            table.write_bytes(original);stop['table']['stdout']['sha256']=hashlib.sha256(original).hexdigest()
             events[2]['state']='unverified';(life/'receipt.json').write_text(json.dumps({'version':'som.m6-mac-parity-capture.v1','recording_errors':[],'events':events}))
             with self.assertRaises(ValueError):audit.audit_product_owners(http,manifest,groups)
 
@@ -518,10 +523,10 @@ class ParityIndependentChecks(unittest.TestCase):
                             with socket.create_connection(('127.0.0.1',port),timeout=.1): break
                         except OSError:time.sleep(.05)
                     else:self.fail('fixture process did not listen')
-                    observer.snapshot(proc.pid,'product-ready',port);start=len(observer.events)-1
+                    observer.product_snapshot(proc.pid,'product-ready',port);start=len(observer.events)-1
                 finally:
                     proc.terminate();proc.wait(timeout=10)
-                observer.snapshot(proc.pid,'product-stopped',port);stop=len(observer.events)-1
+                observer.product_snapshot(proc.pid,'product-stopped',port);stop=len(observer.events)-1
             (life/'receipt.json').write_text(json.dumps({'version':'som.m6-mac-parity-capture.v1','recording_errors':observer.errors,'events':observer.events}))
             base='http://127.0.0.1:'+str(port)
             owner={'id':1,'case':'live-case','target':'rust','base':base,'pid':proc.pid,'start_event':start,'stop_event':stop}

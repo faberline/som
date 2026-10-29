@@ -43,6 +43,15 @@ class TrackingRecorder(Recorder):
             return code
         proc.wait=observed_wait
         return proc
+    def product_snapshot(self,pid,phase,port):
+        """One process table plus the minimum ownership-specific lsof calls."""
+        event={'kind':'process','pid':pid,'phase':phase,'port':port,
+               'table':self.command(['/bin/ps','-axo','pid=,ppid=,pgid=,command=']),
+               'listener':self.command(['/usr/sbin/lsof','-nP',f'-iTCP:{port}','-sTCP:LISTEN','-t'])}
+        if phase=='product-ready':
+            event['cwd']=self.command(['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn'])
+        self.events.append(event)
+
     def run(self,argv,*a,**kw):
         command=[os.fspath(x) for x in argv] if isinstance(argv,(list,tuple)) else []
         # Only the recorded pg_ctl/initdb/identity snapshots mutate log sequence.
@@ -87,7 +96,7 @@ def main():
                     identity=product.context(); process=original.gen.gi_frame.f_locals['process']; pid=process.pid
                     port=int(base.rsplit(':',1)[1])
                     with observer.lock:
-                        observer.snapshot(pid,'product-ready',port); start_event=len(observer.events)-1
+                        observer.product_snapshot(pid,'product-ready',port); start_event=len(observer.events)-1
                         owner=product.bind(identity,base,pid,start_event)
                 except Exception as exc:
                     with observer.lock: observer.errors.append('ProductOwnerStart'+type(exc).__name__)
@@ -96,7 +105,7 @@ def main():
             if owner is not None:
                 try:
                     with observer.lock:
-                        observer.snapshot(pid,'product-stopped',port); stop_event=len(observer.events)-1
+                        observer.product_snapshot(pid,'product-stopped',port); stop_event=len(observer.events)-1
                         product.release(identity,owner,stop_event)
                 except Exception as exc:
                     with observer.lock: observer.errors.append('ProductOwnerStop'+type(exc).__name__)
