@@ -35,6 +35,8 @@ BASE_CONTROLLER_SHA256 = '289a8470c5de2a183b01c8a138ecb4bc6cfe80a624f0291b32b779
 GH_BINARY_SHA256 = '1ffcdcff76db02ff4f9de0fbf784ed4b6d18e434e89450db314b3f77d0f9443b'
 MAC_NODE = Path('/opt/homebrew/Cellar/node/26.5.0/bin/node')
 MAC_NODE_SHA256 = '70851490e028b3d699a8d6d4e1de909af2a989359ae807974c92af9c6580a8e8'
+MAC_LIBNODE = Path('/opt/homebrew/Cellar/node/26.5.0/lib/libnode.147.dylib')
+MAC_LIBNODE_SHA256 = '0c2dfacde99b9381ec37fbd222891271c7f455cc0524294928e3e34199d57ec3'
 RESTORE_SOURCES = {
     'som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs':
         'ac5bfe21853712a38a8f5f032f44a4151c7bf7c2c54b669095704ba20e84a822',
@@ -288,10 +290,12 @@ def decrypt_original_zip(archive, root, source, node='node'):
                 key = bytearray(base64.b64decode(ring[index['key_id']], validate=True))
             except (ValueError, TypeError):
                 raise ValueError('selected evidence key has invalid encoding') from None
-            require(len(key) == 32 and base64.b64encode(key).decode() == ring[index['key_id']],
-                    'selected evidence key has invalid encoding')
-            key[:] = bytes(len(key))
-            del key, ring
+            try:
+                require(len(key) == 32 and base64.b64encode(key).decode() == ring[index['key_id']],
+                        'selected evidence key has invalid encoding')
+            finally:
+                key[:] = bytes(len(key))
+                del key, ring
             expected = {'evidence-index.json'}
             for i, item in enumerate(index['packages']):
                 manifest, cipher = f'package-{i:03}.manifest.json', f'package-{i:03}.sealed'
@@ -657,7 +661,9 @@ def main():
     verify_receipt(args.identity, args.identity_sha256, expected, archive)
     root = args.restored.resolve()
     require(not root.exists(), 'restore target is not fresh')
-    require(MAC_NODE.is_file() and digest(MAC_NODE) == MAC_NODE_SHA256, 'pinned macOS Node binary differs')
+    require(MAC_NODE.is_file() and digest(MAC_NODE) == MAC_NODE_SHA256
+            and MAC_LIBNODE.is_file() and digest(MAC_LIBNODE) == MAC_LIBNODE_SHA256,
+            'pinned macOS Node binary or library differs')
     restoration = decrypt_original_zip(archive, root, source, MAC_NODE)
     universe = verify_universe(archive, root)
     require(restoration['index_sha256'] == universe['index_sha256']
