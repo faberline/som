@@ -65,6 +65,30 @@ def make_tar(extra=None):
     return buf.getvalue(), payloads
 
 class AuditTests(unittest.TestCase):
+    def test_runner_diagnostics_identify_field_without_weakening_checks(self):
+        expected = {'RUNNER_OS': 'Linux', 'RUNNER_ARCH': 'X64', 'ImageOS': 'ubuntu22',
+                    'ImageVersion': '20261025.340.1', 'GITHUB_RUN_ID': str(a.RUN), 'GITHUB_RUN_ATTEMPT': '1'}
+        report = {'runner': expected.copy(), 'os_release_sha256': 'a' * 64}
+        a.runner_metadata(report)
+        report['runner']['ImageVersion'] = 'bad\nversion'
+        with self.assertRaises(a.AuditError) as caught:
+            a.runner_metadata(report)
+        self.assertIn('runner.ImageVersion differs', str(caught.exception))
+        self.assertIn('bad\\nversion', str(caught.exception))
+        self.assertNotIn('\n', str(caught.exception))
+        report['runner'] = expected.copy()
+        del report['runner']['ImageOS']
+        with self.assertRaisesRegex(a.AuditError, 'missing=.*ImageOS'):
+            a.runner_metadata(report)
+        report['runner'] = expected.copy()
+        report['runner']['unexpected'] = 'fixture'
+        with self.assertRaisesRegex(a.AuditError, 'extra_count=1'):
+            a.runner_metadata(report)
+        report['runner'] = expected.copy()
+        report['os_release_sha256'] = 'bad'
+        with self.assertRaisesRegex(a.AuditError, 'os_release_sha256 invalid'):
+            a.runner_metadata(report)
+
     def test_metadata_identity_and_missing_step(self):
         run, jobs, artifact, log = metadata()
         self.assertEqual(a.metadata(run, jobs, artifact, log), a.sha(log))

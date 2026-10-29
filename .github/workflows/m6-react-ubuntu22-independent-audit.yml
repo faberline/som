@@ -21,10 +21,10 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
         run: |
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          test "$(sha256sum audit.py | cut -d ' ' -f 1)" = 0388f4661cc70b73bac65ed8184027daddfebaf2ad4161709e744631f3f288c3
-          test "$(git show "$GITHUB_SHA:.github/m6-react-ubuntu22-independent-audit/audit.py" | sha256sum | cut -d ' ' -f 1)" = 0388f4661cc70b73bac65ed8184027daddfebaf2ad4161709e744631f3f288c3
-          test "$(sha256sum test_audit.py | cut -d ' ' -f 1)" = ad62734202431293fffb91fb7a9b3176f790d49dfb969ab66b21120a0200d8da
-          test "$(git show "$GITHUB_SHA:.github/m6-react-ubuntu22-independent-audit/test_audit.py" | sha256sum | cut -d ' ' -f 1)" = ad62734202431293fffb91fb7a9b3176f790d49dfb969ab66b21120a0200d8da
+          test "$(sha256sum audit.py | cut -d ' ' -f 1)" = 40a78be6c53a8fff78cf7d4d20b6e8eacdc6987b8f3c3a26fe4bed076180a13c
+          test "$(git show "$GITHUB_SHA:.github/m6-react-ubuntu22-independent-audit/audit.py" | sha256sum | cut -d ' ' -f 1)" = 40a78be6c53a8fff78cf7d4d20b6e8eacdc6987b8f3c3a26fe4bed076180a13c
+          test "$(sha256sum test_audit.py | cut -d ' ' -f 1)" = e64494b9319a00b5bf796523ce441ca967cf4500f96afcc6459477855864a606
+          test "$(git show "$GITHUB_SHA:.github/m6-react-ubuntu22-independent-audit/test_audit.py" | sha256sum | cut -d ' ' -f 1)" = e64494b9319a00b5bf796523ce441ca967cf4500f96afcc6459477855864a606
           python3 -m unittest -v test_audit
       - name: Download exact replay and metadata
         env:

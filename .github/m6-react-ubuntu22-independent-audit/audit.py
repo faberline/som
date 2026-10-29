@@ -227,6 +227,32 @@ def receipts(raw, report):
          and 'GLIBC_' in stdout['node-elf-versions'], 'ELF observations differ')
     return len(records)
 
+def runner_metadata(report):
+    expected = {'RUNNER_OS': 'Linux', 'RUNNER_ARCH': 'X64', 'ImageOS': 'ubuntu22',
+                'ImageVersion': '20261025.340.1', 'GITHUB_RUN_ID': str(RUN), 'GITHUB_RUN_ATTEMPT': '1'}
+    observed = report.get('runner')
+    if observed != expected:
+        need(isinstance(observed, dict), 'runner metadata is not an object')
+        missing = sorted(set(expected) - set(observed))
+        extra = len(set(observed) - set(expected))
+        need(not missing and extra == 0,
+             'runner fields differ; missing=' + json.dumps(missing, ensure_ascii=True) + '; extra_count=' + str(extra))
+        for key, value in expected.items():
+            actual = observed[key]
+            if actual != value:
+                if isinstance(actual, str):
+                    safe = json.dumps(actual[:160], ensure_ascii=True)
+                    if len(actual) > 160:
+                        safe += ' (truncated)'
+                elif actual is None or type(actual) in (int, float, bool):
+                    safe = json.dumps(actual, ensure_ascii=True, allow_nan=False)
+                else:
+                    safe = '<' + type(actual).__name__ + '>'
+                raise AuditError('runner.' + key + ' differs; actual=' + safe)
+        raise AuditError('runner metadata differs')
+    digest = report.get('os_release_sha256')
+    need(isinstance(digest, str) and re.fullmatch('[0-9a-f]{64}', digest), 'runner os_release_sha256 invalid')
+
 def audit(zip_path, run, jobs, artifact, job_log):
     log_sha = metadata(run, jobs, artifact, job_log)
     need(zip_path.stat().st_size == ZIP_BYTES and file_sha(zip_path) == ZIP_SHA, 'replay ZIP differs')
@@ -274,9 +300,7 @@ def audit(zip_path, run, jobs, artifact, job_log):
     need(report.get('version') == 'som.react-linux-qa-ubuntu22-replay.v1' and report.get('state') == 'offline-reference-install-observed'
          and report.get('product_acceptance_passed') is False and report.get('producer_head') == PRODUCER and report.get('verifier_head') == HEAD
          and report.get('source_tar_sha256') == SOURCE_TAR and report.get('producer_report_sha256') == sha(producer_raw), 'replay report differs')
-    need(report.get('runner') == {'RUNNER_OS': 'Linux', 'RUNNER_ARCH': 'X64', 'ImageOS': 'ubuntu22',
-                                  'ImageVersion': '20261025.340.1', 'GITHUB_RUN_ID': str(RUN), 'GITHUB_RUN_ATTEMPT': '1'}
-         and isinstance(report.get('os_release_sha256'), str) and re.fullmatch('[0-9a-f]{64}', report['os_release_sha256']), 'runner report differs')
+    runner_metadata(report)
     need(report.get('node_sha256') == NODE_SHA and report.get('node_archive_sha256') == NODE_ARCHIVE
          and report.get('npm_tree') == NPM_TREE and report.get('cache_tree') == CACHE_TREE
          and report.get('prettier_tree') == PRETTIER_TREE and report.get('react_bundle_formatter_sha256') == FORMATTER
