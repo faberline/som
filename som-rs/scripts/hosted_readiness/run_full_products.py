@@ -44,6 +44,7 @@ NATIVE_QA_ENTRIES = {
     'som-rs/tests/typescript-output-v1/check_contract.py': 'entry.qa.typescript-contract',
     'som-rs/scripts/hosted_readiness/typescript_regression_checker.py': 'entry.qa.typescript-wrapper',
     'som-rs/scripts/hosted_readiness/product_runtime/recorded_before_oracle.py': 'entry.qa.recorded-before',
+    'som-rs/scripts/hosted_readiness/run_experimental_native_cnl.py': 'entry.qa.native-cnl',
 }
 
 

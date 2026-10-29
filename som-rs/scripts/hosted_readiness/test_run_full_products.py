@@ -42,7 +42,7 @@ def native_protocol_fixture(case, *, entry_failure=False, shard=None):
         return raw
     driver_raw = source(driver.SELF)
     case.assertEqual(hashlib.sha256(driver_raw).hexdigest(),
-                     '4fdf3359f668caf5e5ca9821c7d1c07a6dde04e071301eb87cbeeeb04df19b8a')
+                     '9783d1ccc222c0269415e5f5aa214ac3967e5375d0107fcce6b3d159d7908cbb')
     protocol = subject('full_product_core_protocol_fixture', HERE / 'test_native_active_controls.py')
     actual_context = source(driver.CONTEXT)
     context_tree = ast.parse(actual_context)
