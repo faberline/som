@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import sys
 import tempfile
-from types import SimpleNamespace
+from types import ModuleType, SimpleNamespace
 import unittest
 from unittest import mock
 
@@ -16,7 +16,10 @@ if os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('RUNNER_ENVIRONM
 
 sys.path.insert(0, str(Path(__file__).absolute().parent))
 import run_acceptance
-import check_products
+# This fixture only checks profile propagation. The real contract gate is a
+# separate required product check, so no contract functions run in this file.
+with mock.patch.dict(sys.modules, {'check_contract': ModuleType('check_contract')}):
+    import check_products
 
 
 def scratch():
