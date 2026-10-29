@@ -1,7 +1,7 @@
 name: Native active source fixtures
 on:
   push:
-    branches: [codex/m12-native-react-payload-source-fixtures-v1]
+    branches: [codex/m12-native-ts-input-source-fixtures-v1]
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,8 +20,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: native-react-payload
-            script: som-rs/scripts/hosted_readiness/test_native_react_payload_handoff.py
+          - name: native-ts-inputs
+            script: som-rs/scripts/hosted_readiness/test_native_ts_input_fragments.py
+            legacy: false
+          - name: original-ts-owner
+            script: som-rs/scripts/hosted_readiness/test_typescript_regression_owner.py
+            legacy: false
+          - name: original-ts-v2-contract
+            script: som-rs/scripts/hosted_readiness/test_typescript_regression_v2_contract.py
             legacy: false
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262

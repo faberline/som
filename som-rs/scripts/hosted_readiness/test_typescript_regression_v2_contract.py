@@ -1,5 +1,6 @@
 """GitHub-only V2 fixtures. These definitions do not grant a gate pass."""
 from __future__ import annotations
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -94,24 +95,43 @@ class VerificationContractTests(unittest.TestCase):
 
 class InputBindingLifecycleTests(unittest.TestCase):
     def fixture(self):
-        adapter = load('typescript_regression_inputs.py')
-        phase2 = SimpleNamespace(PUBLIC='old-public', LEGACY='old-legacy', RS='old-rs',
-            cases=lambda: [], rust_files=lambda: [])
-        original = dict(vars(phase2))
-        module = SimpleNamespace(phase2=phase2, _lookup_prompt_by_id=lambda value: None,
-                                 _ORIG_PHASE2_CASES=phase2.cases)
-        ctx = SimpleNamespace(qa_mode='native-qa-v1', repo=Path('/unread/repo'), cache={},
-            qa_source_authority={'admitted_repository_python_sources': [adapter.SELF,
-                'som-rs/behavior/phase2/check_phase2.py']},
-            data={'typescript_regression_inputs': {'roots': {'public_run': '/input/public',
-                'legacy_run': '/input/legacy'}, 'siblings': {'rs_prompts': '/input/rs'}}},
-            sources=SimpleNamespace(read=lambda path: b'def rust_files(*args):\n    return []\n'))
-        return adapter, ctx, module, original
+        path = HERE / 'test_native_ts_input_fragments.py'
+        names = ('_som_ts_input_coupled_protocol', '_som_ts_input_actual_core_protocol')
+        absent = object()
+        previous = {name: sys.modules.get(name, absent) for name in names}
+        fixture = ModuleType(names[0])
+        fixture.__file__, fixture.__package__ = str(path), ''
+        sys.modules[names[0]] = fixture
+        owned = {names[0]: fixture}
+        def restore_fixture_modules():
+            for name, module in owned.items():
+                if sys.modules.get(name) is not module:
+                    raise AssertionError('foreign fixture module owner retained: ' + name)
+                if previous[name] is absent:
+                    del sys.modules[name]
+                else:
+                    sys.modules[name] = previous[name]
+        # Register before InputFixture: its actual Core closes first.
+        self.addCleanup(restore_fixture_modules)
+        raw = path.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != 'afb7ee3f4fe5343548ea07ed680eaa03deec10b785fa7cba32260d18cc9535bd':
+            raise AssertionError('coupled input fixture differs from reviewed same-head bytes')
+        try:
+            exec(compile(raw, str(path), 'exec', dont_inherit=True), fixture.__dict__)
+        finally:
+            current = sys.modules.get(names[1], absent)
+            if current is not previous[names[1]] and current is not absent:
+                owned[names[1]] = current
+        actual = fixture.InputFixture(self)
+        original = {key: getattr(actual.phase2, key)
+                    for key in ('PUBLIC', 'LEGACY', 'RS', 'cases', 'rust_files')}
+        actual.ctx.input_protocol_later_owner = actual.caller().later_cases
+        return actual.adapter, actual.ctx, actual.module, original
 
     def test_owned_input_binding_cleanup_restores_original_objects(self):
         adapter, ctx, module, original = self.fixture()
         adapter.configure(ctx, module)
-        self.assertEqual(module.phase2.PUBLIC, Path('/input/public'))
+        self.assertEqual(module.phase2.PUBLIC, Path(ctx.data['typescript_regression_inputs']['roots']['public_run']))
         adapter.close(ctx)
         for key, value in original.items():
             self.assertIs(getattr(module.phase2, key), value)
@@ -121,9 +141,9 @@ class InputBindingLifecycleTests(unittest.TestCase):
     def test_input_cleanup_preserves_a_new_owner_and_refuses(self):
         adapter, ctx, module, original = self.fixture()
         adapter.configure(ctx, module)
-        replacement = lambda: ['new owner']
+        replacement = ctx.input_protocol_later_owner
         module.phase2.cases = replacement
-        with self.assertRaisesRegex(ValueError, 'input binding cleanup failed'):
+        with self.assertRaisesRegex(ValueError, 'owned explicit input binding replaced: cases'):
             adapter.close(ctx)
         self.assertIs(module.phase2.cases, replacement)
         for key in ('PUBLIC', 'LEGACY', 'RS', 'rust_files'):
