@@ -223,14 +223,15 @@ class CargoClosureTests(unittest.TestCase):
                     c.lock_union(blobs)
 
     def test_git_binding_rejects_dirty_lock_or_helper(self):
-        files = [c.SCRIPT, c.SUPPORT, c.GOLDENS, c.TS065, c.EXPERIMENT, c.RAW, c.BASE + "toolchain.json"]
+        files = [c.SCRIPT, c.SUPPORT, c.GOLDENS, c.TS065, c.EXPERIMENT, c.RAW, c.CANDIDATE_GUARD,
+                 c.BASE + "toolchain.json"]
         files += [c.BASE + item[0] + "/" + leaf for item in c.LOCKS.values() for leaf in ("Cargo.toml", "Cargo.lock")]
         blobs = {name: ("fixture " + name).encode() for name in files}
         for name, body in blobs.items():
             c.q.write_new(self.repo / name, body)
         with patch.object(c, "__file__", str(self.repo / c.SCRIPT)), patch.object(c.q, "__file__", str(self.repo / c.SUPPORT)):
             self.assertEqual(c.bind_sources(GitOnly(self.repo, blobs), self.repo, "1" * 40), blobs)
-            for name in (c.SCRIPT, c.BASE + "reference/Cargo.lock"):
+            for name in (c.SCRIPT, c.CANDIDATE_GUARD, c.BASE + "reference/Cargo.lock"):
                 path = self.repo / name
                 path.write_bytes(blobs[name] + b" dirty")
                 with self.assertRaisesRegex(c.Refusal, "working source differs"):
@@ -553,13 +554,18 @@ class CargoClosureTests(unittest.TestCase):
 
     def test_missing_consumer_roots_stop_before_any_program(self):
         from types import SimpleNamespace
-        args = SimpleNamespace(repo=self.repo, out=self.root / "new-output", assembly_root=self.root / "absent",
-                               phase1_product_root=self.root / "absent-p1", phase2_product_root=self.root / "absent-p2")
         with patch.dict(os.environ, {"GITHUB_ACTIONS": "true", "RUNNER_TEMP": str(self.root)}), patch.object(c.platform, "system", return_value="Linux"), patch.object(c.platform, "machine", return_value="x86_64"), patch.object(c.q, "Runner") as runner:
-            with self.assertRaisesRegex(c.Refusal, "consumer inputs are missing"):
-                c.provision(args)
+            for candidate_revision in (None, "2" * 40):
+                with self.subTest(candidate_revision=candidate_revision):
+                    args = SimpleNamespace(repo=self.repo, source_revision="1" * 40,
+                                           candidate_revision=candidate_revision, out=self.root / "new-output",
+                                           cargo=self.root / "absent-cargo", rustc=self.root / "absent-rustc",
+                                           assembly_root=self.root / "absent", phase1_product_root=self.root / "absent-p1",
+                                           phase2_product_root=self.root / "absent-p2")
+                    with self.assertRaisesRegex(c.Refusal, "consumer inputs are missing"):
+                        c.provision(args)
+                    self.assertFalse(args.out.exists())
         runner.assert_not_called()
-        self.assertFalse(args.out.exists())
 
 
 if __name__ == "__main__":
