@@ -223,4 +223,34 @@ class RawTransportTests(unittest.TestCase):
         self.assertEqual(s.inventory(self.root / 'final')[0], record['inventory'])
 
 
+    def test_restored_descriptor_keeps_original_root_and_inode_metadata_without_capture_rewrite(self):
+        self.files(); record = s.pack_raw(self.raw, self.archive)
+        original_raw = s.canonical(record) + b'\n'
+        before = {row['path']: row for row in record['inventory']}
+        restored = self.root / 'moved-restored'; s.unpack_raw(self.archive, record, restored)
+        evidence = self.root / 'descriptor-evidence'; evidence.mkdir()
+        descriptor = s.retain_transport_manifest(original_raw, record, restored, evidence)
+        self.assertEqual((evidence / 'transport.json').read_bytes(), original_raw)
+        self.assertEqual(descriptor['original_raw_root'], str(self.raw))
+        self.assertEqual(descriptor['restored_raw_root'], str(restored))
+        self.assertFalse(descriptor['archived_read_authority_granted'])
+        self.assertEqual(s.inventory(restored)[0], record['inventory'])
+        self.assertEqual(s.parse((evidence / 'transport.json').read_bytes())['original_identities'],
+                         s.parse(original_raw)['original_identities'])
+        self.assertEqual({row['path']: row for row in s.inventory(self.raw)[0]}, before)
+
+    def test_descriptor_refuses_changed_manifest_and_payload_overlap(self):
+        self.files(); record = s.pack_raw(self.raw, self.archive)
+        raw = s.canonical(record) + b'\n'
+        restored = self.root / 'restored'; s.unpack_raw(self.archive, record, restored)
+        evidence = self.root / 'descriptor-evidence'; evidence.mkdir()
+        changed = dict(record); changed['original_raw_root'] = '/changed/original'
+        with self.assertRaisesRegex(ValueError, 'manifest differs'):
+            s.retain_transport_manifest(raw, changed, restored, evidence)
+        self.assertFalse((evidence / 'transport.json').exists())
+        with self.assertRaisesRegex(ValueError, 'outside restored payload'):
+            s.retain_transport_manifest(raw, record, restored, restored)
+        self.assertEqual(s.inventory(restored)[0], record['inventory'])
+
+
 if __name__ == '__main__': unittest.main(verbosity=2)

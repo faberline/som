@@ -31,6 +31,10 @@ jobs:
             path: test_native_python_startup.py
           - label: original-named-command
             path: test_same_candidate_contracts.py
+          - label: authenticated-archive-metadata
+            path: test_sealed_current_raw.py
+          - label: recorded-before-input-stage
+            path: test_stage_recorded_before_inputs.py
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:

@@ -165,10 +165,35 @@ def pack_raw(root, archive, external_aliases=None):
     final, final_ids = inventory(root, external_aliases)
     require(rows == final and initial == final_ids, 'complete raw evidence changed during archive creation')
     pin, info = hash_file(archive, MAX_TOTAL + 256 * 1024**2)
-    return {'inventory': rows, 'original_identities': initial, 'inventory_sha256': sha(canonical(rows)),
+    return {'original_raw_root': str(root),
+            'inventory': rows, 'original_identities': initial, 'inventory_sha256': sha(canonical(rows)),
             'opaque_aliases_allowed': external_aliases is not None, 'external_alias_authority': external_aliases,
             'omission_ledger': [],
             'archive_sha256': pin, 'archive_bytes': info.st_size}
+
+
+def retain_transport_manifest(raw, record, restored_root, evidence):
+    """Keep authenticated metadata. This alone grants no archived read authority.
+
+    The caller must first authenticate/decrypt the whole envelope, rejoin the
+    exact chunks and validate/unpack every member. Keep these original bytes
+    outside the payload so no capture, Context or relative inventory changes.
+    """
+    require(parse(raw) == record and raw == canonical(record) + b'\n',
+            'original canonical transport manifest differs')
+    original = Path(record['original_raw_root'])
+    require(original.is_absolute() and '..' not in original.parts,
+            'clean original raw root required')
+    restored_root, evidence = physical(restored_root), physical(evidence)
+    require(restored_root != evidence and restored_root not in evidence.parents and evidence not in restored_root.parents,
+            'transport descriptor must remain outside restored payload')
+    require(record['inventory_sha256'] == sha(canonical(record['inventory']))
+            and record['omission_ledger'] == [], 'complete original inventory required')
+    require(set(record['original_identities']) == {row['path'] for row in record['inventory']},
+            'complete original identity metadata required')
+    with (evidence / 'transport.json').open('xb') as stream: stream.write(raw)
+    return {'transport_manifest_sha256': sha(raw), 'original_raw_root': str(original),
+            'restored_raw_root': str(restored_root), 'archived_read_authority_granted': False}
 
 
 def split_archive(archive, root):
@@ -464,11 +489,13 @@ def main(argv=None):
             archive = scratch / 'raw.tar'
             rejoin_archive(transport / 'chunks', record['chunks'], archive, record['archive_bytes'], record['archive_sha256'])
             unpack_raw(archive, record, out)
+            descriptor = retain_transport_manifest(manifest_raw, record, out, evidence)
             (evidence / 'opaque-aliases.json').write_bytes(canonical({'aliases': [row for row in record['inventory']
                 if row['kind'] == 'opaque-alias'], 'source_authority': record['product_alias_source_authority'],
                 'aliases_instantiated': False, 'omission_ledger': record['omission_ledger']}) + b'\n')
         (evidence / 'restore.json').write_bytes(canonical({'version': 'som.current-raw-sealed-restore.v1',
              'artifact_id': args.artifact_id, 'artifact_digest': args.artifact_digest, 'index_sha256': args.index_sha256,
+             **descriptor,
              'raw_inventory_sha256': record['inventory_sha256'], 'complete_raw_regular_bytes_restored': True,
              'complete_opaque_alias_metadata_retained': True, 'aliases_instantiated': False,
              'native_code_executed_from_restored_evidence': False, 'product_acceptance_passed': False}) + b'\n')

@@ -84,7 +84,7 @@ class NativeStartup(unittest.TestCase):
         return c.ordinary_python_payload(fixture.venv, w.installed_inventory(fixture.venv, fixture.root),
             fixture.expected, fixture.origins, fixture.dirs, [fixture.prefix])
 
-    def child_probe(self, fixture):
+    def child_probe(self, fixture, env=None):
         # This is a test-only source/payload harness. It exercises the real path
         # activation method after a real payload check. It is not Native.verify.
         data = fixture.root / 'expected.json'
@@ -112,7 +112,7 @@ print(json.dumps({'value':startupfixture.VALUE,'uv_hook_executed':'_virtualenv' 
 '''
         return subprocess.run([str(fixture.venv / 'bin/python'), '-I', '-S', '-B', '-c', program,
             str(HERE / 'product_runtime/full_product_context.py'), str(HERE / 'product_python/produce_wheels.py'),
-            str(fixture.venv), str(data)], capture_output=True, text=True, check=False)
+            str(fixture.venv), str(data)], capture_output=True, text=True, check=False, env=env)
 
     def context(self, mode='native-qa-v1'):
         return SimpleNamespace(qa_mode=mode, repo=HERE.parents[2],
@@ -176,9 +176,18 @@ print(json.dumps({'value':startupfixture.VALUE,'uv_hook_executed':'_virtualenv' 
         with self.payload() as f:
             marker = f.root / 'site-hook-marker'
             (f.site/'sitecustomize.py').write_text('from pathlib import Path\nPath('+repr(str(marker))+').write_text("BAD")\n')
-            ordinary=subprocess.run([str(f.venv/'bin/python'),'-B','-c','pass'],capture_output=True,check=False)
-            self.assertEqual(ordinary.returncode,0);self.assertEqual(marker.read_text(),'BAD');marker.unlink()
-            result=self.child_probe(f)
+            # Select this synthetic hook before any distribution-provided hook.
+            # The native child gets the same PYTHONPATH and must still refuse
+            # before any hook executes with its actual -I -S startup.
+            env={**os.environ,'PYTHONPATH':str(f.site)}
+            program='import json,sys; print(json.dumps({"customize_path":getattr(sys.modules.get("sitecustomize"),"__file__",None)}))'
+            ordinary=subprocess.run([str(f.venv/'bin/python'),'-B','-c',program],
+                capture_output=True,text=True,check=False,env=env)
+            self.assertEqual(ordinary.returncode,0,ordinary.stderr)
+            self.assertEqual(json.loads(ordinary.stdout)['customize_path'],str(f.site/'sitecustomize.py'))
+            self.assertTrue(marker.exists(),ordinary.stdout+'\n'+ordinary.stderr)
+            self.assertEqual(marker.read_text(),'BAD');marker.unlink()
+            result=self.child_probe(f,env=env)
             self.assertNotEqual(result.returncode,0);self.assertFalse(marker.exists())
 
     def test_real_matching_timestamp_pyc_is_not_consumed_before_payload_rejection(self):
