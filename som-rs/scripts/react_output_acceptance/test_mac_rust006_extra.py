@@ -259,9 +259,27 @@ class ApprovedInputBindingTests(unittest.TestCase):
             with self.assertRaises(ValueError): bound.read(other)
             with self.assertRaises(ValueError): audit.manifest_map(index_raw,'0'*64,lambda name:raw)
 
-    def test_unreviewed_supplement_cannot_self_approve(self):
+    def test_derived_authority_remains_distinct_and_rejects_tampering(self):
         import audit_mac_rust006_extra as audit
-        self.assertIsNone(audit.HISTORIC_RESPONSE_APPROVED_INDEX_SHA256)
+        with tempfile.TemporaryDirectory() as temp:
+            repo=Path(temp).resolve();old=repo/'old';old.write_bytes(b'approved')
+            new=repo/'derived';new.write_bytes(b'later-capture')
+            files={'old':{'sha256':audit.sha(b'approved'),'bytes':8}}
+            combined=audit.merge_derived(files,{'derived':b'later-capture'},repo)
+            self.assertEqual(combined['derived']['source'],'later-capture-derived')
+            bound=audit.BoundInputs(repo,combined);self.assertEqual(bound.read(new),b'later-capture')
+            with self.assertRaises(ValueError):audit.merge_derived(files,{'old':b'approved'},repo)
+            new.write_bytes(b'tampered')
+            with self.assertRaises(ValueError):audit.merge_derived(files,{'derived':b'later-capture'},repo)
+            with self.assertRaises(ValueError):bound.read(new)
+
+    def test_approved_supplement_still_requires_both_source_provenances(self):
+        import audit_mac_rust006_extra as audit
+        self.assertEqual(audit.HISTORIC_RESPONSE_APPROVED_INDEX_SHA256,'c468ae2086e4d64847b93ad8da08aa3828f30989008db470519cd408e55b67bf')
+        public=audit.REPO/'.local/rust-compiler-goal/acceptance/public-products-003b'
+        legacy=audit.REPO/'.local/rust-compiler-goal/acceptance/legacy544/run-005'
+        with self.assertRaises(ValueError):audit.approved_inputs(public,legacy)
+
 
 
 class CommandRawAuditTests(unittest.TestCase):
@@ -281,7 +299,11 @@ class CommandRawAuditTests(unittest.TestCase):
                   'som-rs/scripts/react_output_acceptance/record_api.py',
                   'som-rs/scripts/rust_output_acceptance/python_replay.py',
                   'som-rs/tests/rust-output-v1/validate_cases.py',
-                  'som-rs/som-targets/qa/check_rust_products.py','som-rs/behavior/hosts.py')
+                  'som-rs/som-targets/qa/check_rust_products.py','som-rs/behavior/hosts.py',
+                  'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py',
+                  'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py',
+                  'som-rs/scripts/react_output_acceptance/install_derived_inputs.py',
+                  'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py')
             for rel in rels:
                 path=root/rel;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(rel.encode())
             python=root/'som-rs/runtime/acceptance-m3-venv/bin/python';script=root/'som-rs/scripts/react_output_acceptance'
@@ -512,6 +534,38 @@ class ProductHTTPBytesTests(unittest.TestCase):
             server.shutdown();server.server_close();thread.join(timeout=5)
 
 class ParityIndependentChecks(unittest.TestCase):
+    def test_join_passes_exact_request_bytes_and_target_to_oracle(self):
+        import hashlib
+        from unittest import mock
+        import audit_mac_parity as audit
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();(root/'calls').mkdir(); calls=[];transcripts={}
+            prompt={'version':'som.prompt.v1','resource':{'table':'things','path':'/things','fields':[]}}
+            for i,target in enumerate(('python','rust'),1):
+                request=b'{"x":1}';response=b'{"status":"ok"}';req=f'calls/{i:06d}.request.raw';res=f'calls/{i:06d}.response.raw'
+                (root/req).write_bytes(request);(root/res).write_bytes(response)
+                calls.append({'id':i,'case':'case','target':target,'sequence':1,'complete':True,'base':'http://127.0.0.1:19021',
+                    'request_file':req,'response_file':res,'request_sha256':hashlib.sha256(request).hexdigest(),
+                    'response_sha256':hashlib.sha256(response).hexdigest(),'body_present':True,'step':'health','category':'healthz',
+                    'method':'POST','path':'/healthz','content_type':'application/json','status':200,'response_content_type':'application/json'})
+                record={'step':'health','method':'POST','path':'/healthz','body':request.decode(),
+                    'content_type':'application/json','status':200,'response_content_type':'application/json','response':response.decode()}
+                normalized={'step':'health','category':'healthz','request':{'method':'POST','path':'/healthz','body':request.decode()},
+                            'status':200,'media':'application/json','body':{'status':'ok'}}
+                transcripts[('case',target)]=[(record,normalized)]
+            (root/'manifest.json').write_text(json.dumps({'version':'som.m6-mac-product-http.v1','calls':calls,
+                'recording_errors':[],'product_acceptance_passed':False,'bytes':sum(7+15 for _ in calls)}))
+            # Byte totals include the exact UTF-8 request and response lengths.
+            manifest=json.loads((root/'manifest.json').read_bytes());manifest['bytes']=sum(len((root/r['request_file']).read_bytes())+len((root/r['response_file']).read_bytes()) for r in calls)
+            (root/'manifest.json').write_text(json.dumps(manifest))
+            with mock.patch.object(audit,'audit_product_owners',return_value=2), mock.patch.object(audit.frozen_oracle,'check') as check:
+                result=audit.audit_product_http(root,transcripts,{'case':prompt})
+                self.assertEqual(result['oracle_case_targets_checked'],2)
+                self.assertEqual([c.kwargs['include_strict'] for c in check.call_args_list],[False,True])
+                self.assertTrue(all(c.args[1][0][1]==b'{"x":1}' for c in check.call_args_list))
+                (root/calls[0]['request_file']).write_bytes(b'tamper')
+                with self.assertRaises(ValueError):audit.audit_product_http(root,transcripts,{'case':prompt})
+
     def test_partial_crud_oracle_rejects_changed_submitted_or_stored_values(self):
         import audit_product_oracle as oracle
         prompt={'version':'som.prompt.v1','resource':{'table':'items','path':'/items',

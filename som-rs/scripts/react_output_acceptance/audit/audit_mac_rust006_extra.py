@@ -99,7 +99,8 @@ class Calls:
 # This must be replaced with the actual independently reviewed, human-approved
 # source index hash after any separately authorized supplemental input upload.
 # No branch name, prior 16-package permission, or caller boolean grants it.
-HISTORIC_RESPONSE_APPROVED_INDEX_SHA256 = None
+HISTORIC_RESPONSE_APPROVED_INDEX_SHA256 = 'c468ae2086e4d64847b93ad8da08aa3828f30989008db470519cd408e55b67bf'
+HISTORIC_RESPONSE_APPROVED_COMMIT = '1de8f05430a72f8d76f6159786cca71b0ae1a911'
 
 def git_blob(commit, name):
     import subprocess
@@ -153,17 +154,44 @@ class BoundInputs:
         return data
     def json(self,path):return obj(self.read(path))
 
-def approved_inputs(public,legacy):
+def merge_derived(files, original, repo):
+    combined=dict(files)
+    for name,data in original.items():
+        need(name not in combined and read(repo/name)==data,'derived response bytes or source role differs')
+        combined[name]={'sha256':sha(data),'bytes':len(data),'source':'later-capture-derived'}
+    return combined
+
+def approved_inputs(public,legacy,config_path=None,provenance_root=None):
     need(public==REPO/'.local/rust-compiler-goal/acceptance/public-products-003b' and
          legacy==REPO/'.local/rust-compiler-goal/acceptance/legacy544/run-005', 'historic source roots differ')
-    config=json_file(REPO/'som-rs/scripts/react_output_acceptance/hosted_inputs.json')
+    need(config_path is not None and provenance_root is not None, 'two-source historic provenance is required')
+    config=json_file(config_path)
     need(type(config) is dict and set(config)=={'version','commit','index_sha256'} and
-         config['version']=='som.m6-hosted-inputs.v1' and
-         type(HISTORIC_RESPONSE_APPROVED_INDEX_SHA256) is str and
-         config['index_sha256']==HISTORIC_RESPONSE_APPROVED_INDEX_SHA256,
-         'supplemental historic response source not approved or not bound')
+         config['version']=='som.m6-hosted-inputs.v1' and config['commit']==HISTORIC_RESPONSE_APPROVED_COMMIT and
+         config['index_sha256']==HISTORIC_RESPONSE_APPROVED_INDEX_SHA256, 'approved 18-package source differs')
     index=git_blob(config['commit'],'inputs-index.json')
-    return BoundInputs(REPO,manifest_map(index,config['index_sha256'],lambda name:git_blob(config['commit'],name)))
+    files=manifest_map(index,config['index_sha256'],lambda name:git_blob(config['commit'],name))
+    # This path was produced from the approved #130 capture; it is never relabeled
+    # as the historical wire. Recompute and join its exact source in this job.
+    import sys
+    sys.path.insert(0,str(REPO/'som-rs/scripts/react_output_acceptance'))
+    try:
+        import reconstruct_historical_responses as derived
+        import verify_historical_response_provenance as provenance
+        map_raw=read(REPO/'som-rs/scripts/react_output_acceptance/historical-response-reuse-map.json')
+        temp=Path(provenance_root).resolve(strict=True)
+        original=derived.derive(map_raw,temp/'input-packages',REPO,temp/'evidence-sealed',temp/'evidence')
+        evidence=derived.indexed_files(temp/'evidence-sealed',derived.EVIDENCE_SHA,True)
+        load=lambda name:derived.checked(temp/'evidence',name,evidence)
+        recording=load(provenance.BASE+'manifest.json'); report=load('run/python-baseline/report.json')
+        need(sha(recording)==provenance.RECORDING_SHA and sha(report)==provenance.REPORT_SHA,
+             'later capture raw authorities differ')
+        joined=provenance.join(derived.parse(map_raw),derived.parse(recording),derived.parse(report),load)
+        need(joined['derived_pairs']==668 and len(original)==1336,'derived response inventory differs')
+        files=merge_derived(files,original,REPO)
+    finally:
+        sys.path.pop(0)
+    return BoundInputs(REPO,files)
 
 
 def request_bytes(bound, d, label):
@@ -591,7 +619,11 @@ def audit_command_records(run, candidate, public, legacy, parity):
              'som-rs/scripts/rust_output_acceptance/python_replay.py',
              'som-rs/tests/rust-output-v1/validate_cases.py',
              'som-rs/som-targets/qa/check_rust_products.py',
-             'som-rs/behavior/hosts.py')
+             'som-rs/behavior/hosts.py',
+             'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py',
+             'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py',
+             'som-rs/scripts/react_output_acceptance/install_derived_inputs.py',
+             'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py')
     for rel in sources:
         entry=subprocess.check_output(['/usr/bin/git','--no-replace-objects','-C',str(REPO),
                                        'ls-tree','-z',revision,'--',rel],timeout=30)
@@ -646,12 +678,14 @@ def audit_command_records(run, candidate, public, legacy, parity):
 def main():
     p=argparse.ArgumentParser()
     for name in ('run','candidate','public-run','legacy-run','parity','out'): p.add_argument('--'+name,type=Path,required=True)
+    p.add_argument('--approved-input-config',type=Path,required=True)
+    p.add_argument('--provenance-root',type=Path,required=True)
     args=p.parse_args()
     need(not args.out.exists() and not args.out.is_symlink(), 'new report required')
     report={'version':'som.m6-mac-rust006-extra-audit.draft.v1','product_acceptance_passed':False,
             'rows':[], 'status':'unrun'}
     try:
-        inputs=approved_inputs(args.public_run,args.legacy_run)
+        inputs=approved_inputs(args.public_run,args.legacy_run,args.approved_input_config,args.provenance_root)
     except Exception as exc:
         inputs=None
         report['rows'].append({'id':'historic-input-authority','status':'unrun',

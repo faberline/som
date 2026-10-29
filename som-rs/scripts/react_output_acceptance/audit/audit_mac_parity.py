@@ -16,10 +16,12 @@ import sys
 import audit_mac_rust006_extra as a
 import audit_product_normalization as independent_normalization
 import audit_product_oracle as independent_oracle
+import independent_behavior_oracle as frozen_oracle
 
 REPO=Path(__file__).resolve().parents[4]
 QA='http://127.0.0.1:18919'
-PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py')
+REVIEWED_ORACLE_SHA='8599438d6019795028b1bc28a51d2d16c2e682cc4012a5c9250a0984316f8fe7'
+PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py')
 
 def need(ok,why):
     if not ok:raise ValueError(why)
@@ -45,6 +47,8 @@ def audit_sources(revision,lifecycle,raw,parity_out):
          and os.environ.get('RUNNER_ENVIRONMENT')=='github-hosted' and os.environ.get('RUNNER_OS')=='macOS'
          and os.environ.get('RUNNER_ARCH')=='ARM64','parity runner identity differs')
     sources=verify_git_sources(REPO,revision,PARITY_SOURCES)
+    need(sources['som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py']==REVIEWED_ORACLE_SHA,
+         'reviewed oracle source differs')
     receipt=a.json_file(lifecycle/'receipt.json')
     need(receipt.get('source_revision')==revision and receipt.get('source_before')==sources and receipt.get('source_after')==sources,
          'parity collector source snapshot differs')
@@ -240,11 +244,12 @@ def audit_product_http(root, transcripts, prompts, *, require_owners=True, check
              and type(row.get('body_present')) is bool and (row['body_present'] or not request), 'product raw bytes differ')
     need(manifest.get('bytes')==byte_count and set(groups)==set(transcripts),'product call inventory differs')
     owner_count=audit_product_owners(root,manifest,groups) if require_owners else None
-    normalized_successes=0; observed_crud_rows=0
+    normalized_successes=0; observed_crud_rows=0; oracle_cases=0
     for key,records in transcripts.items():
         need(key[0] in prompts,'source prompt missing')
         normalizer=independent_normalization.Normalizer(prompts[key[0]]) if check_normalization else None
         oracle=independent_oracle.PartialOracle(prompts[key[0]]) if check_normalization else None
+        oracle_entries=[]
         calls=groups[key];need(len(calls)==len(records),'product call count differs')
         for row,(record,normalized) in zip(calls,records):
             request=a.read(root/row['request_file']);response=a.read(root/row['response_file'])
@@ -258,8 +263,13 @@ def audit_product_http(root, transcripts, prompts, *, require_owners=True, check
             if normalizer is not None:
                 normalized_successes += normalizer.check(record,normalized,response)
                 observed_crud_rows += oracle.check(record,request,response)
+                oracle_entries.append((normalized,request if row['body_present'] else None))
+        if normalizer is not None:
+            frozen_oracle.check(prompts[key[0]],oracle_entries,include_strict=(key[1]=='rust'))
+            oracle_cases+=1
     return {'case_targets':len(groups),'calls':len(manifest['calls']),'bytes':byte_count,'observed_owners':owner_count,
-            'source_origin':'pending','normalized_successes':normalized_successes,'observed_crud_rows':observed_crud_rows,'timestamp_advance_semantics':'unverified','behavior_oracle':'unverified',
+            'source_origin':'pending','normalized_successes':normalized_successes,'observed_crud_rows':observed_crud_rows,
+            'oracle_case_targets_checked':oracle_cases,'full_candidate_behavior':'unverified',
             'unobserved_descendants':'unverified'}
 
 def audit_wire(root,parity_out,legacy,bound,product_http):
@@ -333,12 +343,14 @@ def main():
     for x in ('raw','parity-out','public-run','legacy-run','out'):p.add_argument('--'+x,type=Path,required=True)
     p.add_argument('--product-http',type=Path,required=True)
     p.add_argument('--candidate-revision',required=True)
+    p.add_argument('--approved-input-config',type=Path,required=True)
+    p.add_argument('--provenance-root',type=Path,required=True)
     args=p.parse_args();need(not args.out.exists(),'new report required')
     result={'version':'som.m6-mac-parity-audit.draft.v1','status':'unrun','product_acceptance_passed':False,'rows':[]}
     try:
         source=audit_sources(args.candidate_revision,args.product_http.parent,args.raw,args.parity_out)
         result['rows'].append({'id':'same-head-sources','status':'observed','evidence':source})
-        bound=a.approved_inputs(args.public_run,args.legacy_run)
+        bound=a.approved_inputs(args.public_run,args.legacy_run,args.approved_input_config,args.provenance_root)
         result['rows'].append({'id':'raw-structure','status':'observed','evidence':audit_wire(args.raw,args.parity_out,args.legacy_run,bound,args.product_http)})
     except Exception as exc:result['rows'].append({'id':'raw-structure','status':'unrun','error':type(exc).__name__+': '+str(exc)})
     for identity in ('body-normalization','behavior-oracle','process-cleanup','workflow-origin'):

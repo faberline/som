@@ -224,9 +224,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--python", type=Path, default=REPO / "som-rs/runtime/acceptance-m3-venv/bin/python")
     parser.add_argument("--candidate-revision", default=None,
                         help="Exact new final source SHA for the Rust006 extra gate path.")
+    parser.add_argument("--approved-input-config", type=Path)
+    parser.add_argument("--provenance-root", type=Path)
     args = parser.parse_args(argv)
     if args.candidate_revision is not None and not FINAL_MAC_ADAPTER_REVIEWED:
         parser.error("the final Mac adapter has not completed source and raw-audit review")
+    if args.candidate_revision is not None and (args.approved_input_config is None or args.provenance_root is None):
+        parser.error("the approved two-source input provenance is required")
     stage, out, baseline = "runner", None, None
     summary = {"version": "som.m6-hosted-acceptance.v1", "passed": False, "status": "failed",
                "failed_stage": None, "product_suites": "not_run", "head_before": None,
@@ -333,6 +337,7 @@ def main(argv: list[str] | None = None) -> int:
                     "--raw", str(out / "run/rust006-parity-http"), "--parity-out", str(parity.parent),
                     "--product-http", str(out / "run/rust006-parity-lifecycle/product-http"),
                     "--candidate-revision", args.candidate_revision,
+                    "--approved-input-config", str(args.approved_input_config), "--provenance-root", str(args.provenance_root),
                     "--public-run", str(public), "--legacy-run", str(legacy),
                     "--out", str(out / "run/rust006-parity-audit.json")], env)
             except (OSError, subprocess.SubprocessError):
@@ -358,7 +363,8 @@ def main(argv: list[str] | None = None) -> int:
                     str(args.python), str(HERE / "audit/audit_mac_rust006_extra.py"),
                     "--run", str(extra), "--candidate", str(out / "candidate"),
                     "--public-run", str(public), "--legacy-run", str(legacy),
-                    "--parity", str(parity), "--out", str(out / "run/rust006-audit.json")], env)
+                    "--parity", str(parity), "--approved-input-config", str(args.approved_input_config),
+                    "--provenance-root", str(args.provenance_root), "--out", str(out / "run/rust006-audit.json")], env)
             except (OSError, subprocess.SubprocessError):
                 summary["rust006_audit_exit_code"] = None
             if summary["rust006_audit_exit_code"] != 0:
