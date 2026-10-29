@@ -388,7 +388,7 @@ class ClusterRawAuditTests(unittest.TestCase):
                     if key in event:
                         item=event[key];path=lifecycle/item['file'];raw=path.read_bytes().replace(old.encode(),new.encode()).replace(old_bin.encode(),new_bin.encode());path.write_bytes(raw);item['sha256']=hashlib.sha256(raw).hexdigest()
                 for key in ('ps','cwd','table','listener'):
-                    if key in event:
+                    if isinstance(event.get(key),dict):
                         for stream in ('stdout','stderr'):
                             item=event[key][stream];path=lifecycle/item['file'];raw=path.read_bytes().replace(old.encode(),new.encode()).replace(old_bin.encode(),new_bin.encode());path.write_bytes(raw);item['sha256']=hashlib.sha256(raw).hexdigest()
             hashes={name:contract['postgresql'][name]['sha256'] for name in ('postgres','initdb','pg_ctl')}
