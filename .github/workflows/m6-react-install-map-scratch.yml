@@ -1,0 +1,31 @@
+name: M6 React Linux input source map fixtures (not acceptance)
+on:
+  push:
+    branches:
+      - codex/m6-react-linux-install-map-20261029
+permissions:
+  contents: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bind scratch source and fixtures
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          for entry in \
+            'som-rs/scripts/react_output_acceptance/audit/linux_install_map.py f73ee9e9e36f0471ab67bab808ee86c71cf4fbe45641eaa94cdff647c6e60c28' \
+            'som-rs/scripts/react_output_acceptance/audit/test_linux_install_map.py adb4b72786608257a4475750a56d9a4ca332461feafdbfa984cff224560265c7'; do
+            set -- $entry
+            test "$(sha256sum "$1" | cut -d ' ' -f 1)" = "$2"
+            test "$(git show "$GITHUB_SHA:$1" | sha256sum | cut -d ' ' -f 1)" = "$2"
+          done
+      - name: Verify independent source mapping
+        working-directory: som-rs/scripts/react_output_acceptance/audit
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest -v test_linux_install_map
