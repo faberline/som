@@ -1,0 +1,503 @@
+{
+  "React_plan_if_rerun_for_new_native_candidate": {
+    "assemble_refusals": {
+      "base": "A valid React bundle for the acceptance case example-v1 from the candidate; for A12 the candidate's TypeScript bundle for example-v1, and for A13 the candidate's Rust bundle for example-v1.",
+      "recipes": [
+        {
+          "change": "Replace assets.formatter.sha256 with 64 zero digits.",
+          "code": "ASSET_HASH_MISMATCH",
+          "http_status": 400,
+          "id": "A1",
+          "prompt_pointer": "/bundle/assets"
+        },
+        {
+          "change": "Replace target_contract, catalog, block_library, backend and formatter with the TypeScript descriptors from the candidate's TypeScript manifest.",
+          "code": "ASSET_HASH_MISMATCH",
+          "http_status": 400,
+          "id": "A2",
+          "prompt_pointer": "/bundle/assets"
+        },
+        {
+          "change": "Add target react to a valid som.dsl-bundle.v1 Python bundle.",
+          "code": "INVALID_SCHEMA",
+          "http_status": 400,
+          "id": "A3",
+          "note": "The baseline already gives this result.",
+          "prompt_pointer": "/bundle/target"
+        },
+        {
+          "change": "Set target to python in a React bundle.",
+          "code": "INVALID_SCHEMA",
+          "http_status": 400,
+          "id": "A4",
+          "prompt_pointer": "/bundle/target"
+        },
+        {
+          "change": "Replace the first block id with the Python block id orm.base.",
+          "code": "INVALID_COMPOSITION",
+          "http_status": 400,
+          "id": "A5",
+          "prompt_pointer": "/bundle/dsl/files/0/blocks/0/id"
+        },
+        {
+          "change": "Replace the prompt with the public v5 example prompt. Recompute the shared compiler-v1 descriptors for the v5 prompt, keep the React descriptors and the React DSL, and rehash.",
+          "code": "UNSUPPORTED_TARGET",
+          "http_status": 422,
+          "id": "A6",
+          "prompt_pointer": "/bundle/prompt/version"
+        },
+        {
+          "change": "Change one hex digit of payload_sha256. Do not rehash.",
+          "code": "BUNDLE_HASH_MISMATCH",
+          "http_status": 400,
+          "id": "A7",
+          "prompt_pointer": "/bundle/hashes/payload_sha256"
+        },
+        {
+          "change": "Rename the first prompt field to __proto__ in the prompt and in every DSL param that names it.",
+          "code": "UNSUPPORTED_TARGET",
+          "http_status": 422,
+          "id": "A8",
+          "prompt_pointer": "/bundle/prompt/resource/fields/0/name"
+        },
+        {
+          "change": "Add a 20th file entry, a copy of the last file.",
+          "code": "INVALID_SCHEMA",
+          "http_status": 400,
+          "id": "A9",
+          "prompt_pointer": "/bundle/dsl/files"
+        },
+        {
+          "change": "Set target to rust in a React bundle.",
+          "code": "INVALID_SCHEMA",
+          "http_status": 400,
+          "id": "A10",
+          "note": "rust-output-v1 check_schema reaches the DSL version som.dsl.react.v1 first.",
+          "prompt_pointer": "/bundle/dsl/version"
+        },
+        {
+          "change": "Set target to typescript in a React bundle.",
+          "code": "INVALID_SCHEMA",
+          "http_status": 400,
+          "id": "A11",
+          "prompt_pointer": "/bundle/dsl/version"
+        },
+        {
+          "change": "Set target to react in a TypeScript bundle.",
+          "code": "INVALID_SCHEMA",
+          "http_status": 400,
+          "id": "A12",
+          "prompt_pointer": "/bundle/dsl/version"
+        },
+        {
+          "change": "Set target to react in a Rust bundle.",
+          "code": "INVALID_SCHEMA",
+          "http_status": 400,
+          "id": "A13",
+          "prompt_pointer": "/bundle/dsl/version"
+        },
+        {
+          "change": "Replace the first block id with the first block id of the candidate's TypeScript bundle for the same prompt.",
+          "code": "INVALID_COMPOSITION",
+          "http_status": 400,
+          "id": "A14",
+          "prompt_pointer": "/bundle/dsl/files/0/blocks/0/id"
+        },
+        {
+          "change": "Append copies of the last block of the last file until the bundle has 65 blocks in total, keeping that file at 64 blocks or fewer; when it would pass 64, append to the file before it.",
+          "code": "INVALID_SCHEMA",
+          "http_status": 400,
+          "id": "A15",
+          "note": "The total block limit is checked after the bundle schema (api.schema.json x-assemble-check-order).",
+          "prompt_pointer": "/bundle/dsl/files"
+        },
+        {
+          "change": "Swap the path members of the first two files, keeping their blocks.",
+          "code": "INVALID_COMPOSITION",
+          "http_status": 400,
+          "id": "A16",
+          "note": "Both paths are in the bundle schema path enum, so the composition check is reached.",
+          "prompt_pointer": "/bundle/dsl/files/0/path"
+        }
+      ],
+      "rehash": "Unless a recipe says otherwise, recompute prompt_sha256, dsl_sha256 and payload_sha256 with the frozen formulas after the change, so the hash check passes and the named check is reached.",
+      "schema_order": "The React bundle schema check reports the first failure in the Rust check_schema order: members, version, target, prompt, dsl members, dsl version, files, then each file.",
+      "span": "Line, column and byte spans locate the pointer target in the canonical assemble request body, computed at test time."
+    },
+    "bundle_checks": [
+      "For every acceptance case, the CNL and typed JSON requests with target react return byte-identical som.dsl-bundle.v2 bundles with target react.",
+      "Every React bundle validates against bundle.schema.json, has at most 19 files, 1 to 64 blocks per file and at most 64 blocks in total, and every block id starts with react. and is a block of catalog/react-catalog.v1.json.",
+      "Every bundle asset descriptor equals the candidate's React manifest (api.schema.json x-manifest), and the six shared descriptors equal the candidate's Rust manifest.",
+      "Two compiles and two assembles of the same request give the same bytes.",
+      "The assembled files are exactly the product-layout.json file set (19 files); the 17 fixed files equal the reference files, and src/schema.ts and README.md equal render_reference.py for the prompt."
+    ],
+    "inventory_scope": {
+      "Python_parity_rows": 1342,
+      "React_negative_cases": 30,
+      "React_products": 129,
+      "Rust_inventory_cases": 699,
+      "Rust_parity_rows": 2093,
+      "TypeScript_compile_forms": 246,
+      "TypeScript_named_cases": 125
+    },
+    "plan_sha256": "c3145cdc4528357dba8faa9e80ce2687204eef7c2812581366ab34d7df33792f",
+    "product_gates": {
+      "each_acceptance_case": [
+        "toolchain.json install with the vendored npm cache, offline, with --ignore-scripts",
+        "toolchain.json typecheck: tsc -p tsconfig.json with no diagnostic",
+        "toolchain.json format_check: prettier --check --no-config --no-editorconfig accepts every product file unchanged",
+        "toolchain.json test: vitest run with jsdom; every test passes",
+        "toolchain.json build twice into two directories outside the product; the two dist trees are identical",
+        "package.json and package-lock.json unchanged after the commands, the vendored cache tree hash unchanged, and no product file outside node_modules added or changed",
+        "api-contract.json: the product's src/api.ts against the Python product the candidate assembles for the same request without target, hosted on QA ports with a fresh PostgreSQL cluster; all 20 steps are recorded, no step fails, the skipped steps are exactly those whose when condition is false (api-contract.json skip_rule), and every process started is stopped"
+      ],
+      "no_sampling": "Every acceptance case runs every gate. A missing result, a failure and a skipped check are each reported as such and block acceptance. The only allowed skip is an api-contract.json step whose when condition is false for the prompt, recorded with ok null and its skip_reasons reason."
+    },
+    "python_unchanged": {
+      "checks": [
+        "Every typed prompt of the 127 public products (public-products-003b) and the 544 legacy jobs (legacy544 run-005), sent without target and with target python, gives a compile response equal byte for byte to the baseline's response, and assembling that bundle gives response bytes equal to the baseline's.",
+        "som-rs/tests/react-output-v1/check_python_controls.py --expect som-rs/evidence/react-output-v1/python-controls-2026-10-22.json passes for every negative case and every name case of this contract: each refusal gives the same diagnostic, and each HTTP 200 control gives the payload_sha256 the default gave on 2026-10-22.",
+        "som-rs/tests/typescript-output-v1/check_python_controls.py and som-rs/tests/rust-output-v1/check_python_controls.py pass for every negative case of their contracts."
+      ],
+      "rule": "A request without target, or with target python, returns the same bytes as the baseline for the same request. No existing CNL text, typed prompt, bundle, asset or Python output changes."
+    },
+    "rust_unchanged": {
+      "checks": [
+        "Every case of the accepted Rust inventory, compiled with target rust on the candidate and on the baseline, gives responses that differ only in the three members above; assembling each gives the same product files.",
+        "Every RT case gives its amendment 006 diagnostic, located in the raw request body."
+      ],
+      "rule": "A Rust compile response may differ from the baseline only in bundle.assets.backend, bundle.assets.target_contract and bundle.hashes.payload_sha256, and every Rust product file stays byte-identical. An RT case changes only as rust-output-v1 amendment 006 records."
+    },
+    "same_build_rule": "Every check in this plan passes on one recorded build, with the evidence hashed, and an independent audit written from this plan and the raw outputs only reports no failure and nothing unrun.",
+    "scope_checks": [
+      "Every RS and RP case gives exactly its expected diagnostic with target react; RS17 and RS18 give the compiler-v1 refusal before any target check.",
+      "Every out-of-scope public example, CNL positive fixture and legacy job gives UNSUPPORTED_TARGET with the refusal case-inventory.json records for it, with target react.",
+      "The compiler refusal for each typed prompt equals som-rs/tests/react-output-v1/react_profile.py on that prompt.",
+      "No in-scope acceptance case gives UNSUPPORTED_TARGET with target react."
+    ],
+    "target_selection_checks": [
+      "Every target-examples.json example and name case body gives its expected result.",
+      "Every RR case gives exactly its expected code, status, pointer, cause, allowed form and span, located in the raw request body.",
+      "A target python request gives the same bytes as the request without target, for every acceptance case and every CNL positive fixture.",
+      "The CLI forwards --target react unchanged and exits with status 2 on a refusal."
+    ],
+    "typescript_unchanged": {
+      "checks": [
+        "Every in-scope case of typescript-output-v1 case-inventory.json, compiled with target typescript on the candidate and on the baseline, gives responses that differ only in the three members above; assembling each gives the same product files.",
+        "Every TT, TS and TP case gives its expected diagnostic, with the amendment 002 texts for the TT cases that refuse a value outside the enum."
+      ],
+      "rule": "A TypeScript compile response may differ from the baseline only in bundle.assets.backend, bundle.assets.target_contract and bundle.hashes.payload_sha256, and every TypeScript product file stays byte-identical. A TT case changes only as typescript-output-v1 amendment 002 records."
+    }
+  },
+  "TypeScript_amendment002_if_rerun": {
+    "baseline": "the current default compiler: typescript-output candidate-001, binary 2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c, build commit 8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af, the #65 release (som-rs/evidence/typescript-output-release-2026-10-22-issue65.json), read only",
+    "checks": [
+      "Every TT case gives exactly its expected diagnostic, located in the raw request body: TT01 to TT06 with the amendment 002 texts, TT07 unchanged. Every TS and TP case gives its expected diagnostic unchanged.",
+      "check_python_controls.py passes for every negative case of negative-cases.json.",
+      "Every in-scope case of case-inventory.json, compiled with target typescript on the candidate and on the baseline, gives responses that differ only in bundle.assets.backend, bundle.assets.target_contract and bundle.hashes.payload_sha256; assembling each gives the product files the baseline gives.",
+      "Every TypeScript bundle the baseline returns for that inventory is refused by the candidate at assemble with ASSET_HASH_MISMATCH, and the same bundle rebased on the candidate's backend and target_contract descriptors assembles to the same files.",
+      "Every TypeScript acceptance case passes the product gates of this plan on the candidate.",
+      "An independent audit, written from this plan and the raw outputs only, reports no failure and nothing unrun."
+    ],
+    "receipt": "som-rs/evidence/typescript-output-contract-amendment-002.json",
+    "rule": "The acceptance of CONTRACT.md section 12 (issue #126) on the first react-output-v1 phase 1 candidate build. Every check runs on every case it names; a missing result, a failure and a skipped check each block acceptance.",
+    "status": "sealed"
+  },
+  "all_builds_tests_services": "GitHub runners only",
+  "amendment006_checks": [
+    {
+      "execution": "not_run_by_this_review",
+      "m12_current_candidate_result": "not_granted_by_prior_M6_receipt",
+      "m6_receipt_coverage": "direct_named_tool_in_M6_twelve_step_receipt",
+      "m6_receipt_step": "rt-diagnostics",
+      "m6_receipt_step_evidence": {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "92c6d8270d4eee5d5a928e1b94104ebe352bba941b1a5b7ec35a181125f07a15",
+        "report_sha256": "b3f4e3f3dfada9141a5589c65b0b037df726e2efcd788134eccc7b8470c7b9c4",
+        "seconds": 0.161,
+        "step": "rt-diagnostics"
+      },
+      "pointer": "/amendment006/checks/0",
+      "requirement": "RT diagnostics: every RT case of negative-cases.json, sent as written, gives exactly its expected code, status, pointer, cause, allowed form and span located in the raw request body: RT01 to RT06 with the amendment 006 texts, RT07 unchanged.",
+      "tool_source_sha256": {
+        "som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py": "157ea2a0c1a5c442674ba0b87ff02e7812e8ca69ca65bab329b7525babbcffbe"
+      },
+      "tools": [
+        "som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py"
+      ]
+    },
+    {
+      "execution": "not_run_by_this_review",
+      "m12_current_candidate_result": "not_granted_by_prior_M6_receipt",
+      "m6_receipt_coverage": "direct_named_tool_in_M6_twelve_step_receipt",
+      "m6_receipt_step": "rust-python-controls",
+      "m6_receipt_step_evidence": {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "75986fb1d13718400479a3489f9f48a25a009ef17e5cfb2a10334ca26d71cf13",
+        "report_sha256": "13bf7a5fee47861422694ac665440a9f521d7045249a9da98d7a5cf268a26077",
+        "seconds": 0.427,
+        "step": "rust-python-controls"
+      },
+      "pointer": "/amendment006/checks/1",
+      "requirement": "check_python_controls.py passes for every negative case of negative-cases.json.",
+      "tool_source_sha256": {
+        "som-rs/tests/rust-output-v1/check_python_controls.py": "50e081a6a10cdbb7db8e84e094854ef8833f25d3cfa0857cc98e9cb4e9ccd047"
+      },
+      "tools": [
+        "som-rs/tests/rust-output-v1/check_python_controls.py"
+      ]
+    },
+    {
+      "execution": "not_run_by_this_review",
+      "m12_current_candidate_result": "not_granted_by_prior_M6_receipt",
+      "m6_receipt_coverage": "direct_named_tool_in_M6_twelve_step_receipt",
+      "m6_receipt_step": "python-baseline",
+      "m6_receipt_step_evidence": {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "00b22fa3dbbd907edc9590b0fdf262ccb7b35d3ab8153591a9875ec190b2029a",
+        "report_sha256": "0678867a693a8707cd03aa4a5442556aaf42cbc1fb90e47cf849bf701422e70a",
+        "seconds": 497.555,
+        "step": "python-baseline"
+      },
+      "pointer": "/amendment006/checks/2",
+      "requirement": "Python against the baseline: every typed prompt of the 127 public products (public-products-003b) and the 544 legacy jobs (legacy544 run-005), sent without target and with target python, gives a compile response equal byte for byte to the baseline's response, and assembling that bundle gives response bytes equal to the baseline's.",
+      "tool_source_sha256": {
+        "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py": "ebe4fbe58d54ac6e89ea48f11a6a2b622ed450589864e289327ecb6fd8f51180"
+      },
+      "tools": [
+        "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py"
+      ]
+    },
+    {
+      "execution": "not_run_by_this_review",
+      "m12_current_candidate_result": "not_granted_by_prior_M6_receipt",
+      "m6_receipt_coverage": "missing_named_python_replay_asset_break_and_validate_cases_receipts",
+      "m6_receipt_step": null,
+      "pointer": "/amendment006/checks/3",
+      "requirement": "Python recordings: python_unchanged with its amendment_004 rule, python_replay.py --asset-break over public-products-003b and legacy544 run-005, passes with no failure; validate_cases.py gives the frozen Python file hashes.",
+      "tool_source_sha256": {
+        "som-rs/scripts/rust_output_acceptance/python_replay.py": "069736b5956a6deeb5ce75ba5b5ee454b592bbc6ab8dc9ec285448d06c300d9c",
+        "som-rs/tests/rust-output-v1/validate_cases.py": "9b9131de7a56a54c6a9f103da170143bc18ec6d113bedb6f79ea0a7f8453d4bb"
+      },
+      "tools": [
+        "som-rs/scripts/rust_output_acceptance/python_replay.py",
+        "som-rs/tests/rust-output-v1/validate_cases.py"
+      ]
+    },
+    {
+      "execution": "not_run_by_this_review",
+      "m12_current_candidate_result": "not_granted_by_prior_M6_receipt",
+      "m6_receipt_coverage": "direct_named_tool_in_M6_twelve_step_receipt",
+      "m6_receipt_step": "rust-baseline",
+      "m6_receipt_step_evidence": {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "0e025d5b6f53cfdf927f1e55b5cc9261043a4b47586025db805521dd3787ac94",
+        "report_sha256": "37c74335072cc93a64eb7663cc90c1fdd522e4d4be6a4f47e23f82b18e434b84",
+        "seconds": 64.286,
+        "step": "rust-baseline"
+      },
+      "pointer": "/amendment006/checks/4",
+      "requirement": "Rust compile against the baseline: every case of the rust-output-055 run-003 inventory (the accepted run of rust-output-acceptance-2026-10-20-phase2.json), compiled with target rust, gives a response equal to the baseline's response for the same request except bundle.assets.backend, bundle.assets.target_contract and bundle.hashes.payload_sha256; RS12 and RS13 give the baseline's compiler-v1 refusal bytes.",
+      "tool_source_sha256": {
+        "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py": "f99ff77f78ef80a1e9ff010e9cb669d0219b7ba3b8a4082b29ebbd267c7d309a"
+      },
+      "tools": [
+        "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py"
+      ]
+    },
+    {
+      "execution": "not_run_by_this_review",
+      "m12_current_candidate_result": "not_granted_by_prior_M6_receipt",
+      "m6_receipt_coverage": "partial_rebased_file_proof_only_missing_named_unchanged_and_candidate_phase1_no_gates_reports",
+      "m6_receipt_step": "rust-baseline",
+      "m6_receipt_step_evidence": {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "0e025d5b6f53cfdf927f1e55b5cc9261043a4b47586025db805521dd3787ac94",
+        "report_sha256": "37c74335072cc93a64eb7663cc90c1fdd522e4d4be6a4f47e23f82b18e434b84",
+        "seconds": 64.286,
+        "step": "rust-baseline"
+      },
+      "pointer": "/amendment006/checks/5",
+      "requirement": "check_rust_unchanged.py: every phase 1 and phase 2 Rust product of rust-output-055 run-003 assembles to byte-identical files on the candidate; phase 1 compares a check_rust_products.py --no-gates report made on the candidate.",
+      "tool_source_sha256": {
+        "som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py": "7f9155b6cea577ff06e424d6ec43d6d2dc33262c586fef066f9e6004fd30864d",
+        "som-rs/som-targets/qa/check_rust_products.py": "45a43e9bc86fbc7d5112c6add0f39154dc0ab2cb9bdf1499948ae5a2e4749e60"
+      },
+      "tools": [
+        "som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py",
+        "som-rs/som-targets/qa/check_rust_products.py"
+      ]
+    },
+    {
+      "execution": "not_run_by_this_review",
+      "m12_current_candidate_result": "not_granted_by_prior_M6_receipt",
+      "m6_receipt_coverage": "direct_named_tool_in_M6_twelve_step_receipt",
+      "m6_receipt_step": "rust-baseline",
+      "m6_receipt_step_evidence": {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "0e025d5b6f53cfdf927f1e55b5cc9261043a4b47586025db805521dd3787ac94",
+        "report_sha256": "37c74335072cc93a64eb7663cc90c1fdd522e4d4be6a4f47e23f82b18e434b84",
+        "seconds": 64.286,
+        "step": "rust-baseline"
+      },
+      "pointer": "/amendment006/checks/6",
+      "requirement": "Rust bundles of the baseline: every Rust bundle the baseline returns for that inventory is refused by the candidate at assemble with ASSET_HASH_MISMATCH, and the same bundle rebased on the candidate's backend and target_contract descriptors assembles to the files_sha256 run-003 recorded.",
+      "tool_source_sha256": {
+        "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py": "f99ff77f78ef80a1e9ff010e9cb669d0219b7ba3b8a4082b29ebbd267c7d309a"
+      },
+      "tools": [
+        "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py"
+      ]
+    },
+    {
+      "execution": "not_run_by_this_review",
+      "m12_current_candidate_result": "not_granted_by_prior_M6_receipt",
+      "m6_receipt_coverage": "missing_Rust_phase2_assemble_refusal_report",
+      "m6_receipt_step": null,
+      "pointer": "/amendment006/checks/7",
+      "requirement": "check_rust_products.py with --refusals phase2 passes assemble_refusals, with A6_amendment_004; A4 (target python in a Rust bundle) keeps INVALID_SCHEMA at /bundle/target.",
+      "tool_source_sha256": {
+        "som-rs/som-targets/qa/check_rust_products.py": "45a43e9bc86fbc7d5112c6add0f39154dc0ab2cb9bdf1499948ae5a2e4749e60"
+      },
+      "tools": [
+        "som-rs/som-targets/qa/check_rust_products.py"
+      ]
+    },
+    {
+      "execution": "not_run_by_this_review",
+      "m12_current_candidate_result": "not_granted_by_prior_M6_receipt",
+      "m6_receipt_coverage": "partial_React_CLI_cases_only_missing_full_Rust_check_cli_receipt",
+      "m6_receipt_step": "react-target",
+      "m6_receipt_step_evidence": {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "6476f9f9d3ff8a5002251a4190d0430c06b0a6db9cabeedd1e90f14240eb7b52",
+        "report_sha256": "d159ba348ab5eb15b565b12af3fa5912933a8f697f8a58f1905c8e49d38ae67c",
+        "seconds": 56.922,
+        "step": "react-target"
+      },
+      "pointer": "/amendment006/checks/8",
+      "requirement": "check_cli.py passes, and a case added with react-output-v1 phase 1 shows that `som compile --target react` forwards the string unchanged.",
+      "tool_source_sha256": {
+        "som-rs/scripts/react_output_acceptance/check_target.py": "c1a6386da79be3fe5a8fa2a1f46fb61f62f845d78050c4f32dbdc716e175e33c",
+        "som-rs/scripts/rust_output_acceptance/check_cli.py": "7f6f447597c2e9f497e50d060ca36f62e291eeea344bf3e16db326d39a536dca"
+      },
+      "tools": [
+        "som-rs/scripts/rust_output_acceptance/check_cli.py",
+        "som-rs/scripts/react_output_acceptance/check_target.py"
+      ]
+    },
+    {
+      "execution": "not_run_by_this_review",
+      "m12_current_candidate_result": "not_granted_by_prior_M6_receipt",
+      "m6_receipt_coverage": "React_plan_audit_only_no_explicit_all_ten_amendment006_audit_rows",
+      "m6_receipt_step": null,
+      "pointer": "/amendment006/checks/9",
+      "requirement": "An independent audit, written from this plan and the raw outputs only, reports no failure and nothing unrun.",
+      "tool_source_sha256": {
+        "som-rs/scripts/react_output_acceptance/audit/audit130.py": "0c0ab949fc4e88335320f23857a4f34c4212aae4717a70c27d9260b6f7a8b1dc"
+      },
+      "tools": [
+        "som-rs/scripts/react_output_acceptance/audit/audit130.py"
+      ]
+    }
+  ],
+  "before_binary_sha256": "2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c",
+  "direct_named_tool_checks_in_M6_receipt": [
+    0,
+    1,
+    2,
+    4,
+    6
+  ],
+  "frozen_platform_vs_architecture": {
+    "M12_native_delta_policy": "Unsealed native policy is not an approved extra exception. No compiler_contract, grammar, catalog, serializer, selection, literal, prompt, DSL, status or diagnostic exception follows from this join.",
+    "M6_allowed_compile_differences": [
+      "bundle.assets.backend",
+      "bundle.assets.target_contract",
+      "bundle.hashes.payload_sha256"
+    ],
+    "architectural_requirement": "No model, weights, MLX, training or Apple Silicon requirement for deterministic CNL to DSL to Code.",
+    "forbidden_inference": "Same version text, a passing fixture, or a source build alone does not satisfy frozen binary/toolchain identity or product gates.",
+    "historical_recorded_toolchain_host": "aarch64-apple-darwin",
+    "historical_role": "Preserve exact historical tool and host hashes as evidence of what ran then.",
+    "portable_native_role": "A reviewed numbered native tool extension must bind native binary versions and SHA256, source/license, complete offline dependencies, paths, commands and descriptor deltas."
+  },
+  "latest_m6_tool_source_sha256": {
+    "som-rs/scripts/react_output_acceptance/audit/audit130.py": "c6fa7c77f956977e6556685cccd089aa6b3da8997b5be469eaf0f061491e14af",
+    "som-rs/scripts/react_output_acceptance/run_acceptance.py": "20f3d4cf31c006f7741566b73aeb08a5cae2d89bac68287eb12ad0481bde1256"
+  },
+  "lawful_reuse": {
+    "must_be_observed_for_M12_current_candidate": [
+      "Compiler binary and package identity, all descriptors, source pins and full runtime ownership/cleanup.",
+      "All applicable raw compile/form/diagnostic/old-bundle-rejection/rebase/assembly gates.",
+      "Complete actual offline dependency closure and all full build/test/format/clippy/quality/behavior gates in M12 scope.",
+      "Any React/TypeScript regression claim required by the current M12 gate must bind the current candidate; prior M6 current-side output cannot be relabelled.",
+      "Independent audit of every applicable frozen row from original raw output."
+    ],
+    "not_reusable_as_current_pass": [
+      "M6 macOS binary/tool hashes as Linux binary hashes.",
+      "M6 passing product/behavior results as M12 current product results.",
+      "M6 tooling fixtures as M12 product acceptance.",
+      "An aggregate success or source-only preparation as missing named-tool execution."
+    ],
+    "reusable_before_authority": [
+      "Exact accepted before binary/source identity.",
+      "Immutable original recorded historical request/reply and per-file hashes.",
+      "Separate source-reconstructed request hashes with derived authority retained.",
+      "Fresh M6 before captured requests/replies and product hashes, with exact fresh role and source/run pins.",
+      "Sealed contracts and independent reviews whose bytes remain exact."
+    ],
+    "reusable_historical_completion": [
+      "The accepted M6 receipt remains evidence for its recorded candidate59dab78a and source40cffc13. It grants no M12 binary or platform acceptance."
+    ]
+  },
+  "local_project_programs_executed": false,
+  "m12_acceptance_granted": false,
+  "m12_source_revision_observed": "e686642dce2895dd876e7efa7239913db2d62cf0",
+  "m6_candidate_binary_sha256": "59dab78a0f401a86e028c186285a888cfdf304b2d077e167d46b20d1131a3308",
+  "m6_receipt": {
+    "attested_contract_review_rows": 4,
+    "corrected_raw_audit_run_id": 40755984489,
+    "path": "som-rs/evidence/react-output-acceptance-2026-10-29-issue130.json",
+    "post_acceptance_release_rows": 1,
+    "raw_audit_failed": 0,
+    "raw_audit_passed": 2260,
+    "raw_audit_unrun": 0,
+    "runtime_run_id": 40743738705,
+    "sha256": "5a4d6a0271f57605f0209ff0a4697e92694742b167a04895d6f894aa9cbac46d",
+    "status": "accepted_after_independent_raw_audit"
+  },
+  "m6_receipt_revision": "936aaa2dc25dffac24bc41c04ddcb99b5edc6da3",
+  "m6_source_revision": "40cffc13b3bff35e3ea5804b9f43a49cdef7b3c0",
+  "missing_or_partial_named_tool_checks": [
+    3,
+    5,
+    7,
+    8,
+    9
+  ],
+  "release_default_tag_actions": "post_acceptance; outside M12 task authorization",
+  "repository": "faberline/som",
+  "review_does_not_change_issue130_state": true,
+  "review_kind": "source and public receipt metadata only",
+  "same_candidate_rule": "Every check above passes on the same candidate as the react-output-v1 phase 1 acceptance.",
+  "source_sha256": {
+    "som-rs/contracts/react-output-v1/acceptance-plan.json": "c3145cdc4528357dba8faa9e80ce2687204eef7c2812581366ab34d7df33792f",
+    "som-rs/contracts/react-output-v1/toolchain.json": "49ad8ccd194b110e10a8141ecdfe2dafc7f649ff085ffb709bb06a7df7269bc2",
+    "som-rs/contracts/rust-output-v1/acceptance-plan.json": "bea96ef0e19eb5d2e9923cba5e8a41d05df2ac95e0d55baf2d080a5f9f76a83d",
+    "som-rs/contracts/rust-output-v1/toolchain.json": "9a05dd1953defc89c4a44eada333cbfc41570e4728295ab1a2be060c76b7029d",
+    "som-rs/contracts/typescript-output-v1/acceptance-plan.json": "17478469d02bf362e6d394ef9081ff4e842eeab239fbfc89550fba92951d35f5",
+    "som-rs/contracts/typescript-output-v1/toolchain.json": "0875aeb7e60aa72a44bc59c9aef89b971dffc5fc5304813e0b04ec5dc26da618",
+    "som-rs/evidence/rust-output-contract-amendment-006.json": "502da0c71d8215361d22fa5765f86a5038bbf821ad94b57b388e9cf79d7dc08a",
+    "som-rs/scripts/hosted_readiness/readiness.json": "995a1c59fed9a22cb1f0c937d78a6e8e12561811ea3468da1d80ed4d6e04ea7e"
+  },
+  "strict_interpretation": "The named checks require their own runtime output on the same recorded candidate. Similar baseline rows or aggregate React acceptance do not establish missing named-tool receipts.",
+  "version": "som.m12-M6-amendment006-current-candidate-gate-matrix.v1"
+}

@@ -1,0 +1,116 @@
+{
+  "before": {
+    "binary_sha256": "2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c",
+    "build_commit": "8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af",
+    "role": "fresh_requests_to_pinned_pre_react_default",
+    "url": "http://127.0.0.1:18917"
+  },
+  "comparison_passed": true,
+  "coordinator_legacy_cnl_join_rows_independently_equal": 100,
+  "counts": {
+    "compile_forms": 246,
+    "derived_compile_requests_equal_fresh": 146,
+    "derived_compile_requests_unrun": 100,
+    "fresh_before_and_m6_assemble_replies_equal_historical": 246,
+    "fresh_before_compile_replies_equal_historical": 246,
+    "historical_missing_compile_requests": 106,
+    "legacy_cnl_original_null_fresh_present": 100,
+    "named_cases": 125,
+    "original_recorded_compile_requests": 140,
+    "product_file_hashes_per_side": 1375
+  },
+  "duplicate_named_slots_preserved": true,
+  "fresh_evidence_role": "fresh_recorded_before_replacement_with_same_historical_reply_and_product_hashes",
+  "fresh_receipt_revision": "936aaa2dc25dffac24bc41c04ddcb99b5edc6da3",
+  "full125_join_report_bytes": 822808,
+  "full125_join_report_sha256": "73839841c3cb7403063266889c9989eb9e13bc4fe3b39f143b951249bcfe9347",
+  "historical_missing_requests_recovered": false,
+  "historical_request_fields_changed": false,
+  "historical_source_revision": "e686642dce2895dd876e7efa7239913db2d62cf0",
+  "join_keys": [
+    "named_case_id",
+    "prompt_sha256",
+    "form",
+    "method",
+    "endpoint"
+  ],
+  "local_tests_builds_services": "not_run",
+  "m12_acceptance_granted": false,
+  "m6_candidate": {
+    "binary_sha256": "59dab78a0f401a86e028c186285a888cfdf304b2d077e167d46b20d1131a3308",
+    "source_commit": "40cffc13b3bff35e3ea5804b9f43a49cdef7b3c0",
+    "url": "http://127.0.0.1:18919"
+  },
+  "m6_issue130_observed": "closed agy:done",
+  "m6_pr148_merge_observed": "b0913e81bb5098f490aac70fb25b4611fd1d8499",
+  "m6_receipt_status_observed": "accepted_after_independent_raw_audit",
+  "new_candidate_backfill_used": false,
+  "original_run65_legacy_cnl_member_order": "unknown_preserved",
+  "public_fresh_path": "som-rs/evidence/typescript-unchanged-fresh-raw-2026-10-29-issue130.json",
+  "raw_transport_audit": {
+    "artifact_id": 12843589912,
+    "bytes": 249935784,
+    "index_raw_sha256": "3759239392208eab81bf740ca9ca2a41465be3e3e4995de2bd255774f4596bea",
+    "limitation": "Manifest and ciphertext identity verification is not a plaintext capture-byte audit.",
+    "manifest_and_cipher_sha256_verified_packages": 23,
+    "manifest_bindings_passed": true,
+    "manifest_file_universe": 51964,
+    "plaintext_request_reply_bytes": "not_read_encrypted_transport",
+    "product_payload_bytes": "not_read_encrypted_transport",
+    "run_id": 40743738705,
+    "ts_report_raw_sha256": "f4bbfd8e12c8616d5134fa01e05d5ba8facbbd7615cf376373d6bf958008f5ad",
+    "ts_request_reply_path_and_hash_bindings_verified": 1722,
+    "zip_hash_computed_locally": true,
+    "zip_raw_sha256": "33fbad9d63cfa257636384b9b7c10e1406f2306922e4f28e8189c79f703b041e"
+  },
+  "repository": "faberline/som",
+  "review_kind": "independent source and saved metadata comparison; no project program executed",
+  "samecandidate_gate_findings": {
+    "amendment006_direct_named_tool_receipt_indices": [
+      0,
+      1,
+      2,
+      4,
+      6
+    ],
+    "missing_or_partial_named_tool_receipt_indices": [
+      3,
+      5,
+      7,
+      8,
+      9
+    ],
+    "no_new_private_prerequisite": true,
+    "scope": "This is a separate proof gap. It does not mutate or reinterpret #130 closed state."
+  },
+  "samecandidate_gate_matrix_sha256": "05b3cf1d4e1c30b7e8e89db1472f8ef1556fd6c844e4e2fee10525b14e3a81bf",
+  "source_reconstructed_evidence_role": "derived_not_recorded_preserved",
+  "sources": {
+    "coordinator_join": {
+      "bytes": 109335,
+      "raw_sha256": "5b909f32198e16f9c9a35aef4e4f7ead7b66a3566ab12a90d9dde93f451e57ce"
+    },
+    "fresh": {
+      "bytes": 760753,
+      "raw_sha256": "6365a7565872e987383860d6a117df9c109c795be5e21fecd65123964c418220"
+    },
+    "historical": {
+      "bytes": 1547577,
+      "raw_sha256": "7009c29b93714dc1a827236b4ebeb255efc99c91c61460bc7a5ded49c902c868"
+    },
+    "m6_receipt": {
+      "bytes": 10079,
+      "raw_sha256": "5a4d6a0271f57605f0209ff0a4697e92694742b167a04895d6f894aa9cbac46d"
+    },
+    "m6_review": {
+      "bytes": 1866,
+      "raw_sha256": "05bfac13480926cb11a863662c34fb976e79cd36abf142cc8f443b3b2eb11659"
+    },
+    "source_reconstructed": {
+      "bytes": 863714,
+      "raw_sha256": "fe0408c4449a019d8c81efe72f8930db117f4a027896609924d28ad87b4642e9"
+    }
+  },
+  "unique_prompt_count": 123,
+  "version": "som.ts125-fresh-before-replacement-independent-review.v1"
+}
