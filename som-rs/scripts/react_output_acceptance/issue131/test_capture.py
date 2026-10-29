@@ -141,6 +141,10 @@ class CaptureTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'hosted macOS arm64 required'):
                 capture.execute(SimpleNamespace(), self.checker)
 
+    def test_attempt_without_comparison_stays_unrun(self):
+        self.assertEqual(capture.count_unrun([1, 2, 3], [{'comparison': 'unrun'}]), 3)
+        self.assertEqual(capture.count_unrun([1, 2, 3], [{'comparison': 'failed'}]), 2)
+
 
 if __name__ == '__main__':
     unittest.main()

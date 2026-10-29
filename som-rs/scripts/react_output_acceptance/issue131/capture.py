@@ -243,6 +243,10 @@ def group_gone(pid):
         return False
 
 
+def count_unrun(plan, rows):
+    return len(plan) - len(rows) + sum(row['comparison'] == 'unrun' for row in rows)
+
+
 def execute(args, checker):
     need(os.environ.get('GITHUB_ACTIONS') == 'true' and os.environ.get('RUNNER_OS') == 'macOS'
          and os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted'
@@ -294,7 +298,8 @@ def execute(args, checker):
                     time.sleep(0.25)
             for item in plan:
                 slot = str(item['slot_id'])
-                row = {'slot_id': item['slot_id'], 'status': None, 'response_sha256': None, 'matched': False}
+                row = {'slot_id': item['slot_id'], 'status': None, 'response_sha256': None,
+                       'matched': False, 'comparison': 'unrun'}
                 result['rows'].append(row)
                 request = urllib.request.Request(f'http://127.0.0.1:{PORT}/v1/assemble', data=item['request'],
                                                  headers={'Content-Type': 'application/json'}, method='POST')
@@ -307,7 +312,9 @@ def execute(args, checker):
                 row['response_sha256'] = sha(raw)
                 doc = json.loads(raw)
                 files = doc.get('files') if type(doc) is dict else None
-                row['matched'] = row['status'] == 200 and type(files) is dict and files == expected[slot]
+                row['matched'] = (row['status'] == 200 and type(files) is dict and
+                                  checker.qa.exact_equal(files, expected[slot]))
+                row['comparison'] = 'passed' if row['matched'] else 'failed'
     except Exception as exc:
         result['error'] = type(exc).__name__ + ': ' + str(exc)
     finally:
@@ -321,7 +328,7 @@ def execute(args, checker):
         result['process_group_gone'] = proc is None or group_gone(proc.pid)
         result['baseline_sha256_after'] = sha(read(binary))
         result['assets_unchanged'] = asset_identity(args.baseline / 'assets') == assets
-        result['unrun'] = len(plan) - len(result['rows'])
+        result['unrun'] = count_unrun(plan, result['rows'])
         result['passed'] = (result['error'] is None and result['unrun'] == 0 and
                             all(row['matched'] for row in result['rows']) and result['port_free_after'] and
                             result['process_group_gone'] and result['assets_unchanged'] and
