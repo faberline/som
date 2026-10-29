@@ -29,6 +29,7 @@ ALLOWED_SCRIPTS = frozenset((
     "som-rs/scripts/rust_output_acceptance/python_replay.py",
     "som-rs/tests/rust-output-v1/validate_cases.py",
     "som-rs/som-targets/qa/check_rust_products.py",
+    "som-rs/behavior/check_behavior.py",
 ))
 CHILD_ENV = frozenset((
     "HOME", "PATH", "TMPDIR", "LANG", "LC_ALL", "LC_CTYPE", "CI", "SDKROOT",

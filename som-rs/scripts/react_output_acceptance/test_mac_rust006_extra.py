@@ -14,6 +14,7 @@ if os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('RUNNER_ENVIRONM
 import record_rust006_http as recorder
 import mac_rust006_extra as extra
 import mac_rust006_cluster as cluster
+import mac_parity_capture as parity
 import run_hosted_acceptance as hosted
 
 
@@ -52,6 +53,16 @@ class RawProtocolTests(unittest.TestCase):
 
 
 class WaitEvidenceTests(unittest.TestCase):
+    def test_parity_recorder_keeps_direct_child_wait(self):
+        with tempfile.TemporaryDirectory() as temp:
+            observer = parity.TrackingRecorder(Path(temp).resolve())
+            proc = observer.popen([sys.executable, '-c', 'raise SystemExit(7)'])
+            self.assertEqual(proc.wait(timeout=10), 7)
+            starts = [e for e in observer.events if e['kind'] == 'child-start']
+            waits = [e for e in observer.events if e['kind'] == 'child-wait']
+            self.assertEqual(len(starts), 1)
+            self.assertTrue(any(e['identity'] == starts[0]['identity'] and e['exit_code'] == 7 for e in waits))
+
     def test_actual_child_waits_and_keeps_failure_logs(self):
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp).resolve()
