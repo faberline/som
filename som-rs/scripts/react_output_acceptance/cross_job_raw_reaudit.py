@@ -65,7 +65,7 @@ def recheck(restored,config,provenance,revision,origin_run_id=None,origin_attemp
     check('same-git-source',lambda:check_cross_source(lifecycle,raw,paths,revision))
     check('same-candidate-parity',lambda:extra.audit_candidate(lifecycle/'candidate-probe',candidate,revision,paths['candidate']))
     check('parity-postgres-observed-stop',lambda:parity.audit_parity_postgres(lifecycle))
-    check('parity-raw',lambda:parity.audit_wire(raw,parity_out,legacy,inputs(),lifecycle/'product-http',paths['out']/'rust006-parity-target/debug/som_app'))
+    check('parity-raw',lambda:parity.audit_wire(raw,parity_out,legacy,inputs(),lifecycle/'product-http',paths['out']/'rust006-parity-target/debug/som_app',paths['repo']))
     check('python-replay',lambda:extra.audit_replay(rust/'raw-python-replay',public,legacy,inputs()))
     check('validate-cases',lambda:extra.audit_cases(rust/'raw-validate-cases'))
     check('rust-refusals',lambda:extra.audit_refusals(rust/'raw-rust-refusals',legacy,inputs()))

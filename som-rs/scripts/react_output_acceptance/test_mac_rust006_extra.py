@@ -62,7 +62,7 @@ class PostAcceptanceTests(unittest.TestCase):
             with mock.patch.multiple(post.extra,**{name:mock.DEFAULT for name in names}) as mocks, \
                  mock.patch.object(post.parity,'audit_sources',return_value={}), \
                  mock.patch.object(post.parity,'audit_parity_postgres',return_value={}), \
-                 mock.patch.object(post.parity,'audit_wire',return_value={'cases':115,'compiler_calls':460,'success_body_normalization':'recomputed-on-recorded-successes','behavior_oracle':'recomputed-on-recorded-cases','product_files':{'case_targets':230},'rust_binaries':{'cases':115},'product_http':{'case_targets':230,'observed_owners':230,'oracle_case_targets_checked':230,'normalized_successes':1,'source_origin':'requires-workflow-origin-join','behavior_scope':'recorded-case-targets-only'}}), \
+                 mock.patch.object(post.parity,'audit_wire',return_value={'cases':115,'compiler_calls':460,'success_body_normalization':'recomputed-on-recorded-successes','behavior_oracle':'recomputed-on-recorded-cases','product_files':{'case_targets':230},'rust_binaries':{'cases':115},'python_runtimes':{'cases':115},'product_http':{'case_targets':230,'observed_owners':230,'oracle_case_targets_checked':230,'normalized_successes':1,'source_origin':'requires-workflow-origin-join','behavior_scope':'recorded-case-targets-only'}}), \
                  mock.patch.object(post.owner,'audit',return_value={'candidate_pid':12}), \
                  mock.patch.object(post.baseline,'audit',return_value={}), \
                  mock.patch.object(post.origin,'verify',return_value={}), \
@@ -175,7 +175,8 @@ class CrossJobRawTests(unittest.TestCase):
                 for item in mocks.values():item.return_value={}
                 result=cross.recheck(root,root/'config',root,'a'*40)
                 self.assertFalse(result['product_acceptance_passed']);self.assertEqual(result['status'],'incomplete')
-                self.assertEqual(wire.call_args.args[-1],old['out']/'rust006-parity-target/debug/som_app')
+                self.assertEqual(wire.call_args.args[-2],old['out']/'rust006-parity-target/debug/som_app')
+                self.assertEqual(wire.call_args.args[-1],old['repo'])
                 self.assertTrue(any(row['id']=='original-12-step-recheck' and row['status']=='unverified' for row in result['rows']))
                 with mock.patch.object(cross,'REPO',old['repo']),mock.patch.object(cross.post,'audit_original_gate',return_value={'steps':12}):
                     result=cross.recheck(old['out'],root/'config',root,'a'*40,44,1)
@@ -191,17 +192,57 @@ class ProductArtifactBindingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp).resolve();life=root/'life';life.mkdir();http=life/'product-http';http.mkdir()
             product=root/'rs_example';product.mkdir();(product/'src').mkdir();(product/'src/main.rs').write_text('fn main() {}\n')
-            captures=snapshots.Snapshots(life/'product-files');row=captures.capture(product,'example','rust')
+            captures=snapshots.Snapshots(life/'product-files');row=captures.capture(product,'example','rust');captures.capture_launch(product,'example','rust')
             events=[{'kind':'product-files','snapshot_id':1,'case':'example','target':'rust','cwd':str(product)},
+                    {'kind':'product-files-launch','snapshot_id':1,'case':'example','target':'rust','cwd':str(product)},
                     {'kind':'child-start','pid':123,'cwd':str(product)}, {'kind':'process'}]
             (life/'receipt.json').write_text(json.dumps({'product_file_snapshots':captures.rows,'events':events}))
-            (http/'manifest.json').write_text(json.dumps({'owners':[{'case':'example','target':'rust','pid':123,'start_event':2}]}))
+            (http/'manifest.json').write_text(json.dumps({'owners':[{'case':'example','target':'rust','pid':123,'start_event':3}]}))
             expected={('example','rust'):{'src/main.rs':'fn main() {}\n'}}
             self.assertEqual(audit.audit_product_files(life,expected)['case_targets'],1)
             raw=life/'product-files'/row['files'][0]['file'];raw.write_text('tampered')
             with self.assertRaises(ValueError):audit.audit_product_files(life,expected)
             raw.write_text('fn main() {}\n');expected[('example','rust')]['src/main.rs']='other'
             with self.assertRaises(ValueError):audit.audit_product_files(life,expected)
+
+    def test_real_python_interpreter_module_env_shim_and_tamper(self):
+        import socket,subprocess,time
+        from unittest import mock
+        import audit_mac_parity as audit
+        import parity_python_runtime as runtimes
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();life=root/'life';http=life/'product-http';http.mkdir(parents=True)
+            cwd=root/'products/py_example';cwd.mkdir(parents=True);shim=cwd.parent/'_shim/som_behavior_host.py';shim.parent.mkdir();shim.write_text('fixed shim\n')
+            host=root/'som-rs/behavior/hosts.py';host.parent.mkdir(parents=True);host.write_text("HOST_SHIM = 'fixed shim\\n'\n")
+            python=root/'som-rs/runtime/acceptance-m3-venv/bin/python';python.parent.mkdir(parents=True);python.symlink_to(sys.executable)
+            (cwd/'uvicorn.py').write_text('import http.server,sys\np=int(sys.argv[sys.argv.index("--port")+1])\nhttp.server.HTTPServer(("127.0.0.1",p),http.server.BaseHTTPRequestHandler).serve_forever()\n')
+            with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
+            argv=[str(python),'-m','uvicorn','som_behavior_host:app','--app-dir',str(shim.parent),'--host','127.0.0.1','--port',str(port),'--no-access-log','--log-level','warning']
+            env=dict(os.environ,PYTHONPATH=str(cwd),PYTHONDONTWRITEBYTECODE='1',SOM_BEHAVIOR_PACKAGE='pkg')
+            observer=parity.TrackingRecorder(life);caps=runtimes.Runtimes(life/'python-runtimes');row=caps.capture('example',cwd,argv)
+            observer.events.append({'kind':'product-files-launch','snapshot_id':1,'case':'example','target':'python','cwd':str(cwd)})
+            observer.events.append({'kind':'python-runtime','runtime_id':1,'case':'example','cwd':str(cwd)})
+            with mock.patch.object(subprocess,'Popen',observer.popen):
+                proc=observer.popen(argv,cwd=str(cwd),env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                try:
+                    for _ in range(100):
+                        try:
+                            with socket.create_connection(('127.0.0.1',port),timeout=.1):break
+                        except OSError:time.sleep(.05)
+                    else:self.fail('fixture Python did not listen')
+                    observer.product_snapshot(proc.pid,'product-ready',port,python,follow=True);start=len(observer.events)-1
+                finally:proc.terminate();proc.wait(timeout=10)
+            (life/'receipt.json').write_text(json.dumps({'events':observer.events,'python_runtimes':caps.rows}))
+            (http/'manifest.json').write_text(json.dumps({'owners':[{'case':'example','target':'python','pid':proc.pid,'base':'http://127.0.0.1:'+str(port),'start_event':start}]}))
+            with mock.patch.object(audit,'REPO',root):
+                self.assertEqual(audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root)['cases'],1)
+                saved=json.loads((life/'receipt.json').read_text())
+                child=next(e for e in saved['events'] if e.get('kind')=='child-start' and e.get('pid')==proc.pid)
+                child['environment']['PYTHONPATH']='/wrong';(life/'receipt.json').write_text(json.dumps(saved))
+                with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root)
+                child['environment']['PYTHONPATH']=str(cwd);(life/'receipt.json').write_text(json.dumps(saved))
+                (life/'python-runtimes'/row['shim_file']).write_text('tampered')
+                with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root)
 
     def test_real_macho_binary_build_wait_and_process_image(self):
         import shutil,socket,subprocess,time
@@ -213,19 +254,26 @@ class ProductArtifactBindingTests(unittest.TestCase):
             http.mkdir(parents=True);target=out/'rust006-parity-target/debug/som_app';target.parent.mkdir(parents=True)
             cwd=root/'rs_example';cwd.mkdir();tool=root/'bin';tool.mkdir();cargo=tool/'cargo';cargo.write_text('#!/bin/sh\nexit 0\n');cargo.chmod(0o755)
             config=root/'som-rs/contracts/rust-output-v1/toolchain.json';config.parent.mkdir(parents=True)
-            config.write_text(json.dumps({'rust':{'bin_dir':str(tool)}}))
+            rust_contract={'bin_dir':str(tool),**{name:{'sha256':'a'*64} for name in ('rustc','cargo','rustfmt','cargo-fmt','cargo-clippy','clippy-driver')}}
+            config.write_text(json.dumps({'rust':rust_contract}))
             with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
             src=root/'fixture.c';src.write_text('#include <sys/types.h>\n#include <sys/socket.h>\n#include <netinet/in.h>\n#include <unistd.h>\nint main(void){int s=socket(AF_INET,SOCK_STREAM,0);struct sockaddr_in a={0};a.sin_family=AF_INET;a.sin_port=htons('+str(port)+');a.sin_addr.s_addr=htonl(INADDR_LOOPBACK);if(bind(s,(void*)&a,sizeof(a))||listen(s,4))return 2;for(;;)pause();}\n')
-            subprocess.run(['cc',str(src),'-o',str(target)],check=True,timeout=30)
+            built=root/'built';subprocess.run(['cc',str(src),'-o',str(built)],check=True,timeout=30)
+            target.write_bytes(b'stale')
             observer=parity.TrackingRecorder(life);captures=binaries.Copies(life/'product-binaries')
             observer.events.append({'kind':'product-files','snapshot_id':1,'case':'example','target':'rust','cwd':str(cwd)})
             with mock.patch.object(subprocess,'Popen',observer.popen):
-                build=observer.popen([str(cargo),'build','--locked','--offline','-q'],cwd=str(cwd));self.assertEqual(build.wait(timeout=10),0)
+                prior=binaries.rebuild_inventory(target.parent.parent);target.unlink();after=binaries.rebuild_inventory(target.parent.parent)
+                observer.events.append({'kind':'rust-rebuild-clean','case':'example','target':str(target.parent.parent),'before':prior,'after':after})
+                env=dict(os.environ,CARGO_TARGET_DIR=str(target.parent.parent),CARGO_NET_OFFLINE='true',RUSTC=str(tool/'rustc'),CARGO=str(cargo),RUSTFMT=str(tool/'rustfmt'),PATH=str(tool)+':'+os.environ['PATH'])
+                build=observer.popen([str(cargo),'build','--locked','--offline','-q'],cwd=str(cwd),env=env);self.assertEqual(build.wait(timeout=10),0)
+                shutil.copy2(built,target)
                 binary=cwd/'som_app';shutil.copy2(target,binary);row=captures.capture(target,binary,'example')
                 for label,path in (('source',target),('target',binary)):
                     command=observer.command(['/usr/bin/shasum','-a','256',str(path)])
                     observer.events.append({'kind':'product-binary-hash','binary_id':1,'label':label,**command})
                 observer.events.append({'kind':'product-binary','binary_id':1,'case':'example','cwd':str(cwd)})
+                observer.events.append({'kind':'product-files-launch','snapshot_id':1,'case':'example','target':'rust','cwd':str(cwd)})
                 proc=observer.popen([str(binary)],cwd=str(cwd),stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
                 try:
                     for _ in range(100):
@@ -235,10 +283,20 @@ class ProductArtifactBindingTests(unittest.TestCase):
                     else:self.fail('fixture process did not listen')
                     observer.product_snapshot(proc.pid,'product-ready',port,binary);start=len(observer.events)-1
                 finally:proc.terminate();proc.wait(timeout=10)
-            (life/'receipt.json').write_text(json.dumps({'events':observer.events,'rust_binary_copies':captures.rows}))
+            tool_hashes={name:'a'*64 for name in ('rustc','cargo','rustfmt','cargo-fmt','cargo-clippy','clippy-driver')}
+            (life/'receipt.json').write_text(json.dumps({'events':observer.events,'rust_binary_copies':captures.rows,'rust_tools_before':tool_hashes,'rust_tools_after':tool_hashes}))
             (http/'manifest.json').write_text(json.dumps({'owners':[{'case':'example','target':'rust','pid':proc.pid,'start_event':start}]}))
             with mock.patch.object(audit,'REPO',root):
                 self.assertEqual(audit.audit_rust_binaries(life,{'example'})['cases'],1)
+                saved=json.loads((life/'receipt.json').read_text())
+                cargo_child=next(e for e in saved['events'] if e.get('kind')=='child-start' and e.get('pid')==build.pid)
+                cargo_child['environment']['CARGO_TARGET_DIR']='/wrong';(life/'receipt.json').write_text(json.dumps(saved))
+                with self.assertRaises(ValueError):audit.audit_rust_binaries(life,{'example'})
+                cargo_child['environment']['CARGO_TARGET_DIR']=str(target.parent.parent)
+                clean=next(e for e in saved['events'] if e.get('kind')=='rust-rebuild-clean');clean['after']=[{'path':'debug/som_app'}]
+                (life/'receipt.json').write_text(json.dumps(saved))
+                with self.assertRaises(ValueError):audit.audit_rust_binaries(life,{'example'})
+                clean['after']=[];(life/'receipt.json').write_text(json.dumps(saved))
                 (life/'product-binaries'/row['file']).write_bytes(b'tampered')
                 with self.assertRaises(ValueError):audit.audit_rust_binaries(life,{'example'})
 

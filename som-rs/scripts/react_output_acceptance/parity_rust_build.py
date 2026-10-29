@@ -24,3 +24,18 @@ class Copies:
             row={'id':index,'case':case,'source':str(source),'target':str(target),'file':rel,
                  'sha256':hashlib.sha256(target_data).hexdigest(),'source_stat':source_stat,'target_stat':target_stat}
             self.rows.append(row);return row
+
+
+def rebuild_inventory(target):
+    """List precisely the build units removed by the frozen force_rebuild."""
+    target=Path(target);debug=target/'debug'
+    paths=[*(debug/'.fingerprint').glob('som_app-*'),*(debug/'deps').glob('som_app-*'),
+           *(debug/'deps').glob('libsom_app-*'),debug/'som_app',debug/'libsom_app.rlib']
+    rows=[]
+    for path in sorted(set(paths)):
+        try:info=path.lstat()
+        except FileNotFoundError:continue
+        if len(rows)>=4096:raise ValueError('rebuild inventory too large')
+        rows.append({'path':path.relative_to(target).as_posix(),'device':info.st_dev,'inode':info.st_ino,
+                     'size':info.st_size,'mode':stat.S_IMODE(info.st_mode),'kind':stat.S_IFMT(info.st_mode)})
+    return rows

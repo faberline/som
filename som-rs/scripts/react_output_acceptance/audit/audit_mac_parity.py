@@ -22,7 +22,7 @@ import independent_behavior_oracle as frozen_oracle
 REPO=Path(__file__).resolve().parents[4]
 QA='http://127.0.0.1:18919'
 REVIEWED_ORACLE_SHA='8599438d6019795028b1bc28a51d2d16c2e682cc4012a5c9250a0984316f8fe7'
-PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/parity_product_files.py', 'som-rs/scripts/react_output_acceptance/parity_rust_build.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/post_acceptance_audit.py', 'som-rs/scripts/react_output_acceptance/stage_final_evidence.py', 'som-rs/scripts/react_output_acceptance/external_acceptance_readback.py', 'som-rs/scripts/react_output_acceptance/cross_job_raw_reaudit.py', 'som-rs/scripts/react_output_acceptance/audit/audit130.py', 'som-rs/scripts/react_output_acceptance/audit/api_raw.py', 'som-rs/scripts/react_output_acceptance/audit/baseline_raw.py', 'som-rs/scripts/react_output_acceptance/audit/render_rules.py', 'som-rs/scripts/react_output_acceptance/audit/refusal_rules.py')
+PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/parity_product_files.py', 'som-rs/scripts/react_output_acceptance/parity_rust_build.py', 'som-rs/scripts/react_output_acceptance/parity_python_runtime.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/post_acceptance_audit.py', 'som-rs/scripts/react_output_acceptance/stage_final_evidence.py', 'som-rs/scripts/react_output_acceptance/external_acceptance_readback.py', 'som-rs/scripts/react_output_acceptance/cross_job_raw_reaudit.py', 'som-rs/scripts/react_output_acceptance/audit/audit130.py', 'som-rs/scripts/react_output_acceptance/audit/api_raw.py', 'som-rs/scripts/react_output_acceptance/audit/baseline_raw.py', 'som-rs/scripts/react_output_acceptance/audit/render_rules.py', 'som-rs/scripts/react_output_acceptance/audit/refusal_rules.py')
 
 def need(ok,why):
     if not ok:raise ValueError(why)
@@ -359,14 +359,76 @@ def audit_product_files(lifecycle, expected):
             need(type(wanted) is str and payload==wanted.encode('utf-8') and a.sha(payload)==item.get('sha256') and len(payload)==size,'assembled and written product differ')
             seen.add(name);total+=size
         need(seen==set(expected_files) and total==row.get('bytes') and total<=128*1024*1024,'product file inventory differs')
+        launch=row.get('launch_files');need(type(launch) is list and len(launch)==len(rows),'launch file inventory missing')
+        for index,(first,last) in enumerate(zip(rows,launch),1):
+            rel=f'{position:04d}/launch-{index:04d}.raw'
+            need(last.get('file')==rel and all(last.get(k)==first.get(k) for k in ('path','sha256','bytes','mode')),
+                 'launch file metadata differs')
+            payload=a.read(lifecycle/'product-files'/rel)
+            need(a.sha(payload)==last['sha256'] and len(payload)==last['bytes'] and payload==expected_files[last['path']].encode('utf-8'),
+                 'launch source differs from assembled product')
         owner=owner_map.get(key);need(owner is not None,'product snapshot owner missing')
         selected=[(i,e) for i,e in enumerate(events) if e.get('kind')=='product-files' and e.get('snapshot_id')==position]
         need(len(selected)==1 and selected[0][1]=={'kind':'product-files','snapshot_id':position,'case':key[0],'target':key[1],'cwd':row['cwd']},'product snapshot event differs')
         child=[(i,e) for i,e in enumerate(events[:owner['start_event']]) if e.get('kind')=='child-start' and e.get('pid')==owner['pid']]
-        need(len(child)==1 and selected[0][0]<child[0][0] and child[0][1].get('cwd')==row.get('cwd'),'product snapshot is not before the case server')
+        launch_event=[(i,e) for i,e in enumerate(events) if e.get('kind')=='product-files-launch' and e.get('snapshot_id')==position]
+        need(len(launch_event)==1 and launch_event[0][1]=={'kind':'product-files-launch','snapshot_id':position,'case':key[0],'target':key[1],'cwd':row['cwd']},'launch snapshot event differs')
+        need(len(child)==1 and selected[0][0]<launch_event[0][0]<child[0][0] and child[0][1].get('cwd')==row.get('cwd'),'product snapshots are not before the case server')
         indexed[key]=row
     need(set(indexed)==set(expected)==set(owner_map),'product snapshot case set differs')
     return {'case_targets':len(indexed),'file_count':sum(len(x['files']) for x in indexed.values())}
+
+def audit_python_runtimes(lifecycle,cases,files,original_repo):
+    import ast
+    source=ast.parse(a.read(REPO/'som-rs/behavior/hosts.py').decode('utf-8'))
+    values=[ast.literal_eval(node.value) for node in source.body if isinstance(node,ast.Assign)
+            and any(isinstance(t,ast.Name) and t.id=='HOST_SHIM' for t in node.targets)]
+    need(len(values)==1 and type(values[0]) is str,'frozen Python shim missing');shim_expected=values[0].encode()
+    receipt=a.json_file(lifecycle/'receipt.json');events=receipt['events'];rows=receipt.get('python_runtimes')
+    owners=a.json_file(lifecycle/'product-http/manifest.json')['owners'];owner_map={o['case']:o for o in owners if o.get('target')=='python'}
+    need(type(rows) is list and len(owner_map)==len(cases),'Python runtime inventory missing')
+    executable=str(original_repo/'som-rs/runtime/acceptance-m3-venv/bin/python');seen=set()
+    for number,row in enumerate(rows,1):
+        case=row.get('case');need(row.get('id')==number and case in cases and case not in seen,'Python runtime case differs')
+        owner=owner_map.get(case);need(owner is not None,'Python owner missing');cwd=row.get('cwd')
+        need(type(cwd) is str and Path(cwd).is_absolute() and row.get('interpreter')==executable,'Python interpreter path differs')
+        expected_files=files[(case,'python')];names={name.split('/')[0] for name in expected_files if name.count('/')==1 and name.endswith('/api.py')}
+        need(len(names)==1,'Python package differs');package=next(iter(names));version=cases[case]['version']
+        port=__import__('urllib.parse',fromlist=['urlsplit']).urlsplit(owner['base']).port
+        shim=str(Path(cwd).parent/'_shim/som_behavior_host.py')
+        if version=='som.prompt.v5': app=package+'.app:app';extra=[]
+        else:app='som_behavior_host:app';extra=['--app-dir',str(Path(shim).parent)]
+        argv=[executable,'-m','uvicorn',app,*extra,'--host','127.0.0.1','--port',str(port),'--no-access-log','--log-level','warning']
+        need(row.get('argv')==argv and row.get('shim_path')==shim and row.get('shim_file')==f'shim-{number:04d}.raw','Python invocation differs')
+        retained=a.read(lifecycle/'python-runtimes'/row['file']);need(row['file']==row['sha256']+'.raw' and a.sha(retained)==row['sha256'] and len(retained)==row.get('bytes'),'Python interpreter bytes differ')
+        shim_raw=a.read(lifecycle/'python-runtimes'/row['shim_file']);need(shim_raw==shim_expected and a.sha(shim_raw)==row.get('shim_sha256'),'Python shim differs')
+        need(all(type(row.get(k)) is int and row[k]>0 for k in ('device','inode','bytes')) and type(row.get('mode')) is int and row['mode']&0o111,'Python interpreter stat differs')
+        pre=[(i,e) for i,e in enumerate(events) if e.get('kind')=='python-runtime' and e.get('runtime_id')==number]
+        need(len(pre)==1 and pre[0][1].get('case')==case and pre[0][1].get('cwd')==cwd,'Python runtime event differs')
+        launch=[i for i,e in enumerate(events[:pre[0][0]]) if e.get('kind')=='product-files-launch' and e.get('case')==case and e.get('target')=='python' and e.get('cwd')==cwd]
+        need(len(launch)==1,'Python launch source snapshot missing')
+        children=[(i,e) for i,e in enumerate(events[pre[0][0]+1:owner['start_event']],pre[0][0]+1) if e.get('kind')=='child-start' and e.get('pid')==owner['pid']]
+        need(len(children)==1 and children[0][1].get('argv')==argv and children[0][1].get('cwd')==cwd,'Python server child differs')
+        env=children[0][1].get('environment');need(type(env) is dict and env.get('PYTHONPATH')==cwd and env.get('PYTHONDONTWRITEBYTECODE')=='1','Python import path differs')
+        if version!='som.prompt.v5':need(env.get('SOM_BEHAVIOR_PACKAGE')==package,'Python shim package differs')
+        snapshot=events[owner['start_event']];pid=owner['pid']
+        code,raw=a.command_raw(lifecycle,snapshot['image_stat'],['/usr/bin/stat','-L','-f','%d %i %z %Lp',executable]);parts=raw.decode().split()
+        need(code==0 and len(parts)==4 and all(x.isdigit() for x in parts) and [int(parts[0]),int(parts[1]),int(parts[2]),int(parts[3],8)]==[row[k] for k in ('device','inode','bytes','mode')],'Python interpreter live stat differs')
+        code,started=a.command_raw(lifecycle,snapshot['start_time'],['/bin/ps','-p',str(pid),'-o','lstart=']);need(code==0 and started.strip(),'Python process start time missing')
+        code,image=a.command_raw(lifecycle,snapshot['image'],['/usr/sbin/lsof','-nP','-a','-p',str(pid),'-d','txt','-FfDin']);need(code==0,'Python mapped image unavailable')
+        records=[];record=None
+        for line in image.decode().splitlines():
+            if line.startswith('f'):record={'fd':line[1:]};records.append(record)
+            elif record is not None and line[:1] in ('D','i','n'):
+                need(line[0] not in record,'Python mapped image field repeated');record[line[0]]=line[1:]
+        found=False
+        for item in records:
+            try:
+                if item.get('fd')=='txt' and int(item.get('D',''),0)==row['device'] and int(item.get('i',''))==row['inode']:found=True
+            except ValueError:pass
+        need(found,'Python mapped interpreter inode differs');seen.add(case)
+    need(seen==set(cases)==set(owner_map),'Python runtime cases differ')
+    return {'cases':len(seen),'interpreter_images':'observed','source_tree':'same-case-assembled-files'}
 
 def audit_rust_binaries(lifecycle, expected_cases, original_target=None):
     receipt=a.json_file(lifecycle/'receipt.json');events=receipt['events'];rows=receipt.get('rust_binary_copies')
@@ -374,6 +436,9 @@ def audit_rust_binaries(lifecycle, expected_cases, original_target=None):
     owner_map={o['case']:o for o in owners if o.get('target')=='rust'}
     need(type(rows) is list and len(owner_map)==len(expected_cases),'rust binary inventory missing')
     tools=a.json_file(REPO/'som-rs/contracts/rust-output-v1/toolchain.json')['rust']
+    names=('rustc','cargo','rustfmt','cargo-fmt','cargo-clippy','clippy-driver')
+    expected_tools={name:tools[name]['sha256'] for name in names}
+    need(receipt.get('rust_tools_before')==receipt.get('rust_tools_after')==expected_tools,'rust toolchain observation differs')
     cargo=[str(Path(tools['bin_dir'])/'cargo'),'build','--locked','--offline','-q']
     target=original_target if original_target is not None else lifecycle.parent.parent/'rust006-parity-target/debug/som_app'
     seen=set()
@@ -391,8 +456,16 @@ def audit_rust_binaries(lifecycle, expected_cases, original_target=None):
         ci=copies[0][0];cwd=str(Path(row['target']).parent)
         starts=[(i,e) for i,e in enumerate(events[:ci]) if e.get('kind')=='child-start' and e.get('argv')==cargo and e.get('cwd')==cwd]
         need(len(starts)==1,'rust cargo child missing');si,start=starts[0]
+        env=start.get('environment');bindir=Path(tools['bin_dir']);target_dir=target.parent.parent
+        need(type(env) is dict and env.get('CARGO_TARGET_DIR')==str(target_dir) and env.get('CARGO_NET_OFFLINE')=='true'
+             and env.get('RUSTC')==str(bindir/'rustc') and env.get('CARGO')==str(bindir/'cargo')
+             and env.get('RUSTFMT')==str(bindir/'rustfmt') and type(env.get('PATH')) is str
+             and env['PATH'].startswith(str(bindir)+':'),'rust cargo environment differs')
+        cleans=[(i,e) for i,e in enumerate(events[:si]) if e.get('kind')=='rust-rebuild-clean' and e.get('case')==case]
+        need(len(cleans)==1 and cleans[0][1].get('target')==str(target_dir) and type(cleans[0][1].get('before')) is list
+             and len(cleans[0][1]['before'])<=4096 and cleans[0][1].get('after')==[],'rust pre-build cleanup differs')
         snapshots=[(i,e) for i,e in enumerate(events[:si]) if e.get('kind')=='product-files' and e.get('case')==case and e.get('target')=='rust' and e.get('cwd')==cwd]
-        need(len(snapshots)==1,'rust assembled source not observed before cargo')
+        need(len(snapshots)==1 and snapshots[0][0]<cleans[0][0]<si,'rust assembled source or cleanup order differs')
         waits=[(i,e) for i,e in enumerate(events[si+1:ci],si+1) if e.get('kind')=='child-wait' and e.get('identity')==start.get('identity') and e.get('pid')==start.get('pid') and e.get('state')=='completed']
         need(len(waits)==1 and waits[0][1].get('waited_pid')==start.get('pid') and waits[0][1].get('raw_status')==0 and waits[0][1].get('exit_code')==0,'rust cargo actual wait missing')
         hashes=[(i,e) for i,e in enumerate(events[waits[0][0]+1:ci],waits[0][0]+1) if e.get('kind')=='product-binary-hash' and e.get('binary_id')==number]
@@ -402,7 +475,8 @@ def audit_rust_binaries(lifecycle, expected_cases, original_target=None):
             a.audit_direct_command_wait(events,event,since=waits[0][0]+1)
             need(code==0 and content.decode()==row['sha256']+'  '+path+'\n','rust binary hash command differs')
         product=[(i,e) for i,e in enumerate(events[ci+1:owner['start_event']],ci+1) if e.get('kind')=='child-start' and e.get('pid')==owner['pid']]
-        need(len(product)==1 and product[0][1].get('cwd')==cwd and product[0][1].get('argv')==[row['target']],'rust server child differs')
+        launch=[i for i,e in enumerate(events[ci+1:owner['start_event']],ci+1) if e.get('kind')=='product-files-launch' and e.get('case')==case and e.get('target')=='rust' and e.get('cwd')==cwd]
+        need(len(product)==len(launch)==1 and launch[0]<product[0][0] and product[0][1].get('cwd')==cwd and product[0][1].get('argv')==[row['target']],'rust server child or launch source differs')
         start_snapshot=events[owner['start_event']];pid=owner['pid']
         code,raw_stat=a.command_raw(lifecycle,start_snapshot['image_stat'],['/usr/bin/stat','-f','%d %i %z %Lp',row['target']])
         fields=raw_stat.decode().split();need(code==0 and len(fields)==4 and all(f.isdigit() for f in fields)
@@ -424,7 +498,7 @@ def audit_rust_binaries(lifecycle, expected_cases, original_target=None):
     need(seen==set(expected_cases)==set(owner_map),'rust binary set differs')
     return {'cases':len(seen),'retained_binaries':len(rows)}
 
-def audit_wire(root,parity_out,legacy,bound,product_http,original_target=None):
+def audit_wire(root,parity_out,legacy,bound,product_http,original_target=None,original_repo=None):
     cases=source_cases(legacy,bound)
     keys=[case_key(name) for name,_ in cases]
     need(len(set(keys))==len(keys),'raw transcript filename collision')
@@ -489,7 +563,8 @@ def audit_wire(root,parity_out,legacy,bound,product_http,original_target=None):
     product_evidence=audit_product_http(product_http,transcripts,dict(cases))
     file_evidence=audit_product_files(product_http.parent,product_files)
     binary_evidence=audit_rust_binaries(product_http.parent,{identity for identity,_ in cases},original_target)
-    return {'product_http':product_evidence,'product_files':file_evidence,'rust_binaries':binary_evidence,'cases':len(cases),'compiler_calls':total,'parity_steps':transcript_steps,'strict_steps':strict_steps,
+    python_evidence=audit_python_runtimes(product_http.parent,dict(cases),product_files,original_repo if original_repo is not None else REPO)
+    return {'product_http':product_evidence,'product_files':file_evidence,'rust_binaries':binary_evidence,'python_runtimes':python_evidence,'cases':len(cases),'compiler_calls':total,'parity_steps':transcript_steps,'strict_steps':strict_steps,
             'checked_error_or_empty_bodies':checked_errors,'success_body_normalization':'recomputed-on-recorded-successes','behavior_oracle':'recomputed-on-recorded-cases'}
 
 def main():
