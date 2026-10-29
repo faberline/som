@@ -141,9 +141,9 @@ def fixture():
         args = ['/synthetic/python', '/synthetic/' + name]
         if name == 'products':
             args += ['--qa-profile', origin]
-        receipt = run / 'receipts' / f'{index:02d}-{name}.json'
-        document(receipt, {'step': name, 'index': index, 'argv': args})
-        steps.append({'step': name, 'receipt': str(receipt), 'receipt_sha256': digest(receipt.read_bytes())})
+        step_receipt = run / 'receipts' / f'{index:02d}-{name}.json'
+        document(step_receipt, {'step': name, 'index': index, 'argv': args})
+        steps.append({'step': name, 'receipt': str(step_receipt), 'receipt_sha256': digest(step_receipt.read_bytes())})
     document(run / 'run.json', {'qa_profile': binding, 'steps': steps})
     ids = [f'case-{index:03d}' for index in range(129)]
     origin_root = Path(origin).parent / 'som-react-linux-qa-closure'
