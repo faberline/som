@@ -1,0 +1,56 @@
+name: M6 React Ubuntu 22 independent evidence audit (not acceptance)
+on:
+  push:
+    branches:
+      - codex/m6-react-ubuntu22-audit-20261029
+permissions:
+  contents: read
+  actions: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Run independent synthetic fixtures
+        working-directory: .github/m6-react-ubuntu22-independent-audit
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(sha256sum audit.py | cut -d ' ' -f 1)" = 0388f4661cc70b73bac65ed8184027daddfebaf2ad4161709e744631f3f288c3
+          test "$(git show "$GITHUB_SHA:.github/m6-react-ubuntu22-independent-audit/audit.py" | sha256sum | cut -d ' ' -f 1)" = 0388f4661cc70b73bac65ed8184027daddfebaf2ad4161709e744631f3f288c3
+          test "$(sha256sum test_audit.py | cut -d ' ' -f 1)" = ad62734202431293fffb91fb7a9b3176f790d49dfb969ab66b21120a0200d8da
+          test "$(git show "$GITHUB_SHA:.github/m6-react-ubuntu22-independent-audit/test_audit.py" | sha256sum | cut -d ' ' -f 1)" = ad62734202431293fffb91fb7a9b3176f790d49dfb969ab66b21120a0200d8da
+          python3 -m unittest -v test_audit
+      - name: Download exact replay and metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          XDG_CACHE_HOME: ${{ runner.temp }}/gh-cache
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/40818588943" > "$RUNNER_TEMP/react22-run.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/40818588943/jobs" > "$RUNNER_TEMP/react22-jobs.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/12873517359" > "$RUNNER_TEMP/react22-artifact.json"
+          gh run view 40818588943 --repo "$GITHUB_REPOSITORY" --job 123265438449 --log > "$RUNNER_TEMP/react22-job.log"
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/12873517359/zip" > "$RUNNER_TEMP/react22-replay.zip"
+      - name: Independently audit replay evidence
+        working-directory: .github/m6-react-ubuntu22-independent-audit
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 audit.py --zip "$RUNNER_TEMP/react22-replay.zip" --run-json "$RUNNER_TEMP/react22-run.json" --jobs-json "$RUNNER_TEMP/react22-jobs.json" --artifact-json "$RUNNER_TEMP/react22-artifact.json" --job-log "$RUNNER_TEMP/react22-job.log" --output "$RUNNER_TEMP/react22-independent-audit.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: react-ubuntu22-independent-audit
+          path: |
+            ${{ runner.temp }}/react22-independent-audit.json
+            ${{ runner.temp }}/react22-run.json
+            ${{ runner.temp }}/react22-jobs.json
+            ${{ runner.temp }}/react22-artifact.json
+            ${{ runner.temp }}/react22-job.log
+          if-no-files-found: warn
+          retention-days: 7
