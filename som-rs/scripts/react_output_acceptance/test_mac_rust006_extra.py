@@ -353,6 +353,36 @@ class UnorderedParityWireTests(unittest.TestCase):
 
 
 class ProductHTTPBytesTests(unittest.TestCase):
+    def test_real_suite_transport_seam(self):
+        import importlib, types
+        from unittest import mock
+        import product_http_recorder
+        behavior=Path(__file__).resolve().parents[2]/'behavior'
+        sys.path.insert(0,str(behavior))
+        try: suite=importlib.import_module('suite')
+        finally:sys.path.pop(0)
+        def transport(base,method,path,body,content_type):
+            return 404,'application/json',b'{"detail":"no"}'
+        def script(owner):
+            owner.call('not_found','missing','GET',['/things/42'],status=404,expect={'detail':'no'})
+        prompt={'version':'som.prompt.v1','resource':{'table':'things','path':'/things','fields':[]}}
+        with tempfile.TemporaryDirectory() as temp, mock.patch.object(suite,'http_send',transport), \
+             mock.patch.object(suite.Run,'script',script), mock.patch.object(suite.Run,'strict',script):
+            out=Path(temp).resolve()/'http'; observer=product_http_recorder.ProductRecorder(out,suite)
+            def parity_case(case):
+                python=suite.run(prompt,'http://127.0.0.1:19021')
+                rust=suite.run(prompt,'http://127.0.0.1:19022'); rust.strict()
+                return python,rust
+            with mock.patch.object(suite,'http_send',observer.send), mock.patch.object(suite,'run',observer.run), \
+                 mock.patch.object(suite.Run,'strict',lambda owner:observer.strict(owner)):
+                python,rust=parity_case({'id':'real-suite'})
+            self.assertTrue(observer.finish())
+            rows=json.loads((out/'manifest.json').read_bytes())['calls']
+            self.assertEqual([(r['case'],r['target'],r['sequence']) for r in rows],
+                             [('real-suite','python',1),('real-suite','rust',1),('real-suite','rust',2)])
+            self.assertEqual(python.raw[0]['response'],'{"detail":"no"}')
+            self.assertEqual(len(rust.raw),2)
+
     def test_concurrent_case_sequences_and_exact_bytes(self):
         import concurrent.futures, hashlib, http.client, http.server, threading, types
         from unittest import mock
