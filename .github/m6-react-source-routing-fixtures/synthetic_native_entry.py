@@ -33,7 +33,8 @@ else:
     fixture = Path(os.environ['M6_TEST_FIXTURE_DIR'])
     sys.path.insert(0, str(fixture))
     common = ModuleType('common'); common.CONTRACT=repo/'contracts'; common.REPO=repo
-    with mock.patch.dict(sys.modules, {'common':common, 'check_contract':ModuleType('check_contract')}):
+    with mock.patch.dict(sys.modules, {'common':common, 'check_contract':ModuleType('check_contract')}), \
+         mock.patch.object(sys, 'argv', ['synthetic-entry']):
         import check_products as products
     products.REPO=repo
     entry='som-rs/scripts/react_output_acceptance/m6_native_entry.py'
