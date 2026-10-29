@@ -621,6 +621,28 @@ class ParityIndependentChecks(unittest.TestCase):
             owner={'id':1,'case':'live-case','target':'rust','base':base,'pid':proc.pid,'start_event':start,'stop_event':stop}
             self.assertEqual(audit.audit_product_owners(http,{'owners':[owner]},{('live-case','rust'):[{'owner':1,'base':base}]}),1)
 
+    def test_parity_imports_have_matching_source_inventory(self):
+        import audit_mac_parity as audit
+        expected={'som-rs/tests/rust-output-v1/rust_profile.py','som-rs/tests/rust-output-v1/rust_profile_phase2.py',
+                  'som-rs/scripts/rust_output_acceptance/python_replay.py','som-rs/scripts/compiler_acceptance/qa_harness.py',
+                  'som-rs/scripts/compiler_acceptance/paths.py'}
+        self.assertTrue(expected.issubset(set(audit.PARITY_SOURCES)))
+        self.assertEqual(audit.PARITY_SOURCES,parity.PARITY_SOURCES)
+        import subprocess
+        with tempfile.TemporaryDirectory() as temp:
+            repo=Path(temp).resolve();subprocess.run(['git','init','-q',str(repo)],check=True)
+            for name in expected:
+                target=repo/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(b'original\n')
+            subprocess.run(['git','-C',str(repo),'add','.'],check=True)
+            subprocess.run(['git','-C',str(repo),'-c','user.name=Fixture','-c','user.email=fixture@example.invalid',
+                            'commit','-qm','fixture'],check=True)
+            revision=subprocess.check_output(['git','-C',str(repo),'rev-parse','HEAD'],text=True).strip()
+            self.assertEqual(len(audit.verify_git_sources(repo,revision,sorted(expected))),5)
+            for name in expected:
+                target=repo/name;target.write_bytes(b'mutated\n')
+                with self.subTest(name=name), self.assertRaises(ValueError):audit.verify_git_sources(repo,revision,sorted(expected))
+                target.write_bytes(b'original\n')
+
     def test_parity_sources_match_selected_git_revision(self):
         import audit_mac_parity as audit
         import subprocess
