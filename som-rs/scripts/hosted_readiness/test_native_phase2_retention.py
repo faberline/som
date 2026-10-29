@@ -274,6 +274,7 @@ class NativePhase2Retention(unittest.TestCase):
             tree = ast.parse(raw_source(GATES)); gate = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == 'Gate')
             finish = next(n for n in gate.body if isinstance(n, ast.FunctionDef) and n.name == 'finish')
             namespace = {'phase2': self.phase2(ctx), 'json': json}
+            functions(GATES, ['outcome'], namespace)
             exec(compile(ast.Module(body=[finish], type_ignores=[]), str(REPO / GATES), 'exec'), namespace)
             owner = SimpleNamespace(test_logs=[], gates={})
             namespace['finish'](owner, nominal, {'Cargo.lock': 'new original lock'})
