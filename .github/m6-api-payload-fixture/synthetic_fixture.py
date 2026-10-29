@@ -30,6 +30,10 @@ class Fixture(unittest.TestCase):
         (self.site / 'side-effect.pth').write_text("import pathlib; pathlib.Path('/tmp/fixture-pth-ran').touch()\n")
         self.repo = Path(os.environ['GITHUB_WORKSPACE'])
         self.values = {subject.SELF: b'fixture provider bound by synthetic source authority',
+                       subject.CONTEXT: b'fixture Context source',
+                       subject.PRODUCER: b'fixture wheel producer source',
+                       subject.REUSE: b'fixture runtime reuse source',
+                       subject.QUALIFY: b'fixture runtime qualification source',
                        subject.RETAINED: b'def sealed_files(repo): return {}\n',
                        subject.LIVE: b'_binding = None\ndef bound_sources(repo,revision):\n global _binding\n _binding={"repo":repo,"revision":revision,"reuse":None}\n return _binding,None,None\ndef verify(profile):\n return {"status":"verified-live-inputs", "python":profile["venv"]+"/bin/python", "pg_bin":profile["runtime_root"]+"/install/postgresql/bin", "live_receipt_sha256":"b"*64, "runtime_receipt_sha256":"b"*64, "closure_receipt_sha256":"b"*64, "venv_inventory_sha256":"b"*64, "requirements_count":39, "wheel_count":40}\n'}
         source_hashes = {name:hashlib.sha256(raw).hexdigest() for name, raw in self.values.items()}
@@ -121,6 +125,21 @@ class Fixture(unittest.TestCase):
         shutil.copyfile(self.base, replacement / 'install/python/bin/python3.12')
         self.ctx.data['runtime_root'] = str(replacement)
         with self.assertRaises(subject.PayloadError):
+            subject.admit(self.ctx, self.python)
+
+    def test_each_executed_source_is_admitted_before_runtime(self):
+        allowed = self.ctx.qa_source_authority['admitted_repository_python_sources']
+        self.ctx.runtime = lambda: self.fail('runtime must not run with an incomplete closure')
+        for source in subject.REPOSITORY_PYTHON_EXECUTION_CLOSURE:
+            with self.subTest(source=source):
+                allowed.remove(source)
+                with self.assertRaisesRegex(subject.PayloadError, 'executed Python source'):
+                    subject.admit(self.ctx, self.python)
+                allowed.append(source)
+
+    def test_react_and_native_producer_source_must_match(self):
+        sys.modules['synthetic_authority'].value[subject.PRODUCER] = '0' * 64
+        with self.assertRaisesRegex(subject.PayloadError, 'source authorities differ'):
             subject.admit(self.ctx, self.python)
 
 

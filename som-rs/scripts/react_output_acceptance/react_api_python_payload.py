@@ -20,6 +20,16 @@ SELF = 'som-rs/scripts/react_output_acceptance/react_api_python_payload.py'
 RETAINED = 'som-rs/scripts/react_output_acceptance/retained_evidence.py'
 API = 'som-rs/scripts/react_output_acceptance/linux_api_context.py'
 LIVE = 'som-rs/scripts/react_output_acceptance/linux_api_live_inputs.py'
+CONTEXT = 'som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py'
+PRODUCER = 'som-rs/scripts/hosted_readiness/product_python/produce_wheels.py'
+REUSE = 'som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py'
+QUALIFY = 'som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py'
+# All repository Python that this admission path executes, including the
+# trusted caller and Context.runtime's source-bound helpers. The provisioner
+# and metadata probe are checked as recorded inputs; this path does not run them.
+REPOSITORY_PYTHON_EXECUTION_CLOSURE = frozenset((
+    SELF, CONTEXT, RETAINED, API, LIVE, PRODUCER, REUSE, QUALIFY,
+))
 PRODUCER_MODULE = 'som_react_api_verified_wheel_producer'
 HEX = re.compile(r'[0-9a-f]{64}\Z')
 LOCK = threading.RLock()
@@ -92,13 +102,16 @@ def admit(ctx, executable):
          'active native source authority required')
     allowed = authority.get('admitted_repository_python_sources')
     need(isinstance(allowed, (set, frozenset, list, tuple))
-         and all(path in allowed for path in (SELF, RETAINED, API, LIVE)),
-         'provider or verifier absent from native source authority')
+         and REPOSITORY_PYTHON_EXECUTION_CLOSURE.issubset(allowed),
+         'executed Python source absent from native source authority')
     repo = physical_directory(ctx.repo)
     need(ctx.helper_revision == ctx.candidate_revision == os.environ.get('GITHUB_SHA')
          and re.fullmatch(r'[0-9a-f]{40}', ctx.helper_revision or '') is not None,
          'exact reviewed checkout required')
-    ctx.sources.read(SELF)
+    # Native authorization precedes Context.runtime() and every dynamic exec,
+    # including the wheel producer compiled inside live.bound_sources().
+    for source in sorted(REPOSITORY_PYTHON_EXECUTION_CLOSURE):
+        need(type(ctx.sources.read(source)) is bytes, 'bound source bytes required')
     temp = physical_directory(Path(os.environ['RUNNER_TEMP']))
     profile_path = temp / 'som-react-api-context.json'
     venv = temp / 'som-react-python-closure/environments/react-api-qa/venv'
@@ -132,9 +145,8 @@ def admit(ctx, executable):
             repo2, path, profile, auth, auth_sha, profile_sha, receipt_sha = api.inputs(profile_path, repo)
             need(repo2 == repo and path == profile_path and profile['venv'] == str(venv)
                  and profile['runtime_root'] == str(runtime_root), 'API profile runtime differs from native Context')
-            need(auth['source_sha256'][RETAINED] == hashlib.sha256(ctx.sources.read(RETAINED)).hexdigest()
-                 and auth['source_sha256'][API] == hashlib.sha256(ctx.sources.read(API)).hexdigest()
-                 and auth['source_sha256'][LIVE] == hashlib.sha256(ctx.sources.read(LIVE)).hexdigest(),
+            need(all(auth['source_sha256'][name] == hashlib.sha256(ctx.sources.read(name)).hexdigest()
+                     for name in (RETAINED, API, LIVE, PRODUCER, REUSE, QUALIFY)),
                  'native and React source authorities differ')
             modules['_som_react_api_payload_live'] = load_source(ctx, LIVE, '_som_react_api_payload_live')
             live_verifier = modules['_som_react_api_payload_live']

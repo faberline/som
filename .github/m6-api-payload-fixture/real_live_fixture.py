@@ -67,7 +67,7 @@ ctx.modules, ctx.cache, ctx.module_lock = {}, {}, threading.RLock()
 ctx.data = {'runtime_root':str(runtime_root)}
 ctx.qa_import_controls = SimpleNamespace(verify_installed=lambda: None)
 ctx.qa_source_authority = {'source_authority_active':True,
-    'admitted_repository_python_sources':[provider.SELF, provider.RETAINED, provider.API, provider.LIVE]}
+    'admitted_repository_python_sources':sorted(provider.REPOSITORY_PYTHON_EXECUTION_CLOSURE)}
 runtime = ctx.runtime()
 assert runtime['tools']['python'] == base
 assert runtime['identity']['reuse_receipt_sha256']

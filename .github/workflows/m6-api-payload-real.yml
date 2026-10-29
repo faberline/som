@@ -1,7 +1,7 @@
 name: M6 React API payload real live verifier fixture
 on:
   push:
-    branches: [codex/m6-api-runtime-aligned-20261029]
+    branches: [codex/m6-api-execution-closure-20261029]
 permissions:
   contents: read
   actions: read
