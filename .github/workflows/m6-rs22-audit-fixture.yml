@@ -1,0 +1,23 @@
+name: M6 RS22 independent audit synthetic fixtures (not acceptance)
+on:
+  push:
+    branches:
+      - 'codex/m6-rs22-audit-fixture-v2-20261029'
+permissions:
+  contents: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Run bounded synthetic evidence audit fixtures
+        working-directory: .github/m6-rs22-independent-audit
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python3 -m unittest -v test_audit
