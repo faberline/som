@@ -907,9 +907,6 @@ def verify_capture(root, source_reader, helper_revision, candidate_revision, adm
                 'current capture sealed source authority differs')
     else:
         require(qa_mode == 'recorded-f59' and candidate_revision == CANDIDATE, 'unknown or mixed current capture mode')
-    proof = parse(read(Path(assembly_root) / 'manifest.json'))
-    expected_binary = proof['initial_identities']['binary']['sha256']
-    require(candidate_revision != CANDIDATE or expected_binary == BINARY_SHA, 'historical candidate binary identity differs')
     require(report.get('version') == VERSION and report.get('role') == 'current-candidate-compiled-inputs'
             and report.get('helper_revision') == helper_revision
             and report.get('candidate_revision') == candidate_revision
@@ -920,6 +917,9 @@ def verify_capture(root, source_reader, helper_revision, candidate_revision, adm
             and report.get('before_role') == FIXED_BEFORE_AUTHORITY
             and report.get('historical_missing_wires_recovered') is False,
             'complete actual same-helper current candidate capture required')
+    proof = parse(read(Path(assembly_root) / 'manifest.json'))
+    expected_binary = proof['initial_identities']['binary']['sha256']
+    require(candidate_revision != CANDIDATE or expected_binary == BINARY_SHA, 'historical candidate binary identity differs')
     require(report['initial_identities'] == report['final_identities']
             and report['initial_identities']['candidate']['binary']['sha256'] == expected_binary
             and report['identities_unchanged'] is True and report['cleanup']['cleanup_passed'] is True

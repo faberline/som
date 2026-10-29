@@ -658,6 +658,10 @@ class Context:
             require(os.environ.get('GITHUB_REPOSITORY') == 'faberline/som',
                     'native child requires the admitted GitHub repository')
             environment['GITHUB_REPOSITORY'] = 'faberline/som'
+            job = os.environ.get('GITHUB_JOB')
+            require(type(job) is str and re.fullmatch('[A-Za-z_][A-Za-z0-9_-]*', job) is not None,
+                    'native child requires the actual GitHub job identity')
+            environment['GITHUB_JOB'] = job
         if os.environ.get('SOM_DEPENDENCY_ACTIONS_TOKEN'):
             environment['SOM_DEPENDENCY_ACTIONS_TOKEN'] = os.environ['SOM_DEPENDENCY_ACTIONS_TOKEN']
         return environment

@@ -26,12 +26,12 @@ class NativeChildEnvironment(unittest.TestCase):
     def environment(self, **changes):
         return {'RUNNER_TEMP': '/runner', 'GITHUB_RUN_ID': '40832270009',
                 'GITHUB_RUN_ATTEMPT': '1', 'GITHUB_REPOSITORY': 'faberline/som',
-                'GITHUB_SHA': '1' * 40, **changes}
+                'GITHUB_SHA': '1' * 40, 'GITHUB_JOB': 'full-products', **changes}
 
     def test_exact_run_identity_is_retained_without_keyring(self):
         with mock.patch.dict(os.environ, self.environment(M6_INPUTS_KEYRING='must-not-propagate'), clear=True):
             result = subject.Context.child_environment(self.context())
-        for key in ('GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_REPOSITORY'):
+        for key in ('GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_REPOSITORY', 'GITHUB_JOB'):
             self.assertEqual(result[key], self.environment()[key])
         self.assertNotIn('M6_INPUTS_KEYRING', result)
 
@@ -70,6 +70,18 @@ class NativeChildEnvironment(unittest.TestCase):
             with self.assertRaises(subject.Refusal):
                 subject.Context.child_environment(context)
 
+    def test_missing_or_invalid_job_identity_is_refused(self):
+        for value in (None, '', '../job', 'job with spaces', 'job\nother'):
+            with self.subTest(value=value):
+                environment = self.environment()
+                if value is None:
+                    environment.pop('GITHUB_JOB')
+                else:
+                    environment['GITHUB_JOB'] = value
+                with mock.patch.dict(os.environ, environment, clear=True):
+                    with self.assertRaises(subject.Refusal):
+                        subject.Context.child_environment(self.context())
+
     def test_preparation_keeps_its_previous_environment_contract(self):
         with mock.patch.dict(os.environ, {'RUNNER_TEMP': '/runner'}, clear=True):
             result = subject.Context.child_environment(self.context('experimental-preparation'))
@@ -77,6 +89,7 @@ class NativeChildEnvironment(unittest.TestCase):
         self.assertNotIn('GITHUB_RUN_ATTEMPT', result)
         self.assertNotIn('GITHUB_REPOSITORY', result)
         self.assertNotIn('GITHUB_SHA', result)
+        self.assertNotIn('GITHUB_JOB', result)
 
 
 if __name__ == '__main__':
