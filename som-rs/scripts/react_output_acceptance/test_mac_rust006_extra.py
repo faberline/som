@@ -318,5 +318,39 @@ class CommandRawAuditTests(unittest.TestCase):
                 with self.assertRaises(ValueError):audit.audit_command_records(run,candidate,public,legacy,parity)
 
 
+class UnorderedParityWireTests(unittest.TestCase):
+    def test_raw_wire_join_is_unordered_and_tamper_fails(self):
+        import hashlib
+        from unittest import mock
+        import audit_mac_parity as parity_audit
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve(); script=root/'som-rs/behavior/check_behavior.py'
+            script.parent.mkdir(parents=True);script.write_bytes(b'fixed')
+            raw=root/'wire';(raw/'calls').mkdir(parents=True)
+            sha=lambda b:hashlib.sha256(b).hexdigest()
+            bodies=[('/v1/compile',{'prompt':'a'},{'bundle':'x'}),('/v1/assemble',{'bundle':'x'},{'files':{}})]
+            rows=[]
+            for i,(route,request,response) in enumerate(bodies,1):
+                req=json.dumps(request,ensure_ascii=False,separators=(',',':')).encode()
+                res=json.dumps(response).encode()
+                rf=f'calls/{i:06d}.request.raw';sf=f'calls/{i:06d}.response.raw'
+                (raw/rf).write_bytes(req);(raw/sf).write_bytes(res)
+                row={'id':i,'method':'POST','url':parity_audit.QA+route,'request_file':rf,
+                     'request_sha256':sha(req),'status':200,'response_file':sf,'response_sha256':sha(res),
+                     'error':None,'complete':True}
+                (raw/f'calls/{i:06d}.json').write_text(json.dumps(row));rows.append(row)
+            (raw/'manifest.json').write_text(json.dumps({'version':'som.m6-rust006-http-recording.v1',
+                'exit_code':0,'recording_errors':[],'script':{'path':'som-rs/behavior/check_behavior.py',
+                'sha256':sha(b'fixed')},'calls':rows}))
+            with mock.patch.object(parity_audit,'REPO',root):
+                index,count=parity_audit.raw_exchange_index(raw)
+                self.assertEqual(count,2)
+                self.assertEqual(json.loads(parity_audit.take(index,'/v1/assemble',{'bundle':'x'})),{'files':{}})
+                self.assertEqual(json.loads(parity_audit.take(index,'/v1/compile',{'prompt':'a'})),{'bundle':'x'})
+                self.assertFalse(any(index.values()))
+                (raw/'calls/000002.response.raw').write_bytes(b'tampered')
+                with self.assertRaises(ValueError):parity_audit.raw_exchange_index(raw)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
