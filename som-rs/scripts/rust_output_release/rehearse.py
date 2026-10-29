@@ -43,7 +43,7 @@ PYTHON = sys.executable
 
 def call(argv, out, name):
     started = time.time()
-    record = supervision.invoke(argv, rc.REPO, out, name)
+    record = supervision.invoke(argv, rc.REPO, out, name, defer_spawn_signals=True)
     rc.require(record['outcome'] == 'completed' and type(record['wait_result']) is int
                and record['wait_result'] == record['exit_code'], 'child wait is not verified')
     code = record['exit_code']

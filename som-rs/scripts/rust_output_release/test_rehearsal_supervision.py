@@ -118,6 +118,36 @@ class SupervisionTests(unittest.TestCase):
             self.assertEqual(result['wait_result'], result['exit_code'])
             self.assertFalse(result['cleanup_verified'])
 
+    def test_signal_during_spawn_waits_the_actual_child(self):
+        class Interrupted(Exception):
+            pass
+        def interrupted(signum, _frame):
+            raise Interrupted(str(signum))
+        previous = {sig: signal.getsignal(sig) for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)}
+        original = subprocess.Popen
+        def signal_after_spawn(*args, **kwargs):
+            child = original(*args, **kwargs)
+            os.kill(os.getpid(), signal.SIGTERM)
+            return child
+        try:
+            for sig in previous:
+                signal.signal(sig, interrupted)
+            with tempfile.TemporaryDirectory() as value:
+                out = Path(value)
+                with mock.patch.object(supervision.subprocess, 'Popen', side_effect=signal_after_spawn):
+                    with self.assertRaises(Interrupted):
+                        supervision.invoke([sys.executable, '-c', 'import time; time.sleep(300)'],
+                                           out, out, 'spawn', grace=10, defer_spawn_signals=True)
+                row = json.loads((out / 'spawn.lifecycle.json').read_bytes())
+                self.assertEqual(row['outcome'], 'interrupted')
+                self.assertIs(type(row['wait_result']), int)
+                self.assertEqual(row['wait_result'], row['exit_code'])
+                self.assertFalse(alive(row['pid']))
+                self.assertFalse(row['cleanup_verified'])
+        finally:
+            for sig, handler in previous.items():
+                signal.signal(sig, handler)
+
     def test_interrupted_clone_start_cleans_only_new_admitted_owner(self):
         import switch
         old = {'pid': 42, 'port': 18921}
