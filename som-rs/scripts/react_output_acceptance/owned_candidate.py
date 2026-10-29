@@ -57,6 +57,12 @@ class CandidateOwner:
             return code
         except subprocess.TimeoutExpired:
             self.events.append({'kind':'candidate-wait','pid':proc.pid,'state':'timeout','exit_code':None})
+            try:
+                os.killpg(proc.pid,signal.SIGKILL)
+                code=proc.wait(timeout=timeout)
+                self.events.append({'kind':'candidate-cleanup-wait','pid':proc.pid,'state':'completed','exit_code':code})
+            except (OSError,subprocess.SubprocessError):
+                self.events.append({'kind':'candidate-cleanup-wait','pid':proc.pid,'state':'unverified','exit_code':None})
             raise
     def save(self):
         with (self.out/'candidate-owner.json').open('x') as f:

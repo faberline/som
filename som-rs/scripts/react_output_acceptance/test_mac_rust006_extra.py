@@ -375,6 +375,38 @@ class UnorderedParityWireTests(unittest.TestCase):
 
 
 class OwnedCandidateTests(unittest.TestCase):
+    def test_candidate_audit_checks_wait_and_observed_descendants(self):
+        import hashlib
+        import audit_candidate_owner as audit
+        with tempfile.TemporaryDirectory() as temp:
+            out=Path(temp).resolve();candidate=out/'candidate';candidate.mkdir();binary=candidate/'som';binary.write_bytes(b'binary')
+            digest=hashlib.sha256(b'binary').hexdigest();pid=1234;parent=123
+            argv=[str(binary),'serve','--assets',str(candidate/'assets'),'--port','18919']
+            (candidate/'runtime.json').write_text(json.dumps({'pid':pid,'port':18919,'argv':argv,'binary_sha256':digest}))
+            (candidate/'build.json').write_text(json.dumps({'binary_sha256':digest}))
+            events=[{'kind':'candidate-start','pid':pid,'parent_pid':parent,'argv':argv,'cwd':str(candidate)},
+                    {'kind':'preparer-exit','exit_code':0}]
+            def observation(name,command,code,data):
+                (out/(name+'.stdout')).write_bytes(data);(out/(name+'.stderr')).write_bytes(b'')
+                events.append({'kind':'os-command','name':name,'argv':command,'exit_code':code,
+                               'stdout_sha256':hashlib.sha256(data).hexdigest(),'stderr_sha256':hashlib.sha256(b'').hexdigest()})
+            ps=['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command='];table=['/bin/ps','-axo','pid=,ppid=,pgid=,command=']
+            listener=['/usr/sbin/lsof','-nP','-iTCP:18919','-sTCP:LISTEN','-t']
+            observation('owner-candidate-ps',ps,0,(f'{pid} {parent} {pid} '+' '.join(argv)+'\n').encode())
+            observation('owner-candidate-cwd',['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn'],0,f'p{pid}\nn{candidate}\n'.encode())
+            observation('owner-candidate-listener',listener,0,b'1234\n')
+            observation('owner-candidate-table-before',table,0,b'1234 123 1234 candidate\n1235 1234 1234 worker\n')
+            events.append({'kind':'candidate-wait','pid':pid,'state':'completed','exit_code':-15})
+            observation('owner-candidate-table-after',table,0,b'1 0 1 init\n')
+            observation('owner-candidate-listener-after',listener,1,b'')
+            def save(): (out/'candidate-owner.json').write_text(json.dumps({'version':'som.m6-owned-candidate.v1','product_acceptance_passed':False,'events':events}))
+            save();self.assertEqual(audit.audit(out,candidate)['observed_processes_absent'],2)
+            events[6]['state']='timeout';save()
+            with self.assertRaises(ValueError):audit.audit(out,candidate)
+            events[6]['state']='completed';after=out/'owner-candidate-table-after.stdout';after.write_bytes(b'1 0 1 init\n1235 1 1234 worker\n')
+            events[7]['stdout_sha256']=hashlib.sha256(after.read_bytes()).hexdigest();save()
+            with self.assertRaises(ValueError):audit.audit(out,candidate)
+
     def test_preparer_child_remains_owned_and_has_real_wait(self):
         import subprocess
         import owned_candidate

@@ -447,6 +447,16 @@ def main(argv: list[str] | None = None) -> int:
                 except (OSError, subprocess.SubprocessError):
                     pass
             summary["cleanup"] = cleanup
+            if args.candidate_revision is not None:
+                try:
+                    summary['candidate_owner_audit_exit_code']=logged(out,'candidate-owner-audit',[
+                        sys.executable,str(HERE/'audit/audit_candidate_owner.py'), '--out',str(out),
+                        '--candidate',str(out/'candidate'),'--audit',str(out/'candidate-owner-audit.json')],env)
+                except (OSError,subprocess.SubprocessError):
+                    summary['candidate_owner_audit_exit_code']=None
+                if summary['candidate_owner_audit_exit_code']!=0:
+                    summary['passed']=False
+                    summary['failed_stage']=summary['failed_stage'] or 'candidate-owner-audit'
             try:
                 if summary["head_before"] is not None:
                     summary["head_after"] = head(out, "head-after", env)
