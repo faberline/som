@@ -528,6 +528,19 @@ class ProducerReceiptTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'receipt differs'):
                 audit.verify_receipt(receipt, audit.sha(raw), identity, archive)
 
+    def test_pinned_gh_binary_rejects_changed_bytes_and_symlinks(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d).resolve()
+            binary = write(root / 'tool/gh', b'fixed gh')
+            env = {'RUNNER_TEMP': str(root), 'M6_AUDIT_GH': str(binary)}
+            with mock.patch.dict(os.environ, env), mock.patch.object(audit, 'GH_BINARY_SHA256', audit.sha(b'fixed gh')):
+                self.assertEqual(audit.reviewed_gh(), str(binary))
+                binary.write_bytes(b'changed')
+                with self.assertRaisesRegex(ValueError, 'CLI differs'): audit.reviewed_gh()
+                binary.unlink()
+                binary.symlink_to('/etc/passwd')
+                with self.assertRaisesRegex(ValueError, 'symlink'): audit.reviewed_gh()
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -31,6 +31,7 @@ WORKFLOW_SHA256 = '163584a9ae3a7045b6a939ada696b50b0565bc913dd15de6f577981f83823
 CANDIDATE_SHA256 = '59dab78a0f401a86e028c186285a888cfdf304b2d077e167d46b20d1131a3308'
 PREVIOUS_SHA256 = '2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c'
 BASE_CONTROLLER_SHA256 = '289a8470c5de2a183b01c8a138ecb4bc6cfe80a624f0291b32b779cc854bfb12'
+GH_BINARY_SHA256 = '1ffcdcff76db02ff4f9de0fbf784ed4b6d18e434e89450db314b3f77d0f9443b'
 RESTORE_SOURCES = {
     'som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs':
         'ac5bfe21853712a38a8f5f032f44a4151c7bf7c2c54b669095704ba20e84a822',
@@ -138,13 +139,25 @@ def verify_universe(archive, root):
     return {'index_sha256': sha(index_raw), 'packages': len(packages), 'files': len(entries)}
 
 
+def reviewed_gh():
+    path = Path(os.environ['M6_AUDIT_GH'])
+    temp = Path(os.environ['RUNNER_TEMP']).resolve()
+    require(path.is_absolute() and temp in path.parents, 'pinned GitHub CLI path differs')
+    require(digest(regular(temp, path.relative_to(temp).as_posix())) == GH_BINARY_SHA256,
+            'pinned GitHub CLI differs')
+    return str(path)
+
+
 def api(path):
-    return json.loads(subprocess.check_output(['gh', 'api', path], text=True))
+    done = subprocess.run([reviewed_gh(), 'api', path], stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE, timeout=120, check=False)
+    require(done.returncode == 0, 'GitHub metadata fetch failed')
+    return json.loads(done.stdout)
 
 
 def bounded_job_log(endpoint):
     """Capture untrusted log bytes with a hard size/time bound; never print them."""
-    proc = subprocess.Popen(['gh', 'api', '--allow-escape-sequences', endpoint],
+    proc = subprocess.Popen([reviewed_gh(), 'api', '--allow-escape-sequences', endpoint],
                             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     data, deadline = bytearray(), time.monotonic() + 120
     try:
