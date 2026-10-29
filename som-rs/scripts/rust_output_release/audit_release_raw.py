@@ -9,7 +9,6 @@ contacts recorded ports, signals recorded PIDs, or uploads plaintext.
 from __future__ import annotations
 
 import argparse
-import base64
 from collections import Counter
 import hashlib
 import json
@@ -283,19 +282,10 @@ def decrypt_original_zip(archive, root, source, node='node'):
             ring = json.loads(os.environ['M6_INPUTS_KEYRING'])
             valid_names = isinstance(ring, dict) and all(isinstance(k, str) and HASH.fullmatch(k) for k in ring)
             key_present = valid_names and index.get('key_id') in ring
-            print(json.dumps({'phase': 'restore_preflight', 'keyring_names_valid': bool(valid_names),
+            print(json.dumps({'phase': 'restore_preflight', 'sealed_file_count': len(names),
                               'selected_key_present': bool(key_present)}), flush=True)
+            del ring
             require(key_present, 'selected evidence key is absent')
-            try:
-                key = bytearray(base64.b64decode(ring[index['key_id']], validate=True))
-            except (ValueError, TypeError):
-                raise ValueError('selected evidence key has invalid encoding') from None
-            try:
-                require(len(key) == 32 and base64.b64encode(key).decode() == ring[index['key_id']],
-                        'selected evidence key has invalid encoding')
-            finally:
-                key[:] = bytes(len(key))
-                del key, ring
             expected = {'evidence-index.json'}
             for i, item in enumerate(index['packages']):
                 manifest, cipher = f'package-{i:03}.manifest.json', f'package-{i:03}.sealed'
@@ -306,14 +296,22 @@ def decrypt_original_zip(archive, root, source, node='node'):
                 with z.open(item) as src, (sealed / item.filename).open('xb') as dst:
                     for block in iter(lambda: src.read(1024 * 1024), b''):
                         dst.write(block)
+        actual = list(sealed.iterdir())
+        require({p.name for p in actual} == expected and all(p.is_file() and not p.is_symlink() for p in actual),
+                'sealed root universe differs')
+        require(not root.exists() and root.parent.is_dir() and root != sealed
+                and sealed not in root.parents and root not in sealed.parents, 'unsafe restore destination')
+        for item in index['packages']:
+            require(digest(sealed / item['manifest']) == item['manifest_sha256']
+                    and digest(sealed / item['archive']) == item['cipher_sha256'], 'sealed file hash mismatch')
+        print(json.dumps({'phase': 'sealed_root_verified', 'sealed_file_count': len(actual)}), flush=True)
         script = regular(source, 'som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs')
         done = subprocess.run([str(node), str(script), '--root', str(sealed), '--out', str(root),
                                '--index-sha256', sha(index_raw)], stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE, timeout=1200, check=False)
         if done.returncode != 0:
-            kind = 'restorer_refusal' if done.stderr == b'hosted evidence restore refused\n' else 'node_or_runtime_error'
-            print(json.dumps({'phase': 'restore_failure', 'exit_code': done.returncode,
-                              'stderr_kind': kind, 'stderr_bytes': len(done.stderr)}), flush=True)
+            phase = 'restorer_refusal' if done.stderr == b'hosted evidence restore refused\n' else 'node_or_runtime_error'
+            print(json.dumps({'phase': phase}), flush=True)
             raise ValueError('authenticated evidence restoration failed')
         receipt = json.loads(done.stdout)
         require(receipt['status'] == 'restored' and receipt['index_sha256'] == sha(index_raw),

@@ -140,7 +140,7 @@ class AuthenticatedRestoreTests(unittest.TestCase):
         files['package-000.sealed'] = bytes(cipher)
         with zipfile.ZipFile(self.archive, 'w') as z:
             for name, data in files.items(): z.writestr(name, data)
-        with self.assertRaisesRegex(ValueError, 'authenticated evidence restoration failed'):
+        with self.assertRaisesRegex(ValueError, 'sealed file hash mismatch'):
             audit.decrypt_original_zip(self.archive, self.root / 'restored', self.source)
 
     def test_restore_errors_never_print_captured_stdout_or_stderr(self):
