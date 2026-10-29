@@ -13,7 +13,7 @@ class NamedJoin(unittest.TestCase):
         self.py={'source':'public','id':'p','variant':'none'}; self.ru={'phase':'phase1','id':'r','check':'compile_equal'}
         self.ts={'form':'json'}
         for cohort,role,case,action in [('react_python','python','p','compile'),('react_python','python','p','assemble'),('rust006','rust','r','compile'),('typescript125','ts','t','compile'),('typescript125','ts','t','assemble')]:
-            ident={'slot_id':cohort+action,'cohort':cohort,'group':'public','case':case,'phase':'phase1','form':'json','variant':'none','method':'POST','endpoint':'/v1/'+action}
+            ident={'slot_id':len(self.table)+1,'cohort':cohort,'group':'public','case':case,'phase':'phase1','form':'json','variant':'none','method':'POST','endpoint':'/v1/'+action}
             req=(cohort+action+' request').encode(); resp=(cohort+action+' response').encode(); reqsha=s.sha(req); respsha=s.sha(resp)
             self.table.append({'identity':ident,'request_sha256':reqsha,'response_sha256':respsha,'status':200,'source':{}})
             i=len(self.calls); op='calls/%06d'%i
@@ -64,6 +64,9 @@ class NamedJoin(unittest.TestCase):
         self.assertEqual(self.check()['raw_calls'],5)
         self.calls.pop(2)
         with self.assertRaises(ValueError):self.check()
+    def test_string_slot_id_rejected(self):
+        self.table[0]['identity']['slot_id']='1'
+        with self.assertRaisesRegex(ValueError,'slot identity'):self.check()
     def test_reject_wrong_named_candidate(self):
         self.calls[0]['matching_named_slots']=[self.table[1]['identity']]
         with self.assertRaises(ValueError):self.check()

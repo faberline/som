@@ -912,7 +912,7 @@ def join_recorded_named_rows(original, oracle_root, table, calls, *, expected_co
     for entry in selected:
         i = entry['identity']; cohort = i['cohort']; action = i['endpoint'].removeprefix('/v1/')
         require(set(i) == identity_keys and i['method'] == 'POST' and action in ('compile','assemble')
-                and type(i['slot_id']) is str and i['slot_id'] not in slots, 'oracle slot identity differs')
+                and type(i['slot_id']) is int and i['slot_id'] > 0 and i['slot_id'] not in slots, 'oracle slot identity differs')
         if cohort == 'react_python':
             name = (cohort, i['group'], i['case'], i['variant'], action)
             row = py[(i['group'], i['case'], i['variant'])]
