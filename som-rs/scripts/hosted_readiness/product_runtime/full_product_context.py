@@ -23,6 +23,7 @@ import tempfile
 import threading
 import time
 import tomllib
+import traceback
 from types import ModuleType
 
 SCRIPT = 'som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py'
@@ -990,7 +991,14 @@ class Context:
                   'ordinary_installer_scope_independent_audit': 'unrun',
                   'installed_after_sha256': digest(raw), 'owned_venv_removed': False,
                   'owned_cache_removed': False, 'product_acceptance_passed': False}
-        if passed and same:
+        if self.qa_mode == 'native-qa-v1':
+            cache = Path(selected['environment']['UV_CACHE_DIR'])
+            require(venv.is_dir() and not venv.is_symlink() and Path(selected['python']).resolve()
+                    == self.runtime()['tools']['python'].resolve(), 'owned retained interpreter changed')
+            require(cache == self.work / 'product-caches' / key and cache.is_dir()
+                    and not cache.is_symlink(), 'owned retained cache identity changed')
+            record['retained_for_independent_installed_scope_audit'] = True
+        if passed and same and self.qa_mode != 'native-qa-v1':
             require(venv.is_dir() and not venv.is_symlink() and Path(selected['python']).resolve()
                     == self.runtime()['tools']['python'].resolve(), 'owned cleanup interpreter changed')
             shutil.rmtree(venv)
@@ -1001,6 +1009,178 @@ class Context:
             self.cache['product_environments'].pop(str(root))
         (evidence / 'cleanup.json').write_bytes(canonical(record) + b'\n')
         require(same, 'ordinary product installed environment changed during product commands')
+
+    def native_owned_directory(self, path, *, allow_missing=False):
+        require(self.qa_mode == 'native-qa-v1' and self.qa_import_controls is not None,
+                'native retention requires active source controls')
+        self.qa_import_controls.verify_installed()
+        path = Path(path).absolute()
+        require('..' not in path.parts and (path == self.work or self.work in path.parents),
+                'native retention requires an owned work path')
+        for item in (path, *path.parents):
+            if item.exists() or item.is_symlink():
+                require(stat.S_ISDIR(item.lstat().st_mode) and not item.is_symlink(),
+                        'native retention directory or parent is not physical')
+        require(allow_missing or path.is_dir(), 'native retention directory missing')
+        return path
+
+    def retain_native_environments(self, scope, role):
+        """Append real installed snapshots. The owning checker alone judges gates."""
+        require(role in {'phase2-fixture', 'phase2-storage', 'phase2-suite', 'phase2-before-reset'},
+                'known native retention lifecycle role required')
+        scope = self.native_owned_directory(scope)
+        parent = self.native_owned_directory(self.work / 'native-retention', allow_missing=True)
+        parent.mkdir(exist_ok=True)
+        output = Path(tempfile.mkdtemp(prefix='snapshot-', dir=parent))
+        record = {'version': 'som.native-environment-retention.v1', 'role': role, 'scope': str(scope),
+            'helper_revision': self.helper_revision, 'candidate_revision': self.candidate_revision,
+            'outcome_role': 'lifecycle-metadata-only; product gates are recorded by the owning checker',
+            'product_gates_passed': None, 'complete': False, 'environments': [], 'unregistered_environments': [],
+            'discovery_complete': False, 'discovery_opaque_directory_aliases': [],
+            'ordinary_installer_scope_independent_audit': 'unrun', 'product_acceptance_passed': False}
+        primary = None
+        try:
+            p = self.module('wheels', WHEELS)
+            selected = self.cache.get('product_environments', {})
+            for name in sorted(selected):
+                root = Path(name)
+                if root != scope and scope not in root.parents:
+                    continue
+                self.native_owned_directory(root)
+                value, key = selected[name], digest(str(root).encode())
+                venv = self.native_owned_directory(root / '.venv')
+                cache = Path(value['environment']['UV_CACHE_DIR'])
+                require(cache == self.work / 'product-caches' / key, 'retained cache belongs to another product')
+                self.native_owned_directory(cache)
+                before_path = self.work / 'product-environments' / key / 'installed-before.json'
+                before = read(before_path, 128 * 1024**2)
+                after = canonical(p.installed_inventory(venv, self.work)) + b'\n'
+                saved = output / key; saved.mkdir()
+                with (saved / 'installed-before.json').open('xb') as stream: stream.write(before)
+                with (saved / 'installed-after.json').open('xb') as stream: stream.write(after)
+                row = {'product_root': str(root), 'venv': str(venv), 'cache': str(cache),
+                    'original_before': str(before_path), 'snapshot': key,
+                    'installed_before_sha256': digest(before), 'installed_after_sha256': digest(after),
+                    'same_installed_files_before_after': before == after,
+                    'owned_venv_removed': False, 'owned_cache_removed': False}
+                record['environments'].append(row)
+                require(before == after, 'ordinary native environment changed before retention')
+                require(Path(value['python']) == venv / 'bin/python'
+                        and Path(value['python']).resolve(strict=True) == self.runtime()['tools']['python'].resolve(strict=True),
+                        'retained interpreter is not the actual qualified product interpreter')
+                self.python_payload(value['python'])
+                require(canonical(p.installed_inventory(venv, self.work)) + b'\n' == after,
+                        'native environment changed during retention checks')
+            discovered, directories = [], []
+            def scan_error(error):
+                raise error
+            def checked_directory(path):
+                path = self.native_owned_directory(path)
+                mode = stat.S_IMODE(path.lstat().st_mode)
+                require(mode & 0o444 and mode & 0o111 and os.access(path, os.R_OK | os.X_OK),
+                        'native retention directory is not readable/searchable: ' + str(path))
+                return path
+            for current, names, _files in os.walk(scope, topdown=True, onerror=scan_error, followlinks=False):
+                directory = checked_directory(current)
+                directories.append(str(directory))
+                for name in _files:
+                    mode = (directory / name).lstat().st_mode
+                    require(not stat.S_ISDIR(mode) and name != '.venv',
+                            'native retention walk found a misclassified directory or nonphysical environment')
+                for name in sorted(names):
+                    child = directory / name
+                    if child.is_symlink() and name == 'lib64' and directory.name == '.venv':
+                        require(os.readlink(child) == 'lib', 'unknown native venv directory alias')
+                        target = checked_directory(directory / 'lib')
+                        record['discovery_opaque_directory_aliases'].append({
+                            'path': str(child), 'target': 'lib', 'physical_target': str(target),
+                            'followed': False, 'execution_authority_granted': False})
+                        continue  # The exact uv internal target is scanned at its physical name.
+                    child = checked_directory(child)
+                    if name == '.venv':
+                        discovered.append(child)
+            record['discovery_complete'] = True
+            record['discovery_directory_count'] = len(directories)
+            record['discovery_directories_sha256'] = digest(canonical(sorted(directories)))
+            for venv in sorted(discovered):
+                root = venv.parent
+                if str(root) in selected:
+                    continue
+                self.native_owned_directory(venv)
+                key = digest(str(root).encode())
+                saved = output / key; saved.mkdir()
+                after = canonical(p.installed_inventory(venv, self.work)) + b'\n'
+                with (saved / 'installed-after.json').open('xb') as stream: stream.write(after)
+                record['unregistered_environments'].append({'product_root': str(root), 'venv': str(venv),
+                    'snapshot': key, 'installed_after_sha256': digest(after),
+                    'original_before': None, 'status': 'original installed-before authority unavailable',
+                    'owned_venv_removed': False, 'product_acceptance_passed': False})
+            require(not record['unregistered_environments'], 'native environment lacks original installed-before authority')
+            record['complete'] = True
+        except BaseException as error:
+            primary = error
+            record['first_error'] = {'type': type(error).__name__, 'message': str(error),
+                                    'traceback': traceback.format_exc()}
+            raise
+        finally:
+            try:
+                with (output / 'retention.json').open('xb') as stream: stream.write(canonical(record) + b'\n')
+            except BaseException as secondary:
+                if primary is None: raise
+                primary.__som_native_retention_evidence_error__ = {'type': type(secondary).__name__, 'message': str(secondary)}
+        return {'path': str(output / 'retention.json'), 'sha256': digest(read(output / 'retention.json')),
+                'environments': len(record['environments']), 'product_acceptance_passed': False}
+
+    def native_product_path(self, requested):
+        requested = self.native_owned_directory(requested, allow_missing=True)
+        selected = self.cache.get('native_product_roots', {}).get(str(requested), str(requested))
+        return self.native_owned_directory(selected, allow_missing=True)
+
+    def new_native_product_root(self, requested, role):
+        require(role in {'phase2-fixture', 'phase2-storage'}, 'known native product root role required')
+        requested = self.native_owned_directory(requested, allow_missing=True)
+        previous = self.native_product_path(requested)
+        if previous.exists():
+            self.retain_native_environments(previous, 'phase2-before-reset')
+        else:
+            require(not any(Path(name) == previous or previous in Path(name).parents
+                            for name in self.cache.get('product_environments', {})), 'missing retained environment is not reusable')
+        parent = self.native_owned_directory(requested.parent, allow_missing=True)
+        parent.mkdir(parents=True, exist_ok=True)
+        actual = requested
+        if requested.exists() or previous != requested:
+            container = Path(tempfile.mkdtemp(prefix=requested.name + '.native-attempt-', dir=parent))
+            actual = container / requested.name
+        self.native_owned_directory(actual, allow_missing=True)
+        require(not actual.exists(), 'native product attempt must be fresh')
+        provenance = self.native_owned_directory(self.work / 'native-product-roots', allow_missing=True)
+        provenance.mkdir(exist_ok=True)
+        record = {'version': 'som.native-product-root.v1', 'role': role, 'requested_root': str(requested),
+            'actual_root': str(actual), 'previous_root': str(previous) if previous.exists() else None,
+            'original_paths_rewritten': False, 'previous_tree_removed': False,
+            'helper_revision': self.helper_revision, 'candidate_revision': self.candidate_revision,
+            'product_acceptance_passed': False}
+        folder = Path(tempfile.mkdtemp(prefix='attempt-', dir=provenance))
+        with (folder / 'root.json').open('xb') as stream: stream.write(canonical(record) + b'\n')
+        self.cache.setdefault('native_product_roots', {})[str(requested)] = str(actual)
+        return actual
+
+    @contextmanager
+    def native_phase2_scratch(self, directory):
+        directory = self.native_owned_directory(directory)
+        root = Path(tempfile.mkdtemp(prefix='som-phase2-', dir=directory))
+        primary = None
+        try:
+            yield str(root)
+        except BaseException as error:
+            primary = error
+            raise
+        finally:
+            try:
+                self.retain_native_environments(root, 'phase2-suite')
+            except BaseException as secondary:
+                if primary is None: raise
+                primary.__som_native_retention_error__ = {'type': type(secondary).__name__, 'message': str(secondary)}
 
     def child_environment(self):
         runtime, rust = self.runtime(), self.rust_tools()
