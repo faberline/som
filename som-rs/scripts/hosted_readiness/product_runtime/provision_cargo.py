@@ -5,27 +5,60 @@ from __future__ import annotations
 import argparse
 from contextlib import contextmanager
 import hashlib
-import importlib.util
 import json
 import os
 from pathlib import Path
 import platform
 import re
 import signal
+import stat
 import sys
 import tarfile
 import tomllib
+from types import ModuleType
 from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
-HERE = Path(__file__).absolute().parent
-spec = importlib.util.spec_from_file_location("_som_runtime", HERE / "qualify_runtime.py")
-q = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = q
-spec.loader.exec_module(q)
-require, Refusal = q.require, q.Refusal
 SCRIPT = "som-rs/scripts/hosted_readiness/product_runtime/provision_cargo.py"
 SUPPORT = "som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py"
+SUPPORT_MODULE = "_som_runtime"
+SUPPORT_SHA256 = "f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3"
+
+
+def bootstrap_support(path):
+    """Compile the exact reviewed support bytes. Never read a bytecode cache."""
+    path = Path(path).absolute()
+    suffix = Path(SUPPORT).parts
+    if ".." in path.parts or path.parts[-len(suffix):] != suffix:
+        raise RuntimeError("fixed bootstrap support source path required")
+    for item in (path, *path.parents):
+        info = item.lstat()
+        if stat.S_ISLNK(info.st_mode) or (item != path and not stat.S_ISDIR(info.st_mode)):
+            raise RuntimeError("bootstrap support source or parent is linked or nonregular")
+        if item == path and (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 8 * 1024 * 1024):
+            raise RuntimeError("bootstrap support source is linked, nonregular, or oversized")
+    with path.open("rb") as stream:
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+            raise RuntimeError("bootstrap support source changed type")
+        raw = stream.read(8 * 1024 * 1024 + 1)
+    if len(raw) > 8 * 1024 * 1024 or hashlib.sha256(raw).hexdigest() != SUPPORT_SHA256:
+        raise RuntimeError("bootstrap support SHA differs")
+    if SUPPORT_MODULE in sys.modules:
+        raise RuntimeError("bootstrap support module name already loaded")
+    module = ModuleType(SUPPORT_MODULE)
+    module.__file__, module.__cached__, module.__package__ = str(path), None, ""
+    sys.modules[SUPPORT_MODULE] = module
+    try:
+        exec(compile(raw, str(path), "exec", dont_inherit=True), module.__dict__)
+    except BaseException:
+        sys.modules.pop(SUPPORT_MODULE, None)
+        raise
+    return module
+
+
+q = bootstrap_support(Path(__file__).absolute().with_name("qualify_runtime.py"))
+require, Refusal = q.require, q.Refusal
 BASE = "som-rs/contracts/rust-output-v1/"
 GOLDENS = "som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json"
 EXPERIMENT = "som-rs/scripts/hosted_readiness/experimental_native_compile.py"
@@ -40,6 +73,8 @@ LOCKS = {
 REGISTRY = "registry+https://github.com/rust-lang/crates.io-index"
 IDENTITIES = {"phase1": "example-v1", "phase2": "services14-0000"}
 MAX_BLOB = 16 * 1024 * 1024
+# Full 2,045-observation assembly receipts exceed the source-blob envelope.
+MAX_ASSEMBLY_RECEIPT = 64 * 1024 * 1024
 MAX_CRATE = 50 * 1024 * 1024
 MAX_TOTAL = 512 * 1024 * 1024
 MAX_TREE = 2 * 1024 * 1024 * 1024
@@ -101,11 +136,22 @@ def bind_sources(runner, repo, revision):
     return blobs
 
 
-def load_bound(name, path):
-    spec = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(spec)
+def load_bound(name, path, raw):
+    """Execute only immutable bytes returned by bind_sources, never source/cache files."""
+    relative = {"raw_digest_compat": RAW, "_som_cargo_experiment": EXPERIMENT}.get(name)
+    require(relative is not None and isinstance(path, Path) and path.is_absolute()
+            and ".." not in path.parts and path.parts[-len(Path(relative).parts):] == Path(relative).parts,
+            "fixed bound helper source path required")
+    require(type(raw) is bytes and len(raw) <= MAX_BLOB, "bound Git source bytes required")
+    require(name not in sys.modules, "bound helper module name already loaded")
+    module = ModuleType(name)
+    module.__file__, module.__cached__, module.__package__ = str(path), None, ""
     sys.modules[name] = module
-    spec.loader.exec_module(module)
+    try:
+        exec(compile(raw, str(path), "exec", dont_inherit=True), module.__dict__)
+    except BaseException:
+        sys.modules.pop(name, None)
+        raise
     return module
 
 
@@ -158,8 +204,8 @@ def tree_files(root):
     return dict(sorted(result.items()))
 
 
-def checked_receipt(path, revision):
-    raw = safe_read(path)
+def checked_receipt(path, revision, maximum=MAX_BLOB):
+    raw = safe_read(path, maximum)
     value = parse(raw)
     require(isinstance(value, dict) and value.get("tested_sha") == revision
             and value.get("state") == "experimental-unsealed"
@@ -169,7 +215,7 @@ def checked_receipt(path, revision):
 
 def select_products(artifact_root, roots, blobs, revision, canonical_sha, checker):
     """Use real normal-target products only. The complete historical text maps remain authority."""
-    assembly, assembly_sha = checked_receipt(artifact_root / "assembly/manifest.json", revision)
+    assembly, assembly_sha = checked_receipt(artifact_root / "assembly/manifest.json", revision, MAX_ASSEMBLY_RECEIPT)
     compile_receipt, compile_sha = checked_receipt(artifact_root / "manifest.json", revision)
     require(assembly.get("version") == "som.native-assembly-experiment.v1", "assembly receipt schema differs")
     require(compile_receipt.get("experiment_complete") is True and compile_receipt.get("passed") == 2041
@@ -458,8 +504,8 @@ def provision(args):
         blobs = bind_sources(runner, repo, args.source_revision)
         locked, counts = lock_union(blobs)
         report["lock_counts"], report["registry_union_count"] = counts, len(locked)
-        load_bound("raw_digest_compat", repo / RAW)
-        experiment = load_bound("_som_cargo_experiment", repo / EXPERIMENT)
+        load_bound("raw_digest_compat", repo / RAW, blobs[RAW])
+        experiment = load_bound("_som_cargo_experiment", repo / EXPERIMENT, blobs[EXPERIMENT])
         with fixed_git_environment(runner.environment):
             checker = experiment.ExperimentalChecker(repo)
             require(checker.repo.commit == args.source_revision, "independent checker source revision differs")

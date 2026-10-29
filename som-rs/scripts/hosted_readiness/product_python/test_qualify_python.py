@@ -5,6 +5,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -259,6 +260,37 @@ class EnvironmentTests(unittest.TestCase):
         self.assertIn("sqlalchemy[asyncio]==2.0.44", (self.root / "product-0001/requirements.in").read_text())
         with self.assertRaises(FileExistsError):
             q.write_environment(self.root, "product-0001", needs, PROJECT)
+
+    def test_main_emits_distinct_environment_and_product_ids(self):
+        repo = Path(q.__file__).resolve().parents[4]
+        artifact = self.root / "assembly-input"
+        (artifact / "assembly").mkdir(parents=True)
+        (artifact / "assembly/manifest.json").write_bytes(encoded({"synthetic": True}))
+        out = self.root / "environment-inputs"
+        plan = {"observer_requirements": ["requests==2.34.2"], "remaining_required_inputs": ["wheel closure unrun"]}
+        goldens = {"cohorts": {"python_public": [None] * 127, "python_legacy": [None] * 544}}
+        class FakeSources:
+            pins = {}
+            def __init__(self, _repo, _revision):
+                pass
+            def read(self, name):
+                return encoded(plan if name == q.PLAN else goldens if name == q.GOLDENS else {})
+        product = {"cohort": "python_public", "id": "PAIR_V1_MINIMAL_CRUD", "files_map_sha256": "1" * 64,
+                   "requirements": q.requirements(PROJECT.encode()), "pyproject_bytes": PROJECT}
+        argv = [str(q.__file__), "--repo", str(repo), "--source-revision", "1" * 40,
+                "--out", str(out), "--assembly", str(artifact)]
+        with patch.dict(os.environ, {"RUNNER_TEMP": str(self.root)}), patch.object(sys, "argv", argv), \
+             patch.object(q, "Sources", FakeSources), patch.object(q, "inventory", return_value={}), \
+             patch.object(q, "products", return_value=[product]), patch("builtins.print"), \
+             self.assertRaises(SystemExit) as stopped:
+            q.main()
+        self.assertEqual(stopped.exception.code, 0)
+        receipt = q.parse((out / "receipt.json").read_bytes())
+        environment = next(row for row in receipt["environments"] if row["id"] != "observer")
+        self.assertEqual(environment["id"], "product-0000")
+        self.assertEqual(environment["product_id"], "PAIR_V1_MINIMAL_CRUD")
+        self.assertEqual(environment["venv"], "product-0000/venv")
+        self.assertTrue((out / "environments/product-0000/pyproject.toml").is_file())
 
     def test_unsafe_paths_and_duplicate_json_keys_refused(self):
         for value in ("../outside", "/outside", "a//b", "a\\b", "a/./b", "a\nb"):

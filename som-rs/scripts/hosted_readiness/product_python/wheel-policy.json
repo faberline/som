@@ -1,0 +1,40 @@
+{
+  "version": "som.hosted-python-wheel-policy.v1",
+  "python": "3.12.11",
+  "uv": "0.9.9",
+  "host": "x86_64-manylinux_2_35",
+  "native_sha256": {
+    "python": "8d0f57448252a3a8f8065b889648de2f1ca8959ea3f3fa029a94204bb9325c10",
+    "uv": "83f28650272b5543e939debbc7a5578d087952399fd945e9267b1db0ccc27d33"
+  },
+  "native_authority": {
+    "reuse_source": "som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py",
+    "shared_runtime_source": "som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py",
+    "qualification": "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json",
+    "byte_audit": "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json",
+    "controller_byte_audit_sha256": "7a2c04a65866474bd773b9722274c09c36646951fa7848d62e4b20b2cb94e75f",
+    "qualified_inventory_sha256": "ac9df6b242d0a5016dd32317af27475e64d652dd38ccc8663743b0537f9cd63c"
+  },
+  "publisher_hosts": ["pypi.org", "files.pythonhosted.org"],
+  "uv_cli_authority": [
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-cli/src/lib.rs",
+      "raw_sha256": "f965839e8611950970ce799b4f45d23182a57e23155d8b8e69788b807c01a181"
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/docs/reference/cli.md",
+      "raw_sha256": "c656f275a6e44d5dc5cfa5b771df5308b122807b3def6a8dba26286cdacc0d9d"
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/docs/pip/compile.md",
+      "raw_sha256": "c85989ed665587bb8971f148788147d018e3006e4d1286b8ff368c041f60626e"
+    }
+  ],
+  "deduplication": "exact requirements.in bytes plus qualified Python, uv and whole native inventory identity only",
+  "project_policy": "use the first real unchanged pyproject for a dependency set; only the observer receives its declared observer project",
+  "offline_policy": "validate each real named project with its own lock and venv, streaming successful venv cleanup; preserve every failed environment",
+  "constraints_policy": "offline additive exact selected pins only; original requirements and extras remain mandatory; no overrides",
+  "product_runtime_ready": false,
+  "product_acceptance_passed": false,
+  "limit": "The saved native artifact expires after 30 days. Reuse is an intermediate GitHub qualification route. Independent closure metadata/license audit and all product gates remain unrun."
+}

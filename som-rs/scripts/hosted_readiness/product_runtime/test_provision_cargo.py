@@ -1,18 +1,39 @@
 """Synthetic integrity checks. Run on GitHub; no real network, Cargo, or child programs."""
 import hashlib
-import importlib.util
 import io
 import json
 import os
+import py_compile
+import struct
+import sys
 from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+from types import ModuleType
 from unittest.mock import patch
 
-SPEC = importlib.util.spec_from_file_location("provision_cargo", Path(__file__).with_name("provision_cargo.py"))
-c = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(c)
+SUBJECT = Path(__file__).with_name("provision_cargo.py")
+c = ModuleType("provision_cargo")
+c.__file__, c.__cached__ = str(SUBJECT), None
+sys.modules[c.__name__] = c
+exec(compile(SUBJECT.read_bytes(), str(SUBJECT), "exec", dont_inherit=True), c.__dict__)
+
+
+def stale_cache(path, source, stale):
+    """Create a valid timestamp cache whose body disagrees with the source bytes."""
+    if len(stale) > len(source):
+        raise AssertionError("fixture cache body must fit the source size")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(stale.ljust(len(source), b" "))
+    os.utime(path, (1700000000, 1700000000))
+    cache = Path(py_compile.compile(str(path), doraise=True,
+                                   invalidation_mode=py_compile.PycInvalidationMode.TIMESTAMP))
+    path.write_bytes(source)
+    os.utime(path, (1700000000, 1700000000))
+    if cache.read_bytes()[8:16] != struct.pack("<II", 1700000000, len(source)):
+        raise AssertionError("fixture is not a valid matching timestamp/size cache")
+    return cache
 
 
 def canonical_sha(value):
@@ -99,6 +120,78 @@ class CargoClosureTests(unittest.TestCase):
         c.q.write_new(directory / ".cargo-checksum.json", c.json_bytes(
             {"package": self.record[3], "files": {name: c.digest(body) for name, body in bodies.items()}}))
         return vendor
+
+
+    def test_bootstrap_ignores_valid_matching_timestamp_cache(self):
+        support = self.root / "bootstrap" / c.SUPPORT
+        source = Path(c.q.__file__).read_bytes()
+        cache = stale_cache(support, source, b"raise AssertionError('unchecked cached support executed')\n")
+        with patch.dict(sys.modules):
+            sys.modules.pop(c.SUPPORT_MODULE, None)
+            module = c.bootstrap_support(support)
+        self.assertEqual(module.__file__, str(support))
+        self.assertIsNone(module.__cached__)
+        self.assertEqual(module.EXPECTED, c.q.EXPECTED)
+        self.assertTrue(cache.is_file())
+
+    def test_bootstrap_rejects_dirty_support_before_compile(self):
+        support = self.root / "bootstrap" / c.SUPPORT
+        support.parent.mkdir(parents=True)
+        support.write_bytes(b"raise AssertionError('dirty support executed')\n")
+        with patch("builtins.compile", side_effect=AssertionError("dirty support reached compile")):
+            with self.assertRaisesRegex(RuntimeError, "support SHA"):
+                c.bootstrap_support(support)
+
+    def test_bootstrap_rejects_linked_or_copied_support_paths(self):
+        support = self.root / "bootstrap" / c.SUPPORT
+        support.parent.mkdir(parents=True)
+        target = self.root / "original-support.py"
+        target.write_bytes(Path(c.q.__file__).read_bytes())
+        support.symlink_to(target)
+        with self.assertRaisesRegex(RuntimeError, "linked"):
+            c.bootstrap_support(support)
+        support.unlink()
+        os.link(target, support)
+        with self.assertRaisesRegex(RuntimeError, "linked"):
+            c.bootstrap_support(support)
+        with self.assertRaisesRegex(RuntimeError, "fixed bootstrap"):
+            c.bootstrap_support(target)
+
+    def test_bootstrap_refuses_preloaded_unbound_module(self):
+        support = self.root / "bootstrap" / c.SUPPORT
+        support.parent.mkdir(parents=True)
+        support.write_bytes(Path(c.q.__file__).read_bytes())
+        with patch.dict(sys.modules, {c.SUPPORT_MODULE: ModuleType(c.SUPPORT_MODULE)}):
+            with self.assertRaisesRegex(RuntimeError, "already loaded"):
+                c.bootstrap_support(support)
+
+
+    def test_bound_helper_ignores_valid_cache_and_uses_git_blob_bytes(self):
+        source = b"VALUE = 'committed blob bytes'\n"
+        path = self.repo / c.RAW
+        stale_cache(path, source, b"VALUE = 'cache'\n")
+        with patch.dict(sys.modules):
+            sys.modules.pop("raw_digest_compat", None)
+            module = c.load_bound("raw_digest_compat", path, source)
+        self.assertEqual(module.VALUE, "committed blob bytes")
+        self.assertIsNone(module.__cached__)
+
+    def test_bound_helper_does_not_reread_mutable_source_after_binding(self):
+        source = b"VALUE = 'Git blob authority'\n"
+        path = self.repo / c.RAW
+        c.q.write_new(path, b"raise AssertionError('mutable source executed')\n")
+        with patch.dict(sys.modules):
+            sys.modules.pop("raw_digest_compat", None)
+            module = c.load_bound("raw_digest_compat", path, source)
+        self.assertEqual(module.VALUE, "Git blob authority")
+        with self.assertRaisesRegex(c.Refusal, "fixed bound helper"):
+            c.load_bound("unreviewed_name", path, source)
+
+    def test_bound_helper_refuses_preloaded_unbound_module(self):
+        path = self.repo / c.RAW
+        with patch.dict(sys.modules, {"raw_digest_compat": ModuleType("raw_digest_compat")}):
+            with self.assertRaisesRegex(c.Refusal, "already loaded"):
+                c.load_bound("raw_digest_compat", path, b"VALUE = 'Git blob authority'\n")
 
     def test_real_frozen_locks_have_the_complete_352_union(self):
         repo = Path(__file__).resolve().parents[4]
@@ -301,6 +394,45 @@ class CargoClosureTests(unittest.TestCase):
         c.q.write_new(artifact / "manifest.json", c.json_bytes(compile_receipt))
         c.q.write_new(artifact / "assembly/manifest.json", c.json_bytes(assembly))
         return artifact, roots, blobs, assembly, FrozenCompileOracle(pins)
+
+    def test_complete_assembly_inventory_above_source_blob_limit_is_bound(self):
+        artifact, roots, blobs, assembly, oracle = self.consumer_fixture()
+        files = [{"path": f"generated/component_{index:03d}/source/structured_module_with_full_inventory_scope.rs",
+                  "sha256": "a" * 64, "size": 128} for index in range(40)]
+        assembly["observations"] = [{"index": index, "target": "python" if index < 1348 else "rust",
+                                     "state": "passed", "files": files} for index in range(2045)]
+        path = artifact / "assembly/manifest.json"
+        raw = c.json_bytes(assembly)
+        self.assertGreater(len(raw), 16 * 1024 * 1024)
+        path.write_bytes(raw)
+        # The exact whole receipt must reach the existing full product/raw proof checks.
+        selected, receipts = c.select_products(artifact, roots, blobs, "1" * 40, canonical_sha, oracle)
+        self.assertEqual(set(selected), {"phase1", "phase2"})
+        self.assertEqual(receipts["assembly_manifest_sha256"], c.digest(raw))
+        # The larger receipt allowance must not change ordinary source/blob reads.
+        with self.assertRaisesRegex(c.Refusal, "oversized input"):
+            c.safe_read(path)
+
+    def test_assembly_receipt_above_its_own_limit_is_refused_before_read(self):
+        artifact, roots, blobs, _, oracle = self.consumer_fixture()
+        path = artifact / "assembly/manifest.json"
+        # A sparse oversized file avoids allocating or parsing 64 MiB of fixture data.
+        with path.open("wb") as stream:
+            stream.truncate(c.MAX_ASSEMBLY_RECEIPT + 1)
+        with patch.object(Path, "read_bytes", side_effect=AssertionError("oversized receipt was read")):
+            with self.assertRaisesRegex(c.Refusal, "oversized input"):
+                c.select_products(artifact, roots, blobs, "1" * 40, canonical_sha, oracle)
+
+    def test_assembly_receipt_symbolic_link_is_refused_before_read(self):
+        artifact, roots, blobs, _, oracle = self.consumer_fixture()
+        path = artifact / "assembly/manifest.json"
+        target = self.root / "copied-assembly-manifest.json"
+        target.write_bytes(path.read_bytes())
+        path.unlink()
+        path.symlink_to(target)
+        with patch.object(Path, "read_bytes", side_effect=AssertionError("linked receipt was read")):
+            with self.assertRaisesRegex(c.Refusal, "symlink"):
+                c.select_products(artifact, roots, blobs, "1" * 40, canonical_sha, oracle)
 
     def test_real_product_targets_full_maps_and_raw_receipts_are_bound(self):
         artifact, roots, blobs, _, oracle = self.consumer_fixture()
