@@ -126,6 +126,76 @@ def bring_back(run, root, port, previous, pointers, stop, binaries, python):
     return restored
 
 
+def bring_back_absent(run, config, root, port, previous, current, snapshot, pointers, previous_pointers, output):
+    """Start the previous service before changing links when the owner is absent."""
+    default_path = root / 'som-rs/runtime/default.json'
+    paths = {'runtime': root / 'som-rs/runtime/current', 'assets': root / 'som-rs/compiler-assets/current'}
+    owner, committed, written = None, None, set()
+    try:
+        owner = run.start(previous['command'], previous['health'])
+        run.health(port, previous['health'])
+        run.canary(port, {'previous': Path(previous['command'][0]), 'new': Path(current['command'][0])},
+                   rc.previous_cases(config), 'restored-default')
+        rc.require(rc.identity(owner['pid'], previous['command'], port) == owner, 'restored owner changed')
+        rc.require(not run.evidence_errors, 'restore evidence is incomplete')
+        rc.require(default_path.read_bytes() == snapshot, 'default changed during recovery')
+        for name, path in paths.items():
+            rc.require(rc.link_state(path) == pointers[name], f'{name} pointer changed during recovery')
+        for name, path in paths.items():
+            for other, other_path in paths.items():
+                expected = previous_pointers[other] if other in written else pointers[other]
+                rc.require(rc.link_state(other_path) == expected, f'{other} pointer changed during recovery')
+            rc.atomic_link(path, previous_pointers[name])
+            written.add(name)
+        receipt = {**previous, 'pid': owner['pid'], 'identity': owner,
+                   'process_logs': str(output / 'process-*.log'), 'restore_evidence': str(output),
+                   'restored_from': None, 'replaced_default_sha256': rc.sha_bytes(snapshot)}
+        committed = (json.dumps(receipt, indent=2) + '\n').encode()
+        rc.require(rc.identity(owner['pid'], previous['command'], port) == owner, 'restored owner changed before commit')
+        rc.require(default_path.read_bytes() == snapshot, 'default changed before commit')
+        for name, path in paths.items():
+            rc.require(rc.link_state(path) == previous_pointers[name], f'{name} pointer changed before commit')
+        rc.atomic_bytes(default_path, committed)
+        rc.require(rc.identity(owner['pid'], previous['command'], port) == owner, 'restored owner changed after commit')
+        run.health(port, previous['health'])
+        rc.require(default_path.read_bytes() == committed, 'default changed after commit')
+        for name, path in paths.items():
+            rc.require(rc.link_state(path) == previous_pointers[name], f'{name} pointer changed after commit')
+        run.event('restore_verified', owner=owner, evidence_errors=list(run.evidence_errors))
+        rc.require(not run.evidence_errors, 'restore evidence is incomplete')
+    except BaseException as failure:
+        errors = []
+        # Never overwrite externally changed pointers or default bytes. Only
+        # reverse values this invocation could have written.
+        try:
+            actual = default_path.read_bytes()
+            rc.require(actual == snapshot or (committed is not None and actual == committed),
+                       'default changed externally; cleanup refused')
+            if actual != snapshot:
+                rc.atomic_bytes(default_path, snapshot)
+            for name, path in paths.items():
+                actual = rc.link_state(path)
+                expected = previous_pointers[name] if name in written else pointers[name]
+                rc.require(actual == expected, f'{name} pointer changed externally; cleanup refused')
+                if name in written:
+                    rc.atomic_link(path, pointers[name])
+        except BaseException as cleanup:
+            errors.append(f'pointer or receipt cleanup: {cleanup!r}')
+        if owner is not None:
+            try:
+                child = next(child for child in run.children if child.pid == owner['pid'])
+                if child.poll() is None:
+                    run.stop_child(owner)
+                else:
+                    child.wait(timeout=20)
+            except BaseException as cleanup:
+                errors.append(f'owned process cleanup: {cleanup!r}')
+        run.event('restore_failed', error=repr(failure), cleanup_errors=errors)
+        if errors:
+            raise RuntimeError(f'RECOVERY_FAILED_REQUIRES_OPERATOR: {errors}; original: {failure!r}') from failure
+        raise
+
+
 def execute(config, root, port, output, approval, rehearsal, selected):
     runtime, legacy = rc.check_prerequisites(config)
     rc.apply_formatter_env(config)
@@ -250,8 +320,9 @@ def restore(config, root, port, output, approval, rehearsal, evidence):
     previous = json.loads(previous_bytes)
     rc.assert_current(config, previous)
     previous_pointers = journal[0]['pointers']
+    approval_path = approval
     if not rehearsal:
-        approval = check_approval(approval, 'restore-default-8765-rust-output', config, snapshot)
+        approval = check_approval(approval_path, 'restore-default-8765-rust-output', config, snapshot)
     rc.require(rc.digest(previous['command'][0]) == previous['identity']['binary_sha256'], 'previous binary differs')
     rc.assets_match(Path(previous['command'][3]), previous['health'])
     output.mkdir(parents=True, exist_ok=False)
@@ -260,13 +331,54 @@ def restore(config, root, port, output, approval, rehearsal, evidence):
     run.event('restore_admitted', evidence=str(evidence), approval=approval if not rehearsal else None)
     with (root / 'som-rs/runtime/.default-switch.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        owner = rc.identity(current['pid'], current['command'], port)
-        rc.require(owner == current['identity'], 'live owner differs from the receipt')
-        run.event('stop_intent', owner=owner)
+        pid = current['pid']
+        rc.require(type(pid) is int and pid > 1 and pid != os.getpid(), 'invalid candidate PID')
+        owner = None
+        if rc.alive(pid):
+            owner = rc.identity(pid, current['command'], port)
+            rc.require(owner == current['identity'], 'live owner differs from the receipt')
+            run.event('stop_intent', owner=owner)
+        else:
+            # An absent PID must never be signalled. Bind this recovery to the
+            # exact committed receipt and prove the port is free before changing
+            # either pointer. An alive owner without a listener fails closed in
+            # the live identity branch above; it is not an absent process.
+            identity = current['identity']
+            rc.require(journal[-1].get('receipt') == current, 'committed receipt differs from default')
+            rc.require(identity.get('pid') == pid and identity.get('argv') == current['command']
+                       and identity.get('port') == port and identity.get('uid') == os.getuid(),
+                       'absent candidate identity differs from receipt')
+            rc.require(identity.get('cwd') == previous['identity']['cwd']
+                       and isinstance(identity.get('start'), str) and identity['start'].strip(),
+                       'absent candidate provenance differs')
+            rc.require(rc.load(evidence / 'journal.json') == journal, 'switch journal changed externally')
+            rc.require(next(p for p in sorted(evidence.iterdir()) if p.name.endswith('-previous-default.json')).read_bytes()
+                       == previous_bytes, 'previous snapshot changed externally')
+            rc.require(previous_pointers == {
+                'runtime': {'kind': 'symlink', 'target': str(Path(previous['command'][0]).parent)},
+                'assets': {'kind': 'symlink', 'target': previous['command'][3]},
+            }, 'previous pointers differ from its receipt')
+            rc.require(default_path.read_bytes() == snapshot, 'default receipt changed externally')
+            rc.require(rc.link_state(root / 'som-rs/runtime/current') == pointers['runtime']
+                       and rc.link_state(root / 'som-rs/compiler-assets/current') == pointers['assets'],
+                       'pointers changed externally')
+            rc.port_free(port)
+            rc.require(not rc.alive(pid), 'candidate PID became live; recovery refused')
+            rc.check_prerequisites(config)
+            rc.assert_current(config, current, candidate=True)
+            rc.assert_current(config, previous)
+            rc.require(rc.digest(previous['command'][0]) == previous['identity']['binary_sha256'], 'previous binary differs')
+            rc.assets_match(Path(previous['command'][3]), previous['health'])
+            if not rehearsal:
+                check_approval(approval_path, 'restore-default-8765-rust-output', config, snapshot)
+            run.event('restore_owner_absent', pid=pid, port=port, receipt_sha256=rc.sha_bytes(snapshot))
         for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
             signal.signal(signum, rc.rollback_defer_signal)
         run.recovering = True
-        restored = bring_back(run, root, port, previous, previous_pointers, [owner],
+        if owner is None:
+            bring_back_absent(run, config, root, port, previous, current, snapshot, pointers, previous_pointers, output)
+            return
+        restored = bring_back(run, root, port, previous, previous_pointers, [owner] if owner else [],
                               {'previous': Path(previous['command'][0]), 'new': Path(current['command'][0])},
                               rc.previous_cases(config))
         rc.require(default_path.read_bytes() == snapshot, 'default receipt changed externally')
