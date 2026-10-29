@@ -129,7 +129,8 @@ def inspect_package(blob, row):
     names, license_files, metadata, expanded = set(), {}, None, 0
     for member in members:
         name = relative(member.name)
-        need(name == 'package' or name.startswith('package/'), 'npm member outside package')
+        need(name == 'package' or name.startswith('package/'),
+             'npm member outside package: ' + json.dumps(name[:256], ensure_ascii=True))
         need(name not in names and 0 <= member.size <= 32 * 1024 * 1024, 'npm member repeated or too large')
         names.add(name)
         expanded += member.size
