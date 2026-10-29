@@ -1,0 +1,56 @@
+name: M6 TypeScript sealed-role diagnostic
+on:
+  push:
+    branches: [codex/m6-ts-role-transport-diagnostic]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Inspect retained encrypted artifact member counts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/faberline/som/actions/artifacts/12886702071 > "$RUNNER_TEMP/meta.json"
+          gh api repos/faberline/som/actions/artifacts/12886702071/zip > "$RUNNER_TEMP/sealed.zip"
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib,zipfile
+          root=pathlib.Path(os.environ['RUNNER_TEMP']);meta=json.loads((root/'meta.json').read_bytes());origin=meta['workflow_run']
+          expected='35dd2163eee587765d6d93cd3802493b3a2744eab6720f410bb018ebad80b504'
+          archive=root/'sealed.zip'
+          with archive.open('rb') as f:digest=hashlib.file_digest(f,'sha256').hexdigest()
+          if (meta['id'],meta['name'],meta['digest'],meta['expired'],origin['id'],origin['head_sha'])!=(12886702071,'ts-role-transport-draft-sealed','sha256:'+expected,False,40849890017,'c70d52e289c6191461e119fc020e5f9d79f1222a') or digest!=expected:raise SystemExit('artifact identity refused')
+          profile=json.loads(pathlib.Path('.github/m6-ts-role-transport/typescript-regression-input-profile-draft.json').read_bytes())
+          roles={k:v['files'] for k,v in profile['roles'].items()};roles['rs_prompts']=profile['pending_sibling_inputs']['rs_prompts']
+          found=set()
+          with zipfile.ZipFile(archive) as z:
+              names=z.namelist()
+              if len(names)!=len(set(names)) or 'evidence-index.json' not in names:raise SystemExit('artifact entries refused')
+              index=json.loads(z.read('evidence-index.json'))
+              for package in index['packages']:
+                  raw=z.read(package['manifest'])
+                  if hashlib.sha256(raw).hexdigest()!=package['manifest_sha256']:raise SystemExit('manifest refused')
+                  for entry in json.loads(raw)['files']:
+                      name=entry['path']
+                      if name in found:raise SystemExit('duplicate member refused')
+                      found.add(name)
+          counts={}
+          for role,expected_map in roles.items():
+              prefix='run/'+('siblings/' if role=='rs_prompts' else 'roles/')+role+'/'
+              actual={name[len(prefix):] for name in found if name.startswith(prefix)}
+              wanted=set(expected_map)
+              if role=='node_tools':wanted.remove('bin/node')
+              missing=wanted-actual;extra=actual-wanted
+              counts[role]={'expected':len(wanted),'present':len(actual),'missing':len(missing),'extra':len(extra),
+                            'missing_under_node_modules':sum('node_modules' in name.split('/') for name in missing),
+                            'missing_under_pycache':sum('__pycache__' in name.split('/') for name in missing),
+                            'missing_under_pgdata':sum('pgdata' in name.split('/') for name in missing)}
+          print(json.dumps({'artifact_id':12886702071,'roles':counts,'product_acceptance':'not_run'},sort_keys=True))
+          PY
