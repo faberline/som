@@ -1,7 +1,7 @@
 name: Native active source fixtures
 on:
   push:
-    branches: [codex/m12-native-converged164-binding-rerun-v1]
+    branches: [codex/m12-native-m6-converged-source-fixtures-v1]
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,36 +20,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: native-host-fragments
-            script: som-rs/scripts/hosted_readiness/test_native_ts_host_fragments.py
-          - name: original-lifecycle
-            script: som-rs/scripts/hosted_readiness/test_typescript_regression_lifecycle.py
-          - name: native-checker-targets
-            script: som-rs/scripts/hosted_readiness/test_native_ts_checker_targets.py
-          - name: original-v3-failures
-            script: som-rs/scripts/hosted_readiness/test_typescript_regression_v3_failures.py
-          - name: original-v3-replay
-            script: som-rs/scripts/hosted_readiness/test_typescript_regression_v3_replay.py
-          - name: native-nested-context
-            script: som-rs/scripts/hosted_readiness/test_native_ts_nested_context.py
-          - name: native-react-input-binder
-            script: som-rs/scripts/hosted_readiness/test_native_react_input_binder.py
-          - name: native-ts-owner-transport
-            script: som-rs/scripts/hosted_readiness/test_native_ts_owner_transport.py
-          - name: original-ts-owner
-            script: som-rs/scripts/hosted_readiness/test_typescript_regression_owner.py
-          - name: original-v2-contract
-            script: som-rs/scripts/hosted_readiness/test_typescript_regression_v2_contract.py
-          - name: original-common-gate
-            script: som-rs/scripts/hosted_readiness/test_run_current_candidate_gate.py
-          - name: native-common-services-owner
-            script: som-rs/scripts/hosted_readiness/test_native_common_services_owner.py
-          - name: original-raw-capture
-            script: som-rs/scripts/hosted_readiness/test_typescript_regression_raw_capture.py
-          - name: native-mutable-capture
-            script: som-rs/scripts/hosted_readiness/test_native_ts_mutable_capture.py
-          - name: native-schema-mutable-capture
-            script: som-rs/scripts/hosted_readiness/test_native_ts_schema_mutable_capture.py
+          - name: driver-whole52
+            script: som-rs/scripts/hosted_readiness/test_run_full_products.py
+          - name: m6-context-new5
+            script: som-rs/scripts/hosted_readiness/test_native_m6_callback_context.py
+          - name: callback-whole17
+            script: som-rs/scripts/hosted_readiness/test_native_react_callback_loaders.py
+          - name: auditor-new7
+            script: som-rs/scripts/hosted_readiness/test_native_react_auditor_bindings.py
+          - name: audit130-whole58
+            script: som-rs/scripts/react_output_acceptance/audit/test_audit130.py
+          - name: api-raw-whole13
+            script: som-rs/scripts/react_output_acceptance/audit/test_api_raw.py
+          - name: baseline-raw-whole17
+            script: som-rs/scripts/react_output_acceptance/audit/test_baseline_raw.py
+          - name: m6-entry-whole10
+            script: som-rs/scripts/hosted_readiness/test_native_m6_entry.py
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -65,6 +51,7 @@ jobs:
         env:
           SOURCE_FIXTURE_SCRIPT: ${{ matrix.script }}
         run: |
+          set -o pipefail
           sha256sum "$SOURCE_FIXTURE_SCRIPT" > fixture-source-sha256.txt
           python3 -I -S -B "$GITHUB_WORKSPACE/$SOURCE_FIXTURE_SCRIPT" -v 2>&1 | tee source-fixtures.log
       - name: Retain complete output and first failures

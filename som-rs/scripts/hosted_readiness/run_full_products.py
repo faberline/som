@@ -34,6 +34,7 @@ PENDING = ('fresh compile and assemble determinism and refusals', 'CLI forwardin
            'numbered native policy sealing and independent complete acceptance audit')
 CALLBACK_ADAPTERS = {
     'typescript-regression': 'som-rs/scripts/hosted_readiness/typescript_regression_owner.py',
+    'm6-react003': 'som-rs/scripts/react_output_acceptance/m6_react_callback.py',
 }
 NATIVE_QA_ENTRIES = {
     'som-core/scripts/verify_python_quality.py': 'entry.qa.python-quality',
@@ -706,12 +707,66 @@ def worker(context_path):
                  and report['source_runtime_tools_unchanged']) else 1
 
 
+def m6_callback_input_bindings(args, baselines, protected):
+    """Bind explicit locations. The M6 owner still admits their actual data."""
+    pairs = getattr(args, 'm6_react_input', None) or []
+    gate = getattr(args, 'callback_gate', None)
+    if type(gate) is not str or gate != 'm6-react003':
+        require(not pairs, 'M6 input locations require the fixed M6 callback gate')
+        return {}
+    required = {'baseline_profile', 'legacy_run', 'rust_baseline_run', 'qa_profile',
+                'api_profile', 'api_closure_tar', 'collector_out', 'audit_out'}
+    require(type(pairs) is list and len(pairs) == len(required),
+            'all eight explicit M6 callback input locations required')
+    values = {}
+    for pair in pairs:
+        require(type(pair) in {list, tuple} and len(pair) == 2,
+                'M6 input binding requires exactly NAME VALUE')
+        name, value = pair
+        require(type(name) is str and name in required and name not in values,
+                'unknown or duplicate M6 callback input name')
+        require(type(value) is str and value and '\\' not in value
+                and not any(ord(char) < 32 or ord(char) == 127 for char in value),
+                'M6 callback input value must be a clean explicit string')
+        values[name] = value
+    profile = 'som-rs/scripts/hosted_readiness/inputs/recorded-before-profile-v1.json'
+    require(values['baseline_profile'] == profile and set(baselines) == {profile},
+            'M6 callback requires the exact recorded-before baseline binding')
+    inputs = {}
+    for name in ('legacy_run', 'rust_baseline_run', 'qa_profile', 'api_profile', 'api_closure_tar'):
+        path = Path(values[name])
+        require(path.is_absolute() and str(path) == values[name] and '..' not in path.parts
+                and not any(part.is_symlink() for part in (path, *path.parents)),
+                'M6 callback input path must be physical and absolute')
+        mode = path.lstat().st_mode
+        require(stat.S_ISDIR(mode) if name in {'legacy_run', 'rust_baseline_run'} else stat.S_ISREG(mode),
+                'M6 callback input path has the wrong physical file type')
+        inputs[name] = path
+    local = args.repo.absolute() / '.local'
+    outputs = []
+    for name in ('collector_out', 'audit_out'):
+        path = Path(values[name])
+        require(path.is_absolute() and str(path) == values[name] and '..' not in path.parts
+                and local in path.parents and path.parent.is_dir() and not path.exists()
+                and not any(part.is_symlink() for part in (path, *path.parents)),
+                'M6 callback output must be a new physical repo-local path')
+        require(all(path != other and path not in other.parents and other not in path.parents
+                    for other in [*protected[1:], *map(Path, baselines.values()), *inputs.values(), *outputs]),
+                'M6 callback output overlaps protected input/output or another M6 path')
+        outputs.append(path)
+    return {'m6_react_inputs': values}
+
+
 def callback_context_bindings(args, sources, admission, out):
     """Bind existing callback inputs. Their owning gate still admits all data."""
     pairs = getattr(args, 'baseline_input', None) or []
     gate = getattr(args, 'callback_gate', None)
+    if type(gate) is str and gate == 'm6-react003':
+        m6_pairs = getattr(args, 'm6_react_input', None)
+        require(type(m6_pairs) is list and len(m6_pairs) == 8,
+                'all eight explicit M6 callback input locations required')
     if not pairs and gate is None:
-        return {}
+        return m6_callback_input_bindings(args, {}, [])
     require(args.mode == 'sealed-candidate-products' and getattr(args, 'prepare_context_only', False),
             'callback bindings require sealed prepare-context-only mode')
     require(type(gate) is str and gate in CALLBACK_ADAPTERS,
@@ -765,7 +820,8 @@ def callback_context_bindings(args, sources, admission, out):
             'fixed callback adapter is not in actual native source admission')
     adapter_raw = sources.read(path)
     return {'baseline_inputs': baselines,
-            'gate_adapters': {gate: {'path': path, 'sha256': digest(adapter_raw)}}}
+            'gate_adapters': {gate: {'path': path, 'sha256': digest(adapter_raw)}},
+            **m6_callback_input_bindings(args, baselines, protected)}
 
 
 def prepare(args):
@@ -1044,13 +1100,17 @@ def main(argv=None):
     parser.add_argument('--prepare-context-only', action='store_true')
     parser.add_argument('--callback-gate', choices=tuple(CALLBACK_ADAPTERS))
     parser.add_argument('--baseline-input', nargs=2, action='append', metavar=('PROFILE', 'ROOT'))
+    parser.add_argument('--m6-react-input', nargs=2, action='append', metavar=('NAME', 'VALUE'))
     for name in ('carrier-root', 'artifact-inputs', 'current-companions-root', 'python-inputs-root', 'rust-inputs-root', 'build-provenance-root'):
         parser.add_argument('--' + name, type=Path)
     parser.add_argument('--shard-index', type=int, default=0)
     parser.add_argument('--shard-count', type=int, default=1)
     for name in ('assembly-root', 'wheel-root', 'runtime-root', 'rust-tools-root', 'cargo-root', 'out'):
         parser.add_argument('--' + name, type=Path, required=True)
-    return prepare(parser.parse_args(arguments))
+    parsed = parser.parse_args(arguments)
+    if parsed.callback_gate == 'm6-react003' and len(parsed.m6_react_input or []) != 8:
+        parser.error('all eight explicit M6 callback input locations required')
+    return prepare(parsed)
 
 
 if __name__ == '__main__':

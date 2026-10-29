@@ -42,7 +42,7 @@ def native_protocol_fixture(case, *, entry_failure=False, shard=None):
         return raw
     driver_raw = source(driver.SELF)
     case.assertEqual(hashlib.sha256(driver_raw).hexdigest(),
-                     '9783d1ccc222c0269415e5f5aa214ac3967e5375d0107fcce6b3d159d7908cbb')
+                     'b267bb52ae7f43ee6e7d649c57a44c313a2a6d86f69427d454189cb9e652fc82')
     protocol = subject('full_product_core_protocol_fixture', HERE / 'test_native_active_controls.py')
     actual_context = source(driver.CONTEXT)
     context_tree = ast.parse(actual_context)
@@ -568,7 +568,8 @@ class CallbackBaseContextTests(unittest.TestCase):
     def test_only_the_admitted_fixed_typescript_adapter_can_be_selected(self):
         for gate in ('m6-react003', 'arbitrary.module:callable'):
             self.args.callback_gate = gate
-            with self.subTest(gate=gate), self.assertRaisesRegex(ValueError, 'no finalized fixed source adapter'): self.run_prepare()
+            message = 'all eight explicit M6' if gate == 'm6-react003' else 'no finalized fixed source adapter'
+            with self.subTest(gate=gate), self.assertRaisesRegex(ValueError, message): self.run_prepare()
             self.assert_before_output()
         self.args.callback_gate = 'typescript-regression'
         self.admission['admitted_repository_python_sources'] = []
