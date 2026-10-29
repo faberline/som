@@ -42,7 +42,7 @@ def native_protocol_fixture(case, *, entry_failure=False, shard=None):
         return raw
     driver_raw = source(driver.SELF)
     case.assertEqual(hashlib.sha256(driver_raw).hexdigest(),
-                     'e79377c5607957b5c1c7d88e071bf415913fd5f40085f8d40198c6bd655ee202')
+                     '4fdf3359f668caf5e5ca9821c7d1c07a6dde04e071301eb87cbeeeb04df19b8a')
     protocol = subject('full_product_core_protocol_fixture', HERE / 'test_native_active_controls.py')
     actual_context = source(driver.CONTEXT)
     context_tree = ast.parse(actual_context)
@@ -369,6 +369,218 @@ class NativeRoleProtocolTests(unittest.TestCase):
                 f.summary_path.write_bytes(driver.canonical({**f.summary, **changes}))
                 _, rows = f.results()
                 self.assert_failed_complete(f, rows)
+
+
+class CallbackBaseContextTests(unittest.TestCase):
+    """Actual prepare and Git reader; explicit Graph/Context/runtime doubles."""
+    PROFILE = 'som-rs/scripts/hosted_readiness/inputs/callback-protocol-profile.json'
+    SECOND = 'som-rs/scripts/hosted_readiness/inputs/callback-second-profile.json'
+    GRAPH = 'som-rs/scripts/hosted_readiness/same_candidate_graph.py'
+
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory(prefix='som-callback-base-protocol-')
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name).resolve()
+        self.repo = self.root / 'repo'; self.repo.mkdir()
+        self.calls = []
+        self.profile_raw = b'{"version":"explicit-protocol-profile","admission_complete":false}\n'
+        for relative in (driver.SELF, self.GRAPH, driver.CALLBACK_ADAPTERS['typescript-regression']):
+            raw = (HERE.parents[2] / relative).read_bytes()
+            self.assertEqual(raw, subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(HERE.parents[2]),
+                'cat-file', 'blob', os.environ['HELPER_REVISION'] + ':' + relative]))
+            target = self.repo / relative; target.parent.mkdir(parents=True, exist_ok=True); target.write_bytes(raw)
+        for relative in (self.PROFILE, self.SECOND):
+            target = self.repo / relative; target.parent.mkdir(parents=True, exist_ok=True); target.write_bytes(self.profile_raw)
+        def git(*arguments):
+            return subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(self.repo), *arguments],
+                env={'PATH': '/usr/bin:/bin', 'GIT_CONFIG_NOSYSTEM': '1', 'GIT_CONFIG_GLOBAL': '/dev/null',
+                     'GIT_AUTHOR_NAME': 'Callback protocol fixture', 'GIT_AUTHOR_EMAIL': 'fixture@example.invalid',
+                     'GIT_COMMITTER_NAME': 'Callback protocol fixture', 'GIT_COMMITTER_EMAIL': 'fixture@example.invalid'},
+                stderr=subprocess.DEVNULL, timeout=30)
+        git('init', '--quiet'); git('add', '--all')
+        git('-c', 'commit.gpgsign=false', 'commit', '--quiet', '--no-verify', '-m', 'Explicit callback protocol source')
+        revision = git('rev-parse', 'HEAD').decode().strip()
+        self.sources = context_module.SourceBytes(self.repo, revision)
+        self.sources.workflow_binding = {'explicit_protocol_workflow': True, 'product_acceptance_passed': False}
+        self.baseline = self.root / 'baseline-data'; self.baseline.mkdir()
+        self.other_baseline = self.root / 'other-baseline-data'; self.other_baseline.mkdir()
+        assembly = self.root / 'inputs/_temp/som-unsealed-native-compile'
+        build = assembly.parent / 'som-current-build-provenance'
+        context_parent = self.root / 'context-parent'; context_parent.mkdir()
+        self.args = SimpleNamespace(mode='sealed-candidate-products', repo=self.repo,
+            helper_revision=revision, candidate_revision=revision, stage='phase1', shard_index=0, shard_count=1,
+            prepare_context_only=True, callback_gate='typescript-regression',
+            baseline_input=[[self.PROFILE, str(self.baseline)]], out=context_parent / 'context-out',
+            assembly_root=assembly, build_provenance_root=build)
+        for name in ('wheel_root', 'runtime_root', 'rust_tools_root', 'cargo_root', 'carrier_root',
+                     'python_inputs_root', 'rust_inputs_root', 'current_companions_root'):
+            setattr(self.args, name, self.root / 'inputs' / name)
+        for name in ('assembly_root', 'build_provenance_root', 'wheel_root', 'runtime_root', 'rust_tools_root',
+                     'cargo_root', 'carrier_root', 'python_inputs_root', 'rust_inputs_root', 'current_companions_root'):
+            getattr(self.args, name).mkdir(parents=True, exist_ok=True)
+        self.args.artifact_inputs = self.root / 'inputs/catalog/artifact-inputs.json'
+        self.args.artifact_inputs.parent.mkdir(); self.args.artifact_inputs.write_text('{"explicit_catalog_double":true}')
+        self.admission = {'source_authority_active': True, 'mode': 'native-qa-v1',
+            'admitted_repository_python_sources': [driver.CALLBACK_ADAPTERS['typescript-regression']],
+            'product_acceptance_passed': False}
+        fixture = self
+        class ContextProtocol:
+            def __init__(self, path):
+                self.path = Path(path); self.data = json.loads(self.path.read_bytes())
+                self.repo, self.work, self.sources = fixture.repo, fixture.args.out, fixture.sources
+                # Retain exactly what was on disk at constructor entry.
+                fixture.calls.append(('constructor', json.loads(self.path.read_bytes())))
+            def python_rows(self): fixture.calls.append(('python_rows',)); return []
+            def rust_rows(self): fixture.calls.append(('rust_rows',)); return []
+            def module(self, key, path):
+                fixture.assertEqual((key, path), ('cargo_consumer', driver.CARGO))
+                return SimpleNamespace(prepare=lambda ctx: fixture.calls.append(('cargo_prepare',)))
+            def prepare_python(self, root, files):
+                fixture.assertEqual((root, files), (fixture.args.out / 'observer', {}))
+                fixture.calls.append(('observer_prepare',))
+            def verify(self): fixture.sources.verify(); fixture.calls.append(('verify',))
+            def command(self, *args, **kwargs): raise AssertionError('prepare-only must not run a product worker')
+        self.module = SimpleNamespace(Context=ContextProtocol, __som_native_source_authority__=self.admission)
+        def restore(*args):
+            self.calls.append(('carrier_restore',))
+            return {'explicit_protocol_carrier': True, 'product_acceptance_passed': False}
+        self.graph = SimpleNamespace(_admitted_controller_sources=lambda *args: (self.sources, None, self.admission),
+            restore_current_carrier=restore)
+        self.controls = SimpleNamespace(role_sources={'full.graph': self.GRAPH}, load_module=lambda role: self.graph)
+        self.environment = mock.patch.dict(os.environ, {'RUNNER_TEMP': str(self.root)})
+        self.environment.start(); self.addCleanup(self.environment.stop)
+
+    def run_prepare(self):
+        with mock.patch.object(driver, '_native_controls', return_value=self.controls), \
+             mock.patch.object(driver, 'load_context_module', return_value=self.module):
+            return driver.prepare(self.args)
+
+    def assert_before_output(self):
+        self.assertFalse(self.args.out.exists())
+        self.assertFalse(any(call[0] in {'constructor', 'carrier_restore', 'observer_prepare'} for call in self.calls))
+
+    def test_actual_prepare_stores_exact_fixed_bindings_before_constructor(self):
+        self.assertEqual(self.run_prepare(), 0)
+        snapshot = next(value for name, *values in self.calls if name == 'constructor' for value in values)
+        self.assertEqual(snapshot['baseline_inputs'], {self.PROFILE: str(self.baseline)})
+        adapter = driver.CALLBACK_ADAPTERS['typescript-regression']
+        self.assertEqual(snapshot['gate_adapters'], {'typescript-regression': {
+            'path': adapter, 'sha256': hashlib.sha256(self.sources.read(adapter)).hexdigest()}})
+        self.assertEqual(json.loads((self.args.out / 'context.json').read_bytes()), snapshot)
+        self.assertEqual(self.sources.read(self.PROFILE), self.profile_raw)
+        self.assertFalse(json.loads(self.sources.read(self.PROFILE))['admission_complete'])
+        prepared = json.loads((self.args.out / 'context-prepared.json').read_bytes())
+        self.assertFalse(prepared['product_acceptance_passed']); self.assertFalse(prepared['product_rows_run'])
+        self.assertEqual([item[0] for item in self.calls],
+                         ['carrier_restore', 'constructor', 'python_rows', 'rust_rows', 'cargo_prepare', 'observer_prepare', 'verify'])
+
+    def test_absent_options_preserve_original_base_context_shape(self):
+        self.args.callback_gate = None; self.args.baseline_input = None
+        self.assertEqual(self.run_prepare(), 0)
+        data = json.loads((self.args.out / 'context.json').read_bytes())
+        self.assertNotIn('baseline_inputs', data); self.assertNotIn('gate_adapters', data)
+        self.assertTrue((self.args.out / 'context-prepared.json').is_file())
+
+    def test_cli_passes_explicit_fixed_gate_and_repeated_two_value_bindings(self):
+        arguments = ['--mode', 'sealed-candidate-products', '--stage', 'phase1',
+            '--helper-revision', self.args.helper_revision, '--candidate-revision', self.args.candidate_revision,
+            '--prepare-context-only', '--callback-gate', 'typescript-regression',
+            '--baseline-input', self.PROFILE, str(self.baseline),
+            '--baseline-input', self.SECOND, str(self.other_baseline)]
+        for name in ('repo', 'assembly_root', 'wheel_root', 'runtime_root', 'rust_tools_root', 'cargo_root', 'out',
+                     'carrier_root', 'artifact_inputs', 'current_companions_root', 'python_inputs_root',
+                     'rust_inputs_root', 'build_provenance_root'):
+            arguments += ['--' + name.replace('_', '-'), str(getattr(self.args, name))]
+        handlers = {number: signal.getsignal(number) for number in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)}
+        try:
+            with mock.patch.object(driver, 'prepare', return_value=0) as prepared:
+                self.assertEqual(driver.main(arguments), 0)
+                prepared.assert_called_once()
+                parsed = prepared.call_args.args[0]
+                self.assertEqual(parsed.callback_gate, 'typescript-regression')
+                self.assertTrue(parsed.prepare_context_only)
+                self.assertEqual(parsed.baseline_input,
+                    [[self.PROFILE, str(self.baseline)], [self.SECOND, str(self.other_baseline)]])
+                prepared.reset_mock()
+                arguments[arguments.index('typescript-regression')] = 'm6-react003'
+                with self.assertRaises(SystemExit) as refused: driver.main(arguments)
+                self.assertEqual(refused.exception.code, 2)
+                prepared.assert_not_called()
+        finally:
+            for number, handler in handlers.items(): signal.signal(number, handler)
+
+    def test_bindings_require_sealed_prepare_only_and_explicit_gate_and_nonempty_map(self):
+        for changes, message in (({'mode': 'experimental-preparation'}, 'sealed prepare-context-only'),
+                ({'prepare_context_only': False}, 'sealed prepare-context-only'),
+                ({'callback_gate': None}, 'fixed source adapter'),
+                ({'baseline_input': []}, 'one to 32')):
+            original = vars(self.args).copy()
+            vars(self.args).update(changes)
+            try:
+                with self.subTest(changes=changes), self.assertRaisesRegex(ValueError, message): self.run_prepare()
+                self.assert_before_output()
+            finally:
+                vars(self.args).clear(); vars(self.args).update(original)
+
+    def test_duplicate_profiles_and_more_than32_bindings_refuse_before_output(self):
+        for pairs, message in (([[self.PROFILE, str(self.baseline)], [self.PROFILE, str(self.other_baseline)]], 'duplicate baseline profile'),
+                               ([[self.PROFILE, str(self.baseline)]] * 33, 'one to 32')):
+            self.args.baseline_input = pairs
+            with self.subTest(message=message), self.assertRaisesRegex(ValueError, message): self.run_prepare()
+            self.assert_before_output()
+
+    def test_untracked_missing_or_nonoperational_profile_cannot_bind(self):
+        for profile in ('/absolute/profile.json', '../profile.json', 'som-rs/contracts/profile.json',
+                        'som-rs/scripts/hosted_readiness/../profile.json', 'som-rs/scripts/hosted_readiness/profile.py'):
+            self.args.baseline_input = [[profile, str(self.baseline)]]
+            with self.subTest(profile=profile), self.assertRaisesRegex(ValueError, 'clean tracked operational JSON'): self.run_prepare()
+            self.assert_before_output()
+        missing = 'som-rs/scripts/hosted_readiness/inputs/not-tracked.json'
+        self.args.baseline_input = [[missing, str(self.baseline)]]
+        with self.assertRaisesRegex(ValueError, 'fixed regular Git source required'): self.run_prepare()
+        self.assert_before_output()
+        (self.repo / missing).write_text('{}')
+        with self.assertRaisesRegex(ValueError, 'fixed regular Git source required'): self.run_prepare()
+        self.assert_before_output()
+
+    def test_link_and_traversal_and_relative_roots_refuse_before_output(self):
+        alias = self.root / 'baseline-alias'; alias.symlink_to(self.baseline, target_is_directory=True)
+        regular = self.root / 'baseline-file'; regular.write_bytes(b'not a directory')
+        for locator in (str(alias), str(regular), str(self.baseline) + '/../baseline-data', 'relative-data', str(self.baseline) + '/'):
+            self.args.baseline_input = [[self.PROFILE, locator]]
+            with self.subTest(locator=locator), self.assertRaisesRegex(ValueError, 'physical directory without traversal or links'): self.run_prepare()
+            self.assert_before_output()
+
+    def test_baselines_exclude_every_protected_scope_and_each_other(self):
+        protected = [self.repo, self.args.out.parent, self.args.artifact_inputs.parent,
+                     *(getattr(self.args, name) for name in ('assembly_root', 'wheel_root', 'runtime_root', 'rust_tools_root',
+                       'cargo_root', 'carrier_root', 'python_inputs_root', 'rust_inputs_root', 'current_companions_root', 'build_provenance_root'))]
+        for root in protected:
+            self.args.baseline_input = [[self.PROFILE, str(root)]]
+            with self.subTest(root=root), self.assertRaisesRegex(ValueError, 'overlaps protected'): self.run_prepare()
+            self.assert_before_output()
+        nested = self.baseline / 'nested'; nested.mkdir()
+        for other in (self.baseline, nested):
+            self.args.baseline_input = [[self.PROFILE, str(self.baseline)], [self.SECOND, str(other)]]
+            with self.subTest(other=other), self.assertRaisesRegex(ValueError, 'overlaps protected'): self.run_prepare()
+            self.assert_before_output()
+
+    def test_only_the_admitted_fixed_typescript_adapter_can_be_selected(self):
+        for gate in ('m6-react003', 'arbitrary.module:callable'):
+            self.args.callback_gate = gate
+            with self.subTest(gate=gate), self.assertRaisesRegex(ValueError, 'no finalized fixed source adapter'): self.run_prepare()
+            self.assert_before_output()
+        self.args.callback_gate = 'typescript-regression'
+        self.admission['admitted_repository_python_sources'] = []
+        with self.assertRaisesRegex(ValueError, 'not in actual native source admission'): self.run_prepare()
+        self.assert_before_output()
+        adapter = driver.CALLBACK_ADAPTERS['typescript-regression']
+        self.admission['admitted_repository_python_sources'] = [adapter]
+        path = self.repo / adapter
+        path.rename(path.with_suffix('.unavailable'))
+        with self.assertRaises(FileNotFoundError): self.run_prepare()
+        self.assert_before_output()
+
 
 
 class CohortScopeTests(unittest.TestCase):

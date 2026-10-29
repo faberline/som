@@ -19,6 +19,7 @@ from types import ModuleType
 
 BASE = 'som-rs/scripts/hosted_readiness/'
 SELF = BASE + 'typescript_regression_owner.py'
+CONTEXT = BASE + 'product_runtime/full_product_context.py'
 COLLECTOR = 'som-rs/scripts/typescript_output_acceptance/run_acceptance.py'
 CURRENT_TS = 'som-rs/scripts/react_output_acceptance/check_typescript_baseline.py'
 CURRENT_REBASE = BASE + 'typescript_regression_rebase.py'
@@ -203,19 +204,20 @@ def save(path, value):
         stream.write(canonical(value) + b'\n')
 
 
+def _native_controls(repo=None, helper=None, candidate=None):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    if repo is not None:
+        require(Path(repo).absolute() == controls.root
+                and helper == controls.helper_revision == candidate == controls.candidate_revision,
+                'active TypeScript owner source identity differs')
+    return controls
+
+
 def raw_module(reader, repo, name, path):
+    """Retired native-only route; fixed roles replace arbitrary raw execution."""
     require(name not in sys.modules, 'preloaded TypeScript owner helper refused')
-    raw = reader(path)
-    module = ModuleType(name)
-    module.__file__, module.__package__, module.__cached__ = str(Path(repo) / path), '', None
-    module.__som_raw_sha256__ = sha(raw)
-    sys.modules[name] = module
-    try:
-        exec(compile(raw, module.__file__, 'exec', dont_inherit=True), module.__dict__)
-    except BaseException:
-        sys.modules.pop(name, None)
-        raise
-    return module
+    raise ValueError('native TypeScript owner helpers require fixed active source roles')
 
 
 def plan_scope(reader):
@@ -270,7 +272,10 @@ def admitted_context(ctx):
     require(callable(getattr(ctx, 'python_argv', None)), 'actual isolated qualified Python startup API required')
     ctx.sources.read(SELF)
     ctx.verify()
-    module = sys.modules.get('full_product_context')
+    controls = _native_controls(ctx.repo, ctx.helper_revision, ctx.candidate_revision)
+    ctx.sources.read(CONTEXT)
+    require(controls.role_sources['runtime.context'] == CONTEXT, 'fixed active Context source differs')
+    module = controls.load_module('runtime.context')
     require(module is not None and module.context() is ctx and callable(getattr(module, 'tool_command', None)),
             'actual active Context/tool_command required')
     return module
@@ -625,8 +630,13 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
     # The source-bound common function rederives real source/catalog/layout/owner
     # process/health/wait/cleanup proof. It grants no domain checker pass.
     name = '_som_typescript_owner_shared_postclose'
-    shared = raw_module(source_reader, repo, name, SHARED)
-    try:
+    with _native_controls(repo, helper_revision, candidate_revision).borrow() as controls:
+        source_reader(SHARED)
+        require(controls.role_sources['ts.owner.shared-postclose'] == SHARED,
+                'fixed TypeScript shared postclose source differs')
+        shared = controls.load_module('ts.owner.shared-postclose')
+        require(type(shared) is ModuleType and shared.__name__ == name,
+                'fixed TypeScript shared postclose namespace differs')
         proof = shared.verify_owner_postclose(root, source_reader, helper_revision, candidate_revision,
             gate, repo=repo, proof_roots=proof_roots)
         require(proof['capture_result_sha256'] == sha(capture_raw), 'common proof does not own the immutable capture')
@@ -635,8 +645,7 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
             domain = verify_current_domain(root, source_reader, helper_revision, candidate_revision,
                                            repo=repo, admission=admission, shared_proof=proof,
                                            verification_evidence_root=evidence)
-    finally:
-        sys.modules.pop(name, None)
+        controls.verify_installed()
     # A historical audit065 result cannot establish current002/006 native scope.
     # This must be a separately source-bound current raw-domain audit, derived
     # from every original assertion plus the current TS125 refusal/rebase proof.
@@ -661,10 +670,15 @@ def verify_current_domain(root, source_reader, helper_revision, candidate_revisi
     require(DOMAIN in admission['admitted_repository_python_sources'],
             'current raw TypeScript domain verifier is outside exact source admission')
     name = '_som_typescript_owner_domain_verifier'
-    module = raw_module(source_reader, repo, name, DOMAIN)
-    try:
-        return module.verify(root, source_reader, helper_revision, candidate_revision,
-                             repo=repo, admission=admission, shared_proof=shared_proof,
-                             verification_evidence_root=verification_evidence_root)
-    finally:
-        sys.modules.pop(name, None)
+    with _native_controls(repo, helper_revision, candidate_revision).borrow() as controls:
+        source_reader(DOMAIN)
+        require(controls.role_sources['ts.owner.domain-verifier'] == DOMAIN,
+                'fixed current TypeScript domain source differs')
+        module = controls.load_module('ts.owner.domain-verifier')
+        require(type(module) is ModuleType and module.__name__ == name,
+                'fixed current TypeScript domain namespace differs')
+        result = module.verify(root, source_reader, helper_revision, candidate_revision,
+                               repo=repo, admission=admission, shared_proof=shared_proof,
+                               verification_evidence_root=verification_evidence_root)
+        controls.verify_installed()
+        return result

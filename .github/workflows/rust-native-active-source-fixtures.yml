@@ -1,7 +1,7 @@
 name: Native active source fixtures
 on:
   push:
-    branches: [codex/m12-native-child-driver-source-fixtures-v1]
+    branches: [codex/m12-native-callback-base-context-fixtures-v1]
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,24 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: native-python-startup
-            script: som-rs/scripts/hosted_readiness/test_native_python_startup.py
-          - name: current-child-environment
-            script: som-rs/scripts/hosted_readiness/test_current_child_environment.py
-          - name: current-gate-controller
-            script: som-rs/scripts/hosted_readiness/test_run_current_candidate_gate.py
-          - name: recorded-before-oracle
-            script: som-rs/scripts/hosted_readiness/product_runtime/test_recorded_before_oracle.py
           - name: full-product-driver
             script: som-rs/scripts/hosted_readiness/test_run_full_products.py
-          - name: native-entry-barrier
-            script: som-rs/scripts/hosted_readiness/test_native_entry_barrier.py
-          - name: native-phase2-retention
-            script: som-rs/scripts/hosted_readiness/test_native_phase2_retention.py
-          - name: same-candidate-graph
-            script: som-rs/scripts/hosted_readiness/test_same_candidate_graph.py
-          - name: native-rust-tool-verifier
-            script: som-rs/scripts/hosted_readiness/test_native_rust_tool_verifier.py
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:

@@ -16,6 +16,7 @@ from pathlib import Path
 import re
 import runpy
 import signal
+import stat
 import subprocess
 import sys
 import time
@@ -31,6 +32,9 @@ PENDING = ('fresh compile and assemble determinism and refusals', 'CLI forwardin
            'old bundle refusal and exact rebase', 'recorded baseline compiler comparisons',
            'ordinary-mode installer file scope independent audit',
            'numbered native policy sealing and independent complete acceptance audit')
+CALLBACK_ADAPTERS = {
+    'typescript-regression': 'som-rs/scripts/hosted_readiness/typescript_regression_owner.py',
+}
 NATIVE_QA_ENTRIES = {
     'som-core/scripts/verify_python_quality.py': 'entry.qa.python-quality',
     'som-core/scripts/verify_service_v3.py': 'entry.qa.legacy-service',
@@ -701,6 +705,68 @@ def worker(context_path):
                  and report['source_runtime_tools_unchanged']) else 1
 
 
+def callback_context_bindings(args, sources, admission, out):
+    """Bind existing callback inputs. Their owning gate still admits all data."""
+    pairs = getattr(args, 'baseline_input', None) or []
+    gate = getattr(args, 'callback_gate', None)
+    if not pairs and gate is None:
+        return {}
+    require(args.mode == 'sealed-candidate-products' and getattr(args, 'prepare_context_only', False),
+            'callback bindings require sealed prepare-context-only mode')
+    require(type(gate) is str and gate in CALLBACK_ADAPTERS,
+            'callback gate has no finalized fixed source adapter')
+    require(type(pairs) is list and 1 <= len(pairs) <= 32,
+            'one to 32 explicit baseline profile/root bindings required')
+    names = ('assembly_root', 'wheel_root', 'runtime_root', 'rust_tools_root', 'cargo_root',
+             'carrier_root', 'python_inputs_root', 'rust_inputs_root', 'current_companions_root',
+             'build_provenance_root')
+    protected = [args.repo.absolute(), out, args.artifact_inputs.absolute().parent,
+                 *(getattr(args, name).absolute() for name in names)]
+    require(all('..' not in path.parts and not any(part.is_symlink() for part in (path, *path.parents))
+                for path in protected), 'callback protected input paths must be physical and clean')
+    temporary = Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
+    baselines, roots = {}, []
+    for pair in pairs:
+        require(type(pair) in {list, tuple} and len(pair) == 2,
+                'baseline binding requires exactly PROFILE ROOT')
+        profile, locator = pair
+        require(type(profile) is str and profile.startswith('som-rs/scripts/hosted_readiness/')
+                and profile.endswith('.json') and '\\' not in profile
+                and all(part not in {'', '.', '..'} for part in profile.split('/'))
+                and not any(ord(char) < 32 or ord(char) == 127 for char in profile),
+                'baseline profile must be a clean tracked operational JSON source')
+        require(profile not in baselines, 'duplicate baseline profile binding')
+        # The admitted reader proves tracked source and exact physical Git bytes.
+        # JSON shape is not profile/data completeness or product admission.
+        raw = sources.read(profile)
+        def unique(rows):
+            value = {}
+            for key, item in rows:
+                require(key not in value, 'duplicate operational baseline JSON member')
+                value[key] = item
+            return value
+        document = json.loads(raw, object_pairs_hook=unique,
+            parse_constant=lambda _: (_ for _ in ()).throw(ValueError('nonfinite operational baseline JSON')))
+        require(type(document) is dict, 'operational baseline profile must be a JSON object')
+        require(type(locator) is str and locator and '\\' not in locator
+                and not any(ord(char) < 32 or ord(char) == 127 for char in locator),
+                'baseline root must be an explicit physical absolute path')
+        root = Path(locator)
+        require(root.is_absolute() and str(root) == locator and '..' not in root.parts and temporary in root.parents
+                and not any(part.is_symlink() for part in (root, *root.parents))
+                and stat.S_ISDIR(root.lstat().st_mode), 'baseline root must be a physical directory without traversal or links')
+        require(all(root != other and root not in other.parents and other not in root.parents
+                    for other in [*protected, *roots]), 'baseline root overlaps protected input/output or another baseline')
+        baselines[profile] = str(root)
+        roots.append(root)
+    path = CALLBACK_ADAPTERS[gate]
+    require(type(admission) is dict and path in admission.get('admitted_repository_python_sources', []),
+            'fixed callback adapter is not in actual native source admission')
+    adapter_raw = sources.read(path)
+    return {'baseline_inputs': baselines,
+            'gate_adapters': {gate: {'path': path, 'sha256': digest(adapter_raw)}}}
+
+
 def prepare(args):
     require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'GitHub Linux only')
     sealed = args.mode == 'sealed-candidate-products'
@@ -734,6 +800,8 @@ def prepare(args):
     require(args.stage in STAGES, 'named complete product cohort required')
     if args.stage == 'phase1':
         require((args.shard_index, args.shard_count) == (0, 1), 'phase1 keeps the whole 115-case parity report')
+    callback_bindings = callback_context_bindings(args, graph_sources,
+        module.__som_native_source_authority__ if sealed else None, out)
     out.mkdir(mode=0o700)
     for name in ('home', 'tmp', 'observer'):
         (out / name).mkdir()
@@ -744,6 +812,8 @@ def prepare(args):
             'transport': 'recorded-assembled-products',
             **{name: str(getattr(args, name).absolute()) for name in
                ('assembly_root', 'wheel_root', 'runtime_root', 'rust_tools_root', 'cargo_root')}}
+    if callback_bindings:
+        data.update(callback_bindings)
     if sealed:
         data.update(qa_mode='native-qa-v1', native_source_authority=module.__som_native_source_authority__,
                     source_workflow_binding=graph_sources.workflow_binding,
@@ -971,6 +1041,8 @@ def main(argv=None):
     parser.add_argument('--helper-revision', required=True)
     parser.add_argument('--candidate-revision', required=True)
     parser.add_argument('--prepare-context-only', action='store_true')
+    parser.add_argument('--callback-gate', choices=tuple(CALLBACK_ADAPTERS))
+    parser.add_argument('--baseline-input', nargs=2, action='append', metavar=('PROFILE', 'ROOT'))
     for name in ('carrier-root', 'artifact-inputs', 'current-companions-root', 'python-inputs-root', 'rust-inputs-root', 'build-provenance-root'):
         parser.add_argument('--' + name, type=Path)
     parser.add_argument('--shard-index', type=int, default=0)
