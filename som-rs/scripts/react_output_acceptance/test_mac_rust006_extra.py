@@ -363,6 +363,32 @@ class HistoricalReconstructionTests(unittest.TestCase):
         for invalid in ('run/python-baseline-raw/calls/00009.response.raw', 'run/python-baseline-raw/calls/000009Xresponse.raw', '../run/python-baseline-raw/calls/000009.response.raw'):
             self.assertFalse(recon.valid_response_name(invalid))
 
+    def test_later_source_request_status_and_response_join(self):
+        import hashlib
+        import verify_historical_response_provenance as proof
+        import reconstruct_historical_responses as recon
+        def h(raw): return hashlib.sha256(raw).hexdigest()
+        request=b'{"bundle":"later"}'; response=b'{"files":{}}'
+        root='run/python-baseline-raw/'; prefix='calls/000009'
+        call={'id':9,'method':'POST','url':'http://127.0.0.1:18917/v1/assemble', 'status':200,'complete':True,'error':None,
+              'request_file':prefix+'.request.raw','response_file':prefix+'.response.raw','request_sha256':h(request),'response_sha256':h(response)}
+        files={root+prefix+'.json':json.dumps(call).encode(),root+prefix+'.request.raw':request,root+prefix+'.response.raw':response}
+        recording={'version':'som.m6-http-recording.v1','exit_code':0,'recording_errors':[],'calls':[call]}
+        report={'rows':[{'source':'public','id':'case','variant':v,'baseline_assemble_status':200,
+                         'baseline_assemble_request_sha256':h(request),'baseline_assemble_response_sha256':h(response)} for v in ('none','python')]}
+        mapping={'reconstructed_cases':[{'source':'public','id':'case','source_request_equal':False,'historical_request_sha256':h(b'old'),
+                 'later_baseline_request_sha256':h(request),'decoded_response_sha256':h(response),
+                 'source_candidates':[{'path':root+prefix+'.response.raw'}]}]}
+        self.assertEqual(proof.join(mapping,recording,report,files.__getitem__,1)['derived_pairs'],1)
+        for name in (root+prefix+'.request.raw',root+prefix+'.response.raw',root+prefix+'.json'):
+            old=files[name]; files[name]=old+b'!'
+            with self.subTest(name=name), self.assertRaises((recon.Refused,ValueError)): proof.join(mapping,recording,report,files.__getitem__,1)
+            files[name]=old
+        for field,bad in (('method','GET'),('status',201),('url','http://127.0.0.1:18917/v1/compile'),('complete',False)):
+            old=call[field]; call[field]=bad; files[root+prefix+'.json']=json.dumps(call).encode()
+            with self.subTest(field=field), self.assertRaises(recon.Refused): proof.join(mapping,recording,report,files.__getitem__,1)
+            call[field]=old; files[root+prefix+'.json']=json.dumps(call).encode()
+
     def test_exact_bytes_and_source_tampering(self):
         import base64
         import hashlib

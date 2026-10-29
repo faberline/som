@@ -81,4 +81,5 @@ jobs:
       - name: Reconstruct and verify response hashes
         run: |
           python3 som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py --map som-rs/scripts/react_output_acceptance/historical-response-reuse-map.json --input-packages "$RUNNER_TEMP/input-packages" --input-root "$RUNNER_TEMP/inputs" --evidence-packages "$RUNNER_TEMP/evidence-sealed" --evidence-root "$RUNNER_TEMP/evidence" --out "$RUNNER_TEMP/derived"
+          python3 som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py --map som-rs/scripts/react_output_acceptance/historical-response-reuse-map.json --evidence-packages "$RUNNER_TEMP/evidence-sealed" --evidence-root "$RUNNER_TEMP/evidence"
           printf 'Source: approved #130 sealed evidence; 668 response pairs are derived. Product acceptance was not run.\n' >> "$GITHUB_STEP_SUMMARY"
