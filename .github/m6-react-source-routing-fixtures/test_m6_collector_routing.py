@@ -60,6 +60,29 @@ class CollectorRoutingTests(unittest.TestCase):
                 collector.run_single_step(self.step,self.out,self.repo,Path('/tmp/api.json'))
             spawn.assert_not_called()
 
+    def test_signal_during_spawn_registers_and_waits_owned_checker(self):
+        class Child:
+            pid=123
+            def __init__(self): self.signals=[]
+            def poll(self): return None
+            def send_signal(self, value): self.signals.append(value)
+            def wait(self, timeout=None): return 3
+        child=Child()
+        def spawn(argv, **kwargs):
+            Path(argv[argv.index('--postcheck')+1]).write_text('{}')
+            os.kill(os.getpid(), collector.signal.SIGTERM)
+            return child
+        with mock.patch.object(collector,'NATIVE_ROUTING_REVIEWED',True), \
+             mock.patch.dict(sys.modules,{'full_product_context':self.module}), \
+             mock.patch.object(collector.subprocess,'Popen',side_effect=spawn):
+            with self.assertRaises(KeyboardInterrupt):
+                collector.run_single_step(self.step,self.out,self.repo,Path('/tmp/api.json'))
+        receipt=json.loads((self.out/'receipts/01-fake.json').read_bytes())
+        self.assertEqual(receipt['judgment'],'failed')
+        self.assertEqual(receipt['source_routing']['interruption_cleanup']['wait'],'completed')
+        self.assertEqual(receipt['source_routing']['interruption_cleanup']['nested_services'],'unverified')
+        self.assertEqual(child.signals,[collector.signal.SIGINT])
+
     def test_legacy_child_argv_is_unchanged(self):
         with mock.patch.object(collector.subprocess,'run',return_value=SimpleNamespace(returncode=0)) as run:
             result = collector.run_single_step(self.step,self.out,self.repo)

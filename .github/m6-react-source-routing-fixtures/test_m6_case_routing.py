@@ -79,6 +79,31 @@ class CaseRoutingTests(unittest.TestCase):
                                         '/tmp/venv/bin/python',self.before)
             spawn.assert_not_called()
 
+    def test_signal_during_start_waits_owned_case_child_before_returning(self):
+        class Child:
+            pid=124
+            def __init__(self): self.signals=[]
+            def poll(self): return None
+            def send_signal(self, value): self.signals.append(value)
+            def wait(self, timeout): return 3
+        child=Child()
+        def spawn(argv, **kwargs):
+            Path(argv[argv.index('--postcheck')+1]).write_bytes(b'{}')
+            os.kill(os.getpid(), subject.signal.SIGTERM)
+            return child
+        with mock.patch.object(subject,'REPO',self.repo), mock.patch.dict(sys.modules,{'_som_m6_checked_router':self.holder}), \
+             mock.patch.object(subject.subprocess,'Popen',side_effect=spawn), \
+             mock.patch.object(subject.os,'killpg',side_effect=ProcessLookupError):
+            with self.assertRaises(KeyboardInterrupt):
+                subject.api_invocation([str(self.repo/self.recorder)],self.work/'api.log',self.work/'api-invocation.json',
+                                       '/tmp/venv/bin/python',full_before=self.before)
+        import json
+        saved=json.loads((self.work/'api-invocation.json').read_bytes())
+        self.assertEqual(saved['outcome'],'interrupted')
+        self.assertEqual(saved['interruption_cleanup']['recorder_wait'],'completed')
+        self.assertEqual(saved['interruption_cleanup']['owned_services'],'unverified')
+        self.assertEqual(child.signals,[subject.signal.SIGINT])
+
     def test_missing_postcheck_is_unverified_even_after_zero_exit(self):
         with mock.patch.object(subject,'REPO',self.repo), mock.patch.dict(sys.modules,{'_som_m6_checked_router':self.holder}), \
              mock.patch.object(subject.subprocess,'Popen',return_value=SimpleNamespace(pid=124,wait=lambda timeout:0)), \
