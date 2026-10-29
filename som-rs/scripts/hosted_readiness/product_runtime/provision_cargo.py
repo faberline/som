@@ -63,6 +63,7 @@ BASE = "som-rs/contracts/rust-output-v1/"
 GOLDENS = "som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json"
 EXPERIMENT = "som-rs/scripts/hosted_readiness/experimental_native_compile.py"
 RAW = "som-rs/scripts/hosted_readiness/raw_digest_compat.py"
+CANDIDATE_GUARD = "som-rs/scripts/hosted_readiness/dependency_candidate.py"
 TS065 = "som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json"
 LOCKS = {
     "phase1": ("reference", "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20", 203,
@@ -104,7 +105,7 @@ def bind_sources(runner, repo, revision):
     require(re.fullmatch(r"[0-9a-f]{40}", revision), "full candidate revision required")
     require(Path(__file__).absolute() == repo / SCRIPT and Path(q.__file__).absolute() == repo / SUPPORT,
             "fixed provisioning source paths required")
-    files = [SCRIPT, SUPPORT, GOLDENS, TS065, EXPERIMENT, RAW, BASE + "toolchain.json"]
+    files = [SCRIPT, SUPPORT, GOLDENS, TS065, EXPERIMENT, RAW, CANDIDATE_GUARD, BASE + "toolchain.json"]
     files += [BASE + item[0] + "/" + leaf for item in LOCKS.values() for leaf in ("Cargo.toml", "Cargo.lock")]
     git = Path("/usr/bin/git").resolve(strict=True)
     command = [git, "--no-pager", "--no-replace-objects", "-C", repo]
@@ -138,7 +139,8 @@ def bind_sources(runner, repo, revision):
 
 def load_bound(name, path, raw):
     """Execute only immutable bytes returned by bind_sources, never source/cache files."""
-    relative = {"raw_digest_compat": RAW, "_som_cargo_experiment": EXPERIMENT}.get(name)
+    relative = {"raw_digest_compat": RAW, "_som_cargo_experiment": EXPERIMENT,
+               "_som_cargo_candidate_guard": CANDIDATE_GUARD}.get(name)
     require(relative is not None and isinstance(path, Path) and path.is_absolute()
             and ".." not in path.parts and path.parts[-len(Path(relative).parts):] == Path(relative).parts,
             "fixed bound helper source path required")
@@ -388,8 +390,10 @@ def inspect_crate(record, path, out):
 
 
 def cargo_omission(relative):
-    # Cargo's own source copy omits these metadata and patch backup files.
-    return relative in {".gitattributes", ".gitignore", ".git", ".cargo-ok"} or relative.endswith((".orig", ".rej"))
+    # Cargo 356927216 vendor_this skips Git metadata at every path depth.
+    # Registry .orig/.rej files are retained by this Cargo release.
+    path = Path(relative)
+    return ".git" in path.parts or path.name in {".gitattributes", ".gitignore"} or relative == ".cargo-ok"
 
 
 def verify_vendor(vendor, locked, published, changes):
@@ -483,6 +487,7 @@ def provision(args):
     require(os.environ.get("GITHUB_ACTIONS") == "true" and platform.system() == "Linux"
             and platform.machine().lower() == "x86_64", "GitHub Linux x86_64 execution only")
     repo, out = args.repo.resolve(strict=True), args.out
+    candidate_revision = getattr(args, "candidate_revision", None) or args.source_revision
     q.checked_output(out, repo)
     for path in (args.assembly_root, args.phase1_product_root, args.phase2_product_root):
         temporary = Path(os.environ["RUNNER_TEMP"]).resolve(strict=True)
@@ -492,7 +497,8 @@ def provision(args):
         require(path.is_dir(), "same-candidate assembly consumer inputs are missing")
     out.mkdir(mode=0o700)
     os.chdir(out)
-    report = {"version": "som.product-cargo-closure.v1", "tested_sha": args.source_revision,
+    report = {"version": "som.product-cargo-closure.v1", "tested_sha": candidate_revision,
+              "source_revision": args.source_revision, "helper_revision": args.source_revision, "candidate_revision": candidate_revision,
               "status": "failed", "product_acceptance_passed": False, "product_builds": "unrun",
               "services": "not_started", "toolchain_binary_authority": "observed_hashes_not_independently_admitted",
               "bootstrap_python": {"path": str(Path(sys.executable).resolve()), "version": sys.version,
@@ -502,6 +508,8 @@ def provision(args):
     try:
         runner = q.Runner(out, report)
         blobs = bind_sources(runner, repo, args.source_revision)
+        candidate_guard = load_bound("_som_cargo_candidate_guard", repo / CANDIDATE_GUARD, blobs[CANDIDATE_GUARD])
+        report["candidate_admission"] = candidate_guard.verify_candidate_inputs(repo, args.source_revision, candidate_revision, args.assembly_root)
         locked, counts = lock_union(blobs)
         report["lock_counts"], report["registry_union_count"] = counts, len(locked)
         load_bound("raw_digest_compat", repo / RAW, blobs[RAW])
@@ -510,7 +518,7 @@ def provision(args):
             checker = experiment.ExperimentalChecker(repo)
             require(checker.repo.commit == args.source_revision, "independent checker source revision differs")
             selected, inputs = select_products(args.assembly_root, {"phase1": args.phase1_product_root, "phase2": args.phase2_product_root},
-                                               blobs, args.source_revision, experiment.value_sha, checker)
+                                               blobs, candidate_revision, experiment.value_sha, checker)
         report["input_receipts"] = inputs
         report["reference_products"] = {phase: {key: value for key, value in item.items() if key not in {"source_files", "root"}}
                                         for phase, item in selected.items()}
@@ -572,6 +580,8 @@ def provision(args):
         for phase, root in roots.items():
             actual = {name: q.sha(path) for name, path in tree_files(root).items()}
             require(actual == {row["path"]: row["sha256"] for row in selected[phase]["files"]}, "staged product source changed")
+        require(candidate_guard.verify_candidate_inputs(repo, args.source_revision, candidate_revision, args.assembly_root) == report["candidate_admission"],
+                "candidate admission changed during Cargo qualification")
         report.update(status="registry_closure_verified_product_gates_unrun", cargo_config_sha256=q.sha(home / "config.toml"),
                       vendor_package_count=352, product_builds="unrun",
                       candidate_archive_sha256=package_candidate(out))
@@ -587,7 +597,8 @@ def provision(args):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[4])
-    parser.add_argument("--source-revision", required=True)
+    parser.add_argument("--source-revision", required=True, help="helper Git HEAD")
+    parser.add_argument("--candidate-revision", help="recorded compiler candidate; defaults to helper HEAD")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--cargo", type=Path, required=True)
     parser.add_argument("--rustc", type=Path, required=True)

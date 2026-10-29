@@ -1,0 +1,336 @@
+name: Rust dependency preparation
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      helper_revision:
+        description: Exact helper commit selected by the guarded caller
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  actions: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: rust-dependency-preparation-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  dependency-helper-fixtures:
+    name: Dependency helper fixtures (no compiler build)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Run all dependency and candidate admission fixtures on GitHub
+        run: |
+          python3 -I -S -B som-rs/scripts/hosted_readiness/test_dependency_candidate.py
+          python3 -I -S -B som-rs/scripts/hosted_readiness/product_python/test_qualify_python.py
+          python3 -I -S -B som-rs/scripts/hosted_readiness/product_python/test_produce_wheels.py
+          python3 -I -S -B som-rs/scripts/hosted_readiness/product_runtime/test_provision_cargo.py
+
+  python-dependency-iteration:
+    name: Audited runtime bytes for later GitHub tests (not product readiness)
+    needs: dependency-helper-fixtures
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      actions: read
+    env:
+      SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Fetch the exact recorded candidate source
+        run: git fetch --no-tags --depth=1 origin f59e28d910ff4adb16e3becfdc82bd2978ca84fa
+      - name: Create the transport control directory and check synthetic fixtures
+        working-directory: ${{ runner.temp }}
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          control="$RUNNER_TEMP/som-runtime-reuse-control"
+          mkdir -m 700 "$control"
+          mkdir -m 700 "$control/tests"
+          printf 'created\n' > "$control/stage.txt"
+          cd "$control/tests"
+          TMPDIR="$control/tests" python3 -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_reuse_runtime.py"
+          TMPDIR="$control/tests" python3 -I -S -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_qualify_runtime.py"
+      - name: Download the exact controller-audited artifact from its original run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: "40740849594"
+          artifact-ids: "12840425819"
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/som-runtime-reuse-control/transport
+      - name: Restore and recheck all qualified runtime bytes
+        working-directory: ${{ runner.temp }}/som-runtime-reuse-control
+        env:
+          TESTED_SHA: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+          SOM_RUNTIME_ACTIONS_TOKEN: ${{ github.token }}
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          python3 -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py" \
+            --repo "$GITHUB_WORKSPACE" \
+            --source-revision "$TESTED_SHA" \
+            --artifact-root "$RUNNER_TEMP/som-runtime-reuse-control/transport" \
+            --out "$RUNNER_TEMP/som-product-runtime-qualification"
+          cat "$RUNNER_TEMP/som-product-runtime-qualification/github.env" >> "$GITHUB_ENV"
+      - name: Preserve reuse receipts and failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: product-runtime-reuse-evidence
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/som-runtime-reuse-control/stage.txt
+            ${{ runner.temp }}/som-product-runtime-qualification/receipt.json
+            ${{ runner.temp }}/som-product-runtime-qualification/artifact-origin.json
+            ${{ runner.temp }}/som-product-runtime-qualification/qualification-evidence
+            ${{ runner.temp }}/som-product-runtime-qualification/licenses
+            ${{ runner.temp }}/som-product-runtime-qualification/logs
+            ${{ runner.temp }}/som-product-runtime-qualification/github.env
+      - name: Download the exact reviewed compiler and assembly artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: "40805208879"
+          artifact-ids: "12868189241"
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/som-wheel-assembly-artifact
+      - name: Bind the original candidate and every reviewed artifact file
+        env:
+          HELPER_SHA: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -I -S -B som-rs/scripts/hosted_readiness/dependency_candidate.py verify \
+            --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_SHA" \
+            --candidate-revision f59e28d910ff4adb16e3becfdc82bd2978ca84fa \
+            --assembly-root "$RUNNER_TEMP/som-wheel-assembly-artifact/_temp/som-unsealed-native-compile"
+      - name: Run synthetic wheel and process integrity fixtures on GitHub
+        working-directory: ${{ runner.temp }}
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          mkdir -m 700 "$RUNNER_TEMP/som-wheel-producer-tests"
+          TMPDIR="$RUNNER_TEMP/som-wheel-producer-tests" \
+            "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_python/test_produce_wheels.py"
+      - name: Read every frozen product environment input
+        env:
+          TESTED_SHA: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+        run: |
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_python/qualify_python.py" \
+            --repo "$GITHUB_WORKSPACE" --source-revision "$TESTED_SHA" \
+            --candidate-revision f59e28d910ff4adb16e3becfdc82bd2978ca84fa \
+            --assembly "$RUNNER_TEMP/som-wheel-assembly-artifact/_temp/som-unsealed-native-compile" \
+            --out "$RUNNER_TEMP/som-wheel-environment-inputs"
+      - name: Resolve and stream all named offline environment checks
+        env:
+          TESTED_SHA: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+        run: |
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_python/produce_wheels.py" \
+            --repo "$GITHUB_WORKSPACE" --source-revision "$TESTED_SHA" \
+            --candidate-revision f59e28d910ff4adb16e3becfdc82bd2978ca84fa \
+            --environments "$RUNNER_TEMP/som-wheel-environment-inputs" \
+            --assembly "$RUNNER_TEMP/som-wheel-assembly-artifact/_temp/som-unsealed-native-compile" \
+            --runtime "$RUNNER_TEMP/som-product-runtime-qualification" \
+            --out "$RUNNER_TEMP/som-python-wheel-qualification"
+      - name: Preserve wheel closure, failed environments and all receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: python-wheel-closure-qualification
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/som-wheel-environment-inputs
+            ${{ runner.temp }}/som-python-wheel-qualification/receipt.json
+            ${{ runner.temp }}/som-python-wheel-qualification/probe-installed-metadata.py
+            ${{ runner.temp }}/som-python-wheel-qualification/logs
+            ${{ runner.temp }}/som-python-wheel-qualification/environments
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/receipt.json
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/project
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/requirements.*
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/publisher-metadata
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/wheels
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/wheel-audits
+
+  cargo-dependency-iteration:
+    name: Complete Rust registry closure (product gates unrun)
+    needs: dependency-helper-fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      actions: read
+    env:
+      SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Fetch the exact recorded candidate source
+        run: git fetch --no-tags --depth=1 origin f59e28d910ff4adb16e3becfdc82bd2978ca84fa
+      - name: Create an owned run and check synthetic integrity fixtures
+        working-directory: ${{ runner.temp }}
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          closure_run="$RUNNER_TEMP/som-cargo-closure-run"
+          mkdir -m 700 "$closure_run"
+          printf 'created\n' > "$closure_run/stage.txt"
+          mkdir -m 700 "$closure_run/tests"
+          cd "$closure_run/tests"
+          TMPDIR="$closure_run/tests" python3 -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_provision_cargo.py"
+      - name: Download this run's compile and assembly evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: "40805208879"
+          artifact-ids: "12868189241"
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/som-cargo-closure-run/input
+      - name: Bind the original candidate and every reviewed artifact file
+        env:
+          HELPER_SHA: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -I -S -B som-rs/scripts/hosted_readiness/dependency_candidate.py verify \
+            --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_SHA" \
+            --candidate-revision f59e28d910ff4adb16e3becfdc82bd2978ca84fa \
+            --assembly-root "$RUNNER_TEMP/som-cargo-closure-run/input/_temp/som-unsealed-native-compile"
+      - name: Check the required real product consumer route
+        working-directory: ${{ runner.temp }}/som-cargo-closure-run
+        env:
+          TESTED_SHA: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          python3 -B - "$PWD" "$TESTED_SHA" <<'PY'
+          import json, pathlib, sys
+          run = pathlib.Path(sys.argv[1])
+          root = run / "input/_temp/som-unsealed-native-compile"
+          manifest = json.loads((root / "assembly/manifest.json").read_text())
+          if manifest["tested_sha"] != "f59e28d910ff4adb16e3becfdc82bd2978ca84fa":
+              raise SystemExit("assembly artifact is not this candidate")
+          products = manifest["products"]["rust"]
+          references = {}
+          for phase, identity in (("phase1", "example-v1"), ("phase2", "services14-0000")):
+              rows = [row for row in products if (row["phase"], row["id"]) == (phase, identity)]
+              if len(rows) != 1:
+                  raise SystemExit("named real Cargo reference is missing")
+              path = root / rows[0]["product_dir"]
+              if not all((path / leaf).is_file() for leaf in ("src/main.rs", "Cargo.toml", "Cargo.lock")):
+                  raise SystemExit("real generated Cargo reference target is missing")
+              references[phase] = str(path)
+          (run / "consumer-roots.json").write_text(json.dumps({"assembly_root": str(root), **references}))
+          PY
+      - name: Install exact Rust tools inside the owned run
+        working-directory: ${{ runner.temp }}/som-cargo-closure-run
+        run: |
+          RUSTUP_HOME="$PWD/rustup" CARGO_HOME="$PWD/bootstrap-cargo" \
+            rustup toolchain install 1.96.1 --profile minimal > rustup-install.log 2>&1
+      - name: Make and verify all 352 registry packages
+        working-directory: ${{ runner.temp }}/som-cargo-closure-run
+        env:
+          TESTED_SHA: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          cargo_tool="$(RUSTUP_HOME="$PWD/rustup" CARGO_HOME="$PWD/bootstrap-cargo" rustup which --toolchain 1.96.1 cargo)"
+          rustc_tool="$(RUSTUP_HOME="$PWD/rustup" CARGO_HOME="$PWD/bootstrap-cargo" rustup which --toolchain 1.96.1 rustc)"
+          python3 -B - "$GITHUB_WORKSPACE" "$PWD" "$TESTED_SHA" "$cargo_tool" "$rustc_tool" <<'PY'
+          import json, pathlib, subprocess, sys
+          repo, run = map(pathlib.Path, sys.argv[1:3])
+          refs = json.loads((run / "consumer-roots.json").read_text())
+          subprocess.run([sys.executable, "-B", str(repo / "som-rs/scripts/hosted_readiness/product_runtime/provision_cargo.py"),
+                          "--repo", str(repo), "--source-revision", sys.argv[3],
+                          "--candidate-revision", "f59e28d910ff4adb16e3becfdc82bd2978ca84fa", "--out", str(run / "closure"),
+                          "--cargo", sys.argv[4], "--rustc", sys.argv[5], "--assembly-root", refs["assembly_root"],
+                          "--phase1-product-root", refs["phase1"], "--phase2-product-root", refs["phase2"]],
+                         cwd=run, check=True)
+          PY
+      - name: Preserve registry closure candidate and failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: product-cargo-closure-candidate
+          retention-days: 30
+          include-hidden-files: true
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/som-cargo-closure-run/stage.txt
+            ${{ runner.temp }}/som-cargo-closure-run/consumer-roots.json
+            ${{ runner.temp }}/som-cargo-closure-run/rustup-install.log
+            ${{ runner.temp }}/som-cargo-closure-run/closure
+
+  product-rust-tool-qualification:
+    needs: dependency-helper-fixtures
+    name: Complete Rust product tools (product gates unrun)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Check synthetic source, archive and process fixtures on GitHub
+        working-directory: ${{ runner.temp }}
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          test_root="$RUNNER_TEMP/som-rust-product-tool-tests"
+          mkdir -m 700 "$test_root"
+          TMPDIR="$test_root" python3 -I -S -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_qualify_rust_tools.py" \
+            2>&1 | tee "$test_root/fixtures.log"
+      - name: Qualify all six tools and the complete official runtime tree
+        working-directory: ${{ runner.temp }}
+        env:
+          TESTED_SHA: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/qualify_rust_tools.py" \
+            --repo "$GITHUB_WORKSPACE" --source-revision "$TESTED_SHA" \
+            --out "$RUNNER_TEMP/som-rust-product-tools-qualification"
+      - name: Keep complete qualification and failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: product-rust-tool-qualification
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/som-rust-product-tool-tests/fixtures.log
+            ${{ runner.temp }}/som-rust-product-tools-qualification

@@ -39,13 +39,15 @@ SCRIPT = HERE + "produce_wheels.py"
 POLICY = HERE + "wheel-policy.json"
 CONSUMER = HERE + "qualify_python.py"
 ENV_PLAN = HERE + "environment-plan.json"
+CANDIDATE_GUARD = "som-rs/scripts/hosted_readiness/dependency_candidate.py"
 REUSE = "som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py"
 RUNTIME_SUPPORT = "som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py"
 QUALIFICATION = "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json"
 BYTE_AUDIT = "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json"
 SOURCE_PINS = "som-rs/scripts/hosted_readiness/product_runtime/source-pins.json"
 INSTALLER_AUTHORITY = HERE + "uv099-installer-authority.json"
-MODULES = {"som_python_environment_consumer_for_wheels": CONSUMER, "som_native_reuse_for_wheels": REUSE}
+MODULES = {"som_python_environment_consumer_for_wheels": CONSUMER, "som_native_reuse_for_wheels": REUSE,
+           "som_dependency_candidate_for_wheels": CANDIDATE_GUARD}
 SHA = re.compile(r"[a-f0-9]{64}\Z")
 PIN = re.compile(r"([a-zA-Z0-9][a-zA-Z0-9._-]*)==([a-zA-Z0-9][a-zA-Z0-9.!+_-]*)\Z")
 MAX_SOURCE = 32 * 1024 * 1024
@@ -238,11 +240,13 @@ def admitted_runtime(root, sources, policy, revision):
     return reuse, qualification, inventory, tools, record
 
 
-def environment_inputs(q, sources, root, assembly, revision):
+def environment_inputs(q, sources, root, assembly, revision, candidate_revision=None):
+    candidate_revision = candidate_revision or revision
     receipt_raw = read(root / "receipt.json")
     receipt = parse(receipt_raw)
     require(receipt.get("version") == "som.hosted-python-environment-inventory.v1"
-            and receipt.get("source_revision") == revision and receipt.get("state") == "complete-product-environment-inputs"
+            and receipt.get("source_revision") == revision and receipt.get("helper_revision", revision) == revision
+            and receipt.get("candidate_revision", revision) == candidate_revision and receipt.get("state") == "complete-product-environment-inputs"
             and receipt.get("environment_input_set_complete") is True and receipt.get("observed_products") == 671
             and receipt.get("expected_products") == 671 and receipt.get("product_runtime_ready") is False
             and receipt.get("product_acceptance_passed") is False, "complete same-source environment input receipt required")
@@ -253,7 +257,7 @@ def environment_inputs(q, sources, root, assembly, revision):
     require([len(goldens["cohorts"][key]) for key in ("python_public", "python_legacy")] == [127, 544], "whole frozen Python scope differs")
     assembly_raw = read(assembly / "assembly/manifest.json")
     require(receipt.get("assembly_manifest_sha256") == sha(assembly_raw), "environment source assembly changed")
-    products = q.products(assembly, parse(assembly_raw), goldens, revision, sha(golden_raw), sha(ts_raw))
+    products = q.products(assembly, parse(assembly_raw), goldens, candidate_revision, sha(golden_raw), sha(ts_raw))
     expected = [{"id": "observer", "requirements": {"requires_python": ">=3.12,<3.13", "runtime": plan["observer_requirements"], "development": []}, "pyproject_bytes": None}]
     observer_products = []
     for index, product in enumerate(products):
@@ -615,8 +619,11 @@ class Runner:
 
 def uv_lock_inventory(raw):
     data = tomllib.loads(raw.decode("utf-8"))
+    python = data.get("requires-python")
+    # Pinned uv 0.9.9 normalizes this project's exact minor range to a prefix.
+    python_range = type(python) is str and python.replace(" ", "") in {">=3.12,<3.13", "==3.12.*"}
     require(type(data.get("version")) is int and data["version"] == 1
-            and data.get("requires-python", "").replace(" ", "") == ">=3.12,<3.13", "unreviewed uv lock version/Python constraint")
+            and python_range, "unreviewed uv lock version/Python constraint")
     packages = data.get("package", [])
     require(isinstance(packages, list) and 0 < len(packages) <= MAX_PACKAGES, "uv package inventory missing or oversized")
     root_count = 0
@@ -1098,12 +1105,14 @@ def provision_named(runner, row, closure, probe, record):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, required=True)
-    parser.add_argument("--source-revision", required=True)
+    parser.add_argument("--source-revision", required=True, help="helper Git HEAD")
+    parser.add_argument("--candidate-revision", help="recorded compiler candidate; defaults to helper HEAD")
     parser.add_argument("--environments", type=Path, required=True)
     parser.add_argument("--assembly", type=Path, required=True)
     parser.add_argument("--runtime", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
+    candidate_revision = args.candidate_revision or args.source_revision
     require(os.environ.get("GITHUB_ACTIONS") == "true" and platform.system() == "Linux" and platform.machine() == "x86_64", "GitHub Linux x86_64 execution only")
     os_release = dict(line.split("=", 1) for line in Path("/etc/os-release").read_text().splitlines() if "=" in line)
     require(os_release.get("ID", "").strip('"') == "ubuntu" and os_release.get("VERSION_ID", "").strip('"') == "22.04", "qualified Ubuntu22.04 runtime host required")
@@ -1116,6 +1125,7 @@ def main():
         (out / name).mkdir()
     started = time.monotonic()
     report = {"version": "som.hosted-python-wheel-closure-qualification.v1", "source_revision": args.source_revision,
+              "helper_revision": args.source_revision, "candidate_revision": candidate_revision,
               "started_at": now(), "state": "incomplete", "product_runtime_ready": False, "product_acceptance_passed": False,
               "wheel_closure_qualification_complete": False, "all_named_environment_checks_complete": False,
               "product_tests": "unrun", "independent_metadata_license_audit": "unrun", "commands": [], "closures": [],
@@ -1125,6 +1135,8 @@ def main():
         with cancellation():
             sources = Sources(repo, args.source_revision)
             sources.read(SCRIPT)
+            candidate_guard = bound_module(sources, "som_dependency_candidate_for_wheels", CANDIDATE_GUARD)
+            report["candidate_admission"] = candidate_guard.verify_candidate_inputs(repo, args.source_revision, candidate_revision, assembly)
             policy = parse(sources.read(POLICY))
             require(policy.get("version") == "som.hosted-python-wheel-policy.v1" and policy.get("python") == PYTHON
                     and policy.get("uv") == "0.9.9" and policy.get("host") == HOST, "reviewed wheel policy differs")
@@ -1132,7 +1144,7 @@ def main():
             assets = installer_assets(asset_raw)
             report["installer_source_authority_sha256"] = sha(asset_raw)
             q = bound_module(sources, "som_python_environment_consumer_for_wheels", CONSUMER)
-            rows, old_products, input_record = environment_inputs(q, sources, inputs, assembly, args.source_revision)
+            rows, old_products, input_record = environment_inputs(q, sources, inputs, assembly, args.source_revision, candidate_revision)
             report.update(input_receipts=input_record, expected_products=671, observer_runtime_products=old_products,
                           expected_named_environments=len(rows))
             reuse, qualification, inventory, tools, native = admitted_runtime(runtime, sources, policy, args.source_revision)
@@ -1186,7 +1198,9 @@ def main():
             verifier()
             report["native_runtime_verified_after"] = True
             sources.verify()
-            _, _, after_inputs = environment_inputs(q, sources, inputs, assembly, args.source_revision)
+            require(candidate_guard.verify_candidate_inputs(repo, args.source_revision, candidate_revision, assembly) == report["candidate_admission"],
+                    "candidate admission changed during dependency qualification")
+            _, _, after_inputs = environment_inputs(q, sources, inputs, assembly, args.source_revision, candidate_revision)
             require(after_inputs == input_record, "original environment/assembly receipt bytes changed")
             for closure in resolved.values():
                 verify_closure(closure)

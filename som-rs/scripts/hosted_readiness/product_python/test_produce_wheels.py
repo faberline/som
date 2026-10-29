@@ -85,7 +85,7 @@ class FakeRunner:
         self.report["commands"].append({"argv": args, "cwd": str(cwd), "cache": str(cache), "label": label, "offline": offline, "exit_code": 0})
         pin = "requests==2.32.5 --hash=sha256:" + p.sha(self.blob) + "\n"
         if args[1] == "lock":
-            text = 'version = 1\nrequires-python = ">=3.12, <3.13"\n[[package]]\nname = "real-synthetic-product"\nversion = "0.1.0"\nsource = {virtual = "."}\n'
+            text = 'version = 1\nrevision = 3\nrequires-python = "==3.12.*"\n[[package]]\nname = "real-synthetic-product"\nversion = "0.1.0"\nsource = {virtual = "."}\n'
             text += '[[package]]\nname = "requests"\nversion = "2.32.5"\nsource = {registry = "https://pypi.org/simple"}\n'
             text += 'wheels = [{url = "' + WHEEL_URL + '", hash = "sha256:' + p.sha(self.blob) + '", size = ' + str(len(self.blob)) + '}]\n'
             (cwd / "uv.lock").write_text(text)
@@ -250,6 +250,19 @@ class WheelProducerTests(unittest.TestCase):
                          '[[package]]\nname = "mlx"\nsource = {registry = "https://pypi.org/simple"}\n'):
             with self.assertRaises(p.Refusal):
                 p.uv_lock_inventory((good + addition).encode())
+
+    def test_pinned_uv_minor_prefix_keeps_the_frozen_python_range(self):
+        package = '\n[[package]]\nname = "product"\nversion = "0.1.0"\nsource = {virtual = "."}\n'
+        for constraint in ("==3.12.*", ">=3.12, <3.13"):
+            raw = ('version = 1\nrevision = 3\nrequires-python = ' + json.dumps(constraint) + package).encode()
+            self.assertEqual(p.uv_lock_inventory(raw)["package_records"], 1)
+        for constraint in ("==3.11.*", "==3.13.*", "==3.*", "==3.12", ">=3.12", ">=3.11,<3.13", ">=3.12,<3.14"):
+            with self.subTest(constraint=constraint):
+                raw = ('version = 1\nrevision = 3\nrequires-python = ' + json.dumps(constraint) + package).encode()
+                with self.assertRaisesRegex(p.Refusal, "Python constraint"):
+                    p.uv_lock_inventory(raw)
+        with self.assertRaisesRegex(p.Refusal, "lock version"):
+            p.uv_lock_inventory(('version = 2\nrequires-python = "==3.12.*"' + package).encode())
 
     def fake_download(self, url, destination, limit, expected_sha=None, expected_size=None, metadata=False):
         raw = json.dumps(self.publisher()).encode() if metadata else self.blob

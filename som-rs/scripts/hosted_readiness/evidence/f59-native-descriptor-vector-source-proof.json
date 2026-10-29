@@ -1,0 +1,531 @@
+{
+  "version": "som.native-descriptor-complete-vector-independent-metadata-audit.v1",
+  "method": "Read raw source and saved metadata only; no project/helper imports, tests, compiler, formatter, build or service execution.",
+  "current_source_commit": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+  "observed_saved_candidate": "e686642dce2895dd876e7efa7239913db2d62cf0",
+  "observed_saved_run": 40751160293,
+  "observed_saved_checker_raw_sha256": "cbfe36177d8683b6f4867678c8546b15c27ceff2c2a3df6ed555cbe721f9ceca",
+  "full_current_factories_equal_saved_proof": true,
+  "before_role": "accepted TS065 canary+health descriptor metadata, not proof that a current gate passed",
+  "baseline_raw_sha256": "650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9",
+  "before_descriptors": {
+    "python_backend": "581ce38f29702c300342cdefe8fe5f1735cefcd1869d6485b44f30063a866711",
+    "python_formatted_formatter": "7c15579b81f82e6283e6afbb5d739e8cfebd26faa4a165cc8f0a1baab1b7d73c",
+    "python_render_only_formatter": "a6a6e62d4ad875f8aec308a0fd9c55e8ac576d8129d57fb935bdfc5bc4529b94",
+    "rust_backend": "bbfa2fa3d35f9534950bea04486017db99b1f26ff44a2211eda08f492050ea1a",
+    "rust_formatter": "2c56fd066853c80c786a8a3a0e5434b7f808ace8b2cf66ae6e1a13566aa2815f",
+    "rust_target_contract": "8c25078c84fdec3dea1b4cb15df499d682ccb9b7286d957598f2076e3a685d51",
+    "typescript_backend": "ac93cc3c0f565a17c56e65810fc203000c5d9294d37cbf9ac59f441a86aa6f2e",
+    "typescript_formatter": "636bd4a26884ea92873af81bf4fd5bbc0c065157e645c3919658a4d0bc29c0e8",
+    "typescript_target_contract": "a1ed9978d7ddd0123e22a1e388f1a6e889ca63e43752563cd744733b84c103b4"
+  },
+  "current_observed_after_descriptors": {
+    "python_backend": "92941b7adeb9c7555d4abdfb06d24b4a1bf92c9c1e2617a2a0c4cb5d3e529d0e",
+    "rust_backend": "9c8064cb49c4d9465273b6935a8266ff679f96ef17b1b1c0401065c7671474b1",
+    "typescript_backend": "d65a22b29c259314629df529f256a15e407fb3db9ac7437d1d32beab85a29b79",
+    "python_formatted_formatter": "ca325bc0efdad4d3f8e4e8209814832fdb68947be16c8bd79bd3da92b2da3851",
+    "python_render_only_formatter": "a6a6e62d4ad875f8aec308a0fd9c55e8ac576d8129d57fb935bdfc5bc4529b94",
+    "rust_formatter": "dbb30c6037c51a2bacb94d46e2d6435d9487531c06cf82330fdee0bda507db0d",
+    "typescript_formatter": "6070ceb6d781121f6175b7c3992f3aa58bd56f6d871e08f2ff426020bb30f50b",
+    "rust_target_contract": "090b9060a5b5f24d8e6994072f4e6c8a796110790b119229650cf0e4a52bee3c",
+    "typescript_target_contract": "17ffc6028d66657381464a4d6beaecc1e097f54e421168777e5959cfbdaf063f"
+  },
+  "leaves": {
+    "python_backend": {
+      "before": "581ce38f29702c300342cdefe8fe5f1735cefcd1869d6485b44f30063a866711",
+      "observed_current": "92941b7adeb9c7555d4abdfb06d24b4a1bf92c9c1e2617a2a0c4cb5d3e529d0e",
+      "changed": true
+    },
+    "rust_backend": {
+      "before": "bbfa2fa3d35f9534950bea04486017db99b1f26ff44a2211eda08f492050ea1a",
+      "observed_current": "9c8064cb49c4d9465273b6935a8266ff679f96ef17b1b1c0401065c7671474b1",
+      "changed": true
+    },
+    "typescript_backend": {
+      "before": "ac93cc3c0f565a17c56e65810fc203000c5d9294d37cbf9ac59f441a86aa6f2e",
+      "observed_current": "d65a22b29c259314629df529f256a15e407fb3db9ac7437d1d32beab85a29b79",
+      "changed": true
+    },
+    "python_formatted_formatter": {
+      "before": "7c15579b81f82e6283e6afbb5d739e8cfebd26faa4a165cc8f0a1baab1b7d73c",
+      "observed_current": "ca325bc0efdad4d3f8e4e8209814832fdb68947be16c8bd79bd3da92b2da3851",
+      "changed": true
+    },
+    "python_render_only_formatter": {
+      "before": "a6a6e62d4ad875f8aec308a0fd9c55e8ac576d8129d57fb935bdfc5bc4529b94",
+      "observed_current": "a6a6e62d4ad875f8aec308a0fd9c55e8ac576d8129d57fb935bdfc5bc4529b94",
+      "changed": false
+    },
+    "rust_formatter": {
+      "before": "2c56fd066853c80c786a8a3a0e5434b7f808ace8b2cf66ae6e1a13566aa2815f",
+      "observed_current": "dbb30c6037c51a2bacb94d46e2d6435d9487531c06cf82330fdee0bda507db0d",
+      "changed": true
+    },
+    "typescript_formatter": {
+      "before": "636bd4a26884ea92873af81bf4fd5bbc0c065157e645c3919658a4d0bc29c0e8",
+      "observed_current": "6070ceb6d781121f6175b7c3992f3aa58bd56f6d871e08f2ff426020bb30f50b",
+      "changed": true
+    },
+    "rust_target_contract": {
+      "before": "8c25078c84fdec3dea1b4cb15df499d682ccb9b7286d957598f2076e3a685d51",
+      "observed_current": "090b9060a5b5f24d8e6994072f4e6c8a796110790b119229650cf0e4a52bee3c",
+      "changed": true
+    },
+    "typescript_target_contract": {
+      "before": "a1ed9978d7ddd0123e22a1e388f1a6e889ca63e43752563cd744733b84c103b4",
+      "observed_current": "17ffc6028d66657381464a4d6beaecc1e097f54e421168777e5959cfbdaf063f",
+      "changed": true
+    }
+  },
+  "complete_backend_vectors": {
+    "python": {
+      "id": "som.compiler-backend.v1",
+      "owner": "som-rs/src/compiler.rs",
+      "entries": [
+        {
+          "factory_key": "src/lib.rs",
+          "source_path": "som-rs/src/lib.rs",
+          "source_sha256": "60ea28026fbcbc72ca623717b81a47236a59e59ffe9f9914591e54730d8c158f"
+        },
+        {
+          "factory_key": "src/cnl.rs",
+          "source_path": "som-rs/src/cnl.rs",
+          "source_sha256": "8f14a9c5897b335066a619be907244f38f1ad3947d12ed7e1833fa7e77098789"
+        },
+        {
+          "factory_key": "src/cnl_semantics.rs",
+          "source_path": "som-rs/src/cnl_semantics.rs",
+          "source_sha256": "4d4c6e706fbf83bc86ef5ae7f11cbdc884ba7a9d43ba7c03b7f7a5851311d834"
+        },
+        {
+          "factory_key": "src/planner.rs",
+          "source_path": "som-rs/src/planner.rs",
+          "source_sha256": "7958474d52f4e9b9f4fd1afc16e328428e32acc77dcbabd2ca3814f22610f12d"
+        },
+        {
+          "factory_key": "src/python_names.rs",
+          "source_path": "som-rs/src/python_names.rs",
+          "source_sha256": "22ab53da0538580165f792d3c47c0080a12c7dd8c2d86c5881c793827df6beec"
+        },
+        {
+          "factory_key": "src/compiler.rs",
+          "source_path": "som-rs/src/compiler.rs",
+          "source_sha256": "49c8309e102b1f7c686c8a975ed8b2c81d0133557c0443d8986474ca41cd9f3c"
+        },
+        {
+          "factory_key": "src/strict_json.rs",
+          "source_path": "som-rs/src/strict_json.rs",
+          "source_sha256": "06a8947fcfb9d7ade5afd963f06da72696d3845d64a957f881eded0666f37161"
+        },
+        {
+          "factory_key": "src/json_diagnostics.rs",
+          "source_path": "som-rs/src/json_diagnostics.rs",
+          "source_sha256": "87c38ad0077de8bb5eb1ee9edf5d4ecce7b5fce8fffcb19a4fc190b472d870b6"
+        },
+        {
+          "factory_key": "src/main.rs",
+          "source_path": "som-rs/src/main.rs",
+          "source_sha256": "042c9abb969d17fa3f28dba7dfcec459ee63123da4ba5e3fd1645b1104a454c5"
+        },
+        {
+          "factory_key": "src/related.rs",
+          "source_path": "som-rs/src/related.rs",
+          "source_sha256": "ccc55e6018117a7087685de81da420da911832edaae51532e712be7b1b138dca"
+        },
+        {
+          "factory_key": "src/business.rs",
+          "source_path": "som-rs/src/business.rs",
+          "source_sha256": "b880c325a02c9a93a9e1470baa0416db54560b986511a71561583c1468c9df2f"
+        },
+        {
+          "factory_key": "src/composed.rs",
+          "source_path": "som-rs/src/composed.rs",
+          "source_sha256": "571c04a8e50f9856361dce94ebab813d8a8905aee9e2ea12dbd687f4f32d890c"
+        },
+        {
+          "factory_key": "src/flow.rs",
+          "source_path": "som-rs/src/flow.rs",
+          "source_sha256": "fc8b7ea7d591026aed9380a07641ca206391555e95df15b317b879e0e9a31b75"
+        },
+        {
+          "factory_key": "src/flow_compact.rs",
+          "source_path": "som-rs/src/flow_compact.rs",
+          "source_sha256": "d4543446c2b5cd99fb020bbddb8f15ed3f1faecfc3ca8c08fb98249649687bb4"
+        },
+        {
+          "factory_key": "src/quality.rs",
+          "source_path": "som-rs/src/quality.rs",
+          "source_sha256": "4522527da6a96bfee72365ab0b130c816022194fdff3de386cf604bb7c8e713b"
+        },
+        {
+          "factory_key": "contracts/native-tools-v1/CONTRACT.md",
+          "source_path": "som-rs/contracts/native-tools-v1/CONTRACT.md",
+          "source_sha256": "47d72cabd57bdb380171a54f4dddeeabf25693c3781cabb483c572c162efac6e"
+        },
+        {
+          "factory_key": "contracts/native-tools-v1/artifacts.json",
+          "source_path": "som-rs/contracts/native-tools-v1/artifacts.json",
+          "source_sha256": "959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193"
+        },
+        {
+          "factory_key": "Cargo.toml",
+          "source_path": "som-rs/Cargo.toml",
+          "source_sha256": "6c673ba87bf98308042b8229727850956d90c7d24c03c8ea17b042c874d546b1"
+        },
+        {
+          "factory_key": "Cargo.lock",
+          "source_path": "som-rs/Cargo.lock",
+          "source_sha256": "c7468fc0e5c51fc9031369b0dc292e47214ca5b7233dfb85216748107cc2493c"
+        },
+        {
+          "factory_key": "contracts/related-business.v1.md",
+          "source_path": "som-rs/contracts/related-business.v1.md",
+          "source_sha256": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380"
+        },
+        {
+          "factory_key": "contracts/related-flow.v1.md",
+          "source_path": "som-rs/contracts/related-flow.v1.md",
+          "source_sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+        },
+        {
+          "factory_key": "contracts/python-literal-encoding.v1.json",
+          "source_path": "som-rs/contracts/python-literal-encoding.v1.json",
+          "source_sha256": "7c25a1f45e54cec45e4053a5ceaf767188641ddde7da34dfce0747dc299dbf16"
+        },
+        {
+          "factory_key": "contracts/python-quality-v1/pyproject.toml",
+          "source_path": "som-rs/contracts/python-quality-v1/pyproject.toml",
+          "source_sha256": "4cac7c6758372d4608895c53f1f427992d86988c85ff348c4eed7882efa762b4"
+        },
+        {
+          "factory_key": "block-contracts/composed.json",
+          "source_path": "som-code-python/data/block-contracts/composed.json",
+          "source_sha256": "3e58ed5b162cc4297324cc6da15ad9838c2a136d8a91762f63ac8d0c3af0b6b4"
+        },
+        {
+          "factory_key": "block-contracts/composed-quality.json",
+          "source_path": "som-code-python/data/block-contracts/composed-quality.json",
+          "source_sha256": "28f9bd134f31eb87fae5a680148447de3aaca9bad78fc10f0ac22b00cc40b0e5"
+        },
+        {
+          "factory_key": "block-contracts/flow-v7.json",
+          "source_path": "som-code-python/data/block-contracts/flow-v7.json",
+          "source_sha256": "d0ffbe92abbf8666e5e562022617e6eb81f4ef1c9fcc73b92fca8c718bba3f47"
+        },
+        {
+          "factory_key": "block-contracts/flow-v7-compact.json",
+          "source_path": "som-code-python/data/block-contracts/flow-v7-compact.json",
+          "source_sha256": "a2b96804e6f1c52a2ebf9e6310c6624b8b1b33d86b4f4763f07ffbeb645e103a"
+        },
+        {
+          "factory_key": "flow_compact/forward_support.py.tpl",
+          "source_path": "som-core/block_templates/flow_compact/forward_support.py.tpl",
+          "source_sha256": "45250ff33586c4765733ccd69b8ca1bd52cb34893880bd89fe78d703dc29d557"
+        },
+        {
+          "factory_key": "flow_compact/engine.py.tpl",
+          "source_path": "som-core/block_templates/flow_compact/engine.py.tpl",
+          "source_sha256": "76923c4752bccd850b5fd55ebb77904aa3988170927ba22ee4acef8bbc556d5f"
+        }
+      ],
+      "sha256": "92941b7adeb9c7555d4abdfb06d24b4a1bf92c9c1e2617a2a0c4cb5d3e529d0e"
+    },
+    "rust": {
+      "id": "som.rust-backend.v1",
+      "owner": "som-rs/som-targets/src/rust/mod.rs",
+      "entries": [
+        {
+          "factory_key": "som-targets/Cargo.toml",
+          "source_path": "som-rs/som-targets/Cargo.toml",
+          "source_sha256": "df9be9cf80bc1e0d300c9b0aaf28c7e146e22796bb26ca3ab22ec759eae4e79b"
+        },
+        {
+          "factory_key": "som-targets/src/lib.rs",
+          "source_path": "som-rs/som-targets/src/lib.rs",
+          "source_sha256": "812e0025e930869acb216527fe48461cc0fe694853d1c7be14b3d1e330fadba7"
+        },
+        {
+          "factory_key": "som-targets/src/main.rs",
+          "source_path": "som-rs/som-targets/src/main.rs",
+          "source_sha256": "6f521d6d7f3fa7b074de861da4ce5c15934d312d8ce77464f47cf0c3e9863fe2"
+        },
+        {
+          "factory_key": "som-targets/src/profile.rs",
+          "source_path": "som-rs/som-targets/src/profile.rs",
+          "source_sha256": "193f2efd0c5c1dcc276a4b2bdd0c3dd8a0dbab7033b26cc2d7fa5ac930ff1082"
+        },
+        {
+          "factory_key": "som-targets/src/rust/mod.rs",
+          "source_path": "som-rs/som-targets/src/rust/mod.rs",
+          "source_sha256": "78130eab4e7f51e0c51b4ebfb8fb5c31e2388e9fbc264dc282e811ffa059380d"
+        },
+        {
+          "factory_key": "som-targets/src/rust/format.rs",
+          "source_path": "som-rs/som-targets/src/rust/format.rs",
+          "source_sha256": "852d1ff7b7b7a57f7eac564a6d5db248a56ff8e48fe02163aac7fcd960ea1b05"
+        },
+        {
+          "factory_key": "som-targets/src/rust/prompt_schema.rs",
+          "source_path": "som-rs/som-targets/src/rust/prompt_schema.rs",
+          "source_sha256": "a08fcd2f442d04a0303abffa9d8554428e8c6ba9db3365004f556b85d1798204"
+        },
+        {
+          "factory_key": "contracts/compiler-v1/compiler-prompt.schema.json",
+          "source_path": "som-rs/contracts/compiler-v1/compiler-prompt.schema.json",
+          "source_sha256": "aa9e6300668181beab47643b6748b72a0942499e454b290f3c6c45053524be73"
+        },
+        {
+          "factory_key": "contracts/rust-output-v1/scope.json",
+          "source_path": "som-rs/contracts/rust-output-v1/scope.json",
+          "source_sha256": "0f31b4c0290afda9b4c4ccf99b575edec81c3361ae31c74b44bc16d5ff20e51d"
+        },
+        {
+          "factory_key": "contracts/rust-output-v1/reference/Cargo.toml",
+          "source_path": "som-rs/contracts/rust-output-v1/reference/Cargo.toml",
+          "source_sha256": "8b708c38686b77e6740171e24c28793c4a40b54a8e9807f8e147a9ef3b44591d"
+        },
+        {
+          "factory_key": "contracts/rust-output-v1/reference/Cargo.lock",
+          "source_path": "som-rs/contracts/rust-output-v1/reference/Cargo.lock",
+          "source_sha256": "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20"
+        },
+        {
+          "factory_key": "contracts/rust-output-v1/reference-phase2/Cargo.toml",
+          "source_path": "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.toml",
+          "source_sha256": "d06a474e62ab474465c73f4ad99ddcf5d0e33a750684e3a8cfa83714949cd430"
+        },
+        {
+          "factory_key": "contracts/rust-output-v1/reference-phase2/Cargo.lock",
+          "source_path": "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.lock",
+          "source_sha256": "0483374722515e3daa7f8509708abb9c551f1bc1815f9110e6662b893db443ad"
+        }
+      ],
+      "sha256": "9c8064cb49c4d9465273b6935a8266ff679f96ef17b1b1c0401065c7671474b1"
+    },
+    "typescript": {
+      "id": "som.typescript-backend.v1",
+      "owner": "som-rs/som-targets/src/typescript/mod.rs",
+      "entries": [
+        {
+          "factory_key": "som-targets/Cargo.toml",
+          "source_path": "som-rs/som-targets/Cargo.toml",
+          "source_sha256": "df9be9cf80bc1e0d300c9b0aaf28c7e146e22796bb26ca3ab22ec759eae4e79b"
+        },
+        {
+          "factory_key": "som-targets/src/lib.rs",
+          "source_path": "som-rs/som-targets/src/lib.rs",
+          "source_sha256": "812e0025e930869acb216527fe48461cc0fe694853d1c7be14b3d1e330fadba7"
+        },
+        {
+          "factory_key": "som-targets/src/main.rs",
+          "source_path": "som-rs/som-targets/src/main.rs",
+          "source_sha256": "6f521d6d7f3fa7b074de861da4ce5c15934d312d8ce77464f47cf0c3e9863fe2"
+        },
+        {
+          "factory_key": "som-targets/src/profile.rs",
+          "source_path": "som-rs/som-targets/src/profile.rs",
+          "source_sha256": "193f2efd0c5c1dcc276a4b2bdd0c3dd8a0dbab7033b26cc2d7fa5ac930ff1082"
+        },
+        {
+          "factory_key": "som-targets/src/typescript/format.rs",
+          "source_path": "som-rs/som-targets/src/typescript/format.rs",
+          "source_sha256": "b9c9d3025de0263f2010a47d5374869b89a2c752ddc324a3eb99b774df3fbbaf"
+        },
+        {
+          "factory_key": "som-targets/src/typescript/mod.rs",
+          "source_path": "som-rs/som-targets/src/typescript/mod.rs",
+          "source_sha256": "dd164529ba7b321cf6d3ba491cbd2ddd9aa0b2f65d04401849f0259bbc2eb793"
+        },
+        {
+          "factory_key": "som-targets/src/typescript/profile.rs",
+          "source_path": "som-rs/som-targets/src/typescript/profile.rs",
+          "source_sha256": "ec4be3e28cdc492cc48a5278a46350647850d43fa495426369ef3bd5d41f47b9"
+        },
+        {
+          "factory_key": "som-targets/src/typescript/render.rs",
+          "source_path": "som-rs/som-targets/src/typescript/render.rs",
+          "source_sha256": "73b83546b41f9e6e4be94bf3feacc81383b2012458669032c96ee23334c175a8"
+        },
+        {
+          "factory_key": "som-targets/src/typescript/render/related.rs",
+          "source_path": "som-rs/som-targets/src/typescript/render/related.rs",
+          "source_sha256": "e4cdea4f6c34f61c5eea3beb8d32cc3f7b9669cc46e8becd8fdc136be017d49b"
+        }
+      ],
+      "sha256": "d65a22b29c259314629df529f256a15e407fb3db9ac7437d1d32beab85a29b79"
+    }
+  },
+  "formatter_objects": {
+    "python_formatted": {
+      "id": "som.python-quality.v1",
+      "formatter_version": "ruff 0.16.6",
+      "formatter_sha256": "03b22709bb8f62028a0732423eaac6f7792235bbcb05b3feaddaac3d992318d8",
+      "profile_sha256": "4cac7c6758372d4608895c53f1f427992d86988c85ff348c4eed7882efa762b4"
+    },
+    "python_render_only": {
+      "version": "som.compiler-render-only.v1",
+      "formatter": null
+    },
+    "typescript": {
+      "node": "3de740a941a630439b22b79aafb383f4912b76354a2694765e8d59a033746538",
+      "libnode": null,
+      "prettier_tree_sha256": "f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299"
+    }
+  },
+  "active_target_receipts": {
+    "rust": {
+      "path": "som-rs/evidence/rust-output-contract-amendment-007.json",
+      "raw_sha256": "225b98c2bc01e79c5c6e13ad17f93adda68717498d70fa7577e65930813f9144",
+      "files_map_sha256": "090b9060a5b5f24d8e6994072f4e6c8a796110790b119229650cf0e4a52bee3c"
+    },
+    "typescript": {
+      "path": "som-rs/evidence/typescript-output-contract-amendment-003.json",
+      "raw_sha256": "7052daacfc89bf468e399e09f635e6d773187177eb684a0399d46d8ddf650089",
+      "files_map_sha256": "17ffc6028d66657381464a4d6beaecc1e097f54e421168777e5959cfbdaf063f"
+    }
+  },
+  "source_pins": {
+    "som-rs/src/compiler.rs": "49c8309e102b1f7c686c8a975ed8b2c81d0133557c0443d8986474ca41cd9f3c",
+    "som-rs/src/lib.rs": "60ea28026fbcbc72ca623717b81a47236a59e59ffe9f9914591e54730d8c158f",
+    "som-rs/src/cnl.rs": "8f14a9c5897b335066a619be907244f38f1ad3947d12ed7e1833fa7e77098789",
+    "som-rs/src/cnl_semantics.rs": "4d4c6e706fbf83bc86ef5ae7f11cbdc884ba7a9d43ba7c03b7f7a5851311d834",
+    "som-rs/src/planner.rs": "7958474d52f4e9b9f4fd1afc16e328428e32acc77dcbabd2ca3814f22610f12d",
+    "som-rs/src/python_names.rs": "22ab53da0538580165f792d3c47c0080a12c7dd8c2d86c5881c793827df6beec",
+    "som-rs/src/strict_json.rs": "06a8947fcfb9d7ade5afd963f06da72696d3845d64a957f881eded0666f37161",
+    "som-rs/src/json_diagnostics.rs": "87c38ad0077de8bb5eb1ee9edf5d4ecce7b5fce8fffcb19a4fc190b472d870b6",
+    "som-rs/src/main.rs": "042c9abb969d17fa3f28dba7dfcec459ee63123da4ba5e3fd1645b1104a454c5",
+    "som-rs/src/related.rs": "ccc55e6018117a7087685de81da420da911832edaae51532e712be7b1b138dca",
+    "som-rs/src/business.rs": "b880c325a02c9a93a9e1470baa0416db54560b986511a71561583c1468c9df2f",
+    "som-rs/src/composed.rs": "571c04a8e50f9856361dce94ebab813d8a8905aee9e2ea12dbd687f4f32d890c",
+    "som-rs/src/flow.rs": "fc8b7ea7d591026aed9380a07641ca206391555e95df15b317b879e0e9a31b75",
+    "som-rs/src/flow_compact.rs": "d4543446c2b5cd99fb020bbddb8f15ed3f1faecfc3ca8c08fb98249649687bb4",
+    "som-rs/src/quality.rs": "4522527da6a96bfee72365ab0b130c816022194fdff3de386cf604bb7c8e713b",
+    "som-rs/contracts/native-tools-v1/CONTRACT.md": "47d72cabd57bdb380171a54f4dddeeabf25693c3781cabb483c572c162efac6e",
+    "som-rs/contracts/native-tools-v1/artifacts.json": "959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193",
+    "som-rs/Cargo.toml": "6c673ba87bf98308042b8229727850956d90c7d24c03c8ea17b042c874d546b1",
+    "som-rs/Cargo.lock": "c7468fc0e5c51fc9031369b0dc292e47214ca5b7233dfb85216748107cc2493c",
+    "som-rs/contracts/related-business.v1.md": "9e48b73fe018058bcf7473884e7536f3af13075bc9e18eee7da801a862c7c380",
+    "som-rs/contracts/related-flow.v1.md": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091",
+    "som-rs/contracts/python-literal-encoding.v1.json": "7c25a1f45e54cec45e4053a5ceaf767188641ddde7da34dfce0747dc299dbf16",
+    "som-rs/contracts/python-quality-v1/pyproject.toml": "4cac7c6758372d4608895c53f1f427992d86988c85ff348c4eed7882efa762b4",
+    "som-code-python/data/block-contracts/composed.json": "3e58ed5b162cc4297324cc6da15ad9838c2a136d8a91762f63ac8d0c3af0b6b4",
+    "som-code-python/data/block-contracts/composed-quality.json": "28f9bd134f31eb87fae5a680148447de3aaca9bad78fc10f0ac22b00cc40b0e5",
+    "som-code-python/data/block-contracts/flow-v7.json": "d0ffbe92abbf8666e5e562022617e6eb81f4ef1c9fcc73b92fca8c718bba3f47",
+    "som-code-python/data/block-contracts/flow-v7-compact.json": "a2b96804e6f1c52a2ebf9e6310c6624b8b1b33d86b4f4763f07ffbeb645e103a",
+    "som-core/block_templates/flow_compact/forward_support.py.tpl": "45250ff33586c4765733ccd69b8ca1bd52cb34893880bd89fe78d703dc29d557",
+    "som-core/block_templates/flow_compact/engine.py.tpl": "76923c4752bccd850b5fd55ebb77904aa3988170927ba22ee4acef8bbc556d5f",
+    "som-rs/som-targets/src/rust/mod.rs": "78130eab4e7f51e0c51b4ebfb8fb5c31e2388e9fbc264dc282e811ffa059380d",
+    "som-rs/som-targets/Cargo.toml": "df9be9cf80bc1e0d300c9b0aaf28c7e146e22796bb26ca3ab22ec759eae4e79b",
+    "som-rs/som-targets/src/lib.rs": "812e0025e930869acb216527fe48461cc0fe694853d1c7be14b3d1e330fadba7",
+    "som-rs/som-targets/src/main.rs": "6f521d6d7f3fa7b074de861da4ce5c15934d312d8ce77464f47cf0c3e9863fe2",
+    "som-rs/som-targets/src/profile.rs": "193f2efd0c5c1dcc276a4b2bdd0c3dd8a0dbab7033b26cc2d7fa5ac930ff1082",
+    "som-rs/som-targets/src/rust/format.rs": "852d1ff7b7b7a57f7eac564a6d5db248a56ff8e48fe02163aac7fcd960ea1b05",
+    "som-rs/som-targets/src/rust/prompt_schema.rs": "a08fcd2f442d04a0303abffa9d8554428e8c6ba9db3365004f556b85d1798204",
+    "som-rs/contracts/compiler-v1/compiler-prompt.schema.json": "aa9e6300668181beab47643b6748b72a0942499e454b290f3c6c45053524be73",
+    "som-rs/contracts/rust-output-v1/scope.json": "0f31b4c0290afda9b4c4ccf99b575edec81c3361ae31c74b44bc16d5ff20e51d",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.toml": "8b708c38686b77e6740171e24c28793c4a40b54a8e9807f8e147a9ef3b44591d",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.lock": "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20",
+    "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.toml": "d06a474e62ab474465c73f4ad99ddcf5d0e33a750684e3a8cfa83714949cd430",
+    "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.lock": "0483374722515e3daa7f8509708abb9c551f1bc1815f9110e6662b893db443ad",
+    "som-rs/som-targets/src/typescript/mod.rs": "dd164529ba7b321cf6d3ba491cbd2ddd9aa0b2f65d04401849f0259bbc2eb793",
+    "som-rs/som-targets/src/typescript/format.rs": "b9c9d3025de0263f2010a47d5374869b89a2c752ddc324a3eb99b774df3fbbaf",
+    "som-rs/som-targets/src/typescript/profile.rs": "ec4be3e28cdc492cc48a5278a46350647850d43fa495426369ef3bd5d41f47b9",
+    "som-rs/som-targets/src/typescript/render.rs": "73b83546b41f9e6e4be94bf3feacc81383b2012458669032c96ee23334c175a8",
+    "som-rs/som-targets/src/typescript/render/related.rs": "e4cdea4f6c34f61c5eea3beb8d32cc3f7b9669cc46e8becd8fdc136be017d49b",
+    "som-rs/evidence/rust-output-contract-amendment-007.json": "225b98c2bc01e79c5c6e13ad17f93adda68717498d70fa7577e65930813f9144",
+    "som-rs/contracts/rust-output-v1/CONTRACT.md": "067c6392b78dab379abd0688b2291a21349be66db384834e769e9ab0eb082897",
+    "som-rs/contracts/rust-output-v1/acceptance-plan.json": "bea96ef0e19eb5d2e9923cba5e8a41d05df2ac95e0d55baf2d080a5f9f76a83d",
+    "som-rs/contracts/rust-output-v1/api.schema.json": "fb97891d28a1c757f3cbcad1a82a0d4ab286cfa4478f435309505282477d113f",
+    "som-rs/contracts/rust-output-v1/behavior-normalization.json": "c75b29346d605af7e6ec8ad5d856381f4f8e0e0d321f1d236a5d93b545be97bf",
+    "som-rs/contracts/rust-output-v1/bundle.schema.json": "0d9e9db5495c0d9121b3213ed0eb15b18af6de462ee16ef3e91561414f4547bd",
+    "som-rs/contracts/rust-output-v1/case-inventory.json": "fc6fbec822623cb9bdc0a6e11c2a72b6f0dfac3c41e8b7c1e35830090eb7d2a5",
+    "som-rs/contracts/rust-output-v1/native-tools.json": "d04d2d78f0ab64b855ee9d990b89c69b03113e8f808ce0225b8e11e45caaf1f4",
+    "som-rs/contracts/rust-output-v1/negative-cases.json": "9bb36d689ad4be26e608ac8be779a1a8bb8db043d37788b5819c9fe1bf402e22",
+    "som-rs/contracts/rust-output-v1/phase2/behavior.json": "d2007cc091a5f3ff22a2d0aeeef2c6cfe0e8f620caa255b5dc14c06efdf82ece",
+    "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6",
+    "som-rs/contracts/rust-output-v1/phase2/constructs.json": "6ef923690ce209795141076aec0d76d67d702d0fa35831324da136dd83e463dd",
+    "som-rs/contracts/rust-output-v1/phase2/naming.json": "cf9e2b70608f8ba7bd65710e901c99682bb4478562377ae3d1457abbc1e54de2",
+    "som-rs/contracts/rust-output-v1/phase2/pins.json": "76fa9338f987211dfc4cd1ff01f2b812855c131da7e58f5de3bdac117826e5f1",
+    "som-rs/contracts/rust-output-v1/phase2/services.json": "64c7b3ad93ea8359280232b5b6244f21c5bdcf1fb84931711376708b44ed572d",
+    "som-rs/contracts/rust-output-v1/product-layout.json": "d2d781f31d959fb913b1182a481e44bc4520e6157ef80de1e7e2fcec46be0b8f",
+    "som-rs/contracts/rust-output-v1/target-examples.json": "4d91b175e9c75cadb61ae335dc1540582b3d89c01815abe651b02d57ac6889ae",
+    "som-rs/contracts/rust-output-v1/toolchain.json": "9a05dd1953defc89c4a44eada333cbfc41570e4728295ab1a2be060c76b7029d",
+    "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-15.json": "b83e01caf26dbd403d04dac4948a04b97f059accd22edceae78f8c2519438462",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-20.json": "2398079609c673ff8086dff85f0fc27c51a66b5b087a09b2622d6913d81fcfdf",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-21.json": "8d302755f218237a5fcdb0275d4a35da0566604598e1d0c8c9c0e51ced8142a7",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-23.json": "7f6ddae1dbc9c14ca3d9c25437dc6721f54d9693de43bc178ae1a73a27957b8a",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-16.json": "64eb707bdecdcacb878240ca87094834015cb3dd1a77c2050e852335b18932da",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-17.json": "24cee7a81cf46379c318efd9271dfb18b15acddbde03e549208df162b538f383",
+    "som-rs/tests/rust-output-v1/build_case_inventory.py": "494976a61dd2184d2a9135d297c635fc4b6bd04be4cbb34bd2b7efc00b855874",
+    "som-rs/tests/rust-output-v1/build_cases.py": "13096aacb9ba3eafe84e4389586478622aca5eea8622f6d8774a15bb4da265b3",
+    "som-rs/tests/rust-output-v1/build_negative_cases.py": "6c0d9313452a8e44f93b981babadf3b7ab433a96d3d9020e56f1004a62f7c7c7",
+    "som-rs/tests/rust-output-v1/build_phase2_behavior.py": "7d58af568f093cff9caaae0bff83dba2bac5ba9dbe8e2fc27ad029bbb8d22d9b",
+    "som-rs/tests/rust-output-v1/build_phase2_constructs.py": "a1c2b3ff09644ef246580a2afec062c78299e9cace169d4e750d11313f1e80ee",
+    "som-rs/tests/rust-output-v1/build_phase2_inventory.py": "60328ce9c02446891a5aff86a1681ce103b895a58b25cd970a0529625b44c994",
+    "som-rs/tests/rust-output-v1/build_phase2_pins.py": "7476958452c998972074a9b9e4ae3ee56d5598617ad4f1d4b3cf41b6d9c31c61",
+    "som-rs/tests/rust-output-v1/build_target_examples.py": "697ca7c91c2c9f4c3d27985ed0f50ce6c6f2a103ea7ed264ba1915c056d43ab2",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.cnl": "22e6cb0aacd219cb47478dca4ff5f244b63ae605de399f08a16bb62093ec9ce7",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.cnl": "a2512cdbbea998a8f051160166e3c1d2f4b43ae5d7bbcbe5e6a0cd211a9b7c1d",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.cnl": "554eb27bbd5c894fa7ccd473b45734a33753b1ec32395ccb5f73133b0a71a12c",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.cnl": "cb7f5fb994d6c7bfbdff549e71286211cd1d3f7177b91bdbeeb34337229b7724",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.cnl": "97cb49f506fb16fb9da2ea203b5a114ea68766ec46ebb69cdb4d63f012deb16c",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.prompt.json": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.cnl": "627623f91944b13158487086efec5653948be6c2e77a341e0d0ba9410d291e5d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347",
+    "som-rs/tests/rust-output-v1/cases/index.json": "b49af2a7ba842e5dd810d8d010fcf93436474df7f49f1c569367bed1bc94ed1b",
+    "som-rs/tests/rust-output-v1/check_contract.py": "958aacace4f99badd190715140665bb3bf9f08ec0e88c8557b6d24f87a069b15",
+    "som-rs/tests/rust-output-v1/check_python_controls.py": "50e081a6a10cdbb7db8e84e094854ef8833f25d3cfa0857cc98e9cb4e9ccd047",
+    "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513",
+    "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "66361c04b8c7069868aa03205dbb33f9d28ede06e55ea262326671b91108316b",
+    "som-rs/tests/rust-output-v1/validate_cases.py": "9b9131de7a56a54c6a9f103da170143bc18ec6d113bedb6f79ea0a7f8453d4bb",
+    "som-rs/evidence/typescript-output-contract-amendment-003.json": "7052daacfc89bf468e399e09f635e6d773187177eb684a0399d46d8ddf650089",
+    "som-rs/contracts/typescript-output-v1/CONTRACT.md": "ed3fbf2182763a43ea8985034d770af3108c30b088b609b8ed40291a2c92ead1",
+    "som-rs/contracts/typescript-output-v1/acceptance-plan.json": "17478469d02bf362e6d394ef9081ff4e842eeab239fbfc89550fba92951d35f5",
+    "som-rs/contracts/typescript-output-v1/api.schema.json": "bef2cb55ec61680eb997429d5290d8ced8ab61f790be751e5608dba3ce28f75f",
+    "som-rs/contracts/typescript-output-v1/behavior-normalization.json": "cc068fe361cfbcb960a299be67143eab06e7a02930a981c122251ff6afb4e8b0",
+    "som-rs/contracts/typescript-output-v1/bundle.schema.json": "c5f69b453562cd2259996994c6e57d8e69745d72109cac52ee746d754fc979b6",
+    "som-rs/contracts/typescript-output-v1/case-inventory.json": "f45572b155c89808bae9153c7a833da779ad043fb4c0a34002de9c9ef26dee0c",
+    "som-rs/contracts/typescript-output-v1/catalog/typescript-catalog.v1.json": "14c87b4421a0b5f015d3e6a7a65321edaa256a37bf24fe50db145ce22b5b4642",
+    "som-rs/contracts/typescript-output-v1/native-tools.json": "c9f4e0418d43996b8b8994eccffb6eb146795ed559277b0875da30bb3b5e0ce0",
+    "som-rs/contracts/typescript-output-v1/negative-cases.json": "858906170db681b95ecfb28cf4f0374157570771250a6dead23b84bbf6bce52d",
+    "som-rs/contracts/typescript-output-v1/product-layout.json": "eec61af43adb02583b86ded51478edb57459098f0899062a69c7591591f7ce47",
+    "som-rs/contracts/typescript-output-v1/reference/package-lock.json": "d5daa744e5efc0c7ad754e42930b34880a077ca2a38b466003786931a9f56606",
+    "som-rs/contracts/typescript-output-v1/reference/package.json": "02b2aa2b167dcf5f9282c8c04a7d8deb8f77888d1fa2c5726ea4e98d17b5eaa7",
+    "som-rs/contracts/typescript-output-v1/reference/tsconfig.json": "e1bb40b56013abf2525a53023ebc1ce455d176fe4c0c5061d18a563f25962fae",
+    "som-rs/contracts/typescript-output-v1/scope.json": "7e4beea87179bb06f3263645dd67ce110ec12d28df7e6239da61d4a3fc106304",
+    "som-rs/contracts/typescript-output-v1/target-examples.json": "fac94a5cb3295c5cb26c39f541ef395f6fa6ca1a99f25ca8cb5b3ff16f1aa6c5",
+    "som-rs/contracts/typescript-output-v1/toolchain.json": "0875aeb7e60aa72a44bc59c9aef89b971dffc5fc5304813e0b04ec5dc26da618",
+    "som-rs/evidence/typescript-output-v1/python-controls-2026-10-21.json": "7e97dceb3a8b20ab19c4c26b7029ebc1541783c1104cb35ebe840e7ac71d2cec",
+    "som-rs/evidence/typescript-output-v1/python-controls-2026-10-23.json": "b5b81e63e3d41dac2358862ccc968b66eeaf5c1d4d0c0d391007788d1f46ccfd",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/README.md": "69dad36d620542832b94fce0e40c2a1dbe8a65332ba200e1cbbbf37da47dd6b6",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/migrations/0001_rev0000.sql": "346dd960b0704ab14229e2d1e87ecbfbd5ddc6030223f1908207527bc72b9704",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/package-lock.json": "d5daa744e5efc0c7ad754e42930b34880a077ca2a38b466003786931a9f56606",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/package.json": "02b2aa2b167dcf5f9282c8c04a7d8deb8f77888d1fa2c5726ea4e98d17b5eaa7",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/app.ts": "89bcd9d11d43d450242e9bff3e65cfe56c116bca6b2df0b4513d2f641b9dc6c9",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/db.ts": "a57e3ead187815f5b3c517184dd419e5831841448d704f85b542fe896d62105b",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/main.ts": "3c2392b474f3dfd369083fb2602ee5d1667bbd29da815f4425ba13530b8682b2",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/migrate.ts": "c3452a5125857ab259bef72af4c42bb9407113613cf0a4fbca2ca620d3af5b65",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/schemas.ts": "f2159727c1156b727c285c42660c53bcd959e22e14c3fcb95847b6145506a174",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/test/api.test.ts": "25c3936cde84cdc5d8e1ec2f99f703c4addee32d7eed7b3964027db7c3abbcd3",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/tsconfig.json": "e1bb40b56013abf2525a53023ebc1ce455d176fe4c0c5061d18a563f25962fae",
+    "som-rs/evidence/typescript-output-v1/reference-verification-2026-10-21.json": "5dd5f94cd6bcd2f6d84bed937c3df83a161c361e9317d9bc9a2bb37141498b42",
+    "som-rs/tests/typescript-output-v1/build_case_inventory.py": "9ae6096a1708c478f19ec75b361e0bc721b12f64646d24ef190fb1b51e92e1f1",
+    "som-rs/tests/typescript-output-v1/build_negative_cases.py": "32158c2324e271d4bfd49a5a45106f046e67a136f91605463b21f87b1fc2d7e4",
+    "som-rs/tests/typescript-output-v1/build_target_examples.py": "9bbc13521fcbf9530aadb8417a45128a20d7b972b3b7460ab51dc21f7bb24efd",
+    "som-rs/tests/typescript-output-v1/check_contract.py": "a26c5c59579b609ff0ffe651f57292efd3eb8e4cce95a841232b2e98c409d376",
+    "som-rs/tests/typescript-output-v1/check_python_controls.py": "3e4bb02ecad2e9ee748de327c1db63813cc4c6dc3c0e5cbfa569f6b02c660172",
+    "som-rs/tests/typescript-output-v1/common.py": "77b92f00cdf13d66c54c1069e215bc8de479953887bc853e4316275b02a24497",
+    "som-rs/tests/typescript-output-v1/tree_sha.py": "6c9bccd1293aa8629f18539ea89fa0b5bb284dc70a579b13bc86f8d0324fa9a2",
+    "som-rs/tests/typescript-output-v1/ts_profile.py": "de964991d0022711e799e7b3dfca4f44fa7eb834e978d2a5ec40b52d93d8f6c4",
+    "som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json": "650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9",
+    "som-rs/contracts/compiler-v1/CONTRACT.md": "cf0a1727f924fd5b43df976ab8ca98c811d10e39d9ba41b6434f99f57fc65f3e"
+  },
+  "compiler_contract_raw_sha256": "cf0a1727f924fd5b43df976ab8ca98c811d10e39d9ba41b6434f99f57fc65f3e",
+  "future_policy_target_and_backend_descriptors": "not these observed values; new receipt maps and owning target source must be recomputed after final policy source is frozen",
+  "current_or_future_product_acceptance": false
+}

@@ -13,15 +13,46 @@ from dataclasses import dataclass
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import platform
 import posixpath
 import re
+import stat
 import subprocess
 import sys
-from types import MappingProxyType
+from types import MappingProxyType, ModuleType
 
-import raw_digest_compat as raw_compat
+
+RAW_COMPAT_REVIEWED_SHA256 = "a025bd99b56dafc4de65c268318f583e117adfe16988d61bb9180cb5e8da0896"
+
+
+def bootstrap_raw_compat(path):
+    """Execute only the reviewed helper bytes before any comparison can start."""
+    path = Path(path).absolute()
+    suffix = ("som-rs", "scripts", "hosted_readiness", "raw_digest_compat.py")
+    if ".." in path.parts or path.parts[-len(suffix):] != suffix:
+        raise RuntimeError("fixed raw compatibility source path required")
+    for member in (path, *path.parents):
+        info = member.lstat()
+        if stat.S_ISLNK(info.st_mode) or (member != path and not stat.S_ISDIR(info.st_mode)):
+            raise RuntimeError("linked or nonregular raw compatibility source")
+    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK
+    with os.fdopen(os.open(path, flags), "rb") as stream:
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 65536:
+            raise RuntimeError("linked, nonregular, or oversized raw compatibility source")
+        raw = stream.read(65537)
+    if len(raw) > 65536 or hashlib.sha256(raw).hexdigest() != RAW_COMPAT_REVIEWED_SHA256:
+        raise RuntimeError("raw compatibility source SHA differs before execution")
+    # A fresh local module cannot be supplied by sys.path, sys.modules or a PYC.
+    module = ModuleType("_som_reviewed_raw_digest_compat")
+    module.__file__, module.__cached__, module.__package__ = str(path), None, ""
+    exec(compile(raw, str(path), "exec", dont_inherit=True), module.__dict__)
+    return module
+
+
+raw_compat = bootstrap_raw_compat(Path(__file__).absolute().with_name("raw_digest_compat.py"))
 
 BASELINE = "som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json"
 BASELINE_SHA256 = "650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9"

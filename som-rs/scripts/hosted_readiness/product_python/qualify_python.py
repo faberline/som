@@ -15,11 +15,14 @@ from pathlib import Path
 import platform
 import re
 import subprocess
+import sys
+from types import ModuleType
 import tomllib
 
 HERE = "som-rs/scripts/hosted_readiness/product_python/"
 SCRIPT = HERE + "qualify_python.py"
 PLAN = HERE + "environment-plan.json"
+GUARD = "som-rs/scripts/hosted_readiness/dependency_candidate.py"
 GOLDENS = "som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json"
 TS065 = "som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json"
 SHA = re.compile(r"[a-f0-9]{64}\Z")
@@ -101,6 +104,24 @@ class Sources:
         require(hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest() == bits[2].decode(), "Git blob identity differs")
         self.pins[name] = {"sha256": sha(raw), "git_blob_oid": bits[2].decode()}
         return raw
+
+
+def candidate_admission(sources, candidate_revision, assembly):
+    name = "_som_environment_candidate_guard"
+    require(name not in sys.modules, "candidate guard namespace already loaded")
+    raw = sources.read(GUARD)
+    module = ModuleType(name)
+    module.__file__, module.__cached__, module.__package__ = str(sources.root / GUARD), None, ""
+    sys.modules[name] = module
+    try:
+        exec(compile(raw, module.__file__, "exec", dont_inherit=True), module.__dict__)
+        try:
+            return module.verify_candidate_inputs(sources.root, sources.revision, candidate_revision, assembly)
+        except module.Refusal as error:
+            raise Refusal("candidate admission: " + str(error)) from error
+    finally:
+        if sys.modules.get(name) is module:
+            del sys.modules[name]
 
 
 def requirements(raw, template=False):
@@ -288,10 +309,12 @@ def checked_output(repo, out, assembly, temporary):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, required=True)
-    parser.add_argument("--source-revision", required=True)
+    parser.add_argument("--source-revision", required=True, help="helper Git HEAD")
+    parser.add_argument("--candidate-revision", help="recorded compiler candidate; defaults to helper HEAD")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--assembly", type=Path)
     args = parser.parse_args()
+    candidate_revision = args.candidate_revision or args.source_revision
     require(os.environ.get("GITHUB_ACTIONS") == "true" and platform.system() == "Linux" and platform.machine() == "x86_64", "GitHub Linux x86_64 only")
     repo, out = args.repo.absolute(), args.out.absolute()
     require(Path(__file__).absolute() == repo / SCRIPT, "fixed helper source path required")
@@ -299,6 +322,7 @@ def main():
     checked_output(repo, out, args.assembly.absolute() if args.assembly is not None else None, temporary)
     out.mkdir()
     report = {"version": "som.hosted-python-environment-inventory.v1", "source_revision": args.source_revision,
+              "helper_revision": args.source_revision, "candidate_revision": candidate_revision,
               "state": "source-plan-only", "product_runtime_ready": False, "product_acceptance_passed": False,
               "closure_qualification_complete": False, "environment_input_set_complete": False,
               "environments": [], "missing_inputs": []}
@@ -307,6 +331,7 @@ def main():
     try:
         sources = Sources(repo, args.source_revision)
         sources.read(SCRIPT)
+        report["candidate_admission"] = candidate_admission(sources, candidate_revision, args.assembly.absolute() if args.assembly is not None else None)
         plan = parse(sources.read(PLAN))
         report["inventory"] = inventory(sources, plan)
         golden_raw, ts_raw = sources.read(GOLDENS), sources.read(TS065)
@@ -323,7 +348,7 @@ def main():
             artifact = args.assembly.absolute()
             assembly_raw = read(artifact / "assembly/manifest.json")
             report["assembly_manifest_sha256"] = sha(assembly_raw)
-            rows = products(artifact, parse(assembly_raw), goldens, args.source_revision, sha(golden_raw), sha(ts_raw))
+            rows = products(artifact, parse(assembly_raw), goldens, candidate_revision, sha(golden_raw), sha(ts_raw))
             report["observed_products"] = len(rows)
             report["product_environment_counts"] = dict(Counter("own-project" if row["requirements"] else "observer-runtime" for row in rows))
             report["observer_runtime_products"] = [{key: row[key] for key in ("cohort", "id", "files_map_sha256")} for row in rows if row["requirements"] is None]

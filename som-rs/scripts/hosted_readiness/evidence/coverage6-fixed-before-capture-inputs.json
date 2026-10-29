@@ -1,0 +1,588 @@
+{
+  "version": "som.coverage6-fixed-before-fresh-capture-inputs.v1",
+  "source_revision": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+  "before_binary_sha256": "2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c",
+  "before_build_commit": "8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af",
+  "scope": "Complete6named coverage Python products; fixedbefore compile and own-bundle assemble captures must equal frozen complete per-file hashes; oldpayload digest is observation, not current metadata authority. No newcandidate backfill. Missingdata doesnotblock independent115Rust gates.",
+  "frozen_index": {
+    "path": "som-rs/tests/rust-output-v1/cases/index.json",
+    "raw_sha256": "b49af2a7ba842e5dd810d8d010fcf93436474df7f49f1c569367bed1bc94ed1b"
+  },
+  "rows": [
+    {
+      "id": "cov-v1-types",
+      "prompt_sha256": "848e0ebefba7e84303f4e01240949f02a357fd952f16f626bd0367da4f1408dc",
+      "prompt_source": {
+        "path": "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json",
+        "raw_sha256": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c"
+      },
+      "cnl_source": {
+        "path": "som-rs/tests/rust-output-v1/cases/cov-v1-types.cnl",
+        "raw_sha256": "22e6cb0aacd219cb47478dca4ff5f244b63ae605de399f08a16bb62093ec9ce7"
+      },
+      "historical_authority": {
+        "path": "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json",
+        "raw_sha256": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
+        "pointer": "/cases/0",
+        "expected_file_sha256": {
+          "alembic/versions/cov1000_inventory.py": "e9c9b9add07331d7a9bc1d15a795d9dda0193ad9b754e283280085e59c4fa0a9",
+          "inventory/api.py": "b9e60ab61f4bf668d9fda5e76cd33560c3819a8233458ecaa618835e829bacce",
+          "inventory/models.py": "552fb8dbd42c000a46987db46cc67c8824983a8d2e66d73d57f96d68cd3e18e2",
+          "inventory/schemas.py": "db8ea38c9c73f9027b6910c362d65d1490726ca0500f93af4ae6ce6f1c1aeb3a",
+          "tests/test_inventory.py": "994d812383292431d3d6e4099f1f4af9e697ebc086cf177abe9105b718903b07"
+        },
+        "historical_payload_sha256_observation_only": "391f9d91653d605bf17cc5773b5f51b36a145d352c71c6c886f38d75859fcebf",
+        "recorded_compile_statuses": {
+          "json": 200,
+          "cnl": 200
+        },
+        "recorded_assemble_status": 200,
+        "same_bundle": true
+      },
+      "requests": [
+        {
+          "form": "json",
+          "target": null,
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov1000\"},\"package\":\"inventory\",\"resource\":{\"fields\":[{\"name\":\"sku\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"bin\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"weight\",\"type\":\"float\",\"required\":true,\"unique\":false},{\"name\":\"fragile\",\"type\":\"bool\",\"required\":true,\"unique\":false},{\"name\":\"note\",\"type\":\"str\",\"required\":false,\"unique\":false},{\"name\":\"count\",\"type\":\"int\",\"required\":false,\"unique\":false},{\"name\":\"ratio\",\"type\":\"float\",\"required\":false,\"unique\":false},{\"name\":\"checked\",\"type\":\"bool\",\"required\":false,\"unique\":false}],\"name\":\"Part\",\"path\":\"/parts\",\"table\":\"parts\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"}}",
+          "raw_sha256": "6a053374c2e33d7d7547f8c55c88fbd7e2eb6f7fdae0459a7439e9508f7c9ec8",
+          "bytes": 1040,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "json",
+          "target": "python",
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"List rows in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\",\"Delete a row. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov1000\"},\"package\":\"inventory\",\"resource\":{\"fields\":[{\"name\":\"sku\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"bin\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"weight\",\"type\":\"float\",\"required\":true,\"unique\":false},{\"name\":\"fragile\",\"type\":\"bool\",\"required\":true,\"unique\":false},{\"name\":\"note\",\"type\":\"str\",\"required\":false,\"unique\":false},{\"name\":\"count\",\"type\":\"int\",\"required\":false,\"unique\":false},{\"name\":\"ratio\",\"type\":\"float\",\"required\":false,\"unique\":false},{\"name\":\"checked\",\"type\":\"bool\",\"required\":false,\"unique\":false}],\"name\":\"Part\",\"path\":\"/parts\",\"table\":\"parts\"},\"tests\":[\"Check CRUD, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v1\"},\"target\":\"python\"}",
+          "raw_sha256": "e8eb2ec06f1fd187684a176981b9e8a0e4a87a5d3143d6cbe711d1bc8805a5f3",
+          "bytes": 1058,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "cnl",
+          "target": null,
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package inventory.\\nBegin resource.\\nUse resource name Part.\\nUse table parts.\\nUse path \\\"/parts\\\".\\nField sku is required str and is unique.\\nField bin is required int and is unique.\\nField weight is required float and is not unique.\\nField fragile is required bool and is not unique.\\nField note is optional str and is not unique.\\nField count is optional int and is not unique.\\nField ratio is optional float and is not unique.\\nField checked is optional bool and is not unique.\\nEnd resource.\\nUse migration revision cov1000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
+          "raw_sha256": "9e19b42f9e70c5f0e5af64f1ee0701f76a14b7e28aa8a6ae82af25c36436cf63",
+          "bytes": 1027,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "cnl",
+          "target": "python",
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 1.\\nUse package inventory.\\nBegin resource.\\nUse resource name Part.\\nUse table parts.\\nUse path \\\"/parts\\\".\\nField sku is required str and is unique.\\nField bin is required int and is unique.\\nField weight is required float and is not unique.\\nField fragile is required bool and is not unique.\\nField note is optional str and is not unique.\\nField count is optional int and is not unique.\\nField ratio is optional float and is not unique.\\nField checked is optional bool and is not unique.\\nEnd resource.\\nUse migration revision cov1000.\\nUse no previous migration revision.\\nBegin routes.\\nList rows in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nDelete a row. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"python\"}",
+          "raw_sha256": "767d643631e88a7ae122872b6fe185e261d398b0e7140ef451fb7fb43c2706bd",
+          "bytes": 1045,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        }
+      ],
+      "typed_rust_input": {
+        "path": "rust_phase1/0009/json.request.raw",
+        "raw_sha256": "08019a4373b880a3ebc3e31605000093649795a309904061a07df1daf771a02e",
+        "provenance": {
+          "path": "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json",
+          "source_file_sha256": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c",
+          "pointer": ""
+        }
+      },
+      "fresh_before_capture": "unrun_in_this_input_packet"
+    },
+    {
+      "id": "cov-v2-types",
+      "prompt_sha256": "5ceb9f06a827f4028c2f2c6fb48c09ee8e646801ceb22a64ee82f472076c1996",
+      "prompt_source": {
+        "path": "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json",
+        "raw_sha256": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53"
+      },
+      "cnl_source": {
+        "path": "som-rs/tests/rust-output-v1/cases/cov-v2-types.cnl",
+        "raw_sha256": "a2512cdbbea998a8f051160166e3c1d2f4b43ae5d7bbcbe5e6a0cd211a9b7c1d"
+      },
+      "historical_authority": {
+        "path": "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json",
+        "raw_sha256": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
+        "pointer": "/cases/1",
+        "expected_file_sha256": {
+          "alembic/versions/cov2000_catalog.py": "c2b25afc32e585c459cae8f285a3892248dabbbadcf73dcaf06bbb985b72f09b",
+          "catalog/api.py": "0f0a83005b7090e44f9dfeb37057c809219542bd502dce52bb1b4b456925ded5",
+          "catalog/models.py": "a6b7cd93319da077667253a9759a2a7194b72b3e28365af2f3486a65f0f5ac60",
+          "catalog/schemas.py": "cead3292dbdc84193f7a50fef71055ed3f6604abb5e38451c7584b4728dbedef",
+          "tests/test_catalog.py": "154d2daeed02490f4a436f3e62d07eea4b928b12ed0b872fad6040b5fcba3a37"
+        },
+        "historical_payload_sha256_observation_only": "e128cbe8077cb948dd7bfeeb251a0db45726c43dd632fc8938ff228b69af7200",
+        "recorded_compile_statuses": {
+          "json": 200,
+          "cnl": 200
+        },
+        "recorded_assemble_status": 200,
+        "same_bundle": true
+      },
+      "requests": [
+        {
+          "form": "json",
+          "target": null,
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact string filter, limit, and offset in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov2000\"},\"package\":\"catalog\",\"query\":{\"filter_field\":\"category\",\"max_limit\":100},\"resource\":{\"fields\":[{\"name\":\"category\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"code\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"price\",\"type\":\"float\",\"required\":true,\"unique\":false},{\"name\":\"stock\",\"type\":\"int\",\"required\":false,\"unique\":false},{\"name\":\"active\",\"type\":\"bool\",\"required\":false,\"unique\":false}],\"name\":\"Product\",\"path\":\"/products\",\"table\":\"products\"},\"tests\":[\"Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v2\"}}",
+          "raw_sha256": "8c122aa5de3187edbc00dc1d0c9896757fe8d67506e4c481163766291e77ff61",
+          "bytes": 1001,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "json",
+          "target": "python",
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact string filter, limit, and offset in id order.\",\"Create a row. Return 409 for a unique value conflict.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov2000\"},\"package\":\"catalog\",\"query\":{\"filter_field\":\"category\",\"max_limit\":100},\"resource\":{\"fields\":[{\"name\":\"category\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"code\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"price\",\"type\":\"float\",\"required\":true,\"unique\":false},{\"name\":\"stock\",\"type\":\"int\",\"required\":false,\"unique\":false},{\"name\":\"active\",\"type\":\"bool\",\"required\":false,\"unique\":false}],\"name\":\"Product\",\"path\":\"/products\",\"table\":\"products\"},\"tests\":[\"Check CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\"],\"version\":\"som.prompt.v2\"},\"target\":\"python\"}",
+          "raw_sha256": "b253a2d4014f069b86f46411cf8a6c56b0b60b8e3f53efda2f7fe27a684bb6af",
+          "bytes": 1019,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "cnl",
+          "target": null,
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 2.\\nUse package catalog.\\nBegin resource.\\nUse resource name Product.\\nUse table products.\\nUse path \\\"/products\\\".\\nField category is required str and is not unique.\\nField code is required str and is unique.\\nField price is required float and is not unique.\\nField stock is optional int and is not unique.\\nField active is optional bool and is not unique.\\nEnd resource.\\nBegin query.\\nFilter exactly on field category.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision cov2000.\\nUse no previous migration revision.\\nBegin routes.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact string filter, limit, and offset in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\"}",
+          "raw_sha256": "d241acccb284ac53612f1a77aab5e2a7a6b49179590ef50270b80420ff134735",
+          "bytes": 1070,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "cnl",
+          "target": "python",
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 2.\\nUse package catalog.\\nBegin resource.\\nUse resource name Product.\\nUse table products.\\nUse path \\\"/products\\\".\\nField category is required str and is not unique.\\nField code is required str and is unique.\\nField price is required float and is not unique.\\nField stock is optional int and is not unique.\\nField active is optional bool and is not unique.\\nEnd resource.\\nBegin query.\\nFilter exactly on field category.\\nLimit query results to 100.\\nEnd query.\\nUse migration revision cov2000.\\nUse no previous migration revision.\\nBegin routes.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact string filter, limit, and offset in id order.\\nCreate a row. Return 409 for a unique value conflict.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck CRUD, exact filtering, page bounds, missing id, and unique conflict when supported.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"python\"}",
+          "raw_sha256": "10c57b487ac27a91ed3750974d7f99b429acd91347cb1571d892cf3b696652c7",
+          "bytes": 1088,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        }
+      ],
+      "typed_rust_input": {
+        "path": "rust_phase1/0010/json.request.raw",
+        "raw_sha256": "db36e7b937c34c0ff144b2681d358d1311ff23a6b2c87a7eb5bf4b5f78d40874",
+        "provenance": {
+          "path": "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json",
+          "source_file_sha256": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53",
+          "pointer": ""
+        }
+      },
+      "fresh_before_capture": "unrun_in_this_input_packet"
+    },
+    {
+      "id": "cov-v3-types",
+      "prompt_sha256": "41fb163d59bb167b8105a9be4c5fb9ca177c2e590b4bec14172bb998d464bed3",
+      "prompt_source": {
+        "path": "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json",
+        "raw_sha256": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23"
+      },
+      "cnl_source": {
+        "path": "som-rs/tests/rust-output-v1/cases/cov-v3-types.cnl",
+        "raw_sha256": "554eb27bbd5c894fa7ccd473b45734a33753b1ec32395ccb5f73133b0a71a12c"
+      },
+      "historical_authority": {
+        "path": "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json",
+        "raw_sha256": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
+        "pointer": "/cases/2",
+        "expected_file_sha256": {
+          "README.md": "9d0d9aa5246b1cf3dcd7657504ad8b029792874838eedc71a1ae7376c0331fd1",
+          "alembic.ini": "d94591c0b82a4f66e08e5417f2d6543c2f68eb5ce68e0eb913a02cd3d2e0777b",
+          "alembic/env.py": "5675283a339b1bd6b3f2b25a0893cf1b53cbd26e908278fce9f3ee532791d8d8",
+          "alembic/versions/cov3000_tickets.py": "151f88042910292a8b56b802fdaef4ad560f783b88b92e79f8fb295f5182096c",
+          "pyproject.toml": "dd96069e91cfb93eef7805faba9cf933a6f25c6a529ac800f35b493629944313",
+          "tests/test_tickets.py": "fcc7b6dce7a4e1bb131a9cc2a5dbdb5ccf697bca289c6a23952d5a55bd506fd5",
+          "tickets/__init__.py": "51a55b1662c15238cb072b6f72ce159ed3c03fe01d387da1ddec7dd895854dda",
+          "tickets/api.py": "bef6b592ee9b85a39132f443695d838760309d8746cd6f4f1ea204633f79b80c",
+          "tickets/app.py": "2a5ae85881388032746b8fcbca6674cca1fae4566eb72a732ad61bf02d6adaa4",
+          "tickets/database.py": "f4d6106fb66e330ea4584a64d4aed0679bb33ddebdcd544ad7afde7ad7d6e085",
+          "tickets/models.py": "08f0fcdbc071b6042dc3a20175eef84a3d1098d4dde0436cc7c12dc8b27dfafc",
+          "tickets/schemas.py": "ba97aaa9ccf291192ffde0fe46fb6e6e428063c85db9c981b714f597e6e87ab4"
+        },
+        "historical_payload_sha256_observation_only": "9f38b9c7c2d02fde0febf7c570aaa983ea3d2c327bfa4bb07a3c3d207677866e",
+        "recorded_compile_statuses": {
+          "json": 200,
+          "cnl": 200
+        },
+        "recorded_assemble_status": 200,
+        "same_bundle": true
+      },
+      "requests": [
+        {
+          "form": "json",
+          "target": null,
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact boolean filter, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov3000\"},\"package\":\"tickets\",\"query\":{\"filter_field\":\"closed\",\"max_limit\":50},\"resource\":{\"fields\":[{\"name\":\"subject\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"code\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"priority\",\"type\":\"int\",\"required\":true,\"unique\":false},{\"name\":\"estimate\",\"type\":\"float\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"note\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"closed\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false}],\"name\":\"Ticket\",\"path\":\"/tickets\",\"table\":\"tickets\"},\"tests\":[\"Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v3\"}}",
+          "raw_sha256": "e145d0439af486f12c5175263902ef279f7b4ad452e71e2549d7c8a4d063b370",
+          "bytes": 1121,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "json",
+          "target": "python",
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with an optional exact boolean filter, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov3000\"},\"package\":\"tickets\",\"query\":{\"filter_field\":\"closed\",\"max_limit\":50},\"resource\":{\"fields\":[{\"name\":\"subject\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"code\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"priority\",\"type\":\"int\",\"required\":true,\"unique\":false},{\"name\":\"estimate\",\"type\":\"float\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"note\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"closed\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false}],\"name\":\"Ticket\",\"path\":\"/tickets\",\"table\":\"tickets\"},\"tests\":[\"Check standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v3\"},\"target\":\"python\"}",
+          "raw_sha256": "286496f3c294a1223cb4fe3c8cd3a2f85a99fc93ec0d5973d7e503ea67414bee",
+          "bytes": 1139,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "cnl",
+          "target": null,
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 3.\\nUse package tickets.\\nBegin resource.\\nUse resource name Ticket.\\nUse table tickets.\\nUse path \\\"/tickets\\\".\\nField subject is required str and is unique.\\nField code is required int and is unique.\\nField priority is required int and is not unique.\\nField estimate is optional float and is not unique with default null.\\nField note is optional str and is not unique with default null.\\nField closed is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field closed.\\nLimit query results to 50.\\nEnd query.\\nUse migration revision cov3000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact boolean filter, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\"}",
+          "raw_sha256": "0119c4707f559e3eb248d8a68485388645ed1b2e1ab2fd6ab704a22e2e8c7ad4",
+          "bytes": 1182,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "cnl",
+          "target": "python",
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 3.\\nUse package tickets.\\nBegin resource.\\nUse resource name Ticket.\\nUse table tickets.\\nUse path \\\"/tickets\\\".\\nField subject is required str and is unique.\\nField code is required int and is unique.\\nField priority is required int and is not unique.\\nField estimate is optional float and is not unique with default null.\\nField note is optional str and is not unique with default null.\\nField closed is optional bool and is not unique with default false.\\nEnd resource.\\nBegin query.\\nFilter exactly on field closed.\\nLimit query results to 50.\\nEnd query.\\nUse migration revision cov3000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with an optional exact boolean filter, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"python\"}",
+          "raw_sha256": "41b03bfe67202db4d1a03aff1b282a3fa62ffdfed012a93dd41787345d48f7f1",
+          "bytes": 1200,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        }
+      ],
+      "typed_rust_input": {
+        "path": "rust_phase1/0011/json.request.raw",
+        "raw_sha256": "8d41b1573e60d9dd6edca1459a852a87cab769219b80a9765be42943ee18f1f7",
+        "provenance": {
+          "path": "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json",
+          "source_file_sha256": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23",
+          "pointer": ""
+        }
+      },
+      "fresh_before_capture": "unrun_in_this_input_packet"
+    },
+    {
+      "id": "cov-v4-types",
+      "prompt_sha256": "1a4ab1272fc115cae40d0f488c2812640c40bab39ab904776d08a646e52d091e",
+      "prompt_source": {
+        "path": "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json",
+        "raw_sha256": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e"
+      },
+      "cnl_source": {
+        "path": "som-rs/tests/rust-output-v1/cases/cov-v4-types.cnl",
+        "raw_sha256": "cb7f5fb994d6c7bfbdff549e71286211cd1d3f7177b91bdbeeb34337229b7724"
+      },
+      "historical_authority": {
+        "path": "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json",
+        "raw_sha256": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
+        "pointer": "/cases/3",
+        "expected_file_sha256": {
+          "README.md": "6038bf7e4a6a2dc746cb3177911c382a9a1ae66fce4296182de52561566a0648",
+          "alembic.ini": "d94591c0b82a4f66e08e5417f2d6543c2f68eb5ce68e0eb913a02cd3d2e0777b",
+          "alembic/env.py": "9e217868c36af27b6187e58b397a571de59adc53ea45d1d10a2e08189855e83f",
+          "alembic/versions/cov4000_events.py": "1c219ee4da33c023c60dc727b9f528feeac4a19ca1b486915292f99357a9ee3e",
+          "events/__init__.py": "51a55b1662c15238cb072b6f72ce159ed3c03fe01d387da1ddec7dd895854dda",
+          "events/api.py": "b50cc78ac67053b29efcbe93947882b2d6015b213272324b77b2955c72c85564",
+          "events/app.py": "2a5ae85881388032746b8fcbca6674cca1fae4566eb72a732ad61bf02d6adaa4",
+          "events/database.py": "f4d6106fb66e330ea4584a64d4aed0679bb33ddebdcd544ad7afde7ad7d6e085",
+          "events/models.py": "6adb31bf38ed025a5677a7145025246760a0d59cb0e3ff059ec2b1347edc8097",
+          "events/schemas.py": "38ff4847d61d7598c2194069479e8b83ea3cbf78b1536f0788fbc9a8ae49c7fc",
+          "pyproject.toml": "f2177b8883e249917fb11e8dbd3a4b7015b125106435550744ef22d90e48e678",
+          "tests/test_events.py": "73cbde933a639657bbc0f0d91b53f299635026ab8c402cbc4b3ab8cd7d36218f"
+        },
+        "historical_payload_sha256_observation_only": "46bee033a0ba446a102a68d3988df5153d58cb1aad87394b7c2a6c9b852e1f1d",
+        "recorded_compile_statuses": {
+          "json": 200,
+          "cnl": 200
+        },
+        "recorded_assemble_status": 200,
+        "same_bundle": true
+      },
+      "requests": [
+        {
+          "form": "json",
+          "target": null,
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov4000\"},\"package\":\"events\",\"query\":{\"date_field\":\"starts_on\",\"filter_field\":\"public\",\"max_limit\":20},\"resource\":{\"fields\":[{\"name\":\"name\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"capacity\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"price\",\"type\":\"float\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"public\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"starts_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null}],\"name\":\"Event\",\"path\":\"/events\",\"table\":\"events\"},\"tests\":[\"Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v4\"}}",
+          "raw_sha256": "e6a6c426ded3c58812418a84f1da0c7a171bda9bc2cdfb81cdfcf5d6d1635154",
+          "bytes": 1123,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "json",
+          "target": "python",
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"logic\":[\"Create a row. Return 409 for a unique value conflict.\",\"Delete a row. Return 404 if it does not exist.\",\"List rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\",\"Update supplied fields. Return 404 if the row does not exist.\",\"Get a row by id. Return 404 if it does not exist.\"],\"migration\":{\"down_revision\":null,\"revision\":\"cov4000\"},\"package\":\"events\",\"query\":{\"date_field\":\"starts_on\",\"filter_field\":\"public\",\"max_limit\":20},\"resource\":{\"fields\":[{\"name\":\"name\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"capacity\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"price\",\"type\":\"float\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"public\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"starts_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null}],\"name\":\"Event\",\"path\":\"/events\",\"table\":\"events\"},\"tests\":[\"Check standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\"],\"version\":\"som.prompt.v4\"},\"target\":\"python\"}",
+          "raw_sha256": "62674c2a1a99d94f11dbb17f46f351662a2df97682f227e38499fa3870408dea",
+          "bytes": 1141,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "cnl",
+          "target": null,
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 4.\\nUse package events.\\nBegin resource.\\nUse resource name Event.\\nUse table events.\\nUse path \\\"/events\\\".\\nField name is required str and is not unique.\\nField capacity is required int and is unique.\\nField price is optional float and is not unique with default null.\\nField public is optional bool and is not unique with default false.\\nField starts_on is optional date and is not unique with default null.\\nEnd resource.\\nBegin query.\\nFilter exactly on field public.\\nFilter before date on field starts_on.\\nLimit query results to 20.\\nEnd query.\\nUse migration revision cov4000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\"}",
+          "raw_sha256": "2b61bd255fbd6822c093418c41eb87d545675171f60006c239c043caafce7d8e",
+          "bytes": 1215,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "cnl",
+          "target": "python",
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 4.\\nUse package events.\\nBegin resource.\\nUse resource name Event.\\nUse table events.\\nUse path \\\"/events\\\".\\nField name is required str and is not unique.\\nField capacity is required int and is unique.\\nField price is optional float and is not unique with default null.\\nField public is optional bool and is not unique with default false.\\nField starts_on is optional date and is not unique with default null.\\nEnd resource.\\nBegin query.\\nFilter exactly on field public.\\nFilter before date on field starts_on.\\nLimit query results to 20.\\nEnd query.\\nUse migration revision cov4000.\\nUse no previous migration revision.\\nBegin routes.\\nCreate a row. Return 409 for a unique value conflict.\\nDelete a row. Return 404 if it does not exist.\\nList rows with optional exact boolean and exclusive date-before filters, limit, and offset in id order.\\nUpdate supplied fields. Return 404 if the row does not exist.\\nGet a row by id. Return 404 if it does not exist.\\nEnd routes.\\nBegin checks.\\nCheck standalone CRUD, boolean and date-before filtering, page bounds, defaults, timestamps, missing id, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"python\"}",
+          "raw_sha256": "f03ac121708cd15585b030b11275a3db92575e6b8c4acf3bb0bb4e84f0a7e1ab",
+          "bytes": 1233,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        }
+      ],
+      "typed_rust_input": {
+        "path": "rust_phase1/0012/json.request.raw",
+        "raw_sha256": "07a0b499563ba71bb93470dc75d2371efd304be8c857ed2a77466591c01f0245",
+        "provenance": {
+          "path": "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json",
+          "source_file_sha256": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e",
+          "pointer": ""
+        }
+      },
+      "fresh_before_capture": "unrun_in_this_input_packet"
+    },
+    {
+      "id": "cov-v5-min",
+      "prompt_sha256": "bfcebf842c839e6cb7c9620e7ce0e9e6e5513a405157b160c5fee100f1e90e4a",
+      "prompt_source": {
+        "path": "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json",
+        "raw_sha256": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347"
+      },
+      "cnl_source": {
+        "path": "som-rs/tests/rust-output-v1/cases/cov-v5-min.cnl",
+        "raw_sha256": "627623f91944b13158487086efec5653948be6c2e77a341e0d0ba9410d291e5d"
+      },
+      "historical_authority": {
+        "path": "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json",
+        "raw_sha256": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
+        "pointer": "/cases/4",
+        "expected_file_sha256": {
+          "README.md": "1b2931b7c377fae5e14da91e1518caa2f8703bdcef9a83aeb661c32259e49ab6",
+          "alembic.ini": "d94591c0b82a4f66e08e5417f2d6543c2f68eb5ce68e0eb913a02cd3d2e0777b",
+          "alembic/env.py": "57817dfbbc6e2299b523a67f7c29e80a9207c32eb888e7864dbfd8cfcd066ecf",
+          "alembic/versions/cov5000_boards.py": "73fd1cdfaed9e72173f4dd7f16bd59c448b3570e19b5e606b6263517d9b24472",
+          "boards/__init__.py": "51a55b1662c15238cb072b6f72ce159ed3c03fe01d387da1ddec7dd895854dda",
+          "boards/api.py": "8e54ad9613d51574dd1544dfeda5e94d82437b922f6a66389b8b2c8fd3469e7c",
+          "boards/app.py": "2a5ae85881388032746b8fcbca6674cca1fae4566eb72a732ad61bf02d6adaa4",
+          "boards/database.py": "f4d6106fb66e330ea4584a64d4aed0679bb33ddebdcd544ad7afde7ad7d6e085",
+          "boards/models.py": "0b77f9a5b2e6214ae83d4ba2c758d00a4bdea8e252cace8e519d39c791317623",
+          "boards/schemas.py": "818668fe154fdbbf4a95c05e9b33e96684a9a26c774f3539fa8ad2ed9028c83c",
+          "pyproject.toml": "c4b3ea472cfd9b975005bc39759fa836df77121a4193218fbb892214f41af8ed",
+          "tests/test_boards.py": "c81471e01d321a814d5f1db123deaaf4ed2eaa80e08c04fa536591515f68db91"
+        },
+        "historical_payload_sha256_observation_only": "e5f215025e008c6de55ef036a5e18386b3387f894bff6ecdf3b8b621053b0830",
+        "recorded_compile_statuses": {
+          "json": 200,
+          "cnl": 200
+        },
+        "recorded_assemble_status": 200,
+        "same_bundle": true
+      },
+      "requests": [
+        {
+          "form": "json",
+          "target": null,
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"boards\",\"resources\":{\"parent\":{\"name\":\"Board\",\"table\":\"boards\",\"path\":\"/boards\",\"fields\":[{\"name\":\"title\",\"type\":\"str\",\"required\":true,\"unique\":false}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}},\"child\":{\"name\":\"Card\",\"table\":\"cards\",\"path\":\"/cards\",\"fields\":[{\"name\":\"label\",\"type\":\"str\",\"required\":true,\"unique\":false}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}}},\"relation\":{\"foreign_key\":\"board_id\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"cov5000\",\"down_revision\":null}}}",
+          "raw_sha256": "640adcd5a7fe45766de35136efe4ca7815fb5819aa7bf9f7c8acf97a2a9f1d12",
+          "bytes": 1715,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "json",
+          "target": "python",
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"boards\",\"resources\":{\"parent\":{\"name\":\"Board\",\"table\":\"boards\",\"path\":\"/boards\",\"fields\":[{\"name\":\"title\",\"type\":\"str\",\"required\":true,\"unique\":false}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}},\"child\":{\"name\":\"Card\",\"table\":\"cards\",\"path\":\"/cards\",\"fields\":[{\"name\":\"label\",\"type\":\"str\",\"required\":true,\"unique\":false}],\"query\":{\"filter_field\":null,\"date_field\":null,\"max_limit\":20}}},\"relation\":{\"foreign_key\":\"board_id\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"cov5000\",\"down_revision\":null}},\"target\":\"python\"}",
+          "raw_sha256": "be03eef233bb1fd0de3b5d7d856ff0fb26cd2593a397a609c7697a04c90aa358",
+          "bytes": 1733,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "cnl",
+          "target": null,
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package boards.\\nBegin parent resource.\\nUse resource name Board.\\nUse table boards.\\nUse path \\\"/boards\\\".\\nField title is required str and is not unique.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Card.\\nUse table cards.\\nUse path \\\"/cards\\\".\\nField label is required str and is not unique.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key board_id and restrict deletion.\\nUse migration revision cov5000.\\nUse no previous migration revision.\\nUse no capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\"}",
+          "raw_sha256": "c2850d754ee1106c4f62be87331a4312cc13e20112e68ffd1aa507a591ede23d",
+          "bytes": 1776,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "cnl",
+          "target": "python",
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package boards.\\nBegin parent resource.\\nUse resource name Board.\\nUse table boards.\\nUse path \\\"/boards\\\".\\nField title is required str and is not unique.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Card.\\nUse table cards.\\nUse path \\\"/cards\\\".\\nField label is required str and is not unique.\\nBegin query.\\nUse no exact filter.\\nUse no date filter.\\nLimit query results to 20.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key board_id and restrict deletion.\\nUse migration revision cov5000.\\nUse no previous migration revision.\\nUse no capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"python\"}",
+          "raw_sha256": "b1d597caf1e4ec7dfa2d5c0ccf7f4fdcecae059064e94c0379d21d01147c43dc",
+          "bytes": 1794,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        }
+      ],
+      "typed_rust_input": {
+        "path": "rust_phase1/0013/json.request.raw",
+        "raw_sha256": "8459bccb69f558356dd711c95058f5c5b8c2e176e5dfd0b39717c5826552613e",
+        "provenance": {
+          "path": "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json",
+          "source_file_sha256": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347",
+          "pointer": ""
+        }
+      },
+      "fresh_before_capture": "unrun_in_this_input_packet"
+    },
+    {
+      "id": "cov-v5-max",
+      "prompt_sha256": "aa2749067c9302d47090ce8b17d014e45f1e41898bdfa6bc05eef35c76230538",
+      "prompt_source": {
+        "path": "som-rs/tests/rust-output-v1/cases/cov-v5-max.prompt.json",
+        "raw_sha256": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d"
+      },
+      "cnl_source": {
+        "path": "som-rs/tests/rust-output-v1/cases/cov-v5-max.cnl",
+        "raw_sha256": "97cb49f506fb16fb9da2ea203b5a114ea68766ec46ebb69cdb4d63f012deb16c"
+      },
+      "historical_authority": {
+        "path": "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json",
+        "raw_sha256": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
+        "pointer": "/cases/5",
+        "expected_file_sha256": {
+          "README.md": "c6f62811d415e13d83464f979f25040c8ac719faf8ae7e5df30c0b07bd03da56",
+          "alembic.ini": "d94591c0b82a4f66e08e5417f2d6543c2f68eb5ce68e0eb913a02cd3d2e0777b",
+          "alembic/env.py": "eb1002b74a2cf81cb3dc3e62486d3f828c5b8c64e9fcecde2c1c651645423b42",
+          "alembic/versions/cov5100_billing.py": "6503cdb0fab43b6aa979c37182718e429414fd57bbc5d9ba52c9f9e1bc319e0e",
+          "billing/__init__.py": "51a55b1662c15238cb072b6f72ce159ed3c03fe01d387da1ddec7dd895854dda",
+          "billing/api.py": "449c19b46f19b1b26bf5e2eeefe1435f7f082a9a1e43199a0e8276a5fc777d82",
+          "billing/app.py": "2a5ae85881388032746b8fcbca6674cca1fae4566eb72a732ad61bf02d6adaa4",
+          "billing/database.py": "f4d6106fb66e330ea4584a64d4aed0679bb33ddebdcd544ad7afde7ad7d6e085",
+          "billing/models.py": "98fb3210069ba84b4d8a14eb865512036945f935a2b2b50ce325e1a04e19915c",
+          "billing/schemas.py": "8400204b8f3f1e56dec08cc9e4eee54ed94da804d7c2e1c8c1c153c8c0a5fdf4",
+          "pyproject.toml": "4bba75b50d32648443814cb1720cb3c29d18f26baee57311698b0929dc8fe7b0",
+          "tests/test_billing.py": "a301fd18bf9d17b51fea6fa1e3cf257356d95acfba75ebf810dd278cce2c2254"
+        },
+        "historical_payload_sha256_observation_only": "b323e118aab79eecf44ff1f3a41cd93946c8f16137adccb9b46997673fcefa0a",
+        "recorded_compile_statuses": {
+          "json": 200,
+          "cnl": 200
+        },
+        "recorded_assemble_status": 200,
+        "same_bundle": true
+      },
+      "requests": [
+        {
+          "form": "json",
+          "target": null,
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"billing\",\"resources\":{\"parent\":{\"name\":\"Account\",\"table\":\"accounts\",\"path\":\"/accounts\",\"fields\":[{\"name\":\"code\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"name\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"tier\",\"type\":\"int\",\"required\":true,\"unique\":false},{\"name\":\"balance\",\"type\":\"float\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"active\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"opened_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"quota\",\"type\":\"int\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"notes\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"active\",\"date_field\":\"opened_on\",\"max_limit\":100}},\"child\":{\"name\":\"Invoice\",\"table\":\"invoices\",\"path\":\"/invoices\",\"fields\":[{\"name\":\"number\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"memo\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"amount\",\"type\":\"float\",\"required\":true,\"unique\":false},{\"name\":\"paid\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"due_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"reference\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"discount\",\"type\":\"float\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"lines\",\"type\":\"int\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"paid\",\"date_field\":\"due_on\",\"max_limit\":50}}},\"relation\":{\"foreign_key\":\"account_id\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"cov5100\",\"down_revision\":null}}}",
+          "raw_sha256": "7604750e06bf45083508991e0e94ce55bca380ee96ba112b7b641b0f0b0deffb",
+          "bytes": 2787,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "json",
+          "target": "python",
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.prompt-json.v1\",\"prompt\":{\"version\":\"som.prompt.v5\",\"package\":\"billing\",\"resources\":{\"parent\":{\"name\":\"Account\",\"table\":\"accounts\",\"path\":\"/accounts\",\"fields\":[{\"name\":\"code\",\"type\":\"str\",\"required\":true,\"unique\":true},{\"name\":\"name\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"tier\",\"type\":\"int\",\"required\":true,\"unique\":false},{\"name\":\"balance\",\"type\":\"float\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"active\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"opened_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"quota\",\"type\":\"int\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"notes\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"active\",\"date_field\":\"opened_on\",\"max_limit\":100}},\"child\":{\"name\":\"Invoice\",\"table\":\"invoices\",\"path\":\"/invoices\",\"fields\":[{\"name\":\"number\",\"type\":\"int\",\"required\":true,\"unique\":true},{\"name\":\"memo\",\"type\":\"str\",\"required\":true,\"unique\":false},{\"name\":\"amount\",\"type\":\"float\",\"required\":true,\"unique\":false},{\"name\":\"paid\",\"type\":\"bool\",\"required\":false,\"unique\":false,\"default\":false},{\"name\":\"due_on\",\"type\":\"date\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"reference\",\"type\":\"str\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"discount\",\"type\":\"float\",\"required\":false,\"unique\":false,\"default\":null},{\"name\":\"lines\",\"type\":\"int\",\"required\":false,\"unique\":false,\"default\":null}],\"query\":{\"filter_field\":\"paid\",\"date_field\":\"due_on\",\"max_limit\":50}}},\"relation\":{\"foreign_key\":\"account_id\",\"on_delete\":\"restrict\"},\"logic\":[{\"scope\":\"parent\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"parent\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"parent\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"parent\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"parent\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"child\",\"step\":\"Create a row. Return 409 for a unique value conflict.\"},{\"scope\":\"child\",\"step\":\"Get a row by id. Return 404 if it does not exist.\"},{\"scope\":\"child\",\"step\":\"List scoped rows with the configured filters and pagination in id order.\"},{\"scope\":\"child\",\"step\":\"Update supplied fields. Return 404 if the row does not exist.\"},{\"scope\":\"child\",\"step\":\"Delete a row. Reject a parent with children with 409.\"},{\"scope\":\"batch\",\"step\":\"Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\"}],\"tests\":[\"Check related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\"],\"migration\":{\"revision\":\"cov5100\",\"down_revision\":null}},\"target\":\"python\"}",
+          "raw_sha256": "54a26bec1e34597b4bc2d1aff38360e5d03b3e69f4b50bd9556fe4a926071a32",
+          "bytes": 2805,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "cnl",
+          "target": null,
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package billing.\\nBegin parent resource.\\nUse resource name Account.\\nUse table accounts.\\nUse path \\\"/accounts\\\".\\nField code is required str and is unique.\\nField name is required str and is not unique.\\nField tier is required int and is not unique.\\nField balance is optional float and is not unique with default null.\\nField active is optional bool and is not unique with default false.\\nField opened_on is optional date and is not unique with default null.\\nField quota is optional int and is not unique with default null.\\nField notes is optional str and is not unique with default null.\\nBegin query.\\nFilter exactly on field active.\\nFilter before date on field opened_on.\\nLimit query results to 100.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Invoice.\\nUse table invoices.\\nUse path \\\"/invoices\\\".\\nField number is required int and is unique.\\nField memo is required str and is not unique.\\nField amount is required float and is not unique.\\nField paid is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nField reference is optional str and is not unique with default null.\\nField discount is optional float and is not unique with default null.\\nField lines is optional int and is not unique with default null.\\nBegin query.\\nFilter exactly on field paid.\\nFilter before date on field due_on.\\nLimit query results to 50.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key account_id and restrict deletion.\\nUse migration revision cov5100.\\nUse no previous migration revision.\\nUse no capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\"}",
+          "raw_sha256": "ab5f97e373d0b3534f3b7c5c4f5ef18c9e7aac22276c505efcd8415a99d5cd13",
+          "bytes": 2718,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        },
+        {
+          "form": "cnl",
+          "target": "python",
+          "method": "POST",
+          "endpoint": "/v1/compile",
+          "body": "{\"format\":\"som.cnl.v1\",\"source\":\"Use SOM CNL version 1.\\nUse prompt version 5.\\nUse package billing.\\nBegin parent resource.\\nUse resource name Account.\\nUse table accounts.\\nUse path \\\"/accounts\\\".\\nField code is required str and is unique.\\nField name is required str and is not unique.\\nField tier is required int and is not unique.\\nField balance is optional float and is not unique with default null.\\nField active is optional bool and is not unique with default false.\\nField opened_on is optional date and is not unique with default null.\\nField quota is optional int and is not unique with default null.\\nField notes is optional str and is not unique with default null.\\nBegin query.\\nFilter exactly on field active.\\nFilter before date on field opened_on.\\nLimit query results to 100.\\nEnd query.\\nEnd parent resource.\\nBegin child resource.\\nUse resource name Invoice.\\nUse table invoices.\\nUse path \\\"/invoices\\\".\\nField number is required int and is unique.\\nField memo is required str and is not unique.\\nField amount is required float and is not unique.\\nField paid is optional bool and is not unique with default false.\\nField due_on is optional date and is not unique with default null.\\nField reference is optional str and is not unique with default null.\\nField discount is optional float and is not unique with default null.\\nField lines is optional int and is not unique with default null.\\nBegin query.\\nFilter exactly on field paid.\\nFilter before date on field due_on.\\nLimit query results to 50.\\nEnd query.\\nEnd child resource.\\nRelate child to parent with foreign key account_id and restrict deletion.\\nUse migration revision cov5100.\\nUse no previous migration revision.\\nUse no capabilities.\\nBegin routes.\\nFor parent: Create a row. Return 409 for a unique value conflict.\\nFor parent: Get a row by id. Return 404 if it does not exist.\\nFor parent: List scoped rows with the configured filters and pagination in id order.\\nFor parent: Update supplied fields. Return 404 if the row does not exist.\\nFor parent: Delete a row. Reject a parent with children with 409.\\nFor child: Create a row. Return 409 for a unique value conflict.\\nFor child: Get a row by id. Return 404 if it does not exist.\\nFor child: List scoped rows with the configured filters and pagination in id order.\\nFor child: Update supplied fields. Return 404 if the row does not exist.\\nFor child: Delete a row. Reject a parent with children with 409.\\nFor batch: Create a parent and 1 to 20 children in one transaction. Roll back all writes on failure.\\nEnd routes.\\nBegin checks.\\nCheck related CRUD, filters, defaults, timestamps, isolation, atomic batch, delete restriction, and migration.\\nEnd checks.\\nEnd request.\\n\",\"target\":\"python\"}",
+          "raw_sha256": "e00e32940cf4ba0029ca696812d48a8f1c00318a351f50aa2066f20cc3b49979",
+          "bytes": 2736,
+          "expected_http_status": 200,
+          "assemble_expected_http_status": 200,
+          "authority_role": "source_derived_request_for_fresh_fixed_before_capture; not recovered historical encoding"
+        }
+      ],
+      "typed_rust_input": {
+        "path": "rust_phase1/0014/json.request.raw",
+        "raw_sha256": "f3044157dd0f1be66a04c594553fc7b09236e949152d253623c11acd3a3eee81",
+        "provenance": {
+          "path": "som-rs/tests/rust-output-v1/cases/cov-v5-max.prompt.json",
+          "source_file_sha256": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d",
+          "pointer": ""
+        }
+      },
+      "fresh_before_capture": "unrun_in_this_input_packet"
+    }
+  ],
+  "product_acceptance_passed": false
+}

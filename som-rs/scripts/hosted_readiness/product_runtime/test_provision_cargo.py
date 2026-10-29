@@ -112,7 +112,7 @@ class CargoClosureTests(unittest.TestCase):
         return c.inspect_crate(self.record, self.path, self.out)
 
     def vendor(self, bodies=None):
-        bodies = bodies or {key: value for key, value in self.bodies.items() if not key.endswith(".orig")}
+        bodies = dict(self.bodies) if bodies is None else bodies
         vendor = self.out / "vendor"
         directory = vendor / self.prefix
         for name, body in bodies.items():
@@ -269,7 +269,7 @@ class CargoClosureTests(unittest.TestCase):
         changes = {}
         rows = c.verify_vendor(vendor, {self.record[:2]: self.record}, {self.record[:2]: published}, changes)
         self.assertEqual(len(rows), 1)
-        self.assertEqual(changes[self.prefix]["publisher_files_not_vendored"], ["Cargo.toml.orig"])
+        self.assertEqual(changes[self.prefix]["publisher_files_not_vendored"], [])
         file = vendor / self.prefix / "src/lib.rs"
         file.write_bytes(b'compile_error!("stub");\n')
         with self.assertRaisesRegex(c.Refusal, "checksum metadata"):
@@ -277,7 +277,7 @@ class CargoClosureTests(unittest.TestCase):
 
     def test_rehashed_stub_cannot_hide_behind_new_checksum_metadata(self):
         published = self.published()
-        bodies = {key: value for key, value in self.bodies.items() if not key.endswith(".orig")}
+        bodies = dict(self.bodies)
         bodies["src/lib.rs"] = b'compile_error!("stub");\n'
         vendor = self.vendor(bodies)
         changes = {}
@@ -287,9 +287,39 @@ class CargoClosureTests(unittest.TestCase):
 
     def test_missing_real_source_is_not_a_permitted_cargo_omission(self):
         published = self.published()
-        vendor = self.vendor({name: body for name, body in self.bodies.items() if name not in {"src/lib.rs", "Cargo.toml.orig"}})
+        vendor = self.vendor({name: body for name, body in self.bodies.items() if name != "src/lib.rs"})
         with self.assertRaisesRegex(c.Refusal, "omitted publisher source"):
             c.verify_vendor(vendor, {self.record[:2]: self.record}, {self.record[:2]: published}, {})
+
+    def test_nested_git_metadata_omissions_keep_all_publisher_source_bytes(self):
+        metadata = {"tests/test-data/.gitattributes": b"*.pem binary\n",
+                    "tests/.gitignore": b"generated\n", "nested/.git/config": b"fixture metadata\n"}
+        self.bodies.update(metadata)
+        blob = archive({self.prefix + "/" + name: body for name, body in self.bodies.items()})
+        self.path.write_bytes(blob)
+        self.record = (*self.record[:3], c.digest(blob))
+        published = self.published()
+        vendor = self.vendor({name: body for name, body in self.bodies.items() if name not in metadata})
+        changes = {}
+        rows = c.verify_vendor(vendor, {self.record[:2]: self.record}, {self.record[:2]: published}, changes)
+        self.assertEqual(rows[0]["publisher_files_not_vendored"], sorted(metadata))
+        self.assertEqual(changes[self.prefix]["changed"], {})
+        self.assertIn("Cargo.toml.orig", rows[0]["files"])
+
+    def test_registry_backup_and_other_dotfile_omissions_are_refused(self):
+        original = dict(self.bodies)
+        for index, relative in enumerate(("Cargo.toml.orig", "src/lib.rs.rej", "tests/.gitkeep", "tests/.gitattributes.rs")):
+            with self.subTest(relative=relative):
+                self.out = self.root / f"omission-{index}"
+                self.out.mkdir()
+                self.bodies = {**original, relative: b"publisher byte that Cargo retains\n"}
+                blob = archive({self.prefix + "/" + name: body for name, body in self.bodies.items()})
+                self.path.write_bytes(blob)
+                self.record = (*self.record[:3], c.digest(blob))
+                published = self.published()
+                vendor = self.vendor({name: body for name, body in self.bodies.items() if name != relative})
+                with self.assertRaisesRegex(c.Refusal, "omitted publisher source"):
+                    c.verify_vendor(vendor, {self.record[:2]: self.record}, {self.record[:2]: published}, {})
 
     def test_vendor_symlinks_and_unsafe_config_are_refused(self):
         vendor = self.vendor()

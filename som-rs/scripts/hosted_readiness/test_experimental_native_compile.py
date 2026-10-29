@@ -5,10 +5,13 @@ import hashlib
 import importlib.util
 import io
 import json
+import marshal
 import os
 from pathlib import Path
+import struct
 import sys
 import tempfile
+from types import ModuleType
 import unittest
 from unittest.mock import patch
 
@@ -58,6 +61,52 @@ class CompileTests(unittest.TestCase):
         self.baseline = json.loads((REPO / e.BASELINE).read_bytes())
         self.overrides = {}
         self.after, _receipts = e.after_pins(FixtureRepository())
+
+    def test_raw_helper_bootstrap_ignores_matching_pyc_and_preloaded_module(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary).resolve() / e.RAW_COMPAT
+            path.parent.mkdir(parents=True)
+            raw = (REPO / e.RAW_COMPAT).read_bytes()
+            path.write_bytes(raw)
+            os.utime(path, (1700000000, 1700000000))
+            cache = Path(importlib.util.cache_from_source(str(path)))
+            cache.parent.mkdir()
+            stale = compile("raise AssertionError('unchecked cache ran')", str(path), "exec")
+            cache.write_bytes(importlib.util.MAGIC_NUMBER + struct.pack("<III", 0, 1700000000, len(raw)) + marshal.dumps(stale))
+            poison = ModuleType("raw_digest_compat")
+            poison.pointer_path = lambda _value: (_ for _ in ()).throw(AssertionError("preloaded helper ran"))
+            with patch.dict(sys.modules, {"raw_digest_compat": poison}):
+                module = e.bootstrap_raw_compat(path)
+            self.assertEqual(module.pointer_path("/bundle/hashes"), ("bundle", "hashes"))
+            self.assertIsNone(module.__cached__)
+            self.assertIsNot(module, poison)
+            self.assertTrue(cache.is_file())
+
+    def test_dirty_raw_helper_is_refused_before_compile(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary).resolve() / e.RAW_COMPAT
+            path.parent.mkdir(parents=True)
+            path.write_bytes(b"raise AssertionError('dirty helper ran')\n")
+            with patch("builtins.compile", side_effect=AssertionError("dirty bytes reached compile")):
+                with self.assertRaisesRegex(RuntimeError, "SHA differs"):
+                    e.bootstrap_raw_compat(path)
+
+    def test_raw_helper_bootstrap_refuses_links_and_wrong_source_path(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary).resolve()
+            target = base / "helper.py"
+            target.write_bytes((REPO / e.RAW_COMPAT).read_bytes())
+            path = base / e.RAW_COMPAT
+            path.parent.mkdir(parents=True)
+            path.symlink_to(target)
+            with self.assertRaisesRegex(RuntimeError, "linked"):
+                e.bootstrap_raw_compat(path)
+            path.unlink()
+            os.link(target, path)
+            with self.assertRaisesRegex(RuntimeError, "linked"):
+                e.bootstrap_raw_compat(path)
+            with self.assertRaisesRegex(RuntimeError, "fixed raw compatibility source"):
+                e.bootstrap_raw_compat(target)
 
     def exchange(self, target="python", version="som.prompt.v1", refusal=False):
         rows = self.baseline["baselines"][target]["rows"]
