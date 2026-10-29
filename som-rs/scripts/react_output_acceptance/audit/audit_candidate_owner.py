@@ -19,8 +19,8 @@ def obj(raw):
     return json.loads(raw,object_pairs_hook=pairs)
 def sha(data):return hashlib.sha256(data).hexdigest()
 
-def audit(out,candidate):
-    receipt=obj(read(out/'candidate-owner.json'));runtime=obj(read(candidate/'runtime.json'));build=obj(read(candidate/'build.json'))
+def audit(out,candidate,original_candidate=None,receipt_path=None):
+    receipt=obj(read(receipt_path if receipt_path is not None else out/'candidate-owner.json'));runtime=obj(read(candidate/'runtime.json'));build=obj(read(candidate/'build.json'))
     need(receipt.get('version')=='som.m6-owned-candidate.v1' and receipt.get('product_acceptance_passed') is False)
     events=receipt['events'];starts=[(i,e) for i,e in enumerate(events) if e.get('kind')=='candidate-start']
     waits=[(i,e) for i,e in enumerate(events) if e.get('kind')=='candidate-wait']
@@ -29,9 +29,10 @@ def audit(out,candidate):
     identities=[(i,e) for i,e in enumerate(events) if e.get('kind')=='candidate-signal-identity']
     signals=[(i,e) for i,e in enumerate(events) if e.get('kind')=='candidate-signal']
     need(len(identities)==1 and len(signals)==2);ii,identity=identities[0]
-    pid=start['pid'];parent=start['parent_pid'];argv=[str(candidate/'som'),'serve','--assets',str(candidate/'assets'),'--port','18919']
+    original_candidate=original_candidate if original_candidate is not None else candidate
+    pid=start['pid'];parent=start['parent_pid'];argv=[str(original_candidate/'som'),'serve','--assets',str(original_candidate/'assets'),'--port','18919']
     need(type(pid) is int and pid>1 and type(parent) is int and parent>1 and si<pi<wi
-         and start['argv']==runtime['argv']==argv and start['cwd']==str(candidate) and exit['exit_code']==0
+         and start['argv']==runtime['argv']==argv and start['cwd']==str(original_candidate) and exit['exit_code']==0
          and runtime['pid']==pid and runtime['port']==18919 and wait['pid']==pid and wait['state']=='completed'
          and type(wait['exit_code']) is int and sha(read(candidate/'som'))==runtime['binary_sha256']==build['binary_sha256'])
     identity_argv=['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,stat=,command=']
@@ -82,7 +83,7 @@ def audit(out,candidate):
     need(fields==[str(pid),str(parent),str(pid),' '.join(argv)])
     lines=commands['owner-candidate-cwd'][1].decode().splitlines()
     need([line[1:] for line in lines if line.startswith('p')]==[str(pid)]
-         and [line[1:] for line in lines if line.startswith('n')]==[str(candidate)])
+         and [line[1:] for line in lines if line.startswith('n')]==[str(original_candidate)])
     need(commands['owner-candidate-listener'][1].decode().split()==[str(pid)])
     def table(name):
         values={}

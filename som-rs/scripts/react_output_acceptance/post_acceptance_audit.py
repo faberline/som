@@ -82,6 +82,8 @@ def collect(out, config, provenance, run_info, jobs_info, env):
         if not (result.get('cases')==115 and result.get('compiler_calls')==460
                 and result.get('success_body_normalization')=='recomputed-on-recorded-successes'
                 and result.get('behavior_oracle')=='recomputed-on-recorded-cases'
+                and result.get('product_files',{}).get('case_targets')==230
+                and result.get('rust_binaries',{}).get('cases')==115
                 and product.get('case_targets')==product.get('observed_owners')==product.get('oracle_case_targets_checked')==230
                 and type(product.get('normalized_successes')) is int and product['normalized_successes']>0
                 and product.get('source_origin')=='requires-workflow-origin-join'

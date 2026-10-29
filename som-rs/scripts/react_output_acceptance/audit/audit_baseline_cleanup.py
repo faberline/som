@@ -20,12 +20,13 @@ def obj(data):
     return json.loads(data,object_pairs_hook=unique)
 def sha(data):return hashlib.sha256(data).hexdigest()
 
-def audit(out,frozen,expected_sha=BASELINE_SHA):
-    receipt=obj(read(out/'baseline-cleanup.json'));events=receipt['events'];pid=receipt.get('pid');parent=receipt.get('parent_pid')
-    argv=[str(frozen/'som'),'serve','--assets',str(frozen/'assets'),'--port','18917']
+def audit(out,frozen,expected_sha=BASELINE_SHA,original_frozen=None,receipt_path=None):
+    receipt=obj(read(receipt_path if receipt_path is not None else out/'baseline-cleanup.json'));events=receipt['events'];pid=receipt.get('pid');parent=receipt.get('parent_pid')
+    original_frozen=original_frozen if original_frozen is not None else frozen
+    argv=[str(original_frozen/'som'),'serve','--assets',str(original_frozen/'assets'),'--port','18917']
     need(receipt.get('version')=='som.m6-baseline-cleanup.v1' and receipt.get('product_acceptance_passed') is False
          and type(pid) is int and pid>1 and type(parent) is int and parent>1 and receipt.get('argv')==argv
-         and receipt.get('cwd')==str(frozen) and sha(read(frozen/'som'))==expected_sha)
+         and receipt.get('cwd')==str(original_frozen) and sha(read(frozen/'som'))==expected_sha)
     names=('ps','cwd','listener','before','after','listener-after')
     definitions=[['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,stat=,command='],
                  ['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn'],
@@ -55,7 +56,7 @@ def audit(out,frozen,expected_sha=BASELINE_SHA):
     need(len(ps)==5 and ps[0]==str(pid) and ps[1]==str(parent) and ps[2].isdigit()
          and not ps[3].startswith('Z') and ps[4]==' '.join(argv))
     cwd=command['cwd'][1].decode().splitlines()
-    need([x[1:] for x in cwd if x.startswith('p')]==[str(pid)] and [x[1:] for x in cwd if x.startswith('n')]==[str(frozen)])
+    need([x[1:] for x in cwd if x.startswith('p')]==[str(pid)] and [x[1:] for x in cwd if x.startswith('n')]==[str(original_frozen)])
     need(command['listener'][1].decode().split()==[str(pid)])
     def table(name):
         rows={}

@@ -17,7 +17,7 @@ from record_api import Recorder
 HERE=Path(__file__).resolve().parent
 REPO=HERE.parents[2]
 CHECKER=REPO/'som-rs/behavior/check_behavior.py'
-PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/post_acceptance_audit.py', 'som-rs/scripts/react_output_acceptance/stage_final_evidence.py', 'som-rs/scripts/react_output_acceptance/external_acceptance_readback.py', 'som-rs/scripts/react_output_acceptance/audit/audit130.py', 'som-rs/scripts/react_output_acceptance/audit/api_raw.py', 'som-rs/scripts/react_output_acceptance/audit/baseline_raw.py', 'som-rs/scripts/react_output_acceptance/audit/render_rules.py', 'som-rs/scripts/react_output_acceptance/audit/refusal_rules.py')
+PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/parity_product_files.py', 'som-rs/scripts/react_output_acceptance/parity_rust_build.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/post_acceptance_audit.py', 'som-rs/scripts/react_output_acceptance/stage_final_evidence.py', 'som-rs/scripts/react_output_acceptance/external_acceptance_readback.py', 'som-rs/scripts/react_output_acceptance/cross_job_raw_reaudit.py', 'som-rs/scripts/react_output_acceptance/audit/audit130.py', 'som-rs/scripts/react_output_acceptance/audit/api_raw.py', 'som-rs/scripts/react_output_acceptance/audit/baseline_raw.py', 'som-rs/scripts/react_output_acceptance/audit/render_rules.py', 'som-rs/scripts/react_output_acceptance/audit/refusal_rules.py')
 
 def source_hashes():
     return {name:hashlib.sha256((REPO/name).read_bytes()).hexdigest() for name in PARITY_SOURCES}
@@ -71,12 +71,16 @@ class TrackingRecorder(Recorder):
             return code
         proc.wait=observed_wait
         return proc
-    def product_snapshot(self,pid,phase,port):
+    def product_snapshot(self,pid,phase,port,image=None):
         """One process table plus the minimum ownership-specific lsof calls."""
         event={'kind':'process','pid':pid,'phase':phase,'port':port,
                'table':self.command(['/bin/ps','-axo','pid=,ppid=,pgid=,command=']),
                'listener':self.command(['/usr/sbin/lsof','-nP',f'-iTCP:{port}','-sTCP:LISTEN','-t'])}
         if phase=='product-ready':
+            if image is not None:
+                event['image']=self.command(['/usr/sbin/lsof','-nP','-a','-p',str(pid),'-d','txt','-FfDin'])
+                event['image_stat']=self.command(['/usr/bin/stat','-f','%d %i %z %Lp',str(image)])
+                event['start_time']=self.command(['/bin/ps','-p',str(pid),'-o','lstart='])
             event['cwd']=self.command(['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn'])
         self.events.append(event)
 
@@ -126,6 +130,34 @@ def main():
         sys.path.pop(0)
     import product_http_recorder
     product=product_http_recorder.ProductRecorder(lifecycle/'product-http',suite)
+    import parity_product_files
+    files_snapshot=parity_product_files.Snapshots(lifecycle/'product-files')
+    import parity_rust_build
+    rust_copies=parity_rust_build.Copies(lifecycle/'product-binaries')
+    original_copy=hosts.shutil.copy2
+    def observed_copy(source,destination,*a,**kw):
+        result=original_copy(source,destination,*a,**kw)
+        if Path(source)==target/'debug/som_app' and Path(destination).name=='som_app':
+            try:
+                case,target_name=product.context()
+                if target_name!='rust':raise ValueError('rust copy context differs')
+                row=rust_copies.capture(source,destination,case)
+                with observer.lock:
+                    for label,path in (('source',source),('target',destination)):
+                        command=observer.command(['/usr/bin/shasum','-a','256',str(path)])
+                        observer.events.append({'kind':'product-binary-hash','binary_id':row['id'],'label':label,**command})
+                    observer.events.append({'kind':'product-binary','binary_id':row['id'],'case':case,'cwd':str(Path(destination).parent)})
+            except Exception as exc:
+                with observer.lock:observer.errors.append('ProductBinary'+type(exc).__name__)
+        return result
+    original_write=hosts.products.write
+    def observed_write(root,files):
+        original_write(root,files)
+        try:
+            case,target_name=product.context();row=files_snapshot.capture(Path(root),case,target_name)
+            with observer.lock:observer.events.append({'kind':'product-files','snapshot_id':row['id'],'case':case,'target':target_name,'cwd':str(root)})
+        except Exception as exc:
+            with observer.lock:observer.errors.append('ProductFiles'+type(exc).__name__)
     original_serve=hosts.serve
     @contextlib.contextmanager
     def observed_serve(*a,**kw):
@@ -136,7 +168,8 @@ def main():
                     identity=product.context(); process=original.gen.gi_frame.f_locals['process']; pid=process.pid
                     port=int(base.rsplit(':',1)[1])
                     with observer.lock:
-                        observer.product_snapshot(pid,'product-ready',port); start_event=len(observer.events)-1
+                        image=Path(process.args[0]) if identity[1]=='rust' else None
+                        observer.product_snapshot(pid,'product-ready',port,image); start_event=len(observer.events)-1
                         owner=product.bind(identity,base,pid,start_event)
                 except Exception as exc:
                     with observer.lock: observer.errors.append('ProductOwnerStart'+type(exc).__name__)
@@ -152,6 +185,7 @@ def main():
     code=1
     try:
         with mock.patch.object(subprocess,'run',observer.run), mock.patch.object(subprocess,'Popen',observer.popen), \
+             mock.patch.object(hosts.products,'write',observed_write), mock.patch.object(hosts.shutil,'copy2',observed_copy), \
              mock.patch.object(suite,'http_send',product.send), mock.patch.object(suite,'run',product.run), \
              mock.patch.object(suite.Run,'strict',lambda owner: product.strict(owner)), \
              mock.patch.object(hosts,'serve',observed_serve):
@@ -185,6 +219,7 @@ def main():
         except (OSError,ValueError,KeyError):postgres_after=None;observer.errors.append('PostgresToolAfterUnverified')
         receipt={'version':'som.m6-mac-parity-capture.v1','exit_code':code,'events':observer.events,
                  'postgres_tools_before':postgres_before,'postgres_tools_after':postgres_after,
+                 'product_file_snapshots':files_snapshot.rows,'rust_binary_copies':rust_copies.rows,
                  'source_revision':revision,'source_before':before_sources,'source_after':source_hashes(),
                  'recording_errors':observer.errors,'product_acceptance_passed':False,
                  'cleanup':'requires-independent-raw-audit'}

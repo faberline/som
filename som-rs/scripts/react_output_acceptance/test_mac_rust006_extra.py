@@ -62,7 +62,7 @@ class PostAcceptanceTests(unittest.TestCase):
             with mock.patch.multiple(post.extra,**{name:mock.DEFAULT for name in names}) as mocks, \
                  mock.patch.object(post.parity,'audit_sources',return_value={}), \
                  mock.patch.object(post.parity,'audit_parity_postgres',return_value={}), \
-                 mock.patch.object(post.parity,'audit_wire',return_value={'cases':115,'compiler_calls':460,'success_body_normalization':'recomputed-on-recorded-successes','behavior_oracle':'recomputed-on-recorded-cases','product_http':{'case_targets':230,'observed_owners':230,'oracle_case_targets_checked':230,'normalized_successes':1,'source_origin':'requires-workflow-origin-join','behavior_scope':'recorded-case-targets-only'}}), \
+                 mock.patch.object(post.parity,'audit_wire',return_value={'cases':115,'compiler_calls':460,'success_body_normalization':'recomputed-on-recorded-successes','behavior_oracle':'recomputed-on-recorded-cases','product_files':{'case_targets':230},'rust_binaries':{'cases':115},'product_http':{'case_targets':230,'observed_owners':230,'oracle_case_targets_checked':230,'normalized_successes':1,'source_origin':'requires-workflow-origin-join','behavior_scope':'recorded-case-targets-only'}}), \
                  mock.patch.object(post.owner,'audit',return_value={'candidate_pid':12}), \
                  mock.patch.object(post.baseline,'audit',return_value={}), \
                  mock.patch.object(post.origin,'verify',return_value={}), \
@@ -144,6 +144,98 @@ class SealedFinalEvidenceTests(unittest.TestCase):
             result=staging.stage(source,root/'missing-run',root/'missing-jobs')
             self.assertEqual(len(result['missing']),7)
             self.assertFalse(result['product_acceptance_passed'])
+
+
+class CrossJobRawTests(unittest.TestCase):
+    def test_original_paths_are_narrow_and_never_relabel_current_runner(self):
+        import cross_job_raw_reaudit as cross
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();(root/'candidate').mkdir();head='a'*40
+            old='/old/work/som/.local/m6-hosted/acceptance/candidate'
+            runtime={'argv':[old+'/som','serve','--assets',old+'/assets','--port','18919']}
+            (root/'candidate/runtime.json').write_text(json.dumps(runtime))
+            (root/'summary.json').write_text(json.dumps({'head_before':head,'head_after':head,'pre_origin_passed':True}))
+            before=dict(os.environ);mapped=cross.old_paths(root,head)
+            self.assertEqual(str(mapped['repo']),'/old/work/som');self.assertEqual(dict(os.environ),before)
+            runtime['argv'][3]='/other/assets';(root/'candidate/runtime.json').write_text(json.dumps(runtime))
+            with self.assertRaises(ValueError):cross.old_paths(root,head)
+            self.assertEqual(dict(os.environ),before)
+
+    def test_incomplete_cross_job_never_claims_product_acceptance(self):
+        from unittest import mock
+        import cross_job_raw_reaudit as cross
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();old={'repo':Path('/old/repo'),'out':Path('/old/repo/.local/m6-hosted/acceptance'),
+                'candidate':Path('/old/repo/.local/m6-hosted/acceptance/candidate'),'baseline':Path('/old/repo/.local/m6-hosted/baseline')}
+            names=('approved_inputs','audit_candidate','audit_replay','audit_cases','audit_refusals','audit_cluster')
+            with mock.patch.object(cross,'old_paths',return_value=old),mock.patch.object(cross,'check_cross_source',return_value={}), \
+                 mock.patch.multiple(cross.extra,**{name:mock.DEFAULT for name in names}) as mocks, \
+                 mock.patch.object(cross.parity,'audit_parity_postgres',return_value={}),mock.patch.object(cross.parity,'audit_wire',return_value={}) as wire, \
+                 mock.patch.object(cross.owner,'audit',return_value={}),mock.patch.object(cross.baseline,'audit',return_value={}):
+                for item in mocks.values():item.return_value={}
+                result=cross.recheck(root,root/'config',root,'a'*40)
+                self.assertFalse(result['product_acceptance_passed']);self.assertEqual(result['status'],'incomplete')
+                self.assertEqual(wire.call_args.args[-1],old['out']/'rust006-parity-target/debug/som_app')
+                self.assertTrue(any(row['id']=='original-12-step-recheck' and row['status']=='unverified' for row in result['rows']))
+
+
+class ProductArtifactBindingTests(unittest.TestCase):
+    def test_written_product_matches_same_case_raw_and_tamper_fails(self):
+        import parity_product_files as snapshots
+        import audit_mac_parity as audit
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();life=root/'life';life.mkdir();http=life/'product-http';http.mkdir()
+            product=root/'rs_example';product.mkdir();(product/'src').mkdir();(product/'src/main.rs').write_text('fn main() {}\n')
+            captures=snapshots.Snapshots(life/'product-files');row=captures.capture(product,'example','rust')
+            events=[{'kind':'product-files','snapshot_id':1,'case':'example','target':'rust','cwd':str(product)},
+                    {'kind':'child-start','pid':123,'cwd':str(product)}, {'kind':'process'}]
+            (life/'receipt.json').write_text(json.dumps({'product_file_snapshots':captures.rows,'events':events}))
+            (http/'manifest.json').write_text(json.dumps({'owners':[{'case':'example','target':'rust','pid':123,'start_event':2}]}))
+            expected={('example','rust'):{'src/main.rs':'fn main() {}\n'}}
+            self.assertEqual(audit.audit_product_files(life,expected)['case_targets'],1)
+            raw=life/'product-files'/row['files'][0]['file'];raw.write_text('tampered')
+            with self.assertRaises(ValueError):audit.audit_product_files(life,expected)
+            raw.write_text('fn main() {}\n');expected[('example','rust')]['src/main.rs']='other'
+            with self.assertRaises(ValueError):audit.audit_product_files(life,expected)
+
+    def test_real_macho_binary_build_wait_and_process_image(self):
+        import shutil,socket,subprocess,time
+        from unittest import mock
+        import audit_mac_parity as audit
+        import parity_rust_build as binaries
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();out=root/'out';run=out/'run';life=run/'lifecycle';http=life/'product-http'
+            http.mkdir(parents=True);target=out/'rust006-parity-target/debug/som_app';target.parent.mkdir(parents=True)
+            cwd=root/'rs_example';cwd.mkdir();tool=root/'bin';tool.mkdir();cargo=tool/'cargo';cargo.write_text('#!/bin/sh\nexit 0\n');cargo.chmod(0o755)
+            config=root/'som-rs/contracts/rust-output-v1/toolchain.json';config.parent.mkdir(parents=True)
+            config.write_text(json.dumps({'rust':{'bin_dir':str(tool)}}))
+            with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
+            src=root/'fixture.c';src.write_text('#include <sys/types.h>\n#include <sys/socket.h>\n#include <netinet/in.h>\n#include <unistd.h>\nint main(void){int s=socket(AF_INET,SOCK_STREAM,0);struct sockaddr_in a={0};a.sin_family=AF_INET;a.sin_port=htons('+str(port)+');a.sin_addr.s_addr=htonl(INADDR_LOOPBACK);if(bind(s,(void*)&a,sizeof(a))||listen(s,4))return 2;for(;;)pause();}\n')
+            subprocess.run(['cc',str(src),'-o',str(target)],check=True,timeout=30)
+            observer=parity.TrackingRecorder(life);captures=binaries.Copies(life/'product-binaries')
+            observer.events.append({'kind':'product-files','snapshot_id':1,'case':'example','target':'rust','cwd':str(cwd)})
+            with mock.patch.object(subprocess,'Popen',observer.popen):
+                build=observer.popen([str(cargo),'build','--locked','--offline','-q'],cwd=str(cwd));self.assertEqual(build.wait(timeout=10),0)
+                binary=cwd/'som_app';shutil.copy2(target,binary);row=captures.capture(target,binary,'example')
+                for label,path in (('source',target),('target',binary)):
+                    command=observer.command(['/usr/bin/shasum','-a','256',str(path)])
+                    observer.events.append({'kind':'product-binary-hash','binary_id':1,'label':label,**command})
+                observer.events.append({'kind':'product-binary','binary_id':1,'case':'example','cwd':str(cwd)})
+                proc=observer.popen([str(binary)],cwd=str(cwd),stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                try:
+                    for _ in range(100):
+                        try:
+                            with socket.create_connection(('127.0.0.1',port),timeout=.1):break
+                        except OSError:time.sleep(.05)
+                    else:self.fail('fixture process did not listen')
+                    observer.product_snapshot(proc.pid,'product-ready',port,binary);start=len(observer.events)-1
+                finally:proc.terminate();proc.wait(timeout=10)
+            (life/'receipt.json').write_text(json.dumps({'events':observer.events,'rust_binary_copies':captures.rows}))
+            (http/'manifest.json').write_text(json.dumps({'owners':[{'case':'example','target':'rust','pid':proc.pid,'start_event':start}]}))
+            with mock.patch.object(audit,'REPO',root):
+                self.assertEqual(audit.audit_rust_binaries(life,{'example'})['cases'],1)
+                (life/'product-binaries'/row['file']).write_bytes(b'tampered')
+                with self.assertRaises(ValueError):audit.audit_rust_binaries(life,{'example'})
 
 
 class WaitEvidenceTests(unittest.TestCase):

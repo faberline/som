@@ -464,10 +464,11 @@ def command_raw(root, row, expected):
     need(not output['stderr'],'OS command stderr not empty')
     return row['exit_code'],output['stdout']
 
-def audit_direct_command_wait(events, command):
+def audit_direct_command_wait(events, command, since=0):
     """Join a recorded command to its actual direct waitpid result."""
     index=next(i for i,event in enumerate(events) if event is command)
-    starts=[(i,event) for i,event in enumerate(events[:index])
+    need(type(since) is int and 0<=since<=index,'command interval invalid')
+    starts=[(i,event) for i,event in enumerate(events[since:index],since)
             if event.get('kind')=='child-start' and event.get('argv')==command.get('argv')]
     need(len(starts)==1,'command child start missing or ambiguous')
     si,start=starts[0];pid=start.get('pid');identity=start.get('identity')
@@ -481,7 +482,7 @@ def audit_direct_command_wait(events, command):
          and os.waitstatus_to_exitcode(status)==wait['exit_code']==command.get('exit_code'), 'command direct wait differs')
     return pid
 
-def audit_cluster(root):
+def audit_cluster(root, original_cluster=None):
     receipt=json_file(root/'receipt.json')
     need(receipt.get('version')=='som.m6-mac-rust006-cluster.v1' and receipt.get('exit_code')==0
          and receipt.get('recording_errors')==[] and receipt.get('product_acceptance_passed') is False,
@@ -503,7 +504,7 @@ def audit_cluster(root):
     need(len(init)==1 and len(controls)==2 and len(post)==2 and len(snapshots)==2, 'cluster event count differs')
     need([x['phase'] for x in post]==['after-start','before-stop'] and
          [x['phase'] for x in snapshots]==['before-pg-stop','after-stop'], 'cluster event order differs')
-    cluster=root.parent/'cluster-work'
+    cluster=original_cluster if original_cluster is not None else root.parent/'cluster-work'
     data=str(cluster/'pgdata')
     initial=[str(bin_dir/'initdb'),'-D',data,'-U','postgres','-E','UTF8','--locale=C','--auth=trust','--no-sync']
     code,_=command_raw(root,init[0],initial)
@@ -571,7 +572,7 @@ def audit_cluster(root):
     return {'pid':pid,'port':port,'tool_files':3,'observed_descendants':len(descendants),
             'master_and_observed_descendants_absent':True, 'unobserved_descendants':'unverified'}
 
-def audit_candidate(run, candidate, expected_revision):
+def audit_candidate(run, candidate, expected_revision, original_candidate=None):
     report=json_file(run/'collector.json')
     build=json_file(candidate/'build.json'); runtime=json_file(candidate/'runtime.json'); source=json_file(candidate/'source.json')
     digest=sha(read(candidate/'som'))
@@ -589,8 +590,9 @@ def audit_candidate(run, candidate, expected_revision):
         need(not path.is_absolute() and '..' not in path.parts and sha(read(REPO/path))==expected,'build source file differs')
     pid,port=runtime['pid'],runtime['port']
     need(type(pid) is int and pid>1 and port==18919 and runtime.get('accepted') is False,'candidate PID/port differs')
+    original_candidate=original_candidate if original_candidate is not None else candidate
     argv=runtime['argv']
-    need(argv==[str(candidate/'som'),'serve','--assets',str(candidate/'assets'),'--port','18919'], 'candidate argv differs')
+    need(argv==[str(original_candidate/'som'),'serve','--assets',str(original_candidate/'assets'),'--port','18919'], 'candidate argv differs')
     for phase in ('before','after'):
         snap=report['candidate_'+phase]
         need(snap['pid']==pid and snap['port']==port,'candidate snapshot differs')
@@ -611,7 +613,7 @@ def audit_candidate(run, candidate, expected_revision):
              and fields[3]==' '.join(argv),'candidate process command differs')
         lines=raw[('cwd','stdout')].decode().splitlines()
         need([x[1:] for x in lines if x.startswith('p')]==[str(pid)]
-             and [x[1:] for x in lines if x.startswith('n')]==[str(candidate)],'candidate cwd differs')
+             and [x[1:] for x in lines if x.startswith('n')]==[str(original_candidate)],'candidate cwd differs')
         need(raw[('listener','stdout')].decode().split()==[str(pid)],'candidate listener differs')
         health=snap['health']; health_path=run/health['file']
         need(health['status']==200 and health_path.is_relative_to(run/'logs')

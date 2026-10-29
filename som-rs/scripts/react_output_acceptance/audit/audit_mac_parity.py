@@ -22,7 +22,7 @@ import independent_behavior_oracle as frozen_oracle
 REPO=Path(__file__).resolve().parents[4]
 QA='http://127.0.0.1:18919'
 REVIEWED_ORACLE_SHA='8599438d6019795028b1bc28a51d2d16c2e682cc4012a5c9250a0984316f8fe7'
-PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/post_acceptance_audit.py', 'som-rs/scripts/react_output_acceptance/stage_final_evidence.py', 'som-rs/scripts/react_output_acceptance/external_acceptance_readback.py', 'som-rs/scripts/react_output_acceptance/audit/audit130.py', 'som-rs/scripts/react_output_acceptance/audit/api_raw.py', 'som-rs/scripts/react_output_acceptance/audit/baseline_raw.py', 'som-rs/scripts/react_output_acceptance/audit/render_rules.py', 'som-rs/scripts/react_output_acceptance/audit/refusal_rules.py')
+PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/parity_product_files.py', 'som-rs/scripts/react_output_acceptance/parity_rust_build.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/post_acceptance_audit.py', 'som-rs/scripts/react_output_acceptance/stage_final_evidence.py', 'som-rs/scripts/react_output_acceptance/external_acceptance_readback.py', 'som-rs/scripts/react_output_acceptance/cross_job_raw_reaudit.py', 'som-rs/scripts/react_output_acceptance/audit/audit130.py', 'som-rs/scripts/react_output_acceptance/audit/api_raw.py', 'som-rs/scripts/react_output_acceptance/audit/baseline_raw.py', 'som-rs/scripts/react_output_acceptance/audit/render_rules.py', 'som-rs/scripts/react_output_acceptance/audit/refusal_rules.py')
 
 def need(ok,why):
     if not ok:raise ValueError(why)
@@ -340,7 +340,91 @@ def audit_product_http(root, transcripts, prompts, *, require_owners=True, check
             'oracle_case_targets_checked':oracle_cases,'behavior_scope':'recorded-case-targets-only',
             'unobserved_descendants':'unverified'}
 
-def audit_wire(root,parity_out,legacy,bound,product_http):
+def audit_product_files(lifecycle, expected):
+    receipt=a.json_file(lifecycle/'receipt.json');snapshots=receipt.get('product_file_snapshots');events=receipt.get('events')
+    manifest=a.json_file(lifecycle/'product-http/manifest.json');owners=manifest.get('owners')
+    need(type(snapshots) is list and type(events) is list and type(owners) is list,'product snapshots missing')
+    indexed={}; owner_map={(o.get('case'),o.get('target')):o for o in owners}
+    need(len(owner_map)==len(owners),'product owners repeat')
+    for position,row in enumerate(snapshots,1):
+        key=(row.get('case'),row.get('target'));need(row.get('id')==position and key in expected and key not in indexed,'product snapshot identity differs')
+        rows=row.get('files');need(type(rows) is list and rows,'product file inventory missing')
+        expected_files=expected[key];need(type(expected_files) is dict and len(rows)==len(expected_files),'product file count differs')
+        seen=set();total=0
+        for index,item in enumerate(rows,1):
+            name=item.get('path');rel=item.get('file');mode=item.get('mode');size=item.get('bytes')
+            need(type(name) is str and name in expected_files and name not in seen and rel==f'{position:04d}/{index:04d}.raw'
+                 and type(mode) is int and 0<=mode<=0o777 and not mode&0o111 and type(size) is int and 0<=size<=16*1024*1024,'product file metadata differs')
+            payload=a.read(lifecycle/'product-files'/rel);wanted=expected_files[name]
+            need(type(wanted) is str and payload==wanted.encode('utf-8') and a.sha(payload)==item.get('sha256') and len(payload)==size,'assembled and written product differ')
+            seen.add(name);total+=size
+        need(seen==set(expected_files) and total==row.get('bytes') and total<=128*1024*1024,'product file inventory differs')
+        owner=owner_map.get(key);need(owner is not None,'product snapshot owner missing')
+        selected=[(i,e) for i,e in enumerate(events) if e.get('kind')=='product-files' and e.get('snapshot_id')==position]
+        need(len(selected)==1 and selected[0][1]=={'kind':'product-files','snapshot_id':position,'case':key[0],'target':key[1],'cwd':row['cwd']},'product snapshot event differs')
+        child=[(i,e) for i,e in enumerate(events[:owner['start_event']]) if e.get('kind')=='child-start' and e.get('pid')==owner['pid']]
+        need(len(child)==1 and selected[0][0]<child[0][0] and child[0][1].get('cwd')==row.get('cwd'),'product snapshot is not before the case server')
+        indexed[key]=row
+    need(set(indexed)==set(expected)==set(owner_map),'product snapshot case set differs')
+    return {'case_targets':len(indexed),'file_count':sum(len(x['files']) for x in indexed.values())}
+
+def audit_rust_binaries(lifecycle, expected_cases, original_target=None):
+    receipt=a.json_file(lifecycle/'receipt.json');events=receipt['events'];rows=receipt.get('rust_binary_copies')
+    owners=a.json_file(lifecycle/'product-http/manifest.json')['owners']
+    owner_map={o['case']:o for o in owners if o.get('target')=='rust'}
+    need(type(rows) is list and len(owner_map)==len(expected_cases),'rust binary inventory missing')
+    tools=a.json_file(REPO/'som-rs/contracts/rust-output-v1/toolchain.json')['rust']
+    cargo=[str(Path(tools['bin_dir'])/'cargo'),'build','--locked','--offline','-q']
+    target=original_target if original_target is not None else lifecycle.parent.parent/'rust006-parity-target/debug/som_app'
+    seen=set()
+    for number,row in enumerate(rows,1):
+        case=row.get('case');need(row.get('id')==number and case in expected_cases and case not in seen,'rust binary case differs')
+        owner=owner_map.get(case);need(owner is not None,'rust binary owner missing')
+        raw=a.read(lifecycle/'product-binaries'/f'{number:04d}.raw')
+        need(row.get('file')==f'{number:04d}.raw' and a.sha(raw)==row.get('sha256') and row.get('source')==str(target),'rust binary bytes differ')
+        source=row.get('source_stat');copied=row.get('target_stat')
+        need(type(source) is dict and type(copied) is dict and source.get('size')==copied.get('size')==len(raw)
+             and all(type(copied.get(k)) is int and copied[k]>0 for k in ('device','inode','size'))
+             and type(copied.get('mode')) is int and copied['mode']&0o111,'rust binary stat differs')
+        copies=[(i,e) for i,e in enumerate(events) if e.get('kind')=='product-binary' and e.get('binary_id')==number]
+        need(len(copies)==1 and copies[0][1].get('case')==case and copies[0][1].get('cwd')==str(Path(row['target']).parent),'rust copy event differs')
+        ci=copies[0][0];cwd=str(Path(row['target']).parent)
+        starts=[(i,e) for i,e in enumerate(events[:ci]) if e.get('kind')=='child-start' and e.get('argv')==cargo and e.get('cwd')==cwd]
+        need(len(starts)==1,'rust cargo child missing');si,start=starts[0]
+        snapshots=[(i,e) for i,e in enumerate(events[:si]) if e.get('kind')=='product-files' and e.get('case')==case and e.get('target')=='rust' and e.get('cwd')==cwd]
+        need(len(snapshots)==1,'rust assembled source not observed before cargo')
+        waits=[(i,e) for i,e in enumerate(events[si+1:ci],si+1) if e.get('kind')=='child-wait' and e.get('identity')==start.get('identity') and e.get('pid')==start.get('pid') and e.get('state')=='completed']
+        need(len(waits)==1 and waits[0][1].get('waited_pid')==start.get('pid') and waits[0][1].get('raw_status')==0 and waits[0][1].get('exit_code')==0,'rust cargo actual wait missing')
+        hashes=[(i,e) for i,e in enumerate(events[waits[0][0]+1:ci],waits[0][0]+1) if e.get('kind')=='product-binary-hash' and e.get('binary_id')==number]
+        need(len(hashes)==2 and [e.get('label') for _,e in hashes]==['source','target'],'rust binary hash commands missing')
+        for (_,event),name in zip(hashes,('source','target')):
+            path=row[name];code,content=a.command_raw(lifecycle,event,['/usr/bin/shasum','-a','256',path])
+            a.audit_direct_command_wait(events,event,since=waits[0][0]+1)
+            need(code==0 and content.decode()==row['sha256']+'  '+path+'\n','rust binary hash command differs')
+        product=[(i,e) for i,e in enumerate(events[ci+1:owner['start_event']],ci+1) if e.get('kind')=='child-start' and e.get('pid')==owner['pid']]
+        need(len(product)==1 and product[0][1].get('cwd')==cwd and product[0][1].get('argv')==[row['target']],'rust server child differs')
+        start_snapshot=events[owner['start_event']];pid=owner['pid']
+        code,raw_stat=a.command_raw(lifecycle,start_snapshot['image_stat'],['/usr/bin/stat','-f','%d %i %z %Lp',row['target']])
+        fields=raw_stat.decode().split();need(code==0 and len(fields)==4 and all(f.isdigit() for f in fields)
+             and [int(fields[0]),int(fields[1]),int(fields[2]),int(fields[3],8)]==[copied[k] for k in ('device','inode','size','mode')],'rust live binary stat differs')
+        code,raw_time=a.command_raw(lifecycle,start_snapshot['start_time'],['/bin/ps','-p',str(pid),'-o','lstart='])
+        need(code==0 and raw_time.decode().strip(),'rust process start time missing')
+        code,raw_image=a.command_raw(lifecycle,start_snapshot['image'],['/usr/sbin/lsof','-nP','-a','-p',str(pid),'-d','txt','-FfDin'])
+        need(code==0,'rust mapped image unavailable');mapped=[];record=None
+        for line in raw_image.decode().splitlines():
+            if line.startswith('f'):record={'fd':line[1:]};mapped.append(record)
+            elif record is not None and line[:1] in ('D','i','n'):
+                need(line[0] not in record,'duplicate mapped image field');record[line[0]]=line[1:]
+        matched=False
+        for record in mapped:
+            try:
+                if record.get('fd')=='txt' and int(record.get('D',''),0)==copied['device'] and int(record.get('i',''))==copied['inode']:matched=True
+            except ValueError:pass
+        need(matched,'rust process image inode differs');seen.add(case)
+    need(seen==set(expected_cases)==set(owner_map),'rust binary set differs')
+    return {'cases':len(seen),'retained_binaries':len(rows)}
+
+def audit_wire(root,parity_out,legacy,bound,product_http,original_target=None):
     cases=source_cases(legacy,bound)
     keys=[case_key(name) for name,_ in cases]
     need(len(set(keys))==len(keys),'raw transcript filename collision')
@@ -352,7 +436,7 @@ def audit_wire(root,parity_out,legacy,bound,product_http):
          and summary.get('complete') is True and len(rows)==len(cases),'parity report incomplete')
     result={r['id']:r for r in rows}
     need(len(result)==len(rows) and set(result)=={x[0] for x in cases},'parity IDs differ')
-    transcript_steps=0;strict_steps=0;checked_errors=0; transcripts={}
+    transcript_steps=0;strict_steps=0;checked_errors=0; transcripts={};product_files={}
     for identity,prompt in cases:
         row=result[identity]
         for target in ('python','rust'):
@@ -361,7 +445,7 @@ def audit_wire(root,parity_out,legacy,bound,product_http):
             raw=take(indexed,'/v1/compile',request)
             bundle=a.obj(raw)['bundle']
             assembled=take(indexed,'/v1/assemble',{'bundle':bundle})
-            files=a.obj(assembled)['files']
+            files=a.obj(assembled)['files'];product_files[(identity,target)]=files
             need(a.sha(a.compact(files))==row[target+'_files_sha256'],'candidate product bytes differ')
         data={}
         for target,prefix in (('python','py'),('rust','rs')):
@@ -403,7 +487,9 @@ def audit_wire(root,parity_out,legacy,bound,product_http):
         transcript_steps+=steps;strict_steps+=strict
     need(not any(indexed.values()),'unexpected parity compiler calls')
     product_evidence=audit_product_http(product_http,transcripts,dict(cases))
-    return {'product_http':product_evidence,'cases':len(cases),'compiler_calls':total,'parity_steps':transcript_steps,'strict_steps':strict_steps,
+    file_evidence=audit_product_files(product_http.parent,product_files)
+    binary_evidence=audit_rust_binaries(product_http.parent,{identity for identity,_ in cases},original_target)
+    return {'product_http':product_evidence,'product_files':file_evidence,'rust_binaries':binary_evidence,'cases':len(cases),'compiler_calls':total,'parity_steps':transcript_steps,'strict_steps':strict_steps,
             'checked_error_or_empty_bodies':checked_errors,'success_body_normalization':'recomputed-on-recorded-successes','behavior_oracle':'recomputed-on-recorded-cases'}
 
 def main():
