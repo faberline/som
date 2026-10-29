@@ -48,8 +48,8 @@ def main():
     sys.path.insert(0, str(REPO / 'som-rs/behavior'))
     import hosts
     import record_rust006_http
-    from record_api import Recorder
-    observer = Recorder(lifecycle, subprocess.run)
+    from mac_parity_capture import TrackingRecorder
+    observer = TrackingRecorder(lifecycle)
     toolchain = json.loads((REPO / 'som-rs/contracts/rust-output-v1/toolchain.json').read_bytes())['postgresql']
     tool_dir = Path(toolchain['bin_dir'])
     retained_tools = lifecycle / 'postgresql-tools'
@@ -67,7 +67,7 @@ def main():
     try:
         port = hosts.Ports().take()
         need(port not in (8765, 18765, 18917, 18919), 'protected or compiler port refused')
-        with mock.patch.object(subprocess, 'run', observer.run):
+        with mock.patch.object(subprocess, 'run', observer.run), mock.patch.object(subprocess, 'Popen', observer.popen):
             with hosts.cluster(cluster_root, port) as pg:
                 code = record_rust006_http.run_checker(raw, CHECKER, ['--pg', pg, *argv])
     finally:

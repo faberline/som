@@ -62,7 +62,7 @@ class PostAcceptanceTests(unittest.TestCase):
             with mock.patch.multiple(post.extra,**{name:mock.DEFAULT for name in names}) as mocks, \
                  mock.patch.object(post.parity,'audit_sources',return_value={}), \
                  mock.patch.object(post.parity,'audit_parity_postgres',return_value={}), \
-                 mock.patch.object(post.parity,'audit_wire',return_value={}), \
+                 mock.patch.object(post.parity,'audit_wire',return_value={'cases':115,'compiler_calls':460,'success_body_normalization':'recomputed-on-recorded-successes','behavior_oracle':'recomputed-on-recorded-cases','product_http':{'case_targets':230,'observed_owners':230,'oracle_case_targets_checked':230,'normalized_successes':1,'source_origin':'requires-workflow-origin-join','behavior_scope':'recorded-case-targets-only'}}), \
                  mock.patch.object(post.owner,'audit',return_value={'candidate_pid':12}), \
                  mock.patch.object(post.baseline,'audit',return_value={}), \
                  mock.patch.object(post.origin,'verify',return_value={}), \
@@ -71,14 +71,79 @@ class PostAcceptanceTests(unittest.TestCase):
                 mocks['audit_candidate'].return_value={'pid':12,'binary_sha256':'a'*64}
                 args=(root,root/'config',root,info,info,{'GITHUB_SHA':'a'*40})
                 result=post.collect(*args)
-                self.assertEqual(result['status'],'passed')
-                self.assertEqual(result['final_verdict'],'passed')
-                self.assertTrue(result['product_acceptance_passed'])
+                self.assertEqual(result['status'],'provisional')
+                self.assertEqual(result['final_verdict'],'awaiting-external-readback')
+                self.assertFalse(result['product_acceptance_passed'])
                 mocks['audit_cluster'].side_effect=FileNotFoundError()
                 result=post.collect(*args)
                 self.assertEqual(result['status'],'incomplete')
                 self.assertEqual(next(x for x in result['rows'] if x['id']=='postgres-observed-stop')['status'],'unverified')
                 self.assertFalse(result['product_acceptance_passed'])
+
+
+class SealedFinalEvidenceTests(unittest.TestCase):
+    def test_seal_restore_includes_final_evidence_without_plaintext(self):
+        import base64,hashlib,shutil,subprocess,zipfile
+        import stage_final_evidence as staging
+        import external_acceptance_readback as external
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();source=root/'source';source.mkdir();(source/'run').mkdir()
+            expected={}
+            for name in staging.NAMES:
+                data=('fixture-private-'+name+'\n').encode();(source/name).write_bytes(data);expected[name]=data
+            for name in ('origin-run.json','origin-jobs.json'):
+                data=('fixture-private-'+name+'\n').encode();(root/name).write_bytes(data);expected[name]=data
+            head='a'*40;run={'id':44,'run_attempt':1,'head_sha':head,'path':external.WORKFLOW,'event':'workflow_dispatch',
+                 'status':'completed','conclusion':'success','repository':{'id':external.REPO_ID,'full_name':'faberline/som'},
+                 'head_repository':{'id':external.REPO_ID,'full_name':'faberline/som'}}
+            job={'id':55,'name':external.JOB,'status':'completed','conclusion':'success','steps':[
+                 {'name':name,'status':'completed','conclusion':'success'} for name in
+                 ('Run one candidate and the independent audit','Independently inspect workflow origin',
+                  'Recheck observed evidence after cleanup','Stage final raw audit evidence','Seal the raw evidence','Keep encrypted raw evidence')]}
+            jobs={'total_count':1,'jobs':[job]}
+            origin={'run_id':44,'job_id':55,'head_sha':head}
+            rows=[{'id':name,'status':'passed',**({'evidence':origin} if name=='workflow-origin' else {})} for name in external.ROWS]
+            preliminary={'version':'som.m6-post-acceptance-observations.v1','status':'provisional',
+                         'final_verdict':'awaiting-external-readback','product_acceptance_passed':False,'rows':rows}
+            live_run={'id':44,'head_sha':head,'status':'in_progress'};live_jobs={'jobs':[{'id':55}]}
+            for name,data,path in (('post-acceptance-observations.json',preliminary,source/'post-acceptance-observations.json'),
+                 ('origin-run.json',live_run,root/'origin-run.json'),('origin-jobs.json',live_jobs,root/'origin-jobs.json')):
+                raw=json.dumps(data).encode();path.write_bytes(raw);expected[name]=raw
+            result=staging.stage(source,root/'origin-run.json',root/'origin-jobs.json')
+            self.assertEqual(result['missing'],[])
+            key=os.urandom(32);key_id=hashlib.sha256(key).hexdigest();env=dict(os.environ,M6_INPUTS_KEYRING=json.dumps({key_id:base64.b64encode(key).decode()}))
+            node=shutil.which('node');self.assertIsNotNone(node)
+            scripts=Path(__file__).resolve().parent;sealed=root/'sealed';restored=root/'restored'
+            subprocess.run([node,str(scripts/'seal_hosted_evidence.mjs'),'--root',str(source),'--out',str(sealed)],env=env,check=True,capture_output=True,timeout=60)
+            index=hashlib.sha256((sealed/'evidence-index.json').read_bytes()).hexdigest()
+            for path in sealed.glob('*.sealed'):
+                cipher=path.read_bytes()
+                for raw in expected.values():self.assertNotIn(raw,cipher)
+            subprocess.run([node,str(scripts/'restore_hosted_evidence.mjs'),'--root',str(sealed),'--out',str(restored),'--index-sha256',index],env=env,check=True,capture_output=True,timeout=60)
+            for name,raw in expected.items():self.assertEqual((restored/'run/final-audit-evidence'/name).read_bytes(),raw)
+            self.assertTrue((restored/'run/final-audit-evidence/inventory.json').is_file())
+            archive=root/'artifact.zip'
+            with zipfile.ZipFile(archive,'w') as z:
+                for path in sealed.iterdir():z.write(path,path.name)
+            artifact={'id':66,'name':external.ARTIFACT,'expired':False,'digest':'sha256:'+hashlib.sha256(archive.read_bytes()).hexdigest(),
+                      'workflow_run':{'id':44,'head_sha':head,'repository_id':external.REPO_ID,'head_repository_id':external.REPO_ID}}
+            checked=external.check(archive,restored,run,jobs,artifact,head)
+            self.assertEqual(checked['status'],'readback-verified')
+            self.assertEqual(checked['final_verdict'],'requires-independent-raw-recheck')
+            self.assertFalse(checked['product_acceptance_passed'])
+            job['conclusion']='failure'
+            with self.assertRaises(ValueError):external.check(archive,restored,run,jobs,artifact,head)
+            job['conclusion']='success';(restored/'run/final-audit-evidence/origin-run.json').write_text('tampered')
+            with self.assertRaises(ValueError):external.check(archive,restored,run,jobs,artifact,head)
+
+
+    def test_missing_final_evidence_is_reported(self):
+        import stage_final_evidence as staging
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();source=root/'source';source.mkdir()
+            result=staging.stage(source,root/'missing-run',root/'missing-jobs')
+            self.assertEqual(len(result['missing']),7)
+            self.assertFalse(result['product_acceptance_passed'])
 
 
 class WaitEvidenceTests(unittest.TestCase):
@@ -105,6 +170,22 @@ class WaitEvidenceTests(unittest.TestCase):
             wait=[e for e in observer.events if e['kind']=='child-wait'][-1]
             self.assertEqual(wait['state'],'unverified')
             self.assertNotIn('waited_pid',wait)
+
+    def test_pg_command_records_actual_waitpid_and_rejects_missing(self):
+        import subprocess
+        from unittest import mock
+        import audit_mac_rust006_extra as audit
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();tool=root/'initdb';tool.write_text('#!/bin/sh\nexit 0\n');tool.chmod(0o755)
+            observer=parity.TrackingRecorder(root)
+            with mock.patch.object(subprocess,'Popen',observer.popen):
+                observer.run([str(tool)],capture_output=True,check=True)
+            command=next(e for e in observer.events if e.get('kind')=='initdb')
+            pid=audit.audit_direct_command_wait(observer.events,command)
+            self.assertGreater(pid,1)
+            for event in observer.events:
+                if event.get('kind')=='child-wait' and event.get('state')=='completed':event['raw_status']=256
+            with self.assertRaises(ValueError):audit.audit_direct_command_wait(observer.events,command)
 
     def test_actual_child_waits_and_keeps_failure_logs(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -254,8 +335,14 @@ class ClusterRawAuditTests(unittest.TestCase):
                'ps':command(ps,exit_code=1),'cwd':command(cwd,exit_code=1),
                'listener':command(['/usr/sbin/lsof','-nP',f'-iTCP:{port}','-sTCP:LISTEN','-t'],exit_code=1),
                'table':command(table,b'1 0 1\n')}
+        def waited(row,number):
+            child=4000+number
+            return [{'kind':'child-start','identity':number,'pid':child,'argv':row['argv'],'cwd':str(root)},
+                    {'kind':'child-wait','identity':number,'pid':child,'state':'completed','waited_pid':child,
+                     'raw_status':0,'exit_code':0},row]
+        events=waited(init,1)+waited(start,2)+[post[0],post[1],before]+waited(stop,3)+[after]
         receipt={'version':'som.m6-mac-rust006-cluster.v1','port':port,'exit_code':0,'product_acceptance_passed':False,
-                 'recording_errors':[],'tools':tool_rows,'events':[init,start,post[0],post[1],before,stop,after]}
+                 'recording_errors':[],'tools':tool_rows,'events':events}
         (lifecycle/'receipt.json').write_text(json.dumps(receipt))
         return lifecycle
 

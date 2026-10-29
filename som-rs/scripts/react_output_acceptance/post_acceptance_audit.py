@@ -76,7 +76,19 @@ def collect(out, config, provenance, run_info, jobs_info, env):
     row('parity-sources', lambda: parity.audit_sources(revision, lifecycle, raw, parity_out))
     parity_candidate=row('parity-candidate', lambda: extra.audit_candidate(lifecycle/'candidate-probe', candidate, revision))
     row('parity-postgres-observed-stop', lambda: parity.audit_parity_postgres(lifecycle))
-    row('parity-raw-and-observed-product-cleanup', lambda: parity.audit_wire(raw, parity_out, legacy, require_bound(), lifecycle/'product-http'))
+    def parity_raw():
+        result=parity.audit_wire(raw, parity_out, legacy, require_bound(), lifecycle/'product-http')
+        product=result['product_http']
+        if not (result.get('cases')==115 and result.get('compiler_calls')==460
+                and result.get('success_body_normalization')=='recomputed-on-recorded-successes'
+                and result.get('behavior_oracle')=='recomputed-on-recorded-cases'
+                and product.get('case_targets')==product.get('observed_owners')==product.get('oracle_case_targets_checked')==230
+                and type(product.get('normalized_successes')) is int and product['normalized_successes']>0
+                and product.get('source_origin')=='requires-workflow-origin-join'
+                and product.get('behavior_scope')=='recorded-case-targets-only'):
+            raise ValueError('parity observed checks incomplete')
+        return result
+    row('parity-raw-and-observed-product-cleanup', parity_raw)
     row('python-replay', lambda: extra.audit_replay(rust/'raw-python-replay', public, legacy, require_bound()))
     row('validate-cases', lambda: extra.audit_cases(rust/'raw-validate-cases'))
     row('phase2-rust-refusals', lambda: extra.audit_refusals(rust/'raw-rust-refusals', legacy, require_bound()))
@@ -97,9 +109,9 @@ def collect(out, config, provenance, run_info, jobs_info, env):
         workflow='.github/workflows/m6-mac-final-acceptance.yml', job_name='Frozen M6 tools and optional full acceptance',
         completed_step='Run one candidate and the independent audit', event='workflow_dispatch'))
     complete=all(x['status'] == 'passed' for x in report['rows'])
-    report['status']='passed' if complete else 'incomplete'
-    report['final_verdict']='passed' if complete else 'unverified'
-    report['product_acceptance_passed']=complete
+    report['status']='provisional' if complete else 'incomplete'
+    report['final_verdict']='awaiting-external-readback' if complete else 'unverified'
+    report['product_acceptance_passed']=False
     return report
 
 
@@ -117,7 +129,7 @@ def main():
     print(json.dumps({'status': result['status'], 'final_verdict': result['final_verdict'],
                       'product_acceptance_passed': result['product_acceptance_passed'],
                       'rows': [{'id': x['id'], 'status': x['status']} for x in result['rows']]}))
-    return 0 if result['status'] == 'passed' else 1
+    return 0 if result['status'] == 'provisional' else 1
 
 if __name__ == '__main__':
     raise SystemExit(main())

@@ -22,7 +22,7 @@ import independent_behavior_oracle as frozen_oracle
 REPO=Path(__file__).resolve().parents[4]
 QA='http://127.0.0.1:18919'
 REVIEWED_ORACLE_SHA='8599438d6019795028b1bc28a51d2d16c2e682cc4012a5c9250a0984316f8fe7'
-PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/post_acceptance_audit.py', 'som-rs/scripts/react_output_acceptance/audit/audit130.py', 'som-rs/scripts/react_output_acceptance/audit/api_raw.py', 'som-rs/scripts/react_output_acceptance/audit/baseline_raw.py', 'som-rs/scripts/react_output_acceptance/audit/render_rules.py', 'som-rs/scripts/react_output_acceptance/audit/refusal_rules.py')
+PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/post_acceptance_audit.py', 'som-rs/scripts/react_output_acceptance/stage_final_evidence.py', 'som-rs/scripts/react_output_acceptance/external_acceptance_readback.py', 'som-rs/scripts/react_output_acceptance/audit/audit130.py', 'som-rs/scripts/react_output_acceptance/audit/api_raw.py', 'som-rs/scripts/react_output_acceptance/audit/baseline_raw.py', 'som-rs/scripts/react_output_acceptance/audit/render_rules.py', 'som-rs/scripts/react_output_acceptance/audit/refusal_rules.py')
 
 def need(ok,why):
     if not ok:raise ValueError(why)
@@ -190,7 +190,7 @@ def audit_parity_postgres(lifecycle):
       (ctl[0][1],[str(bindir/'pg_ctl'),'-D',str(data),'-l',str(data.parent/'postgres.log'),'-o',options,'-w','start']),
       (ctl[1][1],[str(bindir/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'])]
     for row,argv in commands:
-        code,_=a.command_raw(lifecycle,row,argv);need(code==0,'parity postgres command failed')
+        code,_=a.command_raw(lifecycle,row,argv);need(code==0,'parity postgres command failed');a.audit_direct_command_wait(events,row)
     before,after=snap[0][1],snap[1][1]
     need(before['pid']==after['pid']==pid and type(before.get('pgid')) is int and before['pgid']>0,'postgres PID differs')
     ps=['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command=']
@@ -336,8 +336,8 @@ def audit_product_http(root, transcripts, prompts, *, require_owners=True, check
             frozen_oracle.check(prompts[key[0]],oracle_entries,include_strict=(key[1]=='rust'))
             oracle_cases+=1
     return {'case_targets':len(groups),'calls':len(manifest['calls']),'bytes':byte_count,'observed_owners':owner_count,
-            'source_origin':'pending','normalized_successes':normalized_successes,'observed_crud_rows':observed_crud_rows,
-            'oracle_case_targets_checked':oracle_cases,'full_candidate_behavior':'unverified',
+            'source_origin':'requires-workflow-origin-join','normalized_successes':normalized_successes,'observed_crud_rows':observed_crud_rows,
+            'oracle_case_targets_checked':oracle_cases,'behavior_scope':'recorded-case-targets-only',
             'unobserved_descendants':'unverified'}
 
 def audit_wire(root,parity_out,legacy,bound,product_http):
@@ -404,7 +404,7 @@ def audit_wire(root,parity_out,legacy,bound,product_http):
     need(not any(indexed.values()),'unexpected parity compiler calls')
     product_evidence=audit_product_http(product_http,transcripts,dict(cases))
     return {'product_http':product_evidence,'cases':len(cases),'compiler_calls':total,'parity_steps':transcript_steps,'strict_steps':strict_steps,
-            'checked_error_or_empty_bodies':checked_errors,'success_body_normalization':'unverified','behavior_oracle':'unverified'}
+            'checked_error_or_empty_bodies':checked_errors,'success_body_normalization':'recomputed-on-recorded-successes','behavior_oracle':'recomputed-on-recorded-cases'}
 
 def main():
     p=argparse.ArgumentParser()

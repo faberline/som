@@ -464,6 +464,23 @@ def command_raw(root, row, expected):
     need(not output['stderr'],'OS command stderr not empty')
     return row['exit_code'],output['stdout']
 
+def audit_direct_command_wait(events, command):
+    """Join a recorded command to its actual direct waitpid result."""
+    index=next(i for i,event in enumerate(events) if event is command)
+    starts=[(i,event) for i,event in enumerate(events[:index])
+            if event.get('kind')=='child-start' and event.get('argv')==command.get('argv')]
+    need(len(starts)==1,'command child start missing or ambiguous')
+    si,start=starts[0];pid=start.get('pid');identity=start.get('identity')
+    need(type(pid) is int and pid>1 and type(identity) is int,'command child identity invalid')
+    waits=[(i,event) for i,event in enumerate(events[si+1:index],si+1)
+           if event.get('kind')=='child-wait' and event.get('pid')==pid and event.get('identity')==identity
+           and event.get('state')=='completed']
+    need(len(waits)==1,'command direct wait missing or ambiguous')
+    wait=waits[0][1];status=wait.get('raw_status')
+    need(wait.get('waited_pid')==pid and type(status) is int and type(wait.get('exit_code')) is int
+         and os.waitstatus_to_exitcode(status)==wait['exit_code']==command.get('exit_code'), 'command direct wait differs')
+    return pid
+
 def audit_cluster(root):
     receipt=json_file(root/'receipt.json')
     need(receipt.get('version')=='som.m6-mac-rust006-cluster.v1' and receipt.get('exit_code')==0
@@ -490,14 +507,14 @@ def audit_cluster(root):
     data=str(cluster/'pgdata')
     initial=[str(bin_dir/'initdb'),'-D',data,'-U','postgres','-E','UTF8','--locale=C','--auth=trust','--no-sync']
     code,_=command_raw(root,init[0],initial)
-    need(code==0,'initdb failed')
+    need(code==0,'initdb failed');audit_direct_command_wait(events,init[0])
     options=(f"-p {port} -c listen_addresses=127.0.0.1 -c unix_socket_directories='' -c timezone=UTC "
              f"-c log_timezone=UTC -c max_connections=300 -c fsync=off")
     start=[str(bin_dir/'pg_ctl'),'-D',data,'-l',str(cluster/'postgres.log'),'-o',options,'-w','start']
     stop=[str(bin_dir/'pg_ctl'),'-D',data,'-m','fast','-w','stop']
     for record,argv in zip(controls,(start,stop)):
         code,_=command_raw(root,record,argv)
-        need(code==0,'pg_ctl failed')
+        need(code==0,'pg_ctl failed');audit_direct_command_wait(events,record)
     parsed=[]
     for event in post:
         record=event['raw']
