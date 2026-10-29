@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import threading
 from types import ModuleType, SimpleNamespace
 
 import react_api_python_payload as provider
@@ -51,12 +52,25 @@ provider.load_source = synthetic_receipt_loader
 runtime_root = temp / 'som-product-runtime-qualification'
 base = runtime_root / 'install/python/bin/python3.12'
 python = temp / 'som-react-python-closure/environments/react-api-qa/venv/bin/python'
-ctx = SimpleNamespace(qa_mode='native-qa-v1', repo=repo, helper_revision=revision,
-    candidate_revision=revision, sources=sources, data={'runtime_root':str(runtime_root)},
-    qa_import_controls=SimpleNamespace(verify_installed=lambda: None),
-    qa_source_authority={'source_authority_active':True,
-        'admitted_repository_python_sources':[provider.SELF, provider.RETAINED, provider.API, provider.LIVE]},
-    runtime=lambda: {'tools':{'python':str(base)}})
+assert os.environ['SOM_NATIVE_RUNTIME_ROOT'] == str(runtime_root)
+# Execute the real Context.runtime() and source-bound admitted_runtime(), not
+# a synthetic runtime result. Only its constructor/source controls are fixtures.
+context_path = 'som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py'
+context_raw = sources.read(context_path)
+context_module = ModuleType('_fixture_real_context')
+context_module.__file__ = str(repo / context_path)
+exec(compile(context_raw, context_module.__file__, 'exec', dont_inherit=True), context_module.__dict__)
+ctx = context_module.Context.__new__(context_module.Context)
+ctx.qa_mode, ctx.repo, ctx.helper_revision, ctx.candidate_revision = 'native-qa-v1', repo, revision, revision
+ctx.sources = context_module.SourceBytes(repo, revision)
+ctx.modules, ctx.cache, ctx.module_lock = {}, {}, threading.RLock()
+ctx.data = {'runtime_root':str(runtime_root)}
+ctx.qa_import_controls = SimpleNamespace(verify_installed=lambda: None)
+ctx.qa_source_authority = {'source_authority_active':True,
+    'admitted_repository_python_sources':[provider.SELF, provider.RETAINED, provider.API, provider.LIVE]}
+runtime = ctx.runtime()
+assert runtime['tools']['python'] == base
+assert runtime['identity']['reuse_receipt_sha256']
 payload = provider.admit(ctx, python)
 record = payload.record()
 assert record['requirements_count'] == 39 and record['wheel_count'] == 40
@@ -64,4 +78,4 @@ assert record['site'] == str(python.parent.parent / 'lib/python3.12/site-package
 assert record['product_acceptance_passed'] is False and record['pth_executed'] is False
 assert record['source_revision'] == revision
 print(json.dumps({'fixture':'synthetic-authority-real-live-verifier', 'product_acceptance_passed':False,
-                  'record':record}, sort_keys=True))
+                  'context_runtime':'real-Context.runtime-with-fixture-construction', 'record':record}, sort_keys=True))

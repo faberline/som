@@ -1,7 +1,7 @@
 name: M6 React API payload real live verifier fixture
 on:
   push:
-    branches: [codex/m6-api-payload-real-20261029]
+    branches: [codex/m6-api-runtime-aligned-20261029]
 permissions:
   contents: read
   actions: read
@@ -14,6 +14,9 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
+      - name: Check synthetic adapter controls
+        run: |
+          python3 -I -S -B -c 'import runpy,sys; sys.path.insert(0,".github/m6-api-payload-fixture"); runpy.run_path(".github/m6-api-payload-fixture/synthetic_fixture.py",run_name="__main__")'
       - name: Bind the venv provision source before execution
         run: |
           set -eu
@@ -78,6 +81,8 @@ jobs:
         run: |
           "$RUNNER_TEMP/som-product-runtime-qualification/install/python/bin/python3.12" -I -S -B "$GITHUB_WORKSPACE/.github/m6-venv-fixtures/provision_live.py" --repo "$GITHUB_WORKSPACE" --source-revision "$GITHUB_SHA" --runtime "$RUNNER_TEMP/som-product-runtime-qualification" --out "$RUNNER_TEMP/som-react-python-closure" --tar "$RUNNER_TEMP/react39-inputs/source/react-python-qa-closure.tar" --audit "$RUNNER_TEMP/react39-inputs/audit/react-python-independent-audit.json"
       - name: Exercise actual live verifier with synthetic authority
+        env:
+          SOM_NATIVE_RUNTIME_ROOT: ${{ runner.temp }}/som-product-runtime-qualification
         run: |
           cp som-rs/contracts/react-output-v1/som-react-linux-api-profile.json "$RUNNER_TEMP/som-react-api-context.json"
           cp som-rs/contracts/react-output-v1/som-react-linux-qa-profile.json "$RUNNER_TEMP/som-react-linux-qa-profile.json"

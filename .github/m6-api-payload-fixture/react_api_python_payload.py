@@ -108,10 +108,11 @@ def admit(ctx, executable):
     physical_directory(venv / 'bin')
     site = physical_directory(venv / 'lib/python3.12/site-packages')
     runtime = ctx.runtime()
+    runtime_root = physical_directory(Path(ctx.data['runtime_root']))
+    need(temp in runtime_root.parents, 'qualified runtime must be under runner temp')
     base = Path(runtime['tools']['python'])
-    expected_base = temp / 'som-product-runtime-qualification/install/python/bin/python3.12'
-    need(base == expected_base and Path(ctx.data['runtime_root']) == expected_base.parents[3],
-         'qualified runtime identity differs')
+    need(base == runtime_root / 'install/python/bin/python3.12', 'qualified runtime identity differs')
+    runtime['reuse'].verify_installed_tree(runtime_root, runtime['inventory'], runtime['qualification'])
     physical_directory(base.parent)
     need(base.is_file() and not base.is_symlink() and os.access(base, os.X_OK),
          'qualified runtime Python is not a physical executable')
@@ -130,20 +131,35 @@ def admit(ctx, executable):
             api = modules['_som_react_api_payload_context']
             repo2, path, profile, auth, auth_sha, profile_sha, receipt_sha = api.inputs(profile_path, repo)
             need(repo2 == repo and path == profile_path and profile['venv'] == str(venv)
-                 and profile['runtime_root'] == str(expected_base.parents[3]), 'API profile differs')
+                 and profile['runtime_root'] == str(runtime_root), 'API profile runtime differs from native Context')
             need(auth['source_sha256'][RETAINED] == hashlib.sha256(ctx.sources.read(RETAINED)).hexdigest()
                  and auth['source_sha256'][API] == hashlib.sha256(ctx.sources.read(API)).hexdigest()
                  and auth['source_sha256'][LIVE] == hashlib.sha256(ctx.sources.read(LIVE)).hexdigest(),
                  'native and React source authorities differ')
             modules['_som_react_api_payload_live'] = load_source(ctx, LIVE, '_som_react_api_payload_live')
-            live = modules['_som_react_api_payload_live'].verify(profile)
+            live_verifier = modules['_som_react_api_payload_live']
+            # Context.runtime() already ran the exact source-bound
+            # admitted_runtime(). Its fixed module names cannot be loaded a
+            # second time in this process. Seed only the verifier's private
+            # runtime cache with that same verified object, never with a
+            # caller-supplied verifier or receipt. bound_sources authenticates
+            # the complete React map and exact Git source before the reuse.
+            need(live_verifier._binding is None, 'preloaded live verifier state refused')
+            binding, _sources, _raw_sources = live_verifier.bound_sources(repo, ctx.helper_revision)
+            need(binding is live_verifier._binding and binding['reuse'] is None
+                 and binding['repo'] == repo and binding['revision'] == ctx.helper_revision,
+                 'fresh source-bound live verifier required')
+            binding.update(reuse=runtime['reuse'], qualification=runtime['qualification'],
+                           runtime_inventory=runtime['inventory'], tools=runtime['tools'], native=runtime['identity'])
+            live = live_verifier.verify(profile)
             keys = {'status', 'python', 'pg_bin', 'live_receipt_sha256', 'runtime_receipt_sha256',
                     'closure_receipt_sha256', 'venv_inventory_sha256', 'requirements_count', 'wheel_count'}
             need(type(live) is dict and set(live) == keys and live['status'] == 'verified-live-inputs'
-                 and live['python'] == str(selected) and live['pg_bin'] == str(expected_base.parents[3] / 'install/postgresql/bin')
+                 and live['python'] == str(selected) and live['pg_bin'] == str(runtime_root / 'install/postgresql/bin')
                  and type(live['requirements_count']) is int and live['requirements_count'] == 39
                  and type(live['wheel_count']) is int and live['wheel_count'] == 40
-                 and live['live_receipt_sha256'] == receipt_sha,
+                 and live['live_receipt_sha256'] == receipt_sha
+                 and live['runtime_receipt_sha256'] == runtime['identity']['reuse_receipt_sha256'],
                  'live verifier result differs')
             hashes = (profile_sha, auth_sha, receipt_sha, live['runtime_receipt_sha256'],
                       live['closure_receipt_sha256'], live['venv_inventory_sha256'])
@@ -153,6 +169,7 @@ def admit(ctx, executable):
                  and (selected.stat().st_dev, selected.stat().st_ino) == (base.stat().st_dev, base.stat().st_ino)
                  and (base.stat().st_dev, base.stat().st_ino) == (base_stat.st_dev, base_stat.st_ino),
                  'Python payload changed during admission')
+            runtime['reuse'].verify_installed_tree(runtime_root, runtime['inventory'], runtime['qualification'])
             ctx.qa_import_controls.verify_installed()
             return AdmittedPayload(('som.native-python-startup-payload.v1', 'react-api-qa', str(selected),
                                     str(site), str(base), *hashes, 39, 40, ctx.helper_revision, False, False))
