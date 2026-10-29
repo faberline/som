@@ -37,9 +37,9 @@ files = dict(authority['source_sha256'])
 files[authority_path] = hashlib.sha256(authority_raw).hexdigest()
 real_loader = provider.load_source
 
-def synthetic_receipt_loader(ctx, name, module_name):
+def synthetic_receipt_loader(ctx, name, module_name, *, scope=None):
     if name != provider.RETAINED:
-        return real_loader(ctx, name, module_name)
+        return real_loader(ctx, name, module_name, scope=scope)
     # This is deliberately a test double. Real React amendment 003 is unsealed.
     if module_name in sys.modules:
         raise ValueError('fixture verifier already loaded')
@@ -102,6 +102,10 @@ finally:
 collector = load_collector()
 retained = sys.modules['retained_evidence']
 assert retained is collector.retained_evidence
+# The source-bound Context loads its own provider module. Substitute only the
+# unsealed receipt in that fixture copy too; do not claim real authority.
+context_provider = ctx.module('react_api_python_payload', provider.SELF)
+context_provider.load_source = synthetic_receipt_loader
 payload = provider.admit(ctx, python)
 record = payload.record()
 assert record['requirements_count'] == 39 and record['wheel_count'] == 40

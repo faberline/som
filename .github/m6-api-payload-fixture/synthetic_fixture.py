@@ -123,6 +123,37 @@ class Fixture(unittest.TestCase):
         finally:
             del sys.modules['_som_react_private_retained']
 
+    def test_private_import_uses_bound_receipt_not_foreign_module(self):
+        self.values[subject.API] = b'import retained_evidence as captured\n'
+        self.values[subject.LIVE] = b'import retained_evidence as captured\n'
+        foreign = SimpleNamespace(sealed_files=lambda *_: self.fail('foreign receipt executed'))
+        sys.modules['retained_evidence'] = foreign
+        try:
+            with subject._private_helpers(self.ctx) as (api, live, scope):
+                self.assertIs(api.captured, scope.modules['retained_evidence'])
+                self.assertIs(live.captured, scope.modules['retained_evidence'])
+                self.assertIsNot(api.captured, foreign)
+                self.assertIs(sys.modules['retained_evidence'], foreign)
+        finally:
+            del sys.modules['retained_evidence']
+
+    def test_unrelated_import_uses_installed_finder(self):
+        calls = []
+        class Finder:
+            def find_spec(self, fullname, path=None, target=None):
+                if fullname == '_som_private_guard_probe':
+                    calls.append(fullname)
+                    raise ImportError('fixture finder denied source')
+        finder = Finder()
+        sys.meta_path.insert(0, finder)
+        try:
+            scope = subject._PrivateImports()
+            with self.assertRaisesRegex(ImportError, 'fixture finder denied'):
+                scope.import_module('_som_private_guard_probe')
+            self.assertEqual(calls, ['_som_private_guard_probe'])
+        finally:
+            sys.meta_path.remove(finder)
+
     def test_verifier_failure_is_not_accepted(self):
         self.values[subject.LIVE] = b'_binding = None\ndef bound_sources(repo,revision):\n global _binding\n _binding={"repo":repo,"revision":revision,"reuse":None}\n return _binding,None,None\ndef verify(profile): raise ValueError("rejected live inputs")\n'
         sys.modules['synthetic_authority'].value[subject.LIVE] = hashlib.sha256(self.values[subject.LIVE]).hexdigest()

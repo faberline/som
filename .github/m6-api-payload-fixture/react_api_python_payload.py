@@ -8,6 +8,7 @@ and the native source closure must both bind this source before use.
 from __future__ import annotations
 
 import hashlib
+import builtins
 from contextlib import contextmanager
 import os
 from pathlib import Path
@@ -56,7 +57,7 @@ def physical_directory(path):
     return path
 
 
-def load_source(ctx, relative, name):
+def load_source(ctx, relative, name, *, scope=None):
     need(name not in sys.modules, 'preloaded verifier refused: ' + name)
     raw = ctx.sources.read(relative)
     need(type(raw) is bytes, 'bound source bytes required')
@@ -64,6 +65,8 @@ def load_source(ctx, relative, name):
     module.__file__ = str(ctx.repo / relative)
     module.__cached__ = None
     module.__package__ = ''
+    if scope is not None:
+        module.__dict__['__builtins__'] = scope.builtins
     sys.modules[name] = module
     try:
         exec(compile(raw, module.__file__, 'exec', dont_inherit=True), module.__dict__)
@@ -114,19 +117,37 @@ class _PrivateSys:
         return getattr(sys, name)
 
 
+class _PrivateImports:
+    """Resolve only our fixed helpers privately; delegate all other imports."""
+    NAMES = frozenset(('retained_evidence', 'linux_api_context', 'linux_api_live_inputs', 'linux_qa_profile'))
+
+    def __init__(self):
+        self.modules = {}
+        self.builtins = dict(vars(builtins))
+        self.builtins['__import__'] = self.import_module
+
+    def import_module(self, name, globals=None, locals=None, fromlist=(), level=0):
+        if level == 0 and name in self.NAMES:
+            need(name in self.modules, 'private source import is not bound')
+            return self.modules[name]
+        return builtins.__import__(name, globals, locals, fromlist, level)
+
+
 @contextmanager
 def _private_helpers(ctx):
     """Compile fresh authenticated modules without touching collector names."""
     modules = {}
+    scope = _PrivateImports()
     try:
-        for relative, name in ((RETAINED, '_som_react_private_retained'),
-                               (API, '_som_react_api_payload_context'),
-                               (LIVE, '_som_react_api_payload_live')):
-            modules[name] = load_source(ctx, relative, name)
+        for relative, name, alias in ((RETAINED, '_som_react_private_retained', 'retained_evidence'),
+                                      (API, '_som_react_api_payload_context', 'linux_api_context'),
+                                      (LIVE, '_som_react_api_payload_live', 'linux_api_live_inputs')):
+            modules[name] = load_source(ctx, relative, name, scope=scope)
+            scope.modules[alias] = modules[name]
         private_sys = _PrivateSys(modules['_som_react_private_retained'])
         modules['_som_react_api_payload_context'].sys = private_sys
         modules['_som_react_api_payload_live'].sys = private_sys
-        yield modules['_som_react_api_payload_context'], modules['_som_react_api_payload_live']
+        yield modules['_som_react_api_payload_context'], modules['_som_react_api_payload_live'], scope
     finally:
         for name, module in reversed(tuple(modules.items())):
             if sys.modules.get(name) is module:
@@ -207,7 +228,7 @@ def admit(ctx, executable):
          == (selected_stat.st_dev, selected_stat.st_ino), 'interpreter inode differs')
 
     with LOCK:
-        with _private_helpers(ctx) as (api, live_verifier):
+        with _private_helpers(ctx) as (api, live_verifier, _scope):
             repo2, path, profile, auth, auth_sha, profile_sha, receipt_sha = api.inputs(profile_path, repo)
             need(repo2 == repo and path == profile_path and profile['venv'] == str(venv)
                  and profile['runtime_root'] == str(runtime_root), 'API profile runtime differs from native Context')
@@ -260,7 +281,7 @@ def collector_validate(ctx, profile_path):
     repo, runtime = physical_directory(ctx.repo), ctx.runtime()
     runtime_root = physical_directory(Path(ctx.data['runtime_root']))
     with LOCK:
-        with _private_helpers(ctx) as (api, live):
+        with _private_helpers(ctx) as (api, live, scope):
             repo2, path2, profile, auth, auth_sha, profile_sha, receipt_sha = api.inputs(path, repo)
             need(repo2 == repo and path2 == path and profile['runtime_root'] == str(runtime_root)
                  and auth_sha == proof['api_authority_sha256'] and profile_sha == proof['api_profile_sha256']
@@ -269,7 +290,8 @@ def collector_validate(ctx, profile_path):
                      for name in (RETAINED, API, LIVE, NODE, PRODUCER, REUSE, QUALIFY)),
                  'collector source authorities differ')
             node_name = '_som_react_api_payload_node'
-            node = load_source(ctx, NODE, node_name)
+            node = load_source(ctx, NODE, node_name, scope=scope)
+            scope.modules['linux_qa_profile'] = node
             try:
                 _bind_live(live, ctx, repo, runtime)
                 result = api.verify(repo, path, profile, auth, auth_sha, profile_sha, receipt_sha, node, live)
