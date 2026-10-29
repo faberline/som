@@ -11,6 +11,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import release_common as rc
+import rehearsal_supervision as supervision
 
 HERE = Path(__file__).resolve().parent
 SCENARIOS = ('switch', 'after_stop', 'after_start', 'after_pointer', 'after_commit')
@@ -165,9 +166,10 @@ def main():
                              '--audit-root', str(args.audit_root.resolve()), '--out', str(out / 'run/inputs')]),
                 ('rehearse', [sys.executable, str(HERE / 'rehearse.py'), '--prerequisites', str(out / 'run/inputs/prerequisites.json'),
                               '--out', str(out / 'run/rehearsal')])]:
-            with (out / f'{name}.stdout').open('xb') as stdout, (out / f'{name}.stderr').open('xb') as stderr:
-                done = subprocess.run(argv, cwd=rc.REPO, stdout=stdout, stderr=stderr, timeout=1800)
-            rc.require(done.returncode == 0, f'{name} failed with exit {done.returncode}; inspect retained raw logs')
+            call = supervision.invoke(argv, rc.REPO, out, name, timeout=1800, grace=300)
+            rc.require(call['outcome'] == 'completed' and type(call['wait_result']) is int
+                       and call['wait_result'] == call['exit_code'] == 0,
+                       f'{name} did not complete cleanly; inspect retained lifecycle and logs')
         config = rc.load(out / 'run/inputs/prerequisites.json')
         rc.check_prerequisites(config)
         report = verify_report(out / 'run/rehearsal', config)

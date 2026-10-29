@@ -1,0 +1,61 @@
+"""Bound direct rehearsal children without pretending to reap detached services.
+
+The child owns its rollback and sandbox cleanup. A timeout is always a failure.
+Only an observed child wait is reported here; service cleanup is a separate gate.
+"""
+from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+import subprocess
+import time
+
+
+def invoke(argv, cwd, out, name, timeout=None, grace=180):
+    """Retain direct-child lifecycle even if waiting or cleanup is interrupted."""
+    out = Path(out)
+    record = {'argv': list(argv), 'cwd': str(cwd), 'pid': None, 'outcome': 'not_started',
+              'exit_code': None, 'wait_result': None, 'term_sent': False,
+              'kill_sent': False, 'cleanup_verified': False}
+    child = None
+    started = time.monotonic()
+    try:
+        with (out / (name + '.stdout')).open('xb') as stdout, (out / (name + '.stderr')).open('xb') as stderr:
+            child = subprocess.Popen(argv, cwd=cwd, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr)
+            record['pid'] = child.pid
+            record['outcome'] = 'running'
+            try:
+                record['wait_result'] = child.wait(timeout=timeout)
+                record['exit_code'] = child.returncode
+                record['outcome'] = 'completed'
+            except BaseException as error:
+                # Popen is our direct child; never signal a PID obtained from a receipt.
+                record['outcome'] = 'timeout' if isinstance(error, subprocess.TimeoutExpired) else 'interrupted'
+                record['error_type'] = type(error).__name__
+                try:
+                    if child.poll() is None:
+                        child.terminate()
+                        record['term_sent'] = True
+                    try:
+                        record['wait_result'] = child.wait(timeout=grace)
+                    except subprocess.TimeoutExpired:
+                        child.kill()
+                        record['kill_sent'] = True
+                        record['wait_result'] = child.wait(timeout=30)
+                    record['exit_code'] = child.returncode
+                except BaseException as cleanup_error:
+                    record['wait_error_type'] = type(cleanup_error).__name__
+                if not isinstance(error, subprocess.TimeoutExpired):
+                    raise
+    except OSError as error:
+        record['outcome'] = 'process_error'
+        record['error_type'] = type(error).__name__
+    finally:
+        record['elapsed_seconds'] = time.monotonic() - started
+        # This field deliberately remains false here. A direct wait cannot prove
+        # that a detached service, its listener, and the sandbox were cleaned up.
+        with (out / (name + '.lifecycle.json')).open('x', encoding='utf-8') as stream:
+            json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)
+            stream.write('\n')
+    return record

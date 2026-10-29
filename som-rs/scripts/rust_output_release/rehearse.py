@@ -28,12 +28,14 @@ import argparse
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
 import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import release_common as rc  # noqa: E402
+import rehearsal_supervision as supervision  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 PYTHON = sys.executable
@@ -41,10 +43,24 @@ PYTHON = sys.executable
 
 def call(argv, out, name):
     started = time.time()
-    with (out / f'{name}.stdout').open('xb') as stdout, (out / f'{name}.stderr').open('xb') as stderr:
-        code = subprocess.run(argv, stdout=stdout, stderr=stderr, cwd=rc.REPO).returncode
+    record = supervision.invoke(argv, rc.REPO, out, name)
+    rc.require(record['outcome'] == 'completed' and type(record['wait_result']) is int
+               and record['wait_result'] == record['exit_code'], 'child wait is not verified')
+    code = record['exit_code']
     return {'name': name, 'argv': argv, 'exit_code': code, 'started_at': started, 'ended_at': time.time(),
+            'wait_result': record['wait_result'],
             'stdout_sha256': rc.digest(out / f'{name}.stdout'), 'stderr_sha256': rc.digest(out / f'{name}.stderr')}
+
+
+class RehearsalInterrupted(BaseException):
+    """Request bounded child rollback and sandbox cleanup, then fail the run."""
+
+
+def interrupted(signum, _frame):
+    # Ignore repeat termination while the direct child and sandbox unwind.
+    for value in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+        signal.signal(value, signal.SIG_IGN)
+    raise RehearsalInterrupted(f'interrupted by signal {signum}')
 
 
 LAUNCHER = ('import subprocess, sys\n'
@@ -156,6 +172,8 @@ def main():
     parser.add_argument('--prerequisites', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
+    for signum in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+        signal.signal(signum, interrupted)
     prerequisites, out = args.prerequisites.resolve(), args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
     config = rc.load(prerequisites)
@@ -220,7 +238,16 @@ def main():
         except Exception as error:
             problems.append(repr(error))
         finally:
-            stopped = stop_sandbox(root, port)
+            cleanup = {'receipt_owner_pid': None, 'receipt_owner_stopped': False,
+                       'qa_port_absent': False, 'all_owned_processes': 'unverified'}
+            try:
+                stopped = stop_sandbox(root, port)
+                cleanup['receipt_owner_pid'] = stopped
+                cleanup['receipt_owner_stopped'] = not rc.alive(stopped)
+                rc.port_free(port)
+                cleanup['qa_port_absent'] = True
+            finally:
+                (directory / 'sandbox-cleanup.json').write_text(json.dumps(cleanup, indent=2) + '\n')
         scenarios.append({'name': name, 'port': port, 'root': str(root), 'calls': calls,
                           **({'offline_seed': offline_seed, 'resume': resumed} if compiler else {}),
                           'switch_stages': journal_stages(directory / 'switch') if (directory / 'switch/journal.json').exists() else None,
