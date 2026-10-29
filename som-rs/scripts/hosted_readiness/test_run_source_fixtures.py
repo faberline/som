@@ -11,6 +11,7 @@ import sys
 import tempfile
 from types import ModuleType
 import unittest
+import zipfile
 
 if os.environ.get('GITHUB_ACTIONS') != 'true':
     raise RuntimeError('Run these fixtures on GitHub only')
@@ -73,6 +74,22 @@ class FixturePayloadGuards(unittest.TestCase):
                     with self.assertRaises(ValueError): self.check()
                 finally:
                     extra.unlink()
+
+    def test_generated_command_requires_its_original_wheel_declaration(self):
+        declaration = b'[console_scripts]\nfixture-command = validators:main\n'
+        name = 'fixture-1.dist-info/entry_points.txt'
+        target = self.site / name; target.write_bytes(declaration)
+        self.audits['fixture']['members'].append({'path': name, 'sha256': r.sha(declaration), 'size': len(declaration)})
+        wheels = self.root / 'wheels'; wheels.mkdir()
+        wheel = wheels / 'fixture-1-py3-none-any.whl'
+        with zipfile.ZipFile(wheel, 'w') as archive: archive.writestr(name, declaration)
+        packages = [{'name': 'fixture', 'filename': wheel.name, 'sha256': r.sha(wheel.read_bytes()),
+                     'bytes': wheel.stat().st_size}]
+        command = self.site / 'bin/fixture-command'; command.parent.mkdir(); command.write_bytes(b'generated command data')
+        self.assertIn('bin/fixture-command', r.check_installed_scope(self.site, self.audits, packages, wheels))
+        unowned = self.site / 'bin/unowned-command'; unowned.write_bytes(b'not declared')
+        with self.assertRaisesRegex(ValueError, 'unowned installed fixture member'):
+            r.check_installed_scope(self.site, self.audits, packages, wheels)
 
     def test_changed_payload_plus_rewritten_inventory_cannot_change_parent_authority(self):
         inventory = self.check()

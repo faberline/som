@@ -1,6 +1,7 @@
 """Run the complete source fixture inventory in separate GitHub processes."""
 import argparse
 import ast
+import configparser
 import hashlib
 import io
 import json
@@ -11,6 +12,7 @@ import stat
 import subprocess
 import sys
 import time
+import zipfile
 from types import ModuleType
 
 BASE = 'som-rs/scripts/hosted_readiness/'
@@ -127,9 +129,41 @@ def verify_sources(repo, revision, expected):
                         'unowned repository import or startup payload: ' + name)
 
 
+def fixture_entry_points(audits, packages, wheel_root):
+    commands = {}
+    for package in packages:
+        audit = audits[package['name']]
+        member = audit['dist_info_dir'].rstrip('/') + '/entry_points.txt'
+        entries = [row for row in audit['members'] if row['path'] == member]
+        if not entries:
+            continue
+        wheel = wheel_root / package['filename']
+        raw = wheel.read_bytes()
+        require(len(raw) == package['bytes'] and sha(raw) == package['sha256'], 'entry point wheel identity differs')
+        with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+            body = archive.read(member)
+        require(len(entries) == 1 and len(body) == entries[0]['size'] and sha(body) == entries[0]['sha256'],
+                'original entry point metadata differs')
+        parser = configparser.ConfigParser(interpolation=None, strict=True)
+        parser.optionxform = str
+        parser.read_string(body.decode('utf-8', 'strict'))
+        for group in ('console_scripts', 'gui_scripts'):
+            if not parser.has_section(group):
+                continue
+            for name, target in parser.items(group):
+                require(re.fullmatch('[A-Za-z0-9_-]+', name) is not None and target,
+                        'bounded extensionless fixture entry point required')
+                path = 'bin/' + name
+                require(path not in commands, 'overlapping generated fixture entry point')
+                commands[path] = {'distribution': package['name'], 'wheel_sha256': package['sha256'],
+                    'source_member': member, 'source_sha256': sha(body), 'declared_target': target}
+    return commands
+
+
 def check_installed_scope(site, audits, packages, wheel_root):
     expected = {}
     records, metadata_roles = set(), {}
+    commands = fixture_entry_points(audits, packages, wheel_root)
     for name, audit in audits.items():
         prefix = audit['dist_info_dir'].rstrip('/')
         records.add(prefix + '/RECORD')
@@ -176,9 +210,9 @@ def check_installed_scope(site, audits, packages, wheel_root):
                         and value['archive_info'].get('hashes') == {'sha256': package['sha256']},
                         'generated wheel origin metadata differs')
         else:
-            # pip creates this declared extensionless command. Fixtures import
-            # package files and never execute this retained entry point.
-            require(name == 'bin/jsonschema' and 'jsonschema' in audits,
+            # These retained extensionless commands come from the original
+            # wheel declarations. Fixtures import package files, not commands.
+            require(name in commands,
                     'unowned installed fixture member: ' + name)
         observed[name] = {'sha256': sha(raw), 'size': len(raw), 'mode': stat.S_IMODE(info.st_mode)}
     require(set(expected) <= set(observed), 'original wheel members were omitted')
@@ -259,6 +293,7 @@ def prepare_dependencies(repo, revision, out):
     save(root / 'qualification.json', {'scope': 'thirteen-wheel source fixture dependencies only',
         'manifest_sha256': sha(raw), 'requirements_sha256': sha(requirements),
         'site_inventory_sha256': sha((root / 'site-inventory.json').read_bytes()),
+        'generated_console_script_origins': fixture_entry_points(audits, packages, wheels),
         'wheels': packages, 'product_environment_qualified': False, 'product_acceptance_passed': False})
     return site, sha((root / 'site-inventory.json').read_bytes())
 
