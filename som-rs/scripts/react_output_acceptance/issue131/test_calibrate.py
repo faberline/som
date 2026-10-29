@@ -1,5 +1,7 @@
 import hashlib
 import json
+import sys
+from pathlib import Path
 import unittest
 from types import SimpleNamespace
 import calibrate as c
@@ -59,6 +61,14 @@ class CalibrationTests(unittest.TestCase):
         with self.assertRaises(c.Invalid): c.relative('../secret')
     def test_python_compact_serializer(self):
         self.assertEqual(enc({'bundle':{'é':'x'}}),b'{"bundle":{"\xc3\xa9":"x"}}')
+    def test_typescript_owner_import_resolves_ts_collector(self):
+        tsdir=Path(__file__).resolve().parents[1].parent/'typescript_output_acceptance'
+        reactdir=Path(__file__).resolve().parents[1]
+        sys.path[:0]=[str(tsdir),str(reactdir)]
+        import check_bundles as ts
+        import check_typescript_baseline as owner
+        self.assertEqual(Path(ts.__file__).resolve(),(tsdir/'check_bundles.py').resolve())
+        self.assertIs(owner.check_bundles,ts)
     def test_missing_raw_does_not_mean_success(self):
         source=FakeSources({})
         with self.assertRaises(c.Unrun): source.read('missing')

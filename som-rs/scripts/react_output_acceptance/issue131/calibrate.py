@@ -117,11 +117,13 @@ def verify_inputs(repo, input_root, config_path):
 def owner_inputs(repo, input_root):
     tsdir=repo/'som-rs/scripts/typescript_output_acceptance'
     reactdir=repo/'som-rs/scripts/react_output_acceptance'
-    sys.path[:0]=[str(reactdir),str(tsdir)]
+    sys.path[:0]=[str(tsdir),str(reactdir)]
     import check_python_baseline as py
     import check_rust_baseline as rust
     import check_bundles as ts
     import check_typescript_baseline as ts_owner
+    require(Path(ts.__file__).resolve()==(tsdir/'check_bundles.py').resolve() and
+            ts_owner.check_bundles is ts, 'TypeScript collector identity differs')
     acceptance=input_root/'.local/rust-compiler-goal/acceptance'
     public=acceptance/'public-products-003b'; legacy=acceptance/'legacy544/run-005'
     public_rows,_=py.read_public_inputs(public); legacy_rows,_=py.read_legacy_inputs(legacy)
