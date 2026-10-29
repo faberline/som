@@ -67,7 +67,7 @@ def make_tar(extra=None):
 class AuditTests(unittest.TestCase):
     def test_runner_diagnostics_identify_field_without_weakening_checks(self):
         expected = {'RUNNER_OS': 'Linux', 'RUNNER_ARCH': 'X64', 'ImageOS': 'ubuntu22',
-                    'ImageVersion': '20261025.340.1', 'GITHUB_RUN_ID': str(a.RUN), 'GITHUB_RUN_ATTEMPT': '1'}
+                    'ImageVersion': '20261026.341.1', 'GITHUB_RUN_ID': str(a.RUN), 'GITHUB_RUN_ATTEMPT': '1'}
         report = {'runner': expected.copy(), 'os_release_sha256': 'a' * 64}
         a.runner_metadata(report)
         report['runner']['ImageVersion'] = 'bad\nversion'
@@ -76,6 +76,9 @@ class AuditTests(unittest.TestCase):
         self.assertIn('runner.ImageVersion differs', str(caught.exception))
         self.assertIn('bad\\nversion', str(caught.exception))
         self.assertNotIn('\n', str(caught.exception))
+        report['runner']['ImageVersion'] = '20261025.340.1'
+        with self.assertRaises(a.AuditError):
+            a.runner_metadata(report)
         report['runner'] = expected.copy()
         del report['runner']['ImageOS']
         with self.assertRaisesRegex(a.AuditError, 'missing=.*ImageOS'):
@@ -92,6 +95,14 @@ class AuditTests(unittest.TestCase):
     def test_metadata_identity_and_missing_step(self):
         run, jobs, artifact, log = metadata()
         self.assertEqual(a.metadata(run, jobs, artifact, log), a.sha(log))
+        with self.assertRaises(a.AuditError):
+            a.metadata(run, jobs, artifact, log.replace(b'20261025.340.1', b'20261026.341.1'))
+        wrong_attempt = dict(run, run_attempt=2)
+        with self.assertRaises(a.AuditError):
+            a.metadata(wrong_attempt, jobs, artifact, log)
+        wrong_artifact = dict(artifact, digest='sha256:' + '0' * 64)
+        with self.assertRaises(a.AuditError):
+            a.metadata(run, jobs, wrong_artifact, log)
         jobs['jobs'][0]['steps'].pop()
         with self.assertRaises(a.AuditError):
             a.metadata(run, jobs, artifact, log)
@@ -191,7 +202,7 @@ class AuditTests(unittest.TestCase):
                   'product_acceptance_passed': False, 'producer_head': a.PRODUCER, 'verifier_head': a.HEAD,
                   'source_tar_sha256': a.SOURCE_TAR, 'producer_report_sha256': a.sha(producer_raw),
                   'runner': {'RUNNER_OS': 'Linux', 'RUNNER_ARCH': 'X64', 'ImageOS': 'ubuntu22',
-                             'ImageVersion': '20261025.340.1', 'GITHUB_RUN_ID': str(a.RUN), 'GITHUB_RUN_ATTEMPT': '1'},
+                             'ImageVersion': '20261026.341.1', 'GITHUB_RUN_ID': str(a.RUN), 'GITHUB_RUN_ATTEMPT': '1'},
                   'os_release_sha256': 'f' * 64, 'node_sha256': a.NODE_SHA, 'node_archive_sha256': a.NODE_ARCHIVE,
                   'npm_tree': a.NPM_TREE, 'cache_tree': cache, 'prettier_tree': a.PRETTIER_TREE,
                   'react_bundle_formatter_sha256': a.FORMATTER, 'node_version': producer['node_version'],
@@ -226,6 +237,9 @@ class AuditTests(unittest.TestCase):
             result = a.audit(path, run, jobs, artifact, log)
             self.assertEqual(result['state'], 'partial-evidence-consistent')
             self.assertFalse(result['product_acceptance_passed'])
+            self.assertEqual(result['runner_image_evidence'], {'setup_log_version': '20261025.340.1',
+                'reported_environment_version': '20261026.341.1', 'mismatch': True, 'cause': 'unknown',
+                'actual_image_identity': 'unverified'})
             self.assertEqual(result['source_tar_sha256'], a.SOURCE_TAR)
             path.write_bytes(blob[:-1] + b'x')
             with self.assertRaises(a.AuditError):

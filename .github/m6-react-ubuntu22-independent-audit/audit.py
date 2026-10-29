@@ -229,7 +229,7 @@ def receipts(raw, report):
 
 def runner_metadata(report):
     expected = {'RUNNER_OS': 'Linux', 'RUNNER_ARCH': 'X64', 'ImageOS': 'ubuntu22',
-                'ImageVersion': '20261025.340.1', 'GITHUB_RUN_ID': str(RUN), 'GITHUB_RUN_ATTEMPT': '1'}
+                'ImageVersion': '20261026.341.1', 'GITHUB_RUN_ID': str(RUN), 'GITHUB_RUN_ATTEMPT': '1'}
     observed = report.get('runner')
     if observed != expected:
         need(isinstance(observed, dict), 'runner metadata is not an object')
@@ -320,7 +320,9 @@ def audit(zip_path, run, jobs, artifact, job_log):
             'product_acceptance_passed': False, 'run_id': RUN, 'job_id': JOB, 'head': HEAD, 'artifact_id': ARTIFACT,
             'zip_sha256': ZIP_SHA, 'replay_tar_sha256': tar_sha, 'source_tar_sha256': SOURCE_TAR, 'job_log_sha256': log_sha,
             'cache_tree': CACHE_TREE, 'npm_tree': NPM_TREE, 'prettier_tree': PRETTIER_TREE, 'commands': count,
-            'unverified': ['The original OS release bytes were not retained; runner image is corroborated by the GitHub job log and recorded runner metadata.',
+            'runner_image_evidence': {'setup_log_version': '20261025.340.1', 'reported_environment_version': '20261026.341.1',
+                                      'mismatch': True, 'cause': 'unknown', 'actual_image_identity': 'unverified'},
+            'unverified': ['The original OS release bytes were not retained. The setup log and reported environment image versions differ; the cause and actual image identity are unknown.',
                            'The two cache snapshots are recorder observations. This audit checks their complete maps and hashes; it did not independently observe the original execution.',
                            'The replay retains source-replayed Node/npm and installed Prettier; the original source archive and cache are tied through prior audit receipts, not re-read here.',
                            'Only platform package metadata is checked; other installed package bytes are not independently compared.',
