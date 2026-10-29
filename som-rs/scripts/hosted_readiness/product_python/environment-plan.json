@@ -8,13 +8,15 @@
     "som-code-python/data/blocks/v5/blocks.json": "6dd5359cc320cb804f87f3d16fa5899b5ae801f37c970e3b9ac4fced0cc0170f",
     "som-code-python/data/blocks/composed-quality/blocks.json": "0bfbf2a452a559a2661ac5c0c8355d0dfb9ce21cc310e505f121a51bb63e85cc",
     "som-code-python/data/blocks/flow-v7-compact-self/blocks.json": "c7269e89d5f7b8fb2b36703cc2ccb6ef8201eccfc62fbffe526714fbd570311e",
-    "som-rs/behavior/phase2/phase2_host.py": "ca46edc076e51d43711223f70b97af0c35fbb4bf413c66da374aca72562d4449",
+    "som-rs/behavior/phase2/phase2_host.py": "695cd7a15001eddd29f5312a147ddc05764425ac9369eb78eab84d4d2e8ed582",
     "som-core/scripts/local_business_services.py": "9345e0a82d621ba322c377f55ffa191d7754ad7dbbf7ba80fcceda4a9541ecc3",
     "som-core/scripts/verify_python_quality.py": "c0d1e43fa332396c0ec5a3ad82977f7a655c62e11919e854733559e9ddf3300d",
     "som-core/scripts/verify_flow_service.py": "6cd3b8932d5c9c092f12baeca442814c66cbc3fe22cc10cdee100e126827fbbe",
-    "som-rs/behavior/hosts.py": "2e350522225e10087737ddfd2824e84508e8c295662eb6805a607fdd27f3f69b",
+    "som-rs/behavior/hosts.py": "2dc1dc43fd77a3fa8079c6c73462cc1fa7324246a83d56417ef666790287ec9f",
     "som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json": "ea573d3c842d367b32538ad8b9fec01608b4f05f676a07a80d9b9acf81a69a8b",
-    "som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json": "650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9"
+    "som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json": "650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9",
+    "som-core/scripts/m3_local_fixture.py": "7c6163ce7f2ac10ea2e424d462a66416887db45f2e029e5d6434f36fc3dd0d42",
+    "som-core/scripts/verify_service_v3.py": "f2d1a13a291cda286a7524d98c61e13aa8000f6850cc4e6f8c1d88c84e6f832e"
   },
   "template_sources": [
     "som-code-python/data/blocks/v5/blocks.json",

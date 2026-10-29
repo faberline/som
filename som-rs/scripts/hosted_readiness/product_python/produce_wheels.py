@@ -416,6 +416,18 @@ def selected_wheel(metadata, name, pin):
     return min(candidates, key=lambda item: (item[0], item[1]))[2]
 
 
+def expanded_wheel_tags(tag):
+    """Parse one bounded compressed triple without changing any wheel bytes."""
+    component = r"[a-z0-9_]+(?:\.[a-z0-9_]+)*"
+    require(isinstance(tag, str) and len(tag) <= 4096
+            and re.fullmatch(component + "-" + component + "-" + component, tag) is not None,
+            "malformed wheel compatibility tag")
+    parts = [part.split(".") for part in tag.split("-")]
+    require(len(parts[0]) * len(parts[1]) * len(parts[2]) <= 4096,
+            "wheel compatibility tag expansion exceeds bound")
+    return {"-".join(row) for row in itertools.product(*parts)}
+
+
 def audit_wheel(path, name, version, notice_root):
     """Read all wheel bytes, verify RECORD, and preserve metadata/notices."""
     no_links(path)
@@ -460,12 +472,16 @@ def audit_wheel(path, name, version, notice_root):
                 and normalize(metadata["Name"]) == name and metadata["Version"] == version and name not in FORBIDDEN,
                 "wheel METADATA identity differs")
         wheel_raw = wheel.read(prefix + "WHEEL")
+        require(len(wheel_raw) <= MAX_METADATA, "WHEEL metadata too large")
         wheel_meta = BytesParser(policy=default).parsebytes(wheel_raw)
         require(wheel_meta["Wheel-Version"] == "1.0" and wheel_meta.get_all("Tag"), "unsupported WHEEL metadata")
-        wheel_tags = set(wheel_meta.get_all("Tag"))
+        wheel_tags = set()
+        for tag in wheel_meta.get_all("Tag"):
+            wheel_tags.update(expanded_wheel_tags(tag))
+            require(len(wheel_tags) <= 4096, "WHEEL compatibility tag set exceeds bound")
         parts = path.name[:-4].split("-")
         require(normalize(parts[0]) == name and parts[1] == version, "wheel archive filename identity differs")
-        filename_tags = {"-".join(tags) for tags in itertools.product(*(part.split(".") for part in parts[-3:]))}
+        filename_tags = expanded_wheel_tags("-".join(parts[-3:]))
         require(wheel_tags == filename_tags, "WHEEL tags differ from archive name")
         record_name = prefix + "RECORD"
         record_raw = wheel.read(record_name)

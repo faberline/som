@@ -721,3 +721,11 @@ jobs:
             ${{ runner.temp }}/som-python-wheel-qualification/closures/*/publisher-metadata
             ${{ runner.temp }}/som-python-wheel-qualification/closures/*/wheels
             ${{ runner.temp }}/som-python-wheel-qualification/closures/*/wheel-audits
+      - name: Preserve the small wheel failure and completion report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: python-wheel-qualification-summary
+          if-no-files-found: warn
+          retention-days: 30
+          path: ${{ runner.temp }}/som-python-wheel-qualification/receipt.json

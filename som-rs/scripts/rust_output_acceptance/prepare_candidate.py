@@ -37,6 +37,9 @@ SOM_RS = REPO / "som-rs"
 TARGETS = SOM_RS / "som-targets"
 TOOLCHAIN = json.loads((SOM_RS / "contracts/rust-output-v1/toolchain.json").read_text())
 BIN_DIR = pathlib.Path(TOOLCHAIN["rust"]["bin_dir"])
+if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+    import full_product_context as hosted_products
+    BIN_DIR = hosted_products.rust_bin()
 SOURCE_ROOTS = ["som-rs/Cargo.toml", "som-rs/Cargo.lock", "som-rs/src", "som-rs/contracts",
                 "som-rs/som-targets/Cargo.toml", "som-rs/som-targets/Cargo.lock",
                 "som-rs/som-targets/src", "som-rs/som-targets/catalog"]
@@ -74,6 +77,12 @@ def tree_state(paths: list[str]) -> dict:
 
 
 def pinned_env(target_dir: pathlib.Path, prettier: pathlib.Path | None = None) -> dict:
+    if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+        env = {**os.environ, **hosted_products.rust_environment(),
+               "CARGO_TARGET_DIR": str(target_dir)}
+        if prettier is not None:
+            env["SOM_TS_PRETTIER"] = str(prettier)
+        return env
     for name in ("rustc", "cargo"):
         if sha(BIN_DIR / name) != TOOLCHAIN["rust"][name]["sha256"]:
             raise SystemExit(f"{name} differs from toolchain.json")

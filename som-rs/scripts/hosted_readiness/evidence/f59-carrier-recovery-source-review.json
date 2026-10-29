@@ -1,0 +1,39 @@
+{
+  "checks": {
+    "YAML_metadata": "passed",
+    "inline_launcher_AST": "passed",
+    "original_source_and_argument_comparison": "passed",
+    "recovery_build_or_pack_execution": "unrun; GitHub only"
+  },
+  "findings": [],
+  "fragment": {
+    "path": "/private/tmp/som-m12-f59-carrier-recovery.fragment.yml",
+    "sha256": "ce1add902340a6808d7c5d7712ceea184d960f080b255017544edd9aeb30bdd4"
+  },
+  "inline_raw_launcher_sha256": "2f067f7aba1a83b8d7957d8badda6cbd22217a77016a668170f2d7df7ee990e4",
+  "next_step": "Root may integrate exact ce1add90 fragment with the reviewed f06813a6 successor and run the single GitHub recovery job. Require actual exact carrier equality before any later use.",
+  "product_acceptance_passed": false,
+  "project_helper_imports_or_execution_locally": false,
+  "release_ready": false,
+  "repository_writes_by_reviewer": false,
+  "resolved_original_finding": "The original fragment directly executed provision_native and candidate_carrier without binding their source. The ce1add90 fixed raw launcher closes this specific before-execution gap.",
+  "reviewed_at_utc": "2026-10-29T03:54:45.110627+00:00",
+  "runtime_ready": false,
+  "source_review": [
+    "Job needs dependency-helper-fixtures, uses Ubuntu24, exact helper checkout and exact fixed f59 metadata fetch. Root workflow defaults provide bash with pipeline failure propagation.",
+    "Exact artifact12868189241/run40805208879 is downloaded with fixed ID and merge-multiple. The full original37535-file and source guard runs before and after build.",
+    "The owned RUNNER_TEMP raw launcher has an exact three-script allowlist. Each launch verifies helper HEAD, regular current Git blob and same bounded working bytes after no-link/O_NOFOLLOW/NONBLOCK/fstat/single-link checks. It compiles those same bytes into a fresh __main__, using Python -I-S-B. Both helpers are stdlib-only; no PYC or repository import path is used.",
+    "Both provision_native and carrier pack now execute through this launcher. The job-level HELPER_REVISION is present at line16 and is inherited by every step.",
+    "Original toolchain1.96.1/minimal+rustfmt, Ubuntu24, target directory, locked Cargo fetch, asset packaging, provisioning arguments and target bin build commands match the original f59 build route. No compiler2041/assembly2045 rerun is claimed.",
+    "The separately reviewed successor carrier --byte-identical-rebuild marks a new build origin. Packing still requires exact raw binary/assets/native formatter portable hashes,sizes,modes and raw original compile proof. Any mismatch fails; no byte or mode exception exists.",
+    "Fresh recovered carrier result is unrun and must not be called the original process or a new full acceptance proof. Final policy and product gates remain separate."
+  ],
+  "supersedes_fragment_sha256": "0fc07c8b5ca499e2d34641c4cad7df7497084434e1d54dac97d1fbd2e8627a3a",
+  "verdict": "APPROVED_BOUNDED_SOURCE_RECOVERY_WORKFLOW",
+  "version": "som.m12.byte-identical-carrier-recovery-independent-source-review.v1",
+  "withdrawn_review_message": {
+    "claim": "Provision step lacks HELPER_REVISION",
+    "correction": "The reviewed ce1add90 raw file has the exact helper expression in job env at line16. Reviewer initially printed only run-step bodies and missed this job env. No code change was needed.",
+    "status": "withdrawn"
+  }
+}

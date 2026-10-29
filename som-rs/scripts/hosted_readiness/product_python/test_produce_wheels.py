@@ -69,6 +69,12 @@ def wheel_blob(changes=None, extras=None, omit_record=()):
     return raw.getvalue()
 
 
+def tagged_wheel_blob(tags):
+    body = ("Wheel-Version: 1.0\nRoot-Is-Purelib: false\n"
+            + "".join("Tag: " + tag + "\n" for tag in tags)).encode()
+    return wheel_blob(changes={"requests-2.32.5.dist-info/WHEEL": body})
+
+
 class FakeRunner:
     """Record commands and create data fixtures. Never spawn any child."""
     def __init__(self, out, blob, fail_sync=False):
@@ -138,6 +144,12 @@ class WheelProducerTests(unittest.TestCase):
         notices = self.root / "notices"
         notices.mkdir()
         return path, notices
+
+    def tagged_wheel(self, filename_tag, metadata_tags):
+        path, notices = self.save_wheel(tagged_wheel_blob(metadata_tags))
+        renamed = path.with_name("requests-2.32.5-" + filename_tag + ".whl")
+        path.rename(renamed)
+        return renamed, notices
 
     def test_exact_dependency_bytes_and_native_identity_define_deduplication(self):
         first = p.dependency_key(b"requests==2.32.5\n", NATIVE)
@@ -214,6 +226,97 @@ class WheelProducerTests(unittest.TestCase):
         notice = audit["license_notices"][0]
         self.assertEqual((notices / notice["preserved"]).read_bytes(), b"Synthetic public license notice.\n")
         self.assertEqual(notice["sha256"], p.sha((notices / notice["preserved"]).read_bytes()))
+
+    def test_actual_maturin_compressed_platform_tag_preserves_all_raw_metadata(self):
+        tag = "cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64"
+        path, notices = self.tagged_wheel(tag, [tag])
+        before = path.read_bytes()
+        with zipfile.ZipFile(path) as archive:
+            wheel = archive.read("requests-2.32.5.dist-info/WHEEL")
+            record = archive.read("requests-2.32.5.dist-info/RECORD")
+        audit = p.audit_wheel(path, "requests", "2.32.5", notices)
+        self.assertTrue(audit["record_verified"])
+        self.assertEqual(path.read_bytes(), before)
+        self.assertEqual((notices / "WHEEL").read_bytes(), wheel)
+        self.assertEqual((notices / "RECORD").read_bytes(), record)
+        self.assertEqual(audit["wheel_metadata_sha256"], p.sha(wheel))
+
+    def test_expanded_metadata_equals_the_same_compressed_filename_set(self):
+        tag = "cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64"
+        path, notices = self.tagged_wheel(tag, ["cp312-cp312-manylinux_2_17_x86_64",
+                                                "cp312-cp312-manylinux2014_x86_64"])
+        self.assertTrue(p.audit_wheel(path, "requests", "2.32.5", notices)["record_verified"])
+
+    def test_all_three_compressed_fields_use_cartesian_not_zipped_pairs(self):
+        self.assertEqual(p.expanded_wheel_tags("py3.py312-none.abi3-any.linux_x86_64"),
+                         {py + "-" + abi + "-" + host for py in ("py3", "py312")
+                          for abi in ("none", "abi3") for host in ("any", "linux_x86_64")})
+        path, notices = self.tagged_wheel("py3.py312-none-any", ["py3-none-any", "py312-none-any"])
+        self.assertTrue(p.audit_wheel(path, "requests", "2.32.5", notices)["record_verified"])
+
+    def test_wrong_metadata_python_abi_and_platform_cannot_match_compatible_filename(self):
+        tag = "cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64"
+        path, notices = self.tagged_wheel(tag, [tag])
+        for wrong in (tag.replace("cp312", "cp311", 1), tag.replace("-cp312-", "-abi3-"),
+                      tag.replace("x86_64", "aarch64")):
+            with self.subTest(tag=wrong):
+                path.write_bytes(tagged_wheel_blob([wrong]))
+                with self.assertRaisesRegex(p.Refusal, "WHEEL tags differ"):
+                    p.audit_wheel(path, "requests", "2.32.5", notices)
+
+    def test_subset_superset_and_unknown_metadata_tags_are_not_intersection_matches(self):
+        tag = "cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64"
+        path, notices = self.tagged_wheel(tag, [tag])
+        for tags in (["cp312-cp312-manylinux2014_x86_64"], [tag, "cp312-cp312-linux_x86_64"],
+                     [tag, "mystery-none-any"], [tag + ".unknown_platform"]):
+            with self.subTest(tags=tags):
+                path.write_bytes(tagged_wheel_blob(tags))
+                with self.assertRaisesRegex(p.Refusal, "WHEEL tags differ"):
+                    p.audit_wheel(path, "requests", "2.32.5", notices)
+
+    def test_empty_and_malformed_metadata_tag_components_are_refused(self):
+        path, notices = self.tagged_wheel("py3-none-any", ["py3-none-any"])
+        for tag in ("", "py3-none", "py3-none-any-extra", "py3--any", "py3..py312-none-any",
+                    ".py3-none-any", "py3-none-any.", "py3-none-any/", "py3-none-any ", "py3-none-any\n folded"):
+            with self.subTest(tag=tag):
+                path.write_bytes(tagged_wheel_blob([tag]))
+                with self.assertRaisesRegex(p.Refusal, "malformed wheel compatibility tag"):
+                    p.audit_wheel(path, "requests", "2.32.5", notices)
+
+    def test_missing_wheel_tag_does_not_create_an_empty_accepted_set(self):
+        path, notices = self.tagged_wheel("py3-none-any", [])
+        with self.assertRaisesRegex(p.Refusal, "unsupported WHEEL metadata"):
+            p.audit_wheel(path, "requests", "2.32.5", notices)
+
+    def test_malformed_compressed_filename_is_not_rescued_by_one_valid_tag(self):
+        path, notices = self.tagged_wheel("py3..py312-none-any", ["py3-none-any", "py312-none-any"])
+        with self.assertRaisesRegex(p.Refusal, "malformed wheel compatibility tag"):
+            p.audit_wheel(path, "requests", "2.32.5", notices)
+
+    def test_unknown_only_filename_family_remains_incompatible(self):
+        path, notices = self.tagged_wheel("mystery-none-unknown_platform", ["mystery-none-unknown_platform"])
+        with self.assertRaisesRegex(p.Refusal, "compatible bounded wheel required"):
+            p.audit_wheel(path, "requests", "2.32.5", notices)
+
+    def test_tag_semantic_equality_cannot_waive_raw_record_hashes(self):
+        tag = "cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64"
+        path, notices = self.tagged_wheel(tag, [tag])
+        changed = io.BytesIO()
+        with zipfile.ZipFile(path) as source, zipfile.ZipFile(changed, "w") as target:
+            for member in source.infolist():
+                body = source.read(member)
+                if member.filename.endswith(".dist-info/WHEEL"):
+                    body = body.replace(("Tag: " + tag + "\n").encode(),
+                        b"Tag: cp312-cp312-manylinux_2_17_x86_64\nTag: cp312-cp312-manylinux2014_x86_64\n")
+                target.writestr(member, body)
+        path.write_bytes(changed.getvalue())
+        with self.assertRaisesRegex(p.Refusal, "RECORD hash or size differs"):
+            p.audit_wheel(path, "requests", "2.32.5", notices)
+
+    def test_tag_expansion_is_bounded_before_cartesian_allocation(self):
+        component = ".".join("tag" + str(index) for index in range(17))
+        with self.assertRaisesRegex(p.Refusal, "expansion exceeds bound"):
+            p.expanded_wheel_tags("-".join([component] * 3))
 
     def test_missing_record_member_is_not_accepted_from_archive_hash_alone(self):
         path, notices = self.save_wheel(wheel_blob(omit_record=("requests/__init__.py",)))
