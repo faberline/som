@@ -22,7 +22,7 @@ import independent_behavior_oracle as frozen_oracle
 REPO=Path(__file__).resolve().parents[4]
 QA='http://127.0.0.1:18919'
 REVIEWED_ORACLE_SHA='8599438d6019795028b1bc28a51d2d16c2e682cc4012a5c9250a0984316f8fe7'
-PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py')
+PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/post_acceptance_audit.py', 'som-rs/scripts/react_output_acceptance/audit/audit130.py', 'som-rs/scripts/react_output_acceptance/audit/api_raw.py', 'som-rs/scripts/react_output_acceptance/audit/baseline_raw.py', 'som-rs/scripts/react_output_acceptance/audit/render_rules.py', 'som-rs/scripts/react_output_acceptance/audit/refusal_rules.py')
 
 def need(ok,why):
     if not ok:raise ValueError(why)
@@ -153,6 +153,72 @@ def check_record(raw, normalized):
         need(a.equal(a.obj(payload.encode('utf-8')), normalized.get('body')), 'error body differs')
         return 'error'
     return 'success-unverified'
+
+def audit_parity_postgres(lifecycle):
+    """Audit this parity run's own PostgreSQL commands and observed cleanup."""
+    import shlex
+    receipt=a.json_file(lifecycle/'receipt.json')
+    need(receipt.get('version')=='som.m6-mac-parity-capture.v1' and receipt.get('exit_code')==0
+         and receipt.get('recording_errors')==[], 'parity lifecycle incomplete')
+    tools=a.json_file(REPO/'som-rs/contracts/rust-output-v1/toolchain.json')['postgresql']
+    bindir=Path(tools['bin_dir']); names=('postgres','initdb','pg_ctl')
+    expected={name:tools[name]['sha256'] for name in names}
+    need(receipt.get('postgres_tools_before')==receipt.get('postgres_tools_after')==expected
+         and all(a.sha((bindir/name).read_bytes())==expected[name] for name in names), 'parity postgres tools differ')
+    events=receipt['events']
+    init=[(i,e) for i,e in enumerate(events) if e.get('kind')=='initdb']
+    ctl=[(i,e) for i,e in enumerate(events) if e.get('kind')=='pg_ctl']
+    posts=[(i,e) for i,e in enumerate(events) if e.get('kind')=='postmaster']
+    snap=[(i,e) for i,e in enumerate(events) if e.get('kind')=='process' and e.get('phase') in ('before-pg-stop','after-stop')]
+    need(len(init)==1 and len(ctl)==2 and len(posts)==2 and len(snap)==2
+         and [e['phase'] for _,e in posts]==['after-start','before-stop']
+         and [e['phase'] for _,e in snap]==['before-pg-stop','after-stop']
+         and init[0][0]<ctl[0][0]<posts[0][0]<posts[1][0]<snap[0][0]<ctl[1][0]<snap[1][0],
+         'parity postgres event order differs')
+    parsed=[]
+    for _,event in posts:
+        raw=a.read(lifecycle/event['raw']['file']);need(a.sha(raw)==event['raw']['sha256'],'postmaster bytes differ')
+        lines=raw.decode().splitlines();need(len(lines)>=4 and lines[0].isdigit() and lines[2].isdigit() and lines[3].isdigit(), 'postmaster invalid')
+        parsed.append(lines[:4])
+    need(parsed[0]==parsed[1], 'postmaster changed')
+    pid=int(parsed[0][0]);data=Path(parsed[0][1]);port=int(parsed[0][3])
+    need(pid>1 and data.is_absolute() and data.name=='pgdata' and data.parent.name.startswith('som-behavior-')
+         and 1024<=port<=65535 and port not in (8765,18765,18917,18919), 'postmaster identity invalid')
+    options=(f"-p {port} -c listen_addresses=127.0.0.1 -c unix_socket_directories='' -c timezone=UTC "
+             f"-c log_timezone=UTC -c max_connections=300 -c fsync=off")
+    commands=[(init[0][1],[str(bindir/'initdb'),'-D',str(data),'-U','postgres','-E','UTF8','--locale=C','--auth=trust','--no-sync']),
+      (ctl[0][1],[str(bindir/'pg_ctl'),'-D',str(data),'-l',str(data.parent/'postgres.log'),'-o',options,'-w','start']),
+      (ctl[1][1],[str(bindir/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'])]
+    for row,argv in commands:
+        code,_=a.command_raw(lifecycle,row,argv);need(code==0,'parity postgres command failed')
+    before,after=snap[0][1],snap[1][1]
+    need(before['pid']==after['pid']==pid and type(before.get('pgid')) is int and before['pgid']>0,'postgres PID differs')
+    ps=['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command=']
+    cwd=['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn']
+    code,raw=a.command_raw(lifecycle,before['ps'],ps);fields=raw.decode().strip().split(None,3)
+    need(code==0 and len(fields)==4 and fields[0]==str(pid) and fields[1].isdigit() and fields[2]==str(before['pgid']), 'postgres process differs')
+    argv=shlex.split(fields[3]);need(argv and Path(argv[0]).name=='postgres' and '-D' in argv and argv[argv.index('-D')+1]==str(data),'postgres argv differs')
+    code,raw=a.command_raw(lifecycle,before['cwd'],cwd);lines=raw.decode().splitlines()
+    need(code==0 and [x[1:] for x in lines if x.startswith('p')]==[str(pid)] and [x[1:] for x in lines if x.startswith('n')]==[str(data)],'postgres cwd differs')
+    def table(event):
+        code,raw=a.command_raw(lifecycle,event['table'],['/bin/ps','-axo','pid=,ppid=,pgid='])
+        need(code==0,'postgres table missing');result={}
+        for line in raw.decode().splitlines():
+            f=line.split();need(len(f)==3 and all(x.isdigit() for x in f) and int(f[0]) not in result,'postgres table invalid')
+            result[int(f[0])]=(int(f[1]),int(f[2]))
+        return result
+    earlier,later=table(before),table(after);need(pid in earlier and earlier[pid][1]==before['pgid'],'postgres table identity differs')
+    owned={pid}
+    while True:
+        more=owned|{child for child,(parent,_) in earlier.items() if parent in owned}
+        if more==owned:break
+        owned=more
+    need(not owned.intersection(later),'observed postgres process remains')
+    listener=['/usr/sbin/lsof','-nP',f'-iTCP:{port}','-sTCP:LISTEN','-t']
+    for name,command in (('ps',ps),('cwd',cwd),('listener',listener)):
+        code,raw=a.command_raw(lifecycle,after[name],command);need(code==1 and not raw,'postgres still present or unknown')
+    need(after.get('port')==port and after.get('pgid') is None and after.get('pgid_error_errno')==3,'postgres port or identity differs')
+    return {'pid':pid,'port':port,'observed_processes_absent':len(owned),'unobserved_descendants':'unverified'}
 
 def audit_product_owners(root, manifest, groups):
     """Check case-owned process/listener observations and direct child waits."""
@@ -350,6 +416,7 @@ def main():
     p.add_argument('--provenance-root',type=Path,required=True)
     args=p.parse_args();need(not args.out.exists(),'new report required')
     result={'version':'som.m6-mac-parity-audit.draft.v1','status':'unrun','product_acceptance_passed':False,'rows':[]}
+    observed=False
     try:
         source=audit_sources(args.candidate_revision,args.product_http.parent,args.raw,args.parity_out)
         candidate=a.audit_candidate(args.product_http.parent/'candidate-probe',args.candidate,args.candidate_revision)
@@ -357,12 +424,15 @@ def main():
         result['rows'].append({'id':'same-head-sources','status':'observed','evidence':source})
         bound=a.approved_inputs(args.public_run,args.legacy_run,args.approved_input_config,args.provenance_root)
         result['rows'].append({'id':'raw-structure','status':'observed','evidence':audit_wire(args.raw,args.parity_out,args.legacy_run,bound,args.product_http)})
+        observed=True
     except Exception as exc:result['rows'].append({'id':'raw-structure','status':'unrun','error':type(exc).__name__+': '+str(exc)})
     for identity in ('body-normalization','behavior-oracle','process-cleanup','workflow-origin'):
         result['rows'].append({'id':identity,'status':'unrun'})
+    result['scoped_raw_status']='observed' if observed else 'unrun'
     args.out.parent.mkdir(parents=True,exist_ok=True)
     with args.out.open('x') as stream:json.dump(result,stream,indent=2,sort_keys=True);stream.write('\n')
-    print(json.dumps({'status':'unrun','product_acceptance_passed':False}))
-    return 1
+    result_status='observed' if observed else 'unrun'
+    print(json.dumps({'status':result_status,'product_acceptance_passed':False}))
+    return 0 if observed else 1
 
 if __name__=='__main__':raise SystemExit(main())

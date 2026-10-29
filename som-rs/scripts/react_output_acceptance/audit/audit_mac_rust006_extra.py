@@ -708,9 +708,11 @@ def main():
     # process/port ownership and PostgreSQL teardown can all be rederived.
     for name in ('outer-run-head-provenance', 'same-candidate-parity', 'outer-owned-candidate-cleanup'):
         report['rows'].append({'id':name,'status':'unrun','reason':'independent raw rule not implemented'})
+    scoped=all(row['status']=='passed' for row in report['rows'] if row['id'] not in ('outer-run-head-provenance','same-candidate-parity','outer-owned-candidate-cleanup'))
+    report['scoped_raw_status']='observed' if scoped else 'unrun'
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open('x') as f: json.dump(report,f,sort_keys=True,indent=2); f.write('\n')
     print(json.dumps({'status':'unrun','product_acceptance_passed':False}))
-    return 1
+    return 0 if scoped else 1
 
 if __name__ == '__main__': raise SystemExit(main())

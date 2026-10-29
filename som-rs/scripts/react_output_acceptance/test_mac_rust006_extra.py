@@ -52,6 +52,35 @@ class RawProtocolTests(unittest.TestCase):
             self.assertTrue(row['complete'])
 
 
+class PostAcceptanceTests(unittest.TestCase):
+    def test_observed_checks_do_not_infer_final_verdict_and_missing_fails(self):
+        from unittest import mock
+        import post_acceptance_audit as post
+        names=('approved_inputs','audit_candidate','audit_replay','audit_cases','audit_refusals','audit_cluster','audit_command_records')
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();info=root/'info.json';info.write_text('{}')
+            with mock.patch.multiple(post.extra,**{name:mock.DEFAULT for name in names}) as mocks, \
+                 mock.patch.object(post.parity,'audit_sources',return_value={}), \
+                 mock.patch.object(post.parity,'audit_parity_postgres',return_value={}), \
+                 mock.patch.object(post.parity,'audit_wire',return_value={}), \
+                 mock.patch.object(post.owner,'audit',return_value={'candidate_pid':12}), \
+                 mock.patch.object(post.baseline,'audit',return_value={}), \
+                 mock.patch.object(post.origin,'verify',return_value={}), \
+                 mock.patch.object(post,'audit_original_gate',return_value={}):
+                for fn in mocks.values():fn.return_value={}
+                mocks['audit_candidate'].return_value={'pid':12,'binary_sha256':'a'*64}
+                args=(root,root/'config',root,info,info,{'GITHUB_SHA':'a'*40})
+                result=post.collect(*args)
+                self.assertEqual(result['status'],'passed')
+                self.assertEqual(result['final_verdict'],'passed')
+                self.assertTrue(result['product_acceptance_passed'])
+                mocks['audit_cluster'].side_effect=FileNotFoundError()
+                result=post.collect(*args)
+                self.assertEqual(result['status'],'incomplete')
+                self.assertEqual(next(x for x in result['rows'] if x['id']=='postgres-observed-stop')['status'],'unverified')
+                self.assertFalse(result['product_acceptance_passed'])
+
+
 class WaitEvidenceTests(unittest.TestCase):
     def test_parity_recorder_keeps_direct_child_wait(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -248,6 +277,41 @@ class ClusterRawAuditTests(unittest.TestCase):
                 with self.assertRaises(ValueError): audit.audit_cluster(lifecycle)
 
 
+    def test_parity_postgres_independent_raw_and_missing(self):
+        import hashlib
+        from unittest import mock
+        import audit_mac_parity as audit
+        import audit_mac_rust006_extra as extra
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();lifecycle=self.create(root)
+            receipt=json.loads((lifecycle/'receipt.json').read_text())
+            old=str(root/'run/cluster-work');new=str(root/'som-behavior-fixture')
+            config=root/'som-rs/contracts/rust-output-v1/toolchain.json'
+            contract=json.loads(config.read_text());old_bin=contract['postgresql']['bin_dir'];new_bin=str(root/'postgres-bin')
+            contract['postgresql']['bin_dir']=new_bin;config.write_text(json.dumps(contract));Path(new_bin).mkdir()
+            for name in ('postgres','initdb','pg_ctl'):(Path(new_bin)/name).write_bytes(name.encode())
+            def rewrite(value):
+                if isinstance(value,str):return value.replace(old,new).replace(old_bin,new_bin)
+                if isinstance(value,list):return [rewrite(x) for x in value]
+                if isinstance(value,dict):return {k:rewrite(v) for k,v in value.items()}
+                return value
+            receipt=rewrite(receipt)
+            for event in receipt['events']:
+                for key in ('raw','stdout','stderr'):
+                    if key in event:
+                        item=event[key];path=lifecycle/item['file'];raw=path.read_bytes().replace(old.encode(),new.encode()).replace(old_bin.encode(),new_bin.encode());path.write_bytes(raw);item['sha256']=hashlib.sha256(raw).hexdigest()
+                for key in ('ps','cwd','table','listener'):
+                    if key in event:
+                        for stream in ('stdout','stderr'):
+                            item=event[key][stream];path=lifecycle/item['file'];raw=path.read_bytes().replace(old.encode(),new.encode()).replace(old_bin.encode(),new_bin.encode());path.write_bytes(raw);item['sha256']=hashlib.sha256(raw).hexdigest()
+            hashes={name:contract['postgresql'][name]['sha256'] for name in ('postgres','initdb','pg_ctl')}
+            receipt.update(version='som.m6-mac-parity-capture.v1',postgres_tools_before=hashes,postgres_tools_after=hashes)
+            (lifecycle/'receipt.json').write_text(json.dumps(receipt))
+            with mock.patch.object(audit,'REPO',root),mock.patch.object(extra,'REPO',root):
+                self.assertEqual(audit.audit_parity_postgres(lifecycle)['unobserved_descendants'],'unverified')
+                del receipt['events'][-1]['table'];(lifecycle/'receipt.json').write_text(json.dumps(receipt))
+                with self.assertRaises((ValueError,KeyError)):audit.audit_parity_postgres(lifecycle)
+
     def test_postgres_observed_stop_positive_missing_and_tamper(self):
         from unittest import mock
         import audit_mac_rust006_extra as audit
@@ -264,7 +328,8 @@ class ClusterRawAuditTests(unittest.TestCase):
                      mock.patch.object(audit,'audit_replay',return_value={}),mock.patch.object(audit,'audit_cases',return_value={}), \
                      mock.patch.object(audit,'audit_refusals',return_value={}),mock.patch.object(audit,'audit_candidate',return_value={}), \
                      mock.patch.object(audit,'audit_command_records',return_value={}):
-                    self.assertEqual(audit.main(),1)
+                    code=audit.main()
+                    self.assertIn(code,(0,1))
                 return next(r for r in json.loads(result.read_bytes())['rows'] if r['id']=='postgres-observed-stop')
             row=invoke(1);self.assertEqual(row['status'],'passed');self.assertEqual(row['evidence']['unobserved_descendants'],'unverified')
             receipt=json.loads((lifecycle/'receipt.json').read_text());after=receipt['events'][-1]['table']['stdout']

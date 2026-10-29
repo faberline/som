@@ -434,6 +434,8 @@ def main(argv: list[str] | None = None) -> int:
                  and summary.get("rust006_extra_exit_code") == 0
                  and summary.get("rust006_audit_exit_code") == 0)
         summary["passed"] = True
+        if args.candidate_revision is not None:
+            summary['pre_origin_passed'] = True
     except (OSError, ValueError, KeyError, TypeError, AttributeError, subprocess.SubprocessError):
         summary["failed_stage"] = summary["failed_stage"] or stage
     finally:
@@ -485,13 +487,18 @@ def main(argv: list[str] | None = None) -> int:
             except (OSError, ValueError, subprocess.SubprocessError):
                 summary["passed"] = False
                 summary["failed_stage"] = summary["failed_stage"] or "cleanup-or-head"
-            summary["status"] = "passed" if summary["passed"] else "failed"
+            if args.candidate_revision is not None:
+                summary['pre_origin_passed'] = bool(summary.get('pre_origin_passed') and summary['passed'])
+                summary['passed'] = False
+                summary['status'] = 'awaiting-post-audit' if summary['pre_origin_passed'] else 'failed'
+            else:
+                summary["status"] = "passed" if summary["passed"] else "failed"
             try:
                 (out / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
             except OSError:
-                summary.update(passed=False, status="failed", failed_stage="summary")
+                summary.update(passed=False, pre_origin_passed=False, status="failed", failed_stage="summary")
     print(json.dumps({key: summary[key] for key in ("passed", "failed_stage", "step_count", "head_before", "candidate_binary_sha256")}))
-    return 0 if summary["passed"] else 1
+    return 0 if (summary.get('pre_origin_passed') if args.candidate_revision is not None else summary['passed']) else 1
 
 
 if __name__ == "__main__":
