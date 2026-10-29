@@ -266,45 +266,55 @@ def execute(args, checker):
               'product_acceptance': 'not_run', 'passed': False, 'unrun': 697,
               'stage': 'source_preparation', 'error_type': type(exc).__name__}))
         raise
-    public_plan = [{k: v for k, v in item.items() if k != 'request'} for item in plan]
-    for item in plan:
-        write(out / 'requests' / (str(item['slot_id']) + '.raw'), item['request'])
-    write(out / 'plan.json', pretty({'role': 'fresh-before', 'historical_wire': False,
-                                   'product_acceptance': 'not_run', 'slots': public_plan, 'refusals': refused}))
-    binary = args.baseline / 'som'
-    need(sha(read(binary)) == BASELINE_SHA, 'baseline binary identity')
-    release_path = args.repo / 'som-rs/evidence/typescript-output-release-2026-10-22-issue65.json'
-    release = load(release_path)['candidate']
-    need(release['binary_sha256'] == BASELINE_SHA and
-         release['build_commit'] == '8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af' and
-         binary.stat().st_size == release['binary_bytes'], 'accepted release identity')
-    identity = {'release_record_sha256': sha(read(release_path)), 'build_commit': release['build_commit']}
-    for name, field in (('source.json', 'source_json_sha256'), ('build.json', 'build_receipt_sha256'),
-                        ('runtime.json', 'runtime_receipt_sha256')):
-        identity[name] = sha(read(args.baseline / name))
-        need(identity[name] == release[field], 'accepted baseline provenance differs')
-    binary_file = subprocess.run(['/usr/bin/file', str(binary)], capture_output=True, check=True, timeout=10)
-    description = binary_file.stdout.decode('utf-8').strip()
-    need('Mach-O' in description and 'arm64' in description, 'baseline binary platform differs')
-    identity['binary_description'] = description
-    assets = asset_identity(args.baseline / 'assets')
-    need(free_port(), 'QA port already in use')
-    health = load(args.baseline / 'runtime.json')['health']
-    env = {k: os.environ[k] for k in ('PATH', 'HOME', 'TMPDIR', 'LANG') if k in os.environ}
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-    argv = [str(binary), 'serve', '--assets', str(args.baseline / 'assets'), '--port', str(PORT)]
-    result = {'role': 'fresh-before', 'historical_wire': False, 'product_acceptance': 'not_run',
-              'baseline_sha256': BASELINE_SHA, 'argv': argv, 'port': PORT,
-              'baseline_provenance': identity, 'assets': assets,
-              'runner': {'platform': platform.platform(), 'machine': platform.machine(),
-                         'python': sys.version, 'python_executable': sys.executable,
-                         'github_sha': os.environ.get('GITHUB_SHA'), 'github_run_id': os.environ.get('GITHUB_RUN_ID'),
-                         'github_run_attempt': os.environ.get('GITHUB_RUN_ATTEMPT')},
-              'owner_pid': os.getpid(), 'pid': None, 'wait_exit': None,
-              'process_group_gone': False, 'port_free_after': False, 'rows': [], 'error': None}
-    proc = None
-    from owned_candidate import CandidateOwner
-    owner = CandidateOwner(out, args.baseline, PORT)
+    stage = 'request_freeze'
+    try:
+        public_plan = [{k: v for k, v in item.items() if k != 'request'} for item in plan]
+        for item in plan:
+            write(out / 'requests' / (str(item['slot_id']) + '.raw'), item['request'])
+        write(out / 'plan.json', pretty({'role': 'fresh-before', 'historical_wire': False,
+                                       'product_acceptance': 'not_run', 'slots': public_plan, 'refusals': refused}))
+        stage = 'baseline_provenance'
+        binary = args.baseline / 'som'
+        need(sha(read(binary)) == BASELINE_SHA, 'baseline binary identity')
+        release_path = args.repo / 'som-rs/evidence/typescript-output-release-2026-10-22-issue65.json'
+        release = load(release_path)['candidate']
+        need(release['binary_sha256'] == BASELINE_SHA and
+             release['build_commit'] == '8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af' and
+             binary.stat().st_size == release['binary_bytes'], 'accepted release identity')
+        identity = {'release_record_sha256': sha(read(release_path)), 'build_commit': release['build_commit']}
+        for name, field in (('source.json', 'source_json_sha256'), ('build.json', 'build_receipt_sha256'),
+                            ('runtime.json', 'runtime_receipt_sha256')):
+            identity[name] = sha(read(args.baseline / name))
+            need(identity[name] == release[field], 'accepted baseline provenance differs')
+        binary_file = subprocess.run(['/usr/bin/file', str(binary)], capture_output=True, check=True, timeout=10)
+        description = binary_file.stdout.decode('utf-8').strip()
+        need('Mach-O' in description and 'arm64' in description, 'baseline binary platform differs')
+        identity['binary_description'] = description
+        assets = asset_identity(args.baseline / 'assets')
+        stage = 'port_check'
+        need(free_port(), 'QA port already in use')
+        health = load(args.baseline / 'runtime.json')['health']
+        env = {k: os.environ[k] for k in ('PATH', 'HOME', 'TMPDIR', 'LANG') if k in os.environ}
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        argv = [str(binary), 'serve', '--assets', str(args.baseline / 'assets'), '--port', str(PORT)]
+        result = {'role': 'fresh-before', 'historical_wire': False, 'product_acceptance': 'not_run',
+                  'baseline_sha256': BASELINE_SHA, 'argv': argv, 'port': PORT,
+                  'baseline_provenance': identity, 'assets': assets,
+                  'runner': {'platform': platform.platform(), 'machine': platform.machine(),
+                             'python': sys.version, 'python_executable': sys.executable,
+                             'github_sha': os.environ.get('GITHUB_SHA'), 'github_run_id': os.environ.get('GITHUB_RUN_ID'),
+                             'github_run_attempt': os.environ.get('GITHUB_RUN_ATTEMPT')},
+                  'owner_pid': os.getpid(), 'pid': None, 'wait_exit': None,
+                  'process_group_gone': False, 'port_free_after': False, 'rows': [], 'error': None}
+        proc = None
+        stage = 'owner_setup'
+        from owned_candidate import CandidateOwner
+        owner = CandidateOwner(out, args.baseline, PORT)
+    except Exception as exc:
+        write(out / 'receipt.json', pretty({'role': 'fresh-before', 'historical_wire': False,
+              'product_acceptance': 'not_run', 'passed': False, 'unrun': 697,
+              'stage': stage, 'error_type': type(exc).__name__}))
+        raise
     try:
         with (out / 'baseline.stdout').open('xb') as stdout, (out / 'baseline.stderr').open('xb') as stderr:
             proc = subprocess.Popen(argv, cwd=args.baseline, env=env, stdin=subprocess.DEVNULL,

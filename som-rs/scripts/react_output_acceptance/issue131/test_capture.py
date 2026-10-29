@@ -176,6 +176,46 @@ class CaptureTests(unittest.TestCase):
         receipt = json.loads((out / 'receipt.json').read_bytes())
         self.assertEqual((receipt['unrun'], receipt['passed'], receipt['stage']), (697, False, 'source_preparation'))
 
+    def fake_prestart(self):
+        root = Path(self.temp.name)
+        baseline, repo = root / 'baseline', root / 'repo'
+        self.put(baseline / 'som', b'fake executable')
+        self.put(baseline / 'source.json', b'fake source')
+        self.put(baseline / 'build.json', b'fake build')
+        self.write(baseline / 'runtime.json', {'health': {}})
+        capture.BASELINE_SHA = digest((baseline / 'som').read_bytes())
+        release = {'candidate': {'binary_sha256': capture.BASELINE_SHA,
+                   'build_commit': '8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af', 'binary_bytes': 15,
+                   'source_json_sha256': digest((baseline / 'source.json').read_bytes()),
+                   'build_receipt_sha256': digest((baseline / 'build.json').read_bytes()),
+                   'runtime_receipt_sha256': digest((baseline / 'runtime.json').read_bytes())}}
+        self.write(repo / 'som-rs/evidence/typescript-output-release-2026-10-22-issue65.json', release)
+        return SimpleNamespace(out=root / 'prestart', inventory=self.inventory, evidence=self.evidence,
+                               run003=self.run, sealed=self.sealed, baseline=baseline, repo=repo)
+
+    def test_provenance_mismatch_records_all_unrun(self):
+        args = self.fake_prestart()
+        self.put(args.baseline / 'source.json', b'changed source')
+        with patch.object(capture, 'prepare', return_value=([], {}, [])), patch.object(capture.subprocess, 'Popen') as spawn:
+            with self.assertRaisesRegex(ValueError, 'baseline provenance'):
+                capture.execute(args, self.checker)
+            spawn.assert_not_called()
+        receipt = json.loads((args.out / 'receipt.json').read_bytes())
+        self.assertEqual((receipt['unrun'], receipt['passed'], receipt['stage']), (697, False, 'baseline_provenance'))
+
+    def test_busy_port_records_all_unrun(self):
+        args = self.fake_prestart()
+        with patch.object(capture, 'prepare', return_value=([], {}, [])), \
+             patch.object(capture.subprocess, 'run', return_value=SimpleNamespace(stdout=b'Mach-O 64-bit executable arm64')), \
+             patch.object(capture.subprocess, 'Popen') as spawn, \
+             patch.object(capture, 'asset_identity', return_value={'ruff': 'fixture'}), \
+             patch.object(capture, 'free_port', return_value=False):
+            with self.assertRaisesRegex(ValueError, 'QA port already in use'):
+                capture.execute(args, self.checker)
+            spawn.assert_not_called()
+        receipt = json.loads((args.out / 'receipt.json').read_bytes())
+        self.assertEqual((receipt['unrun'], receipt['passed'], receipt['stage']), (697, False, 'port_check'))
+
 
 if __name__ == '__main__':
     unittest.main()
