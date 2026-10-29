@@ -152,6 +152,19 @@ def prepare(inventory, evidence, run, checker, sealed):
         need(refused_row['passed'] is True and refused_row['qa_status'] == 400
              and refused_row['request_sha256'] == refused_row['qa_request_sha256'] == sha(request),
              'original serializer request identity')
+        prior_calls = by_response.get((refused_row['request_sha256'], refused_row['qa_response_sha256']), [])
+        prior_sources = []
+        for call in prior_calls:
+            call_name = f"run/rust-baseline-raw/calls/{call['id']:06d}"
+            need(json.loads(bound(call_name + '.json')) == call and call['complete'] is True
+                 and call['error'] is None and call['status'] == 400
+                 and call['request_file'] == f"calls/{call['id']:06d}.request.raw"
+                 and call['response_file'] == f"calls/{call['id']:06d}.response.raw", 'prior refusal call')
+            prior_request = bound(call_name + '.request.raw')
+            prior_response = bound(call_name + '.response.raw')
+            need(prior_request == request and sha(prior_request) == call['request_sha256']
+                 and sha(prior_response) == call['response_sha256'], 'prior refusal raw request differs')
+            prior_sources.append(call_name + '.request.raw')
         if phase == 'phase1':
             files_sha = phase1[case]['files_sha256']
         else:
@@ -186,6 +199,8 @@ def prepare(inventory, evidence, run, checker, sealed):
         plan.append({'slot_id': slot['slot_id'], 'case': case, 'phase': phase,
                      'method': 'POST', 'endpoint': '/v1/assemble', 'request_sha256': sha(request),
                      'prior_candidate_refusal_request_sha256': refused_row['request_sha256'],
+                     'prior_candidate_raw_request_state': 'verified' if prior_sources else 'unavailable',
+                     'prior_candidate_raw_request_sources': prior_sources,
                      'expected_files_sha256': files_sha, 'expected_source': 'accepted-130-rebased-and-run003',
                      'accepted_response_sha256': row['qa_response_sha256'],
                      'baseline_compile_response_sha256': sha(raw), 'request': request})
@@ -250,6 +265,31 @@ def group_gone(pid):
 
 def count_unrun(plan, rows):
     return len(plan) - len(rows) + sum(row['comparison'] == 'unrun' for row in rows)
+
+
+def finalize_capture(result, proc, owner, binary, asset_root, assets, plan, out):
+    errors = []
+    def attempt(name, function, fallback):
+        try:
+            return function()
+        except Exception as exc:
+            errors.append({'stage': name, 'error_type': type(exc).__name__})
+            return fallback
+    if proc is not None:
+        result['wait_exit'] = attempt('direct_wait', lambda: owner.wait_after_signal(timeout=15), None)
+        attempt('owner_receipt', owner.save, None)
+    result['port_free_after'] = attempt('port_check', free_port, False)
+    result['process_group_gone'] = proc is None or attempt('group_check', lambda: group_gone(proc.pid), False)
+    result['baseline_sha256_after'] = attempt('baseline_recheck', lambda: sha(read(binary)), None)
+    result['assets_unchanged'] = attempt('asset_recheck', lambda: asset_identity(asset_root) == assets, False)
+    result['cleanup_errors'] = errors
+    result['unrun'] = count_unrun(plan, result['rows'])
+    result['passed'] = (result['error'] is None and result['unrun'] == 0 and
+                        all(row['matched'] for row in result['rows']) and result['port_free_after'] and
+                        result['process_group_gone'] and result['assets_unchanged'] and
+                        result['baseline_sha256_after'] == BASELINE_SHA and
+                        result['wait_exit'] is not None and not errors)
+    write(out / 'receipt.json', pretty(result))
 
 
 def execute(args, checker):
@@ -358,23 +398,7 @@ def execute(args, checker):
     except Exception as exc:
         result['error'] = type(exc).__name__ + ': ' + str(exc)
     finally:
-        if proc is not None:
-            try:
-                result['wait_exit'] = owner.wait_after_signal(timeout=15)
-            except Exception as exc:
-                result['cleanup_error'] = type(exc).__name__ + ': ' + str(exc)
-            owner.save()
-        result['port_free_after'] = free_port()
-        result['process_group_gone'] = proc is None or group_gone(proc.pid)
-        result['baseline_sha256_after'] = sha(read(binary))
-        result['assets_unchanged'] = asset_identity(args.baseline / 'assets') == assets
-        result['unrun'] = count_unrun(plan, result['rows'])
-        result['passed'] = (result['error'] is None and result['unrun'] == 0 and
-                            all(row['matched'] for row in result['rows']) and result['port_free_after'] and
-                            result['process_group_gone'] and result['assets_unchanged'] and
-                            result['baseline_sha256_after'] == BASELINE_SHA and
-                            result['wait_exit'] is not None and 'cleanup_error' not in result)
-        write(out / 'receipt.json', pretty(result))
+        finalize_capture(result, proc, owner, binary, args.baseline / 'assets', assets, plan, out)
     return 0 if result['passed'] else 1
 
 

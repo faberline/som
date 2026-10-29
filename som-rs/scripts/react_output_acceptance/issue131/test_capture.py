@@ -33,6 +33,8 @@ class CaptureTests(unittest.TestCase):
         self.refusal_request, self.refusal_response = b'bad-request', b'bad-response'
         self.qa_request = b'rebased-request'
         self.qa_response = capture.jbytes({'files': {'src/lib.rs': 'fixed'}})
+        self.prior_request = capture.jbytes({'bundle': {'prompt': '中文'}})
+        self.prior_response = b'candidate refused baseline bundle'
         self.files_sha = canonical({'src/lib.rs': 'fixed'})
         def call(number, port, route, status, request, response):
             base = f'calls/{number:06d}'
@@ -45,7 +47,8 @@ class CaptureTests(unittest.TestCase):
             return row
         calls = [call(1, 18917, '/v1/compile', 200, self.compile_request, self.compile_response),
                  call(2, 18917, '/v1/compile', 400, self.refusal_request, self.refusal_response),
-                 call(3, 18919, '/v1/assemble', 200, self.qa_request, self.qa_response)]
+                 call(3, 18919, '/v1/assemble', 200, self.qa_request, self.qa_response),
+                 call(4, 18919, '/v1/assemble', 400, self.prior_request, self.prior_response)]
         self.write(self.record_path, {'exit_code': 0, 'recording_errors': [], 'calls': calls})
         records, slots, rows = [], [], []
         for index in range(697):
@@ -65,7 +68,8 @@ class CaptureTests(unittest.TestCase):
                           'baseline_request_sha256': digest(self.compile_request)},
                          {'phase': key[0], 'id': case, 'check': 'baseline_bundle_refused', 'passed': True,
                           'qa_status': 400, 'request_sha256': digest(capture.jbytes({'bundle': {'prompt': '中文'}})),
-                          'qa_request_sha256': digest(capture.jbytes({'bundle': {'prompt': '中文'}}))},
+                          'qa_request_sha256': digest(capture.jbytes({'bundle': {'prompt': '中文'}})),
+                          'qa_response_sha256': digest(self.prior_response)},
                          {'phase': key[0], 'id': case, 'check': 'rebased_files', 'passed': True, 'qa_status': 200,
                           'files_sha256': self.files_sha, 'recorded_files_sha256': self.files_sha,
                           'qa_request_sha256': digest(self.qa_request), 'qa_response_sha256': digest(self.qa_response)}])
@@ -113,6 +117,7 @@ class CaptureTests(unittest.TestCase):
         self.assertEqual((len(plan), len(expected), len(refused)), (697, 697, 2))
         self.assertEqual(plan[0]['request'], b'{"bundle":{"prompt":"\xe4\xb8\xad\xe6\x96\x87"}}')
         self.assertEqual(plan[0]['expected_files_sha256'], self.files_sha)
+        self.assertEqual(plan[0]['prior_candidate_raw_request_state'], 'verified')
         self.assertEqual(expected['1'], {'src/lib.rs': 'fixed'})
 
     def test_modified_accepted_map_fails_closed(self):
@@ -215,6 +220,41 @@ class CaptureTests(unittest.TestCase):
             spawn.assert_not_called()
         receipt = json.loads((args.out / 'receipt.json').read_bytes())
         self.assertEqual((receipt['unrun'], receipt['passed'], receipt['stage']), (697, False, 'port_check'))
+
+    def test_cleanup_faults_preserve_wait_first_error_and_partial_rows(self):
+        class Owner:
+            def wait_after_signal(self, timeout): return -15
+            def save(self): raise OSError('fixture')
+        result = {'error': 'RuntimeError: first failure', 'rows': [
+            {'matched': True, 'comparison': 'passed'}, {'matched': False, 'comparison': 'unrun'}]}
+        proc = SimpleNamespace(pid=123)
+        out = Path(self.temp.name) / 'cleanup'; out.mkdir()
+        with patch.object(capture, 'free_port', return_value=True), patch.object(capture, 'group_gone', return_value=True), \
+             patch.object(capture, 'read', side_effect=OSError('fixture')), \
+             patch.object(capture, 'asset_identity', side_effect=ValueError('fixture')):
+            capture.finalize_capture(result, proc, Owner(), out / 'som', out / 'assets', {}, [1, 2, 3], out)
+        receipt = json.loads((out / 'receipt.json').read_bytes())
+        self.assertEqual(receipt['error'], 'RuntimeError: first failure')
+        self.assertEqual((receipt['wait_exit'], receipt['unrun'], receipt['passed']), (-15, 2, False))
+        self.assertEqual([item['stage'] for item in receipt['cleanup_errors']],
+                         ['owner_receipt', 'baseline_recheck', 'asset_recheck'])
+        self.assertEqual(len(receipt['rows']), 2)
+
+    def test_wait_failure_still_attempts_owner_receipt(self):
+        class Owner:
+            saved = False
+            def wait_after_signal(self, timeout): raise TimeoutError('fixture')
+            def save(self): self.saved = True
+        owner = Owner(); out = Path(self.temp.name) / 'wait'; out.mkdir()
+        binary = out / 'som'; self.put(binary, b'binary')
+        result = {'error': None, 'rows': []}
+        with patch.object(capture, 'free_port', return_value=True), patch.object(capture, 'group_gone', return_value=False), \
+             patch.object(capture, 'asset_identity', return_value={}):
+            capture.finalize_capture(result, SimpleNamespace(pid=123), owner, binary, out / 'assets', {}, [1], out)
+        receipt = json.loads((out / 'receipt.json').read_bytes())
+        self.assertTrue(owner.saved)
+        self.assertEqual((receipt['wait_exit'], receipt['unrun'], receipt['passed']), (None, 1, False))
+        self.assertEqual(receipt['cleanup_errors'][0]['stage'], 'direct_wait')
 
 
 if __name__ == '__main__':
