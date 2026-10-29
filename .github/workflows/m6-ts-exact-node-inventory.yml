@@ -1,0 +1,101 @@
+name: M6 TypeScript npm bytecode reconstruction diagnostic
+on:
+  push:
+    branches: [codex/m6-ts-exact-node-inventory]
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.11'
+      - name: Fetch pinned public npm and Node sources
+        run: |
+          curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 https://registry.npmjs.org/npm/-/npm-11.17.0.tgz --output "$RUNNER_TEMP/npm.tgz"
+          test "$(shasum -a 256 "$RUNNER_TEMP/npm.tgz" | cut -d ' ' -f 1)" = b290bbb35b9e72c3ef84edbe041f28c4479c4d9ee79f555817b8caafe7ce4bba
+          curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 https://nodejs.org/dist/v26.5.0/node-v26.5.0-linux-x64.tar.xz --output "$RUNNER_TEMP/node.tar.xz"
+          test "$(shasum -a 256 "$RUNNER_TEMP/node.tar.xz" | cut -d ' ' -f 1)" = 9f619528f1db5ddc41dccf54211066fb42228d69a156733c69cb9d6cc92e358c
+          mkdir "$RUNNER_TEMP/bootstrap" "$RUNNER_TEMP/node" "$RUNNER_TEMP/prefix"
+          tar -xzf "$RUNNER_TEMP/npm.tgz" --strip-components=1 -C "$RUNNER_TEMP/bootstrap"
+          tar -xJf "$RUNNER_TEMP/node.tar.xz" --strip-components=1 -C "$RUNNER_TEMP/node" node-v26.5.0-linux-x64/bin/node
+      - name: Reconstruct offline under isolated prefix
+        env:
+          npm_config_offline: 'true'
+          npm_config_audit: 'false'
+          npm_config_fund: 'false'
+          npm_config_update_notifier: 'false'
+        run: |
+          PATH="$RUNNER_TEMP/node/bin:/usr/bin:/bin" "$RUNNER_TEMP/node/bin/node" "$RUNNER_TEMP/bootstrap/bin/npm-cli.js" install --global --prefix "$RUNNER_TEMP/prefix" "$RUNNER_TEMP/npm.tgz" > "$RUNNER_TEMP/npm-install.log" 2>&1
+          cp "$RUNNER_TEMP/bootstrap/package.json" "$RUNNER_TEMP/prefix/lib/node_modules/npm/package.json"
+          printf 'prefix = /opt/homebrew\n' > "$RUNNER_TEMP/prefix/lib/node_modules/npm/npmrc"
+      - name: Rebuild Python 3.12 bytecode without executing it
+        run: |
+          python - <<'PY'
+          import hashlib,importlib.util,json,os,pathlib,py_compile,sys
+          assert sys.version_info[:3]==(3,12,11)
+          raw=pathlib.Path('.github/m6-ts-role-transport/npm-pyc-rebuild-metadata.json').read_bytes()
+          assert hashlib.sha256(raw).hexdigest()=='8265ef89e448992f5d84cbdbc2f36e83f890fbad6ce246e8221ad6bc852203b2'
+          rows=json.loads(raw)['files']; assert len(rows)==18
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'prefix/lib/node_modules/npm'; matched=0
+          for row in rows:
+              member=pathlib.PurePosixPath(row['path']); assert not member.is_absolute() and '..' not in member.parts and str(member).endswith('.pyc')
+              target=root/str(member); assert not target.exists()
+              source=pathlib.Path(importlib.util.source_from_cache(str(target))); assert source.is_file() and source.stat().st_size==row['source_size']
+              os.utime(source,(row['source_mtime'],row['source_mtime']))
+              dfile='/opt/homebrew/lib/node_modules/npm/'+source.relative_to(root).as_posix()
+              py_compile.compile(str(source),cfile=str(target),dfile=dfile,doraise=True,optimize=0,invalidation_mode=py_compile.PycInvalidationMode.TIMESTAMP)
+              data=target.read_bytes(); matched+=len(data)==row['size'] and hashlib.sha256(data).hexdigest()==row['sha256']
+          print(json.dumps({'files':len(rows),'exact_matches':matched,'content_executed':False,'product_acceptance':'not_run'},sort_keys=True))
+          PY
+      - name: Report aggregate identity only
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'prefix/lib/node_modules/npm'
+          h=hashlib.sha256(); files=links=0; inventory={}
+          for p in sorted(root.rglob('*')):
+              name=p.relative_to(root).as_posix()
+              if p.is_symlink():
+                  target=os.readlink(p); h.update(f'{name}\0symlink:{target}\n'.encode()); links+=1
+                  inventory[name]={'type':'symlink','target':target}
+              elif p.is_file():
+                  digest=hashlib.sha256(p.read_bytes()).hexdigest()
+                  h.update(f'{name}\0{digest}\n'.encode()); files+=1
+                  inventory[name]={'type':'file','sha256':digest,'size':p.stat().st_size}
+          digest=h.hexdigest(); expected='3a9e0a20999d2a5c9727e911c554cd66230dba9a169fe0f0a6a54bd3dc7f9186'
+          (pathlib.Path(os.environ['RUNNER_TEMP'])/'public-npm-inventory.json').write_text(json.dumps({'tree_sha256':digest,'files':files,'links':links,'inventory':inventory},sort_keys=True)+'\n')
+          print(json.dumps({'tree_sha256':digest,'files':files,'links':links,'matches_frozen':digest==expected and files==1957 and links==9,'product_acceptance':'not_run'},sort_keys=True))
+          PY
+      - name: Bind inventory to the frozen npm tree
+        run: |
+          python - <<'PY'
+          import hashlib,json,os,pathlib,stat
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'prefix/lib/node_modules/npm'; files={}; tree=hashlib.sha256(); links=regular=0
+          for p in sorted(root.rglob('*')):
+              name=p.relative_to(root).as_posix(); st=p.lstat()
+              if p.is_symlink():
+                  target=os.readlink(p); resolved=p.resolve(strict=True)
+                  assert not os.path.isabs(target) and root in resolved.parents and resolved.is_file()
+                  files[name]={'type':'internal-alias','target':target,'mode':stat.S_IMODE(st.st_mode),'target_sha256':hashlib.sha256(resolved.read_bytes()).hexdigest()}
+                  tree.update(f'{name}\0symlink:{target}\n'.encode()); links+=1
+              elif p.is_file():
+                  d=hashlib.sha256(p.read_bytes()).hexdigest(); files[name]={'sha256':d,'size':st.st_size,'mode':stat.S_IMODE(st.st_mode)}
+                  tree.update(f'{name}\0{d}\n'.encode()); regular+=1
+          assert tree.hexdigest()=='3a9e0a20999d2a5c9727e911c554cd66230dba9a169fe0f0a6a54bd3dc7f9186' and regular==1957 and links==9
+          p=pathlib.Path(os.environ['RUNNER_TEMP'])/'exact-npm-inventory.json'; p.write_text(json.dumps({'version':'som.ts-public-exact-npm-inventory.v1','tree_sha256':tree.hexdigest(),'regular':regular,'aliases':links,'files':files},sort_keys=True)+'\n')
+          print(json.dumps({'inventory_sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'regular':regular,'aliases':links,'product_acceptance':'not_run'}))
+          PY
+      - name: Retain source-derived inventory metadata only
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ts-exact-npm-inventory
+          path: ${{ runner.temp }}/exact-npm-inventory.json
+          if-no-files-found: error
+          retention-days: 7
