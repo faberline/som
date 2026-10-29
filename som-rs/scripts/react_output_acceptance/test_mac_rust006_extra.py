@@ -194,7 +194,8 @@ class ClusterRawAuditTests(unittest.TestCase):
         table=['/bin/ps','-axo','pid=,ppid=,pgid=']
         before={'kind':'process','pid':pid,'phase':'before-pg-stop','pgid':pid,'pgid_error_errno':None,
                 'ps':command(ps,f'{pid} 1 {pid} /opt/homebrew/bin/postgres -D {data}\n'.encode()),
-                'cwd':command(cwd,f'p{pid}\nfcwd\nn{data}\n'.encode()),'table':command(table,b'1 0 1\n')}
+                'cwd':command(cwd,f'p{pid}\nfcwd\nn{data}\n'.encode()),
+                'table':command(table,f'1 0 1\n{pid} 1 {pid}\n1235 {pid} {pid}\n'.encode())}
         after={'kind':'process','pid':pid,'phase':'after-stop','pgid':None,'pgid_error_errno':3,'port':port,
                'ps':command(ps,exit_code=1),'cwd':command(cwd,exit_code=1),
                'listener':command(['/usr/sbin/lsof','-nP',f'-iTCP:{port}','-sTCP:LISTEN','-t'],exit_code=1),
@@ -210,11 +211,46 @@ class ClusterRawAuditTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp).resolve(); lifecycle=self.create(root)
             with mock.patch.object(audit,'REPO',root):
-                self.assertTrue(audit.audit_cluster(lifecycle)['process_stopped'])
+                self.assertEqual(audit.audit_cluster(lifecycle)['observed_descendants'], 1)
+                self.assertEqual(audit.audit_cluster(lifecycle)['unobserved_descendants'], 'unverified')
                 receipt=json.loads((lifecycle/'receipt.json').read_text())
-                receipt['events'][-1]['listener']['exit_code']=0
+                after=receipt['events'][-1]['table']['stdout']
+                changed=b'1 0 1\n1235 1 1234\n'
+                (lifecycle/after['file']).write_bytes(changed)
+                import hashlib
+                after['sha256']=hashlib.sha256(changed).hexdigest()
                 (lifecycle/'receipt.json').write_text(json.dumps(receipt))
                 with self.assertRaises(ValueError): audit.audit_cluster(lifecycle)
+
+
+class ApprovedInputBindingTests(unittest.TestCase):
+    def test_approved_manifest_binds_actual_request_and_rejects_tamper(self):
+        import hashlib
+        import audit_mac_rust006_extra as audit
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve()
+            target=root/'.local/example/request.json';target.parent.mkdir(parents=True)
+            target.write_bytes(b'{"original":true}')
+            digest=hashlib.sha256(target.read_bytes()).hexdigest()
+            manifest={'version':'som.m6-sealed-inputs-manifest.v1','cipher_sha256':'f'*64,
+                      'uncompressed_bytes':100,'total_files':1,'files':[{'path':'.local/example/request.json',
+                      'sha256':digest,'bytes':target.stat().st_size,'mode':0o644}]}
+            raw=json.dumps(manifest).encode()
+            index={'version':'som.m6-input-index.v1','packages':[{'archive':'package-000.sealed',
+                   'manifest':'package-000.manifest.json','manifest_sha256':hashlib.sha256(raw).hexdigest()}]}
+            index_raw=json.dumps(index).encode()
+            files=audit.manifest_map(index_raw,hashlib.sha256(index_raw).hexdigest(),lambda name:raw)
+            bound=audit.BoundInputs(root,files)
+            self.assertEqual(bound.read(target),b'{"original":true}')
+            target.write_bytes(b'{"original":false}')
+            with self.assertRaises(ValueError): bound.read(target)
+            other=root/'.local/example/other.json';other.write_bytes(b'{}')
+            with self.assertRaises(ValueError): bound.read(other)
+            with self.assertRaises(ValueError): audit.manifest_map(index_raw,'0'*64,lambda name:raw)
+
+    def test_unreviewed_supplement_cannot_self_approve(self):
+        import audit_mac_rust006_extra as audit
+        self.assertIsNone(audit.HISTORIC_RESPONSE_APPROVED_INDEX_SHA256)
 
 
 if __name__ == '__main__':

@@ -95,18 +95,89 @@ class Calls:
         return row['status'], response
     def finish(self): need(self.index == len(self.rows), 'extra calls')
 
-def request_bytes(d, label):
-    p = d / (label + '.request.raw')
-    if p.is_file(): return read(p)
-    return json.dumps(json_file(d / (label + '.request.json')), ensure_ascii=False, separators=(',', ':')).encode()
-def expected(d, label):
-    status = json_file(d / (label + '.response.json'))['http_status']
-    return status, base64.b64decode(read(d / (label + '.response.raw.b64')), validate=False)
 
-def audit_replay(raw, public, legacy):
+# This must be replaced with the actual independently reviewed, human-approved
+# source index hash after any separately authorized supplemental input upload.
+# No branch name, prior 16-package permission, or caller boolean grants it.
+HISTORIC_RESPONSE_APPROVED_INDEX_SHA256 = None
+
+def git_blob(commit, name):
+    import subprocess
+    need(re.fullmatch('[0-9a-f]{40}',commit) is not None and
+         re.fullmatch(r'(?:inputs-index\.json|package-[0-9]{3}\.manifest\.json)',name) is not None,
+         'input Git blob identity differs')
+    return subprocess.check_output(['/usr/bin/git','--no-replace-objects','-C',str(REPO),'show',commit+':'+name],timeout=120)
+
+def manifest_map(index_raw, expected_sha, load):
+    need(type(expected_sha) is str and re.fullmatch('[0-9a-f]{64}',expected_sha) is not None
+         and sha(index_raw)==expected_sha, 'input index source differs')
+    index=obj(index_raw)
+    need(type(index) is dict and set(index)=={'version','packages'} and index['version']=='som.m6-input-index.v1'
+         and type(index['packages']) is list and 1<=len(index['packages'])<=1000, 'input index differs')
+    files={}; names=set()
+    for package in index['packages']:
+        need(type(package) is dict and set(package)=={'archive','manifest','manifest_sha256'}
+             and re.fullmatch(r'package-[0-9]{3}\.sealed',package.get('archive','')) is not None
+             and package['manifest']==package['archive'][:-7]+'.manifest.json'
+             and package['manifest'] not in names, 'input package identity differs')
+        names.add(package['manifest'])
+        raw=load(package['manifest'])
+        need(sha(raw)==package['manifest_sha256'],'input manifest hash differs')
+        manifest=obj(raw)
+        need(type(manifest) is dict and set(manifest)=={'version','cipher_sha256','uncompressed_bytes','total_files','files'}
+             and manifest['version']=='som.m6-sealed-inputs-manifest.v1'
+             and re.fullmatch('[0-9a-f]{64}',manifest['cipher_sha256']) is not None
+             and type(manifest['files']) is list and type(manifest['total_files']) is int
+             and manifest['total_files']==len(manifest['files']), 'input manifest differs')
+        for row in manifest['files']:
+            need(type(row) is dict and set(row)=={'path','sha256','bytes','mode'} and
+                 type(row['path']) is str and row['path'] and not row['path'].startswith('/') and
+                 '\\' not in row['path'] and all(part not in ('','.','..') for part in row['path'].split('/')) and
+                 type(row['bytes']) is int and row['bytes']>=0 and row['mode'] in (0o644,0o755) and
+                 type(row['sha256']) is str and re.fullmatch('[0-9a-f]{64}',row['sha256']) is not None and
+                 row['path'] not in files, 'input member identity differs')
+            files[row['path']]={'sha256':row['sha256'],'bytes':row['bytes']}
+    return files
+
+class BoundInputs:
+    def __init__(self,repo,files):
+        self.repo=repo
+        self.files=files
+    def read(self,path):
+        path=Path(path)
+        need(path.is_absolute() and path.is_relative_to(self.repo), 'input outside repository')
+        relative=path.relative_to(self.repo).as_posix()
+        need(relative in self.files, 'input is not in approved package manifest')
+        data=read(path); expected=self.files[relative]
+        need(len(data)==expected['bytes'] and sha(data)==expected['sha256'], 'input bytes differ from approved manifest')
+        return data
+    def json(self,path):return obj(self.read(path))
+
+def approved_inputs(public,legacy):
+    need(public==REPO/'.local/rust-compiler-goal/acceptance/public-products-003b' and
+         legacy==REPO/'.local/rust-compiler-goal/acceptance/legacy544/run-005', 'historic source roots differ')
+    config=json_file(REPO/'som-rs/scripts/react_output_acceptance/hosted_inputs.json')
+    need(type(config) is dict and set(config)=={'version','commit','index_sha256'} and
+         config['version']=='som.m6-hosted-inputs.v1' and
+         type(HISTORIC_RESPONSE_APPROVED_INDEX_SHA256) is str and
+         config['index_sha256']==HISTORIC_RESPONSE_APPROVED_INDEX_SHA256,
+         'supplemental historic response source not approved or not bound')
+    index=git_blob(config['commit'],'inputs-index.json')
+    return BoundInputs(REPO,manifest_map(index,config['index_sha256'],lambda name:git_blob(config['commit'],name)))
+
+
+def request_bytes(bound, d, label):
+    p = d / (label + '.request.raw')
+    if p.is_file(): return bound.read(p)
+    return json.dumps(bound.json(d / (label + '.request.json')), ensure_ascii=False, separators=(',', ':')).encode()
+def expected(bound, d, label):
+    status = bound.json(d / (label + '.response.json'))['http_status']
+    return status, base64.b64decode(bound.read(d / (label + '.response.raw.b64')), validate=False)
+
+def audit_replay(raw, public, legacy, bound):
     calls = Calls(raw, 'som-rs/scripts/rust_output_acceptance/python_replay.py')
-    pub = json_file(public / 'result.json')
-    leg = json_file(legacy / 'result.json')
+    pub = bound.json(public / 'result.json')
+    leg = bound.json(legacy / 'result.json')
     public_rows, legacy_rows = pub['records'], leg['records']
     need(len(public_rows) == 127 and len(legacy_rows) == 544 and pub.get('complete') is True
          and leg.get('status') == 'passed' and all(row.get('passed') is True for row in public_rows + legacy_rows),
@@ -115,8 +186,8 @@ def audit_replay(raw, public, legacy):
          'frozen case IDs duplicated')
     assets = {}
     def compile_one(directory, label):
-        request = request_bytes(directory, label)
-        expected_status, old_raw = expected(directory, label)
+        request = request_bytes(bound, directory, label)
+        expected_status, old_raw = expected(bound, directory, label)
         status, new_raw = calls.take('/v1/compile', request)
         need(status == expected_status == 200, 'compile status differs')
         old, new = obj(old_raw), obj(new_raw)
@@ -134,7 +205,7 @@ def audit_replay(raw, public, legacy):
         if prompt in assets: need(equal(assets[prompt], new_asset), 'prompt assets changed')
         assets[prompt] = new_asset
     def assemble_one(directory, record):
-        request = request_bytes(directory, 'assemble')
+        request = request_bytes(bound, directory, 'assemble')
         status, body = calls.take('/v1/assemble', request)
         need(status == 400 and obj(body).get('code') == 'ASSET_HASH_MISMATCH', 'old bundle refusal differs')
         content = obj(request)
@@ -146,7 +217,7 @@ def audit_replay(raw, public, legacy):
         bundle['hashes']['payload_sha256'] = sha(canonical({k:bundle[k] for k in ('version','prompt','dsl','assets')}).encode())
         rebased = json.dumps(content, ensure_ascii=False, separators=(',', ':')).encode()
         status, result = calls.take('/v1/assemble', rebased)
-        want_status, want_result = expected(directory, 'assemble')
+        want_status, want_result = expected(bound, directory, 'assemble')
         need(status == want_status and result == want_result, 'rebased product differs')
         files = obj(result)['files']
         need(sha(canonical(files).encode()) == record['product_sha256'], 'product hash differs')
@@ -155,7 +226,7 @@ def audit_replay(raw, public, legacy):
                  'product file hashes differ')
     for index, record in enumerate(public_rows):
         directory = public / f'{index:03d}'
-        need(json_file(directory / 'result.json')['id'] == record['id'], 'public case mismatch')
+        need(bound.json(directory / 'result.json')['id'] == record['id'], 'public case mismatch')
         for label in ('compile-cnl', 'compile-json'): compile_one(directory, label)
         assemble_one(directory, record)
     compile_dirs = sorted(p for p in (legacy / 'compile').iterdir() if p.is_dir())
@@ -213,7 +284,7 @@ def pointer(root, value):
         root = root[int(part)] if type(root) is list else root[part]
     return root
 
-def audit_refusals(raw, legacy):
+def audit_refusals(raw, legacy, bound):
     import jsonschema
     import referencing
     calls = Calls(raw, 'som-rs/som-targets/qa/check_rust_products.py')
@@ -317,7 +388,7 @@ def audit_refusals(raw, legacy):
         need(sha(prompt_raw)==entry['prompt_file_sha256'] and sha(cnl_raw)==entry['cnl_sha256'], 'coverage source differs')
         rows.append((entry['id'],obj(prompt_raw),cnl_raw.decode()))
     for entry in inventory['legacy_in_scope']:
-        request=json_file(legacy/f"{entry['inventory_index']:04d}"/'assemble.request.json')
+        request=bound.json(legacy/f"{entry['inventory_index']:04d}"/'assemble.request.json')
         prompt=request['bundle']['prompt']
         need(h(prompt)==entry['prompt_sha256'],'legacy prompt differs')
         rows.append((entry['id'],prompt,None))
@@ -427,13 +498,33 @@ def audit_cluster(root):
     lines=cwdraw.decode().splitlines()
     need(code==0 and [x[1:] for x in lines if x.startswith('p')]==[str(pid)]
          and [x[1:] for x in lines if x.startswith('n')]==[data], 'PostgreSQL cwd differs')
-    code,_=command_raw(root,before['table'],['/bin/ps','-axo','pid=,ppid=,pgid='])
-    need(code==0,'process table unavailable')
+    table_command=['/bin/ps','-axo','pid=,ppid=,pgid=']
+    def process_table(record):
+        code, raw=command_raw(root,record,table_command)
+        need(code==0,'process table unavailable')
+        result={}
+        for line in raw.decode().splitlines():
+            fields=line.split()
+            need(len(fields)==3 and all(field.isdigit() for field in fields),'invalid process table')
+            child, parent, group=map(int,fields)
+            need(child not in result,'duplicate process table PID')
+            result[child]=(parent,group)
+        return result
+    table_before,table_after=process_table(before['table']),process_table(after['table'])
+    need(pid in table_before and table_before[pid][1]==before['pgid'], 'postmaster missing from process table')
+    descendants=set()
+    frontier={pid}
+    while frontier:
+        children={child for child,(parent,_) in table_before.items() if parent in frontier} - descendants - {pid}
+        descendants.update(children)
+        frontier=children
+    need(not ({pid}|descendants).intersection(table_after), 'observed PostgreSQL process remains')
     for key,cmd in [('ps',ps),('cwd',cwd),('listener',['/usr/sbin/lsof','-nP',f'-iTCP:{port}','-sTCP:LISTEN','-t'])]:
         code,value=command_raw(root,after[key],cmd)
         need(code==1 and not value, 'PostgreSQL process or listener still present')
     need(after.get('pgid') is None and after.get('pgid_error_errno')==3, 'PostgreSQL pid still present')
-    return {'pid':pid,'port':port,'tool_files':3,'process_stopped':True}
+    return {'pid':pid,'port':port,'tool_files':3,'observed_descendants':len(descendants),
+            'master_and_observed_descendants_absent':True, 'unobserved_descendants':'unverified'}
 
 def audit_candidate(run, candidate, expected_revision):
     report=json_file(run/'collector.json')
@@ -491,9 +582,18 @@ def main():
     need(not args.out.exists() and not args.out.is_symlink(), 'new report required')
     report={'version':'som.m6-mac-rust006-extra-audit.draft.v1','product_acceptance_passed':False,
             'rows':[], 'status':'unrun'}
-    for name, action in [('python-replay', lambda:audit_replay(args.run/'raw-python-replay',args.public_run,args.legacy_run)),
+    try:
+        inputs=approved_inputs(args.public_run,args.legacy_run)
+    except Exception as exc:
+        inputs=None
+        report['rows'].append({'id':'historic-input-authority','status':'unrun',
+                               'error':type(exc).__name__ + ': ' + str(exc)})
+    def require_inputs():
+        need(inputs is not None,'historic input authority unrun')
+        return inputs
+    for name, action in [('python-replay', lambda:audit_replay(args.run/'raw-python-replay',args.public_run,args.legacy_run,require_inputs())),
                          ('validate-cases', lambda:audit_cases(args.run/'raw-validate-cases')),
-                         ('phase2-rust-refusals', lambda:audit_refusals(args.run/'raw-rust-refusals',args.legacy_run)),
+                         ('phase2-rust-refusals', lambda:audit_refusals(args.run/'raw-rust-refusals',args.legacy_run,require_inputs())),
                          ('candidate-source-and-process', lambda:audit_candidate(args.run,args.candidate,
                               json_file(args.run/'collector.json')['candidate_revision'])),
                          ('postgres-cleanup', lambda:audit_cluster(args.run/'cluster-lifecycle'))]:
