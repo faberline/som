@@ -101,30 +101,56 @@ class RealEntryBarrierTests(unittest.TestCase):
         self.assertFalse(result['entry_executed'])
 
     def test_actual_pending_native_policy_refuses_before_context_import_or_entry(self):
-        self.write(AUTHORITY, real_source(AUTHORITY))
+        bootstrap_path = 'som-rs/scripts/hosted_readiness/test_native_source_bootstrap.py'
+        protocol = loaded('entry_bootstrap_protocol_fixture', bootstrap_path)
+        # Only GitHub API/workflow metadata is a protocol double. Graph.admit_source,
+        # the source reader and authority.verify remain their actual source bodies.
+        fixture = protocol.Fixture(self, graph_suffix='''
+def source_workflow_binding(candidate, environ=None, reader=None):
+    return {'explicit_protocol_workflow_double': True}
+''')
         for name in ('som-rs/contracts/rust-output-v1/phase2/pins.json',
                      'som-rs/contracts/rust-output-v1/phase2/behavior.json',
                      'som-rs/evidence/rust-compiler-contract-amendment-004.json'):
-            self.write(name, real_source(name))
+            target = fixture.root / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(real_source(name))
+        for name in (CONTEXT, 'sentinel.py'):
+            target = fixture.root / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((self.repo / name).read_bytes())
         # This is a real pending receipt, not a mocked Context or verifier error.
-        self.write('som-rs/evidence/rust-compiler-contract-amendment-005.json',
+        (fixture.root / 'som-rs/evidence/rust-compiler-contract-amendment-005.json').write_bytes(
             json.dumps({'amendment': 5, 'status': 'pending',
                         'previous_receipt': 'som-rs/evidence/rust-compiler-contract-amendment-004.json',
                         'previous_receipt_sha256': '2f0c12e6fed43b8364649a0afff207e72b15738179cf56a8ff69036e4534f42c'}).encode())
-        revision = self.commit(); path = self.context_file(revision)
+        fixture.git('add', '--all')
+        fixture.git('commit', '-m', 'Actual pending authority before QA entry')
+        fixture.revision = fixture.git('rev-parse', 'HEAD').strip()
+        for key in ('GITHUB_SHA', 'GITHUB_WORKFLOW_SHA'):
+            fixture.env[key] = os.environ[key] = fixture.revision
+        fixture.run['head_sha'] = fixture.job['head_sha'] = fixture.revision
+        fixture.run['referenced_workflows'][0]['sha'] = fixture.revision
+        fixture.select_job('experimental-native-compile')
+        forbidden_blobs = {fixture.git('rev-parse', fixture.revision + ':' + name).strip()
+                           for name in ('sentinel.py', CONTEXT)}
+        pending_blob = fixture.git('rev-parse', fixture.revision +
+            ':som-rs/evidence/rust-compiler-contract-amendment-005.json').strip()
         real_check_output = subprocess.check_output
-        with mock.patch.dict(os.environ, {'RUNNER_TEMP': str(self.root), 'SOM_FULL_PRODUCT_CONTEXT': str(path)}), \
-             mock.patch.object(d.subprocess, 'check_output', wraps=real_check_output) as calls, \
-             self.assertRaisesRegex(ValueError, 'pending|stale|authority'):
-            d.execute_tool(['sentinel.py'])
+        with fixture.bootstrap() as bootstrap, \
+             mock.patch.object(subprocess, 'check_output', wraps=real_check_output) as calls:
+            graph = bootstrap.load_admission_module('same-candidate-graph')
+            with self.assertRaisesRegex(ValueError, '^numbered authority is pending, stale or has a false chain$') as first:
+                graph.admit_source(fixture.root, fixture.revision, fixture.revision)
+            self.assertIs(type(first.exception), ValueError)
+            self.assertNotIn('_som_native_trusted_bootstrap_entry', bootstrap._records)
         self.assertFalse(self.marker.exists())
         self.assertFalse(self.context_marker.exists())
         blob_reads = [str(argument) for call in calls.call_args_list for argument in call.args[0]]
         self.assertFalse(any(value.endswith(':sentinel.py') or value.endswith(':' + CONTEXT) for value in blob_reads))
-        result = json.loads(next((self.work / 'checker-postchecks').iterdir()).read_bytes())
-        self.assertFalse(result['entry_executed'])
-        self.assertFalse(result['source_runtime_tools_inputs_unchanged'])
-        self.assertIn('error', result)
+        self.assertFalse(forbidden_blobs.intersection(blob_reads))
+        self.assertIn(pending_blob, blob_reads)
+        self.assertFalse((self.work / 'checker-postchecks').exists())
 
     def legacy_matching_pyc(self, mode, fail_entry):
         helper_name = '_som_legacy_barrier_helper'

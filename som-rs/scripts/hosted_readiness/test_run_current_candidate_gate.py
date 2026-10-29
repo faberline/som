@@ -740,4 +740,270 @@ class CleanupSignalIntegrity(unittest.TestCase):
             self.assert_all_roles_attempted(manager, calls)
 
 
+
+
+class RecordedFreshBootstrapIntegrity(unittest.TestCase):
+    """Finite source protocol fixtures. No real native Context or service pass."""
+    revision = '1' * 40
+    token = 'fixture-actions-authentication-never-save'
+
+    def frame(self, temporary):
+        ref = 'refs/heads/codex/native-recorded-fixture'
+        return {'GITHUB_ACTIONS': 'true', 'RUNNER_ENVIRONMENT': 'github-hosted', 'RUNNER_OS': 'Linux',
+            'RUNNER_TEMP': str(temporary), 'GITHUB_SHA': self.revision, 'GITHUB_RUN_ID': '123',
+            'GITHUB_RUN_ATTEMPT': '2', 'GITHUB_JOB': 'required-callbacks',
+            'GITHUB_REPOSITORY': 'faberline/som', 'GITHUB_REPOSITORY_ID': '1390374878',
+            'GITHUB_SERVER_URL': 'https://github.com', 'GITHUB_API_URL': 'https://api.github.com',
+            'GITHUB_WORKFLOW_SHA': self.revision, 'GITHUB_EVENT_NAME': 'workflow_dispatch', 'GITHUB_REF': ref,
+            'GITHUB_WORKFLOW_REF': 'faberline/som/.github/workflows/rust-hosted-readiness.yml@' + ref,
+            'RUNNER_NAME': 'Synthetic Protocol Runner', p.RECORDED_TOKEN: self.token}
+
+    def test_complete_checked_frame_keeps_authentication_only_in_actual_environment(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d); child = self.frame(root)
+            child.update(M6_INPUTS_KEYRING='fixture-key-must-not-forward', PYTHONPATH='/ambient/site', HOME='/ambient/home')
+            actual, public = p.recorded_python_environment(child, context=root / 'context.json',
+                directory=root / 'baseline', revision=self.revision)
+            self.assertEqual(actual[p.RECORDED_TOKEN], self.token)
+            self.assertEqual(public[p.RECORDED_TOKEN], p.RECORDED_TOKEN_PUBLIC)
+            self.assertEqual(set(actual), set(public))
+            self.assertEqual(set(public), {'PATH', 'LANG', 'LC_ALL', 'TMPDIR', 'SOM_FULL_PRODUCT_CONTEXT',
+                                          p.RECORDED_TOKEN, *p.RECORDED_FRAME})
+            self.assertNotEqual(id(actual), id(public))
+            raw = p.canonical(public)
+            for forbidden in (self.token, p.sha(self.token.encode()), 'fixture-key-must-not-forward', '/ambient/site'):
+                self.assertNotIn(forbidden.encode(), raw)
+            public['RUNNER_NAME'] = 'changed public map'
+            self.assertEqual(actual['RUNNER_NAME'], child['RUNNER_NAME'])
+
+    def test_missing_or_unsafe_existing_authentication_cannot_be_synthesized(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            for value in (None, '', 'bad\nvalue', 'bad\rvalue', 'bad\0value', p.RECORDED_TOKEN_PUBLIC):
+                child = self.frame(root)
+                if value is None: child.pop(p.RECORDED_TOKEN)
+                else: child[p.RECORDED_TOKEN] = value
+                with self.subTest(value=value), self.assertRaisesRegex(ValueError, 'existing Actions authentication'):
+                    p.recorded_python_environment(child, context=root / 'context.json',
+                        directory=root / 'baseline', revision=self.revision)
+
+    def test_every_fresh_bootstrap_frame_key_is_required(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            for key in p.RECORDED_FRAME:
+                child = self.frame(root); child.pop(key)
+                with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'complete child environment'):
+                    p.recorded_python_environment(child, context=root / 'context.json',
+                        directory=root / 'baseline', revision=self.revision)
+
+    def test_public_environment_refuses_real_auth_extra_keys_and_wrong_hosted_frame(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            _, original = p.recorded_python_environment(self.frame(root), context=root / 'context.json',
+                directory=root / 'baseline', revision=self.revision)
+            changes = [(p.RECORDED_TOKEN, self.token), ('EXTRA', 'unlisted'), ('GITHUB_REPOSITORY_ID', '9'),
+                ('GITHUB_REPOSITORY', 'foreign/som'), ('GITHUB_API_URL', 'https://foreign.invalid'),
+                ('GITHUB_WORKFLOW_SHA', '2' * 40), ('GITHUB_EVENT_NAME', 'pull_request'),
+                ('GITHUB_REF', 'refs/heads/different'), ('RUNNER_NAME', ' padded '),
+                ('GITHUB_JOB', 'invalid job'), ('GITHUB_RUN_ID', '0'), ('RUNNER_TEMP', '/foreign')]
+            for key, value in changes:
+                changed = {**original, key: value}
+                with self.subTest(key=key), self.assertRaises(ValueError):
+                    p.validate_recorded_python_environment(changed, context=root / 'context.json',
+                        directory=root / 'baseline', revision=self.revision)
+
+    def test_failed_service_start_keeps_original_error_and_public_record_only(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d); shared = root / 'shared'; shared.mkdir(); out = shared / 'services'; out.mkdir()
+            inputs = root / 'inputs'; inputs.mkdir(); (inputs / 'data').write_bytes(b'opaque recorded data fixture')
+            python = root / 'python3.12'; python.write_bytes(b'\x7fELFqualified fixture'); python.chmod(0o755)
+            context = root / 'context.json'; raw = b'{"native_protocol_fixture":true}'
+            context.write_bytes(raw); (shared / 'context.input.json').write_bytes(raw)
+            primary = RuntimeError('specific owned-start failure')
+            made = []
+            class Service:
+                def __init__(self, binary, assets, tools, port, directory):
+                    self.process = None; self.environment = {}; made.append(self)
+                def start(self): raise primary
+            oracle = SimpleNamespace(prepare_data=lambda *args: ({}, {}, {'profile_sha256': p.sha(b'{}'),
+                'named_slots': 4572}, lambda: None))
+            ctx = SimpleNamespace(repo=root / 'repo', helper_revision=self.revision, candidate_revision=self.revision,
+                path=context, raw=raw, sources=SimpleNamespace(read=lambda name: ('source:' + name).encode()),
+                module=lambda key, path: oracle, runtime=lambda: {'tools': {'python': str(python)},
+                    'identity': {'python_sha256': p.identity(python)['sha256']}},
+                child_environment=lambda: self.frame(root))
+            manager = object.__new__(p.Services)
+            manager.ctx, manager.out, manager.closed, manager.items = ctx, out, False, {}
+            manager.driver = SimpleNamespace(OwnedService=Service, file_identity=full_identity,
+                tree_identity=full_tree, utc=lambda: 'synthetic-time')
+            with mock.patch.dict(os.environ, {'SOM_FULL_PRODUCT_CONTEXT': str(context)}):
+                with self.assertRaises(RuntimeError) as caught:
+                    manager._start_recorded('profile.json', b'{}', inputs)
+            self.assertIs(caught.exception, primary)
+            self.assertIs(manager.items['baseline']['service'], made[0])
+            self.assertEqual(made[0].environment[p.RECORDED_TOKEN], self.token)
+            record = manager.items['baseline']['record']
+            self.assertIsNot(record['environment'], made[0].environment)
+            self.assertEqual(record['environment'][p.RECORDED_TOKEN], p.RECORDED_TOKEN_PUBLIC)
+            for forbidden in (self.token, p.sha(self.token.encode())):
+                self.assertNotIn(forbidden.encode(), p.canonical(record))
+            self.assertEqual(record['requested_argv'][4], str(ctx.repo / p.ORACLE))
+            self.assertNotIn('cleanup', record)
+            self.assertEqual((out / 'baseline-profile.raw').read_bytes(), b'{}')
+
+    def startup_fixture(self, root):
+        directory = root / 'shared/services/baseline'; directory.mkdir(parents=True)
+        revision = self.revision; repo = root / 'repo'; context = root / 'context.json'
+        data = {'repo': str(repo), 'helper_revision': revision, 'candidate_revision': revision, 'qa_mode': 'native-qa-v1',
+                'runtime_root': str(root / 'runtime'), 'work_root': str(root / 'work')}
+        context_raw = p.canonical(data); context.write_bytes(context_raw)
+        (root / 'shared/context.input.json').write_bytes(context_raw)
+        python = root / 'runtime/install/python/bin/python3.12'; python.parent.mkdir(parents=True)
+        python.write_bytes(b'\x7fELFqualified fixture'); python.chmod(0o755)
+        digest = p.identity(python)['sha256']
+        requested, actual = p.recorded_python_arguments(python, repo, revision, revision, 'profile.json',
+            root / 'inputs', directory / 'oracle', digest)
+        startup = {'version': 'som.native-python-child-startup.v1', 'pid': 123, 'actual_argv': actual,
+            'original_requested_argv': requested, 'cwd': str(directory), 'helper_revision': revision,
+            'candidate_revision': revision, 'product_acceptance_passed': False}
+        source_bytes = {p.CONTEXT: b'context source', p.ORACLE: b'oracle source',
+                        p.NATIVE_BOOTSTRAP: b'initial bootstrap source', p.FULL_DRIVER: b'entry driver source'}
+        post = {'version': 'som.native-python-child-postcheck.v1', 'actual_argv': actual,
+            'original_python_arguments': requested[4:], 'helper_revision': revision, 'candidate_revision': revision,
+            'entry_executed': True, 'postchecks_passed': True, 'exit_code': 0, 'product_acceptance_passed': False,
+            'payload': {'version': 'som.native-python-startup-payload.v1', 'role': 'qualified-base-no-site',
+                'python': str(python), 'site': None, 'pth_executed': False, 'product_acceptance_passed': False},
+            # Real Context reads these. Bootstrap/driver pins are separate below.
+            'source_sha256': {name: p.sha(source_bytes[name]) for name in (p.CONTEXT, p.ORACLE)}}
+        startup_raw, post_raw = p.canonical(startup), p.canonical(post)
+        startup_source = root / 'work/python-child-startups/77-123.json'
+        post_source = root / 'work/python-startup-postchecks/123.json'
+        startup_source.parent.mkdir(parents=True); post_source.parent.mkdir(parents=True)
+        startup_source.write_bytes(startup_raw); post_source.write_bytes(post_raw)
+        (directory / 'native-python-startup.json').write_bytes(startup_raw)
+        (directory / 'native-python-postcheck.json').write_bytes(post_raw)
+        (directory / 'start.proc-stat.raw').write_bytes(b'123 (fixture) S 77 123 123')
+        _, environment = p.recorded_python_environment(self.frame(root), context=context,
+            directory=directory, revision=revision)
+        record = {'requested_argv': requested, 'argv': actual, 'environment': environment,
+            'owned_start': {'pid': 123}, 'cleanup': {'exit_code': 0, 'wait_exit_code': 0},
+            'native_python_postcheck': {'source': str(post_source), 'sha256': p.sha(post_raw)},
+            'extra': {'profile_path': 'profile.json', 'input_root': str(root / 'inputs'),
+                'native_bootstrap_source': p.NATIVE_BOOTSTRAP,
+                'native_bootstrap_source_sha256': p.sha(source_bytes[p.NATIVE_BOOTSTRAP]),
+                'native_entry_driver_source': p.FULL_DRIVER,
+                'native_entry_driver_source_sha256': p.sha(source_bytes[p.FULL_DRIVER]),
+                'native_startup_source': str(startup_source), 'native_startup_sha256': p.sha(startup_raw)}}
+        sources = SimpleNamespace(root=repo, revision=revision, read=source_bytes.__getitem__)
+        return directory, record, sources, data
+
+    def test_retained_startup_and_terminal_receipts_keep_exact_new_source_chain(self):
+        with tempfile.TemporaryDirectory() as d:
+            directory, record, sources, data = self.startup_fixture(Path(d))
+            p.verify_recorded_python_startup(directory, record, sources, data)
+            self.assertEqual(record['argv'][4], str(sources.root / p.NATIVE_BOOTSTRAP))
+            self.assertNotIn(str(sources.root / p.FULL_DRIVER), record['argv'])
+            self.assertEqual(record['extra']['native_entry_driver_source_sha256'], p.sha(sources.read(p.FULL_DRIVER)))
+
+    def test_initial_bootstrap_and_entry_driver_cannot_borrow_each_others_pin(self):
+        for change in ('bootstrap-path', 'bootstrap-sha', 'driver-path', 'driver-sha'):
+            with self.subTest(change=change), tempfile.TemporaryDirectory() as d:
+                directory, record, sources, data = self.startup_fixture(Path(d))
+                if change == 'bootstrap-path': record['extra']['native_bootstrap_source'] = p.FULL_DRIVER
+                elif change == 'bootstrap-sha': record['extra']['native_bootstrap_source_sha256'] = p.sha(sources.read(p.FULL_DRIVER))
+                elif change == 'driver-path': record['extra']['native_entry_driver_source'] = p.NATIVE_BOOTSTRAP
+                else: record['extra']['native_entry_driver_source_sha256'] = p.sha(sources.read(p.NATIVE_BOOTSTRAP))
+                with self.assertRaisesRegex(ValueError, 'initial bootstrap, entry driver'):
+                    p.verify_recorded_python_startup(directory, record, sources, data)
+
+    def test_old_driver_first_saved_capture_cannot_be_relabelled_as_new_bootstrap(self):
+        with tempfile.TemporaryDirectory() as d:
+            directory, record, sources, data = self.startup_fixture(Path(d))
+            record['argv'] = [record['argv'][0], '-I', '-S', '-B', str(sources.root / p.FULL_DRIVER),
+                              '--native-python-bootstrap', '--', *record['requested_argv'][4:]]
+            with self.assertRaisesRegex(ValueError, 'initial bootstrap, entry driver'):
+                p.verify_recorded_python_startup(directory, record, sources, data)
+
+
+
+    def test_saved_public_frame_must_match_immutable_context_and_same_run_catalog(self):
+        with tempfile.TemporaryDirectory() as d:
+            temporary = Path(d)
+            directory, record, sources, data = self.startup_fixture(temporary)
+            services = directory.parent; shared = services.parent
+            profile = p.BASE + 'inputs/recorded-before-profile-v1.json'
+            profile_raw = b'{"synthetic_source_profile":true}'
+            inputs = temporary / 'inputs'; inputs.mkdir(); (inputs / 'opaque-data').write_bytes(b'fixture input')
+            python = temporary / 'runtime/install/python/bin/python3.12'
+            catalog = {'repository': 'faberline/som', 'run_id': 123, 'run_attempt': 2,
+                       'helper_revision': self.revision, 'candidate_revision': self.revision}
+            data.update(artifact_inputs=catalog, baseline_inputs={profile: str(inputs)})
+            context_raw = p.canonical(data)
+            Path(record['environment']['SOM_FULL_PRODUCT_CONTEXT']).write_bytes(context_raw)
+            (shared / 'context.input.json').write_bytes(context_raw)
+            (shared / 'artifact-inputs.json').write_bytes(p.canonical(catalog))
+            (services / 'baseline-profile.raw').write_bytes(profile_raw)
+            source_read = sources.read
+            sources.read = lambda name: profile_raw if name == profile else source_read(name)
+            record['extra'].update(profile_path=profile, profile_sha256=p.sha(profile_raw), profile=p.parse(profile_raw),
+                                   input_root=str(inputs), oracle_out='oracle')
+            requested, actual = p.recorded_python_arguments(python, sources.root, self.revision, self.revision,
+                profile, inputs, directory / 'oracle', p.identity(python)['sha256'])
+            record.update(requested_argv=requested, argv=actual, port=p.PORTS['baseline'])
+            identities = {'binary': full_identity(python), 'assets': full_tree(inputs), 'tools': {}}
+            record.update(initial_identities=identities, final_identities=copy.deepcopy(identities))
+            runtime = {'argv': actual, 'port': p.PORTS['baseline'], 'pid': 123,
+                       'binary_sha256': p.identity(python)['sha256']}
+            (directory / 'runtime.json').write_bytes(p.canonical(runtime))
+            oracle_dir = directory / 'oracle'; oracle_dir.mkdir()
+            proof_raw = b'{"synthetic_data_proof":true}'; (oracle_dir / 'data-proof.json').write_bytes(proof_raw)
+            record['extra']['data_proof_sha256'] = p.sha(proof_raw)
+            oracle = SimpleNamespace(verify_recorded_run=lambda *args, **kwargs: {'profile_sha256': p.sha(profile_raw)})
+            @contextmanager
+            def borrowed(unused):
+                yield SimpleNamespace(role_sources={'common.recorded-service': p.ORACLE},
+                                      load_module=lambda role: oracle)
+            # External runtime/data/cleanup proofs are explicit finite stubs here.
+            # This fixture tests the new public-frame join, not those native gates.
+            with mock.patch.dict(os.environ, {name: self.frame(temporary)[name] for name in p.RECORDED_FRAME}), \
+                 mock.patch.object(p, 'qualified_recorded_python', return_value=python), \
+                 mock.patch.object(p, 'verify_recorded_python_startup') as startup, \
+                 mock.patch.object(p, 'verify_service_cleanup') as cleanup, \
+                 mock.patch.object(p, '_borrowed_controls', side_effect=borrowed):
+                p.verify_recorded_service(services, directory, record, {'pid': 123}, sources)
+                startup.assert_called_once(); cleanup.assert_called_once()
+                startup.reset_mock(); cleanup.reset_mock()
+                for changed in ({**catalog, 'run_id': 999}, {**catalog, 'run_attempt': 9},
+                                {**catalog, 'candidate_revision': '2' * 40}):
+                    (shared / 'artifact-inputs.json').write_bytes(p.canonical(changed))
+                    with self.subTest(changed=changed), self.assertRaisesRegex(ValueError, 'immutable Context/same-run'):
+                        p.verify_recorded_service(services, directory, record, {'pid': 123}, sources)
+                    startup.assert_not_called(); cleanup.assert_not_called()
+                (shared / 'artifact-inputs.json').write_bytes(p.canonical(catalog))
+                original_environment = record['environment']
+                alternate_ref = 'refs/heads/codex/another-valid-saved-branch'
+                changes = [
+                    {'GITHUB_JOB': 'another_valid_job'},
+                    {'RUNNER_NAME': 'Another Valid Synthetic Runner'},
+                    {'GITHUB_EVENT_NAME': 'push'},
+                    {'GITHUB_REF': alternate_ref,
+                     'GITHUB_WORKFLOW_REF': 'faberline/som/.github/workflows/rust-hosted-readiness.yml@' + alternate_ref},
+                ]
+                for change in changes:
+                    record['environment'] = {**original_environment, **change}
+                    # Establish that this valid-shaped substitution reached the live-frame join.
+                    p.validate_recorded_python_environment(record['environment'],
+                        context=record['environment']['SOM_FULL_PRODUCT_CONTEXT'],
+                        directory=directory, revision=self.revision)
+                    with self.subTest(saved_change=change), self.assertRaisesRegex(ValueError, 'immutable Context/same-run'):
+                        p.verify_recorded_service(services, directory, record, {'pid': 123}, sources)
+                    startup.assert_not_called(); cleanup.assert_not_called()
+                record['environment'] = original_environment
+                for name in p.RECORDED_FRAME:
+                    with self.subTest(actual_field=name), mock.patch.dict(os.environ, {name: 'different-actual-frame'}):
+                        with self.assertRaisesRegex(ValueError, 'immutable Context/same-run'):
+                            p.verify_recorded_service(services, directory, record, {'pid': 123}, sources)
+                        startup.assert_not_called(); cleanup.assert_not_called()
+
+
 if __name__ == '__main__': unittest.main(verbosity=2)

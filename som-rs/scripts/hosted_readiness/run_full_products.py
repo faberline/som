@@ -31,6 +31,16 @@ PENDING = ('fresh compile and assemble determinism and refusals', 'CLI forwardin
            'old bundle refusal and exact rebase', 'recorded baseline compiler comparisons',
            'ordinary-mode installer file scope independent audit',
            'numbered native policy sealing and independent complete acceptance audit')
+NATIVE_QA_ENTRIES = {
+    'som-core/scripts/verify_python_quality.py': 'entry.qa.python-quality',
+    'som-core/scripts/verify_service_v3.py': 'entry.qa.legacy-service',
+    'som-rs/behavior/check_behavior.py': 'entry.qa.behavior',
+    'som-rs/behavior/phase2/check_phase2.py': 'entry.qa.phase2-python',
+    'som-rs/tests/rust-output-v1/check_contract.py': 'entry.qa.rust-contract',
+    'som-rs/tests/typescript-output-v1/check_contract.py': 'entry.qa.typescript-contract',
+    'som-rs/scripts/hosted_readiness/typescript_regression_checker.py': 'entry.qa.typescript-wrapper',
+    'som-rs/scripts/hosted_readiness/product_runtime/recorded_before_oracle.py': 'entry.qa.recorded-before',
+}
 
 
 def require(value, message):
@@ -44,6 +54,15 @@ def canonical(value):
 
 def digest(raw):
     return hashlib.sha256(raw).hexdigest()
+
+
+def _native_controls(repo, helper_revision, candidate_revision):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    require(Path(repo).absolute() == controls.root and helper_revision == controls.helper_revision
+            == candidate_revision == controls.candidate_revision,
+            'active full-product source identity differs')
+    return controls
 
 
 def load_context_module(repo, revision, qa_mode=None, candidate_revision=None):
@@ -70,14 +89,9 @@ def load_context_module(repo, revision, qa_mode=None, candidate_revision=None):
                 'native QA entry requires one new exact source candidate')
         path = 'som-rs/scripts/hosted_readiness/native_qa_authority.py'
         authority_raw = source(path)
-        authority_name = '_som_full_native_source_admission'
-        authority = sys.modules.get(authority_name)
-        if authority is None:
-            authority = ModuleType(authority_name)
-            authority.__file__, authority.__cached__, authority.__package__ = str(repo / path), None, ''
-            authority.__som_raw_sha256__ = digest(authority_raw)
-            sys.modules[authority_name] = authority
-            exec(compile(authority_raw, authority.__file__, 'exec', dont_inherit=True), authority.__dict__)
+        controls = _native_controls(repo, revision, candidate_revision)
+        require(controls.role_sources['bootstrap.authority'] == path, 'fixed native authority seed source differs')
+        authority = controls.load_module('bootstrap.authority')
         require(authority.__som_raw_sha256__ == digest(authority_raw), 'preloaded native authority source differs')
         tracked = git('ls-tree', '-r', '-z', '--name-only', revision)
         require(tracked.endswith(b'\0'), 'complete tracked source inventory required')
@@ -95,6 +109,13 @@ def load_context_module(repo, revision, qa_mode=None, candidate_revision=None):
     elif qa_mode not in {None, 'historical', 'experimental-preparation'}:
         raise ValueError('unknown source authority mode')
     raw = source(CONTEXT)
+    if qa_mode == 'native-qa-v1':
+        require(controls.role_sources['runtime.context'] == CONTEXT, 'fixed native Context source differs')
+        module = controls.load_module('runtime.context')
+        require(module.__file__ == str(repo / CONTEXT) and module.__som_raw_sha256__ == digest(raw),
+                'actual Core Context source differs from committed bytes')
+        module.__som_native_source_authority__ = native_authority
+        return module
     require('full_product_context' not in sys.modules, 'preloaded context module refused')
     module = ModuleType('full_product_context')
     module.__file__, module.__cached__, module.__package__ = str(repo / CONTEXT), None, ''
@@ -145,6 +166,20 @@ def execute_tool(arguments):
         # Native Context owns its lease. The old modes keep their original raw Git finder.
         raw = sources.read(tool)
         proof['entry_sha256'] = digest(raw)
+        if data.get('qa_mode') == 'native-qa-v1':
+            controls = _native_controls(sources.root, data['helper_revision'], data['candidate_revision'])
+            require(tool in NATIVE_QA_ENTRIES, 'repository checker has no fixed native entry role')
+            role = NATIVE_QA_ENTRIES[tool]
+            require(controls.role_sources[role] == tool, 'fixed native checker role source differs')
+            proof['entry_executed'] = True
+            try:
+                code = controls.execute_entry(role, list(arguments[1:]))
+                proof['entry_exit_code'] = code
+                return code
+            except SystemExit as result:
+                code = result.code if isinstance(result.code, int) else (0 if result.code is None else 1)
+                proof['entry_exit_code'] = code
+                return code
         name = '__main__'
         target = ModuleType(name)
         target.__file__, target.__package__, target.__cached__ = str(sources.root / tool), '', None
@@ -278,10 +313,17 @@ def tool(ctx, script, args, label, timeout=20000):
 
 
 def phase1(ctx):
-    for path in ('som-rs/som-targets/qa', 'som-rs/behavior'):
-        sys.path.insert(0, str(ctx.repo / path))
-    import check_rust_products as products
-    import hosts
+    if ctx.data.get('qa_mode') == 'native-qa-v1':
+        controls = _native_controls(ctx.repo, ctx.helper_revision, ctx.candidate_revision)
+        require(controls.role_sources['full.phase1.products'] == 'som-rs/som-targets/qa/check_rust_products.py'
+                and controls.role_sources['full.hosts'] == 'som-rs/behavior/hosts.py', 'fixed phase1 source roles differ')
+        products = controls.load_module('full.phase1.products')
+        hosts = controls.load_module('full.hosts')
+    else:
+        for path in ('som-rs/som-targets/qa', 'som-rs/behavior'):
+            sys.path.insert(0, str(ctx.repo / path))
+        import check_rust_products as products
+        import hosts
     every = products.acceptance_cases()
     ids = [row['id'] for row in every]
     require(len(ids) == 115 and ctx.data['shard'] == {'index': 0, 'count': 1}, 'whole phase1 job required')
@@ -351,8 +393,14 @@ def phase1(ctx):
 
 
 def phase2_python(ctx):
-    sys.path.insert(0, str(ctx.repo / 'som-rs/behavior/phase2'))
-    import check_phase2 as checker
+    if ctx.data.get('qa_mode') == 'native-qa-v1':
+        controls = _native_controls(ctx.repo, ctx.helper_revision, ctx.candidate_revision)
+        require(controls.role_sources['full.phase2'] == 'som-rs/behavior/phase2/check_phase2.py',
+                'fixed phase2 source role differs')
+        checker = controls.load_module('full.phase2')
+    else:
+        sys.path.insert(0, str(ctx.repo / 'som-rs/behavior/phase2'))
+        import check_phase2 as checker
     every = checker.cases()
     ids = [row['id'] for row in every]
     selected = scoped(ids, ctx.data['shard'])
@@ -370,7 +418,12 @@ def phase2_python(ctx):
 
 def phase2_python_results(ctx, ids, selected, output, key, worker_count, command, error=None):
     """Keep every selected row and bind it to the completed shard process."""
-    from full_product_context import read
+    if ctx.data.get('qa_mode') == 'native-qa-v1':
+        controls = _native_controls(ctx.repo, ctx.helper_revision, ctx.candidate_revision)
+        require(controls.role_sources['runtime.context'] == CONTEXT, 'fixed phase2 result Context source differs')
+        read = controls.load_module('runtime.context').read
+    else:
+        from full_product_context import read
     script = 'som-rs/behavior/phase2/check_phase2.py'
     command_gate = {'passed': bool(error is None and type(command) is dict
                     and type(command.get('exit_code')) is int and command['exit_code'] == 0
@@ -498,13 +551,26 @@ def rust_preparation_without_python(ctx, case, fixture, output):
 
 
 def phase2_rust(ctx):
-    for path in ('som-rs/som-targets/qa', 'som-rs/behavior', 'som-rs/behavior/phase2', 'som-core/scripts'):
-        sys.path.insert(0, str(ctx.repo / path))
-    import check_phase2 as phase2
-    import check_phase2_products as gates
-    import phase2_host
-    from m3_local_fixture import M3Fixture
-    import hosts
+    if ctx.data.get('qa_mode') == 'native-qa-v1':
+        controls = _native_controls(ctx.repo, ctx.helper_revision, ctx.candidate_revision)
+        require(controls.role_sources['full.phase2'] == 'som-rs/behavior/phase2/check_phase2.py'
+                and controls.role_sources['full.phase2-products'] == 'som-rs/som-targets/qa/check_phase2_products.py'
+                and controls.role_sources['full.phase2-host'] == 'som-rs/behavior/phase2/phase2_host.py'
+                and controls.role_sources['full.m3-fixture'] == 'som-core/scripts/m3_local_fixture.py'
+                and controls.role_sources['full.hosts'] == 'som-rs/behavior/hosts.py', 'fixed phase2 Rust source roles differ')
+        phase2 = controls.load_module('full.phase2')
+        gates = controls.load_module('full.phase2-products')
+        phase2_host = controls.load_module('full.phase2-host')
+        M3Fixture = controls.load_module('full.m3-fixture').M3Fixture
+        hosts = controls.load_module('full.hosts')
+    else:
+        for path in ('som-rs/som-targets/qa', 'som-rs/behavior', 'som-rs/behavior/phase2', 'som-core/scripts'):
+            sys.path.insert(0, str(ctx.repo / path))
+        import check_phase2 as phase2
+        import check_phase2_products as gates
+        import phase2_host
+        from m3_local_fixture import M3Fixture
+        import hosts
     every = phase2.cases()
     ids = [row['id'] for row in every]
     selected = set(scoped(ids, ctx.data['shard']))
@@ -655,13 +721,11 @@ def prepare(args):
         graph_raw = subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(args.repo),
             'cat-file', 'blob', args.helper_revision + ':' + graph_path], stderr=subprocess.DEVNULL)
         require(graph_raw == (args.repo / graph_path).read_bytes(), 'graph source differs from exact helper commit')
-        graph = ModuleType('_som_same_candidate_graph_for_products')
-        graph.__file__, graph.__cached__, graph.__package__ = str(args.repo / graph_path), None, ''
-        graph.__som_raw_sha256__ = digest(graph_raw)
-        sys.modules[graph.__name__] = graph
-        exec(compile(graph_raw, graph.__file__, 'exec', dont_inherit=True), graph.__dict__)
+        controls = _native_controls(args.repo, args.helper_revision, args.candidate_revision)
+        require(controls.role_sources['full.graph'] == graph_path, 'fixed full-product Graph source differs')
+        graph = controls.load_module('full.graph')
         # Formal source/HEAD/workflow binding precedes the native policy and Context loaders.
-        graph_sources, _, graph_authority = graph.admit_source(args.repo, args.helper_revision, args.candidate_revision)
+        graph_sources, _, graph_authority = graph._admitted_controller_sources(args.repo, args.helper_revision, args.candidate_revision)
         module = load_context_module(args.repo, args.helper_revision, 'native-qa-v1', args.candidate_revision)
         require(module.__som_native_source_authority__ == graph_authority, 'graph and Context source authority differ')
     temporary = Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
@@ -832,6 +896,16 @@ def native_python_bootstrap(arguments):
                     require(name in ctx.qa_source_authority['admitted_repository_python_sources'],
                             'Python script is outside native repository source authority')
                     raw = ctx.sources.read(name)
+                    controls = _native_controls(ctx.repo, ctx.helper_revision, ctx.candidate_revision)
+                    require(name in NATIVE_QA_ENTRIES, 'repository Python script has no fixed native entry role')
+                    role = NATIVE_QA_ENTRIES[name]
+                    require(controls.role_sources[role] == name, 'fixed repository Python entry source differs')
+                    # Product lookup paths are not a QA import search grant.
+                    sys.path[:] = old_path
+                    proof['entry_executed'] = True
+                    code = controls.execute_entry(role, list(rest))
+                    proof['exit_code'] = code
+                    return code
                 else:
                     raw = module.read(file)
                 sys.path.insert(0, str(file.parent))

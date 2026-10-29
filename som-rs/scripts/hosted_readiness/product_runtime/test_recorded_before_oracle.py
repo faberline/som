@@ -242,7 +242,8 @@ class NativeStartupProtocolTests(unittest.TestCase):
         revision = '1' * 40
         requested, actual = p.recorded_python_arguments('/runtime/install/python/bin/python3.12', '/source',
             revision, revision, 'profile.json', '/inputs', '/owned/oracle', '2' * 64)
-        sources = {p.CONTEXT: b'context fixture bytes', p.ORACLE: b'oracle fixture bytes'}
+        sources = {p.CONTEXT: b'context fixture bytes', p.ORACLE: b'oracle fixture bytes',
+                   p.NATIVE_BOOTSTRAP: b'initial bootstrap fixture bytes', p.FULL_DRIVER: b'entry driver fixture bytes'}
         startup = {'version': 'som.native-python-child-startup.v1', 'pid': 123,
             'actual_argv': actual, 'original_requested_argv': requested, 'cwd': '/owned',
             'helper_revision': revision, 'candidate_revision': revision, 'product_acceptance_passed': False}
@@ -251,15 +252,17 @@ class NativeStartupProtocolTests(unittest.TestCase):
             'entry_executed': True, 'postchecks_passed': True, 'exit_code': 0, 'product_acceptance_passed': False,
             'payload': {'version': 'som.native-python-startup-payload.v1', 'role': 'qualified-base-no-site',
                 'python': actual[0], 'site': None, 'pth_executed': False, 'product_acceptance_passed': False},
-            'source_sha256': {name: p.sha(raw) for name, raw in sources.items()}}
+            'source_sha256': {name: p.sha(sources[name]) for name in (p.CONTEXT, p.ORACLE)}}
         options = {'requested': requested, 'actual': actual, 'pid': 123, 'cwd': '/owned',
                    'revision': revision, 'source_reader': sources.__getitem__, 'exit_code': 0}
         return startup, post, options
 
     def test_direct_oracle_request_uses_the_existing_native_bootstrap_protocol(self):
         startup, post, options = self.fixture()
-        self.assertEqual(options['actual'][1:7], ['-I', '-S', '-B', '/source/' + p.FULL_DRIVER,
-                                                '--native-python-bootstrap', '--'])
+        self.assertEqual(options['actual'][1:16], ['-I', '-S', '-B', '/source/' + p.NATIVE_BOOTSTRAP,
+            '--repo', '/source', '--helper-revision', '1' * 40, '--candidate-revision', '1' * 40,
+            '--entry-role', 'entry.full-products', '--', '--native-python-bootstrap', '--'])
+        self.assertNotEqual(options['actual'][4], '/source/' + p.FULL_DRIVER)
         self.assertEqual(options['requested'][4], '/source/' + p.ORACLE)
         self.assertNotIn('/source/' + p.BOUND, options['actual'])
         p.validate_recorded_python_evidence(startup, post, **options)

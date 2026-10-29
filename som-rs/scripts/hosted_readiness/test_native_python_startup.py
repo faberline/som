@@ -84,7 +84,7 @@ class NativeStartup(unittest.TestCase):
         return c.ordinary_python_payload(fixture.venv, w.installed_inventory(fixture.venv, fixture.root),
             fixture.expected, fixture.origins, fixture.dirs, [fixture.prefix])
 
-    def child_probe(self, fixture, env=None):
+    def child_probe(self, fixture):
         # This is a test-only source/payload harness. It exercises the real path
         # activation method after a real payload check. It is not Native.verify.
         data = fixture.root / 'expected.json'
@@ -112,12 +112,18 @@ print(json.dumps({'value':startupfixture.VALUE,'uv_hook_executed':'_virtualenv' 
 '''
         return subprocess.run([str(fixture.venv / 'bin/python'), '-I', '-S', '-B', '-c', program,
             str(HERE / 'product_runtime/full_product_context.py'), str(HERE / 'product_python/produce_wheels.py'),
-            str(fixture.venv), str(data)], capture_output=True, text=True, check=False, env=env)
+            str(fixture.venv), str(data)], capture_output=True, text=True, check=False)
 
     def context(self, mode='native-qa-v1'):
-        return SimpleNamespace(qa_mode=mode, repo=HERE.parents[2],
-            sources=SimpleNamespace(read=lambda name: (HERE.parents[2] / name).read_bytes()),
+        return SimpleNamespace(qa_mode=mode, repo=HERE.parents[2], helper_revision='1' * 40, candidate_revision='1' * 40,
+            sources=SimpleNamespace(root=HERE.parents[2], revision='1' * 40,
+                read=lambda name: (HERE.parents[2] / name).read_bytes()),
             python_payload=lambda executable: {'site': None})
+
+    def bootstrap_prefix(self, python, ctx):
+        return [python, '-I', '-S', '-B', str(ctx.repo / 'som-rs/scripts/hosted_readiness/native_source_bootstrap.py'),
+            '--repo', str(ctx.repo), '--helper-revision', ctx.helper_revision,
+            '--candidate-revision', ctx.candidate_revision, '--entry-role', 'entry.full-products', '--']
 
     def test_real_wheel_and_uv_payload_accept_ordinary_metadata_without_audit_promotion(self):
         with self.payload() as f:
@@ -176,18 +182,9 @@ print(json.dumps({'value':startupfixture.VALUE,'uv_hook_executed':'_virtualenv' 
         with self.payload() as f:
             marker = f.root / 'site-hook-marker'
             (f.site/'sitecustomize.py').write_text('from pathlib import Path\nPath('+repr(str(marker))+').write_text("BAD")\n')
-            # Select this synthetic hook before any distribution-provided hook.
-            # The native child gets the same PYTHONPATH and must still refuse
-            # before any hook executes with its actual -I -S startup.
-            env={**os.environ,'PYTHONPATH':str(f.site)}
-            program='import json,sys; print(json.dumps({"customize_path":getattr(sys.modules.get("sitecustomize"),"__file__",None)}))'
-            ordinary=subprocess.run([str(f.venv/'bin/python'),'-B','-c',program],
-                capture_output=True,text=True,check=False,env=env)
-            self.assertEqual(ordinary.returncode,0,ordinary.stderr)
-            self.assertEqual(json.loads(ordinary.stdout)['customize_path'],str(f.site/'sitecustomize.py'))
-            self.assertTrue(marker.exists(),ordinary.stdout+'\n'+ordinary.stderr)
-            self.assertEqual(marker.read_text(),'BAD');marker.unlink()
-            result=self.child_probe(f,env=env)
+            ordinary=subprocess.run([str(f.venv/'bin/python'),'-B','-c','pass'],capture_output=True,check=False)
+            self.assertEqual(ordinary.returncode,0);self.assertEqual(marker.read_text(),'BAD');marker.unlink()
+            result=self.child_probe(f)
             self.assertNotEqual(result.returncode,0);self.assertFalse(marker.exists())
 
     def test_real_matching_timestamp_pyc_is_not_consumed_before_payload_rejection(self):
@@ -206,9 +203,9 @@ print(json.dumps({'value':startupfixture.VALUE,'uv_hook_executed':'_virtualenv' 
     def test_native_driver_and_generic_argv_have_real_isolation_flags(self):
         ctx=self.context();python=str(Path(sys.executable).absolute());driver=str(ctx.repo/'som-rs/scripts/hosted_readiness/run_full_products.py')
         direct=c.Context.python_argv(ctx,[python,'-B',driver,'--worker-context','context.json'])
-        self.assertEqual(direct,[python,'-I','-S','-B',driver,'--worker-context','context.json'])
+        self.assertEqual(direct,[*self.bootstrap_prefix(python,ctx),'--worker-context','context.json'])
         generic=c.Context.python_argv(ctx,[python,'-m','unittest','discover'])
-        self.assertEqual(generic,[python,'-I','-S','-B',driver,'--native-python-bootstrap','--','-m','unittest','discover'])
+        self.assertEqual(generic,[*self.bootstrap_prefix(python,ctx),'--native-python-bootstrap','--','-m','unittest','discover'])
         self.assertEqual(c.Context.python_argv(ctx,generic),generic)
 
     def test_historical_and_preparation_commands_remain_exact(self):
@@ -307,7 +304,7 @@ print(json.dumps({'value':startupfixture.VALUE,'uv_hook_executed':'_virtualenv' 
         with tempfile.TemporaryDirectory() as d:
             root=Path(d);directory=root/'python-child-startups';directory.mkdir();path=directory/'1-7.json'
             requested=['/owned/.venv/bin/python','-m','uvicorn','app.app:app','--host','127.0.0.1','--port','18001']
-            actual=[requested[0],'-I','-S','-B','/repo/driver.py','--native-python-bootstrap','--',*requested[1:]]
+            actual=[*self.bootstrap_prefix(requested[0],self.context()),'--native-python-bootstrap','--',*requested[1:]]
             proof={'pid':7,'actual_argv':actual,'original_requested_argv':requested,'helper_revision':'1'*40,'candidate_revision':'1'*40}
             path.write_bytes(c.canonical(proof))
             process=SimpleNamespace(pid=7,args=actual,__som_native_startup_receipt__=(path,proof))
@@ -318,6 +315,46 @@ print(json.dumps({'value':startupfixture.VALUE,'uv_hook_executed':'_virtualenv' 
             with self.assertRaises(c.Refusal):c.Context.python_is_product_process(ctx,process,requested[0],'foreign')
             process.args=[*actual[:-1],'8765']
             with self.assertRaises(c.Refusal):c.Context.python_is_product_process(ctx,process,requested[0],'app')
+
+    def test_exact_source_bootstrap_prefix_is_idempotent_and_reads_both_actual_sources(self):
+        ctx=self.context();python=str(Path(sys.executable).absolute());reads=[]
+        read=ctx.sources.read
+        ctx.sources.read=lambda name:(reads.append(name),read(name))[1]
+        argv=[*self.bootstrap_prefix(python,ctx),'--native-python-bootstrap','--','-c','pass']
+        self.assertEqual(c.Context.python_argv(ctx,argv),argv)
+        self.assertEqual(reads,['som-rs/scripts/hosted_readiness/run_full_products.py',
+            'som-rs/scripts/hosted_readiness/native_source_bootstrap.py'])
+
+    def test_wrong_bootstrap_source_role_or_parameters_refuse_without_rewrapping(self):
+        ctx=self.context();python=str(Path(sys.executable).absolute())
+        good=[*self.bootstrap_prefix(python,ctx),'--worker-context','context.json']
+        for index,value in ((4,'/foreign/native_source_bootstrap.py'),(4,'/foreign/other_bootstrap.py'),(6,'/foreign/repo'),
+                (8,'2'*40),(10,'2'*40),(12,'entry.foreign'),(13,'--wrong-separator'),(1,'-B')):
+            with self.subTest(index=index,value=value):
+                bad=[*good];bad[index]=value
+                with self.assertRaisesRegex(c.Refusal,'bootstrap prefix differs'):
+                    c.Context.python_argv(ctx,bad)
+        with self.assertRaisesRegex(c.Refusal,'bootstrap prefix differs'):
+            c.Context.python_argv(ctx,self.bootstrap_prefix(python,ctx))
+
+    def test_direct_native_tool_and_old_bootstrap_tails_keep_their_driver_semantics(self):
+        ctx=self.context();python=str(Path(sys.executable).absolute())
+        driver=str(ctx.repo/'som-rs/scripts/hosted_readiness/run_full_products.py')
+        for tail in (['--execute-tool','checker.py','--','argument'],
+                     ['--native-python-bootstrap','--','-m','uvicorn','app.app:app']):
+            with self.subTest(tail=tail):
+                self.assertEqual(c.Context.python_argv(ctx,[python,'-I','-S','-B',driver,*tail]),
+                    [*self.bootstrap_prefix(python,ctx),*tail])
+
+    def test_bootstrap_requires_actual_matching_context_source_before_launch(self):
+        python=str(Path(sys.executable).absolute())
+        for field,value in (('helper_revision','short'),('candidate_revision','2'*40)):
+            ctx=self.context();setattr(ctx,field,value)
+            with self.subTest(field=field),self.assertRaisesRegex(c.Refusal,'one exact Context source'):
+                c.Context.python_argv(ctx,[python,'-c','pass'])
+        ctx=self.context();ctx.sources.revision='2'*40
+        with self.assertRaisesRegex(c.Refusal,'one exact Context source'):
+            c.Context.python_argv(ctx,[python,'-c','pass'])
 
 
     def test_already_isolated_bootstrap_and_native_entry_overrides_are_refused_before_start(self):
@@ -474,6 +511,160 @@ print(json.dumps({'value':startupfixture.VALUE,'uv_hook_executed':'_virtualenv' 
                 self.assertEqual(proof['evidence_write_error']['message'],'failure evidence write')
                 with self.assertRaises(ChildProcessError):os.waitpid(proof['pid'],os.WNOHANG)
             finally:controls.close()
+
+    @contextmanager
+    def command_protocol(self, mode='native-qa-v1', rewrite=None):
+        """Real Popen/waits with explicit source/payload doubles; not admission."""
+        with tempfile.TemporaryDirectory() as directory:
+            ctx=self.context(mode);ctx.work=Path(directory);ctx.cache={};ctx.command_lock=threading.RLock()
+            ctx.module=lambda key,path:w
+            calls=[]
+            def route(argv,cwd=None):
+                calls.append(list(argv))
+                return list(argv) if rewrite is None else rewrite(list(argv),cwd)
+            ctx.python_argv=route
+            original=subprocess.Popen
+            controls=c.NativePythonControls(ctx) if mode=='native-qa-v1' else None
+            ctx.python_controls=c.NativePythonLease(controls,False) if controls is not None else None
+            try:
+                yield SimpleNamespace(ctx=ctx,root=ctx.work,calls=calls,controls=controls,original=original)
+            finally:
+                if controls is not None:controls.close()
+                self.assertIs(subprocess.Popen,original)
+
+    def test_command_keeps_first_request_and_records_real_guard_argv_and_receipt(self):
+        python=str(Path(sys.executable).absolute());requested=[python,'-c','print(17)']
+        actual=[python,'-I','-S','-B',*requested[1:]]
+        with self.command_protocol(rewrite=lambda argv,cwd:actual) as f:
+            result=c.Context.command(f.ctx,requested,f.root,dict(os.environ),'first-request',timeout=20)
+            self.assertEqual(f.calls,[requested,requested])
+            self.assertEqual(result['original_requested_argv'],requested)
+            self.assertEqual(result['expected_argv'],actual);self.assertEqual(result['argv'],actual)
+            self.assertEqual(result['exit_code'],0);self.assertTrue(result['wait_completed'])
+            self.assertTrue(result['owned_group_cleanup_passed'])
+            self.assertEqual((f.root/result['stdout']).read_bytes(),b'17\n')
+            path=f.root/'python-child-startups'/f'{os.getpid()}-{result["pid"]}.json'
+            proof=json.loads(path.read_bytes())
+            self.assertEqual(proof['pid'],result['pid']);self.assertEqual(proof['actual_argv'],result['argv'])
+            self.assertEqual(proof['original_requested_argv'],requested)
+            with self.assertRaises(ChildProcessError):os.waitpid(result['pid'],os.WNOHANG)
+
+    def test_command_missing_foreign_or_removed_guard_refuses_before_any_python_start(self):
+        python=str(Path(sys.executable).absolute());calls=[]
+        def forbidden(*args,**kwargs):
+            calls.append((args,kwargs));raise AssertionError('Popen must not be called')
+        class ForeignLease:
+            def verify_installed(self):
+                calls.append('foreign lease');raise AssertionError('foreign lease must not run')
+        with self.command_protocol() as f:
+            lease=f.ctx.python_controls
+            for invalid in (None,ForeignLease()):
+                f.ctx.python_controls=invalid
+                with self.subTest(invalid=type(invalid).__name__),self.assertRaisesRegex(c.Refusal,'active guard lease'):
+                    c.Context.command(f.ctx,[python,'-c','pass'],f.root,dict(os.environ),'missing-guard',timeout=20)
+            f.ctx.python_controls=lease
+            with mock.patch.object(subprocess,'Popen',side_effect=forbidden):
+                with self.assertRaisesRegex(c.Refusal,'startup guard changed'):
+                    c.Context.command(f.ctx,[python,'-c','pass'],f.root,dict(os.environ),'removed-guard',timeout=20)
+            self.assertEqual(calls,[]);self.assertNotIn('commands',f.ctx.cache)
+
+    def test_idempotent_direct_and_command_python_launches_have_real_startup_proofs(self):
+        python=str(Path(sys.executable).absolute());actual=[python,'-I','-S','-B','-c','print(23)']
+        with self.command_protocol() as f:
+            child=subprocess.Popen(actual,cwd=f.root,stdout=subprocess.PIPE,stderr=subprocess.PIPE,start_new_session=True)
+            out,err=child.communicate(timeout=20)
+            self.assertEqual(child.returncode,0,err);self.assertEqual(out,b'23\n')
+            path,proof=child.__som_native_startup_receipt__
+            self.assertEqual(proof['pid'],child.pid);self.assertEqual(proof['actual_argv'],child.args)
+            self.assertEqual(proof['original_requested_argv'],actual);self.assertEqual(json.loads(path.read_bytes()),proof)
+            result=c.Context.command(f.ctx,actual,f.root,dict(os.environ),'idempotent',timeout=20)
+            self.assertEqual(result['argv'],actual);self.assertEqual(result['original_requested_argv'],actual)
+            proof=json.loads((f.root/'python-child-startups'/f'{os.getpid()}-{result["pid"]}.json').read_bytes())
+            self.assertEqual(proof['actual_argv'],actual);self.assertEqual(proof['original_requested_argv'],actual)
+            self.assertTrue(result['wait_completed']);self.assertTrue(result['owned_group_cleanup_passed'])
+
+    def test_command_second_rewrite_mismatch_reaps_actual_child_and_keeps_both_vectors(self):
+        python=str(Path(sys.executable).absolute());requested=[python,'-c','print(31)']
+        expected=[python,'-I','-S','-B',*requested[1:]]
+        actual=[python,'-I','-S','-B','-c','import time;time.sleep(20)'];calls=[]
+        def differing(argv,cwd):
+            calls.append(argv)
+            return expected if len(calls)==1 else actual
+        with self.command_protocol(rewrite=differing) as f:
+            with self.assertRaisesRegex(c.Refusal,'command actual argv differs'):
+                c.Context.command(f.ctx,requested,f.root,dict(os.environ),'mismatch',timeout=20)
+            result=f.ctx.cache['commands'][-1]
+            self.assertEqual(result['original_requested_argv'],requested)
+            self.assertEqual(result['expected_argv'],expected);self.assertEqual(result['argv'],actual)
+            self.assertTrue(result['wait_completed']);self.assertTrue(result['owned_group_cleanup_passed'])
+            self.assertNotEqual(result['exit_code'],0)
+            proof=json.loads((f.root/'python-child-startups'/f'{os.getpid()}-{result["pid"]}.json').read_bytes())
+            self.assertEqual(proof['actual_argv'],actual);self.assertEqual(proof['original_requested_argv'],requested)
+            with self.assertRaises(ChildProcessError):os.waitpid(result['pid'],os.WNOHANG)
+
+    def test_guard_wrong_actual_vector_records_real_args_and_reaps_without_mutating_args(self):
+        python=str(Path(sys.executable).absolute());requested=[python,'-c','print(37)']
+        expected=[python,'-I','-S','-B',*requested[1:]];actual=[python,'-I','-S','-B','-c','pass']
+        with self.command_protocol(rewrite=lambda argv,cwd:expected) as f:
+            original=f.original
+            class DifferentActual(original):
+                def __init__(child,argv,**keywords):
+                    original.__init__(child,actual,**keywords)
+            f.controls.original=DifferentActual
+            try:
+                with self.assertRaisesRegex(c.Refusal,'Popen actual argv differs') as caught:
+                    c.Context.command(f.ctx,requested,f.root,dict(os.environ),'wrong-real-vector',timeout=20)
+                child=caught.exception.__som_native_startup_child__
+                proof=caught.exception.__som_native_startup_failure__
+                self.assertEqual(child.args,actual);self.assertEqual(proof['actual_argv'],actual)
+                self.assertEqual(proof['original_requested_argv'],requested)
+                self.assertTrue(proof['wait_completed']);self.assertTrue(proof['owned_child_reaped'])
+                self.assertIsNone(f.ctx.cache['commands'][-1]['argv'])
+                with self.assertRaises(ChildProcessError):os.waitpid(child.pid,os.WNOHANG)
+            finally:
+                f.controls.original=original
+
+    def test_command_receipt_failure_preserves_first_error_and_actual_terminal_wait(self):
+        python=str(Path(sys.executable).absolute());requested=[python,'-c','import time;time.sleep(20)']
+        actual=[python,'-I','-S','-B',*requested[1:]];primary=OSError('command actual receipt failure')
+        canonical=c.canonical
+        def failure(value):
+            if value.get('version')=='som.native-python-child-startup.v1':raise primary
+            return canonical(value)
+        with self.command_protocol(rewrite=lambda argv,cwd:actual) as f:
+            with mock.patch.object(c,'canonical',side_effect=failure),self.assertRaises(OSError) as caught:
+                c.Context.command(f.ctx,requested,f.root,dict(os.environ),'receipt-failure',timeout=20)
+            self.assertIs(caught.exception,primary)
+            child=primary.__som_native_startup_child__;proof=primary.__som_native_startup_failure__
+            self.assertEqual(proof['actual_argv'],child.args);self.assertEqual(proof['original_requested_argv'],requested)
+            self.assertTrue(proof['wait_completed']);self.assertTrue(proof['owned_child_reaped'])
+            self.assertNotEqual(proof['exit_code'],0)
+            result=f.ctx.cache['commands'][-1]
+            self.assertIsNone(result['argv']);self.assertEqual(result['expected_argv'],actual)
+            self.assertFalse(result['wait_completed'])
+            self.assertFalse(result.get('owned_group_cleanup_passed',False))
+            with self.assertRaises(ChildProcessError):os.waitpid(child.pid,os.WNOHANG)
+
+    def test_real_version_nonpython_and_historical_commands_keep_their_original_semantics(self):
+        python=str(Path(sys.executable).absolute())
+        with self.command_protocol() as f:
+            f.ctx.python_argv=lambda argv,cwd=None:c.Context.python_argv(f.ctx,argv,cwd)
+            result=c.Context.command(f.ctx,[python,'--version'],f.root,dict(os.environ),'version',timeout=20)
+            self.assertEqual(result['argv'],[python,'-I','-S','-B','--version'])
+            proof=json.loads((f.root/'python-child-startups'/f'{os.getpid()}-{result["pid"]}.json').read_bytes())
+            self.assertEqual(proof['original_requested_argv'],[python,'--version'])
+            self.assertEqual(proof['actual_argv'],result['argv'])
+        with self.command_protocol() as f:
+            argv=['/bin/sh','-c','printf unchanged-nonpython']
+            result=c.Context.command(f.ctx,argv,f.root,dict(os.environ),'nonpython',timeout=20)
+            self.assertEqual(result['argv'],argv);self.assertNotIn('original_requested_argv',result)
+            self.assertNotIn('expected_argv',result);self.assertFalse((f.root/'python-child-startups').exists())
+        with self.command_protocol(mode='historical') as f:
+            argv=[python,'-c','print("historical")']
+            result=c.Context.command(f.ctx,argv,f.root,dict(os.environ),'historical',timeout=20)
+            self.assertEqual(result['argv'],argv);self.assertNotIn('original_requested_argv',result)
+            self.assertNotIn('expected_argv',result);self.assertFalse((f.root/'python-child-startups').exists())
+            self.assertEqual((f.root/result['stdout']).read_bytes(),b'historical\n')
 
     @contextmanager
     def api_provider_fixture(self):

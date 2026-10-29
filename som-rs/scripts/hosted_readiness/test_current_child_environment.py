@@ -26,12 +26,18 @@ class NativeChildEnvironment(unittest.TestCase):
     def environment(self, **changes):
         return {'RUNNER_TEMP': '/runner', 'GITHUB_RUN_ID': '40832270009',
                 'GITHUB_RUN_ATTEMPT': '1', 'GITHUB_REPOSITORY': 'faberline/som',
-                'GITHUB_SHA': '1' * 40, 'GITHUB_JOB': 'full-products', **changes}
+                'GITHUB_SHA': '1' * 40, 'GITHUB_JOB': 'products',
+                'GITHUB_ACTIONS': 'true', 'RUNNER_ENVIRONMENT': 'github-hosted', 'RUNNER_OS': 'Linux',
+                'RUNNER_NAME': 'synthetic-hosted-child-environment-fixture',
+                'GITHUB_REPOSITORY_ID': '1390374878', 'GITHUB_SERVER_URL': 'https://github.com',
+                'GITHUB_API_URL': 'https://api.github.com', 'GITHUB_WORKFLOW_SHA': '1' * 40,
+                'GITHUB_EVENT_NAME': 'push', 'GITHUB_REF': 'refs/heads/main',
+                'GITHUB_WORKFLOW_REF': 'faberline/som/.github/workflows/rust-hosted-readiness.yml@refs/heads/main', **changes}
 
     def test_exact_run_identity_is_retained_without_keyring(self):
         with mock.patch.dict(os.environ, self.environment(M6_INPUTS_KEYRING='must-not-propagate'), clear=True):
             result = subject.Context.child_environment(self.context())
-        for key in ('GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_REPOSITORY', 'GITHUB_JOB'):
+        for key in self.environment():
             self.assertEqual(result[key], self.environment()[key])
         self.assertNotIn('M6_INPUTS_KEYRING', result)
 
@@ -90,6 +96,28 @@ class NativeChildEnvironment(unittest.TestCase):
         self.assertNotIn('GITHUB_REPOSITORY', result)
         self.assertNotIn('GITHUB_SHA', result)
         self.assertNotIn('GITHUB_JOB', result)
+
+    def test_missing_or_wrong_outer_bootstrap_metadata_refuses_at_its_own_check(self):
+        invalid={'GITHUB_ACTIONS':('false','hosted metadata: GITHUB_ACTIONS'),
+            'RUNNER_ENVIRONMENT':('self-hosted','hosted metadata: RUNNER_ENVIRONMENT'),
+            'RUNNER_OS':('macOS','hosted metadata: RUNNER_OS'),
+            'RUNNER_NAME':(' \n','actual runner name'),
+            'GITHUB_REPOSITORY_ID':('1390374879','hosted metadata: GITHUB_REPOSITORY_ID'),
+            'GITHUB_SERVER_URL':('https://foreign.invalid','hosted metadata: GITHUB_SERVER_URL'),
+            'GITHUB_API_URL':('https://foreign.invalid/api','hosted metadata: GITHUB_API_URL'),
+            'GITHUB_WORKFLOW_SHA':('2'*40,'same-source workflow SHA'),
+            'GITHUB_EVENT_NAME':('pull_request','formal workflow event'),
+            'GITHUB_REF':('refs/heads/bad ref','actual GitHub ref'),
+            'GITHUB_WORKFLOW_REF':('faberline/som/.github/workflows/foreign.yml@refs/heads/main','actual root workflow/ref')}
+        for key,(bad,message) in invalid.items():
+            for value in (None,bad):
+                with self.subTest(key=key,value=value):
+                    environment=self.environment()
+                    if value is None:environment.pop(key)
+                    else:environment[key]=value
+                    with mock.patch.dict(os.environ,environment,clear=True):
+                        with self.assertRaisesRegex(subject.Refusal,message):
+                            subject.Context.child_environment(self.context())
 
 
 if __name__ == '__main__':

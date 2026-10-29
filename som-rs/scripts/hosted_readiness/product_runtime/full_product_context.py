@@ -29,6 +29,7 @@ from types import ModuleType
 SCRIPT = 'som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py'
 PROFILE = 'som-rs/contracts/native-tools-v1/product-rust-tools-v1.json'
 RUST_HELPER = 'som-rs/scripts/hosted_readiness/product_runtime/qualify_rust_tools.py'
+NATIVE_RUST_HELPER = 'som-rs/scripts/hosted_readiness/product_runtime/native_rust_tool_verifier.py'
 WHEELS = 'som-rs/scripts/hosted_readiness/product_python/produce_wheels.py'
 CONSUMER = 'som-rs/scripts/hosted_readiness/product_python/qualify_python.py'
 GOLDENS = 'som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json'
@@ -193,7 +194,7 @@ class NativePythonControls:
             def __init__(child, *arguments, **keywords):
                 controls.verify_installed()
                 requested = arguments[0] if arguments else keywords.get('args')
-                changed = False
+                python = False
                 if isinstance(requested, (list, tuple)) and requested:
                     python = re.fullmatch(r'python(?:[0-9]+(?:\.[0-9]+)*)?', Path(str(requested[0])).name)
                     if python:
@@ -203,17 +204,16 @@ class NativePythonControls:
                         require(not keywords.get('shell') and keywords.get('executable') is None,
                                 'native Python launch cannot use a shell or executable override')
                     revised = controls.ctx.python_argv(requested, cwd=keywords.get('cwd'))
-                    changed = revised != list(map(str, requested))
                     if arguments:
                         arguments = (revised, *arguments[1:])
                     else:
                         keywords['args'] = revised
                 controls.original.__init__(child, *arguments, **keywords)
-                if changed:
+                if python:
                     try:
                         require(list(child.args) == revised, 'Popen actual argv differs from isolated launch')
                         proof = {'version': 'som.native-python-child-startup.v1', 'pid': child.pid,
-                                 'actual_argv': revised, 'original_requested_argv': list(map(str, requested)),
+                                 'actual_argv': list(child.args), 'original_requested_argv': list(map(str, requested)),
                                  'cwd': str(Path(keywords.get('cwd') or Path.cwd()).absolute()),
                                  'helper_revision': controls.ctx.helper_revision, 'candidate_revision': controls.ctx.candidate_revision,
                                  'product_acceptance_passed': False}
@@ -222,7 +222,7 @@ class NativePythonControls:
                         with path.open('xb') as stream: stream.write(canonical(proof) + b'\n')
                         child.__som_native_startup_receipt__ = (path, proof)
                     except BaseException as primary:
-                        controls.failed_receipt(child, primary, revised, requested, keywords)
+                        controls.failed_receipt(child, primary, child.args, requested, keywords)
                         raise
         GuardedPopen.__som_native_python_controls__ = self
         self.wrapper = GuardedPopen
@@ -460,7 +460,11 @@ class Context:
         return self.cache['runtime']
 
     def rust_tools(self):
-        helper = self.module('rust_tools', RUST_HELPER)
+        if self.qa_mode == 'native-qa-v1':
+            self.sources.read(RUST_HELPER)
+            helper = self.module('native_rust_tools', NATIVE_RUST_HELPER)
+        else:
+            helper = self.module('rust_tools', RUST_HELPER)
         profile = helper.profile_data(self.sources.read(PROFILE))
         out = Path(self.data['rust_tools_root'])
         if 'rust_tools' not in self.cache:
@@ -853,19 +857,37 @@ class Context:
         require(Path(values[0]).is_absolute(), 'native Python child must name its qualified absolute interpreter')
         self.python_payload(values[0])
         driver = str(self.repo / 'som-rs/scripts/hosted_readiness/run_full_products.py')
+        bootstrap = str(self.repo / 'som-rs/scripts/hosted_readiness/native_source_bootstrap.py')
         self.sources.read('som-rs/scripts/hosted_readiness/run_full_products.py')
-        marker = ['-I', '-S', '-B', driver, '--native-python-bootstrap', '--']
-        if values[1:7] == marker or (values[1:5] == ['-I', '-S', '-B', driver]
-                and values[5:6] in (['--execute-tool'], ['--worker-context'])):
-            return values
+        self.sources.read('som-rs/scripts/hosted_readiness/native_source_bootstrap.py')
+        require(type(self.helper_revision) is str and re.fullmatch('[0-9a-f]{40}', self.helper_revision) is not None
+                and type(self.candidate_revision) is str and type(self.sources.revision) is str
+                and type(self.repo) is type(Path()) and type(self.sources.root) is type(Path())
+                and self.helper_revision == self.candidate_revision == self.sources.revision
+                and self.repo == self.sources.root,
+                'native source bootstrap requires one exact Context source')
+        prefix = ['-I', '-S', '-B', bootstrap, '--repo', str(self.repo),
+                  '--helper-revision', self.helper_revision, '--candidate-revision', self.candidate_revision,
+                  '--entry-role', 'entry.full-products', '--']
         tail = values[1:]
         while tail and tail[0] in {'-I', '-S', '-B'}: tail.pop(0)
         if tail in (['--version'], ['-V']): return [values[0], '-I', '-S', '-B', *tail]
         require(tail and (tail[0] in {'-m', '-c'} or not tail[0].startswith('-')),
                 'unsupported native Python startup option')
-        if tail[0] == driver and tail[1:2] in (['--execute-tool'], ['--worker-context']):
-            return [values[0], '-I', '-S', '-B', *tail]
-        return [values[0], *marker, *tail]
+        bootstrap_shape = (tail[1:2] == ['--repo'] and tail[3:4] == ['--helper-revision']
+                           and tail[5:6] == ['--candidate-revision'] and tail[7:8] == ['--entry-role'])
+        if Path(tail[0]).name == 'native_source_bootstrap.py' or bootstrap_shape:
+            require(values[1:1 + len(prefix)] == prefix and len(values) > 1 + len(prefix),
+                    'native source bootstrap prefix differs from actual Context')
+            return values
+        if tail[0] == driver:
+            require(tail[1:2] in (['--execute-tool'], ['--worker-context'])
+                    or tail[1:3] == ['--native-python-bootstrap', '--'],
+                    'unsupported direct native driver entry')
+            tail = tail[1:]
+        else:
+            tail = ['--native-python-bootstrap', '--', *tail]
+        return [values[0], *prefix, *tail]
 
     def python_is_product_process(self, process, executable, package):
         require(self.qa_mode == 'native-qa-v1', 'native process adapter required')
@@ -882,8 +904,16 @@ class Context:
         return True
 
     def command(self, argv, cwd, env, label, timeout=1800, check=True):
+        requested = list(map(str, argv))
+        native_python = (self.qa_mode == 'native-qa-v1' and bool(requested)
+                         and re.fullmatch(r'python(?:[0-9]+(?:\.[0-9]+)*)?', Path(requested[0]).name) is not None)
+        if native_python:
+            require(type(self.python_controls) is NativePythonLease, 'native Python command requires the active guard lease')
+            self.python_controls.verify_installed()
         if self.qa_mode == 'native-qa-v1':
-            argv = self.python_argv(argv, cwd=cwd)
+            expected = self.python_argv(requested, cwd=cwd)
+        else:
+            expected = requested
         directory = self.work / 'environment-commands'
         directory.mkdir(parents=True, exist_ok=True)
         with self.command_lock:
@@ -893,16 +923,21 @@ class Context:
         stdout, stderr = directory / (prefix + '.stdout'), directory / (prefix + '.stderr')
         public_env = {key: ('[redacted transport token]' if key == 'SOM_DEPENDENCY_ACTIONS_TOKEN' else value)
                       for key, value in env.items()}
-        record = {'argv': list(map(str, argv)), 'cwd': str(cwd), 'environment': public_env,
+        record = {'argv': None if native_python else expected, 'cwd': str(cwd), 'environment': public_env,
                   'started_monotonic': time.monotonic(), 'exit_code': None, 'wait_completed': False}
+        if native_python:
+            record.update(original_requested_argv=requested, expected_argv=expected)
         self.cache.setdefault('commands', []).append(record)
         child = None
         try:
             with stdout.open('xb') as output, stderr.open('xb') as errors:
-                child = subprocess.Popen(record['argv'], cwd=cwd, env=env, stdout=output, stderr=errors,
+                child = subprocess.Popen(requested, cwd=cwd, env=env, stdout=output, stderr=errors,
                                          stdin=subprocess.DEVNULL, start_new_session=True)
                 record['pid'] = child.pid
                 try:
+                    if native_python:
+                        record['argv'] = list(child.args)
+                        require(record['argv'] == expected, 'native command actual argv differs from checked request')
                     record['exit_code'] = child.wait(timeout=timeout)
                     record['wait_completed'] = True
                 except BaseException:
@@ -1254,6 +1289,36 @@ class Context:
             require(type(job) is str and re.fullmatch('[A-Za-z_][A-Za-z0-9_-]*', job) is not None,
                     'native child requires the actual GitHub job identity')
             environment['GITHUB_JOB'] = job
+            for key, expected in (('GITHUB_ACTIONS', 'true'), ('RUNNER_ENVIRONMENT', 'github-hosted'),
+                                  ('RUNNER_OS', 'Linux'), ('GITHUB_REPOSITORY_ID', '1390374878'),
+                                  ('GITHUB_SERVER_URL', 'https://github.com'), ('GITHUB_API_URL', 'https://api.github.com')):
+                value = os.environ.get(key)
+                require(type(value) is str and value == expected,
+                        'native child requires actual GitHub hosted metadata: ' + key)
+                environment[key] = value
+            runner = os.environ.get('RUNNER_NAME')
+            require(type(runner) is str and 0 < len(runner) <= 256 and runner == runner.strip()
+                    and not any(ord(char) < 32 or ord(char) == 127 for char in runner),
+                    'native child requires the actual runner name')
+            environment['RUNNER_NAME'] = runner
+            workflow_source = os.environ.get('GITHUB_WORKFLOW_SHA')
+            require(type(workflow_source) is str and workflow_source == source,
+                    'native child requires the actual same-source workflow SHA')
+            environment['GITHUB_WORKFLOW_SHA'] = workflow_source
+            event = os.environ.get('GITHUB_EVENT_NAME')
+            require(event in {'push', 'workflow_dispatch'}, 'native child requires the actual formal workflow event')
+            environment['GITHUB_EVENT_NAME'] = event
+            ref = os.environ.get('GITHUB_REF')
+            require(type(ref) is str and len(ref) <= 1024
+                    and re.fullmatch(r'refs/(?:heads|tags)/[^\s@]+', ref) is not None
+                    and not any(ord(char) < 32 or ord(char) == 127 for char in ref),
+                    'native child requires the actual GitHub ref')
+            environment['GITHUB_REF'] = ref
+            workflow_ref = os.environ.get('GITHUB_WORKFLOW_REF')
+            require(type(workflow_ref) is str
+                    and workflow_ref == environment['GITHUB_REPOSITORY'] + '/.github/workflows/rust-hosted-readiness.yml@' + ref,
+                    'native child requires the actual root workflow/ref')
+            environment['GITHUB_WORKFLOW_REF'] = workflow_ref
         if os.environ.get('SOM_DEPENDENCY_ACTIONS_TOKEN'):
             environment['SOM_DEPENDENCY_ACTIONS_TOKEN'] = os.environ['SOM_DEPENDENCY_ACTIONS_TOKEN']
         return environment
@@ -1293,7 +1358,11 @@ class Context:
         runtime['reuse'].verify_installed_tree(Path(self.data['runtime_root']), runtime['inventory'], runtime['qualification'])
         runtime['sources'].verify()
         self.rust_tools()
-        helper = self.module('rust_tools', RUST_HELPER)
+        if self.qa_mode == 'native-qa-v1':
+            self.sources.read(RUST_HELPER)
+            helper = self.module('native_rust_tools', NATIVE_RUST_HELPER)
+        else:
+            helper = self.module('rust_tools', RUST_HELPER)
         helper.verify_install_tree(Path(self.data['rust_tools_root']),
                                    helper.profile_data(self.sources.read(PROFILE)))
         for closure in self.cache.get('used_closures', {}).values():

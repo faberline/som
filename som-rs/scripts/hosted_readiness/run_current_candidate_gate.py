@@ -30,6 +30,13 @@ SEMANTIC = BASE + 'run_candidate_semantic_gates.py'
 ORACLE = BASE + 'product_runtime/recorded_before_oracle.py'
 BOUND = BASE + 'bound_source.py'
 FULL_DRIVER = BASE + 'run_full_products.py'
+NATIVE_BOOTSTRAP = BASE + 'native_source_bootstrap.py'
+RECORDED_FRAME = ('GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_TEMP',
+    'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_JOB',
+    'GITHUB_REPOSITORY', 'GITHUB_REPOSITORY_ID', 'GITHUB_SERVER_URL', 'GITHUB_API_URL',
+    'GITHUB_WORKFLOW_SHA', 'GITHUB_EVENT_NAME', 'GITHUB_REF', 'GITHUB_WORKFLOW_REF', 'RUNNER_NAME')
+RECORDED_TOKEN = 'SOM_DEPENDENCY_ACTIONS_TOKEN'
+RECORDED_TOKEN_PUBLIC = '<present; value withheld>'
 VERSION = 'som.current-candidate-owned-gate.v1'
 GATES = {'typescript-regression', 'm6-react003'}
 GATE_OWNER_KEYS = {'typescript-regression': 'current_gate_owner_typescript_regression',
@@ -543,22 +550,17 @@ class Services:
         wanted_python = native['identity']['python_sha256']
         require_elf(python)
         require(identity(python)['sha256'] == wanted_python, 'actual qualified base Python differs')
+        self.ctx.sources.read(NATIVE_BOOTSTRAP)
         self.ctx.sources.read(FULL_DRIVER)
         self.ctx.sources.read(CONTEXT)
         directory = self.out / 'baseline'; directory.mkdir()
         service = self.driver.OwnedService(python, root, {}, PORTS['baseline'], directory)
-        # Set the actual command before Popen. Never rewrite Popen.args or old receipts.
+        # Request the oracle. The real guard creates the fresh bootstrap argv.
         requested, expected_actual = recorded_python_arguments(python, self.ctx.repo, self.ctx.helper_revision,
             self.ctx.candidate_revision, profile_path, root, directory / 'oracle', wanted_python)
         service.argv = requested
-        frame = ('GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_TEMP',
-                 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_JOB')
-        require(all(type(os.environ.get(name)) is str and os.environ[name] for name in frame)
-                and os.environ['GITHUB_SHA'] == self.ctx.helper_revision == self.ctx.candidate_revision,
-                'real GitHub source/job frame required for recorded service')
-        service.environment = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8',
-            'TMPDIR': str(directory / 'tmp'), 'SOM_FULL_PRODUCT_CONTEXT': str(self.ctx.path),
-            **{name: os.environ[name] for name in frame}}
+        service.environment, public_environment = recorded_python_environment(self.ctx.child_environment(),
+            context=self.ctx.path, directory=directory, revision=self.ctx.helper_revision)
         require(read(self.ctx.path) == self.ctx.raw == read(self.out.parent / 'context.input.json')
                 and os.environ.get('SOM_FULL_PRODUCT_CONTEXT') == str(self.ctx.path),
                 'recorded child requires the exact active checked Context')
@@ -567,7 +569,7 @@ class Services:
                  'profile': parse(profile_raw), 'input_root': str(root), 'oracle_out': 'oracle',
                  'data_proof_sha256': sha(canonical(proof) + b'\n')}
         record = {'role': 'baseline', 'port': PORTS['baseline'], 'argv': requested, 'requested_argv': requested,
-                  'environment': service.environment,
+                  'environment': public_environment,
                   'started_at': self.driver.utc(), 'initial_identities': initial, 'health_checks': [], 'extra': extra}
         item = {'service': service, 'record': record, 'binary': python, 'assets': root, 'tools': {},
                 'handle': None, 'recorded_verify': verify, 'recorded_module': oracle}
@@ -586,7 +588,10 @@ class Services:
         (directory / 'native-python-startup.json').write_bytes(startup_raw)
         extra['native_startup_source'] = str(startup_path)
         extra['native_startup_sha256'] = sha(startup_raw)
-        extra['native_bootstrap_source_sha256'] = sha(self.ctx.sources.read(FULL_DRIVER))
+        extra['native_bootstrap_source'] = NATIVE_BOOTSTRAP
+        extra['native_bootstrap_source_sha256'] = sha(self.ctx.sources.read(NATIVE_BOOTSTRAP))
+        extra['native_entry_driver_source'] = FULL_DRIVER
+        extra['native_entry_driver_source_sha256'] = sha(self.ctx.sources.read(FULL_DRIVER))
         record['argv'] = list(service.process.args)
         record['proc_proof'] = proc_snapshot(service, directory)
         status, raw, owner = service.call('/healthz')
@@ -810,18 +815,80 @@ def validate_owner_result(value, gate, revision):
 
 
 def recorded_python_arguments(python, repo, helper, candidate, profile, inputs, output, python_sha256):
-    """Request the admitted script; the existing native guard owns the rewrite."""
+    """Keep the oracle request distinct from the fresh source bootstrap argv."""
     tail = [str(Path(repo) / ORACLE), '--repo', str(repo), '--helper-revision', helper,
             '--candidate-revision', candidate, '--profile', profile, '--inputs-root', str(inputs),
             '--python-sha256', python_sha256, '--port', str(PORTS['baseline']), '--out', str(output)]
     requested = [str(python), '-I', '-S', '-B', *tail]
-    actual = [str(python), '-I', '-S', '-B', str(Path(repo) / FULL_DRIVER), '--native-python-bootstrap', '--', *tail]
+    actual = [str(python), '-I', '-S', '-B', str(Path(repo) / NATIVE_BOOTSTRAP),
+              '--repo', str(repo), '--helper-revision', helper, '--candidate-revision', candidate,
+              '--entry-role', 'entry.full-products', '--', '--native-python-bootstrap', '--', *tail]
     return requested, actual
+
+
+def validate_recorded_python_environment(environment, *, context, directory, revision):
+    """Admit an exact public frame. The token has only a fixed presence marker."""
+    require(type(environment) is dict
+            and set(environment) == {'PATH', 'LANG', 'LC_ALL', 'TMPDIR', 'SOM_FULL_PRODUCT_CONTEXT',
+                                     RECORDED_TOKEN, *RECORDED_FRAME}
+            and all(type(value) is str and value and not any(char in value for char in ('\0', '\n', '\r'))
+                    for value in environment.values()), 'recorded Python exact public environment required')
+    require(environment['PATH'] == '/usr/bin:/bin' and environment['LANG'] == environment['LC_ALL'] == 'C.UTF-8'
+            and environment['TMPDIR'] == str(Path(directory) / 'tmp')
+            and environment['SOM_FULL_PRODUCT_CONTEXT'] == str(context)
+            and environment[RECORDED_TOKEN] == RECORDED_TOKEN_PUBLIC,
+            'recorded Python minimal paths or public authentication presence differs')
+    require(environment['GITHUB_ACTIONS'] == 'true' and environment['RUNNER_ENVIRONMENT'] == 'github-hosted'
+            and environment['RUNNER_OS'] == 'Linux' and environment['GITHUB_REPOSITORY'] == 'faberline/som'
+            and environment['GITHUB_REPOSITORY_ID'] == '1390374878'
+            and environment['GITHUB_SERVER_URL'] == 'https://github.com'
+            and environment['GITHUB_API_URL'] == 'https://api.github.com'
+            and environment['GITHUB_SHA'] == environment['GITHUB_WORKFLOW_SHA'] == revision
+            and re.fullmatch('[0-9a-f]{40}', revision or '') is not None,
+            'recorded Python hosted repository/source frame differs')
+    require(all(re.fullmatch('[1-9][0-9]*', environment[name]) is not None
+                for name in ('GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT'))
+            and re.fullmatch('[A-Za-z_][A-Za-z0-9_-]*', environment['GITHUB_JOB']) is not None
+            and environment['GITHUB_EVENT_NAME'] in {'push', 'workflow_dispatch'},
+            'recorded Python actual run/attempt/job/event frame differs')
+    ref, runner = environment['GITHUB_REF'], environment['RUNNER_NAME']
+    require(len(ref) <= 1024 and re.fullmatch(r'refs/(?:heads|tags)/[^\s@]+', ref) is not None
+            and environment['GITHUB_WORKFLOW_REF'] ==
+                'faberline/som/.github/workflows/rust-hosted-readiness.yml@' + ref
+            and 0 < len(runner) <= 256 and runner == runner.strip()
+            and not any(ord(char) < 32 or ord(char) == 127 for char in ref + runner),
+            'recorded Python workflow/ref/runner frame differs')
+    temporary = Path(environment['RUNNER_TEMP'])
+    require(temporary.is_absolute() and '..' not in temporary.parts and temporary in Path(directory).parents,
+            'recorded Python directory must be inside its actual RUNNER_TEMP')
+
+
+def recorded_python_environment(child_environment, *, context, directory, revision):
+    """Select the existing checked Context frame; never save the real token."""
+    require(type(child_environment) is dict and all(name in child_environment for name in RECORDED_FRAME),
+            'checked Context complete child environment required')
+    actual = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8',
+              'TMPDIR': str(Path(directory) / 'tmp'), 'SOM_FULL_PRODUCT_CONTEXT': str(context),
+              **{name: child_environment[name] for name in RECORDED_FRAME}}
+    token = child_environment.get(RECORDED_TOKEN)
+    require(type(token) is str and token and token != RECORDED_TOKEN_PUBLIC
+            and not any(char in token for char in ('\0', '\n', '\r')),
+            'actual existing Actions authentication is required for recorded fresh bootstrap')
+    public = {**actual, RECORDED_TOKEN: RECORDED_TOKEN_PUBLIC}
+    validate_recorded_python_environment(public, context=context, directory=directory, revision=revision)
+    actual[RECORDED_TOKEN] = token
+    return actual, public
 
 
 def validate_recorded_python_evidence(startup, post, *, requested, actual, pid, cwd, revision, source_reader, exit_code):
     """Check the existing guard's real startup and terminal bootstrap protocol."""
     require(type(exit_code) is int and exit_code == 0, 'recorded Python native bootstrap must exit zero')
+    require(type(requested) is list and len(requested) == 21 and all(type(value) is str for value in requested),
+            'recorded original oracle request shape differs')
+    expected_requested, expected_actual = recorded_python_arguments(requested[0], requested[6], revision, revision,
+        requested[12], requested[14], requested[20], requested[16])
+    require(requested == expected_requested and actual == expected_actual,
+            'recorded fresh bootstrap/entry/oracle source command differs')
     require(startup == {'version': 'som.native-python-child-startup.v1', 'pid': pid,
             'actual_argv': actual, 'original_requested_argv': requested, 'cwd': str(cwd),
             'helper_revision': revision, 'candidate_revision': revision, 'product_acceptance_passed': False},
@@ -854,9 +921,14 @@ def verify_recorded_python_startup(directory, record, sources, data):
     python = Path(data['runtime_root']) / 'install/python/bin/python3.12'
     requested, actual = recorded_python_arguments(python, sources.root, sources.revision, sources.revision,
         record['extra']['profile_path'], record['extra']['input_root'], directory / 'oracle', identity(python)['sha256'])
+    validate_recorded_python_environment(record['environment'], context=record['environment']['SOM_FULL_PRODUCT_CONTEXT'],
+        directory=directory, revision=sources.revision)
     require(record['requested_argv'] == requested and record['argv'] == actual
-            and record['extra']['native_bootstrap_source_sha256'] == sha(sources.read(FULL_DRIVER)),
-            'recorded actual bootstrap source or command differs')
+            and record['extra']['native_bootstrap_source'] == NATIVE_BOOTSTRAP
+            and record['extra']['native_bootstrap_source_sha256'] == sha(sources.read(NATIVE_BOOTSTRAP))
+            and record['extra']['native_entry_driver_source'] == FULL_DRIVER
+            and record['extra']['native_entry_driver_source_sha256'] == sha(sources.read(FULL_DRIVER)),
+            'recorded actual initial bootstrap, entry driver source or command differs')
     pid = record['owned_start']['pid']
     proc = read(directory / 'start.proc-stat.raw').rsplit(b')', 1)[1].split()
     startup_source = Path(data['work_root']) / 'python-child-startups' / f'{int(proc[1])}-{pid}.json'
@@ -982,15 +1054,19 @@ def verify_recorded_service(root, directory, record, stamp, sources):
             and record['initial_identities'] == record['final_identities']
             and portable(record['initial_identities']) == {'binary': identity(python), 'assets': tree(inputs), 'tools': {}},
             'actual recorded runtime executable/data identities differ')
-    frame = {'GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_TEMP',
-             'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_JOB'}
     environment = record['environment']
-    require(set(environment) == {'PATH', 'LANG', 'LC_ALL', 'TMPDIR', 'SOM_FULL_PRODUCT_CONTEXT', *frame}
-            and environment['PATH'] == '/usr/bin:/bin' and environment['LANG'] == environment['LC_ALL'] == 'C.UTF-8'
-            and environment['TMPDIR'] == str(directory / 'tmp') and environment['GITHUB_ACTIONS'] == 'true'
-            and environment['RUNNER_ENVIRONMENT'] == 'github-hosted' and environment['RUNNER_OS'] == 'Linux'
-            and environment['GITHUB_SHA'] == sources.revision
-            and all(type(environment[name]) is str and environment[name] for name in frame), 'recorded Python environment/frame differs')
+    validate_recorded_python_environment(environment, context=environment['SOM_FULL_PRODUCT_CONTEXT'],
+        directory=directory, revision=sources.revision)
+    catalog = parse(read(root.parent / 'artifact-inputs.json'))
+    context_catalog = parse(read(data['artifact_inputs'])) if type(data['artifact_inputs']) is str else data['artifact_inputs']
+    require(catalog == context_catalog and catalog['repository'] == environment['GITHUB_REPOSITORY']
+            and type(catalog['run_id']) is int and str(catalog['run_id']) == environment['GITHUB_RUN_ID']
+            and type(catalog['run_attempt']) is int and str(catalog['run_attempt']) == environment['GITHUB_RUN_ATTEMPT']
+            and catalog['helper_revision'] == catalog['candidate_revision'] == sources.revision
+            and all(environment[name] == os.environ.get(name) for name in RECORDED_FRAME)
+            and environment['RUNNER_TEMP'] == os.environ['RUNNER_TEMP']
+            and Path(environment['RUNNER_TEMP']) in Path(data['work_root']).parents,
+            'recorded Python public frame differs from immutable Context/same-run artifact catalog')
     require(record['requested_argv'] == requested, 'recorded original script request differs')
     verify_recorded_python_startup(directory, record, sources, data)
     with _borrowed_controls(sources) as controls:

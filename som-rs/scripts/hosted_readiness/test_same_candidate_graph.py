@@ -397,18 +397,21 @@ class EntryAdmissionTests(unittest.TestCase):
             self.assertFalse(report['entry_executed'])
 
     def test_entry_without_context_import_still_has_prior_context_and_postchecks(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp).resolve()
-            work, context, sources, ctx, mod = self.setup_context(root, ['allowed.py'])
-            sources.read.return_value = b'raise SystemExit(0)'
-            with mock.patch.dict(os.environ, {'RUNNER_TEMP': str(root), 'SOM_FULL_PRODUCT_CONTEXT': str(context)}), \
-                 mock.patch.object(d, 'load_context_module', return_value=mod):
-                self.assertEqual(d.execute_tool(['allowed.py']), 0)
-            mod.Context.assert_called_once()
-            ctx.verify.assert_called_once()
-            report = json.loads(next((work / 'checker-postchecks').iterdir()).read_bytes())
-            self.assertTrue(report['entry_executed'])
-            self.assertTrue(report['source_runtime_tools_inputs_unchanged'])
+        protocol = module('graph_full_product_protocol_fixture', HERE / 'test_run_full_products.py')
+        fixture = protocol.native_protocol_fixture(self)
+        self.assertEqual(fixture.run_entry(), 0)
+        context = fixture.domain.records['runtime.context'].module
+        self.assertEqual(len(context.CONSTRUCTIONS), 1)
+        self.assertEqual(len(context.VERIFICATIONS), 1)
+        self.assertIs(context.CONSTRUCTIONS[0], context.VERIFICATIONS[0])
+        self.assertTrue((fixture.work / 'entry-observed-context').is_file())
+        # The checker payload has no full_product_context import. The actual
+        # driver/actual Core must construct and recheck the protocol Context.
+        self.assertNotIn(b'import full_product_context', fixture.raw[fixture.target])
+        report = json.loads(next((fixture.work / 'checker-postchecks').iterdir()).read_bytes())
+        self.assertTrue(report['entry_executed'])
+        self.assertTrue(report['source_runtime_tools_inputs_unchanged'])
+        self.assertFalse(report['product_acceptance_passed'])
 
     def test_context_admission_failure_keeps_first_error_and_writes_failure_evidence(self):
         with tempfile.TemporaryDirectory() as temp:
