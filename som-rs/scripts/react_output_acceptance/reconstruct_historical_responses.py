@@ -23,6 +23,12 @@ class Refused(ValueError): pass
 def need(ok):
     if not ok: raise Refused('historical response reconstruction refused')
 
+def valid_manifest_name(name):
+    return isinstance(name, str) and re.fullmatch(r'package-[0-9]{3}[.]manifest[.]json', name) is not None
+
+def valid_response_name(name):
+    return isinstance(name, str) and re.fullmatch(r'run/python-baseline-raw/calls/[0-9]{6}[.]response[.]raw', name) is not None
+
 def sha(data): return hashlib.sha256(data).hexdigest()
 def read(path):
     need(not path.is_symlink() and path.is_file())
@@ -51,6 +57,7 @@ def indexed_files(root, index_sha, evidence):
     need(index['version'] == ('som.m6-evidence-index.v1' if evidence else 'som.m6-input-index.v1'))
     result = {}
     for package in index['packages']:
+        need(valid_manifest_name(package['manifest']))
         manifest_raw = read(safe(root, package['manifest']))
         need(sha(manifest_raw) == package['manifest_sha256'])
         manifest = parse(manifest_raw)
@@ -104,7 +111,7 @@ def derive(map_raw, input_packages, input_root, evidence_packages, evidence_root
         # All listed source candidates must be authentic, byte-identical captures.
         raw = None
         for candidate in candidates:
-            name = candidate['path']; need(re.fullmatch(r'run/python-baseline-raw/calls/[0-9]{6}\.response\.raw', name) is not None)
+            name = candidate['path']; need(valid_response_name(name))
             data = checked(evidence_root, name, later)
             _, size, package, _ = later[name]
             need(candidate['package'] == package['archive'] and candidate['manifest'] == package['manifest']

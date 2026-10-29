@@ -353,6 +353,16 @@ class UnorderedParityWireTests(unittest.TestCase):
 
 
 class HistoricalReconstructionTests(unittest.TestCase):
+    def test_actual_source_name_formats(self):
+        import reconstruct_historical_responses as recon
+        self.assertTrue(recon.valid_manifest_name('package-009.manifest.json'))
+        self.assertTrue(recon.valid_manifest_name('package-015.manifest.json'))
+        for invalid in ('package-09.manifest.json', 'package-009Xmanifest.json', '../package-009.manifest.json', 'package-009.manifest.json/extra'):
+            self.assertFalse(recon.valid_manifest_name(invalid))
+        self.assertTrue(recon.valid_response_name('run/python-baseline-raw/calls/000009.response.raw'))
+        for invalid in ('run/python-baseline-raw/calls/00009.response.raw', 'run/python-baseline-raw/calls/000009Xresponse.raw', '../run/python-baseline-raw/calls/000009.response.raw'):
+            self.assertFalse(recon.valid_response_name(invalid))
+
     def test_exact_bytes_and_source_tampering(self):
         import base64
         import hashlib
