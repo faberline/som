@@ -95,6 +95,13 @@ class CallbackFixture(unittest.TestCase):
         git.assert_not_called()
         module.assert_not_called()
 
+    def test_shared_owner_entry_refuses_without_accessing_services_or_inputs(self):
+        class Unavailable:
+            def __getattribute__(self, name):
+                raise AssertionError('unavailable shared owner input accessed: ' + name)
+        with self.assertRaisesRegex(ValueError, 'shared owner integration is not implemented'):
+            subject.run_gate(Unavailable(), Unavailable(), Unavailable(), Unavailable(), subject.GATE)
+
     def test_enabling_outer_guard_alone_still_blocks_bootstrap(self):
         with mock.patch.dict(os.environ, {'GITHUB_ACTIONS': 'true',
                 'RUNNER_ENVIRONMENT': 'github-hosted', 'RUNNER_OS': 'Linux'}), \

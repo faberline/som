@@ -104,6 +104,15 @@ def admit(repo, revision, candidate, context_path):
     raise ValueError('native pre-import source authority is not implemented')
 
 
+def run_gate(ctx, candidate_dir, services, out, gate):
+    """Shared owner entry point; refuse until the actual integration is reviewed.
+
+    The owner controls candidate and baseline lifetime. This callback must not
+    start either service or infer the missing React input and cleanup schemas.
+    """
+    raise ValueError('M6 shared owner integration is not implemented')
+
+
 def command_evidence(ctx, out, name, command):
     """Copy actual raw streams, including partial output after command failure."""
     record = dict(command)
