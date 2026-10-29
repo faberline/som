@@ -1,7 +1,7 @@
 name: Native active source fixtures
 on:
   push:
-    branches: [codex/m12-native-transport-library-source-fixtures-v1]
+    branches: [codex/m12-native-react-payload-source-fixtures-v1]
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,8 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: transport-library-imports
-            script: som-rs/scripts/hosted_readiness/test_native_transport_library_copies.py
+          - name: native-react-payload
+            script: som-rs/scripts/hosted_readiness/test_native_react_payload_handoff.py
             legacy: false
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
