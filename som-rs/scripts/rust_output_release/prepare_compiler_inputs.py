@@ -45,6 +45,7 @@ def final_receipt(path, expected_sha, revision):
     candidate = accepted.get('candidate', {})
     audit = accepted.get('independent_audit', {})
     rc.require(accepted.get('version') == 'som.react-output-acceptance-evidence.v1'
+               and accepted.get('issue') == 130
                and accepted.get('status') == 'accepted_after_independent_raw_audit'
                and candidate.get('source_commit') == revision
                and re.fullmatch(r'[0-9a-f]{64}', candidate.get('binary_sha256', '')) is not None
@@ -70,6 +71,8 @@ def final_review(accepted):
                'independent review bytes differ')
     record = parse(path.read_bytes())
     rc.require(record.get('version') == 'som.react-output-independent-acceptance-review.v1'
+               and record.get('issue') == 130
+               and record.get('verdict') == 'accept_issue130_phase1_only'
                and record.get('findings') == []
                and record.get('candidate_binary_sha256') == accepted['candidate']['binary_sha256']
                and record.get('compiler_source_commit') == accepted['candidate']['source_commit']
@@ -77,6 +80,14 @@ def final_review(accepted):
                and record.get('raw_run_sha256') == accepted['report_sha256']['run/run.json'],
                'independent review does not bind this acceptance')
     return path
+
+
+def final_candidate_source(accepted, raw, revision):
+    """Bind the retained candidate's actual source receipt to the accepted revision."""
+    source = parse(raw)
+    rc.require(source.get('commit') == revision == accepted['candidate']['source_commit'],
+               'candidate source receipt names another commit')
+    return source
 
 
 def parse(raw):
@@ -265,7 +276,9 @@ def main():
     candidate = raw / 'candidate'
     for name, key in [('som', 'binary_sha256'), ('build.json', 'build_sha256'),
                       ('runtime.json', 'runtime_sha256'), ('source.json', 'source_receipt_sha256')]:
-        source.read('candidate/' + name, accepted['candidate'][key])
+        raw_candidate = source.read('candidate/' + name, accepted['candidate'][key])
+        if final_mac and name == 'source.json':
+            final_candidate_source(accepted, raw_candidate, args.mac_candidate_revision)
     previous = rc.REPO / '.local/m6-hosted/baseline'
     for name, expected in BASELINE_PINS.items():
         rc.require(rc.digest(previous / name) == expected, 'accepted previous compiler differs')
@@ -338,6 +351,7 @@ def main():
             'assets': {'path': str(directory / 'assets'), 'manifest_sha256': runtime['health']['asset_manifest_sha256']}}
 
     acceptance_assertions = ({'/status': 'accepted_after_independent_raw_audit',
+                              '/issue': 130,
                               '/candidate/source_commit': args.mac_candidate_revision,
                               '/candidate/binary_sha256': accepted['candidate']['binary_sha256']} if final_mac else {
                               '/status': 'accepted_after_independent_raw_audit',
@@ -358,6 +372,7 @@ def main():
               'source_files': source.files, 'audit_source_files': audited.files}
     if final_mac:
         config['gates']['independent_source_review'] = {**binding(review_path), 'assertions': {
+            '/issue': 130, '/verdict': 'accept_issue130_phase1_only',
             '/candidate_binary_sha256': accepted['candidate']['binary_sha256'],
             '/compiler_source_commit': args.mac_candidate_revision,
             '/audit_sha256': accepted['independent_audit']['audit_sha256'],

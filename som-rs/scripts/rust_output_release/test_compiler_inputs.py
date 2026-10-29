@@ -65,10 +65,11 @@ class CompilerInputTests(unittest.TestCase):
         revision, binary, audit, raw = '1' * 40, '2' * 64, '3' * 64, '4' * 64
         review_path = self.root / 'evidence/review.json'
         review = {'version': 'som.react-output-independent-acceptance-review.v1', 'findings': [],
+                  'issue': 130, 'verdict': 'accept_issue130_phase1_only',
                   'candidate_binary_sha256': binary, 'compiler_source_commit': revision,
                   'audit_sha256': audit, 'raw_run_sha256': raw}
         write(review_path, review)
-        accepted = {'version': 'som.react-output-acceptance-evidence.v1',
+        accepted = {'version': 'som.react-output-acceptance-evidence.v1', 'issue': 130,
                     'status': 'accepted_after_independent_raw_audit',
                     'candidate': {'source_commit': revision, 'binary_sha256': binary},
                     'baseline': {'binary_sha256': self.producer.BASELINE_PINS['som']},
@@ -84,6 +85,25 @@ class CompilerInputTests(unittest.TestCase):
                 self.producer.final_receipt(receipt, '0' * 64, revision)
             with self.assertRaises(RuntimeError):
                 self.producer.final_receipt(receipt, digest(receipt), '9' * 40)
+            self.assertEqual(self.producer.final_candidate_source(accepted, encoded({'commit': revision}), revision)['commit'], revision)
+            with self.assertRaises(RuntimeError):
+                self.producer.final_candidate_source(accepted, encoded({'commit': '9' * 40}), revision)
+            for verdict in (None, 'reject', 'accept_release'):
+                changed = copy.deepcopy(review)
+                if verdict is None:
+                    del changed['verdict']
+                else:
+                    changed['verdict'] = verdict
+                write(review_path, changed)
+                accepted['independent_review']['sha256'] = digest(review_path)
+                with self.assertRaises(RuntimeError):
+                    self.producer.final_review(accepted)
+            review['issue'] = 131
+            write(review_path, review)
+            accepted['independent_review']['sha256'] = digest(review_path)
+            with self.assertRaises(RuntimeError):
+                self.producer.final_review(accepted)
+            review['issue'] = 130
             review['candidate_binary_sha256'] = '9' * 64
             write(review_path, review)
             accepted['independent_review']['sha256'] = digest(review_path)
@@ -91,7 +111,7 @@ class CompilerInputTests(unittest.TestCase):
                 self.producer.final_review(accepted)
 
     def test_final_mac_receipt_refuses_old_binary(self):
-        accepted = {'version': 'som.react-output-acceptance-evidence.v1',
+        accepted = {'version': 'som.react-output-acceptance-evidence.v1', 'issue': 130,
                     'status': 'accepted_after_independent_raw_audit',
                     'candidate': {'source_commit': '1' * 40,
                                   'binary_sha256': '59dab78a0f401a86e028c186285a888cfdf304b2d077e167d46b20d1131a3308'},
