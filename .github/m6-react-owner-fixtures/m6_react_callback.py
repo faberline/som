@@ -8,6 +8,7 @@ launcher cleanup and cross-job restored-run identities have defined verifiers.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
 import os
@@ -28,7 +29,19 @@ GATE = 'm6-react003'
 # Fail closed until the graph supplies reviewed source, owner and restored-run joins.
 GRAPH_INTEGRATION_REVIEWED = False
 OWNER_INTEGRATION_REVIEWED = False
-OWNER_DOMAIN_REVIEWED = False
+INPUT_COMMIT = '1de8f05430a72f8d76f6159786cca71b0ae1a911'
+INPUT_INDEX_SHA = 'c468ae2086e4d64847b93ad8da08aa3828f30989008db470519cd408e55b67bf'
+ORIGINAL_INPUT_COMMIT = '55eb7f5c3b21d4f3b57eb721ab60c6aa97e10db3'
+ORIGINAL_INPUT_INDEX_SHA = '78375feb14ed286ac5df4c52f13d5d1ae301b2057d5e3894edf0f36c2705c498'
+AUDIT_BASE = 'som-rs/scripts/react_output_acceptance/audit/'
+AUDIT_MODULES = ('render_rules', 'refusal_rules', 'api_raw', 'linux_install_map', 'linux_input_raw', 'baseline_raw', 'audit130')
+INPUT_PROFILE = 'som-rs/contracts/react-output-v1/native-owner-input-authority.json'
+DERIVED_SOURCES = {
+    'som-rs/scripts/react_output_acceptance/native_owner_input_binding.py': 'ed8b910fbc79087231050fa5883cc2ca71ddfcdb881a289e32dcf41ce5f34e2d',
+    'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py': 'f7231671f41cb78cfe50e195159f54c644baa1f65a0a186c52f2abc2b8877e41',
+    'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py': '82efed50d624cfe1929de5448ca756bbec5c28f8f04ba652fe8286fc285f5d1b',
+    'som-rs/scripts/react_output_acceptance/historical-response-reuse-map.json': '3b06627c31626238960d38ddb9e772e57c900a98a28ba6407790ca8196edd8ca',
+}
 HEX = re.compile(r'[0-9a-f]{40}\Z')
 
 
@@ -191,7 +204,7 @@ def run_gate(ctx, candidate_dir, services, out, gate):
         ctx.verify(); services.verify_all()
         if collector.is_dir():
             audit_args = auditor_arguments(repo=repo, collector_out=collector, audit_out=audit_out,
-                                           api_closure_tar=paths['api_closure_tar'])
+                                           api_closure_tar=paths['api_closure_tar'], candidate_dir=candidate_dir)
             report['rows'].append(run_command(ctx, module, repo, env, out, report, 'audit', AUDITOR, audit_args, 7200))
             ctx.verify(); services.verify_all()
         else:
@@ -280,6 +293,43 @@ def finalize_report(ctx, out, report):
             errors.append({'stage': 'write_partial_result', 'error': type(secondary).__name__ + ': ' + str(secondary)})
 
 
+def scan_capture_source(source):
+    """Record every regular file, directory and excluded entry without following links."""
+    source = physical(source)
+    files, directories, excluded = {}, {}, []
+    def failed(_):
+        raise ValueError('collector source scan failed')
+    for directory, dirs, names in os.walk(source, topdown=True, followlinks=False, onerror=failed):
+        accepted = []
+        for name in sorted(dirs):
+            path = Path(directory) / name
+            relative = path.relative_to(source).as_posix()
+            info = path.lstat()
+            if stat.S_ISDIR(info.st_mode) and not stat.S_ISLNK(info.st_mode):
+                directories[relative] = stat.S_IMODE(info.st_mode)
+                accepted.append(name)
+            else:
+                excluded.append({'path': relative, 'reason': 'symlink_not_followed' if stat.S_ISLNK(info.st_mode) else 'non_directory_not_followed'})
+        dirs[:] = accepted
+        for name in sorted(names):
+            path = Path(directory) / name
+            relative = path.relative_to(source).as_posix()
+            before = path.lstat()
+            if stat.S_ISLNK(before.st_mode):
+                excluded.append({'path': relative, 'reason': 'symlink_not_followed'})
+            elif not stat.S_ISREG(before.st_mode):
+                excluded.append({'path': relative, 'reason': 'special_file_not_copied'})
+            else:
+                raw = read(path)
+                after = path.lstat()
+                require((before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns, before.st_mode)
+                        == (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_mode),
+                        'collector source changed during scan')
+                files[relative] = {'sha256': sha(raw), 'size': len(raw), 'mode': stat.S_IMODE(after.st_mode)}
+    return {'files': dict(sorted(files.items())), 'directories': dict(sorted(directories.items())),
+            'excluded': sorted(excluded, key=lambda row: row['path'])}
+
+
 def copy_capture(source, destination):
     """Retain safe files despite incomplete runtime; report every omission."""
     source = physical(source)
@@ -288,6 +338,18 @@ def copy_capture(source, destination):
             and source not in destination.parents, 'separate new capture destination required')
     destination.mkdir(mode=0o700)
     copied, excluded, errors = {}, [], []
+    try:
+        before = scan_capture_source(source)
+    except (OSError, ValueError) as error:
+        before = None
+        errors.append({'path': '.', 'error': type(error).__name__, 'stage': 'before_scan'})
+    if before is not None:
+        for name, mode in sorted(before['directories'].items(), key=lambda item: (len(Path(item[0]).parts), item[0])):
+            try:
+                (destination / name).mkdir(parents=True, exist_ok=True)
+                os.chmod(destination / name, mode)
+            except OSError as error:
+                errors.append({'path': name, 'error': type(error).__name__, 'stage': 'copy_directory'})
     def scan_error(error):
         name = getattr(error, 'filename', None)
         try:
@@ -324,15 +386,30 @@ def copy_capture(source, destination):
                     continue
                 raw = read(path)
                 save(destination / relative, raw)
+                os.chmod(destination / relative, stat.S_IMODE(mode))
                 copied[relative] = sha(raw)
             except (OSError, ValueError) as error:
                 errors.append({'path': relative, 'error': type(error).__name__})
+    after = None
+    try:
+        after = scan_capture_source(source)
+    except (OSError, ValueError) as error:
+        errors.append({'path': '.', 'error': type(error).__name__, 'stage': 'after_scan'})
+    stable = before is not None and before == after and not errors
+    modes = stable and all(stat.S_IMODE((destination / name).stat().st_mode) == value['mode']
+                           and copied.get(name) == value['sha256'] for name, value in before['files'].items())
+    try:
+        retained_scan = scan_capture_source(destination)
+        directories_preserved = bool(stable and retained_scan['directories'] == before['directories'])
+    except (OSError, ValueError):
+        directories_preserved = False
     return {'version': 'som.m6-partial-collector-capture.v1',
             'copied_sha256': dict(sorted(copied.items())), 'excluded': excluded, 'errors': errors,
             'unverified_runtime_or_evidence': bool(excluded or errors),
             'all_observed_files_copied': not excluded and not errors,
-            'source_stability_verified': False, 'file_modes_preserved': False,
-            'empty_directories_preserved': False, 'sealed_transport_verified': False,
+            'source_snapshot': before, 'source_stability_verified': stable,
+            'file_modes_preserved': bool(modes and not excluded), 'regular_file_modes_preserved': bool(modes),
+            'empty_directories_preserved': directories_preserved, 'sealed_transport_verified': False,
             'complete': False}
 
 
@@ -496,10 +573,13 @@ def collector_arguments(*, candidate_dir, collector_out, baseline_url, legacy_ru
             '--qa-profile', str(qa_profile), '--api-profile', str(api_profile)]
 
 
-def auditor_arguments(*, repo, collector_out, audit_out, api_closure_tar):
+def auditor_arguments(*, repo, collector_out, audit_out, api_closure_tar, candidate_dir=None):
     """Map explicit raw inputs to the existing auditor CLI without running it."""
-    return ['--repo', str(repo), '--run', str(collector_out), '--out', str(audit_out),
-            '--api-closure-tar', str(api_closure_tar)]
+    result = ['--repo', str(repo), '--run', str(collector_out), '--out', str(audit_out),
+              '--api-closure-tar', str(api_closure_tar)]
+    if candidate_dir is not None:
+        result += ['--owned-candidate-root', str(candidate_dir)]
+    return result
 
 
 def run(args):
@@ -635,17 +715,236 @@ def check_local_capture_consistency(root, source_reader, helper_revision, candid
             'product_acceptance_passed': False}
 
 
-def verify_react_raw_domain(root, source_reader, helper_revision, candidate_revision, gate, *, repo, proof_roots):
-    """Refuse while the React raw-run restore and input authority are unresolved.
+def approved_manifest(repo, commit=INPUT_COMMIT, index_sha=INPUT_INDEX_SHA, count=18):
+    """Read the exact human-approved input index and its bound manifests."""
+    def blob(name):
+        require(re.fullmatch(r'inputs-index[.]json|package-[0-9]{3}[.]manifest[.]json', name) is not None,
+                'approved manifest name differs')
+        return subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(repo),
+                                        'show', commit + ':' + name],
+                                       stderr=subprocess.DEVNULL, timeout=60)
+    raw = blob('inputs-index.json')
+    require(sha(raw) == index_sha, 'approved input index differs')
+    index = strict_json(raw)
+    require(type(index) is dict and index.get('version') == 'som.m6-input-index.v1'
+            and type(index.get('packages')) is list and len(index['packages']) == count,
+            'approved input index schema differs')
+    result = {}
+    for entry in index['packages']:
+        raw = blob(entry['manifest'])
+        require(sha(raw) == entry['manifest_sha256'], 'approved input manifest differs')
+        manifest = strict_json(raw)
+        require(manifest.get('version') == 'som.m6-sealed-inputs-manifest.v1'
+                and manifest.get('total_files') == len(manifest.get('files', [])), 'input manifest schema differs')
+        for file in manifest['files']:
+            name = file['path']
+            require(type(name) is str and name.startswith('.local/') and '..' not in Path(name).parts
+                    and name not in result and re.fullmatch(r'[0-9a-f]{64}', file['sha256']) is not None,
+                    'approved input member differs')
+            require(type(file.get('bytes')) is int and file['bytes'] >= 0 and file.get('mode') in (0o644, 0o755),
+                    'approved input size or mode differs')
+            result[name] = {'sha256': file['sha256'], 'bytes': file['bytes'], 'mode': file['mode']}
+    return result
 
-    Local matching hashes, command exit booleans and the collector's audit
-    output do not independently prove the named product checks. A completed
-    verifier must rederive those checks against authenticated inputs and a
-    restored run before this guard can change.
-    """
+
+@contextlib.contextmanager
+def source_bound_derived_inputs(source_reader, repo):
+    """Re-run the independently reviewed two-source input join (no wire claim)."""
+    profile = strict_json(source_reader(INPUT_PROFILE))
+    require(profile == {'version': 'som.m6-native-owner-input-authority.v1',
+        'approved_commit': INPUT_COMMIT, 'approved_index_sha256': INPUT_INDEX_SHA,
+        'original_commit': ORIGINAL_INPUT_COMMIT, 'original_index_sha256': ORIGINAL_INPUT_INDEX_SHA,
+        'derived_source_sha256': DERIVED_SOURCES,
+        'later_artifact': {'id': 12843589912, 'name': 'm6-sealed-raw-evidence',
+            'size': 249935784, 'sha256': '33fbad9d63cfa257636384b9b7c10e1406f2306922e4f28e8189c79f703b041e',
+            'run_id': 40743738705, 'head_sha': '40cffc13b3bff35e3ea5804b9f43a49cdef7b3c0',
+            'repository_id': 1390374878, 'index_sha256': '3759239392208eab81bf740ca9ca2a41465be3e3e4995de2bd255774f4596bea'}},
+        'tracked React input authority differs')
+    temp = physical(Path(os.environ['RUNNER_TEMP']))
+    metadata = strict_json(read(temp / 'metadata.json', 1024 * 1024))
+    artifact = profile['later_artifact']
+    origin = metadata.get('workflow_run')
+    require(type(origin) is dict and metadata.get('id') == artifact['id']
+            and metadata.get('name') == artifact['name'] and metadata.get('size_in_bytes') == artifact['size']
+            and metadata.get('digest') == 'sha256:' + artifact['sha256'] and metadata.get('expired') is False
+            and origin.get('id') == artifact['run_id'] and origin.get('head_sha') == artifact['head_sha']
+            and origin.get('repository_id') == artifact['repository_id'], 'later artifact origin differs')
+    archive = physical(temp / 'evidence.zip')
+    require(archive.is_file() and archive.stat().st_size == artifact['size'], 'later artifact size differs')
+    with archive.open('rb') as stream:
+        require(hashlib.file_digest(stream, 'sha256').hexdigest() == artifact['sha256'], 'later artifact bytes differ')
+    sources = {path: source_reader(path) for path in DERIVED_SOURCES}
+    require(all(type(raw) is bytes and sha(raw) == DERIVED_SOURCES[path] for path, raw in sources.items()),
+            'reviewed two-source verifier bytes differ')
+    names = [('reconstruct_historical_responses', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py'),
+             ('verify_historical_response_provenance', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py'),
+             ('_som_m6_reviewed_derived_inputs', 'som-rs/scripts/react_output_acceptance/native_owner_input_binding.py')]
+    owned, previous_path = {}, list(sys.path)
+    try:
+        for name, path in names:
+            require(name not in sys.modules, 'preloaded derived-input verifier refused')
+            module = ModuleType(name)
+            module.__file__, module.__package__, module.__cached__ = str(repo / path), '', None
+            module.__som_raw_sha256__ = sha(sources[path])
+            sys.modules[name] = module; owned[name] = module
+            exec(compile(sources[path], module.__file__, 'exec', dont_inherit=True), module.__dict__)
+            require(sys.modules.get(name) is module, 'derived-input verifier identity changed')
+        bound = owned['_som_m6_reviewed_derived_inputs'].approved_inputs(
+            repo / '.local/rust-compiler-goal/acceptance/public-products-003b',
+            repo / '.local/rust-compiler-goal/acceptance/legacy544/run-005',
+            temp / 'm6-final-input-config.json', temp)
+        require(type(bound.files) is dict and bound.repo == repo, 'two-source result differs')
+        yield bound
+        require(all(sys.modules.get(name) is module for name, module in owned.items()),
+                'derived-input verifier identity changed')
+    finally:
+        sys.path[:] = previous_path
+        for name, module in reversed(tuple(owned.items())):
+            if sys.modules.get(name) is module:
+                del sys.modules[name]
+
+
+@contextlib.contextmanager
+def source_bound_auditor(source_reader, repo):
+    """Load the auditor and its actual imports only from exact bound source bytes."""
+    owned, previous_path = {}, list(sys.path)
+    try:
+        for name in AUDIT_MODULES:
+            require(name not in sys.modules, 'preloaded React auditor module refused')
+            path = AUDIT_BASE + name + '.py'
+            raw = source_reader(path)
+            require(type(raw) is bytes and raw, 'source-bound React auditor bytes required')
+            module = ModuleType(name)
+            module.__file__, module.__package__, module.__cached__ = str(repo / path), '', None
+            module.__som_raw_sha256__ = sha(raw)
+            sys.modules[name] = module
+            owned[name] = module
+            exec(compile(raw, module.__file__, 'exec', dont_inherit=True), module.__dict__)
+            require(sys.modules.get(name) is module, 'React auditor module identity changed')
+        yield owned['audit130']
+        require(all(sys.modules.get(name) is module for name, module in owned.items()),
+                'React auditor module identity changed')
+    finally:
+        sys.path[:] = previous_path
+        for name, module in reversed(tuple(owned.items())):
+            if sys.modules.get(name) is module:
+                del sys.modules[name]
+
+
+def verify_react_raw_domain(root, source_reader, helper_revision, candidate_revision, gate, *, repo, proof_roots, shared):
+    """Rederive the React audit from retained bytes and separately bound inputs."""
+    repo = physical(repo)
     check_local_capture_consistency(root, source_reader, helper_revision, candidate_revision, gate)
-    require(OWNER_DOMAIN_REVIEWED, 'M6 independent raw domain verifier is not implemented')
-    raise ValueError('M6 authenticated input and restored-run bindings are not implemented')
+    capture = strict_json(read(root / 'result.json'))
+    require(not capture.get('error') and not capture.get('capture_error')
+            and not capture.get('audit_capture_error') and not capture.get('finalization_errors')
+            and not capture.get('command_evidence_errors'), 'React capture has failure evidence')
+    rows = capture.get('rows')
+    require(type(rows) is list and [row.get('id') for row in rows] == ['collector', 'audit'],
+            'both React commands are required')
+    for row in rows:
+        command = row['command']
+        # The external-candidate auditor intentionally exits 1 until the
+        # common owner rederives its process binding after service cleanup.
+        expected_exit = 0 if row['id'] == 'collector' else 1
+        require(row.get('streams_complete') is True and not row.get('capture_errors')
+                and not row.get('fallback_unverified') and type(command.get('pid')) is int
+                and command['pid'] > 0 and command.get('exit_code') == expected_exit
+                and command.get('wait_completed') is True and command.get('owned_group_cleanup_passed') is True
+                and row.get('postcheck') is not None, 'React command wait, cleanup or logs differ')
+        post = strict_json(read(root / row['postcheck']))
+        tool = COLLECTOR if row['id'] == 'collector' else AUDITOR
+        require(post.get('version') == 'som.full-product-checker-postcheck.v1'
+                and post.get('tool') == tool and post.get('pid') == command['pid']
+                and post.get('helper_revision') == post.get('candidate_revision') == candidate_revision
+                and post.get('entry_executed') is True and post.get('entry_exit_code') == expected_exit
+                and post.get('source_runtime_tools_inputs_unchanged') is True
+                and post.get('product_acceptance_passed') is False, 'React source postcheck differs')
+        pins = post.get('source_sha256')
+        require(type(pins) is dict and tool in pins and all(sha(source_reader(p)) == v for p, v in pins.items()),
+                'React command source bytes differ')
+    paths = capture.get('input_paths')
+    require(type(paths) is dict and type(paths.get('collector_out')) is str
+            and type(paths.get('candidate_dir')) is str and type(paths.get('api_closure_tar')) is str,
+            'React capture input paths missing')
+    original = physical(paths['collector_out'])
+    candidate = physical(paths['candidate_dir'])
+    require(repo / '.local' in original.parents and candidate == root.parent / 'candidate',
+            'React run or owned candidate path differs')
+    copied = capture.get('collector_capture')
+    require(type(copied) is dict and type(copied.get('copied_sha256')) is dict
+            and not copied.get('errors') and copied.get('source_stability_verified') is True
+            and copied.get('regular_file_modes_preserved') is True, 'React retained collector inventory missing')
+    snapshot = copied.get('source_snapshot')
+    require(type(snapshot) is dict and snapshot == scan_capture_source(original)
+            and type(snapshot.get('files')) is dict and type(snapshot.get('excluded')) is list
+            and sorted(copied.get('excluded', []), key=lambda item: item['path']) == snapshot['excluded'],
+            'React collector source tree differs from captured source')
+    retained = inventory(root / 'collector')
+    retained_scan = scan_capture_source(root / 'collector')
+    require(retained == copied['copied_sha256']
+            and set(retained) == set(snapshot['files'])
+            and copied.get('empty_directories_preserved') is True
+            and retained_scan['directories'] == snapshot['directories'] and not retained_scan['excluded']
+            and all(retained[name] == record['sha256']
+                    and stat.S_IMODE((root / 'collector' / name).stat().st_mode) == record['mode']
+                    and (root / 'collector' / name).stat().st_size == record['size']
+                    for name, record in snapshot['files'].items()), 'React collector copy or mode differs')
+    current_runtime = strict_json(read(root.parent / 'services/current/runtime.json'))
+    candidate_runtime = strict_json(read(candidate / 'runtime.json'))
+    require(current_runtime == candidate_runtime and current_runtime.get('pid') is not None,
+            'React candidate and shared service runtime differ')
+    approved = approved_manifest(repo)
+    original_approved = approved_manifest(repo, ORIGINAL_INPUT_COMMIT, ORIGINAL_INPUT_INDEX_SHA, 16)
+    audit_raw = read(root / 'audit.json')
+    recorded = strict_json(audit_raw)
+    with source_bound_auditor(source_reader, repo) as auditor:
+        fresh = auditor.run_audit(repo, original, physical(paths['api_closure_tar']), candidate)
+    require(fresh == recorded and fresh.get('owned_candidate_process_binding') == 'unverified'
+            and fresh.get('run') == original.relative_to(repo).as_posix(), 'fresh React raw audit differs')
+    totals = fresh.get('totals')
+    require(type(totals) is dict and totals.get('failed') == totals.get('unrun') == 0
+            and type(fresh.get('rows')) is list and bool(fresh['rows']) and not fresh.get('missing_files'),
+            'React named raw checks are incomplete')
+    allowed_attestations = {'contract/sealed', 'issue_gates/phase1-contract',
+                            'issue_gates/phase1-target-amendments', 'issue_gates/phase1-acceptance'}
+    require(all(row.get('status') != 'attested' or row.get('id') in allowed_attestations for row in fresh['rows']),
+            'unexpected unverified React attestation')
+    audited = fresh.get('files')
+    require(type(audited) is dict and audited, 'React audit file inventory missing')
+    run_prefix = original.relative_to(repo).as_posix() + '/'
+    with source_bound_derived_inputs(source_reader, repo) as bound:
+        for name, digest in audited.items():
+            require(type(name) is str and type(digest) is str and re.fullmatch(r'[0-9a-f]{64}', digest),
+                    'React audit file identity differs')
+            if name.startswith(run_prefix):
+                relative = name[len(run_prefix):]
+                require(retained.get(relative) == digest and sha(read(root / 'collector' / relative)) == digest,
+                        'React retained run bytes differ')
+            elif name.startswith('@owned-candidate/'):
+                member = name.removeprefix('@owned-candidate/')
+                require(member in ('som', 'build.json', 'runtime.json') and sha(read(candidate / member)) == digest,
+                        'React owned candidate file differs')
+            elif name.startswith('.local/'):
+                raw = bound.read(repo / name)
+                identity = approved.get(name) or original_approved.get(name)
+                require(type(identity) is dict and identity['sha256'] == digest == sha(raw)
+                        and identity['bytes'] == len(raw)
+                        and stat.S_IMODE((repo / name).stat().st_mode) == identity['mode'],
+                        'React input is absent from an approved source role')
+            else:
+                require(sha(source_reader(name)) == digest, 'React audit source differs from bound source')
+    require(all('@owned-candidate/' + n in audited for n in ('som', 'build.json', 'runtime.json'))
+            and shared.get('owned_waits_complete') is True and shared.get('owned_cleanup_complete') is True,
+            'React candidate or shared post-close evidence missing')
+    require(read(root / 'audit.json') == audit_raw and snapshot == scan_capture_source(original),
+            'React audit or collector source changed during verification')
+    return {'version': 'som.m6-react-domain-proof.v1', 'complete': True, 'all_required_passed': True,
+            'raw_logs_complete': True, 'product_acceptance_passed': False,
+            'audit_sha256': sha(audit_raw), 'audited_file_count': len(audited),
+            'candidate_pid': current_runtime['pid'], 'candidate_binary_sha256': sha(read(candidate / 'som')),
+            'approved_input_index_sha256': INPUT_INDEX_SHA,
+            'retained_run_sha256': sha(canonical(retained)), 'audit_totals': totals}
 
 
 def shared_postclose_proof(root, source_reader, helper_revision, candidate_revision, gate, *, repo, proof_roots):
@@ -678,8 +977,6 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
     capture = strict_json(capture_raw)
     require(capture.get('owned_waits_complete') is False and capture.get('owned_cleanup_complete') is False,
             'capture shared cleanup must remain pending')
-    domain = verify_react_raw_domain(root, source_reader, helper_revision, candidate_revision, gate,
-                                     repo=repo, proof_roots=proof_roots)
     shared = shared_postclose_proof(root, source_reader, helper_revision, candidate_revision, gate,
                                     repo=repo, proof_roots=proof_roots)
     expected = {'version', 'gate', 'helper_revision', 'candidate_revision', 'capture_result_sha256',
@@ -694,6 +991,8 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
             and shared.get('capture_result_sha256') == sha(capture_raw)
             and shared.get('owned_waits_complete') is True and shared.get('owned_cleanup_complete') is True
             and shared.get('product_acceptance_passed') is False, 'shared post-close proof differs')
+    domain = verify_react_raw_domain(root, source_reader, helper_revision, candidate_revision, gate,
+                                     repo=repo, proof_roots=proof_roots, shared=shared)
     require(type(domain) is dict and domain.get('complete') is True
             and domain.get('all_required_passed') is True and domain.get('raw_logs_complete') is True,
             'React raw domain incomplete')

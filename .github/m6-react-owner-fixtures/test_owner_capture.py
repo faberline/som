@@ -107,9 +107,10 @@ class OwnerCapture(unittest.TestCase):
         self.assertFalse(result['product_acceptance_passed'])
         self.services.start_baseline.assert_called_once_with(self.profile)
         self.services.close_all.assert_not_called()
-        with self.assertRaisesRegex(ValueError, 'not implemented'):
-            subject.verify_result(self.out, self.source.read, self.rev, self.rev, subject.GATE,
-                                  repo=self.repo, proof_roots={})
+        with mock.patch.object(subject, 'shared_postclose_proof', return_value={}):
+            with self.assertRaisesRegex(ValueError, 'shared post-close proof differs'):
+                subject.verify_result(self.out, self.source.read, self.rev, self.rev, subject.GATE,
+                                      repo=self.repo, proof_roots={})
 
     def test_interrupted_collector_keeps_raw_failure_and_does_not_close_owned_services(self):
         self.interrupt = True
@@ -130,7 +131,7 @@ class OwnerCapture(unittest.TestCase):
                          {'products/case/node_modules/.bin/tool', 'foreign-dir'})
         self.assertTrue(capture['unverified_runtime_or_evidence'])
         self.assertFalse(capture['all_observed_files_copied']); self.assertFalse(capture['complete'])
-        self.assertFalse(capture['file_modes_preserved']); self.assertFalse(capture['empty_directories_preserved'])
+        self.assertFalse(capture['file_modes_preserved']); self.assertTrue(capture['empty_directories_preserved'])
         self.assertFalse(capture['sealed_transport_verified'])
         self.assertFalse(result['owned_cleanup_complete']); self.services.close_all.assert_not_called()
 
@@ -155,7 +156,9 @@ class OwnerCapture(unittest.TestCase):
         with mock.patch.object(subject, 'read', side_effect=read_fixture):
             capture = subject.copy_capture(self.collector, self.out / 'collector')
         self.assertEqual((self.out / 'collector/z-report.raw').read_bytes(), b'important raw data')
-        self.assertEqual(capture['errors'], [{'path': 'a-unreadable.raw', 'error': 'PermissionError'}])
+        self.assertIn({'path': 'a-unreadable.raw', 'error': 'PermissionError'}, capture['errors'])
+        self.assertTrue(any(e.get('stage') == 'before_scan' for e in capture['errors']))
+        self.assertFalse(capture['source_stability_verified'])
         self.assertTrue(capture['unverified_runtime_or_evidence']); self.assertFalse(capture['complete'])
 
     def test_timeout_remains_primary_if_one_command_stream_capture_fails(self):

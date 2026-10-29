@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
 if os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted':
     raise RuntimeError('GitHub-hosted runner required')
@@ -93,6 +94,7 @@ class LocalCaptureFixture(unittest.TestCase):
 
     def test_verifier_stays_closed_even_with_consistent_capture(self):
         self.check()
-        with self.assertRaisesRegex(ValueError, 'not implemented'):
-            subject.verify_result(self.root, lambda _: self.source, self.rev, self.rev,
-                                  repo=self.root, proof_roots={})
+        with mock.patch.object(subject, 'shared_postclose_proof', return_value={}):
+            with self.assertRaisesRegex(ValueError, 'shared post-close proof differs'):
+                subject.verify_result(self.root, lambda _: self.source, self.rev, self.rev,
+                                      repo=self.root, proof_roots={})
