@@ -367,4 +367,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # SCRATCH-ONLY TEST HOOK. This is not a production release change.
+    wrapper = Path(__file__).resolve().parent.parent / 'rust_output_release' / 'audit_wrapper.py'
+    subprocess.run([sys.executable, str(wrapper), 'inspect'], check=True)
     raise SystemExit(main())
