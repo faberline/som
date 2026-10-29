@@ -80,6 +80,16 @@
       "archive": "package-015.sealed",
       "manifest": "package-015.manifest.json",
       "manifest_sha256": "302cd517d3d1fbe71360001ba16d1a82f70a97f749c787467ff87f02ea24460d"
+    },
+    {
+      "archive": "package-016.sealed",
+      "manifest": "package-016.manifest.json",
+      "manifest_sha256": "36f930a3a9ca8f38a11a7371aca4e5ad1a54cdefad8c090e74ded72c4ccadc4d"
+    },
+    {
+      "archive": "package-017.sealed",
+      "manifest": "package-017.manifest.json",
+      "manifest_sha256": "4f1dbc5047ab247753950ddd282684fc55f53c1b0ba1465768d304488a135371"
     }
   ]
 }
