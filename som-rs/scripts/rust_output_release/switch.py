@@ -126,6 +126,32 @@ def bring_back(run, root, port, previous, pointers, stop, binaries, python):
     return restored
 
 
+def run_clone(run, argv, health, clone_cases, clients, config):
+    """Clean only owners admitted by this clone, including interrupted startup."""
+    before = set(run.owners)
+    try:
+        clone = run.start(argv, health)
+        try:
+            if clone_cases is None:
+                run.m2_canary(clone['port'], clients, config['m2_canaries'])
+            else:
+                run.canary(clone['port'], clients, clone_cases, 'clone')
+        finally:
+            run.stop_child(clone)
+    except BaseException:
+        # An interruption can arrive between start() returning and assignment.
+        # Defer repeated signals only after the interruption has been handled.
+        for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+            signal.signal(signum, rc.rollback_defer_signal)
+        for pid, owner in list(run.owners.items()):
+            if pid not in before and rc.alive(pid):
+                try:
+                    run.stop_child(owner)
+                except BaseException as cleanup:
+                    run.event('OWNED_CLONE_CLEANUP_FAILED', owner=owner, error=repr(cleanup))
+        raise
+
+
 def execute(config, root, port, output, approval, rehearsal, selected):
     runtime, legacy = rc.check_prerequisites(config)
     rc.apply_formatter_env(config)
@@ -160,14 +186,7 @@ def execute(config, root, port, output, approval, rehearsal, selected):
             clients['legacy'] = Path(config['legacy_binary']['path'])
             clones.insert(0, (legacy['command'][:-1], legacy['health'], None))
         for argv, health, clone_cases in clones:
-            clone = run.start(argv + [str(rc.free_harness_port(harness))], health)
-            try:
-                if clone_cases is None:
-                    run.m2_canary(clone['port'], clients, config['m2_canaries'])
-                else:
-                    run.canary(clone['port'], clients, clone_cases, 'clone')
-            finally:
-                run.stop_child(clone)
+            run_clone(run, argv + [str(rc.free_harness_port(harness))], health, clone_cases, clients, config)
         installed = install(candidate, root)
         new_assets = rc.install_assets(assets, root, runtime['health']) if assets != Path(current['command'][3]) else assets
         run.event('immutable_install_verified', binary=str(installed), assets=str(new_assets))

@@ -7,7 +7,9 @@ import subprocess
 import sys
 import tempfile
 import time
+import types
 import unittest
+from unittest import mock
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
@@ -115,6 +117,40 @@ class SupervisionTests(unittest.TestCase):
             self.assertIs(type(result['wait_result']), int)
             self.assertEqual(result['wait_result'], result['exit_code'])
             self.assertFalse(result['cleanup_verified'])
+
+    def test_interrupted_clone_start_cleans_only_new_admitted_owner(self):
+        import switch
+        old = {'pid': 42, 'port': 18921}
+        clone = {'pid': 43, 'port': 18922}
+        owners = {42: old}
+        def start(*_args):
+            owners[43] = clone
+            raise RuntimeError('interrupt during clone start')
+        run = types.SimpleNamespace(owners=owners, start=start, stop_child=mock.Mock(),
+                                    event=mock.Mock(), canary=mock.Mock(), m2_canary=mock.Mock())
+        with mock.patch.object(switch.rc, 'alive', return_value=True), \
+             mock.patch.object(switch.signal, 'signal'):
+            with self.assertRaisesRegex(RuntimeError, 'interrupt during clone start'):
+                switch.run_clone(run, ['fake', '18922'], {}, [], {}, {})
+        run.stop_child.assert_called_once_with(clone)
+        run.event.assert_not_called()
+
+    def test_clone_cleanup_error_is_retained_and_original_failure_remains(self):
+        import switch
+        clone = {'pid': 43, 'port': 18922}
+        owners = {}
+        def start(*_args):
+            owners[43] = clone
+            raise RuntimeError('start failed')
+        run = types.SimpleNamespace(owners=owners, start=start,
+                                    stop_child=mock.Mock(side_effect=RuntimeError('cannot verify owner')),
+                                    event=mock.Mock(), canary=mock.Mock(), m2_canary=mock.Mock())
+        with mock.patch.object(switch.rc, 'alive', return_value=True), \
+             mock.patch.object(switch.signal, 'signal'):
+            with self.assertRaisesRegex(RuntimeError, 'start failed'):
+                switch.run_clone(run, ['fake', '18922'], {}, [], {}, {})
+        self.assertEqual(run.event.call_args.args[0], 'OWNED_CLONE_CLEANUP_FAILED')
+        self.assertEqual(run.event.call_args.kwargs['owner'], clone)
 
 
 if __name__ == '__main__':
