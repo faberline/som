@@ -44,5 +44,50 @@ class InputBoundaries(unittest.TestCase):
         artifact['workflow_run']['head_sha']='other'
         with self.assertRaises(inputs.LinuxInputError): inputs.metadata(run,artifact,1,'head',2,'abc')
 
+class SourceClosureSchemaTests(unittest.TestCase):
+    def test_reader_matches_actual_context_authority_inventory(self):
+        import ast
+        context = Path(__file__).resolve().parent.parent / 'linux_api_context.py'
+        tree = ast.parse(context.read_text())
+        constants = {}
+        for node in tree.body:
+            if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+                key = node.targets[0].id
+                if key in ('API_CHAIN', 'LIVE_DEPENDENCIES'):
+                    constants[key] = set(ast.literal_eval(node.value.args[0]))
+                elif key in ('CONTEXT_SOURCE', 'NODE_SOURCE', 'LIVE_SOURCE', 'RECORDER_SOURCE', 'HOST_SOURCE', 'EVIDENCE_SOURCE'):
+                    constants[key] = ast.literal_eval(node.value)
+        expected = constants['API_CHAIN'] | constants['LIVE_DEPENDENCIES'] | {
+            constants[key] for key in ('CONTEXT_SOURCE', 'NODE_SOURCE', 'LIVE_SOURCE',
+                                       'RECORDER_SOURCE', 'HOST_SOURCE', 'EVIDENCE_SOURCE')}
+        self.assertEqual(len(expected), 48)
+        self.assertEqual(set(inputs.REQUIRED_SOURCES), expected)
+        self.assertIn('som-rs/behavior/typescript/__init__.py', expected)
+        shas = {name: '0' * 64 for name in expected}
+        inputs.source_inventory(shas)
+        missing = dict(shas)
+        del missing['som-rs/behavior/typescript/__init__.py']
+        with self.assertRaisesRegex(inputs.LinuxInputError, 'source authority closure differs'):
+            inputs.source_inventory(missing)
+        extra = dict(shas, unreviewed='0' * 64)
+        with self.assertRaisesRegex(inputs.LinuxInputError, 'source authority closure differs'):
+            inputs.source_inventory(extra)
 
-if __name__=='__main__': unittest.main()
+    def test_retained_static_input_names_match_the_host_writer(self):
+        import ast
+        source = Path(__file__).resolve().parent.parent / 'linux_api_evidence.py'
+        tree = ast.parse(source.read_text())
+        begin = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'begin')
+        assignment = next(node for node in ast.walk(begin) if isinstance(node, ast.Assign)
+                          and any(isinstance(target, ast.Name) and target.id == 'inputs' for target in node.targets))
+        written = {ast.literal_eval(key) for key in assignment.value.keys}
+        expected = {'runtime-receipt.json', 'runtime-artifact-origin.json', 'runtime-qualification-receipt.json',
+                    'runtime-installed-files.json', 'runtime-source-pins.json', 'runtime-build-intermediates.json',
+                    'closure-receipt.json', 'live-provision-receipt.json', 'live-installed-files.json',
+                    'live-installed-metadata.json', 'selected.lock', 'offline.lock', 'pyproject.toml', 'uv.lock',
+                    'requirements.in', 'probe-installed-metadata.py'}
+        self.assertEqual(written, expected)
+
+
+if __name__ == '__main__':
+    unittest.main()

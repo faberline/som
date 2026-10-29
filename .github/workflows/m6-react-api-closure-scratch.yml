@@ -1,0 +1,33 @@
+name: Test React API source authority closure consistency
+on:
+  push:
+    branches:
+      - codex/m6-react-api-closure-20261029
+permissions:
+  contents: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bind independent reader and host writer source
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          for entry in \
+            'som-rs/scripts/react_output_acceptance/audit/linux_input_raw.py 4bf8859b2e8998ba652874bc654bb6739a232c56f4e1303e30d4add1d4979616' \
+            'som-rs/scripts/react_output_acceptance/audit/test_linux_input_raw.py da402d7ff2aefb4bf45a1db06d63a4b89454d73437d4c139fddbf639eb557b06' \
+            'som-rs/scripts/react_output_acceptance/linux_api_context.py 08e7d8d39bf09d7156f98366ac51d7658f8d93c01c7cea5b465799bf50e262dd' \
+            'som-rs/scripts/react_output_acceptance/linux_api_evidence.py 4eb09833614c8e32a4038fa1d8c6a7c7f96f50ac9ecef42c315147772a2b53b0'; do
+            set -- $entry
+            test "$(sha256sum "$1" | cut -d ' ' -f 1)" = "$2"
+            test "$(git show "$GITHUB_SHA:$1" | sha256sum | cut -d ' ' -f 1)" = "$2"
+          done
+      - name: Run independent audit fixtures
+        working-directory: som-rs/scripts/react_output_acceptance/audit
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest -v test_api_raw test_linux_api_raw test_linux_install_map test_qa_profile_audit test_linux_input_raw
