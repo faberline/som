@@ -260,13 +260,38 @@ def restore(config, root, port, output, approval, rehearsal, evidence):
     run.event('restore_admitted', evidence=str(evidence), approval=approval if not rehearsal else None)
     with (root / 'som-rs/runtime/.default-switch.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        owner = rc.identity(current['pid'], current['command'], port)
-        rc.require(owner == current['identity'], 'live owner differs from the receipt')
-        run.event('stop_intent', owner=owner)
+        pid = current['pid']
+        rc.require(type(pid) is int and pid > 1 and pid != os.getpid(), 'invalid candidate PID')
+        owner = None
+        if rc.alive(pid):
+            owner = rc.identity(pid, current['command'], port)
+            rc.require(owner == current['identity'], 'live owner differs from the receipt')
+            run.event('stop_intent', owner=owner)
+        else:
+            # An absent PID must never be signalled. Bind this recovery to the
+            # exact committed receipt and prove the port is free before changing
+            # either pointer. An alive owner without a listener fails closed in
+            # the live identity branch above; it is not an absent process.
+            identity = current['identity']
+            rc.require(journal[-1].get('receipt') == current, 'committed receipt differs from default')
+            rc.require(identity.get('pid') == pid and identity.get('argv') == current['command']
+                       and identity.get('port') == port and identity.get('uid') == os.getuid(),
+                       'absent candidate identity differs from receipt')
+            rc.require(identity.get('cwd') == previous['identity']['cwd']
+                       and isinstance(identity.get('start'), str) and identity['start'].strip(),
+                       'absent candidate provenance differs')
+            rc.require(rc.load(evidence / 'journal.json') == journal, 'switch journal changed externally')
+            rc.require(default_path.read_bytes() == snapshot, 'default receipt changed externally')
+            rc.require(rc.link_state(root / 'som-rs/runtime/current') == pointers['runtime']
+                       and rc.link_state(root / 'som-rs/compiler-assets/current') == pointers['assets'],
+                       'pointers changed externally')
+            rc.port_free(port)
+            rc.require(not rc.alive(pid), 'candidate PID became live; recovery refused')
+            run.event('restore_owner_absent', pid=pid, port=port, receipt_sha256=rc.sha_bytes(snapshot))
         for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
             signal.signal(signum, rc.rollback_defer_signal)
         run.recovering = True
-        restored = bring_back(run, root, port, previous, previous_pointers, [owner],
+        restored = bring_back(run, root, port, previous, previous_pointers, [owner] if owner else [],
                               {'previous': Path(previous['command'][0]), 'new': Path(current['command'][0])},
                               rc.previous_cases(config))
         rc.require(default_path.read_bytes() == snapshot, 'default receipt changed externally')
