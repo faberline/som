@@ -17,6 +17,7 @@ usage:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime
 import errno
 import hashlib
@@ -24,9 +25,12 @@ import json
 import os
 import pathlib
 import re
+import signal
+import stat
 import subprocess
 import sys
 import time
+import types
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -35,6 +39,34 @@ from typing import Any
 HERE = pathlib.Path(__file__).resolve().parent
 SOM_RS = HERE.parents[1]
 REPO = SOM_RS.parent
+
+def load_pinned_retained(repo: pathlib.Path):
+    path = repo / 'som-rs/scripts/react_output_acceptance/retained_evidence.py'
+    if (not repo.is_absolute() or repo.resolve() != repo or any(part.is_symlink() for part in (path, *path.parents))
+            or 'retained_evidence' in sys.modules):
+        raise ValueError('retained verifier path or preload differs')
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    try:
+        info = os.fstat(fd)
+        if not stat.S_ISREG(info.st_mode) or info.st_size > 2 * 1024 * 1024:
+            raise ValueError('retained verifier source differs')
+        with os.fdopen(fd, 'rb', closefd=False) as stream:
+            raw = stream.read(2 * 1024 * 1024 + 1)
+    finally:
+        os.close(fd)
+    if len(raw) > 2 * 1024 * 1024 or hashlib.sha256(raw).hexdigest() != '7ec396988cc2e9704c228c05cb3a7cd7a51c87d0fc6ea26c1ffa1455209d75bc':
+        raise ValueError('retained verifier source differs')
+    module = types.ModuleType('retained_evidence')
+    module.__file__ = str(path)
+    exec(compile(raw, str(path), 'exec', dont_inherit=True), module.__dict__)
+    sys.modules['retained_evidence'] = module
+    return module
+
+LINUX_QA_CLI = any(arg in ('--qa-profile', '--api-profile') or arg.startswith(('--qa-profile=', '--api-profile=')) for arg in sys.argv[1:])
+if LINUX_QA_CLI:
+    retained_evidence = load_pinned_retained(REPO)
+else:
+    import retained_evidence
 
 DEFAULT_BASELINE = "http://127.0.0.1:18960"
 DEFAULT_8765_URL = "http://127.0.0.1:8765"
@@ -53,6 +85,9 @@ CLEAN_TREE_PATHS = (
 AMENDMENT_STATUS_SEALED = "amendment_sealed_after_independent_review"
 AMENDMENT_FILENAME_RE = re.compile(r"^react-output-contract-amendment-(\d+)\.json$")
 CONTRACT_SUMMARY_RE = re.compile(r"(?m)^(\d+)\s+passed,\s+(\d+)\s+failed\s*$")
+API_BOOTSTRAP_REVIEWED = True
+NATIVE_ROUTING_REVIEWED = True
+NATIVE_ENTRY = 'som-rs/scripts/react_output_acceptance/m6_native_entry.py'
 
 NO_PROXY_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
@@ -358,6 +393,8 @@ def build_steps(
     cleanup_products_runtime: bool = False,
     rust_baseline_run: str | None = None,
     record_raw_http: bool = False,
+    qa_profile: str | None = None,
+    api_profile: str | None = None,
 ) -> list[dict[str, Any]]:
     """Construct the 12 ordered step definitions."""
     som_binary = str(candidate_dir / "som")
@@ -550,6 +587,8 @@ def build_steps(
                 "--out",
                 str(out_dir / "products"),
                 *(["--cleanup-runtime"] if cleanup_products_runtime else []),
+                *(["--qa-profile", qa_profile] if qa_profile is not None else []),
+                *(["--api-profile", api_profile] if api_profile is not None else []),
             ],
             "report": out_dir / "products" / "report.json",
             "kind": "report",
@@ -559,8 +598,9 @@ def build_steps(
     if record_raw_http:
         for step in steps:
             if step["step"] in {"react-python-controls", "python-baseline", "rust-baseline", "rust-python-controls", "ts-python-controls"}:
+                native = ['--qa-mode', 'native-qa-v1'] if qa_profile is not None else []
                 step["argv"] = [python_bin, str(HERE / "record_http.py"), "--out", str(out_dir / f"{step['step']}-raw"),
-                                "--", *step["argv"][1:]]
+                                *native, "--", *step["argv"][1:]]
     return steps
 
 
@@ -638,10 +678,45 @@ def judge_json_report(exit_code: int, report_path: pathlib.Path, kind: str = "re
     return "failed", f"report missing valid 'passed' field: {passed_val!r}"
 
 
+@contextlib.contextmanager
+def defer_owned_interrupts():
+    """Defer signals while assigning an owned child or waiting for its cancellation."""
+    pending, previous = [], {}
+    def defer(number, _frame): pending.append(number)
+    for number in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+        previous[number] = signal.signal(number, defer)
+    try:
+        yield pending
+    finally:
+        for number, handler in previous.items(): signal.signal(number, handler)
+
+
+def cancel_owned_child(child, grace=90):
+    """Cancel and wait for this child only. Nested service state is unknown."""
+    result = {'method': 'interrupt-direct-child', 'wait': 'unverified',
+              'exit_code': None, 'nested_services': 'unverified'}
+    if child is None: return result
+    with defer_owned_interrupts():
+        try:
+            if child.poll() is None: child.send_signal(signal.SIGINT)
+            code = child.wait(timeout=grace)
+        except subprocess.TimeoutExpired:
+            result['method'] = 'interrupt-then-kill-direct-child'
+            try: child.kill()
+            except ProcessLookupError: pass
+            try: code = child.wait(timeout=10)
+            except subprocess.TimeoutExpired: return result
+        except OSError:
+            return result
+        if type(code) is int: result.update(wait='completed', exit_code=code)
+    return result
+
+
 def run_single_step(
     step_def: dict[str, Any],
     out_dir: pathlib.Path,
     repo: pathlib.Path,
+    api_profile: pathlib.Path | None = None,
 ) -> dict[str, Any]:
     index = step_def["index"]
     step_name = step_def["step"]
@@ -684,22 +759,72 @@ def run_single_step(
     t0 = time.monotonic()
     env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
     launch_error = None
+    child, interrupted = None, False
+    routing = None
+    actual_argv = step_def["argv"]
+    postcheck_path = out_dir / 'source-routing' / f'{prefix}.json'
+    if api_profile is not None:
+        module = sys.modules.get('full_product_context')
+        ctx = module.context() if module is not None and callable(getattr(module, 'context', None)) else None
+        if not NATIVE_ROUTING_REVIEWED or ctx is None or ctx.qa_mode != 'native-qa-v1':
+            raise ValueError('native child source routing is not reviewed')
+        if NATIVE_ENTRY not in ctx.qa_source_authority['admitted_repository_python_sources']:
+            raise ValueError('native child entry missing source authority')
+        ctx.sources.read(NATIVE_ENTRY)
+        postcheck_path.parent.mkdir(parents=True, exist_ok=True)
+        target = pathlib.Path(step_def['argv'][1])
+        target = target if target.is_absolute() else repo / target
+        if not target.is_relative_to(repo):
+            raise ValueError('native child target is outside repository')
+        relative = target.relative_to(repo).as_posix()
+        if relative not in ctx.qa_source_authority['admitted_repository_python_sources']:
+            raise ValueError('native child target lacks source authority')
+        ctx.sources.read(relative)
+        actual_argv = [step_def['argv'][0], '-I', '-S', '-B', str(repo / NATIVE_ENTRY),
+                       '--repo', str(repo), '--product-context', str(ctx.path),
+                       '--helper-revision', ctx.helper_revision, '--candidate-revision', ctx.candidate_revision,
+                       '--api-profile', str(api_profile), '--full-before', str(out_dir / 'api-qa-evidence/full-before.json'),
+                       '--postcheck', str(postcheck_path), '--script', relative, '--scope', 'step', '--', *step_def['argv'][2:]]
+        routing = {'actual_argv': actual_argv, 'pid': None, 'wait': {'state': 'unverified', 'exit_code': None},
+                   'postcheck': str(postcheck_path), 'postcheck_sha256': None}
     with stdout_path.open("wb") as out_f, stderr_path.open("wb") as err_f:
         try:
-            proc = subprocess.run(
-                step_def["argv"],
-                cwd=repo,
-                env=env,
-                stdin=subprocess.DEVNULL,
-                stdout=out_f,
-                stderr=err_f,
-                check=False,
-            )
-            exit_code = proc.returncode
+            if routing is None:
+                proc = subprocess.run(step_def["argv"], cwd=repo, env=env, stdin=subprocess.DEVNULL,
+                                      stdout=out_f, stderr=err_f, check=False)
+                exit_code = proc.returncode
+            else:
+                with defer_owned_interrupts() as pending:
+                    child = subprocess.Popen(actual_argv, cwd=repo, env=env, stdin=subprocess.DEVNULL,
+                                             stdout=out_f, stderr=err_f)
+                    routing['pid'] = child.pid
+                if pending: raise KeyboardInterrupt('owned checker interrupted while starting')
+                waited = child.wait()
+                exit_code = child.returncode
+                if type(waited) is int and waited == exit_code:
+                    routing['wait'] = {'state': 'completed', 'exit_code': waited}
+                else:
+                    launch_error = 'native child wait result differs'
+        except KeyboardInterrupt:
+            if routing is None: raise
+            interrupted = True
+            cleanup = cancel_owned_child(child)
+            exit_code = cleanup['exit_code']
+            if routing is not None:
+                routing['interruption_cleanup'] = cleanup
+                if cleanup['wait'] == 'completed':
+                    routing['wait'] = {'state': 'completed', 'exit_code': exit_code}
+            launch_error = 'owned checker interrupted; nested cleanup unverified'
+            err_f.write((launch_error + "\n").encode("utf-8"))
         except OSError as exc:
             exit_code = 127
             launch_error = f"cannot start step: {type(exc).__name__}: {exc}"
             err_f.write((launch_error + "\n").encode("utf-8"))
+    if routing is not None:
+        if postcheck_path.is_file():
+            routing['postcheck_sha256'] = sha_file(postcheck_path)
+        else:
+            launch_error = launch_error or 'native child source postcheck missing'
     duration = round(time.monotonic() - t0, 3)
     ended_iso = now_iso()
 
@@ -715,6 +840,7 @@ def run_single_step(
         "step": step_name,
         "index": index,
         "argv": step_def["argv"],
+        **({'source_routing': routing} if routing is not None else {}),
         "cwd": str(repo),
         "started_at": started_iso,
         "ended_at": ended_iso,
@@ -731,6 +857,7 @@ def run_single_step(
         "reason": reason,
     }
     write_json(receipt_path, receipt)
+    if interrupted: raise KeyboardInterrupt('owned acceptance checker interrupted')
     return receipt
 
 
@@ -923,7 +1050,53 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--record-raw-http", action="store_true",
                         help="Retain every baseline and Python control HTTP exchange for independent acceptance.")
+    parser.add_argument("--qa-profile", type=pathlib.Path, default=None,
+                        help="Optional sealed Linux React QA profile for every product gate.")
+    parser.add_argument("--api-profile", type=pathlib.Path, default=None,
+                        help="Optional sealed live Linux API QA context.")
     return parser.parse_args(argv)
+
+
+def qa_profile_snapshot(path: pathlib.Path) -> dict[str, str]:
+    """Record profile bytes without following a linked file or ancestor."""
+    if not path.is_absolute() or ".." in path.parts or any(p.is_symlink() for p in (path, *path.parents)):
+        raise ValueError("QA profile must be an absolute physical file")
+    if not path.is_file() or path.stat().st_size > 4096:
+        raise ValueError("QA profile missing or oversized")
+    return {"path": str(path), "sha256": sha_file(path)}
+
+
+def validate_qa_profile(path: pathlib.Path, repo: pathlib.Path) -> dict[str, str]:
+    """Require the same sealed profile accepted by each product gate."""
+    before = qa_profile_snapshot(path)
+    linux_qa_profile = retained_evidence.sealed_profile_helper(repo)
+    admitted = linux_qa_profile.validate_profile(path)
+    if (not isinstance(admitted, dict) or admitted.get("profile_path") != path or admitted.get("profile_sha256") != before["sha256"]
+            or qa_profile_snapshot(path) != before):
+        raise ValueError("QA profile identity differs or changed during validation")
+    return before
+
+
+def load_api_recorder(repo: pathlib.Path):
+    retained_evidence.need(API_BOOTSTRAP_REVIEWED, 'Linux API bootstrap is not reviewed')
+    authority_rel = 'som-rs/contracts/react-output-v1/linux-api-qa-authority.json'
+    files = retained_evidence.sealed_files(repo)
+    path = retained_evidence.physical_repo_path(repo, authority_rel)
+    raw = retained_evidence.read_physical_bytes(path, 1024 * 1024)
+    retained_evidence.need(files.get(authority_rel) == hashlib.sha256(raw).hexdigest(), 'API authority differs')
+    authority = retained_evidence.parse_json(raw)
+    retained_evidence.need(isinstance(authority, dict) and authority.get('version') == 'som.react-linux-api-authority.v1'
+                           and isinstance(authority.get('source_sha256'), dict), 'API authority format differs')
+    rel = 'som-rs/scripts/react_output_acceptance/record_api.py'
+    path = retained_evidence.physical_repo_path(repo, rel)
+    source = retained_evidence.read_physical_bytes(path, 1024 * 1024)
+    retained_evidence.need(authority['source_sha256'].get(rel) == hashlib.sha256(source).hexdigest(), 'API recorder differs')
+    retained_evidence.need('record_api' not in sys.modules, 'preloaded API recorder refused')
+    module = types.ModuleType('record_api')
+    module.__file__ = str(path)
+    exec(compile(source, str(path), 'exec'), module.__dict__)
+    sys.modules['record_api'] = module
+    return module
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -944,6 +1117,23 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     try:
+        if (args.qa_profile is None) != (args.api_profile is None):
+            raise ValueError('Linux QA requires both --qa-profile and --api-profile')
+        if args.qa_profile is not None and not LINUX_QA_CLI:
+            raise ValueError('Linux QA must use the pinned CLI bootstrap')
+        if args.qa_profile is not None:
+            out_dir = retained_evidence.physical_repo_path(repo, args.out)
+        qa_before = validate_qa_profile(args.qa_profile, repo) if args.qa_profile is not None else None
+        api_context = api_module = None
+        if qa_before is not None:
+            recorder = load_api_recorder(repo)
+            api_module, _, api_evidence_module = recorder.load_linux_sources(repo, bound_retained=retained_evidence)
+            api_context = api_module.validate(args.api_profile, repo, bound_node_module=sys.modules['linux_qa_profile'])
+            retained_evidence.need(api_context['node_profile_path'] == args.qa_profile
+                                   and api_context['profile_sha256'] == qa_before['sha256'], 'API QA profile differs')
+            if args.python is not None:
+                retained_evidence.need(python_path == pathlib.Path(api_context['python']), 'QA Python override differs')
+            python_path = pathlib.Path(api_context['python'])
         (
             build_doc,
             runtime_doc,
@@ -952,7 +1142,7 @@ def main(argv: list[str] | None = None) -> int:
             baseline_url,
             _baseline_port,
         ) = validate_preconditions(candidate_dir, out_dir, args.baseline, repo)
-    except ValueError as err:
+    except (ImportError, OSError, ValueError, KeyError, TypeError) as err:
         print(f"refused: {err}", file=sys.stderr)
         return 2
 
@@ -960,6 +1150,46 @@ def main(argv: list[str] | None = None) -> int:
     out_dir.mkdir(parents=True, exist_ok=False)
     (out_dir / "logs").mkdir(parents=True, exist_ok=False)
     (out_dir / "receipts").mkdir(parents=True, exist_ok=False)
+    native_context_record = None
+    if api_context is not None:
+        context_module = sys.modules.get('full_product_context')
+        context = context_module.context() if context_module is not None and callable(getattr(context_module, 'context', None)) else None
+        if not NATIVE_ROUTING_REVIEWED or context is None or context.qa_mode != 'native-qa-v1':
+            print('refused: native child source routing is not reviewed', file=sys.stderr)
+            return 2
+        native_dir = out_dir / 'source-routing'
+        native_dir.mkdir()
+        native_raw = retained_evidence.read_physical_bytes(context.path, 16 * 1024 * 1024)
+        retained_evidence.need(native_raw == context.raw, 'native context differs')
+        native_context_path = native_dir / 'context.json'
+        native_context_path.write_bytes(native_raw)
+        native_context_record = {'original_path': str(context.path), 'path': 'source-routing/context.json',
+                                 'sha256': sha_bytes(native_raw)}
+    if api_context is not None:
+        api_evidence_root = out_dir / 'api-qa-evidence'
+        api_evidence_root.mkdir()
+        write_json(api_evidence_root / 'full-before.json', api_module.full_record(api_context))
+        try:
+            api_evidence_state, api_evidence_runtime = api_evidence_module.begin(api_evidence_root, api_context, api_module)
+        except (OSError, ValueError, KeyError, TypeError) as err:
+            print(f'refused: retained API evidence: {err}', file=sys.stderr)
+            return 2
+    qa_evidence_root = out_dir / "qa-profile-evidence"
+    qa_evidence_state = qa_evidence_runtime = qa_evidence_module = None
+    if qa_before is not None:
+        try:
+            qa_evidence_module = sys.modules.get("linux_qa_profile")
+            expected_module = repo / "som-rs/tests/react-output-v1/linux_qa_profile.py"
+            if (qa_evidence_module is None or not hasattr(qa_evidence_module, "__file__")
+                    or pathlib.Path(qa_evidence_module.__file__).resolve() != expected_module.resolve()):
+                raise ValueError("QA helper source path differs")
+            qa_evidence_state, qa_evidence_runtime = retained_evidence.begin(
+                qa_evidence_root, repo, args.qa_profile, qa_evidence_module)
+            if qa_evidence_state["profile"]["before"]["sha256"] != qa_before["sha256"]:
+                raise ValueError("retained QA profile differs")
+        except (OSError, ValueError, KeyError, TypeError) as err:
+            print(f"refused: retained QA evidence: {err}", file=sys.stderr)
+            return 2
 
     latest_receipt_path = find_latest_contract_receipt(repo)
     contract_receipt_arg = format_repo_arg(latest_receipt_path, repo)
@@ -1011,6 +1241,8 @@ def main(argv: list[str] | None = None) -> int:
     }
     if args.protected_default == "absent":
         initial_identity["8765"]["expected_state"] = "absent"
+    if qa_before is not None:
+        initial_identity["qa_profile"] = {"before": qa_before, "after": None, "unchanged": None}
     identity_path = out_dir / "identity.json"
     write_json(identity_path, initial_identity)
 
@@ -1025,11 +1257,13 @@ def main(argv: list[str] | None = None) -> int:
         cleanup_products_runtime=args.cleanup_products_runtime,
         rust_baseline_run=rust_baseline_run_arg,
         record_raw_http=args.record_raw_http,
+        qa_profile=qa_before["path"] if qa_before is not None else None,
+        api_profile=str(args.api_profile) if api_context is not None else None,
     )
 
     receipts: list[dict[str, Any]] = []
     for step_def in step_defs:
-        receipt = run_single_step(step_def, out_dir, repo)
+        receipt = run_single_step(step_def, out_dir, repo, args.api_profile if qa_before is not None else None)
         receipts.append(receipt)
 
     after_snapshot = capture_identity_snapshot(
@@ -1051,6 +1285,49 @@ def main(argv: list[str] | None = None) -> int:
         after=after_snapshot,
         protected_default=args.protected_default,
     )
+    if qa_before is not None:
+        api_after_path = api_evidence_root / 'full-after.json'
+        try:
+            api_module.recheck(api_context)
+            write_json(api_after_path, api_module.full_record(api_context))
+            api_recheck = retained_evidence.same_value(retained_evidence.read_json(api_evidence_root / 'full-before.json'),
+                                                      retained_evidence.read_json(api_after_path))
+        except (OSError, ValueError, KeyError, TypeError):
+            api_recheck = False
+        try:
+            retained_api = api_evidence_module.finish(api_evidence_root, api_context, api_module,
+                                                       api_evidence_state, api_evidence_runtime)
+        except (OSError, ValueError, KeyError, TypeError):
+            retained_api = False
+        retained_path = api_evidence_root / 'retained.json'
+        final_identity['api_qa_profile'] = {'sha256': api_context['context_sha256'], 'recheck_passed': api_recheck,
+                                             'before': 'api-qa-evidence/full-before.json',
+                                             'before_sha256': sha_file(api_evidence_root / 'full-before.json'),
+                                             'after': 'api-qa-evidence/full-after.json' if api_after_path.is_file() else None,
+                                             'after_sha256': sha_file(api_after_path) if api_after_path.is_file() else None,
+                                             'retained': 'api-qa-evidence/retained.json' if retained_path.is_file() else None,
+                                             'retained_sha256': sha_file(retained_path) if retained_path.is_file() else None,
+                                             'retained_passed': retained_api}
+        if not api_recheck or not retained_api:
+            final_identity['problems'].append('API QA context missing or changed during acceptance')
+            final_identity['passed'] = False
+        try:
+            qa_after = qa_profile_snapshot(args.qa_profile)
+        except (OSError, ValueError):
+            qa_after = None
+        unchanged = qa_after == qa_before
+        final_identity["qa_profile"] = {"before": qa_before, "after": qa_after, "unchanged": unchanged}
+        if not unchanged:
+            final_identity["problems"].append("QA profile missing or changed during acceptance")
+            final_identity["passed"] = False
+        evidence_passed = retained_evidence.finish(qa_evidence_root, repo, args.qa_profile, qa_evidence_module,
+                                                    qa_evidence_state, qa_evidence_runtime)
+        final_identity["qa_profile_evidence"] = {"path": "qa-profile-evidence/identity.json",
+                                                  "sha256": sha_file(qa_evidence_root / "identity.json"),
+                                                  "passed": evidence_passed}
+        if not evidence_passed:
+            final_identity["problems"].append("QA retained evidence missing or changed during acceptance")
+            final_identity["passed"] = False
     write_json(identity_path, final_identity)
 
     summary_steps: list[dict[str, Any]] = []
@@ -1104,6 +1381,9 @@ def main(argv: list[str] | None = None) -> int:
         "baseline_url": baseline_url,
         "legacy_run": legacy_run_arg,
         "record_raw_http": args.record_raw_http,
+        **({"qa_profile": qa_before} if qa_before is not None else {}),
+        **({'api_qa_profile': {'path': str(args.api_profile), 'sha256': api_context['context_sha256']},
+            'native_source_context': native_context_record} if api_context is not None else {}),
         **({"rust_baseline_run": rust_baseline_run_arg} if rust_baseline_run_arg is not None else {}),
         "python": python_arg,
         "contract_receipt": contract_receipt_arg,

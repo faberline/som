@@ -1,0 +1,26 @@
+{
+  "added_paths": [
+    "som-rs/contracts/react-output-v1/linux-api-qa-authority.json",
+    "som-rs/contracts/react-output-v1/linux-qa-audit-authority.json",
+    "som-rs/contracts/react-output-v1/som-react-linux-api-profile.json",
+    "som-rs/contracts/react-output-v1/som-react-linux-qa-profile.json",
+    "som-rs/tests/react-output-v1/linux_qa_profile.py"
+  ],
+  "archives": {
+    "som-rs/tests/react-output-v1/run_api_contract.py": "som-rs/evidence/react-output-contract-archive/run_api_contract-before-amendment-003.py",
+    "som-rs/tests/react-output-v1/run_gates.py": "som-rs/evidence/react-output-contract-archive/run_gates-before-amendment-003.py"
+  },
+  "changed_paths": [
+    "som-rs/tests/react-output-v1/run_api_contract.py",
+    "som-rs/tests/react-output-v1/run_gates.py"
+  ],
+  "new_sha256": {
+    "som-rs/contracts/react-output-v1/linux-api-qa-authority.json": "52978fee5183bed60416f73c360af681154a3820954943d7284f444b6b2ba9cf",
+    "som-rs/contracts/react-output-v1/linux-qa-audit-authority.json": "33479d9fe01c3b083478f88e566960152030463eac948f0ce54a55f4be3cdc67",
+    "som-rs/contracts/react-output-v1/som-react-linux-api-profile.json": "d623ca96c869b6dc954da640234287460b87a299c400f2f2fda1703c1d68ee75",
+    "som-rs/contracts/react-output-v1/som-react-linux-qa-profile.json": "5e2e4852b32e8bdc5b60ad60e50fb8e6a235690334848c13fb29ca55cb0d6c00",
+    "som-rs/tests/react-output-v1/linux_qa_profile.py": "e5e1244e27df4717e369fb0e56c1097df59664f2cb2aa19c0766dc13dc2703d7",
+    "som-rs/tests/react-output-v1/run_api_contract.py": "56e6fd5d0f088a4d1d019538d648378bd8020a85c4787bd1e31866296210ddc1",
+    "som-rs/tests/react-output-v1/run_gates.py": "76edbfff0662bdb666d09580a84eb4eebd5b604f01cff37258cbf3462f3022aa"
+  }
+}

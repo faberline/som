@@ -20,7 +20,7 @@ Writes <out>/report.json and exits 0 when every case passes.
 With --cleanup-runtime, each completed case keeps its evidence and removes only
 its installed node_modules and its PostgreSQL data after a verified stop.
 
-usage: check_products.py --url URL --manifest MANIFEST --out DIR [--cache DIR] [--only ID ...] [--cleanup-runtime]
+usage: check_products.py --url URL --manifest MANIFEST --out DIR [--cache DIR | --qa-profile FILE] [--only ID ...] [--cleanup-runtime]
 """
 from __future__ import annotations
 
@@ -30,11 +30,14 @@ import hashlib
 import json
 import os
 import pathlib
+import re
+import signal
 import shutil
 import stat
 import subprocess
 import sys
 import time
+import types
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -46,17 +49,116 @@ REACT_TESTS = SOM_RS / "tests" / "react-output-v1"
 if str(REACT_TESTS) not in sys.path:
     sys.path.insert(0, str(REACT_TESTS))
 
-import check_contract  # type: ignore[import-not-found]  # noqa: E402
-from common import CONTRACT, REPO  # type: ignore[import-not-found]  # noqa: E402
+def load_pinned_retained(repo: pathlib.Path):
+    path = repo / 'som-rs/scripts/react_output_acceptance/retained_evidence.py'
+    if (not repo.is_absolute() or repo.resolve() != repo or any(part.is_symlink() for part in (path, *path.parents))
+            or 'retained_evidence' in sys.modules):
+        raise ValueError('retained verifier path or preload differs')
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    try:
+        info = os.fstat(fd)
+        if not stat.S_ISREG(info.st_mode) or info.st_size > 2 * 1024 * 1024:
+            raise ValueError('retained verifier source differs')
+        with os.fdopen(fd, 'rb', closefd=False) as stream:
+            raw = stream.read(2 * 1024 * 1024 + 1)
+    finally:
+        os.close(fd)
+    if len(raw) > 2 * 1024 * 1024 or hashlib.sha256(raw).hexdigest() != '7ec396988cc2e9704c228c05cb3a7cd7a51c87d0fc6ea26c1ffa1455209d75bc':
+        raise ValueError('retained verifier source differs')
+    module = types.ModuleType('retained_evidence')
+    module.__file__ = str(path)
+    exec(compile(raw, str(path), 'exec', dont_inherit=True), module.__dict__)
+    sys.modules['retained_evidence'] = module
+    return module
+
+LINUX_QA_CLI = any(arg in ('--qa-profile', '--api-profile') or arg.startswith(('--qa-profile=', '--api-profile=')) for arg in sys.argv[1:])
+if LINUX_QA_CLI:
+    REPO = SOM_RS.parent
+    CONTRACT = SOM_RS / 'contracts/react-output-v1'
+    retained_evidence = load_pinned_retained(REPO)
+    check_contract = None
+else:
+    import check_contract  # type: ignore[import-not-found]  # noqa: E402
+    from common import CONTRACT, REPO  # type: ignore[import-not-found]  # noqa: E402
+    import retained_evidence
 
 PYTHON = str(SOM_RS / "runtime" / "acceptance-m3-venv" / "bin" / "python")
 FORBIDDEN_PORTS = (8765, 18765)
 NO_PROXY_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 EXPECTED_PRODUCTS = 129
+# Native invocation remains gated by the authenticated receipt and source authority.
+API_BOOTSTRAP_REVIEWED = True
+
+
+def frozen_acceptance_groups(repo: pathlib.Path) -> dict[str, str]:
+    """Read named cases and their groups from the sealed contract inventory."""
+    rel = "som-rs/contracts/react-output-v1/case-inventory.json"
+    files = retained_evidence.sealed_files(repo)
+    expected = files.get(rel)
+    retained_evidence.need(isinstance(expected, str), "QA inventory is not sealed")
+    path = retained_evidence.physical_repo_path(repo, rel)
+    raw = retained_evidence.read_physical_bytes(path, 8 * 1024 * 1024)
+    retained_evidence.need(hashlib.sha256(raw).hexdigest() == expected, "QA inventory differs from receipt")
+    inventory = retained_evidence.parse_json(raw)
+    retained_evidence.need(isinstance(inventory, dict) and inventory.get("version") == "som.react-output-case-inventory.v1", "QA inventory format differs")
+    groups = ("public_examples", "version_positive_fixtures", "coverage_cases", "name_cases",
+              "public_products_in_scope", "legacy_in_scope")
+    cases: dict[str, str] = {}
+    for group in groups:
+        rows = inventory.get(group)
+        retained_evidence.need(isinstance(rows, list), "QA inventory group missing")
+        for row in rows:
+            retained_evidence.need(isinstance(row, dict), "QA inventory row invalid")
+            if group in groups[:3]:
+                retained_evidence.need(isinstance(row.get("react"), str), "QA inventory scope missing")
+                if row["react"] != "in_scope":
+                    continue
+            cid = row.get("id")
+            retained_evidence.need(isinstance(cid, str) and re.fullmatch(r"[A-Za-z0-9_.-]+", cid) is not None
+                                   and cid not in (".", ".."), "QA inventory case id invalid")
+            retained_evidence.need(cid not in cases, "QA frozen inventory repeats a case")
+            cases[cid] = group
+    retained_evidence.need(len(cases) == EXPECTED_PRODUCTS,
+                           "QA frozen inventory must contain 129 unique cases")
+    return cases
+
+
+def validate_qa_manifest(entries: Any, expected: dict[str, str]) -> None:
+    retained_evidence.need(isinstance(entries, list) and all(isinstance(row, dict) for row in entries),
+                           "QA manifest products invalid")
+    ids = [row.get("id") for row in entries]
+    retained_evidence.need(all(isinstance(cid, str) for cid in ids), "QA manifest case id invalid")
+    retained_evidence.need(len(ids) == EXPECTED_PRODUCTS and len(set(ids)) == EXPECTED_PRODUCTS
+                           and set(ids) == set(expected), "QA manifest differs from frozen 129 named cases")
+    retained_evidence.need(all(row.get("group") == expected[row["id"]] for row in entries),
+                           "QA manifest case group differs from frozen inventory")
 
 
 def sha(path: pathlib.Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def load_api_recorder(repo: pathlib.Path):
+    """Authenticate the recorder before executing any Linux QA helper."""
+    retained_evidence.need(API_BOOTSTRAP_REVIEWED, 'Linux API bootstrap is not reviewed')
+    authority_rel = 'som-rs/contracts/react-output-v1/linux-api-qa-authority.json'
+    files = retained_evidence.sealed_files(repo)
+    path = retained_evidence.physical_repo_path(repo, authority_rel)
+    raw = retained_evidence.read_physical_bytes(path, 1024 * 1024)
+    retained_evidence.need(files.get(authority_rel) == hashlib.sha256(raw).hexdigest(), 'API authority differs')
+    authority = retained_evidence.parse_json(raw)
+    retained_evidence.need(isinstance(authority, dict) and authority.get('version') == 'som.react-linux-api-authority.v1'
+                           and isinstance(authority.get('source_sha256'), dict), 'API authority format differs')
+    rel = 'som-rs/scripts/react_output_acceptance/record_api.py'
+    path = retained_evidence.physical_repo_path(repo, rel)
+    source = retained_evidence.read_physical_bytes(path, 1024 * 1024)
+    retained_evidence.need(authority['source_sha256'].get(rel) == hashlib.sha256(source).hexdigest(), 'API recorder source differs')
+    retained_evidence.need('record_api' not in sys.modules, 'preloaded API recorder refused')
+    module = types.ModuleType('record_api')
+    module.__file__ = str(path)
+    exec(compile(source, str(path), 'exec'), module.__dict__)
+    sys.modules['record_api'] = module
+    return module
 
 
 def post(base_url: str, route: str, body: bytes) -> tuple[int, bytes]:
@@ -98,10 +200,201 @@ def python_product(base_url: str, entry: dict[str, Any], case_dir: pathlib.Path)
     return None
 
 
-def step(argv: list[str], log: pathlib.Path) -> int:
+def step(argv: list[str], log: pathlib.Path, python: str | None = None) -> int:
     with log.open("w") as out:
-        return subprocess.run([PYTHON, *argv], stdout=out, stderr=subprocess.STDOUT, timeout=3600,
+        return subprocess.run([python or PYTHON, *argv], stdout=out, stderr=subprocess.STDOUT, timeout=3600,
                               check=False).returncode
+
+
+@contextlib.contextmanager
+def defer_owned_interrupts():
+    """Keep owned-child assignment and cleanup from being interrupted."""
+    pending, previous = [], {}
+    def defer(number, _frame): pending.append(number)
+    for number in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+        previous[number] = signal.signal(number, defer)
+    try:
+        yield pending
+    finally:
+        for number, handler in previous.items(): signal.signal(number, handler)
+
+
+def cancel_owned_child(child, grace=60):
+    """Interrupt and wait only for this Popen child; nested service state is unknown."""
+    result = {'method': 'interrupt-direct-child', 'recorder_wait': 'unverified',
+              'exit_code': None, 'owned_services': 'unverified'}
+    if child is None: return result
+    with defer_owned_interrupts():
+        try:
+            if child.poll() is None: child.send_signal(signal.SIGINT)
+            code = child.wait(timeout=grace)
+        except subprocess.TimeoutExpired:
+            result['method'] = 'interrupt-then-kill-direct-child'
+            try: child.kill()
+            except ProcessLookupError: pass
+            try: code = child.wait(timeout=10)
+            except subprocess.TimeoutExpired: return result
+        except OSError:
+            return result
+        if type(code) is int:
+            result['recorder_wait'], result['exit_code'] = 'completed', code
+    return result
+
+
+def native_case_command(logical: list[str], postcheck: pathlib.Path, full_before: pathlib.Path):
+    """Route only checked repository Python entries through the admitted child loader."""
+    holder = sys.modules.get('_som_m6_checked_router')
+    retained_evidence.need(holder is not None and getattr(holder, 'qa_mode', None) == 'native-qa-v1',
+                           'native case source router missing')
+    ctx, live, router = holder.context, holder.live, holder.router
+    retained_evidence.need(ctx.qa_mode == 'native-qa-v1' and pathlib.Path(logical[0]) == pathlib.Path(live['python'])
+                           and full_before == pathlib.Path(holder.full_before), 'native case live context differs')
+    target = pathlib.Path(logical[1]); target = target if target.is_absolute() else REPO / target
+    retained_evidence.need(target.is_absolute() and target.is_relative_to(REPO) and '..' not in target.parts,
+                           'native case target outside repository')
+    relative = target.relative_to(REPO).as_posix()
+    entry = 'som-rs/scripts/react_output_acceptance/m6_native_entry.py'
+    allowed = ctx.qa_source_authority['admitted_repository_python_sources']
+    retained_evidence.need(entry in allowed and relative in allowed, 'native case source not admitted')
+    router.sources.read(entry); router.sources.read(relative)
+    return [logical[0], '-I', '-S', '-B', str(REPO / entry), '--repo', str(REPO),
+            '--product-context', str(ctx.path), '--helper-revision', ctx.helper_revision,
+            '--candidate-revision', ctx.candidate_revision, '--api-profile', str(holder.api_profile),
+            '--full-before', str(full_before), '--postcheck', str(postcheck), '--script', relative,
+            '--scope', 'case', '--', *logical[2:]]
+
+
+def attach_native_route(record, actual, pid, postcheck):
+    group_absent = False
+    if type(pid) is int and pid > 1:
+        try: os.killpg(pid, 0)
+        except ProcessLookupError: group_absent = True
+        except OSError: pass
+    route = {'actual_argv': actual, 'pid': pid, 'postcheck': str(postcheck),
+             'postcheck_sha256': None, 'owned_group_absent': group_absent}
+    if record['outcome'] == 'exited' and not group_absent:
+        record['outcome'] = 'unverified'
+        record['failure'] = record.get('failure') or 'owned-process-group-not-proven-absent'
+    if postcheck.is_file():
+        route['postcheck_sha256'] = retained_evidence.digest(postcheck)
+    else:
+        record['outcome'] = 'unverified'
+        record['failure'] = record.get('failure') or 'source-postcheck-missing'
+    record['source_routing'] = route
+
+
+def gate_invocation(argv: list[str], log: pathlib.Path, destination: pathlib.Path, python: str | None = None,
+                    full_before: pathlib.Path | None = None) -> dict[str, Any]:
+    """Retain the actual direct child invocation; unknown wait cannot pass."""
+    logical = [python or PYTHON, *argv]
+    postcheck = destination.parent / 'gates-source.json'
+    actual = native_case_command(logical, postcheck, full_before) if full_before is not None else logical
+    cwd = str(pathlib.Path.cwd().resolve())
+    outcome, code, failure, pid = "unverified", None, None, None
+    child, interrupted, cleanup = None, False, None
+    with log.open("w") as output:
+        try:
+            if full_before is None:
+                result = subprocess.run(actual, cwd=cwd, stdout=output, stderr=subprocess.STDOUT,
+                                        timeout=3600, check=False)
+                code = result.returncode
+            else:
+                with defer_owned_interrupts() as pending:
+                    child = subprocess.Popen(actual, cwd=cwd, stdout=output, stderr=subprocess.STDOUT,
+                                             start_new_session=True)
+                    pid = child.pid
+                if pending: raise KeyboardInterrupt('owned gate interrupted while starting')
+                try:
+                    code = child.wait(timeout=3600)
+                except subprocess.TimeoutExpired:
+                    outcome, failure = 'timed-out', 'timeout'
+                    cleanup = cancel_owned_child(child)
+                    code = cleanup['exit_code']
+            if outcome != 'timed-out':
+                if type(code) is int: outcome = 'exited'
+                else: failure = 'missing-exit-code'
+        except KeyboardInterrupt:
+            interrupted, outcome, failure = True, 'interrupted', 'interrupted'
+            cleanup = cancel_owned_child(child)
+            code = cleanup['exit_code']
+        except subprocess.TimeoutExpired:
+            outcome, failure = "timed-out", "timeout"
+        except OSError as exc:
+            outcome, failure = "process-error", type(exc).__name__
+    record = {"version": "som.react-gates-invocation.v1", "argv": logical, "cwd": cwd,
+              "outcome": outcome, "exit_code": code,
+              "wait": {"state": "completed" if type(code) is int else "unverified", "exit_code": code},
+              "log": log.name, "log_sha256": retained_evidence.digest(log), "failure": failure}
+    if cleanup is not None:
+        record['interruption_cleanup' if interrupted else 'timeout_cleanup'] = cleanup
+    if full_before is not None:
+        attach_native_route(record, actual, pid, postcheck)
+    retained_evidence.write_json(destination, record)
+    if interrupted: raise KeyboardInterrupt('owned gate interrupted')
+    return record
+
+
+def api_invocation(argv: list[str], log: pathlib.Path, destination: pathlib.Path, python: str,
+                   timeout: float = 3600, grace: float = 60,
+                   full_before: pathlib.Path | None = None) -> dict[str, Any]:
+    logical = [python, *argv]
+    postcheck = destination.parent / 'api-source.json'
+    actual = native_case_command(logical, postcheck, full_before) if full_before is not None else logical
+    cwd = str(pathlib.Path.cwd().resolve())
+    outcome, code, failure = 'unverified', None, None
+    cleanup, pid, child, interrupted = None, None, None, False
+    with log.open('w') as output:
+        try:
+            with defer_owned_interrupts() as pending:
+                child = subprocess.Popen(actual, cwd=cwd, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
+                pid = child.pid
+            if pending: raise KeyboardInterrupt('owned API recorder interrupted while starting')
+            try:
+                result = child.wait(timeout=timeout)
+                if type(result) is int:
+                    outcome, code = 'exited', result
+                else:
+                    failure = 'missing-exit-code'
+            except subprocess.TimeoutExpired:
+                # Interrupt only the owned recorder, so its existing finally
+                # blocks can stop its verified Python and PostgreSQL owners.
+                outcome, failure = 'timed-out', 'timeout'
+                try:
+                    child.send_signal(signal.SIGINT)
+                except ProcessLookupError:
+                    pass
+                try:
+                    code = child.wait(timeout=grace)
+                    cleanup = {'method': 'interrupt-recorder', 'recorder_wait': 'completed',
+                               'exit_code': code, 'owned_services': 'requires-raw-proof'}
+                except subprocess.TimeoutExpired:
+                    child.kill()
+                    try:
+                        code = child.wait(timeout=10)
+                        cleanup = {'method': 'interrupt-then-kill-recorder', 'recorder_wait': 'completed',
+                                   'exit_code': code, 'owned_services': 'unverified'}
+                    except subprocess.TimeoutExpired:
+                        cleanup = {'method': 'interrupt-then-kill-recorder', 'recorder_wait': 'unverified',
+                                   'exit_code': None, 'owned_services': 'unverified'}
+        except KeyboardInterrupt:
+            interrupted, outcome, failure = True, 'interrupted', 'interrupted'
+            cleanup = cancel_owned_child(child, grace=grace)
+            code = cleanup['exit_code']
+        except subprocess.TimeoutExpired:
+            outcome, failure = 'timed-out', 'timeout'
+        except OSError as exc:
+            outcome, failure = 'process-error', type(exc).__name__
+    record = {'version': 'som.react-api-invocation.v1', 'argv': logical, 'cwd': cwd,
+              'outcome': outcome, 'exit_code': code,
+              'wait': {'state': 'completed' if type(code) is int else 'unverified', 'exit_code': code},
+              'log': log.name, 'log_sha256': retained_evidence.digest(log), 'failure': failure}
+    if cleanup is not None:
+        record['interruption_cleanup' if interrupted else 'timeout_cleanup'] = cleanup
+    if full_before is not None:
+        attach_native_route(record, actual, pid, postcheck)
+    retained_evidence.write_json(destination, record)
+    if interrupted: raise KeyboardInterrupt('owned API recorder interrupted')
+    return record
 
 
 def cache_snapshot(cache: pathlib.Path, destination: pathlib.Path) -> dict[str, Any]:
@@ -130,22 +423,71 @@ def cache_snapshot(cache: pathlib.Path, destination: pathlib.Path) -> dict[str, 
     return record
 
 
+def gate_argv(product: pathlib.Path, work: pathlib.Path, cache: pathlib.Path,
+              qa_profile: pathlib.Path | None = None) -> list[str]:
+    """Use the sealed QA profile or the legacy explicit cache, never both."""
+    argv = [str(REACT_TESTS / "run_gates.py"), str(product), str(work)]
+    return argv + (["--qa-profile", str(qa_profile)] if qa_profile is not None else ["--cache", str(cache)])
+
+
 def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: pathlib.Path,
-               api: dict[str, Any]) -> dict[str, Any]:
+               api: dict[str, Any], qa: dict[str, Any] | None = None,
+               api_qa: dict[str, Any] | None = None) -> dict[str, Any]:
+    qa_profile = qa["profile_path"] if qa is not None else None
     cid = entry["id"]
+    if qa is not None:
+        retained_evidence.need(isinstance(cid, str) and cid not in ('', '.', '..')
+                               and pathlib.Path(cid).name == cid and '/' not in cid and '\\' not in cid,
+                               "QA case identifier is unsafe")
     work = out / cid
+    if qa is not None:
+        retained_evidence.physical_repo_path(out, work)
     work.mkdir()
     problems: list[str] = []
     product = pathlib.Path(entry["product"])
     codes: dict[str, int | None] = {"gates": None, "api_contract": None}
+    expected_cache = None
+    if qa_profile is not None:
+        expected_path = out.parent / "qa-profile-evidence" / "cache-inventory.json"
+        expected_cache = retained_evidence.read_json(expected_path)
+        full_before = retained_evidence.tree_inventory(cache)
+        retained_evidence.write_json(work / "cache-evidence-before.json", full_before)
+        retained_evidence.need(retained_evidence.same_value(full_before, expected_cache), "QA cache before differs from retained inventory")
     cache_before = cache_snapshot(cache, work / "cache-before.json")
-    codes["gates"] = step([str(REACT_TESTS / "run_gates.py"), str(product), str(work / "gates"),
-                           "--cache", str(cache)], work / "gates.log")
+    if qa_profile is None:
+        codes["gates"] = step(gate_argv(product, work / "gates", cache, qa_profile), work / "gates.log")
+        invocation = None
+    else:
+        invocation = gate_invocation(gate_argv(product, work / "gates", cache, qa_profile),
+                                     work / "gates.log", work / "gates-invocation.json", str(api_qa['python']),
+                                     out.parent / 'api-qa-evidence/full-before.json')
+        codes["gates"] = invocation["exit_code"]
     cache_after = cache_snapshot(cache, work / "cache-after.json")
+    if qa_profile is not None:
+        full_after = retained_evidence.tree_inventory(cache)
+        retained_evidence.write_json(work / "cache-evidence-after.json", full_after)
+        retained_evidence.need(retained_evidence.same_value(full_after, expected_cache)
+                               and retained_evidence.same_value(full_after, full_before), "QA cache after differs")
+        retained_evidence.need(invocation is not None and invocation["outcome"] == "exited"
+                               and invocation["wait"]["state"] == "completed", "QA gate wait is unverified")
     if cache_before.get("status") != "passed" or cache_after.get("status") != "passed" or cache_before != cache_after:
         problems.append("raw cache file snapshots differ or are missing")
     gates_path = work / "gates" / "gates.json"
-    gates = json.loads(gates_path.read_text()) if gates_path.is_file() else None
+    if qa is None:
+        gates = json.loads(gates_path.read_text()) if gates_path.is_file() else None
+    else:
+        retained_evidence.physical_repo_path(out, gates_path)
+        gates = retained_evidence.read_json(gates_path)
+        retained_evidence.need(isinstance(gates, dict), "QA gate report is not an object")
+        expected_identity = {"sha256": qa["profile_sha256"], "node": str(qa["node"]),
+                             "npm_cli": str(qa["npm_cli"]), "cache": str(qa["cache"])}
+        reported = gates.get("qa_profile")
+        retained_evidence.need(isinstance(reported, dict) and all(reported.get(k) == v for k, v in expected_identity.items())
+                               and reported.get("recheck_passed") is True and "failure_reason" in reported
+                               and reported["failure_reason"] is None, "QA gate profile identity differs")
+        expected_argv = [str(api_qa['python']), *gate_argv(product, work / "gates", cache, qa_profile)]
+        retained_evidence.need(invocation["argv"] == expected_argv and invocation["cwd"] == str(pathlib.Path.cwd().resolve())
+                               and invocation["exit_code"] == codes["gates"] and invocation["wait"]["exit_code"] == codes["gates"], "QA gate invocation differs")
     if codes["gates"] != 0 or gates is None or gates.get("passed") is not True:
         problems.append(f"run_gates.py exit {codes['gates']}")
 
@@ -156,8 +498,19 @@ def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: p
     if python_problem is not None:
         problems.append(python_problem)
     else:
-        codes["api_contract"] = step([str(HERE / "record_api.py"), str(python_dir), str(product),
-                                      str(work / "api"), "--raw-out", str(work / "api-raw")], work / "api.log")
+        api_args = [str(HERE / "record_api.py"), str(python_dir), str(product),
+                    str(work / "api"), "--raw-out", str(work / "api-raw")]
+        if api_qa is not None:
+            api_args += ['--api-profile', str(api_qa['context_path']), '--qa-profile', str(qa_profile),
+                         '--full-validation', str(out.parent / 'api-qa-evidence/full-before.json')]
+        if api_qa is None:
+            codes["api_contract"] = step(api_args, work / "api.log")
+        else:
+            api_call = api_invocation(api_args, work / 'api.log', work / 'api-invocation.json', str(api_qa['python']),
+                                      full_before=out.parent / 'api-qa-evidence/full-before.json')
+            retained_evidence.need(api_call['outcome'] == 'exited' and api_call['wait']['state'] == 'completed',
+                                   'API recorder wait is unverified')
+            codes["api_contract"] = api_call['exit_code']
         report_path = work / "api" / "report.json"
         report = json.loads(report_path.read_text()) if report_path.is_file() else None
     result = (report or {}).get("result") or {}
@@ -179,6 +532,7 @@ def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: p
             problems.append("a process run_api_contract.py started is not stopped")
     row = {
         "id": cid,
+        **({"qa_profile_sha256": qa["profile_sha256"]} if qa is not None else {}),
         "group": entry["group"],
         "prompt_version": entry["prompt"]["version"],
         "exit_codes": codes,
@@ -316,32 +670,75 @@ def cleanup_case_runtime(out: pathlib.Path, cid: str) -> dict[str, Any]:
 
 
 def main() -> int:
+    global check_contract
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", required=True)
     parser.add_argument("--manifest", required=True, type=pathlib.Path)
     parser.add_argument("--out", required=True, type=pathlib.Path)
     toolchain = json.loads((CONTRACT / "toolchain.json").read_text())
-    parser.add_argument("--cache", type=pathlib.Path, default=REPO / toolchain["vendored_cache"]["path"])
+    parser.add_argument("--cache", type=pathlib.Path, default=None)
+    parser.add_argument("--qa-profile", type=pathlib.Path, default=None,
+                        help="Use a sealed Linux QA profile for every product gate.")
+    parser.add_argument("--api-profile", type=pathlib.Path, default=None,
+                        help="Use the sealed live Linux API QA context.")
     parser.add_argument("--only", nargs="*", default=None)
     parser.add_argument("--cleanup-runtime", action="store_true",
                         help="Remove only each completed case's node_modules and verified stopped PostgreSQL data")
     args = parser.parse_args()
+    qa = None
+    api_qa = api_context_module = None
+    qa_out = None
+    if args.qa_profile is not None:
+        if args.cache is not None or args.api_profile is None:
+            parser.error("Linux QA requires --api-profile and forbids --cache")
+        try:
+            qa_out = retained_evidence.physical_repo_path(REPO, args.out)
+            linux_qa_profile = retained_evidence.sealed_profile_helper(REPO)
+            qa = linux_qa_profile.validate_profile(args.qa_profile)
+            cache = qa["cache"]
+            recorder = load_api_recorder(REPO)
+            api_context_module, _, _ = recorder.load_linux_sources(REPO, bound_retained=retained_evidence)
+            api_qa = api_context_module.validate(args.api_profile, REPO, bound_node_module=linux_qa_profile)
+            check_contract = api_context_module.bind_repository_imports(REPO, api_qa['_source_shas'], 'contract')
+            retained_evidence.need(api_qa['node_profile_path'] == qa['profile_path']
+                                   and api_qa['profile_sha256'] == qa['profile_sha256']
+                                   and str(api_qa['node']) == str(qa['node'])
+                                   and str(api_qa['npm_cli']) == str(qa['npm_cli'])
+                                   and pathlib.Path(api_qa['cache']) == qa['cache'], 'API and gate QA identities differ')
+        except (ImportError, OSError, ValueError, KeyError, TypeError) as exc:
+            print(f"refused: Linux QA profile: {exc}", file=sys.stderr)
+            return 2
+    else:
+        if args.api_profile is not None:
+            parser.error('--api-profile requires --qa-profile')
+        cache = args.cache if args.cache is not None else REPO / toolchain["vendored_cache"]["path"]
     port = urllib.parse.urlsplit(args.url).port
     if port in FORBIDDEN_PORTS:
         print(f"refused: port {port} is not a QA port", file=sys.stderr)
         return 2
+    manifest_path = args.manifest.resolve()
+    expected_groups = None
+    if qa is not None:
+        try:
+            manifest = retained_evidence.read_json(manifest_path)
+            entries = manifest.get("products") if isinstance(manifest, dict) else manifest
+            expected_groups = frozen_acceptance_groups(REPO)
+            validate_qa_manifest(entries, expected_groups)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            print(f"refused: QA product inventory: {exc}", file=sys.stderr)
+            return 2
     if args.cleanup_runtime:
         try:
-            out = validate_cleanup_root(args.out)
+            out = validate_cleanup_root(qa_out if qa_out is not None else args.out)
         except (OSError, ValueError) as exc:
             print(f"refused: {exc}", file=sys.stderr)
             return 2
     else:
-        out = args.out.resolve()
+        out = qa_out if qa_out is not None else args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
-    manifest_path = args.manifest.resolve()
-    manifest = json.loads(manifest_path.read_text())
-    entries = manifest["products"] if isinstance(manifest, dict) else manifest
+    if qa is None:
+        manifest = json.loads(manifest_path.read_text())
+        entries = manifest["products"] if isinstance(manifest, dict) else manifest
     if args.only:
         entries = [e for e in entries if e["id"] in args.only]
     api = json.loads((CONTRACT / "api-contract.json").read_text())
@@ -349,7 +746,12 @@ def main() -> int:
     started = time.time()
     for index, entry in enumerate(entries, 1):
         t0 = time.time()
-        row = check_case(args.url, entry, out, args.cache.resolve(), api)
+        if qa is None:
+            row = check_case(args.url, entry, out, cache.resolve(), api)
+        else:
+            api_context_module.recheck_case(api_qa)
+            row = check_case(args.url, entry, out, cache.resolve(), api, qa, api_qa)
+            api_context_module.recheck_case(api_qa)
         if args.cleanup_runtime:
             try:
                 cleanup = cleanup_case_runtime(out, entry["id"])
@@ -364,21 +766,35 @@ def main() -> int:
         print(f"[{index}/{len(entries)}] {row['id']} passed={row['passed']} {row['seconds']}s "
               f"{'; '.join(row['problems'])}", flush=True)
         (out / "progress.json").write_text(json.dumps({"done": index, "total": len(entries)}) + "\n")
+    qa_recheck_problem = None
+    if qa is not None:
+        try:
+            linux_qa_profile.recheck(qa)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            qa_recheck_problem = f"{type(exc).__name__}: {exc}"
     complete = args.only is None and len(rows) == EXPECTED_PRODUCTS
+    if qa is not None:
+        row_ids = [row.get("id") for row in rows]
+        complete = (complete and all(isinstance(cid, str) for cid in row_ids)
+                    and len(set(row_ids)) == EXPECTED_PRODUCTS and set(row_ids) == set(expected_groups)
+                    and all(row.get("group") == expected_groups[row["id"]] for row in rows))
     report = {
         "version": "som.react-output-product-gates.v1",
         "issue": 129,
         "url": args.url,
         "manifest": str(manifest_path),
         "manifest_sha256": sha(manifest_path),
-        "vendored_cache": str(args.cache.resolve()),
+        "vendored_cache": str(cache.resolve()),
+        **({"qa_profile": {"path": str(qa["profile_path"]), "sha256": qa["profile_sha256"]}} if qa is not None else {}),
+        **({"qa_profile_final_recheck": {"passed": qa_recheck_problem is None,
+                                          "failure_reason": qa_recheck_problem}} if qa is not None else {}),
         "case_count": len(rows),
         "complete": complete,
         "failed": [r["id"] for r in rows if not r["passed"]],
         "seconds": round(time.time() - started, 1),
         "cases": rows,
     }
-    report["passed"] = complete and not report["failed"]
+    report["passed"] = complete and not report["failed"] and qa_recheck_problem is None
     (out / "report.json").write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n")
     print(f"cases={len(rows)} failed={len(report['failed'])} complete={complete} passed={report['passed']}")
     return 0 if report["passed"] else 1

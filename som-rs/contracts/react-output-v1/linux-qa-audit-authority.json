@@ -1,0 +1,45 @@
+{
+  "profile": {
+    "cache": {
+      "files": 246,
+      "path": "npm-cache-new",
+      "sha256": "5267851624684b07307609f59d0b13705bd7934a1fd59bde2045463a3ee6ddda",
+      "symlinks": 0
+    },
+    "host": "ubuntu-22.04-x86_64",
+    "node": {
+      "path": "node/bin/node",
+      "sha256": "3de740a941a630439b22b79aafb383f4912b76354a2694765e8d59a033746538"
+    },
+    "npm": {
+      "files": 1921,
+      "root": "node/lib/node_modules/npm",
+      "sha256": "303f008099574a6edbb698df7d748a897f48f8a0c69cb1f3ee699e2937f50ca9",
+      "symlinks": 0
+    },
+    "prettier": {
+      "files": 56,
+      "sha256": "f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299",
+      "symlinks": 0
+    },
+    "reference_formatter_sha256": "636bd4a26884ea92873af81bf4fd5bbc0c065157e645c3919658a4d0bc29c0e8",
+    "source": {
+      "artifact": 12873066929,
+      "artifact_zip_sha256": "10a7f2bf058be21c670ddac89afece05c305ee717b9a879de4c95256fd6fe2dc",
+      "commit": "62637173ffeecde2655482377a218b22bf54618a",
+      "run": 40817465924,
+      "tar_sha256": "5f453d9e3f4fc17e36c9c16d17dacc157a34915fc7c9e477f49da3e81b807171"
+    },
+    "version": "som.react-linux-qa-profile.v1"
+  },
+  "profile_sha256": "5e2e4852b32e8bdc5b60ad60e50fb8e6a235690334848c13fb29ca55cb0d6c00",
+  "source_sha256": {
+    "som-rs/scripts/react_output_acceptance/audit/audit130.py": "d838eb72d361d2f6abdc555701c5557b0aae8eb410bffc2168add7ca8cbb7a14",
+    "som-rs/scripts/react_output_acceptance/check_products.py": "34904c0ceb671a8b9d1ed83d83337776a762beb1eeb7d7fdc2d1239da6bbcec3",
+    "som-rs/scripts/react_output_acceptance/retained_evidence.py": "7ec396988cc2e9704c228c05cb3a7cd7a51c87d0fc6ea26c1ffa1455209d75bc",
+    "som-rs/scripts/react_output_acceptance/run_acceptance.py": "315e931b5173525c897517b6dcda0c159ddfec674eb14953ef4d41e95c7e2434",
+    "som-rs/tests/react-output-v1/linux_qa_profile.py": "e5e1244e27df4717e369fb0e56c1097df59664f2cb2aa19c0766dc13dc2703d7",
+    "som-rs/tests/react-output-v1/run_gates.py": "76edbfff0662bdb666d09580a84eb4eebd5b604f01cff37258cbf3462f3022aa"
+  },
+  "version": "som.react-linux-qa-audit-authority.v1"
+}

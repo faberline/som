@@ -89,12 +89,13 @@ def safe_error(error):
     return {"type": type(error).__name__, "errno": number if type(number) is int else None}
 
 
-def request_identity(request):
+def request_identity(request, ports=(18917, 18919)):
     url = request.full_url
     need(type(url) is str)
     parsed = urllib.parse.urlsplit(url)
     need(parsed.scheme == "http" and parsed.hostname in ("127.0.0.1", "::1", "localhost"))
-    need(parsed.port in (18917, 18919) and parsed.username is None and parsed.password is None)
+    need(ports in ((18917, 18919), (18978, 18979))
+         and parsed.port in ports and parsed.username is None and parsed.password is None)
     need(not parsed.query and not parsed.fragment)
     method = request.get_method()
     need((method == "POST" and parsed.path in ("/v1/compile", "/v1/assemble"))
@@ -176,8 +177,8 @@ class Call:
 
 
 class Recorder:
-    def __init__(self, out: Path):
-        self.out = out
+    def __init__(self, out: Path, ports=(18917, 18919)):
+        self.out, self.ports = out, ports
         self.lock = threading.RLock()
         self.calls = []
         self.errors = []
@@ -191,7 +192,7 @@ class Recorder:
 
     def open(self, handler, http_class, request, **kwargs):
         try:
-            identity = request_identity(request)
+            identity = request_identity(request, self.ports)
             with self.lock:
                 need(len(self.calls) < MAX_CALLS)
                 call = Call(self, identity, len(self.calls) + 1)
@@ -228,7 +229,7 @@ class Recorder:
             call.finish()
 
 
-def run_checker(out: str | Path, script: str | Path, arguments: list[str]):
+def run_checker(out: str | Path, script: str | Path, arguments: list[str], qa_mode=None):
     need(os.environ.get("GITHUB_ACTIONS") == "true"
          and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted")
     root = Path(os.path.abspath(REPO))
@@ -238,22 +239,36 @@ def run_checker(out: str | Path, script: str | Path, arguments: list[str]):
     need(output.is_relative_to(root / ".local") and not output.exists() and not output.is_symlink())
     physical(output.parent)
     source = read_regular(target)
+    native_router = None
+    if qa_mode == 'native-qa-v1':
+        holder = sys.modules.get('_som_m6_checked_router')
+        need(holder is not None and getattr(holder, 'qa_mode', None) == 'native-qa-v1'
+             and callable(getattr(getattr(holder, 'router', None), 'execute', None)))
+        native_router = holder.router
+        need(source == native_router.sources.read(target.relative_to(root).as_posix()))
+    else:
+        need(qa_mode is None)
     output.mkdir(mode=0o700)
     (output / "calls").mkdir(mode=0o700)
     before_argv, before_path, before_env = sys.argv, sys.path[:], dict(os.environ)
-    recorder = Recorder(output)
+    recorder = Recorder(output, (18978, 18979) if native_router is not None else (18917, 18919))
     code = 1
     failed_recording = False
     try:
         sys.argv = [str(target), *arguments]
         sys.path[:] = [str(target.parent), *before_path]
         os.environ.clear()
-        os.environ.update({key: value for key, value in before_env.items() if key in CHILD_ENV})
+        allowed = CHILD_ENV | (frozenset(('SOM_FULL_PRODUCT_CONTEXT', 'GITHUB_SHA', 'GITHUB_RUN_ID',
+                                           'GITHUB_RUN_ATTEMPT')) if native_router is not None else frozenset())
+        os.environ.update({key: value for key, value in before_env.items() if key in allowed})
         os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
         with recorder:
             try:
-                runpy.run_path(str(target), run_name="__main__")
-                code = 0
+                if native_router is None:
+                    runpy.run_path(str(target), run_name="__main__")
+                    code = 0
+                else:
+                    code = native_router.execute(str(target), arguments)
             except SystemExit as error:
                 if error.code is None:
                     code = 0
@@ -278,6 +293,8 @@ def run_checker(out: str | Path, script: str | Path, arguments: list[str]):
     manifest = {
         "version": VERSION, "script": {"path": target.relative_to(root).as_posix(), "sha256": digest(source)},
         "argv": [str(target), *arguments], "exit_code": code,
+        **({"qa_mode": "native-qa-v1", "ports": [18978, 18979],
+            "source_route": "checked-git-bytes"} if native_router is not None else {}),
         "calls": [call.record for call in recorder.calls], "recording_errors": recorder.errors,
     }
     write_new(output / "manifest.json", (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode())
@@ -293,11 +310,14 @@ def main(argv=None):
     try:
         parser = QuietParser(description=__doc__.splitlines()[0])
         parser.add_argument("--out", required=True)
+        parser.add_argument("--qa-mode", choices=('native-qa-v1',), default=None)
         parser.add_argument("checker", nargs=argparse.REMAINDER)
         args = parser.parse_args(argv)
         command = args.checker[1:] if args.checker[:1] == ["--"] else args.checker
         need(command and all(type(value) is str for value in command))
-        return run_checker(args.out, command[0], command[1:])
+        if args.qa_mode is None:
+            return run_checker(args.out, command[0], command[1:])
+        return run_checker(args.out, command[0], command[1:], args.qa_mode)
     except Exception:
         print(REFUSAL, file=sys.stderr)
         return 1

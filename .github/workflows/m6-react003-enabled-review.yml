@@ -1,0 +1,34 @@
+name: Calculate pending React003 map
+on:
+  push:
+    branches: [codex/m6-react003-enabled-review-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  draft:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Check complete draft authority source bytes
+        run: python3 -I -S -B .github/m6-react003-enabled-review/check_authorities.py
+      - name: Verify real unsealed receipt refusal
+        run: python3 -I -S -B .github/m6-react003-enabled-review/check_missing_003.py
+      - name: Run source routing synthetic fixtures
+        run: |
+          python3 -I -S -B -c 'import sys,unittest; sys.path.insert(0,".github/m6-react-source-routing-fixtures"); suite=unittest.defaultTestLoader.discover(".github/m6-react-source-routing-fixtures",pattern="test_*.py"); result=unittest.TextTestRunner(verbosity=2).run(suite); sys.exit(not result.wasSuccessful())'
+      - name: Calculate pending complete files map
+        run: |
+          cp .github/m6-react003-enabled-review/react003-plan.draft.json "$RUNNER_TEMP/react003-plan.json"
+          python3 -I -S -B .github/m6-react003-enabled-review/react003_map.py --repo "$GITHUB_WORKSPACE" --plan "$RUNNER_TEMP/react003-plan.json" --out "$RUNNER_TEMP/react003-map-draft.json"
+          sha256sum "$RUNNER_TEMP/react003-map-draft.json"
+      - name: Save draft metadata only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: react003-pending-map
+          path: ${{ runner.temp }}/react003-map-draft.json
+          if-no-files-found: warn
+          retention-days: 14

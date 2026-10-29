@@ -84,20 +84,25 @@ def pinned_json(reader, path, expected):
     return parse(raw)
 
 
-def endpoint(value):
+def endpoint(value, ports=(18917, 18919)):
+    need(ports in ((18917, 18919), (18978, 18979)), "unsupported fixed QA ports")
     need(type(value) is str, "recorded endpoint is missing", "unrun")
     url = urlsplit(value)
-    need(url.scheme == "http" and url.hostname == "127.0.0.1" and url.port in (18917, 18919)
+    need(url.scheme == "http" and url.hostname == "127.0.0.1" and url.port in ports
          and not url.username and not url.password and not url.query and not url.fragment
          and url.path in ("", "/"), "baseline raw evidence endpoint is not a fixed hosted QA endpoint")
     return value.rstrip("/")
 
 
 class Exchanges:
-    def __init__(self, reader, directory, expected_script):
+    def __init__(self, reader, directory, expected_script, ports=(18917, 18919)):
         self.reader, self.directory = reader, reader.path(directory)
         manifest = obj(read_json(reader, self.directory / "manifest.json"), "raw HTTP manifest")
         need(manifest.get("version") == "som.m6-http-recording.v1", "raw HTTP recording version differs")
+        if ports == (18978, 18979):
+            need(manifest.get("qa_mode") == "native-qa-v1" and manifest.get("ports") == list(ports)
+                 and manifest.get("source_route") == "checked-git-bytes",
+                 "native HTTP recorder evidence missing", "unrun")
         need(type(manifest.get("exit_code")) is int and manifest["exit_code"] == 0,
              "recorded baseline collector did not exit successfully")
         need(manifest.get("recording_errors") == [], "HTTP recorder did not retain complete evidence", "unrun")
@@ -115,7 +120,7 @@ class Exchanges:
             ids.add(identity)
             need(call.get("method") == "POST", "baseline recorder has an unexpected HTTP method")
             split = urlsplit(call.get("url", ""))
-            origin = endpoint(f"{split.scheme}://{split.netloc}")
+            origin = endpoint(f"{split.scheme}://{split.netloc}", ports)
             need(split.path in ("/v1/compile", "/v1/assemble") and not split.query and not split.fragment,
                  "raw baseline request route differs")
             request = self.file(call, "request")
@@ -230,9 +235,9 @@ def legacy_prompt(reader, run, index, case):
     return body, raw
 
 
-def validate_python(reader, raw_dir, report):
-    recording = Exchanges(reader, raw_dir, f"{ROOT}/scripts/typescript_output_acceptance/check_python_baseline.py")
-    qa, base = endpoint(report.get("qa_url", report.get("qa"))), endpoint(report.get("baseline_url", report.get("baseline")))
+def validate_python(reader, raw_dir, report, ports=(18917, 18919)):
+    recording = Exchanges(reader, raw_dir, f"{ROOT}/scripts/typescript_output_acceptance/check_python_baseline.py", ports)
+    qa, base = endpoint(report.get("qa_url", report.get("qa")), ports), endpoint(report.get("baseline_url", report.get("baseline")), ports)
     need(qa != base, "candidate and baseline endpoints are the same")
     public, legacy, legacy_run = source_inputs(reader)
     public_run = f".local/rust-compiler-goal/acceptance/public-products-003b"
@@ -354,9 +359,9 @@ def normalized(document):
     return canonical(out)
 
 
-def validate_rust(reader, raw_dir, report):
-    recording = Exchanges(reader, raw_dir, f"{ROOT}/scripts/typescript_output_acceptance/check_rust_baseline.py")
-    qa, base = endpoint(report.get("qa_url", report.get("qa"))), endpoint(report.get("baseline_url", report.get("baseline")))
+def validate_rust(reader, raw_dir, report, ports=(18917, 18919)):
+    recording = Exchanges(reader, raw_dir, f"{ROOT}/scripts/typescript_output_acceptance/check_rust_baseline.py", ports)
+    qa, base = endpoint(report.get("qa_url", report.get("qa")), ports), endpoint(report.get("baseline_url", report.get("baseline")), ports)
     need(qa != base, "candidate and baseline endpoints are the same")
     specs = rust_sources(reader)
     rows = arr(report.get("rows"), "Rust baseline rows")
@@ -545,11 +550,11 @@ def verify_location(raw, diagnostic):
              "diagnostic JSON pointer line or column differs")
 
 
-def validate_controls(reader, raw_dir, report, language):
+def validate_controls(reader, raw_dir, report, language, ports=(18917, 18919)):
     need(language in ("react", "rust", "ts"), "unknown Python control contract")
     contract = {"react": "react-output-v1", "rust": "rust-output-v1", "ts": "typescript-output-v1"}[language]
-    recording = Exchanges(reader, raw_dir, f"{ROOT}/tests/{contract}/check_python_controls.py")
-    base = endpoint(report.get("base_url"))
+    recording = Exchanges(reader, raw_dir, f"{ROOT}/tests/{contract}/check_python_controls.py", ports)
+    base = endpoint(report.get("base_url"), ports)
     cases = arr(read_json(reader, f"{ROOT}/contracts/{contract}/negative-cases.json").get("cases"), "frozen controls")
     if language != "rust":
         cases += arr(read_json(reader, f"{ROOT}/contracts/{contract}/target-examples.json").get("name_cases"), "frozen name controls")

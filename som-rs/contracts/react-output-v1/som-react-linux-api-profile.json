@@ -1,0 +1,9 @@
+{
+  "closure_root": "/home/runner/work/_temp/som-react-python-closure",
+  "host": "ubuntu-22.04-x86_64",
+  "live_receipt": "/home/runner/work/_temp/som-react-python-closure/environments/react-api-qa/live-provision-receipt.json",
+  "node_profile": "/home/runner/work/_temp/som-react-linux-qa-profile.json",
+  "runtime_root": "/home/runner/work/_temp/som-product-runtime-qualification",
+  "venv": "/home/runner/work/_temp/som-react-python-closure/environments/react-api-qa/venv",
+  "version": "som.react-linux-api-profile.v1"
+}

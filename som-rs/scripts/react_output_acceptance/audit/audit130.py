@@ -12,8 +12,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
+import stat
 import sys
 from typing import Any, Callable
 
@@ -21,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from render_rules import render_files  # noqa: E402
 from refusal_rules import request_for  # noqa: E402
 from api_raw import validate as validate_api, ApiRawError  # noqa: E402
+from linux_input_raw import audit as audit_linux_inputs, LinuxInputError  # noqa: E402
 from baseline_raw import validate_python, validate_rust, validate_controls, verify_location, BaselineRawError  # noqa: E402
 
 
@@ -28,6 +31,18 @@ VERSION = "som.react-output-audit-130.v1"
 CONTRACT = "som-rs/contracts/react-output-v1"
 EVIDENCE = "som-rs/evidence"
 TOOLS = "som-rs/scripts/react_output_acceptance"
+# Proposed authority; the current receipt does not contain it. QA use must
+# remain unrun until the numbered receipt seals these exact source bytes.
+QA_AUTHORITY = f"{CONTRACT}/linux-qa-audit-authority.json"
+QA_SOURCES = (
+    "som-rs/tests/react-output-v1/linux_qa_profile.py",
+    "som-rs/tests/react-output-v1/run_gates.py",
+    "som-rs/scripts/react_output_acceptance/run_acceptance.py",
+    "som-rs/scripts/react_output_acceptance/check_products.py",
+    "som-rs/scripts/react_output_acceptance/retained_evidence.py",
+    "som-rs/scripts/react_output_acceptance/audit/audit130.py",
+)
+QA_RECEIPT_SOURCES = frozenset(QA_SOURCES[:2])
 STEPS = (
     "contract", "react-target", "react-python-controls", "python-baseline",
     "rust-baseline", "rust-python-controls", "rt-diagnostics", "ts-target",
@@ -44,6 +59,32 @@ def canonical(value: Any) -> bytes:
 
 def sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def qa_json_equal(left: Any, right: Any) -> bool:
+    """Compare JSON values with type fidelity: false is not integer zero."""
+    try:
+        encode = lambda value: json.dumps(value, sort_keys=True, separators=(",", ":"),
+                                          ensure_ascii=False, allow_nan=False)
+        return encode(left) == encode(right)
+    except (TypeError, ValueError):
+        return False
+
+
+def strict_qa_json(raw: bytes) -> Any:
+    """Reject duplicate members and nonfinite values in QA authority data."""
+    def pairs(items: list[tuple[str, Any]]) -> dict:
+        result: dict[str, Any] = {}
+        for key, value in items:
+            need(key not in result, "duplicate QA JSON member")
+            result[key] = value
+        return result
+    def nonfinite(_value: str) -> None:
+        raise EvidenceError("nonfinite QA JSON number")
+    try:
+        return json.loads(raw.decode("utf-8", "strict"), object_pairs_hook=pairs, parse_constant=nonfinite)
+    except (UnicodeError, ValueError) as exc:
+        raise EvidenceError("invalid QA JSON") from exc
 
 
 class EvidenceError(ValueError):
@@ -285,7 +326,9 @@ class Schema:
 
 
 class Audit:
-    def __init__(self, repo: Path, run: Path):
+    def __init__(self, repo: Path, run: Path, api_closure_tar: Path | None = None):
+        self.api_closure_tar = api_closure_tar
+        self.api_qa_profile: dict | None = None
         self.reader = Reader(repo)
         self.repo = self.reader.repo
         self.run = self.reader.path(run)
@@ -301,6 +344,8 @@ class Audit:
         self.baseline_requests: dict[tuple[str, str, str], str] = {}
         self.ts_baseline_inventory: dict = {}
         self.ts_baseline_cases: dict[str, tuple[str, dict]] = {}
+        self.qa_requested = False
+        self.qa_profile: dict | None = None
 
     def row(self, row_id: str, action: Callable[[], Any], *, description: str = "") -> dict:
         before = len(self.reader.accesses)
@@ -469,7 +514,134 @@ class Audit:
                     need(step["report_sha256"] == receipt.get("report_sha256"), f"{name} run/receipt report hash differs")
                 need(true_integer(receipt.get("exit_code")), f"{name} did not run", "unrun")
                 need(receipt["exit_code"] == 0, f"{name} process exited {receipt['exit_code']}")
+                if self.qa_requested:
+                    self.native_child_routing(index, name, receipt, run_doc)
             self.row(f"integrity/receipt/{name}", check)
+
+    def native_child_routing(self, index: int, name: str, receipt: dict, run_doc: dict) -> None:
+        """Check actual launcher, wait and source-postcheck; graph joins owner/transport."""
+        need(self.api_qa_profile is not None, 'native API source context missing', 'unrun')
+        logical = list_value(receipt.get('argv'), 'logical child argv')
+        need(len(logical) >= 2 and all(isinstance(word, str) for word in logical)
+             and logical[0] == self.api_qa_profile.get('python'), 'logical child interpreter or argv differs')
+        context = object_value(run_doc.get('native_source_context'), 'native context record')
+        context_path = self.reader.path(context.get('path'), self.run)
+        need(context_path == self.run / 'source-routing/context.json'
+             and self.reader.hash(context_path) == context.get('sha256'), 'retained context differs')
+        context_doc = object_value(self.reader.json(context_path), 'retained native context')
+        revision = context_doc.get('helper_revision')
+        need(isinstance(revision, str) and re.fullmatch('[0-9a-f]{40}', revision)
+             and context_doc.get('candidate_revision') == revision and context_doc.get('qa_mode') == 'native-qa-v1'
+             and context_doc.get('repo') == str(self.repo), 'native context identities differ')
+        identity = object_value(self.reader.json(self.run / 'identity.json'), 'run identity')
+        need(identity.get('git_head', {}).get('before') == revision, 'native context head differs')
+        route = object_value(receipt.get('source_routing'), 'native source routing')
+        post_path = self.reader.path(route.get('postcheck'), self.run)
+        need(post_path == self.run / 'source-routing' / f'{index:02d}-{name}.json'
+             and self.reader.hash(post_path) == route.get('postcheck_sha256'), 'source postcheck differs')
+        target = Path(logical[1]); target = target if target.is_absolute() else self.repo / target
+        need(target.is_relative_to(self.repo), 'native logical checker outside repo')
+        rel = target.relative_to(self.repo).as_posix()
+        api_profile = object_value(run_doc.get('api_qa_profile'), 'API QA profile')
+        expected = [logical[0], '-I', '-S', '-B', str(self.repo / 'som-rs/scripts/react_output_acceptance/m6_native_entry.py'),
+                    '--repo', str(self.repo), '--product-context', context.get('original_path'),
+                    '--helper-revision', revision, '--candidate-revision', revision,
+                    '--api-profile', api_profile.get('path'), '--full-before', str(self.run / 'api-qa-evidence/full-before.json'),
+                    '--postcheck', str(post_path), '--script', rel, '--scope', 'step', '--', *logical[2:]]
+        need(route.get('actual_argv') == expected and true_integer(route.get('pid')) and route['pid'] > 1,
+             'native actual launcher argv or pid differs')
+        wait = object_value(route.get('wait'), 'native direct wait')
+        need(wait.get('state') == 'completed' and true_integer(wait.get('exit_code'))
+             and wait['exit_code'] == receipt['exit_code'] == 0, 'native child wait or exit differs')
+        post = object_value(self.reader.json(post_path), 'native child postcheck')
+        need(post.get('version') == 'som.m6-native-source-entry.v1' and post.get('pid') == route['pid']
+             and post.get('helper_revision') == post.get('candidate_revision') == revision and post.get('scope') == 'step'
+             and post.get('logical_argv') == [rel, *logical[2:]] and post.get('interpreter') == logical[0]
+             and post.get('profile_sha256') == api_profile.get('sha256')
+             and post.get('full_before_sha256') == self.reader.hash(self.run / 'api-qa-evidence/full-before.json')
+             and post.get('entry_executed') is True and post.get('entry_exit_code') == 0
+             and post.get('source_postcheck') is True and post.get('product_acceptance_passed') is False,
+             'native child source postcheck differs')
+        need(post.get('site_packages') == str(Path(logical[0]).parent.parent / 'lib/python3.12/site-packages'),
+             'native child site-packages path differs')
+        executed = list_value(post.get('executed'), 'checked child sources')
+        wanted = [rel]
+        if rel == 'som-rs/scripts/react_output_acceptance/record_http.py':
+            need('--' in logical[2:], 'nested HTTP checker separator missing')
+            nested = Path(logical[logical.index('--') + 1])
+            nested = nested if nested.is_absolute() else self.repo / nested
+            need(nested.is_relative_to(self.repo), 'nested HTTP checker outside repo')
+            wanted.append(nested.relative_to(self.repo).as_posix())
+        need([row.get('path') for row in executed] == wanted, 'checked child source order differs')
+        for row in executed:
+            need(row.get('sha256') == self.reader.hash(row['path']), 'checked child source bytes differ')
+        pins = object_value(post.get('source_sha256'), 'native child source pins')
+        required = {'som-rs/scripts/react_output_acceptance/m6_native_entry.py',
+                    'som-rs/scripts/hosted_readiness/same_candidate_graph.py',
+                    'som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py',
+                    'som-rs/scripts/react_output_acceptance/retained_evidence.py',
+                    'som-rs/scripts/react_output_acceptance/linux_api_context.py', *wanted}
+        need(required.issubset(pins) and all(self.reader.hash(path) == pin for path, pin in pins.items()),
+             'native child source map incomplete or differs')
+
+    def native_case_routing(self, work: Path, invocation: dict, script: str, name: str) -> None:
+        """Check the actual isolated child launcher and its own source postcheck."""
+        cache = getattr(self, '_native_case_routes_checked', set())
+        key = (str(work), name)
+        if key in cache:
+            return
+        run_doc = object_value(self.reader.json(self.run / 'run.json'), 'run record')
+        context = object_value(run_doc.get('native_source_context'), 'native context record')
+        context_path = self.reader.path(context.get('path'), self.run)
+        need(context_path == self.run / 'source-routing/context.json'
+             and self.reader.hash(context_path) == context.get('sha256'), 'retained context differs')
+        doc = object_value(self.reader.json(context_path), 'retained native context')
+        revision = doc.get('helper_revision')
+        need(isinstance(revision, str) and re.fullmatch('[0-9a-f]{40}', revision)
+             and doc.get('candidate_revision') == revision and doc.get('qa_mode') == 'native-qa-v1'
+             and doc.get('repo') == str(self.repo), 'native context identities differ')
+        logical = list_value(invocation.get('argv'), 'case logical argv')
+        need(self.api_qa_profile is not None and len(logical) >= 2
+             and logical[0] == self.api_qa_profile.get('python') and logical[1] == str(self.repo / script),
+             'case logical interpreter or checker differs')
+        route = object_value(invocation.get('source_routing'), 'case native source routing')
+        post_path = self.reader.path(route.get('postcheck'), work)
+        need(post_path == work / (name + '-source.json')
+             and self.reader.hash(post_path) == route.get('postcheck_sha256'), 'case source postcheck differs')
+        profile = object_value(run_doc.get('api_qa_profile'), 'API QA profile')
+        expected = [logical[0], '-I', '-S', '-B', str(self.repo / 'som-rs/scripts/react_output_acceptance/m6_native_entry.py'),
+                    '--repo', str(self.repo), '--product-context', context.get('original_path'),
+                    '--helper-revision', revision, '--candidate-revision', revision,
+                    '--api-profile', profile.get('path'), '--full-before', str(self.run / 'api-qa-evidence/full-before.json'),
+                    '--postcheck', str(post_path), '--script', script, '--scope', 'case', '--', *logical[2:]]
+        need(route.get('actual_argv') == expected and true_integer(route.get('pid')) and route['pid'] > 1
+             and route.get('owned_group_absent') is True, 'case actual launcher argv, pid or owned group differs')
+        wait = object_value(invocation.get('wait'), 'case direct wait')
+        need(wait.get('state') == 'completed' and true_integer(wait.get('exit_code'))
+             and wait['exit_code'] == invocation.get('exit_code') == 0, 'case child wait or exit differs')
+        post = object_value(self.reader.json(post_path), 'case source postcheck')
+        need(post.get('version') == 'som.m6-native-source-entry.v1' and post.get('pid') == route['pid']
+             and post.get('helper_revision') == post.get('candidate_revision') == revision and post.get('scope') == 'case'
+             and post.get('logical_argv') == [script, *logical[2:]] and post.get('interpreter') == logical[0]
+             and post.get('site_packages') == str(Path(logical[0]).parent.parent / 'lib/python3.12/site-packages')
+             and post.get('profile_sha256') == profile.get('sha256')
+             and post.get('full_before_sha256') == self.reader.hash(self.run / 'api-qa-evidence/full-before.json')
+             and post.get('entry_executed') is True and post.get('entry_exit_code') == 0
+             and post.get('source_postcheck') is True and post.get('product_acceptance_passed') is False,
+             'case child source postcheck differs')
+        executed = list_value(post.get('executed'), 'case checked child sources')
+        need(len(executed) == 1 and executed[0].get('path') == script
+             and executed[0].get('sha256') == self.reader.hash(script), 'case checked source differs')
+        pins = object_value(post.get('source_sha256'), 'case child source pins')
+        required = {'som-rs/scripts/react_output_acceptance/m6_native_entry.py',
+                    'som-rs/scripts/hosted_readiness/same_candidate_graph.py',
+                    'som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py',
+                    'som-rs/scripts/react_output_acceptance/retained_evidence.py',
+                    'som-rs/scripts/react_output_acceptance/linux_api_context.py', script}
+        need(required.issubset(pins) and all(self.reader.hash(path) == pin for path, pin in pins.items()),
+             'case child source map incomplete or differs')
+        cache.add(key)
+        self._native_case_routes_checked = cache
 
     def sealed_contract(self) -> tuple[str, str]:
         folder = self.reader.path(EVIDENCE)
@@ -491,6 +663,337 @@ class Audit:
         for path, expected in self.latest_receipt["files"].items():
             need(self.reader.hash(path) == expected, f"sealed contract file hash differs: {path}")
         return "attested", "sealed file hashes and receipt chain match; human approval and independent review are recorded attestations"
+
+    def qa_inventory(self, root: Path, *, readonly: bool = False) -> dict:
+        """Read one retained tree under the repository and refuse skipped paths."""
+        root = self.reader.path(root)
+        need(root.is_dir(), f"missing retained QA tree: {root}", "unrun")
+        entries: dict[str, dict] = {}
+        files: dict[str, str] = {}
+        def scan_error(_error: OSError) -> None:
+            raise EvidenceError("retained QA tree scan failed")
+        for directory, dirs, names in os.walk(root, topdown=True, followlinks=False, onerror=scan_error):
+            current = Path(directory)
+            if readonly:
+                need(stat.S_IMODE(current.stat().st_mode) & 0o222 == 0, "retained QA cache directory is writable")
+            for name in dirs + names:
+                path = self.reader.path(current / name)
+                mode = path.lstat().st_mode
+                need(not stat.S_ISLNK(mode), "retained QA tree contains a symlink")
+                if readonly:
+                    need(stat.S_IMODE(mode) & 0o222 == 0, "retained QA cache entry is writable")
+                if stat.S_ISREG(mode):
+                    relative = path.relative_to(root).as_posix()
+                    need("\n" not in relative and "\r" not in relative and "\\" not in relative, "unsafe retained QA tree name")
+                    files[relative] = self.reader.hash(path)
+                    entries[relative] = {"kind": "file", "mode": stat.S_IMODE(mode), "sha256": files[relative]}
+                else:
+                    need(stat.S_ISDIR(mode), "retained QA tree contains a special file")
+                    relative = path.relative_to(root).as_posix()
+                    need("\n" not in relative and "\r" not in relative and "\\" not in relative, "unsafe retained QA tree name")
+                    entries[relative] = {"kind": "directory", "mode": stat.S_IMODE(mode)}
+        path_order = sha(b"".join(f"{name}\0{files[name]}\n".encode() for name in sorted(files, key=Path)))
+        return {"version": "som.react-qa-tree-inventory.v1", "root_mode": stat.S_IMODE(root.stat().st_mode),
+                "entries": entries, "tree_sha256": path_order, "file_count": len(files), "symlink_count": 0}
+
+    def qa_tree(self, root: Path, *, readonly: bool = False) -> dict[str, str]:
+        inventory = self.qa_inventory(root, readonly=readonly)
+        return {name: row["sha256"] for name, row in inventory["entries"].items() if row["kind"] == "file"}
+
+    def qa_receipt_chain(self, latest: dict) -> None:
+        """Recompute the QA receipt chain and the complete current contract map."""
+        number = latest.get("amendment")
+        need(type(number) is int and number > 0, "QA amendment number missing")
+        evidence_root = self.reader.path(EVIDENCE)
+        candidates = sorted(evidence_root.glob("react-output-contract-amendment-*.json"))
+        need(candidates, "QA amendment receipt missing", "unrun")
+        names = [path.name for path in candidates]
+        need(all(re.fullmatch(r"react-output-contract-amendment-[0-9]{3}\.json", name) for name in names)
+             and names[-1] == f"react-output-contract-amendment-{number:03}.json",
+             "QA receipt is not the latest numbered amendment")
+        latest_path = f"{EVIDENCE}/react-output-contract-amendment-{number:03}.json"
+        latest_raw = self.reader.bytes(latest_path)
+        need(qa_json_equal(strict_qa_json(latest_raw), latest), "latest QA receipt bytes differ")
+        need(latest.get("status") == "amendment_sealed_after_independent_review"
+             and latest.get("implementation_already_in_progress") is False, "QA amendment is not properly sealed")
+        target = object_value(latest.get("target_contract"), "QA target contract")
+        review = object_value(latest.get("independent_review"), "QA independent review")
+        rounds = list_value(review.get("rounds"), "QA review rounds")
+        need(rounds and all(isinstance(row, dict) and type(row.get("round")) is int and row["round"] > 0 for row in rounds),
+             "QA review rounds missing or malformed")
+        numbers = [row["round"] for row in rounds]
+        need(numbers == sorted(numbers) and len(set(numbers)) == len(numbers)
+             and rounds[-1].get("verdict") == "APPROVED" and review.get("target_sha256") == target.get("sha256"),
+             "latest QA review does not approve this target")
+        final_review = rounds[-1]
+        need(isinstance(final_review.get("reviewer"), str) and final_review["reviewer"].strip()
+             and isinstance(final_review.get("evidence"), str) and final_review["evidence"].strip()
+             and isinstance(final_review.get("head"), str)
+             and re.fullmatch(r"[0-9a-f]{40}", final_review["head"]) is not None,
+             "latest QA review record lacks reviewer, evidence or full source head")
+        current = latest
+        while True:
+            files = object_value(current.get("files"), "receipt file map")
+            need(files and all(isinstance(path, str) and isinstance(value, str) and HEX.fullmatch(value)
+                               for path, value in files.items()), "receipt file map differs")
+            current_target = object_value(current.get("target_contract"), "receipt target")
+            need(current_target.get("id") == "som.react-output-contract.v1"
+                 and current_target.get("sha256") == sha(canonical(files)), "receipt target map hash differs")
+            if number == 0:
+                need(current.get("status") == "contract_frozen_before_implementation"
+                     and current.get("implementation_started_before_freeze") is False, "freeze receipt status differs")
+                break
+            need(current.get("status") == "amendment_sealed_after_independent_review"
+                 and current.get("implementation_already_in_progress") is False
+                 and type(current.get("amendment")) is int and current["amendment"] == number,
+                 "receipt chain order or status differs")
+            previous_path = (f"{EVIDENCE}/react-output-contract-amendment-{number - 1:03}.json"
+                             if number > 1 else f"{EVIDENCE}/react-output-contract-freeze-2026-10-22.json")
+            need(current.get("previous_receipt") == previous_path, "previous receipt path differs")
+            previous_raw = self.reader.bytes(previous_path)
+            need(current.get("previous_receipt_sha256") == sha(previous_raw), "previous receipt hash differs")
+            previous = object_value(strict_qa_json(previous_raw), "previous receipt")
+            previous_target = object_value(previous.get("target_contract"), "previous target")
+            need(current_target.get("previous_sha256") == previous_target.get("sha256"), "previous target hash differs")
+            old_files = object_value(previous.get("files"), "previous receipt file map")
+            need(set(old_files) <= set(files), "amendment deletes a previously frozen file")
+            changed = sorted(path for path in files if path in old_files and files[path] != old_files[path])
+            added = sorted(path for path in files if path not in old_files)
+            need(qa_json_equal(current.get("changed_paths"), changed) and qa_json_equal(current.get("added_paths"), added),
+                 "amendment file-map changes differ")
+            changes = list_value(current.get("changes"), "amendment changes")
+            need(all(isinstance(item, dict) for item in changes)
+                 and [item.get("path") for item in changes] == changed, "amendment changed-file records differ")
+            for change in changes:
+                path = change["path"]
+                old_sha = old_files[path]
+                archive = change.get("archived_copy")
+                need(change.get("old_sha256") == old_sha == change.get("archived_copy_sha256")
+                     and change.get("new_sha256") == files[path], "amendment old or new hash differs")
+                need(isinstance(archive, str) and self.reader.hash(archive) == old_sha,
+                     "amendment archived source bytes missing or changed")
+            current = previous
+            number -= 1
+        actual: dict[str, str] = {}
+        roots = (CONTRACT, "som-rs/tests/react-output-v1", "som-rs/evidence/react-output-v1")
+        def scan_error(_error: OSError) -> None:
+            raise EvidenceError("contract tree scan failed")
+        for prefix in roots:
+            root = self.reader.path(prefix)
+            need(root.is_dir(), f"contract root missing: {prefix}", "unrun")
+            for directory, dirs, names in os.walk(root, topdown=True, followlinks=False, onerror=scan_error):
+                dirs[:] = [name for name in dirs if name != "__pycache__"]
+                for name in dirs + names:
+                    path = self.reader.path(Path(directory) / name)
+                    mode = path.lstat().st_mode
+                    need(not stat.S_ISLNK(mode), "contract tree symlink refused")
+                    if stat.S_ISREG(mode):
+                        actual[path.relative_to(self.repo).as_posix()] = self.reader.hash(path)
+                    else:
+                        need(stat.S_ISDIR(mode), "contract tree special file refused")
+        need(qa_json_equal(actual, latest["files"]), "sealed QA receipt is not the complete current contract file map")
+
+    def qa_profile_context(self) -> tuple[str, str]:
+        """Bind proposed Linux QA evidence only through a sealed source receipt."""
+        run_doc = object_value(self.reader.json(self.run / "run.json"), "run record")
+        self.qa_requested = "qa_profile" in run_doc
+        if not self.qa_requested:
+            identity_path = self.run / "identity.json"
+            if identity_path.is_file():
+                identity = object_value(self.reader.json(identity_path), "run identity")
+                need("qa_profile" not in identity and "qa_profile_evidence" not in identity and "api_qa_profile" not in identity,
+                     "unbound QA profile appears in run identity")
+            products_path = self.run / "products/report.json"
+            if products_path.is_file():
+                report = object_value(self.reader.json(products_path), "product report")
+                need("qa_profile" not in report and "qa_profile_final_recheck" not in report,
+                     "unbound QA profile appears in product report")
+            for step in run_doc.get("steps", []):
+                if not isinstance(step, dict) or not step.get("receipt"):
+                    continue
+                receipt_path = self.reader.path(step["receipt"], self.run)
+                if receipt_path.is_file():
+                    step_receipt = object_value(self.reader.json(receipt_path), "step receipt")
+                    argv = list_value(step_receipt.get("argv"), "step argv")
+                    need("--qa-profile" not in argv, "unbound QA profile appears in step command")
+            need(not (self.run / "qa-profile-evidence").exists() and "api_qa_profile" not in run_doc
+                 and not (self.run / "api-qa-evidence").exists(), "unbound QA profile evidence exists")
+            return "passed", "legacy run has no Linux QA profile"
+        self.qa_profile = None
+        run_doc = object_value(strict_qa_json(self.reader.bytes(self.run / "run.json")), "run record")
+        receipt = object_value(self.latest_receipt, "sealed React receipt")
+        need(receipt.get("status") == "amendment_sealed_after_independent_review"
+             and isinstance(receipt.get("independent_review"), dict) and receipt["independent_review"],
+             "sealed Linux QA source authority missing", "unrun")
+        self.qa_receipt_chain(receipt)
+        files = object_value(receipt.get("files"), "sealed React file map")
+        expected_authority = files.get(QA_AUTHORITY)
+        need(isinstance(expected_authority, str) and HEX.fullmatch(expected_authority),
+             "Linux QA authority not in sealed file map", "unrun")
+        authority_raw = self.reader.bytes(QA_AUTHORITY)
+        need(sha(authority_raw) == expected_authority, "sealed Linux QA authority hash differs")
+        authority = object_value(strict_qa_json(authority_raw), "Linux QA authority")
+        need(set(authority) == {"version", "profile_sha256", "profile", "source_sha256"}
+             and authority.get("version") == "som.react-linux-qa-audit-authority.v1", "Linux QA authority format differs")
+        source_shas = object_value(authority.get("source_sha256"), "Linux QA source bindings")
+        need(set(source_shas) == set(QA_SOURCES), "Linux QA source inventory differs")
+        for path in QA_SOURCES:
+            expected = source_shas[path]
+            need(isinstance(expected, str) and HEX.fullmatch(expected) and self.reader.hash(path) == expected,
+                 f"sealed Linux QA source differs: {path}")
+            if path in QA_RECEIPT_SOURCES:
+                need(files.get(path) == expected, f"Linux QA contract tool missing from receipt: {path}")
+        expected_profile_sha = authority.get("profile_sha256")
+        need(isinstance(expected_profile_sha, str) and HEX.fullmatch(expected_profile_sha), "profile authority SHA missing")
+        evidence = self.run / "qa-profile-evidence"
+        retained_identity = object_value(strict_qa_json(self.reader.bytes(evidence / "identity.json")), "retained QA identity")
+        need(retained_identity.get("version") == "som.react-qa-profile-evidence.v1"
+             and retained_identity.get("status") == "passed" and retained_identity.get("problems") == [],
+             "retained QA identity incomplete or failed")
+        profile_records = object_value(retained_identity.get("profile"), "retained profile records")
+        need(set(profile_records) == {"before", "after"}, "retained profile record inventory differs")
+        raw_profiles = []
+        for phase in ("before", "after"):
+            record = object_value(profile_records.get(phase), "retained profile record")
+            name = f"profile-{phase}.json"
+            need(record == {"path": name, "sha256": expected_profile_sha}, "retained profile record differs")
+            raw_profiles.append(self.reader.bytes(evidence / name))
+        profile_raw = raw_profiles[0]
+        need(raw_profiles[0] == raw_profiles[1] and sha(profile_raw) == expected_profile_sha,
+             "retained profile bytes differ from sealed authority")
+        profile = object_value(strict_qa_json(profile_raw), "retained profile")
+        need(qa_json_equal(profile, authority.get("profile")) and profile.get("version") == "som.react-linux-qa-profile.v1"
+             and profile.get("host") == "ubuntu-22.04-x86_64", "retained profile content differs")
+        node = object_value(profile.get("node"), "profile Node")
+        npm = object_value(profile.get("npm"), "profile npm")
+        cache = object_value(profile.get("cache"), "profile cache")
+        prettier = object_value(profile.get("prettier"), "profile Prettier")
+        need(node.get("path") == "node/bin/node" and npm.get("root") == "node/lib/node_modules/npm"
+             and cache.get("path") == "npm-cache-new", "profile relative paths differ")
+        formatter = object_value(self.contracts["toolchain.json"].get("formatter"), "frozen formatter")
+        need(profile.get("reference_formatter_sha256") == formatter.get("sha256")
+             and prettier.get("sha256") == formatter.get("prettier_tree_sha256"), "React formatter provenance differs")
+        source_records = object_value(retained_identity.get("sources"), "retained source records")
+        source_paths = {"run_gates": "som-rs/tests/react-output-v1/run_gates.py",
+                        "linux_qa_profile": "som-rs/tests/react-output-v1/linux_qa_profile.py",
+                        "retained_evidence": "som-rs/scripts/react_output_acceptance/retained_evidence.py"}
+        need(set(source_records) == set(source_paths), "retained source inventory differs")
+        for name, path in source_paths.items():
+            record = object_value(source_records[name], "retained source record")
+            need(record.get("source_path") == path, "retained source path differs")
+            expected = source_shas[path]
+            for phase in ("before", "after"):
+                entry = object_value(record.get(phase), "retained source phase")
+                relative = f"source/{name}.{phase}.py"
+                need(entry == {"path": relative, "sha256": expected}
+                     and self.reader.hash(evidence / relative) == expected, "retained source bytes differ")
+        assets = object_value(retained_identity.get("assets"), "retained QA assets")
+        need(set(assets) == {"node", "npm", "cache"}, "retained QA asset inventory differs")
+        node_record = object_value(assets.get("node"), "retained Node record")
+        node_path = self.reader.path(evidence / "node")
+        need(set(node_record) == {"path", "sha256", "mode"} and node_record.get("path") == "node"
+             and self.reader.hash(node_path) == node.get("sha256") == node_record.get("sha256")
+             and type(node_record.get("mode")) is int and stat.S_IMODE(node_path.stat().st_mode) == node_record["mode"],
+             "retained Node bytes or mode differ")
+        need(node_record["mode"] & 0o111 != 0, "retained Node is not executable")
+        inventories = {}
+        for label, value in (("npm", npm), ("cache", cache)):
+            actual = self.qa_inventory(evidence / label, readonly=label == "cache")
+            recorded = object_value(strict_qa_json(self.reader.bytes(evidence / f"{label}-inventory.json")), f"{label} inventory")
+            asset = object_value(assets.get(label), f"{label} asset")
+            need(qa_json_equal(recorded, actual) and qa_json_equal(asset, {"path": label, "inventory": f"{label}-inventory.json",
+                                                                          "tree_sha256": actual["tree_sha256"], "file_count": actual["file_count"]}),
+                 f"retained {label} inventory differs")
+            need(type(value.get("files")) is int and value["files"] == actual["file_count"]
+                 and type(value.get("symlinks")) is int and value["symlinks"] == 0
+                 and value.get("sha256") == actual["tree_sha256"],
+                 f"retained {label} tree differs")
+            inventories[label] = actual
+        npm_files = {name: row["sha256"] for name, row in inventories["npm"]["entries"].items() if row["kind"] == "file"}
+        cache_files = {name: row["sha256"] for name, row in inventories["cache"]["entries"].items() if row["kind"] == "file"}
+        need("bin/npm-cli.js" in npm_files, "retained npm CLI missing", "unrun")
+        origin = object_value(run_doc.get("qa_profile"), "run QA profile")
+        path = origin.get("path")
+        need(isinstance(path, str), "run profile origin missing", "unrun")
+        profile_path = Path(path)
+        need(profile_path.is_absolute() and ".." not in profile_path.parts
+             and profile_path.name == "som-react-linux-qa-profile.json", "run profile origin differs")
+        need(origin == {"path": path, "sha256": expected_profile_sha}, "run profile binding differs")
+        identity = object_value(strict_qa_json(self.reader.bytes(self.run / "identity.json")), "run identity")
+        qa_identity = object_value(identity.get("qa_profile"), "QA identity")
+        need(qa_identity.get("before") == origin and qa_identity.get("after") == origin,
+             "run QA profile identity changed or missing")
+        evidence_binding = object_value(identity.get("qa_profile_evidence"), "run QA evidence binding")
+        need(qa_json_equal(evidence_binding, {"path": "qa-profile-evidence/identity.json", "passed": True,
+                                              "sha256": self.reader.hash(evidence / "identity.json")}),
+             "run QA retained evidence binding differs")
+        steps = list_value(run_doc.get("steps"), "run steps")
+        need([x.get("step") for x in steps] == list(STEPS), "run step order differs")
+        for index, step in enumerate(steps, 1):
+            receipt_path = self.reader.path(step.get("receipt"), self.run)
+            need(receipt_path == self.run / "receipts" / f"{index:02d}-{step['step']}.json"
+                 and self.reader.hash(receipt_path) == step.get("receipt_sha256"), "step receipt binding differs")
+            step_doc = object_value(strict_qa_json(self.reader.bytes(receipt_path)), "step receipt")
+            need(step_doc.get("step") == step["step"] and type(step_doc.get("index")) is int
+                 and step_doc["index"] == index, "step receipt identity differs")
+            argv = list_value(step_doc.get("argv"), "step argv")
+            if step["step"] == "products":
+                need(argv.count("--qa-profile") == 1 and "--cache" not in argv,
+                     "product profile argument missing or repeated")
+                at = argv.index("--qa-profile")
+                need(at + 1 < len(argv) and argv[at + 1] == path, "product profile argument differs")
+            else:
+                need("--qa-profile" not in argv, "unexpected QA profile argument")
+        product_report = object_value(strict_qa_json(self.reader.bytes(self.run / "products/report.json")), "products report")
+        self.reports["products"] = product_report
+        need(product_report.get("qa_profile") == {"path": path, "sha256": expected_profile_sha},
+             "products profile binding differs")
+        expected_ids = [entry.get("id") for entry in self.acceptance]
+        product_rows = list_value(product_report.get("cases"), "QA product cases")
+        actual_ids = [object_value(entry, "QA product case").get("id") for entry in product_rows]
+        need(all(isinstance(cid, str) for cid in expected_ids + actual_ids)
+             and len(expected_ids) == 129 and len(set(expected_ids)) == 129
+             and len(actual_ids) == 129 and len(set(actual_ids)) == 129 and set(actual_ids) == set(expected_ids),
+             "QA product inventory is not the complete 129 cases")
+        expected_groups = {entry["id"]: entry.get("group") for entry in self.acceptance}
+        need(all(isinstance(group, str) and group for group in expected_groups.values()),
+             "QA frozen inventory group missing")
+        manifest = object_value(strict_qa_json(self.reader.bytes(self.run / "bundles/products/manifest.json")),
+                                "QA products manifest")
+        manifest_rows = list_value(manifest.get("products"), "QA manifest products")
+        manifest_ids = [object_value(entry, "QA manifest case").get("id") for entry in manifest_rows]
+        need(all(isinstance(cid, str) for cid in manifest_ids)
+             and len(manifest_ids) == 129 and len(set(manifest_ids)) == 129
+             and set(manifest_ids) == set(expected_ids), "QA manifest inventory differs from frozen cases")
+        need(all(row.get("group") == expected_groups[row["id"]] for row in manifest_rows),
+             "QA manifest case group differs from frozen inventory")
+        need(all(row.get("group") == expected_groups[row["id"]] for row in product_rows),
+             "QA product case group differs from frozen inventory")
+        need(all(row.get("qa_profile_sha256") == expected_profile_sha for row in product_rows),
+             "QA product case profile SHA differs from verified profile")
+        final_recheck = object_value(product_report.get("qa_profile_final_recheck"), "products final QA recheck")
+        need(final_recheck.get("passed") is True and "failure_reason" in final_recheck
+             and final_recheck["failure_reason"] is None,
+             "products final QA recheck missing or failed")
+        origin_root = profile_path.parent / "som-react-linux-qa-closure"
+        context = {"profile": profile, "profile_sha256": expected_profile_sha, "profile_path": path,
+                   "node": str(origin_root / node["path"]), "npm_cli": str(origin_root / npm["root"] / "bin/npm-cli.js"),
+                   "cache": str(origin_root / cache["path"]), "cache_files": cache_files,
+                   "cache_inventory": inventories["cache"],
+                   "cache_sha256": cache["sha256"], "prettier": prettier}
+        need(product_report.get("vendored_cache") == context["cache"], "products cache origin differs")
+        self.qa_profile = context
+        return "passed", "sealed profile, source bindings, retained tools and cache, identity and product argument match"
+
+    def api_qa_context(self) -> tuple[str, str]:
+        """Independent Linux raw input audit precedes each API case audit."""
+        self.api_qa_profile = None
+        try:
+            self.api_qa_profile = audit_linux_inputs(self.reader, self.run, self.latest_receipt,
+                                                      self.qa_profile, self.api_closure_tar)
+        except LinuxInputError as exc:
+            raise EvidenceError(str(exc), exc.status) from exc
+        return "passed", "retained source, input, command and tree evidence independently recomputed"
 
     def diagnostic(self, row: dict, expected: dict, status: int, step: str, body: str | None = None) -> None:
         _, doc = self.response(step, row)
@@ -977,12 +1480,110 @@ class Audit:
                 return "passed", "exact mutation, hashes, raw request and refusal span recomputed"
             self.row(f"assemble_refusals/recipes/{recipe['id']}", check)
 
+    def qa_product_evidence(self, work: Path, gates: dict, commands: dict) -> None:
+        """Check six retained child records against the sealed QA inputs."""
+        qa = self.qa_profile
+        need(qa is not None, "Linux QA evidence missing", "unrun")
+        gate_work = work / "gates"
+        product = gate_work / "product"
+        expected_profile = object_value(gates.get("qa_profile"), "product QA profile")
+        need(expected_profile.get("sha256") == qa["profile_sha256"]
+             and expected_profile.get("node") == qa["node"] and expected_profile.get("npm_cli") == qa["npm_cli"]
+             and expected_profile.get("cache") == qa["cache"], "product QA profile identity differs")
+        need(expected_profile.get("recheck_passed") is True and "failure_reason" in expected_profile
+             and expected_profile["failure_reason"] is None,
+             "product QA profile recheck missing, failed or contradictory")
+        need(gates.get("passed") is True and gates.get("product_unchanged") is True
+             and gates.get("lock_unchanged") is True and gates.get("builds_identical") is True
+             and ("postcheck_errors" not in gates or gates["postcheck_errors"] == []),
+             "product gate postcheck or overall verdict is missing or contradictory")
+        retained = object_value(expected_profile.get("prettier_evidence"), "retained Prettier evidence")
+        prettier = qa["prettier"]
+        need(qa_json_equal(retained, {"path": "prettier-evidence", "sha256": prettier.get("sha256"),
+                                      "files": prettier.get("files"), "symlinks": prettier.get("symlinks")}),
+             "retained Prettier identity differs")
+        prettier_files = self.qa_tree(gate_work / "prettier-evidence")
+        prettier_sha = sha(b"".join(f"{name}\0{prettier_files[name]}\n".encode() for name in sorted(prettier_files, key=Path)))
+        need(type(prettier.get("symlinks")) is int and prettier["symlinks"] == 0 and type(prettier.get("files")) is int
+             and len(prettier_files) == prettier["files"] and prettier_sha == prettier.get("sha256"),
+             "retained Prettier bytes differ")
+        expected_cache = qa["cache_files"]
+        expected_cache_sha = qa["cache_sha256"]
+        need(gates.get("vendored_cache_tree_sha256_before") == expected_cache_sha
+             and gates.get("vendored_cache_tree_sha256_after") == expected_cache_sha,
+             "QA gate cache hash differs")
+        for when in ("before", "after"):
+            snapshot = object_value(strict_qa_json(self.reader.bytes(work / f"cache-{when}.json")), "QA raw cache snapshot")
+            need(snapshot.get("version") == "som.m6-cache-snapshot.v1" and snapshot.get("status") == "passed"
+                 and snapshot.get("files") == expected_cache and snapshot.get("tree_sha256") == expected_cache_sha
+                 and type(snapshot.get("file_count")) is int and snapshot["file_count"] == len(expected_cache)
+                 and type(snapshot.get("symlink_count")) is int and snapshot["symlink_count"] == 0,
+                 "QA raw cache snapshot differs")
+            mode_inventory = object_value(strict_qa_json(self.reader.bytes(work / f"cache-evidence-{when}.json")), "QA cache mode inventory")
+            need(qa_json_equal(mode_inventory, qa["cache_inventory"]), "QA cache before/after mode inventory differs")
+        cid = work.name
+        need(cid in self.manifest, "QA product manifest binding missing", "unrun")
+        product_source = self.reader.path(self.manifest[cid].get("product"))
+        invocation = object_value(strict_qa_json(self.reader.bytes(work / "gates-invocation.json")), "gate invocation")
+        need(self.api_qa_profile is not None, "Linux API context missing for gate interpreter", "unrun")
+        expected_invocation = [self.api_qa_profile["python"],
+                               str(self.repo / "som-rs/tests/react-output-v1/run_gates.py"), str(product_source),
+                               str(gate_work), "--qa-profile", qa["profile_path"]]
+        wait = object_value(invocation.get("wait"), "gate invocation wait")
+        need(invocation.get("version") == "som.react-gates-invocation.v1"
+             and invocation.get("argv") == expected_invocation and invocation.get("cwd") == str(self.repo)
+             and invocation.get("outcome") == "exited" and true_integer(invocation.get("exit_code"))
+             and invocation["exit_code"] == 0 and set(wait) == {"state", "exit_code"}
+             and wait.get("state") == "completed" and true_integer(wait.get("exit_code")) and wait["exit_code"] == 0
+             and "failure" in invocation and invocation["failure"] is None,
+             "gate invocation identity, exit or wait differs")
+        need(invocation.get("log") == "gates.log", "gate invocation log path differs")
+        gate_log = self.reader.bytes(work / "gates.log")
+        need(invocation.get("log_sha256") == sha(gate_log), "gate invocation raw log differs")
+        self.native_case_routing(work, invocation, 'som-rs/tests/react-output-v1/run_gates.py', 'gates')
+        expected_env = {"PATH": f"{Path(qa['node']).parent}:/usr/bin:/bin", "HOME": str(gate_work),
+                        "npm_config_cache": qa["cache"], "npm_config_offline": "true",
+                        "npm_config_audit": "false", "npm_config_fund": "false", "npm_config_update_notifier": "false",
+                        "npm_config_logs_dir": str(gate_work / "npm-logs"),
+                        "npm_config_userconfig": str(gate_work / "empty-npmrc")}
+        need(self.reader.bytes(gate_work / "empty-npmrc") == b"", "npm user configuration differs")
+        need(gates.get("environment") == {key: value for key, value in expected_env.items() if key != "HOME"},
+             "product gate environment differs")
+        rows = list_value(gates.get("gates"), "QA child records")
+        names = ("install", "typecheck", "format_check", "test", "build-1", "build-2")
+        need([row.get("step") for row in rows] == list(names), "QA child record order differs")
+        for row, name in zip(rows, names):
+            need(isinstance(row, dict), "QA child record malformed")
+            command = commands["build"].replace("<dist dir outside the product>", str(gate_work / f"dist-{name[-1]}")) if name.startswith("build-") else commands[name]
+            words = command.split()
+            need(words and words[0] in ("node", "npm"), "QA frozen command is unsupported")
+            argv = [qa["node"], *([qa["npm_cli"]] if words[0] == "npm" else []), *words[1:]]
+            need(row.get("command") == command and row.get("argv") == argv and row.get("cwd") == str(product)
+                 and row.get("environment") == expected_env, "QA child command, cwd or environment differs")
+            wait = object_value(row.get("wait"), "QA child wait")
+            need(row.get("outcome") == "exited" and true_integer(row.get("exit_code")) and row["exit_code"] == 0
+                 and set(wait) == {"state", "exit_code"} and wait.get("state") == "completed"
+                 and true_integer(wait.get("exit_code")) and wait["exit_code"] == 0
+                 and "failure" in row and row["failure"] is None,
+                 "QA child exit or wait missing or failed")
+            expected_log = name + ".log"
+            need(row.get("log") == expected_log, "QA child log path differs")
+            raw = self.reader.bytes(gate_work / expected_log)
+            need(row.get("log_sha256") == sha(raw), "QA child raw log differs")
+
     def product_gate(self, cid: str, gate: int) -> tuple[str, str] | None:
         need(cid in self.manifest, f"missing product manifest case {cid}", "unrun")
         product_row = self.find("products", cid)
         work = self.run / "products" / cid
-        gates = object_value(self.reader.json(work / "gates/gates.json"), "raw gates")
+        gates_path = work / "gates/gates.json"
+        gates = (object_value(strict_qa_json(self.reader.bytes(gates_path)), "raw gates") if self.qa_requested
+                 else object_value(self.reader.json(gates_path), "raw gates"))
         commands = object_value(self.contracts["toolchain.json"].get("commands"), "frozen commands")
+        if self.qa_requested:
+            need(self.qa_profile is not None, "sealed Linux QA evidence not established", "unrun")
+            self.qa_product_evidence(work, gates, commands)
+        else:
+            need("qa_profile" not in gates, "unbound QA profile appears in gate evidence")
         if gate <= 4 or gate == 5:
             names = ("install", "typecheck", "format_check", "test")
             required = [names[gate - 1]] if gate <= 4 else ["build-1", "build-2"]
@@ -997,7 +1598,7 @@ class Audit:
                 need(true_integer(row.get("exit_code")) and row["exit_code"] == 0, f"{name} exited with a failure")
                 self.reader.bytes(row.get("log"), work / "gates")
             codes = object_value(product_row.get("exit_codes"), "product process exits")
-            need(codes.get("gates") == 0, "product gate process exit is not zero")
+            need(true_integer(codes.get("gates")) and codes["gates"] == 0, "product gate process exit is not zero")
             if gate == 1:
                 environment = object_value(gates.get("environment"), "gate environment")
                 need(environment.get("npm_config_offline") == "true", "npm offline environment missing")
@@ -1016,14 +1617,22 @@ class Audit:
             before, after_cache = gates.get("vendored_cache_tree_sha256_before"), gates.get("vendored_cache_tree_sha256_after")
             need(isinstance(before, str) and HEX.fullmatch(before) and before == after_cache, "vendored cache before/after tree hashes differ or are absent")
             snapshots = [object_value(self.reader.json(work / f"cache-{name}.json"), "raw cache file snapshot") for name in ("before", "after")]
-            frozen = self.contracts["toolchain.json"]["vendored_cache"]
-            current = self.reader.tree(self.reader.path(frozen["path"]))
+            if self.qa_requested:
+                need(self.qa_profile is not None, "sealed Linux QA evidence not established", "unrun")
+                current = self.qa_profile["cache_files"]
+                frozen = self.qa_profile["profile"]["cache"]
+            else:
+                frozen = self.contracts["toolchain.json"]["vendored_cache"]
+                current = self.reader.tree(self.reader.path(frozen["path"]))
             digest = sha(b"".join(f"{name}\0{current[name]}\n".encode() for name in sorted(current, key=Path)))
+            frozen_sha = frozen["sha256"] if self.qa_requested else frozen["tree_sha256"]
+            frozen_files = frozen["files"] if self.qa_requested else frozen["tree_files"]
+            frozen_symlinks = frozen["symlinks"] if self.qa_requested else frozen["tree_symlinks"]
             for snapshot in snapshots:
                 need(snapshot.get("version") == "som.m6-cache-snapshot.v1" and snapshot.get("files") == current, "cache file snapshot differs from current frozen bytes")
-                need(snapshot.get("tree_sha256") == digest == frozen["tree_sha256"] == before == after_cache, "cache tree hash differs from frozen input")
-                need(type(snapshot.get("file_count")) is int and snapshot["file_count"] == frozen["tree_files"] == len(current)
-                     and type(snapshot.get("symlink_count")) is int and snapshot["symlink_count"] == frozen["tree_symlinks"] == 0, "cache file inventory differs")
+                need(snapshot.get("tree_sha256") == digest == frozen_sha == before == after_cache, "cache tree hash differs from frozen input")
+                need(type(snapshot.get("file_count")) is int and snapshot["file_count"] == frozen_files == len(current)
+                     and type(snapshot.get("symlink_count")) is int and snapshot["symlink_count"] == frozen_symlinks == 0, "cache file inventory differs")
             return "passed", "product, lock and before/after cache file maps match retained frozen bytes"
         api = object_value(self.reader.json(work / "api/report.json"), "raw API report")
         result = object_value(api.get("result"), "raw API result")
@@ -1044,7 +1653,10 @@ class Audit:
                 need(step.get("ok") is True and not step.get("skipped"), f"API step failed or was skipped: {name}")
             else:
                 need(step.get("ok") is None and step.get("skipped") == contract["skip_reasons"][name], f"API conditional skip differs: {name}")
-        need(api.get("exit_code") == 0 and product_row.get("exit_codes", {}).get("api_contract") == 0, "API command exited with failure")
+        codes = object_value(product_row.get("exit_codes"), "product process exits")
+        need(true_integer(api.get("exit_code")) and api["exit_code"] == 0
+             and true_integer(codes.get("api_contract")) and codes["api_contract"] == 0,
+             "API command exited with failure")
         processes = list_value(api.get("processes"), "API owned processes")
         need(processes and all(process.get("stopped") is True for process in processes), "API process cleanup is missing or failed")
         for index, process in enumerate(processes):
@@ -1058,9 +1670,14 @@ class Audit:
             stop_verified = process.get("stop_cwd_verified")
             need(stop_verified is True or (stop_verified is None and true_integer(process.get("exit_code"))), "active process stop ownership is unverified")
             self.reader.path(process["expected_cwd"])
+        if self.qa_requested:
+            need(self.api_qa_profile is not None, "independent Linux API input audit not established", "unrun")
+        if self.qa_requested:
+            invocation = object_value(self.reader.json(work / 'api-invocation.json'), 'API invocation')
+            self.native_case_routing(work, invocation, 'som-rs/scripts/react_output_acceptance/record_api.py', 'api')
         try:
             validate_api(self.reader, work / "api-raw", work / "api/report.json", prompt, contract,
-                         self.reader.path(self.manifest[cid]["product"]))
+                         self.reader.path(self.manifest[cid]["product"]), linux=self.api_qa_profile)
         except ApiRawError as error:
             raise EvidenceError(str(error), error.status) from error
         return "passed", "all applicable API exchanges and OS process ownership/cleanup recomputed from raw evidence"
@@ -1089,7 +1706,10 @@ class Audit:
         ids = [row.get("id") for row in results]
         need(len(set(ids)) == len(ids) and set(ids) == expected, "Python controls named case inventory differs", "unrun" if expected - set(ids) else "failed")
         try:
-            validate_controls(self.reader, self.run / f"{step}-raw", report, language)
+            if self.qa_requested:
+                need(self.api_qa_profile is not None, "native API input source context missing", "unrun")
+            ports = (18978, 18979) if self.qa_requested else (18917, 18919)
+            validate_controls(self.reader, self.run / f"{step}-raw", report, language, ports)
         except BaselineRawError as error:
             raise EvidenceError(str(error), error.status) from error
         return "passed", "all named control request/reply bytes, diagnostics and sealed historical payload pins match"
@@ -1103,7 +1723,10 @@ class Audit:
         if language in ("python", "rust"):
             try:
                 validator = validate_python if language == "python" else validate_rust
-                validator(self.reader, self.run / f"{step}-raw", self.get_report(step))
+                if self.qa_requested:
+                    need(self.api_qa_profile is not None, "native API input source context missing", "unrun")
+                ports = (18978, 18979) if self.qa_requested else (18917, 18919)
+                validator(self.reader, self.run / f"{step}-raw", self.get_report(step), ports)
             except BaselineRawError as error:
                 raise EvidenceError(str(error), error.status) from error
             return "passed", "complete source-bound compile and assembly raw bytes match accepted references"
@@ -1398,6 +2021,9 @@ class Audit:
         self.row("contract/data", self.read_contracts)
         if self.contracts and "acceptance-plan.json" in self.contracts:
             self.row("contract/sealed", self.sealed_contract)
+            self.row("integrity/linux-qa-profile", self.qa_profile_context)
+            if self.qa_requested:
+                self.row("integrity/linux-api-inputs", self.api_qa_context)
             for name, action in (("identity", self.identities), ("receipts", self.receipts), ("target", self.target_cases), ("python-pairs", self.python_pairs), ("scope", self.scope_cases), ("bundles", self.bundles), ("products", self.products)):
                 self.row(f"audit_stage/{name}", action)
             self.row("audit_stage/plan", self.plan_rows)
@@ -1411,8 +2037,8 @@ def required_command(rows: list[dict], name: str) -> str:
     return next(row["command"] for row in rows if row["step"] == name)
 
 
-def run_audit(repo: Path, run: Path) -> dict:
-    return Audit(repo, run).run_audit()
+def run_audit(repo: Path, run: Path, api_closure_tar: Path | None = None) -> dict:
+    return Audit(repo, run, api_closure_tar).run_audit()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1420,6 +2046,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--run", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[4])
+    parser.add_argument("--api-closure-tar", type=Path, default=None)
     args = parser.parse_args(argv)
     try:
         repo = args.repo.resolve(strict=True)
@@ -1431,7 +2058,7 @@ def main(argv: list[str] | None = None) -> int:
             need(not path.is_symlink(), "symlink output is refused")
         need(not out.exists(), "--out already exists")
         need(out != run and not out.is_relative_to(run), "audit output must be outside the immutable run directory")
-        report = run_audit(repo, run)
+        report = run_audit(repo, run, args.api_closure_tar)
         out.parent.mkdir(parents=True, exist_ok=True)
         with out.open("x", encoding="utf-8") as stream:
             json.dump(report, stream, indent=2, ensure_ascii=False, allow_nan=False)
