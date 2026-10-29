@@ -4,6 +4,7 @@ import traceback
 import sys
 import json
 from pathlib import Path
+from types import ModuleType
 
 
 def failure_record(error):
@@ -48,9 +49,43 @@ def typed(value):
     return {'type': 'list' if type(value) is list else 'tuple', 'value': [typed(item) for item in value]}
 
 
+BASE = 'som-rs/scripts/hosted_readiness/'
+SELF = BASE + 'typescript_regression_schema_capture.py'
+RAW_CAPTURE = BASE + 'typescript_regression_raw_capture.py'
+
+
+def _native_row_class():
+    try:
+        from _som_native_active_controls_binding import controls
+    except ModuleNotFoundError as error:
+        if error.name != '_som_native_active_controls_binding':
+            raise
+        require('__som_native_active_controls__' not in globals(),
+                'an actual native schema binding cannot fall back to legacy rows')
+        return None
+    require('__som_native_active_controls__' in globals() and controls is __som_native_active_controls__,
+            'actual fixed native schema control binding required')
+    controls.verify_installed()
+    require(__name__ == '_som_full_typescript_regression_schema_capture'
+            and controls.role_sources.get('ctx.typescript-regression-schema-capture') == SELF
+            and controls.role_sources.get('ctx.typescript-regression-raw-capture') == RAW_CAPTURE,
+            'fixed native schema/data provider source roles differ')
+    module = controls.load_module('ctx.typescript-regression-raw-capture')
+    require(type(module) is ModuleType and module.__name__ == '_som_full_typescript_regression_raw_capture'
+            and sys.modules.get(module.__name__) is module and module.__file__ == str(controls.root / RAW_CAPTURE)
+            and module.__cached__ is None and module.CaptureRows is __som_native_CaptureRows__,
+            'actual completed ordinary schema row provider required')
+    controls.verify_installed()
+    return module.CaptureRows
+
+
 def install(checker, root):
     original_schema, original_psycopg = checker.rust_products.schema, checker.rust_products.psycopg
-    rows, active = [], []
+    row_class = _native_row_class()
+    if row_class is None:
+        rows, active = [], []
+    else:
+        rows, active = row_class(), row_class()
     class Connection:
         def __init__(self, connection, row):
             self.connection, self.row = connection, row
@@ -107,4 +142,4 @@ def install(checker, root):
         raise_primary(failure)
         return result
     checker.rust_products.psycopg, checker.rust_products.schema = Psycopg(), schema
-    return rows
+    return rows if row_class is None else rows.value

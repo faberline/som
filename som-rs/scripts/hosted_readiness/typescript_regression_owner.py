@@ -7,6 +7,7 @@ The current regression uses the explicitly frozen TypeScript002/Rust006 role.
 from __future__ import annotations
 
 import copy
+from contextlib import contextmanager
 import hashlib
 import json
 import os
@@ -15,7 +16,7 @@ import re
 import stat
 import sys
 import traceback
-from types import ModuleType
+from types import FunctionType, MethodType, ModuleType
 
 BASE = 'som-rs/scripts/hosted_readiness/'
 SELF = BASE + 'typescript_regression_owner.py'
@@ -39,6 +40,9 @@ DOMAIN = BASE + 'typescript_regression_domain.py'
 LEGACY_AUDITOR = 'som-rs/scripts/typescript_output_acceptance/audit/audit065.py'
 SHARED = BASE + 'run_current_candidate_gate.py'
 INPUT_PROFILE = BASE + 'inputs/typescript-regression-inputs-v1.json'
+INPUT_CONSUMER = BASE + 'typescript_input_consumer.py'
+INPUT_PRODUCER = BASE + 'typescript_input_producer.py'
+INPUT_WRAPPER = BASE + 'run_typescript_input_consumer.py'
 GATE = 'typescript-regression'
 VERSION = 'som.typescript-regression-owner-capture.v1'
 VERIFIED = 'som.typescript-regression-owner-verified.v1'
@@ -281,6 +285,113 @@ def admitted_context(ctx):
     return module
 
 
+def _input_transport_context(ctx=None):
+    """Require the retained real source owner. Never construct a replacement."""
+    controls = _native_controls()
+    require(controls.role_sources.get('runtime.context') == CONTEXT, 'fixed input consumer Context source differs')
+    module = controls.load_module('runtime.context')
+    require(type(module) is ModuleType and module is __som_native_ContextModule__
+            and module.Context is __som_native_Context__ and module.SourceBytes is __som_native_SourceBytes__
+            and module.context is __som_native_context_getter__,
+            'actual fixed input consumer Context module/getter/classes required')
+    active = ModuleType.__getattribute__(module, '__dict__').get('_ACTIVE')
+    require(type(active) is __som_native_Context__, 'retained actual native Context owner required for input transport')
+    if ctx is None:
+        ctx = active
+    require(type(ctx) is __som_native_Context__ and ctx is active,
+            'input transport must use the actual active native Context')
+    require(module.context() is ctx, 'fixed native input consumer Context getter changed identity')
+    require(type(ctx.repo) is type(controls.root) and ctx.repo == controls.root
+            and ctx.helper_revision == controls.helper_revision == ctx.candidate_revision == controls.candidate_revision,
+            'native input consumer Context root/source differs')
+    require(type(ctx.sources) is __som_native_SourceBytes__ and ctx.sources.root == controls.root
+            and ctx.sources.revision == controls.helper_revision, 'actual source-owned input consumer SourceBytes required')
+    for owner, name, cls in ((ctx, 'module', __som_native_Context__), (ctx, 'verify', __som_native_Context__),
+                            (ctx.sources, 'read', __som_native_SourceBytes__),
+                            (ctx.sources, 'verify', __som_native_SourceBytes__)):
+        function = getattr(owner, name)
+        require(type(function) is MethodType and function.__self__ is owner and function.__func__ is getattr(cls, name),
+                'native input consumer bound source method replaced: ' + name)
+    return ctx, controls
+
+
+def _full_input_transport(ctx=None):
+    """Rederive the actual same-job consumer, using only outside-capture outputs."""
+    ctx, owner = _input_transport_context(ctx)
+    allowed = ctx.qa_source_authority['admitted_repository_python_sources']
+    require(all(path in allowed for path in (INPUT_CONSUMER, INPUT_PRODUCER, INPUT_WRAPPER)),
+            'complete actual input transport source admission required')
+    with owner.borrow() as controls:
+        modules = {}
+        for role, path, name in (
+                ('ts.owner.input-consumer-wrapper', INPUT_WRAPPER, '_som_ts_owner_input_consumer_wrapper'),
+                ('ts.transport.common', INPUT_PRODUCER, '_som_ts_input_transport_common'),
+                ('ts.transport.consumer-data', INPUT_CONSUMER, '_som_ts_input_consumer_data')):
+            raw = ctx.sources.read(path)
+            require(controls.role_sources.get(role) == path, 'fixed actual input transport source role differs')
+            module = controls.load_module(role)
+            require(type(module) is ModuleType and module.__name__ == name and sys.modules.get(name) is module
+                    and module.__file__ == str(ctx.repo / path) and module.__cached__ is None
+                    and module.__som_raw_sha256__ == sha(raw), 'actual Core input transport source/module differs')
+            modules[role] = module
+        wrapper = modules['ts.owner.input-consumer-wrapper']
+        common = modules['ts.transport.common']
+        data = modules['ts.transport.consumer-data']
+        for module, names, path in ((wrapper, ('actual_base', 'trusted_catalog', 'trusted_proof'), INPUT_WRAPPER),
+                                  (data, ('verify_after_close',), INPUT_CONSUMER)):
+            for name in names:
+                function = module.__dict__.get(name)
+                require(type(function) is FunctionType and function.__globals__ is module.__dict__
+                        and function.__code__.co_filename == str(ctx.repo / path),
+                        'actual fixed input transport function required: ' + name)
+        temporary = physical(os.environ['RUNNER_TEMP'])
+        path, raw, base, protected = wrapper.actual_base(data, ctx.sources, temporary)
+        require(ctx.path == path and ctx.raw == raw and ctx.data == base and read(ctx.path) == ctx.raw,
+                'actual immutable current Context differs from original consumer protection owner')
+        catalog = wrapper.trusted_catalog(common, data, ctx.sources)
+        proof = wrapper.trusted_proof(data)
+        require(base['typescript_regression_input_producer'] == catalog
+                and base['typescript_regression_input_consumer'] == proof,
+                'actual Context must bind outside-capture Root needs and consumer step outputs')
+        ctx.verify(); ctx.sources.verify(); controls.verify_installed()
+        report = data.verify_after_close(ctx.sources, helper_revision=ctx.helper_revision,
+            candidate_revision=ctx.candidate_revision, context_inputs=base['typescript_regression_inputs'],
+            producer_catalog=catalog, trusted_consumer_proof=proof, protected_roots=protected)
+        require(type(report) is dict and report['version'] == 'som.typescript-input-postclose-verified.v1'
+                and report['receipt_sha256'] == proof['receipt_sha256']
+                and report['producer_catalog_sha256'] == sha(canonical(catalog))
+                and report['evidence_manifest_sha256'] == proof['evidence_manifest_sha256']
+                and report['original_actual_AEAD_step_proof_reverified'] is True
+                and report['AEAD_reexecution'] == 'not performed; verifier has no keys'
+                and report['historical_PID_queries'] is False
+                and report['native_qa_source_admission_complete'] is False
+                and report['strict_live_2bce_gates'] == 'UNRUN' and report['product_acceptance_passed'] is False,
+                'actual complete keyless input consumer report differs; no domain or live-before approval')
+        ctx.verify(); ctx.sources.verify(); controls.verify_installed()
+        return report
+
+
+@contextmanager
+def _retain_input_transport_postclose(evidence, report):
+    """Keep Domain's evidence root fresh until its actual replay has finished."""
+    primary = None
+    try:
+        yield
+    except BaseException as error:
+        primary = error
+        raise
+    finally:
+        try:
+            save(evidence / 'input-transport-postclose.json', report)
+        except BaseException as error:
+            if primary is None:
+                raise
+            state = {'primary': primary, 'traceback': primary.__traceback__,
+                     'failure': getattr(primary, '__som_typescript_failure_record__', None),
+                     'secondary': list(getattr(primary, '__som_typescript_secondary_failures__', []))}
+            remember_failure(state, 'owner_input_transport_postclose_evidence', error)
+
+
 def require_full_input_transport_consumer():
     # Matching payloads/catalogs/API metadata do not establish ZIP, cipher,
     # AEAD, manifest, aliases or ordered-chunk consumer verification. No such
@@ -291,6 +402,7 @@ def require_full_input_transport_consumer():
 
 def admit_inputs(ctx):
     """The data producer must restore one current-run source-profile-bound packet."""
+    _input_transport_context(ctx)
     data = ctx.data.get('typescript_regression_inputs')
     require(type(data) is dict and set(data) == {'roots', 'siblings', 'receipt', 'artifact'},
             'explicit full TypeScript regression input binding required')
@@ -374,9 +486,10 @@ def admit_inputs(ctx):
             and str(actual['workflow_run']['id']) == os.environ['GITHUB_RUN_ID']
             and actual['workflow_run']['head_sha'] == ctx.helper_revision,
             'TypeScript input artifact is not this exact run/source output')
-    require_full_input_transport_consumer()
-    # The concrete future verifier must return independently rederived complete
-    # transport proof before this source branch may expose runtime input roots.
+    transport_report = _full_input_transport(ctx)
+    # Retain this fresh consumer report outside immutable product capture.
+    save(physical(os.environ['RUNNER_TEMP']) / 'som-ts-consumer-wrapper-raw/owner-pre-product-keyless.json',
+         transport_report)
     return roots, profile, {'profile_sha256': sha(profile_raw), 'receipt_sha256': sha(receipt_raw),
                             'artifact': artifact, 'producer': producer, 'files': inventories,
                             'sibling_files': sibling_files, 'directory_modes': dirs,
@@ -640,11 +753,13 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
         proof = shared.verify_owner_postclose(root, source_reader, helper_revision, candidate_revision,
             gate, repo=repo, proof_roots=proof_roots)
         require(proof['capture_result_sha256'] == sha(capture_raw), 'common proof does not own the immutable capture')
-        with shared.admitted_sources(repo, helper_revision, source_reader,
-                                     namespace='_som_owner_postclose_authority') as (_, _, admission):
-            domain = verify_current_domain(root, source_reader, helper_revision, candidate_revision,
-                                           repo=repo, admission=admission, shared_proof=proof,
-                                           verification_evidence_root=evidence)
+        transport_report = _full_input_transport()
+        with _retain_input_transport_postclose(evidence, transport_report):
+            with shared.admitted_sources(repo, helper_revision, source_reader,
+                                         namespace='_som_owner_postclose_authority') as (_, _, admission):
+                domain = verify_current_domain(root, source_reader, helper_revision, candidate_revision,
+                                               repo=repo, admission=admission, shared_proof=proof,
+                                               verification_evidence_root=evidence)
         controls.verify_installed()
     # A historical audit065 result cannot establish current002/006 native scope.
     # This must be a separately source-bound current raw-domain audit, derived

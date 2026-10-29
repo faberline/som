@@ -844,9 +844,240 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  typescript-regression-inputs:
+    name: typescript-regression-inputs
+    needs: [candidate-source-guard, fixture-tests]
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true'
+    permissions:
+      contents: read
+      actions: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    outputs:
+      producer_catalog: ${{ steps.origin.outputs.producer_catalog }}
+    env:
+      HELPER_REVISION: ${{ needs.candidate-source-guard.outputs.helper_revision }}
+      CANDIDATE_REVISION: ${{ needs.candidate-source-guard.outputs.candidate_revision }}
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ needs.candidate-source-guard.outputs.helper_revision }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.11'
+      - name: Derive the complete official Linux Node authority
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -m 700 "$RUNNER_TEMP/ts-producer-evidence"
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"derive","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/derive.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-producer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" derive-node
+          } > "$RUNNER_TEMP/ts-producer-evidence/derive.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/derive.stderr"
+      - name: Fetch only the original approved encrypted 19-package commit
+        run: |
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"fetch-original19","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/fetch-original19.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          git fetch --no-tags --depth=1 origin 02cd9e79cdcedfef92816f67a3ccdf2e089964ab
+          } > "$RUNNER_TEMP/ts-producer-evidence/fetch-original19.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/fetch-original19.stderr"
+      - name: Restore original 19 inputs with their V2 key only
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
+        run: |
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"original19","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/original19.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-producer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" restore-original19
+          } > "$RUNNER_TEMP/ts-producer-evidence/original19.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/original19.stderr"
+      - name: Reconstruct the exact frozen public npm source
+        env:
+          npm_config_offline: 'true'
+          npm_config_audit: 'false'
+          npm_config_fund: 'false'
+          npm_config_update_notifier: 'false'
+        run: |
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"npm-source","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/npm-source.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 https://registry.npmjs.org/npm/-/npm-11.17.0.tgz --output "$RUNNER_TEMP/npm.tgz"
+          test "$(sha256sum "$RUNNER_TEMP/npm.tgz" | cut -d ' ' -f 1)" = b290bbb35b9e72c3ef84edbe041f28c4479c4d9ee79f555817b8caafe7ce4bba
+          mkdir "$RUNNER_TEMP/bootstrap" "$RUNNER_TEMP/npm-prefix"
+          tar -xzf "$RUNNER_TEMP/npm.tgz" --strip-components=1 -C "$RUNNER_TEMP/bootstrap"
+          PATH="$RUNNER_TEMP/ts-node-tools/bin:/usr/bin:/bin" "$RUNNER_TEMP/ts-node-tools/bin/node" "$RUNNER_TEMP/bootstrap/bin/npm-cli.js" install --global --prefix "$RUNNER_TEMP/npm-prefix" "$RUNNER_TEMP/npm.tgz" > "$RUNNER_TEMP/ts-producer-evidence/npm-install.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/npm-install.stderr"
+          cp "$RUNNER_TEMP/bootstrap/package.json" "$RUNNER_TEMP/npm-prefix/lib/node_modules/npm/package.json"
+          printf 'prefix = /opt/homebrew\n' > "$RUNNER_TEMP/npm-prefix/lib/node_modules/npm/npmrc"
+          } > "$RUNNER_TEMP/ts-producer-evidence/npm-source.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/npm-source.stderr"
+      - name: Reconstruct all18 frozen bytecode members as data only
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"pyc","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/pyc.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-producer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" rebuild-pyc
+          python3 -I -S -B - <<'PY'
+          import os,pathlib,shutil
+          root=pathlib.Path(os.environ['RUNNER_TEMP']); dest=root/'ts-node-tools/lib/node_modules/npm'
+          dest.parent.mkdir(parents=True,exist_ok=True)
+          shutil.copytree(root/'npm-prefix/lib/node_modules/npm',dest,symlinks=True)
+          PY
+          } > "$RUNNER_TEMP/ts-producer-evidence/pyc.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/pyc.stderr"
+      - name: Materialize every role and create separate new-current profile records
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"materialize","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/materialize.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-producer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" materialize
+          } > "$RUNNER_TEMP/ts-producer-evidence/materialize.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/materialize.stderr"
+      - name: Seal only the new same-run role packet with V1
+        id: seal_ts_roles
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"seal","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/seal.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-producer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" seal
+          } > "$RUNNER_TEMP/ts-producer-evidence/seal.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/seal.stderr"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        id: upload_ts_roles
+        if: always() && steps.seal_ts_roles.outcome == 'success'
+        with:
+          name: same-candidate-typescript-regression-inputs
+          path: ${{ runner.temp }}/ts-role-sealed
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+      - name: Download the actual full ZIP and verify actual AEAD before catalog output
+        id: origin
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+          TS_UPLOAD_ARTIFACT_ID: ${{ steps.upload_ts_roles.outputs.artifact-id }}
+          TS_UPLOAD_DIGEST: ${{ steps.upload_ts_roles.outputs.artifact-digest }}
+        run: |
+          save_producer_step_terminal() {
+            original_exit=$?
+            trap - EXIT
+            if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"origin","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/origin.step.json"; then
+              if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
+            fi
+            exit "$original_exit"
+          }
+          trap save_producer_step_terminal EXIT
+          {
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-producer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" origin
+          } > "$RUNNER_TEMP/ts-producer-evidence/origin.stdout" 2> "$RUNNER_TEMP/ts-producer-evidence/origin.stderr"
+      - name: Retain the complete original TS producer evidence with step-only V1
+        id: retain_ts_producer
+        if: always()
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+          TS_PRODUCER_PRIOR_STATUS: ${{ job.status }}
+        run: |
+          mkdir -m 700 "$RUNNER_TEMP/som-ts-producer-exporter-raw"
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-producer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" retain > "$RUNNER_TEMP/som-ts-producer-exporter-raw/launch.stdout" 2> "$RUNNER_TEMP/som-ts-producer-exporter-raw/launch.stderr"
+      - name: Record only safe final exporter stream observations after its actual exit
+        if: always()
+        env:
+          TS_RETENTION_STEP_OUTCOME: ${{ steps.retain_ts_producer.outcome }}
+        run: |
+          python3 -I -S -B - <<'PYCONTROL'
+          import hashlib,json,os,pathlib
+          temporary=pathlib.Path(os.environ['RUNNER_TEMP'])
+          output=temporary/'som-ts-producer-retained-upload'
+          assert temporary.is_absolute() and '..' not in temporary.parts
+          assert not any(p.is_symlink() for p in (output,*output.parents))
+          output.mkdir(mode=0o700,exist_ok=True)
+          streams={}
+          for name in ('launch.stdout','launch.stderr'):
+              path=temporary/'som-ts-producer-exporter-raw'/name
+              row={'publication':'UNARCHIVED','observed':False,'sha256':None,'bytes':None}
+              if path.exists():
+                  assert path.is_file() and not path.is_symlink() and path.stat().st_nlink==1
+                  h=hashlib.sha256();count=0
+                  with path.open('rb') as stream:
+                      while body:=stream.read(1024**2):h.update(body);count+=len(body)
+                  row.update(observed=True,sha256=h.hexdigest(),bytes=count)
+              streams[name]=row
+          outcome=os.environ.get('TS_RETENTION_STEP_OUTCOME')
+          assert outcome in {'success','failure','cancelled','skipped'}
+          value={'version':'som.ts-producer-retention-launch-control.v1','actual_step_outcome':outcome,
+              'private_archive_index_present':(output/'sealed/evidence-index.json').is_file(),
+              'raw_exporter_launch_streams':streams,'authenticated_archive_view_admitted':False,'product_acceptance_passed':False}
+          with (output/'launch-control.json').open('x') as stream:json.dump(value,stream,sort_keys=True);stream.write('\n')
+          PYCONTROL
+      - name: Publish only the separate encrypted producer audit and safe exporter controls
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: typescript-input-producer-private-retention
+          path: ${{ runner.temp }}/som-ts-producer-retained-upload
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30
+
   same-candidate-full-products:
     needs: [candidate-source-guard, public-input-reconstruction, experimental-native-compile,
-            product-cargo-closure, product-runtime-reuse, current-product-rust-tools]
+            product-cargo-closure, product-runtime-reuse, current-product-rust-tools, typescript-regression-inputs]
     if: needs.candidate-source-guard.outputs.run_full_candidate == 'true'
     permissions:
       contents: read
@@ -857,6 +1088,7 @@ jobs:
       helper_revision: ${{ needs.candidate-source-guard.outputs.helper_revision }}
       candidate_revision: ${{ needs.candidate-source-guard.outputs.candidate_revision }}
       runtime_manifest_sha256: ${{ needs.product-runtime-reuse.outputs.runtime_manifest_sha256 }}
+      typescript_input_producer_catalog: ${{ needs.typescript-regression-inputs.outputs.producer_catalog }}
       artifact_spec: |
         {
           "public_inputs":{"id":${{ needs.public-input-reconstruction.outputs.artifact_id }},"name":"public-input-reconstruction","digest":"sha256:${{ needs.public-input-reconstruction.outputs.artifact_digest }}"},

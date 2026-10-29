@@ -10,7 +10,8 @@ from pathlib import Path
 import sys
 import traceback
 import threading
-from types import ModuleType
+from contextlib import contextmanager
+from types import FunctionType, MethodType, ModuleType
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -22,6 +23,130 @@ RAW_CAPTURE = BASE + 'typescript_regression_raw_capture.py'
 INPUT_ADAPTER = BASE + 'typescript_regression_inputs.py'
 SCHEMA_CAPTURE = BASE + 'typescript_regression_schema_capture.py'
 NESTED_RUST = BASE + 'typescript_regression_nested_rust.py'
+
+
+CONTEXT = BASE + 'product_runtime/full_product_context.py'
+NATIVE_HOST = BASE + 'typescript_native_host.py'
+_TARGETS = {'som-rs/scripts/hosted_readiness/typescript_regression_rebase.py': {'module': '_som_ts_native_original_typescript002_refusal_rebase',
+                                                                     'role': 'ts.checker.original-typescript002-refusal-rebase'},
+ 'som-rs/scripts/react_output_acceptance/check_typescript_baseline.py': {'module': '_som_ts_native_original_typescript002_baseline',
+                                                                         'role': 'ts.checker.original-typescript002-baseline'},
+ 'som-rs/scripts/rust_output_acceptance/check_cli.py': {'module': '_som_ts_native_original_cli',
+                                                        'role': 'ts.checker.original-cli'},
+ 'som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py': {'module': '_som_ts_native_original_rust_unchanged',
+                                                                   'role': 'ts.checker.original-rust-unchanged'},
+ 'som-rs/scripts/rust_output_acceptance/python_replay.py': {'module': '_som_ts_native_original_python_replay',
+                                                            'role': 'ts.checker.original-python-replay'},
+ 'som-rs/scripts/rust_output_acceptance/run_acceptance.py': {'module': '_som_ts_native_original_rust_acceptance',
+                                                             'role': 'ts.checker.original-rust-acceptance'},
+ 'som-rs/scripts/typescript_output_acceptance/check_bundles.py': {'module': '_som_ts_native_original_bundles',
+                                                                  'role': 'ts.checker.original-bundles'},
+ 'som-rs/scripts/typescript_output_acceptance/check_python_baseline.py': {'module': '_som_ts_native_original_python_baseline',
+                                                                          'role': 'ts.checker.original-python-baseline'},
+ 'som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py': {'module': '_som_ts_native_original_rt_diagnostics',
+                                                                         'role': 'ts.checker.original-rt-diagnostics'},
+ 'som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py': {'module': '_som_ts_native_original_rust_baseline',
+                                                                        'role': 'ts.checker.original-rust-baseline'},
+ 'som-rs/scripts/typescript_output_acceptance/check_target.py': {'module': '_som_ts_native_original_target',
+                                                                 'role': 'ts.checker.original-target'},
+ 'som-rs/som-targets/qa/check_rust_products.py': {'module': '_som_ts_native_original_rust_products',
+                                                  'role': 'ts.checker.original-rust-products'},
+ 'som-rs/som-targets/qa/check_ts_products.py': {'module': '_som_ts_native_original_ts_products',
+                                                'role': 'ts.checker.original-ts-products'},
+ 'som-rs/tests/rust-output-v1/check_python_controls.py': {'module': '_som_ts_native_original_rust_python_controls',
+                                                          'role': 'ts.checker.original-rust-python-controls'},
+ 'som-rs/tests/rust-output-v1/validate_cases.py': {'module': '_som_ts_native_original_validate_cases',
+                                                   'role': 'ts.checker.original-validate-cases'},
+ 'som-rs/tests/typescript-output-v1/check_python_controls.py': {'module': '_som_ts_native_original_ts_python_controls',
+                                                                'role': 'ts.checker.original-ts-python-controls'}}
+_ABSENT = object()
+_ADAPTER_NAMES = frozenset(('cluster_gates', 'LEGACY', '_run_cli_with_request_capture', 'check',
+    'asset_only_difference', 'http_send', 'psycopg', 'schema'))
+
+
+def _native_context(hosted):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    require(type(hosted) is ModuleType and hosted is __som_native_ContextModule__
+            and hosted.context is __som_native_context_getter__
+            and hosted.Context is __som_native_Context__ and hosted.SourceBytes is __som_native_SourceBytes__
+            and controls.role_sources.get('entry.qa.typescript-wrapper') == SELF
+            and controls.role_sources.get('runtime.context') == CONTEXT,
+            'actual fixed native Context module/getter/classes required')
+    ctx = hosted.context()
+    require(type(ctx) is __som_native_Context__, 'actual source-owned native Context instance required')
+    require(type(ctx.repo) is type(controls.root) and ctx.repo == controls.root
+            and ctx.helper_revision == controls.helper_revision == ctx.candidate_revision == controls.candidate_revision,
+            'native checker Context root/revision differs')
+    require(type(ctx.sources) is __som_native_SourceBytes__ and ctx.sources.root == controls.root
+            and ctx.sources.revision == controls.helper_revision, 'actual checker SourceBytes owner required')
+    for owner, name, cls in ((ctx, 'module', __som_native_Context__), (ctx, 'verify', __som_native_Context__),
+                             (ctx.sources, 'read', __som_native_SourceBytes__),
+                             (ctx.sources, 'verify', __som_native_SourceBytes__)):
+        method = getattr(owner, name)
+        require(type(method) is MethodType and method.__self__ is owner and method.__func__ is getattr(cls, name),
+                'native checker bound source method replaced: ' + name)
+    return ctx, controls
+
+
+def _target(lease, ctx, tool, raw):
+    require(type(tool) is str and tool in _TARGETS, 'unlisted native original checker source')
+    item = _TARGETS[tool]
+    require(lease.role_sources.get(item['role']) == tool, 'fixed native checker target role source differs')
+    name = item['module']
+    require(name not in sys.modules, 'preloaded original TypeScript checker refused')
+    target = lease.load_module(item['role'])
+    require(type(target) is ModuleType and target.__name__ == name and sys.modules.get(name) is target
+            and target.__file__ == str(ctx.repo / tool) and target.__cached__ is None
+            and target.__som_raw_sha256__ == sha(raw), 'actual Core original checker identity differs')
+    return target
+
+
+def _checked_native_host(ctx, controls, host):
+    controls.verify_installed()
+    require(type(host) is ModuleType
+            and controls.context_keys.get('typescript_regression_native_host') == 'ctx.typescript-regression-native-host'
+            and controls.role_sources.get('ctx.typescript-regression-native-host') == NATIVE_HOST
+            and host.__name__ == '_som_full_typescript_regression_native_host'
+            and host.__file__ == str(ctx.repo / NATIVE_HOST) and host.__cached__ is None
+            and sys.modules.get(host.__name__) is host
+            and host.__som_raw_sha256__ == sha(ctx.sources.read(NATIVE_HOST)),
+            'actual fixed native TypeScript host source/module required')
+    for name in ('configure', 'close'):
+        function = host.__dict__.get(name)
+        require(type(function) is FunctionType and function.__globals__ is host.__dict__
+                and function.__code__.co_filename == str(ctx.repo / NATIVE_HOST),
+                'actual fixed native TypeScript host callable required: ' + name)
+    return host
+
+
+@contextmanager
+def _owned_adapter(changes, owner, names):
+    require(type(owner) is ModuleType and type(names) is tuple and set(names) <= _ADAPTER_NAMES,
+            'fixed source-owned checker adapter fields required')
+    namespace = ModuleType.__getattribute__(owner, '__dict__')
+    rows = [(owner, name, namespace.get(name, _ABSENT)) for name in names]
+    try:
+        yield
+    finally:
+        for module, name, before in rows:
+            changes.append((module, name, before, ModuleType.__getattribute__(module, '__dict__').get(name, _ABSENT)))
+
+
+def _close_owned_adapters(changes):
+    state = {'primary': None, 'traceback': None, 'failure': None, 'secondary': []}
+    for owner, name, original, installed in reversed(changes):
+        try:
+            namespace = ModuleType.__getattribute__(owner, '__dict__')
+            require(namespace.get(name, _ABSENT) is installed, 'checker adapter replaced by later owner: ' + name)
+            if original is _ABSENT:
+                namespace.pop(name, None)
+            else:
+                namespace[name] = original
+        except BaseException as error:
+            remember_failure(state, 'checker_adapter_restore_' + name, error)
+    changes.clear()
+    raise_primary(state)
 
 
 def require(value, message):
@@ -179,7 +304,7 @@ class HttpCapture:
 
 def main(argv=None):
     import full_product_context as hosted
-    ctx = hosted.context()
+    ctx, controls = _native_context(hosted)
     require(ctx.qa_mode == 'native-qa-v1' and ctx.qa_source_authority['source_authority_active'] is True,
             'checked native Context before checker source required')
     parser = argparse.ArgumentParser(description=__doc__)
@@ -191,31 +316,31 @@ def main(argv=None):
     require(args.tool in allowed and SELF in allowed and args.tool.endswith('.py')
             and all(part not in {'', '.', '..'} for part in args.tool.split('/')),
             'exact original checker entry must be admitted')
+    require(args.tool in _TARGETS, 'unlisted native original checker source')
     raw = ctx.sources.read(args.tool)
     root = args.capture_root.absolute()
     require(ctx.work in root.parents and not root.exists()
             and not any(p.is_symlink() for p in root.parents), 'new Context-owned checker capture root required')
     root.mkdir(parents=True)
-    name = '_som_typescript_original_checker_entry'
-    require(name not in sys.modules, 'preloaded original TypeScript checker refused')
-    target = ModuleType(name)
-    target.__file__, target.__cached__, target.__package__ = str(ctx.repo / args.tool), None, ''
-    target.__som_raw_sha256__ = sha(raw)
+    target, target_lease, changes = None, None, []
+    host, host_configure_attempted = None, False
     old_main, old_argv, old_path = sys.modules['__main__'], sys.argv, list(sys.path)
     require(RAW_CAPTURE in allowed, 'complete command/CLI/product raw capture source must be admitted')
     raw_capture = ctx.module('typescript_regression_raw_capture', RAW_CAPTURE)
     runs = raw_capture.RawRuns(root / 'raw-commands')
-    http = HttpCapture(root); outcome = {'tool': args.tool, 'source_sha256': sha(raw),
-        'entry_executed': False, 'exit_code': None, 'postcheck_complete': False, 'product_acceptance_passed': False}
+    require(raw_capture.CaptureRows is __som_native_CaptureRows__
+            and raw_capture.CaptureOutcome is __som_native_CaptureOutcome__,
+            'actual completed RawCapture JSON data classes required')
+    http = HttpCapture(root); outcome = raw_capture.CaptureOutcome({'tool': args.tool, 'source_sha256': sha(raw),
+        'entry_executed': False, 'exit_code': None, 'postcheck_complete': False, 'product_acceptance_passed': False})
     original = None
     try:
         http.install()
-        sys.modules[name] = target
-        sys.argv = [target.__file__, *(args.arguments[1:] if args.arguments[:1] == ['--'] else args.arguments)]
-        sys.path.insert(0, str((ctx.repo / args.tool).parent))
+        sys.argv = [str(ctx.repo / args.tool), *(args.arguments[1:] if args.arguments[:1] == ['--'] else args.arguments)]
         outcome['entry_executed'] = True
         try:
-            exec(compile(raw, target.__file__, 'exec', dont_inherit=True), target.__dict__)
+            target_lease = controls.borrow()
+            target = _target(target_lease, ctx, args.tool, raw)
             if args.tool == 'som-rs/scripts/typescript_output_acceptance/check_bundles.py':
                 outcome['native_bundle_expectations'] = native_bundle_expectations(ctx, target)
             if args.tool in {'som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py',
@@ -226,20 +351,27 @@ def main(argv=None):
             if args.tool == 'som-rs/scripts/rust_output_acceptance/run_acceptance.py':
                 require(NESTED_RUST in allowed, 'nested original Rust capture source must be admitted')
                 nested = ctx.module('typescript_regression_nested_rust', NESTED_RUST)
-                outcome['nested_rust_capture'] = nested.install(ctx, target, root)
+                with _owned_adapter(changes, target, ('cluster_gates',)):
+                    outcome['nested_rust_capture'] = nested.install(ctx, target, root)
             if args.tool == 'som-rs/som-targets/qa/check_rust_products.py':
-                target.targets.LEGACY = Path(ctx.data['typescript_regression_inputs']['roots']['legacy_run'])
+                with _owned_adapter(changes, target.targets, ('LEGACY',)):
+                    target.targets.LEGACY = Path(ctx.data['typescript_regression_inputs']['roots']['legacy_run'])
             if args.tool == 'som-rs/som-targets/qa/check_ts_products.py':
-                host_path = BASE + 'typescript_native_host.py'
+                host_path = NATIVE_HOST
                 require(host_path in allowed, 'native TypeScript product host must be source-admitted')
                 host = ctx.module('typescript_regression_native_host', host_path)
+                host = _checked_native_host(ctx, controls, host)
+                host_configure_attempted = True
                 outcome['native_typescript_tools'] = host.configure(ctx, target)
-                outcome['product_http_rows'] = raw_capture.install_product_http(target, root / 'product-http')
+                with _owned_adapter(changes, target.ts_suite, ('http_send',)):
+                    outcome['product_http_rows'] = raw_capture.install_product_http(target, root / 'product-http')
                 require(SCHEMA_CAPTURE in allowed, 'actual schema capture source must be admitted')
                 schema = ctx.module('typescript_regression_schema_capture', SCHEMA_CAPTURE)
-                outcome['schema_rows'] = schema.install(target, root / 'schema-raw')
+                with _owned_adapter(changes, target.rust_products, ('psycopg', 'schema')):
+                    outcome['schema_rows'] = schema.install(target, root / 'schema-raw')
             if args.tool == 'som-rs/scripts/rust_output_acceptance/check_cli.py':
-                outcome['cli_rows'] = raw_capture.install_cli(target, root / 'cli-raw')
+                with _owned_adapter(changes, target, ('_run_cli_with_request_capture',)):
+                    outcome['cli_rows'] = raw_capture.install_cli(target, root / 'cli-raw')
                 original_check = target.check
                 def checked_request(*values, **keywords):
                     if len(values) > 7:
@@ -248,17 +380,23 @@ def main(argv=None):
                     else:
                         keywords['verify_request'] = True
                     return original_check(*values, **keywords)
-                target.check = checked_request
+                with _owned_adapter(changes, target, ('check',)):
+                    target.check = checked_request
             if args.tool == 'som-rs/scripts/rust_output_acceptance/python_replay.py':
-                digest = ctx.module('typescript_regression_native_replay_digests', DIGESTS)
+                replay_digest = ctx.module('typescript_regression_native_replay_digests', DIGESTS)
                 original_difference = target.asset_only_difference
                 outcome['native_python_replay_proofs'] = []
                 def current_difference(expected, current):
-                    problem, proof = digest.historical_python_replay(ctx, expected, current, original_difference)
+                    problem, proof = replay_digest.historical_python_replay(ctx, expected, current, original_difference)
                     outcome['native_python_replay_proofs'].append(proof)
                     return problem
-                target.asset_only_difference = current_difference
+                with _owned_adapter(changes, target, ('asset_only_difference',)):
+                    target.asset_only_difference = current_difference
             require(callable(getattr(target, 'main', None)), 'original checker main entry required')
+            require(type(target.main) is FunctionType and target.main.__globals__ is target.__dict__
+                    and target.main.__code__.co_filename == str(ctx.repo / args.tool),
+                    'original checker main code/globals differ')
+            target_lease.verify_installed()
             # Source/bootstrap Git reads are admitted first. Native command
             # capture starts at the actual checker main, after all owning
             # digest factories are checked and cached in this Context.
@@ -289,11 +427,20 @@ def main(argv=None):
             if ctx.cache.get('typescript_regression_input_binding_closers'):
                 ctx.module('typescript_regression_inputs', INPUT_ADAPTER).close(ctx)
         def close_bundle_adapter():
-            if target.__dict__.get('__som_native_bundle_expectation_leases__'):
+            if target is not None and target.__dict__.get('__som_native_bundle_expectation_leases__'):
                 close_native_bundle_expectations(target)
+        def close_native_host():
+            if host_configure_attempted:
+                require(args.tool == 'som-rs/som-targets/qa/check_ts_products.py' and target is not None,
+                        'only the actual configured TypeScript product host may close')
+                _checked_native_host(ctx, controls, host).close(ctx, target)
         for label, action in (('raw_commands', runs.close), ('raw_http', http.close),
                               ('input_bindings', close_input_bindings), ('bundle_adapter', close_bundle_adapter),
-                              ('context', ctx.verify)):
+                              ('owned_adapters', lambda: _close_owned_adapters(changes)),
+                              ('context', ctx.verify),
+                              ('native_host', close_native_host),
+                              ('native_target_ledger', lambda: target_lease.verify_installed() if target_lease is not None else None),
+                              ('native_target_borrow', lambda: target_lease.close() if target_lease is not None else None)):
             try:
                 action()
             except BaseException as error:
@@ -302,7 +449,6 @@ def main(argv=None):
         if cleanup_errors:
             outcome['postcheck_failures'] = cleanup_errors
         sys.modules['__main__'], sys.argv, sys.path = old_main, old_argv, old_path
-        sys.modules.pop(name, None)
         try:
             outcome['bound_source_sha256'] = dict(sorted(ctx.sources.pins.items()))
         except BaseException as error:
@@ -312,7 +458,7 @@ def main(argv=None):
             outcome['primary_failure'] = state['failure']
         outcome['secondary_failures'] = state['secondary']
         try:
-            save(root / 'checker-postcheck.json', outcome)
+            save(root / 'checker-postcheck.json', outcome.value)
         except BaseException as error:
             cleanup_errors.append(remember_failure(state, 'checker_postcheck_evidence', error))
             outcome['postcheck_complete'] = False

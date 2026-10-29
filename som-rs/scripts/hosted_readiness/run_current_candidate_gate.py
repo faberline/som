@@ -22,6 +22,7 @@ from types import ModuleType
 
 BASE = 'som-rs/scripts/hosted_readiness/'
 SELF = BASE + 'run_current_candidate_gate.py'
+SERVICES_SOURCE = BASE + 'current_gate_services.py'
 CONTEXT = BASE + 'product_runtime/full_product_context.py'
 AUTHORITY = BASE + 'native_qa_authority.py'
 LAYOUT = BASE + 'product_runtime/current_candidate_layout.py'
@@ -1292,6 +1293,25 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
     return report
 
 
+def _native_service_class(sources):
+    """Load the completed ordinary source owner before using its actual class."""
+    require(type(sources) is Sources, 'actual current-gate source owner required')
+    controls = _native_controls(sources)
+    raw = sources.read(SERVICES_SOURCE)
+    require(controls.role_sources.get('common.services') == SERVICES_SOURCE,
+            'fixed ordinary current-gate services source differs')
+    module = controls.load_module('common.services')
+    require(type(module) is ModuleType and module.__name__ == '_som_current_gate_services'
+            and sys.modules.get(module.__name__) is module
+            and module.__file__ == str(sources.root / SERVICES_SOURCE) and module.__cached__ is None
+            and module.__som_raw_sha256__ == sha(raw), 'actual ordinary services source/module differs')
+    cls = module.Services
+    require(type(cls) is type and type.__getattribute__(cls, '__module__') == module.__name__,
+            'actual ordinary source-owned Services class required')
+    controls.verify_installed()
+    return cls
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('repo', 'product-context', 'out', 'assembly-root', 'carrier-root'):
@@ -1357,7 +1377,7 @@ def main(argv=None):
             owner = ctx.module(GATE_OWNER_KEYS[args.gate], spec['path']); owner_api(owner, args.gate)
             output = args.out / 'owner'; output.mkdir()
             with semantic.trusted_proof_bundle(sources.root, sources.read, args.helper_revision, args.candidate_revision, roots, args.out, admission) as trusted:
-                services = Services(ctx, trusted.driver, trusted.checker, trusted.proof, report['layout'], restored, args.out / 'services')
+                services = _native_service_class(sources)(ctx, trusted.driver, trusted.checker, trusted.proof, report['layout'], restored, args.out / 'services')
                 with trusted.driver.cancellation_handlers() as cancellation:
                     with owned_cleanup(services, cancellation, report):
                         services.start_current()

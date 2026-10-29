@@ -1,7 +1,7 @@
 name: Native active source fixtures
 on:
   push:
-    branches: [codex/m12-native-ts-input-source-fixtures-v1]
+    branches: [codex/m12-native-converged-source-fixtures-v1]
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,15 +20,36 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: native-ts-inputs
-            script: som-rs/scripts/hosted_readiness/test_native_ts_input_fragments.py
-            legacy: false
+          - name: native-host-fragments
+            script: som-rs/scripts/hosted_readiness/test_native_ts_host_fragments.py
+          - name: original-lifecycle
+            script: som-rs/scripts/hosted_readiness/test_typescript_regression_lifecycle.py
+          - name: native-checker-targets
+            script: som-rs/scripts/hosted_readiness/test_native_ts_checker_targets.py
+          - name: original-v3-failures
+            script: som-rs/scripts/hosted_readiness/test_typescript_regression_v3_failures.py
+          - name: original-v3-replay
+            script: som-rs/scripts/hosted_readiness/test_typescript_regression_v3_replay.py
+          - name: native-nested-context
+            script: som-rs/scripts/hosted_readiness/test_native_ts_nested_context.py
+          - name: native-react-input-binder
+            script: som-rs/scripts/hosted_readiness/test_native_react_input_binder.py
+          - name: native-ts-owner-transport
+            script: som-rs/scripts/hosted_readiness/test_native_ts_owner_transport.py
           - name: original-ts-owner
             script: som-rs/scripts/hosted_readiness/test_typescript_regression_owner.py
-            legacy: false
-          - name: original-ts-v2-contract
+          - name: original-v2-contract
             script: som-rs/scripts/hosted_readiness/test_typescript_regression_v2_contract.py
-            legacy: false
+          - name: original-common-gate
+            script: som-rs/scripts/hosted_readiness/test_run_current_candidate_gate.py
+          - name: native-common-services-owner
+            script: som-rs/scripts/hosted_readiness/test_native_common_services_owner.py
+          - name: original-raw-capture
+            script: som-rs/scripts/hosted_readiness/test_typescript_regression_raw_capture.py
+          - name: native-mutable-capture
+            script: som-rs/scripts/hosted_readiness/test_native_ts_mutable_capture.py
+          - name: native-schema-mutable-capture
+            script: som-rs/scripts/hosted_readiness/test_native_ts_schema_mutable_capture.py
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -43,14 +64,9 @@ jobs:
       - name: Run the complete selected source fixture file
         env:
           SOURCE_FIXTURE_SCRIPT: ${{ matrix.script }}
-          LEGACY_FIXTURE: ${{ matrix.legacy }}
         run: |
           sha256sum "$SOURCE_FIXTURE_SCRIPT" > fixture-source-sha256.txt
-          if [ "$LEGACY_FIXTURE" = true ]; then
-            python3 -I -S -B "$GITHUB_WORKSPACE/.github/actions/native-active-source-fixtures/legacy_runner.py" "$SOURCE_FIXTURE_SCRIPT" 2>&1 | tee source-fixtures.log
-          else
-            python3 -I -S -B "$GITHUB_WORKSPACE/$SOURCE_FIXTURE_SCRIPT" -v 2>&1 | tee source-fixtures.log
-          fi
+          python3 -I -S -B "$GITHUB_WORKSPACE/$SOURCE_FIXTURE_SCRIPT" -v 2>&1 | tee source-fixtures.log
       - name: Retain complete output and first failures
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

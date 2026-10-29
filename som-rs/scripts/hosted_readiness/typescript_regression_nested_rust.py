@@ -1,6 +1,7 @@
 """Keep the original Rust cluster gate, with owned PG and a raw child entry."""
 from __future__ import annotations
 import traceback
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -15,6 +16,8 @@ WRAPPER = BASE + 'typescript_regression_checker.py'
 RUST = 'som-rs/som-targets/qa/check_rust_products.py'
 HOST = 'som-rs/behavior/hosts.py'
 STAMP = BASE + 'typescript_native_host.py'
+CONTEXT = BASE + 'product_runtime/full_product_context.py'
+NATIVE_ROLE = 'ctx.typescript-regression-nested-rust'
 
 
 def failure_record(error):
@@ -77,6 +80,41 @@ def owned_socket(pid, port):
     return found[0]
 
 
+def _native_context(ctx):
+    """Use the current checked Context object before the nested child route."""
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    require(controls.role_sources.get(NATIVE_ROLE) == SELF
+            and controls.role_sources.get('runtime.context') == CONTEXT,
+            'fixed nested Rust and Context source roles required')
+    hosted = controls.load_module('runtime.context')
+    context_type = globals().get('__som_native_Context__')
+    source_type = globals().get('__som_native_SourceBytes__')
+    require(context_type is hosted.Context and source_type is hosted.SourceBytes,
+            'fixed native nested Context class exports required')
+    require(type(ctx) is context_type, 'actual native nested Context object required')
+    require(vars(hosted).get('_ACTIVE') is ctx,
+            'actual active nested Context owner required')
+    require(ctx.qa_mode == 'native-qa-v1' and ctx.repo == controls.root
+            and ctx.helper_revision == controls.helper_revision
+            == ctx.candidate_revision == controls.candidate_revision,
+            'actual native nested Context source identities differ')
+    require(type(ctx.sources) is source_type and ctx.sources.root == controls.root
+            and ctx.sources.revision == controls.helper_revision,
+            'actual native nested SourceBytes owner required')
+    require(type(ctx.qa_source_authority) is dict
+            and ctx.qa_source_authority.get('source_authority_active') is True
+            and {SELF, CONTEXT} <= set(ctx.qa_source_authority['admitted_repository_python_sources']),
+            'complete native nested Context source admission required')
+    require(hosted.__file__ == str(controls.root / CONTEXT)
+            and hosted.__som_raw_sha256__ == hashlib.sha256(ctx.sources.read(CONTEXT)).hexdigest()
+            and ctx.sources.read(SELF) == Path(__file__).read_bytes(),
+            'actual native nested Context module source differs')
+    require(hosted.context() is ctx, 'current native nested Context getter differs')
+    controls.verify_installed()
+    return hosted
+
+
 def install(ctx, target, capture_root):
     require(ctx.qa_mode == 'native-qa-v1' and {SELF, WRAPPER, RUST, HOST, STAMP} <=
             set(ctx.qa_source_authority['admitted_repository_python_sources']),
@@ -121,7 +159,7 @@ def install(ctx, target, capture_root):
             state['postgres'] = {'pid': proc.pid, 'argv': argv, 'cwd': str(data), 'start': started,
                                  'owned_socket': owned_socket(proc.pid, port)}
             save(work / 'pg-start.json', state['postgres'])
-            hosted = sys.modules['full_product_context']
+            hosted = _native_context(ctx)
             child_args = ['--tool', RUST, '--capture-root', str(capture_root / 'nested-rust-gates'), '--',
                           '--pg', f'127.0.0.1:{port}', *arguments]
             command = ctx.command(hosted.tool_command(ctx.repo / WRAPPER, child_args), ctx.repo / 'som-rs/som-targets/qa',

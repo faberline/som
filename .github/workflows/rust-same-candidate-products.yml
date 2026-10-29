@@ -15,8 +15,14 @@ on:
       runtime_manifest_sha256:
         type: string
         required: true
+      typescript_input_producer_catalog:
+        description: Exact Root needs output from this run literal typescript-regression-inputs job
+        type: string
+        required: true
     secrets:
       SOM_M6_ACCEPTANCE_INPUTS_V1:
+        required: true
+      SOM_M6_ACCEPTANCE_INPUTS_V2:
         required: true
 permissions:
   contents: read
@@ -258,12 +264,61 @@ jobs:
           M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
         run: |
           python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/sealed_current_raw.py -- restore --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --node "$SOM_RAW_TRANSPORT_NODE" --stage current-python-companions --packet-root "$RUNNER_TEMP/som-current-companions-sealed" --out "$RUNNER_TEMP/som-current-inputs/companions" --evidence-out "$RUNNER_TEMP/som-current-companions-restore-evidence" --artifact-id "${{ needs.current-python-companions.outputs.artifact_id }}" --artifact-digest "sha256:${{ needs.current-python-companions.outputs.artifact_digest }}" --artifact-name same-candidate-current-python-companions --index-sha256 "${{ needs.current-python-companions.outputs.index_sha256 }}"
+      - name: Fetch exact approved19 ciphertext and distinct original18 metadata refs
+        if: matrix.gate == 'typescript-regression'
+        run: git fetch --no-tags --depth=1 origin 02cd9e79cdcedfef92816f67a3ccdf2e089964ab 1de8f05430a72f8d76f6159786cca71b0ae1a911
+      - name: Qualify actual runtime and derive official crypto Node before baseline staging
+        if: matrix.gate == 'typescript-regression'
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -m 700 "$RUNNER_TEMP/som-ts-consumer-wrapper-raw"
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-consumer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" before-node > "$RUNNER_TEMP/som-ts-consumer-wrapper-raw/before-node.stdout" 2> "$RUNNER_TEMP/som-ts-consumer-wrapper-raw/before-node.stderr"
+      - name: Restore actual approved19 with V2 and retain the distinct original18 metadata
+        if: matrix.gate == 'typescript-regression'
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
+        run: |
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-consumer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" restore-before19 > "$RUNNER_TEMP/som-ts-consumer-wrapper-raw/before19.stdout" 2> "$RUNNER_TEMP/som-ts-consumer-wrapper-raw/before19.stderr"
+      - name: Stage all three historical data ZIPs with the unchanged actual factory
+        if: matrix.gate == 'typescript-regression'
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-consumer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" stage-before > "$RUNNER_TEMP/som-ts-consumer-wrapper-raw/before-stage.stdout" 2> "$RUNNER_TEMP/som-ts-consumer-wrapper-raw/before-stage.stderr"
       - name: Prepare the same current observer context before each required native gate
         run: |
           sudo install -d -m 1777 /private/tmp
           mkdir -m 700 "$RUNNER_TEMP/som-callback-raw"
-          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/run_full_products.py -- --mode sealed-candidate-products --stage "$PRODUCT_STAGE" --build-provenance-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-current-build-provenance" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --python-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-public-inputs" --rust-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-rust-complete-inputs" --wheel-root "$RUNNER_TEMP/som-current-inputs/wheel/som-python-wheel-qualification" --cargo-root "$RUNNER_TEMP/som-current-inputs/cargo/closure" --runtime-root "$RUNNER_TEMP/som-product-runtime-qualification" --rust-tools-root "$RUNNER_TEMP/som-rust-product-tools-qualification" --current-companions-root "$RUNNER_TEMP/som-current-inputs/companions/som-current-python-companions" --shard-index "$SHARD_INDEX" --shard-count "$SHARD_COUNT" --out "$RUNNER_TEMP/som-callback-context" --prepare-context-only > "$RUNNER_TEMP/som-callback-raw/context.stdout" 2> "$RUNNER_TEMP/som-callback-raw/context.stderr"
+          callback=()
+          if [ "$REQUIRED_GATE" = typescript-regression ]; then
+            callback=(--callback-gate typescript-regression --baseline-input som-rs/scripts/hosted_readiness/inputs/recorded-before-profile-v1.json "$RUNNER_TEMP/som-recorded-before-inputs")
+          fi
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/run_full_products.py -- --mode sealed-candidate-products --stage "$PRODUCT_STAGE" --build-provenance-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-current-build-provenance" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --python-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-public-inputs" --rust-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-rust-complete-inputs" --wheel-root "$RUNNER_TEMP/som-current-inputs/wheel/som-python-wheel-qualification" --cargo-root "$RUNNER_TEMP/som-current-inputs/cargo/closure" --runtime-root "$RUNNER_TEMP/som-product-runtime-qualification" --rust-tools-root "$RUNNER_TEMP/som-rust-product-tools-qualification" --current-companions-root "$RUNNER_TEMP/som-current-inputs/companions/som-current-python-companions" --shard-index "$SHARD_INDEX" --shard-count "$SHARD_COUNT" --out "$RUNNER_TEMP/som-callback-context" --prepare-context-only "${callback[@]}" > "$RUNNER_TEMP/som-callback-raw/context.stdout" 2> "$RUNNER_TEMP/som-callback-raw/context.stderr"
+      - name: Provision actual full TS inputs after the genuine base Context
+        id: typescript_input_consumer
+        if: matrix.gate == 'typescript-regression'
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+          TS_INPUT_PRODUCER_CATALOG: ${{ inputs.typescript_input_producer_catalog }}
+        run: |
+          test -d "$RUNNER_TEMP/som-ts-consumer-wrapper-raw"
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-consumer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" provision > "$RUNNER_TEMP/som-ts-consumer-wrapper-raw/provision.stdout" 2> "$RUNNER_TEMP/som-ts-consumer-wrapper-raw/provision.stderr"
+      - name: Append only the three trusted TS Context keys before owner or service start
+        if: matrix.gate == 'typescript-regression'
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          TS_INPUT_PRODUCER_CATALOG: ${{ inputs.typescript_input_producer_catalog }}
+          TS_INPUT_CONSUMER_PROOF: ${{ steps.typescript_input_consumer.outputs.consumer_proof }}
+        run: |
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-consumer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" bind-context > "$RUNNER_TEMP/som-ts-consumer-wrapper-raw/bind.stdout" 2> "$RUNNER_TEMP/som-ts-consumer-wrapper-raw/bind.stderr"
       - name: Run the actual owning gate with complete private driver streams
+        env:
+          TS_INPUT_PRODUCER_CATALOG: ${{ inputs.typescript_input_producer_catalog }}
+          TS_INPUT_CONSUMER_PROOF: ${{ steps.typescript_input_consumer.outputs.consumer_proof }}
         run: |
           {
             case "$REQUIRED_GATE" in
@@ -279,6 +334,30 @@ jobs:
       - name: Rebuild the owning raw proof from the same-run catalog roots
         run: |
           python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- verify-callback --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --python-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-public-inputs" --rust-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-rust-complete-inputs" --stage "$REQUIRED_GATE" --root "$RUNNER_TEMP/som-callback-raw/gate" --verification-evidence-root "$RUNNER_TEMP/som-callback-raw/verification-evidence/graph-postclose" --out "$RUNNER_TEMP/som-callback-raw/data-check.json" > "$RUNNER_TEMP/som-callback-raw/verify.stdout" 2> "$RUNNER_TEMP/som-callback-raw/verify.stderr"
+      - name: Recheck the actual consumer outside product capture with no M6 key
+        if: always() && matrix.gate == 'typescript-regression' && steps.typescript_input_consumer.outcome == 'success'
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          TS_INPUT_PRODUCER_CATALOG: ${{ inputs.typescript_input_producer_catalog }}
+          TS_INPUT_CONSUMER_PROOF: ${{ steps.typescript_input_consumer.outputs.consumer_proof }}
+        run: |
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-consumer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" postclose > "$RUNNER_TEMP/som-ts-consumer-wrapper-raw/postclose.stdout" 2> "$RUNNER_TEMP/som-ts-consumer-wrapper-raw/postclose.stderr"
+      - name: Retain the whole TS consumer container as encrypted inert data
+        id: ts_input_retention
+        if: always() && matrix.gate == 'typescript-regression'
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.ts-input-consumer -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" retain > "$RUNNER_TEMP/som-ts-consumer-retention.stdout" 2> "$RUNNER_TEMP/som-ts-consumer-retention.stderr"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always() && matrix.gate == 'typescript-regression' && steps.ts_input_retention.outcome == 'success'
+        with:
+          name: typescript-input-consumer-private-retention
+          path: ${{ runner.temp }}/som-ts-consumer-retained-sealed
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
       - name: Seal the complete affected raw tree through the existing M6 transport
         id: seal
         if: always()

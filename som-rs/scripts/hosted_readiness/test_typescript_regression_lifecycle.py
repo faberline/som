@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import base64
 from contextlib import contextmanager
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -26,11 +27,29 @@ def load(relative):
 
 def original_nested(name, scope):
     path = HERE / 'typescript_native_host.py'
-    tree = ast.parse(path.read_bytes())
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != '74811b731ca0d7c26f72b5e914742f16c4488ce571370caaa37e07f89d05cbb2':
+        raise AssertionError('exact reviewed native host source required')
+    tree = ast.parse(raw)
     configure = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'configure')
-    nodes = [node for node in configure.body if isinstance(node, (ast.FunctionDef, ast.ClassDef)) and node.name == name]
-    if len(nodes) != 1:
-        raise AssertionError('one exact current lifecycle node required')
+    wanted = ('_RegistrationBase', 'NativeTracker') if name == 'NativeTracker' else (name,)
+    def lexical(body):
+        for node in body:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+                    yield node
+                # Do not enter a different function or class scope.
+            else:
+                for key, value in ast.iter_fields(node):
+                    if isinstance(value, list):
+                        for item in value:
+                            if isinstance(item, ast.stmt):
+                                yield from lexical([item])
+                            elif isinstance(item, ast.ExceptHandler):
+                                yield from lexical(item.body)
+    nodes = [node for node in lexical(configure.body) if node.name in wanted]
+    if len(nodes) != len(wanted) or {node.name for node in nodes} != set(wanted):
+        raise AssertionError('exact complete current lifecycle nodes required')
     selected = ast.Module(body=[ast.ImportFrom(module='__future__', names=[ast.alias(name='annotations')], level=0),
                                 *nodes], type_ignores=[])
     ast.fix_missing_locations(selected)

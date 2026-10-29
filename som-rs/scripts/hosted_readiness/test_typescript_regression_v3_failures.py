@@ -191,39 +191,39 @@ class OwnerCheckerFailureTests(unittest.TestCase):
         self.assertIn('collect',first.__som_typescript_failure_record__['traceback'])
 
     def checker_fixture(self,entry):
-        checker=load('typescript_regression_checker');raw=load('typescript_regression_raw_capture')
-        ctx=SimpleNamespace(work=self.root,repo=self.root,cache={},qa_mode='native-qa-v1',
-            qa_source_authority={'source_authority_active':True,'admitted_repository_python_sources':[
-                'fixture.py',checker.SELF,checker.RAW_CAPTURE,checker.DIGESTS]},
-            sources=SimpleNamespace(read=lambda path:entry,pins={}),verify=lambda:None)
-        ctx.module=lambda key,path:raw if path==checker.RAW_CAPTURE else SimpleNamespace(authorities=lambda *args:None)
-        hosted=ModuleType('full_product_context');hosted.context=lambda:ctx
-        return checker,hosted
+        # Finite loader protocol, not a genuine Context/runtime qualification.
+        protocol=load('test_native_ts_checker_targets')
+        fixture=protocol.CheckerFixture(self)
+        raw=b'from _som_native_active_controls_binding import controls\ncontrols.verify_installed()\n'+entry
+        fixture.raw[protocol.TOOL]=raw
+        (fixture.root/protocol.TOOL).write_bytes(raw)
+        fixture.policy['sources'][protocol.TOOL]['sha256']=fixture.core.sha(raw)
+        fixture.tool=protocol.TOOL
+        return fixture
 
     def test_checker_actual_entry_error_survives_postcheck_writer_failure(self):
         first=RuntimeError('original checker assertion');later=OSError('checker postcheck refused')
-        checker,hosted=self.checker_fixture(b'def main():\n import builtins\n raise builtins.__ts_v3_first__\n')
-        original=checker.save
-        def save(path,value):
+        fixture=self.checker_fixture(b'def main():\n import builtins\n raise builtins.__ts_v3_first__\n')
+        original=Path.open
+        def opened(path,*args,**kwargs):
             if path.name=='checker-postcheck.json':raise later
-            return original(path,value)
-        with mock.patch.dict(sys.modules,{'full_product_context':hosted}), \
-             mock.patch.object(builtins,'__ts_v3_first__',first,create=True),mock.patch.object(checker,'save',side_effect=save):
+            return original(path,*args,**kwargs)
+        with mock.patch.object(builtins,'__ts_v3_first__',first,create=True),mock.patch.object(Path,'open',new=opened):
             with self.assertRaises(RuntimeError) as caught:
-                checker.main(['--tool','fixture.py','--capture-root',str(self.root/'checker')])
+                fixture.execute()
         self.assertIs(caught.exception,first)
-        self.assertIn('fixture.py',first.__som_typescript_failure_record__['traceback'])
+        self.assertIn(fixture.tool,first.__som_typescript_failure_record__['traceback'])
         self.assertEqual(first.__som_typescript_secondary_failures__[-1]['role'],'checker_postcheck_evidence')
 
     def test_checker_writer_failure_after_success_is_not_a_success(self):
-        checker,hosted=self.checker_fixture(b'def main():\n return 0\n');later=OSError('first postcheck write refusal')
-        original=checker.save
-        def save(path,value):
+        fixture=self.checker_fixture(b'def main():\n return 0\n');later=OSError('first postcheck write refusal')
+        original=Path.open
+        def opened(path,*args,**kwargs):
             if path.name=='checker-postcheck.json':raise later
-            return original(path,value)
-        with mock.patch.dict(sys.modules,{'full_product_context':hosted}),mock.patch.object(checker,'save',side_effect=save):
+            return original(path,*args,**kwargs)
+        with mock.patch.object(Path,'open',new=opened):
             with self.assertRaises(OSError) as caught:
-                checker.main(['--tool','fixture.py','--capture-root',str(self.root/'checker')])
+                fixture.execute()
         self.assertIs(caught.exception,later)
 
     def test_missing_transport_consumer_refuses_before_any_service_or_product(self):

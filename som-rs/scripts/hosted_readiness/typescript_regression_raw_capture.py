@@ -7,6 +7,7 @@ from __future__ import annotations
 import hashlib
 import json
 import locale
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -57,6 +58,82 @@ def save(path, value):
     with path.open('xb') as stream:
         stream.write((json.dumps(value, ensure_ascii=False, sort_keys=True,
                                  separators=(',', ':'), allow_nan=False) + '\n').encode())
+
+
+def _capture_json(value):
+    """Check data without invoking foreign converters or object hooks."""
+    active = set()
+    def check(item):
+        kind = type(item)
+        if any(kind is allowed for allowed in (str, int, bool, type(None))):
+            return
+        if kind is float:
+            require(math.isfinite(item), 'capture JSON must contain only finite numbers')
+            return
+        require(kind is dict or kind is list or kind is tuple,
+                'capture containers accept only plain JSON data')
+        marker = id(item)
+        require(marker not in active, 'capture JSON cannot contain a cycle')
+        active.add(marker)
+        try:
+            if kind is dict:
+                require(all(type(key) is str for key in item), 'capture JSON object keys must be plain text')
+                for entry in dict.values(item):
+                    check(entry)
+            else:
+                for entry in item:
+                    check(entry)
+        finally:
+            active.remove(marker)
+    check(value)
+    return value
+
+
+class CaptureRows:
+    """Mutable JSON rows. The source-owned object has no callable protocol."""
+    def __init__(self):
+        self._value = []
+
+    def __len__(self):
+        require(type(self._value) is list, 'owned capture row storage changed')
+        return len(self._value)
+
+    def append(self, value):
+        require(type(self._value) is list, 'owned capture row storage changed')
+        self._value.append(_capture_json(value))
+
+    def __getitem__(self, index):
+        require(type(self._value) is list and type(index) is int, 'owned capture row storage/index changed')
+        return self._value[index]
+
+    def clear(self):
+        require(type(self._value) is list, 'owned capture row storage changed')
+        self._value.clear()
+
+    @property
+    def value(self):
+        require(type(self._value) is list, 'owned capture row storage changed')
+        return _capture_json(self._value)
+
+
+class CaptureOutcome:
+    """Mutable checker JSON. It cannot grant a callback, Context or process."""
+    def __init__(self, value):
+        require(type(value) is dict, 'owned capture outcome must start with a plain object')
+        self._value = _capture_json(value)
+
+    def __getitem__(self, key):
+        require(type(self._value) is dict and type(key) is str, 'owned capture outcome storage/key changed')
+        return self._value[key]
+
+    def __setitem__(self, key, value):
+        require(type(self._value) is dict and type(key) is str, 'owned capture outcome storage/key changed')
+        self._value[key] = _capture_json(value)
+
+    @property
+    def value(self):
+        require(type(self._value) is dict, 'owned capture outcome storage changed')
+        return _capture_json(self._value)
 
 
 class RawRuns:
@@ -205,7 +282,7 @@ class RawRuns:
 
 def install_cli(target, root):
     original = target._run_cli_with_request_capture
-    rows = []
+    rows = CaptureRows()
     def capture(binary, base_url, cnl_path, selected):
         done, sent = original(binary, base_url, cnl_path, selected)
         index = len(rows); directory = root / f'{index:06d}'; directory.mkdir(parents=True)
@@ -224,12 +301,12 @@ def install_cli(target, root):
         save(root / f'checkpoint-{index:06d}.json', row)
         return done, sent
     target._run_cli_with_request_capture = capture
-    return rows
+    return rows.value
 
 
 def install_product_http(target, root):
     original = target.ts_suite.http_send
-    rows = []
+    rows = CaptureRows()
     def capture(base, method, path, body, content_type='application/json'):
         index = len(rows); directory = root / f'{index:06d}'; directory.mkdir(parents=True)
         require(body is None or type(body) is bytes, 'complete product request bytes required')
@@ -247,4 +324,4 @@ def install_product_http(target, root):
         finally:
             save(directory / 'result.json', row); rows.append(row)
     target.ts_suite.http_send = capture
-    return rows
+    return rows.value
