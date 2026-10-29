@@ -31,11 +31,13 @@ import json
 import os
 import pathlib
 import re
+import signal
 import shutil
 import stat
 import subprocess
 import sys
 import time
+import types
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -47,14 +49,46 @@ REACT_TESTS = SOM_RS / "tests" / "react-output-v1"
 if str(REACT_TESTS) not in sys.path:
     sys.path.insert(0, str(REACT_TESTS))
 
-import check_contract  # type: ignore[import-not-found]  # noqa: E402
-from common import CONTRACT, REPO  # type: ignore[import-not-found]  # noqa: E402
-import retained_evidence
+def load_pinned_retained(repo: pathlib.Path):
+    path = repo / 'som-rs/scripts/react_output_acceptance/retained_evidence.py'
+    if (not repo.is_absolute() or repo.resolve() != repo or any(part.is_symlink() for part in (path, *path.parents))
+            or 'retained_evidence' in sys.modules):
+        raise ValueError('retained verifier path or preload differs')
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    try:
+        info = os.fstat(fd)
+        if not stat.S_ISREG(info.st_mode) or info.st_size > 2 * 1024 * 1024:
+            raise ValueError('retained verifier source differs')
+        with os.fdopen(fd, 'rb', closefd=False) as stream:
+            raw = stream.read(2 * 1024 * 1024 + 1)
+    finally:
+        os.close(fd)
+    if len(raw) > 2 * 1024 * 1024 or hashlib.sha256(raw).hexdigest() != '7ec396988cc2e9704c228c05cb3a7cd7a51c87d0fc6ea26c1ffa1455209d75bc':
+        raise ValueError('retained verifier source differs')
+    module = types.ModuleType('retained_evidence')
+    module.__file__ = str(path)
+    exec(compile(raw, str(path), 'exec', dont_inherit=True), module.__dict__)
+    sys.modules['retained_evidence'] = module
+    return module
+
+LINUX_QA_CLI = any(arg in ('--qa-profile', '--api-profile') or arg.startswith(('--qa-profile=', '--api-profile=')) for arg in sys.argv[1:])
+if LINUX_QA_CLI:
+    REPO = SOM_RS.parent
+    CONTRACT = SOM_RS / 'contracts/react-output-v1'
+    retained_evidence = load_pinned_retained(REPO)
+    check_contract = None
+else:
+    import check_contract  # type: ignore[import-not-found]  # noqa: E402
+    from common import CONTRACT, REPO  # type: ignore[import-not-found]  # noqa: E402
+    import retained_evidence
 
 PYTHON = str(SOM_RS / "runtime" / "acceptance-m3-venv" / "bin" / "python")
 FORBIDDEN_PORTS = (8765, 18765)
 NO_PROXY_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 EXPECTED_PRODUCTS = 129
+# Activation remains blocked until the shared receipt verifier is authenticated
+# before import and the live-input evidence and independent audit are reviewed.
+API_BOOTSTRAP_REVIEWED = False
 
 
 def frozen_acceptance_groups(repo: pathlib.Path) -> dict[str, str]:
@@ -105,6 +139,29 @@ def sha(path: pathlib.Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def load_api_recorder(repo: pathlib.Path):
+    """Authenticate the recorder before executing any Linux QA helper."""
+    retained_evidence.need(API_BOOTSTRAP_REVIEWED, 'Linux API bootstrap is not reviewed')
+    authority_rel = 'som-rs/contracts/react-output-v1/linux-api-qa-authority.json'
+    files = retained_evidence.sealed_files(repo)
+    path = retained_evidence.physical_repo_path(repo, authority_rel)
+    raw = retained_evidence.read_physical_bytes(path, 1024 * 1024)
+    retained_evidence.need(files.get(authority_rel) == hashlib.sha256(raw).hexdigest(), 'API authority differs')
+    authority = retained_evidence.parse_json(raw)
+    retained_evidence.need(isinstance(authority, dict) and authority.get('version') == 'som.react-linux-api-authority.v1'
+                           and isinstance(authority.get('source_sha256'), dict), 'API authority format differs')
+    rel = 'som-rs/scripts/react_output_acceptance/record_api.py'
+    path = retained_evidence.physical_repo_path(repo, rel)
+    source = retained_evidence.read_physical_bytes(path, 1024 * 1024)
+    retained_evidence.need(authority['source_sha256'].get(rel) == hashlib.sha256(source).hexdigest(), 'API recorder source differs')
+    retained_evidence.need('record_api' not in sys.modules, 'preloaded API recorder refused')
+    module = types.ModuleType('record_api')
+    module.__file__ = str(path)
+    exec(compile(source, str(path), 'exec'), module.__dict__)
+    sys.modules['record_api'] = module
+    return module
+
+
 def post(base_url: str, route: str, body: bytes) -> tuple[int, bytes]:
     req = urllib.request.Request(base_url.rstrip("/") + route, data=body,
                                  headers={"Content-Type": "application/json"}, method="POST")
@@ -144,15 +201,15 @@ def python_product(base_url: str, entry: dict[str, Any], case_dir: pathlib.Path)
     return None
 
 
-def step(argv: list[str], log: pathlib.Path) -> int:
+def step(argv: list[str], log: pathlib.Path, python: str | None = None) -> int:
     with log.open("w") as out:
-        return subprocess.run([PYTHON, *argv], stdout=out, stderr=subprocess.STDOUT, timeout=3600,
+        return subprocess.run([python or PYTHON, *argv], stdout=out, stderr=subprocess.STDOUT, timeout=3600,
                               check=False).returncode
 
 
-def gate_invocation(argv: list[str], log: pathlib.Path, destination: pathlib.Path) -> dict[str, Any]:
+def gate_invocation(argv: list[str], log: pathlib.Path, destination: pathlib.Path, python: str | None = None) -> dict[str, Any]:
     """Retain the actual direct child invocation; unknown wait cannot pass."""
-    actual = [PYTHON, *argv]
+    actual = [python or PYTHON, *argv]
     cwd = str(pathlib.Path.cwd().resolve())
     outcome, code, failure = "unverified", None, None
     with log.open("w") as output:
@@ -171,6 +228,56 @@ def gate_invocation(argv: list[str], log: pathlib.Path, destination: pathlib.Pat
               "outcome": outcome, "exit_code": code,
               "wait": {"state": "completed" if outcome == "exited" else "unverified", "exit_code": code},
               "log": log.name, "log_sha256": retained_evidence.digest(log), "failure": failure}
+    retained_evidence.write_json(destination, record)
+    return record
+
+
+def api_invocation(argv: list[str], log: pathlib.Path, destination: pathlib.Path, python: str,
+                   timeout: float = 3600, grace: float = 60) -> dict[str, Any]:
+    actual = [python, *argv]
+    cwd = str(pathlib.Path.cwd().resolve())
+    outcome, code, failure = 'unverified', None, None
+    cleanup = None
+    with log.open('w') as output:
+        try:
+            child = subprocess.Popen(actual, cwd=cwd, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
+            try:
+                result = child.wait(timeout=timeout)
+                if type(result) is int:
+                    outcome, code = 'exited', result
+                else:
+                    failure = 'missing-exit-code'
+            except subprocess.TimeoutExpired:
+                # Interrupt only the owned recorder, so its existing finally
+                # blocks can stop its verified Python and PostgreSQL owners.
+                outcome, failure = 'timed-out', 'timeout'
+                try:
+                    child.send_signal(signal.SIGINT)
+                except ProcessLookupError:
+                    pass
+                try:
+                    code = child.wait(timeout=grace)
+                    cleanup = {'method': 'interrupt-recorder', 'recorder_wait': 'completed',
+                               'exit_code': code, 'owned_services': 'requires-raw-proof'}
+                except subprocess.TimeoutExpired:
+                    child.kill()
+                    try:
+                        code = child.wait(timeout=10)
+                        cleanup = {'method': 'interrupt-then-kill-recorder', 'recorder_wait': 'completed',
+                                   'exit_code': code, 'owned_services': 'unverified'}
+                    except subprocess.TimeoutExpired:
+                        cleanup = {'method': 'interrupt-then-kill-recorder', 'recorder_wait': 'unverified',
+                                   'exit_code': None, 'owned_services': 'unverified'}
+        except subprocess.TimeoutExpired:
+            outcome, failure = 'timed-out', 'timeout'
+        except OSError as exc:
+            outcome, failure = 'process-error', type(exc).__name__
+    record = {'version': 'som.react-api-invocation.v1', 'argv': actual, 'cwd': cwd,
+              'outcome': outcome, 'exit_code': code,
+              'wait': {'state': 'completed' if type(code) is int else 'unverified', 'exit_code': code},
+              'log': log.name, 'log_sha256': retained_evidence.digest(log), 'failure': failure}
+    if cleanup is not None:
+        record['timeout_cleanup'] = cleanup
     retained_evidence.write_json(destination, record)
     return record
 
@@ -209,7 +316,8 @@ def gate_argv(product: pathlib.Path, work: pathlib.Path, cache: pathlib.Path,
 
 
 def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: pathlib.Path,
-               api: dict[str, Any], qa: dict[str, Any] | None = None) -> dict[str, Any]:
+               api: dict[str, Any], qa: dict[str, Any] | None = None,
+               api_qa: dict[str, Any] | None = None) -> dict[str, Any]:
     qa_profile = qa["profile_path"] if qa is not None else None
     cid = entry["id"]
     if qa is not None:
@@ -236,7 +344,7 @@ def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: p
         invocation = None
     else:
         invocation = gate_invocation(gate_argv(product, work / "gates", cache, qa_profile),
-                                     work / "gates.log", work / "gates-invocation.json")
+                                     work / "gates.log", work / "gates-invocation.json", str(api_qa['python']))
         codes["gates"] = invocation["exit_code"]
     cache_after = cache_snapshot(cache, work / "cache-after.json")
     if qa_profile is not None:
@@ -261,7 +369,7 @@ def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: p
         retained_evidence.need(isinstance(reported, dict) and all(reported.get(k) == v for k, v in expected_identity.items())
                                and reported.get("recheck_passed") is True and "failure_reason" in reported
                                and reported["failure_reason"] is None, "QA gate profile identity differs")
-        expected_argv = [PYTHON, *gate_argv(product, work / "gates", cache, qa_profile)]
+        expected_argv = [str(api_qa['python']), *gate_argv(product, work / "gates", cache, qa_profile)]
         retained_evidence.need(invocation["argv"] == expected_argv and invocation["cwd"] == str(pathlib.Path.cwd().resolve())
                                and invocation["exit_code"] == codes["gates"] and invocation["wait"]["exit_code"] == codes["gates"], "QA gate invocation differs")
     if codes["gates"] != 0 or gates is None or gates.get("passed") is not True:
@@ -274,8 +382,18 @@ def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: p
     if python_problem is not None:
         problems.append(python_problem)
     else:
-        codes["api_contract"] = step([str(HERE / "record_api.py"), str(python_dir), str(product),
-                                      str(work / "api"), "--raw-out", str(work / "api-raw")], work / "api.log")
+        api_args = [str(HERE / "record_api.py"), str(python_dir), str(product),
+                    str(work / "api"), "--raw-out", str(work / "api-raw")]
+        if api_qa is not None:
+            api_args += ['--api-profile', str(api_qa['context_path']), '--qa-profile', str(qa_profile),
+                         '--full-validation', str(out.parent / 'api-qa-evidence/full-before.json')]
+        if api_qa is None:
+            codes["api_contract"] = step(api_args, work / "api.log")
+        else:
+            api_call = api_invocation(api_args, work / 'api.log', work / 'api-invocation.json', str(api_qa['python']))
+            retained_evidence.need(api_call['outcome'] == 'exited' and api_call['wait']['state'] == 'completed',
+                                   'API recorder wait is unverified')
+            codes["api_contract"] = api_call['exit_code']
         report_path = work / "api" / "report.json"
         report = json.loads(report_path.read_text()) if report_path.is_file() else None
     result = (report or {}).get("result") or {}
@@ -443,24 +561,37 @@ def main() -> int:
     parser.add_argument("--cache", type=pathlib.Path, default=None)
     parser.add_argument("--qa-profile", type=pathlib.Path, default=None,
                         help="Use a sealed Linux QA profile for every product gate.")
+    parser.add_argument("--api-profile", type=pathlib.Path, default=None,
+                        help="Use the sealed live Linux API QA context.")
     parser.add_argument("--only", nargs="*", default=None)
     parser.add_argument("--cleanup-runtime", action="store_true",
                         help="Remove only each completed case's node_modules and verified stopped PostgreSQL data")
     args = parser.parse_args()
     qa = None
+    api_qa = api_context_module = None
     qa_out = None
     if args.qa_profile is not None:
-        if args.cache is not None:
-            parser.error("--cache cannot override the Linux QA profile")
+        if args.cache is not None or args.api_profile is None:
+            parser.error("Linux QA requires --api-profile and forbids --cache")
         try:
             qa_out = retained_evidence.physical_repo_path(REPO, args.out)
             linux_qa_profile = retained_evidence.sealed_profile_helper(REPO)
             qa = linux_qa_profile.validate_profile(args.qa_profile)
             cache = qa["cache"]
+            recorder = load_api_recorder(REPO)
+            api_context_module, _, _ = recorder.load_linux_sources(REPO, bound_retained=retained_evidence)
+            api_qa = api_context_module.validate(args.api_profile, REPO, bound_node_module=linux_qa_profile)
+            retained_evidence.need(api_qa['node_profile_path'] == qa['profile_path']
+                                   and api_qa['profile_sha256'] == qa['profile_sha256']
+                                   and str(api_qa['node']) == str(qa['node'])
+                                   and str(api_qa['npm_cli']) == str(qa['npm_cli'])
+                                   and pathlib.Path(api_qa['cache']) == qa['cache'], 'API and gate QA identities differ')
         except (ImportError, OSError, ValueError, KeyError, TypeError) as exc:
             print(f"refused: Linux QA profile: {exc}", file=sys.stderr)
             return 2
     else:
+        if args.api_profile is not None:
+            parser.error('--api-profile requires --qa-profile')
         cache = args.cache if args.cache is not None else REPO / toolchain["vendored_cache"]["path"]
     port = urllib.parse.urlsplit(args.url).port
     if port in FORBIDDEN_PORTS:
@@ -499,7 +630,9 @@ def main() -> int:
         if qa is None:
             row = check_case(args.url, entry, out, cache.resolve(), api)
         else:
-            row = check_case(args.url, entry, out, cache.resolve(), api, qa)
+            api_context_module.recheck_case(api_qa)
+            row = check_case(args.url, entry, out, cache.resolve(), api, qa, api_qa)
+            api_context_module.recheck_case(api_qa)
         if args.cleanup_runtime:
             try:
                 cleanup = cleanup_case_runtime(out, entry["id"])

@@ -27,7 +27,20 @@ def product_files(root: pathlib.Path) -> dict[str, str]:
 
 
 def main() -> int:
-    case, react, work = (pathlib.Path(arg).resolve() for arg in sys.argv[1:4])
+    args = sys.argv[1:]
+    case, react, work = (pathlib.Path(arg).resolve() for arg in args[:3])
+    if len(args) == 4 and args[3] == "--linux-qa":
+        # Only the source-bound recorder may install this authenticated module.
+        adapter = sys.modules.get("linux_api_host")
+        qa = getattr(adapter, "ADMITTED_CONTEXT", None)
+        if adapter is None or not isinstance(qa, dict):
+            raise ValueError("Linux QA context was not admitted")
+        with adapter.configured_host(ts_host, qa):
+            return run_case(case, react, work, str(qa["python"]))
+    return run_case(case, react, work, PYTHON)
+
+
+def run_case(case: pathlib.Path, react: pathlib.Path, work: pathlib.Path, python: str) -> int:
     work.mkdir(parents=True, exist_ok=False)
     prompt = json.loads((case / "prompt.json").read_text())
     files = product_files(case / "product")
@@ -37,7 +50,7 @@ def main() -> int:
     try:
         with ts_host.pg_cluster(work, ports.take(), tracker) as pg:
             db = ts_host.base_hosts.products.fresh_database(pg, "api_contract")
-            with ts_host.python_product(work, "python", prompt, files, db, ports.take(), PYTHON, tracker) as url:
+            with ts_host.python_product(work, "python", prompt, files, db, ports.take(), python, tracker) as url:
                 done = subprocess.run(
                     [ts_host.NODE_BIN, str(HERE / "api_contract.mjs"), str(react), url, str(case / "prompt.json")],
                     capture_output=True,

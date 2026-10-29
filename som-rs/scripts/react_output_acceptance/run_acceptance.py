@@ -24,18 +24,47 @@ import json
 import os
 import pathlib
 import re
+import stat
 import subprocess
 import sys
 import time
+import types
 import urllib.error
 import urllib.parse
 import urllib.request
 from typing import Any
-import retained_evidence
 
 HERE = pathlib.Path(__file__).resolve().parent
 SOM_RS = HERE.parents[1]
 REPO = SOM_RS.parent
+
+def load_pinned_retained(repo: pathlib.Path):
+    path = repo / 'som-rs/scripts/react_output_acceptance/retained_evidence.py'
+    if (not repo.is_absolute() or repo.resolve() != repo or any(part.is_symlink() for part in (path, *path.parents))
+            or 'retained_evidence' in sys.modules):
+        raise ValueError('retained verifier path or preload differs')
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    try:
+        info = os.fstat(fd)
+        if not stat.S_ISREG(info.st_mode) or info.st_size > 2 * 1024 * 1024:
+            raise ValueError('retained verifier source differs')
+        with os.fdopen(fd, 'rb', closefd=False) as stream:
+            raw = stream.read(2 * 1024 * 1024 + 1)
+    finally:
+        os.close(fd)
+    if len(raw) > 2 * 1024 * 1024 or hashlib.sha256(raw).hexdigest() != '7ec396988cc2e9704c228c05cb3a7cd7a51c87d0fc6ea26c1ffa1455209d75bc':
+        raise ValueError('retained verifier source differs')
+    module = types.ModuleType('retained_evidence')
+    module.__file__ = str(path)
+    exec(compile(raw, str(path), 'exec', dont_inherit=True), module.__dict__)
+    sys.modules['retained_evidence'] = module
+    return module
+
+LINUX_QA_CLI = any(arg in ('--qa-profile', '--api-profile') or arg.startswith(('--qa-profile=', '--api-profile=')) for arg in sys.argv[1:])
+if LINUX_QA_CLI:
+    retained_evidence = load_pinned_retained(REPO)
+else:
+    import retained_evidence
 
 DEFAULT_BASELINE = "http://127.0.0.1:18960"
 DEFAULT_8765_URL = "http://127.0.0.1:8765"
@@ -54,6 +83,7 @@ CLEAN_TREE_PATHS = (
 AMENDMENT_STATUS_SEALED = "amendment_sealed_after_independent_review"
 AMENDMENT_FILENAME_RE = re.compile(r"^react-output-contract-amendment-(\d+)\.json$")
 CONTRACT_SUMMARY_RE = re.compile(r"(?m)^(\d+)\s+passed,\s+(\d+)\s+failed\s*$")
+API_BOOTSTRAP_REVIEWED = False
 
 NO_PROXY_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
@@ -360,6 +390,7 @@ def build_steps(
     rust_baseline_run: str | None = None,
     record_raw_http: bool = False,
     qa_profile: str | None = None,
+    api_profile: str | None = None,
 ) -> list[dict[str, Any]]:
     """Construct the 12 ordered step definitions."""
     som_binary = str(candidate_dir / "som")
@@ -553,6 +584,7 @@ def build_steps(
                 str(out_dir / "products"),
                 *(["--cleanup-runtime"] if cleanup_products_runtime else []),
                 *(["--qa-profile", qa_profile] if qa_profile is not None else []),
+                *(["--api-profile", api_profile] if api_profile is not None else []),
             ],
             "report": out_dir / "products" / "report.json",
             "kind": "report",
@@ -928,6 +960,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                         help="Retain every baseline and Python control HTTP exchange for independent acceptance.")
     parser.add_argument("--qa-profile", type=pathlib.Path, default=None,
                         help="Optional sealed Linux React QA profile for every product gate.")
+    parser.add_argument("--api-profile", type=pathlib.Path, default=None,
+                        help="Optional sealed live Linux API QA context.")
     return parser.parse_args(argv)
 
 
@@ -951,6 +985,28 @@ def validate_qa_profile(path: pathlib.Path, repo: pathlib.Path) -> dict[str, str
     return before
 
 
+def load_api_recorder(repo: pathlib.Path):
+    retained_evidence.need(API_BOOTSTRAP_REVIEWED, 'Linux API bootstrap is not reviewed')
+    authority_rel = 'som-rs/contracts/react-output-v1/linux-api-qa-authority.json'
+    files = retained_evidence.sealed_files(repo)
+    path = retained_evidence.physical_repo_path(repo, authority_rel)
+    raw = retained_evidence.read_physical_bytes(path, 1024 * 1024)
+    retained_evidence.need(files.get(authority_rel) == hashlib.sha256(raw).hexdigest(), 'API authority differs')
+    authority = retained_evidence.parse_json(raw)
+    retained_evidence.need(isinstance(authority, dict) and authority.get('version') == 'som.react-linux-api-authority.v1'
+                           and isinstance(authority.get('source_sha256'), dict), 'API authority format differs')
+    rel = 'som-rs/scripts/react_output_acceptance/record_api.py'
+    path = retained_evidence.physical_repo_path(repo, rel)
+    source = retained_evidence.read_physical_bytes(path, 1024 * 1024)
+    retained_evidence.need(authority['source_sha256'].get(rel) == hashlib.sha256(source).hexdigest(), 'API recorder differs')
+    retained_evidence.need('record_api' not in sys.modules, 'preloaded API recorder refused')
+    module = types.ModuleType('record_api')
+    module.__file__ = str(path)
+    exec(compile(source, str(path), 'exec'), module.__dict__)
+    sys.modules['record_api'] = module
+    return module
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     repo = REPO
@@ -969,9 +1025,23 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     try:
+        if (args.qa_profile is None) != (args.api_profile is None):
+            raise ValueError('Linux QA requires both --qa-profile and --api-profile')
+        if args.qa_profile is not None and not LINUX_QA_CLI:
+            raise ValueError('Linux QA must use the pinned CLI bootstrap')
         if args.qa_profile is not None:
             out_dir = retained_evidence.physical_repo_path(repo, args.out)
         qa_before = validate_qa_profile(args.qa_profile, repo) if args.qa_profile is not None else None
+        api_context = api_module = None
+        if qa_before is not None:
+            recorder = load_api_recorder(repo)
+            api_module, _, api_evidence_module = recorder.load_linux_sources(repo, bound_retained=retained_evidence)
+            api_context = api_module.validate(args.api_profile, repo, bound_node_module=sys.modules['linux_qa_profile'])
+            retained_evidence.need(api_context['node_profile_path'] == args.qa_profile
+                                   and api_context['profile_sha256'] == qa_before['sha256'], 'API QA profile differs')
+            if args.python is not None:
+                retained_evidence.need(python_path == pathlib.Path(api_context['python']), 'QA Python override differs')
+            python_path = pathlib.Path(api_context['python'])
         (
             build_doc,
             runtime_doc,
@@ -988,6 +1058,15 @@ def main(argv: list[str] | None = None) -> int:
     out_dir.mkdir(parents=True, exist_ok=False)
     (out_dir / "logs").mkdir(parents=True, exist_ok=False)
     (out_dir / "receipts").mkdir(parents=True, exist_ok=False)
+    if api_context is not None:
+        api_evidence_root = out_dir / 'api-qa-evidence'
+        api_evidence_root.mkdir()
+        write_json(api_evidence_root / 'full-before.json', api_module.full_record(api_context))
+        try:
+            api_evidence_state, api_evidence_runtime = api_evidence_module.begin(api_evidence_root, api_context, api_module)
+        except (OSError, ValueError, KeyError, TypeError) as err:
+            print(f'refused: retained API evidence: {err}', file=sys.stderr)
+            return 2
     qa_evidence_root = out_dir / "qa-profile-evidence"
     qa_evidence_state = qa_evidence_runtime = qa_evidence_module = None
     if qa_before is not None:
@@ -1072,6 +1151,7 @@ def main(argv: list[str] | None = None) -> int:
         rust_baseline_run=rust_baseline_run_arg,
         record_raw_http=args.record_raw_http,
         qa_profile=qa_before["path"] if qa_before is not None else None,
+        api_profile=str(args.api_profile) if api_context is not None else None,
     )
 
     receipts: list[dict[str, Any]] = []
@@ -1099,6 +1179,31 @@ def main(argv: list[str] | None = None) -> int:
         protected_default=args.protected_default,
     )
     if qa_before is not None:
+        api_after_path = api_evidence_root / 'full-after.json'
+        try:
+            api_module.recheck(api_context)
+            write_json(api_after_path, api_module.full_record(api_context))
+            api_recheck = retained_evidence.same_value(retained_evidence.read_json(api_evidence_root / 'full-before.json'),
+                                                      retained_evidence.read_json(api_after_path))
+        except (OSError, ValueError, KeyError, TypeError):
+            api_recheck = False
+        try:
+            retained_api = api_evidence_module.finish(api_evidence_root, api_context, api_module,
+                                                       api_evidence_state, api_evidence_runtime)
+        except (OSError, ValueError, KeyError, TypeError):
+            retained_api = False
+        retained_path = api_evidence_root / 'retained.json'
+        final_identity['api_qa_profile'] = {'sha256': api_context['context_sha256'], 'recheck_passed': api_recheck,
+                                             'before': 'api-qa-evidence/full-before.json',
+                                             'before_sha256': sha_file(api_evidence_root / 'full-before.json'),
+                                             'after': 'api-qa-evidence/full-after.json' if api_after_path.is_file() else None,
+                                             'after_sha256': sha_file(api_after_path) if api_after_path.is_file() else None,
+                                             'retained': 'api-qa-evidence/retained.json' if retained_path.is_file() else None,
+                                             'retained_sha256': sha_file(retained_path) if retained_path.is_file() else None,
+                                             'retained_passed': retained_api}
+        if not api_recheck or not retained_api:
+            final_identity['problems'].append('API QA context missing or changed during acceptance')
+            final_identity['passed'] = False
         try:
             qa_after = qa_profile_snapshot(args.qa_profile)
         except (OSError, ValueError):
@@ -1170,6 +1275,8 @@ def main(argv: list[str] | None = None) -> int:
         "legacy_run": legacy_run_arg,
         "record_raw_http": args.record_raw_http,
         **({"qa_profile": qa_before} if qa_before is not None else {}),
+        **({'api_qa_profile': {'path': str(args.api_profile), 'sha256': api_context['context_sha256']}}
+           if api_context is not None else {}),
         **({"rust_baseline_run": rust_baseline_run_arg} if rust_baseline_run_arg is not None else {}),
         "python": python_arg,
         "contract_receipt": contract_receipt_arg,
