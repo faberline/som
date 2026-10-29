@@ -1,0 +1,41 @@
+name: M6 React collector retained evidence fixtures (not acceptance)
+on:
+  push:
+    branches:
+      - codex/m6-react-collector-evidence-20261029
+permissions:
+  contents: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bind reviewed fixture source
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          for entry in \
+            'som-rs/scripts/react_output_acceptance/check_products.py 625a2254a859ae3b7b58fc61a7fa11bf086a702dcacf3672a1db4f8a11077170' \
+            'som-rs/scripts/react_output_acceptance/run_acceptance.py 4647a93366c5a39a53b5ded3068974b438552ac1eb0240fa7eef750f555d2ca7' \
+            'som-rs/scripts/react_output_acceptance/retained_evidence.py af0d161e85be6b6149999fdc17dc8c245b6574dad83be67386a1a03c3a747560' \
+            'som-rs/scripts/react_output_acceptance/test_profile_propagation.py fe09f9c80d1961d5122550496cd3c0f6620ac9911c63a1af32aaa57d21661ddc' \
+            'som-rs/scripts/react_output_acceptance/test_retained_evidence.py 725f2203077a0d02a5ff9cb6674490b847b8f879473084c3c09878795a12681a' \
+            'som-rs/tests/react-output-v1/run_gates.py 76edbfff0662bdb666d09580a84eb4eebd5b604f01cff37258cbf3462f3022aa' \
+            'som-rs/tests/react-output-v1/linux_qa_profile.py f390a135b224cbec0f387eb4fdb0f4b4877a61ed320f52485a87e656d90db5e2' \
+            'som-rs/tests/react-output-v1/common.py 56c7318db6cbd85e27e6ac3c168de3cb9591e9c66cdb751b7d039ce3c8e3da73' \
+            'som-rs/tests/react-output-v1/react_profile.py 4fb08644d4766ecc2733cb72ab620471cfe760ce6696f18090f9f8581b484c66' \
+            'som-rs/tests/react-output-v1/tree_sha.py b047ae9ac44eb76df4a33cabc0ae20fb8258480069b17be0825c83921dfefc3c' \
+            'som-rs/tests/rust-output-v1/build_negative_cases.py 6c0d9313452a8e44f93b981babadf3b7ab433a96d3d9020e56f1004a62f7c7c7' \
+            'som-rs/tests/rust-output-v1/rust_profile.py 62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513'; do
+            set -- $entry
+            test "$(sha256sum "$1" | cut -d ' ' -f 1)" = "$2"
+            test "$(git show "$GITHUB_SHA:$1" | sha256sum | cut -d ' ' -f 1)" = "$2"
+          done
+      - name: Test retained evidence and complete profile propagation
+        working-directory: som-rs/scripts/react_output_acceptance
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest -v test_profile_propagation test_retained_evidence

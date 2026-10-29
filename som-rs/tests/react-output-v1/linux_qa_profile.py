@@ -131,6 +131,8 @@ def recheck(qa: dict) -> None:
     for item in (Path(qa['node']), qa['npm_root'], qa['cache'], qa['profile_path']):
         need(not item.is_symlink() and item.resolve() == item, 'QA path changed or linked')
     need(file_sha(qa['profile_path']) == qa['profile_sha256'], 'QA profile changed')
-    need(file_sha(Path(qa['node'])) == NODE_SHA256, 'QA node changed')
+    node = Path(qa['node'])
+    need(file_sha(node) == NODE_SHA256 and stat.S_IMODE(node.stat().st_mode) & 0o111 != 0
+         and os.access(node, os.X_OK), 'QA node changed or is not executable')
     need(safe_tree(qa['npm_root'], False) == NPM_TREE, 'QA npm changed')
     need(safe_tree(qa['cache'], True) == CACHE_TREE, 'QA cache changed')

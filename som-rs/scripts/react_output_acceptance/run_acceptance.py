@@ -31,6 +31,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from typing import Any
+import retained_evidence
 
 HERE = pathlib.Path(__file__).resolve().parent
 SOM_RS = HERE.parents[1]
@@ -942,10 +943,7 @@ def qa_profile_snapshot(path: pathlib.Path) -> dict[str, str]:
 def validate_qa_profile(path: pathlib.Path, repo: pathlib.Path) -> dict[str, str]:
     """Require the same sealed profile accepted by each product gate."""
     before = qa_profile_snapshot(path)
-    tests = str(repo / "som-rs/tests/react-output-v1")
-    if tests not in sys.path:
-        sys.path.insert(0, tests)
-    import linux_qa_profile  # type: ignore[import-not-found]
+    linux_qa_profile = retained_evidence.sealed_profile_helper(repo)
     admitted = linux_qa_profile.validate_profile(path)
     if (not isinstance(admitted, dict) or admitted.get("profile_path") != path or admitted.get("profile_sha256") != before["sha256"]
             or qa_profile_snapshot(path) != before):
@@ -971,6 +969,8 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     try:
+        if args.qa_profile is not None:
+            out_dir = retained_evidence.physical_repo_path(repo, args.out)
         qa_before = validate_qa_profile(args.qa_profile, repo) if args.qa_profile is not None else None
         (
             build_doc,
@@ -988,6 +988,22 @@ def main(argv: list[str] | None = None) -> int:
     out_dir.mkdir(parents=True, exist_ok=False)
     (out_dir / "logs").mkdir(parents=True, exist_ok=False)
     (out_dir / "receipts").mkdir(parents=True, exist_ok=False)
+    qa_evidence_root = out_dir / "qa-profile-evidence"
+    qa_evidence_state = qa_evidence_runtime = qa_evidence_module = None
+    if qa_before is not None:
+        try:
+            qa_evidence_module = sys.modules.get("linux_qa_profile")
+            expected_module = repo / "som-rs/tests/react-output-v1/linux_qa_profile.py"
+            if (qa_evidence_module is None or not hasattr(qa_evidence_module, "__file__")
+                    or pathlib.Path(qa_evidence_module.__file__).resolve() != expected_module.resolve()):
+                raise ValueError("QA helper source path differs")
+            qa_evidence_state, qa_evidence_runtime = retained_evidence.begin(
+                qa_evidence_root, repo, args.qa_profile, qa_evidence_module)
+            if qa_evidence_state["profile"]["before"]["sha256"] != qa_before["sha256"]:
+                raise ValueError("retained QA profile differs")
+        except (OSError, ValueError, KeyError, TypeError) as err:
+            print(f"refused: retained QA evidence: {err}", file=sys.stderr)
+            return 2
 
     latest_receipt_path = find_latest_contract_receipt(repo)
     contract_receipt_arg = format_repo_arg(latest_receipt_path, repo)
@@ -1091,6 +1107,14 @@ def main(argv: list[str] | None = None) -> int:
         final_identity["qa_profile"] = {"before": qa_before, "after": qa_after, "unchanged": unchanged}
         if not unchanged:
             final_identity["problems"].append("QA profile missing or changed during acceptance")
+            final_identity["passed"] = False
+        evidence_passed = retained_evidence.finish(qa_evidence_root, repo, args.qa_profile, qa_evidence_module,
+                                                    qa_evidence_state, qa_evidence_runtime)
+        final_identity["qa_profile_evidence"] = {"path": "qa-profile-evidence/identity.json",
+                                                  "sha256": sha_file(qa_evidence_root / "identity.json"),
+                                                  "passed": evidence_passed}
+        if not evidence_passed:
+            final_identity["problems"].append("QA retained evidence missing or changed during acceptance")
             final_identity["passed"] = False
     write_json(identity_path, final_identity)
 
