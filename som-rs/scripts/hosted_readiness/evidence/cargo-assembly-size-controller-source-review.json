@@ -1,0 +1,22 @@
+{
+  "version": "som.controller-cargo-assembly-size-source-review.v1",
+  "reviewer": "root_controller_independent_of_scratch_author",
+  "patch_sha256": "6b0c84d776b20d19cad3afc7e992505c8810e81f03624463c339628a0ca5b181",
+  "source_sha256": "33aa9cd27e264f763b6d73131467fdddca7635ce2fafcc42d0b3d76644e601ec",
+  "tests_sha256": "1465e935f626e0f1ec2d0d9ab934f8e33556550e1720269caa6c9bc54bbac2f3",
+  "source_verdict": "approved_bounded_source_only",
+  "findings": [],
+  "observations": [
+    "Only the complete assembly receipt gets a distinct64MiB ceiling. Ordinary source blobs and compile receipts retain16MiB.",
+    "The original safe_read regular-file, no-link, single-link and size-before-read rules remain in force.",
+    "The actual e686 manifest has19333107 bytes and2045 observations; its whole hash and candidate source binding remain mandatory.",
+    "New fixture exercises full2045-row metadata above16MiB through the existing real reference map/raw proof checks and asserts exact whole receipt hash.",
+    "New sparse64MiB+1 and symbolic-link fixtures assert refusal before any read.",
+    "No acceptance flags or content comparison scope changed."
+  ],
+  "test_definitions": 29,
+  "github_tests": "unrun",
+  "cargo_closure": "unrun_after_fix",
+  "local_execution": "source AST and saved-data hash audit only; no helper imports, tests, Cargo or project binaries",
+  "product_acceptance_passed": false
+}

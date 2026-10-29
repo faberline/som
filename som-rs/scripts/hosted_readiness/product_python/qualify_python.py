@@ -330,7 +330,8 @@ def main():
             for index, row in enumerate(rows):
                 if row["requirements"] is not None:
                     record = write_environment(environment_root, f"product-{index:04d}", row["requirements"], row["pyproject_bytes"])
-                    record.update({key: row[key] for key in ("cohort", "id", "files_map_sha256")})
+                    record.update(cohort=row["cohort"], product_id=row["id"],
+                                  files_map_sha256=row["files_map_sha256"])
                     report["environments"].append(record)
             report.update(state="complete-product-environment-inputs", environment_input_set_complete=True)
         report["missing_inputs"] += plan["remaining_required_inputs"]

@@ -33,10 +33,15 @@ The `Rust hosted readiness` workflow has these jobs:
   It then checks 1,342 default Python assemblies, six checked Python plans
   and all 697 Rust product file maps. It keeps every complete product directory.
   This unsealed experiment does not pass product acceptance.
-- The runtime qualification job builds pinned PostgreSQL, Python and Redis sources.
+- The optional first-build job builds pinned PostgreSQL, Python and Redis sources.
   It checks pinned MongoDB and uv archive members on Ubuntu 22.04.
   It records the first binary hashes and keeps runtime readiness false.
   It starts no service. Independent review and Python dependencies remain required.
+- The runtime reuse job restores the exact reviewed first-build artifact.
+  It checks every file, internal link, mode, version and source binding again.
+  It then checks all 671 Python environment inputs and their offline wheel closures.
+  The wheel checks keep every original product requirement and project file.
+  They do not run the full product quality or behavior gates.
 - The product readiness job reads source hashes and named inventories.
   It starts no product, service or emulator.
 
@@ -201,6 +206,20 @@ Its saved artifacts passed source, license, version, binary-byte and log checks.
 Artifact upload follows aliases and changes modes. A reuse installer must restore
 only the recorded internal links and modes, then check the tools again on GitHub.
 Services, dependency closure and product behavior remain separate unrun gates.
+
+Run 40744576391 also passed all 2,045 complete assembly observations.
+Its independent saved-byte audit checked 37,535 files and all named product slots.
+The later e686 run passed the same full compile and assembly scope.
+Its Cargo closure stopped before any package download.
+The complete assembly receipt has 19,333,107 bytes, above the old 16 MiB input limit.
+Only this receipt now has a separate 64 MiB bound.
+Its exact source, raw reply, full inventory and file hashes remain required.
+The new boundary fixtures and actual closure still need GitHub execution.
+
+The first-build job now runs only when a manual dispatch selects
+`rebuild_product_runtime`. Its default is false.
+Normal runs use the exact reviewed runtime artifact and check it again on GitHub.
+The artifact has finite retention. It is not a permanent runtime distribution.
 
 The Python environment consumer checks all 671 product slots and both compile variants.
 It requires each exact frozen raw assembly reply and complete saved file map.

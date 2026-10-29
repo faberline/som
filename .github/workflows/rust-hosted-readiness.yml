@@ -28,6 +28,11 @@ on:
       - som-core/scripts/**
       - LICENSE
   workflow_dispatch:
+    inputs:
+      rebuild_product_runtime:
+        description: Rebuild the pinned native product runtime
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -351,6 +356,7 @@ jobs:
 
   product-runtime-source-qualification:
     name: Product runtime first-build qualification (not acceptance)
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.rebuild_product_runtime }}
     needs: fixture-tests
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -532,3 +538,129 @@ jobs:
             ${{ runner.temp }}/som-cargo-closure-run/consumer-roots.json
             ${{ runner.temp }}/som-cargo-closure-run/rustup-install.log
             ${{ runner.temp }}/som-cargo-closure-run/closure
+
+  product-runtime-reuse:
+    name: Audited runtime bytes for later GitHub tests (not product readiness)
+    needs: [fixture-tests, experimental-native-compile]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      actions: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Create the transport control directory and check synthetic fixtures
+        working-directory: ${{ runner.temp }}
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          control="$RUNNER_TEMP/som-runtime-reuse-control"
+          mkdir -m 700 "$control"
+          mkdir -m 700 "$control/tests"
+          printf 'created\n' > "$control/stage.txt"
+          cd "$control/tests"
+          TMPDIR="$control/tests" python3 -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_reuse_runtime.py"
+          TMPDIR="$control/tests" python3 -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_qualify_runtime.py"
+      - name: Download the exact controller-audited artifact from its original run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: "40740849594"
+          artifact-ids: "12840425819"
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/som-runtime-reuse-control/transport
+      - name: Restore and recheck all qualified runtime bytes
+        working-directory: ${{ runner.temp }}/som-runtime-reuse-control
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          SOM_RUNTIME_ACTIONS_TOKEN: ${{ github.token }}
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          python3 -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py" \
+            --repo "$GITHUB_WORKSPACE" \
+            --source-revision "$TESTED_SHA" \
+            --artifact-root "$RUNNER_TEMP/som-runtime-reuse-control/transport" \
+            --out "$RUNNER_TEMP/som-product-runtime-qualification"
+          cat "$RUNNER_TEMP/som-product-runtime-qualification/github.env" >> "$GITHUB_ENV"
+      - name: Preserve reuse receipts and failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: product-runtime-reuse-evidence
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/som-runtime-reuse-control/stage.txt
+            ${{ runner.temp }}/som-product-runtime-qualification/receipt.json
+            ${{ runner.temp }}/som-product-runtime-qualification/artifact-origin.json
+            ${{ runner.temp }}/som-product-runtime-qualification/qualification-evidence
+            ${{ runner.temp }}/som-product-runtime-qualification/licenses
+            ${{ runner.temp }}/som-product-runtime-qualification/logs
+            ${{ runner.temp }}/som-product-runtime-qualification/github.env
+      - name: Download this run's complete owned assembly proof
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: experimental-unsealed-native-compile
+          path: ${{ runner.temp }}/som-wheel-assembly-artifact
+      - name: Bind the assembly artifact to this candidate
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(cat "$RUNNER_TEMP/som-wheel-assembly-artifact/som/som/tested-sha.txt")" = "$TESTED_SHA"
+          test -f "$RUNNER_TEMP/som-wheel-assembly-artifact/_temp/som-unsealed-native-compile/assembly/manifest.json"
+      - name: Run synthetic wheel and process integrity fixtures on GitHub
+        working-directory: ${{ runner.temp }}
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          mkdir -m 700 "$RUNNER_TEMP/som-wheel-producer-tests"
+          TMPDIR="$RUNNER_TEMP/som-wheel-producer-tests" \
+            "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_python/test_produce_wheels.py"
+      - name: Read every frozen product environment input
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_python/qualify_python.py" \
+            --repo "$GITHUB_WORKSPACE" --source-revision "$TESTED_SHA" \
+            --assembly "$RUNNER_TEMP/som-wheel-assembly-artifact/_temp/som-unsealed-native-compile" \
+            --out "$RUNNER_TEMP/som-wheel-environment-inputs"
+      - name: Resolve and stream all named offline environment checks
+        env:
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_python/produce_wheels.py" \
+            --repo "$GITHUB_WORKSPACE" --source-revision "$TESTED_SHA" \
+            --environments "$RUNNER_TEMP/som-wheel-environment-inputs" \
+            --assembly "$RUNNER_TEMP/som-wheel-assembly-artifact/_temp/som-unsealed-native-compile" \
+            --runtime "$RUNNER_TEMP/som-product-runtime-qualification" \
+            --out "$RUNNER_TEMP/som-python-wheel-qualification"
+      - name: Preserve wheel closure, failed environments and all receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: python-wheel-closure-qualification
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/som-wheel-environment-inputs
+            ${{ runner.temp }}/som-python-wheel-qualification/receipt.json
+            ${{ runner.temp }}/som-python-wheel-qualification/probe-installed-metadata.py
+            ${{ runner.temp }}/som-python-wheel-qualification/logs
+            ${{ runner.temp }}/som-python-wheel-qualification/environments
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/receipt.json
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/project
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/requirements.*
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/publisher-metadata
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/wheels
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/wheel-audits

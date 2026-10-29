@@ -1,0 +1,487 @@
+{
+  "actionable_findings": [],
+  "classification": "public_source_and_hash_review_metadata",
+  "limits": [
+    "All22 synthetic tests remain unrun locally. No loader, helper, project import, compiler, native executable, runtime probe, build, service or product gate ran locally.",
+    "The full saved byte audit was not repeated. Its record, qualification, controller audit and corrected job fragment raw hashes are unchanged.",
+    "The first-build artifact remains a finite-retention intermediate input for later GitHub tests. It is not permanent readiness or product acceptance.",
+    "The outer wheel consumer loader is outside this RT source approval. It must execute its bound raw bytes and must not reintroduce a SourceFileLoader/PYC path.",
+    "Actual candidate Git bindings, all22 tests and all41 restored executable checks still require GitHub Ubuntu22.04 x86_64 execution."
+  ],
+  "new_fixture_source_review": [
+    {
+      "line": 123,
+      "meaning": "Builds a malicious timestamp PYC from a same-size padded body. Restores good source with the exact same mtime and size. Checks the header timestamp/size bytes. The stale body raises if executed. The test then requires good support values, actual __file__, __cached__ None and a cache file that still exists. This covers the original loader risk.",
+      "name": "test_bootstrap_ignores_valid_matching_timestamp_cache"
+    },
+    {
+      "line": 135,
+      "meaning": "Patches builtins.compile to fail if reached. A dirty support body must fail at the literal SHA check first.",
+      "name": "test_bootstrap_rejects_dirty_support_before_compile"
+    },
+    {
+      "line": 143,
+      "meaning": "Refuses a source symlink, hardlink and copied path with an invalid fixed suffix before source execution.",
+      "name": "test_bootstrap_rejects_linked_or_copied_support_paths"
+    },
+    {
+      "line": 158,
+      "meaning": "Places an unbound ModuleType at the fixed module name and requires refusal instead of reusing its namespace.",
+      "name": "test_bootstrap_refuses_preloaded_unbound_module"
+    }
+  ],
+  "new_loader_source_review": {
+    "PYC_boundary": "The production helper has no importlib, SourceFileLoader, spec_from_file_location or exec_module path. The only explicit compile/exec pair is in bootstrap_support. No bytecode cache or project-path fallback is read by that loader.",
+    "api_compatibility": {
+      "qualification_data": "raw_qualification, raw_audit, raw_source_pins",
+      "read_inventory": "path, qualification",
+      "state": "Signatures, return schemas, Refusal alias and q.__file__ contract remain unchanged. A wheel consumer can load this helper from its own bound raw bytes once in a fresh process. The outer wheel loader requires its own separate source review; this record does not approve an old SourceFileLoader in that consumer.",
+      "verify_installed_tree": "root, inventory, qualification"
+    },
+    "bytes_to_execution": "The same in-memory raw bytes are SHA256-checked and then passed to compile. Compile inherits no caller future flags. The original support future import therefore governs its own source semantics.",
+    "fresh_namespace": "Preloaded _som_reuse_support is refused. ModuleType creates a new module dictionary. __file__ is the actual fixed support path, __cached__ is None and __package__ is empty. The module is registered before exec and removed if exec fails.",
+    "literal_source_authority": {
+      "constant": "SUPPORT_SHA256",
+      "first_compile_exec_line": 48,
+      "raw_sha256": "f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3",
+      "source_path": "som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py",
+      "validation_line": 40
+    },
+    "mandatory_later_binding": "Normal bind_sources still requires exact full candidate Git HEAD, repository root and regular Git blob identities for helper, support, qualification, audit and source pins before any restored executable runs.",
+    "method": "Read, AST inspection, exact source hashes and unchanged metadata hashes only. No project source was imported or executed.",
+    "patch_apply_check": "passed without repository changes",
+    "path_boundary": "Fixed repository-relative support suffix; no parent traversal; no symlink file or parent; directory parents only; regular support file with link count1 and at most8MiB. Opened file is checked again and read with a bound.",
+    "support_closure": "The exact pinned support source imports standard-library modules only. Its main guard is false under the registered support module name.",
+    "test_subject_loader": "The test subject is now also compiled directly from read source bytes into a registered ModuleType, with __file__ and __cached__ assigned. It does not use a source/PYC loader."
+  },
+  "next_step": "Use only the exact revised RT helper and tests in this review. Run all22 definitions and the corrected artifact reuse job on GitHub. Keep the old source approval superseded and readiness/acceptance false.",
+  "primary_references": [
+    {
+      "git_blob_oid": "7fc4fb55c7d0c7b198b1c7466e1efd7c7d05fb26",
+      "url": "https://github.com/actions/download-artifact/blob/d3f86a106a0bac45b974a628896c90dbdf5c8093/action.yml",
+      "verified": "Pinned action supports artifact-ids, repository, run-id, github-token and merge-multiple. A token is required for another run."
+    },
+    {
+      "git_blob_oid": "5cc6b1704fb5ef0d4487ed63d910d4f8a9f2fbd2",
+      "url": "https://github.com/actions/download-artifact/blob/d3f86a106a0bac45b974a628896c90dbdf5c8093/src/download-artifact.ts",
+      "verified": "The fixed fragment now puts this single exact artifact directly at the expected transport root."
+    },
+    {
+      "url": "https://docs.github.com/en/rest/actions/artifacts?apiVersion=2026-03-10#get-an-artifact",
+      "verified": "Artifact endpoint supports the checked digest/workflow-run fields and Actions read permission; the fragment grants Actions read."
+    }
+  ],
+  "product_acceptance_passed": false,
+  "product_runtime_ready": false,
+  "resolved_findings": [
+    {
+      "description": "At the pinned action revision, artifact-ids does not set isSingleArtifactDownload. Without merge-multiple:true, extracted files go into a named artifact subdirectory and the helper cannot find receipt.json at the configured root.",
+      "file": "GitHub runtime reuse job fragment",
+      "fix": "Root added merge-multiple:true for the single exact artifact ID.",
+      "fixed_raw_sha256": "3604121b60b0f9450f48ce1046aeff0ebcae3c439799b73aa2a5b91f8fa8fdb0",
+      "original_raw_sha256": "247bf96600958ff9496b69bb4b50804c11ee8694b1211d86ca41fc2db57d3c9c",
+      "primary_git_blob_oid": "5cc6b1704fb5ef0d4487ed63d910d4f8a9f2fbd2",
+      "primary_source": "https://github.com/actions/download-artifact/blob/d3f86a106a0bac45b974a628896c90dbdf5c8093/src/download-artifact.ts",
+      "priority": "P1",
+      "state": "source fix reviewed; GitHub execution still unrun"
+    },
+    {
+      "description": "Checked source bytes must be the bytes executed for nested support loading. A valid stale PYC must have no effect.",
+      "file": "som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py",
+      "fix": "A fixed literal support SHA is checked before compilation. A fresh registered ModuleType executes compile(raw,fixed_path,exec,dont_inherit=True). File paths and file kind/link/size are checked first. Preloaded module names are refused. No project source-loader or fallback remains.",
+      "new_lines": [
+        23,
+        40,
+        42,
+        44,
+        45,
+        46,
+        48
+      ],
+      "old_line": 20,
+      "priority": "P1",
+      "state": "source fix approved in exact new helper; 22 synthetic tests and GitHub execution remain unrun"
+    }
+  ],
+  "reviewed": {
+    "fixed_job_fragment": {
+      "bytes": 3281,
+      "raw_sha256": "3604121b60b0f9450f48ce1046aeff0ebcae3c439799b73aa2a5b91f8fa8fdb0"
+    },
+    "helper": {
+      "bytes": 30566,
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py",
+      "raw_sha256": "2a92e2df47fb05e76677fbb84e9cbb7f12d07d90eb8019bd816b5fe6b5588598"
+    },
+    "original_controller_audit": {
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json",
+      "raw_sha256": "7a2c04a65866474bd773b9722274c09c36646951fa7848d62e4b20b2cb94e75f"
+    },
+    "patch": {
+      "bytes": 64522,
+      "raw_sha256": "947812228af0eb149fc24f6cb44b78b9b99edff315ec6baae4af046c835ea7e7"
+    },
+    "qualification": {
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json",
+      "raw_sha256": "4aaca5ef284440fd64bd50723619425201417937b4d635bb3c5d2d5835226b68"
+    },
+    "shared_support": {
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py",
+      "raw_sha256": "f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3"
+    },
+    "source_pins": {
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/source-pins.json",
+      "raw_sha256": "a4208c342bc9e923509bc5ba7ce6a9a1adfe3143d55b6215f0a313b4833550b2"
+    },
+    "tests": {
+      "bytes": 21670,
+      "definitions": [
+        {
+          "line": 123,
+          "name": "test_bootstrap_ignores_valid_matching_timestamp_cache"
+        },
+        {
+          "line": 135,
+          "name": "test_bootstrap_rejects_dirty_support_before_compile"
+        },
+        {
+          "line": 143,
+          "name": "test_bootstrap_rejects_linked_or_copied_support_paths"
+        },
+        {
+          "line": 158,
+          "name": "test_bootstrap_refuses_preloaded_unbound_module"
+        },
+        {
+          "line": 166,
+          "name": "test_qualification_uses_exact_audit_and_source_pin_bytes"
+        },
+        {
+          "line": 173,
+          "name": "test_audit_cannot_grant_full_product_readiness"
+        },
+        {
+          "line": 179,
+          "name": "test_inventory_rejects_unknown_modes_and_admitted_aliases"
+        },
+        {
+          "line": 189,
+          "name": "test_unknown_or_escaping_alias_is_refused"
+        },
+        {
+          "line": 197,
+          "name": "test_transport_extra_file_or_empty_directory_is_refused"
+        },
+        {
+          "line": 207,
+          "name": "test_tampered_regular_and_dereferenced_alias_bytes_are_refused"
+        },
+        {
+          "line": 216,
+          "name": "test_transport_symlinks_and_hardlinks_are_refused"
+        },
+        {
+          "line": 227,
+          "name": "test_only_recorded_links_and_modes_are_restored"
+        },
+        {
+          "line": 238,
+          "name": "test_changed_installed_mode_hash_or_link_is_refused"
+        },
+        {
+          "line": 249,
+          "name": "test_source_command_failure_and_wrong_version_log_are_refused"
+        },
+        {
+          "line": 259,
+          "name": "test_mocked_origin_requires_exact_pinned_run_digest_and_source"
+        },
+        {
+          "line": 279,
+          "name": "test_mocked_native_checks_use_only_admitted_paths_and_explicit_python_B"
+        },
+        {
+          "line": 301,
+          "name": "test_bad_qualified_hash_never_reaches_a_native_command"
+        },
+        {
+          "line": 312,
+          "name": "test_copy_rehashes_transport_bytes_and_preserves_original_evidence"
+        },
+        {
+          "line": 319,
+          "name": "test_fixed_git_sources_reject_dirty_qualification"
+        },
+        {
+          "line": 346,
+          "name": "test_copied_installer_path_is_not_source_authority"
+        },
+        {
+          "line": 354,
+          "name": "test_mocked_wrong_version_is_refused"
+        },
+        {
+          "line": 365,
+          "name": "test_json_duplicate_keys_are_refused"
+        }
+      ],
+      "execution": "unrun; GitHub only",
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/test_reuse_runtime.py",
+      "raw_sha256": "00efdba666a1c8057142747f6482b569f56b85e6fe571dfcebbfb1c0decb1c29"
+    }
+  },
+  "supersession": {
+    "reason": "The old nested SourceFileLoader could execute a matching timestamp/size PYC body that differed from the checked support source. Source/Git hashing did not bind those executed bytes.",
+    "saved_data_audit": "The independent 10344-file/41-ELF saved-data audit remains valid and unchanged. Its embedded old source-review input hashes are historical context, not approval of the old loader.",
+    "superseded_review_raw_sha256": "95acd78ee0b31f140e5c78b9ede182b167eb1aafa398e2849e19b31b5b5200e3",
+    "superseded_source_approval": "withdrawn; do not use the v1 review to approve the old loader",
+    "superseded_source_raw_sha256": "cb27682ec9818bac8249cd3ec4f5dd5e5b514707d05a5f861aba47adfe1c8db2"
+  },
+  "unchanged_runtime_source_checks": {
+    "all41_admitted_programs_regular_ELF_with_static_expected_hashes_and_versions": "retained",
+    "complete_transport_files_directories_and_hashes": "retained",
+    "eleven_only_recorded_internal_aliases_and_recorded_755_644_modes": "retained",
+    "exact_live_origin_tuple_and_nonexpired_state_check": "retained",
+    "fixed_environment_without_token_and_owned_process_cleanup": "retained",
+    "fixed_original_python_prefix_and_new_owned_output": "retained",
+    "isolated_python_probe_with_explicit_B_and_full_tree_before_after": "retained",
+    "original_receipts_logs_licenses_preserved_and_postchecked": "retained",
+    "qualification_and_controller_audit_digest_bindings": "retained",
+    "readiness_and_acceptance_flags": "false",
+    "source_binding_before_native_programs": "retained"
+  },
+  "unchanged_saved_data_audit": {
+    "admitted_expected_hash_and_version_pins": {
+      "install/mongodb/bin/mongod": {
+        "sha256": "891300d61048fa5694178eeaf1f7a0077fab35d5b9744fedb7a0a30304a3ec12",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "2c31fc80437273ff8a7ef7352ca69cc304efc5085c298db777f66c5ad2829678"
+      },
+      "install/postgresql/bin/clusterdb": {
+        "sha256": "595f6cddb8cae1db9e33dce5bd46e59740fe01fc6465cb08954d5c91dda91ede",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "5a62fe1249fb649cffaa65e09ce837043e092663067207c96f536890858b548f"
+      },
+      "install/postgresql/bin/createdb": {
+        "sha256": "79f185763511b7a5f43943d50a5c51cb50298123537fc93379886648f4fa0f5b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "3d0498178bef973d2730d87ec3aac8ea1e899f442d3f6638fbee8e5ee5f22dae"
+      },
+      "install/postgresql/bin/createuser": {
+        "sha256": "902665f8ba233b93357a1aa32415a9f5a219e8dee36d3664462424f015f73cbb",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "ae612489643655bdddddd5fddedd6d80cef0c2eadcc8c0f1024d1c1482c6f8aa"
+      },
+      "install/postgresql/bin/dropdb": {
+        "sha256": "3ce8369178589a819b7c607ab2c1f3840f5f825970f380905d72beac768385c9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "bbbc0cc5a7144a57026b8c118d92a4701895fa7f4fc8aeebe726d5bb52d41c2b"
+      },
+      "install/postgresql/bin/dropuser": {
+        "sha256": "e37d8c24b643038476f0b3e8f748fa906d3ca39681bfff48851604a57e61a2d3",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "bb681ecf856878e8e4735b98ca9720b89e92661d95c6e77425481f240fb8431b"
+      },
+      "install/postgresql/bin/ecpg": {
+        "sha256": "1a1863ad887b5fa964fd9fee611a5994db959dd31a8bbacef5305373f71a5aa5",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "961510744d858c5aa94ff2ea51e5a988610501f08112f2651c99c030e922195c"
+      },
+      "install/postgresql/bin/initdb": {
+        "sha256": "5df35cf4eea4c56039d42226ca564921069fdd422136cba8ab9aab2a7676488b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "d9a211f295d97dd2ba88ee7b45fef4d562f0affd512d326702b57215f736960d"
+      },
+      "install/postgresql/bin/pg_amcheck": {
+        "sha256": "4c5e8b6adf78f6094c520e3c5bf218d5ecd7a7de7dc323d82f74c4f85a7c48eb",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "5c753197e9ddbd2cc3d43f3e1471b5288ecee6467fb7ed4b6c34c99c0507922f"
+      },
+      "install/postgresql/bin/pg_archivecleanup": {
+        "sha256": "3195fa94cf1bfed46c7669990bb6ef4bc6b579a7cc0296b0c9661c25b670c4cf",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "51ecae1fa0fce540275c14036f9b1578ff50540f9e17a1f6d1f13b874bcb5e20"
+      },
+      "install/postgresql/bin/pg_basebackup": {
+        "sha256": "8e0addc11ebc12cac331b867de69847c425a33a3dd76b410f2f9b9ffd5f497fe",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "8e136ce1512241505f70bdf19ee40cb5c05a4a68057414e5592e8b802eda6891"
+      },
+      "install/postgresql/bin/pg_checksums": {
+        "sha256": "03ab78239e07c83ef8b72277bdf12c1ef986c69c681440d80c41093693b7e6ab",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "950033714d574ad35384de0a7fd85675e9d036caeccf28728e739fb63c51ec95"
+      },
+      "install/postgresql/bin/pg_combinebackup": {
+        "sha256": "f12ce4a324d213ed85e3cee08a176e188404f898883ff5535b714efb541c664e",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "9e9fdaa430d614ae1785c453b5ffebbb6c5d300c3a2207b4280986ce8418b406"
+      },
+      "install/postgresql/bin/pg_config": {
+        "sha256": "2f5a4c5a6f436fb483c0f453bbedb91e8599783f40f439ebc418780b12aa2163",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "47b51e33d2407fd8600e8e018e7dcfc6f432e9192bcae96fe5243570807f4f4e"
+      },
+      "install/postgresql/bin/pg_controldata": {
+        "sha256": "30b99a011094c5f1d2e4077acad77fdbba036d5bfbd96bd8453427d5bf1f567a",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "6f8603f06773bbf9378e45bdc86ef522a8d789cbe7ac6f605f368794272d03f4"
+      },
+      "install/postgresql/bin/pg_createsubscriber": {
+        "sha256": "9f53eaac1b157f754422c3929d2a3c4ee997e8675cbdbe71e16c27c8ad121511",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "251f669101b59493ff0a08d15a5cd67b5bb3441b7b43bc7c7a5140b6b0d44a09"
+      },
+      "install/postgresql/bin/pg_ctl": {
+        "sha256": "a01762e05cc3a354178abead32cce2c72e8f15d5598320d601b9bf767915ad7f",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "b7703f234c71e919c283fd6847ca12dbf93f239c66b3bc46db9577806d229c17"
+      },
+      "install/postgresql/bin/pg_dump": {
+        "sha256": "3de8793cbab81955b3e20744be6a08b0f040895ceff41ec66e293188fecfd191",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "d9b7d06d804bc123949179855f2f922a0035858a396b12eddb2640954394f6e1"
+      },
+      "install/postgresql/bin/pg_dumpall": {
+        "sha256": "e86390c54d904c3a53192cacf600b7e8cb71d33b43a395bc6f97b10369971de2",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "593b4a4faa26e2e5deb7d59cc717d28dc6f30443e161378d7af99225c7d46473"
+      },
+      "install/postgresql/bin/pg_isready": {
+        "sha256": "a88692675d42a118349b814a9952e599ca0217d7342f7c16f9743d1181846d74",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "e2ddd840820959aa1c69a4729c9289c494e9ee549ef3398b7969b037b96f78dd"
+      },
+      "install/postgresql/bin/pg_receivewal": {
+        "sha256": "de3fd893e7b6e2e0e1563eb7e3d1a2f1a3121cc7bf019b68ce759c90eb72b81f",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "e6c7a4bbc2f82c3278ed76d4dd86c6061c11c64978da2546c97f6d261663f000"
+      },
+      "install/postgresql/bin/pg_recvlogical": {
+        "sha256": "0ee0fae63767c3b804fb29bcfb285d4f6971cb161b523185f585b659a9266c7b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "a9e98c13d865f8a1373594e73d189025eb608f5faf110bdfd1803583e96a6091"
+      },
+      "install/postgresql/bin/pg_resetwal": {
+        "sha256": "087634d7dd12d8378a55d672296d818d4e1c5fefe71913844ddb79e4e5839f6b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "40e60782a00a2376c5b5ba962dc34cd9409ac57cddc4ce793515444854079266"
+      },
+      "install/postgresql/bin/pg_restore": {
+        "sha256": "9b35b2b96323173d74c40554fd9d4f2dde5bce7069f6e1193adc00e92db5f86b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "ba4f924aed1fa404d9e4edbc611520316eafef494691da8bf8c9328da41e0a5b"
+      },
+      "install/postgresql/bin/pg_rewind": {
+        "sha256": "f396a2e7f0e616bc68345c92f203874f92fe49027d6b57478a81da93e467ce27",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "ef8bd60e74192e30b1ed5c1267a3eb17e7e7fe531d0ee7ed6b57f56a5aad448b"
+      },
+      "install/postgresql/bin/pg_test_fsync": {
+        "sha256": "3aa53f72461e4664d444c21dd43613640cdc20c2ab9a8b58a259160a5531f70f",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "f336f88cc9514e21f085d21295d7a874b6b01246bfaadf7f203e3f1404149b15"
+      },
+      "install/postgresql/bin/pg_test_timing": {
+        "sha256": "51bb45d825ddb638e2be9ff6cbd4683a6189e6e8d617e9a3bd2849fd65a410ff",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "fb836d2bddde648410d09c908527740aefea35434c828742f2ec4a8d97c449a9"
+      },
+      "install/postgresql/bin/pg_upgrade": {
+        "sha256": "eb33432cefc086a4da322660559a46fb6f57c2f44501561de2db10bc8d5e1194",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "3759216efd5b5011e94cbc5c1e08b90d1d7a22f6ff4e720e29ebd6b97b1813bc"
+      },
+      "install/postgresql/bin/pg_verifybackup": {
+        "sha256": "d6431d032598c3e45373f8ce7d46fa22fc05e231c77cbe6ccb80d02985f20371",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "e661a02db8ee8da55d9b96d9c93fc4c2be84ddbe866b1e40106784b697be40bf"
+      },
+      "install/postgresql/bin/pg_waldump": {
+        "sha256": "3f180395247b58da6f5542dc141f8e4df100dbc9fa0d190b6576e42ecb1dfb65",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "d25fa3e9f28202ac78e94481642c67081b6ba613b2915062b4e08da0f8dfc396"
+      },
+      "install/postgresql/bin/pg_walsummary": {
+        "sha256": "56f93883044807c3abe90b1527a54c2c19946ce2188f39c8963e5ea100f8c263",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "224332b0dc8cfef3a4bf64cf665fa0727525cd41d942095edc3063175a7b1697"
+      },
+      "install/postgresql/bin/pgbench": {
+        "sha256": "4bd0cf7a0ddca4b98f9e708af6f5a3d0876f591b5431a5ac47f4c1bd4a7a1a54",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "b94502219a43f9df8a29cde1f8b964fad2dc9ccc9aaa5f2b7df62c9717b2f782"
+      },
+      "install/postgresql/bin/postgres": {
+        "sha256": "27403a740d2e42528925c5b8264c302ec1f3b0025c76b263dfb398b0a6f6f94b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "8f17d3e6a8befd834f7f3372b69c074ebdb96c4242493a70e55749307313518b"
+      },
+      "install/postgresql/bin/psql": {
+        "sha256": "9d355cff90eb8090deb242d968bf6e6f1b827446229f7830301f333784bb01b4",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "65776b06837f597bbe68ab3d759335166935cd15270e7775ea83e3b272a84bf8"
+      },
+      "install/postgresql/bin/reindexdb": {
+        "sha256": "b7f7e43cf97ac36fd7d7633d0c03c78b7d527aa1cfbdde72a1f8d92f87488df2",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "d04facac446f5820d67acaa469f100fa6d6c340124ee21ef0ea0b302a2ba3e7f"
+      },
+      "install/postgresql/bin/vacuumdb": {
+        "sha256": "415e7b1fa9fb72ff20987770e21f1216ba157e8c6ed3ccbc040e244a973a0f05",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "25a30d8d8edf384a5e14d3cd3a06a42b3f446d2ef94ef999c05af74985dc29f8"
+      },
+      "install/python/bin/python3.12": {
+        "sha256": "8d0f57448252a3a8f8065b889648de2f1ca8959ea3f3fa029a94204bb9325c10",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "8eea2bd52b89a2bd9e3d040b6d16f5164ab656ba74b7f9a1e5c9547a480d2577"
+      },
+      "install/redis/bin/redis-benchmark": {
+        "sha256": "331a58f26d0297fee67921d36f87b681340fa6ded008cc1b76e231b9986dad25",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "581bf8abf52e80080bb900df229ee0e1b4ecbcba7c282f42f9b830007bc3bfd4"
+      },
+      "install/redis/bin/redis-cli": {
+        "sha256": "3c95659940b4f1c32f88cc10345ca0e37303587054ef4c4fd2f6358ceb13a465",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "283c04ab7567a99feae38a7c3dbe8d9509604fb66ee14400c40071e3bb52126d"
+      },
+      "install/redis/bin/redis-server": {
+        "sha256": "9afcdd5bf7088e17e55a7361a7946bccab23a2ecb5d96f46833c65214cde6363",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "3e60e02ed12c2b610027c2e996ab827565f7302ff990686d608615ccb14943ef"
+      },
+      "install/uv/bin/uv": {
+        "sha256": "83f28650272b5543e939debbc7a5578d087952399fd945e9267b1db0ccc27d33",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "version_stdout_sha256": "c4e9d32e7aa66ba9b237c4700455600a833df4d158216d4ce1cb35553be977af"
+      }
+    },
+    "counts": {
+      "admitted_ELF_files": 41,
+      "command_stdout_stderr_logs": 214,
+      "license_files": 13,
+      "original_transport_files": 10344,
+      "recorded_executable_flags": 210,
+      "regular_installed_files": 10102,
+      "source_archive_records": 6,
+      "transport_dereferenced_aliases": 11,
+      "zero_exit_commands": 107
+    },
+    "original_artifact": {
+      "artifact_id": 12840425819,
+      "artifact_sha256": "a7ccf8732ce89e82eaa4d351a4ca096c263f4268c6cd708e447e8652d4ff8167",
+      "expires_at": "2026-11-27T18:06:33Z",
+      "live_api_expired": false,
+      "repository": "faberline/som",
+      "run_id": 40740849594,
+      "source_revision": "bf3a04a0eee05d633b9b68ffe4e7e2885583dcd5"
+    },
+    "raw_sha256": "233a14ba9a77bd3a0ca2042c649d5f917c6e57e5cb6ca6bc37b74ebb273cd24d",
+    "reuse_scope": "saved first-build data only; no inherited old source approval",
+    "version": "som.runtime-reuse-independent-saved-data-audit.v1"
+  },
+  "verdict": "APPROVED_BOUNDED_SOURCE_AND_SAVED_DATA_FOR_GITHUB_REQUALIFICATION",
+  "version": "som.runtime-reuse-independent-source-data-review.v2"
+}
