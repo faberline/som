@@ -142,6 +142,8 @@ class EntryFixture(protocol.Fixture):
 
     def add_role(self,role,path,raw,**kwargs):
         row=super().add_role(role,path,raw,**kwargs)
+        if role=='caller':
+            row['bindings']['__som_native_active_controls__']={'kind':'active-controls'}
         if role!='m6.api.producer':return row
         super().add_role('runtime.context',CONTEXT,CONTEXT_SOURCE,module='_som_m6_entry_fixture_context')
         for role2,path2,body in [('fixture.m6.api',API,API_SOURCE),('fixture.m6.retained',RETAINED,'def sealed_files(repo):return {}\n'),
