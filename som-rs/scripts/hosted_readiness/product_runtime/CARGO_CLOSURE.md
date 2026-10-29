@@ -45,7 +45,9 @@ Cargo writes the directory source and every .cargo-checksum.json.
 The helper does not write an index or replacement checksum metadata.
 It verifies the exact 352 vendor directories, every checksum entry, every actual file,
 and the package checksums against the locks and publisher archives.
-Only Cargo's metadata and patch-backup file omissions are allowed.
+Only Cargo's exact Git metadata and root .cargo-ok omissions are allowed.
+Git metadata includes .git path components and .gitignore or .gitattributes files at any depth.
+Cargo 1.96.1 retains registry .orig and .rej files. Their omission is refused.
 Any changed publisher byte or other omission blocks the closure for independent review.
 This can expose a version-specific Cargo normalization change on the first hosted run.
 
@@ -72,4 +74,4 @@ References:
 - [Cargo vendor](https://doc.rust-lang.org/cargo/commands/cargo-vendor.html)
 - [Directory source checksums](https://doc.rust-lang.org/cargo/reference/source-replacement.html)
 - [Registry archive checksums](https://doc.rust-lang.org/cargo/reference/registry-index.html)
-- [Cargo source-copy rules](https://rust.googlesource.com/cargo/+/f8984e1169dc670fd1c002d68c8c5efee63ff514/src/cargo/ops/vendor.rs)
+- [Cargo 1.96.1 vendor_this rules](https://github.com/rust-lang/cargo/blob/356927216a2d746168cf76e5e88cc3f4b58e029d/src/cargo/ops/vendor.rs)

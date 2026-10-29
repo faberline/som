@@ -8,14 +8,17 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from types import ModuleType
 from unittest.mock import patch
 
 if os.environ.get("GITHUB_ACTIONS") != "true":
     raise RuntimeError("GitHub tests only")
 
-SPEC = importlib.util.spec_from_file_location("qualify_python", Path(__file__).with_name("qualify_python.py"))
-q = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(q)
+SUBJECT = Path(__file__).with_name("qualify_python.py")
+q = ModuleType("qualify_python")
+q.__file__, q.__cached__, q.__package__ = str(SUBJECT), None, ""
+sys.modules[q.__name__] = q
+exec(compile(SUBJECT.read_bytes(), str(SUBJECT), "exec", dont_inherit=True), q.__dict__)
 
 PROJECT = '''[project]
 name = "synthetic_product"
@@ -281,7 +284,8 @@ class EnvironmentTests(unittest.TestCase):
                 "--out", str(out), "--assembly", str(artifact)]
         with patch.dict(os.environ, {"RUNNER_TEMP": str(self.root)}), patch.object(sys, "argv", argv), \
              patch.object(q, "Sources", FakeSources), patch.object(q, "inventory", return_value={}), \
-             patch.object(q, "products", return_value=[product]), patch("builtins.print"), \
+             patch.object(q, "products", return_value=[product]), \
+             patch.object(q, "candidate_admission", return_value={"helper_revision": "1" * 40, "candidate_revision": "1" * 40}), patch("builtins.print"), \
              self.assertRaises(SystemExit) as stopped:
             q.main()
         self.assertEqual(stopped.exception.code, 0)
@@ -290,7 +294,15 @@ class EnvironmentTests(unittest.TestCase):
         self.assertEqual(environment["id"], "product-0000")
         self.assertEqual(environment["product_id"], "PAIR_V1_MINIMAL_CRUD")
         self.assertEqual(environment["venv"], "product-0000/venv")
+        self.assertEqual(receipt["helper_revision"], "1" * 40)
+        self.assertEqual(receipt["candidate_revision"], "1" * 40)
         self.assertTrue((out / "environments/product-0000/pyproject.toml").is_file())
+
+    def test_products_candidate_identity_does_not_follow_helper_revision(self):
+        document, goldens = self.fixture()
+        self.assertEqual(len(q.products(self.root, document, goldens, "1" * 40, "a" * 64, "b" * 64)), 1)
+        with self.assertRaisesRegex(q.Refusal, "assembly identity"):
+            q.products(self.root, document, goldens, "2" * 40, "a" * 64, "b" * 64)
 
     def test_unsafe_paths_and_duplicate_json_keys_refused(self):
         for value in ("../outside", "/outside", "a//b", "a\\b", "a/./b", "a\nb"):

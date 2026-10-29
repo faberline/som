@@ -1,0 +1,810 @@
+{
+  "version": "som.f59-cargo-registry-normalization-independent-saved-byte-audit.v1",
+  "candidate_source": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+  "run_id": 40805208879,
+  "job_id": 123230392135,
+  "failure_artifact_id": 12868069781,
+  "artifact_zip_sha256_github_attested": "b159b4d25178bc0c1cc76ca5448fddb32e2407e4620d7dbe270a91a0f584a002",
+  "receipt_sha256": "cf45824ae08ebaa4026fc27a18339abfbe952145e2f9d0e7b59fa5c7362b1442",
+  "official_archives_equal_complete_frozen_lock_union": 352,
+  "publisher_archive_files_rehashed": 15229,
+  "actual_vendor_files_rehashed_and_checksummed": 15089,
+  "packages_with_metadata_omissions": 128,
+  "metadata_omissions": [
+    {
+      "package": "ahash-0.8.12",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "allocator-api2-0.2.21",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "async-trait-0.1.92",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "atoi-2.0.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "autocfg-1.5.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "autocfg-1.5.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "base64-0.22.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "bitflags-2.13.2",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "bumpalo-3.20.2",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "bumpalo-3.20.3",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "byteorder-1.5.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "cc-1.8.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "cfg-if-1.0.5",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "const-random-0.1.18",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "convert_case-0.10.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "crc-3.4.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "crc-catalog-2.5.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "crc32fast-1.5.2",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "critical-section-1.2.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "crunchy-0.2.4",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "darling-0.24.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "derive-syn-parse-0.2.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "either-1.15.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "either-1.19.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "equivalent-1.0.2",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "equivalent-1.0.3",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "errno-0.3.14",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "etcetera-0.8.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "flume-0.11.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "foldhash-0.1.5",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "foldhash-0.2.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "futures-intrusive-0.5.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "hashbrown-0.15.5",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "hashbrown-0.17.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "hashlink-0.10.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "hex-0.4.3",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "hickory-proto-0.26.3",
+      "paths": [
+        "tests/test-data/.gitattributes"
+      ]
+    },
+    {
+      "package": "http-1.5.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "httparse-1.10.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "httpdate-1.0.3",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "hybrid-array-0.4.15",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "hyper-util-0.1.21",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "iana-time-zone-0.1.65",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "ident_case-1.0.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "idna_adapter-1.2.2",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "indexmap-2.14.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "indexmap-2.14.2",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "ipconfig-0.3.4",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "ipnet-2.12.2",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "itoa-1.0.18",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "jni-sys-0.4.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "lazy_static-1.5.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "lazy_static-1.5.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "libredox-0.1.25",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "libsqlite3-sys-0.30.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "log-0.4.34",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "macro_magic-0.5.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "matchit-0.8.4",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "memchr-2.8.3",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "mime-0.3.17",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "mongocrypt-0.4.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "mongocrypt-sys-0.1.6+1.18.2",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "mongodb-internal-macros-3.9.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "num-bigint-dig-0.8.6",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "num-integer-0.1.46",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "num-integer-0.1.47",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "num-iter-0.1.46",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "num-traits-0.2.19",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "once_cell-1.21.4",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "parking_lot-0.12.5",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "pkg-config-0.3.33",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "pkg-config-0.3.34",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "plain-0.2.3",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "portable-atomic-1.15.0",
+      "paths": [
+        "tests/.gitignore"
+      ]
+    },
+    {
+      "package": "prefix-trie-0.8.4",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "proc-macro2-1.0.107",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "quote-1.0.47",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "r-efi-5.3.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "r-efi-6.0.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "rand_core-0.10.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "redox_syscall-0.5.18",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "redox_syscall-0.9.4",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "resolv-conf-0.7.6",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "rsa-0.9.10",
+      "paths": [
+        ".gitattributes",
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "rustc_version-0.4.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "rustc_version_runtime-0.3.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "rustversion-1.0.22",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "rustversion-1.0.23",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "ryu-1.0.23",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "same-file-1.0.6",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "scopeguard-1.2.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "semver-1.0.28",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "serde_bytes-0.11.19",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "serde_json-1.0.154",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "serde_path_to_error-0.1.20",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "serde_urlencoded-0.7.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "shlex-2.0.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "simd_cesu8-1.2.0",
+      "paths": [
+        ".gitattributes",
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "spin-0.9.9",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "sqlx-0.8.6",
+      "paths": [
+        ".gitattributes",
+        ".gitignore",
+        "examples/.gitignore",
+        "tests/.gitignore",
+        "tests/sqlite/.gitignore"
+      ]
+    },
+    {
+      "package": "stable_deref_trait-1.2.1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "stringprep-0.1.5",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "strsim-0.11.1",
+      "paths": [
+        ".gitattributes",
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "sync_wrapper-1.0.2",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "tagptr-0.2.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "take_mut-0.2.2",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "thiserror-2.0.21",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "tiny-keccak-2.0.2",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "tinyvec-1.13.3",
+      "paths": [
+        ".gitignore",
+        "fuzz/.gitignore"
+      ]
+    },
+    {
+      "package": "tokio-rustls-0.26.6",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "try-lock-0.2.5",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "typed-builder-0.22.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "typenum-1.20.1",
+      "paths": [
+        ".gitattributes",
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "unicode-bidi-0.3.18",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "unicode-ident-1.0.27",
+      "paths": [
+        ".gitattributes",
+        ".gitignore",
+        "tests/fst/.gitignore"
+      ]
+    },
+    {
+      "package": "unicode-normalization-0.1.25",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "unicode-normalization-0.1.26",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "unicode-properties-0.1.4",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "unicode-xid-0.2.6",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "untrusted-0.9.0",
+      "paths": [
+        ".gitattributes",
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "utf8_iter-1.0.4",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "vcpkg-0.2.15",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "version_check-0.9.5",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "walkdir-2.5.0",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "want-0.3.2",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "wasi-0.11.1+wasi-snapshot-preview1",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "winapi-util-0.1.11",
+      "paths": [
+        ".gitignore"
+      ]
+    },
+    {
+      "package": "zmij-1.0.23",
+      "paths": [
+        ".gitignore"
+      ]
+    }
+  ],
+  "changed_publisher_source_files": 0,
+  "unknown_vendor_files": 0,
+  "classification": "Git metadata omissions exactly match actualCargo356927216 vendor_this; .orig/.rej files retained",
+  "primary_source": {
+    "url": "https://github.com/rust-lang/cargo/blob/356927216a2d746168cf76e5e88cc3f4b58e029d/src/cargo/ops/vendor.rs",
+    "git_blob_oid": "76ff4178a961e4acce5208902355609181f1a9ae"
+  },
+  "original_failure_preserved": {
+    "type": "Refusal",
+    "message": "Cargo omitted publisher source files: hickory-proto-0.26.3"
+  },
+  "offline_metadata_commands_after_fix": "unrun",
+  "closure_qualified": false,
+  "product_acceptance_passed": false,
+  "local_execution": "Standalone stdlib archive/file reads and hashes only; no helper imports, Cargo, tests, builds or services"
+}

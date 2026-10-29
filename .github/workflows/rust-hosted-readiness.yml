@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/rust-hosted-readiness.yml
+      - .github/workflows/rust-dependency-preparation.yml
       - som-rs/scripts/hosted_readiness/**
       - '!som-rs/scripts/hosted_readiness/evidence/**'
       - som-rs/Cargo.toml
@@ -29,6 +30,10 @@ on:
       - LICENSE
   workflow_dispatch:
     inputs:
+      dependency_preparation_only:
+        description: Reuse the reviewed candidate for dependency helper iteration only
+        type: boolean
+        default: false
       rebuild_product_runtime:
         description: Rebuild the pinned native product runtime
         type: boolean
@@ -46,7 +51,57 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  candidate-source-guard:
+    name: Select a full candidate or pinned dependency iteration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      run_full_candidate: ${{ steps.select.outputs.run_full_candidate }}
+      candidate_revision: ${{ steps.select.outputs.candidate_revision }}
+      helper_revision: ${{ steps.select.outputs.helper_revision }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Fetch the exact recorded source as Git metadata only
+        run: git fetch --no-tags --depth=1 origin f59e28d910ff4adb16e3becfdc82bd2978ca84fa
+      - name: Classify complete candidate inputs without building
+        id: select
+        env:
+          HELPER_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          EVENT: ${{ github.event_name }}
+          DEPENDENCY_ONLY: ${{ inputs.dependency_preparation_only || false }}
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          mode=""
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            if [ "$DEPENDENCY_ONLY" = "true" ]; then
+              mode="--dependency-only"
+            else
+              mode="--force-full"
+            fi
+          fi
+          python3 -I -S -B som-rs/scripts/hosted_readiness/dependency_candidate.py classify \
+            --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_SHA" $mode
+
+  dependency-preparation:
+    name: Dependency helper iteration with recorded compiler identity
+    needs: [candidate-source-guard, fixture-tests]
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'false'
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/rust-dependency-preparation.yml
+    with:
+      helper_revision: ${{ needs.candidate-source-guard.outputs.helper_revision }}
+
   cargo-tests:
+    needs: candidate-source-guard
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true'
     name: Cargo tests (${{ matrix.package }}, Linux)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -157,8 +212,9 @@ jobs:
           retention-days: 14
 
   public-input-reconstruction:
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true'
     name: Public input reconstruction (partial scope)
-    needs: fixture-tests
+    needs: [fixture-tests, candidate-source-guard]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
@@ -225,7 +281,8 @@ jobs:
 
   experimental-native-compile:
     name: Full Python and Rust compile and assembly (unsealed experiment)
-    needs: [cargo-tests, public-input-reconstruction]
+    needs: [cargo-tests, public-input-reconstruction, candidate-source-guard]
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     env:

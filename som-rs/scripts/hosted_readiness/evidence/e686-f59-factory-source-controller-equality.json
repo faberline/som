@@ -1,0 +1,18 @@
+{
+  "version": "som.controller-e686-f59-listed-factory-source-equality.v1",
+  "proof_sha256": "1b926be4e306caccc670e7dde25497ad501597acbf19cc7ff3ba11eb5722b8de",
+  "before_source": "e686642dce2895dd876e7efa7239913db2d62cf0",
+  "current_source": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+  "all_139_listed_source_pins_byte_equal_at_both_git_revisions_and_working_tree": true,
+  "complete_factory_entry_counts": {
+    "python": 29,
+    "rust": 13,
+    "typescript": 9
+  },
+  "compiler_contract_raw_sha256": "cf0a1727f924fd5b43df976ab8ca98c811d10e39d9ba41b6434f99f57fc65f3e",
+  "scope": "controller independently read/hash-compared every listed139 raw files and Gitblobs; separate reviewer checks factory completeness/formulas",
+  "e686_candidate_identity_preserved": true,
+  "f59_actual_descriptor_or_product_pass_inferred": false,
+  "future_policy_after_descriptor_values_inferred": false,
+  "local_project_or_test_execution": false
+}

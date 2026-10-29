@@ -1,0 +1,45 @@
+{
+  "version": "som.independent-early-raw-helper-loader-source-review.v1",
+  "reviewer": "native_policy_closure",
+  "scope": "Bounded source-only review of root-authored early raw_digest_compat import repair. No repository edits or local helper/project/test/native execution.",
+  "result": "approved_bounded_source_delta_for_GitHub_execution",
+  "source": {
+    "path": "som-rs/scripts/hosted_readiness/experimental_native_compile.py",
+    "sha256": "1c772df746c8a87d84f8635fab55a669a919824a5ce0f650319c8eff8957aaf7",
+    "bytes": 28390
+  },
+  "tests": {
+    "path": "som-rs/scripts/hosted_readiness/test_experimental_native_compile.py",
+    "sha256": "d8290ce893c5bd6a12505afb11887d3234509f23a59029b0cb06652c70cab877",
+    "definitions": 23,
+    "new_meaningful_definitions": 3,
+    "execution": "unrun"
+  },
+  "raw_helper": {
+    "path": "som-rs/scripts/hosted_readiness/raw_digest_compat.py",
+    "sha256": "a025bd99b56dafc4de65c268318f583e117adfe16988d61bb9180cb5e8da0896",
+    "bytes": 8573,
+    "only_stdlib_imports": true,
+    "dataclass_or_project_import": false
+  },
+  "independent_ast_comparison": {
+    "checker_logic_unchanged_except_bootstrap_and_imports": true,
+    "previous_20_fixture_methods_unchanged": true
+  },
+  "observations": [
+    "The fixed path suffix and every source parent refuse links and non-directory parents before source use.",
+    "O_NOFOLLOW and O_NONBLOCK plus fstat refuse links, FIFOs, directories, multi-link files and files above65536 bytes before bounded read.",
+    "Only bytes matching literal independently reviewed a025bd99 SHA compile into a fresh local ModuleType. No sys.path, sys.modules entry, file loader or PYC can supply the executed helper body.",
+    "The reviewed raw helper has only stdlib imports and plain classes/functions. It needs no dataclass module registry. Its __file__, empty package and __cached__None are correct.",
+    "The existing checker later binds the exact raw helper file and complete closure to the declared Git source. Bootstrap does not replace that check.",
+    "The new fixtures construct a valid timestamp+size PYC and poison the external module namespace; verify dirty source refusal before compile; and verify symlink, hardlink and wrong-path refusal.",
+    "No response digest leaf, expected descriptor, payload rule, request scope, HTTP status or product acceptance flag changes."
+  ],
+  "findings": [],
+  "remaining": [
+    "Run all23 fixture tests on GitHub for the new source.",
+    "Bind the entire final full-product helper closure before imports.",
+    "Keep current experimental byte evidence unsealed and separate from product acceptance."
+  ],
+  "product_acceptance_passed": false
+}

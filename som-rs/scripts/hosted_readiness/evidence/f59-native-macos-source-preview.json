@@ -1,0 +1,93 @@
+{
+  "version": "som.current-macos-native-descriptor-source-preview.v1",
+  "host": "aarch64-apple-darwin",
+  "role": "source-derived preview only; no macOS binary/tool execution or observed current acceptance",
+  "current_source_commit": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+  "base_complete_vector_proof_raw_sha256": "1b926be4e306caccc670e7dde25497ad501597acbf19cc7ff3ba11eb5722b8de",
+  "source_pins": {
+    "som-rs/src/compiler.rs": "49c8309e102b1f7c686c8a975ed8b2c81d0133557c0443d8986474ca41cd9f3c",
+    "som-rs/som-targets/src/rust/format.rs": "852d1ff7b7b7a57f7eac564a6d5db248a56ff8e48fe02163aac7fcd960ea1b05",
+    "som-rs/som-targets/src/typescript/format.rs": "b9c9d3025de0263f2010a47d5374869b89a2c752ddc324a3eb99b774df3fbbaf"
+  },
+  "native_hashes": {
+    "ruff": "cb0cdeba051c5c5bdc85c22dc31440ac1ea17651366bf188d4df1f8fe985933a",
+    "rustfmt": "2c56fd066853c80c786a8a3a0e5434b7f808ace8b2cf66ae6e1a13566aa2815f",
+    "node": "70851490e028b3d699a8d6d4e1de909af2a989359ae807974c92af9c6580a8e8",
+    "libnode": "0c2dfacde99b9381ec37fbd222891271c7f455cc0524294928e3e34199d57ec3",
+    "prettier_tree": "f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299"
+  },
+  "formatter_objects": {
+    "python_formatted": {
+      "id": "som.python-quality.v1",
+      "formatter_version": "ruff 0.16.6",
+      "formatter_sha256": "cb0cdeba051c5c5bdc85c22dc31440ac1ea17651366bf188d4df1f8fe985933a",
+      "profile_sha256": "4cac7c6758372d4608895c53f1f427992d86988c85ff348c4eed7882efa762b4"
+    },
+    "typescript": {
+      "node": "70851490e028b3d699a8d6d4e1de909af2a989359ae807974c92af9c6580a8e8",
+      "libnode": "0c2dfacde99b9381ec37fbd222891271c7f455cc0524294928e3e34199d57ec3",
+      "prettier_tree_sha256": "f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299"
+    }
+  },
+  "source_derived_current_after_descriptors": {
+    "python_backend": "92941b7adeb9c7555d4abdfb06d24b4a1bf92c9c1e2617a2a0c4cb5d3e529d0e",
+    "rust_backend": "9c8064cb49c4d9465273b6935a8266ff679f96ef17b1b1c0401065c7671474b1",
+    "typescript_backend": "d65a22b29c259314629df529f256a15e407fb3db9ac7437d1d32beab85a29b79",
+    "python_formatted_formatter": "7c15579b81f82e6283e6afbb5d739e8cfebd26faa4a165cc8f0a1baab1b7d73c",
+    "python_render_only_formatter": "a6a6e62d4ad875f8aec308a0fd9c55e8ac576d8129d57fb935bdfc5bc4529b94",
+    "rust_formatter": "2c56fd066853c80c786a8a3a0e5434b7f808ace8b2cf66ae6e1a13566aa2815f",
+    "typescript_formatter": "636bd4a26884ea92873af81bf4fd5bbc0c065157e645c3919658a4d0bc29c0e8",
+    "rust_target_contract": "090b9060a5b5f24d8e6994072f4e6c8a796110790b119229650cf0e4a52bee3c",
+    "typescript_target_contract": "17ffc6028d66657381464a4d6beaecc1e097f54e421168777e5959cfbdaf063f"
+  },
+  "leaves": {
+    "python_backend": {
+      "before": "581ce38f29702c300342cdefe8fe5f1735cefcd1869d6485b44f30063a866711",
+      "predicted_current_macOS": "92941b7adeb9c7555d4abdfb06d24b4a1bf92c9c1e2617a2a0c4cb5d3e529d0e",
+      "changed": true
+    },
+    "rust_backend": {
+      "before": "bbfa2fa3d35f9534950bea04486017db99b1f26ff44a2211eda08f492050ea1a",
+      "predicted_current_macOS": "9c8064cb49c4d9465273b6935a8266ff679f96ef17b1b1c0401065c7671474b1",
+      "changed": true
+    },
+    "typescript_backend": {
+      "before": "ac93cc3c0f565a17c56e65810fc203000c5d9294d37cbf9ac59f441a86aa6f2e",
+      "predicted_current_macOS": "d65a22b29c259314629df529f256a15e407fb3db9ac7437d1d32beab85a29b79",
+      "changed": true
+    },
+    "python_formatted_formatter": {
+      "before": "7c15579b81f82e6283e6afbb5d739e8cfebd26faa4a165cc8f0a1baab1b7d73c",
+      "predicted_current_macOS": "7c15579b81f82e6283e6afbb5d739e8cfebd26faa4a165cc8f0a1baab1b7d73c",
+      "changed": false
+    },
+    "python_render_only_formatter": {
+      "before": "a6a6e62d4ad875f8aec308a0fd9c55e8ac576d8129d57fb935bdfc5bc4529b94",
+      "predicted_current_macOS": "a6a6e62d4ad875f8aec308a0fd9c55e8ac576d8129d57fb935bdfc5bc4529b94",
+      "changed": false
+    },
+    "rust_formatter": {
+      "before": "2c56fd066853c80c786a8a3a0e5434b7f808ace8b2cf66ae6e1a13566aa2815f",
+      "predicted_current_macOS": "2c56fd066853c80c786a8a3a0e5434b7f808ace8b2cf66ae6e1a13566aa2815f",
+      "changed": false
+    },
+    "typescript_formatter": {
+      "before": "636bd4a26884ea92873af81bf4fd5bbc0c065157e645c3919658a4d0bc29c0e8",
+      "predicted_current_macOS": "636bd4a26884ea92873af81bf4fd5bbc0c065157e645c3919658a4d0bc29c0e8",
+      "changed": false
+    },
+    "rust_target_contract": {
+      "before": "8c25078c84fdec3dea1b4cb15df499d682ccb9b7286d957598f2076e3a685d51",
+      "predicted_current_macOS": "090b9060a5b5f24d8e6994072f4e6c8a796110790b119229650cf0e4a52bee3c",
+      "changed": true
+    },
+    "typescript_target_contract": {
+      "before": "a1ed9978d7ddd0123e22a1e388f1a6e889ca63e43752563cd744733b84c103b4",
+      "predicted_current_macOS": "17ffc6028d66657381464a4d6beaecc1e097f54e421168777e5959cfbdaf063f",
+      "changed": true
+    }
+  },
+  "runtime_observed": false,
+  "product_acceptance_passed": false,
+  "future_native_policy_source": "New numbered receipt maps and owning module source will change target and backend digests. This preview is only the current pre-policy source."
+}
