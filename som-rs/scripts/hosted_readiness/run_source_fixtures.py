@@ -135,7 +135,16 @@ def check_installed_scope(site, audits, packages, wheel_root):
         records.add(prefix + '/RECORD')
         for member in audit['members']:
             path = member['path']
-            require('.data/' not in path and path not in expected, 'unsupported or overlapping fixture wheel payload')
+            data_prefix = prefix.removesuffix('.dist-info') + '.data/'
+            if path.startswith(data_prefix):
+                role, separator, relative = path[len(data_prefix):].partition('/')
+                require(separator and role == 'headers' and relative
+                        and all(part not in {'', '.', '..'} for part in relative.split('/')),
+                        'unsupported fixture wheel data role')
+                path = 'include/python/' + name + '/' + relative
+            else:
+                require('.data/' not in path, 'unbound fixture wheel data path')
+            require(path not in expected, 'overlapping fixture wheel payload')
             expected[path] = member
         for leaf in ('INSTALLER', 'REQUESTED', 'direct_url.json'):
             metadata_roles[prefix + '/' + leaf] = (name, leaf)

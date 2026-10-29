@@ -404,7 +404,7 @@
       "som-rs/scripts/hosted_readiness/run_experimental_native_compile.py": "bb3653edc9021b1476d659276fbf9a549ba33de594fad9dac3713ac368b37d87",
       "som-rs/scripts/hosted_readiness/run_full_products.py": "2b70ccff557f1e647e1f85204d09f959a74334bbdbe065744063026c0131e22b",
       "som-rs/scripts/hosted_readiness/run_same_candidate_contracts.py": "05e6f9b4443790482d52eff4caa482217f2b5a875c5d591699bae8121f87e2ba",
-      "som-rs/scripts/hosted_readiness/run_source_fixtures.py": "d97e65bb0c554207f80faa58e5a44a91cdd7f1fb3de0dc6b279209bdf569ca21",
+      "som-rs/scripts/hosted_readiness/run_source_fixtures.py": "7d5ad2544bbb001e0ccd1f8cd152d883055fb9032f63446ccce30dafbf800cbc",
       "som-rs/scripts/hosted_readiness/same_candidate_graph.py": "61b45cdf7c706c5eb9a34998d542a092b2afb09b00d68b36df61b2ad4798973e",
       "som-rs/scripts/hosted_readiness/sealed_current_raw.py": "92bc6ffaf8d575a882a24fb563e055c8136b4bc17b2a231c9c170c4305992c29",
       "som-rs/scripts/hosted_readiness/test_complete_rust_inputs.py": "234681f5fe6ceb7effd900139d010e2863056b6c7d83fec6ccb12b520347b086",
@@ -432,7 +432,7 @@
       "som-rs/scripts/hosted_readiness/test_run_experimental_native_cnl.py": "0f9f4698873547480525602f4419f98bd8f7ad3cbac6a1f69fc06809e3f800a3",
       "som-rs/scripts/hosted_readiness/test_run_experimental_native_compile.py": "efbc86603ea45c4ee1ef787bb2c69caa2b52e17d7f34cf6926c395733bdc76c5",
       "som-rs/scripts/hosted_readiness/test_run_full_products.py": "34537f7fb6c79fb1f9ed4d6c1ad1adaaf20206ca03447d1ec7cff8385a9a04f1",
-      "som-rs/scripts/hosted_readiness/test_run_source_fixtures.py": "d6506ee461f08e457c3761d6b82b2ce38f2b07e8da579520ee94aceeeda67788",
+      "som-rs/scripts/hosted_readiness/test_run_source_fixtures.py": "111375f477a7110a36ffd07df1c8dc3510b175091b4b7887f6e67001e28e7fd3",
       "som-rs/scripts/hosted_readiness/test_same_candidate_contracts.py": "6f59320fb31578a1b0e258db10cbf5d78b4889392bd87bc977829828c4ea8d36",
       "som-rs/scripts/hosted_readiness/test_same_candidate_graph.py": "95b88037e8820e7d2b6a9e9d473790ce3680f5b1d9c47c6b4036fd34198aebd3",
       "som-rs/scripts/hosted_readiness/test_sealed_current_raw.py": "e577b9d3fe650aacffbd1dd8b5681bb221186074a19127723f0304f4530a667a"

@@ -54,6 +54,17 @@ class FixturePayloadGuards(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'cached or automatic'):
             self.check()
 
+    def test_original_wheel_header_is_verified_at_the_actual_pip_target_path(self):
+        body = b'typedef int source_fixture_header;\n'
+        self.audits['fixture']['members'].append({'path': 'fixture-1.data/headers/fixture.h',
+                                                 'sha256': r.sha(body), 'size': len(body)})
+        target = self.site / 'include/python/fixture/fixture.h'
+        target.parent.mkdir(parents=True); target.write_bytes(body)
+        self.assertEqual(self.check()['include/python/fixture/fixture.h']['sha256'], r.sha(body))
+        target.write_bytes(body + b'changed')
+        with self.assertRaisesRegex(ValueError, 'installed fixture bytes differ'):
+            self.check()
+
     def test_unowned_python_extension_and_startup_files_are_refused(self):
         for name in ('extra.py', 'extra.so', 'unexpected.pth', 'sitecustomize.py'):
             with self.subTest(name=name):
