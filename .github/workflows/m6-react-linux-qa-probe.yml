@@ -1,0 +1,63 @@
+name: M6 React Linux QA cache experiment (not acceptance)
+on:
+  push:
+    branches:
+      - codex/m6-react-linux-qa-probe-20261029
+permissions:
+  contents: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Run synthetic fixtures on GitHub
+        working-directory: .github/m6-react-linux-qa-probe
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python3 -m unittest -v test_prepare_public test_offline_probe
+          node --test test_seed_cache.cjs
+  probe:
+    needs: fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Prepare exact public sources
+        working-directory: .github/m6-react-linux-qa-probe
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 prepare_public.py --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/som-react-linux-qa-closure"
+      - name: Seed a new cache from the frozen lock
+        working-directory: .github/m6-react-linux-qa-probe
+        run: '"$RUNNER_TEMP/som-react-linux-qa-closure/node/bin/node" seed_cache.cjs'
+      - name: Observe an offline reference install
+        working-directory: .github/m6-react-linux-qa-probe
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 offline_probe.py --repo "$GITHUB_WORKSPACE" --root "$RUNNER_TEMP/som-react-linux-qa-closure"
+      - name: Retain public inputs and raw results with file modes
+        if: always()
+        run: |
+          if [ -d "$RUNNER_TEMP/som-react-linux-qa-closure" ]; then
+            tar -C "$RUNNER_TEMP" -cf "$RUNNER_TEMP/react-linux-qa-public-inputs.tar" som-react-linux-qa-closure
+            sha256sum "$RUNNER_TEMP/react-linux-qa-public-inputs.tar" > "$RUNNER_TEMP/react-linux-qa-public-inputs.tar.sha256"
+          fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: react-linux-qa-public-inputs-and-results
+          path: |
+            ${{ runner.temp }}/react-linux-qa-public-inputs.tar
+            ${{ runner.temp }}/react-linux-qa-public-inputs.tar.sha256
+          if-no-files-found: warn
+          retention-days: 7
