@@ -24,11 +24,12 @@ CONTEXT = 'som-rs/scripts/hosted_readiness/product_runtime/full_product_context.
 PRODUCER = 'som-rs/scripts/hosted_readiness/product_python/produce_wheels.py'
 REUSE = 'som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py'
 QUALIFY = 'som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py'
+NATIVE_AUTHORITY = 'som-rs/scripts/hosted_readiness/native_qa_authority.py'
 # All repository Python that this admission path executes, including the
 # trusted caller and Context.runtime's source-bound helpers. The provisioner
 # and metadata probe are checked as recorded inputs; this path does not run them.
 REPOSITORY_PYTHON_EXECUTION_CLOSURE = frozenset((
-    SELF, CONTEXT, RETAINED, API, LIVE, PRODUCER, REUSE, QUALIFY,
+    SELF, CONTEXT, NATIVE_AUTHORITY, RETAINED, API, LIVE, PRODUCER, REUSE, QUALIFY,
 ))
 PRODUCER_MODULE = 'som_react_api_verified_wheel_producer'
 HEX = re.compile(r'[0-9a-f]{64}\Z')
@@ -96,7 +97,6 @@ def admit(ctx, executable):
          'active native source controls required')
     need(sys.flags.isolated and sys.flags.no_site and sys.dont_write_bytecode,
          'isolated no-site no-bytecode startup required')
-    ctx.qa_import_controls.verify_installed()
     authority = ctx.qa_source_authority
     need(isinstance(authority, dict) and authority.get('source_authority_active') is True,
          'active native source authority required')
@@ -112,6 +112,7 @@ def admit(ctx, executable):
     # including the wheel producer compiled inside live.bound_sources().
     for source in sorted(REPOSITORY_PYTHON_EXECUTION_CLOSURE):
         need(type(ctx.sources.read(source)) is bytes, 'bound source bytes required')
+    ctx.qa_import_controls.verify_installed()
     temp = physical_directory(Path(os.environ['RUNNER_TEMP']))
     profile_path = temp / 'som-react-api-context.json'
     venv = temp / 'som-react-python-closure/environments/react-api-qa/venv'

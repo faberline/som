@@ -31,6 +31,7 @@ class Fixture(unittest.TestCase):
         self.repo = Path(os.environ['GITHUB_WORKSPACE'])
         self.values = {subject.SELF: b'fixture provider bound by synthetic source authority',
                        subject.CONTEXT: b'fixture Context source',
+                       subject.NATIVE_AUTHORITY: b'fixture native authority source',
                        subject.PRODUCER: b'fixture wheel producer source',
                        subject.REUSE: b'fixture runtime reuse source',
                        subject.QUALIFY: b'fixture runtime qualification source',
