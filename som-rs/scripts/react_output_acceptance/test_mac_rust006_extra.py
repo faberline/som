@@ -352,6 +352,19 @@ class UnorderedParityWireTests(unittest.TestCase):
                 with self.assertRaises(ValueError):parity_audit.raw_exchange_index(raw)
 
 
+class SupplementProofTests(unittest.TestCase):
+    def test_pair_exact_json_types_and_tamper(self):
+        import base64
+        import audit_supplement_provision as proof
+        raw=b'{"n":1,"ok":true}'; encoded=base64.b64encode(raw)+b'\n'
+        document=json.dumps({'http_status':200,'body':{'n':1,'ok':True}}).encode()
+        proof.verify_pair(encoded,document)
+        for altered in (json.dumps({'http_status':200,'body':{'n':True,'ok':True}}).encode(),
+                        json.dumps({'http_status':201,'body':{'n':1,'ok':True}}).encode()):
+            with self.assertRaises(ValueError):proof.verify_pair(encoded,altered)
+        for altered in (encoded+b' ',encoded[:-1],b'%%%\n'):
+            with self.assertRaises(ValueError):proof.verify_pair(altered,document)
+
 class ProductHTTPBytesTests(unittest.TestCase):
     def test_real_suite_transport_seam(self):
         import importlib, types

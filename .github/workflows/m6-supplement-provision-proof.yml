@@ -1,0 +1,44 @@
+name: M6 approved supplement provisioning proof
+on:
+  push:
+    branches:
+      - codex/m6-mac-rust006-fixtures-20261029
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  provision:
+    runs-on: macos-26
+    timeout-minutes: 20
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Pin proof source and approved inputs
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+          git fetch --no-tags --depth=1 origin 1de8f05430a72f8d76f6159786cca71b0ae1a911 55eb7f5c3b21d4f3b57eb721ab60c6aa97e10db3
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib,subprocess
+          commit='1de8f05430a72f8d76f6159786cca71b0ae1a911'
+          raw=subprocess.check_output(['git','show',commit+':inputs-index.json'])
+          if hashlib.sha256(raw).hexdigest()!='c468ae2086e4d64847b93ad8da08aa3828f30989008db470519cd408e55b67bf': raise SystemExit('approved input index refused')
+          config={'version':'som.m6-hosted-inputs.v1','commit':commit,'index_sha256':hashlib.sha256(raw).hexdigest()}
+          path=pathlib.Path(os.environ['RUNNER_TEMP'])/'m6-supplement-config.json'
+          path.write_text(json.dumps(config)+'\n')
+          PY
+      - name: Restore the 18 approved encrypted packages
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
+        run: |
+          python3 som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py --repo-root "$GITHUB_WORKSPACE" --config "$RUNNER_TEMP/m6-supplement-config.json" --out "$RUNNER_TEMP/approved-inputs" --node "$(command -v node)" > /dev/null
+      - name: Independently verify all supplement bytes
+        run: |
+          python3 som-rs/scripts/react_output_acceptance/audit_supplement_provision.py
+          printf 'Verified 18 approved encrypted packages and 2,674 supplemental files. No product test was run.\n' >> "$GITHUB_STEP_SUMMARY"
