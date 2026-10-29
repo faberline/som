@@ -1,0 +1,15 @@
+name: M6 React venv scratch fixtures
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Run synthetic venv fixtures
+        run: python3 -I -S -B -c 'import sys,runpy; sys.path.insert(0,".github/m6-venv-fixtures"); runpy.run_path(".github/m6-venv-fixtures/test_provision_live.py",run_name="__main__")'
