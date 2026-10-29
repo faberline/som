@@ -6,8 +6,9 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 import unittest
+from unittest import mock
 
 if os.environ.get('GITHUB_ACTIONS') != 'true' or sys.platform != 'linux':
     raise RuntimeError('GitHub Linux fixtures only')
@@ -41,7 +42,7 @@ class NamedContractDataTests(unittest.TestCase):
                   'owned_waits_complete': True, 'owned_cleanup_complete': True, 'raw_logs_complete': True,
                   'bound_source_sha256': {m.SELF: hashlib.sha256(sources[m.SELF]).hexdigest()}, 'rows': []}
         for index, (identity, script, arguments) in enumerate(m.CASES):
-            command = {'argv': [data['observer_python'], '-B', str(repo / (m.BASE + 'run_full_products.py')),
+            command = {'argv': [data['observer_python'], '-I', '-S', '-B', str(repo / (m.BASE + 'run_full_products.py')),
                 '--execute-tool', script, '--', *arguments, '--qa-mode', 'native-qa-v1'], 'cwd': str(repo),
                 'exit_code': 0, 'wait_completed': True, 'owned_group_cleanup_passed': True, 'pid': 100 + index}
             row = {'id': identity, 'passed': True, 'command': command}
@@ -111,6 +112,56 @@ class NamedContractDataTests(unittest.TestCase):
             root = Path(temp).resolve(); fixture = self.fixture(root)
             (root / 'unlisted.raw').write_bytes(b'unlisted raw bytes')
             with self.assertRaisesRegex(ValueError, 'universe'): self.check(root, fixture)
+
+
+    def test_real_current_tool_command_keeps_isolation_and_original_receipt_tail(self):
+        # Exercise the actual source-owned command producer. Runtime and payload
+        # admission are explicit doubles; this proves argv integration only.
+        path = m.CONTEXT
+        source = (REPO / path).read_bytes()
+        self.assertEqual(source, subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(REPO),
+            'cat-file', 'blob', HELPER + ':' + path]))
+        context_module = ModuleType('named_command_context_source_fixture')
+        context_module.__file__ = str(REPO / path)
+        exec(compile(source, context_module.__file__, 'exec', dont_inherit=True), context_module.__dict__)
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve(); fixture = self.fixture(root)
+            repo, _, _, report, _ = fixture
+            observer = report['rows'][0]['command']['argv'][0]
+            checked = []
+            ctx = SimpleNamespace(repo=repo, qa_mode='native-qa-v1',
+                qa_source_authority={'source_authority_active': True},
+                sources=SimpleNamespace(read=lambda name: checked.append(name) or b'checked source'),
+                python_payload=lambda executable: {'site': None})
+            ctx.python_argv = lambda argv: context_module.Context.python_argv(ctx, argv)
+            with mock.patch.object(context_module, 'context', return_value=ctx), \
+                 mock.patch.object(context_module, 'observer_python', return_value=Path(observer)):
+                for row, (_, script, arguments) in zip(report['rows'], m.CASES):
+                    self.assertEqual(context_module.tool_command(repo / script, arguments), row['command']['argv'])
+                    self.assertIn(script, checked)
+            self.assertEqual(len(self.check(root, fixture)['rows']), 2)
+
+    def test_lost_isolation_flag_is_refused_with_rehashed_command_and_inventory(self):
+        for flag in ('-I', '-S', '-B'):
+            with self.subTest(flag=flag), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp).resolve(); fixture = self.fixture(root)
+                _, _, _, report, save = fixture
+                row = report['rows'][0]
+                row['command']['argv'].remove(flag)
+                save(row['command_record'], row['command'])
+                report['saved_files_sha256'] = m.inventory(root); report['saved_files_sha256'].pop('result.json')
+                save('result.json', report)
+                with self.assertRaisesRegex(ValueError, 'complete command'): self.check(root, fixture)
+
+    def test_foreign_driver_with_all_isolation_flags_is_refused(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve(); fixture = self.fixture(root)
+            _, _, _, report, save = fixture
+            row = report['rows'][0]; row['command']['argv'][4] = '/foreign/driver.py'
+            save(row['command_record'], row['command'])
+            report['saved_files_sha256'] = m.inventory(root); report['saved_files_sha256'].pop('result.json')
+            save('result.json', report)
+            with self.assertRaisesRegex(ValueError, 'complete command'): self.check(root, fixture)
 
 
 if __name__ == '__main__': unittest.main(verbosity=2)

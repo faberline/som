@@ -19,8 +19,10 @@ import signal
 import stat
 import subprocess
 import sys
+import tempfile
 import threading
 import time
+import tomllib
 from types import ModuleType
 
 SCRIPT = 'som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py'
@@ -34,6 +36,7 @@ BASELINE = 'som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json
 BASELINE_SHA256 = '650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9'
 DEPENDENCY_GUARD = 'som-rs/scripts/hosted_readiness/dependency_candidate.py'
 NATIVE_AUTHORITY = 'som-rs/scripts/hosted_readiness/native_qa_authority.py'
+REACT_API_PAYLOAD = 'som-rs/scripts/react_output_acceptance/react_api_python_payload.py'
 ENV = 'SOM_FULL_PRODUCT_CONTEXT'
 _ACTIVE = None
 
@@ -177,6 +180,181 @@ def install_source_finder(sources):
     return finder
 
 
+class NativePythonControls:
+    """Rewrite only Python children of this admitted native Context."""
+    def __init__(self, ctx):
+        self.ctx, self.original, self.closed = ctx, subprocess.Popen, False
+        self.startup_failures = []
+        previous = getattr(self.original, '__som_native_python_controls__', None)
+        require(previous is None, 'another native Python child guard is already active')
+        controls = self
+        class GuardedPopen(self.original):
+            def __init__(child, *arguments, **keywords):
+                controls.verify_installed()
+                requested = arguments[0] if arguments else keywords.get('args')
+                changed = False
+                if isinstance(requested, (list, tuple)) and requested:
+                    python = re.fullmatch(r'python(?:[0-9]+(?:\.[0-9]+)*)?', Path(str(requested[0])).name)
+                    if python:
+                        # Positional Popen options can hide shell/executable/cwd.
+                        # Native Python callers must name these options explicitly.
+                        require(len(arguments) <= 1, 'native Python launch requires keyword Popen options')
+                        require(not keywords.get('shell') and keywords.get('executable') is None,
+                                'native Python launch cannot use a shell or executable override')
+                    revised = controls.ctx.python_argv(requested, cwd=keywords.get('cwd'))
+                    changed = revised != list(map(str, requested))
+                    if arguments:
+                        arguments = (revised, *arguments[1:])
+                    else:
+                        keywords['args'] = revised
+                controls.original.__init__(child, *arguments, **keywords)
+                if changed:
+                    try:
+                        require(list(child.args) == revised, 'Popen actual argv differs from isolated launch')
+                        proof = {'version': 'som.native-python-child-startup.v1', 'pid': child.pid,
+                                 'actual_argv': revised, 'original_requested_argv': list(map(str, requested)),
+                                 'cwd': str(Path(keywords.get('cwd') or Path.cwd()).absolute()),
+                                 'helper_revision': controls.ctx.helper_revision, 'candidate_revision': controls.ctx.candidate_revision,
+                                 'product_acceptance_passed': False}
+                        directory = controls.ctx.work / 'python-child-startups'; directory.mkdir(parents=True, exist_ok=True)
+                        path = directory / f'{os.getpid()}-{child.pid}.json'
+                        with path.open('xb') as stream: stream.write(canonical(proof) + b'\n')
+                        child.__som_native_startup_receipt__ = (path, proof)
+                    except BaseException as primary:
+                        controls.failed_receipt(child, primary, revised, requested, keywords)
+                        raise
+        GuardedPopen.__som_native_python_controls__ = self
+        self.wrapper = GuardedPopen
+        subprocess.Popen = GuardedPopen
+
+    def failed_receipt(self, child, primary, actual, requested, keywords):
+        """Keep the receipt error and attempt a real wait after each stop attempt."""
+        proof = {'version': 'som.native-python-child-startup-failure.v1', 'pid': child.pid,
+                 'actual_argv': list(actual), 'original_requested_argv': list(map(str, requested)),
+                 'helper_revision': self.ctx.helper_revision, 'candidate_revision': self.ctx.candidate_revision,
+                 'primary_error': {'type': type(primary).__name__, 'message': str(primary)},
+                 'start_new_session': bool(keywords.get('start_new_session')),
+                 'cleanup_scope': 'newly-started-child; no descendant-group acceptance',
+                 'child_handle_attribute': '__som_native_startup_child__',
+                 'attempts': [], 'wait_completed': False, 'exit_code': None,
+                 'owned_child_reaped': False, 'cleanup_passed': False, 'product_acceptance_passed': False}
+        self.startup_failures.append(proof)
+        primary.__som_native_startup_failure__ = proof
+        primary.__som_native_startup_child__ = child
+        child.__som_native_startup_failure__ = proof
+
+        def attempt(stage, operation):
+            entry = {'stage': stage, 'completed': False}
+            proof['attempts'].append(entry)
+            try:
+                result = operation()
+                entry.update(completed=True, result=result)
+                return True, result
+            except BaseException as error:
+                entry['error'] = {'type': type(error).__name__, 'message': str(error)}
+                return False, None
+
+        def stop(sig):
+            if keywords.get('start_new_session'):
+                os.killpg(child.pid, sig)
+            elif sig == signal.SIGTERM:
+                child.terminate()
+            else:
+                child.kill()
+
+        checked, terminal = attempt('poll', child.poll)
+        if not checked or terminal is None:
+            attempt('SIGTERM', lambda: stop(signal.SIGTERM))
+        # Signal errors, including a fast-exit ProcessLookupError, cannot skip wait.
+        waited, code = attempt('wait-after-stop', lambda: child.wait(timeout=10))
+        if not waited or type(code) is not int:
+            attempt('SIGKILL', lambda: stop(signal.SIGKILL))
+            waited, code = attempt('wait-after-escalation', lambda: child.wait(timeout=10))
+        proof.update(wait_completed=waited and type(code) is int,
+                     exit_code=code if waited and type(code) is int else None)
+        proof['owned_child_reaped'] = proof['cleanup_passed'] = proof['wait_completed']
+        try:
+            directory = self.ctx.work / 'python-child-startup-failures'
+            directory.mkdir(parents=True, exist_ok=True)
+            path = directory / f'{os.getpid()}-{child.pid}-{len(self.startup_failures):06d}.json'
+            proof['failure_evidence_path'] = str(path)
+            with path.open('xb') as stream: stream.write(canonical(proof) + b'\n')
+        except BaseException as error:
+            # The in-memory record stays attached to the original raised error.
+            proof['evidence_write_error'] = {'type': type(error).__name__, 'message': str(error)}
+
+    def verify_installed(self):
+        require(not self.closed and subprocess.Popen is self.wrapper,
+                'native Python child startup guard changed')
+
+    def close(self):
+        if not self.closed:
+            self.verify_installed()
+            subprocess.Popen = self.original
+            self.closed = True
+
+
+class NativePythonLease:
+    def __init__(self, controls, owns_controls):
+        self.controls, self.owns_controls, self.closed = controls, owns_controls, False
+
+    def verify_installed(self):
+        require(not self.closed, 'native Python control lease is closed')
+        self.controls.verify_installed()
+
+    def close(self):
+        if not self.closed:
+            self.verify_installed()
+            if self.owns_controls: self.controls.close()
+            self.closed = True
+
+
+def install_python_controls(ctx):
+    previous = getattr(subprocess.Popen, '__som_native_python_controls__', None)
+    if previous is not None:
+        require(previous.ctx.path == ctx.path and previous.ctx.raw == ctx.raw,
+                'native Python controls belong to another Context')
+        previous.verify_installed()
+        return NativePythonLease(previous, False)
+    return NativePythonLease(NativePythonControls(ctx), True)
+
+
+def ordinary_python_payload(venv, inventory, expected, origins, expected_dirs, dist_infos):
+    """Check code payload; leave ordinary installer metadata for its own audit."""
+    site = 'lib/python3.12/site-packages'
+    metadata = {'INSTALLER', 'REQUESTED', 'direct_url.json', 'uv_cache.json', 'uv_build.json', 'RECORD'}
+    permitted_metadata = {site + '/' + relative(prefix) + '/' + leaf
+                          for prefix in dist_infos for leaf in metadata}
+    require(set(expected) <= set(inventory) and set(inventory) <= set(expected) | permitted_metadata,
+            'ordinary venv has missing payload or unproven extra startup files')
+    payload, retained_metadata = {}, {}
+    for name, actual in inventory.items():
+        if name in permitted_metadata:
+            require(actual.get('type') == 'file' and type(actual.get('size')) is int
+                    and actual['size'] <= 16 * 1024**2 and not (actual.get('mode', 0) & 0o111),
+                    'ordinary installer metadata must stay bounded non-executable data')
+            retained_metadata[name] = actual
+        else:
+            wanted = expected[name]
+            require(all(actual.get(key) == value for key, value in wanted.items()),
+                    'ordinary installed wheel/uv payload differs: ' + name)
+            payload[name] = {'expected': wanted, 'origin': origins[name]}
+    directories = {path.relative_to(venv).as_posix() for path in venv.rglob('*')
+                   if path.is_dir() and not path.is_symlink()}
+    require(directories == expected_dirs, 'ordinary venv contains unproven package directories')
+    require(expected.get(site + '/_virtualenv.pth') == {
+        'type': 'file', 'sha256': digest(b'import _virtualenv'), 'size': len(b'import _virtualenv')},
+        'exact source-derived uv hook is required and remains unexecuted')
+    return {'version': 'som.native-python-startup-payload.v1', 'site': str(venv / site),
+            'payload_files': len(payload), 'payload_source_bindings_sha256': digest(canonical(payload)),
+            'ordinary_metadata_sha256': digest(canonical(retained_metadata)),
+            'ordinary_installer_scope_independent_audit': 'unrun',
+            'startup_hook_payloads': {name: {'expected': row, 'origin': origins[name]} for name, row in expected.items()
+                if name.endswith('.pth') or Path(name).name in {'sitecustomize.py', 'usercustomize.py'}},
+            'installer_metadata_mode': 'ordinary; unchanged', 'pth_executed': False,
+            'sitecustomize_executed': False, 'product_acceptance_passed': False}
+
+
 class Context:
     def __init__(self, path):
         self.path, self.raw = Path(path).absolute(), read(Path(path).absolute())
@@ -204,14 +382,19 @@ class Context:
                     'regular hosted input root required: ' + key)
         self.qa_mode = self.data.get('qa_mode', 'experimental-preparation')
         require(self.qa_mode in {'experimental-preparation', 'historical', 'native-qa-v1'}, 'known explicit QA source mode required')
+        if self.qa_mode == 'native-qa-v1':
+            require(sys.flags.isolated and sys.flags.no_site and sys.dont_write_bytecode,
+                    'native Context must start with -I -S -B before source admission')
         self.qa_source_authority = None
         self.qa_import_controls = None
+        self.python_controls = None
         if self.qa_mode != 'experimental-preparation':
             authority = self.module('native_qa_authority', NATIVE_AUTHORITY)
             paths = self.sources.git('ls-tree', '-r', '--name-only', self.helper_revision).decode().splitlines()
             self.qa_source_authority = authority.verify(self.sources.read, self.qa_mode, paths, helper_revision=self.helper_revision, candidate_revision=self.candidate_revision)
             if self.qa_mode == 'native-qa-v1':
                 self.qa_import_controls = authority.install_raw_finder(self.sources.read, self.repo, self.qa_source_authority)
+                self.python_controls = install_python_controls(self)
         guard = self.module('dependency_guard', DEPENDENCY_GUARD)
         self.candidate_admission = guard.verify_candidate_inputs(self.repo, self.helper_revision,
             self.candidate_revision, Path(self.data['assembly_root']))
@@ -474,7 +657,193 @@ class Context:
         # Each actual product still receives its own cache and venv.
         return 'product-' + f'{matches[0]["index"]:04d}'
 
+    def react_api_python_payload(self, python, base, *, record=True):
+        """Call only the admitted React API owner for its exact external venv."""
+        require(self.qa_mode == 'native-qa-v1' and self.qa_import_controls is not None,
+                'native raw controls must precede external Python payload admission')
+        self.qa_import_controls.verify_installed()
+        authority = self.qa_source_authority
+        require(type(authority) is dict and authority.get('source_authority_active') is True
+                and REACT_API_PAYLOAD in authority.get('admitted_repository_python_sources', ()),
+                'React API payload provider is outside sealed native source authority')
+        temporary = Path(os.environ.get('RUNNER_TEMP', ''))
+        require(temporary.is_absolute() and '..' not in temporary.parts,
+                'exact runner temporary root required for React API payload')
+        venv = temporary / 'som-react-python-closure/environments/react-api-qa/venv'
+        python, base = Path(python).absolute(), Path(base).absolute()
+        runtime = self.runtime()
+        runtime['reuse'].verify_installed_tree(Path(self.data['runtime_root']), runtime['inventory'], runtime['qualification'])
+        require(base == Path(runtime['tools']['python']).absolute(), 'React API base must be the actual qualified Context interpreter')
+        require(python == venv / 'bin/python', 'only the exact React API interpreter route is admitted')
+        require(not any(item.is_symlink() for item in (venv, python.parent, *venv.parents))
+                and python.is_symlink() and python.resolve(strict=True) == base,
+                'React API interpreter must link to the qualified physical base')
+        before = base.stat()
+        before_hash = digest(read(base, 300 * 1024**2))
+        require(stat.S_ISREG(before.st_mode) and not base.is_symlink()
+                and (python.stat().st_dev, python.stat().st_ino) == (before.st_dev, before.st_ino),
+                'React API base interpreter inode differs')
+        provider_raw = self.sources.read(REACT_API_PAYLOAD)
+        provider = self.module('react_api_python_payload', REACT_API_PAYLOAD)
+        require(getattr(provider, '__som_raw_sha256__', None) == digest(provider_raw)
+                and getattr(provider, '__file__', None) == str(self.repo / REACT_API_PAYLOAD),
+                'React API provider raw source module differs')
+        # Never accept a caller-supplied record. The real owner derives it now.
+        admitted = provider.admit(self, python)
+        require(type(admitted) is provider.AdmittedPayload and isinstance(admitted, tuple),
+                'React API provider must return its exact immutable AdmittedPayload type')
+        proof = admitted.record()
+        hashes = {'api_profile_sha256', 'api_authority_sha256', 'live_receipt_sha256',
+                  'runtime_receipt_sha256', 'closure_receipt_sha256', 'venv_inventory_sha256'}
+        keys = {'version', 'role', 'python', 'site', 'base_python', *hashes,
+                'requirements_count', 'wheel_count', 'source_revision', 'pth_executed', 'product_acceptance_passed'}
+        require(type(proof) is dict and set(proof) == keys
+                and proof['version'] == 'som.native-python-startup-payload.v1' and proof['role'] == 'react-api-qa'
+                and proof['python'] == str(python) and proof['site'] == str(venv / 'lib/python3.12/site-packages')
+                and proof['base_python'] == str(base) and proof['source_revision'] == self.helper_revision == self.candidate_revision
+                and type(proof['requirements_count']) is int and proof['requirements_count'] == 39
+                and type(proof['wheel_count']) is int and proof['wheel_count'] == 40
+                and proof['pth_executed'] is False and proof['product_acceptance_passed'] is False
+                and all(type(proof[name]) is str and re.fullmatch('[0-9a-f]{64}', proof[name]) for name in hashes),
+                'React API provider record schema or exact source identity differs')
+        site = Path(proof['site'])
+        require(site.is_dir() and not any(item.is_symlink() for item in (site, *site.parents)),
+                'React API site must be a physical directory')
+        self.qa_import_controls.verify_installed()
+        require(self.sources.read(REACT_API_PAYLOAD) == provider_raw and python.resolve(strict=True) == base
+                and digest(read(base, 300 * 1024**2)) == before_hash
+                and (base.stat().st_dev, base.stat().st_ino) == (before.st_dev, before.st_ino)
+                and (python.stat().st_dev, python.stat().st_ino) == (before.st_dev, before.st_ino),
+                'React API provider or qualified base changed during admission')
+        proof = {**proof, 'provider_source': REACT_API_PAYLOAD, 'provider_source_sha256': digest(provider_raw),
+                 'base_python_sha256': before_hash,
+                 'base_python_inode': {'device': before.st_dev, 'inode': before.st_ino},
+                 'ordinary_installer_scope_independent_audit': 'unrun'}
+        if record:
+            with self.command_lock:
+                sequence = self.cache.get('startup_payload_sequence', 0)
+                self.cache['startup_payload_sequence'] = sequence + 1
+            path = self.work / 'python-startup-payloads' / f'{os.getpid()}-{sequence:06d}.json'
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open('xb') as stream: stream.write(canonical(proof) + b'\n')
+        return proof
+
+    def python_payload(self, executable, *, record=True):
+        require(self.qa_mode == 'native-qa-v1' and self.qa_import_controls is not None,
+                'native raw controls must precede Python payload admission')
+        self.qa_import_controls.verify_installed()
+        runtime = self.runtime()
+        runtime['reuse'].verify_installed_tree(Path(self.data['runtime_root']), runtime['inventory'], runtime['qualification'])
+        python = Path(executable).absolute()
+        base = Path(runtime['tools']['python']).absolute()
+        require(python.is_file() and python.resolve() == base.resolve(), 'only the qualified base Python may start')
+        if python == base:
+            return {'version': 'som.native-python-startup-payload.v1', 'role': 'qualified-base-no-site',
+                    'python': str(python), 'site': None, 'pth_executed': False, 'product_acceptance_passed': False}
+        temporary = Path(os.environ.get('RUNNER_TEMP', ''))
+        if temporary.is_absolute() and python == temporary / 'som-react-python-closure/environments/react-api-qa/venv/bin/python':
+            return self.react_api_python_payload(python, base, record=record)
+        require(python.name in {'python', 'python3', 'python3.12'} and python.parent.name == 'bin'
+                and python.parent.parent.name == '.venv', 'known ordinary product Python path required')
+        venv, root = python.parent.parent, python.parent.parent.parent
+        require(self.work in root.parents and not any(item.is_symlink() for item in (venv, root, *root.parents)),
+                'external Python environment requires its own exact source-bound wheel/uv payload proof; observer fallback is forbidden')
+        identity = 'observer' if root == self.work / 'observer' else self.environment_identity({
+            'pyproject.toml': read(root / 'pyproject.toml').decode('utf-8', 'strict')})
+        closure, project, receipt = self.closure(identity)
+        require(read(root / 'pyproject.toml') == read(project / 'pyproject.toml')
+                and read(root / 'uv.lock') == read(project / 'uv.lock'), 'ordinary Python project/lock differs from qualification')
+        p = self.module('wheels', WHEELS)
+        p.verify_closure(closure)
+        fresh_audits = {}
+        with tempfile.TemporaryDirectory(prefix='startup-wheel-audit-', dir=self.work) as temporary:
+            for name, audit in closure['audits'].items():
+                notices = Path(temporary) / relative(name); notices.mkdir()
+                fresh = p.audit_wheel(closure['wheels'] / relative(audit['filename']), name, audit['version'], notices)
+                require(fresh == audit, 'ordinary package payload audit differs from actual wheel RECORD/provenance')
+                fresh_audits[name] = digest(canonical(fresh))
+        assets_raw = self.sources.read(p.INSTALLER_AUTHORITY)
+        assets = p.installer_assets(assets_raw)
+        qualified_uv = read(runtime['tools']['uv'], 300 * 1024**2)
+        require(digest(qualified_uv) == runtime['identity']['uv_sha256']
+                and all(value in qualified_uv for value in assets.values()), 'uv seed source is not in the qualified installer')
+        expected, _contents, origins, directories, _proof = p.installed_scope(
+            venv, closure, assets, base, tomllib.loads(read(root / 'pyproject.toml').decode())['project']['name'])
+        inventory = p.installed_inventory(venv, self.work)
+        proof = ordinary_python_payload(venv, inventory, expected, origins, directories,
+                                       [audit['dist_info_dir'] for audit in closure['audits'].values()])
+        proof.update(role=identity, python=str(python), installed_inventory_sha256=digest(canonical(inventory)),
+                     wheel_closure_sha256=digest(canonical(closure['record'])),
+                     rederived_wheel_audits_sha256=digest(canonical(fresh_audits)),
+                     uv_installer_authority_sha256=digest(assets_raw), base_python=str(base))
+        p.verify_closure(closure)
+        require(p.installed_inventory(venv, self.work) == inventory, 'ordinary installed payload changed during admission')
+        if record:
+            with self.command_lock:
+                sequence = self.cache.get('startup_payload_sequence', 0)
+                self.cache['startup_payload_sequence'] = sequence + 1
+            path = self.work / 'python-startup-payloads' / f'{os.getpid()}-{sequence:06d}.json'
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open('xb') as stream: stream.write(canonical(proof) + b'\n')
+        return proof
+
+    def activate_python_paths(self, executable=None):
+        require(self.qa_mode == 'native-qa-v1' and sys.flags.isolated and sys.flags.no_site
+                and sys.dont_write_bytecode, 'native Python startup requires -I -S -B')
+        require(self.qa_source_authority is not None and self.qa_source_authority['source_authority_active'] is True,
+                'native source authority must precede explicit package paths')
+        proof = self.python_payload(executable or sys.executable)
+        site_path = proof['site']
+        if site_path is not None and site_path not in sys.path:
+            # An ordinary list operation executes neither .pth nor customize.
+            sys.path.append(site_path)
+        if site_path is not None:
+            prefix = str(Path(proof['python']).parent.parent)
+            sys.prefix = sys.exec_prefix = prefix
+        self.cache.setdefault('active_python_payloads', {})[proof['python']] = proof
+        return proof
+
+    def python_argv(self, argv, cwd=None):
+        values = list(map(str, argv))
+        if self.qa_mode != 'native-qa-v1' or not values:
+            return values
+        name = Path(values[0]).name
+        if not re.fullmatch(r'python(?:[0-9]+(?:\.[0-9]+)*)?', name):
+            return values
+        require(Path(values[0]).is_absolute(), 'native Python child must name its qualified absolute interpreter')
+        self.python_payload(values[0])
+        driver = str(self.repo / 'som-rs/scripts/hosted_readiness/run_full_products.py')
+        self.sources.read('som-rs/scripts/hosted_readiness/run_full_products.py')
+        marker = ['-I', '-S', '-B', driver, '--native-python-bootstrap', '--']
+        if values[1:7] == marker or (values[1:5] == ['-I', '-S', '-B', driver]
+                and values[5:6] in (['--execute-tool'], ['--worker-context'])):
+            return values
+        tail = values[1:]
+        while tail and tail[0] in {'-I', '-S', '-B'}: tail.pop(0)
+        if tail in (['--version'], ['-V']): return [values[0], '-I', '-S', '-B', *tail]
+        require(tail and (tail[0] in {'-m', '-c'} or not tail[0].startswith('-')),
+                'unsupported native Python startup option')
+        if tail[0] == driver and tail[1:2] in (['--execute-tool'], ['--worker-context']):
+            return [values[0], '-I', '-S', '-B', *tail]
+        return [values[0], *marker, *tail]
+
+    def python_is_product_process(self, process, executable, package):
+        require(self.qa_mode == 'native-qa-v1', 'native process adapter required')
+        receipt = getattr(process, '__som_native_startup_receipt__', None)
+        require(type(receipt) is tuple and len(receipt) == 2, 'actual native Python startup receipt missing')
+        path, proof = receipt
+        require(path.parent == self.work / 'python-child-startups' and json.loads(read(path)) == proof
+                and proof['pid'] == process.pid and proof['actual_argv'] == list(process.args)
+                and proof['helper_revision'] == self.helper_revision and proof['candidate_revision'] == self.candidate_revision,
+                'actual Python argv/startup receipt differs')
+        requested = proof['original_requested_argv']
+        require(requested[:4] == [str(executable), '-m', 'uvicorn', package + '.app:app']
+                and self.python_argv(requested) == list(process.args), 'native product app tail differs')
+        return True
+
     def command(self, argv, cwd, env, label, timeout=1800, check=True):
+        if self.qa_mode == 'native-qa-v1':
+            argv = self.python_argv(argv, cwd=cwd)
         directory = self.work / 'environment-commands'
         directory.mkdir(parents=True, exist_ok=True)
         with self.command_lock:
@@ -543,6 +912,7 @@ class Context:
             require(digest(read(root / 'uv.lock')) == previous['lock_sha256']
                     and Path(previous['python']).resolve() == self.runtime()['tools']['python'].resolve(),
                     'owned product environment changed on repeated preparation')
+            if self.qa_mode == 'native-qa-v1': self.python_payload(previous['python'])
             return Path(previous['python'])
         closure, original, receipt = self.closure(identity)
         expected_project = read(original / 'pyproject.toml')
@@ -597,6 +967,7 @@ class Context:
         public['environment'] = {key: ('[redacted transport token]' if key == 'SOM_DEPENDENCY_ACTIONS_TOKEN' else value)
                                  for key, value in public['environment'].items()}
         (evidence / 'environment.json').write_bytes(canonical(public) + b'\n')
+        if self.qa_mode == 'native-qa-v1': self.python_payload(executable)
         return executable
 
     def release_python(self, root, passed):
@@ -608,6 +979,7 @@ class Context:
         key = digest(str(root).encode())
         evidence = self.work / 'product-environments' / key
         venv = root / '.venv'
+        if self.qa_mode == 'native-qa-v1': self.python_payload(selected['python'])
         p = self.module('wheels', WHEELS)
         after = p.installed_inventory(venv, self.work)
         raw = canonical(after) + b'\n'
@@ -645,6 +1017,7 @@ class Context:
                 'UV_OFFLINE': '1', 'UV_PYTHON_DOWNLOADS': 'never',
                 'SOM_PRODUCT_PYTHON': str(runtime['tools']['python']), 'SOM_PRODUCT_UV': str(runtime['tools']['uv'])}
         if self.qa_mode == 'native-qa-v1':
+            environment.pop('PYTHONPATH')
             source = os.environ.get('GITHUB_SHA')
             require(type(source) is str and re.fullmatch('[0-9a-f]{40}', source) is not None
                     and source == self.helper_revision == self.candidate_revision,
@@ -670,6 +1043,10 @@ class Context:
         self.sources.verify()
         if self.qa_import_controls is not None:
             self.qa_import_controls.verify_installed()
+        if self.python_controls is not None:
+            self.python_controls.verify_installed()
+        for executable in self.cache.get('active_python_payloads', {}):
+            self.python_payload(executable, record=False)
         if self.qa_source_authority is not None:
             authority = self.module('native_qa_authority', NATIVE_AUTHORITY)
             paths = self.sources.git('ls-tree', '-r', '--name-only', self.helper_revision).decode().splitlines()
@@ -839,8 +1216,9 @@ def tool_command(script, arguments):
         require(not any(value == '--qa-mode' or value.startswith('--qa-mode=') for value in arguments),
                 'QA source mode comes from the checked context')
         arguments += ['--qa-mode', 'native-qa-v1']
-    return [str(observer_python()), '-B', str(ctx.repo / 'som-rs/scripts/hosted_readiness/run_full_products.py'),
+    argv = [str(observer_python()), '-B', str(ctx.repo / 'som-rs/scripts/hosted_readiness/run_full_products.py'),
             '--execute-tool', relative_path, '--', *arguments]
+    return ctx.python_argv(argv) if ctx.qa_mode == 'native-qa-v1' else argv
 
 
 def native_contract_host():

@@ -14,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import re
+import runpy
 import signal
 import subprocess
 import sys
@@ -134,6 +135,7 @@ def execute_tool(arguments):
                     and authority['source_authority_active'] is True
                     and tool in authority['admitted_repository_python_sources'],
                     'entry itself must have exact sealed native source authority before read or execution')
+            ctx.activate_python_paths(sys.executable)
         else:
             before_finders = tuple(sys.meta_path)
             legacy_finder = module.install_source_finder(sources)
@@ -600,6 +602,7 @@ def worker(context_path):
     module = load_context_module(data['repo'], data['helper_revision'], data.get('qa_mode'), data['candidate_revision'])
     ctx = module.Context(context_path)
     module._ACTIVE = ctx
+    if data.get('qa_mode') == 'native-qa-v1': ctx.activate_python_paths(sys.executable)
     if data.get('qa_mode') != 'native-qa-v1': module.install_source_finder(ctx.sources)
     ctx.sources.read(SELF)
     stage = data['stage']
@@ -636,7 +639,7 @@ def prepare(args):
     require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'GitHub Linux only')
     sealed = args.mode == 'sealed-candidate-products'
     if args.mode not in {'experimental-preparation', 'sealed-candidate-products'}:
-        raise ValueError('unsealed official acceptance requires separate complete independent acceptance')
+        raise ValueError('official acceptance refuses the unsealed policy and requires separate complete independent acceptance')
     module, graph, graph_sources = None, None, None
     if sealed:
         require(args.helper_revision == args.candidate_revision and args.candidate_revision != 'f59e28d910ff4adb16e3becfdc82bd2978ca84fa',
@@ -789,10 +792,92 @@ def join(args):
     return 0 if passed else 1
 
 
+def native_python_bootstrap(arguments):
+    """Enter a qualified Python payload after source admission, without site."""
+    require(sys.flags.isolated and sys.flags.no_site and sys.dont_write_bytecode,
+            'native Python child requires -I -S -B before any project import')
+    path = Path(os.environ['SOM_FULL_PRODUCT_CONTEXT']).absolute()
+    data = json.loads(path.read_bytes())
+    require(data.get('qa_mode') == 'native-qa-v1', 'native Python bootstrap cannot change historical modes')
+    module = load_context_module(data['repo'], data['helper_revision'], 'native-qa-v1', data['candidate_revision'])
+    ctx = module.Context(path); module._ACTIVE = ctx
+    payload = ctx.activate_python_paths(sys.executable)
+    require(arguments, 'Python child target is missing')
+    proof = {'version': 'som.native-python-child-postcheck.v1', 'payload': payload,
+             'original_python_arguments': list(arguments), 'actual_argv': list(sys.orig_argv),
+             'helper_revision': ctx.helper_revision, 'candidate_revision': ctx.candidate_revision,
+             'entry_executed': False, 'postchecks_passed': False, 'product_acceptance_passed': False}
+    old_main, old_argv, old_path = sys.modules['__main__'], sys.argv, list(sys.path)
+    primary = None
+    try:
+        # Product module lookup and script lookup start only after the payload
+        # and repo raw import controls have passed. No site/.pth helper is used.
+        sys.path.insert(0, str(Path.cwd()))
+        if arguments[0] == '-m':
+            require(len(arguments) >= 2 and not arguments[1].startswith('-'), 'Python module name required')
+            sys.argv = [arguments[1], *arguments[2:]]
+            proof['entry_executed'] = True
+            runpy.run_module(arguments[1], run_name='__main__', alter_sys=True)
+        else:
+            if arguments[0] == '-c':
+                require(len(arguments) >= 2, 'Python source argument required')
+                raw, filename, rest = arguments[1].encode(), '<string>', arguments[2:]
+            else:
+                file = Path(arguments[0]).absolute()
+                require(file.suffix == '.py' and (ctx.repo in file.parents or ctx.work in file.parents),
+                        'Python script must be admitted repository or owned generated source')
+                filename, rest = str(file), arguments[1:]
+                if ctx.repo in file.parents:
+                    name = file.relative_to(ctx.repo).as_posix()
+                    require(name in ctx.qa_source_authority['admitted_repository_python_sources'],
+                            'Python script is outside native repository source authority')
+                    raw = ctx.sources.read(name)
+                else:
+                    raw = module.read(file)
+                sys.path.insert(0, str(file.parent))
+            target = ModuleType('__main__')
+            target.__file__, target.__package__, target.__cached__ = filename, '', None
+            target.__som_raw_sha256__ = digest(raw)
+            sys.modules['__main__'], sys.argv = target, [filename if filename != '<string>' else '-c', *rest]
+            proof['entry_executed'] = True
+            exec(compile(raw, filename, 'exec', dont_inherit=True), target.__dict__)
+        proof['exit_code'] = 0
+        return 0
+    except SystemExit as result:
+        code = result.code if type(result.code) is int else (0 if result.code is None else 1)
+        if code != 0: primary = result
+        proof['exit_code'] = code
+        return code
+    except BaseException as error:
+        primary = error
+        proof['error'] = type(error).__name__ + ': ' + str(error)
+        raise
+    finally:
+        try:
+            ctx.verify()
+            proof['postchecks_passed'] = True
+        except BaseException as error:
+            proof['postcheck_error'] = type(error).__name__ + ': ' + str(error)
+            if primary is None:
+                primary = error
+                raise
+        finally:
+            proof['source_sha256'] = dict(sorted(ctx.sources.pins.items()))
+            try:
+                save(ctx.work / 'python-startup-postchecks' / f'{os.getpid()}.json', proof)
+            except BaseException:
+                if primary is None: raise
+            finally:
+                sys.modules['__main__'], sys.argv, sys.path[:] = old_main, old_argv, old_path
+
+
 def main(argv=None):
     arguments = list(sys.argv[1:] if argv is None else argv)
     for number in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
         signal.signal(number, lambda number, frame: (_ for _ in ()).throw(KeyboardInterrupt('owned runner interrupted')))
+    if arguments[:1] == ['--native-python-bootstrap']:
+        require(arguments[1:2] == ['--'], 'explicit native Python target separator required')
+        return native_python_bootstrap(arguments[2:])
     if arguments[:1] == ['--execute-tool']:
         rest = arguments[1:]
         require(len(rest) >= 2 and rest[1] == '--', 'explicit checker argument separator required')

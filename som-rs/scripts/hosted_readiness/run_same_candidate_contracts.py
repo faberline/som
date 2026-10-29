@@ -70,7 +70,7 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
         require(raw_command == command, 'named receipt command differs from its original raw record')
         require(row['passed'] is True and command['exit_code'] == 0 and command['wait_completed'] is True
                 and command['owned_group_cleanup_passed'] is True, 'named receipt process did not pass')
-        expected = [data['observer_python'], '-B', str(Path(repo) / (BASE + 'run_full_products.py')),
+        expected = [data['observer_python'], '-I', '-S', '-B', str(Path(repo) / (BASE + 'run_full_products.py')),
                     '--execute-tool', script, '--', *arguments, '--qa-mode', 'native-qa-v1']
         require(command['argv'] == expected and command['cwd'] == str(repo),
                 'original named receipt complete command or native mode differs')

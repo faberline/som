@@ -27,6 +27,9 @@ AUTHORITY = BASE + 'native_qa_authority.py'
 LAYOUT = BASE + 'product_runtime/current_candidate_layout.py'
 CARRIER = BASE + 'product_runtime/candidate_carrier.py'
 SEMANTIC = BASE + 'run_candidate_semantic_gates.py'
+ORACLE = BASE + 'product_runtime/recorded_before_oracle.py'
+BOUND = BASE + 'bound_source.py'
+FULL_DRIVER = BASE + 'run_full_products.py'
 VERSION = 'som.current-candidate-owned-gate.v1'
 GATES = {'typescript-regression', 'm6-react003'}
 PORTS = {'current': 18978, 'baseline': 18979}
@@ -193,9 +196,10 @@ def raw_module(sources, name, path):
 
 
 @contextmanager
-def admitted_sources(repo, revision, reader=None, *, install=True):
+def admitted_sources(repo, revision, reader=None, *, install=True, namespace='_som_current_gate_authority'):
     sources = Sources(repo, revision, reader)
-    authority = raw_module(sources, '_som_current_gate_authority', AUTHORITY)
+    require(namespace in {'_som_current_gate_authority', '_som_owner_postclose_authority'}, 'fixed source authority namespace required')
+    authority = raw_module(sources, namespace, AUTHORITY)
     lease = None
     try:
         admission = authority.verify(sources.read, 'native-qa-v1', sources.paths(), revision, revision)
@@ -213,7 +217,7 @@ def admitted_sources(repo, revision, reader=None, *, install=True):
     finally:
         if lease is not None:
             lease.close()
-        sys.modules.pop('_som_current_gate_authority', None)
+        sys.modules.pop(namespace, None)
 
 
 def roots_checked(values, saved, repo):
@@ -379,6 +383,8 @@ class Services:
         selected = self.ctx.data.get('baseline_inputs', {}).get(profile_path)
         require(type(selected) is str and Path(selected).is_absolute(), 'explicit admitted baseline input root required')
         root = regular_root(selected)
+        if profile.get('version') == 'som.linux-qa-recorded-before.v1':
+            return self._start_recorded(profile_path, profile_raw, root)
         binary, assets, tools, expected = profile_inputs(profile, root, current_revision=self.ctx.candidate_revision)
         retained = self.out / 'baseline-inputs'; retained.mkdir()
         for name, wanted in expected.items(): copy_checked(root / name, retained / name, wanted)
@@ -387,6 +393,88 @@ class Services:
         return self._start('baseline', binary, assets, tools,
             {'source_sha256': profile['source_sha256'], 'profile_path': profile_path, 'profile_sha256': sha(profile_raw),
              'profile': profile, 'input_root': str(root), 'retained_root': 'baseline-inputs'})
+
+    def _start_recorded(self, profile_path, profile_raw, root):
+        """Use the real qualified Python process. Old SOM files are data only."""
+        require(not self.closed and 'baseline' not in self.items, 'baseline service already started or closed')
+        oracle = self.ctx.module('recorded_before_oracle', ORACLE)
+        table, metadata, proof, verify = oracle.prepare_data(self.ctx.sources.read, profile_path, root)
+        require(proof['profile_sha256'] == sha(profile_raw) and proof['named_slots'] == 4572, 'recorded data source admission differs')
+        native = self.ctx.runtime()
+        python = Path(native['tools']['python']).resolve(strict=True)
+        wanted_python = native['identity']['python_sha256']
+        require_elf(python)
+        require(identity(python)['sha256'] == wanted_python, 'actual qualified base Python differs')
+        self.ctx.sources.read(FULL_DRIVER)
+        self.ctx.sources.read(CONTEXT)
+        directory = self.out / 'baseline'; directory.mkdir()
+        service = self.driver.OwnedService(python, root, {}, PORTS['baseline'], directory)
+        # Set the actual command before Popen. Never rewrite Popen.args or old receipts.
+        requested, expected_actual = recorded_python_arguments(python, self.ctx.repo, self.ctx.helper_revision,
+            self.ctx.candidate_revision, profile_path, root, directory / 'oracle', wanted_python)
+        service.argv = requested
+        frame = ('GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_TEMP',
+                 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_JOB')
+        require(all(type(os.environ.get(name)) is str and os.environ[name] for name in frame)
+                and os.environ['GITHUB_SHA'] == self.ctx.helper_revision == self.ctx.candidate_revision,
+                'real GitHub source/job frame required for recorded service')
+        service.environment = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8',
+            'TMPDIR': str(directory / 'tmp'), 'SOM_FULL_PRODUCT_CONTEXT': str(self.ctx.path),
+            **{name: os.environ[name] for name in frame}}
+        require(read(self.ctx.path) == self.ctx.raw == read(self.out.parent / 'context.input.json')
+                and os.environ.get('SOM_FULL_PRODUCT_CONTEXT') == str(self.ctx.path),
+                'recorded child requires the exact active checked Context')
+        initial = {'binary': self.driver.file_identity(python), 'assets': self.driver.tree_identity(root), 'tools': {}}
+        extra = {'mode': 'recorded-same-request-before', 'profile_path': profile_path, 'profile_sha256': sha(profile_raw),
+                 'profile': parse(profile_raw), 'input_root': str(root), 'oracle_out': 'oracle',
+                 'data_proof_sha256': sha(canonical(proof) + b'\n')}
+        record = {'role': 'baseline', 'port': PORTS['baseline'], 'argv': requested, 'requested_argv': requested,
+                  'environment': service.environment,
+                  'started_at': self.driver.utc(), 'initial_identities': initial, 'health_checks': [], 'extra': extra}
+        item = {'service': service, 'record': record, 'binary': python, 'assets': root, 'tools': {},
+                'handle': None, 'recorded_verify': verify, 'recorded_module': oracle}
+        self.items['baseline'] = item
+        (self.out / 'baseline-profile.raw').write_bytes(profile_raw)
+        record['owned_start'] = service.start()
+        require(list(service.process.args) == expected_actual
+                and self.ctx.python_argv(requested, cwd=directory) == expected_actual,
+                'actual native Python guard rewrite differs')
+        startup = getattr(service.process, '__som_native_startup_receipt__', None)
+        require(type(startup) is tuple and len(startup) == 2, 'actual native Python startup receipt missing')
+        startup_path, startup_proof = startup
+        startup_raw = read(startup_path)
+        require(Path(startup_path) == self.ctx.work / 'python-child-startups' / f'{os.getpid()}-{service.process.pid}.json'
+                and parse(startup_raw) == startup_proof, 'actual native startup source record differs')
+        (directory / 'native-python-startup.json').write_bytes(startup_raw)
+        extra['native_startup_source'] = str(startup_path)
+        extra['native_startup_sha256'] = sha(startup_raw)
+        extra['native_bootstrap_source_sha256'] = sha(self.ctx.sources.read(FULL_DRIVER))
+        record['argv'] = list(service.process.args)
+        record['proc_proof'] = proc_snapshot(service, directory)
+        status, raw, owner = service.call('/healthz')
+        (directory / 'health.response.raw').write_bytes(raw)
+        body = parse(raw)
+        compiler = {name: metadata[name] for name in ('binary_sha256', 'source_revision', 'health', 'health_role')}
+        require(status == 200 and body['version'] == 'som.recorded-before-oracle-health.v1'
+                and body['status'] == 'ok' and body['role'] == 'recorded-same-request-before'
+                and body['actual_runtime'] == 'qualified-linux-python' and body['runtime_python_sha256'] == wanted_python
+                and body['source_revision'] == body['candidate_revision'] == self.ctx.candidate_revision
+                and body['profile_sha256'] == proof['profile_sha256'] and body['table_sha256'] == proof['table_sha256']
+                and body['source_compiler'] == compiler and body['pid'] == owner['pid'], 'recorded data/Python/old compiler health roles differ')
+        require(owner_stamp(owner, initial['binary']['inode']) == owner_stamp(record['owned_start'], initial['binary']['inode']),
+                'recorded health has another executable/socket owner')
+        record['health'] = {'status': status, 'raw_sha256': sha(raw), 'owned_socket': owner, 'body': body}
+        runtime = {'version': 'som.recorded-before-oracle-runtime.v1', 'actual_runtime': 'qualified-linux-python',
+            'pid': owner['pid'], 'argv': record['argv'], 'port': PORTS['baseline'], 'binary_sha256': wanted_python,
+            'source_revision': self.ctx.helper_revision, 'candidate_revision': self.ctx.candidate_revision,
+            'profile_path': profile_path, 'profile_sha256': sha(profile_raw), 'health': body,
+            'source_compiler': compiler, 'accepted': False}
+        save(directory / 'runtime.json', runtime)
+        save(directory / 'started.json', record)
+        baseline_dir = root / 'approved/restored/.local/m6-hosted/baseline'
+        handle = {'url': f'http://127.0.0.1:{PORTS["baseline"]}', 'candidate_dir': str(baseline_dir), 'runtime': runtime}
+        item['handle'] = handle
+        return handle
 
     def _start(self, role, binary, assets, tools, extra):
         require(not self.closed and role in PORTS and role not in self.items, 'owned service role already started or closed')
@@ -457,7 +545,9 @@ class Services:
             'tools': {key: self.driver.tree_identity(path) if key == 'SOM_TS_PRETTIER' else self.driver.file_identity(path)
                       for key, path in item['tools'].items()}}
         require(current == record['initial_identities'], 'running source binary/assets/tools changed')
-        if record['role'] == 'baseline':
+        if record['role'] == 'baseline' and record['extra'].get('mode') == 'recorded-same-request-before':
+            item['recorded_verify']()
+        elif record['role'] == 'baseline':
             profile_inputs(record['extra']['profile'], record['extra']['input_root'], current_revision=self.ctx.candidate_revision)
 
     def close_all(self):
@@ -499,6 +589,17 @@ class Services:
                         cleanup['exit_code'] = code
                 attempt(role, 'wait', actual_wait)
             record['cleanup'] = cleanup
+            if role == 'baseline' and record.get('extra', {}).get('mode') == 'recorded-same-request-before':
+                def recorded_postcheck():
+                    require(process is not None and cleanup.get('wait_completed') is True
+                            and cleanup.get('exit_code') == cleanup.get('wait_exit_code') == 0,
+                            'recorded Python must finish its real native postchecks with exit zero')
+                    source = self.ctx.work / 'python-startup-postchecks' / f'{process.pid}.json'
+                    raw = read(source)
+                    (self.out / role / 'native-python-postcheck.json').write_bytes(raw)
+                    record['native_python_postcheck'] = {'source': str(source), 'sha256': sha(raw)}
+                    verify_recorded_python_startup(self.out / role, record, self.ctx.sources, self.ctx.data)
+                attempt(role, 'recorded-native-postcheck', recorded_postcheck)
             record['port_absent_after'] = attempt(role, 'listener-after', lambda: not self.driver.listeners(PORTS[role]))
             def final_inputs():
                 return {'binary': self.driver.file_identity(item['binary']), 'assets': self.driver.tree_identity(item['assets']),
@@ -570,6 +671,201 @@ def validate_owner_result(value, gate, revision):
             'owner gate did not provide complete independently verified evidence')
 
 
+def recorded_python_arguments(python, repo, helper, candidate, profile, inputs, output, python_sha256):
+    """Request the admitted script; the existing native guard owns the rewrite."""
+    tail = [str(Path(repo) / ORACLE), '--repo', str(repo), '--helper-revision', helper,
+            '--candidate-revision', candidate, '--profile', profile, '--inputs-root', str(inputs),
+            '--python-sha256', python_sha256, '--port', str(PORTS['baseline']), '--out', str(output)]
+    requested = [str(python), '-I', '-S', '-B', *tail]
+    actual = [str(python), '-I', '-S', '-B', str(Path(repo) / FULL_DRIVER), '--native-python-bootstrap', '--', *tail]
+    return requested, actual
+
+
+def validate_recorded_python_evidence(startup, post, *, requested, actual, pid, cwd, revision, source_reader, exit_code):
+    """Check the existing guard's real startup and terminal bootstrap protocol."""
+    require(type(exit_code) is int and exit_code == 0, 'recorded Python native bootstrap must exit zero')
+    require(startup == {'version': 'som.native-python-child-startup.v1', 'pid': pid,
+            'actual_argv': actual, 'original_requested_argv': requested, 'cwd': str(cwd),
+            'helper_revision': revision, 'candidate_revision': revision, 'product_acceptance_passed': False},
+            'recorded Python actual guarded startup differs')
+    require(post.get('version') == 'som.native-python-child-postcheck.v1'
+            and post.get('helper_revision') == post.get('candidate_revision') == revision
+            and post.get('actual_argv') == actual and post.get('original_python_arguments') == requested[4:]
+            and post.get('entry_executed') is True and post.get('postchecks_passed') is True
+            and type(post.get('exit_code')) is int and post['exit_code'] == 0
+            and post.get('product_acceptance_passed') is False
+            and 'error' not in post and 'postcheck_error' not in post,
+            'recorded Python native entry or final postcheck failed')
+    require(post.get('payload') == {'version': 'som.native-python-startup-payload.v1',
+            'role': 'qualified-base-no-site', 'python': actual[0], 'site': None,
+            'pth_executed': False, 'product_acceptance_passed': False}, 'recorded Python payload differs')
+    pins = post.get('source_sha256')
+    require(type(pins) is dict and {CONTEXT, ORACLE} <= set(pins)
+            and all(sha(source_reader(name)) == digest for name, digest in pins.items()),
+            'recorded Python terminal source checks differ')
+
+
+def verify_recorded_python_startup(directory, record, sources, data):
+    """Read retained and actual same-job native records. Never synthesize receipts."""
+    context_raw = read(directory.parent.parent / 'context.input.json')
+    require(parse(context_raw) == data and data['repo'] == str(sources.root)
+            and data['helper_revision'] == data['candidate_revision'] == sources.revision
+            and data['qa_mode'] == 'native-qa-v1'
+            and read(record['environment']['SOM_FULL_PRODUCT_CONTEXT']) == context_raw,
+            'recorded native child Context differs from the actual checked Context')
+    python = Path(data['runtime_root']) / 'install/python/bin/python3.12'
+    requested, actual = recorded_python_arguments(python, sources.root, sources.revision, sources.revision,
+        record['extra']['profile_path'], record['extra']['input_root'], directory / 'oracle', identity(python)['sha256'])
+    require(record['requested_argv'] == requested and record['argv'] == actual
+            and record['extra']['native_bootstrap_source_sha256'] == sha(sources.read(FULL_DRIVER)),
+            'recorded actual bootstrap source or command differs')
+    pid = record['owned_start']['pid']
+    proc = read(directory / 'start.proc-stat.raw').rsplit(b')', 1)[1].split()
+    startup_source = Path(data['work_root']) / 'python-child-startups' / f'{int(proc[1])}-{pid}.json'
+    startup_raw = read(directory / 'native-python-startup.json')
+    require(record['extra']['native_startup_source'] == str(startup_source)
+            and read(startup_source) == startup_raw and sha(startup_raw) == record['extra']['native_startup_sha256'],
+            'actual native startup receipt was not retained unchanged')
+    post_source = Path(data['work_root']) / 'python-startup-postchecks' / f'{pid}.json'
+    post_raw = read(directory / 'native-python-postcheck.json')
+    require(record['native_python_postcheck'] == {'source': str(post_source), 'sha256': sha(post_raw)}
+            and read(post_source) == post_raw and record['cleanup']['wait_exit_code'] == record['cleanup']['exit_code'],
+            'actual terminal native Python postcheck was not retained unchanged')
+    validate_recorded_python_evidence(parse(startup_raw), parse(post_raw), requested=requested, actual=actual,
+        pid=pid, cwd=directory, revision=sources.revision, source_reader=sources.read, exit_code=record['cleanup']['exit_code'])
+
+
+def qualified_recorded_python(sources, data):
+    """Rederive the checked runtime tree without reimporting fixed bootstrap names."""
+    base = BASE + 'product_runtime/'
+    policy = parse(sources.read(BASE + 'product_python/wheel-policy.json'))
+    qualification_raw = sources.read(base + 'runtime-bf3-qualification.json')
+    audit_raw = sources.read(base + 'runtime-bf3-byte-audit.json')
+    qualification, audit = parse(qualification_raw), parse(audit_raw)
+    authority = policy['native_authority']
+    require(sha(audit_raw) == authority['controller_byte_audit_sha256'] == qualification['audit']['sha256']
+            and qualification['audit']['path'] == base + 'runtime-bf3-byte-audit.json'
+            and qualification['version'] == 'som.product-runtime-artifact-qualification.v1'
+            and qualification['qualified_for'] == 'later_GitHub_tests_only'
+            and qualification['product_runtime_ready'] is False and qualification['product_acceptance_passed'] is False
+            and audit['qualification_evidence_verified'] is True and audit['product_acceptance_passed'] is False
+            and audit['tested_sha'] == qualification['source_revision']
+            and audit['artifact_id'] == qualification['artifact_id']
+            and audit['artifact_github_digest'] == qualification['artifact_sha256'], 'qualified runtime source/controller binding differs')
+    root = regular_root(data['runtime_root'])
+    require(str(root) == qualification['install_prefix'], 'recorded service runtime prefix differs')
+    inventory_raw = read(root / 'qualification-evidence/installed-files.json')
+    require(sha(inventory_raw) == authority['qualified_inventory_sha256']
+            == qualification['transport_files']['installed-files.json'] == audit['installed_inventory_sha256'],
+            'complete qualified runtime inventory differs')
+    inventory = parse(inventory_raw)
+    expected_dirs = {parent.as_posix() for name in inventory for parent in Path(member(name)).parents if parent.as_posix() != '.'}
+    files, directories, aliases, regular = set(), {'install'}, {}, 0
+    for path in (root / 'install').rglob('*'):
+        name = path.relative_to(root).as_posix(); info = path.lstat()
+        if stat.S_ISDIR(info.st_mode):
+            directories.add(name)
+            continue
+        files.add(name)
+        require(name in inventory, 'unexpected qualified runtime member')
+        row = inventory[name]
+        if row['kind'] == 'regular_file':
+            require(set(row) == {'kind', 'sha256', 'executable_bit'} and type(row['executable_bit']) is bool
+                    and stat.S_ISREG(info.st_mode) and not path.is_symlink()
+                    and identity(path) == {'sha256': row['sha256'], 'size': info.st_size,
+                                           'mode': 0o755 if row['executable_bit'] else 0o644}, 'qualified runtime byte/mode changed')
+            regular += 1
+        else:
+            target = row.get('target')
+            require(set(row) == {'kind', 'target', 'sha256', 'qualification_probe_executed', 'runtime_admitted'}
+                    and row['kind'] == 'alias_not_admitted' and row['qualification_probe_executed'] is False
+                    and row['runtime_admitted'] is False and type(target) is str and '/' not in target and target not in ('', '.', '..')
+                    and stat.S_ISLNK(info.st_mode) and os.readlink(path) == target and sha(target.encode()) == row['sha256']
+                    and qualification['aliases'].get(name) == target
+                    and inventory[str(Path(name).parent / target)]['kind'] == 'regular_file', 'qualified internal alias changed or became executable authority')
+            aliases[name] = target
+    require(files == set(inventory) and directories == expected_dirs
+            and regular == qualification['counts']['regular_installed_files'] and aliases == qualification['aliases'],
+            'whole qualified runtime tree/count differs')
+    receipt = parse(read(root / 'receipt.json'))
+    require(receipt['version'] == 'som.product-runtime-reuse.v1'
+            and receipt['status'] == 'audited_runtime_reinstalled_and_rechecked_for_hosted_tests'
+            and receipt['tested_sha'] == sources.revision and receipt['qualified_for'] == 'later_GitHub_tests_only'
+            and receipt['installed_tree_verified_before'] is True and receipt['installed_tree_verified_after'] is True
+            and receipt['product_runtime_ready'] is False and receipt['product_acceptance_passed'] is False
+            and receipt['qualification']['manifest_sha256'] == sha(qualification_raw)
+            and receipt['qualification']['audit_sha256'] == sha(audit_raw)
+            and receipt['qualification']['installed_inventory_sha256'] == sha(inventory_raw), 'runtime reuse source/evidence differs')
+    admitted = receipt['admitted_executables']
+    require(set(admitted) == set(qualification['admitted_paths']) and len(admitted) == 41, 'complete native runtime tool scope required')
+    for name, item in admitted.items():
+        require(inventory[name]['kind'] == 'regular_file' and inventory[name]['executable_bit'] is True
+                and item['status'] == 'hash_and_version_rechecked' and item['version_exit_code'] == 0
+                and item['qualified_for'] == 'later_GitHub_tests_only' and item['authority'] == 'controller_audited_saved_artifact'
+                and item['sha256'] == inventory[name]['sha256'], 'runtime executable admission differs')
+    python = root / 'install/python/bin/python3.12'
+    require_elf(python)
+    require(identity(python)['sha256'] == policy['native_sha256']['python']
+            == admitted['install/python/bin/python3.12']['sha256']
+            and admitted['install/python/bin/python3.12']['version_stdout'].strip() == 'Python 3.12.11', 'actual qualified Python differs')
+    return python
+
+
+def verify_service_cleanup(directory, record, stamp, purpose):
+    cleanup = parse(read(directory / 'cleanup.json'))
+    require(cleanup == record['cleanup'] and cleanup.get('owned_pid') == stamp['pid']
+            and cleanup.get('cleanup_passed') is True and cleanup.get('wait_completed') is True
+            and type(cleanup.get('exit_code')) is int and cleanup.get('wait_exit_code') == cleanup['exit_code']
+            and cleanup.get('remaining_owned_session_members') == [] and cleanup.get('signal_target') == 'owned new process group only'
+            and cleanup.get('signals') in ([], ['SIGTERM'], ['SIGTERM', 'SIGKILL']) and record['port_absent_after'] is True
+            and sha(read(directory / 'server.log')) == record['server_log_sha256'], 'actual owned wait/log/group cleanup differs')
+    events = [parse(line) for line in read(directory / 'server.log').splitlines() if line.startswith(b'{')]
+    require(events and events[0] == {'stage': 'listening', 'address': f'127.0.0.1:{record["port"]}', 'purpose': purpose},
+            'actual owning server listening event differs')
+
+
+def verify_recorded_service(root, directory, record, stamp, sources):
+    profile_path = member(record['extra']['profile_path'])
+    require(profile_path.startswith(BASE) and profile_path.endswith('.json'), 'recorded profile source scope differs')
+    profile_raw = sources.read(profile_path)
+    require(read(root / 'baseline-profile.raw') == profile_raw and sha(profile_raw) == record['extra']['profile_sha256']
+            and parse(profile_raw) == record['extra']['profile'], 'recorded profile differs from admitted raw Git')
+    data = parse(read(root.parent / 'context.input.json'))
+    selected = data.get('baseline_inputs', {}).get(profile_path)
+    require(type(selected) is str and record['extra']['input_root'] == selected
+            and record['extra']['oracle_out'] == 'oracle', 'actual recorded input source root differs')
+    inputs = regular_root(selected)
+    python = qualified_recorded_python(sources, data)
+    runtime = parse(read(directory / 'runtime.json'))
+    requested, argv = recorded_python_arguments(python, sources.root, sources.revision, sources.revision,
+        profile_path, inputs, directory / 'oracle', identity(python)['sha256'])
+    require(record['argv'] == runtime['argv'] == argv and record['port'] == runtime['port'] == PORTS['baseline']
+            and runtime['pid'] == stamp['pid'] and runtime['binary_sha256'] == identity(python)['sha256']
+            and record['initial_identities'] == record['final_identities']
+            and portable(record['initial_identities']) == {'binary': identity(python), 'assets': tree(inputs), 'tools': {}},
+            'actual recorded runtime executable/data identities differ')
+    frame = {'GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_TEMP',
+             'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_JOB'}
+    environment = record['environment']
+    require(set(environment) == {'PATH', 'LANG', 'LC_ALL', 'TMPDIR', 'SOM_FULL_PRODUCT_CONTEXT', *frame}
+            and environment['PATH'] == '/usr/bin:/bin' and environment['LANG'] == environment['LC_ALL'] == 'C.UTF-8'
+            and environment['TMPDIR'] == str(directory / 'tmp') and environment['GITHUB_ACTIONS'] == 'true'
+            and environment['RUNNER_ENVIRONMENT'] == 'github-hosted' and environment['RUNNER_OS'] == 'Linux'
+            and environment['GITHUB_SHA'] == sources.revision
+            and all(type(environment[name]) is str and environment[name] for name in frame), 'recorded Python environment/frame differs')
+    require(record['requested_argv'] == requested, 'recorded original script request differs')
+    verify_recorded_python_startup(directory, record, sources, data)
+    oracle = raw_module(sources, '_som_recorded_service_verify', ORACLE)
+    try:
+        verified = oracle.verify_recorded_run(directory / 'oracle', sources.read, sources.revision, sources.revision,
+            profile_path, inputs, repo=sources.root, runtime=runtime)
+        require(verified['profile_sha256'] == sha(profile_raw)
+                and sha(read(directory / 'oracle/data-proof.json')) == record['extra']['data_proof_sha256'], 'recorded complete data proof differs')
+    finally:
+        sys.modules.pop('_som_recorded_service_verify', None)
+    verify_service_cleanup(directory, record, stamp, 'recorded-same-request-before')
+
+
 def verify_services(root, value, trusted, layout, sources):
     require(value.get('version') == 'som.current-candidate-services.v1' and value.get('errors') == []
             and value['protected_before'] == value['protected_after']
@@ -590,8 +886,10 @@ def verify_services(root, value, trusted, layout, sources):
         raw = read(directory / 'health.response.raw')
         require(record['health']['status'] == 200 and sha(raw) == record['health']['raw_sha256']
                 and parse(raw) == record['health']['body'], 'raw health record differs')
-        initial_record = {key: item for key, item in record.items()
-                          if key not in {'cleanup', 'final_identities', 'port_absent_after', 'server_log_sha256'}}
+        after_start_fields = {'cleanup', 'final_identities', 'port_absent_after', 'server_log_sha256'}
+        if role == 'baseline' and record['extra'].get('mode') == 'recorded-same-request-before':
+            after_start_fields.add('native_python_postcheck')
+        initial_record = {key: item for key, item in record.items() if key not in after_start_fields}
         initial_record['health_checks'] = []
         require(parse(read(directory / 'started.json')) == initial_record and record['health_checks'], 'actual startup or post-gate health evidence missing')
         for index, check in enumerate(record['health_checks']):
@@ -601,6 +899,9 @@ def verify_services(root, value, trusted, layout, sources):
                     and owner_stamp(check['owned_socket'], inode) == stamp, 'post-gate raw health/owner evidence differs')
         require(set(tree(directory / 'health-checks')) == {f'{index:04d}/{name}' for index in range(len(record['health_checks']))
                     for name in ('response.raw', 'record.json')}, 'post-gate health raw member universe differs')
+        if role == 'baseline' and record['extra'].get('mode') == 'recorded-same-request-before':
+            verify_recorded_service(root, directory, record, stamp, sources)
+            continue
         if role == 'current':
             require(raw == trusted.proof.read('health.response.raw')
                     and portable(record['initial_identities']) == trusted.carrier['identity']
@@ -659,6 +960,66 @@ def verify_services(root, value, trusted, layout, sources):
     require(read(Path(layout['candidate_dir']) / 'runtime.json') == read(root / 'current/runtime.json'), 'candidate runtime copy differs')
 
 
+def verify_owner_postclose(root, source_reader, helper_revision, candidate_revision, gate, *, repo, proof_roots):
+    """Rederive shared source/layout/process cleanup; owner gate checks remain separate."""
+    require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'GitHub Linux post-close verifier only')
+    root = regular_root(root)
+    require(root.name == 'owner' and helper_revision == candidate_revision and gate in GATES,
+            'exact shared owner source and directory required')
+    shared = root.parent
+    capture_raw = read(root / 'result.json')
+    capture = parse(capture_raw)
+    require(capture.get('gate') == gate and capture.get('helper_revision') == capture.get('candidate_revision') == candidate_revision
+            and capture.get('product_acceptance_passed') is False, 'owner capture identity differs')
+    names = ('_som_owner_postclose_layout', '_som_owner_postclose_semantic')
+    with admitted_sources(repo, helper_revision, source_reader, namespace='_som_owner_postclose_authority') as (sources, authority, admission):
+        roots = roots_checked(proof_roots, shared, sources.root)
+        context_raw = read(shared / 'context.input.json')
+        data = parse(context_raw)
+        require(data.get('repo') == str(sources.root) and data.get('helper_revision') == data.get('candidate_revision') == candidate_revision
+                and data.get('qa_mode') == 'native-qa-v1' and data.get('native_source_authority') == admission
+                and all(data[name] == str(path) for name, path in roots.items()), 'shared Context/proof source differs')
+        spec = adapter_spec(data, gate, admission, sources)
+        catalog_raw = read(shared / 'artifact-inputs.json')
+        catalog = parse(catalog_raw)
+        try:
+            layout_module = raw_module(sources, names[0], LAYOUT)
+            semantic = raw_module(sources, names[1], SEMANTIC)
+            layout = layout_module.verify_candidate_layout(shared / 'candidate', sources.read, helper_revision, candidate_revision,
+                **layout_arguments(sources, roots, shared / 'restored-candidate', catalog))
+            services_raw = read(shared / 'services/manifest.json')
+            with semantic.trusted_proof_bundle(sources.root, sources.read, helper_revision, candidate_revision, roots, shared, admission) as trusted:
+                verify_services(shared / 'services', parse(services_raw), trusted, layout, sources)
+            proof = {'version': 'som.owner-shared-postclose-proof.v1', 'gate': gate,
+                'helper_revision': helper_revision, 'candidate_revision': candidate_revision,
+                'capture_result_sha256': sha(capture_raw), 'context_sha256': sha(context_raw),
+                'artifact_inputs_sha256': sha(catalog_raw), 'services_manifest_sha256': sha(services_raw),
+                'layout_binding_sha256': sha(canonical(layout_binding(layout))),
+                'source_admission_sha256': sha(canonical(admission)), 'owner_adapter': spec,
+                'proof_files_sha256': sha(canonical({name: tree(path) for name, path in roots.items()})),
+                'bound_source_sha256': dict(sorted(sources.pins.items())),
+                'owned_waits_complete': True, 'owned_cleanup_complete': True,
+                'product_acceptance_passed': False}
+            require(read(root / 'result.json') == capture_raw and read(shared / 'context.input.json') == context_raw
+                    and read(shared / 'artifact-inputs.json') == catalog_raw
+                    and read(shared / 'services/manifest.json') == services_raw, 'post-close raw inputs changed')
+        finally:
+            for name in names: sys.modules.pop(name, None)
+    return proof
+
+
+def verify_owner_phase_join(root, capture_raw, verified, shared_proof):
+    """Bind the new verified result to immutable capture bytes and actual cleanup."""
+    capture = parse(capture_raw)
+    require(capture.get('owned_waits_complete') is False and capture.get('owned_cleanup_complete') is False,
+            'capture must keep shared waits and cleanup pending')
+    require(verified != capture and verified.get('capture_result_sha256') == sha(capture_raw)
+            and verified.get('shared_postclose_proof') == shared_proof
+            and shared_proof['capture_result_sha256'] == sha(capture_raw)
+            and read(Path(root) / 'result.json') == capture_raw,
+            'verified owner result does not bind unchanged capture and rederived shared cleanup')
+
+
 def verify_result(root, source_reader, helper_revision, candidate_revision, gate, *, repo, proof_roots):
     require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'GitHub Linux verifier only')
     root = regular_root(root)
@@ -692,8 +1053,14 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
             verified = owner.verify_result(root / 'owner', sources.read, helper_revision, candidate_revision, gate,
                 repo=sources.root, proof_roots=roots)
             validate_owner_result(verified, gate, candidate_revision)
-            require(verified == report['owner_result'] and sha(read(root / 'owner/result.json')) == report['owner_result_sha256'],
-                    'actual owner verifier/raw result join differs')
+            capture_raw = read(root / 'owner/result.json')
+            shared_proof = verify_owner_postclose(root / 'owner', sources.read, helper_revision, candidate_revision, gate,
+                repo=sources.root, proof_roots=roots)
+            verify_owner_phase_join(root / 'owner', capture_raw, verified, shared_proof)
+            require(verified == report['owner_result'] == parse(read(root / 'owner/verified-result.json'))
+                    and sha(capture_raw) == report['owner_capture_result_sha256']
+                    and sha(read(root / 'owner/verified-result.json')) == report['owner_verified_result_sha256'],
+                    'actual owner verifier/capture/verified result join differs')
             require(all(report.get(k) is True for k in ('complete', 'all_required_passed', 'owned_waits_complete', 'owned_cleanup_complete', 'raw_logs_complete')),
                     'incomplete shared result')
             require(read(root / 'result.json') == raw and tree(root) == {'result.json': identity(root / 'result.json'), **snapshot}, 'shared raw files changed during join')
@@ -764,15 +1131,21 @@ def main(argv=None):
                     with owned_cleanup(services, cancellation, report):
                         services.start_current()
                         returned = owner.run_gate(ctx, Path(report['layout']['candidate_dir']), services, output, args.gate)
-                        require(type(returned) is dict and parse(read(output / 'result.json')) == returned,
+                        capture_raw = read(output / 'result.json')
+                        require(type(returned) is dict and parse(capture_raw) == returned,
                                 'actual owner hook must return its retained result object')
                         services.verify_all()
                     require(cancellation['signal'] is None, 'owned gate was interrupted')
             verified = owner.verify_result(output, sources.read, args.helper_revision, args.candidate_revision, args.gate,
                 repo=sources.root, proof_roots=roots)
             validate_owner_result(verified, args.gate, args.candidate_revision)
-            require(verified == returned, 'owner run and actual independent owner verifier differ')
-            report['owner_result'], report['owner_result_sha256'] = verified, sha(read(output / 'result.json'))
+            shared_proof = verify_owner_postclose(output, sources.read, args.helper_revision, args.candidate_revision, args.gate,
+                repo=sources.root, proof_roots=roots)
+            verify_owner_phase_join(output, capture_raw, verified, shared_proof)
+            save(output / 'verified-result.json', verified)
+            report['owner_result'] = verified
+            report['owner_capture_result_sha256'] = sha(capture_raw)
+            report['owner_verified_result_sha256'] = sha(read(output / 'verified-result.json'))
             require(layout_module.verify_candidate_layout(args.out / 'candidate', sources.read, args.helper_revision, args.candidate_revision,
                 **layout_arguments(sources, roots, restored['root'], catalog)) == report['layout'], 'same-build candidate layout changed during gate')
             ctx.verify(); sources.verify()
