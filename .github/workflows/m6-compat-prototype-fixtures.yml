@@ -13,6 +13,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 0
           persist-credentials: false
       - name: Test unused synthetic-only comparison algorithms
         working-directory: .github/m6-native-compat-prototype
@@ -21,3 +22,8 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           python3 -m unittest -v test_strict_adapter test_synthetic_only
+      - name: Test React historical source binding experiment
+        working-directory: .github/m6-react-source-binding
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest -v test_react_source_snapshot
