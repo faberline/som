@@ -132,6 +132,18 @@ def audit_product_owners(root, manifest, groups):
              'product owner snapshots differ')
         prior=[(i,e) for i,e in enumerate(events[:before]) if e.get('kind')=='child-start' and e.get('pid')==pid]
         need(len(prior)==1,'product child start missing'); child=prior[0][1]
+        cwd=child.get('cwd'); argv=child.get('argv')
+        need(type(cwd) is str and Path(cwd).is_absolute() and Path(cwd).name ==
+             ('py_' if key[1]=='python' else 'rs_')+case_key(key[0]) and type(argv) is list and argv,
+             'product case command identity differs')
+        if key[1]=='rust': need(argv == [str(Path(cwd)/'som_app')], 'Rust product command differs')
+        else:
+            need(len(argv)>=8 and argv[1:3]==['-m','uvicorn'] and '--host' in argv and
+                 argv[argv.index('--host')+1]=='127.0.0.1' and '--port' in argv and
+                 argv[argv.index('--port')+1]==str(port), 'Python product command differs')
+        cwd_argv=['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn']
+        code,cwd_raw=a.command_raw(root.parent,start['cwd'],cwd_argv)
+        need(code==0 and ('n'+cwd) in cwd_raw.decode().splitlines(), 'product process cwd differs')
         need(any(e.get('kind')=='child-wait' and e.get('identity')==child.get('identity') and e.get('pid')==pid
                  and e.get('state')=='completed' and type(e.get('exit_code')) is int for e in events[before:after]),
              'product child wait missing')

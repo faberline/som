@@ -481,10 +481,12 @@ class ParityIndependentChecks(unittest.TestCase):
             ps=['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command=']
             listener=['/usr/sbin/lsof','-nP',f'-iTCP:{port}','-sTCP:LISTEN','-t']
             start={'kind':'process','phase':'product-ready','pid':pid,'port':port,
-                   'ps':command(ps,0,b'1234 1 1234 fake-product\n'),'listener':command(listener,0,b'1234\n')}
+                   'ps':command(ps,0,b'1234 1 1234 fake-product\n'),'listener':command(listener,0,b'1234\n'),
+                   'cwd':command(['/usr/sbin/lsof','-a','-p','1234','-d','cwd','-Fn'],0,b'p1234\nn/tmp/py_example\n')}
             stop={'kind':'process','phase':'product-stopped','pid':pid,'port':port,
                   'ps':command(ps,1,b''),'listener':command(listener,1,b'')}
-            events=[{'kind':'child-start','identity':7,'pid':pid},start,
+            events=[{'kind':'child-start','identity':7,'pid':pid,'cwd':'/tmp/py_example',
+                     'argv':['python','-m','uvicorn','app','--host','127.0.0.1','--port','19021']},start,
                     {'kind':'child-wait','identity':7,'pid':pid,'state':'completed','exit_code':-15},stop]
             (life/'receipt.json').write_text(json.dumps({'version':'som.m6-mac-parity-capture.v1','recording_errors':[],'events':events}))
             owner={'id':1,'case':'example','target':'python','base':'http://127.0.0.1:19021','pid':pid,'start_event':1,'stop_event':3}
