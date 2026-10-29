@@ -63,6 +63,8 @@ class RecoveryLoopback(unittest.TestCase):
         self.config = self.fixture.config
         for role in ('previous', 'candidate'):
             binding = self.config[role]
+            # The real process controller requires an explicit healthy status.
+            self.fixture.runtimes[role]['health']['status'] = 'ok'
             shutil.copy2(self.binaries[role], binding['binary']['path'])
             sha = rc.digest(binding['binary']['path'])
             binding['binary']['sha256'] = sha
@@ -70,6 +72,8 @@ class RecoveryLoopback(unittest.TestCase):
                 path = Path(binding[name]['path'])
                 doc = json.loads(path.read_bytes())
                 doc['binary_sha256'] = sha
+                if name == 'runtime':
+                    doc['health']['status'] = 'ok'
                 path.write_text(json.dumps(doc))
                 binding[name]['sha256'] = rc.digest(path)
         for role in ('previous', 'candidate'):
