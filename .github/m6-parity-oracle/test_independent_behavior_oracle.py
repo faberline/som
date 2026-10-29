@@ -107,6 +107,24 @@ class OracleIntegration(unittest.TestCase):
                     elif mutation=='extra':changed.append(copy.deepcopy(changed[-1]))
                     else:changed.pop()
                     with self.assertRaises(oracle.OracleError,msg=name+' '+mutation):oracle.check(prompt,changed,include_strict=True)
+                # Change the actual value in each applicable category. This
+                # checks that stateful rows, query and strict paths are not
+                # accepted solely because both producers agree with each other.
+                for category in ('crud','not_found','unique','validation','defaults','null',
+                                 'filter','date_filter','limit','pagination','order','fallback',
+                                 'scope','isolation','restrict','batch','batch_atomic','bounds',
+                                 'healthz','D1','D2','D3','D4','D5'):
+                    indexes=[i for i,(event,_) in enumerate(actual) if event['category']==category]
+                    if not indexes:
+                        continue
+                    i=indexes[len(indexes)//2]
+                    for mutation in ('status','path','body'):
+                        changed=copy.deepcopy(actual)
+                        if mutation=='status':changed[i][0]['status']=599
+                        elif mutation=='path':changed[i][0]['request']['path']+='/tampered'
+                        else:changed[i][0]['body']={'tampered':True}
+                        with self.assertRaises(oracle.OracleError,msg=f'{name} {category} {mutation}'):
+                            oracle.check(prompt,changed,include_strict=True)
     def test_type_equality_never_treats_boolean_as_integer(self):
         self.assertFalse(oracle.same(True,1))
         self.assertFalse(oracle.same(1,1.0))
