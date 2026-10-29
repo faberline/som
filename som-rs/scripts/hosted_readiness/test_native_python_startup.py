@@ -182,10 +182,16 @@ print(json.dumps({'value':startupfixture.VALUE,'uv_hook_executed':'_virtualenv' 
         with self.payload() as f:
             marker = f.root / 'site-hook-marker'
             (f.site/'sitecustomize.py').write_text('from pathlib import Path\nPath('+repr(str(marker))+').write_text("BAD")\n')
-            ordinary=subprocess.run([str(f.venv/'bin/python'),'-B','-c','pass'],capture_output=True,check=False)
-            self.assertEqual(ordinary.returncode,0);self.assertEqual(marker.read_text(),'BAD');marker.unlink()
-            result=self.child_probe(f)
-            self.assertNotEqual(result.returncode,0);self.assertFalse(marker.exists())
+            # Both actual children receive the same hook input. The isolated child
+            # must ignore PYTHONPATH and refuse the extra payload before execution.
+            # The ordinary control must prove which startup module actually ran.
+            with mock.patch.dict(os.environ, {'PYTHONPATH': str(f.site)}):
+                ordinary=subprocess.run([str(f.venv/'bin/python'),'-B','-c',
+                    'import sys; print(sys.modules["sitecustomize"].__file__)'],capture_output=True,check=False)
+                self.assertEqual(ordinary.returncode,0);self.assertEqual(marker.read_text(),'BAD');marker.unlink()
+                self.assertEqual(Path(ordinary.stdout.decode().strip()), f.site/'sitecustomize.py')
+                result=self.child_probe(f)
+                self.assertNotEqual(result.returncode,0);self.assertFalse(marker.exists())
 
     def test_real_matching_timestamp_pyc_is_not_consumed_before_payload_rejection(self):
         import importlib.util
