@@ -210,10 +210,72 @@ def run_gate(ctx, candidate_dir, services, out, gate):
                 report['audit_sha256'] = sha(raw)
         except BaseException as error:
             report['audit_capture_error'] = type(error).__name__ + ': ' + str(error)
-        report['bound_source_sha256'] = dict(sorted(ctx.sources.pins.items()))
-        report['saved_files_sha256'] = inventory(out)
-        save(out / 'result.json', canonical(report) + b'\n')
+        finalize_report(ctx, out, report)
     return report
+
+
+def partial_output_inventory(root):
+    """List safe retained files after a failed strict inventory, without following links."""
+    files, omitted, errors = {}, [], []
+    def failed(error):
+        errors.append({'path': '.', 'error': type(error).__name__})
+    for directory, dirs, names in os.walk(root, topdown=True, followlinks=False, onerror=failed):
+        safe_dirs = []
+        for name in sorted(dirs):
+            path = Path(directory) / name
+            rel = path.relative_to(root).as_posix()
+            try:
+                mode = path.lstat().st_mode
+                if stat.S_ISDIR(mode) and not stat.S_ISLNK(mode):
+                    safe_dirs.append(name)
+                else:
+                    omitted.append(rel)
+            except OSError as error:
+                errors.append({'path': rel, 'error': type(error).__name__})
+        dirs[:] = safe_dirs
+        for name in sorted(names):
+            path = Path(directory) / name
+            rel = path.relative_to(root).as_posix()
+            try:
+                mode = path.lstat().st_mode
+                if stat.S_ISREG(mode) and not stat.S_ISLNK(mode):
+                    files[rel] = sha(read(path))
+                else:
+                    omitted.append(rel)
+            except (OSError, ValueError) as error:
+                errors.append({'path': rel, 'error': type(error).__name__})
+    return {'files': dict(sorted(files.items())), 'omitted': omitted, 'errors': errors,
+            'complete': False, 'source_stability_verified': False}
+
+
+def finalize_report(ctx, out, report):
+    """Retain the original outcome when bookkeeping or result writing fails."""
+    errors = report.setdefault('finalization_errors', [])
+    try:
+        report['bound_source_sha256'] = dict(sorted(ctx.sources.pins.items()))
+    except BaseException as error:
+        errors.append({'stage': 'source_pins', 'error': type(error).__name__ + ': ' + str(error)})
+        report['bound_source_sha256'] = {}
+    try:
+        report['saved_files_sha256'] = inventory(out)
+    except BaseException as error:
+        errors.append({'stage': 'inventory', 'error': type(error).__name__ + ': ' + str(error)})
+        try:
+            partial = partial_output_inventory(out)
+            report['saved_files_sha256'] = partial['files']
+            report['partial_output_inventory'] = partial
+        except BaseException as secondary:
+            errors.append({'stage': 'partial_inventory', 'error': type(secondary).__name__ + ': ' + str(secondary)})
+            report['saved_files_sha256'] = {}
+    try:
+        save(out / 'result.json', canonical(report) + b'\n')
+    except BaseException as error:
+        errors.append({'stage': 'write_result', 'error': type(error).__name__ + ': ' + str(error)})
+        # One bounded alternate file. No recursion or deletion of partial data.
+        try:
+            save(out / 'result.partial.json', canonical(report) + b'\n')
+        except BaseException as secondary:
+            errors.append({'stage': 'write_partial_result', 'error': type(secondary).__name__ + ': ' + str(secondary)})
 
 
 def copy_capture(source, destination):
@@ -275,25 +337,33 @@ def copy_capture(source, destination):
 def command_evidence(ctx, out, name, command):
     """Copy actual raw streams, including partial output after command failure."""
     record = dict(command)
-    row = {'id': name, 'command': record, 'streams_complete': False, 'postcheck': None}
+    row = {'id': name, 'command': record, 'streams_complete': False, 'postcheck': None,
+           'capture_errors': []}
     streams = 0
     for kind in ('stdout', 'stderr'):
         if kind not in command:
             continue
-        data = read(ctx.work / command[kind])
-        require(sha(data) == command[kind + '_sha256'], 'command log changed')
-        relative = 'logs/' + name + '.' + kind
-        save(out / relative, data)
-        row[kind] = relative
-        streams += 1
+        try:
+            data = read(ctx.work / command[kind])
+            relative = 'logs/' + name + '.' + kind
+            save(out / relative, data)
+            row[kind] = relative
+            row[kind + '_observed_sha256'] = sha(data)
+            require(row[kind + '_observed_sha256'] == command[kind + '_sha256'], 'command log changed')
+            streams += 1
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            row['capture_errors'].append({'stage': kind, 'error': type(error).__name__ + ': ' + str(error)})
     row['streams_complete'] = streams == 2
     if type(command.get('pid')) is int:
-        path = ctx.work / 'checker-postchecks' / (str(command['pid']) + '.json')
-        if path.is_file():
-            post = read(path)
-            relative = 'logs/' + name + '.postcheck.json'
-            save(out / relative, post)
-            row.update(postcheck=relative, postcheck_sha256=sha(post))
+        try:
+            path = ctx.work / 'checker-postchecks' / (str(command['pid']) + '.json')
+            if path.is_file():
+                post = read(path)
+                relative = 'logs/' + name + '.postcheck.json'
+                save(out / relative, post)
+                row.update(postcheck=relative, postcheck_sha256=sha(post))
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            row['capture_errors'].append({'stage': 'postcheck', 'error': type(error).__name__ + ': ' + str(error)})
     return row
 
 
@@ -304,9 +374,13 @@ def run_command(ctx, module, repo, env, out, report, label, script, arguments, t
         command = ctx.command(module.tool_command(repo / script, arguments), repo, env,
                               'm6-react-' + label, timeout=timeout, check=False)
     except BaseException:
-        rows = ctx.cache.get('commands', [])
-        if len(rows) == prior + 1:
-            report['rows'].append(command_evidence(ctx, out, label, rows[-1]))
+        try:
+            rows = ctx.cache.get('commands', [])
+            if len(rows) == prior + 1:
+                report['rows'].append(command_evidence(ctx, out, label, rows[-1]))
+        except BaseException as error:
+            report.setdefault('command_evidence_errors', []).append(
+                {'stage': label, 'error': type(error).__name__ + ': ' + str(error)})
         raise
     return command_evidence(ctx, out, label, command)
 

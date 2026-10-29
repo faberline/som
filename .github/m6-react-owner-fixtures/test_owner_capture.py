@@ -56,6 +56,7 @@ class OwnerCapture(unittest.TestCase):
             verify_all=mock.Mock(), close_all=mock.Mock())
         self.module = SimpleNamespace(context=lambda:self.ctx, tool_command=lambda script, args: [str(script), *args])
         self.interrupt = False
+        self.signal = False
         self.runtime_links = False
 
         def command(argv, cwd, env, label, timeout, check):
@@ -83,6 +84,8 @@ class OwnerCapture(unittest.TestCase):
             self.ctx.cache['commands'].append(record)
             if self.interrupt and label == 'm6-react-collector':
                 record['exit_code'] = None; record['wait_completed'] = False
+                if self.signal:
+                    raise KeyboardInterrupt('fixture owned signal')
                 raise TimeoutError('fixture partial collector')
             return record
         self.ctx.command = command
@@ -154,6 +157,107 @@ class OwnerCapture(unittest.TestCase):
         self.assertEqual((self.out / 'collector/z-report.raw').read_bytes(), b'important raw data')
         self.assertEqual(capture['errors'], [{'path': 'a-unreadable.raw', 'error': 'PermissionError'}])
         self.assertTrue(capture['unverified_runtime_or_evidence']); self.assertFalse(capture['complete'])
+
+    def test_timeout_remains_primary_if_one_command_stream_capture_fails(self):
+        self.interrupt = True
+        original = subject.read
+        def fail_stdout(path, *args, **kwargs):
+            if Path(path) == self.ctx.work / 'stdout0':
+                raise PermissionError('fixture stdout capture denied')
+            return original(path, *args, **kwargs)
+        with mock.patch.object(subject, 'read', side_effect=fail_stdout):
+            result = self.invoke()
+        self.assertIn('TimeoutError: fixture partial collector', result['error'])
+        self.assertEqual(result['rows'][0]['capture_errors'][0]['stage'], 'stdout')
+        self.assertIn('PermissionError', result['rows'][0]['capture_errors'][0]['error'])
+        self.assertEqual((self.out / 'logs/collector.stderr').read_bytes(), b'stderr:m6-react-collector')
+        self.assertEqual((self.out / 'collector/run.json').read_text(), '{"partial":true}')
+        self.assertFalse(result['rows'][0]['streams_complete']); self.assertFalse(result['all_required_passed'])
+
+    def test_mismatched_log_hash_retains_observed_bytes_and_original_timeout(self):
+        self.interrupt = True
+        original = self.ctx.command
+        def mutate_hash(*args, **kwargs):
+            try:
+                return original(*args, **kwargs)
+            except TimeoutError:
+                self.ctx.cache['commands'][-1]['stdout_sha256'] = '0' * 64
+                raise
+        self.ctx.command = mutate_hash
+        result = self.invoke()
+        self.assertIn('TimeoutError: fixture partial collector', result['error'])
+        self.assertEqual((self.out / 'logs/collector.stdout').read_bytes(), b'stdout:m6-react-collector')
+        self.assertNotEqual(result['rows'][0]['stdout_observed_sha256'],
+                            result['rows'][0]['command']['stdout_sha256'])
+        self.assertIn('command log changed', result['rows'][0]['capture_errors'][0]['error'])
+        self.assertFalse(result['rows'][0]['streams_complete']); self.assertFalse(result['complete'])
+
+    def test_secondary_command_evidence_exception_does_not_replace_timeout(self):
+        self.interrupt = True
+        with mock.patch.object(subject, 'command_evidence', side_effect=RuntimeError('secondary evidence error')):
+            result = self.invoke()
+        self.assertIn('TimeoutError: fixture partial collector', result['error'])
+        self.assertEqual(result['command_evidence_errors'][0]['stage'], 'collector')
+        self.assertIn('secondary evidence error', result['command_evidence_errors'][0]['error'])
+        self.assertEqual((self.out / 'collector/run.json').read_text(), '{"partial":true}')
+        self.assertFalse(result['complete'])
+
+    def test_owned_signal_remains_primary_if_evidence_capture_raises(self):
+        self.interrupt = True
+        self.signal = True
+        with mock.patch.object(subject, 'command_evidence', side_effect=OSError('secondary capture failure')):
+            result = self.invoke()
+        self.assertEqual(result['error'], 'KeyboardInterrupt: fixture owned signal')
+        self.assertIn('secondary capture failure', result['command_evidence_errors'][0]['error'])
+        self.assertEqual((self.out / 'collector/run.json').read_text(), '{"partial":true}')
+        self.assertFalse(result['owned_cleanup_complete']); self.services.close_all.assert_not_called()
+
+    def test_finalization_errors_preserve_primary_and_one_fallback_result(self):
+        self.interrupt = True
+        delegate = self.ctx.sources
+        class BadPins:
+            def read(inner, path): return delegate.read(path)
+            @property
+            def pins(inner): raise RuntimeError('fixture pin failure')
+        self.ctx.sources = BadPins()
+        command = self.ctx.command
+        def interrupted_with_output_link(*args, **kwargs):
+            try:
+                return command(*args, **kwargs)
+            finally:
+                (self.out / 'untrusted-link').symlink_to(self.qa)
+        self.ctx.command = interrupted_with_output_link
+        original_save = subject.save
+        def fail_result(path, raw):
+            if Path(path) == self.out / 'result.json':
+                raise OSError('fixture final result failure')
+            return original_save(path, raw)
+        with mock.patch.object(subject, 'save', side_effect=fail_result):
+            result = self.invoke()
+        self.assertIn('TimeoutError: fixture partial collector', result['error'])
+        self.assertEqual([row['stage'] for row in result['finalization_errors']],
+                         ['source_pins', 'inventory', 'write_result'])
+        self.assertIn('untrusted-link', result['partial_output_inventory']['omitted'])
+        self.assertFalse(result['partial_output_inventory']['complete'])
+        self.assertEqual(json.loads((self.out / 'result.partial.json').read_bytes()), result)
+        self.assertEqual((self.out / 'collector/run.json').read_text(), '{"partial":true}')
+        self.assertFalse(result['all_required_passed']); self.services.close_all.assert_not_called()
+
+    def test_failed_primary_and_fallback_result_do_not_erase_raw_files(self):
+        self.interrupt = True
+        original_save = subject.save
+        def fail_both(path, raw):
+            if Path(path) in {self.out / 'result.json', self.out / 'result.partial.json'}:
+                raise OSError('fixture result writes unavailable')
+            return original_save(path, raw)
+        with mock.patch.object(subject, 'save', side_effect=fail_both):
+            result = self.invoke()
+        self.assertIn('TimeoutError: fixture partial collector', result['error'])
+        self.assertEqual([row['stage'] for row in result['finalization_errors']],
+                         ['write_result', 'write_partial_result'])
+        self.assertEqual((self.out / 'collector/run.json').read_text(), '{"partial":true}')
+        self.assertTrue((self.out / 'logs/collector.stderr').is_file())
+        self.assertFalse(result['complete'])
 
     def test_missing_inputs_fails_before_starting_baseline(self):
         self.ctx.data['m6_react_inputs'].pop('baseline_profile')
