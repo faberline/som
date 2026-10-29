@@ -2,6 +2,7 @@
 """Run the React product gates of toolchain.json on a fresh copy of a product and write the gate evidence.
 
 Usage: run_gates.py <product dir> <work dir (new)> [--cache <vendored cache>]
+                    [--qa-profile <sealed Linux QA profile>]
 
 The product is copied to <work>/product without node_modules. The gates run in
 toolchain.json commands order: install, typecheck, format_check, test, then
@@ -24,6 +25,7 @@ from typing import Any
 
 from common import CONTRACT, REPO
 from tree_sha import tree_sha
+import linux_qa_profile
 
 TOOLCHAIN = json.loads((CONTRACT / "toolchain.json").read_text())
 NODE = TOOLCHAIN["node"]["binary"]
@@ -35,12 +37,14 @@ def sha(path: pathlib.Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def argv(command: str) -> list[str]:
+def argv(command: str, node: str | None = None, npm_cli: str | None = None) -> list[str]:
+    node = NODE if node is None else node
+    npm_cli = NPM_CLI if npm_cli is None else npm_cli
     words = command.split()
     if words[0] == "npm":
-        return [NODE, NPM_CLI, *words[1:]]
+        return [node, npm_cli, *words[1:]]
     assert words[0] == "node", command
-    return [NODE, *words[1:]]
+    return [node, *words[1:]]
 
 
 def same_tree(a: pathlib.Path, b: pathlib.Path) -> bool:
@@ -61,8 +65,18 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("product", type=pathlib.Path)
     parser.add_argument("work", type=pathlib.Path)
-    parser.add_argument("--cache", type=pathlib.Path, default=REPO / TOOLCHAIN["vendored_cache"]["path"])
+    parser.add_argument("--cache", type=pathlib.Path)
+    parser.add_argument("--qa-profile", type=pathlib.Path)
     args = parser.parse_args()
+    qa = None
+    node, npm_cli = NODE, NPM_CLI
+    if args.qa_profile is not None:
+        if args.cache is not None:
+            parser.error("--cache cannot override the Linux QA profile")
+        qa = linux_qa_profile.validate_profile(args.qa_profile)
+        node, npm_cli, cache = qa['node'], qa['npm_cli'], qa['cache']
+    else:
+        cache = args.cache if args.cache is not None else REPO / TOOLCHAIN["vendored_cache"]["path"]
     work = args.work.resolve()
     work.mkdir(parents=True, exist_ok=False)
     product = work / "product"
@@ -70,19 +84,19 @@ def main() -> int:
     files = product_files(product)
     userconfig = work / "empty-npmrc"
     userconfig.write_text("")
-    env = {"PATH": f"{pathlib.Path(NODE).parent}:/usr/bin:/bin", "HOME": str(work),
-           "npm_config_cache": str(args.cache.resolve()), "npm_config_offline": "true",
+    env = {"PATH": f"{pathlib.Path(node).parent}:/usr/bin:/bin", "HOME": str(work),
+           "npm_config_cache": str(cache.resolve()), "npm_config_offline": "true",
            "npm_config_audit": "false", "npm_config_fund": "false", "npm_config_update_notifier": "false",
            "npm_config_logs_dir": str(work / "npm-logs"), "npm_config_userconfig": str(userconfig)}
     lock_before = sha(product / "package-lock.json")
     manifest_before = sha(product / "package.json")
-    cache_before = tree_sha(args.cache)[0]
+    cache_before = tree_sha(cache)[0]
     gates: list[dict[str, Any]] = []
 
     def run(step: str, command: str) -> int:
         log = work / f"{step}.log"
         with log.open("w") as out:
-            code = subprocess.run(argv(command), cwd=product, env=env, stdout=out, stderr=subprocess.STDOUT,
+            code = subprocess.run(argv(command, node, npm_cli), cwd=product, env=env, stdout=out, stderr=subprocess.STDOUT,
                                   timeout=600, check=False).returncode
         gates.append({"step": step, "command": command, "exit_code": code, "log": log.name})
         print(f"{step}={code}")
@@ -103,11 +117,20 @@ def main() -> int:
     files_after = product_files(product)
     product_unchanged = files_after == files
     print(f"product_unchanged={product_unchanged}")
-    cache_after = tree_sha(args.cache)[0]
+    cache_after = tree_sha(cache)[0]
     prettier = tree_sha(product / "node_modules" / "prettier")[0] if (product / "node_modules" / "prettier").is_dir() \
         else None
     passed = (all(g["exit_code"] == 0 for g in gates) and identical and lock_unchanged and product_unchanged
               and cache_before == cache_after)
+    qa_reason = None
+    if qa is not None:
+        try:
+            linux_qa_profile.recheck(qa)
+            linux_qa_profile.need(linux_qa_profile.safe_tree(product / "node_modules" / "prettier", False)
+                                  == linux_qa_profile.PRETTIER_TREE, 'QA prettier differs')
+        except (linux_qa_profile.ProfileError, OSError) as exc:
+            qa_reason = str(exc)
+            passed = False
     dist = {p.relative_to(work / "dist-1").as_posix(): sha(p) for p in sorted((work / "dist-1").rglob("*"))
             if p.is_file()} if (work / "dist-1").is_dir() else {}
     report = {"version": "som.react-output-gates.v1", "source": str(args.product), "product_files": files,
@@ -117,6 +140,10 @@ def main() -> int:
               "lock_sha256_after": lock_after, "lock_unchanged": lock_unchanged,
               "vendored_cache_tree_sha256_before": cache_before, "vendored_cache_tree_sha256_after": cache_after,
               "prettier_tree_sha256": prettier, "passed": passed}
+    if qa is not None:
+        report["qa_profile"] = {"sha256": qa["profile_sha256"], "node": node, "npm_cli": npm_cli,
+                                "cache": str(cache), "recheck_passed": qa_reason is None,
+                                "failure_reason": qa_reason}
     (work / "gates.json").write_text(json.dumps(report, indent=2) + "\n")
     print(f"passed={passed}")
     return 0 if passed else 1

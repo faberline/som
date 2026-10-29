@@ -20,7 +20,7 @@ Writes <out>/report.json and exits 0 when every case passes.
 With --cleanup-runtime, each completed case keeps its evidence and removes only
 its installed node_modules and its PostgreSQL data after a verified stop.
 
-usage: check_products.py --url URL --manifest MANIFEST --out DIR [--cache DIR] [--only ID ...] [--cleanup-runtime]
+usage: check_products.py --url URL --manifest MANIFEST --out DIR [--cache DIR | --qa-profile FILE] [--only ID ...] [--cleanup-runtime]
 """
 from __future__ import annotations
 
@@ -130,8 +130,15 @@ def cache_snapshot(cache: pathlib.Path, destination: pathlib.Path) -> dict[str, 
     return record
 
 
+def gate_argv(product: pathlib.Path, work: pathlib.Path, cache: pathlib.Path,
+              qa_profile: pathlib.Path | None = None) -> list[str]:
+    """Use the sealed QA profile or the legacy explicit cache, never both."""
+    argv = [str(REACT_TESTS / "run_gates.py"), str(product), str(work)]
+    return argv + (["--qa-profile", str(qa_profile)] if qa_profile is not None else ["--cache", str(cache)])
+
+
 def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: pathlib.Path,
-               api: dict[str, Any]) -> dict[str, Any]:
+               api: dict[str, Any], qa_profile: pathlib.Path | None = None) -> dict[str, Any]:
     cid = entry["id"]
     work = out / cid
     work.mkdir()
@@ -139,8 +146,7 @@ def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: p
     product = pathlib.Path(entry["product"])
     codes: dict[str, int | None] = {"gates": None, "api_contract": None}
     cache_before = cache_snapshot(cache, work / "cache-before.json")
-    codes["gates"] = step([str(REACT_TESTS / "run_gates.py"), str(product), str(work / "gates"),
-                           "--cache", str(cache)], work / "gates.log")
+    codes["gates"] = step(gate_argv(product, work / "gates", cache, qa_profile), work / "gates.log")
     cache_after = cache_snapshot(cache, work / "cache-after.json")
     if cache_before.get("status") != "passed" or cache_after.get("status") != "passed" or cache_before != cache_after:
         problems.append("raw cache file snapshots differ or are missing")
@@ -321,11 +327,26 @@ def main() -> int:
     parser.add_argument("--manifest", required=True, type=pathlib.Path)
     parser.add_argument("--out", required=True, type=pathlib.Path)
     toolchain = json.loads((CONTRACT / "toolchain.json").read_text())
-    parser.add_argument("--cache", type=pathlib.Path, default=REPO / toolchain["vendored_cache"]["path"])
+    parser.add_argument("--cache", type=pathlib.Path, default=None)
+    parser.add_argument("--qa-profile", type=pathlib.Path, default=None,
+                        help="Use a sealed Linux QA profile for every product gate.")
     parser.add_argument("--only", nargs="*", default=None)
     parser.add_argument("--cleanup-runtime", action="store_true",
                         help="Remove only each completed case's node_modules and verified stopped PostgreSQL data")
     args = parser.parse_args()
+    qa = None
+    if args.qa_profile is not None:
+        if args.cache is not None:
+            parser.error("--cache cannot override the Linux QA profile")
+        try:
+            import linux_qa_profile  # type: ignore[import-not-found]
+            qa = linux_qa_profile.validate_profile(args.qa_profile)
+            cache = qa["cache"]
+        except (ImportError, OSError, ValueError, KeyError, TypeError) as exc:
+            print(f"refused: Linux QA profile: {exc}", file=sys.stderr)
+            return 2
+    else:
+        cache = args.cache if args.cache is not None else REPO / toolchain["vendored_cache"]["path"]
     port = urllib.parse.urlsplit(args.url).port
     if port in FORBIDDEN_PORTS:
         print(f"refused: port {port} is not a QA port", file=sys.stderr)
@@ -349,7 +370,10 @@ def main() -> int:
     started = time.time()
     for index, entry in enumerate(entries, 1):
         t0 = time.time()
-        row = check_case(args.url, entry, out, args.cache.resolve(), api)
+        if qa is None:
+            row = check_case(args.url, entry, out, cache.resolve(), api)
+        else:
+            row = check_case(args.url, entry, out, cache.resolve(), api, qa["profile_path"])
         if args.cleanup_runtime:
             try:
                 cleanup = cleanup_case_runtime(out, entry["id"])
@@ -364,6 +388,12 @@ def main() -> int:
         print(f"[{index}/{len(entries)}] {row['id']} passed={row['passed']} {row['seconds']}s "
               f"{'; '.join(row['problems'])}", flush=True)
         (out / "progress.json").write_text(json.dumps({"done": index, "total": len(entries)}) + "\n")
+    qa_recheck_problem = None
+    if qa is not None:
+        try:
+            linux_qa_profile.recheck(qa)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            qa_recheck_problem = f"{type(exc).__name__}: {exc}"
     complete = args.only is None and len(rows) == EXPECTED_PRODUCTS
     report = {
         "version": "som.react-output-product-gates.v1",
@@ -371,14 +401,17 @@ def main() -> int:
         "url": args.url,
         "manifest": str(manifest_path),
         "manifest_sha256": sha(manifest_path),
-        "vendored_cache": str(args.cache.resolve()),
+        "vendored_cache": str(cache.resolve()),
+        **({"qa_profile": {"path": str(qa["profile_path"]), "sha256": qa["profile_sha256"]}} if qa is not None else {}),
+        **({"qa_profile_final_recheck": {"passed": qa_recheck_problem is None,
+                                          "failure_reason": qa_recheck_problem}} if qa is not None else {}),
         "case_count": len(rows),
         "complete": complete,
         "failed": [r["id"] for r in rows if not r["passed"]],
         "seconds": round(time.time() - started, 1),
         "cases": rows,
     }
-    report["passed"] = complete and not report["failed"]
+    report["passed"] = complete and not report["failed"] and qa_recheck_problem is None
     (out / "report.json").write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n")
     print(f"cases={len(rows)} failed={len(report['failed'])} complete={complete} passed={report['passed']}")
     return 0 if report["passed"] else 1

@@ -358,6 +358,7 @@ def build_steps(
     cleanup_products_runtime: bool = False,
     rust_baseline_run: str | None = None,
     record_raw_http: bool = False,
+    qa_profile: str | None = None,
 ) -> list[dict[str, Any]]:
     """Construct the 12 ordered step definitions."""
     som_binary = str(candidate_dir / "som")
@@ -550,6 +551,7 @@ def build_steps(
                 "--out",
                 str(out_dir / "products"),
                 *(["--cleanup-runtime"] if cleanup_products_runtime else []),
+                *(["--qa-profile", qa_profile] if qa_profile is not None else []),
             ],
             "report": out_dir / "products" / "report.json",
             "kind": "report",
@@ -923,7 +925,32 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--record-raw-http", action="store_true",
                         help="Retain every baseline and Python control HTTP exchange for independent acceptance.")
+    parser.add_argument("--qa-profile", type=pathlib.Path, default=None,
+                        help="Optional sealed Linux React QA profile for every product gate.")
     return parser.parse_args(argv)
+
+
+def qa_profile_snapshot(path: pathlib.Path) -> dict[str, str]:
+    """Record profile bytes without following a linked file or ancestor."""
+    if not path.is_absolute() or ".." in path.parts or any(p.is_symlink() for p in (path, *path.parents)):
+        raise ValueError("QA profile must be an absolute physical file")
+    if not path.is_file() or path.stat().st_size > 4096:
+        raise ValueError("QA profile missing or oversized")
+    return {"path": str(path), "sha256": sha_file(path)}
+
+
+def validate_qa_profile(path: pathlib.Path, repo: pathlib.Path) -> dict[str, str]:
+    """Require the same sealed profile accepted by each product gate."""
+    before = qa_profile_snapshot(path)
+    tests = str(repo / "som-rs/tests/react-output-v1")
+    if tests not in sys.path:
+        sys.path.insert(0, tests)
+    import linux_qa_profile  # type: ignore[import-not-found]
+    admitted = linux_qa_profile.validate_profile(path)
+    if (not isinstance(admitted, dict) or admitted.get("profile_path") != path or admitted.get("profile_sha256") != before["sha256"]
+            or qa_profile_snapshot(path) != before):
+        raise ValueError("QA profile identity differs or changed during validation")
+    return before
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -944,6 +971,7 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     try:
+        qa_before = validate_qa_profile(args.qa_profile, repo) if args.qa_profile is not None else None
         (
             build_doc,
             runtime_doc,
@@ -952,7 +980,7 @@ def main(argv: list[str] | None = None) -> int:
             baseline_url,
             _baseline_port,
         ) = validate_preconditions(candidate_dir, out_dir, args.baseline, repo)
-    except ValueError as err:
+    except (ImportError, OSError, ValueError, KeyError, TypeError) as err:
         print(f"refused: {err}", file=sys.stderr)
         return 2
 
@@ -1011,6 +1039,8 @@ def main(argv: list[str] | None = None) -> int:
     }
     if args.protected_default == "absent":
         initial_identity["8765"]["expected_state"] = "absent"
+    if qa_before is not None:
+        initial_identity["qa_profile"] = {"before": qa_before, "after": None, "unchanged": None}
     identity_path = out_dir / "identity.json"
     write_json(identity_path, initial_identity)
 
@@ -1025,6 +1055,7 @@ def main(argv: list[str] | None = None) -> int:
         cleanup_products_runtime=args.cleanup_products_runtime,
         rust_baseline_run=rust_baseline_run_arg,
         record_raw_http=args.record_raw_http,
+        qa_profile=qa_before["path"] if qa_before is not None else None,
     )
 
     receipts: list[dict[str, Any]] = []
@@ -1051,6 +1082,16 @@ def main(argv: list[str] | None = None) -> int:
         after=after_snapshot,
         protected_default=args.protected_default,
     )
+    if qa_before is not None:
+        try:
+            qa_after = qa_profile_snapshot(args.qa_profile)
+        except (OSError, ValueError):
+            qa_after = None
+        unchanged = qa_after == qa_before
+        final_identity["qa_profile"] = {"before": qa_before, "after": qa_after, "unchanged": unchanged}
+        if not unchanged:
+            final_identity["problems"].append("QA profile missing or changed during acceptance")
+            final_identity["passed"] = False
     write_json(identity_path, final_identity)
 
     summary_steps: list[dict[str, Any]] = []
@@ -1104,6 +1145,7 @@ def main(argv: list[str] | None = None) -> int:
         "baseline_url": baseline_url,
         "legacy_run": legacy_run_arg,
         "record_raw_http": args.record_raw_http,
+        **({"qa_profile": qa_before} if qa_before is not None else {}),
         **({"rust_baseline_run": rust_baseline_run_arg} if rust_baseline_run_arg is not None else {}),
         "python": python_arg,
         "contract_receipt": contract_receipt_arg,
