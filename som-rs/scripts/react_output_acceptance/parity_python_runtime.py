@@ -31,3 +31,21 @@ class Runtimes:
                  'bytes':before.st_size,'mode':stat.S_IMODE(before.st_mode),'shim_path':str(shim),
                  'shim_file':shim_name,'shim_sha256':hashlib.sha256(shim_bytes).hexdigest()}
             self.rows.append(row);return row
+
+    def bind_image(self,row,command):
+        suffix=' '+' '.join(row['argv'][1:])
+        if not command.endswith(suffix):raise ValueError('Python process argv differs')
+        image=Path(command[:-len(suffix)])
+        if not image.is_absolute() or not image.is_file():raise ValueError('Python image path missing')
+        before=image.stat();data=image.read_bytes();after=image.stat()
+        if not stat.S_ISREG(before.st_mode) or len(data)>MAX_BYTES or len(data)!=before.st_size or (before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns)!=(after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns):raise ValueError('Python image changed')
+        digest=hashlib.sha256(data).hexdigest();name='image-'+digest+'.raw'
+        with self.lock:
+            path=self.root/name
+            if path.exists():
+                if path.is_symlink() or path.read_bytes()!=data:raise ValueError('Python image collision')
+            else:
+                with path.open('xb') as stream:stream.write(data)
+            row['image']={'path':str(image),'file':name,'sha256':digest,'device':before.st_dev,
+                          'inode':before.st_ino,'bytes':before.st_size,'mode':stat.S_IMODE(before.st_mode)}
+        return image

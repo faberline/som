@@ -22,7 +22,7 @@ import independent_behavior_oracle as frozen_oracle
 REPO=Path(__file__).resolve().parents[4]
 QA='http://127.0.0.1:18919'
 REVIEWED_ORACLE_SHA='8599438d6019795028b1bc28a51d2d16c2e682cc4012a5c9250a0984316f8fe7'
-PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/parity_product_files.py', 'som-rs/scripts/react_output_acceptance/parity_rust_build.py', 'som-rs/scripts/react_output_acceptance/parity_python_runtime.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/post_acceptance_audit.py', 'som-rs/scripts/react_output_acceptance/stage_final_evidence.py', 'som-rs/scripts/react_output_acceptance/external_acceptance_readback.py', 'som-rs/scripts/react_output_acceptance/cross_job_raw_reaudit.py', 'som-rs/scripts/react_output_acceptance/audit/audit130.py', 'som-rs/scripts/react_output_acceptance/audit/api_raw.py', 'som-rs/scripts/react_output_acceptance/audit/baseline_raw.py', 'som-rs/scripts/react_output_acceptance/audit/render_rules.py', 'som-rs/scripts/react_output_acceptance/audit/refusal_rules.py')
+PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/parity_product_files.py', 'som-rs/scripts/react_output_acceptance/parity_rust_build.py', 'som-rs/scripts/react_output_acceptance/parity_python_runtime.py', 'som-rs/scripts/react_output_acceptance/parity_python_probe.py', 'som-rs/scripts/react_output_acceptance/parity_python_authority.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/post_acceptance_audit.py', 'som-rs/scripts/react_output_acceptance/stage_final_evidence.py', 'som-rs/scripts/react_output_acceptance/external_acceptance_readback.py', 'som-rs/scripts/react_output_acceptance/cross_job_raw_reaudit.py', 'som-rs/scripts/react_output_acceptance/audit/audit130.py', 'som-rs/scripts/react_output_acceptance/audit/api_raw.py', 'som-rs/scripts/react_output_acceptance/audit/baseline_raw.py', 'som-rs/scripts/react_output_acceptance/audit/render_rules.py', 'som-rs/scripts/react_output_acceptance/audit/refusal_rules.py')
 
 def need(ok,why):
     if not ok:raise ValueError(why)
@@ -378,12 +378,62 @@ def audit_product_files(lifecycle, expected):
     need(set(indexed)==set(expected)==set(owner_map),'product snapshot case set differs')
     return {'case_targets':len(indexed),'file_count':sum(len(x['files']) for x in indexed.values())}
 
-def audit_python_runtimes(lifecycle,cases,files,original_repo):
+def audit_python_authority(lifecycle,original_repo,expected_version='3.12.11'):
+    receipt=a.json_file(lifecycle/'receipt.json');events=receipt['events'];row=receipt.get('python_authority')
+    need(type(row) is dict and row.get('state')=='completed' and row.get('exit_code')==0,'Python authority missing')
+    executable=str(original_repo/'som-rs/runtime/acceptance-m3-venv/bin/python')
+    probe=str(original_repo/'som-rs/scripts/react_output_acceptance/parity_python_probe.py')
+    need(row.get('argv')==[executable,'-I',probe] and row.get('cwd')==str(original_repo) and type(row.get('pid')) is int,'Python authority command differs')
+    starts=[(i,e) for i,e in enumerate(events) if e.get('kind')=='child-start' and e.get('pid')==row['pid'] and e.get('argv')==row['argv'] and e.get('cwd')==row['cwd']]
+    need(len(starts)==1,'Python authority child missing')
+    waits=[e for e in events[starts[0][0]+1:] if e.get('kind')=='child-wait' and e.get('pid')==row['pid'] and e.get('identity')==starts[0][1].get('identity') and e.get('state')=='completed']
+    need(len(waits)==1 and waits[0].get('waited_pid')==row['pid'] and waits[0].get('raw_status')==0 and waits[0].get('exit_code')==0,'Python authority wait missing')
+    for stream in ('stdout','stderr'):
+        item=row[stream];need(item.get('file')=='python-authority.'+stream,'Python authority stream differs')
+        data=a.read(lifecycle/item['file']);need(a.sha(data)==item.get('sha256'),'Python authority stream hash differs')
+        if stream=='stderr':need(not data,'Python authority stderr differs')
+        else:info=a.obj(data)
+    need(info.get('pid')==row['pid'] and info.get('executable')==executable and info.get('prefix')==str(Path(executable).parent.parent)
+         and info.get('version')==expected_version and type(info.get('base_executable')) is str and Path(info['base_executable']).is_absolute()
+         and type(info.get('base_prefix')) is str and Path(info['base_prefix']).is_absolute()
+         and type(info.get('native_image')) is str and Path(info['native_image']).is_absolute()
+         and Path(info['native_image']).is_relative_to(Path(info['base_prefix'])),'Python venv authority differs')
+    for name in ('image','launcher'):
+        item=row[name+'_stat_value'] if name=='launcher' else row['image_stat']
+        file=row[name+'_file'];digest=row[name+'_sha256'];expected='python-authority-'+name+'.raw'
+        raw=a.read(lifecycle/file);need(file==expected and a.sha(raw)==digest and len(raw)==item.get('bytes')
+             and all(type(item.get(k)) is int and item[k]>0 for k in ('device','inode','bytes'))
+             and type(item.get('mode')) is int and item['mode']&0o111,'Python authority binary differs')
+    pid=row['pid'];code,psraw=a.command_raw(lifecycle,row['ps'],['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command='])
+    fields=psraw.decode().strip().split(None,3)
+    need(code==0 and len(fields)==4 and fields[0]==str(pid) and fields[1].isdigit() and fields[2].isdigit()
+         and fields[3]==' '.join([info['native_image'],'-I',probe]),'Python authority live argv differs')
+    for name,path,item in (('stat',info['native_image'],row['image_stat']),('launcher_stat',executable,row['launcher_stat_value'])):
+        code,raw=a.command_raw(lifecycle,row[name],['/usr/bin/stat','-L','-f','%d %i %z %Lp',path]);fields=raw.decode().split()
+        need(code==0 and len(fields)==4 and all(f.isdigit() for f in fields)
+             and [int(fields[0]),int(fields[1]),int(fields[2]),int(fields[3],8)]==[item[k] for k in ('device','inode','bytes','mode')],'Python authority stat differs')
+    code,raw=a.command_raw(lifecycle,row['lsof'],['/usr/sbin/lsof','-nP','-a','-p',str(pid),'-d','txt','-FfDin']);need(code==0,'Python authority mapped image missing')
+    records=[];record=None
+    for line in raw.decode().splitlines():
+        if line.startswith('f'):record={'fd':line[1:]};records.append(record)
+        elif record is not None and line[:1] in ('D','i','n'):
+            need(line[0] not in record,'Python authority mapped field repeated');record[line[0]]=line[1:]
+    matched=False
+    for record in records:
+        try:
+            if record.get('fd')=='txt' and int(record.get('D',''),0)==row['image_stat']['device'] and int(record.get('i',''))==row['image_stat']['inode']:matched=True
+        except ValueError:pass
+    need(matched,'Python authority mapped inode differs')
+    return {'launcher_sha256':row['launcher_sha256'],'launcher_stat':row['launcher_stat_value'],
+            'image_sha256':row['image_sha256'],'image_stat':row['image_stat'],'version':expected_version}
+
+def audit_python_runtimes(lifecycle,cases,files,original_repo,expected_version='3.12.11'):
     import ast
     source=ast.parse(a.read(REPO/'som-rs/behavior/hosts.py').decode('utf-8'))
     values=[ast.literal_eval(node.value) for node in source.body if isinstance(node,ast.Assign)
             and any(isinstance(t,ast.Name) and t.id=='HOST_SHIM' for t in node.targets)]
     need(len(values)==1 and type(values[0]) is str,'frozen Python shim missing');shim_expected=values[0].encode()
+    authority=audit_python_authority(lifecycle,original_repo,expected_version)
     receipt=a.json_file(lifecycle/'receipt.json');events=receipt['events'];rows=receipt.get('python_runtimes')
     owners=a.json_file(lifecycle/'product-http/manifest.json')['owners'];owner_map={o['case']:o for o in owners if o.get('target')=='python'}
     need(type(rows) is list and len(owner_map)==len(cases),'Python runtime inventory missing')
@@ -403,6 +453,7 @@ def audit_python_runtimes(lifecycle,cases,files,original_repo):
         retained=a.read(lifecycle/'python-runtimes'/row['file']);need(row['file']==row['sha256']+'.raw' and a.sha(retained)==row['sha256'] and len(retained)==row.get('bytes'),'Python interpreter bytes differ')
         shim_raw=a.read(lifecycle/'python-runtimes'/row['shim_file']);need(shim_raw==shim_expected and a.sha(shim_raw)==row.get('shim_sha256'),'Python shim differs')
         need(all(type(row.get(k)) is int and row[k]>0 for k in ('device','inode','bytes')) and type(row.get('mode')) is int and row['mode']&0o111,'Python interpreter stat differs')
+        need(row['sha256']==authority['launcher_sha256'] and all(row[k]==authority['launcher_stat'][k] for k in ('device','inode','bytes','mode')),'Python interpreter is not the qualified venv launcher')
         pre=[(i,e) for i,e in enumerate(events) if e.get('kind')=='python-runtime' and e.get('runtime_id')==number]
         need(len(pre)==1 and pre[0][1].get('case')==case and pre[0][1].get('cwd')==cwd,'Python runtime event differs')
         launch=[i for i,e in enumerate(events[:pre[0][0]]) if e.get('kind')=='product-files-launch' and e.get('case')==case and e.get('target')=='python' and e.get('cwd')==cwd]
@@ -411,9 +462,20 @@ def audit_python_runtimes(lifecycle,cases,files,original_repo):
         need(len(children)==1 and children[0][1].get('argv')==argv and children[0][1].get('cwd')==cwd,'Python server child differs')
         env=children[0][1].get('environment');need(type(env) is dict and env.get('PYTHONPATH')==cwd and env.get('PYTHONDONTWRITEBYTECODE')=='1','Python import path differs')
         if version!='som.prompt.v5':need(env.get('SOM_BEHAVIOR_PACKAGE')==package,'Python shim package differs')
-        snapshot=events[owner['start_event']];pid=owner['pid']
-        code,raw=a.command_raw(lifecycle,snapshot['image_stat'],['/usr/bin/stat','-L','-f','%d %i %z %Lp',executable]);parts=raw.decode().split()
-        need(code==0 and len(parts)==4 and all(x.isdigit() for x in parts) and [int(parts[0]),int(parts[1]),int(parts[2]),int(parts[3],8)]==[row[k] for k in ('device','inode','bytes','mode')],'Python interpreter live stat differs')
+        snapshot=events[owner['start_event']];pid=owner['pid'];image_row=row.get('image')
+        need(type(image_row) is dict and type(image_row.get('path')) is str and Path(image_row['path']).is_absolute()
+             and type(image_row.get('sha256')) is str and image_row.get('file')=='image-'+image_row['sha256']+'.raw', 'Python image identity missing')
+        need(image_row['sha256']==authority['image_sha256'] and all(image_row[k]==authority['image_stat'][k] for k in ('device','inode','bytes','mode')),'Python image is not the qualified venv image')
+        image_bytes=a.read(lifecycle/'python-runtimes'/image_row['file'])
+        need(a.sha(image_bytes)==image_row['sha256'] and len(image_bytes)==image_row.get('bytes')
+             and all(type(image_row.get(k)) is int and image_row[k]>0 for k in ('device','inode','bytes'))
+             and type(image_row.get('mode')) is int and image_row['mode']&0o111,'Python image bytes differ')
+        code,psraw=a.command_raw(lifecycle,snapshot['image_ps'],['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command='])
+        ps=psraw.decode().strip().split(None,3)
+        need(code==0 and len(ps)==4 and ps[0]==str(pid) and ps[1].isdigit() and ps[2].isdigit()
+             and ps[3]==' '.join([image_row['path'],*argv[1:]]),'Python running image or argv differs')
+        code,raw=a.command_raw(lifecycle,snapshot['image_stat'],['/usr/bin/stat','-L','-f','%d %i %z %Lp',image_row['path']]);parts=raw.decode().split()
+        need(code==0 and len(parts)==4 and all(x.isdigit() for x in parts) and [int(parts[0]),int(parts[1]),int(parts[2]),int(parts[3],8)]==[image_row[k] for k in ('device','inode','bytes','mode')],'Python live image stat differs')
         code,started=a.command_raw(lifecycle,snapshot['start_time'],['/bin/ps','-p',str(pid),'-o','lstart=']);need(code==0 and started.strip(),'Python process start time missing')
         code,image=a.command_raw(lifecycle,snapshot['image'],['/usr/sbin/lsof','-nP','-a','-p',str(pid),'-d','txt','-FfDin']);need(code==0,'Python mapped image unavailable')
         records=[];record=None
@@ -424,7 +486,7 @@ def audit_python_runtimes(lifecycle,cases,files,original_repo):
         found=False
         for item in records:
             try:
-                if item.get('fd')=='txt' and int(item.get('D',''),0)==row['device'] and int(item.get('i',''))==row['inode']:found=True
+                if item.get('fd')=='txt' and int(item.get('D',''),0)==image_row['device'] and int(item.get('i',''))==image_row['inode']:found=True
             except ValueError:pass
         need(found,'Python mapped interpreter inode differs');seen.add(case)
     need(seen==set(cases)==set(owner_map),'Python runtime cases differ')

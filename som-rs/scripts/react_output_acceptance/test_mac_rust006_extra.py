@@ -206,9 +206,10 @@ class ProductArtifactBindingTests(unittest.TestCase):
             with self.assertRaises(ValueError):audit.audit_product_files(life,expected)
 
     def test_real_python_interpreter_module_env_shim_and_tamper(self):
-        import socket,subprocess,time
+        import shutil,socket,subprocess,time
         from unittest import mock
         import audit_mac_parity as audit
+        import parity_python_authority as authority
         import parity_python_runtime as runtimes
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp).resolve();life=root/'life';http=life/'product-http';http.mkdir(parents=True)
@@ -221,7 +222,10 @@ class ProductArtifactBindingTests(unittest.TestCase):
             with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
             argv=[str(python),'-m','uvicorn','som_behavior_host:app','--app-dir',str(shim.parent),'--host','127.0.0.1','--port',str(port),'--no-access-log','--log-level','warning']
             env=dict(os.environ,PYTHONPATH=str(cwd),PYTHONDONTWRITEBYTECODE='1',SOM_BEHAVIOR_PACKAGE='pkg')
-            observer=parity.TrackingRecorder(life);caps=runtimes.Runtimes(life/'python-runtimes');row=caps.capture('example',cwd,argv)
+            probe=root/'som-rs/scripts/react_output_acceptance/parity_python_probe.py';probe.parent.mkdir(parents=True)
+            shutil.copyfile(Path(__file__).resolve().parent/'parity_python_probe.py',probe)
+            observer=parity.TrackingRecorder(life);proof=authority.capture(observer,life,python,probe,root)
+            caps=runtimes.Runtimes(life/'python-runtimes');row=caps.capture('example',cwd,argv)
             observer.events.append({'kind':'product-files-launch','snapshot_id':1,'case':'example','target':'python','cwd':str(cwd)})
             observer.events.append({'kind':'python-runtime','runtime_id':1,'case':'example','cwd':str(cwd)})
             with mock.patch.object(subprocess,'Popen',observer.popen):
@@ -236,19 +240,26 @@ class ProductArtifactBindingTests(unittest.TestCase):
                         state=subprocess.run(['/bin/ps','-ww','-p',str(proc.pid),'-o','pid=,stat=,command='],capture_output=True,text=True,timeout=10)
                         listeners=subprocess.run(['/usr/sbin/lsof','-nP','-iTCP:'+str(port),'-sTCP:LISTEN','-t'],capture_output=True,text=True,timeout=10)
                         self.fail('fixture Python did not listen: '+log_path.read_text(errors='replace')[-3000:]+' ps='+state.stdout+' lsof='+listeners.stdout)
-                    observer.product_snapshot(proc.pid,'product-ready',port,python,follow=True);start=len(observer.events)-1
+                    observer.product_snapshot(proc.pid,'product-ready',port);snapshot=observer.events[-1];start=len(observer.events)-1
+                    snapshot['image_ps']=observer.command(['/bin/ps','-ww','-p',str(proc.pid),'-o','pid=,ppid=,pgid=,command='])
+                    fields=(life/snapshot['image_ps']['stdout']['file']).read_bytes().decode().strip().split(None,3)
+                    image=caps.bind_image(row,fields[3])
+                    snapshot['image']=observer.command(['/usr/sbin/lsof','-nP','-a','-p',str(proc.pid),'-d','txt','-FfDin'])
+                    snapshot['image_stat']=observer.command(['/usr/bin/stat','-L','-f','%d %i %z %Lp',str(image)])
+                    snapshot['start_time']=observer.command(['/bin/ps','-p',str(proc.pid),'-o','lstart='])
                 finally:proc.terminate();proc.wait(timeout=10);sink.close()
-            (life/'receipt.json').write_text(json.dumps({'events':observer.events,'python_runtimes':caps.rows}))
+            (life/'receipt.json').write_text(json.dumps({'events':observer.events,'python_runtimes':caps.rows,'python_authority':proof}))
             (http/'manifest.json').write_text(json.dumps({'owners':[{'case':'example','target':'python','pid':proc.pid,'base':'http://127.0.0.1:'+str(port),'start_event':start}]}))
             with mock.patch.object(audit,'REPO',root):
-                self.assertEqual(audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root)['cases'],1)
+                version='.'.join(map(str,sys.version_info[:3]))
+                self.assertEqual(audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version)['cases'],1)
                 saved=json.loads((life/'receipt.json').read_text())
                 child=next(e for e in saved['events'] if e.get('kind')=='child-start' and e.get('pid')==proc.pid)
                 child['environment']['PYTHONPATH']='/wrong';(life/'receipt.json').write_text(json.dumps(saved))
-                with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root)
+                with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version)
                 child['environment']['PYTHONPATH']=str(cwd);(life/'receipt.json').write_text(json.dumps(saved))
                 (life/'python-runtimes'/row['shim_file']).write_text('tampered')
-                with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root)
+                with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version)
 
     def test_real_macho_binary_build_wait_and_process_image(self):
         import shutil,socket,subprocess,time

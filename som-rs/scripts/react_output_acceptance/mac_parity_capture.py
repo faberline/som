@@ -17,7 +17,7 @@ from record_api import Recorder
 HERE=Path(__file__).resolve().parent
 REPO=HERE.parents[2]
 CHECKER=REPO/'som-rs/behavior/check_behavior.py'
-PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/parity_product_files.py', 'som-rs/scripts/react_output_acceptance/parity_rust_build.py', 'som-rs/scripts/react_output_acceptance/parity_python_runtime.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/post_acceptance_audit.py', 'som-rs/scripts/react_output_acceptance/stage_final_evidence.py', 'som-rs/scripts/react_output_acceptance/external_acceptance_readback.py', 'som-rs/scripts/react_output_acceptance/cross_job_raw_reaudit.py', 'som-rs/scripts/react_output_acceptance/audit/audit130.py', 'som-rs/scripts/react_output_acceptance/audit/api_raw.py', 'som-rs/scripts/react_output_acceptance/audit/baseline_raw.py', 'som-rs/scripts/react_output_acceptance/audit/render_rules.py', 'som-rs/scripts/react_output_acceptance/audit/refusal_rules.py')
+PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/parity_product_files.py', 'som-rs/scripts/react_output_acceptance/parity_rust_build.py', 'som-rs/scripts/react_output_acceptance/parity_python_runtime.py', 'som-rs/scripts/react_output_acceptance/parity_python_probe.py', 'som-rs/scripts/react_output_acceptance/parity_python_authority.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/post_acceptance_audit.py', 'som-rs/scripts/react_output_acceptance/stage_final_evidence.py', 'som-rs/scripts/react_output_acceptance/external_acceptance_readback.py', 'som-rs/scripts/react_output_acceptance/cross_job_raw_reaudit.py', 'som-rs/scripts/react_output_acceptance/audit/audit130.py', 'som-rs/scripts/react_output_acceptance/audit/api_raw.py', 'som-rs/scripts/react_output_acceptance/audit/baseline_raw.py', 'som-rs/scripts/react_output_acceptance/audit/render_rules.py', 'som-rs/scripts/react_output_acceptance/audit/refusal_rules.py')
 
 def source_hashes():
     return {name:hashlib.sha256((REPO/name).read_bytes()).hexdigest() for name in PARITY_SOURCES}
@@ -126,6 +126,8 @@ def main():
     lifecycle.mkdir(parents=True,mode=0o700)
     import record_rust006_http
     observer=TrackingRecorder(lifecycle)
+    import parity_python_authority
+    python_authority=parity_python_authority.capture(observer,lifecycle,python,HERE/'parity_python_probe.py',REPO)
     import mac_rust006_extra as candidate_probe
     probe=lifecycle/'candidate-probe';probe.mkdir(mode=0o700);(probe/'logs').mkdir(mode=0o700)
     runtime=json.loads((candidate/'runtime.json').read_bytes())
@@ -188,15 +190,15 @@ def main():
     original_serve=hosts.serve
     @contextlib.contextmanager
     def observed_serve(*a,**kw):
-        original=original_serve(*a,**kw); owner=None; identity=None; pid=None; port=None
+        original=original_serve(*a,**kw); owner=None; identity=None; pid=None; port=None;python_row=None
         try:
             try:
                 pre_identity=product.context()
                 launch=files_snapshot.capture_launch(a[1],pre_identity[0],pre_identity[1])
                 with observer.lock:observer.events.append({'kind':'product-files-launch','snapshot_id':launch['id'],'case':pre_identity[0],'target':pre_identity[1],'cwd':str(a[1])})
                 if pre_identity[1]=='python':
-                    row=python_runtimes.capture(pre_identity[0],a[1],a[0])
-                    with observer.lock:observer.events.append({'kind':'python-runtime','runtime_id':row['id'],'case':pre_identity[0],'cwd':str(a[1])})
+                    python_row=python_runtimes.capture(pre_identity[0],a[1],a[0])
+                    with observer.lock:observer.events.append({'kind':'python-runtime','runtime_id':python_row['id'],'case':pre_identity[0],'cwd':str(a[1])})
             except Exception as exc:
                 with observer.lock:observer.errors.append('PythonRuntime'+type(exc).__name__)
             with original as base:
@@ -204,8 +206,19 @@ def main():
                     identity=product.context(); process=original.gen.gi_frame.f_locals['process']; pid=process.pid
                     port=int(base.rsplit(':',1)[1])
                     with observer.lock:
-                        image=Path(process.args[0])
-                        observer.product_snapshot(pid,'product-ready',port,image,follow=(identity[1]=='python')); start_event=len(observer.events)-1
+                        if identity[1]=='rust':
+                            observer.product_snapshot(pid,'product-ready',port,Path(process.args[0]))
+                        else:
+                            observer.product_snapshot(pid,'product-ready',port)
+                            event=observer.events[-1]
+                            event['image_ps']=observer.command(['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command='])
+                            ps=(lifecycle/event['image_ps']['stdout']['file']).read_bytes().decode().strip().split(None,3)
+                            need(event['image_ps']['exit_code']==0 and len(ps)==4 and ps[0]==str(pid),'Python image process missing')
+                            image=python_runtimes.bind_image(python_row,ps[3])
+                            event['image']=observer.command(['/usr/sbin/lsof','-nP','-a','-p',str(pid),'-d','txt','-FfDin'])
+                            event['image_stat']=observer.command(['/usr/bin/stat','-L','-f','%d %i %z %Lp',str(image)])
+                            event['start_time']=observer.command(['/bin/ps','-p',str(pid),'-o','lstart='])
+                        start_event=observer.events.index(event) if identity[1]=='python' else len(observer.events)-1
                         owner=product.bind(identity,base,pid,start_event)
                 except Exception as exc:
                     with observer.lock: observer.errors.append('ProductOwnerStart'+type(exc).__name__)
@@ -258,7 +271,8 @@ def main():
         receipt={'version':'som.m6-mac-parity-capture.v1','exit_code':code,'events':observer.events,
                  'postgres_tools_before':postgres_before,'postgres_tools_after':postgres_after,
                  'product_file_snapshots':files_snapshot.rows,'rust_binary_copies':rust_copies.rows,
-                 'python_runtimes':python_runtimes.rows,'rust_tools_before':rust_before,'rust_tools_after':rust_after,
+                 'python_runtimes':python_runtimes.rows,'python_authority':python_authority,
+                 'rust_tools_before':rust_before,'rust_tools_after':rust_after,
                  'source_revision':revision,'source_before':before_sources,'source_after':source_hashes(),
                  'recording_errors':observer.errors,'product_acceptance_passed':False,
                  'cleanup':'requires-independent-raw-audit'}
