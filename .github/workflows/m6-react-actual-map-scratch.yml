@@ -1,0 +1,47 @@
+name: Verify React Linux Python source mapping against saved GitHub inputs
+on:
+  push:
+    branches:
+      - codex/m6-react-linux-actual-map-20261029
+permissions:
+  contents: read
+  actions: read
+jobs:
+  actual-input-proof:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bind audit source
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          for entry in \
+            'som-rs/scripts/react_output_acceptance/audit/linux_install_map.py f73ee9e9e36f0471ab67bab808ee86c71cf4fbe45641eaa94cdff647c6e60c28' \
+            'som-rs/scripts/react_output_acceptance/audit/check_actual_map.py 167b91a39f39c49408e5f85d5affddd8450e2ff9f15eb4ab1482121ed16212b1' \
+            'som-rs/scripts/hosted_readiness/product_python/uv099-installer-authority.json e166303c1376a77d6e92ae19d9ff0eddcdd24c3adbde8381ff835274bb850358'; do
+            set -- $entry
+            test "$(sha256sum "$1" | cut -d ' ' -f 1)" = "$2"
+            test "$(git show "$GITHUB_SHA:$1" | sha256sum | cut -d ' ' -f 1)" = "$2"
+          done
+      - name: Acquire exact source and prior input proof
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          gh api repos/faberline/som/actions/artifacts/12874482658/zip > "$RUNNER_TEMP/react39.zip"
+          gh api repos/faberline/som/actions/artifacts/12876217601/zip > "$RUNNER_TEMP/react-live-proof.zip"
+          test "$(sha256sum "$RUNNER_TEMP/react39.zip" | cut -d ' ' -f 1)" = d568ebe48167bec64b4d067f1e2e246b625e16852fc6201bef3689c13c7850bf
+          test "$(sha256sum "$RUNNER_TEMP/react-live-proof.zip" | cut -d ' ' -f 1)" = b06a1d67b909bd45ee85ae76376b02181e7958f01d0918083c616930107c656d
+          mkdir "$RUNNER_TEMP/react39-source" "$RUNNER_TEMP/live-proof"
+          unzip -q "$RUNNER_TEMP/react39.zip" -d "$RUNNER_TEMP/react39-source"
+          unzip -q "$RUNNER_TEMP/react-live-proof.zip" -d "$RUNNER_TEMP/live-proof"
+          test "$(sha256sum "$RUNNER_TEMP/react39-source/react-python-qa-closure.tar" | cut -d ' ' -f 1)" = 8a1ead27a72911acb9af76c622311c5924ad91073b3fc9a221a44db6a0dd4e3b
+          test "$(sha256sum "$RUNNER_TEMP/live-proof/react-live-venv-proof.tar" | cut -d ' ' -f 1)" = 7b1a6498c1141525a153f72d6806081850933102066f11f97d4c023c5e60ac16
+          mv "$RUNNER_TEMP/live-proof/react-live-venv-proof.tar" "$RUNNER_TEMP/react-live-venv-proof.tar"
+      - name: Reconstruct 40 wheels and compare prior saved venv inventory
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 som-rs/scripts/react_output_acceptance/audit/check_actual_map.py
