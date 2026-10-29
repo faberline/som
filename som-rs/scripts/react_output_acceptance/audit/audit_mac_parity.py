@@ -76,6 +76,45 @@ def take(index,route,request):
 
 def case_key(identity):return re.sub(r'[^a-z0-9]+','_',identity.lower()).strip('_')
 
+def check_record(raw, normalized):
+    """Recompute request body, media, and fixed error normalization from raw records.
+
+    Success-row ID, timestamp and floating-field normalization remains unverified.
+    """
+    need(type(raw) is dict and type(normalized) is dict and type(normalized.get('request')) is dict, 'record shape differs')
+    request=normalized['request']; status=raw.get('status')
+    need(raw.get('step') == normalized.get('step') and raw.get('method') == request.get('method')
+         and type(status) is int and status == normalized.get('status'), 'record request or status differs')
+    body=raw.get('body'); need((body is None and 'body' not in request) or
+                                 (type(body) is str and request.get('body') == body), 'request body differs')
+    content=raw.get('content_type')
+    need(type(content) is str and (content == 'application/json' and 'content_type' not in request or
+                                   content != 'application/json' and request.get('content_type') == content),
+         'request content type differs')
+    raw_media=raw.get('response_content_type')
+    need(raw_media is None or type(raw_media) is str, 'response content type invalid')
+    media=raw_media.split(';',1)[0].strip().lower() if raw_media else None
+    need(normalized.get('media') == media, 'response media differs')
+    payload=raw.get('response'); need(type(payload) is str, 'response bytes missing')
+    if status == 204:
+        need(payload == '' and normalized.get('body') is None, '204 body differs')
+        return 'empty'
+    if status == 422:
+        document=a.obj(payload.encode('utf-8'))
+        need(type(document) is dict and set(document) == {'detail'} and type(document['detail']) is list
+             and document['detail'], '422 response shape differs')
+        heads=set()
+        for issue in document['detail']:
+            need(type(issue) is dict and {'type','loc','msg'} <= set(issue) and type(issue['loc']) is list and issue['loc'],
+                 '422 detail differs')
+            heads.add(str(issue['loc'][0]))
+        need(a.equal(normalized.get('body'), {'422_loc0': sorted(heads)}), '422 normalization differs')
+        return 'validation-error'
+    if not 200 <= status < 300:
+        need(a.equal(a.obj(payload.encode('utf-8')), normalized.get('body')), 'error body differs')
+        return 'error'
+    return 'success-unverified'
+
 def audit_wire(root,parity_out,legacy,bound):
     cases=source_cases(legacy,bound)
     keys=[case_key(name) for name,_ in cases]
@@ -88,7 +127,7 @@ def audit_wire(root,parity_out,legacy,bound):
          and summary.get('complete') is True and len(rows)==len(cases),'parity report incomplete')
     result={r['id']:r for r in rows}
     need(len(result)==len(rows) and set(result)=={x[0] for x in cases},'parity IDs differ')
-    transcript_steps=0;strict_steps=0
+    transcript_steps=0;strict_steps=0;checked_errors=0
     for identity,prompt in cases:
         row=result[identity]
         for target in ('python','rust'):
@@ -108,15 +147,21 @@ def audit_wire(root,parity_out,legacy,bound):
             need(type(data[target].get('raw')) is list and type(data[target].get('transcript')) is list
                  and type(data[target].get('failures')) is list,'parity raw structure differs')
         py,rs=data['python'],data['rust']
+        need(not py['failures'] and not rs['failures'] and row.get('passed') is True and
+             all(row.get(k)==0 for k in ('python_failures','rust_failures','strict_failures','differences')),
+             'parity run or oracle reported failure')
         steps=row.get('steps');strict=row.get('strict_steps')
         need(type(steps) is int and steps>0 and type(strict) is int and strict>=0
              and len(py['raw'])==len(py['transcript'])==steps
              and len(rs['raw'])==len(rs['transcript'])==steps+strict,'parity step count differs')
         for raw_list, transcript in ((py['raw'],py['transcript']),(rs['raw'],rs['transcript'])):
             for raw, normalized in zip(raw_list,transcript):
-                need(raw.get('step')==normalized.get('step') and raw.get('method')==normalized.get('request',{}).get('method')
-                     and type(raw.get('status')) is int and raw['status']==normalized.get('status')
-                     and raw['status']!=500,'parity raw/normalized metadata differs')
+                kind=check_record(raw,normalized)
+                checked_errors += kind != 'success-unverified'
+                need(raw['status'] != 500, 'parity returned 500')
+        for left,right in zip(py['transcript'],rs['transcript'][:steps]):
+            for key in ('step','category','request','status','media','body'):
+                need(key in left and key in right and a.equal(left[key],right[key]), 'normalized parity differs')
         for left,right in zip(py['raw'],rs['raw'][:steps]):
             need(left.get('step')==right.get('step') and left.get('method')==right.get('method')
                  and left.get('status')==right.get('status'),'parity wire status differs')
@@ -132,7 +177,7 @@ def audit_wire(root,parity_out,legacy,bound):
         transcript_steps+=steps;strict_steps+=strict
     need(not any(indexed.values()),'unexpected parity compiler calls')
     return {'cases':len(cases),'compiler_calls':total,'parity_steps':transcript_steps,'strict_steps':strict_steps,
-            'body_normalization':'unverified','behavior_oracle':'unverified'}
+            'checked_error_or_empty_bodies':checked_errors,'success_body_normalization':'unverified','behavior_oracle':'unverified'}
 
 def main():
     p=argparse.ArgumentParser()

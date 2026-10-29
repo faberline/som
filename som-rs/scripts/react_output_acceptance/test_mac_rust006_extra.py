@@ -352,6 +352,38 @@ class UnorderedParityWireTests(unittest.TestCase):
                 with self.assertRaises(ValueError):parity_audit.raw_exchange_index(raw)
 
 
+class ParityIndependentChecks(unittest.TestCase):
+    def test_validation_error_raw_response_and_request(self):
+        import audit_mac_parity as audit
+        raw={'step':'bad input','method':'POST','body':'{}','content_type':'application/json',
+             'status':422,'response_content_type':'Application/JSON; charset=utf-8',
+             'response':json.dumps({'detail':[{'type':'bad','loc':['body','name'],'msg':'invalid'}]})}
+        normalized={'step':'bad input','request':{'method':'POST','body':'{}'},'status':422,
+                    'media':'application/json','body':{'422_loc0':['body']}}
+        self.assertEqual(audit.check_record(raw,normalized),'validation-error')
+        for key, value in (('body','different'),('status',409),('media','text/plain')):
+            clone=json.loads(json.dumps(normalized))
+            if key=='body': clone['request']['body']=value
+            else: clone[key]=value
+            with self.subTest(key=key), self.assertRaises(ValueError): audit.check_record(raw,clone)
+        clone=json.loads(json.dumps(normalized)); clone['body']={'422_loc0':['query']}
+        with self.assertRaises(ValueError): audit.check_record(raw,clone)
+
+    def test_empty_and_full_error_bodies(self):
+        import audit_mac_parity as audit
+        raw={'step':'missing','method':'GET','body':None,'content_type':'application/json',
+             'status':404,'response_content_type':'application/json','response':'{"detail":"Not Found"}'}
+        normalized={'step':'missing','request':{'method':'GET'},'status':404,
+                    'media':'application/json','body':{'detail':'Not Found'}}
+        self.assertEqual(audit.check_record(raw,normalized),'error')
+        normalized['body']={'detail':'other'}
+        with self.assertRaises(ValueError): audit.check_record(raw,normalized)
+        raw.update(status=204,response='',response_content_type=None)
+        normalized.update(status=204,media=None,body=None)
+        self.assertEqual(audit.check_record(raw,normalized),'empty')
+        raw['response']='unexpected'
+        with self.assertRaises(ValueError): audit.check_record(raw,normalized)
+
 class HistoricalReconstructionTests(unittest.TestCase):
     def test_actual_source_name_formats(self):
         import reconstruct_historical_responses as recon

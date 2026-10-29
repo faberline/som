@@ -1,8 +1,5 @@
 name: M6 historical response reconstruction proof
 on:
-  push:
-    branches:
-      - codex/m6-mac-rust006-fixtures-20261029
   workflow_dispatch:
 permissions:
   contents: read
