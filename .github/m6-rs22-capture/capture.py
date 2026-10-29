@@ -186,14 +186,31 @@ def no_listener(port):
             "stderr_sha256": sha(result.stderr), "stdout": "", "stderr": ""}
 
 
-def owned_listener(pid):
-    result = subprocess.run(["/usr/sbin/lsof", "-nP", "-a", f"-iTCP:{PORT}", "-sTCP:LISTEN", "-Fp"],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10, check=False)
-    need(result.returncode == 0 and not result.stderr and result.stdout.splitlines() == [f"p{pid}".encode()],
+def owned_listener(pid, folder, observation):
+    folder.mkdir()
+    observation.update({"port": PORT, "pid": pid, "attempted": True, "exit_code": None})
+    error = None
+    try:
+        result = subprocess.run(["/usr/sbin/lsof", "-nP", "-a", f"-iTCP:{PORT}", "-sTCP:LISTEN", "-Fp"],
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10, check=False)
+        stdout, stderr = result.stdout, result.stderr
+        observation["exit_code"] = result.returncode
+    except subprocess.TimeoutExpired as exc:
+        error = exc
+        stdout, stderr = exc.stdout or b"", exc.stderr or b""
+    except OSError as exc:
+        error = exc
+        stdout, stderr = b"", b""
+    if error is not None:
+        observation["error_type"] = type(error).__name__
+    observation.update({"stdout_raw": save(folder / "stdout.raw", stdout),
+                        "stderr_raw": save(folder / "stderr.raw", stderr),
+                        "stdout_sha256": sha(stdout), "stderr_sha256": sha(stderr)})
+    if error is not None:
+        raise error
+    need(result.returncode == 0 and not stderr and stdout.splitlines() == [f"p{pid}".encode()],
          "listener ownership differs")
-    return {"port": PORT, "pid": pid, "exit_code": result.returncode,
-            "stdout": result.stdout.decode("ascii"), "stderr": "",
-            "stdout_sha256": sha(result.stdout), "stderr_sha256": sha(result.stderr)}
+    observation.update({"stdout": stdout.decode("ascii"), "stderr": ""})
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -425,7 +442,9 @@ def main(argv=None):
                 summary["health"] = {"status": status, "response": save(health_folder / "response.raw", raw)}
                 need(status == 200 and parse(raw) == health, "baseline health differs")
                 break
-            summary["ports"]["owned"] = owned_listener(process.pid)
+            stage = "listener_ownership"
+            summary["ports"]["owned"] = {}
+            owned_listener(process.pid, run / "listener-owned", summary["ports"]["owned"])
             stage = "capture"
             for i, (row, case, native, rust_raw, typed) in enumerate(rows):
                 folder = run / row["id"]

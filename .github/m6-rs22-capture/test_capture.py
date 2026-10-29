@@ -182,6 +182,37 @@ class CaptureFixtureTests(unittest.TestCase):
         self.assertTrue(receipt["wait_completed"])
         self.assertEqual(receipt["post_wait_poll"], -9)
 
+    def test_owned_listener_preserves_raw_on_success_and_failure(self):
+        class Result:
+            returncode = 0
+            stdout = b'p42\n'
+            stderr = b''
+        with tempfile.TemporaryDirectory() as tmp, patch.object(capture.subprocess, "run", return_value=Result()):
+            run = Path(tmp) / "run"
+            run.mkdir()
+            observation = {}
+            capture.owned_listener(42, run / "success", observation)
+            self.assertEqual(observation["stdout"], "p42\n")
+            self.assertEqual((run / "success" / "stdout.raw").read_bytes(), b'p42\n')
+            Result.stdout = b'p999\n'
+            observation = {}
+            with self.assertRaises(capture.Refusal):
+                capture.owned_listener(42, run / "failure", observation)
+            self.assertEqual((run / "failure" / "stdout.raw").read_bytes(), b'p999\n')
+            self.assertEqual(observation["exit_code"], 0)
+        with tempfile.TemporaryDirectory() as tmp:
+            run = Path(tmp) / "run"
+            run.mkdir()
+            error = subprocess.TimeoutExpired("lsof", 10, output=b'partial', stderr=b'warning')
+            observation = {}
+            with patch.object(capture.subprocess, "run", side_effect=error), self.assertRaises(subprocess.TimeoutExpired):
+                capture.owned_listener(42, run / "timeout", observation)
+            self.assertTrue(observation["attempted"])
+            self.assertIsNone(observation["exit_code"])
+            self.assertEqual(observation["error_type"], "TimeoutExpired")
+            self.assertEqual((run / "timeout" / "stdout.raw").read_bytes(), b'partial')
+            self.assertEqual((run / "timeout" / "stderr.raw").read_bytes(), b'warning')
+
     def test_port_probe_refuses_listener_and_unknown_outcome(self):
         class Result:
             returncode = 0
