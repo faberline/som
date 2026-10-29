@@ -170,7 +170,8 @@ def main():
                              '--audit-root', str(args.audit_root.resolve()), '--out', str(out / 'run/inputs')]),
                 ('rehearse', [sys.executable, str(HERE / 'rehearse.py'), '--prerequisites', str(out / 'run/inputs/prerequisites.json'),
                               '--out', str(out / 'run/rehearsal')])]:
-            call = supervision.invoke(argv, rc.REPO, out, name, timeout=1800, grace=300)
+            call = supervision.invoke(argv, rc.REPO, out, name, timeout=1800, grace=300,
+                                      lifecycle_dir=out / 'run')
             rc.require(call['outcome'] == 'completed' and type(call['wait_result']) is int
                        and call['wait_result'] == call['exit_code'] == 0,
                        f'{name} did not complete cleanly; inspect retained lifecycle and logs')

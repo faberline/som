@@ -69,6 +69,17 @@ class SupervisionTests(unittest.TestCase):
             self.assertEqual((out / 'simple.stdout').read_bytes(), b'ok\n')
             self.assertEqual(json.loads((out / 'simple.lifecycle.json').read_bytes()), result)
 
+    def test_outer_lifecycle_is_in_the_sealed_run_tree(self):
+        with tempfile.TemporaryDirectory() as value:
+            out = Path(value)
+            run = out / 'run'
+            run.mkdir()
+            result = supervision.invoke([sys.executable, '-c', 'pass'], out, out, 'outer',
+                                        timeout=20, grace=10, lifecycle_dir=run)
+            self.assertEqual(result['outcome'], 'completed')
+            self.assertEqual(json.loads((run / 'outer.lifecycle.json').read_bytes()), result)
+            self.assertFalse((out / 'outer.lifecycle.json').exists())
+
     def test_timeout_asks_controller_and_owned_service_to_clean_up(self):
         with tempfile.TemporaryDirectory() as value:
             out = Path(value)

@@ -6,13 +6,12 @@ Only an observed child wait is reported here; service cleanup is a separate gate
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 import subprocess
 import time
 
 
-def invoke(argv, cwd, out, name, timeout=None, grace=180):
+def invoke(argv, cwd, out, name, timeout=None, grace=180, lifecycle_dir=None):
     """Retain direct-child lifecycle even if waiting or cleanup is interrupted."""
     out = Path(out)
     record = {'argv': list(argv), 'cwd': str(cwd), 'pid': None, 'outcome': 'not_started',
@@ -55,7 +54,8 @@ def invoke(argv, cwd, out, name, timeout=None, grace=180):
         record['elapsed_seconds'] = time.monotonic() - started
         # This field deliberately remains false here. A direct wait cannot prove
         # that a detached service, its listener, and the sandbox were cleaned up.
-        with (out / (name + '.lifecycle.json')).open('x', encoding='utf-8') as stream:
+        lifecycle_dir = out if lifecycle_dir is None else Path(lifecycle_dir)
+        with (lifecycle_dir / (name + '.lifecycle.json')).open('x', encoding='utf-8') as stream:
             json.dump(record, stream, indent=2, sort_keys=True, allow_nan=False)
             stream.write('\n')
     return record
