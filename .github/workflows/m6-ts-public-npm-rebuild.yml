@@ -1,0 +1,49 @@
+name: M6 TypeScript public npm reconstruction diagnostic
+on:
+  push:
+    branches: [codex/m6-ts-public-npm-rebuild-proof]
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Fetch pinned public npm and Node sources
+        run: |
+          curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 https://registry.npmjs.org/npm/-/npm-11.17.0.tgz --output "$RUNNER_TEMP/npm.tgz"
+          test "$(shasum -a 256 "$RUNNER_TEMP/npm.tgz" | cut -d ' ' -f 1)" = b290bbb35b9e72c3ef84edbe041f28c4479c4d9ee79f555817b8caafe7ce4bba
+          curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 https://nodejs.org/dist/v26.5.0/node-v26.5.0-linux-x64.tar.xz --output "$RUNNER_TEMP/node.tar.xz"
+          test "$(shasum -a 256 "$RUNNER_TEMP/node.tar.xz" | cut -d ' ' -f 1)" = 9f619528f1db5ddc41dccf54211066fb42228d69a156733c69cb9d6cc92e358c
+          mkdir "$RUNNER_TEMP/bootstrap" "$RUNNER_TEMP/node" "$RUNNER_TEMP/prefix"
+          tar -xzf "$RUNNER_TEMP/npm.tgz" --strip-components=1 -C "$RUNNER_TEMP/bootstrap"
+          tar -xJf "$RUNNER_TEMP/node.tar.xz" --strip-components=1 -C "$RUNNER_TEMP/node" node-v26.5.0-linux-x64/bin/node
+      - name: Reconstruct offline under isolated prefix
+        env:
+          npm_config_offline: 'true'
+          npm_config_audit: 'false'
+          npm_config_fund: 'false'
+          npm_config_update_notifier: 'false'
+        run: |
+          PATH="$RUNNER_TEMP/node/bin:/usr/bin:/bin" "$RUNNER_TEMP/node/bin/node" "$RUNNER_TEMP/bootstrap/bin/npm-cli.js" install --global --prefix "$RUNNER_TEMP/prefix" "$RUNNER_TEMP/npm.tgz" > "$RUNNER_TEMP/npm-install.log" 2>&1
+          cp "$RUNNER_TEMP/bootstrap/package.json" "$RUNNER_TEMP/prefix/lib/node_modules/npm/package.json"
+          printf 'prefix = /opt/homebrew\n' > "$RUNNER_TEMP/prefix/lib/node_modules/npm/npmrc"
+      - name: Report aggregate identity only
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'prefix/lib/node_modules/npm'
+          h=hashlib.sha256(); files=links=0
+          for p in sorted(root.rglob('*')):
+              name=p.relative_to(root).as_posix()
+              if p.is_symlink():
+                  h.update(f'{name}\0symlink:{os.readlink(p)}\n'.encode()); links+=1
+              elif p.is_file():
+                  h.update(f'{name}\0{hashlib.sha256(p.read_bytes()).hexdigest()}\n'.encode()); files+=1
+          digest=h.hexdigest(); expected='3a9e0a20999d2a5c9727e911c554cd66230dba9a169fe0f0a6a54bd3dc7f9186'
+          print(json.dumps({'tree_sha256':digest,'files':files,'links':links,'matches_frozen':digest==expected and files==1957 and links==9,'product_acceptance':'not_run'},sort_keys=True))
+          PY
