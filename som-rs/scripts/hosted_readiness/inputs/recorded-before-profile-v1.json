@@ -1,5 +1,5 @@
 {
-  "admission_complete": false,
+  "admission_complete": true,
   "artifacts": {
     "calibration": {
       "digest": "sha256:109e809fd0f628644dc7d02098806ac920fc8b8ca1b07fb2aa63e167fd9b4895",

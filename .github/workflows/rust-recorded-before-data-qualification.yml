@@ -1,0 +1,98 @@
+name: Recorded before real data qualification
+
+on:
+  push:
+    branches: [codex/m12-recorded-before-data-qualification]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: som-recorded-before-data-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  HELPER_REVISION: ${{ github.sha }}
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  recorded-before-data:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Record exact source and actual Python
+        run: |
+          test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
+          git rev-parse HEAD > tested-sha.txt
+          python3 --version > python-version.txt 2>&1
+          git fetch --no-tags --depth=1 origin 02cd9e79cdcedfef92816f67a3ccdf2e089964ab 1de8f05430a72f8d76f6159786cca71b0ae1a911
+      - name: Admit only the tracked data source and official crypto tool
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          python3 -I -S -B som-rs/scripts/hosted_readiness/qualify_recorded_before_data.py --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --phase prepare
+      - name: Restore actual 19 approved inputs and retain original 18 metadata
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
+        run: |
+          python3 -I -S -B som-rs/scripts/hosted_readiness/qualify_recorded_before_data.py --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --phase provision
+      - name: Download the three exact original encrypted artifacts
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          python3 -I -S -B som-rs/scripts/hosted_readiness/qualify_recorded_before_data.py --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --phase download
+      - name: Restore authenticated data and qualify all 4572 named slots
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 -I -S -B som-rs/scripts/hosted_readiness/qualify_recorded_before_data.py --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --phase qualify
+      - name: Seal new evidence and verify a complete actual restore
+        if: always()
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 -I -S -B som-rs/scripts/hosted_readiness/qualify_recorded_before_data.py --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --phase seal
+      - name: Retain only encrypted new observations and safe transport records
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: recorded-before-data-new-evidence
+          if-no-files-found: warn
+          retention-days: 30
+          path: ${{ runner.temp }}/som-recorded-before-data-sealed/
+      - name: Retain unchanged original encrypted inputs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: recorded-before-data-original-encrypted-inputs
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 0
+          path: |
+            ${{ runner.temp }}/som-recorded-before-data-qualification/encrypted-inputs/
+            ${{ runner.temp }}/som-recorded-before-data-qualification/encrypted-approved19/
+      - name: Retain official public Node archive and complete notices
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: recorded-before-data-official-node-source
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/som-recorded-before-data-qualification/node/original.tar.xz
+            ${{ runner.temp }}/som-recorded-before-data-qualification/node/notices/
+            tested-sha.txt
+            python-version.txt
