@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 from unittest import mock
@@ -49,6 +50,18 @@ def main():
     import record_rust006_http
     from record_api import Recorder
     observer = Recorder(lifecycle, subprocess.run)
+    toolchain = json.loads((REPO / 'som-rs/contracts/rust-output-v1/toolchain.json').read_bytes())['postgresql']
+    tool_dir = Path(toolchain['bin_dir'])
+    retained_tools = lifecycle / 'postgresql-tools'
+    retained_tools.mkdir(mode=0o700)
+    tool_observations = {}
+    for name in ('postgres', 'initdb', 'pg_ctl'):
+        source, target = tool_dir / name, retained_tools / name
+        need(source.is_file() and sha(source) == toolchain[name]['sha256'], 'PostgreSQL tool differs')
+        shutil.copyfile(source, target, follow_symlinks=True)
+        need(sha(source) == sha(target) == toolchain[name]['sha256'], 'retained PostgreSQL tool differs')
+        tool_observations[name] = {'source': str(source), 'file': str(target.relative_to(lifecycle)),
+                                   'sha256': sha(target), 'source_before': sha(source)}
     code = 1
     port = None
     try:
@@ -68,8 +81,15 @@ def main():
                 observer.errors.append(type(exc).__name__)
         else:
             observer.errors.append('PostmasterNotObserved')
+        for name in tool_observations:
+            try:
+                tool_observations[name]['source_after'] = sha(tool_dir / name)
+                if tool_observations[name]['source_after'] != tool_observations[name]['sha256']:
+                    observer.errors.append('PostgresqlToolChanged')
+            except OSError as exc:
+                observer.errors.append(type(exc).__name__)
         receipt = {'version': 'som.m6-mac-rust006-cluster.v1', 'port': port, 'exit_code': code,
-                   'events': observer.events, 'recording_errors': observer.errors,
+                   'events': observer.events, 'recording_errors': observer.errors, 'tools': tool_observations,
                    'checker_sha256': sha(CHECKER), 'product_acceptance_passed': False,
                    'cleanup_claim': 'requires-independent-raw-audit'}
         (lifecycle / 'receipt.json').write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')

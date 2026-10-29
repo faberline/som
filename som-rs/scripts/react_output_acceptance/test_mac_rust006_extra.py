@@ -151,5 +151,71 @@ class IndependentRawTests(unittest.TestCase):
         self.assertEqual(audit.ALLOWED, {'backend','block_library','catalog','compiler_contract','selection_policy'})
 
 
+class ClusterRawAuditTests(unittest.TestCase):
+    def create(self, root):
+        import hashlib
+        import audit_mac_rust006_extra as audit
+        def digest(data): return hashlib.sha256(data).hexdigest()
+        config=root/'som-rs/contracts/rust-output-v1/toolchain.json'
+        config.parent.mkdir(parents=True)
+        names=('postgres','initdb','pg_ctl')
+        pgdir='/opt/homebrew/opt/postgresql@17/bin'
+        toolchain={'postgresql':{'bin_dir':pgdir,**{n:{'sha256':digest(n.encode())} for n in names}}}
+        config.write_text(json.dumps(toolchain))
+        run=root/'run'; lifecycle=run/'cluster-lifecycle'; lifecycle.mkdir(parents=True)
+        (lifecycle/'postgresql-tools').mkdir()
+        tool_rows={}
+        for n in names:
+            (lifecycle/'postgresql-tools'/n).write_bytes(n.encode())
+            tool_rows[n]={'source':pgdir+'/'+n,'file':'postgresql-tools/'+n,'sha256':digest(n.encode()),
+                          'source_before':digest(n.encode()),'source_after':digest(n.encode())}
+        data=str(run/'cluster-work/pgdata'); log=str(run/'cluster-work/postgres.log'); port=18920; pid=1234
+        calls=0
+        def command(argv, stdout=b'', exit_code=0, kind='os'):
+            nonlocal calls
+            calls+=1
+            stem=f'{kind}-{calls:04d}'
+            (lifecycle/(stem+'.stdout')).write_bytes(stdout)
+            (lifecycle/(stem+'.stderr')).write_bytes(b'')
+            return {'argv':argv,'exit_code':exit_code,
+                    'stdout':{'file':stem+'.stdout','sha256':digest(stdout)},
+                    'stderr':{'file':stem+'.stderr','sha256':digest(b'')}}
+        options=f"-p {port} -c listen_addresses=127.0.0.1 -c unix_socket_directories='' -c timezone=UTC -c log_timezone=UTC -c max_connections=300 -c fsync=off"
+        init={'kind':'initdb',**command([pgdir+'/initdb','-D',data,'-U','postgres','-E','UTF8','--locale=C','--auth=trust','--no-sync'],kind='call')}
+        start={'kind':'pg_ctl',**command([pgdir+'/pg_ctl','-D',data,'-l',log,'-o',options,'-w','start'],kind='call')}
+        stop={'kind':'pg_ctl',**command([pgdir+'/pg_ctl','-D',data,'-m','fast','-w','stop'],kind='call')}
+        post_raw=f'{pid}\n{data}\n123456\n{port}\n'.encode()
+        post=[]
+        for phase in ('after-start','before-stop'):
+            name='postmaster-'+phase+'.pid'; (lifecycle/name).write_bytes(post_raw)
+            post.append({'kind':'postmaster','phase':phase,'raw':{'file':name,'sha256':digest(post_raw)}})
+        ps=['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command=']
+        cwd=['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn']
+        table=['/bin/ps','-axo','pid=,ppid=,pgid=']
+        before={'kind':'process','pid':pid,'phase':'before-pg-stop','pgid':pid,'pgid_error_errno':None,
+                'ps':command(ps,f'{pid} 1 {pid} /opt/homebrew/bin/postgres -D {data}\n'.encode()),
+                'cwd':command(cwd,f'p{pid}\nfcwd\nn{data}\n'.encode()),'table':command(table,b'1 0 1\n')}
+        after={'kind':'process','pid':pid,'phase':'after-stop','pgid':None,'pgid_error_errno':3,'port':port,
+               'ps':command(ps,exit_code=1),'cwd':command(cwd,exit_code=1),
+               'listener':command(['/usr/sbin/lsof','-nP',f'-iTCP:{port}','-sTCP:LISTEN','-t'],exit_code=1),
+               'table':command(table,b'1 0 1\n')}
+        receipt={'version':'som.m6-mac-rust006-cluster.v1','port':port,'exit_code':0,'product_acceptance_passed':False,
+                 'recording_errors':[],'tools':tool_rows,'events':[init,start,post[0],post[1],before,stop,after]}
+        (lifecycle/'receipt.json').write_text(json.dumps(receipt))
+        return lifecycle
+
+    def test_cluster_raw_owner_and_absence(self):
+        from unittest import mock
+        import audit_mac_rust006_extra as audit
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve(); lifecycle=self.create(root)
+            with mock.patch.object(audit,'REPO',root):
+                self.assertTrue(audit.audit_cluster(lifecycle)['process_stopped'])
+                receipt=json.loads((lifecycle/'receipt.json').read_text())
+                receipt['events'][-1]['listener']['exit_code']=0
+                (lifecycle/'receipt.json').write_text(json.dumps(receipt))
+                with self.assertRaises(ValueError): audit.audit_cluster(lifecycle)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

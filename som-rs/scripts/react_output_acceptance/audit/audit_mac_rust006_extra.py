@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Independent raw audit draft for Mac Rust006 extras; incomplete, never acceptance.
 
-Checks raw Python replay and frozen coverage wire exchanges. Rust refusal and
-OS cleanup checks are deliberately unrun until their full independent checks
-exist. The exit is always nonzero; it cannot approve a release.
+Checks raw Python replay, coverage, Rust refusal and OS observations. Command
+provenance, parity and outer cleanup remain deliberately unrun. The exit is
+always nonzero; it cannot approve a release.
 """
 from __future__ import annotations
 import argparse
@@ -350,6 +350,140 @@ def audit_refusals(raw, legacy):
     return {'refusals':count,'bundle_cases':len(rows),'raw_calls':calls.index}
 
 
+
+def command_raw(root, row, expected):
+    need(type(row) is dict and row.get('argv') == expected and type(row.get('exit_code')) is int,
+         'OS command differs')
+    output = {}
+    for stream in ('stdout','stderr'):
+        record=row.get(stream)
+        need(type(record) is dict and type(record.get('file')) is str and
+             re.fullmatch(r'(?:os|call)-[0-9]{4}\.(?:stdout|stderr)',record['file']), 'OS log reference differs')
+        raw=read(root/record['file'])
+        need(sha(raw)==record.get('sha256'),'OS log hash differs')
+        output[stream]=raw
+    need(not output['stderr'],'OS command stderr not empty')
+    return row['exit_code'],output['stdout']
+
+def audit_cluster(root):
+    receipt=json_file(root/'receipt.json')
+    need(receipt.get('version')=='som.m6-mac-rust006-cluster.v1' and receipt.get('exit_code')==0
+         and receipt.get('recording_errors')==[] and receipt.get('product_acceptance_passed') is False,
+         'cluster record incomplete')
+    port=receipt['port']
+    need(type(port) is int and 18919<=port<19000 and port not in (18917,18919,8765,18765),'cluster port differs')
+    tools=json_file(REPO/'som-rs/contracts/rust-output-v1/toolchain.json')['postgresql']
+    bin_dir=Path(tools['bin_dir'])
+    for name in ('postgres','initdb','pg_ctl'):
+        row=receipt['tools'][name]
+        need(row['source']==str(bin_dir/name) and row['file']==f'postgresql-tools/{name}'
+             and row['source_before']==row['source_after']==row['sha256']==tools[name]['sha256']
+             and sha(read(root/row['file']))==tools[name]['sha256'], 'retained PostgreSQL tool differs')
+    events=receipt['events']
+    init=[e for e in events if e.get('kind')=='initdb']
+    controls=[e for e in events if e.get('kind')=='pg_ctl']
+    post=[e for e in events if e.get('kind')=='postmaster']
+    snapshots=[e for e in events if e.get('kind')=='process']
+    need(len(init)==1 and len(controls)==2 and len(post)==2 and len(snapshots)==2, 'cluster event count differs')
+    need([x['phase'] for x in post]==['after-start','before-stop'] and
+         [x['phase'] for x in snapshots]==['before-pg-stop','after-stop'], 'cluster event order differs')
+    cluster=root.parent/'cluster-work'
+    data=str(cluster/'pgdata')
+    initial=[str(bin_dir/'initdb'),'-D',data,'-U','postgres','-E','UTF8','--locale=C','--auth=trust','--no-sync']
+    code,_=command_raw(root,init[0],initial)
+    need(code==0,'initdb failed')
+    options=(f"-p {port} -c listen_addresses=127.0.0.1 -c unix_socket_directories='' -c timezone=UTC "
+             f"-c log_timezone=UTC -c max_connections=300 -c fsync=off")
+    start=[str(bin_dir/'pg_ctl'),'-D',data,'-l',str(cluster/'postgres.log'),'-o',options,'-w','start']
+    stop=[str(bin_dir/'pg_ctl'),'-D',data,'-m','fast','-w','stop']
+    for record,argv in zip(controls,(start,stop)):
+        code,_=command_raw(root,record,argv)
+        need(code==0,'pg_ctl failed')
+    parsed=[]
+    for event in post:
+        record=event['raw']
+        need(record['file'] in ('postmaster-after-start.pid','postmaster-before-stop.pid'),'postmaster file differs')
+        raw=read(root/record['file'])
+        need(sha(raw)==record['sha256'],'postmaster hash differs')
+        lines=raw.decode().splitlines()
+        need(len(lines)>=4 and lines[0].isdigit() and int(lines[0])>1 and lines[1]==data
+             and lines[2].isdigit() and lines[3]==str(port),'postmaster identity differs')
+        parsed.append(lines[:4])
+    need(parsed[0]==parsed[1],'postmaster identity changed')
+    pid=int(parsed[0][0]); before,after=snapshots
+    need(before['pid']==after['pid']==pid and type(before.get('pgid')) is int and before['pgid']>0,
+         'cluster snapshot identity differs')
+    ps=['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command=']
+    cwd=['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn']
+    code,psraw=command_raw(root,before['ps'],ps)
+    fields=psraw.decode().strip().split(None,3)
+    need(code==0 and len(fields)==4 and fields[0]==str(pid) and fields[1].isdigit() and fields[2].isdigit()
+         and fields[2]==str(before['pgid']), 'PostgreSQL process snapshot differs')
+    import shlex
+    argv=shlex.split(fields[3])
+    need(argv and Path(argv[0]).name=='postgres' and '-D' in argv and argv[argv.index('-D')+1]==data,
+         'PostgreSQL command differs')
+    code,cwdraw=command_raw(root,before['cwd'],cwd)
+    lines=cwdraw.decode().splitlines()
+    need(code==0 and [x[1:] for x in lines if x.startswith('p')]==[str(pid)]
+         and [x[1:] for x in lines if x.startswith('n')]==[data], 'PostgreSQL cwd differs')
+    code,_=command_raw(root,before['table'],['/bin/ps','-axo','pid=,ppid=,pgid='])
+    need(code==0,'process table unavailable')
+    for key,cmd in [('ps',ps),('cwd',cwd),('listener',['/usr/sbin/lsof','-nP',f'-iTCP:{port}','-sTCP:LISTEN','-t'])]:
+        code,value=command_raw(root,after[key],cmd)
+        need(code==1 and not value, 'PostgreSQL process or listener still present')
+    need(after.get('pgid') is None and after.get('pgid_error_errno')==3, 'PostgreSQL pid still present')
+    return {'pid':pid,'port':port,'tool_files':3,'process_stopped':True}
+
+def audit_candidate(run, candidate, expected_revision):
+    report=json_file(run/'collector.json')
+    build=json_file(candidate/'build.json'); runtime=json_file(candidate/'runtime.json'); source=json_file(candidate/'source.json')
+    digest=sha(read(candidate/'som'))
+    need(report.get('version')=='som.m6-mac-rust006-extra.v1' and report.get('candidate_revision')==expected_revision
+         and report.get('candidate_binary_sha256')==digest and report.get('product_acceptance_passed') is False
+         and build.get('binary_sha256')==runtime.get('binary_sha256')==digest
+         and build.get('complete') is True and build.get('source_unchanged') is True
+         and build.get('tree_before',{}).get('head')==source.get('commit')==expected_revision
+         and sha(read(candidate/'source.json'))==build.get('source_sha256')==runtime.get('source_sha256')
+         and sha(read(candidate/'source.tar'))==source.get('archive_sha256')
+         and sha(read(candidate/'assets/manifest.json'))==build.get('asset_manifest_sha256'), 'candidate bytes differ')
+    need(type(source.get('files')) is dict and source['files'], 'source file map missing')
+    for rel,expected in source['files'].items():
+        path=Path(rel)
+        need(not path.is_absolute() and '..' not in path.parts and sha(read(REPO/path))==expected,'build source file differs')
+    pid,port=runtime['pid'],runtime['port']
+    need(type(pid) is int and pid>1 and port==18919 and runtime.get('accepted') is False,'candidate PID/port differs')
+    argv=runtime['argv']
+    need(argv==[str(candidate/'som'),'serve','--assets',str(candidate/'assets'),'--port','18919'], 'candidate argv differs')
+    for phase in ('before','after'):
+        snap=report['candidate_'+phase]
+        need(snap['pid']==pid and snap['port']==port,'candidate snapshot differs')
+        commands={'ps':['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command='],
+                  'cwd':['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn'],
+                  'listener':['/usr/sbin/lsof','-nP',f'-iTCP:{port}','-sTCP:LISTEN','-t']}
+        raw={}
+        for name,command in commands.items():
+            row=snap['commands'][name]
+            need(row['argv']==command and row['exit_code']==0,'candidate command failed')
+            for stream in ('stdout','stderr'):
+                path=run/row[stream]
+                need(path.is_relative_to(run/'logs') and sha(read(path))==row[stream+'_sha256'],'candidate log differs')
+                raw[(name,stream)]=read(path)
+            need(not raw[(name,'stderr')],'candidate command stderr differs')
+        fields=raw[('ps','stdout')].decode().strip().split(None,3)
+        need(len(fields)==4 and fields[0]==str(pid) and fields[1].isdigit() and fields[2].isdigit()
+             and fields[3]==' '.join(argv),'candidate process command differs')
+        lines=raw[('cwd','stdout')].decode().splitlines()
+        need([x[1:] for x in lines if x.startswith('p')]==[str(pid)]
+             and [x[1:] for x in lines if x.startswith('n')]==[str(candidate)],'candidate cwd differs')
+        need(raw[('listener','stdout')].decode().split()==[str(pid)],'candidate listener differs')
+        health=snap['health']; health_path=run/health['file']
+        need(health['status']==200 and health_path.is_relative_to(run/'logs')
+             and sha(read(health_path))==health['sha256'] and equal(obj(read(health_path)),runtime['health']),
+             'candidate health differs')
+    return {'binary_sha256':digest,'pid':pid,'port':port,'source_files':len(source['files'])}
+
+
 def main():
     p=argparse.ArgumentParser()
     for name in ('run','candidate','public-run','legacy-run','parity','out'): p.add_argument('--'+name,type=Path,required=True)
@@ -359,12 +493,15 @@ def main():
             'rows':[], 'status':'unrun'}
     for name, action in [('python-replay', lambda:audit_replay(args.run/'raw-python-replay',args.public_run,args.legacy_run)),
                          ('validate-cases', lambda:audit_cases(args.run/'raw-validate-cases')),
-                         ('phase2-rust-refusals', lambda:audit_refusals(args.run/'raw-rust-refusals',args.legacy_run))]:
+                         ('phase2-rust-refusals', lambda:audit_refusals(args.run/'raw-rust-refusals',args.legacy_run)),
+                         ('candidate-source-and-process', lambda:audit_candidate(args.run,args.candidate,
+                              json_file(args.run/'collector.json')['candidate_revision'])),
+                         ('postgres-cleanup', lambda:audit_cluster(args.run/'cluster-lifecycle'))]:
         try: report['rows'].append({'id':name,'status':'passed','evidence':action()})
         except Exception as exc: report['rows'].append({'id':name,'status':'failed','error':type(exc).__name__ + ': ' + str(exc)})
     # No affirmative outcome until the refusal recipes, source provenance,
     # process/port ownership and PostgreSQL teardown can all be rederived.
-    for name in ('candidate-source-and-process', 'postgres-cleanup'):
+    for name in ('independent-command-provenance', 'same-candidate-parity', 'outer-owned-candidate-cleanup'):
         report['rows'].append({'id':name,'status':'unrun','reason':'independent raw rule not implemented'})
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open('x') as f: json.dump(report,f,sort_keys=True,indent=2); f.write('\n')
