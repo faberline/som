@@ -375,6 +375,22 @@ class UnorderedParityWireTests(unittest.TestCase):
 
 
 class OwnedCandidateTests(unittest.TestCase):
+    def test_timeout_kills_owned_group_but_never_counts_as_success(self):
+        import subprocess
+        from unittest import mock
+        import owned_candidate
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();candidate=root/'candidate';candidate.mkdir()
+            owner=owned_candidate.CandidateOwner(root,candidate,18919)
+            proc=mock.Mock();proc.pid=7123;proc.poll.return_value=None
+            proc.wait.side_effect=[subprocess.TimeoutExpired('fixture',1),-9];owner.process=proc
+            with mock.patch.object(owned_candidate.os,'getpgid',return_value=7123), \
+                 mock.patch.object(owned_candidate.os,'killpg') as kill:
+                with self.assertRaises(subprocess.TimeoutExpired):owner.wait_after_signal(timeout=1)
+            self.assertEqual([call.args[1] for call in kill.call_args_list],[owned_candidate.signal.SIGTERM,owned_candidate.signal.SIGKILL])
+            self.assertEqual([event['state'] for event in owner.events],['timeout','completed'])
+            self.assertEqual(owner.events[1]['kind'],'candidate-cleanup-wait')
+
     def test_candidate_audit_checks_wait_and_observed_descendants(self):
         import hashlib
         import audit_candidate_owner as audit
