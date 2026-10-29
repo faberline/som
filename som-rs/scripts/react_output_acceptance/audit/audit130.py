@@ -182,9 +182,14 @@ class Reader:
                 with os.fdopen(fd, 'rb', closefd=False) as stream:
                     raw = stream.read(128 * 1024**2 + 1)
                 after = os.fstat(fd)
+                current = os.stat(path, follow_symlinks=False)
                 need(len(raw) == before.st_size and before.st_ino == after.st_ino
                      and before.st_dev == after.st_dev and before.st_size == after.st_size
-                     and before.st_mtime_ns == after.st_mtime_ns, 'candidate member changed')
+                     and before.st_mtime_ns == after.st_mtime_ns and stat.S_ISREG(current.st_mode)
+                     and (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns)
+                     == (current.st_dev, current.st_ino, current.st_size, current.st_mtime_ns)
+                     and not any(p.is_symlink() for p in (directory, *directory.parents)),
+                     'candidate member changed')
             finally:
                 os.close(fd)
         except OSError as exc:
