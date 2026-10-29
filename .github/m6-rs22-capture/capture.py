@@ -468,6 +468,8 @@ def main(argv=None):
         summary["status"] = "failed"
         summary["failed_stage"] = stage
         summary["failure_type"] = type(exc).__name__
+        if isinstance(exc, Refusal):
+            summary["failure_reason"] = str(exc)
     finally:
         if process is not None:
             try:
