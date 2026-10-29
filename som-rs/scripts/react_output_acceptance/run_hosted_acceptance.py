@@ -468,7 +468,7 @@ def main(argv: list[str] | None = None) -> int:
                          type(cleanup['candidate'].get('direct_wait')) is dict and
                          cleanup['candidate']['direct_wait'].get('completed') is True)
                     owner_audit=load(out/'candidate-owner-audit.json')
-                    need(owner_audit.get('cleanup_complete') is True)
+                    need(owner_audit.get('candidate_owned_group_cleanup')=='passed')
             except (OSError, ValueError, subprocess.SubprocessError):
                 summary["passed"] = False
                 summary["failed_stage"] = summary["failed_stage"] or "cleanup-or-head"

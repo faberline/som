@@ -101,20 +101,22 @@ def audit(out,candidate):
         observed=more
     need(not observed.intersection(after))
     return {'candidate_pid':pid,'direct_wait_exit_code':wait['exit_code'],
-            'observed_processes_absent':len(observed),'unobserved_descendants':'unverified',
-            'workflow_origin':'unverified'}
+            'observed_processes_absent':len(observed),'owned_group_absent':True,'listener_absent':True,
+            'outside_observed_group':'unverified','workflow_origin':'unverified'}
 
 def main():
     p=argparse.ArgumentParser()
     for name in ('out','candidate','audit'):p.add_argument('--'+name,type=Path,required=True)
     a=p.parse_args();need(not a.audit.exists())
     result={'version':'som.m6-owned-candidate-audit.draft.v1','status':'unrun',
-            'cleanup_complete':False,'product_acceptance_passed':False}
+            'candidate_owned_group_cleanup':'unrun','product_acceptance_passed':False}
     try:
         result['observed']=audit(a.out,a.candidate)
         result['status']='observed'
+        result['candidate_owned_group_cleanup']='passed'
     except Exception as exc:result['error']=type(exc).__name__+': '+str(exc)
     with a.audit.open('x') as f:json.dump(result,f,indent=2,sort_keys=True);f.write('\n')
-    print(json.dumps({'status':result['status'],'cleanup_complete':False,'product_acceptance_passed':False}))
+    print(json.dumps({'status':result['status'],'candidate_owned_group_cleanup':result['candidate_owned_group_cleanup'],
+                      'outside_observed_group':'unverified','product_acceptance_passed':False}))
     return 0 if result['status']=='observed' else 1
 if __name__=='__main__':raise SystemExit(main())

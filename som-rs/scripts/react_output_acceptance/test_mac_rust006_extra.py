@@ -585,14 +585,23 @@ class OwnedCandidateTests(unittest.TestCase):
                 self.assertTrue(cleanup['stopped'])
                 evidence=audit_candidate_owner.audit(root,candidate)
                 self.assertEqual(evidence['candidate_pid'],owner.process.pid)
-                self.assertEqual(evidence['unobserved_descendants'],'unverified')
+                self.assertEqual(evidence['outside_observed_group'],'unverified')
                 result=subprocess.run([sys.executable,str(Path(audit_candidate_owner.__file__)),'--out',str(root),
                                        '--candidate',str(candidate),'--audit',str(root/'owner-audit.json')],
                                       capture_output=True,check=False,timeout=30)
                 self.assertEqual(result.returncode,0)
                 report=json.loads((root/'owner-audit.json').read_bytes())
-                self.assertEqual(report['status'],'observed');self.assertFalse(report['cleanup_complete'])
+                self.assertEqual(report['status'],'observed');self.assertEqual(report['candidate_owned_group_cleanup'],'passed')
+                self.assertEqual(report['observed']['outside_observed_group'],'unverified')
                 self.assertFalse(report['product_acceptance_passed'])
+                (root/'owner-candidate-listener.stdout').write_bytes(b'mutated')
+                bad=subprocess.run([sys.executable,str(Path(audit_candidate_owner.__file__)),'--out',str(root),
+                                    '--candidate',str(candidate),'--audit',str(root/'owner-audit-bad.json')],
+                                   capture_output=True,check=False,timeout=30)
+                self.assertEqual(bad.returncode,1)
+                bad_report=json.loads((root/'owner-audit-bad.json').read_bytes())
+                self.assertEqual(bad_report['candidate_owned_group_cleanup'],'unrun')
+                self.assertFalse(bad_report['product_acceptance_passed'])
             finally:
                 if owner.process is not None and owner.process.poll() is None:
                     owner.process.terminate();owner.process.wait(timeout=10)
