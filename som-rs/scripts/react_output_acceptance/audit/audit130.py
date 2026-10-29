@@ -2,8 +2,8 @@
 """Audit a React acceptance run from frozen contracts and retained raw evidence.
 
 No acceptance tool is imported, parsed or run. Tool files are hashed only.
-Aggregate verdicts are ignored. A narrow per-case boolean with no retained raw
-exchange is labelled attested, never independently passed. Missing evidence is
+Aggregate verdicts are ignored. Operational checks require retained raw bytes.
+Only human review and approval metadata can be attested. Missing evidence is
 unrun. A clean committed checkout is supplied by the caller; this audit checks
 its bytes against the run identity, not the internal Git object database.
 """
@@ -16,6 +16,12 @@ from pathlib import Path
 import re
 import sys
 from typing import Any, Callable
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from render_rules import render_files  # noqa: E402
+from refusal_rules import request_for  # noqa: E402
+from api_raw import validate as validate_api, ApiRawError  # noqa: E402
+from baseline_raw import validate_python, validate_rust, validate_controls, verify_location, BaselineRawError  # noqa: E402
 
 
 VERSION = "som.react-output-audit-130.v1"
@@ -293,6 +299,8 @@ class Audit:
         self.attestations: list[dict] = []
         self.active_report = ""
         self.baseline_requests: dict[tuple[str, str, str], str] = {}
+        self.ts_baseline_inventory: dict = {}
+        self.ts_baseline_cases: dict[str, tuple[str, dict]] = {}
 
     def row(self, row_id: str, action: Callable[[], Any], *, description: str = "") -> dict:
         before = len(self.reader.accesses)
@@ -368,13 +376,6 @@ class Audit:
         need(len(matches) == 1, f"duplicate named case {step}/{case_id}")
         return matches[0]
 
-    def per_case_attestation(self, row: dict, reason: str, field: str = "passed") -> tuple[str, str]:
-        need(field in row, f"missing per-case attestation: {reason}", "unrun")
-        need(row[field] is True, f"per-case tool boolean is false or malformed: {reason}")
-        record = {"file": self.active_report, "record": {key: row[key] for key in ("id", "section", "variant", "check") if key in row}, "field": field, "reason": reason}
-        self.attestations.append(record)
-        return "attested", f"{reason}; exact raw record: {record['file']} {record['record']} /{field}"
-
     def identities(self) -> None:
         identity = object_value(self.reader.json(self.run / "identity.json"), "identity")
         for role in ("candidate", "baseline", "8765"):
@@ -382,6 +383,25 @@ class Audit:
                 data = object_value(identity.get(role), role)
                 pair = object_value(data.get("healthz"), f"{role} healthz")
                 before, after = object_value(pair.get("before"), "health before"), object_value(pair.get("after"), "health after")
+                if role == "8765" and "expected_state" in data:
+                    need(data["expected_state"] == "absent", "8765 expected state is invalid")
+                    base_url = "http://127.0.0.1:8765"
+                    health_url = f"{base_url}/healthz"
+                    if "url" in data:
+                        need(data["url"] == base_url, "8765 protected URL differs")
+                    urls = []
+                    for point in (before, after):
+                        url = point.get("url", health_url if data.get("url") == base_url else None)
+                        need(url == health_url, "8765 absent health URL differs")
+                        urls.append(url)
+                        need(point.get("error_kind") == "connection_refused", "8765 absence has no connection refusal")
+                        number = point.get("error_errno")
+                        need(true_integer(number) and number in (61, 111), "8765 absence has no ECONNREFUSED error number")
+                        need(point.get("error_type") in ("ConnectionRefusedError", "OSError"), "8765 absence error type differs")
+                        need(isinstance(point.get("error"), str) and point["error"].strip(), "8765 absence error is missing")
+                        need(all(key in point and point[key] is None for key in ("status", "body", "raw", "sha256")), "8765 absent health snapshot contains an HTTP response")
+                    need(urls[0] == urls[1], "8765 absent health URL changed")
+                    return
                 for point in (before, after):
                     need(point.get("status") == 200, f"{role} health HTTP status is not 200")
                     need(isinstance(point.get("raw"), str), f"{role} raw health body missing", "unrun")
@@ -582,11 +602,26 @@ class Audit:
                 captured_request["target"] = body["target"]
             expected_hash = sha(json.dumps(captured_request, ensure_ascii=False, separators=(",", ":")).encode())
             need(row.get("expected_request_sha256") == row.get("request_sha256") == expected_hash, "CLI captured request hash differs from the independently derived frozen request")
-            need(row.get("exit_code") == (2 if refusal else 0), "CLI exit code differs")
+            need(true_integer(row.get("exit_code")) and row["exit_code"] == (2 if refusal else 0), "CLI exit code differs")
             if refusal:
                 need(row.get("code") == case["expected"]["code"] and row.get("http_status") == case["http_status"], "CLI refusal differs")
-            self.per_case_attestation(row, f"CLI stdout equality for {case['id']}; raw stdout is not retained")
-        return "attested", "forwarded request hashes and exit codes match; raw CLI stdout equality is a per-case attestation"
+            def raw(name: str) -> bytes:
+                value = row.get(f"{name}_file")
+                need(isinstance(value, str) and value, f"missing CLI raw {name}", "unrun")
+                path = self.reader.path(value, self.run / "react-target")
+                need(path.is_relative_to(self.run / "react-target/cli-inputs"), "CLI raw path leaves this run")
+                data = self.reader.bytes(path)
+                need(row.get(f"{name}_sha256") == sha(data), f"CLI raw {name} hash differs")
+                return data
+            request = raw("request")
+            need(request == json.dumps(captured_request, ensure_ascii=False, separators=(",", ":")).encode(), "CLI raw forwarded request differs")
+            need(true_integer(row.get("capture_count")) and row["capture_count"] == 1
+                 and row.get("request_route") == "/v1/compile", "CLI forwarding inventory differs")
+            reply = object_value(json.loads(raw("http_response")), "CLI HTTP reply")
+            stdout, stderr = raw("stdout"), raw("stderr")
+            stream = stderr if refusal else stdout
+            need(json.loads(stream) == (reply if refusal else reply.get("bundle")), "CLI output differs from raw HTTP reply")
+        return "passed", "exact forwarded request, raw streams, HTTP reply and exit codes match"
 
     def scope_cases(self) -> None:
         for case in self.inventory.get("public_examples", []):
@@ -771,7 +806,7 @@ class Audit:
                 base = directory / f"{index:03d}"
                 raw = self.reader.bytes(base / "prompt.json")
                 prompt = object_value(json.loads(raw), "public product prompt")
-                need(prompt == frozen_sources[index]["prompt"], "public source prompt differs from immutable fixture/example prompt")
+                need(canonical(prompt) == canonical(frozen_sources[index]["prompt"]), "public source prompt differs from immutable fixture/example prompt")
                 refusal = self.scope_oracle(prompt)
                 rule = "in_scope" if refusal is None else refusal["rule"]
                 key = (prompt["version"], rule)
@@ -784,7 +819,17 @@ class Audit:
                 actual_cnl = self.reader.bytes(cnl).decode()
                 need(actual_cnl == frozen_sources[index]["cnl"], "public CNL source differs from immutable fixture/example source")
                 forms["cnl"] = {"format": "som.cnl.v1", "source": actual_cnl, "target": "react"}
-                self.scope_case(cid, prompt, forms, rule)
+                if refusal is None:
+                    self.scope_case(cid, prompt, forms, rule)
+                else:
+                    # The frozen writer emits dedicated product rows only for
+                    # admitted products. Refusals use the original fixture or
+                    # example identity and that source's declared forms.
+                    source_case = frozen_sources[index]
+                    source_forms = {form: forms[form] for form in source_case["scope_forms"]}
+                    if "json" in source_forms:
+                        source_forms["json"] = {"format": "som.prompt-json.v1", "prompt": source_case["prompt"], "target": "react"}
+                    self.scope_case(source_case["scope_id"], source_case["prompt"], source_forms, rule)
             self.row(f"scope_case/{cid}", check)
         need(observed == expected, "complete public source profile histogram differs from frozen contract")
 
@@ -800,7 +845,8 @@ class Audit:
             need(isinstance(case.get("id"), str) and isinstance(case.get("cnl"), str), "frozen public fixture identity/source missing")
             need(case.get("prompt_sha256") == sha(canonical(prompt)), "frozen public fixture prompt hash differs")
             need(case.get("cnl_sha256") == sha(case["cnl"].encode()), "frozen public fixture CNL hash differs")
-            cases.append({"id": case["id"], "prompt": prompt, "cnl": case["cnl"]})
+            cases.append({"id": case["id"], "prompt": prompt, "cnl": case["cnl"],
+                          "scope_id": case["id"], "scope_forms": ("json", "cnl") if case.get("category") == "version_positive" else ("cnl",)})
         examples = Path("som-rs/contracts/compiler-v1/examples")
         pins = sources.get("examples", {})
         index_path = examples / "index.json"
@@ -811,9 +857,12 @@ class Audit:
             prompt = object_value(self.pinned_json(prompt_path, pins.get(prompt_path.as_posix())), "frozen public example prompt")
             raw_cnl = self.reader.bytes(cnl_path)
             need(sha(raw_cnl) == pins.get(cnl_path.as_posix()), "frozen public example CNL hash differs")
-            cases.append({"id": "PUBLIC_" + case["id"], "prompt": prompt, "cnl": raw_cnl.decode()})
+            cases.append({"id": "PUBLIC_" + case["id"], "prompt": prompt, "cnl": raw_cnl.decode(),
+                          "scope_id": "example-" + case["id"], "scope_forms": ("json", "cnl")})
         ids = [case["id"] for case in cases]
         need(cases and len(set(ids)) == len(ids), "immutable public input ids are empty or repeated")
+        scope_ids = [case["scope_id"] for case in cases]
+        need(len(set(scope_ids)) == len(scope_ids), "immutable public scope source ids are ambiguous")
         return cases
 
     def bundle_data(self, case_id: str) -> tuple[dict, dict, dict]:
@@ -886,14 +935,46 @@ class Audit:
                 if isinstance(formatter, dict):
                     need(assets.get("formatter") == {"id": formatter["id"], "sha256": formatter["sha256"]}, "formatter descriptor differs")
                 need(assets.get("catalog") == {"id": "som.react-catalog.v1", "sha256": self.reader.hash(f"{CONTRACT}/catalog/react-catalog.v1.json")}, "React catalog descriptor differs")
-                return self.per_case_attestation(row, f"{cid}: dynamic schema/README reference rendering and backend/block-library descriptor construction are per-case attestations; bytes, schema, catalog, hashes, fixed files, shared descriptors and determinism were recomputed")
+                fixed_order = ("index.html", "package.json", "package-lock.json", "tsconfig.json", "vite.config.ts",
+                    "src/main.tsx", "src/App.tsx", "src/api.ts", "src/spec.ts", "src/form.ts", "src/styles.css",
+                    "src/pages/ListPage.tsx", "src/pages/DetailPage.tsx", "src/pages/FormPage.tsx", "src/pages/ErrorView.tsx",
+                    "src/app.test.tsx", "src/form.test.ts")
+                library = self.reader.bytes("som-rs/som-targets/src/react/render.rs") + b"".join(
+                    self.reader.bytes(f"{CONTRACT}/reference/{name}") for name in fixed_order)
+                need(assets.get("block_library") == {"id": "som.react-block-library.v1", "sha256": sha(library)}, "React block library descriptor differs")
+                backend = {f"som-targets/{name}": self.reader.hash(f"som-rs/som-targets/{name}")
+                           for name in ("Cargo.toml", "src/lib.rs", "src/main.rs", "src/profile.rs")}
+                backend.update({f"som-targets/src/react/{name}": value for name, value in
+                                self.reader.tree(self.reader.path("som-rs/som-targets/src/react")).items()})
+                need(assets.get("backend") == {"id": "som.react-backend.v1", "sha256": sha(canonical(
+                    {"version": "som.react-backend.v1", "files": backend}))}, "React backend descriptor differs")
+                for name, expected_text in render_files(bundle["prompt"]).items():
+                    need(files.get(name) == expected_text, f"generated {name} differs from independent frozen rendering rules")
+                return "passed", "raw bundle, product bytes, generated files and all descriptors recomputed"
             self.row(f"bundle_case/{cid}", check)
         recipes = self.contracts["acceptance-plan.json"].get("assemble_refusals", {}).get("recipes", [])
         for recipe in recipes:
             def check(recipe: dict = recipe) -> tuple[str, str]:
                 row = self.find("bundles", recipe["id"], "assemble_refusals")
-                self.diagnostic(row, {key: recipe[key] for key in ("code", "prompt_pointer")}, recipe["http_status"], "bundles")
-                return self.per_case_attestation(row, f"{recipe['id']}: response code/status/pointer recomputed; exact mutated request, rehash and span are only per-case attestations because request bytes were not retained")
+                def base(name: str) -> dict:
+                    return object_value(self.reader.json(self.run / "bundles/responses" / name), "assemble base reply")["bundle"]
+                react = base("bundle_checks__example-v1__compile_json_1.json")
+                rust = base("bundle_checks__example-v1__rust_manifest.json")
+                typescript = base("assemble_refusals__base_typescript_v1.json")
+                python = base("assemble_refusals__base_python_v1.json")
+                v5 = base("assemble_refusals__base_python_v5.json")
+                prompt = self.reader.json("som-rs/contracts/compiler-v1/examples/v5.prompt.json")
+                need(v5["prompt"] == prompt, "v5 refusal base prompt differs from frozen example")
+                raw = request_for(recipe["id"], react, typescript, rust, python, prompt, v5["assets"])
+                retained = self.reader.bytes(self.run / "bundles/responses" / f"assemble_refusals__{recipe['id']}.request.raw")
+                need(retained == raw, "assemble mutation differs from independently rebuilt frozen recipe")
+                self.diagnostic(row, {key: recipe[key] for key in ("code", "prompt_pointer")}, recipe["http_status"], "bundles", raw.decode())
+                _, response = self.response("bundles", row)
+                try:
+                    verify_location(raw, response["diagnostics"][0])
+                except BaselineRawError as error:
+                    raise EvidenceError(str(error), error.status) from error
+                return "passed", "exact mutation, hashes, raw request and refusal span recomputed"
             self.row(f"assemble_refusals/recipes/{recipe['id']}", check)
 
     def product_gate(self, cid: str, gate: int) -> tuple[str, str] | None:
@@ -934,7 +1015,16 @@ class Audit:
             need(lock is not None and lock == gates.get("lock_sha256_before") == gates.get("lock_sha256_after"), "package lock hashes differ")
             before, after_cache = gates.get("vendored_cache_tree_sha256_before"), gates.get("vendored_cache_tree_sha256_after")
             need(isinstance(before, str) and HEX.fullmatch(before) and before == after_cache, "vendored cache before/after tree hashes differ or are absent")
-            return self.per_case_attestation(product_row, "product and lock bytes recomputed; historical cache tree snapshots are not retained byte trees", "vendored_cache_unchanged")
+            snapshots = [object_value(self.reader.json(work / f"cache-{name}.json"), "raw cache file snapshot") for name in ("before", "after")]
+            frozen = self.contracts["toolchain.json"]["vendored_cache"]
+            current = self.reader.tree(self.reader.path(frozen["path"]))
+            digest = sha(b"".join(f"{name}\0{current[name]}\n".encode() for name in sorted(current, key=Path)))
+            for snapshot in snapshots:
+                need(snapshot.get("version") == "som.m6-cache-snapshot.v1" and snapshot.get("files") == current, "cache file snapshot differs from current frozen bytes")
+                need(snapshot.get("tree_sha256") == digest == frozen["tree_sha256"] == before == after_cache, "cache tree hash differs from frozen input")
+                need(type(snapshot.get("file_count")) is int and snapshot["file_count"] == frozen["tree_files"] == len(current)
+                     and type(snapshot.get("symlink_count")) is int and snapshot["symlink_count"] == frozen["tree_symlinks"] == 0, "cache file inventory differs")
+            return "passed", "product, lock and before/after cache file maps match retained frozen bytes"
         api = object_value(self.reader.json(work / "api/report.json"), "raw API report")
         result = object_value(api.get("result"), "raw API result")
         contract = self.contracts["api-contract.json"]
@@ -952,7 +1042,6 @@ class Audit:
             applicable = facts[conditions[name]] if name in conditions else True
             if applicable:
                 need(step.get("ok") is True and not step.get("skipped"), f"API step failed or was skipped: {name}")
-                self.attestations.append({"file": (work / "api/report.json").relative_to(self.repo).as_posix(), "record": f"/result/steps/{index}/ok", "value": True, "reason": f"{cid}: {name}; successful HTTP exchange not retained"})
             else:
                 need(step.get("ok") is None and step.get("skipped") == contract["skip_reasons"][name], f"API conditional skip differs: {name}")
         need(api.get("exit_code") == 0 and product_row.get("exit_codes", {}).get("api_contract") == 0, "API command exited with failure")
@@ -969,8 +1058,12 @@ class Audit:
             stop_verified = process.get("stop_cwd_verified")
             need(stop_verified is True or (stop_verified is None and true_integer(process.get("exit_code"))), "active process stop ownership is unverified")
             self.reader.path(process["expected_cwd"])
-            self.attestations.append({"file": (work / "api/report.json").relative_to(self.repo).as_posix(), "record": f"/processes/{index}/stopped", "value": True, "reason": f"{cid}: process {process['pid']}; OS ownership/cleanup snapshot not retained"})
-        return "attested", "API case facts, exact step inventory and conditional skips recomputed; successful API exchanges and process cleanup are per-case booleans because raw HTTP and OS ownership snapshots were not retained"
+        try:
+            validate_api(self.reader, work / "api-raw", work / "api/report.json", prompt, contract,
+                         self.reader.path(self.manifest[cid]["product"]))
+        except ApiRawError as error:
+            raise EvidenceError(str(error), error.status) from error
+        return "passed", "all applicable API exchanges and OS process ownership/cleanup recomputed from raw evidence"
 
     def products(self) -> None:
         rows = self.cases("products")
@@ -995,38 +1088,11 @@ class Audit:
         expected = set(expectations)
         ids = [row.get("id") for row in results]
         need(len(set(ids)) == len(ids) and set(ids) == expected, "Python controls named case inventory differs", "unrun" if expected - set(ids) else "failed")
-        baseline = {}
-        if language == "react":
-            frozen = object_value(self.reader.json(f"{EVIDENCE}/react-output-v1/python-controls-2026-10-22.json"), "frozen controls")
-            baseline = {row["id"]: row for row in frozen["results"]}
-        attested = False
-        for row in results:
-            status = row.get("control_status")
-            need(true_integer(status), "control HTTP status missing", "unrun")
-            case = expectations[row["id"]]
-            successful = str(case.get("python_control_expected", "")).startswith("HTTP 200")
-            if successful:
-                need(status == 200, "Python control unexpectedly refused")
-                value = row.get("payload_sha256")
-                need(isinstance(value, str) and HEX.fullmatch(value), "control payload hash missing", "unrun")
-                if row["id"] in baseline:
-                    need(value == baseline[row["id"]].get("payload_sha256"), "Python control payload changed")
-                elif language == "react":
-                    raise EvidenceError(f"frozen React control has no payload hash: {row['id']}", "unrun")
-                elif language != "react":
-                    self.per_case_attestation(row, "recorded Python control response has no retained baseline response")
-                    attested = True
-            elif language == "rust":
-                need(status == case.get("http_status"), "Rust Python control refusal HTTP status differs")
-                self.per_case_attestation(row, "Rust refusal control has no retained raw diagnostic")
-                attested = True
-            else:
-                need(status == case.get("http_status"), "Python control refusal HTTP status differs")
-                expected_diag = object_value(case.get("expected"), "frozen Python control diagnostic")
-                actual_diag = object_value(row.get("diagnostic"), "recorded Python control diagnostic")
-                for key in ("code", "cause", "allowed_form", "byte_start", "byte_end", "line", "column"):
-                    need(actual_diag.get(key) == expected_diag.get(key), f"Python control diagnostic {key} changed")
-        return ("attested", "some control comparisons only retain per-case booleans") if attested else ("passed", "all named Python controls match retained payload/diagnostic data")
+        try:
+            validate_controls(self.reader, self.run / f"{step}-raw", report, language)
+        except BaselineRawError as error:
+            raise EvidenceError(str(error), error.status) from error
+        return "passed", "all named control request/reply bytes, diagnostics and sealed historical payload pins match"
 
     def baseline(self, language: str) -> tuple[str, str]:
         step = f"{language}-baseline"
@@ -1034,37 +1100,148 @@ class Audit:
         rows = self.cases(step, key)
         need(rows, f"missing {language} baseline case results", "unrun")
         self.baseline_inventory(language, rows)
-        attested = False
+        if language in ("python", "rust"):
+            try:
+                validator = validate_python if language == "python" else validate_rust
+                validator(self.reader, self.run / f"{step}-raw", self.get_report(step))
+            except BaselineRawError as error:
+                raise EvidenceError(str(error), error.status) from error
+            return "passed", "complete source-bound compile and assembly raw bytes match accepted references"
         seen = set()
         for row in rows:
             identity = (row.get("source"), row.get("phase"), row.get("id"), row.get("variant"), row.get("check"))
             need(identity not in seen, "baseline case result is repeated")
             seen.add(identity)
-            if language == "python":
-                identity_key = (row.get("source"), row.get("id"), row.get("variant"))
-                if identity_key in self.baseline_requests:
-                    expected_request = self.baseline_requests[identity_key]
-                    need(row.get("qa_compile_request_sha256") == row.get("baseline_compile_request_sha256") == expected_request, "Python baseline request hash differs from source-bound immutable input")
-                for endpoint in ("compile", "assemble"):
-                    a, b = row.get(f"qa_{endpoint}_status"), row.get(f"baseline_{endpoint}_status")
-                    need(a == b == 200, "Python baseline HTTP result differs")
-                    left, right = row.get(f"qa_{endpoint}_response_sha256"), row.get(f"baseline_{endpoint}_response_sha256")
-                    need(isinstance(left, str) and HEX.fullmatch(left) and left == right, "Python baseline response hashes differ or are missing")
-            elif language == "rust" and row.get("check") == "rebased_files":
-                need(row.get("files_sha256") and row["files_sha256"] == row.get("recorded_files_sha256"), "Rust reassembled file hashes differ")
-            elif language == "rust":
-                self.per_case_attestation(row, "Rust normalized compile/refusal comparison retains no successful raw response")
-                attested = True
+            self.typescript_baseline_case(row)
+        return "passed", "raw TypeScript compile replies and product file bytes match"
+
+    def typescript_raw(self, record: dict, file_key: str, hash_key: str) -> dict:
+        """Read one hash-bound exchange from this run's TypeScript step only."""
+        value = record.get(file_key)
+        need(value is not None, f"missing TypeScript raw {file_key}", "unrun")
+        need(isinstance(value, str) and value and not Path(value).is_absolute(), "TypeScript raw path must be relative to this step")
+        root = self.run / "ts-baseline"
+        path = self.reader.path(value, root)
+        need(path.is_relative_to(root), "TypeScript raw exchange is outside this step of the recorded run")
+        raw = self.reader.bytes(path)
+        need(record.get(hash_key) == sha(raw), f"TypeScript raw {hash_key} differs")
+        try:
+            document = object_value(json.loads(raw), "TypeScript raw exchange")
+            canonical(document)
+            return document
+        except (ValueError, UnicodeDecodeError) as exc:
+            raise EvidenceError("invalid JSON in TypeScript raw exchange") from exc
+
+    def typescript_baseline_inputs(self, cid: str) -> tuple[dict, dict | None, str | None]:
+        """Derive request forms from frozen data without loading a collector."""
+        group, case = self.ts_baseline_cases[cid]
+        sources = self.ts_baseline_inventory.get("sources", {})
+        prompt, cnl = None, None
+        if group == "public_examples":
+            prompt = object_value(self.pinned_json(case["prompt"], case.get("prompt_file_sha256")), "TypeScript public prompt")
+            if case.get("cnl"):
+                raw = self.reader.bytes(case["cnl"])
+                need(sha(raw) == case.get("cnl_sha256"), "TypeScript public CNL source hash differs")
+                cnl = raw.decode()
+        elif group in ("version_positive_fixtures", "coverage_cases"):
+            fixture = group == "version_positive_fixtures"
+            path = "som-rs/tests/compiler-v1/cnl-positive-fixtures.json" if fixture else "som-rs/tests/rust-output-v1/cases/index.json"
+            pins = sources.get("cnl_positive_fixtures" if fixture else "coverage_index", {})
+            document = object_value(self.pinned_json(path, pins.get(path)), "TypeScript source inventory")
+            matches = [item for item in list_value(document.get("cases"), "TypeScript source cases") if item.get("id") == cid]
+            need(len(matches) == 1, "TypeScript source case is missing or repeated", "unrun" if not matches else "failed")
+            source = matches[0]
+            if fixture:
+                prompt = object_value(source.get("expected_prompt"), "TypeScript fixture prompt")
+                cnl = source.get("cnl")
+                need(sha(canonical(prompt)) == case.get("prompt_sha256"), "TypeScript fixture prompt hash differs")
             else:
-                requests = list_value(row.get("requests"), "TypeScript baseline requests")
-                need(requests, "TypeScript baseline requests missing", "unrun")
-                for request in requests:
-                    need(request.get("qa_status") == request.get("baseline_status") == 200, "TypeScript baseline compile status differs")
-                    need(request.get("qa_assemble_status") == request.get("baseline_assemble_status") == 200, "TypeScript baseline assemble status differs")
-                    need(request.get("files_sha256"), "TypeScript product file hashes missing", "unrun")
-                self.per_case_attestation(row, "TypeScript normalized response and baseline product comparisons retain only per-case booleans")
-                attested = True
-        return ("attested", f"{language} comparisons include per-case attestations; no aggregate verdict used") if attested else ("passed", "retained baseline response hashes match")
+                base = Path("som-rs/tests/rust-output-v1/cases")
+                prompt = object_value(self.pinned_json(base / source["prompt"], case.get("prompt_file_sha256")), "TypeScript coverage prompt")
+                cnl = self.reader.bytes(base / source["cnl"]).decode()
+            need(isinstance(cnl, str) and sha(cnl.encode()) == case.get("cnl_sha256"), "TypeScript CNL source hash differs")
+        elif group == "name_cases":
+            document = object_value(self.reader.json("som-rs/contracts/typescript-output-v1/target-examples.json"), "TypeScript name examples")
+            matches = [item for item in list_value(document.get("name_cases"), "TypeScript name cases") if item.get("id") == cid]
+            need(len(matches) == 1, "TypeScript name source is missing or repeated", "unrun" if not matches else "failed")
+            source = matches[0]
+            need(isinstance(source.get("body"), str) and sha(source["body"].encode()) == case.get("body_sha256"), "TypeScript name source request hash differs")
+            body = object_value(json.loads(source["body"]), "TypeScript name request")
+            form = case.get("form")
+            need(source.get("form") == form and form in ("json", "cnl"), "TypeScript name source form differs")
+            forms = {form: body}
+            if form == "cnl":
+                forms["json"] = None
+            return forms, body.get("prompt"), None
+        elif group == "legacy_in_scope":
+            # The frozen legacy inventory keeps prompt hashes, not private prompts.
+            return {"json": None, "cnl": None}, None, case.get("prompt_sha256")
+        else:
+            raise EvidenceError(f"no independent TypeScript source rule for {group}", "unrun")
+        forms = {"json": {"format": "som.prompt-json.v1", "prompt": prompt, "target": "typescript"}}
+        if cnl is not None:
+            forms["cnl"] = {"format": "som.cnl.v1", "source": cnl, "target": "typescript"}
+        return forms, prompt, None
+
+    def typescript_baseline_case(self, row: dict) -> None:
+        cid = row["id"]
+        group, _ = self.ts_baseline_cases[cid]
+        need(row.get("group") == group, "TypeScript baseline source group differs")
+        need(row.get("requests") is not None, "TypeScript baseline requests missing", "unrun")
+        requests = list_value(row.get("requests"), "TypeScript baseline requests")
+        need(requests, "TypeScript baseline requests missing", "unrun")
+        forms, expected_prompt, prompt_hash = self.typescript_baseline_inputs(cid)
+        actual_forms = [record.get("form") for record in requests if isinstance(record, dict)]
+        need(len(actual_forms) == len(requests) and len(set(actual_forms)) == len(actual_forms), "TypeScript request forms are malformed or repeated")
+        need(set(actual_forms) == set(forms), "TypeScript baseline request forms differ from source", "unrun" if set(forms) - set(actual_forms) else "failed")
+        previous_bundles = {}
+        for record in requests:
+            form = record["form"]
+            body = self.typescript_raw(record, "request_file", "body_sha256")
+            need(body.get("target") == "typescript", "TypeScript compile request target differs")
+            member, format_name = ("prompt", "som.prompt-json.v1") if form == "json" else ("source", "som.cnl.v1")
+            need(set(body) == {"format", member, "target"} and body.get("format") == format_name, "TypeScript compile request form differs")
+            need(isinstance(body[member], dict if form == "json" else str), "TypeScript compile input type differs")
+            if forms[form] is not None:
+                need(canonical(body) == canonical(forms[form]), "TypeScript compile request differs from immutable source")
+            bundles, normalized, file_maps = {}, {}, {}
+            for side in ("qa", "baseline"):
+                reply = self.typescript_raw(record, f"{side}_response_file", f"{side}_sha256")
+                status = record.get(f"{side}_status")
+                need(true_integer(status) and status == 200, "TypeScript baseline compile status differs")
+                need(reply.get("status") == "ok", "TypeScript compile response is not successful")
+                bundle = object_value(reply.get("bundle"), "TypeScript compiled bundle")
+                need(bundle.get("target") == "typescript", "TypeScript compiled bundle target differs")
+                prompt = object_value(bundle.get("prompt"), "TypeScript compiled prompt")
+                if expected_prompt is not None:
+                    need(canonical(prompt) == canonical(expected_prompt), "TypeScript compiled prompt differs from immutable source")
+                if prompt_hash is not None:
+                    need(isinstance(prompt_hash, str) and HEX.fullmatch(prompt_hash) and sha(canonical(prompt)) == prompt_hash, "TypeScript legacy compiled prompt differs from frozen hash")
+                if form == "json":
+                    need(canonical(body["prompt"]) == canonical(prompt), "TypeScript JSON request differs from its compiled prompt")
+                normalized[side] = json.loads(canonical(reply))
+                for section, key in (("assets", "backend"), ("assets", "target_contract"), ("hashes", "payload_sha256")):
+                    members = object_value(normalized[side]["bundle"].get(section), f"TypeScript bundle {section}")
+                    if key in members:
+                        members[key] = None
+                bundles[side] = bundle
+                if side in previous_bundles:
+                    need(canonical(bundle) == previous_bundles[side], "TypeScript request forms produce different bundles")
+                assemble_body = self.typescript_raw(record, f"{side}_assemble_request_file", f"{side}_assemble_request_sha256")
+                need(canonical(assemble_body) == canonical({"bundle": bundle}), "TypeScript assemble request differs from its own compiled bundle")
+                assembled = self.typescript_raw(record, f"{side}_assemble_response_file", f"{side}_assemble_sha256")
+                status = record.get(f"{side}_assemble_status")
+                need(true_integer(status) and status == 200, "TypeScript baseline assemble status differs")
+                need(assembled.get("status") == "ok", "TypeScript assemble response is not successful")
+                files = object_value(assembled.get("files"), "TypeScript product files")
+                need(files and all(isinstance(name, str) and isinstance(content, str) for name, content in files.items()), "TypeScript product files are not a nonempty string map")
+                hashes = {name: sha(content.encode()) for name, content in files.items()}
+                hash_key = "files_sha256" if side == "qa" else "baseline_files_sha256"
+                need(canonical(record.get(hash_key)) == canonical(hashes), f"TypeScript {side} product file hashes differ from raw bytes")
+                file_maps[side] = {name: content.encode() for name, content in files.items()}
+            need(canonical(normalized["qa"]) == canonical(normalized["baseline"]), "TypeScript compile replies differ outside the three allowed members")
+            need(file_maps["qa"] == file_maps["baseline"], "TypeScript baseline product file names or bytes differ")
+            previous_bundles = {side: canonical(bundle) for side, bundle in bundles.items()}
 
     def baseline_inventory(self, language: str, rows: list[dict]) -> None:
         if language == "python":
@@ -1123,11 +1300,15 @@ class Audit:
         else:
             expected = set()
             inventory = object_value(self.reader.json("som-rs/contracts/typescript-output-v1/case-inventory.json"), "TypeScript baseline inventory")
+            self.ts_baseline_inventory = inventory
+            self.ts_baseline_cases = {}
             for group in ("public_examples", "version_positive_fixtures", "coverage_cases", "name_cases", "public_products_in_scope", "legacy_in_scope"):
-                for case in list_value(inventory.get(group), f"TypeScript {group}"):
+                for case in list_value(inventory.get(group, []), f"TypeScript {group}"):
                     if group in ("public_examples", "version_positive_fixtures", "coverage_cases") and case.get("typescript") != "in_scope":
                         continue
+                    need(case["id"] not in expected, "TypeScript frozen baseline inventory repeats an id")
                     expected.add(case["id"])
+                    self.ts_baseline_cases[case["id"]] = (group, case)
             actual = {row.get("id") for row in rows}
         need(expected, f"{language} complete baseline inventory is empty", "unrun")
         need(actual == expected, f"{language} baseline named inventory differs: {len(expected - actual)} missing, {len(actual - expected)} unexpected", "unrun" if expected - actual else "failed")
@@ -1223,7 +1404,7 @@ class Audit:
         totals = dict.fromkeys(STATUSES, 0)
         for row in self.rows:
             totals[row["status"]] += 1
-        return {"version": VERSION, "run": self.run.relative_to(self.repo).as_posix(), "plan_sha256": self.reader.files.get(f"{CONTRACT}/acceptance-plan.json"), "rows": self.rows, "totals": totals, "files": dict(sorted(self.reader.files.items())), "missing_files": sorted(self.reader.missing), "limitations": ["Current source bytes are checked against recorded before/after identities. The caller supplies a clean committed checkout; Git object storage is not independently inspected.", "Per-case facts that cannot be recomputed from retained raw bytes are explicitly attested. Aggregate tool verdicts are never acceptance evidence."]}
+        return {"version": VERSION, "run": self.run.relative_to(self.repo).as_posix(), "plan_sha256": self.reader.files.get(f"{CONTRACT}/acceptance-plan.json"), "rows": self.rows, "totals": totals, "files": dict(sorted(self.reader.files.items())), "missing_files": sorted(self.reader.missing), "limitations": ["Current source bytes are checked against recorded before/after identities. The caller supplies a clean committed checkout; Git object storage is not independently inspected.", "Only human review and approval metadata is attested. Operational checks require raw evidence. Aggregate tool verdicts are never acceptance evidence."]}
 
 
 def required_command(rows: list[dict], name: str) -> str:

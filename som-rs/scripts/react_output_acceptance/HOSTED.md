@@ -1,0 +1,95 @@
+# M6 on GitHub runners
+
+Edit code locally. Run tests, builds, and services on GitHub-hosted runners.
+SOM uses fixed rules for CNL → DSL → Code. It needs no model training.
+
+## Two separate results
+
+The `M6 tooling` workflow runs fake fixtures. It proves tool behavior only.
+The `M6 hosted acceptance` workflow first checks the frozen tool files.
+Its provisioning result always says `product_suites: not_run`.
+
+The full run builds one candidate. It runs all twelve acceptance steps.
+It then runs the independent audit against the retained raw output.
+It samples no cases. A missing result blocks acceptance.
+Operational checks require raw evidence. A reported pass flag is not enough.
+Only recorded human review and approval can use the `attested` status.
+
+The recorded baseline and frozen tool bottles require `macos-26`.
+This preserves the existing baseline for this compatibility run.
+It does not make Apple hardware a requirement of the compiler algorithm.
+M12 owns native tool support on other hosts.
+
+Eleven public third-party tool files use a separate frozen file supplement.
+The macOS signer cannot reproduce their historical allocation bytes.
+The supplement preserves those complete files and their original license text.
+Its commit, manifest, official bottle provenance, installed paths, and file hashes are pinned.
+The runner checks every file before it changes any staged tool.
+It still checks all official bottles and every unchanged installed tool hash.
+This supplement contains no SOM inputs and needs no project input key.
+
+## Approve inputs before transfer
+
+`hosted_inputs.json` pins an encrypted input commit and its index hash.
+The controller prepares the encrypted files separately from the code branch.
+The secret `SOM_M6_ACCEPTANCE_INPUTS_V1` holds the decryption keyring.
+Keys and local selection files must never enter Git.
+
+The human must approve the input payload and destination repository first.
+A label does not grant that approval.
+After approval, the controller can push the encrypted input commit.
+It can then add `m6:run-full-acceptance` to the same-repository pull request.
+The label schedules the full job. It must not be added before approval.
+Manual runs can select `provision` or `acceptance` after the workflow is available.
+
+`fetch_hosted_inputs.py` checks every manifest before restore.
+It verifies hashes, paths, sizes, modes, counts, and the exact keyring.
+It restores only files under `.local/` in a fresh staging tree.
+Its success result is input provisioning, not product acceptance.
+
+The approved payload has sixteen encrypted packages.
+The last package keeps all 544 original legacy assembly requests.
+Do not replace these requests with newly generated historical records.
+
+The hosted helper rebuilds the nine public name prompts from the frozen baseline.
+Their exact file hashes must match the frozen name-case evidence.
+It copies the accepted Rust records into a separate physical directory.
+This selects the existing checker's saved-record input mode.
+The copy keeps each file's exact bytes. A receipt records each hash.
+The helper logs and receipt stay with the encrypted raw evidence.
+
+## Run and retain evidence
+
+Public crates and Python packages are fetched before offline verification.
+The frozen npm caches remain read-only during verification.
+The baseline uses QA port `18917`. The candidate uses QA port `18919`.
+No QA service binds to `8765` or `18765`.
+
+Unit tests need the ignored `som-rs/compiler-assets/current` fixture directory.
+The driver copies the frozen baseline assets there without changing their bytes.
+The candidate then packages assets from its own recorded source.
+Both complete file maps must match. The bootstrap receipt stays with raw evidence.
+
+The isolated runner expects no default service on `8765`.
+Two read-only health requests must both get an OS connection-refused result.
+A timeout, a live response, or a state change fails that check.
+The usual healthy-default mode stays available for other environments.
+
+After each complete product check, the run removes installed dependencies.
+It removes PostgreSQL scratch data only after a verified process stop.
+It keeps both static build output trees, source files, replies, reports, and logs.
+
+The driver removes input keys and GitHub tokens from child environments.
+The HTTP recorder wraps the five frozen baseline and Python control scripts.
+It keeps their original files and request behavior unchanged.
+The API recorder keeps each fetch and the operating system process snapshots.
+Its Node hook applies only to the frozen API probe.
+The cache gate keeps per-file snapshots before and after each product check.
+The workflow publishes only safe summaries in plain text.
+It encrypts raw evidence before uploading an Actions artifact.
+Never upload the whole acceptance directory as a plain artifact.
+
+`summary.json` reports acceptance only when the build, all twelve steps,
+the independent audit, source identity, and owned-process cleanup pass.
+The audit must have zero failures and zero unrun checks.
+The candidate remains a QA candidate. Default switching and release need #131.

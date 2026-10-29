@@ -444,14 +444,14 @@ class Audit130Tests(unittest.TestCase):
         self.assertEqual(set(report["totals"]), STATUSES)
         self.assertEqual(report["totals"], {status: counted[status] for status in STATUSES})
 
-    def test_supported_fixture_plan_passes_and_tools_are_only_hashed(self):
+    def test_incomplete_legacy_fixture_blocks_acceptance_and_tools_are_only_hashed(self):
         code, report, _, error = self.run_audit()
-        self.assertEqual(code, 0, error or json.dumps(report, indent=2))
+        self.assertEqual(code, 1, error or json.dumps(report, indent=2))
         self.assertEqual(report["version"], "som.react-output-audit-130.v1")
         self.assertEqual(report["run"], self.fixture.run.relative_to(self.fixture.repo).as_posix())
         self.assertEqual(report["plan_sha256"], sha_file(self.fixture.contract / "acceptance-plan.json"))
         self.assertEqual(report["totals"]["failed"], 0)
-        self.assertEqual(report["totals"]["unrun"], 0)
+        self.assertGreater(report["totals"]["unrun"], 0)
         self.assertGreater(report["totals"]["post_acceptance"], 0)
         self.assertGreater(report["totals"]["attested"], 0)
         self.assert_totals(report)
@@ -504,6 +504,221 @@ class Audit130Tests(unittest.TestCase):
         row = next(row for row in report["rows"] if row["id"] == "typescript_unchanged/1")
         self.assertEqual(row["status"], "unrun")
 
+    def _typescript_baseline_raw_pair(self):
+        """Retain both request forms and every HTTP body in a reduced run."""
+        inventory = read_json(SOURCE_REPO / "som-rs/contracts/typescript-output-v1/case-inventory.json")
+        case = copy.deepcopy(inventory["public_examples"][0])
+        inventory = {"sources": inventory["sources"], "public_examples": [case],
+                     "version_positive_fixtures": [], "coverage_cases": [],
+                     "name_cases": [], "legacy_in_scope": []}
+        save_json(self.fixture.repo / "som-rs/contracts/typescript-output-v1/case-inventory.json", inventory)
+        root = self.fixture.run / "ts-baseline"
+        source = (self.fixture.repo / case["cnl"]).read_text()
+        bodies = {"json": {"format": "som.prompt-json.v1", "prompt": self.fixture.prompt, "target": "typescript"},
+                  "cnl": {"format": "som.cnl.v1", "source": source, "target": "typescript"}}
+        bundles = {}
+        for side in ("qa", "baseline"):
+            bundle = copy.deepcopy(self.fixture.bundle)
+            bundle["target"] = "typescript"
+            bundle["dsl"]["version"] = "som.dsl.typescript.v1"
+            bundle["assets"]["backend"] = {"id": f"fixture.typescript.{side}", "sha256": sha_bytes(side.encode())}
+            bundle["assets"]["target_contract"] = {"id": f"fixture.contract.{side}", "sha256": sha_bytes(side.encode())}
+            bundle["hashes"]["payload_sha256"] = sha_bytes(canonical(bundle))
+            bundles[side] = bundle
+
+        def retain(record, file_key, hash_key, relative, document):
+            path = root / relative
+            save_json(path, document)
+            record[file_key], record[hash_key] = relative, sha_file(path)
+
+        requests = []
+        files = {"index.ts": "export const fixture = 'same bytes';\n", "unicode.txt": "測試\r\n"}
+        for index, (form, body) in enumerate(bodies.items()):
+            record = {"form": form, "qa_status": 200, "baseline_status": 200,
+                      "qa_assemble_status": 200, "baseline_assemble_status": 200,
+                      "differing_members": [], "passed": True,
+                      "files_sha256": {name: sha_bytes(text.encode()) for name, text in files.items()},
+                      "baseline_files_sha256": {name: sha_bytes(text.encode()) for name, text in files.items()}}
+            stem = f"{case['id']}/{index}-{form}"
+            retain(record, "request_file", "body_sha256", f"requests/{stem}.compile.json", body)
+            for side in ("qa", "baseline"):
+                retain(record, f"{side}_response_file", f"{side}_sha256", f"responses/{stem}.{side}.compile.json",
+                       {"status": "ok", "bundle": bundles[side]})
+                retain(record, f"{side}_assemble_request_file", f"{side}_assemble_request_sha256",
+                       f"requests/{stem}.{side}.assemble.json", {"bundle": bundles[side]})
+                retain(record, f"{side}_assemble_response_file", f"{side}_assemble_sha256",
+                       f"responses/{stem}.{side}.assemble.json", {"status": "ok", "files": files})
+            requests.append(record)
+        row = {"id": case["id"], "group": "public_examples", "status": "passed", "passed": True,
+               "problems": [], "requests": requests}
+        self.fixture.reports["ts-baseline"] = {"version": "som.react-output-typescript-baseline.v1",
+            "passed": True, "status": "passed", "cases": [row]}
+        plan = copy.deepcopy(self.fixture.plan)
+        plan["typescript_unchanged"]["checks"] = ["Compare every TypeScript product with the baseline."]
+        self.fixture.replace_plan(plan)
+        self.fixture.refresh_receipts()
+        return row
+
+    def _typescript_baseline_result(self):
+        self._typescript_audit_count = getattr(self, "_typescript_audit_count", 0) + 1
+        out = self.fixture.output.with_name(f"typescript-{self._typescript_audit_count}.json")
+        code, report, _, _ = self.run_audit(out=out)
+        return code, next(row for row in report["rows"] if row["id"] == "typescript_unchanged/1")
+
+    def test_typescript_raw_compile_and_assemble_pair_is_independently_passed(self):
+        self._typescript_baseline_raw_pair()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1, row)  # Other legacy fixture gates lack raw operational evidence.
+        self.assertEqual(row["status"], "passed", row)
+        self.assertNotIn("attestations", row)
+
+    def test_typescript_raw_compile_drift_fails_with_all_hashes_refreshed(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        path = self.fixture.run / "ts-baseline" / record["baseline_response_file"]
+        document = read_json(path)
+        document["unexpected_member"] = "raw drift"
+        save_json(path, document)
+        record["baseline_sha256"] = sha_file(path)
+        self.fixture.refresh_receipts()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("outside the three allowed", row["reason"])
+
+    def test_typescript_raw_compile_comparison_keeps_exact_json_types(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        for side, value in (("qa", 1), ("baseline", True)):
+            path = self.fixture.run / "ts-baseline" / record[f"{side}_response_file"]
+            document = read_json(path)
+            document["type_check"] = value
+            save_json(path, document)
+            record[f"{side}_sha256"] = sha_file(path)
+        self.fixture.refresh_receipts()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("outside the three allowed", row["reason"])
+
+    def test_typescript_raw_file_drift_fails_with_both_file_maps_refreshed(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        path = self.fixture.run / "ts-baseline" / record["baseline_assemble_response_file"]
+        document = read_json(path)
+        document["files"]["unicode.txt"] = "測試\n"
+        save_json(path, document)
+        record["baseline_assemble_sha256"] = sha_file(path)
+        record["baseline_files_sha256"] = {name: sha_bytes(text.encode()) for name, text in document["files"].items()}
+        self.fixture.refresh_receipts()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("names or bytes differ", row["reason"])
+
+    def test_typescript_missing_raw_exchange_is_unrun(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        fields = ("request_file", "qa_response_file", "baseline_response_file",
+                  "qa_assemble_request_file", "baseline_assemble_request_file",
+                  "qa_assemble_response_file", "baseline_assemble_response_file")
+        for field in fields:
+            with self.subTest(field=field):
+                relative = record.pop(field)
+                self.fixture.refresh_receipts()
+                code, row = self._typescript_baseline_result()
+                self.assertEqual(code, 1)
+                self.assertEqual(row["status"], "unrun", row)
+                record[field] = relative
+        path = self.fixture.run / "ts-baseline" / record["qa_response_file"]
+        path.unlink()
+        self.fixture.refresh_receipts()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "unrun", row)
+
+    def test_typescript_raw_hash_drift_is_failed(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        path = self.fixture.run / "ts-baseline" / record["qa_response_file"]
+        path.write_bytes(path.read_bytes() + b"\n")
+        self.fixture.refresh_receipts()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("sha256 differs", row["reason"])
+
+    def test_typescript_compile_request_must_match_target_and_public_source(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        path = self.fixture.run / "ts-baseline" / record["request_file"]
+        original = read_json(path)
+        for mutation in ("target", "prompt", "format"):
+            with self.subTest(mutation=mutation):
+                document = copy.deepcopy(original)
+                if mutation == "target":
+                    document["target"] = "react"
+                elif mutation == "prompt":
+                    document["prompt"]["resource"]["fields"][0]["name"] = "substituted_name"
+                else:
+                    document["format"] = "som.cnl.v1"
+                save_json(path, document)
+                record["body_sha256"] = sha_file(path)
+                self.fixture.refresh_receipts()
+                code, row = self._typescript_baseline_result()
+                self.assertEqual(code, 1)
+                self.assertEqual(row["status"], "failed", row)
+
+    def test_typescript_assemble_request_must_use_its_own_compiled_bundle(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        root = self.fixture.run / "ts-baseline"
+        path = root / record["qa_assemble_request_file"]
+        save_json(path, read_json(root / record["baseline_assemble_request_file"]))
+        record["qa_assemble_request_sha256"] = sha_file(path)
+        self.fixture.refresh_receipts()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("its own compiled bundle", row["reason"])
+
+    def test_typescript_exchange_statuses_must_all_be_http_200(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        for field in ("qa_status", "baseline_status", "qa_assemble_status", "baseline_assemble_status"):
+            with self.subTest(field=field):
+                record[field] = 201
+                self.fixture.refresh_receipts()
+                code, row = self._typescript_baseline_result()
+                self.assertEqual(code, 1)
+                self.assertEqual(row["status"], "failed", row)
+                record[field] = 200
+
+    def test_typescript_matching_recorded_file_hashes_must_match_raw_bytes(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        record["files_sha256"]["index.ts"] = "e" * 64
+        record["baseline_files_sha256"]["index.ts"] = "e" * 64
+        self.fixture.refresh_receipts()
+        code, row = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("hashes differ from raw bytes", row["reason"])
+
+    def test_typescript_raw_exchange_cannot_reference_another_run(self):
+        record = self._typescript_baseline_raw_pair()["requests"][0]
+        original = record["qa_response_file"]
+        outside = self.fixture.run.parent / "other-run/ts-baseline/response.json"
+        outside.parent.mkdir(parents=True)
+        shutil.copyfile(self.fixture.run / "ts-baseline" / original, outside)
+        for relative in (str(outside), "../../other-run/ts-baseline/response.json"):
+            with self.subTest(relative=relative):
+                record["qa_response_file"] = relative
+                self.fixture.refresh_receipts()
+                code, row = self._typescript_baseline_result()
+                self.assertEqual(code, 1)
+                self.assertEqual(row["status"], "failed", row)
+
+    def test_typescript_public_source_requires_both_forms(self):
+        row = self._typescript_baseline_raw_pair()
+        row["requests"] = row["requests"][:1]
+        self.fixture.refresh_receipts()
+        code, result = self._typescript_baseline_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(result["status"], "unrun", result)
+        self.assertIn("request forms", result["reason"])
+
     def test_raw_product_exit_failure_overrides_passed_aggregates(self):
         gates = read_json(self.fixture.gates_path)
         gates["gates"][1]["exit_code"] = 1
@@ -523,15 +738,15 @@ class Audit130Tests(unittest.TestCase):
         result = next(row for row in report["rows"] if row["id"] == "target_selection_checks/4")
         self.assertEqual(result["status"], "failed")
 
-    def test_already_exited_owned_process_needs_no_stop_cwd_snapshot(self):
+    def test_reported_exit_without_raw_os_evidence_is_unrun(self):
         api = read_json(self.fixture.api_path)
         api["processes"][0].update(stopped=True, exit_code=0, stop_cwd_verified=None)
         save_json(self.fixture.api_path, api)
         self.fixture.refresh_receipts()
         code, report, _, error = self.run_audit()
-        self.assertEqual(code, 0, error or json.dumps(report, indent=2))
+        self.assertEqual(code, 1, error or json.dumps(report, indent=2))
         result = next(row for row in report["rows"] if row["id"] == f"product_gates/{self.fixture.cid}/7")
-        self.assertEqual(result["status"], "attested")
+        self.assertEqual(result["status"], "unrun")
 
     def test_active_process_stop_without_owner_snapshot_fails(self):
         api = read_json(self.fixture.api_path)
@@ -626,6 +841,138 @@ class Audit130Tests(unittest.TestCase):
         target = next(row for row in report["rows"]
                       if row["id"] == "target_case/target_examples/example-v1-cnl-react")
         self.assertEqual(target["status"], "failed")
+
+    def _public_refusal_sources(self):
+        """The frozen writer names refused public products by their source."""
+        examples = self.fixture.repo / "som-rs/contracts/compiler-v1/examples"
+        prompt = read_json(examples / "v5.prompt.json")
+        cnl = (examples / "v5.cnl").read_text()
+        fixtures_path = self.fixture.repo / "som-rs/tests/compiler-v1/cnl-positive-fixtures.json"
+        source_cases = [{"id": cid, "category": category, "expected_prompt": prompt, "cnl": cnl,
+                         "prompt_sha256": sha_bytes(canonical(prompt)), "cnl_sha256": sha_bytes(cnl.encode())}
+                        for cid, category in (("OUTSIDE_CNL", "capability_tuple"), ("OUTSIDE_PAIR", "version_positive"))]
+        save_json(fixtures_path, {"cases": source_cases})
+        index_path = examples / "index.json"
+        index = read_json(index_path)
+        index["cases"] = [case for case in index["cases"] if case["id"] == "v5"]
+        save_json(index_path, index)
+        public = self.fixture.repo / ".local/public-refusal-sources"
+        source_ids = ["OUTSIDE_CNL", "OUTSIDE_PAIR", "PUBLIC_v5"]
+        save_json(public / "result.json", {"records": [{"id": cid} for cid in source_ids]})
+        # Stored products may have another member order. The source writer's
+        # exact typed request still uses the pinned fixture/example order.
+        reversed_prompt = dict(reversed(list(prompt.items())))
+        for position in range(len(source_ids)):
+            directory = public / f"{position:03d}"
+            directory.mkdir(parents=True, exist_ok=True)
+            (directory / "prompt.json").write_text(json.dumps(reversed_prompt, ensure_ascii=False) + "\n")
+            (directory / "source.cnl").write_text(cnl)
+        inventory = self.fixture.docs["case-inventory.json"]
+        inventory["sources"]["cnl_positive_fixtures"] = {
+            fixtures_path.relative_to(self.fixture.repo).as_posix(): sha_file(fixtures_path)}
+        inventory["sources"]["examples"][index_path.relative_to(self.fixture.repo).as_posix()] = sha_file(index_path)
+        source = {"directory": public.relative_to(self.fixture.repo).as_posix()}
+        inventory["sources"]["public_products"] = source
+        inventory["counts"]["public_products"] = [{"prompt_version": "som.prompt.v5", "react": "prompt_version", "count": 3}]
+        save_json(self.fixture.contract / "case-inventory.json", inventory)
+        scope = self.fixture.docs["scope.json"]
+        expected = scope["refusals"]["prompt_version"]
+        cause = expected["cause"].format(version="5", family=scope["prompt_versions"]["out_of_scope"]["som.prompt.v5"])
+        rows = []
+        pinned_cases = read_json(fixtures_path)["cases"]
+        cases = [(case["id"], case["expected_prompt"], ("cnl", "json") if case["category"] == "version_positive" else ("cnl",))
+                 for case in pinned_cases]
+        cases.append(("example-v5", read_json(examples / "v5.prompt.json"), ("cnl", "json")))
+        for cid, own_prompt, forms in cases:
+            for form in forms:
+                request = {"format": "som.cnl.v1", "source": cnl, "target": "react"} if form == "cnl" else {
+                    "format": "som.prompt-json.v1", "prompt": own_prompt, "target": "react"}
+                body = json.dumps(request, ensure_ascii=False, separators=(",", ":"))
+                located = cnl if form == "cnl" else body
+                token = "5" if form == "cnl" else '"som.prompt.v5"'
+                start = cnl.index("Use prompt version 5.") + len("Use prompt version ") if form == "cnl" else body.index(token)
+                diagnostic = {"code": expected["code"], "cause": cause, "allowed_form": expected["allowed_form"],
+                              "prompt_pointer": "/version" if form == "cnl" else "/prompt/version"}
+                for position, prefix in ((start, ""), (start + len(token), "end_")):
+                    before = located[:position]
+                    diagnostic[prefix + "line"] = before.count("\n") + 1
+                    diagnostic[prefix + "column"] = len(before.rsplit("\n", 1)[-1]) + 1
+                    diagnostic["byte_" + ("start" if not prefix else "end")] = len(before.encode())
+                response = {"status": "error", "code": expected["code"], "detail": cause, "diagnostics": [diagnostic]}
+                row = self.fixture._raw_row("react-target", "out_of_scope", f"{cid}-{form}-react", body,
+                                            response, expected["http_status"])
+                row["passed"] = False
+                rows.append(row)
+        self.fixture.reports["react-target"]["cases"] = rows
+        save_json(self.fixture.run / "react-target/report.json", self.fixture.reports["react-target"])
+        return source, public
+
+    def _public_scope_audit(self, source):
+        save_json(self.fixture.run / "react-target/report.json", self.fixture.reports["react-target"])
+        auditor = audit130.Audit(self.fixture.repo, self.fixture.run)
+        auditor.read_contracts()
+        auditor.row("scope_case/source-public-products", lambda: auditor.public_product_scope(source))
+        return auditor
+
+    def test_public_refusals_use_exact_source_names_and_only_emitted_forms(self):
+        source, _ = self._public_refusal_sources()
+        auditor = self._public_scope_audit(source)
+        self.assertEqual([row["id"] for row in auditor.rows], [*[f"scope_case/public-product-{index:03d}" for index in range(3)],
+                                                              "scope_case/source-public-products"])
+        self.assertTrue(all(row["status"] == "passed" for row in auditor.rows), auditor.rows)
+
+    def test_public_refusal_source_rows_cannot_be_missing_aliased_or_duplicated(self):
+        for mutation, status in (("missing_json", "unrun"), ("product_alias", "unrun"), ("example_prefix", "unrun"),
+                                 ("wrong_section", "unrun"), ("duplicate", "failed"), ("wrong_request", "failed")):
+            with self.subTest(mutation=mutation):
+                source, _ = self._public_refusal_sources()
+                rows = self.fixture.reports["react-target"]["cases"]
+                selected = next(row for row in rows if row["id"] == ("OUTSIDE_PAIR-json-react" if mutation == "missing_json" else
+                                      "example-v5-json-react" if mutation == "example_prefix" else "OUTSIDE_CNL-cnl-react"))
+                if mutation == "missing_json":
+                    rows.remove(selected)
+                elif mutation == "product_alias":
+                    selected["id"] = "public-product-000-cnl-react"
+                elif mutation == "example_prefix":
+                    selected["id"] = "example-v50-json-react"
+                elif mutation == "wrong_section":
+                    selected["section"] = "in_scope"
+                elif mutation == "duplicate":
+                    rows.append(copy.deepcopy(selected))
+                else:
+                    selected["request_sha256"] = "0" * 64
+                auditor = self._public_scope_audit(source)
+                self.assertEqual([row["status"] for row in auditor.rows].count(status), 1, auditor.rows)
+
+    def test_public_refusal_products_remain_bound_to_immutable_prompt_and_cnl(self):
+        for changed in ("prompt", "cnl", "json_type"):
+            with self.subTest(changed=changed):
+                source, public = self._public_refusal_sources()
+                if changed != "cnl":
+                    path = public / "000/prompt.json"
+                    prompt = read_json(path)
+                    if changed == "prompt":
+                        prompt["package"] = "another_package"
+                    else:
+                        prompt["resources"]["parent"]["fields"][0]["required"] = 1
+                    save_json(path, prompt)
+                else:
+                    (public / "000/source.cnl").write_text("Use SOM CNL version 1.\n")
+                auditor = self._public_scope_audit(source)
+                self.assertEqual(auditor.rows[0]["status"], "failed", auditor.rows)
+
+    def test_public_scope_source_identity_collision_is_rejected(self):
+        source, _ = self._public_refusal_sources()
+        path = self.fixture.repo / "som-rs/tests/compiler-v1/cnl-positive-fixtures.json"
+        fixtures = read_json(path)
+        fixtures["cases"][0]["id"] = "example-v5"
+        save_json(path, fixtures)
+        inventory = self.fixture.docs["case-inventory.json"]
+        inventory["sources"]["cnl_positive_fixtures"][path.relative_to(self.fixture.repo).as_posix()] = sha_file(path)
+        save_json(self.fixture.contract / "case-inventory.json", inventory)
+        auditor = self._public_scope_audit(source)
+        self.assertEqual(auditor.rows[-1]["status"], "failed", auditor.rows)
+        self.assertIn("scope source ids are ambiguous", auditor.rows[-1]["reason"])
 
     def _python_baseline_source_universes(self, public_ids):
         """Declare source names and prompts before writing mutable result.records."""
@@ -790,6 +1137,110 @@ class Audit130Tests(unittest.TestCase):
         code, report, _, _ = self.run_audit()
         self.assertEqual(code, 1)
         self.assertGreater(report["totals"]["failed"], 0)
+
+    def _absent_protected_port(self):
+        point = {"url": "http://127.0.0.1:8765/healthz", "status": None,
+                 "body": None, "raw": None, "sha256": None,
+                 "error": "ConnectionRefusedError: synthetic connection refused",
+                 "error_kind": "connection_refused", "error_type": "ConnectionRefusedError",
+                 "error_errno": 111}
+        role = {"url": "http://127.0.0.1:8765", "expected_state": "absent",
+                "healthz": {"before": copy.deepcopy(point), "after": copy.deepcopy(point),
+                            "unchanged": True}}
+        self.fixture.identity["8765"] = role
+        return role
+
+    def _protected_port_result(self):
+        save_json(self.fixture.run / "identity.json", self.fixture.identity)
+        self.fixture.refresh_receipts()
+        self._protected_port_audit_count = getattr(self, "_protected_port_audit_count", 0) + 1
+        out = self.fixture.output.with_name(f"protected-port-{self._protected_port_audit_count}.json")
+        code, report, _, _ = self.run_audit(out=out)
+        return code, next(row for row in report["rows"] if row["id"] == "integrity/health/8765")
+
+    def test_explicit_absent_protected_port_passes_from_both_refusal_snapshots(self):
+        role = self._absent_protected_port()
+        # The audit derives the result instead of using the runner's verdict.
+        role["healthz"]["unchanged"] = False
+        for number, error_type in ((61, "ConnectionRefusedError"), (111, "OSError")):
+            with self.subTest(number=number, error_type=error_type):
+                for point in (role["healthz"]["before"], role["healthz"]["after"]):
+                    point["error_errno"], point["error_type"] = number, error_type
+                code, row = self._protected_port_result()
+                self.assertEqual(code, 1, row)  # Other operational fixture evidence is incomplete.
+                self.assertEqual(row["status"], "passed", row)
+        for point in (role["healthz"]["before"], role["healthz"]["after"]):
+            del point["url"]
+        code, row = self._protected_port_result()
+        self.assertEqual(code, 1, row)
+        self.assertEqual(row["status"], "passed", row)
+
+    def test_absent_protected_port_becoming_http_200_fails(self):
+        role = self._absent_protected_port()
+        raw = '{"status":"ok"}'
+        role["healthz"]["after"] = {"url": "http://127.0.0.1:8765/healthz", "status": 200,
+            "body": json.loads(raw), "raw": raw, "sha256": sha_bytes(raw.encode()), "error": None}
+        code, row = self._protected_port_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+
+    def test_absent_protected_port_timeout_is_not_connection_refusal(self):
+        role = self._absent_protected_port()
+        role["healthz"]["after"].update(error_kind="timeout", error_type="TimeoutError",
+                                        error_errno=None, error="TimeoutError: synthetic timeout")
+        code, row = self._protected_port_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("connection refusal", row["reason"])
+
+    def test_absent_protected_port_cannot_use_only_a_forged_unchanged_boolean(self):
+        role = self._absent_protected_port()
+        for point in (role["healthz"]["before"], role["healthz"]["after"]):
+            for key in ("error_kind", "error_errno", "error_type"):
+                del point[key]
+        code, row = self._protected_port_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("connection refusal", row["reason"])
+
+    def test_healthy_protected_port_mode_rejects_connection_refusal(self):
+        role = self._absent_protected_port()
+        del role["expected_state"]
+        code, row = self._protected_port_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
+        self.assertIn("HTTP status is not 200", row["reason"])
+
+    def test_absent_protected_port_requires_the_exact_loopback_url(self):
+        for place, value in (("role", "http://example.invalid:8765"),
+                             ("before", "http://127.0.0.1:8766/healthz"),
+                             ("after", "http://localhost:8765/healthz"),
+                             ("after", None)):
+            with self.subTest(place=place, value=value):
+                role = self._absent_protected_port()
+                target = role if place == "role" else role["healthz"][place]
+                target["url"] = value
+                code, row = self._protected_port_result()
+                self.assertEqual(code, 1)
+                self.assertEqual(row["status"], "failed", row)
+                self.assertIn("URL differs", row["reason"])
+
+    def test_absent_protected_port_requires_exact_error_and_null_response_fields(self):
+        mutations = (("error_errno", True), ("error_errno", 111.0), ("error_errno", 110),
+                     ("error_type", "TimeoutError"), ("error", ""), ("status", 200),
+                     ("body", {}), ("raw", ""), ("sha256", "0" * 64))
+        for field, value in mutations:
+            with self.subTest(field=field, value=value):
+                role = self._absent_protected_port()
+                role["healthz"]["after"][field] = value
+                code, row = self._protected_port_result()
+                self.assertEqual(code, 1)
+                self.assertEqual(row["status"], "failed", row)
+        role = self._absent_protected_port()
+        del role["healthz"]["after"]["raw"]
+        code, row = self._protected_port_result()
+        self.assertEqual(code, 1)
+        self.assertEqual(row["status"], "failed", row)
 
     def test_log_checksum_mismatch_fails(self):
         log = self.fixture.run / "logs/02-react-target.stdout"

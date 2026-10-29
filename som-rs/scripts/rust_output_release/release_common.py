@@ -12,6 +12,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import urllib.error
@@ -21,6 +22,7 @@ REPO = Path(__file__).resolve().parents[3]
 BASE_PATH = REPO / 'som-rs/scripts/compiler_default_switch.py'
 BASE_SHA256 = '289a8470c5de2a183b01c8a138ecb4bc6cfe80a624f0291b32b779cc854bfb12'
 PREREQUISITES_VERSION = 'som.rust-output-switch-prerequisites.v1'
+COMPILER_PREREQUISITES_VERSION = 'som.compiler-output-switch-prerequisites.v1'
 PROTECTED_PORTS = {8765, 18765}
 HARNESS_PORTS = range(18919, 19000)
 
@@ -138,6 +140,9 @@ class Release(base.Run):
 
 def check_prerequisites(config):
     """Hashes of every bound input. Returns the parsed receipts the tools need."""
+    if config.get('version') == COMPILER_PREREQUISITES_VERSION:
+        return check_compiler_prerequisites(config)
+    require(config.get('profile') in (None, 'legacy-m2'), 'compiler-only requires its explicit version')
     require(config['version'] == PREREQUISITES_VERSION, 'wrong prerequisites version')
     repo = Path(config['repo'])
     require(repo == REPO, 'prerequisites belong to another repository')
@@ -182,6 +187,136 @@ def check_prerequisites(config):
         require({c['family'] for c in previous_python(config)} >= {'flow', 'legacy'},
                 'missing previous python canary family')
     return runtime, legacy
+
+
+def compiler_profile(config):
+    return config.get('version') == COMPILER_PREREQUISITES_VERSION and config.get('profile') == 'compiler-only'
+
+
+def candidate_cases(config):
+    return (config['python_canaries'] + config['rust_canaries']
+            + config.get('typescript_canaries', []) + config.get('react_canaries', []))
+
+
+def previous_cases(config):
+    if compiler_profile(config):
+        return [case for family in ('python', 'rust', 'typescript') for case in config['previous_canaries'][family]]
+    return previous_python(config)
+
+
+def profile_runtime(config, candidate=True):
+    return load(bound(config['candidate' if candidate else 'previous']['runtime']))
+
+
+def expected_runtime(config, expected_sha):
+    require(compiler_profile(config), 'expected runtime selection needs the compiler-only profile')
+    roles = [name for name in ('candidate', 'previous') if config[name]['binary']['sha256'] == expected_sha]
+    require(len(roles) == 1, 'expected binary is not a unique pinned compiler')
+    return profile_runtime(config, roles[0] == 'candidate')
+
+
+def formatter_tree_sha(root):
+    """The exact prettier tree algorithm used by prepare_candidate.py."""
+    root = Path(root)
+    require(root.is_absolute() and root.is_dir() and not root.is_symlink(), 'formatter is not a physical directory')
+    tree = hashlib.sha256()
+    for path in sorted(root.rglob('*')):
+        relative = path.relative_to(root).as_posix()
+        if path.is_symlink():
+            tree.update(f'{relative}\0symlink:{os.readlink(path)}\n'.encode())
+        elif path.is_file():
+            tree.update(f'{relative}\0{digest(path)}\n'.encode())
+        else:
+            require(path.is_dir(), 'formatter has a special file')
+    return tree.hexdigest()
+
+
+def compiler_artifact(config, role):
+    artifact = config[role]
+    paths = {name: bound(artifact[name]) for name in ('binary', 'runtime', 'build', 'source')}
+    require(all(not path.is_symlink() for path in paths.values()), f'{role} input is a symlink')
+    runtime, build, source = (load(paths[name]) for name in ('runtime', 'build', 'source'))
+    binary_sha, source_sha = artifact['binary']['sha256'], artifact['source']['sha256']
+    require(runtime['binary_sha256'] == build['binary_sha256'] == binary_sha, f'{role} receipt binary differs')
+    require(runtime.get('source_sha256') == build.get('source_sha256') == source_sha, f'{role} source receipt differs')
+    require(build.get('complete') is True and build.get('source_unchanged') is True, f'{role} build is not complete')
+    commit = source.get('commit')
+    require(isinstance(commit, str) and re.fullmatch(r'[0-9a-f]{40}', commit), f'{role} source commit missing')
+    for point in ('tree_before', 'tree_after'):
+        require(build[point].get('head') == commit and build[point].get('porcelain') == '', f'{role} source changed')
+    assets = Path(artifact['assets']['path'])
+    require(assets.is_absolute() and assets.is_dir() and not assets.is_symlink(), f'{role} assets directory invalid')
+    manifest = assets / 'manifest.json'
+    require(not manifest.is_symlink(), f'{role} manifest is a symlink')
+    for name in load(manifest)['files']:
+        require(Path(name).name == name, 'asset filename must be flat')
+    require(artifact['assets']['manifest_sha256'] == runtime['health']['asset_manifest_sha256'], f'{role} asset binding differs')
+    assets_match(assets, runtime['health'])
+    return runtime, build
+
+
+def check_compiler_prerequisites(config):
+    require(compiler_profile(config), 'wrong compiler-only profile')
+    require(Path(config['repo']) == REPO, 'prerequisites belong to another repository')
+    runtime, build = compiler_artifact(config, 'candidate')
+    previous, previous_build = compiler_artifact(config, 'previous')
+    require(config['candidate']['binary']['sha256'] != config['previous']['binary']['sha256'], 'compiler identities must differ')
+    require(set(config['previous_canaries']) == {'python', 'rust', 'typescript'}, 'previous compiler families differ')
+    for role, groups in (('new', {family: config[family + '_canaries'] for family in ('python', 'rust', 'typescript', 'react')}),
+                         ('previous', config['previous_canaries'])):
+        for family, cases in groups.items():
+            require(isinstance(cases, list) and len(cases) >= 2 and len({case['name'] for case in cases}) == len(cases),
+                    f'need two distinct {role} {family} canaries')
+            if family == 'python':
+                require({case['family'] for case in cases} >= {'flow', 'legacy'}, 'missing Python flow or legacy family')
+            for case in cases:
+                steps = case['steps']
+                require(isinstance(steps, list) and {step['kind'] for step in steps} == {'http', 'cli'}, 'canary needs HTTP and CLI evidence')
+                for step in steps:
+                    bound(step['response'])
+                    if step['kind'] == 'http':
+                        require(step['path'] in ('/v1/compile', '/v1/assemble', '/v1/generate'), 'unexpected canary route')
+                        bound(step['request'])
+                    else:
+                        args = step['args']
+                        validate_argv(args)
+                        require(args[0] in ('compile', 'assemble', 'generate') and len(args) in (2, 4), 'unexpected canary CLI')
+                        require(len(args) == 2 or (args[0] == 'compile' and args[2:] == ['--target', family]), 'unexpected canary target')
+                        require(step['binaries'] == [role], 'canary CLI belongs to another compiler')
+                        inputs = step.get('inputs', [])
+                        require(inputs and args[1] in [str(bound(binding)) for binding in inputs], 'CLI source is not bound')
+                    for binding in step.get('inputs', []):
+                        bound(binding)
+    gates = config['gates']
+    require(isinstance(gates, dict) and gates, 'compiler acceptance gates missing')
+    passed = False
+    for gate in gates.values():
+        receipt = load(bound(gate))
+        require(isinstance(gate.get('assertions'), dict) and gate['assertions'], 'gate assertions missing')
+        for selector, expected in gate['assertions'].items():
+            actual = base.pointer(receipt, selector)
+            require(type(actual) is type(expected) and actual == expected, f'gate failed: {selector}')
+            passed = passed or expected is True
+    require(passed, 'acceptance pass assertion missing')
+    formatter = config['typescript_formatter']
+    require(formatter.get('env') == 'SOM_TS_PRETTIER', 'invalid typescript_formatter')
+    tree = formatter_tree_sha(Path(formatter['path']))
+    require(tree == formatter.get('tree_sha256') == runtime.get('prettier_tree_sha256') == build.get('prettier_tree_sha256'),
+            'candidate formatter tree differs')
+    for document in (previous, previous_build):
+        require(document.get('prettier_tree_sha256', tree) == tree, 'previous formatter tree differs')
+    return runtime, previous
+
+
+def assert_current(config, current, candidate=False):
+    if not compiler_profile(config):
+        return
+    role = 'candidate' if candidate else 'previous'
+    expected = profile_runtime(config, candidate)
+    require(digest(current['command'][0]) == current['identity']['binary_sha256'] == config[role]['binary']['sha256'],
+            f'current identity is not the pinned {role} compiler')
+    require(exact_json(current['health'], expected['health']), f'current health is not the pinned {role} compiler')
+    assets_match(Path(current['command'][3]), expected['health'])
 
 
 def apply_formatter_env(config):

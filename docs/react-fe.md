@@ -3,6 +3,8 @@
 Generate a React client and a Python service from the same prompt.
 The [React contract](../som-rs/contracts/react-output-v1/CONTRACT.md) defines this output.
 Run all checks, tests, and builds below on a GitHub runner.
+See the [M6 release plan](m6-release.md) for the hosted switch and rollback rehearsal.
+The production switch and release approvals are still pending.
 
 ## 1. What you get
 

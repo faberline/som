@@ -1315,6 +1315,7 @@ def check_cli(binary: str, base_url: str, out_dir: pathlib.Path) -> dict[str, An
     exits 2 with the HTTP error document. Reuses rust_output_acceptance/check_cli.py check()."""
     sys.path.append(str(SOM_RS / "scripts" / "rust_output_acceptance"))
     import check_cli as rust_check_cli  # type: ignore[import-not-found]  # noqa: PLC0415
+    import cli_raw  # noqa: PLC0415
 
     scratch = out_dir / "cli-inputs"
     scratch.mkdir()
@@ -1324,7 +1325,7 @@ def check_cli(binary: str, base_url: str, out_dir: pathlib.Path) -> dict[str, An
         body = json.loads(item["body"])
         if body.get("format") != "som.cnl.v1":
             continue
-        rows.append(rust_check_cli.check(binary, base_url, scratch, item["id"], body["source"],
+        rows.append(cli_raw.check_case(rust_check_cli, binary, base_url, scratch, item["id"], body["source"],
                                          body.get("target"), verify_request=True))
     negative = json.loads((CONTRACT / "negative-cases.json").read_text(encoding="utf-8"))
     for case in negative["cases"]:
@@ -1333,7 +1334,7 @@ def check_cli(binary: str, base_url: str, out_dir: pathlib.Path) -> dict[str, An
             continue
         if set(body) != {"format", "source", "target"}:
             continue
-        row = rust_check_cli.check(binary, base_url, scratch, case["id"], body["source"], body["target"],
+        row = cli_raw.check_case(rust_check_cli, binary, base_url, scratch, case["id"], body["source"], body["target"],
                                    expect=case["expected"]["code"], verify_request=True)
         if row["http_status"] != case["http_status"]:
             row["problems"].append(f"http_status {row['http_status']} != expected {case['http_status']}")

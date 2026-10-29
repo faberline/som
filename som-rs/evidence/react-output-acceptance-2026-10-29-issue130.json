@@ -1,0 +1,241 @@
+{
+  "artifacts": {
+    "corrected_audit": {
+      "expires_at": "2026-11-27T19:40:51Z",
+      "id": 12846405979,
+      "name": "m6-retained-audit-evidence",
+      "sha256": "56b9d0423f7c9ef7311d5e6148994706cba44d8aa2751cd6b1d0f0964e856398"
+    },
+    "original_raw": {
+      "expires_at": "2026-11-27T19:12:57Z",
+      "files": 51964,
+      "id": 12843589912,
+      "index_sha256": "3759239392208eab81bf740ca9ca2a41465be3e3e4995de2bd255774f4596bea",
+      "name": "m6-sealed-raw-evidence",
+      "packages": 23,
+      "plaintext_bytes": 735818564,
+      "sha256": "33fbad9d63cfa257636384b9b7c10e1406f2306922e4f28e8189c79f703b041e"
+    }
+  },
+  "baseline": {
+    "binary_sha256": "2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c",
+    "source_commit": "8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af"
+  },
+  "candidate": {
+    "binary_sha256": "59dab78a0f401a86e028c186285a888cfdf304b2d077e167d46b20d1131a3308",
+    "build_sha256": "6b9f5e99b4d48b956fbc7c03b82cb1dde045d885980f3c03ee92188fdeca6963",
+    "identity_sha256": "af6831814aa2f53e59370bb43ebd891777722eb78ee378fbfd274267d2d948f7",
+    "runtime_sha256": "c4d0cb4cf532d0ab5a11d4fd5afde6f6efd22b772f8d735f4738d98965345388",
+    "source_commit": "40cffc13b3bff35e3ea5804b9f43a49cdef7b3c0",
+    "source_receipt_sha256": "de15f92a290b1ffdcc46903f96a5c169d627e56a39e5536d1aec1c243805974f"
+  },
+  "coverage": {
+    "api_cases": 129,
+    "api_conditional_skips": 178,
+    "api_ok": 2402,
+    "api_steps": 2580,
+    "bundle_and_assemble_refusal_cases": 145,
+    "python_parity_rows": 1342,
+    "react_negative_cases": 30,
+    "react_products": 129,
+    "react_target_rows": 1050,
+    "rust_inventory_cases": 699,
+    "rust_parity_rows": 2093,
+    "typescript_compile_forms": 246,
+    "typescript_diagnostic_rows": 791,
+    "typescript_parity_cases": 125
+  },
+  "execution": {
+    "local_steps": "source/metadata reads and edits, Git, actual data packaging/restoration only",
+    "project_tests_builds_and_services": "GitHub-hosted runners only"
+  },
+  "independent_audit": {
+    "audit_exit_code": 0,
+    "audit_sha256": "471a74c77b2d069e05e0e7c7acdef27d40acd3d9af8e642db633e89a070d4c68",
+    "corrections": [
+      "Resolve refused public products through exact immutable source IDs and forms.",
+      "Admit the exact pinned macOS Python framework transition with all ownership/cleanup checks."
+    ],
+    "input_files_hashed": 36912,
+    "missing_files": [],
+    "new_product_suites": "not_run; same complete original runtime bytes audited",
+    "operational_attestations": 0,
+    "original_raw_evidence_changed": false,
+    "plan_sha256": "c3145cdc4528357dba8faa9e80ce2687204eef7c2812581366ab34d7df33792f",
+    "rows": 2265,
+    "run_id": 40755984489,
+    "source_commit": "afd8739faae3e267cc1185d56de1e15831c6a177",
+    "source_receipt_sha256": "5c4f8bb9675cadc732d22367d7a0136fdec7a7632c3a88cd28c0817c33f047b6",
+    "summary_sha256": "86c43d3b817f2480869f589dbe1baee15901c166c8d7d3da837e68a3d227dc58",
+    "totals": {
+      "attested": 4,
+      "failed": 0,
+      "passed": 2260,
+      "post_acceptance": 1,
+      "unrun": 0
+    },
+    "url": "https://github.com/faberline/som/actions/runs/40755984489",
+    "workflow_conclusion": "success"
+  },
+  "independent_review": {
+    "path": "som-rs/evidence/react-output-acceptance-independent-review-2026-10-29-issue130.json",
+    "sha256": "05bfac13480926cb11a863662c34fb976e79cd36abf142cc8f443b3b2eb11659"
+  },
+  "inputs": {
+    "commit": "55eb7f5c3b21d4f3b57eb721ab60c6aa97e10db3",
+    "files": 5703,
+    "index_sha256": "78375feb14ed286ac5df4c52f13d5d1ae301b2057d5e3894edf0f36c2705c498",
+    "packages": 16,
+    "tool_supplement_commit": "806ab0fae7a5b8433fab978f35730c28fdc91abc"
+  },
+  "issue": 130,
+  "milestone": "M6 React frontend v0.3.0",
+  "observed_at_utc": "2026-10-28T19:52:14.281539Z",
+  "release_gate": {
+    "default_switch_tag_and_release": "not executed or authorized by this receipt",
+    "issue": 131,
+    "status": "post_acceptance"
+  },
+  "report_sha256": {
+    "run/bundles/report.json": "97ea69846294412da037c4137d5d37be833252838c6b34d73a83aac4c82729a7",
+    "run/products/report.json": "8c92c2c315f20e35b530b1166a50ff97cef52ae5b13bad17b040ae1ea1445e20",
+    "run/python-baseline/report.json": "0678867a693a8707cd03aa4a5442556aaf42cbc1fb90e47cf849bf701422e70a",
+    "run/react-target/report.json": "d159ba348ab5eb15b565b12af3fa5912933a8f697f8a58f1905c8e49d38ae67c",
+    "run/run.json": "69e41d5c44aa9bcb4aa147f297d3ec317f30d88b348f8930c41908ee4671e62b",
+    "run/rust-baseline/report.json": "37c74335072cc93a64eb7663cc90c1fdd522e4d4be6a4f47e23f82b18e434b84",
+    "run/ts-baseline/report.json": "f4bbfd8e12c8616d5134fa01e05d5ba8facbbd7615cf376373d6bf958008f5ad",
+    "run/ts-target/report.json": "8c2513139a8eda87fb4d1f9830ec3a9f3c784762b8165784d9508f3a7ee4b927"
+  },
+  "runtime": {
+    "acceptance_exit_code": 0,
+    "original_audit_exit_code": 1,
+    "original_failed_stage": "audit",
+    "original_summary_sha256": "134f21a4ee0699f87cf1a4430bdcaad68a57554411875b452ca869580dbaf196",
+    "raw_run_sha256": "69e41d5c44aa9bcb4aa147f297d3ec317f30d88b348f8930c41908ee4671e62b",
+    "run_id": 40743738705,
+    "source_commit": "40cffc13b3bff35e3ea5804b9f43a49cdef7b3c0",
+    "steps": [
+      {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "a69877fee54a430efcd532d5e36b10ce341064be0768de60846ce0211b55e7e0",
+        "report_sha256": "73e0a6dd5ca6baaaaae054ad1ca3f754b7bcc2fecfc14ed96a2c538d64633de9",
+        "seconds": 1.602,
+        "step": "contract"
+      },
+      {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "6476f9f9d3ff8a5002251a4190d0430c06b0a6db9cabeedd1e90f14240eb7b52",
+        "report_sha256": "d159ba348ab5eb15b565b12af3fa5912933a8f697f8a58f1905c8e49d38ae67c",
+        "seconds": 56.922,
+        "step": "react-target"
+      },
+      {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "eda91dfaf924323ef57c618cad881680d7a2bfbab309b0cb4905eba96683aef8",
+        "report_sha256": "bfd1828acaa2f2e7814e459b6693e18a6b1d47b30a0f41c3599060862d8e16f8",
+        "seconds": 0.548,
+        "step": "react-python-controls"
+      },
+      {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "00b22fa3dbbd907edc9590b0fdf262ccb7b35d3ab8153591a9875ec190b2029a",
+        "report_sha256": "0678867a693a8707cd03aa4a5442556aaf42cbc1fb90e47cf849bf701422e70a",
+        "seconds": 497.555,
+        "step": "python-baseline"
+      },
+      {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "0e025d5b6f53cfdf927f1e55b5cc9261043a4b47586025db805521dd3787ac94",
+        "report_sha256": "37c74335072cc93a64eb7663cc90c1fdd522e4d4be6a4f47e23f82b18e434b84",
+        "seconds": 64.286,
+        "step": "rust-baseline"
+      },
+      {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "75986fb1d13718400479a3489f9f48a25a009ef17e5cfb2a10334ca26d71cf13",
+        "report_sha256": "13bf7a5fee47861422694ac665440a9f521d7045249a9da98d7a5cf268a26077",
+        "seconds": 0.427,
+        "step": "rust-python-controls"
+      },
+      {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "92c6d8270d4eee5d5a928e1b94104ebe352bba941b1a5b7ec35a181125f07a15",
+        "report_sha256": "b3f4e3f3dfada9141a5589c65b0b037df726e2efcd788134eccc7b8470c7b9c4",
+        "seconds": 0.161,
+        "step": "rt-diagnostics"
+      },
+      {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "f1273189713154f368c928d7ddc3f4984b270342d7a3e4d31c1bf1230a5bb24a",
+        "report_sha256": "8c2513139a8eda87fb4d1f9830ec3a9f3c784762b8165784d9508f3a7ee4b927",
+        "seconds": 4.354,
+        "step": "ts-target"
+      },
+      {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "b69b41c37e4ec7b40fd7b32edaba3f3041c98a1e8e9a4c683e692530f4688a19",
+        "report_sha256": "f4bbfd8e12c8616d5134fa01e05d5ba8facbbd7615cf376373d6bf958008f5ad",
+        "seconds": 258.063,
+        "step": "ts-baseline"
+      },
+      {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "ee0bc9921bc8af18f5a0dd5dc1229bccbc13e2ce478ee73a507dcfda44f70871",
+        "report_sha256": "03227340bc646a33f72268be299902b07da748f011bf29e1d51d5a38dfbd7a91",
+        "seconds": 0.634,
+        "step": "ts-python-controls"
+      },
+      {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "6550ee4fdad51d28718df6e02fd897545aec6056c8e20d82c6f6a6c0fb338bb9",
+        "report_sha256": "97ea69846294412da037c4137d5d37be833252838c6b34d73a83aac4c82729a7",
+        "seconds": 10.887,
+        "step": "bundles"
+      },
+      {
+        "exit_code": 0,
+        "judgment": "passed",
+        "receipt_sha256": "47c5bdd9b258a2f28ee6b8dce51187bbda7f6c1cef750233d84b2597b5a48f1e",
+        "report_sha256": "8c92c2c315f20e35b530b1166a50ff97cef52ae5b13bad17b040ae1ea1445e20",
+        "seconds": 1525.862,
+        "step": "products"
+      }
+    ],
+    "url": "https://github.com/faberline/som/actions/runs/40743738705",
+    "workflow_conclusion": "failure"
+  },
+  "source_boundary": {
+    "compiler_build_source": "40cffc13b3bff35e3ea5804b9f43a49cdef7b3c0",
+    "frozen_contracts_tests_compiler_targets_and_templates_unchanged": true,
+    "later_changes": "audit, replay and workflow infrastructure only",
+    "reviewed_auditor_source": "afd8739faae3e267cc1185d56de1e15831c6a177"
+  },
+  "status": "accepted_after_independent_raw_audit",
+  "tooling_tests": {
+    "audit": 96,
+    "node": 53,
+    "passed": 388,
+    "python_runner": 201,
+    "quickstart": 10,
+    "release": 28,
+    "run_id": 40755984823,
+    "source_commit": "afd8739faae3e267cc1185d56de1e15831c6a177",
+    "url": "https://github.com/faberline/som/actions/runs/40755984823"
+  },
+  "typescript_hash_map": {
+    "path": "som-rs/evidence/typescript-unchanged-fresh-raw-2026-10-29-issue130.json",
+    "sha256": "6365a7565872e987383860d6a117df9c109c795be5e21fecd65123964c418220"
+  },
+  "version": "som.react-output-acceptance-evidence.v1"
+}
