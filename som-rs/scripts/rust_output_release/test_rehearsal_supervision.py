@@ -125,8 +125,10 @@ class SupervisionTests(unittest.TestCase):
             raise Interrupted(str(signum))
         previous = {sig: signal.getsignal(sig) for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)}
         original = subprocess.Popen
+        spawned = []
         def signal_after_spawn(*args, **kwargs):
             child = original(*args, **kwargs)
+            spawned.append(child)
             os.kill(os.getpid(), signal.SIGTERM)
             return child
         try:
@@ -145,6 +147,57 @@ class SupervisionTests(unittest.TestCase):
                 self.assertFalse(alive(row['pid']))
                 self.assertFalse(row['cleanup_verified'])
         finally:
+            for child in spawned:
+                if child.poll() is None:
+                    child.terminate()
+                    child.wait(timeout=10)
+            for sig, handler in previous.items():
+                signal.signal(sig, handler)
+
+    def test_signal_during_real_release_start_registers_child_before_interrupt(self):
+        import release_common as rc
+        class Interrupted(Exception):
+            pass
+        def interrupted(signum, _frame):
+            raise Interrupted(str(signum))
+        previous = {sig: signal.getsignal(sig) for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)}
+        original = subprocess.Popen
+        spawned = []
+        def signal_after_spawn(*args, **kwargs):
+            child = original(*args, **kwargs)
+            spawned.append(child)
+            # Fire in the inherited Run.start call before Popen returns there.
+            os.kill(os.getpid(), signal.SIGTERM)
+            return child
+        def identity(pid, argv, port):
+            return {'pid': pid, 'argv': argv, 'port': port, 'cwd': str(out)}
+        try:
+            for sig in previous:
+                signal.signal(sig, interrupted)
+            with tempfile.TemporaryDirectory() as value:
+                out = Path(value)
+                run = rc.Release(out, out)
+                run.health = mock.Mock()
+                command = [sys.executable, '-c', 'import time; time.sleep(300)', '18940']
+                with mock.patch.object(rc.base, 'port_free'), \
+                     mock.patch.object(rc.base, 'identity', side_effect=identity), \
+                     mock.patch.object(rc.base.subprocess, 'Popen', side_effect=signal_after_spawn):
+                    with self.assertRaises(Interrupted):
+                        run.start(command, {})
+                    self.assertEqual(len(spawned), 1)
+                    child = spawned[0]
+                    self.assertIn(child, run.children)
+                    self.assertIn(child.pid, run.owners)
+                    owner = run.owners[child.pid]
+                    run.stop_child(owner)
+                    self.assertIs(type(child.returncode), int)
+                    self.assertFalse(alive(child.pid))
+                    self.assertEqual([event['stage'] for event in run.events], ['started', 'stopped'])
+        finally:
+            for child in spawned:
+                if child.poll() is None:
+                    child.terminate()
+                    child.wait(timeout=10)
             for sig, handler in previous.items():
                 signal.signal(sig, handler)
 

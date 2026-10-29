@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path
 import re
+import signal
 import shutil
 import subprocess
 import urllib.error
@@ -90,6 +91,36 @@ def cli_argv(binary, step, port):
 
 class Release(base.Run):
     """The #44 Run with byte-exact exchanges and the #51 pinned canaries."""
+
+    def start(self, argv, expected):
+        """Defer interruption until the inherited start owns its child handle.
+
+        The inherited method owns startup-failure cleanup. On success it records
+        the owner before returning. The caller's normal interrupt handler then
+        drives its existing rollback/cleanup. Never infer cleanup from deferral.
+        """
+        previous, pending = {}, []
+        def defer(signum, frame):
+            pending.append((signum, frame))
+        try:
+            for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+                handler = signal.getsignal(signum)
+                if callable(handler):
+                    previous[signum] = handler
+                    signal.signal(signum, defer)
+            owner = super().start(argv, expected)
+        finally:
+            # Block only while restoring handlers, never across the child exec.
+            # This prevents an arriving signal from interrupting restoration.
+            mask = signal.pthread_sigmask(signal.SIG_BLOCK, set(previous))
+            try:
+                for signum, handler in previous.items():
+                    signal.signal(signum, handler)
+            finally:
+                signal.pthread_sigmask(signal.SIG_SETMASK, mask)
+        if pending:
+            previous[pending[0][0]](*pending[0])
+        return owner
 
     def raw(self, port, path, body):
         if body is not None:
