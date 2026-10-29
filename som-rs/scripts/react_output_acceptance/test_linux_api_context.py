@@ -54,6 +54,58 @@ class LinuxApiContextTests(unittest.TestCase):
     def admitted(self, state, node, live):
         return api.verify(*state, node, live)
 
+    def test_source_bound_repository_imports_and_preload_refusal(self):
+        # Real imports, direct-by-path builder load, and a poisoned cache file.
+        # All source files here are synthetic and run only on GitHub.
+        for role in ('host', 'contract'):
+            with self.subTest(role=role), tempfile.TemporaryDirectory(dir=os.environ['RUNNER_TEMP']) as directory:
+                root = Path(directory).resolve()
+                tree = ('tree_sha', 'som-rs/tests/' + ('typescript' if role == 'host' else 'react') + '-output-v1/tree_sha.py')
+                chain = ((api.IMPORT_CHAIN if role == 'host' else (('rust_profile', 'som-rs/tests/rust-output-v1/rust_profile.py'),))
+                         + (tree,) + (api.HOST_CHAIN if role == 'host' else api.CONTRACT_CHAIN))
+                values = {name: b'value = "sealed"\n' for name, _ in chain}
+                values['common'] = (b'import importlib.util, pathlib\n'
+                    b'p=pathlib.Path(__file__).parents[2] / "tests/rust-output-v1/build_negative_cases.py"\n'
+                    b's=importlib.util.spec_from_file_location("rust_build_negative_cases", p)\n'
+                    b'm=importlib.util.module_from_spec(s); s.loader.exec_module(m)\n'
+                    b'value=m.value\n')
+                values['check_contract'] = b'import common\nvalue=common.value\n'
+                values['typescript.host'] = b'import hosts, tree_sha\nvalue=hosts.value + tree_sha.value\n'
+                hashes = {}
+                for name, rel in chain:
+                    path = root / rel
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(values[name])
+                    hashes[rel] = digest(values[name])
+                    cache = path.parent / '__pycache__'
+                    cache.mkdir(exist_ok=True)
+                    (cache / (path.stem + '.cpython-310.pyc')).write_bytes(b'poisoned-bytecode')
+                if role == 'contract':
+                    builder = root / api.RUST_BUILDER
+                    builder.parent.mkdir(parents=True, exist_ok=True)
+                    builder.write_bytes(b'value = "builder"\n')
+                    hashes[api.RUST_BUILDER] = digest(builder.read_bytes())
+                names = {name for name, _ in chain} | {'rust_build_negative_cases'}
+                with mock.patch.dict(sys.modules):
+                    for name in names:
+                        sys.modules.pop(name, None)
+                    result = api.bind_repository_imports(root, hashes, role)
+                    self.assertEqual(result.value, 'sealedsealed' if role == 'host' else 'builder')
+                    self.assertEqual(result.__file__, str(root / chain[-1][1]))
+                with mock.patch.dict(sys.modules):
+                    for name in names:
+                        sys.modules.pop(name, None)
+                    sys.modules[chain[-1][0]] = SimpleNamespace()
+                    with self.assertRaises(api.ContextError):
+                        api.bind_repository_imports(root, hashes, role)
+                with mock.patch.dict(sys.modules):
+                    for name in names:
+                        sys.modules.pop(name, None)
+                    (root / chain[-1][1]).write_bytes(b'raise RuntimeError("must not run")\n')
+                    with self.assertRaises(api.ContextError):
+                        api.bind_repository_imports(root, hashes, role)
+                    self.assertTrue(all(name not in sys.modules for name in names))
+
     def test_bound_context_identity_and_recheck(self):
         state, node, live = fixture()
         with mock.patch.object(api, 'tool', side_effect=lambda path: {'path': path, 'sha256': '2' * 64}), \

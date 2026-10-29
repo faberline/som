@@ -7,6 +7,7 @@ draft. The separately reviewed live-input verifier is not yet available.
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -26,7 +27,7 @@ EVIDENCE_SOURCE = 'som-rs/scripts/react_output_acceptance/linux_api_evidence.py'
 API_CHAIN = frozenset({
     'som-rs/tests/react-output-v1/run_api_contract.py',
     'som-rs/tests/react-output-v1/api_contract.mjs',
-    'som-rs/behavior/typescript/host.py', 'som-rs/behavior/hosts.py',
+    'som-rs/behavior/typescript/__init__.py', 'som-rs/behavior/typescript/host.py', 'som-rs/behavior/hosts.py',
     'som-rs/som-targets/qa/check_rust_products.py',
     'som-rs/scripts/react_output_acceptance/record_api_fetch.mjs',
     'som-rs/scripts/react_output_acceptance/check_products.py',
@@ -152,6 +153,86 @@ def load_bound(repo, relative, expected, name):
     exec(compile(raw, module.__file__, 'exec', dont_inherit=True), module.__dict__)
     sys.modules[name] = module
     return module
+
+
+
+# These are repository imports in the two fresh Python processes. The source
+# bytes are captured from the sealed authority and compiled directly; Python
+# cannot select a shadow module or a .pyc file for any name in these lists.
+IMPORT_CHAIN = (
+    ('paths', 'som-rs/scripts/compiler_acceptance/paths.py'),
+    ('qa_harness', 'som-rs/scripts/compiler_acceptance/qa_harness.py'),
+    ('python_replay', 'som-rs/scripts/rust_output_acceptance/python_replay.py'),
+    ('rust_profile', 'som-rs/tests/rust-output-v1/rust_profile.py'),
+    ('rust_profile_phase2', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py'),
+    ('check_targets', 'som-rs/som-targets/qa/check_targets.py'),
+)
+HOST_CHAIN = (
+    ('check_rust_products', 'som-rs/som-targets/qa/check_rust_products.py'),
+    ('hosts', 'som-rs/behavior/hosts.py'),
+    ('typescript', 'som-rs/behavior/typescript/__init__.py'),
+    ('typescript.host', 'som-rs/behavior/typescript/host.py'),
+)
+CONTRACT_CHAIN = (
+    ('react_profile', 'som-rs/tests/react-output-v1/react_profile.py'),
+    ('common', 'som-rs/tests/react-output-v1/common.py'),
+    ('check_contract', 'som-rs/tests/react-output-v1/check_contract.py'),
+)
+RUST_BUILDER = 'som-rs/tests/rust-output-v1/build_negative_cases.py'
+
+
+def bind_repository_imports(repo, source_shas, role):
+    """Bind one fresh process's finite repo import chain to authenticated bytes."""
+    need(role in ('host', 'contract'), 'unknown repository import role')
+    tree = ('tree_sha', 'som-rs/tests/' + ('typescript' if role == 'host' else 'react') + '-output-v1/tree_sha.py')
+    chain = ((IMPORT_CHAIN if role == 'host' else (('rust_profile', 'som-rs/tests/rust-output-v1/rust_profile.py'),))
+             + (tree,) + (HOST_CHAIN if role == 'host' else CONTRACT_CHAIN))
+    names = {name for name, _ in chain} | {'rust_build_negative_cases'}
+    need(all(name not in sys.modules for name in names), 'preloaded repository module refused')
+    sources = {rel: source_bytes(repo, rel, source_shas.get(rel)) for _, rel in chain}
+    if role == 'contract':
+        sources[RUST_BUILDER] = source_bytes(repo, RUST_BUILDER, source_shas.get(RUST_BUILDER))
+    loaded = []
+    original_spec = importlib.util.spec_from_file_location
+
+    class CapturedBuilder:
+        def create_module(self, spec):
+            return None
+        def exec_module(self, module):
+            path = str(repo / RUST_BUILDER)
+            module.__file__ = path
+            exec(compile(sources[RUST_BUILDER], path, 'exec', dont_inherit=True), module.__dict__)
+
+    def captured_spec(name, location, *args, **kwargs):
+        if name == 'rust_build_negative_cases':
+            need(str(location) == str(repo / RUST_BUILDER) and not args and not kwargs,
+                 'Rust builder resolution differs')
+            return importlib.util.spec_from_loader(name, CapturedBuilder(), origin=str(location))
+        return original_spec(name, location, *args, **kwargs)
+
+    try:
+        for name, rel in chain:
+            path = str(repo / rel)
+            module = ModuleType(name)
+            module.__file__ = path
+            module.__package__ = name if name == 'typescript' else name.rpartition('.')[0]
+            if name == 'typescript':
+                module.__path__ = [str((repo / rel).parent)]
+            sys.modules[name] = module
+            loaded.append(name)
+            if name == 'common':
+                importlib.util.spec_from_file_location = captured_spec
+            try:
+                exec(compile(sources[rel], path, 'exec', dont_inherit=True), module.__dict__)
+            finally:
+                importlib.util.spec_from_file_location = original_spec
+            if name == 'typescript.host':
+                sys.modules['typescript'].host = module
+        return sys.modules['typescript.host' if role == 'host' else 'check_contract']
+    except BaseException:
+        for name in reversed(loaded):
+            sys.modules.pop(name, None)
+        raise
 
 
 def authority(repo):

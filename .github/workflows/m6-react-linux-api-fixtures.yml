@@ -19,19 +19,20 @@ jobs:
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           for entry in \
             'som-rs/scripts/react_output_acceptance/run_acceptance.py 8bf2dc001d10e61f9904abbd81940b3d0376a96176874331a1095b125347960a' \
-            'som-rs/scripts/react_output_acceptance/check_products.py b516b246a1d74621adfcfeecf8838495d71f88e5bf80e92ec29397a11cceda12' \
-            'som-rs/scripts/react_output_acceptance/record_api.py b48abcf1169e29a3b773a6cacf2563d2fd82f20c89668617df9c732734c3e5ce' \
+            'som-rs/scripts/react_output_acceptance/check_products.py 8b396e063dd5a668102ed984f076a761072d83fe996632f2db84eedf84b43dce' \
+            'som-rs/scripts/react_output_acceptance/record_api.py 29ba75902d10a864d0bf47843e50e207e90483092cb3b216964ae28081fc58f4' \
             'som-rs/scripts/react_output_acceptance/retained_evidence.py 7ec396988cc2e9704c228c05cb3a7cd7a51c87d0fc6ea26c1ffa1455209d75bc' \
-            'som-rs/scripts/react_output_acceptance/linux_api_context.py 3ee9d535387a074f43a25173d2d8073ede1b4c77e847924bf6bcda86c8021306' \
+            'som-rs/scripts/react_output_acceptance/linux_api_context.py 08e7d8d39bf09d7156f98366ac51d7658f8d93c01c7cea5b465799bf50e262dd' \
             'som-rs/scripts/react_output_acceptance/linux_api_live_inputs.py 5a925a82318a5ef0504ea363ece10e939e0377f985fa8f2c4089bca80d138c2c' \
             'som-rs/scripts/react_output_acceptance/linux_api_host.py ccdf3d0c06752c6e1d8fecba4e166ffc78676218d0763aebfe7a5b6d69ff7a38' \
             'som-rs/scripts/react_output_acceptance/linux_api_evidence.py 4eb09833614c8e32a4038fa1d8c6a7c7f96f50ac9ecef42c315147772a2b53b0' \
-            'som-rs/scripts/react_output_acceptance/test_linux_api_context.py c69f88690289a4c119d0618f5fafc3d514ca782a6d1d2fdebf5ad759f04c1efc' \
+            'som-rs/scripts/react_output_acceptance/test_linux_api_context.py 9cf5868954628398f66d9ff34eb332a863d78bbe04dd4f18bbe70dcf0d423f49' \
             'som-rs/scripts/react_output_acceptance/test_linux_api_live_inputs.py 267eaf2ccf6ab83fa2fee299eaa5bc6cb043331323d66c22a3106b250d35a193' \
             'som-rs/scripts/react_output_acceptance/test_linux_api_host.py 4263f26c8600392a6c68c76c34d44a8025b723facce31a99550f0ba4ec3d184f' \
             'som-rs/scripts/react_output_acceptance/test_linux_api_evidence.py 02fb3daece1387e98a303601d0a9585ca6b733c5b959b8ddd1745098bd8067a7' \
             'som-rs/scripts/react_output_acceptance/test_linux_api_propagation.py d5ddce1e498dab1676783d99f0f559f1867e616bc4ba22a4e3218d46ab4ff998' \
             'som-rs/scripts/react_output_acceptance/capture_api_timeout.py aa8b7a1d3d3dcb502e040bff9e7673f0a19b9a2f041b0b546c7eccb18389a68a' \
+            'som-rs/behavior/typescript/__init__.py 62a9e06452f012caa16d401a5c1dd183cc8b7dddd7630e5b4f9e478c246cdc99' \
             'som-rs/tests/react-output-v1/run_api_contract.py 56e6fd5d0f088a4d1d019538d648378bd8020a85c4787bd1e31866296210ddc1' \
             'som-rs/tests/react-output-v1/linux_qa_profile.py e5e1244e27df4717e369fb0e56c1097df59664f2cb2aa19c0766dc13dc2703d7' \
             'som-rs/scripts/react_output_acceptance/fixtures/live-proof/live-provision-receipt.json a54253a9871ef535927b44c28ee5372e02aa311c3392ce253ae394c12eea3fe7' \

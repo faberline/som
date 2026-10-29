@@ -238,6 +238,9 @@ def main(argv: list[str] | None = None) -> int:
         full_before = retained_evidence.physical_repo_path(REPO, args.full_validation)
         need(full_before == work_path.parents[2] / 'api-qa-evidence/full-before.json')
         qa = context_module.validate_case(args.api_profile, REPO, full_before)
+        context_module.bind_repository_imports(REPO, qa['_source_shas'], 'host')
+        runner_raw = context_module.source_bytes(REPO, 'som-rs/tests/react-output-v1/run_api_contract.py',
+                                                 qa['_source_shas'].get('som-rs/tests/react-output-v1/run_api_contract.py'))
         need(qa['node_profile_path'] == args.qa_profile and qa['profile_sha256'] == sha(args.qa_profile))
         adapter.ADMITTED_CONTEXT = qa
     case, product, work = (path.resolve() for path in (args.case, args.product, args.work))
@@ -267,7 +270,11 @@ def main(argv: list[str] | None = None) -> int:
              mock.patch.object(subprocess, "run", recorder.run), \
              mock.patch.object(subprocess, "Popen", recorder.popen):
             try:
-                runpy.run_path(str(RUNNER), run_name="__main__")
+                if qa is None:
+                    runpy.run_path(str(RUNNER), run_name="__main__")
+                else:
+                    exec(compile(runner_raw, str(RUNNER), "exec", dont_inherit=True),
+                         {"__name__": "__main__", "__file__": str(RUNNER), "__package__": ""})
                 code = 0
             except SystemExit as exc:
                 code = exc.code if type(exc.code) is int else 1

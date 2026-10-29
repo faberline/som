@@ -553,6 +553,7 @@ def cleanup_case_runtime(out: pathlib.Path, cid: str) -> dict[str, Any]:
 
 
 def main() -> int:
+    global check_contract
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", required=True)
     parser.add_argument("--manifest", required=True, type=pathlib.Path)
@@ -581,6 +582,7 @@ def main() -> int:
             recorder = load_api_recorder(REPO)
             api_context_module, _, _ = recorder.load_linux_sources(REPO, bound_retained=retained_evidence)
             api_qa = api_context_module.validate(args.api_profile, REPO, bound_node_module=linux_qa_profile)
+            check_contract = api_context_module.bind_repository_imports(REPO, api_qa['_source_shas'], 'contract')
             retained_evidence.need(api_qa['node_profile_path'] == qa['profile_path']
                                    and api_qa['profile_sha256'] == qa['profile_sha256']
                                    and str(api_qa['node']) == str(qa['node'])
