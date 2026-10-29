@@ -13,6 +13,14 @@ if os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('RUNNER_ENVIRONM
 import record_rust006_http as recorder
 import mac_rust006_extra as extra
 import mac_rust006_cluster as cluster
+import run_hosted_acceptance as hosted
+
+
+class HostedAdmissionTests(unittest.TestCase):
+    def test_final_adapter_cannot_be_activated_before_review(self):
+        self.assertFalse(hosted.FINAL_MAC_ADAPTER_REVIEWED)
+        with self.assertRaises(SystemExit):
+            hosted.main(['--out', '.local/m6-hosted/unused', '--candidate-revision', 'a' * 40])
 
 
 class RawProtocolTests(unittest.TestCase):
@@ -28,7 +36,7 @@ class RawProtocolTests(unittest.TestCase):
 
     def test_record_preserves_raw_request_and_response(self):
         with tempfile.TemporaryDirectory() as tmp:
-            out = Path(tmp)
+            out = Path(tmp).resolve()
             (out / 'calls').mkdir()
             owner = recorder.Recorder(out)
             call = recorder.Call(owner, ('POST', 'http://127.0.0.1:18919/v1/compile', b'original'), 1)
@@ -45,7 +53,7 @@ class RawProtocolTests(unittest.TestCase):
 class WaitEvidenceTests(unittest.TestCase):
     def test_actual_child_waits_and_keeps_failure_logs(self):
         with tempfile.TemporaryDirectory() as tmp:
-            out = Path(tmp)
+            out = Path(tmp).resolve()
             (out / 'logs').mkdir()
             row = extra.record_command(out, 1, 'bad', [sys.executable, '-c',
                 'import sys; print("out"); print("err",file=sys.stderr); sys.exit(7)'], out, dict(os.environ), 10)
@@ -58,7 +66,7 @@ class WaitEvidenceTests(unittest.TestCase):
 
     def test_timeout_is_never_completed(self):
         with tempfile.TemporaryDirectory() as tmp:
-            out = Path(tmp)
+            out = Path(tmp).resolve()
             (out / 'logs').mkdir()
             row = extra.record_command(out, 1, 'slow', [sys.executable, '-c', 'import time; time.sleep(30)'],
                                        out, dict(os.environ), 0.5)

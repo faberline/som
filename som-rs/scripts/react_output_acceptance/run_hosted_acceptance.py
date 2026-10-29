@@ -25,6 +25,8 @@ STEPS = ("contract", "react-target", "react-python-controls", "python-baseline",
          "rust-baseline", "rust-python-controls", "rt-diagnostics", "ts-target",
          "ts-baseline", "ts-python-controls", "bundles", "products")
 BASELINE_PORT, CANDIDATE_PORT = 18917, 18919
+# Keep the new path disabled until its raw auditor and source review are complete.
+FINAL_MAC_ADAPTER_REVIEWED = False
 ASSET_NAMES = {"blocks.json", "legacy-blocks.json", "quality-blocks.json", "quality.json",
                "ruff", "pyproject.toml", "manifest.json"}
 OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -219,7 +221,13 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--python", type=Path, default=REPO / "som-rs/runtime/acceptance-m3-venv/bin/python")
+    parser.add_argument("--candidate-revision", default=None,
+                        help="Exact new final source SHA for the Rust006 extra gate path.")
+    parser.add_argument("--rust006-parity", type=Path, default=None,
+                        help="Same-candidate Rust parity report for the Rust006 refusal checker.")
     args = parser.parse_args(argv)
+    if (args.candidate_revision is None) != (args.rust006_parity is None):
+        parser.error("--candidate-revision and --rust006-parity must be supplied together")
     stage, out, baseline = "runner", None, None
     summary = {"version": "som.m6-hosted-acceptance.v1", "passed": False, "status": "failed",
                "failed_stage": None, "product_suites": "not_run", "head_before": None,
@@ -240,6 +248,9 @@ def main(argv: list[str] | None = None) -> int:
         need(type(expected) is dict and (REPO / ".local/m6-hosted/prettier").is_dir())
         summary["baseline_binary_sha256"] = BASELINE_SHA
         summary["head_before"] = head(out, "head-before", env)
+        if args.candidate_revision is not None:
+            need(FINAL_MAC_ADAPTER_REVIEWED and re.fullmatch(r"[0-9a-f]{40}", args.candidate_revision) is not None
+                 and args.candidate_revision == summary["head_before"] == os.environ.get("GITHUB_SHA"))
         stage = "ports"
         need(port_free(BASELINE_PORT) and port_free(CANDIDATE_PORT))
         stage = "baseline"
@@ -297,6 +308,35 @@ def main(argv: list[str] | None = None) -> int:
                 summary["product_suites"] = "recorded"
         except (OSError, ValueError, TypeError, AttributeError):
             pass
+        # The three additional named Rust006 checks use this exact same candidate.
+        # Their independent raw audit is required before this new path can pass.
+        if args.candidate_revision is not None and summary["acceptance_exit_code"] == 0:
+            stage = "rust006-extra"
+            extra = out / "run/rust006-extra"
+            public = REPO / ".local/rust-compiler-goal/acceptance/public-products-003b"
+            legacy = REPO / ".local/rust-compiler-goal/acceptance/legacy544/run-005"
+            try:
+                summary["rust006_extra_exit_code"] = logged(out, "rust006-extra", [
+                    str(args.python), str(HERE / "mac_rust006_extra.py"), "--candidate", str(out / "candidate"),
+                    "--candidate-revision", args.candidate_revision, "--out", str(extra),
+                    "--public-run", str(public), "--legacy-run", str(legacy),
+                    "--parity", str(args.rust006_parity), "--python", str(args.python)], env)
+            except (OSError, subprocess.SubprocessError):
+                summary["rust006_extra_exit_code"] = None
+            if summary["rust006_extra_exit_code"] != 0:
+                summary["failed_stage"] = summary["failed_stage"] or stage
+            # The raw-only auditor must be implemented and reviewed before activation.
+            stage = "rust006-independent-audit"
+            try:
+                summary["rust006_audit_exit_code"] = logged(out, "rust006-audit", [
+                    str(args.python), str(HERE / "audit/audit_mac_rust006_extra.py"),
+                    "--run", str(extra), "--candidate", str(out / "candidate"),
+                    "--public-run", str(public), "--legacy-run", str(legacy),
+                    "--parity", str(args.rust006_parity), "--out", str(out / "run/rust006-audit.json")], env)
+            except (OSError, subprocess.SubprocessError):
+                summary["rust006_audit_exit_code"] = None
+            if summary["rust006_audit_exit_code"] != 0:
+                summary["failed_stage"] = summary["failed_stage"] or stage
         # A failed runner can still leave useful raw evidence. Audit it before cleanup.
         if (out / "run").is_dir():
             stage = "audit"
@@ -306,6 +346,8 @@ def main(argv: list[str] | None = None) -> int:
                 summary["failed_stage"] = summary["failed_stage"] or "audit"
         stage = "verdict"
         need(verdict(out, summary))
+        if args.candidate_revision is not None:
+            need(summary.get("rust006_extra_exit_code") == 0 and summary.get("rust006_audit_exit_code") == 0)
         summary["passed"] = True
     except (OSError, ValueError, KeyError, TypeError, AttributeError, subprocess.SubprocessError):
         summary["failed_stage"] = summary["failed_stage"] or stage
