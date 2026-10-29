@@ -35,6 +35,17 @@ jobs:
           INNER
       - name: Provision the frozen tool closure
         run: python3 som-rs/scripts/react_output_acceptance/provision_macos.py --out "$RUNNER_TEMP/m6-provision"
+      - name: Check runner Node paths after tool provisioning
+        run: |
+          python3 - <<'INNER'
+          import json,shutil,subprocess
+          fixed='/opt/homebrew/Cellar/node/26.5.0/bin/node'; default=shutil.which('node')
+          def probe(path):
+              if not path:return {'available':False}
+              result=subprocess.run([path,'--version'],capture_output=True,check=False,timeout=15)
+              return {'available':True,'exit_code':result.returncode,'version':result.stdout.decode().strip()}
+          print(json.dumps({'fixed_node':probe(fixed),'path_node':probe(default),'path_uses_fixed':default==fixed},sort_keys=True))
+          INNER
       - name: Fetch the approved 18-package inputs and original manifest revision
         run: |
           git fetch --no-tags --depth=1 origin 1de8f05430a72f8d76f6159786cca71b0ae1a911 55eb7f5c3b21d4f3b57eb721ab60c6aa97e10db3
@@ -57,7 +68,7 @@ jobs:
         env:
           M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
         run: |
-          python3 som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py --repo-root "$GITHUB_WORKSPACE" --config "$RUNNER_TEMP/m6-final-input-config.json" --out "$RUNNER_TEMP/approved-inputs" --node node
+          python3 som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py --repo-root "$GITHUB_WORKSPACE" --config "$RUNNER_TEMP/m6-final-input-config.json" --out "$RUNNER_TEMP/approved-inputs" --node /opt/homebrew/Cellar/node/26.5.0/bin/node
       - name: Independently verify the approved supplement
         run: python3 som-rs/scripts/react_output_acceptance/audit_supplement_provision.py
       - name: Download and verify approved encrypted evidence
@@ -94,7 +105,7 @@ jobs:
         env:
           M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
         run: |
-          node som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs --root "$RUNNER_TEMP/evidence-sealed" --out "$RUNNER_TEMP/evidence" --index-sha256 3759239392208eab81bf740ca9ca2a41465be3e3e4995de2bd255774f4596bea > /dev/null
+          /opt/homebrew/Cellar/node/26.5.0/bin/node som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs --root "$RUNNER_TEMP/evidence-sealed" --out "$RUNNER_TEMP/evidence" --index-sha256 3759239392208eab81bf740ca9ca2a41465be3e3e4995de2bd255774f4596bea > /dev/null
       - name: Bind approved binary, source, assets, and run-003 input files
         run: |
           python3 - <<'INNER'
