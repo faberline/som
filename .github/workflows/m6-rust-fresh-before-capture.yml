@@ -1,6 +1,8 @@
 name: M6 issue 131 Rust fresh-before capture
 on:
   workflow_dispatch:
+  push:
+    branches: [codex/m6-rust-fresh-before-capture-run]
 permissions:
   contents: read
   actions: read
