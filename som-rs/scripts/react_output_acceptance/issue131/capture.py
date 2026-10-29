@@ -267,6 +267,51 @@ def count_unrun(plan, rows):
     return len(plan) - len(rows) + sum(row['comparison'] == 'unrun' for row in rows)
 
 
+def process_evidence(proc, argv, binary, out, stage, initial=None):
+    pid = str(proc.pid)
+    commands = {
+        'identity': ['/bin/ps', '-ww', '-p', pid, '-o', 'pid=,ppid=,pgid=,stat=,command='],
+        'start_time': ['/bin/ps', '-p', pid, '-o', 'lstart='],
+        'listeners': ['/usr/sbin/lsof', '-nP', '-iTCP:' + str(PORT), '-sTCP:LISTEN', '-Fp'],
+        'executable': ['/usr/sbin/lsof', '-nP', '-a', '-p', pid, '-d', 'txt', '-Fn'],
+    }
+    results, receipt = {}, {}
+    for name, command in commands.items():
+        result = subprocess.run(command, capture_output=True, check=False, timeout=10)
+        write(out / 'process-evidence' / (stage + '-' + name + '.stdout'), result.stdout)
+        write(out / 'process-evidence' / (stage + '-' + name + '.stderr'), result.stderr)
+        receipt[name] = {'argv': command, 'exit_code': result.returncode,
+                         'stdout_sha256': sha(result.stdout), 'stderr_sha256': sha(result.stderr)}
+        need(result.returncode == 0 and not result.stderr, 'process evidence command failed')
+        results[name] = result.stdout.decode('utf-8').strip()
+    fields = results['identity'].split(None, 4)
+    need(len(fields) == 5 and fields[:3] == [pid, str(os.getpid()), pid] and
+         not fields[3].startswith('Z') and fields[4] == ' '.join(argv), 'process identity differs')
+    listeners = [line[1:] for line in results['listeners'].splitlines() if line.startswith('p')]
+    need(listeners == [pid], 'listener is not exclusively owned by baseline')
+    info = binary.stat()
+    executable_identity = (info.st_dev, info.st_ino)
+    observed = False
+    for line in results['executable'].splitlines():
+        if line.startswith('n'):
+            try:
+                candidate = Path(line[1:]).stat()
+                if (candidate.st_dev, candidate.st_ino) == executable_identity:
+                    observed = True
+            except OSError:
+                pass
+    need(observed, 'owned process executable inode differs')
+    start_time = results['start_time']
+    need(bool(start_time), 'process start time missing')
+    identity = {'pid': proc.pid, 'parent_pid': os.getpid(), 'pgid': proc.pid, 'start_time': start_time,
+                'binary_device': info.st_dev, 'binary_inode': info.st_ino, 'binary_size': info.st_size,
+                'commands': receipt}
+    if initial is not None:
+        for name in ('pid', 'parent_pid', 'pgid', 'start_time', 'binary_device', 'binary_inode', 'binary_size'):
+            need(identity[name] == initial[name], 'process identity changed during capture')
+    return identity
+
+
 def finalize_capture(result, proc, owner, binary, asset_root, assets, plan, out):
     errors = []
     def attempt(name, function, fallback):
@@ -277,6 +322,12 @@ def finalize_capture(result, proc, owner, binary, asset_root, assets, plan, out)
             return fallback
     if proc is not None:
         result['wait_exit'] = attempt('direct_wait', lambda: owner.wait_after_signal(timeout=15), None)
+        if result['wait_exit'] is None:
+            for event in reversed(getattr(owner, 'events', [])):
+                if (event.get('kind') in ('candidate-wait', 'candidate-cleanup-wait') and
+                        event.get('state') == 'completed' and type(event.get('exit_code')) is int):
+                    result['wait_exit'] = event['exit_code']
+                    break
         attempt('owner_receipt', owner.save, None)
     result['port_free_after'] = attempt('port_check', free_port, False)
     result['process_group_gone'] = proc is None or attempt('group_check', lambda: group_gone(proc.pid), False)
@@ -371,11 +422,16 @@ def execute(args, checker):
                      not fields[3].startswith('Z'), 'baseline ownership lost during startup')
                 try:
                     with opener.open(f'http://127.0.0.1:{PORT}/healthz', timeout=2) as response:
-                        need(response.status == 200 and json.loads(response.read()) == health, 'baseline health differs')
+                        health_raw = response.read()
+                        write(out / 'health.raw', health_raw)
+                        need(response.status == 200 and json.loads(health_raw) == health, 'baseline health differs')
+                        result['health_status'] = response.status
+                        result['health_sha256'] = sha(health_raw)
                     break
                 except (urllib.error.URLError, TimeoutError):
                     need(time.monotonic() < deadline, 'baseline startup timed out')
                     time.sleep(0.25)
+            result['process_start'] = process_evidence(proc, argv, binary, out, 'start')
             for item in plan:
                 slot = str(item['slot_id'])
                 row = {'slot_id': item['slot_id'], 'status': None, 'response_sha256': None,
@@ -395,6 +451,7 @@ def execute(args, checker):
                 row['matched'] = (row['status'] == 200 and type(files) is dict and
                                   checker.qa.exact_equal(files, expected[slot]))
                 row['comparison'] = 'passed' if row['matched'] else 'failed'
+            result['process_end'] = process_evidence(proc, argv, binary, out, 'end', result['process_start'])
     except Exception as exc:
         result['error'] = type(exc).__name__ + ': ' + str(exc)
     finally:

@@ -154,6 +154,24 @@ class CaptureTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'original serializer request identity'):
             self.prepare()
 
+    def test_missing_prior_raw_request_is_marked_unavailable(self):
+        report = json.loads(self.report_path.read_bytes())
+        report['rows'][1]['qa_response_sha256'] = '0' * 64
+        self.write(self.report_path, report)
+        capture.REPORT_SHA = digest(self.report_path.read_bytes())
+        manifest_path = self.sealed / 'manifest.json'
+        manifest = json.loads(manifest_path.read_bytes())
+        next(x for x in manifest['files'] if x['path'] == 'run/rust-baseline/report.json')['sha256'] = capture.REPORT_SHA
+        self.write(manifest_path, manifest)
+        index_path = self.sealed / 'evidence-index.json'
+        index = json.loads(index_path.read_bytes())
+        index['packages'][0]['manifest_sha256'] = digest(manifest_path.read_bytes())
+        self.write(index_path, index)
+        capture.EVIDENCE_INDEX_SHA = digest(index_path.read_bytes())
+        plan, _, _ = self.prepare()
+        self.assertEqual(plan[0]['prior_candidate_raw_request_state'], 'unavailable')
+        self.assertEqual(plan[0]['prior_candidate_raw_request_sources'], [])
+
     def test_modified_refusal_fails_closed(self):
         self.put(self.record_path.parent / 'calls/000002.response.raw', b'changed')
         with self.assertRaises(ValueError):
@@ -255,6 +273,50 @@ class CaptureTests(unittest.TestCase):
         self.assertTrue(owner.saved)
         self.assertEqual((receipt['wait_exit'], receipt['unrun'], receipt['passed']), (None, 1, False))
         self.assertEqual(receipt['cleanup_errors'][0]['stage'], 'direct_wait')
+
+    def test_completed_wait_survives_owner_postwait_failure(self):
+        class Owner:
+            events = []
+            def wait_after_signal(self, timeout):
+                self.events.append({'kind': 'candidate-wait', 'state': 'completed', 'exit_code': -15})
+                raise ValueError('postwait evidence failed')
+            def save(self): pass
+        out = Path(self.temp.name) / 'postwait'; out.mkdir()
+        binary = out / 'som'; self.put(binary, b'binary')
+        result = {'error': None, 'rows': []}
+        with patch.object(capture, 'free_port', return_value=True), patch.object(capture, 'group_gone', return_value=True), \
+             patch.object(capture, 'asset_identity', return_value={}):
+            capture.finalize_capture(result, SimpleNamespace(pid=123), Owner(), binary, out / 'assets', {}, [1], out)
+        receipt = json.loads((out / 'receipt.json').read_bytes())
+        self.assertEqual((receipt['wait_exit'], receipt['unrun'], receipt['passed']), (-15, 1, False))
+        self.assertEqual(receipt['cleanup_errors'][0]['stage'], 'direct_wait')
+
+    def test_process_evidence_binds_listener_and_executable(self):
+        out = Path(self.temp.name) / 'identity'; out.mkdir()
+        binary = out / 'som'; self.put(binary, b'binary')
+        proc = SimpleNamespace(pid=123)
+        argv = [str(binary), 'serve']
+        def response(command, **kwargs):
+            if command[0] == '/bin/ps' and 'pid=,ppid=,pgid=,stat=,command=' in command:
+                data = f'123 {os.getpid()} 123 S {" ".join(argv)}\n'.encode()
+            elif command[0] == '/bin/ps':
+                data = b'Thu Oct 29 12:00:00 2026\n'
+            elif '-Fp' in command:
+                data = b'p123\n'
+            else:
+                data = ('p123\nn' + str(binary) + '\n').encode()
+            return SimpleNamespace(returncode=0, stdout=data, stderr=b'')
+        with patch.object(capture.subprocess, 'run', side_effect=response):
+            identity = capture.process_evidence(proc, argv, binary, out, 'start')
+            capture.process_evidence(proc, argv, binary, out, 'end', identity)
+        self.assertEqual(identity['binary_inode'], binary.stat().st_ino)
+        self.assertTrue((out / 'process-evidence/start-listeners.stdout').is_file())
+        def wrong_listener(command, **kwargs):
+            result = response(command, **kwargs)
+            return SimpleNamespace(returncode=0, stdout=b'p999\n', stderr=b'') if '-Fp' in command else result
+        with patch.object(capture.subprocess, 'run', side_effect=wrong_listener):
+            with self.assertRaisesRegex(ValueError, 'listener'):
+                capture.process_evidence(proc, argv, binary, out, 'wrong')
 
 
 if __name__ == '__main__':
