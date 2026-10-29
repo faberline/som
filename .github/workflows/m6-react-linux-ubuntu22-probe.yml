@@ -1,0 +1,74 @@
+name: M6 React Ubuntu 22 QA cache replay (not acceptance)
+on:
+  push:
+    branches:
+      - codex/m6-react-linux-ubuntu22-20261029
+permissions:
+  contents: read
+  actions: read
+jobs:
+  replay:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Run replay synthetic fixtures
+        working-directory: .github/m6-react-linux-ubuntu22-probe
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest -v test_prepare_public test_offline_probe test_restore_inputs test_unpack_artifact
+      - name: Check original run and artifact identities
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/40817465924" > "$RUNNER_TEMP/react-producer-run.json"
+          jq -e '.id == 40817465924 and .head_sha == "62637173ffeecde2655482377a218b22bf54618a" and .status == "completed" and .conclusion == "success"' "$RUNNER_TEMP/react-producer-run.json" > /dev/null
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/40818025549" > "$RUNNER_TEMP/react-audit-run.json"
+          jq -e '.id == 40818025549 and .head_sha == "34aca02762745daa2e6d42b588ae54c80a2c7df8" and .status == "completed" and .conclusion == "success"' "$RUNNER_TEMP/react-audit-run.json" > /dev/null
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/12873066929" > "$RUNNER_TEMP/react-producer-artifact.json"
+          jq -e '.id == 12873066929 and .workflow_run.id == 40817465924 and .expired == false and .size_in_bytes == 523384472 and .digest == "sha256:10a7f2bf058be21c670ddac89afece05c305ee717b9a879de4c95256fd6fe2dc"' "$RUNNER_TEMP/react-producer-artifact.json" > /dev/null
+      - name: Download and independently recheck retained public evidence
+        working-directory: .github/m6-react-linux-independent-audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          printf '%s  %s\n' 2196e9124ff171650c5fbfd223d4784e5b3fd91a8c7cc5c9f482819c4ba537a1 audit.py | sha256sum -c -
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/12873066929/zip" > "$RUNNER_TEMP/react-qa-artifact.zip"
+          python3 "$GITHUB_WORKSPACE/.github/m6-react-linux-ubuntu22-probe/unpack_artifact.py" "$RUNNER_TEMP/react-qa-artifact.zip" "$RUNNER_TEMP/react-linux-qa-public-inputs.tar"
+          python3 audit.py --repo "$GITHUB_WORKSPACE" --tar "$RUNNER_TEMP/react-linux-qa-public-inputs.tar" --expected-tar-sha256 5f453d9e3f4fc17e36c9c16d17dacc157a34915fc7c9e477f49da3e81b807171 --source-commit 62637173ffeecde2655482377a218b22bf54618a --output "$RUNNER_TEMP/react-ubuntu22-source-audit.json"
+      - name: Restore exact retained cache and public tools
+        working-directory: .github/m6-react-linux-ubuntu22-probe
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 restore_inputs.py --tar "$RUNNER_TEMP/react-linux-qa-public-inputs.tar" --expected-tar-sha256 5f453d9e3f4fc17e36c9c16d17dacc157a34915fc7c9e477f49da3e81b807171
+      - name: Observe offline reference install on Ubuntu 22
+        working-directory: .github/m6-react-linux-ubuntu22-probe
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 offline_probe.py --repo "$GITHUB_WORKSPACE" --root "$RUNNER_TEMP/som-react-linux-qa-closure"
+      - name: Preserve raw replay results
+        if: always()
+        run: |
+          if [ -d "$RUNNER_TEMP/som-react-linux-qa-closure/probe" ]; then
+            tar -C "$RUNNER_TEMP/som-react-linux-qa-closure" -cf "$RUNNER_TEMP/react-ubuntu22-replay.tar" probe
+            sha256sum "$RUNNER_TEMP/react-ubuntu22-replay.tar" > "$RUNNER_TEMP/react-ubuntu22-replay.tar.sha256"
+          fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: react-ubuntu22-replay
+          path: |
+            ${{ runner.temp }}/react-ubuntu22-replay.tar
+            ${{ runner.temp }}/react-ubuntu22-replay.tar.sha256
+            ${{ runner.temp }}/react-ubuntu22-source-audit.json
+            ${{ runner.temp }}/som-react-linux-qa-closure/restore-receipt.json
+            ${{ runner.temp }}/som-react-linux-qa-closure/producer-report.json
+            ${{ runner.temp }}/react-producer-run.json
+            ${{ runner.temp }}/react-audit-run.json
+            ${{ runner.temp }}/react-producer-artifact.json
+          if-no-files-found: warn
+          retention-days: 7
