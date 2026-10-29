@@ -146,15 +146,20 @@ def fixture():
         steps.append({'step': name, 'receipt': str(step_receipt), 'receipt_sha256': digest(step_receipt.read_bytes())})
     document(run / 'run.json', {'qa_profile': binding, 'steps': steps})
     ids = [f'case-{index:03d}' for index in range(129)]
+    groups = ('public_examples', 'coverage_cases', 'legacy_in_scope')
+    cases = [{'id': cid, 'group': groups[index % len(groups)]} for index, cid in enumerate(ids)]
+    manifest = [{'id': case['id'], 'group': case['group'],
+                 'product': str(run / 'bundles/products' / case['id'])} for case in cases]
+    document(run / 'bundles/products/manifest.json', {'products': manifest})
     origin_root = Path(origin).parent / 'som-react-linux-qa-closure'
     node = str(origin_root / 'node/bin/node')
     cli = str(origin_root / 'node/lib/node_modules/npm/bin/npm-cli.js')
     cache = str(origin_root / 'npm-cache-new')
-    document(run / 'products/report.json', {'cases': [{'id': cid} for cid in ids], 'qa_profile': binding,
+    document(run / 'products/report.json', {'cases': [{**case, 'qa_profile_sha256': digest(profile_raw)} for case in cases], 'qa_profile': binding,
              'qa_profile_final_recheck': {'passed': True, 'failure_reason': None}, 'vendored_cache': cache})
     audit = a.Audit(root, run)
-    audit.acceptance = [{'id': cid} for cid in ids]
-    audit.manifest = {cid: {'product': str(run / 'bundles/products' / cid)} for cid in ids}
+    audit.acceptance = cases
+    audit.manifest = {entry['id']: entry for entry in manifest}
     audit.latest_receipt = receipt
     audit.contracts = {'toolchain.json': {'formatter': {'sha256': formatter, 'prettier_tree_sha256': tree_hash(prettier_files)}}}
     work = run / 'products' / ids[0] / 'gates'
@@ -211,6 +216,35 @@ class LinuxQaAuditFixtures(unittest.TestCase):
         audit, _, _, _, commands, gates, work = fixture()
         self.assertEqual(audit.qa_profile_context()[0], 'passed')
         audit.qa_product_evidence(work.parent, gates, commands)
+
+    def test_each_manifest_and_product_group_and_profile_match_frozen_case(self):
+        for failure in ('manifest_group_missing', 'manifest_group_wrong', 'manifest_case_missing',
+                        'product_group_missing', 'product_group_wrong',
+                        'product_profile_missing', 'product_profile_wrong'):
+            with self.subTest(failure=failure):
+                audit, _, run, _, _, _, _ = fixture()
+                manifest_path = run / 'bundles/products/manifest.json'
+                report_path = run / 'products/report.json'
+                manifest = json.loads(manifest_path.read_bytes())
+                report = json.loads(report_path.read_bytes())
+                if failure == 'manifest_group_missing':
+                    del manifest['products'][-1]['group']
+                elif failure == 'manifest_group_wrong':
+                    manifest['products'][-1]['group'] = 'wrong'
+                elif failure == 'manifest_case_missing':
+                    manifest['products'].pop()
+                elif failure == 'product_group_missing':
+                    del report['cases'][-1]['group']
+                elif failure == 'product_group_wrong':
+                    report['cases'][-1]['group'] = 'wrong'
+                elif failure == 'product_profile_missing':
+                    del report['cases'][-1]['qa_profile_sha256']
+                else:
+                    report['cases'][-1]['qa_profile_sha256'] = '0' * 64
+                document(manifest_path, manifest)
+                document(report_path, report)
+                with self.assertRaises(a.EvidenceError):
+                    audit.qa_profile_context()
 
     def test_legacy_context_does_not_require_a_linux_authority(self):
         root = Path(tempfile.mkdtemp(prefix='som-react-legacy-fixture-')).resolve()

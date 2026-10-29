@@ -822,9 +822,26 @@ class Audit:
         expected_ids = [entry.get("id") for entry in self.acceptance]
         product_rows = list_value(product_report.get("cases"), "QA product cases")
         actual_ids = [object_value(entry, "QA product case").get("id") for entry in product_rows]
-        need(len(expected_ids) == 129 and len(set(expected_ids)) == 129
+        need(all(isinstance(cid, str) for cid in expected_ids + actual_ids)
+             and len(expected_ids) == 129 and len(set(expected_ids)) == 129
              and len(actual_ids) == 129 and len(set(actual_ids)) == 129 and set(actual_ids) == set(expected_ids),
              "QA product inventory is not the complete 129 cases")
+        expected_groups = {entry["id"]: entry.get("group") for entry in self.acceptance}
+        need(all(isinstance(group, str) and group for group in expected_groups.values()),
+             "QA frozen inventory group missing")
+        manifest = object_value(strict_qa_json(self.reader.bytes(self.run / "bundles/products/manifest.json")),
+                                "QA products manifest")
+        manifest_rows = list_value(manifest.get("products"), "QA manifest products")
+        manifest_ids = [object_value(entry, "QA manifest case").get("id") for entry in manifest_rows]
+        need(all(isinstance(cid, str) for cid in manifest_ids)
+             and len(manifest_ids) == 129 and len(set(manifest_ids)) == 129
+             and set(manifest_ids) == set(expected_ids), "QA manifest inventory differs from frozen cases")
+        need(all(row.get("group") == expected_groups[row["id"]] for row in manifest_rows),
+             "QA manifest case group differs from frozen inventory")
+        need(all(row.get("group") == expected_groups[row["id"]] for row in product_rows),
+             "QA product case group differs from frozen inventory")
+        need(all(row.get("qa_profile_sha256") == expected_profile_sha for row in product_rows),
+             "QA product case profile SHA differs from verified profile")
         final_recheck = object_value(product_report.get("qa_profile_final_recheck"), "products final QA recheck")
         need(final_recheck.get("passed") is True and "failure_reason" in final_recheck
              and final_recheck["failure_reason"] is None,
