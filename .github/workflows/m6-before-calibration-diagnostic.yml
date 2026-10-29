@@ -1,0 +1,45 @@
+name: M6 recorded before calibration diagnostic
+on:
+  push:
+    branches: [codex/m6-before-calibration-diagnostic]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Download exact encrypted failed receipt
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/faberline/som/actions/artifacts/12883652063/zip > "$RUNNER_TEMP/a.zip"
+          python3 - <<'PY'
+          import hashlib,os,pathlib,stat,zipfile
+          temp=pathlib.Path(os.environ['RUNNER_TEMP']); raw=(temp/'a.zip').read_bytes()
+          if len(raw)!=1390 or hashlib.sha256(raw).hexdigest()!='e9b0495a8a21bdd98da0e68e23672f20223d3b1cad3d2bde5de751bd5ec561b1': raise SystemExit('artifact differs')
+          out=temp/'sealed';out.mkdir(mode=0o700)
+          with zipfile.ZipFile(temp/'a.zip') as z:
+              items=z.infolist(); names=[x.filename for x in items]
+              if len(names)!=3 or set(names)!={'evidence-index.json','package-000.sealed','package-000.manifest.json'}: raise SystemExit('members differ')
+              for item in items:
+                  if stat.S_IFMT(item.external_attr>>16) not in (0,stat.S_IFREG) or item.file_size>1024*1024: raise SystemExit('member refused')
+                  (out/item.filename).write_bytes(z.read(item))
+          PY
+      - name: Decrypt in runner and print status only
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
+        run: |
+          index_sha=$(shasum -a 256 "$RUNNER_TEMP/sealed/evidence-index.json" | cut -d' ' -f1)
+          node som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs --root "$RUNNER_TEMP/sealed" --out "$RUNNER_TEMP/receipt" --index-sha256 "$index_sha" >/dev/null
+          python3 - <<'PY'
+          import json,os,pathlib
+          d=json.loads((pathlib.Path(os.environ['RUNNER_TEMP'])/'receipt/run/receipt.json').read_text())
+          allowed=('stage','error_type','unrun','counts','runtime_comparison','product_acceptance','passed')
+          print(json.dumps({key:d[key] for key in allowed if key in d},sort_keys=True))
+          PY
