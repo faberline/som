@@ -175,23 +175,26 @@ class StoppedCandidateRestoreTests(unittest.TestCase):
     def test_committed_receipt_mismatch_refuses_before_port_or_pointers(self):
         self.journal[-1]['receipt']['pid'] = 9999
         (self.evidence / 'journal.json').write_text(json.dumps(self.journal))
-        with self.assertRaisesRegex(RuntimeError, 'committed receipt differs'):
+        with self.assertRaisesRegex(RuntimeError, 'committed receipt differs') as error:
             self.restore()
+        self.assertIn('RECOVERY_FAILED_REQUIRES_OPERATOR', str(error.exception))
         self.port_free.assert_not_called()
         self.links.assert_not_called()
         self.stop.assert_not_called()
 
     def test_foreign_listener_refuses_before_pointer_change(self):
         self.port_free.side_effect = RuntimeError('port occupied')
-        with self.assertRaisesRegex(RuntimeError, 'port occupied'):
+        with self.assertRaisesRegex(RuntimeError, 'port occupied') as error:
             self.restore()
+        self.assertIn('RECOVERY_FAILED_REQUIRES_OPERATOR', str(error.exception))
         self.links.assert_not_called()
         self.stop.assert_not_called()
 
     def test_pid_reappears_before_restore_refuses_without_signalling(self):
         self.alive.side_effect = [False, True]
-        with self.assertRaisesRegex(RuntimeError, 'became live'):
+        with self.assertRaisesRegex(RuntimeError, 'became live') as error:
             self.restore()
+        self.assertIn('RECOVERY_FAILED_REQUIRES_OPERATOR', str(error.exception))
         self.links.assert_not_called()
         self.stop.assert_not_called()
 
@@ -206,8 +209,9 @@ class StoppedCandidateRestoreTests(unittest.TestCase):
 
     def test_changed_default_receipt_refuses_before_pointer_change(self):
         self.default.write_bytes(b'external change')
-        with self.assertRaisesRegex(RuntimeError, 'default receipt changed'):
+        with self.assertRaisesRegex(RuntimeError, 'default receipt changed') as error:
             self.restore()
+        self.assertIn('RECOVERY_FAILED_REQUIRES_OPERATOR', str(error.exception))
         self.port_free.assert_not_called()
         self.links.assert_not_called()
 
@@ -215,22 +219,26 @@ class StoppedCandidateRestoreTests(unittest.TestCase):
         self.current['identity']['port'] = 18941
         self.journal[-1]['receipt'] = copy.deepcopy(self.current)
         (self.evidence / 'journal.json').write_text(json.dumps(self.journal))
-        with self.assertRaisesRegex(RuntimeError, 'identity differs'):
+        with self.assertRaisesRegex(RuntimeError, 'identity differs') as error:
             self.restore()
+        self.assertIn('RECOVERY_FAILED_REQUIRES_OPERATOR', str(error.exception))
         self.port_free.assert_not_called()
         self.links.assert_not_called()
 
     def test_port_taken_after_probe_refuses_before_pointer_change(self):
         self.start_error = True
-        with self.assertRaisesRegex(RuntimeError, 'listener taken before start'):
+        with self.assertRaisesRegex(RuntimeError, 'listener taken before start') as error:
             self.restore()
+        self.assertIn('RECOVERY_FAILED_REQUIRES_OPERATOR', str(error.exception))
         self.links.assert_not_called()
         self.assertEqual(self.default.read_bytes(), self.snapshot)
 
     def test_start_failure_with_live_unadmitted_child_requires_operator_without_signal(self):
         self.start_child_failure = 'alive'
-        with self.assertRaisesRegex(RuntimeError, 'RECOVERY_FAILED_REQUIRES_OPERATOR'):
+        with self.assertRaisesRegex(RuntimeError, 'RECOVERY_FAILED_REQUIRES_OPERATOR') as error:
             self.restore()
+        self.assertIn('unadmitted child exit unverified', str(error.exception))
+        self.assertIn('child 8123 remains alive or exit is unknown', str(error.exception))
         self.assertTrue(self.runs[0].children[0].alive)
         self.identity.assert_not_called()
         self.stop.assert_not_called()
@@ -242,8 +250,11 @@ class StoppedCandidateRestoreTests(unittest.TestCase):
             with self.subTest(failure=failure):
                 self.start_child_failure = failure
                 self.output = self.root / ('restore-' + failure)
-                with self.assertRaisesRegex(RuntimeError, 'RECOVERY_FAILED_REQUIRES_OPERATOR'):
+                with self.assertRaisesRegex(RuntimeError, 'RECOVERY_FAILED_REQUIRES_OPERATOR') as error:
                     self.restore()
+                self.assertIn('unadmitted child exit unverified', str(error.exception))
+                self.assertIn('poll unavailable' if failure == 'poll-error' else 'wait unavailable',
+                              str(error.exception))
                 self.identity.assert_not_called()
                 self.stop.assert_not_called()
                 self.links.assert_not_called()
@@ -251,9 +262,10 @@ class StoppedCandidateRestoreTests(unittest.TestCase):
 
     def test_start_failure_with_confirmed_waited_child_keeps_original_failure(self):
         self.start_child_failure = 'exited'
-        with self.assertRaisesRegex(RuntimeError, 'start failed after child creation') as error:
+        with self.assertRaisesRegex(RuntimeError, 'RECOVERY_FAILED_REQUIRES_OPERATOR') as error:
             self.restore()
-        self.assertNotIn('RECOVERY_FAILED_REQUIRES_OPERATOR', str(error.exception))
+        self.assertIn('start failed after child creation', str(error.exception))
+        self.assertIn('cleanup_errors=[]', str(error.exception))
         self.assertEqual(self.runs[0].children[0].wait_count, 1)
         self.identity.assert_not_called()
         self.stop.assert_not_called()
@@ -262,16 +274,18 @@ class StoppedCandidateRestoreTests(unittest.TestCase):
 
     def test_canary_failure_stops_owned_child_before_pointer_change(self):
         self.canary_error = True
-        with self.assertRaisesRegex(RuntimeError, 'canary failed'):
+        with self.assertRaisesRegex(RuntimeError, 'canary failed') as error:
             self.restore()
+        self.assertIn('RECOVERY_FAILED_REQUIRES_OPERATOR', str(error.exception))
         self.links.assert_not_called()
         self.assertFalse(self.runs[0].children[0].alive)
         self.assertEqual(self.default.read_bytes(), self.snapshot)
 
     def test_second_pointer_failure_restores_first_and_stops_owned_child(self):
         self.fail_asset_link = True
-        with self.assertRaisesRegex(OSError, 'simulated link failure'):
+        with self.assertRaisesRegex(RuntimeError, 'simulated link failure') as error:
             self.restore()
+        self.assertIn('RECOVERY_FAILED_REQUIRES_OPERATOR', str(error.exception))
         self.assertEqual(self.actual_pointers, self.pointers)
         self.assertFalse(self.runs[0].children[0].alive)
         self.assertEqual(self.default.read_bytes(), self.snapshot)
@@ -322,8 +336,9 @@ class StoppedCandidateRestoreTests(unittest.TestCase):
             approval['approved'] = False
             approval_path.write_text(json.dumps(approval))
         self.port_free.side_effect = alter_after_initial_check
-        with self.assertRaisesRegex(RuntimeError, 'approval approved differs'):
+        with self.assertRaisesRegex(RuntimeError, 'approval approved differs') as error:
             self.switch.restore(config, self.root, self.port, self.output, approval_path, False, self.evidence)
+        self.assertIn('RECOVERY_FAILED_REQUIRES_OPERATOR', str(error.exception))
         self.assertEqual(self.runs[0].children, [])
         self.links.assert_not_called()
         self.assertEqual(self.default.read_bytes(), self.snapshot)

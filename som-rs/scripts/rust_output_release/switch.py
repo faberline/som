@@ -205,9 +205,10 @@ def bring_back_absent(run, config, root, port, previous, current, snapshot, poin
                 except BaseException as cleanup:
                     errors.append(f'unadmitted child exit unverified: {cleanup!r}')
         run.event('restore_failed', error=repr(failure), cleanup_errors=errors)
-        if errors:
-            raise RuntimeError(f'RECOVERY_FAILED_REQUIRES_OPERATOR: {errors}; original: {failure!r}') from failure
-        raise
+        # The prior candidate was already absent. Even if every child and
+        # pointer was cleaned up, a default service was not restored.
+        raise RuntimeError(f'RECOVERY_FAILED_REQUIRES_OPERATOR: cleanup_errors={errors}; '
+                           f'original: {failure!r}') from failure
 
 
 def execute(config, root, port, output, approval, rehearsal, selected):
@@ -357,35 +358,38 @@ def restore(config, root, port, output, approval, rehearsal, evidence):
             # exact committed receipt and prove the port is free before changing
             # either pointer. An alive owner without a listener fails closed in
             # the live identity branch above; it is not an absent process.
-            identity = current['identity']
-            rc.require(journal[-1].get('receipt') == current, 'committed receipt differs from default')
-            rc.require(identity.get('pid') == pid and identity.get('argv') == current['command']
-                       and identity.get('port') == port and identity.get('uid') == os.getuid(),
-                       'absent candidate identity differs from receipt')
-            rc.require(identity.get('cwd') == previous['identity']['cwd']
-                       and isinstance(identity.get('start'), str) and identity['start'].strip(),
-                       'absent candidate provenance differs')
-            rc.require(rc.load(evidence / 'journal.json') == journal, 'switch journal changed externally')
-            rc.require(next(p for p in sorted(evidence.iterdir()) if p.name.endswith('-previous-default.json')).read_bytes()
-                       == previous_bytes, 'previous snapshot changed externally')
-            rc.require(previous_pointers == {
-                'runtime': {'kind': 'symlink', 'target': str(Path(previous['command'][0]).parent)},
-                'assets': {'kind': 'symlink', 'target': previous['command'][3]},
-            }, 'previous pointers differ from its receipt')
-            rc.require(default_path.read_bytes() == snapshot, 'default receipt changed externally')
-            rc.require(rc.link_state(root / 'som-rs/runtime/current') == pointers['runtime']
-                       and rc.link_state(root / 'som-rs/compiler-assets/current') == pointers['assets'],
-                       'pointers changed externally')
-            rc.port_free(port)
-            rc.require(not rc.alive(pid), 'candidate PID became live; recovery refused')
-            rc.check_prerequisites(config)
-            rc.assert_current(config, current, candidate=True)
-            rc.assert_current(config, previous)
-            rc.require(rc.digest(previous['command'][0]) == previous['identity']['binary_sha256'], 'previous binary differs')
-            rc.assets_match(Path(previous['command'][3]), previous['health'])
-            if not rehearsal:
-                check_approval(approval_path, 'restore-default-8765-rust-output', config, snapshot)
-            run.event('restore_owner_absent', pid=pid, port=port, receipt_sha256=rc.sha_bytes(snapshot))
+            try:
+                identity = current['identity']
+                rc.require(journal[-1].get('receipt') == current, 'committed receipt differs from default')
+                rc.require(identity.get('pid') == pid and identity.get('argv') == current['command']
+                           and identity.get('port') == port and identity.get('uid') == os.getuid(),
+                           'absent candidate identity differs from receipt')
+                rc.require(identity.get('cwd') == previous['identity']['cwd']
+                           and isinstance(identity.get('start'), str) and identity['start'].strip(),
+                           'absent candidate provenance differs')
+                rc.require(rc.load(evidence / 'journal.json') == journal, 'switch journal changed externally')
+                rc.require(next(p for p in sorted(evidence.iterdir()) if p.name.endswith('-previous-default.json')).read_bytes()
+                           == previous_bytes, 'previous snapshot changed externally')
+                rc.require(previous_pointers == {
+                    'runtime': {'kind': 'symlink', 'target': str(Path(previous['command'][0]).parent)},
+                    'assets': {'kind': 'symlink', 'target': previous['command'][3]},
+                }, 'previous pointers differ from its receipt')
+                rc.require(default_path.read_bytes() == snapshot, 'default receipt changed externally')
+                rc.require(rc.link_state(root / 'som-rs/runtime/current') == pointers['runtime']
+                           and rc.link_state(root / 'som-rs/compiler-assets/current') == pointers['assets'],
+                           'pointers changed externally')
+                rc.port_free(port)
+                rc.require(not rc.alive(pid), 'candidate PID became live; recovery refused')
+                rc.check_prerequisites(config)
+                rc.assert_current(config, current, candidate=True)
+                rc.assert_current(config, previous)
+                rc.require(rc.digest(previous['command'][0]) == previous['identity']['binary_sha256'], 'previous binary differs')
+                rc.assets_match(Path(previous['command'][3]), previous['health'])
+                if not rehearsal:
+                    check_approval(approval_path, 'restore-default-8765-rust-output', config, snapshot)
+                run.event('restore_owner_absent', pid=pid, port=port, receipt_sha256=rc.sha_bytes(snapshot))
+            except BaseException as failure:
+                raise RuntimeError(f'RECOVERY_FAILED_REQUIRES_OPERATOR: absent-owner preflight failed: {failure!r}') from failure
         for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
             signal.signal(signum, rc.rollback_defer_signal)
         run.recovering = True
