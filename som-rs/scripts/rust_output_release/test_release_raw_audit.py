@@ -293,11 +293,14 @@ class CompleteAuditTests(ExchangeTests):
                             'profile': 'compiler-only', 'live_default_accessed': False, 'script_sha256': {}})
         config_raw = json.dumps(self.config).encode()
         write(self.root / 'run/inputs/prerequisites.json', config_raw)
-        self.report['prerequisites'] = {'sha256': audit.sha(config_raw)}
+        self.report['prerequisites'] = {'sha256': audit.sha(config_raw),
+                                        'path': self.original + 'run/inputs/prerequisites.json'}
         checks = {name: {'passed': True} for name in ('owner', 'health', 'pointers', 'previous_compiler_inputs',
                                                        'canaries', 'owner_after')}
         for i, row in enumerate(self.report['scenarios']):
             name, base = row['name'], self.root / 'run/rehearsal' / row['name']
+            original_scenario = self.original + 'run/rehearsal/' + name
+            row['root'] = original_scenario + '/root'
             pid, owner_pid = 1000 + i, 2000 + i
             identity = {'pid': owner_pid, 'binary_sha256': audit.PREVIOUS_SHA256}
             seed_raw = json.dumps({'pid': pid, 'identity': {'binary_sha256': audit.PREVIOUS_SHA256}}).encode()
@@ -308,7 +311,9 @@ class CompleteAuditTests(ExchangeTests):
             seed = {'pid': pid, 'old_pid_alive': False, 'exit_code': 0, 'stdout_file': 'stand-in/seed.stdout',
                     'stderr_file': 'stand-in/seed.stderr', 'stdout_sha256': audit.sha(stdout),
                     'stderr_sha256': audit.sha(stderr), 'receipt': 'stand-in/stale-default.json',
-                    'default_sha256': audit.sha(seed_raw)}
+                    'default_sha256': audit.sha(seed_raw),
+                    'argv': ['/opt/homebrew/Cellar/python@3.12/3.12.11_1/bin/python3.12',
+                             '-c', 'import os; print(os.getpid())']}
             fresh = json.dumps({'pid': owner_pid, 'identity': identity}).encode()
             write(base / 'switch/0002-previous-default.json', fresh)
             resume = {'passed': True, 'status': 'passed', 'old_pid': pid, 'old_pid_alive': False,
@@ -340,7 +345,16 @@ class CompleteAuditTests(ExchangeTests):
             calls = []
             for call in names:
                 script = 'resume_default.py' if call == 'resume' else 'switch.py' if call in ('switch', 'restore') else 'check_default.py'
-                argv = ['python', self.repo + '/som-rs/scripts/rust_output_release/' + script, '--port', str(row['port'])]
+                argv = [seed['argv'][0], self.repo + '/som-rs/scripts/rust_output_release/' + script,
+                        '--prerequisites', self.report['prerequisites']['path'], '--root', row['root'], '--port', str(row['port'])]
+                if call in ('resume', 'switch'):
+                    argv += ['--rehearsal', '--execute', '--output', original_scenario + '/' + call]
+                    if call == 'switch' and name != 'switch': argv += ['--inject-failure', name]
+                elif call == 'restore':
+                    argv += ['--rehearsal', '--restore', original_scenario + '/switch', '--output', original_scenario + '/restore']
+                else:
+                    expected = audit.CANDIDATE_SHA256 if name == 'switch' and call == 'check' else audit.PREVIOUS_SHA256
+                    argv += ['--expect-binary-sha256', expected, '--output', original_scenario + '/' + call]
                 for stream in ('stdout', 'stderr'): write(base / (call + '.' + stream), b'')
                 calls.append({'name': call, 'argv': argv, 'exit_code': 1 if call == 'switch' and name != 'switch' else 0,
                               'started_at': 1, 'ended_at': 2, 'stdout_sha256': audit.sha(b''), 'stderr_sha256': audit.sha(b'')})
@@ -406,6 +420,11 @@ class CompleteAuditTests(ExchangeTests):
         value['owner']['pid'] += 1
         path.write_text(json.dumps(value))
         with self.assertRaisesRegex(ValueError, 'resumed owner binding differs'): self.raw()
+
+    def test_modified_injection_argv_refused(self):
+        self.report['scenarios'][1]['calls'][0]['argv'][-1] = 'after_start'
+        (self.root / 'run/rehearsal/rehearsal.json').write_text(json.dumps(self.report))
+        with self.assertRaisesRegex(ValueError, 'call argv mismatch'): self.raw()
 
 
 class GithubIdentityTests(unittest.TestCase):

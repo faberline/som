@@ -384,6 +384,9 @@ def check_raw(root, source, head):
     config_file = regular(root, 'run/inputs/prerequisites.json')
     require(digest(config_file) == report['prerequisites']['sha256'], 'prerequisites hash mismatch')
     config = json.loads(config_file.read_bytes())
+    original_root = config['repo'] + '/.local/rust-compiler-goal/acceptance/react-131'
+    require(report['prerequisites']['path'] == original_root + '/run/inputs/prerequisites.json',
+            'original prerequisites path mismatch')
     candidate = config['candidate']['binary']['sha256']
     previous = config['previous']['binary']['sha256']
     require(candidate == summary['candidate_binary_sha256'] == CANDIDATE_SHA256
@@ -404,9 +407,13 @@ def check_raw(root, source, head):
         require(type(port) is int and 18919 <= port <= 18999 and port not in (8765, 18765), 'bad QA port')
         require(row['passed'] is True and row['problems'] == [], 'failed scenario')
         base = 'run/rehearsal/' + name
+        original_scenario = original_root + '/run/rehearsal/' + name
+        require(row['root'] == original_scenario + '/root', 'scenario root mismatch')
         seed = row['offline_seed']
         require(seed['exit_code'] == 0 and seed['old_pid_alive'] is False
                 and type(seed['pid']) is int and seed['pid'] > 1, 'seed mismatch')
+        require(seed['argv'][0] == '/opt/homebrew/Cellar/python@3.12/3.12.11_1/bin/python3.12'
+                and seed['argv'][1:] == ['-c', 'import os; print(os.getpid())'], 'seed argv mismatch')
         for stream in ('stdout', 'stderr'):
             raw = regular(root, base + '/' + seed[stream + '_file']).read_bytes()
             require(sha(raw) == seed[stream + '_sha256'], 'seed stream mismatch')
@@ -421,12 +428,20 @@ def check_raw(root, source, head):
         for call in calls:
             callname = call['name']
             require((call['exit_code'] != 0) == (callname == 'switch' and name != 'switch'), 'call exit mismatch')
-            require(isinstance(call['argv'], list) and len(call['argv']) >= 4, 'invalid argv')
             expected_script = 'resume_default.py' if callname == 'resume' else 'switch.py' if callname in ('switch', 'restore') else 'check_default.py'
-            require(call['argv'][1] == config['repo'] + '/som-rs/scripts/rust_output_release/' + expected_script,
-                    'call source path mismatch')
-            require('--port' in call['argv'] and call['argv'][call['argv'].index('--port') + 1] == str(port),
-                    'call port mismatch')
+            argv = [seed['argv'][0], config['repo'] + '/som-rs/scripts/rust_output_release/' + expected_script,
+                    '--prerequisites', report['prerequisites']['path'], '--root', row['root'], '--port', str(port)]
+            if callname in ('resume', 'switch'):
+                argv += ['--rehearsal', '--execute', '--output', original_scenario + '/' + callname]
+                if callname == 'switch' and name != 'switch':
+                    argv += ['--inject-failure', name]
+            elif callname == 'restore':
+                argv += ['--rehearsal', '--restore', original_scenario + '/switch',
+                         '--output', original_scenario + '/restore']
+            else:
+                check_sha = candidate if name == 'switch' and callname == 'check' else previous
+                argv += ['--expect-binary-sha256', check_sha, '--output', original_scenario + '/' + callname]
+            require(call['argv'] == argv, 'call argv mismatch')
             require(call['started_at'] <= call['ended_at'], 'call time mismatch')
             for stream in ('stdout', 'stderr'):
                 require(digest(regular(root, base + '/' + callname + '.' + stream)) == call[stream + '_sha256'],
