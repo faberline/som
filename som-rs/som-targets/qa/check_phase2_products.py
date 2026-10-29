@@ -352,6 +352,10 @@ def gated_product_class() -> type:
             command = super().test_command()
             if Gate.current is None:
                 return command
+            if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+                from full_product_context import tool_command
+                return tool_command(pathlib.Path(__file__).resolve(),
+                                    ["tee", str(Gate.current.test_log()), "--", *command])
             return [sys.executable, str(pathlib.Path(__file__).resolve()), "tee", str(Gate.current.test_log()),
                     "--", *command]
 

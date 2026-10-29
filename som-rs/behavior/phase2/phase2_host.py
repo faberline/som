@@ -27,6 +27,9 @@ HERE = pathlib.Path(__file__).resolve().parent
 SOM_RS = HERE.parent.parent
 TOOLCHAIN = json.loads((SOM_RS / "contracts" / "rust-output-v1" / "toolchain.json").read_text())
 CARGO = pathlib.Path(TOOLCHAIN["rust"]["bin_dir"]) / "cargo"
+if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+    import full_product_context as hosted_products
+    CARGO = hosted_products.rust_bin() / "cargo"
 FORBIDDEN_PORTS = frozenset({8765, 18765})
 FRAMEWORK_FALLBACK = {404: {"detail": "Not Found"}, 405: {"detail": "Method Not Allowed"}}
 PROBE_ID = 2147483000
@@ -239,6 +242,10 @@ class PythonProduct:
 
     def prepare(self, env: dict) -> None:
         from verify_related import run
+        if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+            self.python = str(hosted_products.prepare_python(self.root))
+            env.update(hosted_products.product_environment(self.root, env))
+            return
         run(["uv", "sync", "--python", "3.12"], cwd=self.root, env=env)
 
     def serve_command(self, package: str, port: int) -> list[str]:
@@ -289,6 +296,8 @@ class RustProduct:
         self.surface_checks: list[dict] = []
 
     def cargo_env(self, env: dict) -> dict:
+        if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+            env = {**env, **hosted_products.rust_environment()}
         return {**env, "CARGO_NET_OFFLINE": "true", "CARGO_TARGET_DIR": str(self.target_dir),
                 "PATH": str(CARGO.parent) + os.pathsep + env.get("PATH", "")}
 

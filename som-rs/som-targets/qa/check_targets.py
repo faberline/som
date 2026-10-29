@@ -44,6 +44,7 @@ import collections
 import concurrent.futures
 import hashlib
 import json
+import os
 import pathlib
 import sys
 import urllib.error
@@ -236,6 +237,9 @@ def sources() -> list[dict]:
         cases.append({"id": case["id"], "group": "coverage_cases", "prompt_file_sha256": case["prompt_file_sha256"],
                       "prompt": json.loads((COVERAGE.parent / case["prompt"]).read_text()),
                       "cnl": (COVERAGE.parent / case["cnl"]).read_text()})
+    if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+        from full_product_context import legacy_cases
+        return cases + legacy_cases() + rejections()
     inventory = json.loads((LEGACY / "inventory-003.json").read_text())
     for index, group in enumerate(inventory["groups"]):
         request = json.loads((LEGACY / "run-005" / f"{index:04d}" / "assemble.request.json").read_text())

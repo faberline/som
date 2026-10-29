@@ -38,6 +38,7 @@ jobs:
           python3 -I -S -B som-rs/scripts/hosted_readiness/product_python/test_qualify_python.py
           python3 -I -S -B som-rs/scripts/hosted_readiness/product_python/test_produce_wheels.py
           python3 -I -S -B som-rs/scripts/hosted_readiness/product_runtime/test_provision_cargo.py
+          python3 -I -S -B som-rs/scripts/hosted_readiness/test_run_full_products.py
 
   python-dependency-iteration:
     name: Audited runtime bytes for later GitHub tests (not product readiness)
@@ -176,6 +177,14 @@ jobs:
             ${{ runner.temp }}/som-python-wheel-qualification/closures/*/publisher-metadata
             ${{ runner.temp }}/som-python-wheel-qualification/closures/*/wheels
             ${{ runner.temp }}/som-python-wheel-qualification/closures/*/wheel-audits
+      - name: Preserve the small wheel failure and completion report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: python-wheel-qualification-summary
+          if-no-files-found: warn
+          retention-days: 30
+          path: ${{ runner.temp }}/som-python-wheel-qualification/receipt.json
 
   cargo-dependency-iteration:
     name: Complete Rust registry closure (product gates unrun)
@@ -334,3 +343,402 @@ jobs:
           path: |
             ${{ runner.temp }}/som-rust-product-tool-tests/fixtures.log
             ${{ runner.temp }}/som-rust-product-tools-qualification
+
+  recorded-candidate-carrier:
+    name: Recover only byte-identical recorded f59 compiler files
+    needs: dependency-helper-fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      actions: read
+    env:
+      RUSTUP_TOOLCHAIN: 1.96.1
+      CARGO_TERM_COLOR: never
+      CARGO_BUILD_JOBS: 2
+      RUST_BACKTRACE: 1
+      PYTHONDONTWRITEBYTECODE: "1"
+      SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+      HELPER_REVISION: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Fetch the exact original compiler source as metadata
+        run: git fetch --no-tags --depth=1 origin f59e28d910ff4adb16e3becfdc82bd2978ca84fa
+      - name: Create the narrow raw Git source launcher
+        run: |
+          umask 077
+          set -o noclobber
+          cat > "$RUNNER_TEMP/som-carrier-bound-source.py" <<'PY'
+          import os, pathlib, re, stat, subprocess, sys, types
+          repo, revision, name = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+          assert repo.is_absolute() and re.fullmatch('[0-9a-f]{40}', revision)
+          assert name in {'som-rs/scripts/hosted_readiness/dependency_candidate.py',
+                          'som-rs/scripts/hosted_readiness/provision_native.py',
+                          'som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py'}
+          def git(*args):
+              return subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(repo), *args],
+                                             stderr=subprocess.DEVNULL)
+          assert git('rev-parse', '--verify', 'HEAD^{commit}').decode().strip() == revision
+          entry = git('ls-tree', '-z', revision, '--', name)
+          assert entry.count(b'\0') == 1 and entry.endswith(b'\t' + name.encode() + b'\0')
+          assert entry.startswith((b'100644 blob ', b'100755 blob '))
+          path = repo / name
+          assert not any(part.is_symlink() for part in (path, *path.parents))
+          with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), 'rb') as stream:
+              info = os.fstat(stream.fileno())
+              assert stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_size <= 2**20
+              body = stream.read(2**20 + 1)
+          assert len(body) <= 2**20 and body == git('cat-file', 'blob', revision + ':' + name)
+          module = types.ModuleType('__main__')
+          module.__file__, module.__package__, module.__cached__ = str(path), '', None
+          sys.modules['__main__'], sys.argv = module, [str(path), *sys.argv[4:]]
+          exec(compile(body, str(path), 'exec', dont_inherit=True), module.__dict__)
+          PY
+      - name: Restore the complete recorded compiler and assembly proof
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: "40805208879"
+          artifact-ids: "12868189241"
+          github-token: ${{ github.token }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/som-carrier-assembly-proof
+      - name: Require all original compiler inputs before building
+        env:
+          HELPER_REVISION: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -I -S -B "$RUNNER_TEMP/som-carrier-bound-source.py" \
+            "$GITHUB_WORKSPACE" "$HELPER_REVISION" \
+            som-rs/scripts/hosted_readiness/dependency_candidate.py verify \
+            --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" \
+            --candidate-revision f59e28d910ff4adb16e3becfdc82bd2978ca84fa \
+            --assembly-root "$RUNNER_TEMP/som-carrier-assembly-proof/_temp/som-unsealed-native-compile"
+          printf 'CARGO_TARGET_DIR=%s/som-experimental-cargo-target\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Install the original native compiler toolchain
+        run: |
+          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt 2>&1 | tee carrier-tools.log
+          rustc -vV | tee -a carrier-tools.log
+          cargo -vV | tee -a carrier-tools.log
+          rustfmt --version | tee -a carrier-tools.log
+          sha256sum "$(rustup which rustc)" "$(rustup which cargo)" "$(rustup which rustfmt)" | tee -a carrier-tools.log
+      - name: Fetch only the original locked compiler dependencies
+        run: |
+          cargo fetch --locked --manifest-path som-rs/Cargo.toml 2>&1 | tee carrier-fetch.log
+          cargo fetch --locked --manifest-path som-rs/som-targets/Cargo.toml 2>&1 | tee -a carrier-fetch.log
+      - name: Provision the original verified native formatters
+        run: |
+          python3 -I -S -B "$RUNNER_TEMP/som-carrier-bound-source.py" \
+            "$GITHUB_WORKSPACE" "$HELPER_REVISION" \
+            som-rs/scripts/hosted_readiness/provision_native.py \
+            --manifest som-rs/contracts/native-tools-v1/artifacts.json \
+            --out "$RUNNER_TEMP/som-native-tools" \
+            --rustfmt "$(rustup which rustfmt)" 2>&1 | tee carrier-native.log
+          cat "$RUNNER_TEMP/som-native-tools/github.env" >> "$GITHUB_ENV"
+      - name: Recreate the original compiler asset files
+        run: |
+          cargo run --locked --offline --manifest-path som-rs/Cargo.toml \
+            --bin som-compiler-assets -- \
+            --destination som-rs/compiler-assets/current \
+            --formatter "$SOM_RUFF" 2>&1 | tee carrier-assets.log
+      - name: Build once and record the actual new binary hash
+        run: |
+          cargo build --locked --offline --manifest-path som-rs/som-targets/Cargo.toml --bin som 2>&1 | tee carrier-build.log
+          sha256sum "$CARGO_TARGET_DIR/debug/som" | tee -a carrier-build.log
+      - name: Recheck source and require exact recorded binary, assets and tools
+        env:
+          HELPER_REVISION: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 -I -S -B "$RUNNER_TEMP/som-carrier-bound-source.py" \
+            "$GITHUB_WORKSPACE" "$HELPER_REVISION" \
+            som-rs/scripts/hosted_readiness/dependency_candidate.py verify \
+            --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" \
+            --candidate-revision f59e28d910ff4adb16e3becfdc82bd2978ca84fa \
+            --assembly-root "$RUNNER_TEMP/som-carrier-assembly-proof/_temp/som-unsealed-native-compile"
+          python3 -I -S -B "$RUNNER_TEMP/som-carrier-bound-source.py" \
+            "$GITHUB_WORKSPACE" "$HELPER_REVISION" \
+            som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py \
+            --byte-identical-rebuild \
+            --candidate-revision f59e28d910ff4adb16e3becfdc82bd2978ca84fa \
+            --compile-manifest "$RUNNER_TEMP/som-carrier-assembly-proof/_temp/som-unsealed-native-compile/manifest.json" \
+            --binary "$CARGO_TARGET_DIR/debug/som" \
+            --assets "$GITHUB_WORKSPACE/som-rs/compiler-assets/current" \
+            --native "$RUNNER_TEMP/som-native-tools" --rustfmt "$SOM_RUSTFMT" \
+            --out "$RUNNER_TEMP/som-tested-candidate-carrier"
+      - name: Verify unchanged dependency locks
+        if: always()
+        run: git diff --exit-code -- som-rs/Cargo.lock som-rs/som-targets/Cargo.lock
+      - name: Preserve the exact recovered carrier and all build evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: recorded-f59-candidate-carrier
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            carrier-tools.log
+            carrier-fetch.log
+            carrier-native.log
+            carrier-assets.log
+            carrier-build.log
+            ${{ runner.temp }}/som-tested-candidate-carrier
+
+  full-product-preparation:
+    name: Fresh product gates (${{ matrix.stage }} ${{ matrix.index }}/${{ matrix.count }})
+    needs: [python-dependency-iteration, cargo-dependency-iteration, product-rust-tool-qualification]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - stage: python-quality
+            index: 0
+            count: 8
+          - stage: python-quality
+            index: 1
+            count: 8
+          - stage: python-quality
+            index: 2
+            count: 8
+          - stage: python-quality
+            index: 3
+            count: 8
+          - stage: python-quality
+            index: 4
+            count: 8
+          - stage: python-quality
+            index: 5
+            count: 8
+          - stage: python-quality
+            index: 6
+            count: 8
+          - stage: python-quality
+            index: 7
+            count: 8
+          - stage: phase1
+            index: 0
+            count: 1
+          - stage: phase2-python
+            index: 0
+            count: 8
+          - stage: phase2-python
+            index: 1
+            count: 8
+          - stage: phase2-python
+            index: 2
+            count: 8
+          - stage: phase2-python
+            index: 3
+            count: 8
+          - stage: phase2-python
+            index: 4
+            count: 8
+          - stage: phase2-python
+            index: 5
+            count: 8
+          - stage: phase2-python
+            index: 6
+            count: 8
+          - stage: phase2-python
+            index: 7
+            count: 8
+          - stage: phase2-rust
+            index: 0
+            count: 16
+          - stage: phase2-rust
+            index: 1
+            count: 16
+          - stage: phase2-rust
+            index: 2
+            count: 16
+          - stage: phase2-rust
+            index: 3
+            count: 16
+          - stage: phase2-rust
+            index: 4
+            count: 16
+          - stage: phase2-rust
+            index: 5
+            count: 16
+          - stage: phase2-rust
+            index: 6
+            count: 16
+          - stage: phase2-rust
+            index: 7
+            count: 16
+          - stage: phase2-rust
+            index: 8
+            count: 16
+          - stage: phase2-rust
+            index: 9
+            count: 16
+          - stage: phase2-rust
+            index: 10
+            count: 16
+          - stage: phase2-rust
+            index: 11
+            count: 16
+          - stage: phase2-rust
+            index: 12
+            count: 16
+          - stage: phase2-rust
+            index: 13
+            count: 16
+          - stage: phase2-rust
+            index: 14
+            count: 16
+          - stage: phase2-rust
+            index: 15
+            count: 16
+    defaults:
+      run:
+        shell: bash
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      CANDIDATE_REVISION: f59e28d910ff4adb16e3becfdc82bd2978ca84fa
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Fetch the exact recorded candidate source
+        run: git fetch --no-tags --depth=1 origin f59e28d910ff4adb16e3becfdc82bd2978ca84fa
+      - name: Run complete-scope and join refusal fixtures on GitHub
+        working-directory: ${{ runner.temp }}
+        run: |
+          python3 -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/test_run_full_products.py"
+      - name: Download the fixed independently audited runtime transport
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: "40740849594"
+          artifact-ids: "12840425819"
+          github-token: ${{ github.token }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/som-full-runtime-transport
+      - name: Restore all native runtime bytes at the admitted prefix
+        env:
+          HELPER_REVISION: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+          SOM_RUNTIME_ACTIONS_TOKEN: ${{ github.token }}
+        working-directory: ${{ runner.temp }}
+        run: |
+          python3 -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py" \
+            --repo "$GITHUB_WORKSPACE" --source-revision "$HELPER_REVISION" \
+            --artifact-root "$RUNNER_TEMP/som-full-runtime-transport" \
+            --out "$RUNNER_TEMP/som-product-runtime-qualification"
+          cat "$RUNNER_TEMP/som-product-runtime-qualification/github.env" >> "$GITHUB_ENV"
+      - name: Qualify the exact complete six-tool Rust product profile
+        env:
+          HELPER_REVISION: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+        working-directory: ${{ runner.temp }}
+        run: |
+          python3 -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/qualify_rust_tools.py" \
+            --repo "$GITHUB_WORKSPACE" --source-revision "$HELPER_REVISION" \
+            --out "$RUNNER_TEMP/som-rust-product-tools-qualification"
+      - name: Download the fixed complete f59 compile and assembly artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: "40805208879"
+          artifact-ids: "12868189241"
+          github-token: ${{ github.token }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/som-full-assembly-transport
+      - name: Download the current helper wheel closure qualification
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: python-wheel-closure-qualification
+          path: ${{ runner.temp }}/som-full-wheel-transport
+      - name: Download the current helper complete Cargo closure
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: product-cargo-closure-candidate
+          path: ${{ runner.temp }}/som-full-cargo-transport
+      - name: Run every named slot of this shard with fresh product commands
+        env:
+          HELPER_REVISION: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          PRODUCT_STAGE: ${{ matrix.stage }}
+          SHARD_INDEX: ${{ matrix.index }}
+          SHARD_COUNT: ${{ matrix.count }}
+        working-directory: ${{ runner.temp }}
+        run: |
+          # Keep the original M3 fixture socket location on this disposable runner.
+          sudo install -d -m 1777 /private/tmp
+          "$SOM_PRODUCT_PYTHON" -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/run_full_products.py" \
+            --mode experimental-preparation --stage "$PRODUCT_STAGE" \
+            --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" \
+            --candidate-revision "$CANDIDATE_REVISION" \
+            --assembly-root "$RUNNER_TEMP/som-full-assembly-transport/_temp/som-unsealed-native-compile" \
+            --wheel-root "$RUNNER_TEMP/som-full-wheel-transport/som-python-wheel-qualification" \
+            --cargo-root "$RUNNER_TEMP/som-full-cargo-transport/closure" \
+            --runtime-root "$RUNNER_TEMP/som-product-runtime-qualification" \
+            --rust-tools-root "$RUNNER_TEMP/som-rust-product-tools-qualification" \
+            --shard-index "$SHARD_INDEX" --shard-count "$SHARD_COUNT" \
+            --out "$RUNNER_TEMP/som-full-product-run"
+      - name: Preserve all product rows, full command logs and failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: full-product-${{ matrix.stage }}-${{ matrix.index }}
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/som-full-product-run
+            ${{ runner.temp }}/som-rust-product-tools-qualification/receipt.json
+            ${{ runner.temp }}/som-rust-product-tools-qualification/logs
+            ${{ runner.temp }}/som-product-runtime-qualification/receipt.json
+
+  full-product-preparation-join:
+    name: Join every required named product slot (preparation only)
+    needs: full-product-preparation
+    if: always()
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: full-product-*
+          path: ${{ runner.temp }}/som-full-product-shards
+      - name: Require complete ordered disjoint cohorts and identical artifact identities
+        working-directory: ${{ runner.temp }}
+        shell: bash
+        run: |
+          python3 -I -S -B - "$RUNNER_TEMP/som-full-product-shards" > "$RUNNER_TEMP/som-full-product-receipts.list" <<'PY'
+          import pathlib, stat, sys
+          root = pathlib.Path(sys.argv[1])
+          expected = ['full-product-' + stage + '-' + str(index)
+                      for stage, count in (('python-quality', 8), ('phase1', 1),
+                                           ('phase2-python', 8), ('phase2-rust', 16))
+                      for index in range(count)]
+          assert len(expected) == 33 and {path.name for path in root.iterdir()} == set(expected)
+          for name in expected:
+              path = root / name / 'som-full-product-run/result.json'
+              assert not any(part.is_symlink() for part in (path, *path.parents))
+              info = path.stat()
+              assert stat.S_ISREG(info.st_mode) and info.st_nlink == 1
+              sys.stdout.buffer.write(str(path).encode() + b'\0')
+          PY
+          mapfile -d '' receipts < "$RUNNER_TEMP/som-full-product-receipts.list"
+          python3 -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/run_full_products.py" \
+            --join --out "$RUNNER_TEMP/som-full-product-join.json" "${receipts[@]}"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: full-product-preparation-join
+          path: ${{ runner.temp }}/som-full-product-join.json
+          if-no-files-found: error
