@@ -91,7 +91,12 @@ def derive(map_raw, input_packages, input_root, evidence_packages, evidence_root
         need((source, i) not in ids); ids.add((source, i))
         prefix = (f'.local/rust-compiler-goal/acceptance/public-products-003b/{i:03d}' if source == 'public'
                   else f'.local/rust-compiler-goal/acceptance/legacy544/run-005/{i:04d}')
-        request = checked(input_root, prefix + '/assemble.request.raw', old)
+        request_path = prefix + '/assemble.request.raw'
+        if request_path in old:
+            request = checked(input_root, request_path, old)
+        else:
+            request_obj = parse(checked(input_root, prefix + '/assemble.request.json', old))
+            request = json.dumps(request_obj, ensure_ascii=False, separators=(',', ':')).encode()
         need(sha(request) == row['historical_request_sha256'])
         need(row['historical_raw_path'] == prefix + '/assemble.response.raw.b64'
              and row['historical_json_path'] == prefix + '/assemble.response.json')

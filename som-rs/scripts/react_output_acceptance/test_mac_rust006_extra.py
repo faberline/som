@@ -398,6 +398,23 @@ class HistoricalReconstructionTests(unittest.TestCase):
                     target.write_bytes(original + b'!')
                     with self.assertRaises(recon.Refused): run()
                     target.write_bytes(original)
+            # Legacy sources retain JSON requests, not raw request files. Bind the
+            # approved JSON bytes before reproducing the compact request body.
+            request_json = enc({'original': True})
+            request_compact = b'{"original":true}'
+            json_name = prefix + '/assemble.request.json'
+            put(restored / json_name, request_json)
+            fallback_manifest = enc(manifest(json_name, request_json, b'old'))
+            put(inputs / 'package-000.manifest.json', fallback_manifest)
+            old_index = enc({'version':'som.m6-input-index.v1','packages':[{'archive':'package-000.sealed','manifest':'package-000.manifest.json','manifest_sha256':h(fallback_manifest)}]})
+            put(inputs / 'inputs-index.json', old_index)
+            mapping['historical_input_index_sha256'] = h(old_index)
+            mapping['reconstructed_cases'][0]['historical_request_sha256'] = h(request_compact)
+            raw_map = enc(mapping)
+            self.assertEqual(run()[prefix+'/assemble.response.json'], wrapped)
+            (restored / json_name).write_bytes(request_json + b'!')
+            with self.assertRaises(recon.Refused): run()
+            (restored / json_name).write_bytes(request_json)
             changed = raw_map.replace(h(wire).encode(), b'0'*64)
             with self.assertRaises(recon.Refused):
                 recon.derive(changed, inputs, restored, sealed, later, map_sha=h(raw_map), input_sha=h(old_index), evidence_sha=h(new_index), expected_count=1)
