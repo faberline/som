@@ -498,6 +498,35 @@ class ParityIndependentChecks(unittest.TestCase):
             events[2]['state']='unverified';(life/'receipt.json').write_text(json.dumps({'version':'som.m6-mac-parity-capture.v1','recording_errors':[],'events':events}))
             with self.assertRaises(ValueError):audit.audit_product_owners(http,manifest,groups)
 
+    def test_macos_product_process_actual_listener_and_wait(self):
+        import socket, subprocess, time
+        from unittest import mock
+        import audit_mac_parity as audit
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve(); life=root/'lifecycle';life.mkdir();http=life/'product-http';http.mkdir()
+            cwd=root/'rs_live_case';cwd.mkdir(); executable=cwd/'som_app'
+            with socket.socket() as probe:
+                probe.bind(('127.0.0.1',0));port=probe.getsockname()[1]
+            executable.write_text('#!'+sys.executable+'\nimport http.server\nhttp.server.HTTPServer(("127.0.0.1",'+str(port)+'),http.server.BaseHTTPRequestHandler).serve_forever()\n')
+            executable.chmod(0o755)
+            observer=parity.TrackingRecorder(life)
+            with mock.patch.object(subprocess,'Popen',observer.popen):
+                proc=observer.popen([str(executable)],cwd=str(cwd),stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                try:
+                    for _ in range(100):
+                        try:
+                            with socket.create_connection(('127.0.0.1',port),timeout=.1): break
+                        except OSError:time.sleep(.05)
+                    else:self.fail('fixture process did not listen')
+                    observer.snapshot(proc.pid,'product-ready',port);start=len(observer.events)-1
+                finally:
+                    proc.terminate();proc.wait(timeout=10)
+                observer.snapshot(proc.pid,'product-stopped',port);stop=len(observer.events)-1
+            (life/'receipt.json').write_text(json.dumps({'version':'som.m6-mac-parity-capture.v1','recording_errors':observer.errors,'events':observer.events}))
+            base='http://127.0.0.1:'+str(port)
+            owner={'id':1,'case':'live-case','target':'rust','base':base,'pid':proc.pid,'start_event':start,'stop_event':stop}
+            self.assertEqual(audit.audit_product_owners(http,{'owners':[owner]},{('live-case','rust'):[{'owner':1,'base':base}]}),1)
+
     def test_missing_product_capture_refused(self):
         import audit_mac_parity as audit
         from unittest import mock
