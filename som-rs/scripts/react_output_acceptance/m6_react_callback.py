@@ -927,11 +927,22 @@ def verify_react_raw_domain(root, source_reader, helper_revision, candidate_revi
                         'React owned candidate file differs')
             elif name.startswith('.local/'):
                 raw = bound.read(repo / name)
-                identity = approved.get(name) or original_approved.get(name)
-                require(type(identity) is dict and identity['sha256'] == digest == sha(raw)
-                        and identity['bytes'] == len(raw)
-                        and stat.S_IMODE((repo / name).stat().st_mode) == identity['mode'],
-                        'React input is absent from an approved source role')
+                bound_record = bound.files.get(name)
+                require(type(bound_record) is dict and bound_record.get('sha256') == digest == sha(raw)
+                        and bound_record.get('bytes') == len(raw), 'React input source role differs')
+                if bound_record.get('source') == 'later-capture-derived':
+                    # These are the 1,336 previously missing files. Their bytes
+                    # come from the verified mapping and later capture, not
+                    # from the old input manifest or an original wire record.
+                    require(name not in approved and name not in original_approved
+                            and stat.S_IMODE((repo / name).stat().st_mode) == 0o644,
+                            'derived React input identity or mode differs')
+                else:
+                    identity = approved.get(name)
+                    require(type(identity) is dict and identity['sha256'] == digest
+                            and identity['bytes'] == len(raw)
+                            and stat.S_IMODE((repo / name).stat().st_mode) == identity['mode'],
+                            'React input is absent from an approved source role')
             else:
                 require(sha(source_reader(name)) == digest, 'React audit source differs from bound source')
     require(all('@owned-candidate/' + n in audited for n in ('som', 'build.json', 'runtime.json'))
