@@ -407,6 +407,36 @@ class OwnedCandidateTests(unittest.TestCase):
             events[7]['stdout_sha256']=hashlib.sha256(after.read_bytes()).hexdigest();save()
             with self.assertRaises(ValueError):audit.audit(out,candidate)
 
+    def test_real_macos_owned_candidate_audit(self):
+        import hashlib, socket, subprocess, time
+        import owned_candidate, audit_candidate_owner
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();candidate=root/'candidate';candidate.mkdir();(candidate/'assets').mkdir()
+            source=root/'fixture.c';source.write_text('#include <sys/types.h>\n#include <sys/socket.h>\n#include <netinet/in.h>\n#include <unistd.h>\n#include <stdlib.h>\nint main(void){int s=socket(AF_INET,SOCK_STREAM,0);int v=1;setsockopt(s,SOL_SOCKET,SO_REUSEADDR,&v,sizeof(v));struct sockaddr_in a={0};a.sin_family=AF_INET;a.sin_port=htons(18919);a.sin_addr.s_addr=htonl(INADDR_LOOPBACK);if(bind(s,(void*)&a,sizeof(a))||listen(s,4))return 2;for(;;)pause();}\n')
+            binary=candidate/'som';subprocess.run(['cc',str(source),'-o',str(binary)],check=True,timeout=30)
+            preparer=root/'preparer.py'
+            preparer.write_text('import subprocess,sys\nfrom pathlib import Path\nc=Path(sys.argv[1])\nsubprocess.Popen([str(c/"som"),"serve","--assets",str(c/"assets"),"--port","18919"],cwd=c,start_new_session=True)\n')
+            owner=owned_candidate.CandidateOwner(root,candidate,18919);env=dict(os.environ)
+            try:
+                self.assertEqual(owner.run_preparer(preparer,[str(candidate)],env,timeout=10),0)
+                for _ in range(100):
+                    try:
+                        with socket.create_connection(('127.0.0.1',18919),timeout=.1):break
+                    except OSError:time.sleep(.05)
+                else:self.fail('fake candidate failed to listen')
+                digest=hashlib.sha256(binary.read_bytes()).hexdigest()
+                (candidate/'runtime.json').write_text(json.dumps({'pid':owner.process.pid,'argv':owner.argv,'port':18919,'binary_sha256':digest}))
+                (candidate/'build.json').write_text(json.dumps({'binary_sha256':digest}))
+                cleanup=hosted.stop_owned_candidate(root,env,owner)
+                self.assertTrue(cleanup['ownership_verified']);self.assertTrue(cleanup['direct_wait']['completed'])
+                self.assertTrue(cleanup['stopped'])
+                evidence=audit_candidate_owner.audit(root,candidate)
+                self.assertEqual(evidence['candidate_pid'],owner.process.pid)
+                self.assertEqual(evidence['unobserved_descendants'],'unverified')
+            finally:
+                if owner.process is not None and owner.process.poll() is None:
+                    owner.process.terminate();owner.process.wait(timeout=10)
+
     def test_preparer_child_remains_owned_and_has_real_wait(self):
         import subprocess
         import owned_candidate
