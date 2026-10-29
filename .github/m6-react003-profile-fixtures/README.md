@@ -1,0 +1,7 @@
+# DRAFT candidate binding; not acceptance
+
+This isolated helper differs from `../source/linux_qa_profile.py` only in the binding comment and `PROFILE_SHA256`. It is not a sealed contract and must not be deployed or substituted into the repo before independent review and a genuine React003 process. The helper's successful validation does not check for a sealed receipt. Never treat its result as permission to use this profile as product authority. The production formatter identity stays unchanged.
+
+`qa-profile.draft.json` is the exact original profile. The GH-only synthetic tests exercise its real raw digest, exact fields and profile validation. The positive case simulates node/npm/cache identity observations and does not verify artifact bytes. Negative cases test identity rejections; one node case hashes actual wrong synthetic bytes and one cache case really scans the synthetic cache. The source-field test temporarily changes the expected digest only to isolate the independent semantic-equality check; production must never derive its authority hash from incoming data. The test does not execute the synthetic node or npm.
+
+The fixture does not verify artifact provenance, actual Ubuntu image identity, or product acceptance. The previous setup-log and environment-report image values differ; preserve both and keep the actual image identity unverified. The collector, auditor, review, source closure, sealed receipt, shared dependencies and same-candidate GH acceptance are all pending. All test execution belongs on GitHub-hosted Ubuntu 22.04.

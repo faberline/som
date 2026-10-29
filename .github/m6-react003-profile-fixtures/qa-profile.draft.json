@@ -1,0 +1,33 @@
+{
+  "version": "som.react-linux-qa-profile.v1",
+  "host": "ubuntu-22.04-x86_64",
+  "source": {
+    "commit": "62637173ffeecde2655482377a218b22bf54618a",
+    "run": 40817465924,
+    "artifact": 12873066929,
+    "artifact_zip_sha256": "10a7f2bf058be21c670ddac89afece05c305ee717b9a879de4c95256fd6fe2dc",
+    "tar_sha256": "5f453d9e3f4fc17e36c9c16d17dacc157a34915fc7c9e477f49da3e81b807171"
+  },
+  "node": {
+    "path": "node/bin/node",
+    "sha256": "3de740a941a630439b22b79aafb383f4912b76354a2694765e8d59a033746538"
+  },
+  "npm": {
+    "root": "node/lib/node_modules/npm",
+    "sha256": "69965a8f2a75cad99018e333ff1819bdc8cbf4f17570e77f24ad5f95aa57e558",
+    "files": 1921,
+    "symlinks": 0
+  },
+  "cache": {
+    "path": "npm-cache-new",
+    "sha256": "5267851624684b07307609f59d0b13705bd7934a1fd59bde2045463a3ee6ddda",
+    "files": 246,
+    "symlinks": 0
+  },
+  "prettier": {
+    "sha256": "f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299",
+    "files": 56,
+    "symlinks": 0
+  },
+  "reference_formatter_sha256": "636bd4a26884ea92873af81bf4fd5bbc0c065157e645c3919658a4d0bc29c0e8"
+}

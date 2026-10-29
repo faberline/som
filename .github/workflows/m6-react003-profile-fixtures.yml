@@ -1,0 +1,30 @@
+name: M6 React profile binding fixtures (not acceptance)
+on:
+  push:
+    branches:
+      - codex/m6-react003-profile-fixtures-20261029
+permissions:
+  contents: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bind reviewed profile and fixture bytes
+        working-directory: .github/m6-react003-profile-fixtures
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          for entry in 'linux_qa_profile.py e4dc9fd9530e3e5b1d789d56947d8b245c21c23adcf6063e2118078233d23689' 'qa-profile.draft.json e050319a7b91a56b01167e720fc4b5f08eb92b4fb1df01c00f13422091d7d6a0' 'test_draft_binding.py ae6d1f5d0e834270b1947356acfefab38b4317c3339f37bc86f31778da133a9f'; do
+            set -- $entry
+            test "$(sha256sum "$1" | cut -d ' ' -f 1)" = "$2"
+            test "$(git show "$GITHUB_SHA:.github/m6-react003-profile-fixtures/$1" | sha256sum | cut -d ' ' -f 1)" = "$2"
+          done
+      - name: Run profile binding fixtures
+        working-directory: .github/m6-react003-profile-fixtures
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest -v test_draft_binding
