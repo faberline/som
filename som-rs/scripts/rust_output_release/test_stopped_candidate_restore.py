@@ -244,6 +244,13 @@ class StoppedCandidateRestoreTests(unittest.TestCase):
         self.assertTrue(self.runs[0].children[0].alive)
         self.assertEqual(self.default.read_bytes(), self.snapshot)
 
+    def test_live_approval_path_is_rechecked_after_lock(self):
+        approval_path = self.root / 'approval.json'
+        approval_check = self.patch(self.switch, 'check_approval', return_value={'approved': True})
+        self.switch.restore({}, self.root, self.port, self.output, approval_path, False, self.evidence)
+        self.assertEqual(approval_check.call_count, 2)
+        self.assertTrue(all(call.args[0] == approval_path for call in approval_check.call_args_list))
+
 
 if __name__ == '__main__':
     unittest.main()
