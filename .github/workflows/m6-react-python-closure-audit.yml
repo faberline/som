@@ -1,0 +1,63 @@
+name: M6 React Python closure independent audit (not acceptance)
+on:
+  push:
+    branches:
+      - codex/m6-react-python-closure-audit-20261029
+permissions:
+  contents: read
+  actions: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Run synthetic auditor fixtures
+        working-directory: .github/m6-react-python-independent-audit
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          for entry in \
+            'audit.py 84f361f6177e8f95cf6fd52fd7a42bd7d38937b8641af97f4d8d2fd0b13f6023' \
+            'wheel_audit.py bb830eff1c37e2f104e2a84158419698bfd65b02c99c10c02b8950aa908c2512' \
+            'test_audit.py f2bfb4a3c1b9203f428b128abd5c1974f1a7bbecc603bd8b320e3ff6afc4b994' \
+            'test_wheel_audit.py f73386008cd528cbadb9be8839e205725849159ba3f71de7ddaf895ec50b0002'; do
+            set -- $entry
+            test "$(sha256sum "$1" | cut -d ' ' -f 1)" = "$2"
+            test "$(git show "$GITHUB_SHA:.github/m6-react-python-independent-audit/$1" | sha256sum | cut -d ' ' -f 1)" = "$2"
+          done
+          python3 -m unittest -v test_audit test_wheel_audit
+      - name: Verify source run and artifact metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/40821432963" > "$RUNNER_TEMP/react-python-run.json"
+          jq -e '.id == 40821432963 and .head_sha == "071c55b0f02e2325a6f0993636d5330005b6a4fe" and .status == "completed" and .conclusion == "success" and .run_attempt == 1' "$RUNNER_TEMP/react-python-run.json" > /dev/null
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/40821432963/jobs" > "$RUNNER_TEMP/react-python-jobs.json"
+          jq -e '.jobs | length == 1 and .[0].id == 123274562142 and .[0].name == "qualification" and .[0].head_sha == "071c55b0f02e2325a6f0993636d5330005b6a4fe" and .[0].conclusion == "success" and all(.[0].steps[]; .conclusion == "success")' "$RUNNER_TEMP/react-python-jobs.json" > /dev/null
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/12874482658" > "$RUNNER_TEMP/react-python-artifact.json"
+          jq -e '.id == 12874482658 and .workflow_run.id == 40821432963 and .workflow_run.head_sha == "071c55b0f02e2325a6f0993636d5330005b6a4fe" and .expired == false and .size_in_bytes == 56158381 and .digest == "sha256:d568ebe48167bec64b4d067f1e2e246b625e16852fc6201bef3689c13c7850bf"' "$RUNNER_TEMP/react-python-artifact.json" > /dev/null
+      - name: Download and audit retained public closure
+        working-directory: .github/m6-react-python-independent-audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/12874482658/zip" > "$RUNNER_TEMP/react-python-qa-closure.zip"
+          python3 audit.py --repo "$GITHUB_WORKSPACE" --artifact-zip "$RUNNER_TEMP/react-python-qa-closure.zip" --output "$RUNNER_TEMP/react-python-independent-audit.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: react-python-independent-audit
+          path: |
+            ${{ runner.temp }}/react-python-independent-audit.json
+            ${{ runner.temp }}/react-python-run.json
+            ${{ runner.temp }}/react-python-jobs.json
+            ${{ runner.temp }}/react-python-artifact.json
+          if-no-files-found: warn
+          retention-days: 7
