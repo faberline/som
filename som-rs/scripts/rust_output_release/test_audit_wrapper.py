@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 import unittest
 from unittest import mock
+import warnings
 import zipfile
 
 import audit_wrapper as wrapper
@@ -75,6 +76,8 @@ class WrapperTests(unittest.TestCase):
                            args[args.index('--phase') + 1] == 'inspect')
         self.assertIn('GH_TOKEN', fetch_env)
         self.assertNotIn('M6_INPUTS_KEYRING', fetch_env)
+        gh_args = next(args for args, _env in self.calls if Path(args[0]).name == 'gh')
+        self.assertEqual(gh_args[0], str(self.root / 'tool/gh'))
         self.assertEqual(audit_env['M6_AUDIT_GH'], str(self.root / 'tool/gh'))
         self.assertNotIn('GH_TOKEN', inspect_env)
         self.assertIn('M6_INPUTS_KEYRING', inspect_env)
@@ -131,6 +134,7 @@ class InstallGhTests(unittest.TestCase):
         env.start()
         self.addCleanup(env.stop)
         self.curl_env = None
+        self.curl_args = None
         run = mock.patch.object(wrapper.subprocess, 'run', side_effect=self.fake_curl)
         run.start()
         self.addCleanup(run.stop)
@@ -141,6 +145,7 @@ class InstallGhTests(unittest.TestCase):
 
     def fake_curl(self, args, **kwargs):
         self.curl_env = kwargs['env']
+        self.curl_args = args
         Path(args[args.index('--output') + 1]).write_bytes(self.zip_bytes)
         return subprocess.CompletedProcess(args, 0)
 
@@ -149,9 +154,18 @@ class InstallGhTests(unittest.TestCase):
         self.assertEqual(binary.read_bytes(), self.fake_binary)
         for name in ('GH_TOKEN', 'GITHUB_TOKEN', 'M6_INPUTS_KEYRING', 'ACTIONS_RUNTIME_TOKEN', 'SSH_AUTH_SOCK'):
             self.assertNotIn(name, self.curl_env)
+        self.assertEqual(self.curl_args[1], '--disable')
+        self.assertEqual(self.curl_args[self.curl_args.index('--proto') + 1], '=https')
+        self.assertEqual(self.curl_args[self.curl_args.index('--proto-redir') + 1], '=https')
+        self.assertNotIn('Authorization', ' '.join(self.curl_args))
 
     def test_mismatched_archive_refused_before_execution(self):
         self.zip_bytes += b'extra'
+        with self.assertRaisesRegex(RuntimeError, 'ZIP differs'):
+            wrapper.install_gh(self.root)
+
+    def test_changed_archive_same_size_refused(self):
+        self.zip_bytes = bytes([self.zip_bytes[0] ^ 1]) + self.zip_bytes[1:]
         with self.assertRaisesRegex(RuntimeError, 'ZIP differs'):
             wrapper.install_gh(self.root)
 
@@ -161,6 +175,21 @@ class InstallGhTests(unittest.TestCase):
             info = zipfile.ZipInfo(wrapper.GH_MEMBER)
             info.external_attr = (stat.S_IFLNK | 0o777) << 16
             z.writestr(info, self.fake_binary)
+        self.zip_bytes = path.read_bytes()
+        with mock.patch.object(wrapper, 'GH_ZIP_BYTES', len(self.zip_bytes)), \
+             mock.patch.object(wrapper, 'GH_ZIP_SHA256', sha(self.zip_bytes)):
+            with self.assertRaisesRegex(RuntimeError, 'ZIP member differs'):
+                wrapper.install_gh(self.root)
+
+    def test_duplicate_member_refused_even_when_archive_pinned(self):
+        path = self.root / 'duplicate.zip'
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', UserWarning)
+            with zipfile.ZipFile(path, 'w') as z:
+                for _ in range(2):
+                    info = zipfile.ZipInfo(wrapper.GH_MEMBER)
+                    info.external_attr = (stat.S_IFREG | 0o755) << 16
+                    z.writestr(info, self.fake_binary)
         self.zip_bytes = path.read_bytes()
         with mock.patch.object(wrapper, 'GH_ZIP_BYTES', len(self.zip_bytes)), \
              mock.patch.object(wrapper, 'GH_ZIP_SHA256', sha(self.zip_bytes)):
