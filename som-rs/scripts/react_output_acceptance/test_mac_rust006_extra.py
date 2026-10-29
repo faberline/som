@@ -286,7 +286,9 @@ class ProductArtifactBindingTests(unittest.TestCase):
                 except ValueError as exc:
                     fake_info=json.loads((life/'python-authority.stdout').read_bytes())
                     fake_ps=(life/proof['ps']['stdout']['file']).read_text()
-                    raise AssertionError('fixture authority='+json.dumps(fake_info,sort_keys=True)+' ps='+fake_ps) from exc
+                    first_info=json.loads((initial_dir/'python-authority.stdout').read_bytes())
+                    first_ps=(initial_dir/identity['python_authority']['ps']['stdout']['file']).read_text()
+                    raise AssertionError('fixture authority='+json.dumps(fake_info,sort_keys=True)+' ps='+fake_ps+' initial='+json.dumps(first_info,sort_keys=True)+' initial_ps='+first_ps) from exc
                 self.assertEqual(observed['cases'],1)
                 current=audit.audit_python_authority(life,root,version,str(provision_binary))
                 first=audit.audit_python_authority(initial_dir,root,version,str(provision_binary),True)
