@@ -481,14 +481,23 @@ class GithubIdentityTests(unittest.TestCase):
             return artifact
         with tempfile.TemporaryDirectory() as d:
             archive = write(Path(d) / 'a', b'archive')
-            log = f'Artifact m6-release-evidence.zip successfully finalized. Artifact ID 4\nSHA256 digest of uploaded artifact zip is {digest}'
+            stamp = '2026-10-29T11:18:09.3530390Z '
+            log = (stamp + f'SHA256 digest of uploaded artifact zip is {digest}\n'
+                   + stamp + 'Artifact m6-release-evidence.zip successfully finalized. Artifact ID 4\n'
+                   + stamp + 'Artifact download URL: https://github.com/faberline/som/actions/runs/1/artifacts/4\n').encode()
             with mock.patch.object(audit, 'api', side_effect=fake_api), \
-                 mock.patch.object(audit.subprocess, 'check_output', return_value=log):
+                 mock.patch.object(audit, 'bounded_job_log', return_value=log):
                 result = audit.bind_github(1, 2, 3, 4, head, archive)
                 self.assertEqual(result['artifact_sha256'], digest)
-                with self.assertRaisesRegex(ValueError, 'upload log'):
-                    with mock.patch.object(audit.subprocess, 'check_output', return_value='different upload'):
+                with self.assertRaisesRegex(ValueError, 'artifact ID log'):
+                    with mock.patch.object(audit, 'bounded_job_log', return_value=b'different upload'):
                         audit.bind_github(1, 2, 3, 4, head, archive)
+                with self.assertRaisesRegex(ValueError, 'unexpected log control byte'):
+                    with mock.patch.object(audit, 'bounded_job_log', return_value=log + b'\x1b[2J'):
+                        audit.bind_github(1, 2, 3, 4, head, archive)
+                colored = b'\x1b[36m' + log + b'\x1b[0m'
+                with mock.patch.object(audit, 'bounded_job_log', return_value=colored):
+                    audit.bind_github(1, 2, 3, 4, head, archive)
                 artifact['workflow_run']['head_repository_id'] = 0
                 with self.assertRaisesRegex(ValueError, 'artifact metadata mismatch'):
                     audit.bind_github(1, 2, 3, 4, head, archive)

@@ -15,9 +15,11 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import select
 import stat
 import subprocess
 import tempfile
+import time
 import zipfile
 
 REPO = 'faberline/som'
@@ -36,6 +38,7 @@ RESTORE_SOURCES = {
 }
 SCENARIOS = ('switch', 'after_stop', 'after_start', 'after_pointer', 'after_commit')
 HASH = re.compile(r'[0-9a-f]{64}\Z')
+MAX_JOB_LOG_BYTES = 8 * 1024 * 1024
 
 
 def require(value, message):
@@ -138,6 +141,52 @@ def api(path):
     return json.loads(subprocess.check_output(['gh', 'api', path], text=True))
 
 
+def bounded_job_log(endpoint):
+    """Capture untrusted log bytes with a hard size/time bound; never print them."""
+    proc = subprocess.Popen(['gh', 'api', '--allow-escape-sequences', endpoint],
+                            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    data, deadline = bytearray(), time.monotonic() + 120
+    try:
+        while True:
+            remaining = deadline - time.monotonic()
+            require(remaining > 0, 'producer job log timed out')
+            ready, _, _ = select.select([proc.stdout], [], [], min(remaining, 1.0))
+            if not ready:
+                continue
+            chunk = os.read(proc.stdout.fileno(), 65536)
+            if not chunk:
+                break
+            data.extend(chunk)
+            require(len(data) <= MAX_JOB_LOG_BYTES, 'producer job log exceeds limit')
+        require(proc.wait(timeout=max(1, deadline - time.monotonic())) == 0, 'producer job log fetch failed')
+        return bytes(data)
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+            proc.wait(timeout=20)
+        proc.stdout.close()
+
+
+def parse_upload_log(raw, artifact_id, artifact_sha, run_id):
+    """Accept only SGR color escapes and the exact upload-action bindings."""
+    require(isinstance(raw, bytes) and len(raw) <= MAX_JOB_LOG_BYTES, 'invalid producer job log')
+    clean = re.sub(rb'\x1b\[[0-9;]*m', b'', raw)
+    require(all(b >= 32 and b != 127 or b in (9, 10, 13) for b in clean), 'unexpected log control byte')
+    lines = clean.decode('utf-8', 'strict').splitlines()
+    timestamp = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z '
+    digest_re = re.compile(timestamp + r'SHA256 digest of uploaded artifact zip is ([0-9a-f]{64})\Z')
+    id_re = re.compile(timestamp + r'Artifact m6-release-evidence\.zip successfully finalized\. Artifact ID ([0-9]+)\Z')
+    url_re = re.compile(timestamp + r'Artifact download URL: https://github\.com/faberline/som/actions/runs/([0-9]+)/artifacts/([0-9]+)\Z')
+    final = [(i, m) for i, line in enumerate(lines) if (m := id_re.fullmatch(line))]
+    require(len(final) == 1 and int(final[0][1].group(1)) == artifact_id, 'producer artifact ID log mismatch')
+    index = final[0][0]
+    before = [(i, m) for i, line in enumerate(lines[:index]) if (m := digest_re.fullmatch(line))]
+    require(before and before[-1][1].group(1) == artifact_sha, 'producer artifact digest log mismatch')
+    after = [m for line in lines[index + 1:] if (m := url_re.fullmatch(line))]
+    require(len(after) == 1 and int(after[0].group(1)) == run_id and int(after[0].group(2)) == artifact_id,
+            'producer artifact URL log mismatch')
+
+
 def bind_github(run_id, attempt, job_id, artifact_id, head, archive):
     base = f'repos/{REPO}'
     run = api(f'{base}/actions/runs/{run_id}/attempts/{attempt}')
@@ -165,10 +214,8 @@ def bind_github(run_id, attempt, job_id, artifact_id, head, archive):
             and artifact['size_in_bytes'] == archive.stat().st_size, 'artifact metadata mismatch')
     # Artifact metadata does not include the attempt or job. Bind those to the
     # actual upload action log from the precise job of the precise attempt.
-    logs = subprocess.check_output(['gh', 'api', f'{base}/actions/jobs/{job_id}/logs'], text=True)
-    require(f'Artifact m6-release-evidence.zip successfully finalized. Artifact ID {artifact_id}' in logs
-            and f'SHA256 digest of uploaded artifact zip is {observed_sha}' in logs,
-            'producer upload log mismatch')
+    logs = bounded_job_log(f'{base}/actions/jobs/{job_id}/logs')
+    parse_upload_log(logs, artifact_id, observed_sha, run_id)
     return {'run_id': run_id, 'attempt': attempt, 'job_id': job_id, 'artifact_id': artifact_id,
             'head_sha': head, 'artifact_sha256': observed_sha}
 
