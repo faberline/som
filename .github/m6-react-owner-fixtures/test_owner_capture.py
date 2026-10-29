@@ -56,6 +56,7 @@ class OwnerCapture(unittest.TestCase):
             verify_all=mock.Mock(), close_all=mock.Mock())
         self.module = SimpleNamespace(context=lambda:self.ctx, tool_command=lambda script, args: [str(script), *args])
         self.interrupt = False
+        self.runtime_links = False
 
         def command(argv, cwd, env, label, timeout, check):
             index = len(self.ctx.cache['commands'])
@@ -63,6 +64,17 @@ class OwnerCapture(unittest.TestCase):
             stdout.write_bytes(('stdout:' + label).encode()); stderr.write_bytes(('stderr:' + label).encode())
             if label == 'm6-react-collector':
                 self.collector.mkdir(); (self.collector / 'run.json').write_text('{"partial":true}')
+                if self.runtime_links:
+                    outside = root / 'foreign-secret'; outside.write_text('not owned raw evidence')
+                    bindir = self.collector / 'products/case/node_modules/.bin'
+                    bindir.mkdir(parents=True)
+                    (bindir / 'tool').symlink_to(outside)
+                    (bindir / 'safe.log').write_bytes(b'previous raw log')
+                    foreign_dir = root / 'foreign-directory'; foreign_dir.mkdir()
+                    (foreign_dir / 'secret').write_bytes(b'not owned')
+                    (self.collector / 'foreign-dir').symlink_to(foreign_dir, target_is_directory=True)
+                    report_dir = self.collector / 'products/case/reports'; report_dir.mkdir()
+                    (report_dir / 'case.json').write_text('{"raw":"retained"}')
             else:
                 self.audit.write_text('{"rows":[],"totals":{"unrun":1}}')
             record = {'argv': argv, 'pid': 100 + index, 'exit_code': 0,
@@ -98,12 +110,50 @@ class OwnerCapture(unittest.TestCase):
 
     def test_interrupted_collector_keeps_raw_failure_and_does_not_close_owned_services(self):
         self.interrupt = True
+        self.runtime_links = True
         result = self.invoke()
         self.assertIn('fixture partial collector', result['error'])
         self.assertFalse(result['rows'][0]['command']['wait_completed'])
         self.assertEqual((self.out / 'collector/run.json').read_text(), '{"partial":true}')
         self.assertTrue((self.out / 'logs/collector.stdout').is_file())
+        self.assertEqual((self.out / 'collector/products/case/reports/case.json').read_text(), '{"raw":"retained"}')
+        self.assertEqual((self.out / 'collector/products/case/node_modules/.bin/safe.log').read_bytes(), b'previous raw log')
+        self.assertFalse((self.out / 'collector/products/case/node_modules/.bin/tool').exists())
+        self.assertFalse((self.out / 'collector/products/case/node_modules/.bin/tool').is_symlink())
+        self.assertFalse((self.out / 'collector/foreign-dir').exists())
+        self.assertFalse((self.out / 'collector/foreign-dir').is_symlink())
+        capture = result['collector_capture']
+        self.assertEqual({row['path'] for row in capture['excluded']},
+                         {'products/case/node_modules/.bin/tool', 'foreign-dir'})
+        self.assertTrue(capture['unverified_runtime_or_evidence'])
+        self.assertFalse(capture['all_observed_files_copied']); self.assertFalse(capture['complete'])
+        self.assertFalse(capture['file_modes_preserved']); self.assertFalse(capture['empty_directories_preserved'])
+        self.assertFalse(capture['sealed_transport_verified'])
         self.assertFalse(result['owned_cleanup_complete']); self.services.close_all.assert_not_called()
+
+    def test_special_file_is_excluded_without_losing_other_raw_files(self):
+        self.collector.mkdir()
+        os.mkfifo(self.collector / 'runtime-fifo')
+        (self.collector / 'report.json').write_bytes(b'raw report')
+        capture = subject.copy_capture(self.collector, self.out / 'collector')
+        self.assertEqual((self.out / 'collector/report.json').read_bytes(), b'raw report')
+        self.assertEqual(capture['excluded'], [{'path': 'runtime-fifo', 'reason': 'special_file_not_copied'}])
+        self.assertTrue(capture['unverified_runtime_or_evidence']); self.assertFalse(capture['complete'])
+
+    def test_unreadable_file_does_not_prevent_retaining_other_files(self):
+        self.collector.mkdir()
+        bad = self.collector / 'a-unreadable.raw'; bad.write_bytes(b'unreadable fixture')
+        (self.collector / 'z-report.raw').write_bytes(b'important raw data')
+        original = subject.read
+        def read_fixture(path, *args, **kwargs):
+            if Path(path) == bad:
+                raise PermissionError('synthetic missing read permission')
+            return original(path, *args, **kwargs)
+        with mock.patch.object(subject, 'read', side_effect=read_fixture):
+            capture = subject.copy_capture(self.collector, self.out / 'collector')
+        self.assertEqual((self.out / 'collector/z-report.raw').read_bytes(), b'important raw data')
+        self.assertEqual(capture['errors'], [{'path': 'a-unreadable.raw', 'error': 'PermissionError'}])
+        self.assertTrue(capture['unverified_runtime_or_evidence']); self.assertFalse(capture['complete'])
 
     def test_missing_inputs_fails_before_starting_baseline(self):
         self.ctx.data['m6_react_inputs'].pop('baseline_profile')

@@ -200,13 +200,16 @@ def run_gate(ctx, candidate_dir, services, out, gate):
         # Preserve partial failures. A copied snapshot is data, not a restored-run proof.
         try:
             if collector is not None and collector.is_dir():
-                copy_capture(collector, out / 'collector')
+                report['collector_capture'] = copy_capture(collector, out / 'collector')
+        except BaseException as error:
+            report['capture_error'] = type(error).__name__ + ': ' + str(error)
+        try:
             if audit_out is not None and audit_out.is_file():
                 raw = read(audit_out)
                 save(out / 'audit.json', raw)
                 report['audit_sha256'] = sha(raw)
         except BaseException as error:
-            report['capture_error'] = type(error).__name__ + ': ' + str(error)
+            report['audit_capture_error'] = type(error).__name__ + ': ' + str(error)
         report['bound_source_sha256'] = dict(sorted(ctx.sources.pins.items()))
         report['saved_files_sha256'] = inventory(out)
         save(out / 'result.json', canonical(report) + b'\n')
@@ -214,17 +217,59 @@ def run_gate(ctx, candidate_dir, services, out, gate):
 
 
 def copy_capture(source, destination):
-    """Copy exactly the observed regular files, without following links."""
+    """Retain safe files despite incomplete runtime; report every omission."""
     source = physical(source)
-    require(source.is_dir() and not destination.exists(), 'new capture destination required')
-    files = inventory(source)
+    destination = physical(destination, exists=False)
+    require(source.is_dir() and not destination.exists() and destination not in source.parents
+            and source not in destination.parents, 'separate new capture destination required')
     destination.mkdir(mode=0o700)
-    for name, expected in files.items():
-        raw = read(source / name)
-        require(sha(raw) == expected, 'collector evidence changed during copy')
-        save(destination / name, raw)
-    require(inventory(destination) == files and inventory(source) == files,
-            'collector evidence changed during capture')
+    copied, excluded, errors = {}, [], []
+    def scan_error(error):
+        name = getattr(error, 'filename', None)
+        try:
+            relative = str(Path(name).relative_to(source)) if name else '.'
+        except ValueError:
+            relative = '.'
+        errors.append({'path': relative, 'error': type(error).__name__})
+    for directory, dirs, names in os.walk(source, topdown=True, followlinks=False, onerror=scan_error):
+        accepted_dirs = []
+        for name in sorted(dirs):
+            path = Path(directory) / name
+            relative = path.relative_to(source).as_posix()
+            try:
+                mode = path.lstat().st_mode
+                if stat.S_ISLNK(mode):
+                    excluded.append({'path': relative, 'reason': 'symlink_not_followed'})
+                elif stat.S_ISDIR(mode):
+                    accepted_dirs.append(name)
+                else:
+                    excluded.append({'path': relative, 'reason': 'non_directory_not_followed'})
+            except OSError as error:
+                errors.append({'path': relative, 'error': type(error).__name__})
+        dirs[:] = accepted_dirs
+        for name in sorted(names):
+            path = Path(directory) / name
+            relative = path.relative_to(source).as_posix()
+            try:
+                mode = path.lstat().st_mode
+                if stat.S_ISLNK(mode):
+                    excluded.append({'path': relative, 'reason': 'symlink_not_followed'})
+                    continue
+                if not stat.S_ISREG(mode):
+                    excluded.append({'path': relative, 'reason': 'special_file_not_copied'})
+                    continue
+                raw = read(path)
+                save(destination / relative, raw)
+                copied[relative] = sha(raw)
+            except (OSError, ValueError) as error:
+                errors.append({'path': relative, 'error': type(error).__name__})
+    return {'version': 'som.m6-partial-collector-capture.v1',
+            'copied_sha256': dict(sorted(copied.items())), 'excluded': excluded, 'errors': errors,
+            'unverified_runtime_or_evidence': bool(excluded or errors),
+            'all_observed_files_copied': not excluded and not errors,
+            'source_stability_verified': False, 'file_modes_preserved': False,
+            'empty_directories_preserved': False, 'sealed_transport_verified': False,
+            'complete': False}
 
 
 def command_evidence(ctx, out, name, command):
