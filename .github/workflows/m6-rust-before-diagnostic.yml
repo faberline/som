@@ -55,6 +55,21 @@ jobs:
           events=[]
           owner=root/'candidate-owner.json'
           if owner.exists():events=json.loads(owner.read_bytes()).get('events',[])
+          codes=collections.Counter(); message_flags=collections.Counter()
+          for row in rows:
+              path=root/'responses'/(str(row['slot_id'])+'.raw')
+              if not path.is_file():continue
+              try:
+                  response=json.loads(path.read_bytes()); code=response.get('code') if type(response) is dict else None
+                  codes[code if code in ('ASSET_UNAVAILABLE','ASSET_HASH_MISMATCH','INTERNAL_ERROR') else 'other']+=1
+                  message=str(response.get('message','')).lower() if type(response) is dict else ''
+                  if 'no such file' in message:message_flags['no_such_file']+=1
+                  if 'rustfmt' in message:message_flags['rustfmt']+=1
+                  if 'permission denied' in message:message_flags['permission_denied']+=1
+              except (ValueError,UnicodeError):codes['non_json']+=1
+          stderr=(root/'baseline.stderr').read_bytes()
+          lower=stderr.lower()
+          health=(root/'health.raw').read_bytes()
           result={'artifact_id':12883028279,'capture_head':'2c60b2f677b9bfb3260e4bef569978ba41514e92',
                   'role':receipt.get('role'),'passed':receipt.get('passed'),'stage':receipt.get('stage'),
                   'capture_error_reason':reason,'capture_error_type':error.split(':',1)[0] if type(error) is str else receipt.get('error_type'),
@@ -65,6 +80,9 @@ jobs:
                   'assets_unchanged':receipt.get('assets_unchanged'),'cleanup_errors':receipt.get('cleanup_errors'),
                   'process_start_recorded':'process_start' in receipt,'process_end_recorded':'process_end' in receipt,
                   'owner_wait_states':[{'kind':e.get('kind'),'state':e.get('state'),'exit_code':e.get('exit_code')} for e in events if e.get('kind') in ('candidate-wait','candidate-cleanup-wait')],
+                  'response_codes':dict(codes),'response_message_flags':dict(message_flags),'stderr_bytes':len(stderr),
+                  'stderr_mentions_rustfmt':b'rustfmt' in lower,'stderr_mentions_not_found':b'not found' in lower,
+                  'health_has_expected_rustfmt_sha':b'2c56fd066853c80c786a8a3a0e5434b7f808ace8b2cf66ae6e1a13566aa2815f' in health,
                   'historical_wire':False,'product_acceptance':'not_run'}
           print(json.dumps(result,sort_keys=True))
           PY
