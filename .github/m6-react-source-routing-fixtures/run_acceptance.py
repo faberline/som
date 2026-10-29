@@ -17,6 +17,7 @@ usage:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime
 import errno
 import hashlib
@@ -24,6 +25,7 @@ import json
 import os
 import pathlib
 import re
+import signal
 import stat
 import subprocess
 import sys
@@ -676,6 +678,40 @@ def judge_json_report(exit_code: int, report_path: pathlib.Path, kind: str = "re
     return "failed", f"report missing valid 'passed' field: {passed_val!r}"
 
 
+@contextlib.contextmanager
+def defer_owned_interrupts():
+    """Defer signals while assigning an owned child or waiting for its cancellation."""
+    pending, previous = [], {}
+    def defer(number, _frame): pending.append(number)
+    for number in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+        previous[number] = signal.signal(number, defer)
+    try:
+        yield pending
+    finally:
+        for number, handler in previous.items(): signal.signal(number, handler)
+
+
+def cancel_owned_child(child, grace=90):
+    """Cancel and wait for this child only. Nested service state is unknown."""
+    result = {'method': 'interrupt-direct-child', 'wait': 'unverified',
+              'exit_code': None, 'nested_services': 'unverified'}
+    if child is None: return result
+    with defer_owned_interrupts():
+        try:
+            if child.poll() is None: child.send_signal(signal.SIGINT)
+            code = child.wait(timeout=grace)
+        except subprocess.TimeoutExpired:
+            result['method'] = 'interrupt-then-kill-direct-child'
+            try: child.kill()
+            except ProcessLookupError: pass
+            try: code = child.wait(timeout=10)
+            except subprocess.TimeoutExpired: return result
+        except OSError:
+            return result
+        if type(code) is int: result.update(wait='completed', exit_code=code)
+    return result
+
+
 def run_single_step(
     step_def: dict[str, Any],
     out_dir: pathlib.Path,
@@ -723,6 +759,7 @@ def run_single_step(
     t0 = time.monotonic()
     env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
     launch_error = None
+    child, interrupted = None, False
     routing = None
     actual_argv = step_def["argv"]
     postcheck_path = out_dir / 'source-routing' / f'{prefix}.json'
@@ -757,15 +794,28 @@ def run_single_step(
                                       stdout=out_f, stderr=err_f, check=False)
                 exit_code = proc.returncode
             else:
-                child = subprocess.Popen(actual_argv, cwd=repo, env=env, stdin=subprocess.DEVNULL,
-                                         stdout=out_f, stderr=err_f)
-                routing['pid'] = child.pid
+                with defer_owned_interrupts() as pending:
+                    child = subprocess.Popen(actual_argv, cwd=repo, env=env, stdin=subprocess.DEVNULL,
+                                             stdout=out_f, stderr=err_f)
+                    routing['pid'] = child.pid
+                if pending: raise KeyboardInterrupt('owned checker interrupted while starting')
                 waited = child.wait()
                 exit_code = child.returncode
                 if type(waited) is int and waited == exit_code:
                     routing['wait'] = {'state': 'completed', 'exit_code': waited}
                 else:
                     launch_error = 'native child wait result differs'
+        except KeyboardInterrupt:
+            if routing is None: raise
+            interrupted = True
+            cleanup = cancel_owned_child(child)
+            exit_code = cleanup['exit_code']
+            if routing is not None:
+                routing['interruption_cleanup'] = cleanup
+                if cleanup['wait'] == 'completed':
+                    routing['wait'] = {'state': 'completed', 'exit_code': exit_code}
+            launch_error = 'owned checker interrupted; nested cleanup unverified'
+            err_f.write((launch_error + "\n").encode("utf-8"))
         except OSError as exc:
             exit_code = 127
             launch_error = f"cannot start step: {type(exc).__name__}: {exc}"
@@ -807,6 +857,7 @@ def run_single_step(
         "reason": reason,
     }
     write_json(receipt_path, receipt)
+    if interrupted: raise KeyboardInterrupt('owned acceptance checker interrupted')
     return receipt
 
 

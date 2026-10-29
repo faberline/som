@@ -207,6 +207,41 @@ def step(argv: list[str], log: pathlib.Path, python: str | None = None) -> int:
                               check=False).returncode
 
 
+@contextlib.contextmanager
+def defer_owned_interrupts():
+    """Keep owned-child assignment and cleanup from being interrupted."""
+    pending, previous = [], {}
+    def defer(number, _frame): pending.append(number)
+    for number in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+        previous[number] = signal.signal(number, defer)
+    try:
+        yield pending
+    finally:
+        for number, handler in previous.items(): signal.signal(number, handler)
+
+
+def cancel_owned_child(child, grace=60):
+    """Interrupt and wait only for this Popen child; nested service state is unknown."""
+    result = {'method': 'interrupt-direct-child', 'recorder_wait': 'unverified',
+              'exit_code': None, 'owned_services': 'unverified'}
+    if child is None: return result
+    with defer_owned_interrupts():
+        try:
+            if child.poll() is None: child.send_signal(signal.SIGINT)
+            code = child.wait(timeout=grace)
+        except subprocess.TimeoutExpired:
+            result['method'] = 'interrupt-then-kill-direct-child'
+            try: child.kill()
+            except ProcessLookupError: pass
+            try: code = child.wait(timeout=10)
+            except subprocess.TimeoutExpired: return result
+        except OSError:
+            return result
+        if type(code) is int:
+            result['recorder_wait'], result['exit_code'] = 'completed', code
+    return result
+
+
 def native_case_command(logical: list[str], postcheck: pathlib.Path, full_before: pathlib.Path):
     """Route only checked repository Python entries through the admitted child loader."""
     holder = sys.modules.get('_som_m6_checked_router')
@@ -257,6 +292,7 @@ def gate_invocation(argv: list[str], log: pathlib.Path, destination: pathlib.Pat
     actual = native_case_command(logical, postcheck, full_before) if full_before is not None else logical
     cwd = str(pathlib.Path.cwd().resolve())
     outcome, code, failure, pid = "unverified", None, None, None
+    child, interrupted, cleanup = None, False, None
     with log.open("w") as output:
         try:
             if full_before is None:
@@ -264,23 +300,24 @@ def gate_invocation(argv: list[str], log: pathlib.Path, destination: pathlib.Pat
                                         timeout=3600, check=False)
                 code = result.returncode
             else:
-                child = subprocess.Popen(actual, cwd=cwd, stdout=output, stderr=subprocess.STDOUT,
-                                         start_new_session=True)
-                pid = child.pid
+                with defer_owned_interrupts() as pending:
+                    child = subprocess.Popen(actual, cwd=cwd, stdout=output, stderr=subprocess.STDOUT,
+                                             start_new_session=True)
+                    pid = child.pid
+                if pending: raise KeyboardInterrupt('owned gate interrupted while starting')
                 try:
                     code = child.wait(timeout=3600)
                 except subprocess.TimeoutExpired:
                     outcome, failure = 'timed-out', 'timeout'
-                    try: os.killpg(child.pid, signal.SIGTERM)
-                    except ProcessLookupError: pass
-                    try: code = child.wait(timeout=60)
-                    except subprocess.TimeoutExpired:
-                        try: os.killpg(child.pid, signal.SIGKILL)
-                        except ProcessLookupError: pass
-                        code = child.wait(timeout=10)
+                    cleanup = cancel_owned_child(child)
+                    code = cleanup['exit_code']
             if outcome != 'timed-out':
                 if type(code) is int: outcome = 'exited'
                 else: failure = 'missing-exit-code'
+        except KeyboardInterrupt:
+            interrupted, outcome, failure = True, 'interrupted', 'interrupted'
+            cleanup = cancel_owned_child(child)
+            code = cleanup['exit_code']
         except subprocess.TimeoutExpired:
             outcome, failure = "timed-out", "timeout"
         except OSError as exc:
@@ -289,9 +326,12 @@ def gate_invocation(argv: list[str], log: pathlib.Path, destination: pathlib.Pat
               "outcome": outcome, "exit_code": code,
               "wait": {"state": "completed" if type(code) is int else "unverified", "exit_code": code},
               "log": log.name, "log_sha256": retained_evidence.digest(log), "failure": failure}
+    if cleanup is not None:
+        record['interruption_cleanup' if interrupted else 'timeout_cleanup'] = cleanup
     if full_before is not None:
         attach_native_route(record, actual, pid, postcheck)
     retained_evidence.write_json(destination, record)
+    if interrupted: raise KeyboardInterrupt('owned gate interrupted')
     return record
 
 
@@ -303,11 +343,13 @@ def api_invocation(argv: list[str], log: pathlib.Path, destination: pathlib.Path
     actual = native_case_command(logical, postcheck, full_before) if full_before is not None else logical
     cwd = str(pathlib.Path.cwd().resolve())
     outcome, code, failure = 'unverified', None, None
-    cleanup, pid = None, None
+    cleanup, pid, child, interrupted = None, None, None, False
     with log.open('w') as output:
         try:
-            child = subprocess.Popen(actual, cwd=cwd, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
-            pid = child.pid
+            with defer_owned_interrupts() as pending:
+                child = subprocess.Popen(actual, cwd=cwd, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
+                pid = child.pid
+            if pending: raise KeyboardInterrupt('owned API recorder interrupted while starting')
             try:
                 result = child.wait(timeout=timeout)
                 if type(result) is int:
@@ -335,6 +377,10 @@ def api_invocation(argv: list[str], log: pathlib.Path, destination: pathlib.Path
                     except subprocess.TimeoutExpired:
                         cleanup = {'method': 'interrupt-then-kill-recorder', 'recorder_wait': 'unverified',
                                    'exit_code': None, 'owned_services': 'unverified'}
+        except KeyboardInterrupt:
+            interrupted, outcome, failure = True, 'interrupted', 'interrupted'
+            cleanup = cancel_owned_child(child, grace=grace)
+            code = cleanup['exit_code']
         except subprocess.TimeoutExpired:
             outcome, failure = 'timed-out', 'timeout'
         except OSError as exc:
@@ -344,10 +390,11 @@ def api_invocation(argv: list[str], log: pathlib.Path, destination: pathlib.Path
               'wait': {'state': 'completed' if type(code) is int else 'unverified', 'exit_code': code},
               'log': log.name, 'log_sha256': retained_evidence.digest(log), 'failure': failure}
     if cleanup is not None:
-        record['timeout_cleanup'] = cleanup
+        record['interruption_cleanup' if interrupted else 'timeout_cleanup'] = cleanup
     if full_before is not None:
         attach_native_route(record, actual, pid, postcheck)
     retained_evidence.write_json(destination, record)
+    if interrupted: raise KeyboardInterrupt('owned API recorder interrupted')
     return record
 
 

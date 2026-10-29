@@ -120,6 +120,14 @@ class RoutingAuditTests(unittest.TestCase):
         invocation['wait']['exit_code']=False
         with self.assertRaises(audit130.EvidenceError):
             audit130.Audit.native_case_routing(self.audit,case,invocation,script,'gates')
+        invocation['wait']['exit_code']=0
+        self.audit.api_qa_profile['python']='/tmp/other-python'
+        with self.assertRaises(audit130.EvidenceError):
+            audit130.Audit.native_case_routing(self.audit,case,invocation,script,'gates')
+
+    def test_step_rejects_interpreter_not_in_verified_profile(self):
+        self.audit.api_qa_profile['python']='/tmp/other-python'
+        with self.assertRaises(audit130.EvidenceError): self.check()
 
     def test_changed_source_bytes_refused(self):
         (self.repo/self.nested).write_bytes(b'tampered')

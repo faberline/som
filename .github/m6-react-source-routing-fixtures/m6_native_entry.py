@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import re
+import signal
 import stat
 import subprocess
 import sys
@@ -191,6 +192,11 @@ def run(args):
               'entry_executed': False, 'entry_exit_code': None, 'source_postcheck': False,
               'product_acceptance_passed': False}
     code = 1
+    previous_signals = {}
+    def interrupted(number, _frame):
+        raise KeyboardInterrupt('owned native child interrupted: ' + str(number))
+    for number in (signal.SIGTERM, signal.SIGHUP):
+        previous_signals[number] = signal.signal(number, interrupted)
     try:
         report['entry_executed'] = True
         code = router.execute(args.script, args.arguments)
@@ -213,6 +219,8 @@ def run(args):
         report['source_sha256'] = dict(sorted({**sources.pins, **ctx.sources.pins}.items()))
         save(args.postcheck, report)
         sys.modules.pop(ROUTER_NAME, None)
+        for number, handler in previous_signals.items():
+            signal.signal(number, handler)
     return code
 
 
