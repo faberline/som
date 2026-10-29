@@ -46,6 +46,22 @@ class NamedJoin(unittest.TestCase):
     def test_reject_missing_and_extra_calls(self):
         self.calls.pop()
         with self.assertRaises(ValueError):self.check()
+    def test_identical_wire_slots_keep_distinct_multiplicity(self):
+        first=self.calls[0]; duplicate=self.calls[2]
+        request=(self.oracle/first['request_file']).read_bytes(); response=(self.oracle/first['response_file']).read_bytes()
+        self.put(self.oracle/duplicate['request_file'],request); self.put(self.oracle/duplicate['response_file'],response)
+        duplicate['request_sha256']=s.sha(request);duplicate['response_sha256']=s.sha(response)
+        identities=[self.table[0]['identity'],self.table[2]['identity']]
+        first['matching_named_slots']=identities; duplicate['matching_named_slots']=identities
+        self.table[2]['request_sha256']=s.sha(request);self.table[2]['response_sha256']=s.sha(response)
+        record=self.records['rust'][0]; base=self.run/'rust-baseline-raw'
+        self.put(base/record['request_file'],request);self.put(base/record['response_file'],response)
+        record['request_sha256']=s.sha(request);record['response_sha256']=s.sha(response)
+        self.ru['baseline_request_sha256']=s.sha(request);self.ru['baseline_response_sha256']=s.sha(response)
+        self.putj(base/'manifest.json',{'calls':[record]});self.putj(self.run/'rust-baseline/report.json',{'rows':[self.ru]})
+        self.assertEqual(self.check()['raw_calls'],5)
+        self.calls.pop(2)
+        with self.assertRaises(ValueError):self.check()
     def test_reject_wrong_named_candidate(self):
         self.calls[0]['matching_named_slots']=[self.table[1]['identity']]
         with self.assertRaises(ValueError):self.check()
