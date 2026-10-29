@@ -808,6 +808,62 @@ def verify_closure(closure):
             require(sha(read(audit_root / notice["preserved"], MAX_MEMBER)) == notice["sha256"], "preserved license/notice changed")
 
 
+def prepare_frozen_url_cache(runner, closure, project, cache, evidence, label):
+    """Prepare uv's original URL cache before the separate offline product sync."""
+    verify_closure(closure)
+    for path in (project, cache, evidence):
+        require(path.is_absolute() and ".." not in path.parts and runner.out in path.parents,
+                "cache preparation requires owned output paths")
+        no_links(path)
+    require(project.is_dir() and cache.is_dir() and not evidence.exists(), "new cache preparation evidence required")
+    require(runner.installer_assets is not None, "bound installer bytes required for cache preparation")
+    original = read(project / "pyproject.toml")
+    locked = read(project / "uv.lock")
+    uv_lock_inventory(locked)
+    evidence.mkdir(parents=True, mode=0o700)
+    venv = evidence / "venv"
+    start = len(runner.report["commands"])
+    record = {"version": "som.frozen-url-cache-preparation.v1", "state": "incomplete",
+              "project_sha256": sha(original), "uv_lock_sha256": sha(locked),
+              "cache": str(cache), "venv": str(venv), "product_acceptance_passed": False,
+              "network_scope": "preparation using the unchanged frozen official publisher URLs",
+              "installer_mode": "qualification seed only; ordinary product mode is unchanged"}
+    try:
+        runner.run([runner.tools["uv"], "sync", "--frozen", "--python", runner.tools["python"],
+                    "--no-managed-python", "--no-config", "--no-build", "--no-index",
+                    "--find-links", closure["wheels"], "--link-mode", "copy"],
+                   project, cache, label + "-frozen-url-cache", offline=False, venv=venv)
+        inventory = installed_inventory(venv, runner.out)
+        project_name = tomllib.loads(original.decode())["project"]["name"]
+        record["installed_wheel_member_bindings"] = verify_installed_members(
+            venv, inventory, closure, runner.installer_assets, runner.tools["python"], project_name)
+        require(read(project / "pyproject.toml") == original and read(project / "uv.lock") == locked,
+                "cache preparation changed the original project or frozen lock")
+        verify_closure(closure)
+        dump(evidence / "installed-files.json", inventory)
+        record.update(state="frozen-url-cache-prepared", installed_inventory_sha256=file_sha(evidence / "installed-files.json"),
+                      commands=runner.report["commands"][start:], installed_code_executed=False,
+                      offline_product_sync="required separately", original_inputs_unchanged=True)
+        checkpoint = evidence / "before-cleanup.json"
+        dump(checkpoint, record)
+        # The seed has no product result. Remove only this verified owned seed.
+        require(parse(read(checkpoint)) == record and venv == evidence / "venv"
+                and venv.is_dir() and not venv.is_symlink() and runner.out in venv.parents
+                and installed_inventory(venv, runner.out) == inventory,
+                "cache seed identity or saved qualification changed before cleanup")
+        shutil.rmtree(venv)
+        require(not venv.exists(), "owned cache seed cleanup incomplete")
+        record["owned_seed_venv_removed"] = True
+        return record
+    except BaseException as error:
+        record.update(state="failed", error=type(error).__name__,
+                      reason=str(error) if isinstance(error, Refusal) else "see preserved cache preparation commands")
+        raise
+    finally:
+        record["commands"] = runner.report["commands"][start:]
+        dump(evidence / "receipt.json", record)
+
+
 def installer_assets(raw):
     authority = parse(raw)
     require(authority.get("version") == "som.uv099-installer-source-authority.v1" and authority.get("uv") == "0.9.9", "installer source authority differs")
@@ -1197,7 +1253,19 @@ def main():
                     record.update(state="failed", error=type(error).__name__, reason=str(error) if isinstance(error, Refusal) else "see preserved source/command/download evidence")
                     report["failures"].append({"dependency_set": key, "error": record["error"], "reason": record["reason"]})
             report["wheel_closure_qualification_complete"] = len(resolved) == len(sets)
-            if report["wheel_closure_qualification_complete"]:
+            report["frozen_url_caches"] = {}
+            for key, closure in resolved.items():
+                try:
+                    report["frozen_url_caches"][key] = prepare_frozen_url_cache(
+                        runner, closure, closure["root"] / "project", closure["cache"],
+                        closure["root"] / "cache-preparation", "cache-" + key)
+                except (InterruptedError, KeyboardInterrupt):
+                    raise
+                except Exception as error:
+                    report["failures"].append({"dependency_set": key, "stage": "frozen-url-cache-preparation",
+                                               "error": type(error).__name__, "reason": str(error)})
+            report["frozen_url_caches_prepared"] = len(report["frozen_url_caches"]) == len(sets)
+            if report["wheel_closure_qualification_complete"] and report["frozen_url_caches_prepared"]:
                 for row, binding in zip(rows, bindings):
                     try:
                         provision_named(runner, row, resolved[binding["dependency_set"]], probe, binding)
@@ -1209,7 +1277,7 @@ def main():
                         break
             else:
                 for binding in bindings:
-                    binding["state"] = "unrun; one or more dependency closures failed"
+                    binding["state"] = "unrun; a dependency closure or its frozen URL cache preparation failed"
             report["all_named_environment_checks_complete"] = all(row["state"] == "offline-environment-qualified" for row in bindings)
             verifier()
             report["native_runtime_verified_after"] = True

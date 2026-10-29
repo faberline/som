@@ -513,6 +513,16 @@ class Context:
                    UV_PYTHON_DOWNLOADS='never', UV_PYTHON=str(python), UV_NO_BUILD='1',
                    UV_NO_INDEX='1', UV_FIND_LINKS=str(closure['wheels']))
         require('UV_NO_INSTALLER_METADATA' not in env, 'qualification metadata mode leaked to full product')
+        p = self.module('wheels', WHEELS)
+        for directory in ('logs', 'home', 'tmp'):
+            (self.work / directory).mkdir(exist_ok=True)
+        assets = p.installer_assets(self.sources.read(p.INSTALLER_AUTHORITY))
+        preparation = {'commands': []}
+        seed_runner = p.Runner(self.work, preparation, runtime['tools'], runtime['identity'], assets)
+        p.prepare_frozen_url_cache(seed_runner, closure, root, cache,
+                                   self.work / 'cache-preparation' / key, 'cache-' + key)
+        require(not venv.exists() and 'UV_NO_INSTALLER_METADATA' not in env,
+                'cache seed must not become the ordinary product environment')
         self.command([uv, 'sync', '--python', '3.12'], root, env, 'ordinary-offline-uv-sync')
         require(read(project) == expected_project and read(lock) == frozen_lock,
                 'ordinary full product sync changed project or its frozen lock')

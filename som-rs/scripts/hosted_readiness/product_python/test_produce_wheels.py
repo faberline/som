@@ -421,6 +421,87 @@ class WheelProducerTests(unittest.TestCase):
         runner.closure = closure
         return closure
 
+    def test_frozen_url_cache_preparation_is_separate_from_offline_product_sync(self):
+        runner = FakeRunner(self.root, self.blob)
+        closure = self.closure_fixture(runner)
+        count = len(runner.calls)
+        project = closure["root"] / "project"
+        before = {name: (project / name).read_bytes() for name in ("pyproject.toml", "uv.lock")}
+        evidence = closure["root"] / "cache-preparation"
+        record = p.prepare_frozen_url_cache(runner, closure, project, closure["cache"], evidence, "cache-fixture")
+        call = runner.calls[count]
+        self.assertFalse(call["offline"])
+        self.assertEqual(call["argv"][1:3], ["sync", "--frozen"])
+        self.assertNotIn("--offline", call["argv"])
+        for flag in ("--no-build", "--no-config", "--no-index", "--find-links"):
+            self.assertIn(flag, call["argv"])
+        self.assertEqual(call["cache"], closure["cache"])
+        self.assertEqual(call["venv"], evidence / "venv")
+        self.assertEqual(record["state"], "frozen-url-cache-prepared")
+        self.assertFalse(record["product_acceptance_passed"])
+        self.assertFalse(record["installed_code_executed"])
+        self.assertFalse((evidence / "venv").exists())
+        self.assertTrue((evidence / "installed-files.json").is_file())
+        self.assertTrue((evidence / "before-cleanup.json").is_file())
+        self.assertEqual(before, {name: (project / name).read_bytes() for name in before})
+
+    def test_cache_preparation_rejects_changed_wheel_before_any_command(self):
+        runner = FakeRunner(self.root, self.blob)
+        closure = self.closure_fixture(runner)
+        (closure["wheels"] / WHEEL_NAME).write_bytes(b"changed")
+        count = len(runner.calls)
+        evidence = closure["root"] / "cache-preparation"
+        with self.assertRaises(p.Refusal):
+            p.prepare_frozen_url_cache(runner, closure, closure["root"] / "project", closure["cache"], evidence, "cache-fixture")
+        self.assertEqual(len(runner.calls), count)
+        self.assertFalse(evidence.exists())
+
+    def test_cache_preparation_does_not_reuse_existing_seed_output(self):
+        runner = FakeRunner(self.root, self.blob)
+        closure = self.closure_fixture(runner)
+        evidence = closure["root"] / "cache-preparation"
+        evidence.mkdir()
+        count = len(runner.calls)
+        with self.assertRaises(p.Refusal):
+            p.prepare_frozen_url_cache(runner, closure, closure["root"] / "project", closure["cache"], evidence, "cache-fixture")
+        self.assertEqual(len(runner.calls), count)
+
+    def test_failed_cache_preparation_preserves_seed_and_never_qualifies_an_environment(self):
+        runner = FakeRunner(self.root, self.blob, fail_sync=True)
+        closure = self.closure_fixture(runner)
+        evidence = closure["root"] / "cache-preparation"
+        with self.assertRaises(p.Refusal):
+            p.prepare_frozen_url_cache(runner, closure, closure["root"] / "project", closure["cache"], evidence, "cache-fixture")
+        self.assertTrue((evidence / "venv").is_dir())
+        record = json.loads((evidence / "receipt.json").read_bytes())
+        self.assertEqual(record["state"], "failed")
+        self.assertFalse(record["product_acceptance_passed"])
+        self.assertEqual(len(record["commands"]), 1)
+        self.assertEqual(record["commands"][0]["label"], "cache-fixture-frozen-url-cache")
+
+    def test_cache_preparation_rejects_extra_installed_hook_before_cleanup(self):
+        runner = FakeRunner(self.root, self.blob)
+        closure = self.closure_fixture(runner)
+        runner.inject_extra = "lib/python3.12/site-packages/unproven.pth"
+        evidence = closure["root"] / "cache-preparation"
+        with self.assertRaisesRegex(p.Refusal, "installed scope"):
+            p.prepare_frozen_url_cache(runner, closure, closure["root"] / "project", closure["cache"], evidence, "cache-fixture")
+        self.assertTrue((evidence / "venv" / runner.inject_extra).is_file())
+
+    def test_cache_preparation_refuses_source_change_after_native_sync(self):
+        runner = FakeRunner(self.root, self.blob)
+        closure = self.closure_fixture(runner)
+        project = closure["root"] / "project"
+        evidence = closure["root"] / "cache-preparation"
+        original = runner.run
+        def mutate(*args, **kwargs):
+            result = original(*args, **kwargs)
+            (project / "uv.lock").write_bytes(b"changed lock")
+            return result
+        with patch.object(runner, "run", side_effect=mutate), self.assertRaisesRegex(p.Refusal, "original project or frozen lock"):
+            p.prepare_frozen_url_cache(runner, closure, project, closure["cache"], evidence, "cache-fixture")
+        self.assertTrue((evidence / "venv").is_dir())
+
     def test_changed_frozen_wheel_blocks_named_environment_before_process(self):
         (self.root / "environments").mkdir()
         runner = FakeRunner(self.root, self.blob)

@@ -721,6 +721,7 @@ jobs:
             ${{ runner.temp }}/som-python-wheel-qualification/closures/*/publisher-metadata
             ${{ runner.temp }}/som-python-wheel-qualification/closures/*/wheels
             ${{ runner.temp }}/som-python-wheel-qualification/closures/*/wheel-audits
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/cache-preparation
       - name: Preserve the small wheel failure and completion report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

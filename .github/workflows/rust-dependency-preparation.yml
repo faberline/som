@@ -177,6 +177,7 @@ jobs:
             ${{ runner.temp }}/som-python-wheel-qualification/closures/*/publisher-metadata
             ${{ runner.temp }}/som-python-wheel-qualification/closures/*/wheels
             ${{ runner.temp }}/som-python-wheel-qualification/closures/*/wheel-audits
+            ${{ runner.temp }}/som-python-wheel-qualification/closures/*/cache-preparation
       - name: Preserve the small wheel failure and completion report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -447,6 +448,48 @@ jobs:
         run: |
           cargo build --locked --offline --manifest-path som-rs/som-targets/Cargo.toml --bin som 2>&1 | tee carrier-build.log
           sha256sum "$CARGO_TARGET_DIR/debug/som" | tee -a carrier-build.log
+      - name: Copy the exact built inputs into an owned single-link staging directory
+        run: |
+          python3 -I -S -B - "$CARGO_TARGET_DIR/debug/som" "$SOM_RUSTFMT" "$RUNNER_TEMP" <<'PY'
+          import hashlib, json, os, pathlib, stat, sys
+          temporary = pathlib.Path(sys.argv[3])
+          root = temporary / 'som-carrier-regular-inputs'
+          assert temporary.is_absolute() and not any(p.is_symlink() for p in (root, *root.parents))
+          root.mkdir(mode=0o700)
+          proof = json.loads((temporary / 'som-carrier-assembly-proof/_temp/som-unsealed-native-compile/manifest.json').read_bytes())
+          expected = {'binary': proof['initial_identities']['binary'],
+                      'rustfmt': proof['initial_identities']['tools']['SOM_RUSTFMT']}
+          record = {'version': 'som.carrier-single-link-staging.v1', 'files': {}, 'product_acceptance_passed': False}
+          fields = ('st_dev', 'st_ino', 'st_nlink', 'st_mode', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
+          for name, argument in zip(('binary', 'rustfmt'), sys.argv[1:3]):
+              source = pathlib.Path(argument)
+              assert source.is_absolute() and not any(p.is_symlink() for p in (source, *source.parents))
+              with os.fdopen(os.open(source, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), 'rb') as stream:
+                  before = os.fstat(stream.fileno())
+                  assert stat.S_ISREG(before.st_mode) and 0 < before.st_nlink and before.st_size <= 300 * 1024**2
+                  body = stream.read(300 * 1024**2 + 1)
+                  identity = {'sha256': hashlib.sha256(body).hexdigest(), 'size': len(body), 'mode': stat.S_IMODE(before.st_mode)}
+                  print(json.dumps({'source': str(source), 'nlink': before.st_nlink, **identity}), flush=True)
+                  assert identity == {key: expected[name][key] for key in identity}
+                  destination = root / name
+                  with destination.open('xb') as output:
+                      output.write(body)
+                      os.fchmod(output.fileno(), identity['mode'])
+                      output.flush()
+                      os.fsync(output.fileno())
+                  after = os.fstat(stream.fileno())
+                  assert all(getattr(before, key) == getattr(after, key) for key in fields)
+                  assert all(getattr(after, key) == getattr(source.lstat(), key) for key in fields)
+                  stream.seek(0)
+                  assert stream.read(300 * 1024**2 + 1) == body
+              installed = destination.stat()
+              assert stat.S_ISREG(installed.st_mode) and installed.st_nlink == 1
+              assert installed.st_size == identity['size'] and stat.S_IMODE(installed.st_mode) == identity['mode']
+              assert hashlib.sha256(destination.read_bytes()).hexdigest() == identity['sha256']
+              record['files'][name] = {'source': str(source), 'source_nlink': before.st_nlink,
+                                      'staged': str(destination), 'staged_nlink': installed.st_nlink, **identity}
+          (root / 'receipt.json').write_text(json.dumps(record, sort_keys=True) + '\n')
+          PY
       - name: Recheck source and require exact recorded binary, assets and tools
         env:
           HELPER_REVISION: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
@@ -463,9 +506,9 @@ jobs:
             --byte-identical-rebuild \
             --candidate-revision f59e28d910ff4adb16e3becfdc82bd2978ca84fa \
             --compile-manifest "$RUNNER_TEMP/som-carrier-assembly-proof/_temp/som-unsealed-native-compile/manifest.json" \
-            --binary "$CARGO_TARGET_DIR/debug/som" \
+            --binary "$RUNNER_TEMP/som-carrier-regular-inputs/binary" \
             --assets "$GITHUB_WORKSPACE/som-rs/compiler-assets/current" \
-            --native "$RUNNER_TEMP/som-native-tools" --rustfmt "$SOM_RUSTFMT" \
+            --native "$RUNNER_TEMP/som-native-tools" --rustfmt "$RUNNER_TEMP/som-carrier-regular-inputs/rustfmt" \
             --out "$RUNNER_TEMP/som-tested-candidate-carrier"
       - name: Verify unchanged dependency locks
         if: always()
@@ -484,6 +527,7 @@ jobs:
             carrier-native.log
             carrier-assets.log
             carrier-build.log
+            ${{ runner.temp }}/som-carrier-regular-inputs/receipt.json
             ${{ runner.temp }}/som-tested-candidate-carrier
 
   full-product-preparation:
