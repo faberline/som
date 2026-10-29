@@ -1,0 +1,17 @@
+name: Test unsealed React candidate audit scope
+on:
+  push:
+    branches: [codex/m6-react-external-candidate-audit-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fixture:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Run bounded candidate-reader fixtures
+        run: |
+          python3 -I -S -B -c 'import sys,unittest; sys.path.insert(0,"som-rs/scripts/react_output_acceptance/audit"); sys.path.insert(0,".github/m6-react-external-audit-fixtures"); import test_owned_candidate_audit as tests; result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(tests)); sys.exit(not result.wasSuccessful())'

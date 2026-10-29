@@ -161,6 +161,41 @@ class Reader:
     def note(self, value: str | Path) -> None:
         self.accesses.append(self.path(value).relative_to(self.repo).as_posix())
 
+    def owned_candidate_bytes(self, directory: Path, name: str) -> bytes:
+        """Read exactly one candidate file; process identity is checked elsewhere.
+
+        This is a draft named amendment. The caller must independently bind
+        the directory to the launcher's same-build layout and live PID. No
+        general external paths are admitted by Reader.path.
+        """
+        need(name in ('som', 'build.json', 'runtime.json'), 'candidate member refused')
+        need(directory.is_absolute() and '..' not in directory.parts and directory.is_dir()
+             and not any(p.is_symlink() for p in (directory, *directory.parents)),
+             'external candidate directory is not physical')
+        path = directory / name
+        try:
+            fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+            try:
+                before = os.fstat(fd)
+                need(stat.S_ISREG(before.st_mode) and before.st_nlink == 1
+                     and before.st_size <= 128 * 1024**2, 'invalid external candidate member')
+                with os.fdopen(fd, 'rb', closefd=False) as stream:
+                    raw = stream.read(128 * 1024**2 + 1)
+                after = os.fstat(fd)
+                need(len(raw) == before.st_size and before.st_ino == after.st_ino
+                     and before.st_dev == after.st_dev and before.st_size == after.st_size
+                     and before.st_mtime_ns == after.st_mtime_ns, 'candidate member changed')
+            finally:
+                os.close(fd)
+        except OSError as exc:
+            raise EvidenceError('external candidate member unavailable', 'unrun') from exc
+        key = '@owned-candidate/' + name
+        digest = sha(raw)
+        need(key not in self.files or self.files[key] == digest, 'candidate member changed during audit')
+        self.files[key] = digest
+        self.accesses.append(key)
+        return raw
+
     def hash(self, value: str | Path, base: Path | None = None) -> str:
         return sha(self.bytes(value, base, hash_only=True))
 
@@ -326,8 +361,10 @@ class Schema:
 
 
 class Audit:
-    def __init__(self, repo: Path, run: Path, api_closure_tar: Path | None = None):
+    def __init__(self, repo: Path, run: Path, api_closure_tar: Path | None = None,
+                 owned_candidate_root: Path | None = None):
         self.api_closure_tar = api_closure_tar
+        self.owned_candidate_root = owned_candidate_root
         self.api_qa_profile: dict | None = None
         self.reader = Reader(repo)
         self.repo = self.reader.repo
@@ -459,11 +496,19 @@ class Audit:
             need(isinstance(value, str) and HEX.fullmatch(value), "candidate binary hash is missing")
             need(value == candidate.get("binary_sha256_after"), "candidate binary changed")
             if "dir" in candidate:
-                directory = self.reader.path(candidate["dir"])
-                need(self.reader.hash(directory / "som") == value, "current candidate binary hash differs")
+                if self.owned_candidate_root is None:
+                    directory = self.reader.path(candidate["dir"])
+                    read_candidate = lambda name: self.reader.bytes(directory / name)
+                else:
+                    directory = self.owned_candidate_root
+                    need(type(candidate['dir']) is str and Path(candidate['dir']) == directory,
+                         'recorded and owned candidate directory differ')
+                    read_candidate = lambda name: self.reader.owned_candidate_bytes(directory, name)
+                need(sha(read_candidate('som')) == value, "current candidate binary hash differs")
                 for key in ("build", "runtime"):
-                    doc = object_value(self.reader.json(directory / f"{key}.json"), f"candidate {key}")
-                    need(self.reader.hash(directory / f"{key}.json") == candidate.get(f"{key}_sha256"), f"candidate {key} metadata hash differs")
+                    raw = read_candidate(f'{key}.json')
+                    doc = object_value(json.loads(raw), f"candidate {key}")
+                    need(sha(raw) == candidate.get(f"{key}_sha256"), f"candidate {key} metadata hash differs")
                     need(doc == candidate.get(key) and doc.get("binary_sha256") == value, f"candidate {key} metadata changed")
         self.row("integrity/candidate", binary)
         def git_identity() -> None:
@@ -2037,8 +2082,13 @@ def required_command(rows: list[dict], name: str) -> str:
     return next(row["command"] for row in rows if row["step"] == name)
 
 
-def run_audit(repo: Path, run: Path, api_closure_tar: Path | None = None) -> dict:
-    return Audit(repo, run, api_closure_tar).run_audit()
+def run_audit(repo: Path, run: Path, api_closure_tar: Path | None = None,
+              owned_candidate_root: Path | None = None) -> dict:
+    report = Audit(repo, run, api_closure_tar, owned_candidate_root).run_audit()
+    if owned_candidate_root is not None:
+        report['owned_candidate_process_binding'] = 'unverified'
+        report['limitations'].append('An external candidate is not a process ownership proof; the common launcher must independently bind it to the exact live candidate and post-close evidence.')
+    return report
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -2047,6 +2097,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[4])
     parser.add_argument("--api-closure-tar", type=Path, default=None)
+    parser.add_argument("--owned-candidate-root", type=Path, default=None)
     args = parser.parse_args(argv)
     try:
         repo = args.repo.resolve(strict=True)
@@ -2058,13 +2109,13 @@ def main(argv: list[str] | None = None) -> int:
             need(not path.is_symlink(), "symlink output is refused")
         need(not out.exists(), "--out already exists")
         need(out != run and not out.is_relative_to(run), "audit output must be outside the immutable run directory")
-        report = run_audit(repo, run, args.api_closure_tar)
+        report = run_audit(repo, run, args.api_closure_tar, args.owned_candidate_root)
         out.parent.mkdir(parents=True, exist_ok=True)
         with out.open("x", encoding="utf-8") as stream:
             json.dump(report, stream, indent=2, ensure_ascii=False, allow_nan=False)
             stream.write("\n")
         print(json.dumps({"report": str(out), "totals": report["totals"]}))
-        return 0 if report["totals"]["failed"] == 0 and report["totals"]["unrun"] == 0 else 1
+        return 0 if args.owned_candidate_root is None and report["totals"]["failed"] == 0 and report["totals"]["unrun"] == 0 else 1
     except (EvidenceError, OSError, ValueError, TypeError) as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
