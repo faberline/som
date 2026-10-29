@@ -96,32 +96,12 @@ def git(repo, *args):
 
 
 def admit(repo, revision, candidate, context_path):
-    require(HEX.fullmatch(revision or '') is not None and revision == candidate,
-            'same full source and candidate revision required')
-    require(git(repo, 'rev-parse', '--verify', 'HEAD^{commit}').decode().strip() == revision,
-            'checkout HEAD differs')
-    entry = git(repo, 'ls-tree', '-z', revision, '--', GRAPH)
-    require(entry.startswith((b'100644 blob ', b'100755 blob ')) and
-            entry.endswith(b'\t' + GRAPH.encode() + b'\0') and entry.count(b'\0') == 1,
-            'regular graph Git source required')
-    raw = git(repo, 'cat-file', 'blob', revision + ':' + GRAPH)
-    require(raw == read(repo / GRAPH), 'graph source differs from Git')
-    name = '_som_m6_callback_graph'
-    require(name not in sys.modules, 'preloaded graph refused')
-    graph = ModuleType(name)
-    graph.__file__, graph.__cached__, graph.__package__ = str(repo / GRAPH), None, ''
-    graph.__som_raw_sha256__ = sha(raw)
-    sys.modules[name] = graph
-    exec(compile(raw, graph.__file__, 'exec', dont_inherit=True), graph.__dict__)
-    sources, _, authority = graph.admit_source(repo, revision, candidate)
-    require(sources.read(SELF) == read(Path(__file__).absolute()), 'callback source differs from Git')
-    module = graph.raw_module(sources, 'full_product_context', CONTEXT)
-    ctx = module.Context(context_path)
-    module._ACTIVE = ctx
-    require(ctx.repo == repo and ctx.helper_revision == revision and ctx.candidate_revision == candidate
-            and ctx.qa_mode == 'native-qa-v1' and ctx.qa_source_authority == authority,
-            'context and source authority differ')
-    return graph, sources, authority, module, ctx
+    """Refuse until reviewed native source authority precedes every graph import.
+
+    The previous draft only compared the graph bytes with a requested Git HEAD.
+    That comparison does not authorize the revision before executing its code.
+    """
+    raise ValueError('native pre-import source authority is not implemented')
 
 
 def command_evidence(ctx, out, name, command):
@@ -209,12 +189,12 @@ def run(args):
             os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted' and
             os.environ.get('RUNNER_OS') == 'Linux' and sys.platform == 'linux',
             'GitHub-hosted Linux runner required')
+    require(GRAPH_INTEGRATION_REVIEWED, 'M6 graph integration is unreviewed; product run not admitted')
     repo = physical(args.repo)
     physical(args.product_context)
     graph, sources, authority, module, ctx = admit(repo, args.helper_revision, args.candidate_revision,
                                                    args.product_context)
     proof = validate_args(args, ctx, graph)
-    require(GRAPH_INTEGRATION_REVIEWED, 'M6 graph integration is unreviewed; product run not admitted')
     out = args.out
     out.mkdir(mode=0o700)
     report = {'version': 'som.m6-react-graph-callback.v1', 'gate': GATE,

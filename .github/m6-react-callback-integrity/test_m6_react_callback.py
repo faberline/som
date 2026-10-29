@@ -74,6 +74,42 @@ class CallbackFixture(unittest.TestCase):
             subject.verify_result(self.args.out, lambda _: b'', self.rev, self.rev,
                                   repo=self.repo, proof_roots={})
 
+    def test_disabled_guard_precedes_any_graph_or_context_work(self):
+        with mock.patch.dict(os.environ, {'GITHUB_ACTIONS': 'true',
+                'RUNNER_ENVIRONMENT': 'github-hosted', 'RUNNER_OS': 'Linux'}), \
+             mock.patch.object(subject.sys, 'platform', 'linux'), \
+             mock.patch.object(subject, 'physical') as physical, \
+             mock.patch.object(subject, 'admit') as admit, \
+             mock.patch.object(subject, 'validate_args') as validate:
+            with self.assertRaisesRegex(ValueError, 'graph integration is unreviewed'):
+                subject.run(self.args)
+        physical.assert_not_called()
+        admit.assert_not_called()
+        validate.assert_not_called()
+
+    def test_independent_bootstrap_refuses_before_git_or_import(self):
+        with mock.patch.object(subject, 'git') as git, \
+             mock.patch.object(subject, 'ModuleType') as module:
+            with self.assertRaisesRegex(ValueError, 'pre-import source authority is not implemented'):
+                subject.admit(self.repo, self.rev, self.rev, self.repo / 'context.json')
+        git.assert_not_called()
+        module.assert_not_called()
+
+    def test_enabling_outer_guard_alone_still_blocks_bootstrap(self):
+        with mock.patch.dict(os.environ, {'GITHUB_ACTIONS': 'true',
+                'RUNNER_ENVIRONMENT': 'github-hosted', 'RUNNER_OS': 'Linux'}), \
+             mock.patch.object(subject.sys, 'platform', 'linux'), \
+             mock.patch.object(subject, 'GRAPH_INTEGRATION_REVIEWED', True), \
+             mock.patch.object(subject, 'physical', side_effect=lambda path, **_: path), \
+             mock.patch.object(subject, 'git') as git, \
+             mock.patch.object(subject, 'ModuleType') as module:
+            self.args.product_context = self.repo / 'context.json'
+            self.args.helper_revision = self.rev
+            with self.assertRaisesRegex(ValueError, 'pre-import source authority is not implemented'):
+                subject.run(self.args)
+        git.assert_not_called()
+        module.assert_not_called()
+
     def test_child_environment_excludes_transport_token_and_qualification_setting(self):
         ctx = SimpleNamespace(child_environment=lambda: {'PATH': '/bin',
             'SOM_DEPENDENCY_ACTIONS_TOKEN': 'must-not-propagate', 'UV_NO_INSTALLER_METADATA': '1'})
