@@ -63,6 +63,9 @@ class CaptureTests(unittest.TestCase):
             rows.extend([{'phase': key[0], 'id': case, 'check': 'compile_equal', 'passed': True,
                           'baseline_status': 200, 'baseline_response_sha256': digest(self.compile_response),
                           'baseline_request_sha256': digest(self.compile_request)},
+                         {'phase': key[0], 'id': case, 'check': 'baseline_bundle_refused', 'passed': True,
+                          'qa_status': 400, 'request_sha256': digest(capture.jbytes({'bundle': {'prompt': '中文'}})),
+                          'qa_request_sha256': digest(capture.jbytes({'bundle': {'prompt': '中文'}}))},
                          {'phase': key[0], 'id': case, 'check': 'rebased_files', 'passed': True, 'qa_status': 200,
                           'files_sha256': self.files_sha, 'recorded_files_sha256': self.files_sha,
                           'qa_request_sha256': digest(self.qa_request), 'qa_response_sha256': digest(self.qa_response)}])
@@ -127,6 +130,25 @@ class CaptureTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.prepare()
 
+    def test_refusal_request_sha_mismatch_fails_closed(self):
+        report = json.loads(self.report_path.read_bytes())
+        report['rows'][1]['request_sha256'] = '0' * 64
+        report['rows'][1]['qa_request_sha256'] = '0' * 64
+        self.write(self.report_path, report)
+        capture.REPORT_SHA = digest(self.report_path.read_bytes())
+        manifest_path = self.sealed / 'manifest.json'
+        manifest = json.loads(manifest_path.read_bytes())
+        entry = next(x for x in manifest['files'] if x['path'] == 'run/rust-baseline/report.json')
+        entry['sha256'] = capture.REPORT_SHA
+        self.write(manifest_path, manifest)
+        index_path = self.sealed / 'evidence-index.json'
+        index = json.loads(index_path.read_bytes())
+        index['packages'][0]['manifest_sha256'] = digest(manifest_path.read_bytes())
+        self.write(index_path, index)
+        capture.EVIDENCE_INDEX_SHA = digest(index_path.read_bytes())
+        with self.assertRaisesRegex(ValueError, 'original serializer request identity'):
+            self.prepare()
+
     def test_modified_refusal_fails_closed(self):
         self.put(self.record_path.parent / 'calls/000002.response.raw', b'changed')
         with self.assertRaises(ValueError):
@@ -140,6 +162,19 @@ class CaptureTests(unittest.TestCase):
         with patch.dict(os.environ, {'RUNNER_ENVIRONMENT': 'self-hosted', 'RUNNER_OS': 'macOS'}):
             with self.assertRaisesRegex(ValueError, 'hosted macOS arm64 required'):
                 capture.execute(SimpleNamespace(), self.checker)
+
+    def test_attempt_without_comparison_stays_unrun(self):
+        self.assertEqual(capture.count_unrun([1, 2, 3], [{'comparison': 'unrun'}]), 3)
+        self.assertEqual(capture.count_unrun([1, 2, 3], [{'comparison': 'failed'}]), 2)
+
+    def test_source_preparation_failure_records_all_unrun(self):
+        out = Path(self.temp.name) / 'failed-capture'
+        args = SimpleNamespace(out=out, inventory=self.inventory, evidence=self.evidence, run003=self.run, sealed=self.sealed)
+        with patch.object(capture, 'prepare', side_effect=ValueError('fixture failure')):
+            with self.assertRaisesRegex(ValueError, 'fixture failure'):
+                capture.execute(args, self.checker)
+        receipt = json.loads((out / 'receipt.json').read_bytes())
+        self.assertEqual((receipt['unrun'], receipt['passed'], receipt['stage']), (697, False, 'source_preparation'))
 
 
 if __name__ == '__main__':
