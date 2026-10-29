@@ -94,7 +94,8 @@ class LocalCaptureFixture(unittest.TestCase):
 
     def test_verifier_stays_closed_even_with_consistent_capture(self):
         self.check()
-        with mock.patch.object(subject, 'shared_postclose_proof', return_value={}):
+        with mock.patch.object(subject, 'admit_owner_executables', return_value={'source_admission_sha256':'e'*64}), \
+             mock.patch.object(subject, 'shared_postclose_proof', return_value={}):
             with self.assertRaisesRegex(ValueError, 'shared post-close proof differs'):
                 subject.verify_result(self.root, lambda _: self.source, self.rev, self.rev,
                                       repo=self.root, proof_roots={})

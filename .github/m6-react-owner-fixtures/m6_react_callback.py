@@ -22,6 +22,8 @@ from types import ModuleType
 SELF = 'som-rs/scripts/react_output_acceptance/m6_react_callback.py'
 GRAPH = 'som-rs/scripts/hosted_readiness/same_candidate_graph.py'
 CONTEXT = 'som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py'
+AUTHORITY = 'som-rs/scripts/hosted_readiness/native_qa_authority.py'
+DRIVER = 'som-rs/scripts/hosted_readiness/run_full_products.py'
 COLLECTOR = 'som-rs/scripts/react_output_acceptance/run_acceptance.py'
 AUDITOR = 'som-rs/scripts/react_output_acceptance/audit/audit130.py'
 LAUNCHER = 'som-rs/scripts/hosted_readiness/run_current_candidate_gate.py'
@@ -36,12 +38,16 @@ ORIGINAL_INPUT_INDEX_SHA = '78375feb14ed286ac5df4c52f13d5d1ae301b2057d5e3894edf0
 AUDIT_BASE = 'som-rs/scripts/react_output_acceptance/audit/'
 AUDIT_MODULES = ('render_rules', 'refusal_rules', 'api_raw', 'linux_install_map', 'linux_input_raw', 'baseline_raw', 'audit130')
 INPUT_PROFILE = 'som-rs/contracts/react-output-v1/native-owner-input-authority.json'
+REACT_RECEIPT = 'som-rs/evidence/react-output-contract-amendment-003.json'
 DERIVED_SOURCES = {
     'som-rs/scripts/react_output_acceptance/native_owner_input_binding.py': 'ed8b910fbc79087231050fa5883cc2ca71ddfcdb881a289e32dcf41ce5f34e2d',
     'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py': 'f7231671f41cb78cfe50e195159f54c644baa1f65a0a186c52f2abc2b8877e41',
     'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py': '82efed50d624cfe1929de5448ca756bbec5c28f8f04ba652fe8286fc285f5d1b',
     'som-rs/scripts/react_output_acceptance/historical-response-reuse-map.json': '3b06627c31626238960d38ddb9e772e57c900a98a28ba6407790ca8196edd8ca',
 }
+EXECUTABLE_SOURCES = frozenset({SELF, COLLECTOR, AUDITOR, LAUNCHER, CONTEXT, AUTHORITY, DRIVER,
+    *[AUDIT_BASE + name + '.py' for name in AUDIT_MODULES],
+    *[path for path in DERIVED_SOURCES if path.endswith('.py')]})
 HEX = re.compile(r'[0-9a-f]{40}\Z')
 
 
@@ -51,7 +57,7 @@ def require(value, message):
 
 
 def canonical(value):
-    return json.dumps(value, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
+    return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False, allow_nan=False).encode('utf-8')
 
 
 def sha(raw):
@@ -140,8 +146,8 @@ def run_gate(ctx, candidate_dir, services, out, gate):
             and all(source_authority.get(k) is False for k in ('product_acceptance_passed',
                 'compiler_acceptance_passed', 'whole_acceptance_complete')), 'native source authority required')
     admitted = source_authority.get('admitted_repository_python_sources', [])
-    require(all(p in admitted for p in (SELF, COLLECTOR, AUDITOR)), 'owner sources not admitted')
-    for path in (SELF, COLLECTOR, AUDITOR):
+    require(all(p in admitted for p in EXECUTABLE_SOURCES), 'owner executable sources not admitted')
+    for path in EXECUTABLE_SOURCES:
         ctx.sources.read(path)
     report = {'version': 'som.m6-react-graph-callback.v1', 'gate': gate,
               'helper_revision': revision, 'candidate_revision': revision, 'rows': [],
@@ -871,7 +877,7 @@ def verify_react_raw_domain(root, source_reader, helper_revision, candidate_revi
                                    api_closure_tar=paths['api_closure_tar'], candidate_dir=candidate)
     observer = context.get('observer_python')
     require(type(observer) is str and Path(observer).is_absolute(), 'React observer Python differs')
-    driver = 'som-rs/scripts/hosted_readiness/run_full_products.py'
+    driver = DRIVER
     source_reader(CONTEXT); source_reader(driver)
     expected_commands = {
         'collector': [observer, '-I', '-S', '-B', str(repo / driver), '--execute-tool', COLLECTOR, '--', *collector_args],
@@ -1013,6 +1019,56 @@ def shared_postclose_proof(root, source_reader, helper_revision, candidate_revis
             del sys.modules[name]
 
 
+def admit_owner_executables(root, source_reader, helper_revision, candidate_revision, *, repo):
+    """Rederive native source admission before any manually loaded helper."""
+    repo = physical(repo)
+    require(HEX.fullmatch(helper_revision or '') is not None and helper_revision == candidate_revision,
+            'one exact owner source revision required')
+    require(git(repo, 'rev-parse', '--verify', 'HEAD^{commit}').decode().strip() == helper_revision,
+            'owner source HEAD differs')
+    paths_raw = git(repo, 'ls-tree', '-r', '-z', '--name-only', helper_revision)
+    require(paths_raw.endswith(b'\0'), 'owner source inventory incomplete')
+    paths = paths_raw[:-1].decode('utf-8', 'strict').split('\0')
+    require(len(paths) == len(set(paths)), 'owner source inventory duplicated')
+    raw = source_reader(AUTHORITY)
+    require(type(raw) is bytes and raw, 'native authority source unavailable')
+    name = '_som_m6_react_owner_authority'
+    require(name not in sys.modules, 'preloaded owner authority refused')
+    module = ModuleType(name)
+    module.__file__, module.__package__, module.__cached__ = str(repo / AUTHORITY), '', None
+    module.__som_raw_sha256__ = sha(raw)
+    sys.modules[name] = module
+    try:
+        exec(compile(raw, module.__file__, 'exec', dont_inherit=True), module.__dict__)
+        require(sys.modules.get(name) is module and callable(getattr(module, 'verify', None)),
+                'native source authority module differs')
+        authority = module.verify(source_reader, 'native-qa-v1', set(paths), helper_revision, candidate_revision)
+        context = strict_json(read(root.parent / 'context.input.json'))
+        require(type(authority) is dict and authority == context.get('native_source_authority')
+                and authority.get('source_authority_active') is True
+                and authority.get('helper_revision') == authority.get('candidate_revision') == candidate_revision
+                and all(authority.get(key) is False for key in ('product_acceptance_passed',
+                    'compiler_acceptance_passed', 'whole_acceptance_complete')),
+                'native owner source authority differs')
+        admitted = authority.get('admitted_repository_python_sources')
+        require(type(admitted) is list and len(admitted) == len(set(admitted))
+                and EXECUTABLE_SOURCES <= set(admitted), 'owner executable source scope not admitted')
+        pins = {path: sha(source_reader(path)) for path in sorted(EXECUTABLE_SOURCES)}
+        receipt = strict_json(source_reader(REACT_RECEIPT))
+        require(type(receipt) is dict and receipt.get('amendment') == 3
+                and receipt.get('status') == 'amendment_sealed_after_independent_review'
+                and type(receipt.get('independent_review')) is dict and receipt['independent_review']
+                and type(receipt.get('files')) is dict, 'reviewed React003 receipt required')
+        react_paths = {SELF, AUDITOR, INPUT_PROFILE, *DERIVED_SOURCES}
+        require(all(receipt['files'].get(path) == sha(source_reader(path)) for path in react_paths),
+                'React owner sources or input authority absent from React003 receipt')
+        require(sys.modules.get(name) is module, 'native source authority module changed')
+        return {'source_admission_sha256': sha(canonical(authority)), 'executed_source_sha256': pins}
+    finally:
+        if sys.modules.get(name) is module:
+            del sys.modules[name]
+
+
 def verify_result(root, source_reader, helper_revision, candidate_revision, gate=GATE, *, repo, proof_roots):
     """Return a new result only after owner raw audit and shared post-close proof."""
     root = physical(root)
@@ -1020,6 +1076,7 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
     capture = strict_json(capture_raw)
     require(capture.get('owned_waits_complete') is False and capture.get('owned_cleanup_complete') is False,
             'capture shared cleanup must remain pending')
+    admitted = admit_owner_executables(root, source_reader, helper_revision, candidate_revision, repo=repo)
     shared = shared_postclose_proof(root, source_reader, helper_revision, candidate_revision, gate,
                                     repo=repo, proof_roots=proof_roots)
     expected = {'version', 'gate', 'helper_revision', 'candidate_revision', 'capture_result_sha256',
@@ -1032,6 +1089,7 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
             and shared.get('gate') == gate and shared.get('helper_revision') == helper_revision
             and shared.get('candidate_revision') == candidate_revision
             and shared.get('capture_result_sha256') == sha(capture_raw)
+            and shared.get('source_admission_sha256') == admitted['source_admission_sha256']
             and shared.get('owned_waits_complete') is True and shared.get('owned_cleanup_complete') is True
             and shared.get('product_acceptance_passed') is False, 'shared post-close proof differs')
     domain = verify_react_raw_domain(root, source_reader, helper_revision, candidate_revision, gate,
@@ -1043,7 +1101,8 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
     verified = {'version': 'som.m6-react-verified-owner.v1', 'gate': gate,
                 'helper_revision': helper_revision, 'candidate_revision': candidate_revision,
                 'capture_result_sha256': sha(capture_raw), 'shared_postclose_proof': shared,
-                'react_domain_proof': domain, 'complete': True, 'all_required_passed': True,
+                'react_domain_proof': domain, 'owner_source_admission': admitted,
+                'complete': True, 'all_required_passed': True,
                 'owned_waits_complete': True, 'owned_cleanup_complete': True,
                 'raw_logs_complete': True, 'product_acceptance_passed': False}
     verified_path = root / 'verified-result.json'

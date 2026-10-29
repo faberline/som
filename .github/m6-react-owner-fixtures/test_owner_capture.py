@@ -34,7 +34,7 @@ class OwnerCapture(unittest.TestCase):
         self.profile = 'som-rs/scripts/hosted_readiness/baseline.json'
         self.rev = 'a' * 40
         self.source_map = {name: ('fixture:' + name).encode() for name in
-                           (subject.SELF, subject.COLLECTOR, subject.AUDITOR, self.profile)}
+                           (*subject.EXECUTABLE_SOURCES, self.profile)}
         pins = {}
         def read_source(path):
             raw = self.source_map[path]; pins[path] = subject.sha(raw); return raw
@@ -45,7 +45,7 @@ class OwnerCapture(unittest.TestCase):
         authority = {'source_authority_active': True, 'helper_revision': self.rev, 'candidate_revision': self.rev,
             'product_acceptance_passed': False, 'compiler_acceptance_passed': False,
             'whole_acceptance_complete': False,
-            'admitted_repository_python_sources': [subject.SELF, subject.COLLECTOR, subject.AUDITOR]}
+            'admitted_repository_python_sources': sorted(subject.EXECUTABLE_SOURCES)}
         self.ctx = SimpleNamespace(repo=self.repo, work=root, helper_revision=self.rev, candidate_revision=self.rev,
             qa_mode='native-qa-v1', qa_source_authority=authority, data={'m6_react_inputs': config},
             sources=self.source, cache={'commands': []}, verify=mock.Mock(),
@@ -107,7 +107,8 @@ class OwnerCapture(unittest.TestCase):
         self.assertFalse(result['product_acceptance_passed'])
         self.services.start_baseline.assert_called_once_with(self.profile)
         self.services.close_all.assert_not_called()
-        with mock.patch.object(subject, 'shared_postclose_proof', return_value={}):
+        with mock.patch.object(subject, 'admit_owner_executables', return_value={'source_admission_sha256':'e'*64}), \
+             mock.patch.object(subject, 'shared_postclose_proof', return_value={}):
             with self.assertRaisesRegex(ValueError, 'shared post-close proof differs'):
                 subject.verify_result(self.out, self.source.read, self.rev, self.rev, subject.GATE,
                                       repo=self.repo, proof_roots={})
