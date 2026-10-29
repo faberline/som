@@ -108,10 +108,6 @@ class DomainBoundaryTests(unittest.TestCase):
              mock.patch.object(s,'verify_recorded_named_scope',return_value={'complete':True, 'fixture_only':True}):
             return s.verify_react_raw_domain(self.owner,lambda _:self.source,self.rev,self.rev,s.GATE,
                                               repo=self.repo,proof_roots={},shared=self.shared_proof)
-    def test_recorded_scope_missing_fails_closed(self):
-        with self.assertRaisesRegex(ValueError, 'recorded oracle named raw scope'):
-            s.verify_recorded_named_scope(self.owner, lambda _: self.source, repo=self.repo,
-                                          original=self.original, shared=self.shared_proof)
     def test_complete_synthetic_domain_and_identity(self):
         proof=self.check();self.assertTrue(proof['complete']);self.assertEqual(proof['candidate_pid'],4321)
         self.assertEqual(proof['candidate_binary_sha256'],s.sha(self.binary))

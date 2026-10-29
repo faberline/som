@@ -24,6 +24,8 @@ GRAPH = 'som-rs/scripts/hosted_readiness/same_candidate_graph.py'
 CONTEXT = 'som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py'
 AUTHORITY = 'som-rs/scripts/hosted_readiness/native_qa_authority.py'
 DRIVER = 'som-rs/scripts/hosted_readiness/run_full_products.py'
+ORACLE = 'som-rs/scripts/hosted_readiness/product_runtime/recorded_before_oracle.py'
+ORACLE_PROFILE = 'som-rs/scripts/hosted_readiness/inputs/recorded-before-profile-v1.json'
 COLLECTOR = 'som-rs/scripts/react_output_acceptance/run_acceptance.py'
 AUDITOR = 'som-rs/scripts/react_output_acceptance/audit/audit130.py'
 LAUNCHER = 'som-rs/scripts/hosted_readiness/run_current_candidate_gate.py'
@@ -45,7 +47,7 @@ DERIVED_SOURCES = {
     'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py': '82efed50d624cfe1929de5448ca756bbec5c28f8f04ba652fe8286fc285f5d1b',
     'som-rs/scripts/react_output_acceptance/historical-response-reuse-map.json': '3b06627c31626238960d38ddb9e772e57c900a98a28ba6407790ca8196edd8ca',
 }
-EXECUTABLE_SOURCES = frozenset({SELF, COLLECTOR, AUDITOR, LAUNCHER, CONTEXT, AUTHORITY, DRIVER,
+EXECUTABLE_SOURCES = frozenset({SELF, COLLECTOR, AUDITOR, LAUNCHER, CONTEXT, AUTHORITY, DRIVER, ORACLE,
     *[AUDIT_BASE + name + '.py' for name in AUDIT_MODULES],
     *[path for path in DERIVED_SOURCES if path.endswith('.py')]})
 HEX = re.compile(r'[0-9a-f]{40}\Z')
@@ -839,7 +841,7 @@ def source_bound_auditor(source_reader, repo):
 
 def join_recorded_named_rows(original, oracle_root, table, calls, *, expected_counts):
     """Join already source-verified oracle rows to the freshly audited owner raw bytes."""
-    from collections import Counter, defaultdict
+    from collections import Counter
     from urllib.parse import urlsplit
 
     original, oracle_root = physical(original), physical(oracle_root)
@@ -938,9 +940,70 @@ def join_recorded_named_rows(original, oracle_root, table, calls, *, expected_co
             'named_role_counts': dict(expected_counts), 'duplicate_wire_caller_identity': 'indistinguishable'}
 
 
-def verify_recorded_named_scope(root, source_reader, *, repo, original, shared):
-    """Reject until the source-bound oracle and its named joins are available."""
-    raise ValueError('recorded oracle named raw scope is not yet verified')
+def verify_recorded_named_scope(root, source_reader, helper_revision, candidate_revision, *, repo, original, shared):
+    """Rebuild the oracle from admitted bytes, then join this gate's named calls."""
+    context_raw = read(root.parent / 'context.input.json')
+    services_raw = read(root.parent / 'services/manifest.json')
+    require(sha(context_raw) == shared.get('context_sha256')
+            and sha(services_raw) == shared.get('services_manifest_sha256'),
+            'recorded oracle context or service manifest differs')
+    context, services = strict_json(context_raw), strict_json(services_raw)
+    capture = strict_json(read(root / 'result.json'))
+    require(capture.get('input_paths', {}).get('baseline_profile') == ORACLE_PROFILE,
+            'recorded oracle profile path differs')
+    selected = context.get('baseline_inputs', {}).get(ORACLE_PROFILE)
+    require(type(selected) is str and selected, 'recorded oracle input root missing')
+    inputs = physical(selected)
+    require(inputs.is_dir(), 'recorded oracle input root is not a directory')
+    baseline = services.get('services', {}).get('baseline')
+    require(type(baseline) is dict and type(baseline.get('extra')) is dict
+            and baseline['extra'].get('profile_path') == ORACLE_PROFILE
+            and baseline['extra'].get('input_root') == selected
+            and baseline['extra'].get('oracle_out') == 'oracle',
+            'recorded oracle service input binding differs')
+    oracle_root = physical(root.parent / 'services/baseline/oracle')
+    runtime_raw = read(root.parent / 'services/baseline/runtime.json')
+    runtime = strict_json(runtime_raw)
+    name = '_som_m6_react_recorded_before_verifier'
+    require(name not in sys.modules, 'preloaded recorded oracle verifier refused')
+    raw = source_reader(ORACLE)
+    require(type(raw) is bytes and raw, 'source-bound oracle verifier missing')
+    module = ModuleType(name)
+    module.__file__, module.__package__, module.__cached__ = str(repo / ORACLE), '', None
+    module.__som_raw_sha256__ = sha(raw)
+    sys.modules[name] = module
+    try:
+        exec(compile(raw, module.__file__, 'exec', dont_inherit=True), module.__dict__)
+        require(sys.modules.get(name) is module and callable(getattr(module, 'verify_recorded_run', None)),
+                'source-bound oracle verifier differs')
+        verified = module.verify_recorded_run(oracle_root, source_reader, helper_revision, candidate_revision,
+                                             ORACLE_PROFILE, inputs, repo=repo, runtime=runtime)
+        require(sys.modules.get(name) is module, 'recorded oracle verifier identity changed')
+    finally:
+        if sys.modules.get(name) is module:
+            del sys.modules[name]
+    table_raw, result_raw = read(oracle_root / 'table.json'), read(oracle_root / 'result.json')
+    result = strict_json(result_raw)
+    require(type(verified) is dict and set(verified) == {'version', 'profile_sha256', 'helper_revision',
+            'candidate_revision', 'table_sha256', 'table', 'calls', 'result_sha256',
+            'runtime_named_coverage', 'product_acceptance_passed'}
+            and verified['version'] == 'som.recorded-before-run-verification.v1'
+            and verified['helper_revision'] == helper_revision and verified['candidate_revision'] == candidate_revision
+            and verified['profile_sha256'] == sha(source_reader(ORACLE_PROFILE))
+            and verified['table_sha256'] == sha(table_raw) and verified['table'] == strict_json(table_raw)
+            and verified['result_sha256'] == sha(result_raw) and verified['calls'] == result.get('calls')
+            and verified['runtime_named_coverage'] == 'owner_verifier_required'
+            and verified['product_acceptance_passed'] is False,
+            'source-bound recorded oracle proof differs')
+    joined = join_recorded_named_rows(original, oracle_root, verified['table'], verified['calls'],
+        expected_counts={'react_python': 2684, 'rust006': 699, 'typescript125': 492})
+    require(read(root.parent / 'context.input.json') == context_raw
+            and read(root.parent / 'services/manifest.json') == services_raw
+            and read(root.parent / 'services/baseline/runtime.json') == runtime_raw
+            and read(oracle_root / 'table.json') == table_raw and read(oracle_root / 'result.json') == result_raw,
+            'recorded oracle evidence changed during named join')
+    return {**joined, 'oracle_verifier_sha256': sha(raw), 'oracle_profile_sha256': verified['profile_sha256'],
+            'oracle_table_sha256': verified['table_sha256'], 'oracle_result_sha256': verified['result_sha256']}
 
 
 def verify_react_raw_domain(root, source_reader, helper_revision, candidate_revision, gate, *, repo, proof_roots, shared):
@@ -1092,7 +1155,8 @@ def verify_react_raw_domain(root, source_reader, helper_revision, candidate_revi
     require(all('@owned-candidate/' + n in audited for n in ('som', 'build.json', 'runtime.json'))
             and shared.get('owned_waits_complete') is True and shared.get('owned_cleanup_complete') is True,
             'React candidate or shared post-close evidence missing')
-    named_scope = verify_recorded_named_scope(root, source_reader, repo=repo, original=original, shared=shared)
+    named_scope = verify_recorded_named_scope(root, source_reader, helper_revision, candidate_revision,
+                                               repo=repo, original=original, shared=shared)
     require(type(named_scope) is dict and named_scope.get('complete') is True,
             'recorded oracle named raw scope differs')
     require(read(root / 'audit.json') == audit_raw and snapshot == scan_capture_source(original),
