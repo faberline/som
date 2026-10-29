@@ -356,6 +356,7 @@ def compare_exchanges(root, config, report, candidate, previous):
                 require(role is not None, 'CLI binary path mismatch')
                 paired_stdout.add(stdout.name)
                 paired_stderr.add(stderr.name)
+                counts['cli_stderr_nonempty'] += int(stderr.stat().st_size > 0)
                 observed_cli.append((role, tuple(argv[1:-2]), digest(stdout), int(match.group(1))))
             # Response-only files are health checks and are not HTTP canaries.
             # Every CLI stdout/stderr must have a corresponding argv.
@@ -372,6 +373,7 @@ def compare_exchanges(root, config, report, candidate, previous):
             counts['http_pairs'] += len(observed_http)
             counts['cli_records'] += len(observed_cli)
     return {'http_pairs': counts['http_pairs'], 'cli_records': counts['cli_records'],
+            'cli_stderr_nonempty': counts['cli_stderr_nonempty'],
             'join': 'per-unit source order and producer canary events; identical requests do not identify their caller',
             'http_route_per_exchange': 'not_recorded'}
 

@@ -248,6 +248,11 @@ class ExchangeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'CLI argv/stdout'):
             self.inspect()
 
+    def test_cli_stderr_is_counted_without_inventing_a_gate(self):
+        path = next((self.root / 'run/rehearsal/switch/switch').glob('*-cli-stderr.raw'))
+        path.write_bytes(b'warning')
+        self.assertEqual(self.inspect()['cli_stderr_nonempty'], 1)
+
     def test_clone_port_must_match_its_recorded_owner(self):
         path = self.root / 'run/rehearsal/switch/switch/journal.json'
         events = json.loads(path.read_bytes())
