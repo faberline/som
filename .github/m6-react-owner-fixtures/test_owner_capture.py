@@ -200,7 +200,43 @@ class OwnerCapture(unittest.TestCase):
         self.assertEqual(result['command_evidence_errors'][0]['stage'], 'collector')
         self.assertIn('secondary evidence error', result['command_evidence_errors'][0]['error'])
         self.assertEqual((self.out / 'collector/run.json').read_text(), '{"partial":true}')
+        self.assertEqual((self.out / 'logs/collector.stdout').read_bytes(), b'stdout:m6-react-collector')
+        self.assertEqual((self.out / 'logs/collector.stderr').read_bytes(), b'stderr:m6-react-collector')
+        self.assertTrue(result['rows'][0]['fallback_unverified'])
+        self.assertFalse(result['rows'][0]['streams_complete'])
         self.assertFalse(result['complete'])
+
+    def test_fallback_retains_readable_stream_and_marks_unreadable_stream(self):
+        self.interrupt = True
+        original = subject.read
+        def fail_stdout(path, *args, **kwargs):
+            if Path(path) == self.ctx.work / 'stdout0':
+                raise PermissionError('fixture fallback stdout unavailable')
+            return original(path, *args, **kwargs)
+        with mock.patch.object(subject, 'command_evidence', side_effect=RuntimeError('secondary evidence error')), \
+             mock.patch.object(subject, 'read', side_effect=fail_stdout):
+            result = self.invoke()
+        self.assertIn('TimeoutError: fixture partial collector', result['error'])
+        self.assertIn('secondary evidence error', result['command_evidence_errors'][0]['error'])
+        self.assertEqual((self.out / 'logs/collector.stderr').read_bytes(), b'stderr:m6-react-collector')
+        self.assertFalse((self.out / 'logs/collector.stdout').exists())
+        self.assertEqual(result['rows'][0]['capture_errors'][0]['stage'], 'stdout')
+        self.assertIn('PermissionError', result['rows'][0]['capture_errors'][0]['error'])
+        self.assertTrue(result['rows'][0]['fallback_unverified'])
+        self.assertFalse(result['rows'][0]['streams_complete']); self.assertFalse(result['complete'])
+
+    def test_fallback_keeps_an_already_saved_stream_and_recovers_the_other(self):
+        self.interrupt = True
+        def partial_handler(ctx, out, name, command):
+            subject.save(out / 'logs/collector.stdout', (ctx.work / command['stdout']).read_bytes())
+            raise RuntimeError('failure after first stream')
+        with mock.patch.object(subject, 'command_evidence', side_effect=partial_handler):
+            result = self.invoke()
+        self.assertIn('TimeoutError: fixture partial collector', result['error'])
+        self.assertEqual((self.out / 'logs/collector.stdout').read_bytes(), b'stdout:m6-react-collector')
+        self.assertEqual((self.out / 'logs/collector.stderr').read_bytes(), b'stderr:m6-react-collector')
+        self.assertEqual(result['rows'][0]['capture_errors'], [])
+        self.assertTrue(result['rows'][0]['fallback_unverified']); self.assertFalse(result['complete'])
 
     def test_owned_signal_remains_primary_if_evidence_capture_raises(self):
         self.interrupt = True

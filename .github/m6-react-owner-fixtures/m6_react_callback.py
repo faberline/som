@@ -367,6 +367,35 @@ def command_evidence(ctx, out, name, command):
     return row
 
 
+def fallback_command_streams(ctx, out, name, command):
+    """One bounded best-effort copy after an unexpected evidence-handler error."""
+    row = {'id': name, 'command': dict(command), 'streams_complete': False, 'postcheck': None,
+           'capture_errors': [], 'fallback_unverified': True}
+    for kind in ('stdout', 'stderr'):
+        if kind not in command:
+            row['capture_errors'].append({'stage': kind, 'error': 'original stream path unavailable'})
+            continue
+        try:
+            relative_source = Path(command[kind])
+            require(not relative_source.is_absolute() and relative_source.parts
+                    and all(part not in ('', '.', '..') for part in relative_source.parts),
+                    'unsafe original stream path')
+            raw = read(ctx.work / relative_source)
+            relative_dest = 'logs/' + name + '.' + kind
+            destination = out / relative_dest
+            if destination.exists() or destination.is_symlink():
+                require(read(destination) == raw, 'previously retained stream bytes differ')
+            else:
+                save(destination, raw)
+            row[kind] = relative_dest
+            row[kind + '_observed_sha256'] = sha(raw)
+            require(row[kind + '_observed_sha256'] == command[kind + '_sha256'],
+                    'fallback stream hash differs')
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            row['capture_errors'].append({'stage': kind, 'error': type(error).__name__ + ': ' + str(error)})
+    return row
+
+
 def run_command(ctx, module, repo, env, out, report, label, script, arguments, timeout):
     """Keep recorded failure data even if Context.command raises on timeout."""
     prior = len(ctx.cache.get('commands', []))
@@ -381,6 +410,13 @@ def run_command(ctx, module, repo, env, out, report, label, script, arguments, t
         except BaseException as error:
             report.setdefault('command_evidence_errors', []).append(
                 {'stage': label, 'error': type(error).__name__ + ': ' + str(error)})
+            try:
+                rows = ctx.cache.get('commands', [])
+                if len(rows) == prior + 1:
+                    report['rows'].append(fallback_command_streams(ctx, out, label, rows[-1]))
+            except BaseException as secondary:
+                report.setdefault('command_evidence_errors', []).append(
+                    {'stage': label + '_fallback', 'error': type(secondary).__name__ + ': ' + str(secondary)})
         raise
     return command_evidence(ctx, out, label, command)
 
