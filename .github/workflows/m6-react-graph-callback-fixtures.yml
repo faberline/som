@@ -1,0 +1,17 @@
+name: Test M6 graph callback scratch fixtures
+on:
+  push:
+    branches: [codex/m6-react-graph-callback-fixtures-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fixture:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Run isolated synthetic checks
+        run: |
+          python3 -I -S -B -c 'import sys,runpy; sys.path.insert(0,".github/m6-react-callback-fixtures"); runpy.run_path(".github/m6-react-callback-fixtures/test_m6_react_callback.py",run_name="__main__")'
