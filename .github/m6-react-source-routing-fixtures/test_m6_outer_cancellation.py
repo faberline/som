@@ -30,7 +30,17 @@ class OuterCancellationTests(unittest.TestCase):
                 deadline=time.monotonic()+12
                 while not (repo/'case-started').exists() and outer.poll() is None and time.monotonic()<deadline:
                     time.sleep(.05)
-                self.assertTrue((repo/'case-started').exists(),'nested controlled child did not start')
+                if not (repo/'case-started').exists():
+                    if outer.poll() is not None:
+                        captured_out, captured_err = outer.communicate(timeout=2)
+                    else:
+                        captured_out, captured_err = b'', b'outer still running'
+                    evidence = []
+                    for path in sorted((repo/'.local/run').rglob('*')) if (repo/'.local/run').exists() else []:
+                        if path.is_file() and path.stat().st_size < 64000:
+                            evidence.append(str(path.relative_to(repo)) + ': ' + path.read_text(errors='replace'))
+                    self.fail('nested controlled child did not start; stdout=' + captured_out.decode(errors='replace')
+                              + ' stderr=' + captured_err.decode(errors='replace') + ' evidence=' + repr(evidence))
                 os.killpg(outer.pid,signal.SIGTERM)
                 stdout,stderr=outer.communicate(timeout=15)
                 self.assertEqual(outer.returncode,0,stderr.decode(errors='replace'))
