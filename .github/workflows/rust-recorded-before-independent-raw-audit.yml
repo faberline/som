@@ -1,0 +1,87 @@
+name: Independent recorded before plaintext data audit
+on:
+  push:
+    branches: [codex/m12-recorded-before-independent-raw-audit]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: som-recorded-before-independent-raw-${{ github.ref }}
+  cancel-in-progress: false
+defaults:
+  run:
+    shell: bash
+env:
+  HELPER_REVISION: ${{ github.sha }}
+  PYTHONDONTWRITEBYTECODE: '1'
+jobs:
+  source-fixtures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Check exact source and run five bounded fixtures
+        run: |
+          test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
+          git rev-parse HEAD > tested-sha.txt
+          python3 --version > python-version.txt 2>&1
+          python3 -I -S -B som-rs/scripts/hosted_readiness/test_recorded_before_independent_raw_audit.py -v 2>&1 | tee source-fixtures.log
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: recorded-before-independent-raw-source-fixtures
+          retention-days: 30
+          if-no-files-found: error
+          path: |
+            tested-sha.txt
+            python-version.txt
+            source-fixtures.log
+  recorded-before-raw-audit:
+    needs: source-fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Record actual source and fetch only original encrypted input commits
+        run: |
+          test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
+          git fetch --no-tags --depth=1 origin 02cd9e79cdcedfef92816f67a3ccdf2e089964ab 1de8f05430a72f8d76f6159786cca71b0ae1a911
+      - name: Admit audit source and authenticate exact producer artifacts and Node notices
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          python3 -I -S -B som-rs/scripts/hosted_readiness/audit_recorded_before_raw.py --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --phase prepare
+      - name: Restore actual19 with V2 only and retain strict original18 metadata
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
+        run: |
+          python3 -I -S -B som-rs/scripts/hosted_readiness/audit_recorded_before_raw.py --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --phase provision
+      - name: Authenticate V1 evidence and independently compare all4572 plaintext data rows
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 -I -S -B som-rs/scripts/hosted_readiness/audit_recorded_before_raw.py --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --phase audit
+      - name: Seal independent raw observations and first failures with actual roundtrip
+        if: always()
+        env:
+          SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 -I -S -B som-rs/scripts/hosted_readiness/audit_recorded_before_raw.py --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --phase seal
+      - name: Retain only encrypted audit raw data and safe transport records
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: recorded-before-independent-raw-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: ${{ runner.temp }}/som-recorded-before-independent-raw-audit-sealed/

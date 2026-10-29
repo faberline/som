@@ -1,0 +1,164 @@
+{
+  "approved19": {
+    "commit": "02cd9e79cdcedfef92816f67a3ccdf2e089964ab",
+    "index_sha256": "6953812ebe0f388cefe77ec90e8659a8f70d6e8ccf9517f6417e7a3b9b774c28"
+  },
+  "data_source_admission_complete": true,
+  "files": {
+    ".github/workflows/rust-recorded-before-independent-raw-audit.yml": {
+      "bytes": 3917,
+      "sha256": "0c9a2efb6282d27fbd1399618dc17814c6032a7eee45edc498fd635695a1b980"
+    },
+    "som-rs/contracts/native-tools-v1/artifacts.json": {
+      "bytes": 29314,
+      "sha256": "959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193"
+    },
+    "som-rs/evidence/typescript-output-release-2026-10-22-issue65.json": {
+      "bytes": 13159,
+      "sha256": "f8e649ea96bac3f5e62ef01537c4c517a857e0743d05fb38028d013faf08b640"
+    },
+    "som-rs/scripts/hosted_readiness/audit_recorded_before_raw.py": {
+      "bytes": 42934,
+      "sha256": "1bc6cefa9730b75ec5b418db6aef7dbe0cc8458a4a0b870df1bf708a58f344df"
+    },
+    "som-rs/scripts/hosted_readiness/inputs/recorded-before-profile-v1.json": {
+      "bytes": 1945,
+      "sha256": "0789ef5e04bbf4c7786dea3626f7efa35866c71e0c28a080108513758c650ce7"
+    },
+    "som-rs/scripts/hosted_readiness/inputs/recorded-before-slots-v1.json": {
+      "bytes": 6599866,
+      "sha256": "83489c5cc729b7f79e513cfbf2b6c7c93cca717daff093a19f101d566ca6c44f"
+    },
+    "som-rs/scripts/hosted_readiness/product_runtime/recorded_before_oracle.py": {
+      "bytes": 64591,
+      "sha256": "1a2f90337230d5200efc689d3f1717d137d00b92c12c5630b40e69d1ede6d15e"
+    },
+    "som-rs/scripts/hosted_readiness/same_candidate_graph.py": {
+      "bytes": 30889,
+      "sha256": "61b45cdf7c706c5eb9a34998d542a092b2afb09b00d68b36df61b2ad4798973e"
+    },
+    "som-rs/scripts/hosted_readiness/sealed_current_raw.py": {
+      "bytes": 31594,
+      "sha256": "d9aefa7f2a043dd1106c712a53a48b597dfc05f20d39034e04a0431510ce25de"
+    },
+    "som-rs/scripts/hosted_readiness/stage_recorded_before_inputs.py": {
+      "bytes": 17434,
+      "sha256": "b263de598d5b8ce204e1bf0871560038a434556b8e71880ebf055ef152bfc891"
+    },
+    "som-rs/scripts/hosted_readiness/test_recorded_before_independent_raw_audit.py": {
+      "bytes": 6652,
+      "sha256": "7b1616ab085eaa00a5ce36f5149ce961dac8934f0754c7aa0e52314cea7d4a52"
+    },
+    "som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py": {
+      "bytes": 15371,
+      "sha256": "916c013815a467c71f9bf922104dd33cb7a0fd7e2ee30568921751b21dbbb03a"
+    },
+    "som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs": {
+      "bytes": 11250,
+      "sha256": "ac5bfe21853712a38a8f5f032f44a4151c7bf7c2c54b669095704ba20e84a822"
+    },
+    "som-rs/scripts/react_output_acceptance/seal_hosted_evidence.mjs": {
+      "bytes": 13172,
+      "sha256": "3ebba4db4a2ada98c14d6ce015d1659acc3c8976f2131f4cd0fcf6cb07dee575"
+    },
+    "som-rs/scripts/react_output_acceptance/sealed_inputs.mjs": {
+      "bytes": 14578,
+      "sha256": "bda649080df1fced5ac6cfabdc300d9d9b1b3d9a53a1240c11fdce80e0b1e9c9"
+    }
+  },
+  "native_qa_source_admission_complete": false,
+  "original18": {
+    "commit": "1de8f05430a72f8d76f6159786cca71b0ae1a911",
+    "index_sha256": "c468ae2086e4d64847b93ad8da08aa3828f30989008db470519cd408e55b67bf"
+  },
+  "producer": {
+    "artifacts": {
+      "new": {
+        "digest": "sha256:939d2a70c3f83499e4307c4dbeedad7b520d24ff306b91f32a1afb2254be7774",
+        "id": 12899522703,
+        "name": "recorded-before-data-new-evidence",
+        "size_in_bytes": 1662438
+      },
+      "node": {
+        "digest": "sha256:ccc9cf9bc0d5aec391704adb7b50e8ad5af1b82f44f5c82cd74145ceb2b7ff09",
+        "id": 12899358195,
+        "name": "recorded-before-data-official-node-source",
+        "size_in_bytes": 33606100
+      },
+      "originals": {
+        "digest": "sha256:626deda5872d63b6b0126b32033993857fc7934b12bf60430940d01f3c7f2287",
+        "id": 12899024097,
+        "name": "recorded-before-data-original-encrypted-inputs",
+        "size_in_bytes": 455182373
+      }
+    },
+    "head_sha": "d35a3aad611f169e64087be5bc9415cbcc5a3744",
+    "job_id": 123465775887,
+    "run_attempt": 1,
+    "run_id": 40879174297,
+    "workflow_path": ".github/workflows/rust-recorded-before-data-qualification.yml"
+  },
+  "producer_declaration_sha256": "c581c65e428922f40bbd54e126a1ed39c6012d2dca027659b89e7172b2349eb3",
+  "producer_files": {
+    ".github/workflows/rust-recorded-before-data-qualification.yml": {
+      "bytes": 4314,
+      "sha256": "488f2c755a2320f04ec0765d41d6292faeaccac709582bf8972082f981789190"
+    },
+    "som-rs/contracts/native-tools-v1/artifacts.json": {
+      "bytes": 29314,
+      "sha256": "959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193"
+    },
+    "som-rs/evidence/typescript-output-release-2026-10-22-issue65.json": {
+      "bytes": 13159,
+      "sha256": "f8e649ea96bac3f5e62ef01537c4c517a857e0743d05fb38028d013faf08b640"
+    },
+    "som-rs/scripts/hosted_readiness/inputs/recorded-before-profile-v1.json": {
+      "bytes": 1945,
+      "sha256": "0789ef5e04bbf4c7786dea3626f7efa35866c71e0c28a080108513758c650ce7"
+    },
+    "som-rs/scripts/hosted_readiness/inputs/recorded-before-slots-v1.json": {
+      "bytes": 6599866,
+      "sha256": "83489c5cc729b7f79e513cfbf2b6c7c93cca717daff093a19f101d566ca6c44f"
+    },
+    "som-rs/scripts/hosted_readiness/product_runtime/recorded_before_oracle.py": {
+      "bytes": 64591,
+      "sha256": "1a2f90337230d5200efc689d3f1717d137d00b92c12c5630b40e69d1ede6d15e"
+    },
+    "som-rs/scripts/hosted_readiness/qualify_recorded_before_data.py": {
+      "bytes": 32809,
+      "sha256": "3f7e3074953452afe3a31c61801a359d31d213f9a1d0a5d96296d72213d5821e"
+    },
+    "som-rs/scripts/hosted_readiness/same_candidate_graph.py": {
+      "bytes": 30889,
+      "sha256": "61b45cdf7c706c5eb9a34998d542a092b2afb09b00d68b36df61b2ad4798973e"
+    },
+    "som-rs/scripts/hosted_readiness/sealed_current_raw.py": {
+      "bytes": 31594,
+      "sha256": "d9aefa7f2a043dd1106c712a53a48b597dfc05f20d39034e04a0431510ce25de"
+    },
+    "som-rs/scripts/hosted_readiness/stage_recorded_before_inputs.py": {
+      "bytes": 17434,
+      "sha256": "b263de598d5b8ce204e1bf0871560038a434556b8e71880ebf055ef152bfc891"
+    },
+    "som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py": {
+      "bytes": 15371,
+      "sha256": "916c013815a467c71f9bf922104dd33cb7a0fd7e2ee30568921751b21dbbb03a"
+    },
+    "som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs": {
+      "bytes": 11250,
+      "sha256": "ac5bfe21853712a38a8f5f032f44a4151c7bf7c2c54b669095704ba20e84a822"
+    },
+    "som-rs/scripts/react_output_acceptance/seal_hosted_evidence.mjs": {
+      "bytes": 13172,
+      "sha256": "3ebba4db4a2ada98c14d6ce015d1659acc3c8976f2131f4cd0fcf6cb07dee575"
+    },
+    "som-rs/scripts/react_output_acceptance/sealed_inputs.mjs": {
+      "bytes": 14578,
+      "sha256": "bda649080df1fced5ac6cfabdc300d9d9b1b3d9a53a1240c11fdce80e0b1e9c9"
+    }
+  },
+  "product_acceptance_passed": false,
+  "scope": "recorded-before-independent-raw-data-audit-v1",
+  "version": "som.recorded-before-independent-raw-audit-source.v1",
+  "workflow_path": ".github/workflows/rust-recorded-before-independent-raw-audit.yml"
+}
