@@ -244,6 +244,42 @@ class StoppedCandidateRestoreTests(unittest.TestCase):
         self.assertTrue(self.runs[0].children[0].alive)
         self.assertEqual(self.default.read_bytes(), self.snapshot)
 
+    def test_live_approval_path_is_rechecked_after_lock(self):
+        approval_path = self.root / 'approval.json'
+        approval_check = self.patch(self.switch, 'check_approval', return_value={'approved': True})
+        self.switch.restore({}, self.root, self.port, self.output, approval_path, False, self.evidence)
+        self.assertEqual(approval_check.call_count, 2)
+        self.assertTrue(all(call.args[0] == approval_path for call in approval_check.call_args_list))
+
+    def actual_approval(self):
+        config = {'candidate': {'binary': {'sha256': 'synthetic-candidate'}}}
+        approval_path = self.root / 'real-approval.json'
+        approval = {'action': 'restore-default-8765-rust-output', 'approved': True,
+                    'candidate_binary_sha256': 'synthetic-candidate',
+                    'script_sha256': self.rc.digest(self.switch.__file__),
+                    'common_sha256': self.rc.digest(self.rc.__file__),
+                    'prerequisites_sha256': self.rc.receipt_sha(config),
+                    'default_sha256': self.rc.sha_bytes(self.snapshot), 'quote': 'synthetic approval'}
+        approval_path.write_text(json.dumps(approval))
+        return config, approval_path, approval
+
+    def test_live_restore_accepts_exact_approval_twice(self):
+        config, approval_path, _ = self.actual_approval()
+        self.switch.restore(config, self.root, self.port, self.output, approval_path, False, self.evidence)
+        self.assertEqual(json.loads(self.default.read_bytes())['pid'], 8123)
+
+    def test_live_restore_refuses_approval_changed_after_first_check(self):
+        config, approval_path, approval = self.actual_approval()
+        def alter_after_initial_check(_port):
+            approval['approved'] = False
+            approval_path.write_text(json.dumps(approval))
+        self.port_free.side_effect = alter_after_initial_check
+        with self.assertRaisesRegex(RuntimeError, 'approval approved differs'):
+            self.switch.restore(config, self.root, self.port, self.output, approval_path, False, self.evidence)
+        self.assertEqual(self.runs[0].children, [])
+        self.links.assert_not_called()
+        self.assertEqual(self.default.read_bytes(), self.snapshot)
+
 
 if __name__ == '__main__':
     unittest.main()

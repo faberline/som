@@ -320,8 +320,9 @@ def restore(config, root, port, output, approval, rehearsal, evidence):
     previous = json.loads(previous_bytes)
     rc.assert_current(config, previous)
     previous_pointers = journal[0]['pointers']
+    approval_path = approval
     if not rehearsal:
-        approval = check_approval(approval, 'restore-default-8765-rust-output', config, snapshot)
+        approval = check_approval(approval_path, 'restore-default-8765-rust-output', config, snapshot)
     rc.require(rc.digest(previous['command'][0]) == previous['identity']['binary_sha256'], 'previous binary differs')
     rc.assets_match(Path(previous['command'][3]), previous['health'])
     output.mkdir(parents=True, exist_ok=False)
@@ -369,7 +370,7 @@ def restore(config, root, port, output, approval, rehearsal, evidence):
             rc.require(rc.digest(previous['command'][0]) == previous['identity']['binary_sha256'], 'previous binary differs')
             rc.assets_match(Path(previous['command'][3]), previous['health'])
             if not rehearsal:
-                check_approval(approval, 'restore-default-8765-rust-output', config, snapshot)
+                check_approval(approval_path, 'restore-default-8765-rust-output', config, snapshot)
             run.event('restore_owner_absent', pid=pid, port=port, receipt_sha256=rc.sha_bytes(snapshot))
         for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
             signal.signal(signum, rc.rollback_defer_signal)
