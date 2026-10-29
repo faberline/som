@@ -1,0 +1,46 @@
+name: M6 React retained tree order diagnostic (not acceptance)
+on:
+  push:
+    branches:
+      - codex/m6-react-tree-order-20261029
+permissions:
+  contents: read
+  actions: read
+jobs:
+  diagnostic:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bind and test diagnostic source
+        working-directory: .github/m6-react-tree-order
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          for entry in 'tree_order.py 178cf05fe8c0fce30bedeb4dd85919e4248c20cbae5067f363ebebdaf3da718e' 'test_tree_order.py 2401043fe5197c0cabd8c32954c28922bfad6e43c6ae95d173ac15e210d26c37'; do
+            set -- $entry
+            test "$(sha256sum "$1" | cut -d ' ' -f 1)" = "$2"
+            test "$(git show "$GITHUB_SHA:.github/m6-react-tree-order/$1" | sha256sum | cut -d ' ' -f 1)" = "$2"
+          done
+          python3 -m unittest -v test_tree_order
+      - name: Compare exact retained paths
+        working-directory: .github/m6-react-tree-order
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/40818588943" > "$RUNNER_TEMP/react-order-run.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/12873517359" > "$RUNNER_TEMP/react-order-artifact.json"
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/12873517359/zip" > "$RUNNER_TEMP/react-order-replay.zip"
+          python3 tree_order.py --zip "$RUNNER_TEMP/react-order-replay.zip" --run-json "$RUNNER_TEMP/react-order-run.json" --artifact-json "$RUNNER_TEMP/react-order-artifact.json" --out "$RUNNER_TEMP/react-order-result"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: react-tree-order-diagnostic
+          path: ${{ runner.temp }}/react-order-result
+          if-no-files-found: warn
+          retention-days: 7
