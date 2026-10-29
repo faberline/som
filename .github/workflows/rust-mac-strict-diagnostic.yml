@@ -1,0 +1,156 @@
+name: Mac strict preparation diagnostic
+on:
+  push:
+    branches: [codex/m12-mac-strict-diagnostic-v2]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  strict-diagnostic:
+    name: strict-diagnostic
+    runs-on: macos-26
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 9763e9b86f36a99229b70d8c571734e9a740e81c
+          path: candidate-source
+          persist-credentials: false
+      - name: Provision exact Mac tools and approved18 inputs
+        env:
+          DIAG_PHASE: provision
+          SOM_DIAGNOSTIC_ACTIONS_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/som-m12-mac-diagnostic-bootstrap"
+          /usr/bin/python3 -I -S -B - <<'PY' 2>&1 | tee "$RUNNER_TEMP/som-m12-mac-diagnostic-bootstrap/provision-entry.log"
+          import hashlib,json,os,pathlib,platform,re,subprocess,sys,urllib.request
+          root=pathlib.Path(os.environ['GITHUB_WORKSPACE']).resolve(strict=True)
+          sha=os.environ['GITHUB_SHA']
+          workflow='.github/workflows/rust-mac-strict-diagnostic.yml'
+          expected={'som-rs/scripts/hosted_readiness/mac_strict_diagnostic.py': '39c38ac7e544609f7c94fcb5de8be82b5fafcc09278ad9ea4fc3a7fdb5461579', 'som-rs/scripts/hosted_readiness/mac_strict_diagnostic_sources.json': 'da8a21d80ccff0ae747b9927430d80f4156fda289e5a1dd2cbfb31ceafe4a90b'}
+          assert os.environ.get('GITHUB_ACTIONS')=='true' and os.environ.get('RUNNER_ENVIRONMENT')=='github-hosted'
+          assert platform.system()=='Darwin' and platform.machine()=='arm64' and platform.mac_ver()[0].split('.')[0]=='26'
+          assert re.fullmatch('[0-9a-f]{40}',sha) and os.environ.get('GITHUB_WORKFLOW_SHA')==sha
+          assert os.environ.get('GITHUB_REPOSITORY')=='faberline/som' and os.environ.get('GITHUB_JOB')=='strict-diagnostic'
+          assert os.environ.get('GITHUB_EVENT_NAME') in ('push','workflow_dispatch')
+          assert os.environ['GITHUB_WORKFLOW_REF'].split('@',1)[0]=='faberline/som/'+workflow
+          for key in ('GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT','GITHUB_REPOSITORY_ID'):assert re.fullmatch('[1-9][0-9]*',os.environ[key])
+          def git(*args):
+              return subprocess.check_output(['/usr/bin/git','--no-replace-objects','-C',str(root),*args],env={'PATH':'/usr/bin:/bin','GIT_CONFIG_GLOBAL':'/dev/null','GIT_CONFIG_NOSYSTEM':'1','GIT_OPTIONAL_LOCKS':'0'},timeout=120)
+          assert git('rev-parse','HEAD').decode().strip()==sha
+          assert git('rev-parse','--show-toplevel').decode().strip()==str(root)
+          assert git('rev-list','--parents','-n','1',sha).decode().split()==[sha,'9763e9b86f36a99229b70d8c571734e9a740e81c']
+          assert set(git('diff-tree','--no-commit-id','--name-only','-r',sha).decode().splitlines())==set(expected)|{workflow}
+          for name in (*expected,workflow):
+              path=root/name
+              assert not any(p.is_symlink() for p in (path,*path.parents)) and path.is_file() and path.stat().st_nlink==1
+              entry=git('ls-tree','-z',sha,'--',name)
+              assert entry.startswith(b'100644 blob ') and entry.endswith(b'\t'+name.encode()+b'\0') and entry.count(b'\0')==1
+              raw=git('cat-file','blob',sha+':'+name)
+              assert path.read_bytes()==raw
+              if name in expected:assert hashlib.sha256(raw).hexdigest()==expected[name]
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,*args,**kwargs):return None
+          def api(suffix):
+              request=urllib.request.Request('https://api.github.com/repos/faberline/som'+suffix,headers={'Authorization':'Bearer '+os.environ['SOM_DIAGNOSTIC_ACTIONS_TOKEN'],'Accept':'application/vnd.github+json','User-Agent':'som-m12-mac-strict-diagnostic'})
+              with urllib.request.build_opener(NoRedirect).open(request,timeout=60) as response:
+                  assert response.status==200
+                  raw=response.read(4*1024**2+1)
+              assert len(raw)<=4*1024**2
+              return json.loads(raw),raw
+          run,run_raw=api('/actions/runs/'+os.environ['GITHUB_RUN_ID'])
+          assert run['id']==int(os.environ['GITHUB_RUN_ID']) and run['run_attempt']==int(os.environ['GITHUB_RUN_ATTEMPT']) and run['head_sha']==sha
+          assert run['repository']['full_name']=='faberline/som' and run['repository']['id']==int(os.environ['GITHUB_REPOSITORY_ID'])
+          assert run['path'].split('@',1)[0]==workflow and run['event']==os.environ['GITHUB_EVENT_NAME'] and run['status']=='in_progress'
+          jobs,jobs_raw=api('/actions/runs/'+str(run['id'])+'/attempts/'+str(run['run_attempt'])+'/jobs?per_page=100&page=1')
+          assert jobs['total_count']==1 and len(jobs['jobs'])==1
+          job=jobs['jobs'][0]
+          assert job['name']=='strict-diagnostic' and job['run_id']==run['id'] and job['head_sha']==sha and job['status']=='in_progress'
+          bootstrap=pathlib.Path(os.environ['RUNNER_TEMP'])/'som-m12-mac-diagnostic-bootstrap'
+          for name,raw in (('run',run_raw),('job',jobs_raw)):
+              (bootstrap/(os.environ['DIAG_PHASE']+'-'+name+'.json')).write_bytes(raw)
+          (bootstrap/(os.environ['DIAG_PHASE']+'-source.json')).write_text(json.dumps({'head_sha':sha,'candidate_revision':'9763e9b86f36a99229b70d8c571734e9a740e81c','pins':expected,'workflow_sha256':hashlib.sha256((root/workflow).read_bytes()).hexdigest(),'product_acceptance_passed':False})+'\n')
+          name='som-rs/scripts/hosted_readiness/mac_strict_diagnostic.py'
+          raw=(root/name).read_bytes()
+          exec(compile(raw,str(root/name),'exec',dont_inherit=True),{'__name__':'__main__','__file__':str(root/name),'__package__':None})
+          PY
+      - name: Build fixed source and compare strict live bytes
+        env:
+          DIAG_PHASE: compare
+          SOM_DIAGNOSTIC_ACTIONS_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/som-m12-mac-diagnostic-bootstrap"
+          /usr/bin/python3 -I -S -B - <<'PY' 2>&1 | tee "$RUNNER_TEMP/som-m12-mac-diagnostic-bootstrap/compare-entry.log"
+          import hashlib,json,os,pathlib,platform,re,subprocess,sys,urllib.request
+          root=pathlib.Path(os.environ['GITHUB_WORKSPACE']).resolve(strict=True)
+          sha=os.environ['GITHUB_SHA']
+          workflow='.github/workflows/rust-mac-strict-diagnostic.yml'
+          expected={'som-rs/scripts/hosted_readiness/mac_strict_diagnostic.py': '39c38ac7e544609f7c94fcb5de8be82b5fafcc09278ad9ea4fc3a7fdb5461579', 'som-rs/scripts/hosted_readiness/mac_strict_diagnostic_sources.json': 'da8a21d80ccff0ae747b9927430d80f4156fda289e5a1dd2cbfb31ceafe4a90b'}
+          assert os.environ.get('GITHUB_ACTIONS')=='true' and os.environ.get('RUNNER_ENVIRONMENT')=='github-hosted'
+          assert platform.system()=='Darwin' and platform.machine()=='arm64' and platform.mac_ver()[0].split('.')[0]=='26'
+          assert re.fullmatch('[0-9a-f]{40}',sha) and os.environ.get('GITHUB_WORKFLOW_SHA')==sha
+          assert os.environ.get('GITHUB_REPOSITORY')=='faberline/som' and os.environ.get('GITHUB_JOB')=='strict-diagnostic'
+          assert os.environ.get('GITHUB_EVENT_NAME') in ('push','workflow_dispatch')
+          assert os.environ['GITHUB_WORKFLOW_REF'].split('@',1)[0]=='faberline/som/'+workflow
+          for key in ('GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT','GITHUB_REPOSITORY_ID'):assert re.fullmatch('[1-9][0-9]*',os.environ[key])
+          def git(*args):
+              return subprocess.check_output(['/usr/bin/git','--no-replace-objects','-C',str(root),*args],env={'PATH':'/usr/bin:/bin','GIT_CONFIG_GLOBAL':'/dev/null','GIT_CONFIG_NOSYSTEM':'1','GIT_OPTIONAL_LOCKS':'0'},timeout=120)
+          assert git('rev-parse','HEAD').decode().strip()==sha
+          assert git('rev-parse','--show-toplevel').decode().strip()==str(root)
+          assert git('rev-list','--parents','-n','1',sha).decode().split()==[sha,'9763e9b86f36a99229b70d8c571734e9a740e81c']
+          assert set(git('diff-tree','--no-commit-id','--name-only','-r',sha).decode().splitlines())==set(expected)|{workflow}
+          for name in (*expected,workflow):
+              path=root/name
+              assert not any(p.is_symlink() for p in (path,*path.parents)) and path.is_file() and path.stat().st_nlink==1
+              entry=git('ls-tree','-z',sha,'--',name)
+              assert entry.startswith(b'100644 blob ') and entry.endswith(b'\t'+name.encode()+b'\0') and entry.count(b'\0')==1
+              raw=git('cat-file','blob',sha+':'+name)
+              assert path.read_bytes()==raw
+              if name in expected:assert hashlib.sha256(raw).hexdigest()==expected[name]
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,*args,**kwargs):return None
+          def api(suffix):
+              request=urllib.request.Request('https://api.github.com/repos/faberline/som'+suffix,headers={'Authorization':'Bearer '+os.environ['SOM_DIAGNOSTIC_ACTIONS_TOKEN'],'Accept':'application/vnd.github+json','User-Agent':'som-m12-mac-strict-diagnostic'})
+              with urllib.request.build_opener(NoRedirect).open(request,timeout=60) as response:
+                  assert response.status==200
+                  raw=response.read(4*1024**2+1)
+              assert len(raw)<=4*1024**2
+              return json.loads(raw),raw
+          run,run_raw=api('/actions/runs/'+os.environ['GITHUB_RUN_ID'])
+          assert run['id']==int(os.environ['GITHUB_RUN_ID']) and run['run_attempt']==int(os.environ['GITHUB_RUN_ATTEMPT']) and run['head_sha']==sha
+          assert run['repository']['full_name']=='faberline/som' and run['repository']['id']==int(os.environ['GITHUB_REPOSITORY_ID'])
+          assert run['path'].split('@',1)[0]==workflow and run['event']==os.environ['GITHUB_EVENT_NAME'] and run['status']=='in_progress'
+          jobs,jobs_raw=api('/actions/runs/'+str(run['id'])+'/attempts/'+str(run['run_attempt'])+'/jobs?per_page=100&page=1')
+          assert jobs['total_count']==1 and len(jobs['jobs'])==1
+          job=jobs['jobs'][0]
+          assert job['name']=='strict-diagnostic' and job['run_id']==run['id'] and job['head_sha']==sha and job['status']=='in_progress'
+          bootstrap=pathlib.Path(os.environ['RUNNER_TEMP'])/'som-m12-mac-diagnostic-bootstrap'
+          for name,raw in (('run',run_raw),('job',jobs_raw)):
+              (bootstrap/(os.environ['DIAG_PHASE']+'-'+name+'.json')).write_bytes(raw)
+          (bootstrap/(os.environ['DIAG_PHASE']+'-source.json')).write_text(json.dumps({'head_sha':sha,'candidate_revision':'9763e9b86f36a99229b70d8c571734e9a740e81c','pins':expected,'workflow_sha256':hashlib.sha256((root/workflow).read_bytes()).hexdigest(),'product_acceptance_passed':False})+'\n')
+          name='som-rs/scripts/hosted_readiness/mac_strict_diagnostic.py'
+          raw=(root/name).read_bytes()
+          exec(compile(raw,str(root/name),'exec',dont_inherit=True),{'__name__':'__main__','__file__':str(root/name),'__package__':None})
+          PY
+      - name: Retain complete diagnostic and first-failure bytes
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: mac-strict-preparation-diagnostic
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/som-m12-mac-diagnostic-bootstrap/
+            ${{ runner.temp }}/som-m12-mac-strict-diagnostic/
