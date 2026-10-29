@@ -1,0 +1,214 @@
+name: Same-run runtime capsule transport qualification (no compiler)
+
+on:
+  push:
+    branches:
+      - codex/m12-runtime-capsule-qualification
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: som-runtime-capsule-qualification-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  capsule-fixtures:
+    name: Run 33 runtime capsule fixtures on GitHub
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bind the reviewed source before fixture execution
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --exit-code HEAD -- som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py som-rs/scripts/hosted_readiness/product_runtime/test_runtime_capsule.py som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json som-rs/scripts/hosted_readiness/product_runtime/source-pins.json
+          sha256sum --check <<'SHAS'
+          1385e58948c8252bcd5169586cf36527e11906ecad438a190eb726ade5470a4c  som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py
+          36e8d5c78caeb61b29745064aa4250b93b42f4db85c0096e35177cf60f4abd2d  som-rs/scripts/hosted_readiness/product_runtime/test_runtime_capsule.py
+          2a92e2df47fb05e76677fbb84e9cbb7f12d07d90eb8019bd816b5fe6b5588598  som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py
+          f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3  som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py
+          4aaca5ef284440fd64bd50723619425201417937b4d635bb3c5d2d5835226b68  som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json
+          7a2c04a65866474bd773b9722274c09c36646951fa7848d62e4b20b2cb94e75f  som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json
+          a4208c342bc9e923509bc5ba7ce6a9a1adfe3143d55b6215f0a313b4833550b2  som-rs/scripts/hosted_readiness/product_runtime/source-pins.json
+          SHAS
+      - name: Run all capsule fixtures without installed runtime execution
+        env:
+          HELPER_REVISION: ${{ github.sha }}
+        run: |
+          python3 -I -S -B som-rs/scripts/hosted_readiness/product_runtime/test_runtime_capsule.py 2>&1 | tee capsule-fixtures.log
+      - name: Preserve fixture logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: runtime-capsule-fixtures
+          path: capsule-fixtures.log
+          if-no-files-found: error
+          retention-days: 30
+
+  export-runtime:
+    name: Recheck original runtime bytes and export this run capsule
+    needs: capsule-fixtures
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    outputs:
+      artifact_id: ${{ steps.capsule_upload.outputs.artifact-id }}
+      artifact_digest: ${{ steps.capsule_upload.outputs.artifact-digest }}
+      manifest_sha256: ${{ steps.capsule_export.outputs.runtime_capsule_manifest_sha256 }}
+      archive_sha256: ${{ steps.capsule_export.outputs.runtime_capsule_archive_sha256 }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bind the reviewed source before runtime recheck
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --exit-code HEAD -- som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py som-rs/scripts/hosted_readiness/product_runtime/test_runtime_capsule.py som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json som-rs/scripts/hosted_readiness/product_runtime/source-pins.json
+          sha256sum --check <<'SHAS'
+          1385e58948c8252bcd5169586cf36527e11906ecad438a190eb726ade5470a4c  som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py
+          36e8d5c78caeb61b29745064aa4250b93b42f4db85c0096e35177cf60f4abd2d  som-rs/scripts/hosted_readiness/product_runtime/test_runtime_capsule.py
+          2a92e2df47fb05e76677fbb84e9cbb7f12d07d90eb8019bd816b5fe6b5588598  som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py
+          f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3  som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py
+          4aaca5ef284440fd64bd50723619425201417937b4d635bb3c5d2d5835226b68  som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json
+          7a2c04a65866474bd773b9722274c09c36646951fa7848d62e4b20b2cb94e75f  som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json
+          a4208c342bc9e923509bc5ba7ce6a9a1adfe3143d55b6215f0a313b4833550b2  som-rs/scripts/hosted_readiness/product_runtime/source-pins.json
+          SHAS
+      - name: Create one owned transport directory
+        run: |
+          umask 077
+          mkdir "$RUNNER_TEMP/som-runtime-reuse-control"
+          printf 'created\n' > "$RUNNER_TEMP/som-runtime-reuse-control/stage.txt"
+      - name: Download only the original source-qualified runtime artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: "40740849594"
+          artifact-ids: "12840425819"
+          github-token: ${{ github.token }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/som-runtime-reuse-control/transport
+      - name: Recheck the unchanged native runtime using the existing validator
+        working-directory: ${{ runner.temp }}/som-runtime-reuse-control
+        env:
+          SOM_RUNTIME_ACTIONS_TOKEN: ${{ github.token }}
+          TESTED_SHA: ${{ github.sha }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py" \
+            --repo "$GITHUB_WORKSPACE" --source-revision "$TESTED_SHA" \
+            --artifact-root "$RUNNER_TEMP/som-runtime-reuse-control/transport" \
+            --out "$RUNNER_TEMP/som-product-runtime-qualification" 2>&1 | tee "$RUNNER_TEMP/som-runtime-reuse.log"
+      - name: Export this run verified complete runtime without executing it
+        id: capsule_export
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py" export \
+            --repo "$GITHUB_WORKSPACE" --helper-revision "$SOURCE_SHA" --candidate-revision "$SOURCE_SHA" \
+            --runtime-root "$RUNNER_TEMP/som-product-runtime-qualification" \
+            --out "$RUNNER_TEMP/som-runtime-capsule" 2>&1 | tee "$RUNNER_TEMP/som-runtime-capsule-export.log"
+      - name: Upload the exact two-file capsule for this run
+        id: capsule_upload
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: same-run-qualified-runtime-capsule
+          path: ${{ runner.temp }}/som-runtime-capsule
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+      - name: Preserve all qualification and export evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: runtime-capsule-export-evidence
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/som-runtime-reuse-control/stage.txt
+            ${{ runner.temp }}/som-runtime-reuse.log
+            ${{ runner.temp }}/som-runtime-capsule-export.log
+            ${{ runner.temp }}/som-product-runtime-qualification/receipt.json
+            ${{ runner.temp }}/som-product-runtime-qualification/artifact-origin.json
+            ${{ runner.temp }}/som-product-runtime-qualification/github.env
+            ${{ runner.temp }}/som-product-runtime-qualification/logs
+            ${{ runner.temp }}/som-product-runtime-qualification/qualification-evidence
+            ${{ runner.temp }}/som-runtime-capsule/capsule.json
+
+  restore-runtime:
+    name: Restore the exact same-run capsule and verify all bytes and aliases
+    needs: export-runtime
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bind the reviewed source before capsule restore
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --exit-code HEAD -- som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py som-rs/scripts/hosted_readiness/product_runtime/test_runtime_capsule.py som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json som-rs/scripts/hosted_readiness/product_runtime/source-pins.json
+          sha256sum --check <<'SHAS'
+          1385e58948c8252bcd5169586cf36527e11906ecad438a190eb726ade5470a4c  som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py
+          36e8d5c78caeb61b29745064aa4250b93b42f4db85c0096e35177cf60f4abd2d  som-rs/scripts/hosted_readiness/product_runtime/test_runtime_capsule.py
+          2a92e2df47fb05e76677fbb84e9cbb7f12d07d90eb8019bd816b5fe6b5588598  som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py
+          f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3  som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py
+          4aaca5ef284440fd64bd50723619425201417937b4d635bb3c5d2d5835226b68  som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json
+          7a2c04a65866474bd773b9722274c09c36646951fa7848d62e4b20b2cb94e75f  som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json
+          a4208c342bc9e923509bc5ba7ce6a9a1adfe3143d55b6215f0a313b4833550b2  som-rs/scripts/hosted_readiness/product_runtime/source-pins.json
+          SHAS
+      - name: Download only this run exported capsule by exact artifact ID
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: ${{ github.repository }}
+          run-id: ${{ github.run_id }}
+          artifact-ids: ${{ needs.export-runtime.outputs.artifact_id }}
+          github-token: ${{ github.token }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/som-runtime-capsule-download
+      - name: Restore and verify the complete same-run runtime without native execution
+        env:
+          SOM_RUNTIME_ACTIONS_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.sha }}
+          CAPSULE_ARTIFACT_ID: ${{ needs.export-runtime.outputs.artifact_id }}
+          CAPSULE_ARTIFACT_DIGEST: ${{ needs.export-runtime.outputs.artifact_digest }}
+          CAPSULE_MANIFEST_SHA256: ${{ needs.export-runtime.outputs.manifest_sha256 }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py" restore \
+            --repo "$GITHUB_WORKSPACE" --helper-revision "$SOURCE_SHA" --candidate-revision "$SOURCE_SHA" \
+            --capsule-root "$RUNNER_TEMP/som-runtime-capsule-download" \
+            --out "$RUNNER_TEMP/som-product-runtime-qualification" \
+            --evidence-out "$RUNNER_TEMP/som-runtime-capsule-restore-evidence" \
+            --artifact-id "$CAPSULE_ARTIFACT_ID" --artifact-digest "$CAPSULE_ARTIFACT_DIGEST" \
+            --manifest-sha256 "$CAPSULE_MANIFEST_SHA256" 2>&1 | tee "$RUNNER_TEMP/som-runtime-capsule-restore.log"
+          cat "$RUNNER_TEMP/som-product-runtime-qualification/github.env" >> "$GITHUB_ENV"
+      - name: Preserve restore, raw recheck and artifact identity evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: runtime-capsule-restore-evidence
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/som-runtime-capsule-restore.log
+            ${{ runner.temp }}/som-runtime-capsule-restore-evidence
+            ${{ runner.temp }}/som-product-runtime-qualification/receipt.json
+            ${{ runner.temp }}/som-product-runtime-qualification/artifact-origin.json
+            ${{ runner.temp }}/som-product-runtime-qualification/github.env
+            ${{ runner.temp }}/som-product-runtime-qualification/logs
+            ${{ runner.temp }}/som-product-runtime-qualification/qualification-evidence
+            ${{ runner.temp }}/som-runtime-capsule-download/capsule.json
