@@ -12,7 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
-      - name: Test unused strict-only scratch adapter
+      - name: Test unused synthetic-only comparison algorithms
         working-directory: .github/m6-native-compat-prototype
-        run: python3 -m unittest -v test_strict_adapter
+        env:
+          SOM_SYNTHETIC_RAW_HELPER: ${{ github.workspace }}/som-rs/scripts/hosted_readiness/raw_digest_compat.py
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python3 -m unittest -v test_strict_adapter test_synthetic_only
