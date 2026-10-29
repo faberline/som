@@ -217,7 +217,7 @@ class ProductArtifactBindingTests(unittest.TestCase):
             venv=root/'som-rs/runtime/acceptance-m3-venv';venv.parent.mkdir(parents=True)
             subprocess.run([sys.executable,'-m','venv','--without-pip',str(venv)],check=True,capture_output=True,timeout=60)
             python=venv/'bin/python'
-            (cwd/'uvicorn.py').write_text('import http.server,sys\np=int(sys.argv[sys.argv.index("--port")+1])\nhttp.server.HTTPServer(("127.0.0.1",p),http.server.BaseHTTPRequestHandler).serve_forever()\n')
+            (cwd/'uvicorn.py').write_text('print("fixture module started",flush=True)\nimport http.server,sys\np=int(sys.argv[sys.argv.index("--port")+1])\nprint("fixture port",p,flush=True)\nhttp.server.HTTPServer(("127.0.0.1",p),http.server.BaseHTTPRequestHandler).serve_forever()\n')
             with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
             argv=[str(python),'-m','uvicorn','som_behavior_host:app','--app-dir',str(shim.parent),'--host','127.0.0.1','--port',str(port),'--no-access-log','--log-level','warning']
             env=dict(os.environ,PYTHONPATH=str(cwd),PYTHONDONTWRITEBYTECODE='1',SOM_BEHAVIOR_PACKAGE='pkg')
@@ -232,7 +232,10 @@ class ProductArtifactBindingTests(unittest.TestCase):
                         try:
                             with socket.create_connection(('127.0.0.1',port),timeout=.1):break
                         except OSError:time.sleep(.05)
-                    else:self.fail('fixture Python did not listen: '+log_path.read_text(errors='replace')[-3000:])
+                    else:
+                        state=subprocess.run(['/bin/ps','-ww','-p',str(proc.pid),'-o','pid=,stat=,command='],capture_output=True,text=True,timeout=10)
+                        listeners=subprocess.run(['/usr/sbin/lsof','-nP','-iTCP:'+str(port),'-sTCP:LISTEN','-t'],capture_output=True,text=True,timeout=10)
+                        self.fail('fixture Python did not listen: '+log_path.read_text(errors='replace')[-3000:]+' ps='+state.stdout+' lsof='+listeners.stdout)
                     observer.product_snapshot(proc.pid,'product-ready',port,python,follow=True);start=len(observer.events)-1
                 finally:proc.terminate();proc.wait(timeout=10);sink.close()
             (life/'receipt.json').write_text(json.dumps({'events':observer.events,'python_runtimes':caps.rows}))
