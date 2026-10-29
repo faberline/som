@@ -142,6 +142,40 @@ def admit_source(repo, helper, candidate):
     return sources, authority, result
 
 
+def _native_controls(repo=None, helper=None, candidate=None):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    if repo is not None:
+        require(Path(repo).absolute() == controls.root
+                and helper == controls.helper_revision == candidate == controls.candidate_revision,
+                'active Graph controller source identity differs')
+    return controls
+
+
+def _admitted_controller_sources(repo, helper, candidate):
+    """Recheck the original admission using the actual opaque authority seed."""
+    controls = _native_controls(repo, helper, candidate)
+    pair(helper, candidate)
+    workflow_binding = source_workflow_binding(candidate)
+    sources = Sources(repo, helper)
+    workflow_raw = sources.read('.github/workflows/rust-hosted-readiness.yml')
+    workflow_binding['workflow_source_sha256'] = sha(workflow_raw)
+    sources.workflow_binding = workflow_binding
+    body = sources.read(AUTHORITY)
+    authority = controls.load_module('bootstrap.authority')
+    require(authority.__file__ == str(sources.root / AUTHORITY)
+            and authority.__som_raw_sha256__ == sha(body), 'preloaded helper source differs')
+    result = authority.verify(sources.read, mode='native-qa-v1', source_paths=sources.paths,
+                              helper_revision=helper, candidate_revision=candidate)
+    require(result.get('source_authority_active') is True and result.get('mode') == 'native-qa-v1'
+            and result.get('helper_revision') == helper and result.get('candidate_revision') == candidate
+            and result.get('product_acceptance_passed') is False
+            and result.get('compiler_acceptance_passed') is False
+            and result.get('whole_acceptance_complete') is False, 'sealed native source admission failed')
+    sources.verify()
+    return sources, authority, result
+
+
 def source_workflow_binding(candidate, environ=None, reader=None):
     """Use GitHub's actual workflow source identity. Never replace merge SHA metadata."""
     environ = os.environ if environ is None else environ
@@ -250,8 +284,11 @@ def restore_stage_set(sources, kind, packet_roots, out, evidence_out, node, help
             and out != evidence_out and out not in evidence_out.parents and evidence_out not in out.parents,
             'new separate stage restore/evidence roots required')
     out.mkdir(mode=0o700); evidence_out.mkdir(mode=0o700)
-    transport = raw_module(sources, '_som_graph_sealed_raw_stage_data',
-                           'som-rs/scripts/hosted_readiness/sealed_current_raw.py')
+    sources.read('som-rs/scripts/hosted_readiness/sealed_current_raw.py')
+    controls = _native_controls(sources.root, helper, candidate)
+    require(controls.role_sources['graph.sealed-raw-stage'] == 'som-rs/scripts/hosted_readiness/sealed_current_raw.py',
+            'fixed sealed stage transport source differs')
+    transport = controls.load_module('graph.sealed-raw-stage')
     rows = []
     for name, stage in plan.items():
         origin = origins[name]
@@ -348,8 +385,11 @@ def restore_current_carrier(sources, catalog_path, assembly_root, carrier_root, 
             'fresh same-job exact built carrier required; historical or rebuilt candidate refused')
     temporary = Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
     require(out.is_absolute() and temporary in out.parents and not out.exists(), 'new owned carrier restore root required')
-    module = raw_module(sources, '_som_same_candidate_carrier_data',
-                        'som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py')
+    sources.read('som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py')
+    controls = _native_controls(sources.root, helper, candidate)
+    require(controls.role_sources['graph.carrier'] == 'som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py',
+            'fixed carrier data verifier source differs')
+    module = controls.load_module('graph.carrier')
     restored = module.restore(Path(carrier_root), out, Path(assembly_root) / 'manifest.json', candidate)
     require(module.identities(out) == restored['identity']
             and restored['identity']['binary']['sha256'] == proof['binary_identity']['sha256'],
@@ -373,29 +413,43 @@ def verify_callback(sources, root, stage, helper, candidate, proof_roots, *,
             'complete graph-chosen callback proof roots required')
     verify_compile_proof(proof_roots['assembly_root'], candidate)
     if stage in {'cnl', 'cli-refusals-rebase'}:
-        module = raw_module(sources, '_som_graph_semantic_gate_data',
-                            'som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py')
+        sources.read('som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py')
+        controls = _native_controls(sources.root, helper, candidate)
+        require(controls.role_sources['graph.semantic'] == 'som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py',
+                'fixed semantic callback verifier source differs')
+        module = controls.load_module('graph.semantic')
         checked = module.verify_result(root, sources.read, helper, candidate, stage,
                                        repo=sources.root, proof_roots=proof_roots)
         manifest = Path(root) / 'result.json'
     elif stage == 'named-contract-acceptance':
-        module = raw_module(sources, '_som_graph_named_contract_data',
-                            'som-rs/scripts/hosted_readiness/run_same_candidate_contracts.py')
+        sources.read('som-rs/scripts/hosted_readiness/run_same_candidate_contracts.py')
+        controls = _native_controls(sources.root, helper, candidate)
+        require(controls.role_sources['graph.named-contracts'] == 'som-rs/scripts/hosted_readiness/run_same_candidate_contracts.py',
+                'fixed named callback verifier source differs')
+        module = controls.load_module('graph.named-contracts')
         checked = module.verify_result(root, sources.read, helper, candidate, stage,
                                        repo=sources.root, proof_roots=proof_roots)
         manifest = Path(root) / 'result.json'
     elif stage == 'current-python-companions':
-        guard = raw_module(sources, '_som_graph_current_candidate_admission',
-                           'som-rs/scripts/hosted_readiness/dependency_candidate.py')
+        sources.read('som-rs/scripts/hosted_readiness/dependency_candidate.py')
+        controls = _native_controls(sources.root, helper, candidate)
+        require(controls.role_sources['graph.dependency'] == 'som-rs/scripts/hosted_readiness/dependency_candidate.py',
+                'fixed current dependency verifier source differs')
+        guard = controls.load_module('graph.dependency')
         admission = guard.verify_candidate_inputs(sources.root, helper, candidate, proof_roots['assembly_root'])
-        module = raw_module(sources, '_som_graph_current_companion_data',
-                            'som-rs/scripts/hosted_readiness/run_current_python_companions.py')
+        sources.read('som-rs/scripts/hosted_readiness/run_current_python_companions.py')
+        require(controls.role_sources['graph.companions'] == 'som-rs/scripts/hosted_readiness/run_current_python_companions.py',
+                'fixed current companion verifier source differs')
+        module = controls.load_module('graph.companions')
         checked = module.verify_capture(root, sources.read, helper, candidate, admission,
                     proof_roots['assembly_root'], qa_mode='native-qa-v1', source_paths=sources.paths)
         manifest = Path(root) / 'manifest.json'
     else:
-        module = raw_module(sources, '_som_graph_current_candidate_gate_data',
-                            'som-rs/scripts/hosted_readiness/run_current_candidate_gate.py')
+        sources.read('som-rs/scripts/hosted_readiness/run_current_candidate_gate.py')
+        controls = _native_controls(sources.root, helper, candidate)
+        require(controls.role_sources['controller.current-gate'] == 'som-rs/scripts/hosted_readiness/run_current_candidate_gate.py',
+                'fixed current gate verifier source differs')
+        module = controls.load_module('controller.current-gate')
         keyword = {'repo': sources.root, 'proof_roots': proof_roots}
         if stage == 'typescript-regression':
             keyword.update(verification_evidence_root=verification_evidence_root, archive_view=None)
@@ -445,6 +499,7 @@ def join_graph(sources, callbacks_root, current_root, product_join, helper, cand
 
 def main():
     require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'GitHub Linux execution only')
+    _native_controls()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('operation', choices=('matrix', 'receipt-paths', 'admit', 'artifact-inputs', 'restore-carrier', 'verify-callback', 'restore-stage-set', 'join-graph'))
     parser.add_argument('--repo', type=Path)
@@ -475,11 +530,11 @@ def main():
     elif args.operation == 'receipt-paths':
         for path in receipt_paths(args.root): sys.stdout.buffer.write(str(path).encode() + b'\0')
     elif args.operation == 'admit':
-        sources, _, record = admit_source(args.repo, args.helper_revision, args.candidate_revision)
+        sources, _, record = _admitted_controller_sources(args.repo, args.helper_revision, args.candidate_revision)
         sources.verify(); dump(args.out, {'native_source_authority': record, 'workflow_binding': sources.workflow_binding,
                                          'product_acceptance_passed': False, 'whole_acceptance_complete': False})
     elif args.operation in {'restore-carrier', 'verify-callback', 'restore-stage-set', 'join-graph'}:
-        sources, _, authority = admit_source(args.repo, args.helper_revision, args.candidate_revision)
+        sources, _, authority = _admitted_controller_sources(args.repo, args.helper_revision, args.candidate_revision)
         if args.operation == 'restore-stage-set':
             restore_stage_set(sources, args.stage_set, args.packet_roots, args.out, args.evidence_out, args.node,
                               args.helper_revision, args.candidate_revision)

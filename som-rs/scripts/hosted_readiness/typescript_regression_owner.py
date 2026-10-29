@@ -593,6 +593,17 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
     require(temporary in evidence.parents and all(evidence != path and evidence not in path.parents
                 and path not in evidence.parents for path in protected),
             'verification evidence must be disjoint from capture, repository and all input roots')
+    receipt_value = data['typescript_regression_inputs'].get('receipt')
+    require(type(receipt_value) is str and receipt_value and Path(receipt_value).is_absolute(),
+            'explicit physical TypeScript consumer receipt path required')
+    receipt = physical(receipt_value)
+    receipt_parent = physical(receipt.parent)
+    receipt_info = receipt.lstat()
+    require(receipt_parent.is_dir() and stat.S_ISREG(receipt_info.st_mode) and receipt_info.st_nlink == 1,
+            'single-link regular TypeScript consumer receipt and physical container required')
+    require(all(evidence != path and evidence not in path.parents and path not in evidence.parents
+                for path in (receipt, receipt_parent)),
+            'verification evidence overlaps receipt or whole TypeScript consumer container')
     if evidence.exists():
         require(evidence.is_dir() and not any(evidence.iterdir()), 'fresh empty verification evidence directory required')
     else:

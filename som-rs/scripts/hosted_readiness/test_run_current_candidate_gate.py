@@ -182,9 +182,33 @@ class GateIntegrity(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d); repo, revision, marker = self.git_fixture(root,
                 b'def verify(*args, **kwargs):\n    raise ValueError("pending numbered authority")\n')
-            with self.assertRaisesRegex(ValueError, 'pending numbered'):
-                with p.admitted_sources(repo, revision, install=False):
-                    self.fail('pending authority must not yield')
+            # The source/Git checks are real. Only the active loader is a
+            # protocol double; it returns this exact committed pending body.
+            bound = p.Sources(repo, revision)
+            raw = bound.read(p.AUTHORITY)
+            self.assertEqual(raw, (repo / p.AUTHORITY).read_bytes())
+            authority = ModuleType('_committed_pending_authority_protocol_fixture')
+            authority.__file__, authority.__som_raw_sha256__ = str(repo / p.AUTHORITY), p.sha(raw)
+            exec(compile(raw, authority.__file__, 'exec', dont_inherit=True), authority.__dict__)
+            committed_verify = authority.verify
+            authority.verify = mock.Mock(wraps=committed_verify)
+            lease = SimpleNamespace(verify_installed=mock.Mock(), close=mock.Mock(),
+                load_module=mock.Mock(return_value=authority))
+            controls = SimpleNamespace(borrow=mock.Mock(return_value=lease))
+            with mock.patch.object(p, '_native_controls', return_value=controls) as acquire, \
+                 mock.patch.object(p, 'raw_module', side_effect=AssertionError('legacy raw loader must not execute')):
+                with self.assertRaisesRegex(ValueError, 'pending numbered'):
+                    with p.admitted_sources(repo, revision, install=False):
+                        self.fail('pending authority must not yield')
+            acquire.assert_called_once()
+            sources = acquire.call_args.args[0]
+            self.assertEqual(sources.root, repo)
+            self.assertEqual(sources.revision, revision)
+            controls.borrow.assert_called_once_with()
+            lease.load_module.assert_called_once_with('bootstrap.authority')
+            authority.verify.assert_called_once_with(sources.read, 'native-qa-v1', sources.paths(), revision, revision)
+            self.assertEqual(lease.verify_installed.call_count, 2)
+            lease.close.assert_called_once_with()
             self.assertFalse(marker.exists())
 
     def test_actual_Git_source_change_cannot_reuse_a_committed_body(self):

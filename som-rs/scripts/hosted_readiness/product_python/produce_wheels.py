@@ -42,6 +42,7 @@ ENV_PLAN = HERE + "environment-plan.json"
 CANDIDATE_GUARD = "som-rs/scripts/hosted_readiness/dependency_candidate.py"
 REUSE = "som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py"
 RUNTIME_SUPPORT = "som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py"
+NATIVE_RUNTIME_VERIFIER = "som-rs/scripts/hosted_readiness/product_runtime/native_runtime_verifier.py"
 QUALIFICATION = "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json"
 BYTE_AUDIT = "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json"
 SOURCE_PINS = "som-rs/scripts/hosted_readiness/product_runtime/source-pins.json"
@@ -193,6 +194,70 @@ def admitted_runtime(root, sources, policy, revision):
     qualification_raw, audit_raw = sources.read(QUALIFICATION), sources.read(BYTE_AUDIT)
     source_pins_raw = sources.read(SOURCE_PINS)
     reuse = bound_module(sources, "som_native_reuse_for_wheels", REUSE)
+    require(sha(audit_raw) == policy["native_authority"]["controller_byte_audit_sha256"], "controller native byte audit differs")
+    qualification = reuse.qualification_data(qualification_raw, audit_raw, source_pins_raw)
+    require(str(root) == qualification["install_prefix"], "native Python root differs from its qualified build prefix")
+    require(qualification["transport_files"]["installed-files.json"] == policy["native_authority"]["qualified_inventory_sha256"], "qualified native inventory authority differs")
+    raw = read(root / "receipt.json")
+    receipt = parse(raw)
+    require(receipt.get("version") == "som.product-runtime-reuse.v1"
+            and receipt.get("status") == "audited_runtime_reinstalled_and_rechecked_for_hosted_tests"
+            and receipt.get("tested_sha") == revision and receipt.get("qualified_for") == "later_GitHub_tests_only"
+            and receipt.get("installed_tree_verified_before") is True and receipt.get("installed_tree_verified_after") is True
+            and receipt.get("product_runtime_ready") is False and receipt.get("product_acceptance_passed") is False,
+            "verified native reuse receipt required")
+    binding = receipt.get("qualification", {})
+    require(binding.get("manifest_sha256") == sha(qualification_raw) and binding.get("audit_sha256") == sha(audit_raw)
+            and binding.get("installed_inventory_sha256") == policy["native_authority"]["qualified_inventory_sha256"],
+            "reuse receipt qualification source bindings differ")
+    inventory = reuse.read_inventory(root / "qualification-evidence/installed-files.json", qualification)
+    verified = reuse.verify_installed_tree(root, inventory, qualification)
+    admitted = receipt.get("admitted_executables", {})
+    require(set(admitted) == set(qualification["admitted_paths"]) and len(admitted) == 41, "complete native binary recheck required")
+    for name, row in admitted.items():
+        require(row.get("status") == "hash_and_version_rechecked" and row.get("version_exit_code") == 0
+                and row.get("qualified_for") == "later_GitHub_tests_only"
+                and row.get("authority") == "controller_audited_saved_artifact"
+                and row.get("sha256") == inventory[name]["sha256"], "one of the complete native tool rechecks failed")
+    tools = {}
+    for name, relative_path in (("python", "install/python/bin/python3.12"), ("uv", "install/uv/bin/uv")):
+        row = admitted[relative_path]
+        path = root / relative_path
+        no_links(path)
+        require(path.is_file() and path.stat().st_mode & 0o111, "qualified executable is not regular executable")
+        require(row.get("status") == "hash_and_version_rechecked" and row.get("version_exit_code") == 0
+                and row.get("qualified_for") == "later_GitHub_tests_only"
+                and row.get("authority") == "controller_audited_saved_artifact"
+                and row.get("sha256") == policy["native_sha256"][name] == file_sha(path), "native tool admission differs")
+        text = row.get("version_stdout", "")
+        require(isinstance(text, str) and (text.strip() == "Python " + PYTHON if name == "python"
+                                         else re.match(r"uv 0\.9\.9(?:\s|$)", text) is not None), "native version differs")
+        tools[name] = path
+    record = {"reuse_receipt_sha256": sha(raw), "tree": verified,
+              "qualification_sha256": sources.pins[QUALIFICATION]["sha256"],
+              "inventory_sha256": qualification["transport_files"]["installed-files.json"],
+              "python_sha256": policy["native_sha256"]["python"], "uv_sha256": policy["native_sha256"]["uv"],
+              "qualification_scope": "temporary saved artifact reuse for GitHub qualification; not permanent readiness"}
+    return reuse, qualification, inventory, tools, record
+
+
+def admitted_native_runtime(root, sources, policy, revision):
+    """Use Core-owned runtime sources; keep the original full runtime checks."""
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    require(sources.root == controls.root and revision == sources.revision
+            == controls.helper_revision == controls.candidate_revision,
+            "native runtime source identity differs from active controls")
+    require(controls.role_sources['runtime.native-verifier'] == NATIVE_RUNTIME_VERIFIER
+            and controls.role_sources['runtime.qualifier'] == RUNTIME_SUPPORT,
+            "fixed native runtime verifier/qualifier sources differ")
+    sources.read(RUNTIME_SUPPORT)
+    qualification_raw, audit_raw = sources.read(QUALIFICATION), sources.read(BYTE_AUDIT)
+    source_pins_raw = sources.read(SOURCE_PINS)
+    sources.read(REUSE)
+    sources.read(NATIVE_RUNTIME_VERIFIER)
+    reuse = controls.load_module('runtime.native-verifier')
+    require(reuse.q is controls.load_module('runtime.qualifier'), "native verifier does not hold the actual Core qualifier")
     require(sha(audit_raw) == policy["native_authority"]["controller_byte_audit_sha256"], "controller native byte audit differs")
     qualification = reuse.qualification_data(qualification_raw, audit_raw, source_pins_raw)
     require(str(root) == qualification["install_prefix"], "native Python root differs from its qualified build prefix")

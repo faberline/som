@@ -1,0 +1,67 @@
+name: Native active source fixtures
+on:
+  push:
+    branches: [codex/m12-native-active-source-fixtures-v1]
+  workflow_dispatch:
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+env:
+  HELPER_REVISION: ${{ github.sha }}
+  PYTHONDONTWRITEBYTECODE: '1'
+jobs:
+  source-fixtures:
+    name: source-fixtures (${{ matrix.name }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: active-controls
+            script: som-rs/scripts/hosted_readiness/test_native_active_controls.py
+          - name: initial-bootstrap
+            script: som-rs/scripts/hosted_readiness/test_native_source_bootstrap.py
+          - name: graph-controller
+            script: som-rs/scripts/hosted_readiness/test_same_candidate_graph.py
+          - name: current-gate-controller
+            script: som-rs/scripts/hosted_readiness/test_run_current_candidate_gate.py
+          - name: owner-evidence
+            script: som-rs/scripts/hosted_readiness/test_owner_verification_evidence.py
+          - name: owner-receipt-container
+            script: som-rs/scripts/hosted_readiness/test_owner_receipt_container.py
+          - name: typescript-receipt-container
+            script: som-rs/scripts/hosted_readiness/test_typescript_receipt_container.py
+          - name: typescript-input-consumer
+            script: som-rs/scripts/hosted_readiness/test_typescript_input_consumer.py
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Record actual source and interpreter
+        run: |
+          test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
+          git rev-parse HEAD > tested-sha.txt
+          python3 --version > python-version.txt 2>&1
+      - name: Run the complete selected source fixture file
+        env:
+          SOURCE_FIXTURE_SCRIPT: ${{ matrix.script }}
+        run: |
+          sha256sum "$SOURCE_FIXTURE_SCRIPT" > fixture-source-sha256.txt
+          python3 -I -S -B "$GITHUB_WORKSPACE/$SOURCE_FIXTURE_SCRIPT" -v 2>&1 | tee source-fixtures.log
+      - name: Retain complete output and first failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-active-source-fixtures-${{ matrix.name }}
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            tested-sha.txt
+            python-version.txt
+            fixture-source-sha256.txt
+            source-fixtures.log

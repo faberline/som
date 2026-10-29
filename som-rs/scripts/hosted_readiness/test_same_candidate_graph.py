@@ -169,8 +169,16 @@ class GraphTests(unittest.TestCase):
             sources = mock.Mock(root=root / 'repo', pins={})
             roots = {name: root / name for name in ('assembly_root', 'python_inputs_root', 'rust_inputs_root', 'carrier_root')}
             owning = mock.Mock(); owning.verify_result.return_value = {'verified': 'unit fixture'}
-            with mock.patch.object(g, 'verify_compile_proof'), mock.patch.object(g, 'raw_module', return_value=owning):
+            # Finite loader protocol double; this does not admit native source.
+            controls = mock.Mock(spec=['role_sources', 'load_module'])
+            controls.role_sources = {'graph.semantic': 'som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py'}
+            controls.load_module.return_value = owning
+            with mock.patch.object(g, 'verify_compile_proof'), \
+                 mock.patch.object(g, '_native_controls', return_value=controls) as acquire, \
+                 mock.patch.object(g, 'raw_module', side_effect=AssertionError('legacy raw loader must not execute')):
                 result = g.verify_callback(sources, root, 'cnl', '1' * 40, '1' * 40, roots)
+            acquire.assert_called_once_with(sources.root, '1' * 40, '1' * 40)
+            controls.load_module.assert_called_once_with('graph.semantic')
             owning.verify_result.assert_called_once_with(root, sources.read, '1' * 40, '1' * 40, 'cnl',
                                                          repo=sources.root, proof_roots=roots)
             self.assertFalse(result['product_acceptance_passed'])

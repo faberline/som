@@ -389,22 +389,58 @@ class Context:
         self.qa_source_authority = None
         self.qa_import_controls = None
         self.python_controls = None
-        if self.qa_mode != 'experimental-preparation':
-            authority = self.module('native_qa_authority', NATIVE_AUTHORITY)
-            paths = self.sources.git('ls-tree', '-r', '--name-only', self.helper_revision).decode().splitlines()
-            self.qa_source_authority = authority.verify(self.sources.read, self.qa_mode, paths, helper_revision=self.helper_revision, candidate_revision=self.candidate_revision)
+        try:
             if self.qa_mode == 'native-qa-v1':
-                self.qa_import_controls = authority.install_raw_finder(self.sources.read, self.repo, self.qa_source_authority)
-                self.python_controls = install_python_controls(self)
-        guard = self.module('dependency_guard', DEPENDENCY_GUARD)
-        self.candidate_admission = guard.verify_candidate_inputs(self.repo, self.helper_revision,
-            self.candidate_revision, Path(self.data['assembly_root']))
-        require(self.candidate_admission.get('helper_revision') == self.helper_revision
-                and self.candidate_admission.get('candidate_revision') == self.candidate_revision,
-                'candidate/helper source roles differ from reviewed admission')
+                self.qa_import_controls = self._native_source_controls().borrow()
+                self.qa_import_controls.verify_installed()
+            if self.qa_mode != 'experimental-preparation':
+                authority = self.module('native_qa_authority', NATIVE_AUTHORITY)
+                paths = self.sources.git('ls-tree', '-r', '--name-only', self.helper_revision).decode().splitlines()
+                self.qa_source_authority = authority.verify(self.sources.read, self.qa_mode, paths, helper_revision=self.helper_revision, candidate_revision=self.candidate_revision)
+                if self.qa_mode == 'native-qa-v1':
+                    self.python_controls = install_python_controls(self)
+            guard = self.module('dependency_guard', DEPENDENCY_GUARD)
+            self.candidate_admission = guard.verify_candidate_inputs(self.repo, self.helper_revision,
+                self.candidate_revision, Path(self.data['assembly_root']))
+            require(self.candidate_admission.get('helper_revision') == self.helper_revision
+                    and self.candidate_admission.get('candidate_revision') == self.candidate_revision,
+                    'candidate/helper source roles differ from reviewed admission')
+        except BaseException as primary:
+            if self.qa_mode == 'native-qa-v1':
+                cleanup = []
+                for role, lease in (('python', self.python_controls), ('source', self.qa_import_controls)):
+                    if lease is not None:
+                        try:
+                            lease.close()
+                        except BaseException as secondary:
+                            cleanup.append({'role': role, 'error': type(secondary).__name__, 'reason': str(secondary)})
+                primary.__som_native_context_initialization_cleanup__ = cleanup
+            raise
+
+    def _native_source_controls(self):
+        from _som_native_active_context_binding import controls as _checked_controls
+        require(self.qa_mode == 'native-qa-v1' and _checked_controls.root == self.repo
+                and _checked_controls.helper_revision == self.helper_revision
+                and _checked_controls.candidate_revision == self.candidate_revision,
+                'actual pre-exec native Context source binding differs')
+        _checked_controls.verify_installed()
+        return _checked_controls
 
     def module(self, key, path):
         with self.module_lock:
+            if self.qa_mode == 'native-qa-v1':
+                controls = self._native_source_controls()
+                require(type(key) is str and key in controls.context_keys,
+                        'fixed native Context module key required')
+                role = controls.context_keys[key]
+                require((type(path) is str or type(path) is type(Path()))
+                        and str(path) in {controls.role_sources[role], str(self.repo / controls.role_sources[role])},
+                        'native Context target differs from its fixed source role')
+                module = controls.load_module(role)
+                require(key not in self.modules or self.modules[key] is module,
+                        'native Context module cache changed identity')
+                self.modules[key] = module
+                return module
             if key not in self.modules:
                 self.modules[key] = bound_module(self.sources, '_som_full_' + key, path)
             return self.modules[key]
@@ -414,7 +450,10 @@ class Context:
             wheels = self.module('wheels', WHEELS)
             sources = wheels.Sources(self.repo, self.helper_revision)
             policy = json.loads(sources.read(wheels.POLICY))
-            values = wheels.admitted_runtime(Path(self.data['runtime_root']), sources, policy, self.helper_revision)
+            if self.qa_mode == 'native-qa-v1':
+                values = wheels.admitted_native_runtime(Path(self.data['runtime_root']), sources, policy, self.helper_revision)
+            else:
+                values = wheels.admitted_runtime(Path(self.data['runtime_root']), sources, policy, self.helper_revision)
             reuse, qualification, inventory, tools, native = values
             self.cache['runtime'] = {'reuse': reuse, 'qualification': qualification, 'inventory': inventory,
                                      'tools': tools, 'identity': native, 'sources': sources}
@@ -1221,7 +1260,9 @@ class Context:
 
     def verify(self):
         self.sources.verify()
-        if self.qa_import_controls is not None:
+        if self.qa_mode == 'native-qa-v1':
+            self._native_source_controls().verify_installed()
+        elif self.qa_import_controls is not None:
             self.qa_import_controls.verify_installed()
         if self.python_controls is not None:
             self.python_controls.verify_installed()

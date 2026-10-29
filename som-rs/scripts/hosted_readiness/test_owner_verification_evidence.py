@@ -42,6 +42,11 @@ class EvidenceRootTests(unittest.TestCase):
             'siblings': {'rs_prompts': str(self.directory('inputs/rs_prompts'))}}}
         self.data.update({name: str(self.directory('runtime/' + name)) for name in
                           ('runtime_root', 'wheel_root', 'rust_tools_root', 'cargo_root')})
+        consumer = self.directory('input-transport/som-typescript-input-consumer')
+        receipt = consumer / 'receipt.json'; receipt.write_bytes(b'{"fixture":"consumer-receipt"}\n')
+        self.data['typescript_regression_inputs'].update(receipt=str(receipt), artifact={
+            'id': 1, 'name': 'same-candidate-typescript-regression-inputs',
+            'digest': 'sha256:' + 'f' * 64, 'receipt_sha256': self.common.sha(receipt.read_bytes())})
         self.evidence = self.base / 'raw/verification-evidence/same-job'
 
     def directory(self, relative):
@@ -226,10 +231,17 @@ class GraphEvidenceForwardingTests(unittest.TestCase):
             calls.append({'root': root, 'repo': repo, 'proof_roots': proof_roots,
                 'verification_evidence_root': verification_evidence_root, 'archive_view': archive_view})
             return {'fixture_protocol_only': True}
+        # Finite fixed-role double; the original keyword judge is unchanged.
+        controls = SimpleNamespace(
+            role_sources={'controller.current-gate': 'som-rs/scripts/hosted_readiness/run_current_candidate_gate.py'},
+            load_module=mock.Mock(return_value=SimpleNamespace(verify_result=verify_result)))
         with mock.patch.object(self.graph, 'verify_compile_proof', return_value={}), \
-             mock.patch.object(self.graph, 'raw_module', return_value=SimpleNamespace(verify_result=verify_result)):
+             mock.patch.object(self.graph, '_native_controls', return_value=controls) as acquire, \
+             mock.patch.object(self.graph, 'raw_module', side_effect=AssertionError('legacy raw loader must not execute')):
             self.graph.verify_callback(self.sources, self.root, 'typescript-regression', 'a'*40, 'a'*40,
                 self.proofs, verification_evidence_root=self.evidence)
+        acquire.assert_called_once_with(self.sources.root, 'a'*40, 'a'*40)
+        controls.load_module.assert_called_once_with('controller.current-gate')
         self.assertEqual(calls, [{'root': self.root, 'repo': self.sources.root, 'proof_roots': self.proofs,
             'verification_evidence_root': self.evidence, 'archive_view': None}])
 
@@ -237,10 +249,17 @@ class GraphEvidenceForwardingTests(unittest.TestCase):
         calls = []
         def verify_result(root, source_reader, helper_revision, candidate_revision, gate, *, repo, proof_roots):
             calls.append({'repo': repo, 'proof_roots': proof_roots}); return {'fixture_protocol_only': True}
+        # This strict callee still accepts only the original M6 keywords.
+        controls = SimpleNamespace(
+            role_sources={'controller.current-gate': 'som-rs/scripts/hosted_readiness/run_current_candidate_gate.py'},
+            load_module=mock.Mock(return_value=SimpleNamespace(verify_result=verify_result)))
         with mock.patch.object(self.graph, 'verify_compile_proof', return_value={}), \
-             mock.patch.object(self.graph, 'raw_module', return_value=SimpleNamespace(verify_result=verify_result)):
+             mock.patch.object(self.graph, '_native_controls', return_value=controls) as acquire, \
+             mock.patch.object(self.graph, 'raw_module', side_effect=AssertionError('legacy raw loader must not execute')):
             self.graph.verify_callback(self.sources, self.root, 'm6-react003', 'a'*40, 'a'*40, self.proofs,
                 verification_evidence_root=self.evidence)
+        acquire.assert_called_once_with(self.sources.root, 'a'*40, 'a'*40)
+        controls.load_module.assert_called_once_with('controller.current-gate')
         self.assertEqual(calls, [{'repo': self.sources.root, 'proof_roots': self.proofs}])
 
     def test_missing_ts_evidence_and_any_archive_view_refuse_before_proof_loading(self):

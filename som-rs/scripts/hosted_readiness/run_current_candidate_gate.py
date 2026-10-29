@@ -32,6 +32,10 @@ BOUND = BASE + 'bound_source.py'
 FULL_DRIVER = BASE + 'run_full_products.py'
 VERSION = 'som.current-candidate-owned-gate.v1'
 GATES = {'typescript-regression', 'm6-react003'}
+GATE_OWNER_KEYS = {'typescript-regression': 'current_gate_owner_typescript_regression',
+                   'm6-react003': 'current_gate_owner_m6_react003'}
+VERIFY_OWNER_ROLES = {'typescript-regression': 'common.owner-verify.typescript-regression',
+                      'm6-react003': 'common.owner-verify.m6-react003'}
 PORTS = {'current': 18978, 'baseline': 18979}
 PROTECTED = (8765, 18765)
 ROLES = {'assembly_root', 'python_inputs_root', 'rust_inputs_root', 'carrier_root'}
@@ -195,29 +199,69 @@ def raw_module(sources, name, path):
     return module
 
 
+def _native_controls(sources=None):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    if sources is not None:
+        require(sources.root == controls.root and sources.revision == controls.helper_revision
+                == controls.candidate_revision, 'active shared controller source identity differs')
+    return controls
+
+
+@contextmanager
+def _borrowed_controls(sources=None):
+    lease = _native_controls(sources).borrow()
+    primary = None
+    try:
+        lease.verify_installed()
+        yield lease
+        lease.verify_installed()
+    except BaseException as error:
+        primary = error
+        raise
+    finally:
+        errors = []
+        try:
+            lease.verify_installed()
+        except BaseException as secondary:
+            errors.append(secondary)
+        try:
+            lease.close()
+        except BaseException as secondary:
+            errors.append(secondary)
+        if errors:
+            first = errors[0] if primary is None else primary
+            for secondary in errors[1:] if primary is None else errors:
+                try:
+                    previous = BaseException.__getattribute__(first, '__som_native_controller_secondary_errors__')
+                except AttributeError:
+                    previous = ()
+                BaseException.__setattr__(first, '__som_native_controller_secondary_errors__', (*previous,
+                    {'phase': 'borrowed-source-controls-close', 'exception': secondary}))
+            if primary is None:
+                raise first
+
+
 @contextmanager
 def admitted_sources(repo, revision, reader=None, *, install=True, namespace='_som_current_gate_authority'):
     sources = Sources(repo, revision, reader)
     require(namespace in {'_som_current_gate_authority', '_som_owner_postclose_authority'}, 'fixed source authority namespace required')
-    authority = raw_module(sources, namespace, AUTHORITY)
-    lease = None
-    try:
+    # The active owner already installed the exact finder. Both legacy install
+    # values borrow it. This function owns neither seed namespaces nor controls.
+    with _borrowed_controls(sources) as lease:
+        body = sources.read(AUTHORITY)
+        authority = lease.load_module('bootstrap.authority')
+        require(authority.__file__ == str(sources.root / AUTHORITY)
+                and authority.__som_raw_sha256__ == sha(body), 'preloaded helper source differs')
         admission = authority.verify(sources.read, 'native-qa-v1', sources.paths(), revision, revision)
         require(admission.get('source_authority_active') is True
                 and all(admission.get(k) is False for k in ('product_acceptance_passed', 'compiler_acceptance_passed', 'whole_acceptance_complete')),
                 'source authority cannot grant acceptance')
-        if install:
-            lease = authority.install_raw_finder(sources.read, sources.root, admission)
         yield sources, authority, admission
-        if lease is not None:
-            lease.verify_installed()
+        lease.verify_installed()
         require(authority.verify(sources.read, 'native-qa-v1', sources.paths(), revision, revision) == admission,
                 'native source authority changed')
         sources.verify()
-    finally:
-        if lease is not None:
-            lease.close()
-        sys.modules.pop(namespace, None)
 
 
 def roots_checked(values, saved, repo):
@@ -285,6 +329,19 @@ def verification_evidence_root_checked(value, *, capture_root, repo, proof_roots
                  *[regular_root(data[name]) for name in ('build_provenance_root', 'current_companions_root') if name in data]]
     require(all(root != path and root not in path.parents and path not in root.parents for path in protected),
             'verification evidence overlaps whole gate capture, repository or protected proof/input/runtime root')
+    receipt_value = inputs.get('receipt')
+    require(type(receipt_value) is str and receipt_value and Path(receipt_value).is_absolute(),
+            'explicit physical TypeScript consumer receipt path required')
+    receipt = Path(receipt_value)
+    require('..' not in receipt.parts and not any(path.is_symlink() for path in (receipt, *receipt.parents)),
+            'physical TypeScript consumer receipt and parent required')
+    receipt_parent = regular_root(receipt.parent)
+    receipt_info = receipt.lstat()
+    require(stat.S_ISREG(receipt_info.st_mode) and receipt_info.st_nlink == 1,
+            'single-link regular TypeScript consumer receipt required')
+    require(all(root != path and root not in path.parents and path not in root.parents
+                for path in (receipt, receipt_parent)),
+            'verification evidence overlaps receipt or whole TypeScript consumer container')
     info = temporary.stat()
     require(info.st_uid == os.getuid() and info.st_mode & 0o022 == 0,
             'owned RUNNER_TEMP without group/other writes required')
@@ -936,14 +993,14 @@ def verify_recorded_service(root, directory, record, stamp, sources):
             and all(type(environment[name]) is str and environment[name] for name in frame), 'recorded Python environment/frame differs')
     require(record['requested_argv'] == requested, 'recorded original script request differs')
     verify_recorded_python_startup(directory, record, sources, data)
-    oracle = raw_module(sources, '_som_recorded_service_verify', ORACLE)
-    try:
+    with _borrowed_controls(sources) as controls:
+        sources.read(ORACLE)
+        require(controls.role_sources['common.recorded-service'] == ORACLE, 'fixed recorded verifier source differs')
+        oracle = controls.load_module('common.recorded-service')
         verified = oracle.verify_recorded_run(directory / 'oracle', sources.read, sources.revision, sources.revision,
             profile_path, inputs, repo=sources.root, runtime=runtime)
         require(verified['profile_sha256'] == sha(profile_raw)
                 and sha(read(directory / 'oracle/data-proof.json')) == record['extra']['data_proof_sha256'], 'recorded complete data proof differs')
-    finally:
-        sys.modules.pop('_som_recorded_service_verify', None)
     verify_service_cleanup(directory, record, stamp, 'recorded-same-request-before')
 
 
@@ -1052,7 +1109,6 @@ def verify_owner_postclose(root, source_reader, helper_revision, candidate_revis
     capture = parse(capture_raw)
     require(capture.get('gate') == gate and capture.get('helper_revision') == capture.get('candidate_revision') == candidate_revision
             and capture.get('product_acceptance_passed') is False, 'owner capture identity differs')
-    names = ('_som_owner_postclose_layout', '_som_owner_postclose_semantic')
     with admitted_sources(repo, helper_revision, source_reader, namespace='_som_owner_postclose_authority') as (sources, authority, admission):
         roots = roots_checked(proof_roots, shared, sources.root)
         context_raw = read(shared / 'context.input.json')
@@ -1063,9 +1119,12 @@ def verify_owner_postclose(root, source_reader, helper_revision, candidate_revis
         spec = adapter_spec(data, gate, admission, sources)
         catalog_raw = read(shared / 'artifact-inputs.json')
         catalog = parse(catalog_raw)
-        try:
-            layout_module = raw_module(sources, names[0], LAYOUT)
-            semantic = raw_module(sources, names[1], SEMANTIC)
+        with _borrowed_controls(sources) as controls:
+            sources.read(LAYOUT); sources.read(SEMANTIC)
+            require(controls.role_sources['common.postclose.layout'] == LAYOUT
+                    and controls.role_sources['common.postclose.semantic'] == SEMANTIC, 'fixed postclose verifier sources differ')
+            layout_module = controls.load_module('common.postclose.layout')
+            semantic = controls.load_module('common.postclose.semantic')
             layout = layout_module.verify_candidate_layout(shared / 'candidate', sources.read, helper_revision, candidate_revision,
                 **layout_arguments(sources, roots, shared / 'restored-candidate', catalog))
             services_raw = read(shared / 'services/manifest.json')
@@ -1084,8 +1143,6 @@ def verify_owner_postclose(root, source_reader, helper_revision, candidate_revis
             require(read(root / 'result.json') == capture_raw and read(shared / 'context.input.json') == context_raw
                     and read(shared / 'artifact-inputs.json') == catalog_raw
                     and read(shared / 'services/manifest.json') == services_raw, 'post-close raw inputs changed')
-        finally:
-            for name in names: sys.modules.pop(name, None)
     return proof
 
 
@@ -1128,10 +1185,14 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
         spec = adapter_spec(data, gate, admission, sources)
         require(spec == report['owner_adapter'], 'saved owner adapter differs')
         catalog = parse(read(root / 'artifact-inputs.json'))
-        layout_module = raw_module(sources, '_som_current_gate_layout_verify', LAYOUT)
-        semantic = raw_module(sources, '_som_current_gate_semantic_verify', SEMANTIC)
-        owner = raw_module(sources, '_som_current_gate_owner_verify', spec['path']); owner_api(owner, gate)
-        try:
+        with _borrowed_controls(sources) as controls:
+            sources.read(LAYOUT); sources.read(SEMANTIC)
+            require(controls.role_sources['common.verify.layout'] == LAYOUT
+                    and controls.role_sources['common.verify.semantic'] == SEMANTIC
+                    and controls.role_sources[VERIFY_OWNER_ROLES[gate]] == spec['path'], 'fixed gate verifier sources differ')
+            layout_module = controls.load_module('common.verify.layout')
+            semantic = controls.load_module('common.verify.semantic')
+            owner = controls.load_module(VERIFY_OWNER_ROLES[gate]); owner_api(owner, gate)
             layout = layout_module.verify_candidate_layout(root / 'candidate', sources.read, helper_revision, candidate_revision,
                 **layout_arguments(sources, roots, root / 'restored-candidate', catalog))
             require(layout_binding(layout) == layout_binding(report['layout']), 'same-build layout/provenance proof differs')
@@ -1152,9 +1213,6 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
             require(all(report.get(k) is True for k in ('complete', 'all_required_passed', 'owned_waits_complete', 'owned_cleanup_complete', 'raw_logs_complete')),
                     'incomplete shared result')
             require(read(root / 'result.json') == raw and tree(root) == {'result.json': identity(root / 'result.json'), **snapshot}, 'shared raw files changed during join')
-        finally:
-            for name in ('_som_current_gate_layout_verify', '_som_current_gate_semantic_verify', '_som_current_gate_owner_verify'):
-                sys.modules.pop(name, None)
     return report
 
 
@@ -1178,7 +1236,7 @@ def main(argv=None):
     temporary = regular_root(os.environ['RUNNER_TEMP'])
     require(temporary in args.out.parents and not args.out.exists() and '..' not in args.out.parts
             and not any(p.is_symlink() for p in args.out.parents), 'new owned launcher output required')
-    # Context will own its raw import controls. Do not stack a second owner above it.
+    # The Core owns its raw import controls. Source admission and Context borrow it.
     with admitted_sources(args.repo, args.helper_revision, install=False) as (sources, authority, admission):
         raw = read(args.product_context)
         data = parse(raw)
@@ -1196,7 +1254,10 @@ def main(argv=None):
             verification_evidence_root_checked(args.verification_evidence_root, capture_root=args.out,
                                                repo=sources.root, proof_roots=roots, data=data)
         spec = adapter_spec(data, args.gate, admission, sources)  # Missing owner fails before any native command.
-        module = raw_module(sources, 'full_product_context', CONTEXT)
+        sources.read(CONTEXT)
+        controls = _native_controls(sources)
+        require(controls.role_sources['runtime.context'] == CONTEXT, 'fixed native Context source differs')
+        module = controls.load_module('runtime.context')
         os.environ[module.ENV] = str(args.product_context.absolute())
         ctx = module.Context(args.product_context); module._ACTIVE = ctx
         require(Path(sys.executable).resolve() == module.observer_python().resolve(), 'actual qualified observer Python required')
@@ -1217,7 +1278,7 @@ def main(argv=None):
             report['layout'] = layout_module.restore_candidate_layout(sources.root, sources.read, args.helper_revision, args.candidate_revision,
                 out=args.out / 'candidate', **{k: v for k, v in layout_arguments(sources, roots, restored['root'], catalog).items() if k != 'repo'})
             semantic = ctx.module('current_gate_semantic', SEMANTIC)
-            owner = ctx.module('current_gate_owner', spec['path']); owner_api(owner, args.gate)
+            owner = ctx.module(GATE_OWNER_KEYS[args.gate], spec['path']); owner_api(owner, args.gate)
             output = args.out / 'owner'; output.mkdir()
             with semantic.trusted_proof_bundle(sources.root, sources.read, args.helper_revision, args.candidate_revision, roots, args.out, admission) as trusted:
                 services = Services(ctx, trusted.driver, trusted.checker, trusted.proof, report['layout'], restored, args.out / 'services')
