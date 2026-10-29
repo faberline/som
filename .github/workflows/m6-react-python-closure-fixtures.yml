@@ -1,0 +1,29 @@
+name: M6 React Python closure synthetic fixtures (not acceptance)
+on:
+  push:
+    branches:
+      - codex/m6-react-python-closure-fixtures-20261029
+permissions:
+  contents: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bind reviewed source before execution
+        working-directory: .github/m6-react-python-closure
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(sha256sum qualify_react_python.py | cut -d ' ' -f 1)" = 4886a996d4bf055bff68ddae3aef4ecd16d31462ceaf43719028b0b7e6b51a8b
+          test "$(git show "$GITHUB_SHA:.github/m6-react-python-closure/qualify_react_python.py" | sha256sum | cut -d ' ' -f 1)" = 4886a996d4bf055bff68ddae3aef4ecd16d31462ceaf43719028b0b7e6b51a8b
+          test "$(sha256sum test_qualify_react_python.py | cut -d ' ' -f 1)" = a2a5df395d33f2990e2269558ea7c80f9980a3ccc99a67308113b878492f7a34
+          test "$(git show "$GITHUB_SHA:.github/m6-react-python-closure/test_qualify_react_python.py" | sha256sum | cut -d ' ' -f 1)" = a2a5df395d33f2990e2269558ea7c80f9980a3ccc99a67308113b878492f7a34
+      - name: Run isolated synthetic fixtures
+        working-directory: .github/m6-react-python-closure
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -I -S -B test_qualify_react_python.py -v
