@@ -6,6 +6,7 @@ This program never identifies its output as a historical wire capture or a
 product acceptance result. All preparation must succeed before it starts SOM.
 """
 import argparse
+import errno
 import hashlib
 import json
 import os
@@ -23,6 +24,8 @@ REPORT_SHA = '37c74335072cc93a64eb7663cc90c1fdd522e4d4be6a4f47e23f82b18e434b84'
 RECORDING_SHA = '34114b9069f47db454ab3030df63fbee2f142a6c1c6acb0fc62ab1883400fbfa'
 EVIDENCE_INDEX_SHA = '3759239392208eab81bf740ca9ca2a41465be3e3e4995de2bd255774f4596bea'
 BASELINE_SHA = '2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c'
+RUSTFMT_PATH = Path('/opt/homebrew/Cellar/rust/1.96.1/bin/rustfmt')
+RUSTFMT_SHA = '2c56fd066853c80c786a8a3a0e5434b7f808ace8b2cf66ae6e1a13566aa2815f'
 PORT = 18917
 
 
@@ -322,6 +325,44 @@ def process_evidence(proc, argv, binary, out, stage, initial=None, prelaunch=Non
     return identity
 
 
+def cleanup_listener_evidence(out):
+    command = ['/usr/sbin/lsof', '-nP', '-iTCP:' + str(PORT), '-sTCP:LISTEN', '-Fp']
+    result = subprocess.run(command, capture_output=True, check=False, timeout=10)
+    write(out / 'process-evidence/cleanup-listeners.stdout', result.stdout)
+    write(out / 'process-evidence/cleanup-listeners.stderr', result.stderr)
+    need(not result.stderr and (result.returncode == 0 or (result.returncode == 1 and not result.stdout)),
+         'cleanup listener evidence unavailable')
+    return {'argv': command, 'exit_code': result.returncode, 'stdout_sha256': sha(result.stdout),
+            'stderr_sha256': sha(result.stderr), 'listener_absent': result.returncode == 1}
+
+
+def cleanup_bind_evidence(out):
+    result = {'address': '127.0.0.1', 'port': PORT, 'available': False, 'errno': None}
+    with socket.socket() as sock:
+        try:
+            sock.bind(('127.0.0.1', PORT))
+            result['available'] = True
+        except OSError as exc:
+            result['errno'] = exc.errno
+    write(out / 'process-evidence/cleanup-bind.json', pretty(result))
+    return result
+
+
+def cleanup_socket_evidence(out):
+    command = ['/usr/sbin/netstat', '-an', '-p', 'tcp']
+    result = subprocess.run(command, capture_output=True, check=False, timeout=10)
+    write(out / 'process-evidence/cleanup-sockets.stdout', result.stdout)
+    write(out / 'process-evidence/cleanup-sockets.stderr', result.stderr)
+    need(result.returncode == 0 and not result.stderr, 'cleanup socket evidence unavailable')
+    states = []
+    for line in result.stdout.decode('utf-8').splitlines():
+        fields = line.split()
+        if fields and fields[0] in ('tcp4', 'tcp6') and len(fields) >= 6 and fields[3].endswith('.' + str(PORT)):
+            states.append(fields[5])
+    return {'argv': command, 'exit_code': result.returncode, 'stdout_sha256': sha(result.stdout),
+            'stderr_sha256': sha(result.stderr), 'states': states}
+
+
 def finalize_capture(result, proc, owner, binary, asset_root, assets, plan, out):
     errors = []
     def attempt(name, function, fallback):
@@ -339,16 +380,24 @@ def finalize_capture(result, proc, owner, binary, asset_root, assets, plan, out)
                     result['wait_exit'] = event['exit_code']
                     break
         attempt('owner_receipt', owner.save, None)
-    result['port_free_after'] = attempt('port_check', free_port, False)
+    result['listener_after'] = attempt('listener_check', lambda: cleanup_listener_evidence(out), None)
+    result['bind_after'] = attempt('bind_check', lambda: cleanup_bind_evidence(out), None)
+    result['sockets_after'] = attempt('socket_check', lambda: cleanup_socket_evidence(out), None)
     result['process_group_gone'] = proc is None or attempt('group_check', lambda: group_gone(proc.pid), False)
     result['baseline_sha256_after'] = attempt('baseline_recheck', lambda: sha(read(binary)), None)
     result['assets_unchanged'] = attempt('asset_recheck', lambda: asset_identity(asset_root) == assets, False)
+    result['rustfmt_sha256_after'] = attempt('rustfmt_recheck', lambda: sha(read(RUSTFMT_PATH)), None)
     result['cleanup_errors'] = errors
     result['unrun'] = count_unrun(plan, result['rows'])
     result['passed'] = (result['error'] is None and result['unrun'] == 0 and
-                        all(row['matched'] for row in result['rows']) and result['port_free_after'] and
+                        all(row['matched'] for row in result['rows']) and result['listener_after'] is not None and
+                        result['listener_after']['listener_absent'] and result['bind_after'] is not None and
+                        result['sockets_after'] is not None and 'LISTEN' not in result['sockets_after']['states'] and
+                        (result['bind_after']['available'] or (result['bind_after']['errno'] == errno.EADDRINUSE and
+                         'TIME_WAIT' in result['sockets_after']['states'])) and
                         result['process_group_gone'] and result['assets_unchanged'] and
                         result['baseline_sha256_after'] == BASELINE_SHA and
+                        result['rustfmt_sha256_after'] == RUSTFMT_SHA and
                         result['wait_exit'] is not None and not errors)
     write(out / 'receipt.json', pretty(result))
 
@@ -397,22 +446,32 @@ def execute(args, checker):
                      'binary_size': binary_stat.st_size}
         need(sha(read(binary)) == BASELINE_SHA and binary.stat().st_ino == binary_stat.st_ino
              and binary.stat().st_dev == binary_stat.st_dev, 'baseline prelaunch identity differs')
+        stage = 'formatter'
+        need(sha(read(RUSTFMT_PATH)) == RUSTFMT_SHA, 'accepted rustfmt identity differs')
+        rustfmt = subprocess.run([str(RUSTFMT_PATH), '--version'], capture_output=True, check=True, timeout=15)
+        write(out / 'rustfmt-version.stdout', rustfmt.stdout)
+        write(out / 'rustfmt-version.stderr', rustfmt.stderr)
+        need(rustfmt.stdout.decode('utf-8').startswith('rustfmt 1.9.0') and not rustfmt.stderr,
+             'accepted rustfmt version differs')
         stage = 'port_check'
         need(free_port(), 'QA port already in use')
         health = load(args.baseline / 'runtime.json')['health']
         env = {k: os.environ[k] for k in ('PATH', 'HOME', 'TMPDIR', 'LANG') if k in os.environ}
+        env['SOM_TS_PRETTIER'] = str(args.prettier)
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         argv = [str(binary), 'serve', '--assets', str(args.baseline / 'assets'), '--port', str(PORT)]
         result = {'role': 'fresh-before', 'historical_wire': False, 'product_acceptance': 'not_run',
                   'baseline_sha256': BASELINE_SHA, 'argv': argv, 'port': PORT,
                   'baseline_provenance': identity, 'assets': assets,
                   'binary_prelaunch': prelaunch,
+                  'rustfmt': {'path': str(RUSTFMT_PATH), 'sha256': RUSTFMT_SHA,
+                              'version': rustfmt.stdout.decode('utf-8').strip()},
                   'runner': {'platform': platform.platform(), 'machine': platform.machine(),
                              'python': sys.version, 'python_executable': sys.executable,
                              'github_sha': os.environ.get('GITHUB_SHA'), 'github_run_id': os.environ.get('GITHUB_RUN_ID'),
                              'github_run_attempt': os.environ.get('GITHUB_RUN_ATTEMPT')},
                   'owner_pid': os.getpid(), 'pid': None, 'wait_exit': None,
-                  'process_group_gone': False, 'port_free_after': False, 'rows': [], 'error': None}
+                  'process_group_gone': False, 'rows': [], 'error': None}
         proc = None
         stage = 'owner_setup'
         from owned_candidate import CandidateOwner
@@ -477,7 +536,7 @@ def execute(args, checker):
 
 def main():
     parser = argparse.ArgumentParser()
-    for name in ('inventory', 'evidence', 'run003', 'baseline', 'out', 'repo', 'sealed'):
+    for name in ('inventory', 'evidence', 'run003', 'baseline', 'out', 'repo', 'sealed', 'prettier'):
         parser.add_argument('--' + name, type=Path, required=True)
     args = parser.parse_args()
     sys.path.insert(0, str(args.repo / 'som-rs/scripts/typescript_output_acceptance'))

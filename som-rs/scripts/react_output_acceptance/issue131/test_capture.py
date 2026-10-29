@@ -204,6 +204,9 @@ class CaptureTests(unittest.TestCase):
         root = Path(self.temp.name)
         baseline, repo = root / 'baseline', root / 'repo'
         self.put(baseline / 'som', b'fake executable')
+        capture.RUSTFMT_PATH = root / 'rustfmt'
+        self.put(capture.RUSTFMT_PATH, b'fake rustfmt')
+        capture.RUSTFMT_SHA = digest(capture.RUSTFMT_PATH.read_bytes())
         self.put(baseline / 'source.json', b'fake source')
         self.put(baseline / 'build.json', b'fake build')
         self.write(baseline / 'runtime.json', {'health': {}})
@@ -229,8 +232,10 @@ class CaptureTests(unittest.TestCase):
 
     def test_busy_port_records_all_unrun(self):
         args = self.fake_prestart()
+        def fake_command(command, **kwargs):
+            return SimpleNamespace(stdout=b'rustfmt 1.9.0\n' if command[-1] == '--version' else b'Mach-O 64-bit executable arm64', stderr=b'')
         with patch.object(capture, 'prepare', return_value=([], {}, [])), \
-             patch.object(capture.subprocess, 'run', return_value=SimpleNamespace(stdout=b'Mach-O 64-bit executable arm64')), \
+             patch.object(capture.subprocess, 'run', side_effect=fake_command), \
              patch.object(capture.subprocess, 'Popen') as spawn, \
              patch.object(capture, 'asset_identity', return_value={'ruff': 'fixture'}), \
              patch.object(capture, 'free_port', return_value=False):
@@ -248,7 +253,9 @@ class CaptureTests(unittest.TestCase):
             {'matched': True, 'comparison': 'passed'}, {'matched': False, 'comparison': 'unrun'}]}
         proc = SimpleNamespace(pid=123)
         out = Path(self.temp.name) / 'cleanup'; out.mkdir()
-        with patch.object(capture, 'free_port', return_value=True), patch.object(capture, 'group_gone', return_value=True), \
+        with patch.object(capture, 'cleanup_listener_evidence', return_value={'listener_absent': True}), \
+             patch.object(capture, 'cleanup_bind_evidence', return_value={'available': True, 'errno': None}), \
+             patch.object(capture, 'cleanup_socket_evidence', return_value={'states': []}), patch.object(capture, 'group_gone', return_value=True), \
              patch.object(capture, 'read', side_effect=OSError('fixture')), \
              patch.object(capture, 'asset_identity', side_effect=ValueError('fixture')):
             capture.finalize_capture(result, proc, Owner(), out / 'som', out / 'assets', {}, [1, 2, 3], out)
@@ -256,7 +263,7 @@ class CaptureTests(unittest.TestCase):
         self.assertEqual(receipt['error'], 'RuntimeError: first failure')
         self.assertEqual((receipt['wait_exit'], receipt['unrun'], receipt['passed']), (-15, 2, False))
         self.assertEqual([item['stage'] for item in receipt['cleanup_errors']],
-                         ['owner_receipt', 'baseline_recheck', 'asset_recheck'])
+                         ['owner_receipt', 'baseline_recheck', 'asset_recheck', 'rustfmt_recheck'])
         self.assertEqual(len(receipt['rows']), 2)
 
     def test_wait_failure_still_attempts_owner_receipt(self):
@@ -267,7 +274,9 @@ class CaptureTests(unittest.TestCase):
         owner = Owner(); out = Path(self.temp.name) / 'wait'; out.mkdir()
         binary = out / 'som'; self.put(binary, b'binary')
         result = {'error': None, 'rows': []}
-        with patch.object(capture, 'free_port', return_value=True), patch.object(capture, 'group_gone', return_value=False), \
+        with patch.object(capture, 'cleanup_listener_evidence', return_value={'listener_absent': True}), \
+             patch.object(capture, 'cleanup_bind_evidence', return_value={'available': True, 'errno': None}), \
+             patch.object(capture, 'cleanup_socket_evidence', return_value={'states': []}), patch.object(capture, 'group_gone', return_value=False), \
              patch.object(capture, 'asset_identity', return_value={}):
             capture.finalize_capture(result, SimpleNamespace(pid=123), owner, binary, out / 'assets', {}, [1], out)
         receipt = json.loads((out / 'receipt.json').read_bytes())
@@ -285,7 +294,9 @@ class CaptureTests(unittest.TestCase):
         out = Path(self.temp.name) / 'postwait'; out.mkdir()
         binary = out / 'som'; self.put(binary, b'binary')
         result = {'error': None, 'rows': []}
-        with patch.object(capture, 'free_port', return_value=True), patch.object(capture, 'group_gone', return_value=True), \
+        with patch.object(capture, 'cleanup_listener_evidence', return_value={'listener_absent': True}), \
+             patch.object(capture, 'cleanup_bind_evidence', return_value={'available': True, 'errno': None}), \
+             patch.object(capture, 'cleanup_socket_evidence', return_value={'states': []}), patch.object(capture, 'group_gone', return_value=True), \
              patch.object(capture, 'asset_identity', return_value={}):
             capture.finalize_capture(result, SimpleNamespace(pid=123), Owner(), binary, out / 'assets', {}, [1], out)
         receipt = json.loads((out / 'receipt.json').read_bytes())
@@ -345,6 +356,41 @@ class CaptureTests(unittest.TestCase):
                 proc.terminate()
             proc.wait(timeout=10)
         self.assertTrue(capture.free_port(), 'fixture listener must stop')
+
+    def test_real_macos_socket_cleanup_observations(self):
+        import socket
+        import subprocess
+        import sys
+        self.assertTrue(capture.free_port(), 'fixture QA port must be unused')
+        out = Path(self.temp.name) / 'real-socket'; out.mkdir()
+        script = out / 'server.py'
+        script.write_text('import socket\ns=socket.socket()\ns.bind(("127.0.0.1",18917))\ns.listen(1)\nc,_=s.accept()\nc.sendall(b"x")\nc.close()\ns.close()\n')
+        proc = subprocess.Popen([sys.executable, str(script)], stdin=subprocess.DEVNULL,
+                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        try:
+            deadline = time.monotonic() + 15
+            while capture.free_port():
+                self.assertIsNone(proc.poll(), 'socket fixture exited')
+                self.assertLess(time.monotonic(), deadline)
+                time.sleep(0.1)
+            with socket.create_connection(('127.0.0.1', capture.PORT), timeout=5) as client:
+                self.assertEqual(client.recv(1), b'x')
+                self.assertEqual(client.recv(1), b'')
+            self.assertEqual(proc.wait(timeout=10), 0)
+            listener = capture.cleanup_listener_evidence(out)
+            bind = capture.cleanup_bind_evidence(out)
+            sockets = capture.cleanup_socket_evidence(out)
+            self.assertTrue(listener['listener_absent'])
+            self.assertNotIn('LISTEN', sockets['states'])
+            if not bind['available']:
+                self.assertEqual(bind['errno'], __import__('errno').EADDRINUSE)
+                self.assertIn('TIME_WAIT', sockets['states'])
+            print(json.dumps({'fixture_listener_absent': listener['listener_absent'],
+                              'fixture_bind_available': bind['available'], 'fixture_socket_states': sockets['states']}))
+        finally:
+            if proc.poll() is None:
+                proc.terminate()
+            proc.wait(timeout=10)
 
 
 if __name__ == '__main__':
