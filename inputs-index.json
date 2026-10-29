@@ -90,6 +90,11 @@
       "archive": "package-017.sealed",
       "manifest": "package-017.manifest.json",
       "manifest_sha256": "4f1dbc5047ab247753950ddd282684fc55f53c1b0ba1465768d304488a135371"
+    },
+    {
+      "archive": "package-018.sealed",
+      "manifest": "package-018.manifest.json",
+      "manifest_sha256": "77e8548a4f0922f1df543869f296d3101dc9deca53a786c74a75f4d5d5fb939a"
     }
   ]
 }

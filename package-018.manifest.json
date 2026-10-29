@@ -1,0 +1,14 @@
+{
+  "version": "som.m6-sealed-inputs-manifest.v1",
+  "cipher_sha256": "b54fba5da89a70cdce5e82a3021045f63392670eeda8d4aaadbb7e7d3986c2cb",
+  "uncompressed_bytes": 104319,
+  "total_files": 1,
+  "files": [
+    {
+      "path": ".local/rust-compiler-goal/acceptance/rust-output-055/run-003/behavior/parity/report-parity.json",
+      "sha256": "db0f8bafa27f39acd6a8a98994110706142e124278c86e2ad87e8a56e18beca6",
+      "bytes": 78107,
+      "mode": 420
+    }
+  ]
+}
