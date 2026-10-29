@@ -545,7 +545,7 @@ class OwnedCandidateTests(unittest.TestCase):
         import owned_candidate, audit_candidate_owner
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp).resolve();candidate=root/'candidate';candidate.mkdir();(candidate/'assets').mkdir()
-            source=root/'fixture.c';source.write_text('#include <sys/types.h>\n#include <sys/socket.h>\n#include <netinet/in.h>\n#include <unistd.h>\n#include <stdlib.h>\nint main(void){int s=socket(AF_INET,SOCK_STREAM,0);int v=1;setsockopt(s,SOL_SOCKET,SO_REUSEADDR,&v,sizeof(v));struct sockaddr_in a={0};a.sin_family=AF_INET;a.sin_port=htons(18919);a.sin_addr.s_addr=htonl(INADDR_LOOPBACK);if(bind(s,(void*)&a,sizeof(a))||listen(s,4))return 2;for(;;)pause();}\n')
+            source=root/'fixture.c';source.write_text('#include <sys/types.h>\n#include <sys/socket.h>\n#include <netinet/in.h>\n#include <unistd.h>\n#include <signal.h>\n#include <string.h>\nint main(void){signal(SIGPIPE,SIG_IGN);int s=socket(AF_INET,SOCK_STREAM,0);int v=1;setsockopt(s,SOL_SOCKET,SO_REUSEADDR,&v,sizeof(v));struct sockaddr_in a={0};a.sin_family=AF_INET;a.sin_port=htons(18919);a.sin_addr.s_addr=htonl(INADDR_LOOPBACK);if(bind(s,(void*)&a,sizeof(a))||listen(s,4))return 2;for(;;){int c=accept(s,0,0);char buf[4096];if(c>=0){if(read(c,buf,sizeof(buf))>0){const char*r="HTTP/1.1 200 OK\\r\\nContent-Type: application/json\\r\\nContent-Length: 15\\r\\nConnection: close\\r\\n\\r\\n{\\\"status\\\":\\\"ok\\\"}";write(c,r,strlen(r));}close(c);}}}\n')
             binary=candidate/'som';subprocess.run(['cc',str(source),'-o',str(binary)],check=True,timeout=30)
             preparer=root/'preparer.py'
             preparer.write_text('import subprocess,sys\nfrom pathlib import Path\nc=Path(sys.argv[1])\nsubprocess.Popen([str(c/"som"),"serve","--assets",str(c/"assets"),"--port","18919"],cwd=c,start_new_session=True)\n')
@@ -558,8 +558,25 @@ class OwnedCandidateTests(unittest.TestCase):
                     except OSError:time.sleep(.05)
                 else:self.fail('fake candidate failed to listen')
                 digest=hashlib.sha256(binary.read_bytes()).hexdigest()
-                (candidate/'runtime.json').write_text(json.dumps({'pid':owner.process.pid,'argv':owner.argv,'port':18919,'binary_sha256':digest}))
-                (candidate/'build.json').write_text(json.dumps({'binary_sha256':digest}))
+                revision='a'*40;(candidate/'source.tar').write_bytes(b'archive');(candidate/'assets/manifest.json').write_bytes(b'assets')
+                (root/'source.rs').write_bytes(b'source')
+                source_info={'commit':revision,'archive_sha256':hashlib.sha256(b'archive').hexdigest(),
+                             'files':{'source.rs':hashlib.sha256(b'source').hexdigest()}}
+                (candidate/'source.json').write_text(json.dumps(source_info));source_sha=hashlib.sha256((candidate/'source.json').read_bytes()).hexdigest()
+                runtime={'pid':owner.process.pid,'argv':owner.argv,'port':18919,'binary_sha256':digest,
+                         'source_sha256':source_sha,'accepted':False,'health':{'status':'ok'}}
+                build={'binary_sha256':digest,'source_sha256':source_sha,'complete':True,'source_unchanged':True,
+                       'tree_before':{'head':revision},'asset_manifest_sha256':hashlib.sha256(b'assets').hexdigest()}
+                (candidate/'runtime.json').write_text(json.dumps(runtime));(candidate/'build.json').write_text(json.dumps(build))
+                import mac_rust006_extra as extra, audit_mac_rust006_extra as independent
+                from unittest import mock
+                probe=root/'probe';(probe/'logs').mkdir(parents=True)
+                before=extra.observe(probe,'before',runtime);after=extra.observe(probe,'after',runtime)
+                collector={'version':'som.m6-mac-rust006-extra.v1','candidate_revision':revision,'candidate_binary_sha256':digest,
+                           'product_acceptance_passed':False,'candidate_before':before,'candidate_after':after}
+                (probe/'collector.json').write_text(json.dumps(collector))
+                with mock.patch.object(independent,'REPO',root):
+                    self.assertEqual(independent.audit_candidate(probe,candidate,revision)['pid'],owner.process.pid)
                 diag=subprocess.run(['/bin/ps','-ww','-p',str(owner.process.pid),'-o','pid=,ppid=,pgid=,stat=,command='],capture_output=True,text=True)
                 print('FAKE_IDENTITY',repr(diag.stdout),repr(diag.stderr),diag.returncode,'sigchld',repr(__import__('signal').getsignal(__import__('signal').SIGCHLD)),flush=True)
                 cleanup=hosted.stop_owned_candidate(root,env,owner)
@@ -569,6 +586,13 @@ class OwnedCandidateTests(unittest.TestCase):
                 evidence=audit_candidate_owner.audit(root,candidate)
                 self.assertEqual(evidence['candidate_pid'],owner.process.pid)
                 self.assertEqual(evidence['unobserved_descendants'],'unverified')
+                result=subprocess.run([sys.executable,str(Path(audit_candidate_owner.__file__)),'--out',str(root),
+                                       '--candidate',str(candidate),'--audit',str(root/'owner-audit.json')],
+                                      capture_output=True,check=False,timeout=30)
+                self.assertEqual(result.returncode,0)
+                report=json.loads((root/'owner-audit.json').read_bytes())
+                self.assertEqual(report['status'],'observed');self.assertFalse(report['cleanup_complete'])
+                self.assertFalse(report['product_acceptance_passed'])
             finally:
                 if owner.process is not None and owner.process.poll() is None:
                     owner.process.terminate();owner.process.wait(timeout=10)

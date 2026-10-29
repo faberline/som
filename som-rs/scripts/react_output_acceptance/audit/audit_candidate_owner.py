@@ -108,9 +108,13 @@ def main():
     p=argparse.ArgumentParser()
     for name in ('out','candidate','audit'):p.add_argument('--'+name,type=Path,required=True)
     a=p.parse_args();need(not a.audit.exists())
-    result={'version':'som.m6-owned-candidate-audit.draft.v1','status':'unrun','product_acceptance_passed':False}
-    try:result['observed']=audit(a.out,a.candidate)
+    result={'version':'som.m6-owned-candidate-audit.draft.v1','status':'unrun',
+            'cleanup_complete':False,'product_acceptance_passed':False}
+    try:
+        result['observed']=audit(a.out,a.candidate)
+        result['status']='observed'
     except Exception as exc:result['error']=type(exc).__name__+': '+str(exc)
     with a.audit.open('x') as f:json.dump(result,f,indent=2,sort_keys=True);f.write('\n')
-    print(json.dumps({'status':'unrun','product_acceptance_passed':False}));return 1
+    print(json.dumps({'status':result['status'],'cleanup_complete':False,'product_acceptance_passed':False}))
+    return 0 if result['status']=='observed' else 1
 if __name__=='__main__':raise SystemExit(main())
