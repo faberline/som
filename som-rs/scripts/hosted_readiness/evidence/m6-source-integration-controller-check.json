@@ -1,0 +1,28 @@
+{
+  "version": "som.m12-m6-source-integration-and-controller-metadata-check.v1",
+  "integrated_main": "0575257e72f43b9d8e140379e753092209bb4827",
+  "merge_commit": "04eb6518729b63c6be4203c3a8c77dc904459a50",
+  "merge_conflicts": false,
+  "controller_independent_join_counts": {
+    "named_cases": 125,
+    "forms": 246,
+    "product_file_hashes": 1375,
+    "recorded_compile_requests": 140,
+    "derived_compile_requests": 146,
+    "legacy_cnl_original_null_fresh_present": 100
+  },
+  "join_source_sha256": {
+    "historical": "7009c29b93714dc1a827236b4ebeb255efc99c91c61460bc7a5ded49c902c868",
+    "derived": "fe0408c4449a019d8c81efe72f8930db117f4a027896609924d28ad87b4642e9",
+    "fresh": "6365a7565872e987383860d6a117df9c109c795be5e21fecd65123964c418220"
+  },
+  "historical_missing_requests_recovered": false,
+  "raw_plaintext_capture_audit": "pending; separate evidence will record it",
+  "m6_prior_acceptance_is_current_m12_acceptance": false,
+  "same_candidate_matrix_role": "prospective complete gate plan; all current-candidate product gates remain unrun",
+  "m6_tools_integrated_without_cross_edits": true,
+  "compiler_sources_changed_by_merge": false,
+  "native_runtime_mode": "exact audited artifact reuse, every file and version rechecked; first-build optional manual false by default",
+  "tests_and_builds": "GitHub runners only",
+  "product_acceptance_passed": false
+}
