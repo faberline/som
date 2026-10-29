@@ -7,6 +7,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import capture
 
@@ -130,6 +131,15 @@ class CaptureTests(unittest.TestCase):
         self.put(self.record_path.parent / 'calls/000002.response.raw', b'changed')
         with self.assertRaises(ValueError):
             self.prepare()
+
+    def test_owner_import_uses_sibling_source(self):
+        import owned_candidate
+        self.assertEqual(Path(owned_candidate.__file__).resolve(), Path(capture.__file__).resolve().with_name('owned_candidate.py'))
+
+    def test_self_hosted_runner_is_rejected_before_execution(self):
+        with patch.dict(os.environ, {'RUNNER_ENVIRONMENT': 'self-hosted', 'RUNNER_OS': 'macOS'}):
+            with self.assertRaisesRegex(ValueError, 'hosted macOS arm64 required'):
+                capture.execute(SimpleNamespace(), self.checker)
 
 
 if __name__ == '__main__':
