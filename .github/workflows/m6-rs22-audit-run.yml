@@ -1,0 +1,94 @@
+name: M6 RS22 independent evidence audit (not acceptance)
+on:
+  push:
+    branches:
+      - 'codex/m6-rs22-audit-20261029-*'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Test independent audit fixtures
+        working-directory: .github/m6-rs22-independent-audit
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python3 -m unittest -v test_audit
+  audit:
+    needs: fixtures
+    if: github.repository == 'faberline/som' && endsWith(github.ref, '-run')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Download exact encrypted capture artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: '40812392485'
+          artifact-ids: '12870872795'
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/rs22-sealed-audit
+      - name: Download exact typed input artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: '40805208879'
+          artifact-ids: '12867533444'
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/rs22-public-audit
+      - name: Bind the audited evidence decoder before using the key
+        run: |
+          python3 - <<'PY'
+          import hashlib, pathlib
+          p = pathlib.Path('som-rs/scripts/react_output_acceptance/sealed_inputs.mjs')
+          if p.is_symlink() or hashlib.sha256(p.read_bytes()).hexdigest() != 'bda649080df1fced5ac6cfabdc300d9d9b1b3d9a53a1240c11fdce80e0b1e9c9':
+              raise SystemExit('evidence decoder differs')
+          PY
+      - name: Restore encrypted capture without exposing raw data
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: node .github/m6-rs22-independent-audit/restore.mjs
+      - name: Audit raw observations and retain incomplete status
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 - <<'PY'
+          import hashlib, os, pathlib
+          p = pathlib.Path(os.environ['RUNNER_TEMP']) / 'rs22-raw-audit/summary.json'
+          if hashlib.sha256(p.read_bytes()).hexdigest() != '4447fe6485351b7265e3e8927c1fe8024a8e32877d0822d90a5175d178a9e7d8':
+              raise SystemExit('capture summary pin differs')
+          PY
+          set +e
+          python3 .github/m6-rs22-independent-audit/audit.py --capture "$RUNNER_TEMP/rs22-raw-audit" --repo "$GITHUB_WORKSPACE" --inputs "$RUNNER_TEMP/rs22-public-audit/_temp/som-rust-complete-inputs" > "$RUNNER_TEMP/rs22-independent-audit.json"
+          rc=$?
+          set -e
+          if [ "$rc" -ne 2 ]; then exit 1; fi
+          python3 - <<'PY'
+          import json, os, pathlib
+          p = pathlib.Path(os.environ['RUNNER_TEMP']) / 'rs22-independent-audit.json'
+          result = json.loads(p.read_bytes())
+          if result.get('result') != 'incomplete' or result.get('product_acceptance') is not False:
+              raise SystemExit('audit did not retain incomplete status')
+          print(json.dumps(result, sort_keys=True))
+          PY
+      - name: Save non-sensitive incomplete audit result
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: m6-rs22-independent-audit-incomplete
+          path: ${{ runner.temp }}/rs22-independent-audit.json
+          if-no-files-found: error
+          retention-days: 30
