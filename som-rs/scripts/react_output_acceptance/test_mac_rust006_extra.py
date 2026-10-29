@@ -1000,6 +1000,48 @@ class ParityIndependentChecks(unittest.TestCase):
                 with self.subTest(name=name), self.assertRaises(ValueError):audit.verify_git_sources(repo,revision,sorted(expected))
                 target.write_bytes(b'original\n')
 
+    def test_same_candidate_snapshots_and_binary_are_bound(self):
+        import hashlib
+        from unittest import mock
+        import audit_mac_rust006_extra as audit
+        def h(data):return hashlib.sha256(data).hexdigest()
+        def write(path,data):path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
+        with tempfile.TemporaryDirectory() as temp:
+            repo=Path(temp).resolve();candidate=repo/'candidate';candidate.mkdir();run=repo/'run';(run/'logs').mkdir(parents=True)
+            binary=candidate/'som';binary.write_bytes(b'binary');write(candidate/'assets/manifest.json',b'assets')
+            write(repo/'src/source.rs',b'source');write(candidate/'source.tar',b'archive')
+            revision='a'*40;source={'commit':revision,'archive_sha256':h(b'archive'),'files':{'src/source.rs':h(b'source')}}
+            write(candidate/'source.json',json.dumps(source).encode()); source_sha=h((candidate/'source.json').read_bytes())
+            build={'binary_sha256':h(b'binary'),'complete':True,'source_unchanged':True,'tree_before':{'head':revision},
+                   'source_sha256':source_sha,'asset_manifest_sha256':h(b'assets')}
+            argv=[str(binary),'serve','--assets',str(candidate/'assets'),'--port','18919'];health={'status':'ok'}
+            runtime={'binary_sha256':h(b'binary'),'source_sha256':source_sha,'pid':1234,'port':18919,'accepted':False,'argv':argv,'health':health}
+            write(candidate/'build.json',json.dumps(build).encode());write(candidate/'runtime.json',json.dumps(runtime).encode())
+            def snapshot(phase):
+                commands={'ps':['/bin/ps','-ww','-p','1234','-o','pid=,ppid=,pgid=,command='],
+                          'cwd':['/usr/sbin/lsof','-a','-p','1234','-d','cwd','-Fn'],
+                          'listener':['/usr/sbin/lsof','-nP','-iTCP:18919','-sTCP:LISTEN','-t']}
+                values={'ps':('1234 12 1234 '+' '.join(argv)+'\n').encode(),
+                        'cwd':('p1234\nn'+str(candidate)+'\n').encode(),'listener':b'1234\n'}
+                result={'pid':1234,'port':18919,'commands':{}}
+                for name,command in commands.items():
+                    row={'argv':command,'exit_code':0}
+                    for stream in ('stdout','stderr'):
+                        rel='logs/'+phase+'-'+name+'.'+stream;data=values[name] if stream=='stdout' else b''
+                        write(run/rel,data);row[stream]=rel;row[stream+'_sha256']=h(data)
+                    result['commands'][name]=row
+                data=json.dumps(health).encode();rel='logs/'+phase+'-health.raw';write(run/rel,data)
+                result['health']={'status':200,'file':rel,'sha256':h(data)};return result
+            report={'version':'som.m6-mac-rust006-extra.v1','candidate_revision':revision,'candidate_binary_sha256':h(b'binary'),
+                    'product_acceptance_passed':False,'candidate_before':snapshot('before'),'candidate_after':snapshot('after')}
+            write(run/'collector.json',json.dumps(report).encode())
+            with mock.patch.object(audit,'REPO',repo):
+                self.assertEqual(audit.audit_candidate(run,candidate,revision)['pid'],1234)
+                (run/'logs/after-listener.stdout').write_bytes(b'9999\n')
+                with self.assertRaises(ValueError):audit.audit_candidate(run,candidate,revision)
+                (run/'logs/after-listener.stdout').write_bytes(b'1234\n');binary.write_bytes(b'mutated')
+                with self.assertRaises(ValueError):audit.audit_candidate(run,candidate,revision)
+
     def test_parity_sources_match_selected_git_revision(self):
         import audit_mac_parity as audit
         import subprocess

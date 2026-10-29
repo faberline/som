@@ -17,7 +17,7 @@ from record_api import Recorder
 HERE=Path(__file__).resolve().parent
 REPO=HERE.parents[2]
 CHECKER=REPO/'som-rs/behavior/check_behavior.py'
-PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py')
+PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py')
 
 def source_hashes():
     return {name:hashlib.sha256((REPO/name).read_bytes()).hexdigest() for name in PARITY_SOURCES}
@@ -67,8 +67,9 @@ class TrackingRecorder(Recorder):
 
 def main():
     p=argparse.ArgumentParser()
-    for name in ('raw-out','lifecycle','parity-out','target-dir','python'):
+    for name in ('raw-out','lifecycle','parity-out','target-dir','python','candidate'):
         p.add_argument('--'+name,type=Path,required=True)
+    p.add_argument('--candidate-revision',required=True)
     args=p.parse_args()
     need(os.environ.get('GITHUB_ACTIONS')=='true' and os.environ.get('RUNNER_ENVIRONMENT')=='github-hosted'
          and os.environ.get('RUNNER_OS')=='macOS','GitHub Mac required')
@@ -76,6 +77,8 @@ def main():
     need(all(x.is_relative_to(REPO/'.local') and not x.exists() and not x.is_symlink()
              and not any(parent.is_symlink() for parent in x.parents) for x in paths), 'new owned paths required')
     raw,lifecycle,parity,target=paths
+    candidate=Path(os.path.abspath(args.candidate))
+    need(candidate.is_relative_to(REPO/'.local') and candidate.is_dir() and not candidate.is_symlink(), 'candidate root differs')
     before_sources=source_hashes()
     revision=os.environ.get('GITHUB_SHA')
     python=Path(os.path.abspath(args.python))
@@ -83,6 +86,12 @@ def main():
     lifecycle.mkdir(parents=True,mode=0o700)
     import record_rust006_http
     observer=TrackingRecorder(lifecycle)
+    import mac_rust006_extra as candidate_probe
+    probe=lifecycle/'candidate-probe';probe.mkdir(mode=0o700);(probe/'logs').mkdir(mode=0o700)
+    runtime=json.loads((candidate/'runtime.json').read_bytes())
+    need(runtime.get('port')==18919 and runtime.get('accepted') is False and
+         args.candidate_revision==os.environ.get('GITHUB_SHA'), 'candidate source or port differs')
+    candidate_before=candidate_probe.observe(probe,'before',runtime)
     # Load the same suite module that check_behavior imports. Record at its
     # transport seam without changing the HTTP result consumed by the suite.
     sys.path.insert(0, str(CHECKER.parent))
@@ -125,6 +134,14 @@ def main():
             code=record_rust006_http.run_checker(raw,CHECKER,['parity','--qa','http://127.0.0.1:18919',
                  '--out',str(parity),'--target-dir',str(target),'--python',str(python),'--jobs','4'])
     finally:
+        try:
+            candidate_after=candidate_probe.observe(probe,'after',runtime)
+        except Exception as exc:
+            candidate_after=None;observer.errors.append('CandidateAfter'+type(exc).__name__)
+        collector={'version':'som.m6-mac-rust006-extra.v1','candidate_revision':args.candidate_revision,
+                   'candidate_binary_sha256':hashlib.sha256((candidate/'som').read_bytes()).hexdigest(),
+                   'product_acceptance_passed':False,'candidate_before':candidate_before,'candidate_after':candidate_after}
+        (probe/'collector.json').write_text(json.dumps(collector,indent=2,sort_keys=True)+'\n')
         if not product.finish(): observer.errors.append('ProductHTTPRecordingFailed')
         starts=[e for e in observer.events if e.get('kind')=='postmaster' and e.get('phase')=='after-start']
         if starts:

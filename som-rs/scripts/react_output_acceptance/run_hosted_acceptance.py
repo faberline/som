@@ -374,7 +374,8 @@ def main(argv: list[str] | None = None) -> int:
                     "--raw-out", str(out / "run/rust006-parity-http"),
                     "--lifecycle", str(out / "run/rust006-parity-lifecycle"),
                     "--parity-out", str(parity.parent), "--target-dir", str(out / "rust006-parity-target"),
-                    "--python", str(args.python)], env)
+                    "--python", str(args.python), "--candidate", str(out / "candidate"),
+                    "--candidate-revision", args.candidate_revision], env)
             except (OSError, subprocess.SubprocessError):
                 summary["rust006_parity_exit_code"] = None
             if summary["rust006_parity_exit_code"] != 0:
@@ -385,7 +386,7 @@ def main(argv: list[str] | None = None) -> int:
                     str(args.python), str(HERE / "audit/audit_mac_parity.py"),
                     "--raw", str(out / "run/rust006-parity-http"), "--parity-out", str(parity.parent),
                     "--product-http", str(out / "run/rust006-parity-lifecycle/product-http"),
-                    "--candidate-revision", args.candidate_revision,
+                    "--candidate-revision", args.candidate_revision, "--candidate", str(out / "candidate"),
                     "--approved-input-config", str(args.approved_input_config), "--provenance-root", str(args.provenance_root),
                     "--public-run", str(public), "--legacy-run", str(legacy),
                     "--out", str(out / "run/rust006-parity-audit.json")], env)
