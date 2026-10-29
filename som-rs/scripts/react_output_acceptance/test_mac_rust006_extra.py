@@ -214,7 +214,9 @@ class ProductArtifactBindingTests(unittest.TestCase):
             root=Path(temp).resolve();life=root/'life';http=life/'product-http';http.mkdir(parents=True)
             cwd=root/'products/py_example';cwd.mkdir(parents=True);shim=cwd.parent/'_shim/som_behavior_host.py';shim.parent.mkdir();shim.write_text('fixed shim\n')
             host=root/'som-rs/behavior/hosts.py';host.parent.mkdir(parents=True);host.write_text("HOST_SHIM = 'fixed shim\\n'\n")
-            python=root/'som-rs/runtime/acceptance-m3-venv/bin/python';python.parent.mkdir(parents=True);python.symlink_to(sys.executable)
+            venv=root/'som-rs/runtime/acceptance-m3-venv';venv.parent.mkdir(parents=True)
+            subprocess.run([sys.executable,'-m','venv','--without-pip',str(venv)],check=True,capture_output=True,timeout=60)
+            python=venv/'bin/python'
             (cwd/'uvicorn.py').write_text('import http.server,sys\np=int(sys.argv[sys.argv.index("--port")+1])\nhttp.server.HTTPServer(("127.0.0.1",p),http.server.BaseHTTPRequestHandler).serve_forever()\n')
             with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
             argv=[str(python),'-m','uvicorn','som_behavior_host:app','--app-dir',str(shim.parent),'--host','127.0.0.1','--port',str(port),'--no-access-log','--log-level','warning']
@@ -223,15 +225,16 @@ class ProductArtifactBindingTests(unittest.TestCase):
             observer.events.append({'kind':'product-files-launch','snapshot_id':1,'case':'example','target':'python','cwd':str(cwd)})
             observer.events.append({'kind':'python-runtime','runtime_id':1,'case':'example','cwd':str(cwd)})
             with mock.patch.object(subprocess,'Popen',observer.popen):
-                proc=observer.popen(argv,cwd=str(cwd),env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                log_path=root/'python-fixture.log';sink=log_path.open('wb')
+                proc=observer.popen(argv,cwd=str(cwd),env=env,stdout=sink,stderr=sink)
                 try:
                     for _ in range(100):
                         try:
                             with socket.create_connection(('127.0.0.1',port),timeout=.1):break
                         except OSError:time.sleep(.05)
-                    else:self.fail('fixture Python did not listen')
+                    else:self.fail('fixture Python did not listen: '+log_path.read_text(errors='replace')[-3000:])
                     observer.product_snapshot(proc.pid,'product-ready',port,python,follow=True);start=len(observer.events)-1
-                finally:proc.terminate();proc.wait(timeout=10)
+                finally:proc.terminate();proc.wait(timeout=10);sink.close()
             (life/'receipt.json').write_text(json.dumps({'events':observer.events,'python_runtimes':caps.rows}))
             (http/'manifest.json').write_text(json.dumps({'owners':[{'case':'example','target':'python','pid':proc.pid,'base':'http://127.0.0.1:'+str(port),'start_event':start}]}))
             with mock.patch.object(audit,'REPO',root):
