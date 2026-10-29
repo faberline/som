@@ -1,8 +1,8 @@
-name: M6 RS22 independent evidence audit (not acceptance)
+name: M6 RS22 source-bound evidence audit (not acceptance)
 on:
   push:
     branches:
-      - 'codex/m6-rs22-audit-20261029-*'
+      - 'codex/m6-rs22-formal-audit-20261029-*'
 permissions:
   contents: read
   actions: read
@@ -14,7 +14,10 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 0
           persist-credentials: false
+      - name: Bind before and candidate diagnostic source authorities
+        run: python3 .github/m6-rs22-independent-audit/source_bind.py
       - name: Test independent audit fixtures
         working-directory: .github/m6-rs22-independent-audit
         env:
@@ -31,7 +34,10 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 0
           persist-credentials: false
+      - name: Bind before and candidate diagnostic source authorities
+        run: python3 .github/m6-rs22-independent-audit/source_bind.py
       - name: Download exact encrypted capture artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:

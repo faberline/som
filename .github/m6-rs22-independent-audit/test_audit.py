@@ -47,15 +47,20 @@ class AuditFixtureTests(unittest.TestCase):
                       'byte_end': start + 8, 'prompt_pointer': '/prompt/query/filter_field',
                       'cause': 'synthetic cause', 'allowed_form': 'synthetic form'}
         case = {'id': 'RS13_JSON_V3_FILTER_OFFSET', 'span_text': '"offset"', 'expected': diagnostic}
-        response = raw({'code': 'INVALID_VALUE', 'diagnostics': [diagnostic]})
+        response = raw({'status': 'error', 'code': 'INVALID_VALUE', 'detail': 'synthetic cause', 'diagnostics': [diagnostic]})
         audit.native_diagnostic(response, case, request)
         for key in diagnostic:
             bad = dict(diagnostic)
             bad[key] = 'incorrect'
             with self.subTest(key=key), self.assertRaises(audit.AuditError):
-                audit.native_diagnostic(raw({'code': 'INVALID_VALUE', 'diagnostics': [bad]}), case, request)
+                audit.native_diagnostic(raw({'status': 'error', 'code': 'INVALID_VALUE', 'detail': 'synthetic cause', 'diagnostics': [bad]}), case, request)
         with self.assertRaises(audit.AuditError):
-            audit.native_diagnostic(raw({'code': 'INVALID_VALUE', 'diagnostics': [{**diagnostic, 'extra': 1}]}), case, request)
+            audit.native_diagnostic(raw({'status': 'error', 'code': 'INVALID_VALUE', 'detail': 'synthetic cause', 'diagnostics': [{**diagnostic, 'extra': 1}]}), case, request)
+        with self.assertRaises(audit.AuditError):
+            audit.native_diagnostic(raw({'status': 'error', 'code': 'INVALID_VALUE', 'detail': 'wrong', 'diagnostics': [diagnostic]}), case, request)
+        with self.assertRaises(audit.AuditError):
+            audit.native_diagnostic(raw({'status': 'error', 'code': 'INVALID_VALUE', 'detail': 'synthetic cause',
+                                         'diagnostics': [{**diagnostic, 'line': True}]}), case, request)
 
     def test_native_cnl_refusal_uses_decoded_source_span(self):
         source = 'hello limit\n'
@@ -63,9 +68,9 @@ class AuditFixtureTests(unittest.TestCase):
                     'line': 1, 'column': 7, 'end_line': 1, 'end_column': 12,
                     'cause': 'synthetic', 'allowed_form': 'synthetic', 'prompt_pointer': '/x'}
         case = {'id': 'RS12_CNL_V3_FILTER_LIMIT', 'expected': expected, 'span_text': 'limit'}
-        audit.native_diagnostic(raw({'code': 'INVALID_VALUE', 'diagnostics': [expected]}), case, raw({'source': source}))
+        audit.native_diagnostic(raw({'status': 'error', 'code': 'INVALID_VALUE', 'detail': 'synthetic', 'diagnostics': [expected]}), case, raw({'source': source}))
         with self.assertRaises(audit.AuditError):
-            audit.native_diagnostic(raw({'code': 'INVALID_VALUE', 'diagnostics': [expected]}), case, raw({'source': 'hello wrong\n'}))
+            audit.native_diagnostic(raw({'status': 'error', 'code': 'INVALID_VALUE', 'detail': 'synthetic', 'diagnostics': [expected]}), case, raw({'source': 'hello wrong\n'}))
 
     def test_typed_diagnostic_is_shape_checked_but_not_proved(self):
         case = {'expected': {'code': 'INVALID_VALUE'}}
@@ -74,6 +79,41 @@ class AuditFixtureTests(unittest.TestCase):
             audit.check_refusal(raw({'code': 'OTHER', 'diagnostics': [{}]}), case)
         with self.assertRaises(audit.AuditError):
             audit.check_refusal(raw({'code': 'INVALID_VALUE', 'diagnostics': []}), case)
+
+    def test_rs13_requires_equal_request_and_reply_bytes(self):
+        audit.same_refusal(b'request', b'request', b'reply', b'reply')
+        with self.assertRaises(audit.AuditError):
+            audit.same_refusal(b'request', b'other', b'reply', b'reply')
+        with self.assertRaises(audit.AuditError):
+            audit.same_refusal(b'request', b'request', b'reply', b'other')
+
+    def test_typed_limit_full_diagnostic_and_every_field(self):
+        prompt = {'query': {'filter_field': 'limit'}}
+        request = raw({'format': 'som.prompt-json.v1', 'prompt': prompt})
+        start = request.index(b'"limit"')
+        detail = 'prompt.query.filter_field: name collides with a generated Python identifier'
+        fixture = {'id': 'NAME_V3_FILTER_FIELD_LIMIT', 'prompt': prompt,
+                   'prompt_sha256': audit.digest(audit.canonical(prompt)),
+                   'expected': {'status': 400, 'code': 'INVALID_VALUE', 'detail': detail,
+                                'json_prompt_pointer': '/prompt/query/filter_field'}}
+        diag = {'code': 'INVALID_VALUE', 'line': 1, 'column': start + 1, 'end_line': 1,
+                'end_column': start + 8, 'byte_start': start, 'byte_end': start + 7,
+                'prompt_pointer': '/prompt/query/filter_field', 'cause': detail,
+                'allowed_form': 'A prompt that meets the pinned compiler contract.'}
+        doc = {'status': 'error', 'code': 'INVALID_VALUE', 'detail': detail, 'diagnostics': [diag]}
+        audit.typed_limit_diagnostic(raw(doc), request, fixture)
+        for key in diag:
+            changed = dict(diag)
+            changed[key] = 'wrong'
+            bad = {**doc, 'diagnostics': [changed]}
+            with self.subTest(key=key), self.assertRaises(audit.AuditError):
+                audit.typed_limit_diagnostic(raw(bad), request, fixture)
+        with self.assertRaises(audit.AuditError):
+            audit.typed_limit_diagnostic(raw({**doc, 'extra': True}), request, fixture)
+        with self.assertRaises(audit.AuditError):
+            audit.typed_limit_diagnostic(raw({**doc, 'diagnostics': [{**diag, 'line': True}]}), request, fixture)
+        with self.assertRaises(audit.AuditError):
+            audit.typed_limit_diagnostic(raw(doc), request.replace(b'limit', b'other'), fixture)
 
     def test_missing_or_nonempty_guard_fails(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -129,6 +169,10 @@ class AuditFixtureTests(unittest.TestCase):
                     'files_sha256': {k: audit.digest(v.encode()) for k, v in files.items()},
                     'files_map_sha256': audit.digest(audit.canonical(files))}
             audit.check_case(root, inputs, row, case, frozen, supplied, result)
+            result['typed']['compile_status'] = 200.0
+            with self.assertRaises(audit.AuditError):
+                audit.check_case(root, inputs, row, case, frozen, supplied, result)
+            result['typed']['compile_status'] = 200
             (inputs / 'fixture' / 'source').write_bytes(b'wrong')
             with self.assertRaises(audit.AuditError):
                 audit.check_case(root, inputs, row, case, frozen, supplied, result)

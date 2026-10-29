@@ -2,7 +2,7 @@
 """DRAFT. Offline, GitHub-hosted-only data audit of d423 RS22 capture.
 
 No product imports, subprocesses, network or services. Never print raw data.
-Exit 2 means checked data but typed refusal diagnostics remain unproved.
+Exit 2 means the bounded raw audit remains incomplete for provenance and binary identity.
 This program is not acceptance and must be independently reviewed before use.
 """
 import argparse
@@ -20,6 +20,7 @@ NEGATIVE = '9bb36d689ad4be26e608ac8be779a1a8bb8db043d37788b5819c9fe1bf402e22'
 PHASE = 'b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6'
 VECTORS = 'dd09b41f49702f70098574f638e10ea33646366a77dfa486539f324d6f9ff83f'
 MANIFEST = '428e948240ca94c5be26e390fe7d058e6570087ec4cac700ab949c38b0bc2486'
+SELF_NAMES = '821b4ef626e42805dc96537dda1ac7cf6ba3de85d7a67f1ca04cdc8cc37f46ed'
 REFUSALS = {'RS12_CNL_V3_FILTER_LIMIT', 'RS13_JSON_V3_FILTER_OFFSET'}
 LIMIT = 32 * 1024 * 1024
 EMPTY = hashlib.sha256(b'').hexdigest()
@@ -165,7 +166,9 @@ def native_diagnostic(raw, case, request):
         need(source[expected['byte_start']:expected['byte_end']].decode('utf-8') == case['span_text'],
              'native CNL source span differs')
     # Extra diagnostic fields have no independent expected values, so fail closed.
-    need(ds[0] == expected, 'native complete frozen diagnostic differs')
+    need(canonical(ds[0]) == canonical(expected), 'native complete frozen diagnostic differs')
+    need(canonical(doc) == canonical({'status': 'error', 'code': expected['code'], 'detail': expected['cause'],
+                                   'diagnostics': [expected]}), 'native complete error envelope differs')
     return doc
 
 def check_refusal(raw, case):
@@ -173,9 +176,42 @@ def check_refusal(raw, case):
     need(type(doc) is dict and doc.get('code') == case['expected']['code'], 'typed refusal code differs')
     ds = doc.get('diagnostics')
     need(type(ds) is list and len(ds) == 1 and type(ds[0]) is dict, 'typed refusal diagnostics missing')
-    # No independent complete typed diagnostic authority exists. Do not claim a pass.
+    # Complete case-specific checks follow in check_case.
 
-def check_case(root, inputs, row, case, frozen, supplied, result):
+def typed_limit_diagnostic(raw, request, fixture):
+    need(fixture['id'] == 'NAME_V3_FILTER_FIELD_LIMIT', 'typed fixture differs')
+    envelope = parse(request)
+    need(type(envelope) is dict and set(envelope) == {'format', 'prompt'}
+         and envelope['format'] == 'som.prompt-json.v1' and envelope['prompt'] == fixture['prompt']
+         and digest(canonical(envelope['prompt'])) == fixture['prompt_sha256'], 'typed fixture prompt differs')
+    authority = fixture['expected']
+    need(authority['status'] == 400 and authority['code'] == 'INVALID_VALUE'
+         and authority['json_prompt_pointer'] == '/prompt/query/filter_field', 'typed fixture rule differs')
+    marker = b'"filter_field":"limit"'
+    need(request.count(marker) == 1, 'typed value location ambiguous')
+    start = request.index(marker) + len(b'"filter_field":')
+    token = b'"limit"'
+    end = start + len(token)
+    need(request[start:end] == token, 'typed token differs')
+    prefix = request[:start].decode('utf-8', 'strict')
+    value = token.decode('utf-8', 'strict')
+    line = prefix.count('\n') + 1
+    column = len(prefix.rsplit('\n', 1)[-1]) + 1
+    detail = authority['detail']
+    diagnostic = {'code': authority['code'], 'line': line, 'column': column,
+                  'end_line': line, 'end_column': column + len(value), 'byte_start': start, 'byte_end': end,
+                  'prompt_pointer': authority['json_prompt_pointer'], 'cause': detail,
+                  'allowed_form': 'A prompt that meets the pinned compiler contract.'}
+    expected = {'status': 'error', 'code': authority['code'], 'detail': detail, 'diagnostics': [diagnostic]}
+    need(canonical(parse(raw)) == canonical(expected), 'typed complete diagnostic differs')
+
+
+def same_refusal(native_wire, typed_wire, native_reply, typed_reply):
+    need(native_wire == typed_wire, 'RS13 request wires differ')
+    need(native_reply == typed_reply, 'RS13 response wires differ')
+
+
+def check_case(root, inputs, row, case, frozen, supplied, result, typed_fixture=None):
     cid = row['id']
     need(re.fullmatch(r'RS[0-9]{2}_[A-Z0-9_]+', cid) is not None, 'case ID format differs')
     status = 400 if cid in REFUSALS else 200
@@ -208,8 +244,8 @@ def check_case(root, inputs, row, case, frozen, supplied, result):
     maps, replies = [], {}
     for form, expected_wire in (('native', native_wire), ('typed', typed_wire)):
         r = result[form]
-        need(r.get('form') == form and r.get('expected_status') == status and r.get('compile_status') == status,
-             'compile status differs')
+        need(r.get('form') == form and type(r.get('expected_status')) is int and r['expected_status'] == status
+             and type(r.get('compile_status')) is int and r['compile_status'] == status, 'compile status differs')
         prefix = f'run/{cid}/{form}'
         request = saved(root, r['compile_request'], prefix + '.compile.request.raw')
         raw = saved(root, r['compile_response'], prefix + '.compile.response.raw')
@@ -222,8 +258,11 @@ def check_case(root, inputs, row, case, frozen, supplied, result):
                 native_diagnostic(raw, case, request)
             else:
                 check_refusal(raw, case)
+                if cid == 'RS12_CNL_V3_FILTER_LIMIT':
+                    typed_limit_diagnostic(raw, request, typed_fixture)
             continue
-        need(r.get('status') == 'captured_product' and r.get('assemble_status') == 200, 'assemble status differs')
+        need(r.get('status') == 'captured_product' and type(r.get('assemble_status')) is int
+             and r['assemble_status'] == 200, 'assemble status differs')
         reply = parse(raw)
         bundle = reply.get('bundle') if type(reply) is dict else None
         need(type(bundle) is dict and bundle.get('version') == 'som.dsl-bundle.v1'
@@ -242,8 +281,8 @@ def check_case(root, inputs, row, case, frozen, supplied, result):
         maps.append(files)
     if status == 200:
         need(len(maps) == 2 and maps[0] == maps[1], 'native/typed product differs')
-    elif native_wire == typed_wire:
-        need(replies['native'] == replies['typed'], 'identical request replies differ')
+    elif cid == 'RS13_JSON_V3_FILTER_OFFSET':
+        same_refusal(native_wire, typed_wire, replies['native'], replies['typed'])
 
 def audit(root, repo, inputs):
     matrix = pinned(repo, '.github/m6-rs22-capture/input-matrix.json', MATRIX)
@@ -251,6 +290,8 @@ def audit(root, repo, inputs):
     phase = pinned(repo, 'som-rs/contracts/rust-output-v1/phase2/case-inventory.json', PHASE)
     manifest = pinned(inputs, 'manifest.json', MANIFEST)
     qualify_vectors(physical(repo, 'som-rs/contracts/compiler-v1/canonical-vectors.json'))
+    self_names = pinned(repo, 'som-rs/tests/compiler-v1/self-name-fixtures.json', SELF_NAMES)
+    typed_fixture = unique(self_names['negative'])['NAME_V3_FILTER_FIELD_LIMIT']
     need(manifest.get('version') == 'som.public-rust-input-completion.v1'
          and manifest.get('tested_sha') == 'f59e28d910ff4adb16e3becfdc82bd2978ca84fa'
          and matrix.get('typed_artifact_input_manifest_sha256') == MANIFEST, 'input manifest identity differs')
@@ -268,12 +309,11 @@ def audit(root, repo, inputs):
     ids = set(groups[0])
     need(len(ids) == 22 and REFUSALS <= ids and all(set(g) == ids for g in groups), 'case inventory differs')
     for cid in sorted(ids):
-        check_case(root, inputs, groups[0][cid], groups[1][cid], groups[2][cid], groups[3][cid], results[cid])
+        check_case(root, inputs, groups[0][cid], groups[1][cid], groups[2][cid], groups[3][cid], results[cid], typed_fixture)
     check_cleanup(summary, root)
     return {'result': 'incomplete', 'checked': {'compile': 44, 'assemble': 40, 'native_refusals': 2,
-                                                'typed_refusal_raw_and_code': 2},
-            'unproved': ['complete typed refusal diagnostics lack independent frozen rules',
-                         'runner provenance, artifact authenticity and baseline identity require separate verification'],
+                                                'typed_refusals_complete': 2},
+            'unproved': ['runner provenance, artifact authenticity and baseline identity require separate verification'],
             'product_acceptance': False}
 
 def main():
