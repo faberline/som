@@ -14,3 +14,5 @@ jobs:
           persist-credentials: false
       - name: Run controlled wait and timeout fixtures
         run: python3 som-rs/scripts/rust_output_release/test_rehearsal_supervision.py -v
+      - name: Run existing compiler rehearsal fixtures
+        run: python3 -m unittest discover -s som-rs/scripts/rust_output_release -p 'test_compiler*.py' -v

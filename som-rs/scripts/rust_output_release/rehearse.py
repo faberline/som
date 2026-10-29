@@ -172,8 +172,6 @@ def main():
     parser.add_argument('--prerequisites', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
-    for signum in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
-        signal.signal(signum, interrupted)
     prerequisites, out = args.prerequisites.resolve(), args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
     config = rc.load(prerequisites)
@@ -270,4 +268,6 @@ def main():
 
 
 if __name__ == '__main__':
+    for signum in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+        signal.signal(signum, interrupted)
     sys.exit(main())

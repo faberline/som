@@ -64,7 +64,9 @@ def verify_resume(directory, row, config):
     stale = rc.load(directory / seed['receipt'])
     rc.require(stale['pid'] == seed['pid'] and stale['identity']['binary_sha256'] == config['previous']['binary']['sha256'],
                'offline seed names another previous compiler')
-    rc.require(call['name'] == 'resume' and call['exit_code'] == 0, 'offline resume did not succeed')
+    rc.require(call['name'] == 'resume' and call['exit_code'] == 0
+               and type(call.get('wait_result')) is int and call['wait_result'] == 0,
+               'offline resume did not succeed or its wait is missing')
     for stream in ('stdout', 'stderr'):
         rc.require(rc.digest(directory / f'resume.{stream}') == call[stream + '_sha256'], 'resume subprocess stream changed')
     journal = rc.load(directory / 'resume/journal.json')
@@ -116,6 +118,8 @@ def verify_report(directory, config):
         calls = row['calls']
         rc.require([c['name'] for c in calls] == (['switch', 'check', 'restore', 'check-restored']
                    if name == 'switch' else ['switch', 'check']), 'scenario call sequence differs')
+        rc.require(all(type(c.get('wait_result')) is int and c['wait_result'] == c['exit_code'] for c in calls),
+                   'scenario command wait is missing or differs')
         rc.require(all(c['exit_code'] == 0 for c in calls[1:]), 'check or restore failed')
         rc.require((calls[0]['exit_code'] == 0) == (name == 'switch'), 'switch exit differs')
         for call in calls:

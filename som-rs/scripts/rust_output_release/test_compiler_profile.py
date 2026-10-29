@@ -331,6 +331,7 @@ class CompilerProfileTests(unittest.TestCase):
              mock.patch.object(rehearsal, "call", side_effect=call), \
              mock.patch.object(self.rc, "free_harness_port", side_effect=range(18940, 18945)), \
              mock.patch.object(self.rc, "alive", return_value=False), \
+             mock.patch.object(self.rc, "port_free"), \
              mock.patch.object(self.rc, "post_raw", side_effect=forbidden), \
              mock.patch.object(rehearsal.subprocess, "run", side_effect=forbidden), \
              mock.patch.dict(self.rc.os.environ, {}, clear=True), \

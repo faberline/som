@@ -231,7 +231,7 @@ class CompilerInputTests(unittest.TestCase):
                 write(path, f'{seed_pid}\n'.encode() if stream == 'stdout' else b'')
                 seed[stream + '_file'] = f'stand-in/seed.{stream}'
                 seed[stream + '_sha256'] = digest(path)
-            resume_call = {'name': 'resume', 'exit_code': 0}
+            resume_call = {'name': 'resume', 'exit_code': 0, 'wait_result': 0}
             for stream in ('stdout', 'stderr'):
                 path = root / f'resume.{stream}'
                 write(path, b'fake resume stream\n')
@@ -254,6 +254,7 @@ class CompilerInputTests(unittest.TestCase):
             names = ('switch', 'check', 'restore', 'check-restored') if scenario == 'switch' else ('switch', 'check')
             for operation in names:
                 call = {'name': operation, 'exit_code': 1 if operation == 'switch' and scenario != 'switch' else 0}
+                call['wait_result'] = call['exit_code']
                 for stream in ('stdout', 'stderr'):
                     path = root / (operation + '.' + stream)
                     write(path, (f'fake {scenario} {operation} {stream}\n').encode())
@@ -287,6 +288,17 @@ class CompilerInputTests(unittest.TestCase):
     def test_complete_five_scenario_report_binds_streams_checks_and_stopped_owners(self):
         directory, config, report = self.rehearsal('valid')
         self.assertEqual(self.verify(directory, config), report)
+
+    def test_missing_or_wrong_child_wait_refuses(self):
+        for target, value in (('resume', None), ('switch', None), ('switch', False), ('switch', 8)):
+            with self.subTest(target=target, value=value):
+                directory, config, report = self.rehearsal(f'wait-{target}-{value}')
+                row = report['scenarios'][0]
+                call = row['resume'] if target == 'resume' else row['calls'][0]
+                call['wait_result'] = value
+                write(directory / 'rehearsal.json', report)
+                with self.assertRaises(RuntimeError):
+                    self.verify(directory, config)
 
     def test_resume_proof_mutations_refuse_even_when_switch_and_checks_pass(self):
         for mutation in ('exit', 'seed_zero', 'seed_command', 'seed_stream', 'stale_receipt',
