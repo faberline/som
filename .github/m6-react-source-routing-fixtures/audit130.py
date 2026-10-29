@@ -546,7 +546,7 @@ class Audit:
                     '--repo', str(self.repo), '--product-context', context.get('original_path'),
                     '--helper-revision', revision, '--candidate-revision', revision,
                     '--api-profile', api_profile.get('path'), '--full-before', str(self.run / 'api-qa-evidence/full-before.json'),
-                    '--postcheck', str(post_path), '--script', rel, '--', *logical[2:]]
+                    '--postcheck', str(post_path), '--script', rel, '--scope', 'step', '--', *logical[2:]]
         need(route.get('actual_argv') == expected and true_integer(route.get('pid')) and route['pid'] > 1,
              'native actual launcher argv or pid differs')
         wait = object_value(route.get('wait'), 'native direct wait')
@@ -554,7 +554,7 @@ class Audit:
              and wait['exit_code'] == receipt['exit_code'] == 0, 'native child wait or exit differs')
         post = object_value(self.reader.json(post_path), 'native child postcheck')
         need(post.get('version') == 'som.m6-native-source-entry.v1' and post.get('pid') == route['pid']
-             and post.get('helper_revision') == post.get('candidate_revision') == revision
+             and post.get('helper_revision') == post.get('candidate_revision') == revision and post.get('scope') == 'step'
              and post.get('logical_argv') == [rel, *logical[2:]] and post.get('interpreter') == logical[0]
              and post.get('profile_sha256') == api_profile.get('sha256')
              and post.get('full_before_sha256') == self.reader.hash(self.run / 'api-qa-evidence/full-before.json')
@@ -582,6 +582,63 @@ class Audit:
                     'som-rs/scripts/react_output_acceptance/linux_api_context.py', *wanted}
         need(required.issubset(pins) and all(self.reader.hash(path) == pin for path, pin in pins.items()),
              'native child source map incomplete or differs')
+
+    def native_case_routing(self, work: Path, invocation: dict, script: str, name: str) -> None:
+        """Check the actual isolated child launcher and its own source postcheck."""
+        cache = getattr(self, '_native_case_routes_checked', set())
+        key = (str(work), name)
+        if key in cache:
+            return
+        run_doc = object_value(self.reader.json(self.run / 'run.json'), 'run record')
+        context = object_value(run_doc.get('native_source_context'), 'native context record')
+        context_path = self.reader.path(context.get('path'), self.run)
+        need(context_path == self.run / 'source-routing/context.json'
+             and self.reader.hash(context_path) == context.get('sha256'), 'retained context differs')
+        doc = object_value(self.reader.json(context_path), 'retained native context')
+        revision = doc.get('helper_revision')
+        need(isinstance(revision, str) and re.fullmatch('[0-9a-f]{40}', revision)
+             and doc.get('candidate_revision') == revision and doc.get('qa_mode') == 'native-qa-v1'
+             and doc.get('repo') == str(self.repo), 'native context identities differ')
+        logical = list_value(invocation.get('argv'), 'case logical argv')
+        need(len(logical) >= 2 and logical[1] == str(self.repo / script), 'case logical checker differs')
+        route = object_value(invocation.get('source_routing'), 'case native source routing')
+        post_path = self.reader.path(route.get('postcheck'), work)
+        need(post_path == work / (name + '-source.json')
+             and self.reader.hash(post_path) == route.get('postcheck_sha256'), 'case source postcheck differs')
+        profile = object_value(run_doc.get('api_qa_profile'), 'API QA profile')
+        expected = [logical[0], '-I', '-S', '-B', str(self.repo / 'som-rs/scripts/react_output_acceptance/m6_native_entry.py'),
+                    '--repo', str(self.repo), '--product-context', context.get('original_path'),
+                    '--helper-revision', revision, '--candidate-revision', revision,
+                    '--api-profile', profile.get('path'), '--full-before', str(self.run / 'api-qa-evidence/full-before.json'),
+                    '--postcheck', str(post_path), '--script', script, '--scope', 'case', '--', *logical[2:]]
+        need(route.get('actual_argv') == expected and true_integer(route.get('pid')) and route['pid'] > 1
+             and route.get('owned_group_absent') is True, 'case actual launcher argv, pid or owned group differs')
+        wait = object_value(invocation.get('wait'), 'case direct wait')
+        need(wait.get('state') == 'completed' and true_integer(wait.get('exit_code'))
+             and wait['exit_code'] == invocation.get('exit_code') == 0, 'case child wait or exit differs')
+        post = object_value(self.reader.json(post_path), 'case source postcheck')
+        need(post.get('version') == 'som.m6-native-source-entry.v1' and post.get('pid') == route['pid']
+             and post.get('helper_revision') == post.get('candidate_revision') == revision and post.get('scope') == 'case'
+             and post.get('logical_argv') == [script, *logical[2:]] and post.get('interpreter') == logical[0]
+             and post.get('site_packages') == str(Path(logical[0]).parent.parent / 'lib/python3.12/site-packages')
+             and post.get('profile_sha256') == profile.get('sha256')
+             and post.get('full_before_sha256') == self.reader.hash(self.run / 'api-qa-evidence/full-before.json')
+             and post.get('entry_executed') is True and post.get('entry_exit_code') == 0
+             and post.get('source_postcheck') is True and post.get('product_acceptance_passed') is False,
+             'case child source postcheck differs')
+        executed = list_value(post.get('executed'), 'case checked child sources')
+        need(len(executed) == 1 and executed[0].get('path') == script
+             and executed[0].get('sha256') == self.reader.hash(script), 'case checked source differs')
+        pins = object_value(post.get('source_sha256'), 'case child source pins')
+        required = {'som-rs/scripts/react_output_acceptance/m6_native_entry.py',
+                    'som-rs/scripts/hosted_readiness/same_candidate_graph.py',
+                    'som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py',
+                    'som-rs/scripts/react_output_acceptance/retained_evidence.py',
+                    'som-rs/scripts/react_output_acceptance/linux_api_context.py', script}
+        need(required.issubset(pins) and all(self.reader.hash(path) == pin for path, pin in pins.items()),
+             'case child source map incomplete or differs')
+        cache.add(key)
+        self._native_case_routes_checked = cache
 
     def sealed_contract(self) -> tuple[str, str]:
         folder = self.reader.path(EVIDENCE)
@@ -1465,7 +1522,8 @@ class Audit:
         need(cid in self.manifest, "QA product manifest binding missing", "unrun")
         product_source = self.reader.path(self.manifest[cid].get("product"))
         invocation = object_value(strict_qa_json(self.reader.bytes(work / "gates-invocation.json")), "gate invocation")
-        expected_invocation = [str(self.repo / "som-rs/runtime/acceptance-m3-venv/bin/python"),
+        need(self.api_qa_profile is not None, "Linux API context missing for gate interpreter", "unrun")
+        expected_invocation = [self.api_qa_profile["python"],
                                str(self.repo / "som-rs/tests/react-output-v1/run_gates.py"), str(product_source),
                                str(gate_work), "--qa-profile", qa["profile_path"]]
         wait = object_value(invocation.get("wait"), "gate invocation wait")
@@ -1479,6 +1537,7 @@ class Audit:
         need(invocation.get("log") == "gates.log", "gate invocation log path differs")
         gate_log = self.reader.bytes(work / "gates.log")
         need(invocation.get("log_sha256") == sha(gate_log), "gate invocation raw log differs")
+        self.native_case_routing(work, invocation, 'som-rs/tests/react-output-v1/run_gates.py', 'gates')
         expected_env = {"PATH": f"{Path(qa['node']).parent}:/usr/bin:/bin", "HOME": str(gate_work),
                         "npm_config_cache": qa["cache"], "npm_config_offline": "true",
                         "npm_config_audit": "false", "npm_config_fund": "false", "npm_config_update_notifier": "false",
@@ -1610,6 +1669,9 @@ class Audit:
             self.reader.path(process["expected_cwd"])
         if self.qa_requested:
             need(self.api_qa_profile is not None, "independent Linux API input audit not established", "unrun")
+        if self.qa_requested:
+            invocation = object_value(self.reader.json(work / 'api-invocation.json'), 'API invocation')
+            self.native_case_routing(work, invocation, 'som-rs/scripts/react_output_acceptance/record_api.py', 'api')
         try:
             validate_api(self.reader, work / "api-raw", work / "api/report.json", prompt, contract,
                          self.reader.path(self.manifest[cid]["product"]), linux=self.api_qa_profile)

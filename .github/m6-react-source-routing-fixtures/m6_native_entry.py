@@ -115,7 +115,7 @@ def admit_live_inputs(graph, sources, repo, profile, before):
     # No .pth files or sitecustomize are executed. Full venv byte identity is
     # established before/after the run; this case rechecks selected live tools.
     sys.path.append(str(site))
-    return live, site
+    return live, site, api
 
 
 class Router:
@@ -159,18 +159,20 @@ def run(args):
     need(repo.is_absolute() and repo.resolve() == repo and not any(p.is_symlink() for p in (repo, *repo.parents)),
          'physical repository required')
     graph, sources, ctx, authority = bootstrap(repo, args.helper_revision, args.candidate_revision, args.product_context)
-    live, site = admit_live_inputs(graph, sources, repo, args.api_profile, args.full_before)
+    live, site, api = admit_live_inputs(graph, sources, repo, args.api_profile, args.full_before)
     need(ROUTING_REVIEWED, 'M6 routing remains unreviewed')
     router = Router(repo, sources, authority)
     need(ROUTER_NAME not in sys.modules, 'preloaded M6 router refused')
     holder = ModuleType(ROUTER_NAME)
     holder.router = router
     holder.qa_mode = 'native-qa-v1'
+    holder.context, holder.live = ctx, live
+    holder.api_profile, holder.full_before = args.api_profile, args.full_before
     sys.modules[ROUTER_NAME] = holder
     report = {'version': 'som.m6-native-source-entry.v1', 'helper_revision': args.helper_revision,
               'candidate_revision': args.candidate_revision, 'logical_argv': [args.script, *args.arguments],
               'profile_sha256': live['context_sha256'], 'full_before_sha256': live['full_before_sha256'],
-              'pid': os.getpid(), 'interpreter': str(Path(sys.executable).absolute()), 'site_packages': str(site),
+              'pid': os.getpid(), 'scope': args.scope, 'interpreter': str(Path(sys.executable).absolute()), 'site_packages': str(site),
               'entry_executed': False, 'entry_exit_code': None, 'source_postcheck': False,
               'product_acceptance_passed': False}
     code = 1
@@ -183,7 +185,19 @@ def run(args):
         code = 1
     finally:
         try:
-            sources.verify(); ctx.verify()
+            sources.verify()
+            if args.scope == 'step':
+                ctx.verify()
+            else:
+                ctx.sources.verify()
+                need(read(ctx.path) == ctx.raw, 'product context changed')
+                retained = sys.modules.get('retained_evidence')
+                if retained is None:
+                    retained = graph.raw_module(sources, 'retained_evidence', RETAINED)
+                need(getattr(retained, '__file__', None) == str(repo / RETAINED)
+                     and callable(getattr(retained, 'sealed_files', None))
+                     and sources.read(RETAINED) == read(repo / RETAINED), 'retained verifier changed')
+                api.recheck_case(live)
             report['source_postcheck'] = True
         except BaseException as error:
             report['postcheck_error'] = type(error).__name__ + ': ' + str(error)
@@ -201,6 +215,7 @@ def main(argv=None):
         parser.add_argument('--' + name, type=Path, required=True)
     for name in ('helper-revision', 'candidate-revision', 'script'):
         parser.add_argument('--' + name, required=True)
+    parser.add_argument('--scope', choices=('step', 'case'), required=True)
     parser.add_argument('arguments', nargs=argparse.REMAINDER)
     args = parser.parse_args(argv)
     if args.arguments[:1] == ['--']: args.arguments = args.arguments[1:]

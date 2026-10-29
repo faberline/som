@@ -747,7 +747,7 @@ def run_single_step(
                        '--repo', str(repo), '--product-context', str(ctx.path),
                        '--helper-revision', ctx.helper_revision, '--candidate-revision', ctx.candidate_revision,
                        '--api-profile', str(api_profile), '--full-before', str(out_dir / 'api-qa-evidence/full-before.json'),
-                       '--postcheck', str(postcheck_path), '--script', relative, '--', *step_def['argv'][2:]]
+                       '--postcheck', str(postcheck_path), '--script', relative, '--scope', 'step', '--', *step_def['argv'][2:]]
         routing = {'actual_argv': actual_argv, 'pid': None, 'wait': {'state': 'unverified', 'exit_code': None},
                    'postcheck': str(postcheck_path), 'postcheck_sha256': None}
     with stdout_path.open("wb") as out_f, stderr_path.open("wb") as err_f:
