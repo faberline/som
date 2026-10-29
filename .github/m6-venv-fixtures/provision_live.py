@@ -149,6 +149,7 @@ def restore(tar_path, out):
                 dest.chmod(member.mode & 0o777)
         for name,target,_ in links:
             dest = out.joinpath(*PurePosixPath(name).relative_to(ROOT).parts)
+            dest.parent.mkdir(parents=True,exist_ok=True)
             os.symlink(target,dest)
 
 def interpreter_preconditions():
