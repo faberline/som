@@ -223,6 +223,7 @@ class ProductArtifactBindingTests(unittest.TestCase):
         import audit_mac_parity as audit
         import parity_python_authority as authority
         import parity_python_runtime as runtimes
+        import provision_python_identity as initial
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp).resolve();life=root/'life';http=life/'product-http';http.mkdir(parents=True)
             cwd=root/'products/py_example';cwd.mkdir(parents=True);shim=cwd.parent/'_shim/som_behavior_host.py';shim.parent.mkdir();shim.write_text('fixed shim\n')
@@ -249,6 +250,10 @@ class ProductArtifactBindingTests(unittest.TestCase):
             provision={'version':'som.react-output-macos-provision.v1','status':'passed','stage':'complete','manifest_sha256':hashlib.sha256(bottle_path.read_bytes()).hexdigest(),'packages':[package],
                        'python':{'status':'passed','binary':str(provision_binary),'expected_version':'Python '+version,'checks':[{'label':label,'status':'passed','exit_code':0} for label in ('version','stdlib_and_bundled_ensurepip')]}}
             provision_path=root/'report.json';provision_path.write_text(json.dumps(provision))
+            initial_dir=life/'python-provision-identity'
+            identity=initial.capture(initial_dir,root,provision_binary,provision_path,'fixture-revision',{'fixture':'digest'})
+            identity['source_after']=identity['source_before']
+            (initial_dir/'receipt.json').write_text(json.dumps(identity))
             observer=parity.TrackingRecorder(life);proof=authority.capture(observer,life,python,probe,root,provision_path,provision_binary)
             caps=runtimes.Runtimes(life/'python-runtimes');row=caps.capture('example',cwd,argv)
             observer.events.append({'kind':'product-files-launch','snapshot_id':1,'case':'example','target':'python','cwd':str(cwd)})
@@ -273,7 +278,7 @@ class ProductArtifactBindingTests(unittest.TestCase):
                     snapshot['image_stat']=observer.command(['/usr/bin/stat','-L','-f','%d %i %z %Lp',str(image)])
                     snapshot['start_time']=observer.command(['/bin/ps','-p',str(proc.pid),'-o','lstart='])
                 finally:proc.terminate();proc.wait(timeout=10);sink.close()
-            (life/'receipt.json').write_text(json.dumps({'events':observer.events,'python_runtimes':caps.rows,'python_authority':proof}))
+            (life/'receipt.json').write_text(json.dumps({'events':observer.events,'python_runtimes':caps.rows,'python_authority':proof,'source_revision':'fixture-revision','source_before':{'fixture':'digest'},'source_after':{'fixture':'digest'}}))
             (http/'manifest.json').write_text(json.dumps({'owners':[{'case':'example','target':'python','pid':proc.pid,'base':'http://127.0.0.1:'+str(port),'start_event':start}]}))
             with mock.patch.object(audit,'REPO',root):
                 try:
@@ -283,6 +288,11 @@ class ProductArtifactBindingTests(unittest.TestCase):
                     fake_ps=(life/proof['ps']['stdout']['file']).read_text()
                     raise AssertionError('fixture authority='+json.dumps(fake_info,sort_keys=True)+' ps='+fake_ps) from exc
                 self.assertEqual(observed['cases'],1)
+                current=audit.audit_python_authority(life,root,version,str(provision_binary))
+                first=audit.audit_python_authority(initial_dir,root,version,str(provision_binary),True)
+                substituted=dict(first,image_stat={**first['image_stat'],'inode':first['image_stat']['inode']+1})
+                with mock.patch.object(audit,'audit_python_authority',side_effect=[current,substituted]):
+                    with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version,str(provision_binary))
                 saved=json.loads((life/'receipt.json').read_text())
                 child=next(e for e in saved['events'] if e.get('kind')=='child-start' and e.get('pid')==proc.pid)
                 child['environment']['PYTHONPATH']='/wrong';(life/'receipt.json').write_text(json.dumps(saved))
@@ -301,6 +311,10 @@ class ProductArtifactBindingTests(unittest.TestCase):
                 (life/'receipt.json').write_text(json.dumps(wrong))
                 with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version,str(provision_binary))
                 stat_path.write_bytes(original);(life/'receipt.json').write_text(json.dumps(saved))
+                original=(initial_dir/'python-authority-image.raw').read_bytes()
+                (initial_dir/'python-authority-image.raw').write_bytes(original+b'tamper')
+                with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version,str(provision_binary))
+                (initial_dir/'python-authority-image.raw').write_bytes(original)
                 (life/'python-runtimes'/row['shim_file']).write_text('tampered')
                 with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version,str(provision_binary))
 

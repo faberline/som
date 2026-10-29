@@ -47,7 +47,7 @@ def audit_sources(revision,lifecycle,raw,parity_out):
     need(os.environ.get('GITHUB_SHA')==revision and os.environ.get('GITHUB_ACTIONS')=='true'
          and os.environ.get('RUNNER_ENVIRONMENT')=='github-hosted' and os.environ.get('RUNNER_OS')=='macOS'
          and os.environ.get('RUNNER_ARCH')=='ARM64','parity runner identity differs')
-    sources=verify_git_sources(REPO,revision,PARITY_SOURCES + ('som-rs/scripts/react_output_acceptance/macos_bottles.json','som-rs/scripts/react_output_acceptance/provision_macos.py'))
+    sources=verify_git_sources(REPO,revision,PARITY_SOURCES + ('som-rs/scripts/react_output_acceptance/macos_bottles.json','som-rs/scripts/react_output_acceptance/provision_macos.py','som-rs/scripts/react_output_acceptance/provision_python_identity.py'))
     need(sources['som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py']==REVIEWED_ORACLE_SHA,
          'reviewed oracle source differs')
     receipt=a.json_file(lifecycle/'receipt.json')
@@ -378,10 +378,10 @@ def audit_product_files(lifecycle, expected):
     need(set(indexed)==set(expected)==set(owner_map),'product snapshot case set differs')
     return {'case_targets':len(indexed),'file_count':sum(len(x['files']) for x in indexed.values())}
 
-def audit_python_authority(lifecycle,original_repo,expected_version='3.12.11',provision_binary='/opt/homebrew/opt/python@3.12/bin/python3.12'):
+def audit_python_authority(lifecycle,original_repo,expected_version='3.12.11',provision_binary='/opt/homebrew/opt/python@3.12/bin/python3.12',provision_probe=False):
     receipt=a.json_file(lifecycle/'receipt.json');events=receipt['events'];row=receipt.get('python_authority')
     need(type(row) is dict and row.get('state')=='completed' and row.get('exit_code')==0,'Python authority missing')
-    executable=str(original_repo/'som-rs/runtime/acceptance-m3-venv/bin/python')
+    executable=provision_binary if provision_probe else str(original_repo/'som-rs/runtime/acceptance-m3-venv/bin/python')
     probe=str(original_repo/'som-rs/scripts/react_output_acceptance/parity_python_probe.py')
     need(row.get('argv')==[executable,'-I',probe] and row.get('cwd')==str(original_repo) and type(row.get('pid')) is int,'Python authority command differs')
     starts=[(i,e) for i,e in enumerate(events) if e.get('kind')=='child-start' and e.get('pid')==row['pid'] and e.get('argv')==row['argv'] and e.get('cwd')==row['cwd']]
@@ -393,13 +393,14 @@ def audit_python_authority(lifecycle,original_repo,expected_version='3.12.11',pr
         data=a.read(lifecycle/item['file']);need(a.sha(data)==item.get('sha256'),'Python authority stream hash differs')
         if stream=='stderr':need(not data,'Python authority stderr differs')
         else:info=a.obj(data)
-    need(info.get('pid')==row['pid'] and info.get('executable')==executable and info.get('prefix')==str(Path(executable).parent.parent)
+    need(info.get('pid')==row['pid'] and info.get('executable')==executable
+         and info.get('prefix')==(info.get('base_prefix') if provision_probe else str(Path(executable).parent.parent))
          and info.get('version')==expected_version and type(info.get('base_executable')) is str and Path(info['base_executable']).is_absolute()
          and type(info.get('base_prefix')) is str and Path(info['base_prefix']).is_absolute()
          and type(info.get('base_prefix_real')) is str and Path(info['base_prefix_real']).is_absolute()
          and type(info.get('native_image')) is str and Path(info['native_image']).is_absolute()
          and Path(info['native_image']).is_relative_to(Path(info['base_prefix_real']))
-         and Path(info['base_executable']).is_relative_to(Path(info['base_prefix_real'])),'Python venv authority differs')
+         and (provision_probe or Path(info['base_executable']).is_relative_to(Path(info['base_prefix_real']))),'Python venv authority differs')
     prefixes=[]
     for name,path in (('base_prefix_stat',info['base_prefix']),('base_real_stat',info['base_prefix_real'])):
         code,raw=a.command_raw(lifecycle,row[name],['/usr/bin/stat','-L','-f','%d %i',path]);fields=raw.decode().split()
@@ -434,6 +435,9 @@ def audit_python_authority(lifecycle,original_repo,expected_version='3.12.11',pr
         need(code==0 and len(fields)==4 and all(x.isdigit() for x in fields),'Python provisioned binary stat missing')
         binary_stats.append(fields)
     need(binary_stats[0]==binary_stats[1],'Python base executable is not provisioned interpreter')
+    provision_bytes=a.read(lifecycle/'python-provision-binary.raw');provision_stat=row['provision_binary_stat_value']
+    need(a.sha(provision_bytes)==row.get('provision_binary_sha256') and len(provision_bytes)==provision_stat.get('bytes')
+         and [int(binary_stats[0][0]),int(binary_stats[0][1]),int(binary_stats[0][2]),int(binary_stats[0][3],8)]==[provision_stat[k] for k in ('device','inode','bytes','mode')],'Python provisioned binary bytes differ')
     for name in ('image','launcher'):
         item=row[name+'_stat_value'] if name=='launcher' else row['image_stat']
         file=row[name+'_file'];digest=row[name+'_sha256'];expected='python-authority-'+name+'.raw'
@@ -460,8 +464,11 @@ def audit_python_authority(lifecycle,original_repo,expected_version='3.12.11',pr
             if record.get('fd')=='txt' and int(record.get('D',''),0)==row['image_stat']['device'] and int(record.get('i',''))==row['image_stat']['inode']:matched=True
         except ValueError:pass
     need(matched,'Python authority mapped inode differs')
+    if provision_probe:
+        need(row['launcher_sha256']==row['provision_binary_sha256'] and row['launcher_stat_value']==provision_stat,'Python provision launcher changed during observation')
     return {'launcher_sha256':row['launcher_sha256'],'launcher_stat':row['launcher_stat_value'],
-            'image_sha256':row['image_sha256'],'image_stat':row['image_stat'],'version':expected_version}
+            'image_sha256':row['image_sha256'],'image_stat':row['image_stat'],'version':expected_version,
+            'provision_binary_sha256':row['provision_binary_sha256'],'provision_binary_stat':provision_stat}
 
 def audit_python_runtimes(lifecycle,cases,files,original_repo,expected_version='3.12.11',provision_binary='/opt/homebrew/opt/python@3.12/bin/python3.12'):
     import ast
@@ -471,6 +478,12 @@ def audit_python_runtimes(lifecycle,cases,files,original_repo,expected_version='
     need(len(values)==1 and type(values[0]) is str,'frozen Python shim missing');shim_expected=values[0].encode()
     authority=audit_python_authority(lifecycle,original_repo,expected_version,provision_binary)
     receipt=a.json_file(lifecycle/'receipt.json');events=receipt['events'];rows=receipt.get('python_runtimes')
+    initial_dir=lifecycle/'python-provision-identity';initial_receipt=a.json_file(initial_dir/'receipt.json')
+    need(initial_receipt.get('version')=='som.m6-python-provision-identity.v1' and
+         all(initial_receipt.get(name)==receipt.get(name) and initial_receipt.get(name) is not None for name in ('source_revision','source_before','source_after')),'Python provisioning source origin differs')
+    need(a.read(initial_dir/'python-provision-report.json')==a.read(lifecycle/'python-provision-report.json') and a.read(initial_dir/'python-bottles.json')==a.read(lifecycle/'python-bottles.json'),'Python provisioning inputs changed')
+    initial=audit_python_authority(initial_dir,original_repo,expected_version,provision_binary,True)
+    need(all(initial[k]==authority[k] for k in ('image_sha256','image_stat','provision_binary_sha256','provision_binary_stat')),'Python provisioned image changed before product probe')
     owners=a.json_file(lifecycle/'product-http/manifest.json')['owners'];owner_map={o['case']:o for o in owners if o.get('target')=='python'}
     need(type(rows) is list and len(owner_map)==len(cases),'Python runtime inventory missing')
     executable=str(original_repo/'som-rs/runtime/acceptance-m3-venv/bin/python');seen=set()

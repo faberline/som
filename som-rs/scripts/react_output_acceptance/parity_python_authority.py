@@ -36,6 +36,11 @@ def capture(observer,root,python,probe,cwd,provision_report,provision_binary=Pat
         with (root/'python-authority-launcher.raw').open('xb') as stream:stream.write(launcher)
         row['launcher_file']='python-authority-launcher.raw';row['launcher_sha256']=hashlib.sha256(launcher).hexdigest()
         row['launcher_stat_value']={'device':launch_before.st_dev,'inode':launch_before.st_ino,'bytes':launch_before.st_size,'mode':launch_before.st_mode&0o777}
+        provision_before=provision_binary.stat();provision_bytes=provision_binary.read_bytes();provision_after=provision_binary.stat()
+        if len(provision_bytes)>MAX_IMAGE or len(provision_bytes)!=provision_before.st_size or (provision_before.st_dev,provision_before.st_ino,provision_before.st_size,provision_before.st_mtime_ns)!=(provision_after.st_dev,provision_after.st_ino,provision_after.st_size,provision_after.st_mtime_ns):raise ValueError('Python provisioned binary changed')
+        with (root/'python-provision-binary.raw').open('xb') as stream:stream.write(provision_bytes)
+        row['provision_binary_sha256']=hashlib.sha256(provision_bytes).hexdigest()
+        row['provision_binary_stat_value']={'device':provision_before.st_dev,'inode':provision_before.st_ino,'bytes':provision_before.st_size,'mode':provision_before.st_mode&0o777}
         row['image_file']=filename;row['image_sha256']=digest
         row['image_stat']={'device':before.st_dev,'inode':before.st_ino,'bytes':before.st_size,'mode':before.st_mode&0o777}
         pid=str(proc.pid)
