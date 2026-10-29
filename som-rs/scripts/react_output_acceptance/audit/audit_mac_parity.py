@@ -15,6 +15,7 @@ from pathlib import Path
 import sys
 import audit_mac_rust006_extra as a
 import audit_product_normalization as independent_normalization
+import audit_product_oracle as independent_oracle
 
 REPO=Path(__file__).resolve().parents[4]
 QA='http://127.0.0.1:18919'
@@ -207,10 +208,11 @@ def audit_product_http(root, transcripts, prompts, *, require_owners=True, check
              and type(row.get('body_present')) is bool and (row['body_present'] or not request), 'product raw bytes differ')
     need(manifest.get('bytes')==byte_count and set(groups)==set(transcripts),'product call inventory differs')
     owner_count=audit_product_owners(root,manifest,groups) if require_owners else None
-    normalized_successes=0
+    normalized_successes=0; observed_crud_rows=0
     for key,records in transcripts.items():
         need(key[0] in prompts,'source prompt missing')
         normalizer=independent_normalization.Normalizer(prompts[key[0]]) if check_normalization else None
+        oracle=independent_oracle.PartialOracle(prompts[key[0]]) if check_normalization else None
         calls=groups[key];need(len(calls)==len(records),'product call count differs')
         for row,(record,normalized) in zip(calls,records):
             request=a.read(root/row['request_file']);response=a.read(root/row['response_file'])
@@ -221,9 +223,11 @@ def audit_product_http(root, transcripts, prompts, *, require_owners=True, check
                  and row.get('status')==record.get('status') and row.get('response_content_type')==record.get('response_content_type')
                  and body==record.get('body') and response.decode('utf-8','replace')==record.get('response'),
                  'product raw call and transcript differ')
-            if normalizer is not None: normalized_successes += normalizer.check(record,normalized,response)
+            if normalizer is not None:
+                normalized_successes += normalizer.check(record,normalized,response)
+                observed_crud_rows += oracle.check(record,request,response)
     return {'case_targets':len(groups),'calls':len(manifest['calls']),'bytes':byte_count,'observed_owners':owner_count,
-            'source_origin':'pending','normalized_successes':normalized_successes,'timestamp_advance_semantics':'unverified','behavior_oracle':'unverified',
+            'source_origin':'pending','normalized_successes':normalized_successes,'observed_crud_rows':observed_crud_rows,'timestamp_advance_semantics':'unverified','behavior_oracle':'unverified',
             'unobserved_descendants':'unverified'}
 
 def audit_wire(root,parity_out,legacy,bound,product_http):

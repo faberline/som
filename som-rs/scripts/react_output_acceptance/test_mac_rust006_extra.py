@@ -383,6 +383,32 @@ class ProductHTTPBytesTests(unittest.TestCase):
             self.assertEqual(python.raw[0]['response'],'{"detail":"no"}')
             self.assertEqual(len(rust.raw),2)
 
+    def test_real_suite_fallback_put_capture(self):
+        import importlib
+        from unittest import mock
+        import product_http_recorder
+        behavior=Path(__file__).resolve().parents[2]/'behavior';sys.path.insert(0,str(behavior))
+        try:suite=importlib.import_module('suite')
+        finally:sys.path.pop(0)
+        def send(base,method,path,body,content_type):
+            status=404 if method=='GET' else 405
+            return status,'application/json',json.dumps({'detail':'Not Found' if status==404 else 'Method Not Allowed'}).encode()
+        def script(owner):
+            table=owner.prof.tables[0]; token=owner.norm.token(table,12,True)
+            owner.fallbacks(table,None,token,owner.coll(table,None))
+        prompt={'version':'som.prompt.v1','resource':{'table':'things','path':'/things','fields':[]}}
+        with tempfile.TemporaryDirectory() as temp, mock.patch.object(suite,'http_send',send), mock.patch.object(suite.Run,'script',script):
+            out=Path(temp).resolve()/'http';observer=product_http_recorder.ProductRecorder(out,suite,require_owner=False)
+            def parity_case(case):return suite.run(prompt,'http://127.0.0.1:19021')
+            with mock.patch.object(suite,'http_send',observer.send), mock.patch.object(suite,'run',observer.run):
+                result=parity_case({'id':'fallback'})
+            self.assertTrue(observer.finish()); rows=json.loads((out/'manifest.json').read_bytes())['calls']
+            put=next(row for row in rows if row['method']=='PUT')
+            self.assertEqual(put['status'],405);self.assertEqual(put['step'],'things: put on the collection')
+            self.assertEqual((out/put['request_file']).read_bytes(),b'{}')
+            self.assertEqual(json.loads((out/put['response_file']).read_bytes()),{'detail':'Method Not Allowed'})
+            self.assertEqual(result.raw[1]['method'],'PUT')
+
     def test_concurrent_case_sequences_and_exact_bytes(self):
         import concurrent.futures, hashlib, http.client, http.server, threading, types
         from unittest import mock
@@ -450,6 +476,20 @@ class ProductHTTPBytesTests(unittest.TestCase):
             server.shutdown();server.server_close();thread.join(timeout=5)
 
 class ParityIndependentChecks(unittest.TestCase):
+    def test_partial_crud_oracle_rejects_changed_submitted_or_stored_values(self):
+        import audit_product_oracle as oracle
+        prompt={'version':'som.prompt.v1','resource':{'table':'items','path':'/items',
+                'fields':[{'name':'name','type':'str'},{'name':'amount','type':'int'}]}}
+        model=oracle.PartialOracle(prompt)
+        record={'status':201,'method':'POST','path':'/items'}
+        self.assertEqual(model.check(record,b'{"name":"one","amount":1}',b'{"id":7,"name":"one","amount":1}'),1)
+        record.update(status=200,method='PATCH',path='/items/7')
+        with self.assertRaises(ValueError):model.check(record,b'{"name":"two"}',b'{"id":7,"name":"one","amount":1}')
+        with self.assertRaises(ValueError):model.check(record,b'{"name":"two"}',b'{"id":7,"name":"two","amount":2}')
+        self.assertEqual(model.check(record,b'{"name":"two"}',b'{"id":7,"name":"two","amount":1}'),1)
+        record['method']='GET'
+        with self.assertRaises(ValueError):model.check(record,b'',b'{"id":7,"name":"wrong","amount":1}')
+
     def test_recompute_success_row_ids_timestamps_and_number_types(self):
         import audit_product_normalization as norm
         prompt={'version':'som.prompt.v3','resource':{'table':'things','path':'/things',

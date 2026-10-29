@@ -71,7 +71,7 @@ class ProductRecorder:
         if not (identity and split.scheme=='http' and split.hostname=='127.0.0.1' and split.port and
                 split.port not in (8765,18765,18917,18919) and split.path in ('','/') and not split.query and
                 not split.fragment and not split.username and not split.password and
-                method in ('GET','POST','PATCH','DELETE') and type(path) is str and path.startswith('/') and
+                method in ('GET','POST','PATCH','DELETE','PUT') and type(path) is str and path.startswith('/') and
                 (body is None or type(body) is bytes) and type(response) is bytes and type(status) is int and
                 type(content_type) is str and (media is None or type(media) is str)):
             raise ValueError('product call identity differs')
