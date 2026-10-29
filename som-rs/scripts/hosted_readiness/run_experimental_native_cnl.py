@@ -143,6 +143,8 @@ class BoundModules(importlib.abc.MetaPathFinder, importlib.abc.Loader):
         sys.dont_write_bytecode = True
         sys.meta_path.insert(0, self)
         try:
+            for name in MODULES:
+                importlib.import_module(name)
             yield self
             require(set(MODULES) == self.loaded, "bound helper import closure differs")
             self.sources.verify()

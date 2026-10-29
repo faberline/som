@@ -38,35 +38,11 @@ jobs:
           python3 --version 2>&1 | tee python-version.log
       - name: Run the complete source fixture inventory on GitHub
         run: |
-          python3 -I -S -B - <<'PY' 2>&1 | tee readiness-source-fixtures.log
-          import ast
-          import json
-          import os
-          from pathlib import Path
-          import subprocess
-          import sys
-          import time
-          root = Path(os.environ['GITHUB_WORKSPACE']) / 'som-rs/scripts/hosted_readiness'
-          files = sorted(root.glob('test_*.py'))
-          assert files, 'complete source fixture inventory must not be empty'
-          rows = []
-          for path in files:
-              tree = ast.parse(path.read_bytes())
-              main = ast.dump(ast.parse("__name__ == '__main__'", mode='eval').body)
-              assert any(isinstance(node, ast.If) and ast.dump(node.test) == main for node in tree.body), path
-              argv = [sys.executable, '-I', '-S', '-B', str(path), '-v']
-              print('BEGIN SOURCE FIXTURE FILE ' + path.name, flush=True)
-              started = time.monotonic()
-              child = subprocess.run(argv, check=False)
-              rows.append({'path': path.name, 'argv': argv, 'wait_completed': True,
-                           'exit_code': child.returncode, 'elapsed_seconds': time.monotonic() - started})
-              print('END SOURCE FIXTURE FILE ' + path.name + ' exit=' + str(child.returncode), flush=True)
-          Path('source-fixture-results.json').write_text(json.dumps({'files': rows,
-              'complete_inventory': [path.name for path in files],
-              'all_files_ran': len(rows) == len(files),
-              'product_acceptance_passed': False}, indent=2) + '\n')
-          raise SystemExit(1 if any(row['exit_code'] for row in rows) else 0)
-          PY
+          python3 -I -S -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/run_source_fixtures.py" \
+            --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" \
+            --out "$RUNNER_TEMP/som-source-fixture-run" \
+            2>&1 | tee readiness-source-fixtures.log
       - name: Preserve all fixture output including first failures
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -78,7 +54,7 @@ jobs:
             tested-sha.txt
             python-version.log
             readiness-source-fixtures.log
-            source-fixture-results.json
+            ${{ runner.temp }}/som-source-fixture-run
 
   current-context-source-fixtures:
     name: Run all current input role and retained process proof fixtures

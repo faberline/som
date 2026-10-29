@@ -24,6 +24,8 @@ concurrency:
 
 jobs:
   dependency-helper-fixtures:
+    env:
+      HELPER_REVISION: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
     name: Dependency helper fixtures (no compiler build)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -39,6 +41,9 @@ jobs:
           python3 -I -S -B som-rs/scripts/hosted_readiness/product_python/test_produce_wheels.py
           python3 -I -S -B som-rs/scripts/hosted_readiness/product_runtime/test_provision_cargo.py
           python3 -I -S -B som-rs/scripts/hosted_readiness/test_run_full_products.py
+          python3 -I -S -B som-rs/scripts/hosted_readiness/test_same_candidate_graph.py
+          python3 -I -S -B som-rs/scripts/hosted_readiness/test_run_current_python_companions.py
+          python3 -I -S -B som-rs/scripts/hosted_readiness/product_runtime/test_runtime_capsule.py
 
   python-dependency-iteration:
     name: Audited runtime bytes for later GitHub tests (not product readiness)
@@ -530,9 +535,26 @@ jobs:
             ${{ runner.temp }}/som-carrier-regular-inputs/receipt.json
             ${{ runner.temp }}/som-tested-candidate-carrier
 
+  product-cohort-plan:
+    needs: dependency-helper-fixtures
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    env:
+      HELPER_REVISION: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Load the one complete product cohort plan
+        id: plan
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- matrix
+
   full-product-preparation:
     name: Fresh product gates (${{ matrix.stage }} ${{ matrix.index }}/${{ matrix.count }})
-    needs: [python-dependency-iteration, cargo-dependency-iteration, product-rust-tool-qualification]
+    needs: [python-dependency-iteration, cargo-dependency-iteration, product-rust-tool-qualification, product-cohort-plan]
     runs-on: ubuntu-22.04
     timeout-minutes: 360
     permissions:
@@ -540,107 +562,7 @@ jobs:
       actions: read
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - stage: python-quality
-            index: 0
-            count: 8
-          - stage: python-quality
-            index: 1
-            count: 8
-          - stage: python-quality
-            index: 2
-            count: 8
-          - stage: python-quality
-            index: 3
-            count: 8
-          - stage: python-quality
-            index: 4
-            count: 8
-          - stage: python-quality
-            index: 5
-            count: 8
-          - stage: python-quality
-            index: 6
-            count: 8
-          - stage: python-quality
-            index: 7
-            count: 8
-          - stage: phase1
-            index: 0
-            count: 1
-          - stage: phase2-python
-            index: 0
-            count: 8
-          - stage: phase2-python
-            index: 1
-            count: 8
-          - stage: phase2-python
-            index: 2
-            count: 8
-          - stage: phase2-python
-            index: 3
-            count: 8
-          - stage: phase2-python
-            index: 4
-            count: 8
-          - stage: phase2-python
-            index: 5
-            count: 8
-          - stage: phase2-python
-            index: 6
-            count: 8
-          - stage: phase2-python
-            index: 7
-            count: 8
-          - stage: phase2-rust
-            index: 0
-            count: 16
-          - stage: phase2-rust
-            index: 1
-            count: 16
-          - stage: phase2-rust
-            index: 2
-            count: 16
-          - stage: phase2-rust
-            index: 3
-            count: 16
-          - stage: phase2-rust
-            index: 4
-            count: 16
-          - stage: phase2-rust
-            index: 5
-            count: 16
-          - stage: phase2-rust
-            index: 6
-            count: 16
-          - stage: phase2-rust
-            index: 7
-            count: 16
-          - stage: phase2-rust
-            index: 8
-            count: 16
-          - stage: phase2-rust
-            index: 9
-            count: 16
-          - stage: phase2-rust
-            index: 10
-            count: 16
-          - stage: phase2-rust
-            index: 11
-            count: 16
-          - stage: phase2-rust
-            index: 12
-            count: 16
-          - stage: phase2-rust
-            index: 13
-            count: 16
-          - stage: phase2-rust
-            index: 14
-            count: 16
-          - stage: phase2-rust
-            index: 15
-            count: 16
+      matrix: ${{ fromJSON(needs.product-cohort-plan.outputs.matrix) }}
     defaults:
       run:
         shell: bash
@@ -654,10 +576,6 @@ jobs:
           persist-credentials: false
       - name: Fetch the exact recorded candidate source
         run: git fetch --no-tags --depth=1 origin f59e28d910ff4adb16e3becfdc82bd2978ca84fa
-      - name: Run complete-scope and join refusal fixtures on GitHub
-        working-directory: ${{ runner.temp }}
-        run: |
-          python3 -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/test_run_full_products.py"
       - name: Download the fixed independently audited runtime transport
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
@@ -743,6 +661,8 @@ jobs:
 
   full-product-preparation-join:
     name: Join every required named product slot (preparation only)
+    env:
+      HELPER_REVISION: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
     needs: full-product-preparation
     if: always()
     runs-on: ubuntu-22.04
@@ -762,21 +682,7 @@ jobs:
         working-directory: ${{ runner.temp }}
         shell: bash
         run: |
-          python3 -I -S -B - "$RUNNER_TEMP/som-full-product-shards" > "$RUNNER_TEMP/som-full-product-receipts.list" <<'PY'
-          import pathlib, stat, sys
-          root = pathlib.Path(sys.argv[1])
-          expected = ['full-product-' + stage + '-' + str(index)
-                      for stage, count in (('python-quality', 8), ('phase1', 1),
-                                           ('phase2-python', 8), ('phase2-rust', 16))
-                      for index in range(count)]
-          assert len(expected) == 33 and {path.name for path in root.iterdir()} == set(expected)
-          for name in expected:
-              path = root / name / 'som-full-product-run/result.json'
-              assert not any(part.is_symlink() for part in (path, *path.parents))
-              info = path.stat()
-              assert stat.S_ISREG(info.st_mode) and info.st_nlink == 1
-              sys.stdout.buffer.write(str(path).encode() + b'\0')
-          PY
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- receipt-paths --root "$RUNNER_TEMP/som-full-product-shards" > "$RUNNER_TEMP/som-full-product-receipts.list"
           mapfile -d '' receipts < "$RUNNER_TEMP/som-full-product-receipts.list"
           python3 -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/run_full_products.py" \
             --join --out "$RUNNER_TEMP/som-full-product-join.json" "${receipts[@]}"

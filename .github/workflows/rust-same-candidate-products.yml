@@ -1,0 +1,360 @@
+name: Same candidate full product graph
+on:
+  workflow_call:
+    inputs:
+      helper_revision:
+        type: string
+        required: true
+      candidate_revision:
+        type: string
+        required: true
+      artifact_spec:
+        description: Exact current-run artifact id/name/ZIP digest map; no historical defaults
+        type: string
+        required: true
+      runtime_manifest_sha256:
+        type: string
+        required: true
+    secrets:
+      SOM_M6_ACCEPTANCE_INPUTS_V1:
+        required: true
+permissions:
+  contents: read
+  actions: read
+defaults:
+  run:
+    shell: bash
+env:
+  HELPER_REVISION: ${{ inputs.helper_revision }}
+  CANDIDATE_REVISION: ${{ inputs.candidate_revision }}
+  SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+  SOM_RUNTIME_ACTIONS_TOKEN: ${{ github.token }}
+  PYTHONDONTWRITEBYTECODE: '1'
+jobs:
+  bind:
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      catalog_id: ${{ steps.publish.outputs.artifact-id }}
+      catalog_digest: ${{ steps.publish.outputs.artifact-digest }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.helper_revision }}
+          persist-credentials: false
+      - name: Require the complete sealed source authority
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- admit --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --out "$RUNNER_TEMP/graph-native-source.json"
+      - name: Use the single complete shard plan
+        id: plan
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- matrix
+      - name: Bind all seven same-run artifact IDs and ZIP digests
+        env:
+          ARTIFACT_SPEC: ${{ inputs.artifact_spec }}
+        run: |
+          python3 -I -S -B - <<'PY'
+          import os,pathlib
+          pathlib.Path(os.environ["RUNNER_TEMP"], "artifact-spec.json").write_text(os.environ["ARTIFACT_SPEC"])
+          PY
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- artifact-inputs --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-spec "$RUNNER_TEMP/artifact-spec.json" --out "$RUNNER_TEMP/graph-inputs/artifact-inputs.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        id: publish
+        if: always()
+        with:
+          name: same-candidate-artifact-inputs
+          path: ${{ runner.temp }}/graph-inputs
+          if-no-files-found: error
+          retention-days: 30
+
+  current-python-companions:
+    needs: bind
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    outputs:
+      artifact_id: ${{ steps.publish.outputs.artifact-id }}
+      artifact_digest: ${{ steps.publish.outputs.artifact-digest }}
+      index_sha256: ${{ steps.seal.outputs.sealed_index_sha256 }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.helper_revision }}
+          persist-credentials: false
+      - uses: ./.github/actions/same-candidate-inputs
+        with:
+          helper_revision: ${{ inputs.helper_revision }}
+          candidate_revision: ${{ inputs.candidate_revision }}
+          artifact_spec: ${{ inputs.artifact_spec }}
+          runtime_manifest_sha256: ${{ inputs.runtime_manifest_sha256 }}
+          catalog_id: ${{ needs.bind.outputs.catalog_id }}
+          require_runtime: 'false'
+      - name: Capture all68 exact current forms and retain private driver streams
+        run: |
+          mkdir -m 700 "$RUNNER_TEMP/som-current-python-raw"
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/run_current_python_companions.py -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --qa-mode native-qa-v1 --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --restored-candidate "$RUNNER_TEMP/som-current-companion-restored" --out "$RUNNER_TEMP/som-current-python-raw/som-current-python-companions" > "$RUNNER_TEMP/som-current-python-raw/driver.stdout" 2> "$RUNNER_TEMP/som-current-python-raw/driver.stderr"
+      - name: Recheck all raw current forms with the owning consumer
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- verify-callback --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --python-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-public-inputs" --rust-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-rust-complete-inputs" --stage current-python-companions --root "$RUNNER_TEMP/som-current-python-raw/som-current-python-companions" --out "$RUNNER_TEMP/som-current-python-raw/data-check.json" > "$RUNNER_TEMP/som-current-python-raw/verify.stdout" 2> "$RUNNER_TEMP/som-current-python-raw/verify.stderr"
+      - name: Seal the complete affected raw tree through the existing M6 transport
+        id: seal
+        if: always()
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/sealed_current_raw.py -- seal --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --node "$SOM_RAW_TRANSPORT_NODE" --stage current-python-companions --raw-root "$RUNNER_TEMP/som-current-python-raw" --out "$RUNNER_TEMP/som-current-python-sealed" --evidence-out "$RUNNER_TEMP/som-seal-command-evidence"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        id: publish
+        if: always()
+        with:
+          name: same-candidate-current-python-companions
+          path: ${{ runner.temp }}/som-current-python-sealed
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+  products:
+    needs: [bind, current-python-companions]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.bind.outputs.matrix) }}
+    env:
+      PRODUCT_STAGE: ${{ matrix.stage }}
+      SHARD_INDEX: ${{ matrix.index }}
+      SHARD_COUNT: ${{ matrix.count }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.helper_revision }}
+          persist-credentials: false
+      - uses: ./.github/actions/same-candidate-inputs
+        with:
+          helper_revision: ${{ inputs.helper_revision }}
+          candidate_revision: ${{ inputs.candidate_revision }}
+          artifact_spec: ${{ inputs.artifact_spec }}
+          runtime_manifest_sha256: ${{ inputs.runtime_manifest_sha256 }}
+          catalog_id: ${{ needs.bind.outputs.catalog_id }}
+          require_runtime: 'true'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          artifact-ids: ${{ needs.current-python-companions.outputs.artifact_id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/som-current-companions-sealed
+      - name: Restore this run exact sealed current68 data before the Context reads it
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/sealed_current_raw.py -- restore --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --node "$SOM_RAW_TRANSPORT_NODE" --stage current-python-companions --packet-root "$RUNNER_TEMP/som-current-companions-sealed" --out "$RUNNER_TEMP/som-current-inputs/companions" --evidence-out "$RUNNER_TEMP/som-current-companions-restore-evidence" --artifact-id "${{ needs.current-python-companions.outputs.artifact_id }}" --artifact-digest "sha256:${{ needs.current-python-companions.outputs.artifact_digest }}" --artifact-name same-candidate-current-python-companions --index-sha256 "${{ needs.current-python-companions.outputs.index_sha256 }}"
+      - name: Run every original named product slot with qualified Python3.12
+        run: |
+          sudo install -d -m 1777 /private/tmp
+          mkdir -m 700 "$RUNNER_TEMP/som-product-raw"
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/run_full_products.py -- --mode sealed-candidate-products --stage "$PRODUCT_STAGE" --build-provenance-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-current-build-provenance" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --python-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-public-inputs" --rust-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-rust-complete-inputs" --wheel-root "$RUNNER_TEMP/som-current-inputs/wheel/som-python-wheel-qualification" --cargo-root "$RUNNER_TEMP/som-current-inputs/cargo/closure" --runtime-root "$RUNNER_TEMP/som-product-runtime-qualification" --rust-tools-root "$RUNNER_TEMP/som-rust-product-tools-qualification" --current-companions-root "$RUNNER_TEMP/som-current-inputs/companions/som-current-python-companions" --shard-index "$SHARD_INDEX" --shard-count "$SHARD_COUNT" --out "$RUNNER_TEMP/som-product-raw/som-full-product-run" > "$RUNNER_TEMP/som-product-raw/driver.stdout" 2> "$RUNNER_TEMP/som-product-raw/driver.stderr"
+      - name: Seal the complete affected raw tree through the existing M6 transport
+        id: seal
+        if: always()
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/sealed_current_raw.py -- seal --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --node "$SOM_RAW_TRANSPORT_NODE" --stage "full-product-$PRODUCT_STAGE-$SHARD_INDEX" --raw-root "$RUNNER_TEMP/som-product-raw" --out "$RUNNER_TEMP/som-product-sealed" --evidence-out "$RUNNER_TEMP/som-seal-command-evidence" --product-context "$RUNNER_TEMP/som-product-raw/som-full-product-run/context.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        id: publish
+        if: always()
+        with:
+          name: full-product-${{ matrix.stage }}-${{ matrix.index }}
+          path: ${{ runner.temp }}/som-product-sealed
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+  product-join:
+    needs: [bind, products]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    outputs:
+      artifact_id: ${{ steps.publish.outputs.artifact-id }}
+      artifact_digest: ${{ steps.publish.outputs.artifact-digest }}
+      index_sha256: ${{ steps.seal.outputs.sealed_index_sha256 }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.helper_revision }}
+          persist-credentials: false
+      - uses: ./.github/actions/same-candidate-inputs
+        with:
+          helper_revision: ${{ inputs.helper_revision }}
+          candidate_revision: ${{ inputs.candidate_revision }}
+          artifact_spec: ${{ inputs.artifact_spec }}
+          runtime_manifest_sha256: ${{ inputs.runtime_manifest_sha256 }}
+          catalog_id: ${{ needs.bind.outputs.catalog_id }}
+          require_runtime: 'false'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: full-product-*
+          path: ${{ runner.temp }}/som-product-sealed-shards
+      - name: Restore all33 exact same-run encrypted job outputs before joining any row
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- restore-stage-set --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --set products --packet-roots "$RUNNER_TEMP/som-product-sealed-shards" --node "$SOM_RAW_TRANSPORT_NODE" --out "$RUNNER_TEMP/som-full-product-shards" --evidence-out "$RUNNER_TEMP/som-shard-restore-evidence"
+      - name: Require each named product once in the original complete contract order
+        run: |
+          mkdir -m 700 "$RUNNER_TEMP/som-product-join-raw"
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- receipt-paths --root "$RUNNER_TEMP/som-full-product-shards" > "$RUNNER_TEMP/receipts.list"
+          mapfile -d '' receipts < "$RUNNER_TEMP/receipts.list"
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/run_full_products.py -- --join --out "$RUNNER_TEMP/som-product-join-raw/product-join.json" "${receipts[@]}" > "$RUNNER_TEMP/som-product-join-raw/driver.stdout" 2> "$RUNNER_TEMP/som-product-join-raw/driver.stderr"
+      - name: Seal the complete affected raw tree through the existing M6 transport
+        id: seal
+        if: always()
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/sealed_current_raw.py -- seal --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --node "$SOM_RAW_TRANSPORT_NODE" --stage full-product-join --raw-root "$RUNNER_TEMP/som-product-join-raw" --out "$RUNNER_TEMP/som-product-join-sealed" --evidence-out "$RUNNER_TEMP/som-seal-command-evidence"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        id: publish
+        if: always()
+        with:
+          name: same-candidate-product-join
+          path: ${{ runner.temp }}/som-product-join-sealed
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+  required-callbacks:
+    needs: [bind, current-python-companions]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        gate: [cnl, cli-refusals-rebase, named-contract-acceptance, typescript-regression, m6-react003]
+    env:
+      PRODUCT_STAGE: phase1
+      SHARD_INDEX: '0'
+      SHARD_COUNT: '1'
+      REQUIRED_GATE: ${{ matrix.gate }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.helper_revision }}
+          persist-credentials: false
+      - uses: ./.github/actions/same-candidate-inputs
+        with:
+          helper_revision: ${{ inputs.helper_revision }}
+          candidate_revision: ${{ inputs.candidate_revision }}
+          artifact_spec: ${{ inputs.artifact_spec }}
+          runtime_manifest_sha256: ${{ inputs.runtime_manifest_sha256 }}
+          catalog_id: ${{ needs.bind.outputs.catalog_id }}
+          require_runtime: 'true'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          artifact-ids: ${{ needs.current-python-companions.outputs.artifact_id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/som-current-companions-sealed
+      - name: Restore this run exact sealed current68 data before the Context reads it
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/sealed_current_raw.py -- restore --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --node "$SOM_RAW_TRANSPORT_NODE" --stage current-python-companions --packet-root "$RUNNER_TEMP/som-current-companions-sealed" --out "$RUNNER_TEMP/som-current-inputs/companions" --evidence-out "$RUNNER_TEMP/som-current-companions-restore-evidence" --artifact-id "${{ needs.current-python-companions.outputs.artifact_id }}" --artifact-digest "sha256:${{ needs.current-python-companions.outputs.artifact_digest }}" --artifact-name same-candidate-current-python-companions --index-sha256 "${{ needs.current-python-companions.outputs.index_sha256 }}"
+      - name: Prepare the same current observer context before each required native gate
+        run: |
+          sudo install -d -m 1777 /private/tmp
+          mkdir -m 700 "$RUNNER_TEMP/som-callback-raw"
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/run_full_products.py -- --mode sealed-candidate-products --stage "$PRODUCT_STAGE" --build-provenance-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-current-build-provenance" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --python-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-public-inputs" --rust-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-rust-complete-inputs" --wheel-root "$RUNNER_TEMP/som-current-inputs/wheel/som-python-wheel-qualification" --cargo-root "$RUNNER_TEMP/som-current-inputs/cargo/closure" --runtime-root "$RUNNER_TEMP/som-product-runtime-qualification" --rust-tools-root "$RUNNER_TEMP/som-rust-product-tools-qualification" --current-companions-root "$RUNNER_TEMP/som-current-inputs/companions/som-current-python-companions" --shard-index "$SHARD_INDEX" --shard-count "$SHARD_COUNT" --out "$RUNNER_TEMP/som-callback-context" --prepare-context-only > "$RUNNER_TEMP/som-callback-raw/context.stdout" 2> "$RUNNER_TEMP/som-callback-raw/context.stderr"
+      - name: Run the actual owning gate with complete private driver streams
+        run: |
+          {
+            case "$REQUIRED_GATE" in
+              cnl|cli-refusals-rebase)
+                "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py -- --gate "$REQUIRED_GATE" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --product-context "$RUNNER_TEMP/som-callback-context/context.json" --qa-mode native-qa-v1 --port 18979 --out "$RUNNER_TEMP/som-callback-raw/gate" ;;
+              named-contract-acceptance)
+                "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/run_same_candidate_contracts.py -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --product-context "$RUNNER_TEMP/som-callback-context/context.json" --out "$RUNNER_TEMP/som-callback-raw/gate" ;;
+              typescript-regression|m6-react003)
+                "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/run_current_candidate_gate.py -- --gate "$REQUIRED_GATE" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --product-context "$RUNNER_TEMP/som-callback-context/context.json" --qa-mode native-qa-v1 --port 18978 --out "$RUNNER_TEMP/som-callback-raw/gate" ;;
+              *) exit 1 ;;
+            esac
+          } > "$RUNNER_TEMP/som-callback-raw/driver.stdout" 2> "$RUNNER_TEMP/som-callback-raw/driver.stderr"
+      - name: Rebuild the owning raw proof from the same-run catalog roots
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- verify-callback --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --python-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-public-inputs" --rust-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-rust-complete-inputs" --stage "$REQUIRED_GATE" --root "$RUNNER_TEMP/som-callback-raw/gate" --out "$RUNNER_TEMP/som-callback-raw/data-check.json" > "$RUNNER_TEMP/som-callback-raw/verify.stdout" 2> "$RUNNER_TEMP/som-callback-raw/verify.stderr"
+      - name: Seal the complete affected raw tree through the existing M6 transport
+        id: seal
+        if: always()
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/sealed_current_raw.py -- seal --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --node "$SOM_RAW_TRANSPORT_NODE" --stage "$REQUIRED_GATE" --raw-root "$RUNNER_TEMP/som-callback-raw" --out "$RUNNER_TEMP/som-callback-sealed" --evidence-out "$RUNNER_TEMP/som-seal-command-evidence"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        id: publish
+        if: always()
+        with:
+          name: required-same-candidate-${{ matrix.gate }}
+          path: ${{ runner.temp }}/som-callback-sealed
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+  whole-graph-join:
+    needs: [bind, current-python-companions, product-join, required-callbacks]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.helper_revision }}
+          persist-credentials: false
+      - uses: ./.github/actions/same-candidate-inputs
+        with:
+          helper_revision: ${{ inputs.helper_revision }}
+          candidate_revision: ${{ inputs.candidate_revision }}
+          artifact_spec: ${{ inputs.artifact_spec }}
+          runtime_manifest_sha256: ${{ inputs.runtime_manifest_sha256 }}
+          catalog_id: ${{ needs.bind.outputs.catalog_id }}
+          require_runtime: 'false'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          artifact-ids: ${{ needs.current-python-companions.outputs.artifact_id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/som-current-companions-sealed
+      - name: Restore this run exact sealed current68 data before the Context reads it
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/sealed_current_raw.py -- restore --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --node "$SOM_RAW_TRANSPORT_NODE" --stage current-python-companions --packet-root "$RUNNER_TEMP/som-current-companions-sealed" --out "$RUNNER_TEMP/som-current-inputs/companions" --evidence-out "$RUNNER_TEMP/som-current-companions-restore-evidence" --artifact-id "${{ needs.current-python-companions.outputs.artifact_id }}" --artifact-digest "sha256:${{ needs.current-python-companions.outputs.artifact_digest }}" --artifact-name same-candidate-current-python-companions --index-sha256 "${{ needs.current-python-companions.outputs.index_sha256 }}"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: required-same-candidate-*
+          path: ${{ runner.temp }}/som-callback-sealed-set
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: same-candidate-product-join
+          path: ${{ runner.temp }}/som-product-join-sealed-set/same-candidate-product-join
+      - name: Restore every required same-run callback and the complete product join
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- restore-stage-set --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --set callbacks --packet-roots "$RUNNER_TEMP/som-callback-sealed-set" --node "$SOM_RAW_TRANSPORT_NODE" --out "$RUNNER_TEMP/som-final-callbacks" --evidence-out "$RUNNER_TEMP/som-final-callback-restore-evidence"
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- restore-stage-set --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --set product-join --packet-roots "$RUNNER_TEMP/som-product-join-sealed-set" --node "$SOM_RAW_TRANSPORT_NODE" --out "$RUNNER_TEMP/som-final-products" --evidence-out "$RUNNER_TEMP/som-final-product-restore-evidence"
+      - name: Recheck every owning raw gate and join this one exact candidate graph
+        run: |
+          mkdir -m 700 "$RUNNER_TEMP/som-whole-graph-raw"
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- join-graph --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --python-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-public-inputs" --rust-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-rust-complete-inputs" --root "$RUNNER_TEMP/som-final-callbacks" --current-companions-root "$RUNNER_TEMP/som-current-inputs/companions/som-current-python-companions" --product-join "$RUNNER_TEMP/som-final-products/same-candidate-product-join/product-join.json" --out "$RUNNER_TEMP/som-whole-graph-raw/result.json" > "$RUNNER_TEMP/som-whole-graph-raw/driver.stdout" 2> "$RUNNER_TEMP/som-whole-graph-raw/driver.stderr"
+      - name: Seal the complete affected raw tree through the existing M6 transport
+        id: seal
+        if: always()
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/sealed_current_raw.py -- seal --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --node "$SOM_RAW_TRANSPORT_NODE" --stage whole-graph-join --raw-root "$RUNNER_TEMP/som-whole-graph-raw" --out "$RUNNER_TEMP/som-whole-graph-sealed" --evidence-out "$RUNNER_TEMP/som-seal-command-evidence"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        id: publish
+        if: always()
+        with:
+          name: same-candidate-whole-graph-join
+          path: ${{ runner.temp }}/som-whole-graph-sealed
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30

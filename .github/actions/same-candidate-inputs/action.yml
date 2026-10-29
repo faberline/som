@@ -1,0 +1,87 @@
+name: Admit this run exact candidate and product inputs
+description: Restore checked data before any current native product command
+inputs:
+  helper_revision:
+    required: true
+  candidate_revision:
+    required: true
+  artifact_spec:
+    required: true
+  runtime_manifest_sha256:
+    required: true
+  catalog_id:
+    required: true
+  require_runtime:
+    default: 'true'
+runs:
+  using: composite
+  steps:
+    - name: Admit exact native source before helper imports
+      shell: bash
+      env:
+        EXPECTED_HELPER: ${{ inputs.helper_revision }}
+        EXPECTED_CANDIDATE: ${{ inputs.candidate_revision }}
+      run: |
+        test "$HELPER_REVISION" = "$EXPECTED_HELPER"
+        test "$CANDIDATE_REVISION" = "$EXPECTED_CANDIDATE"
+        python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- admit --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --out "$RUNNER_TEMP/native-source-authority.json"
+    - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ fromJSON(inputs.artifact_spec).public_inputs.id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/public
+    - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ fromJSON(inputs.artifact_spec).assembly.id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/assembly
+    - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ fromJSON(inputs.artifact_spec).carrier.id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/carrier
+    - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ inputs.catalog_id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/catalog
+    - name: Restore the current compiler and native bytes without executing them
+      shell: bash
+      run: |
+        python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- restore-carrier --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --out "$RUNNER_TEMP/som-current-transport-carrier"
+        printf '%s\n' "SOM_RAW_TRANSPORT_NODE=$RUNNER_TEMP/som-current-transport-carrier/native/bin/node" >> "$GITHUB_ENV"
+    - if: inputs.require_runtime == 'true'
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ fromJSON(inputs.artifact_spec).wheel.id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/wheel
+    - if: inputs.require_runtime == 'true'
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ fromJSON(inputs.artifact_spec).cargo.id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/cargo
+    - if: inputs.require_runtime == 'true'
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ fromJSON(inputs.artifact_spec).runtime.id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/runtime
+    - if: inputs.require_runtime == 'true'
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      with:
+        artifact-ids: ${{ fromJSON(inputs.artifact_spec).rust_tools.id }}
+        merge-multiple: true
+        path: ${{ runner.temp }}/som-current-inputs/rust-source
+    - name: Restore exact qualified native runtime before selecting its Python
+      if: inputs.require_runtime == 'true'
+      shell: bash
+      run: |
+        python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py -- restore --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --capsule-root "$RUNNER_TEMP/som-current-inputs/runtime" --out "$RUNNER_TEMP/som-product-runtime-qualification" --evidence-out "$RUNNER_TEMP/som-runtime-capsule-restore-evidence" --artifact-id "${{ fromJSON(inputs.artifact_spec).runtime.id }}" --artifact-digest "${{ fromJSON(inputs.artifact_spec).runtime.digest }}" --manifest-sha256 "${{ inputs.runtime_manifest_sha256 }}"
+        cat "$RUNNER_TEMP/som-product-runtime-qualification/github.env" >> "$GITHUB_ENV"
+    - name: Requalify all six native Rust tools for this consumer
+      if: inputs.require_runtime == 'true'
+      shell: bash
+      run: |
+        "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/qualify_rust_tools.py -- --repo "$GITHUB_WORKSPACE" --source-revision "$HELPER_REVISION" --out "$RUNNER_TEMP/som-rust-product-tools-qualification"

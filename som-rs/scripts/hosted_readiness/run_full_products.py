@@ -527,6 +527,18 @@ def phase2_rust(ctx):
                     continue
                 record = {'id': case['id'], 'passed': False, 'fresh_bundle_checks': 'unrun_no_compiler_carrier'}
                 try:
+                    if case['phase2_expected']['result'] == 'refusal' and ctx.data.get('qa_mode') == 'native-qa-v1':
+                        negative = ctx.current_refusal(case['id'], 'rust')
+                        require(negative is not None and negative['product_executed'] is False,
+                                'fresh exact named current Rust refusal missing')
+                        record.update(passed=True, outcome_role='current-compiler-refusal-no-product',
+                                      product_executed=False, current_refusal=negative,
+                                      fresh_bundle_checks='source-verified-current-typed-compiler-refusal')
+                        save(output / 'cases' / (phase2.key(case['id']) + '.json'), record)
+                        rows.append(record)
+                        save(output / 'gates' / (phase2.key(case['id']) + '.json'), record)
+                        print(case['id'], 'PASS', flush=True)
+                        continue
                     if case['phase2_expected']['result'] == 'refusal':
                         raise ValueError('fresh current refusal requires the same-candidate compiler carrier')
                     try:
@@ -579,15 +591,16 @@ def identity_record(ctx):
             'rust_profile_sha256': digest(profile),
             'wheel_receipt_sha256': digest((Path(ctx.data['wheel_root']) / 'receipt.json').read_bytes()),
             'cargo_receipt_sha256': digest((Path(ctx.data['cargo_root']) / 'receipt.json').read_bytes()),
-            'input_transport': ctx.data['transport']}
+            'input_transport': ctx.data['transport'], 'qa_mode': ctx.data.get('qa_mode', 'historical'),
+            'native_source_admission_sha256': digest(canonical(ctx.data['native_source_authority'])) if ctx.data.get('native_source_authority') else None}
 
 
 def worker(context_path):
     data = json.loads(context_path.read_bytes())
-    module = load_context_module(data['repo'], data['helper_revision'])
+    module = load_context_module(data['repo'], data['helper_revision'], data.get('qa_mode'), data['candidate_revision'])
     ctx = module.Context(context_path)
     module._ACTIVE = ctx
-    module.install_source_finder(ctx.sources)
+    if data.get('qa_mode') != 'native-qa-v1': module.install_source_finder(ctx.sources)
     ctx.sources.read(SELF)
     stage = data['stage']
     started = time.monotonic()
@@ -621,8 +634,33 @@ def worker(context_path):
 
 def prepare(args):
     require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'GitHub Linux only')
-    if args.mode != 'experimental-preparation':
-        raise ValueError('official acceptance refuses the unsealed policy and missing same-build compiler carrier')
+    sealed = args.mode == 'sealed-candidate-products'
+    if args.mode not in {'experimental-preparation', 'sealed-candidate-products'}:
+        raise ValueError('unsealed official acceptance requires separate complete independent acceptance')
+    module, graph, graph_sources = None, None, None
+    if sealed:
+        require(args.helper_revision == args.candidate_revision and args.candidate_revision != 'f59e28d910ff4adb16e3becfdc82bd2978ca84fa',
+                'sealed products require one new final source candidate')
+        require(all(getattr(args, name, None) is not None for name in
+                    ('carrier_root', 'artifact_inputs', 'current_companions_root', 'python_inputs_root', 'rust_inputs_root', 'build_provenance_root')),
+                'all fresh same-run carrier/input/current-companion paths are required')
+        build_root = args.build_provenance_root.absolute()
+        require(build_root == args.assembly_root.absolute().parent / 'som-current-build-provenance'
+                and build_root.is_dir() and not any(path.is_symlink() for path in (build_root, *build_root.parents)),
+                'original same-job build provenance must be the exact assembly artifact sibling')
+        graph_path = 'som-rs/scripts/hosted_readiness/same_candidate_graph.py'
+        graph_raw = subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(args.repo),
+            'cat-file', 'blob', args.helper_revision + ':' + graph_path], stderr=subprocess.DEVNULL)
+        require(graph_raw == (args.repo / graph_path).read_bytes(), 'graph source differs from exact helper commit')
+        graph = ModuleType('_som_same_candidate_graph_for_products')
+        graph.__file__, graph.__cached__, graph.__package__ = str(args.repo / graph_path), None, ''
+        graph.__som_raw_sha256__ = digest(graph_raw)
+        sys.modules[graph.__name__] = graph
+        exec(compile(graph_raw, graph.__file__, 'exec', dont_inherit=True), graph.__dict__)
+        # Formal source/HEAD/workflow binding precedes the native policy and Context loaders.
+        graph_sources, _, graph_authority = graph.admit_source(args.repo, args.helper_revision, args.candidate_revision)
+        module = load_context_module(args.repo, args.helper_revision, 'native-qa-v1', args.candidate_revision)
+        require(module.__som_native_source_authority__ == graph_authority, 'graph and Context source authority differ')
     temporary = Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
     out = args.out.absolute()
     require(temporary in out.parents and '..' not in out.parts and not out.exists(), 'new RUNNER_TEMP output required')
@@ -639,19 +677,37 @@ def prepare(args):
             'transport': 'recorded-assembled-products',
             **{name: str(getattr(args, name).absolute()) for name in
                ('assembly_root', 'wheel_root', 'runtime_root', 'rust_tools_root', 'cargo_root')}}
+    if sealed:
+        data.update(qa_mode='native-qa-v1', native_source_authority=module.__som_native_source_authority__,
+                    source_workflow_binding=graph_sources.workflow_binding,
+                    artifact_inputs=str(args.artifact_inputs.absolute()),
+                    carrier_root=str(args.carrier_root.absolute()),
+                    build_provenance_root=str(args.build_provenance_root.absolute()),
+                    current_companions_root=str(args.current_companions_root.absolute()),
+                    python_inputs_root=str(args.python_inputs_root.absolute()), rust_inputs_root=str(args.rust_inputs_root.absolute()))
+        data['current_carrier_restore'] = graph.restore_current_carrier(graph_sources, args.artifact_inputs, args.assembly_root,
+            args.carrier_root, out / 'candidate', args.helper_revision, args.candidate_revision)
     path = out / 'context.json'
     save(path, data)
     os.environ['SOM_FULL_PRODUCT_CONTEXT'] = str(path)
-    module = load_context_module(args.repo, args.helper_revision)
+    if module is None: module = load_context_module(args.repo, args.helper_revision)
     ctx = module.Context(path)
     module._ACTIVE = ctx
-    module.install_source_finder(ctx.sources)
+    if data.get('qa_mode') != 'native-qa-v1': module.install_source_finder(ctx.sources)
     ctx.sources.read(SELF)
     ctx.python_rows()
     ctx.rust_rows()
     consumer = ctx.module('cargo_consumer', CARGO)
     consumer.prepare(ctx)
     ctx.prepare_python(out / 'observer', {})
+    if getattr(args, 'prepare_context_only', False):
+        require(sealed, 'callback context requires active sealed source mode')
+        ctx.verify()
+        save(out / 'context-prepared.json', {'version': 'som.sealed-callback-context-prepared.v1',
+             'helper_revision': args.helper_revision, 'candidate_revision': args.candidate_revision,
+             'context_sha256': digest(path.read_bytes()), 'product_acceptance_passed': False,
+             'product_rows_run': False})
+        return 0
     command = ctx.command([data['observer_python'], '-B', ctx.repo / SELF, '--worker-context', str(path)],
                           out, ctx.child_environment(), 'whole-frozen-product-cohort', timeout=20000, check=False)
     ctx.verify()
@@ -681,7 +737,7 @@ def join(args):
         row['receipt_raw_sha256'] = digest(raw)
         grouped[row['stage']].append(row)
     repo = Path(__file__).absolute().parents[3]
-    module = load_context_module(repo, identities['helper_revision'])
+    module = load_context_module(repo, identities['helper_revision'], identities.get('qa_mode'), identities['candidate_revision'])
     sources = module.SourceBytes(repo, identities['helper_revision'])
     for shards in grouped.values():
         for receipt in shards:
@@ -750,11 +806,14 @@ def main(argv=None):
         parser.add_argument('receipts', type=Path, nargs='+')
         return join(parser.parse_args(arguments[1:]))
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--mode', choices=('experimental-preparation', 'acceptance'), required=True)
+    parser.add_argument('--mode', choices=('experimental-preparation', 'sealed-candidate-products', 'acceptance'), required=True)
     parser.add_argument('--stage', choices=STAGES, required=True)
     parser.add_argument('--repo', type=Path, required=True)
     parser.add_argument('--helper-revision', required=True)
     parser.add_argument('--candidate-revision', required=True)
+    parser.add_argument('--prepare-context-only', action='store_true')
+    for name in ('carrier-root', 'artifact-inputs', 'current-companions-root', 'python-inputs-root', 'rust-inputs-root', 'build-provenance-root'):
+        parser.add_argument('--' + name, type=Path)
     parser.add_argument('--shard-index', type=int, default=0)
     parser.add_argument('--shard-count', type=int, default=1)
     for name in ('assembly-root', 'wheel-root', 'runtime-root', 'rust-tools-root', 'cargo-root', 'out'):
