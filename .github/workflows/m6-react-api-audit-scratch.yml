@@ -1,0 +1,31 @@
+name: M6 React Linux API raw auditor fixtures (not acceptance)
+on:
+  push:
+    branches:
+      - codex/m6-react-linux-api-audit-20261029
+permissions:
+  contents: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bind scratch audit source
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          for entry in \
+            'som-rs/scripts/react_output_acceptance/audit/api_raw.py 25ff69a6c37623d6ed179d63f39eb04ee2c62e4c7697d0677e7d2fac1ad382f5' \
+            'som-rs/scripts/react_output_acceptance/audit/test_linux_api_raw.py b57f564332f83a39660310d90e96f533b380ed08672cda878fff2b4313b80070'; do
+            set -- $entry
+            test "$(sha256sum "$1" | cut -d ' ' -f 1)" = "$2"
+            test "$(git show "$GITHUB_SHA:$1" | sha256sum | cut -d ' ' -f 1)" = "$2"
+          done
+      - name: Verify unchanged macOS and Linux API raw evidence fixtures
+        working-directory: som-rs/scripts/react_output_acceptance/audit
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest -v test_api_raw test_linux_api_raw
