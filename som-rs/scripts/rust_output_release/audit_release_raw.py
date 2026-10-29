@@ -376,7 +376,12 @@ def compare_exchanges(root, config, report, candidate, previous):
 def check_raw(root, source, head):
     report = load(root, 'run/rehearsal/rehearsal.json')
     summary = load(root, 'summary.json')
-    require(summary['passed'] is True and summary['source_commit'] == head, 'summary mismatch')
+    require(summary['version'] == 'som.m6-release-rehearsal.v1' and summary['passed'] is True
+            and summary['status'] == 'passed' and summary['source_commit'] == head
+            and summary['scenarios'] == {name: True for name in SCENARIOS}
+            and summary['offline_resume'] == {'passed': True, 'scenarios': 5}, 'summary mismatch')
+    require(summary['rehearsal_sha256'] == digest(regular(root, 'run/rehearsal/rehearsal.json')),
+            'rehearsal summary hash mismatch')
     require(report['version'] == 'som.rust-output-switch-rehearsal.v1' and report['passed'] is True
             and report['profile'] == 'compiler-only' and report['live_default_accessed'] is False,
             'rehearsal report mismatch')
@@ -384,6 +389,9 @@ def check_raw(root, source, head):
     config_file = regular(root, 'run/inputs/prerequisites.json')
     require(digest(config_file) == report['prerequisites']['sha256'], 'prerequisites hash mismatch')
     config = json.loads(config_file.read_bytes())
+    canonical = json.dumps(config, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode()
+    require(report['prerequisites_receipt_sha256'] == sha(canonical)
+            and summary['prerequisites_sha256'] == digest(config_file), 'prerequisites receipt mismatch')
     original_root = config['repo'] + '/.local/rust-compiler-goal/acceptance/react-131'
     require(report['prerequisites']['path'] == original_root + '/run/inputs/prerequisites.json',
             'original prerequisites path mismatch')
@@ -420,7 +428,8 @@ def check_raw(root, source, head):
             require(raw == (f"{seed['pid']}\n".encode() if stream == 'stdout' else b''), 'seed bytes mismatch')
         require(digest(regular(root, base + '/' + seed['receipt'])) == seed['default_sha256'], 'seed receipt mismatch')
         stale = load(root, base + '/' + seed['receipt'])
-        require(stale['pid'] == seed['pid'] and stale['identity']['binary_sha256'] == previous,
+        require(stale['pid'] == seed['pid'] and stale['identity']['pid'] == seed['pid']
+                and stale['identity']['port'] == port and stale['identity']['binary_sha256'] == previous,
                 'stale seed identity mismatch')
         calls = [row['resume']] + row['calls']
         require([c['name'] for c in calls] == (['resume', 'switch', 'check', 'restore', 'check-restored']
@@ -477,6 +486,7 @@ def check_raw(root, source, head):
                 and fresh['identity']['binary_sha256'] == previous, 'resumed owner binding differs')
         final = load(root, base + '/root/som-rs/runtime/default.json')
         require(final['identity']['binary_sha256'] == previous and final['pid'] == row['stopped_pid']
+                and final['identity']['pid'] == row['stopped_pid'] and final['identity']['port'] == port
                 and not final.get('rollback_evidence_errors'), 'final receipt mismatch')
         for check in ('check',) + (('check-restored',) if name == 'switch' else ()):
             result = load(root, base + '/' + check + '/result.json')

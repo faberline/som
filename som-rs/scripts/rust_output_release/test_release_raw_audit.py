@@ -295,6 +295,8 @@ class CompleteAuditTests(ExchangeTests):
         write(self.root / 'run/inputs/prerequisites.json', config_raw)
         self.report['prerequisites'] = {'sha256': audit.sha(config_raw),
                                         'path': self.original + 'run/inputs/prerequisites.json'}
+        self.report['prerequisites_receipt_sha256'] = audit.sha(json.dumps(
+            self.config, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode())
         checks = {name: {'passed': True} for name in ('owner', 'health', 'pointers', 'previous_compiler_inputs',
                                                        'canaries', 'owner_after')}
         for i, row in enumerate(self.report['scenarios']):
@@ -302,8 +304,9 @@ class CompleteAuditTests(ExchangeTests):
             original_scenario = self.original + 'run/rehearsal/' + name
             row['root'] = original_scenario + '/root'
             pid, owner_pid = 1000 + i, 2000 + i
-            identity = {'pid': owner_pid, 'binary_sha256': audit.PREVIOUS_SHA256}
-            seed_raw = json.dumps({'pid': pid, 'identity': {'binary_sha256': audit.PREVIOUS_SHA256}}).encode()
+            identity = {'pid': owner_pid, 'port': row['port'], 'binary_sha256': audit.PREVIOUS_SHA256}
+            seed_raw = json.dumps({'pid': pid, 'identity': {'pid': pid, 'port': row['port'],
+                                                          'binary_sha256': audit.PREVIOUS_SHA256}}).encode()
             write(base / 'stand-in/stale-default.json', seed_raw)
             stdout, stderr = f'{pid}\n'.encode(), b''
             write(base / 'stand-in/seed.stdout', stdout)
@@ -338,7 +341,8 @@ class CompleteAuditTests(ExchangeTests):
                 journal_path.write_text(json.dumps(journal))
             final_path = base / 'root/som-rs/runtime/default.json'
             final_health = {'status': 'ok', 'version': 'previous'}
-            write(final_path, json.dumps({'pid': 3000 + i, 'identity': {'binary_sha256': audit.PREVIOUS_SHA256},
+            write(final_path, json.dumps({'pid': 3000 + i, 'identity': {'pid': 3000 + i, 'port': row['port'],
+                                                                       'binary_sha256': audit.PREVIOUS_SHA256},
                                          'health': final_health}).encode())
             row['stopped_pid'], row['passed'], row['problems'], row['offline_seed'] = 3000 + i, True, [], seed
             names = ['resume', 'switch', 'check'] + (['restore', 'check-restored'] if name == 'switch' else [])
@@ -363,9 +367,13 @@ class CompleteAuditTests(ExchangeTests):
                 expected = audit.CANDIDATE_SHA256 if name == 'switch' and unit == 'check' else audit.PREVIOUS_SHA256
                 write(base / unit / 'result.json', json.dumps({'passed': True, 'expect_binary_sha256': expected,
                                                               'checks': checks}).encode())
-        write(self.root / 'run/rehearsal/rehearsal.json', json.dumps(self.report).encode())
+        report_raw = json.dumps(self.report).encode()
+        write(self.root / 'run/rehearsal/rehearsal.json', report_raw)
         observations = [{'port': p, 'exit_code': 1, 'stdout_empty': True, 'stderr_empty': True} for p in (8765, 18765)]
-        self.summary = {'passed': True, 'source_commit': self.head, 'candidate_binary_sha256': audit.CANDIDATE_SHA256,
+        self.summary = {'version': 'som.m6-release-rehearsal.v1', 'passed': True, 'status': 'passed',
+                        'source_commit': self.head, 'scenarios': {name: True for name in audit.SCENARIOS},
+                        'offline_resume': {'passed': True, 'scenarios': 5}, 'rehearsal_sha256': audit.sha(report_raw),
+                        'prerequisites_sha256': audit.sha(config_raw), 'candidate_binary_sha256': audit.CANDIDATE_SHA256,
                         'previous_binary_sha256': audit.PREVIOUS_SHA256, 'protected_ports_unused': [8765, 18765],
                         'all_scenario_owners_stopped': True, 'protected_port_check': {'before': observations, 'after': observations}}
         self.summary_path = self.root / 'summary.json'
@@ -389,7 +397,10 @@ class CompleteAuditTests(ExchangeTests):
 
     def test_missing_scenario_refused(self):
         self.report['scenarios'].pop()
-        (self.root / 'run/rehearsal/rehearsal.json').write_text(json.dumps(self.report))
+        path = self.root / 'run/rehearsal/rehearsal.json'
+        path.write_text(json.dumps(self.report))
+        self.summary['rehearsal_sha256'] = audit.digest(path)
+        self.summary_path.write_text(json.dumps(self.summary))
         with self.assertRaisesRegex(ValueError, 'scenario inventory mismatch'): self.raw()
 
     def test_false_owner_attestation_refused(self):
@@ -423,7 +434,10 @@ class CompleteAuditTests(ExchangeTests):
 
     def test_modified_injection_argv_refused(self):
         self.report['scenarios'][1]['calls'][0]['argv'][-1] = 'after_start'
-        (self.root / 'run/rehearsal/rehearsal.json').write_text(json.dumps(self.report))
+        path = self.root / 'run/rehearsal/rehearsal.json'
+        path.write_text(json.dumps(self.report))
+        self.summary['rehearsal_sha256'] = audit.digest(path)
+        self.summary_path.write_text(json.dumps(self.summary))
         with self.assertRaisesRegex(ValueError, 'call argv mismatch'): self.raw()
 
 
