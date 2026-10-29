@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import hashlib
 import base64
+import contextlib
+import io
 import json
 import os
 from pathlib import Path
@@ -140,6 +142,21 @@ class AuthenticatedRestoreTests(unittest.TestCase):
             for name, data in files.items(): z.writestr(name, data)
         with self.assertRaisesRegex(ValueError, 'authenticated evidence restoration failed'):
             audit.decrypt_original_zip(self.archive, self.root / 'restored', self.source)
+
+    def test_restore_errors_never_print_captured_stdout_or_stderr(self):
+        samples = (b'hosted evidence restore refused\n', b'FAKE_KEY_OR_KEY_ID_SHOULD_NOT_APPEAR')
+        for i, stderr in enumerate(samples):
+            with self.subTest(kind=i):
+                output = io.StringIO()
+                result = subprocess.CompletedProcess(['synthetic-node'], 1,
+                                                     stdout=b'FAKE_PRIVATE_OUTPUT', stderr=stderr)
+                with mock.patch.object(audit.subprocess, 'run', return_value=result), \
+                     contextlib.redirect_stdout(output):
+                    with self.assertRaisesRegex(ValueError, 'authenticated evidence restoration failed'):
+                        audit.decrypt_original_zip(self.archive, self.root / ('restored-' + str(i)), self.source)
+                self.assertNotIn('FAKE_PRIVATE_OUTPUT', output.getvalue())
+                self.assertNotIn('FAKE_KEY_OR_KEY_ID_SHOULD_NOT_APPEAR', output.getvalue())
+                self.assertIn('restorer_refusal' if i == 0 else 'node_or_runtime_error', output.getvalue())
 
 
 class ExchangeTests(unittest.TestCase):
