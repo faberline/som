@@ -37,7 +37,7 @@ SOURCE_SET = frozenset((CONTEXT_SOURCE, LIVE_SOURCE, NODE_SOURCE, RECORDER_SOURC
                         PROVISIONER, REQUIREMENTS, PRODUCER, POLICY, INSTALLER, *NATIVE_PATHS,
                         'som-rs/tests/react-output-v1/run_api_contract.py',
                         'som-rs/tests/react-output-v1/api_contract.mjs',
-                        'som-rs/behavior/typescript/host.py', 'som-rs/behavior/hosts.py',
+                        'som-rs/behavior/typescript/__init__.py', 'som-rs/behavior/typescript/host.py', 'som-rs/behavior/hosts.py',
                         'som-rs/som-targets/qa/check_rust_products.py',
                         'som-rs/scripts/react_output_acceptance/record_api_fetch.mjs',
                         'som-rs/scripts/react_output_acceptance/check_products.py',

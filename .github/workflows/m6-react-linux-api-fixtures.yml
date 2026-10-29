@@ -23,7 +23,7 @@ jobs:
             'som-rs/scripts/react_output_acceptance/record_api.py 29ba75902d10a864d0bf47843e50e207e90483092cb3b216964ae28081fc58f4' \
             'som-rs/scripts/react_output_acceptance/retained_evidence.py 7ec396988cc2e9704c228c05cb3a7cd7a51c87d0fc6ea26c1ffa1455209d75bc' \
             'som-rs/scripts/react_output_acceptance/linux_api_context.py 08e7d8d39bf09d7156f98366ac51d7658f8d93c01c7cea5b465799bf50e262dd' \
-            'som-rs/scripts/react_output_acceptance/linux_api_live_inputs.py 5a925a82318a5ef0504ea363ece10e939e0377f985fa8f2c4089bca80d138c2c' \
+            'som-rs/scripts/react_output_acceptance/linux_api_live_inputs.py 9f65b4b4da94872416c80e35c30d2cc13011a68a29320c06bac45cbe7eea01d1' \
             'som-rs/scripts/react_output_acceptance/linux_api_host.py ccdf3d0c06752c6e1d8fecba4e166ffc78676218d0763aebfe7a5b6d69ff7a38' \
             'som-rs/scripts/react_output_acceptance/linux_api_evidence.py 4eb09833614c8e32a4038fa1d8c6a7c7f96f50ac9ecef42c315147772a2b53b0' \
             'som-rs/scripts/react_output_acceptance/test_linux_api_context.py 9cf5868954628398f66d9ff34eb332a863d78bbe04dd4f18bbe70dcf0d423f49' \
