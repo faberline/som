@@ -7,9 +7,12 @@ from unittest import mock
 
 repo=Path.cwd().resolve()
 sys.path.insert(0,str(repo/'som-rs/scripts/react_output_acceptance'))
+saved_argv = sys.argv[:]
+sys.argv = [sys.argv[0], "--api-profile", "/fixture-only"]
+import check_products
+sys.argv = saved_argv
 import retained_evidence
 import run_acceptance
-import check_products
 import record_api
 
 class UnsealedRefusal(unittest.TestCase):
