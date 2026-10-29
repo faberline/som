@@ -81,6 +81,15 @@ class OwnedCandidateAuditTests(unittest.TestCase):
         self.assertEqual(result['owned_candidate_process_binding'], 'unverified')
         self.assertIn('process ownership', result['limitations'][-1])
 
+    def test_external_cli_cannot_claim_acceptance(self):
+        out = self.repo / 'external-audit.json'
+        report = {'totals': {'failed': 0, 'unrun': 0}, 'owned_candidate_process_binding': 'unverified'}
+        args = ['--repo', str(self.repo), '--run', str(self.run), '--out', str(out),
+                '--owned-candidate-root', str(self.candidate)]
+        with mock.patch.object(audit130, 'run_audit', return_value=report):
+            self.assertEqual(audit130.main(args), 1)
+        self.assertEqual(json.loads(out.read_bytes()), report)
+
 
 if __name__ == '__main__':
     unittest.main()
