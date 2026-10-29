@@ -61,7 +61,21 @@ class WaitEvidenceTests(unittest.TestCase):
             starts = [e for e in observer.events if e['kind'] == 'child-start']
             waits = [e for e in observer.events if e['kind'] == 'child-wait']
             self.assertEqual(len(starts), 1)
-            self.assertTrue(any(e['identity'] == starts[0]['identity'] and e['exit_code'] == 7 for e in waits))
+            self.assertTrue(any(e['identity'] == starts[0]['identity'] and e['exit_code'] == 7 and e['state'] == 'completed' and e['waited_pid'] == proc.pid and os.waitstatus_to_exitcode(e['raw_status']) == 7 for e in waits))
+
+    def test_parity_cached_wait_is_unverified(self):
+        import time
+        with tempfile.TemporaryDirectory() as temp:
+            observer=parity.TrackingRecorder(Path(temp).resolve())
+            proc=observer.popen([sys.executable,'-c','raise SystemExit(7)'])
+            for _ in range(100):
+                if proc.poll() is not None:break
+                time.sleep(.05)
+            else:self.fail('child did not exit')
+            self.assertEqual(proc.wait(timeout=10),7)
+            wait=[e for e in observer.events if e['kind']=='child-wait'][-1]
+            self.assertEqual(wait['state'],'unverified')
+            self.assertNotIn('waited_pid',wait)
 
     def test_actual_child_waits_and_keeps_failure_logs(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -1073,7 +1087,7 @@ class ParityIndependentChecks(unittest.TestCase):
                   'table':command(ps,0,b'1 0 1 init\n'),'listener':command(listener,1,b'')}
             events=[{'kind':'child-start','identity':7,'pid':pid,'cwd':'/tmp/py_example',
                      'argv':['python','-m','uvicorn','app','--host','127.0.0.1','--port','19021']},start,
-                    {'kind':'child-wait','identity':7,'pid':pid,'state':'completed','exit_code':-15},stop]
+                    {'kind':'child-wait','identity':7,'pid':pid,'state':'completed','exit_code':-15,'waited_pid':pid,'raw_status':15},stop]
             (life/'receipt.json').write_text(json.dumps({'version':'som.m6-mac-parity-capture.v1','recording_errors':[],'events':events}))
             owner={'id':1,'case':'example','target':'python','base':'http://127.0.0.1:19021','pid':pid,'start_event':1,'stop_event':3}
             manifest={'owners':[owner]};groups={('example','python'):[{'owner':1,'base':owner['base']}]}
@@ -1086,7 +1100,9 @@ class ParityIndependentChecks(unittest.TestCase):
             (life/'receipt.json').write_text(json.dumps({'version':'som.m6-mac-parity-capture.v1','recording_errors':[],'events':events}))
             with self.assertRaises(ValueError):audit.audit_product_owners(http,manifest,groups)
             table.write_bytes(original);stop['table']['stdout']['sha256']=hashlib.sha256(original).hexdigest()
-            events[2]['state']='unverified';(life/'receipt.json').write_text(json.dumps({'version':'som.m6-mac-parity-capture.v1','recording_errors':[],'events':events}))
+            events[2]['raw_status']=0;(life/'receipt.json').write_text(json.dumps({'version':'som.m6-mac-parity-capture.v1','recording_errors':[],'events':events}))
+            with self.assertRaises(ValueError):audit.audit_product_owners(http,manifest,groups)
+            events[2]['raw_status']=15;events[2]['state']='unverified';(life/'receipt.json').write_text(json.dumps({'version':'som.m6-mac-parity-capture.v1','recording_errors':[],'events':events}))
             with self.assertRaises(ValueError):audit.audit_product_owners(http,manifest,groups)
 
     def test_macos_product_process_actual_listener_and_wait(self):

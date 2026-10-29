@@ -10,6 +10,7 @@ import argparse
 from collections import defaultdict
 import hashlib
 import json
+import os
 import re
 from pathlib import Path
 import sys
@@ -183,8 +184,9 @@ def audit_product_owners(root, manifest, groups):
         code,cwd_raw=a.command_raw(root.parent,start['cwd'],cwd_argv)
         need(code==0 and ('n'+cwd) in cwd_raw.decode().splitlines(), 'product process cwd differs')
         need(any(e.get('kind')=='child-wait' and e.get('identity')==child.get('identity') and e.get('pid')==pid
-                 and e.get('state')=='completed' and type(e.get('exit_code')) is int for e in events[before:after]),
-             'product child wait missing')
+                 and e.get('state')=='completed' and e.get('waited_pid')==pid and type(e.get('raw_status')) is int
+                 and type(e.get('exit_code')) is int and os.waitstatus_to_exitcode(e['raw_status'])==e['exit_code']
+                 for e in events[before:after]), 'product direct child wait missing')
         listener=['/usr/sbin/lsof','-nP',f'-iTCP:{port}','-sTCP:LISTEN','-t']
         code,raw=a.command_raw(root.parent,start['listener'],listener)
         need(code==0 and set(raw.decode().split())=={str(pid)}, 'product listening PID differs')

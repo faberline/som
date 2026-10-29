@@ -37,14 +37,30 @@ class TrackingRecorder(Recorder):
                 'argv':[os.fspath(x) for x in argv] if isinstance(argv,(list,tuple)) else str(argv),
                 'cwd':os.fspath(kw.get('cwd') or Path.cwd())})
         original=proc.wait
+        local=threading.local()
+        # Popen._try_wait converts ECHILD to a fabricated zero status. Keep its
+        # behavior for the caller, but retain only an actual waitpid result as
+        # evidence. A cached returncode produces no such observation.
+        def observed_try_wait(flags):
+            try:waited,status=os.waitpid(proc.pid,flags)
+            except ChildProcessError:return proc.pid,0
+            if waited and getattr(local,'active',False):
+                local.reaped=(waited,status)
+            return waited,status
+        proc._try_wait=observed_try_wait
         def observed_wait(*args,**kwargs):
+            local.active=True;local.reaped=None
             try:code=original(*args,**kwargs)
             except BaseException as exc:
                 with self.lock:self.events.append({'kind':'child-wait','identity':identity,'pid':proc.pid,
                                                    'state':'unverified','error_type':type(exc).__name__})
                 raise
-            with self.lock:self.events.append({'kind':'child-wait','identity':identity,'pid':proc.pid,
-                                               'state':'completed','exit_code':code})
+            finally:local.active=False
+            reaped=local.reaped
+            event={'kind':'child-wait','identity':identity,'pid':proc.pid,'state':'unverified','exit_code':code}
+            if reaped is not None and reaped[0]==proc.pid and os.waitstatus_to_exitcode(reaped[1])==code:
+                event.update(state='completed',waited_pid=reaped[0],raw_status=reaped[1])
+            with self.lock:self.events.append(event)
             return code
         proc.wait=observed_wait
         return proc
