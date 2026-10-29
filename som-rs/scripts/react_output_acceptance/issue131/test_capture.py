@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import tempfile
+import time
 import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -304,7 +305,8 @@ class CaptureTests(unittest.TestCase):
             elif '-Fp' in command:
                 data = b'p123\n'
             else:
-                data = ('p123\nn' + str(binary) + '\n').encode()
+                info = binary.stat()
+                data = (f'p123\nftxt\nD{hex(info.st_dev)}\ni{info.st_ino}\nn{binary}\n').encode()
             return SimpleNamespace(returncode=0, stdout=data, stderr=b'')
         with patch.object(capture.subprocess, 'run', side_effect=response):
             identity = capture.process_evidence(proc, argv, binary, out, 'start')
@@ -317,6 +319,32 @@ class CaptureTests(unittest.TestCase):
         with patch.object(capture.subprocess, 'run', side_effect=wrong_listener):
             with self.assertRaisesRegex(ValueError, 'listener'):
                 capture.process_evidence(proc, argv, binary, out, 'wrong')
+
+    def test_real_macos_macho_mapped_inode_and_listener(self):
+        import subprocess
+        binary = Path('/usr/bin/nc').resolve()
+        description = subprocess.check_output(['/usr/bin/file', str(binary)]).decode()
+        self.assertIn('Mach-O', description)
+        self.assertTrue(capture.free_port(), 'fixture QA port must be unused')
+        out = Path(self.temp.name) / 'real-macho'; out.mkdir()
+        argv = [str(binary), '-l', '127.0.0.1', str(capture.PORT)]
+        proc = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL, start_new_session=True)
+        try:
+            deadline = time.monotonic() + 15
+            while capture.free_port():
+                self.assertIsNone(proc.poll(), 'Mach-O fixture exited')
+                self.assertLess(time.monotonic(), deadline, 'fixture listener did not start')
+                time.sleep(0.1)
+            identity = capture.process_evidence(proc, argv, binary, out, 'real')
+            self.assertEqual(identity['binary_inode'], binary.stat().st_ino)
+            with self.assertRaisesRegex(ValueError, 'mapped executable inode'):
+                capture.process_evidence(proc, argv, Path('/bin/sleep').resolve(), out, 'negative')
+        finally:
+            if proc.poll() is None:
+                proc.terminate()
+            proc.wait(timeout=10)
+        self.assertTrue(capture.free_port(), 'fixture listener must stop')
 
 
 if __name__ == '__main__':
