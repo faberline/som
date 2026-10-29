@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from render_rules import render_files  # noqa: E402
 from refusal_rules import request_for  # noqa: E402
 from api_raw import validate as validate_api, ApiRawError  # noqa: E402
+from linux_input_raw import audit as audit_linux_inputs, LinuxInputError  # noqa: E402
 from baseline_raw import validate_python, validate_rust, validate_controls, verify_location, BaselineRawError  # noqa: E402
 
 
@@ -325,7 +326,9 @@ class Schema:
 
 
 class Audit:
-    def __init__(self, repo: Path, run: Path):
+    def __init__(self, repo: Path, run: Path, api_closure_tar: Path | None = None):
+        self.api_closure_tar = api_closure_tar
+        self.api_qa_profile: dict | None = None
         self.reader = Reader(repo)
         self.repo = self.reader.repo
         self.run = self.reader.path(run)
@@ -671,7 +674,7 @@ class Audit:
             identity_path = self.run / "identity.json"
             if identity_path.is_file():
                 identity = object_value(self.reader.json(identity_path), "run identity")
-                need("qa_profile" not in identity and "qa_profile_evidence" not in identity,
+                need("qa_profile" not in identity and "qa_profile_evidence" not in identity and "api_qa_profile" not in identity,
                      "unbound QA profile appears in run identity")
             products_path = self.run / "products/report.json"
             if products_path.is_file():
@@ -686,7 +689,8 @@ class Audit:
                     step_receipt = object_value(self.reader.json(receipt_path), "step receipt")
                     argv = list_value(step_receipt.get("argv"), "step argv")
                     need("--qa-profile" not in argv, "unbound QA profile appears in step command")
-            need(not (self.run / "qa-profile-evidence").exists(), "unbound QA profile evidence exists")
+            need(not (self.run / "qa-profile-evidence").exists() and "api_qa_profile" not in run_doc
+                 and not (self.run / "api-qa-evidence").exists(), "unbound QA profile evidence exists")
             return "passed", "legacy run has no Linux QA profile"
         self.qa_profile = None
         run_doc = object_value(strict_qa_json(self.reader.bytes(self.run / "run.json")), "run record")
@@ -853,6 +857,16 @@ class Audit:
         need(product_report.get("vendored_cache") == context["cache"], "products cache origin differs")
         self.qa_profile = context
         return "passed", "sealed profile, source bindings, retained tools and cache, identity and product argument match"
+
+    def api_qa_context(self) -> tuple[str, str]:
+        """Independent Linux raw input audit precedes each API case audit."""
+        self.api_qa_profile = None
+        try:
+            self.api_qa_profile = audit_linux_inputs(self.reader, self.run, self.latest_receipt,
+                                                      self.qa_profile, self.api_closure_tar)
+        except LinuxInputError as exc:
+            raise EvidenceError(str(exc), exc.status) from exc
+        return "passed", "retained source, input, command and tree evidence independently recomputed"
 
     def diagnostic(self, row: dict, expected: dict, status: int, step: str, body: str | None = None) -> None:
         _, doc = self.response(step, row)
@@ -1527,9 +1541,11 @@ class Audit:
             stop_verified = process.get("stop_cwd_verified")
             need(stop_verified is True or (stop_verified is None and true_integer(process.get("exit_code"))), "active process stop ownership is unverified")
             self.reader.path(process["expected_cwd"])
+        if self.qa_requested:
+            need(self.api_qa_profile is not None, "independent Linux API input audit not established", "unrun")
         try:
             validate_api(self.reader, work / "api-raw", work / "api/report.json", prompt, contract,
-                         self.reader.path(self.manifest[cid]["product"]))
+                         self.reader.path(self.manifest[cid]["product"]), linux=self.api_qa_profile)
         except ApiRawError as error:
             raise EvidenceError(str(error), error.status) from error
         return "passed", "all applicable API exchanges and OS process ownership/cleanup recomputed from raw evidence"
@@ -1868,6 +1884,8 @@ class Audit:
         if self.contracts and "acceptance-plan.json" in self.contracts:
             self.row("contract/sealed", self.sealed_contract)
             self.row("integrity/linux-qa-profile", self.qa_profile_context)
+            if self.qa_requested:
+                self.row("integrity/linux-api-inputs", self.api_qa_context)
             for name, action in (("identity", self.identities), ("receipts", self.receipts), ("target", self.target_cases), ("python-pairs", self.python_pairs), ("scope", self.scope_cases), ("bundles", self.bundles), ("products", self.products)):
                 self.row(f"audit_stage/{name}", action)
             self.row("audit_stage/plan", self.plan_rows)
@@ -1881,8 +1899,8 @@ def required_command(rows: list[dict], name: str) -> str:
     return next(row["command"] for row in rows if row["step"] == name)
 
 
-def run_audit(repo: Path, run: Path) -> dict:
-    return Audit(repo, run).run_audit()
+def run_audit(repo: Path, run: Path, api_closure_tar: Path | None = None) -> dict:
+    return Audit(repo, run, api_closure_tar).run_audit()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1890,6 +1908,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--run", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[4])
+    parser.add_argument("--api-closure-tar", type=Path, default=None)
     args = parser.parse_args(argv)
     try:
         repo = args.repo.resolve(strict=True)
@@ -1901,7 +1920,7 @@ def main(argv: list[str] | None = None) -> int:
             need(not path.is_symlink(), "symlink output is refused")
         need(not out.exists(), "--out already exists")
         need(out != run and not out.is_relative_to(run), "audit output must be outside the immutable run directory")
-        report = run_audit(repo, run)
+        report = run_audit(repo, run, args.api_closure_tar)
         out.parent.mkdir(parents=True, exist_ok=True)
         with out.open("x", encoding="utf-8") as stream:
             json.dump(report, stream, indent=2, ensure_ascii=False, allow_nan=False)

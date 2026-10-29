@@ -1,0 +1,34 @@
+name: Test React independent Linux API audit integration
+on:
+  push:
+    branches:
+      - codex/m6-react-linux-audit-integration-20261029
+permissions:
+  contents: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bind scratch auditor source
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          for entry in \
+            'som-rs/scripts/react_output_acceptance/audit/api_raw.py 25ff69a6c37623d6ed179d63f39eb04ee2c62e4c7697d0677e7d2fac1ad382f5' \
+            'som-rs/scripts/react_output_acceptance/audit/audit130.py a0e257269e8c5ecb25b9b10e644f77c95928903c991036c91bde15aad1d306ce' \
+            'som-rs/scripts/react_output_acceptance/audit/linux_install_map.py f73ee9e9e36f0471ab67bab808ee86c71cf4fbe45641eaa94cdff647c6e60c28' \
+            'som-rs/scripts/react_output_acceptance/audit/linux_input_raw.py 5253fb029bd5268744e487c9f31756cec1eeee36d356ab4be9025a87ba0449fa' \
+            'som-rs/scripts/react_output_acceptance/audit/test_linux_input_raw.py 6f000a4c9e40a786f1620d932899369dce4b7b9bd5f5b31d676558bd2ffabdd8'; do
+            set -- $entry
+            test "$(sha256sum "$1" | cut -d ' ' -f 1)" = "$2"
+            test "$(git show "$GITHUB_SHA:$1" | sha256sum | cut -d ' ' -f 1)" = "$2"
+          done
+      - name: Test original and Linux auditor fixtures
+        working-directory: som-rs/scripts/react_output_acceptance/audit
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest -v test_api_raw test_linux_api_raw test_linux_install_map test_qa_profile_audit test_linux_input_raw
