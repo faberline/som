@@ -1,0 +1,217 @@
+name: M6 RS22 baseline recapture (not acceptance)
+
+on:
+  push:
+    branches:
+      - 'codex/m6-rs22-before-*'
+
+permissions:
+  contents: read
+  actions: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  fixture-tests:
+    name: RS22 capture synthetic fixtures only
+    runs-on: macos-26
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Run isolated synthetic fixtures
+        working-directory: .github/m6-rs22-capture
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python3 -m unittest -v test_capture
+
+  recapture:
+    name: Fresh RS22 baseline evidence (not acceptance)
+    needs: fixture-tests
+    if: github.repository == 'faberline/som' && endsWith(github.ref, '-capture')
+    runs-on: macos-26
+    timeout-minutes: 90
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Bind source and frozen RS inventory
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git merge-base --is-ancestor f59e28d910ff4adb16e3becfdc82bd2978ca84fa "$GITHUB_SHA"
+          python3 - <<'PY'
+          import hashlib, pathlib
+          p = pathlib.Path('som-rs/contracts/rust-output-v1/negative-cases.json')
+          expected = '9bb36d689ad4be26e608ac8be779a1a8bb8db043d37788b5819c9fe1bf402e22'
+          if hashlib.sha256(p.read_bytes()).hexdigest() != expected:
+              raise SystemExit('frozen RS inventory differs')
+          PY
+      - name: Download the pinned public typed-input artifact before QA
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: "40805208879"
+          artifact-ids: "12867533444"
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/rs22-public-input
+      - name: Verify the typed-input manifest before QA
+        run: |
+          python3 - <<'PY_INNER'
+          import hashlib, pathlib
+          path = pathlib.Path(r"${{ runner.temp }}") / 'rs22-public-input/_temp/som-rust-complete-inputs/manifest.json'
+          if path.is_symlink() or not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != '428e948240ca94c5be26e390fe9d058e6570087ec4cac700ab949c38b0bc2486':
+              raise SystemExit('typed input manifest differs')
+          PY_INNER
+      - name: Verify protected listeners are absent before QA
+        run: |
+          guard_failed=0
+          for port in 8765 18765; do
+            set +e
+            /usr/sbin/lsof -nP -a -iTCP:"$port" -sTCP:LISTEN -Fp > "$RUNNER_TEMP/rs22-before-$port.out" 2> "$RUNNER_TEMP/rs22-before-$port.err"
+            rc=$?
+            set -e
+            printf '%s\n' "$rc" > "$RUNNER_TEMP/rs22-before-$port.rc"
+            if [ "$rc" -ne 1 ] || [ -s "$RUNNER_TEMP/rs22-before-$port.out" ] || [ -s "$RUNNER_TEMP/rs22-before-$port.err" ]; then
+              echo "Protected listener check failed for port $port" >&2
+              guard_failed=1
+            fi
+          done
+          if [ "$guard_failed" -ne 0 ]; then exit 1; fi
+      - name: Fetch pinned public tool supplement
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, subprocess
+          cfg = json.loads(pathlib.Path('som-rs/scripts/react_output_acceptance/macos_bottles.json').read_bytes())
+          entry = cfg['frozen_file_supplement']
+          commit = '806ab0fae7a5b8433fab978f35730c28fdc91abc'
+          if entry['repository'] != 'faberline/som' or entry['commit'] != commit:
+              raise SystemExit('tool supplement pin differs')
+          subprocess.run(['git', 'fetch', '--no-tags', '--depth=1', 'origin', commit], check=True)
+          PY
+      - name: Install the frozen macOS tool closure
+        run: python3 som-rs/scripts/react_output_acceptance/provision_macos.py --out "$RUNNER_TEMP/m6-provision"
+      - name: Prepare the pinned product Python environment
+        run: |
+          /opt/homebrew/opt/python@3.12/bin/python3.12 -m venv som-rs/runtime/acceptance-m3-venv
+          som-rs/runtime/acceptance-m3-venv/bin/python -m pip install -r som-rs/scripts/react_output_acceptance/hosted_python_requirements.txt
+          som-rs/runtime/acceptance-m3-venv/bin/python -m pip check
+      - name: Fetch pinned approved encrypted inputs before QA
+        run: |
+          som-rs/runtime/acceptance-m3-venv/bin/python - <<'PY'
+          import json, pathlib, subprocess
+          cfg = json.loads(pathlib.Path('som-rs/scripts/react_output_acceptance/hosted_inputs.json').read_bytes())
+          commit = '55eb7f5c3b21d4f3b57eb721ab60c6aa97e10db3'
+          index = '78375feb14ed286ac5df4c52f13d5d1ae301b2057d5e3894edf0f36c2705c498'
+          if cfg['commit'] != commit or cfg['index_sha256'] != index:
+              raise SystemExit('approved input pin differs')
+          subprocess.run(['git', 'fetch', '--no-tags', '--depth=1', 'origin', commit], check=True)
+          PY
+      - name: Restore approved inputs
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py --repo-root "$GITHUB_WORKSPACE" --config "$GITHUB_WORKSPACE/som-rs/scripts/react_output_acceptance/hosted_inputs.json" --out "$RUNNER_TEMP/m6-inputs" --node /opt/homebrew/Cellar/node/26.5.0/bin/node
+          if [ -e .local ] || [ -L .local ]; then
+            echo 'unexpected .local' >&2
+            exit 1
+          fi
+          mv "$RUNNER_TEMP/m6-inputs/.local" .local
+          chmod -R a-w .local/react-output/npm-cache-001 .local/typescript-output/npm-cache-001
+      - name: Bind restored baseline identities
+        run: |
+          som-rs/runtime/acceptance-m3-venv/bin/python - <<'PY'
+          import hashlib, pathlib
+          root = pathlib.Path('.local/m6-hosted/baseline')
+          pins = {
+              'som': '2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c',
+              'build.json': '0918984e7c9c00c5299d62d38209658385b960f996d84bf0514b52c04c528d73',
+              'runtime.json': '7c4ba46a498bb0f601bd67ff77f99dfe75e4ee1669d6af3c53f3b338a550b970',
+              'source.json': 'd40578d8845fff8bfeff627924aa501e56f3973eddb09c2d871e25adec2bbbe5',
+              'assets/manifest.json': 'c406d03c0edd98ab703a616c1c2be5d81f001966ac9c84280edce5765f91a138',
+          }
+          for name, expected in pins.items():
+              path = root / name
+              if path.is_symlink() or not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+                  raise SystemExit('restored baseline identity differs')
+          PY
+      - name: Capture fresh baseline requests and replies
+        id: capture
+        run: |
+          som-rs/runtime/acceptance-m3-venv/bin/python .github/m6-rs22-capture/capture.py --root "$GITHUB_WORKSPACE" --inputs "$RUNNER_TEMP/rs22-public-input/_temp/som-rust-complete-inputs" --matrix "$GITHUB_WORKSPACE/.github/m6-rs22-capture/input-matrix.json" --out "$GITHUB_WORKSPACE/.local/m6-rs22/capture" > "$RUNNER_TEMP/rs22-capture.stdout" 2> "$RUNNER_TEMP/rs22-capture.stderr"
+      - name: Verify protected listeners are absent after QA
+        if: always()
+        run: |
+          guard_failed=0
+          for port in 8765 18765; do
+            set +e
+            /usr/sbin/lsof -nP -a -iTCP:"$port" -sTCP:LISTEN -Fp > "$RUNNER_TEMP/rs22-after-$port.out" 2> "$RUNNER_TEMP/rs22-after-$port.err"
+            rc=$?
+            set -e
+            printf '%s\n' "$rc" > "$RUNNER_TEMP/rs22-after-$port.rc"
+            if [ "$rc" -ne 1 ] || [ -s "$RUNNER_TEMP/rs22-after-$port.out" ] || [ -s "$RUNNER_TEMP/rs22-after-$port.err" ]; then
+              echo "Protected listener check failed for port $port" >&2
+              guard_failed=1
+            fi
+          done
+          if [ "$guard_failed" -ne 0 ]; then exit 1; fi
+      - name: Seal raw and failure evidence
+        if: always() && (steps.capture.outcome == 'success' || steps.capture.outcome == 'failure')
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/.local/m6-rs22/capture"
+          cp "$RUNNER_TEMP/rs22-capture.stdout" "$GITHUB_WORKSPACE/.local/m6-rs22/capture/capture.stdout"
+          cp "$RUNNER_TEMP/rs22-capture.stderr" "$GITHUB_WORKSPACE/.local/m6-rs22/capture/capture.stderr"
+          mkdir -p "$GITHUB_WORKSPACE/.local/m6-rs22/capture/run/guards"
+          for phase in before after; do
+            for port in 8765 18765; do
+              for suffix in rc out err; do
+                source="$RUNNER_TEMP/rs22-$phase-$port.$suffix"
+                if [ ! -f "$source" ] || [ -L "$source" ]; then
+                  echo "Required protected-listener evidence missing" >&2
+                  exit 1
+                fi
+                cp "$source" "$GITHUB_WORKSPACE/.local/m6-rs22/capture/run/guards/$phase-$port.$suffix"
+              done
+            done
+          done
+          /opt/homebrew/Cellar/node/26.5.0/bin/node som-rs/scripts/react_output_acceptance/seal_hosted_evidence.mjs --root "$GITHUB_WORKSPACE/.local/m6-rs22/capture" --out "$RUNNER_TEMP/rs22-sealed"
+      - name: Save encrypted raw evidence only
+        if: always() && (steps.capture.outcome == 'success' || steps.capture.outcome == 'failure')
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: m6-rs22-baseline-sealed
+          path: ${{ runner.temp }}/rs22-sealed/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Write non-sensitive run status
+        if: always()
+        env:
+          CAPTURE_OUTCOME: ${{ steps.capture.outcome }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          data = {'version': 'som.rs22-github-status.v1', 'capture_outcome': os.environ.get('CAPTURE_OUTCOME', ''),
+                  'source_commit': os.environ['GITHUB_SHA'], 'run_id': os.environ['GITHUB_RUN_ID'],
+                  'expected_baseline_binary_sha256': '2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c',
+                  'evidence_role': 'fresh baseline recapture; not historical wire recovery',
+                  'product_acceptance': False}
+          pathlib.Path(os.environ['RUNNER_TEMP'], 'rs22-safe-status.json').write_text(json.dumps(data, indent=2) + '\n')
+          PY
+      - name: Save non-sensitive status
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: m6-rs22-baseline-status
+          path: ${{ runner.temp }}/rs22-safe-status.json
+          if-no-files-found: error
+          retention-days: 30
