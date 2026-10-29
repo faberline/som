@@ -393,7 +393,8 @@ def audit_python_authority(lifecycle,original_repo,expected_version='3.12.11',pr
         data=a.read(lifecycle/item['file']);need(a.sha(data)==item.get('sha256'),'Python authority stream hash differs')
         if stream=='stderr':need(not data,'Python authority stderr differs')
         else:info=a.obj(data)
-    need(info.get('pid')==row['pid'] and info.get('executable')==executable
+    need(info.get('pid')==row['pid'] and type(info.get('executable')) is str and Path(info['executable']).is_absolute()
+         and (provision_probe or info['executable']==executable)
          and info.get('prefix')==(info.get('base_prefix') if provision_probe else str(Path(executable).parent.parent))
          and info.get('version')==expected_version and type(info.get('base_executable')) is str and Path(info['base_executable']).is_absolute()
          and type(info.get('base_prefix')) is str and Path(info['base_prefix']).is_absolute()
@@ -435,6 +436,9 @@ def audit_python_authority(lifecycle,original_repo,expected_version='3.12.11',pr
         need(code==0 and len(fields)==4 and all(x.isdigit() for x in fields),'Python provisioned binary stat missing')
         binary_stats.append(fields)
     need(binary_stats[0]==binary_stats[1],'Python base executable is not provisioned interpreter')
+    if provision_probe:
+        code,raw=a.command_raw(lifecycle,row['reported_executable_stat'],['/usr/bin/stat','-L','-f','%d %i %z %Lp',info['executable']])
+        need(code==0 and raw.decode().split()==binary_stats[0],'Python reported executable is not provisioned interpreter')
     provision_bytes=a.read(lifecycle/'python-provision-binary.raw');provision_stat=row['provision_binary_stat_value']
     need(a.sha(provision_bytes)==row.get('provision_binary_sha256') and len(provision_bytes)==provision_stat.get('bytes')
          and [int(binary_stats[0][0]),int(binary_stats[0][1]),int(binary_stats[0][2]),int(binary_stats[0][3],8)]==[provision_stat[k] for k in ('device','inode','bytes','mode')],'Python provisioned binary bytes differ')

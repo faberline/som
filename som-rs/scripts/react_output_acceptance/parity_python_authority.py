@@ -55,7 +55,8 @@ def capture(observer,root,python,probe,cwd,provision_report,provision_binary=Pat
             ('base_real_stat',['/usr/bin/stat','-L','-f','%d %i',info['base_prefix_real']]),
             ('provision_framework_stat',['/usr/bin/stat','-L','-f','%d %i',row['provision_framework']]),
             ('provision_binary_stat',['/usr/bin/stat','-L','-f','%d %i %z %Lp',str(provision_binary)]),
-            ('base_executable_stat',['/usr/bin/stat','-L','-f','%d %i %z %Lp',info['base_executable']])):
+            ('base_executable_stat',['/usr/bin/stat','-L','-f','%d %i %z %Lp',info['base_executable']]),
+            ('reported_executable_stat',['/usr/bin/stat','-L','-f','%d %i %z %Lp',info['executable']])):
             row[name]=observer.command(command)
         proc.stdin.write(b'x');proc.stdin.flush();tail,stderr=proc.communicate(timeout=30)
         row['stdout']=observer.retain('python-authority.stdout',line+tail)
