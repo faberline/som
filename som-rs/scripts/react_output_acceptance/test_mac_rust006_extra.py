@@ -375,6 +375,56 @@ class UnorderedParityWireTests(unittest.TestCase):
 
 
 class OwnedCandidateTests(unittest.TestCase):
+    def test_timeout_retry_signal_error_still_attempts_bounded_wait(self):
+        import errno,subprocess
+        from unittest import mock
+        import owned_candidate
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();candidate=root/'candidate';candidate.mkdir()
+            owner=owned_candidate.CandidateOwner(root,candidate,18919);proc=mock.Mock();proc.pid=7123;proc.returncode=None
+            proc.wait.side_effect=[subprocess.TimeoutExpired('fixture',1),-9];owner.process=proc
+            line=('7123 '+str(os.getpid())+' 7123 S '+' '.join(owner.argv)+'\n').encode()
+            with mock.patch.object(owned_candidate.os,'getpgid',return_value=7123), \
+                 mock.patch.object(owned_candidate.subprocess,'run',return_value=subprocess.CompletedProcess([],0,line,b'')), \
+                 mock.patch.object(owned_candidate.os,'killpg',side_effect=[None,None,PermissionError(errno.EPERM,'denied')]):
+                with self.assertRaises(subprocess.TimeoutExpired):owner.wait_after_signal(timeout=1,grace=0)
+            self.assertEqual(proc.wait.call_count,2)
+            retry=next(e for e in owner.events if e['kind']=='candidate-cleanup-signal')
+            self.assertEqual((retry['error_type'],retry['errno']),('PermissionError',errno.EPERM))
+            self.assertTrue(any(e['kind']=='candidate-cleanup-wait' and e['state']=='completed' for e in owner.events))
+
+    def test_eperm_is_failure_but_direct_wait_is_recorded(self):
+        import errno,subprocess
+        from unittest import mock
+        import owned_candidate
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();candidate=root/'candidate';candidate.mkdir()
+            owner=owned_candidate.CandidateOwner(root,candidate,18919);proc=mock.Mock();proc.pid=7123;proc.returncode=None;proc.wait.return_value=-9;owner.process=proc
+            line=('7123 '+str(os.getpid())+' 7123 S '+' '.join(owner.argv)+'\n').encode()
+            with mock.patch.object(owned_candidate.os,'getpgid',return_value=7123), \
+                 mock.patch.object(owned_candidate.subprocess,'run',return_value=subprocess.CompletedProcess([],0,line,b'')), \
+                 mock.patch.object(owned_candidate.os,'killpg',side_effect=[PermissionError(errno.EPERM,'denied'),None]):
+                with self.assertRaises(owned_candidate.OwnershipError):owner.wait_after_signal(timeout=1,grace=0)
+            error=next(e for e in owner.events if e.get('error_type')=='PermissionError')
+            self.assertEqual(error['errno'],errno.EPERM)
+            self.assertTrue(any(e['kind']=='candidate-wait' and e['state']=='completed' for e in owner.events))
+            proc.wait.assert_called_once()
+
+    def test_zombie_only_group_skips_signals_and_waits(self):
+        import subprocess
+        from unittest import mock
+        import owned_candidate
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();candidate=root/'candidate';candidate.mkdir()
+            owner=owned_candidate.CandidateOwner(root,candidate,18919);proc=mock.Mock();proc.pid=7123;proc.returncode=None;proc.wait.return_value=0;owner.process=proc
+            line=('7123 '+str(os.getpid())+' 7123 Z <defunct>\n').encode()
+            with mock.patch.object(owned_candidate.subprocess,'run',return_value=subprocess.CompletedProcess([],0,line,b'')), \
+                 mock.patch.object(owned_candidate.os,'killpg') as kill:
+                self.assertEqual(owner.wait_after_signal(timeout=1,grace=0),0)
+            kill.assert_not_called()
+            self.assertEqual([e['group'] for e in owner.events if e['kind']=='candidate-signal'],['no-live-members','no-live-members'])
+            proc.wait.assert_called_once()
+
     def test_identity_live_to_zombie_race_rechecks_before_signal(self):
         import subprocess
         from unittest import mock
@@ -385,12 +435,14 @@ class OwnedCandidateTests(unittest.TestCase):
             proc=mock.Mock();proc.pid=7123;proc.returncode=None;proc.wait.return_value=0;owner.process=proc
             live=('7123 '+str(os.getpid())+' 7123 S '+' '.join(owner.argv)+'\n').encode()
             zombie=('7123 '+str(os.getpid())+' 7123 Z <defunct>\n').encode()
-            replies=[subprocess.CompletedProcess([],0,live,b''),subprocess.CompletedProcess([],0,zombie,b'')]
+            group=(zombie.decode()+'7124 1 7123 S child\n').encode()
+            replies=[subprocess.CompletedProcess([],0,live,b''),subprocess.CompletedProcess([],0,zombie,b''),
+                     subprocess.CompletedProcess([],0,group,b''),subprocess.CompletedProcess([],0,group,b'')]
             with mock.patch.object(owned_candidate.os,'getpgid',side_effect=ProcessLookupError), \
                  mock.patch.object(owned_candidate.subprocess,'run',side_effect=replies) as ps, \
                  mock.patch.object(owned_candidate.os,'killpg') as kill:
                 self.assertEqual(owner.wait_after_signal(timeout=1,grace=0),0)
-            self.assertEqual(ps.call_count,2);self.assertEqual(kill.call_count,2)
+            self.assertEqual(ps.call_count,4);self.assertEqual(kill.call_count,2)
             identity=next(e for e in owner.events if e['kind']=='candidate-signal-identity')
             self.assertEqual(identity['state'],'Z')
             self.assertIn(b'<defunct>',(root/'candidate-signal-identity.stdout').read_bytes())
@@ -439,7 +491,15 @@ class OwnedCandidateTests(unittest.TestCase):
             (out/'candidate-signal-identity.stdout').write_bytes(identity);(out/'candidate-signal-identity.stderr').write_bytes(b'')
             events.append({'kind':'candidate-signal-identity','pid':pid,'parent_pid':parent,'pgid':pid,'argv':ident_argv,'exit_code':0,'state':'S',
                            'stdout_sha256':hashlib.sha256(identity).hexdigest(),'stderr_sha256':hashlib.sha256(b'').hexdigest()})
-            events.extend([{'kind':'candidate-signal','pid':pid,'signal':'TERM'}, {'kind':'candidate-signal','pid':pid,'signal':'KILL'}])
+            group_argv=['/bin/ps','-axo','pid=,ppid=,pgid=,stat=,command=']
+            def group_observation(stage,data,count):
+                (out/('candidate-group-'+stage+'.stdout')).write_bytes(data);(out/('candidate-group-'+stage+'.stderr')).write_bytes(b'')
+                events.append({'kind':'candidate-group-observation','stage':stage,'argv':group_argv,'exit_code':0,'live_count':count,
+                               'stdout_sha256':hashlib.sha256(data).hexdigest(),'stderr_sha256':hashlib.sha256(b'').hexdigest()})
+            group_observation('before-term',b'1234 123 1234 S candidate\n1235 1234 1234 S worker\n',2)
+            events.append({'kind':'candidate-signal','pid':pid,'signal':'TERM'})
+            group_observation('before-kill',b'1234 123 1234 Z <defunct>\n',0)
+            events.append({'kind':'candidate-signal','pid':pid,'signal':'KILL','group':'no-live-members'})
             events.append({'kind':'candidate-wait','pid':pid,'state':'completed','exit_code':-15})
             observation('owner-candidate-table-after',table,0,b'1 0 1 init\n')
             observation('owner-candidate-listener-after',listener,1,b'')

@@ -94,26 +94,61 @@ class CandidateOwner:
                             'pgid':proc.pid,'state':fields[3],'argv':identity_argv,'exit_code':result.returncode,
                             'stdout_sha256':hashlib.sha256(result.stdout).hexdigest(),
                             'stderr_sha256':hashlib.sha256(result.stderr).hexdigest()})
-        try:
-            os.killpg(proc.pid,signal.SIGTERM)
-            self.events.append({'kind':'candidate-signal','pid':proc.pid,'signal':'TERM'})
-        except ProcessLookupError:
-            self.events.append({'kind':'candidate-signal','pid':proc.pid,'signal':'TERM','group':'absent'})
-        time.sleep(grace)
-        try:
-            os.killpg(proc.pid,signal.SIGKILL)
-            self.events.append({'kind':'candidate-signal','pid':proc.pid,'signal':'KILL'})
-        except ProcessLookupError:
-            self.events.append({'kind':'candidate-signal','pid':proc.pid,'signal':'KILL','group':'absent'})
+        # Inspect the anchored process group before each signal. Darwin returns
+        # EPERM for groups containing zombies only; that is not a proof of exit.
+        def group_live(stage):
+            nonlocal evidence_ok
+            command=['/bin/ps','-axo','pid=,ppid=,pgid=,stat=,command=']
+            try:
+                snapshot=subprocess.run(command,capture_output=True,check=False,timeout=10)
+                rows={}
+                for line in snapshot.stdout.decode().splitlines():
+                    fields=line.strip().split(None,4)
+                    need(len(fields)==5 and all(x.isdigit() for x in fields[:3]))
+                    pid,ppid,pgid=map(int,fields[:3]);need(pid not in rows);rows[pid]=(ppid,pgid,fields[3])
+                need(snapshot.returncode==0 and not snapshot.stderr and proc.pid in rows and
+                     rows[proc.pid][:2]==(os.getpid(),proc.pid))
+                live=[pid for pid,(_,pgid,state) in rows.items() if pgid==proc.pid and not state.startswith('Z')]
+                try:
+                    with (self.out/('candidate-group-'+stage+'.stdout')).open('xb') as f:f.write(snapshot.stdout)
+                    with (self.out/('candidate-group-'+stage+'.stderr')).open('xb') as f:f.write(snapshot.stderr)
+                except OSError as exc:
+                    evidence_ok=False;self.events.append({'kind':'candidate-evidence-error','error_type':type(exc).__name__})
+                self.events.append({'kind':'candidate-group-observation','stage':stage,'argv':command,
+                                    'exit_code':snapshot.returncode,'live_count':len(live),
+                                    'stdout_sha256':hashlib.sha256(snapshot.stdout).hexdigest(),
+                                    'stderr_sha256':hashlib.sha256(snapshot.stderr).hexdigest()})
+                return bool(live)
+            except (OSError,ValueError,subprocess.SubprocessError) as exc:
+                evidence_ok=False;self.events.append({'kind':'candidate-group-observation-error','stage':stage,
+                                                       'error_type':type(exc).__name__})
+                return True
+        signal_ok=True
+        for stage, sig, name in (('before-term',signal.SIGTERM,'TERM'),('before-kill',signal.SIGKILL,'KILL')):
+            if stage=='before-kill':time.sleep(grace)
+            if not group_live(stage):
+                self.events.append({'kind':'candidate-signal','pid':proc.pid,'signal':name,'group':'no-live-members'})
+                continue
+            try:
+                os.killpg(proc.pid,sig)
+                self.events.append({'kind':'candidate-signal','pid':proc.pid,'signal':name})
+            except OSError as exc:
+                signal_ok=False;self.events.append({'kind':'candidate-signal','pid':proc.pid,'signal':name,
+                                                    'error_type':type(exc).__name__,'errno':exc.errno})
         try:
             code=proc.wait(timeout=timeout)
             self.events.append({'kind':'candidate-wait','pid':proc.pid,'state':'completed','exit_code':code})
-            need(evidence_ok)
+            need(evidence_ok and signal_ok)
             return code
         except subprocess.TimeoutExpired:
             self.events.append({'kind':'candidate-wait','pid':proc.pid,'state':'timeout','exit_code':None})
             try:
                 os.killpg(proc.pid,signal.SIGKILL)
+                self.events.append({'kind':'candidate-cleanup-signal','pid':proc.pid,'signal':'KILL'})
+            except OSError as exc:
+                self.events.append({'kind':'candidate-cleanup-signal','pid':proc.pid,'signal':'KILL',
+                                    'error_type':type(exc).__name__,'errno':exc.errno})
+            try:
                 code=proc.wait(timeout=timeout)
                 self.events.append({'kind':'candidate-cleanup-wait','pid':proc.pid,'state':'completed','exit_code':code})
             except (OSError,subprocess.SubprocessError):

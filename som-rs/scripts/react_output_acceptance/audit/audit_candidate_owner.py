@@ -45,6 +45,22 @@ def audit(out,candidate):
          and pi<ii<signals[0][0]<signals[1][0]<wi
          and [e.get('signal') for _,e in signals]==['TERM','KILL']
          and all(e.get('pid')==pid for _,e in signals))
+    observations=[(i,e) for i,e in enumerate(events) if e.get('kind')=='candidate-group-observation']
+    need(len(observations)==2 and [e.get('stage') for _,e in observations]==['before-term','before-kill']
+         and ii<observations[0][0]<signals[0][0]<observations[1][0]<signals[1][0]<wi)
+    for (_,observation),(_,sent) in zip(observations,signals):
+        stage=observation['stage'];command=['/bin/ps','-axo','pid=,ppid=,pgid=,stat=,command=']
+        stdout=read(out/('candidate-group-'+stage+'.stdout'));stderr=read(out/('candidate-group-'+stage+'.stderr'))
+        need(observation.get('argv')==command and observation.get('exit_code')==0 and not stderr
+             and observation.get('stdout_sha256')==sha(stdout) and observation.get('stderr_sha256')==sha(stderr))
+        rows={}
+        for line in stdout.decode().splitlines():
+            parts=line.strip().split(None,4);need(len(parts)==5 and all(x.isdigit() for x in parts[:3]))
+            key=int(parts[0]);need(key not in rows);rows[key]=(int(parts[1]),int(parts[2]),parts[3])
+        need(pid in rows and rows[pid][:2]==(parent,pid))
+        live=[key for key,(_,pgid,state) in rows.items() if pgid==pid and not state.startswith('Z')]
+        need(observation.get('live_count')==len(live) and not sent.get('error_type')
+             and (sent.get('group')=='no-live-members' if not live else 'group' not in sent))
     definitions={
       'owner-candidate-ps':['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command='],
       'owner-candidate-cwd':['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn'],
