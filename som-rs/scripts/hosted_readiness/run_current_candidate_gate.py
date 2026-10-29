@@ -246,13 +246,94 @@ def adapter_spec(data, gate, admission, sources):
     return value
 
 
-def owner_api(module):
+def owner_api(module, gate=None):
     for name, args, keyword in [('run_gate', ('ctx', 'candidate_dir', 'services', 'out', 'gate'), ()),
                               ('verify_result', ('root', 'source_reader', 'helper_revision', 'candidate_revision', 'gate'), ('repo', 'proof_roots'))]:
         function = getattr(module, name, None)
         require(callable(function), 'actual owner adapter function missing: ' + name)
         parameters = inspect.signature(function).parameters
         require(tuple(parameters)[:len(args)] == args and all(k in parameters for k in keyword), 'owner hook API differs: ' + name)
+        if gate == 'typescript-regression' and name == 'verify_result':
+            require(all(key in parameters and parameters[key].kind is inspect.Parameter.KEYWORD_ONLY
+                        and parameters[key].default is None
+                        for key in ('verification_evidence_root', 'archive_view')),
+                    'TypeScript owner requires exact optional evidence/archive keyword API')
+
+
+def verification_evidence_root_checked(value, *, capture_root, repo, proof_roots, data):
+    """Check the complete protected universe before any evidence directory exists."""
+    require(value is not None, 'explicit fresh TypeScript verification evidence root required')
+    root = Path(value).absolute()
+    require('..' not in root.parts and not any(path.is_symlink() for path in (root, *root.parents)),
+            'physical verification evidence path required')
+    temporary = regular_root(os.environ['RUNNER_TEMP'])
+    require(temporary in root.parents, 'verification evidence must be below RUNNER_TEMP')
+    require(set(proof_roots) == ROLES, 'all four trusted verification proof roots required')
+    inputs = data.get('typescript_regression_inputs')
+    require(type(inputs) is dict and type(inputs.get('roots')) is dict
+            and set(inputs['roots']) == {'public_run', 'legacy_run', 'rust_run', 'npm_cache', 'node_tools'}
+            and type(inputs.get('siblings')) is dict and set(inputs['siblings']) == {'rs_prompts'},
+            'complete explicit TypeScript input roles/siblings required before verification')
+    capture = Path(capture_root).absolute()
+    require('..' not in capture.parts and not any(path.is_symlink() for path in (capture, *capture.parents)),
+            'physical whole gate capture required')
+    protected = [capture, regular_root(repo), *[regular_root(path) for path in proof_roots.values()],
+                 *[regular_root(path) for path in inputs['roots'].values()],
+                 *[regular_root(path) for path in inputs['siblings'].values()],
+                 *[regular_root(data[name]) for name in ('runtime_root', 'wheel_root', 'rust_tools_root', 'cargo_root')],
+                 *[regular_root(path) for path in data.get('baseline_inputs', {}).values()],
+                 *[regular_root(data[name]) for name in ('build_provenance_root', 'current_companions_root') if name in data]]
+    require(all(root != path and root not in path.parents and path not in root.parents for path in protected),
+            'verification evidence overlaps whole gate capture, repository or protected proof/input/runtime root')
+    info = temporary.stat()
+    require(info.st_uid == os.getuid() and info.st_mode & 0o022 == 0,
+            'owned RUNNER_TEMP without group/other writes required')
+    current = temporary
+    for part in root.relative_to(temporary).parts:
+        current /= part
+        if current.exists():
+            info = current.stat()
+            require(stat.S_ISDIR(info.st_mode) and info.st_uid == os.getuid()
+                    and info.st_mode & 0o022 == 0 and info.st_mode & 0o700 == 0o700,
+                    'owned physical verification evidence directory required')
+    if root.exists():
+        require(not any(root.iterdir()), 'verification evidence root must be fresh and empty')
+    return root
+
+
+def prepare_verification_evidence_root(value, *, capture_root, repo, proof_roots, data):
+    root = verification_evidence_root_checked(value, capture_root=capture_root, repo=repo,
+                                               proof_roots=proof_roots, data=data)
+    temporary = regular_root(os.environ['RUNNER_TEMP'])
+    descriptor = os.open(temporary, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        for part in root.relative_to(temporary).parts:
+            try:
+                info = os.stat(part, dir_fd=descriptor, follow_symlinks=False)
+            except FileNotFoundError:
+                os.mkdir(part, mode=0o700, dir_fd=descriptor)
+                info = os.stat(part, dir_fd=descriptor, follow_symlinks=False)
+            require(stat.S_ISDIR(info.st_mode) and info.st_uid == os.getuid()
+                    and info.st_mode & 0o022 == 0 and info.st_mode & 0o700 == 0o700,
+                    'evidence directory changed before owned creation')
+            child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=descriptor)
+            os.close(descriptor); descriptor = child
+    finally:
+        os.close(descriptor)
+    return verification_evidence_root_checked(root, capture_root=capture_root, repo=repo,
+                                               proof_roots=proof_roots, data=data)
+
+
+def verify_owner_domain(owner, root, source_reader, helper_revision, candidate_revision, gate, *,
+                        repo, proof_roots, data, verification_evidence_root=None, archive_view=None):
+    require(archive_view is None, 'a concrete reviewed archive-view API is required')
+    owner_api(owner, gate)
+    keyword = {'repo': repo, 'proof_roots': proof_roots}
+    if gate == 'typescript-regression':
+        keyword.update(verification_evidence_root=prepare_verification_evidence_root(
+            verification_evidence_root, capture_root=Path(root).parent, repo=repo,
+            proof_roots=proof_roots, data=data), archive_view=None)
+    return owner.verify_result(root, source_reader, helper_revision, candidate_revision, gate, **keyword)
 
 
 def require_elf(path):
@@ -1020,7 +1101,9 @@ def verify_owner_phase_join(root, capture_raw, verified, shared_proof):
             'verified owner result does not bind unchanged capture and rederived shared cleanup')
 
 
-def verify_result(root, source_reader, helper_revision, candidate_revision, gate, *, repo, proof_roots):
+def verify_result(root, source_reader, helper_revision, candidate_revision, gate, *, repo, proof_roots,
+                  verification_evidence_root=None, archive_view=None):
+    require(archive_view is None, 'a concrete reviewed archive-view API is required')
     require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'GitHub Linux verifier only')
     root = regular_root(root)
     require(helper_revision == candidate_revision and gate in GATES, 'one exact final source gate required')
@@ -1029,6 +1112,10 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
             and report.get('gate') == gate and report.get('product_acceptance_passed') is False, 'shared result identity differs')
     snapshot = tree(root); snapshot.pop('result.json')
     require(snapshot == report['saved_files'], 'shared raw file universe/bytes/modes differ')
+    data = parse(read(root / 'context.input.json'))
+    if gate == 'typescript-regression':
+        verification_evidence_root_checked(verification_evidence_root, capture_root=root, repo=repo,
+                                           proof_roots=proof_roots, data=data)
     with admitted_sources(repo, helper_revision, source_reader) as (sources, authority, admission):
         require(SELF in report['bound_source_sha256'] and all(sha(sources.read(name)) == digest
                 for name, digest in report['bound_source_sha256'].items()), 'captured source bindings differ')
@@ -1043,15 +1130,16 @@ def verify_result(root, source_reader, helper_revision, candidate_revision, gate
         catalog = parse(read(root / 'artifact-inputs.json'))
         layout_module = raw_module(sources, '_som_current_gate_layout_verify', LAYOUT)
         semantic = raw_module(sources, '_som_current_gate_semantic_verify', SEMANTIC)
-        owner = raw_module(sources, '_som_current_gate_owner_verify', spec['path']); owner_api(owner)
+        owner = raw_module(sources, '_som_current_gate_owner_verify', spec['path']); owner_api(owner, gate)
         try:
             layout = layout_module.verify_candidate_layout(root / 'candidate', sources.read, helper_revision, candidate_revision,
                 **layout_arguments(sources, roots, root / 'restored-candidate', catalog))
             require(layout_binding(layout) == layout_binding(report['layout']), 'same-build layout/provenance proof differs')
             with semantic.trusted_proof_bundle(sources.root, sources.read, helper_revision, candidate_revision, roots, root, admission) as trusted:
                 verify_services(root / 'services', parse(read(root / 'services/manifest.json')), trusted, layout, sources)
-            verified = owner.verify_result(root / 'owner', sources.read, helper_revision, candidate_revision, gate,
-                repo=sources.root, proof_roots=roots)
+            verified = verify_owner_domain(owner, root / 'owner', sources.read, helper_revision, candidate_revision, gate,
+                repo=sources.root, proof_roots=roots, data=data,
+                verification_evidence_root=verification_evidence_root, archive_view=archive_view)
             validate_owner_result(verified, gate, candidate_revision)
             capture_raw = read(root / 'owner/result.json')
             shared_proof = verify_owner_postclose(root / 'owner', sources.read, helper_revision, candidate_revision, gate,
@@ -1079,7 +1167,10 @@ def main(argv=None):
     parser.add_argument('--gate', choices=sorted(GATES), required=True)
     parser.add_argument('--qa-mode', choices=['native-qa-v1'], required=True)
     parser.add_argument('--port', type=int, required=True)
+    parser.add_argument('--verification-evidence-root', type=Path)
+    parser.add_argument('--archive-view', type=Path)
     args = parser.parse_args(argv)
+    require(args.archive_view is None, 'a concrete reviewed archive-view API is required')
     require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'GitHub Linux launcher only')
     require(args.helper_revision == args.candidate_revision and args.candidate_revision != 'f59e28d910ff4adb16e3becfdc82bd2978ca84fa'
             and args.port == PORTS['current'], 'fresh current candidate and exact QA port18978 required')
@@ -1101,6 +1192,9 @@ def main(argv=None):
                      *[Path(value).absolute() for value in data.get('baseline_inputs', {}).values()]]
         require(all(args.out != path and path not in args.out.parents and args.out not in path.parents for path in protected),
                 'launcher output overlaps a protected input')
+        if args.gate == 'typescript-regression':
+            verification_evidence_root_checked(args.verification_evidence_root, capture_root=args.out,
+                                               repo=sources.root, proof_roots=roots, data=data)
         spec = adapter_spec(data, args.gate, admission, sources)  # Missing owner fails before any native command.
         module = raw_module(sources, 'full_product_context', CONTEXT)
         os.environ[module.ENV] = str(args.product_context.absolute())
@@ -1123,7 +1217,7 @@ def main(argv=None):
             report['layout'] = layout_module.restore_candidate_layout(sources.root, sources.read, args.helper_revision, args.candidate_revision,
                 out=args.out / 'candidate', **{k: v for k, v in layout_arguments(sources, roots, restored['root'], catalog).items() if k != 'repo'})
             semantic = ctx.module('current_gate_semantic', SEMANTIC)
-            owner = ctx.module('current_gate_owner', spec['path']); owner_api(owner)
+            owner = ctx.module('current_gate_owner', spec['path']); owner_api(owner, args.gate)
             output = args.out / 'owner'; output.mkdir()
             with semantic.trusted_proof_bundle(sources.root, sources.read, args.helper_revision, args.candidate_revision, roots, args.out, admission) as trusted:
                 services = Services(ctx, trusted.driver, trusted.checker, trusted.proof, report['layout'], restored, args.out / 'services')
@@ -1136,8 +1230,9 @@ def main(argv=None):
                                 'actual owner hook must return its retained result object')
                         services.verify_all()
                     require(cancellation['signal'] is None, 'owned gate was interrupted')
-            verified = owner.verify_result(output, sources.read, args.helper_revision, args.candidate_revision, args.gate,
-                repo=sources.root, proof_roots=roots)
+            verified = verify_owner_domain(owner, output, sources.read, args.helper_revision, args.candidate_revision, args.gate,
+                repo=sources.root, proof_roots=roots, data=data,
+                verification_evidence_root=args.verification_evidence_root, archive_view=args.archive_view)
             validate_owner_result(verified, args.gate, args.candidate_revision)
             shared_proof = verify_owner_postclose(output, sources.read, args.helper_revision, args.candidate_revision, args.gate,
                 repo=sources.root, proof_roots=roots)

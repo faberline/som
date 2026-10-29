@@ -1,0 +1,52 @@
+name: Owner verification evidence source qualification
+on:
+  push:
+    branches: [codex/m12-owner-evidence-source-fixtures]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: som-owner-evidence-source-${{ github.ref }}
+  cancel-in-progress: false
+defaults:
+  run:
+    shell: bash
+env:
+  HELPER_REVISION: ${{ github.sha }}
+  PYTHONDONTWRITEBYTECODE: '1'
+jobs:
+  owner-evidence-fixtures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: shared-services
+            path: test_run_current_candidate_gate.py
+          - label: owner-evidence-protocol
+            path: test_owner_verification_evidence.py
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Record exact source and actual Python
+        run: |
+          test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
+          git rev-parse HEAD > tested-sha.txt
+          python3 --version > python-version.txt 2>&1
+      - name: Run every selected source fixture
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/${{ matrix.path }}" -v 2>&1 | tee source-fixtures.log
+      - name: Retain complete source output and first failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: owner-evidence-source-${{ matrix.label }}
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            tested-sha.txt
+            python-version.txt
+            source-fixtures.log

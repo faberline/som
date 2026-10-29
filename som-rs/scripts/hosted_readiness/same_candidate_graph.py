@@ -362,9 +362,13 @@ def restore_current_carrier(sources, catalog_path, assembly_root, carrier_root, 
             'native_code_executed': False, 'product_acceptance_passed': False}
 
 
-def verify_callback(sources, root, stage, helper, candidate, proof_roots):
+def verify_callback(sources, root, stage, helper, candidate, proof_roots, *,
+                    verification_evidence_root=None, archive_view=None):
     """Use each owning raw-data verifier. Summary booleans never admit a stage."""
     pair(helper, candidate)
+    require(archive_view is None, 'a concrete reviewed archive-view API is required')
+    if stage == 'typescript-regression':
+        require(verification_evidence_root is not None, 'explicit TypeScript verification evidence root required')
     require(stage in CALLBACKS and set(proof_roots) == {'assembly_root', 'python_inputs_root', 'rust_inputs_root', 'carrier_root'},
             'complete graph-chosen callback proof roots required')
     verify_compile_proof(proof_roots['assembly_root'], candidate)
@@ -392,8 +396,10 @@ def verify_callback(sources, root, stage, helper, candidate, proof_roots):
     else:
         module = raw_module(sources, '_som_graph_current_candidate_gate_data',
                             'som-rs/scripts/hosted_readiness/run_current_candidate_gate.py')
-        checked = module.verify_result(root, sources.read, helper, candidate, stage,
-                                       repo=sources.root, proof_roots=proof_roots)
+        keyword = {'repo': sources.root, 'proof_roots': proof_roots}
+        if stage == 'typescript-regression':
+            keyword.update(verification_evidence_root=verification_evidence_root, archive_view=None)
+        checked = module.verify_result(root, sources.read, helper, candidate, stage, **keyword)
         manifest = Path(root) / 'result.json'
     require(type(checked) in {dict, list} and checked, 'owning raw callback verifier returned no checked data')
     sources.verify()
@@ -404,8 +410,11 @@ def verify_callback(sources, root, stage, helper, candidate, proof_roots):
             'product_acceptance_passed': False, 'whole_acceptance_complete': False}
 
 
-def join_graph(sources, callbacks_root, current_root, product_join, helper, candidate, proof_roots):
+def join_graph(sources, callbacks_root, current_root, product_join, helper, candidate, proof_roots, *,
+               verification_evidence_root=None, archive_view=None):
     pair(helper, candidate)
+    require(archive_view is None, 'a concrete reviewed archive-view API is required')
+    require(verification_evidence_root is not None, 'explicit final graph verification evidence root required')
     expected = required_stage_artifacts('callbacks')
     require({p.name for p in callbacks_root.iterdir()} == set(expected), 'missing or extra required final gate')
     joined_raw = read(product_join); joined = parse(joined_raw)
@@ -421,7 +430,11 @@ def join_graph(sources, callbacks_root, current_root, product_join, helper, cand
         require(row['total'] == row['run'] == row['passed'] == count and row['failed'] == [], 'incomplete whole product cohort')
     checked = [verify_callback(sources, current_root, 'current-python-companions', helper, candidate, proof_roots)]
     for name, stage in expected.items():
-        checked.append(verify_callback(sources, callbacks_root / name / 'gate', stage, helper, candidate, proof_roots))
+        keyword = {}
+        if stage == 'typescript-regression':
+            keyword.update(verification_evidence_root=Path(verification_evidence_root) / stage, archive_view=None)
+        checked.append(verify_callback(sources, callbacks_root / name / 'gate', stage, helper, candidate,
+                                       proof_roots, **keyword))
     sources.verify()
     return {'version': 'som.same-candidate-whole-graph-data-join.v1', 'helper_revision': helper, 'candidate_revision': candidate,
             'product_join_raw_sha256': sha(joined_raw), 'required_callback_scope': sorted(CALLBACKS),
@@ -452,7 +465,10 @@ def main():
     parser.add_argument('--node', type=Path)
     parser.add_argument('--current-companions-root', type=Path)
     parser.add_argument('--product-join', type=Path)
+    parser.add_argument('--verification-evidence-root', type=Path)
+    parser.add_argument('--archive-view', type=Path)
     args = parser.parse_args()
+    require(args.archive_view is None, 'a concrete reviewed archive-view API is required')
     if args.operation == 'matrix':
         value = canonical(matrix()).decode()
         with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as stream: stream.write('matrix=' + value + '\n')
@@ -484,9 +500,11 @@ def main():
             require(all(value is not None for value in roots.values()), 'four graph proof roots are required')
             if args.operation == 'join-graph':
                 record = join_graph(sources, args.root, args.current_companions_root, args.product_join,
-                                    args.helper_revision, args.candidate_revision, roots)
+                                    args.helper_revision, args.candidate_revision, roots,
+                                    verification_evidence_root=args.verification_evidence_root, archive_view=args.archive_view)
             else:
-                record = verify_callback(sources, args.root, args.stage, args.helper_revision, args.candidate_revision, roots)
+                record = verify_callback(sources, args.root, args.stage, args.helper_revision, args.candidate_revision, roots,
+                                         verification_evidence_root=args.verification_evidence_root, archive_view=args.archive_view)
             dump(args.out, record)
     else:
         pair(args.helper_revision, args.candidate_revision)
