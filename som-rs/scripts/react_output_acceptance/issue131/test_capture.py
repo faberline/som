@@ -145,6 +145,15 @@ class CaptureTests(unittest.TestCase):
         self.assertEqual(capture.count_unrun([1, 2, 3], [{'comparison': 'unrun'}]), 3)
         self.assertEqual(capture.count_unrun([1, 2, 3], [{'comparison': 'failed'}]), 2)
 
+    def test_source_preparation_failure_records_all_unrun(self):
+        out = Path(self.temp.name) / 'failed-capture'
+        args = SimpleNamespace(out=out, inventory=self.inventory, evidence=self.evidence, run003=self.run, sealed=self.sealed)
+        with patch.object(capture, 'prepare', side_effect=ValueError('fixture failure')):
+            with self.assertRaisesRegex(ValueError, 'fixture failure'):
+                capture.execute(args, self.checker)
+        receipt = json.loads((out / 'receipt.json').read_bytes())
+        self.assertEqual((receipt['unrun'], receipt['passed'], receipt['stage']), (697, False, 'source_preparation'))
+
 
 if __name__ == '__main__':
     unittest.main()
