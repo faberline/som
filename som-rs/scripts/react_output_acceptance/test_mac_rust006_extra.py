@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent / 'audit'))
 import tempfile
 import unittest
 import urllib.request
@@ -74,6 +75,69 @@ class WaitEvidenceTests(unittest.TestCase):
             self.assertIsNone(row['wait_result'])
             self.assertEqual(row['cleanup'], 'unverified')
             self.assertIsInstance(row['cleanup_wait_result'], int)
+
+
+class IndependentRawTests(unittest.TestCase):
+    def fixture(self, root):
+        import hashlib
+        import audit_mac_rust006_extra as audit
+        def h(raw): return hashlib.sha256(raw).hexdigest()
+        script = root / 'som-rs/tests/rust-output-v1/validate_cases.py'
+        script.parent.mkdir(parents=True)
+        script.write_bytes(b'fixed-checker')
+        cases = script.parent / 'cases'
+        cases.mkdir()
+        prompt = {'name':'sample'}
+        prompt_raw = json.dumps(prompt).encode()
+        cnl = b'create sample'
+        (cases/'one.prompt.json').write_bytes(prompt_raw)
+        (cases/'one.cnl').write_bytes(cnl)
+        index = {'cases':[{'id':'one','prompt':'one.prompt.json','cnl':'one.cnl',
+                          'prompt_file_sha256':h(prompt_raw),'cnl_sha256':h(cnl)}]}
+        (cases/'index.json').write_text(json.dumps(index))
+        files = {'main.py':'print(1)\n'}
+        frozen = {'cases':[{'id':'one','prompt_sha256':'abc','python_files':{'main.py':h(files['main.py'].encode())}}]}
+        evidence = root / 'som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json'
+        evidence.parent.mkdir(parents=True)
+        evidence.write_text(json.dumps(frozen))
+        bundle = {'hashes':{'prompt_sha256':'abc'},'value':'fixed'}
+        raw = root / 'run'
+        (raw/'calls').mkdir(parents=True)
+        requests = [json.dumps({'format':'som.prompt-json.v1','prompt':prompt}).encode(),
+                    json.dumps({'format':'som.cnl.v1','source':cnl.decode()}).encode(),
+                    json.dumps({'bundle':bundle}).encode()]
+        responses = [json.dumps({'bundle':bundle}).encode(), json.dumps({'bundle':bundle}).encode(),
+                     json.dumps({'files':files}).encode()]
+        rows=[]
+        for i,(request,response) in enumerate(zip(requests,responses),1):
+            req=f'calls/{i:06d}.request.raw'; res=f'calls/{i:06d}.response.raw'
+            (raw/req).write_bytes(request); (raw/res).write_bytes(response)
+            row={'id':i,'method':'POST','url':audit.QA+('/v1/assemble' if i==3 else '/v1/compile'),
+                 'request_file':req,'request_sha256':h(request),'status':200,'response_file':res,
+                 'response_sha256':h(response),'error':None,'complete':True}
+            (raw/f'calls/{i:06d}.json').write_text(json.dumps(row))
+            rows.append(row)
+        manifest={'version':'som.m6-rust006-http-recording.v1',
+                  'script':{'path':'som-rs/tests/rust-output-v1/validate_cases.py','sha256':h(b'fixed-checker')},
+                  'exit_code':0,'calls':rows,'recording_errors':[]}
+        (raw/'manifest.json').write_text(json.dumps(manifest))
+        return raw
+
+    def test_coverage_raw_checked_without_success_booleans(self):
+        import audit_mac_rust006_extra as audit
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve()
+            raw=self.fixture(root)
+            with mock.patch.object(audit,'REPO',root):
+                self.assertEqual(audit.audit_cases(raw),{'cases':1,'raw_calls':3})
+                response=raw/'calls/000003.response.raw'
+                response.write_bytes(b'{"files":{"main.py":"tampered"}}')
+                with self.assertRaises(ValueError): audit.audit_cases(raw)
+
+    def test_final_audit_stays_incomplete(self):
+        import audit_mac_rust006_extra as audit
+        self.assertEqual(audit.ALLOWED, {'backend','block_library','catalog','compiler_contract','selection_policy'})
 
 
 if __name__ == '__main__':
