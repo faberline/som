@@ -88,6 +88,25 @@ class RoutingTests(unittest.TestCase):
                 record_http.run_checker(self.repo/'.local/http', self.script, [], 'native-qa-v1')
         self.assertFalse((self.repo/'.local/http').exists())
 
+    def test_case_postcheck_refuses_replaced_raw_import_control(self):
+        context_path = self.repo/'context.json'; context_path.write_bytes(b'{}')
+        retained = self.repo/native.RETAINED; retained.parent.mkdir(parents=True,exist_ok=True)
+        retained.write_bytes(b'fixture')
+        tokens = ['installed']
+        def verify_installed():
+            if tokens != ['installed']:
+                raise ValueError('raw import control replaced')
+        ctx = SimpleNamespace(sources=SimpleNamespace(verify=lambda:None),
+                              qa_import_controls=SimpleNamespace(verify_installed=verify_installed),
+                              path=context_path,raw=b'{}')
+        api = SimpleNamespace(recheck_case=lambda live:None)
+        sources = SimpleNamespace(read=lambda name:b'fixture')
+        module = SimpleNamespace(__file__=str(retained),sealed_files=lambda repo:{})
+        with mock.patch.dict(sys.modules,{'retained_evidence':module}):
+            native.case_postcheck(ctx,api,{},None,sources,self.repo)
+            tokens.clear()
+            with self.assertRaises(ValueError): native.case_postcheck(ctx,api,{},None,sources,self.repo)
+
     def test_unreviewed_entry_cannot_claim_graph_readiness(self):
         self.assertFalse(native.ROUTING_REVIEWED)
         self.assertTrue(sys.flags.isolated and sys.flags.no_site and sys.flags.dont_write_bytecode)

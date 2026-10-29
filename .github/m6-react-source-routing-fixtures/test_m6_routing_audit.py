@@ -53,6 +53,7 @@ class RoutingAuditTests(unittest.TestCase):
         (self.run/'api-qa-evidence/full-before.json').write_bytes(b'{}')
         self.original_context = '/tmp/som-test-context.json'
         self.python = '/tmp/venv/bin/python'
+        self.audit.api_qa_profile = {'python': self.python}
         self.profile_path = '/tmp/api-profile.json'
         self.post_path = self.run/'source-routing/01-python-baseline.json'
         self.logical = [self.python,str(self.repo/self.wrapper),'--out','/tmp/unused','--qa-mode','native-qa-v1',

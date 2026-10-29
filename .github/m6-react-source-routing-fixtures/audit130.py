@@ -522,7 +522,8 @@ class Audit:
         """Check actual launcher, wait and source-postcheck; graph joins owner/transport."""
         need(self.api_qa_profile is not None, 'native API source context missing', 'unrun')
         logical = list_value(receipt.get('argv'), 'logical child argv')
-        need(len(logical) >= 2 and all(isinstance(word, str) for word in logical), 'logical child argv differs')
+        need(len(logical) >= 2 and all(isinstance(word, str) for word in logical)
+             and logical[0] == self.api_qa_profile.get('python'), 'logical child interpreter or argv differs')
         context = object_value(run_doc.get('native_source_context'), 'native context record')
         context_path = self.reader.path(context.get('path'), self.run)
         need(context_path == self.run / 'source-routing/context.json'
@@ -600,7 +601,9 @@ class Audit:
              and doc.get('candidate_revision') == revision and doc.get('qa_mode') == 'native-qa-v1'
              and doc.get('repo') == str(self.repo), 'native context identities differ')
         logical = list_value(invocation.get('argv'), 'case logical argv')
-        need(len(logical) >= 2 and logical[1] == str(self.repo / script), 'case logical checker differs')
+        need(self.api_qa_profile is not None and len(logical) >= 2
+             and logical[0] == self.api_qa_profile.get('python') and logical[1] == str(self.repo / script),
+             'case logical interpreter or checker differs')
         route = object_value(invocation.get('source_routing'), 'case native source routing')
         post_path = self.reader.path(route.get('postcheck'), work)
         need(post_path == work / (name + '-source.json')

@@ -151,6 +151,21 @@ class Router:
             else: sys.modules['__main__'] = prior_main
 
 
+def case_postcheck(ctx, api, live, graph, sources, repo):
+    """Recheck import controls and live case identity without rescanning runtime."""
+    ctx.sources.verify()
+    need(ctx.qa_import_controls is not None, 'native raw import controls missing')
+    ctx.qa_import_controls.verify_installed()
+    need(read(ctx.path) == ctx.raw, 'product context changed')
+    retained = sys.modules.get('retained_evidence')
+    if retained is None:
+        retained = graph.raw_module(sources, 'retained_evidence', RETAINED)
+    need(getattr(retained, '__file__', None) == str(repo / RETAINED)
+         and callable(getattr(retained, 'sealed_files', None))
+         and sources.read(RETAINED) == read(repo / RETAINED), 'retained verifier changed')
+    api.recheck_case(live)
+
+
 def run(args):
     need(os.environ.get('GITHUB_ACTIONS') == 'true' and
          os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted' and sys.platform == 'linux',
@@ -189,15 +204,7 @@ def run(args):
             if args.scope == 'step':
                 ctx.verify()
             else:
-                ctx.sources.verify()
-                need(read(ctx.path) == ctx.raw, 'product context changed')
-                retained = sys.modules.get('retained_evidence')
-                if retained is None:
-                    retained = graph.raw_module(sources, 'retained_evidence', RETAINED)
-                need(getattr(retained, '__file__', None) == str(repo / RETAINED)
-                     and callable(getattr(retained, 'sealed_files', None))
-                     and sources.read(RETAINED) == read(repo / RETAINED), 'retained verifier changed')
-                api.recheck_case(live)
+                case_postcheck(ctx, api, live, graph, sources, repo)
             report['source_postcheck'] = True
         except BaseException as error:
             report['postcheck_error'] = type(error).__name__ + ': ' + str(error)
