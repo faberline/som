@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 jobs:
   fixtures:
     runs-on: macos-26
@@ -17,3 +18,10 @@ jobs:
           persist-credentials: false
       - name: Run focused raw and wait fixtures
         run: python3 -B som-rs/scripts/react_output_acceptance/test_mac_rust006_extra.py
+      - name: Verify live GH job origin
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/faberline/som/actions/runs/$GITHUB_RUN_ID" > "$RUNNER_TEMP/origin-run.json"
+          gh api "repos/faberline/som/actions/runs/$GITHUB_RUN_ID/jobs?per_page=100" > "$RUNNER_TEMP/origin-jobs.json"
+          python3 som-rs/scripts/react_output_acceptance/audit_workflow_origin.py --run "$RUNNER_TEMP/origin-run.json" --jobs "$RUNNER_TEMP/origin-jobs.json" --workflow .github/workflows/m6-mac-rust006-fixtures.yml --job-name fixtures --completed-step 'Run focused raw and wait fixtures' --event push

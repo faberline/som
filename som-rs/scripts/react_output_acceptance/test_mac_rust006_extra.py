@@ -374,6 +374,35 @@ class UnorderedParityWireTests(unittest.TestCase):
                 with self.assertRaises(ValueError):parity_audit.raw_exchange_index(raw)
 
 
+class WorkflowOriginTests(unittest.TestCase):
+    def test_origin_source_and_runner_metadata_are_bound(self):
+        import subprocess
+        import audit_workflow_origin as origin
+        with tempfile.TemporaryDirectory() as temp:
+            repo=Path(temp).resolve();workflow='.github/workflows/fixture.yml';source=repo/workflow;source.parent.mkdir(parents=True);source.write_bytes(b'fixture')
+            subprocess.run(['git','init','-q',str(repo)],check=True);subprocess.run(['git','-C',str(repo),'add','.'],check=True)
+            subprocess.run(['git','-C',str(repo),'-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','-qm','fixture'],check=True)
+            head=subprocess.check_output(['git','-C',str(repo),'rev-parse','HEAD'],text=True).strip()
+            env={'GITHUB_ACTIONS':'true','RUNNER_ENVIRONMENT':'github-hosted','RUNNER_OS':'macOS','RUNNER_ARCH':'ARM64',
+                 'GITHUB_REPOSITORY':'faberline/som','GITHUB_EVENT_NAME':'push','GITHUB_SHA':head,'GITHUB_WORKFLOW_SHA':head,
+                 'GITHUB_RUN_ID':'123','GITHUB_RUN_ATTEMPT':'1','GITHUB_REF':'refs/heads/fixture',
+                 'GITHUB_WORKFLOW_REF':'faberline/som/'+workflow+'@refs/heads/fixture','RUNNER_NAME':'runner'}
+            repo_meta={'id':1390374878,'full_name':'faberline/som'}
+            run={'id':123,'run_attempt':1,'event':'push','head_sha':head,'path':workflow,'status':'in_progress',
+                 'repository':repo_meta,'head_repository':repo_meta}
+            jobs={'total_count':1,'jobs':[{'id':17,'name':'fixtures','runner_name':'runner','status':'in_progress',
+                  'steps':[{'name':'check','status':'completed','conclusion':'success'}]}]}
+            def check():return origin.verify(repo,env,run,jobs,workflow=workflow,job_name='fixtures',completed_step='check',event='push')
+            self.assertEqual(check()['job_id'],17)
+            for key,value in (('head_sha','0'*40),('path','.github/workflows/other.yml'),('run_attempt',2)):
+                old=run[key];run[key]=value
+                with self.subTest(key=key),self.assertRaises(ValueError):check()
+                run[key]=old
+            jobs['jobs'][0]['runner_name']='other'
+            with self.assertRaises(ValueError):check()
+            jobs['jobs'][0]['runner_name']='runner';source.write_bytes(b'modified')
+            with self.assertRaises(ValueError):check()
+
 class OwnedCandidateTests(unittest.TestCase):
     def test_timeout_retry_signal_error_still_attempts_bounded_wait(self):
         import errno,subprocess

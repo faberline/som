@@ -150,6 +150,14 @@ jobs:
         if: env.M6_ACCEPTANCE_REQUESTED == 'true'
         run: |
           som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py --out .local/m6-hosted/acceptance --candidate-revision "$GITHUB_SHA" --approved-input-config "$RUNNER_TEMP/m6-final-input-config.json" --provenance-root "$RUNNER_TEMP"
+      - name: Independently inspect workflow origin
+        if: always() && env.M6_ACCEPTANCE_REQUESTED == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/faberline/som/actions/runs/$GITHUB_RUN_ID" > "$RUNNER_TEMP/origin-run.json"
+          gh api "repos/faberline/som/actions/runs/$GITHUB_RUN_ID/jobs?per_page=100" > "$RUNNER_TEMP/origin-jobs.json"
+          python3 som-rs/scripts/react_output_acceptance/audit_workflow_origin.py --run "$RUNNER_TEMP/origin-run.json" --jobs "$RUNNER_TEMP/origin-jobs.json" --workflow .github/workflows/m6-mac-final-acceptance.yml --job-name 'Frozen M6 tools and optional full acceptance' --completed-step 'Run one candidate and the independent audit' --event workflow_dispatch
       - name: Seal the raw evidence
         if: always() && env.M6_ACCEPTANCE_REQUESTED == 'true'
         env:
