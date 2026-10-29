@@ -69,7 +69,8 @@ class NestedFixture(protocol.Fixture):
         super().add_role(ROLE, NESTED, source(NESTED),
             module='_som_full_typescript_regression_nested_rust',
             callers=[{'role': 'caller', 'function': 'run'}],
-            bindings={'__som_native_Context__': {'kind': 'role-export', 'role': 'runtime.context', 'attribute': 'Context'},
+            bindings={'__som_native_active_controls__': {'kind': 'active-controls'},
+                      '__som_native_Context__': {'kind': 'role-export', 'role': 'runtime.context', 'attribute': 'Context'},
                       '__som_native_SourceBytes__': {'kind': 'role-export', 'role': 'runtime.context', 'attribute': 'SourceBytes'}})
         env = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8',
                'GIT_CONFIG_NOSYSTEM': '1', 'GIT_CONFIG_GLOBAL': '/dev/null'}

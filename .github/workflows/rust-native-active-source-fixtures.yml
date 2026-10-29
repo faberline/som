@@ -1,7 +1,7 @@
 name: Native active source fixtures
 on:
   push:
-    branches: [codex/m12-native-converged-source-fixtures-v1]
+    branches: [codex/m12-native-converged164-binding-rerun-v1]
   workflow_dispatch:
 permissions:
   contents: read
