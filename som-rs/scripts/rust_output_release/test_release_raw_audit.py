@@ -498,6 +498,11 @@ class GithubIdentityTests(unittest.TestCase):
                 colored = b'\x1b[36m' + log + b'\x1b[0m'
                 with mock.patch.object(audit, 'bounded_job_log', return_value=colored):
                     audit.bind_github(1, 2, 3, 4, head, archive)
+                for control in ('\r', '\u0085', '\u2028', '\u2029', '\u202e'):
+                    with self.subTest(control=ord(control)):
+                        with mock.patch.object(audit, 'bounded_job_log', return_value=log + control.encode()):
+                            with self.assertRaises(ValueError):
+                                audit.bind_github(1, 2, 3, 4, head, archive)
                 artifact['workflow_run']['head_repository_id'] = 0
                 with self.assertRaisesRegex(ValueError, 'artifact metadata mismatch'):
                     audit.bind_github(1, 2, 3, 4, head, archive)

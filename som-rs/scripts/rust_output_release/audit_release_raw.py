@@ -20,6 +20,7 @@ import stat
 import subprocess
 import tempfile
 import time
+import unicodedata
 import zipfile
 
 REPO = 'faberline/som'
@@ -171,8 +172,11 @@ def parse_upload_log(raw, artifact_id, artifact_sha, run_id):
     """Accept only SGR color escapes and the exact upload-action bindings."""
     require(isinstance(raw, bytes) and len(raw) <= MAX_JOB_LOG_BYTES, 'invalid producer job log')
     clean = re.sub(rb'\x1b\[[0-9;]*m', b'', raw)
-    require(all(b >= 32 and b != 127 or b in (9, 10, 13) for b in clean), 'unexpected log control byte')
-    lines = clean.decode('utf-8', 'strict').splitlines()
+    require(all(b >= 32 and b != 127 or b in (9, 10) for b in clean), 'unexpected log control byte')
+    decoded = clean.decode('utf-8-sig', 'strict')
+    require(all(c in ('\n', '\t') or unicodedata.category(c) not in ('Cc', 'Cf', 'Cs', 'Zl', 'Zp')
+                for c in decoded), 'unexpected Unicode log control')
+    lines = decoded.split('\n')
     timestamp = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z '
     digest_re = re.compile(timestamp + r'SHA256 digest of uploaded artifact zip is ([0-9a-f]{64})\Z')
     id_re = re.compile(timestamp + r'Artifact m6-release-evidence\.zip successfully finalized\. Artifact ID ([0-9]+)\Z')
