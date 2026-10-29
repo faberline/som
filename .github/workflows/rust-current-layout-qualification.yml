@@ -1,0 +1,52 @@
+name: Current candidate actual build layout source fixtures
+
+on:
+  push:
+    branches:
+      - codex/m12-current-layout-qualification
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: som-current-layout-qualification-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  HELPER_REVISION: ${{ github.sha }}
+
+jobs:
+  layout-source-fixtures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Record the exact source
+        run: |
+          test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
+          printf '%s\n' "$HELPER_REVISION" > tested-sha.txt
+          python3 --version 2>&1 | tee python-version.log
+      - name: Run all 20 actual source and layout fixtures
+        run: |
+          python3 -I -S -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_current_candidate_layout.py" \
+            -v 2>&1 | tee current-layout-source-fixtures.log
+      - name: Preserve all actual output including the first failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: current-layout-source-fixtures
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            tested-sha.txt
+            python-version.log
+            current-layout-source-fixtures.log
