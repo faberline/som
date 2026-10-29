@@ -131,6 +131,7 @@ def bring_back_absent(run, config, root, port, previous, current, snapshot, poin
     default_path = root / 'som-rs/runtime/default.json'
     paths = {'runtime': root / 'som-rs/runtime/current', 'assets': root / 'som-rs/compiler-assets/current'}
     owner, committed, written = None, None, set()
+    initial_children = len(run.children)
     try:
         owner = run.start(previous['command'], previous['health'])
         run.health(port, previous['health'])
@@ -190,6 +191,19 @@ def bring_back_absent(run, config, root, port, previous, current, snapshot, poin
                     child.wait(timeout=20)
             except BaseException as cleanup:
                 errors.append(f'owned process cleanup: {cleanup!r}')
+        else:
+            # Run.start may fail after creating a child but before returning its
+            # owner. Inspect only handles added by this invocation. A live or
+            # unobservable child is not safe to signal or to claim as stopped.
+            for child in run.children[initial_children:]:
+                try:
+                    status = child.poll()
+                    rc.require(type(status) is int, f'child {child.pid} remains alive or exit is unknown')
+                    waited = child.wait(timeout=0)
+                    rc.require(type(waited) is int and waited == status,
+                               f'child {child.pid} wait does not confirm its exit')
+                except BaseException as cleanup:
+                    errors.append(f'unadmitted child exit unverified: {cleanup!r}')
         run.event('restore_failed', error=repr(failure), cleanup_errors=errors)
         if errors:
             raise RuntimeError(f'RECOVERY_FAILED_REQUIRES_OPERATOR: {errors}; original: {failure!r}') from failure

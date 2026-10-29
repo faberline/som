@@ -19,11 +19,18 @@ spec.loader.exec_module(profile)
 class FakeChild:
     def __init__(self, pid):
         self.pid, self.alive = pid, True
+        self.poll_error = self.wait_error = False
+        self.wait_count = 0
 
     def poll(self):
+        if self.poll_error:
+            raise OSError('poll unavailable')
         return None if self.alive else 0
 
     def wait(self, timeout):
+        self.wait_count += 1
+        if self.wait_error:
+            raise OSError('wait unavailable')
         profile.require(not self.alive, 'child still alive')
         return 0
 
@@ -42,6 +49,13 @@ class FakeRun:
     def start(self, argv, health):
         if self.fixture.start_error:
             raise RuntimeError('listener taken before start')
+        if self.fixture.start_child_failure:
+            child = FakeChild(8123)
+            child.alive = self.fixture.start_child_failure == 'alive'
+            child.poll_error = self.fixture.start_child_failure == 'poll-error'
+            child.wait_error = self.fixture.start_child_failure == 'wait-error'
+            self.children.append(child)
+            raise RuntimeError('start failed after child creation')
         self.children.append(FakeChild(8123))
         return {'pid': 8123, 'argv': argv, 'port': 18940, 'cwd': self.cwd}
 
@@ -101,6 +115,7 @@ class StoppedCandidateRestoreTests(unittest.TestCase):
         self.runs = []
         self.output = self.root / 'restore'
         self.start_error = self.canary_error = self.fail_asset_link = self.alter_assets_during_canary = False
+        self.start_child_failure = None
         self.actual_pointers = copy.deepcopy(self.pointers)
         self.patch(self.rc, 'check_prerequisites')
         self.patch(self.rc, 'apply_formatter_env')
@@ -209,6 +224,39 @@ class StoppedCandidateRestoreTests(unittest.TestCase):
         self.start_error = True
         with self.assertRaisesRegex(RuntimeError, 'listener taken before start'):
             self.restore()
+        self.links.assert_not_called()
+        self.assertEqual(self.default.read_bytes(), self.snapshot)
+
+    def test_start_failure_with_live_unadmitted_child_requires_operator_without_signal(self):
+        self.start_child_failure = 'alive'
+        with self.assertRaisesRegex(RuntimeError, 'RECOVERY_FAILED_REQUIRES_OPERATOR'):
+            self.restore()
+        self.assertTrue(self.runs[0].children[0].alive)
+        self.identity.assert_not_called()
+        self.stop.assert_not_called()
+        self.links.assert_not_called()
+        self.assertEqual(self.default.read_bytes(), self.snapshot)
+
+    def test_start_failure_with_unobservable_child_requires_operator(self):
+        for failure in ('poll-error', 'wait-error'):
+            with self.subTest(failure=failure):
+                self.start_child_failure = failure
+                self.output = self.root / ('restore-' + failure)
+                with self.assertRaisesRegex(RuntimeError, 'RECOVERY_FAILED_REQUIRES_OPERATOR'):
+                    self.restore()
+                self.identity.assert_not_called()
+                self.stop.assert_not_called()
+                self.links.assert_not_called()
+                self.assertEqual(self.default.read_bytes(), self.snapshot)
+
+    def test_start_failure_with_confirmed_waited_child_keeps_original_failure(self):
+        self.start_child_failure = 'exited'
+        with self.assertRaisesRegex(RuntimeError, 'start failed after child creation') as error:
+            self.restore()
+        self.assertNotIn('RECOVERY_FAILED_REQUIRES_OPERATOR', str(error.exception))
+        self.assertEqual(self.runs[0].children[0].wait_count, 1)
+        self.identity.assert_not_called()
+        self.stop.assert_not_called()
         self.links.assert_not_called()
         self.assertEqual(self.default.read_bytes(), self.snapshot)
 
