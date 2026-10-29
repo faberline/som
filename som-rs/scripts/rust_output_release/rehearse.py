@@ -57,9 +57,9 @@ class RehearsalInterrupted(BaseException):
 
 
 def interrupted(signum, _frame):
-    # Ignore repeat termination while the direct child and sandbox unwind.
+    # Defer repeated termination while the direct child and sandbox unwind.
     for value in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
-        signal.signal(value, signal.SIG_IGN)
+        signal.signal(value, rc.rollback_defer_signal)
     raise RehearsalInterrupted(f'interrupted by signal {signum}')
 
 
