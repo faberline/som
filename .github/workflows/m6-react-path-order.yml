@@ -1,0 +1,48 @@
+name: M6 React frozen tree order fixtures (not acceptance)
+on:
+  push:
+    branches:
+      - codex/m6-react-path-order-fixtures-20261029
+permissions:
+  contents: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bind reviewed Path-order sources
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          for entry in \
+            'som-rs/tests/react-output-v1/linux_qa_profile.py e5e1244e27df4717e369fb0e56c1097df59664f2cb2aa19c0766dc13dc2703d7' \
+            'som-rs/scripts/react_output_acceptance/retained_evidence.py 7ec396988cc2e9704c228c05cb3a7cd7a51c87d0fc6ea26c1ffa1455209d75bc' \
+            'som-rs/scripts/react_output_acceptance/test_retained_evidence.py bd346f961f9c3d98daeebca4fbc57d6077ef26ef07206d5a445a6decbfc5c612' \
+            'som-rs/scripts/react_output_acceptance/audit/audit130.py c92585dda61ff4a89d3d376da37e2f4d59bd3fd68a501ffe6a97c57da7eee2bf' \
+            'som-rs/scripts/react_output_acceptance/audit/test_qa_profile_audit.py 95d3782d901fa43ed57c31893e642db246860810262745d46ba96ff4286f0158' \
+            '.github/m6-react-path-order/linux_qa_profile.py e5e1244e27df4717e369fb0e56c1097df59664f2cb2aa19c0766dc13dc2703d7' \
+            '.github/m6-react-path-order/qa-profile.draft.json 5e2e4852b32e8bdc5b60ad60e50fb8e6a235690334848c13fb29ca55cb0d6c00' \
+            '.github/m6-react-path-order/test_linux_qa_profile.py ba7fe167b3dda7262ee63dc2cd9d8dbd78b2b9906b277ae925a358e9b7b85ad3' \
+            '.github/m6-react-path-order/test_draft_binding.py 4f7edf82d0f7582d9ca4c05bd9e9fdd7aee1d7cf5a94c259ec5b34e952054424'; do
+            set -- $entry
+            test "$(sha256sum "$1" | cut -d ' ' -f 1)" = "$2"
+            test "$(git show "$GITHUB_SHA:$1" | sha256sum | cut -d ' ' -f 1)" = "$2"
+          done
+      - name: Test QA profile Path order
+        working-directory: .github/m6-react-path-order
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest -v test_linux_qa_profile test_draft_binding
+      - name: Test retained evidence Path order
+        working-directory: som-rs/scripts/react_output_acceptance
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest -v test_retained_evidence
+      - name: Test independent auditor Path order
+        working-directory: som-rs/scripts/react_output_acceptance/audit
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest -v test_qa_profile_audit

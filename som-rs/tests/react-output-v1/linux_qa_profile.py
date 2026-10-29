@@ -12,10 +12,10 @@ from pathlib import Path
 import platform
 import stat
 
-# Deliberately unbound. An accepted receipt must bind the final exact bytes.
-PROFILE_SHA256: str | None = None
+# DRAFT ONLY: this scratch binding is not a sealed receipt or product authority.
+PROFILE_SHA256: str | None = '5e2e4852b32e8bdc5b60ad60e50fb8e6a235690334848c13fb29ca55cb0d6c00'
 NODE_SHA256 = '3de740a941a630439b22b79aafb383f4912b76354a2694765e8d59a033746538'
-NPM_TREE = ('69965a8f2a75cad99018e333ff1819bdc8cbf4f17570e77f24ad5f95aa57e558', 1921, 0)
+NPM_TREE = ('303f008099574a6edbb698df7d748a897f48f8a0c69cb1f3ee699e2937f50ca9', 1921, 0)
 CACHE_TREE = ('5267851624684b07307609f59d0b13705bd7934a1fd59bde2045463a3ee6ddda', 246, 0)
 PRETTIER_TREE = ('f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299', 56, 0)
 REFERENCE_FORMATTER = '636bd4a26884ea92873af81bf4fd5bbc0c065157e645c3919658a4d0bc29c0e8'
@@ -84,7 +84,7 @@ def safe_tree(root: Path, readonly: bool) -> tuple[str, int, int]:
                 need(stat.S_IMODE(item.st_mode) & 0o222 == 0, 'cache member writable')
             if stat.S_ISREG(item.st_mode):
                 lines.append((rel, rel + '\0' + file_sha(path) + '\n'))
-    lines.sort(key=lambda item: item[0])
+    lines.sort(key=lambda item: Path(item[0]))
     return hashlib.sha256(''.join(x[1] for x in lines).encode('utf-8')).hexdigest(), len(lines), 0
 
 def validate_host() -> None:

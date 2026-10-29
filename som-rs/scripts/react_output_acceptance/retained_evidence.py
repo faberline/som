@@ -196,7 +196,7 @@ def tree_inventory(root):
                 lines.append((rel, rel + '\0' + value + '\n'))
             else:
                 raise EvidenceError('evidence tree special file refused')
-    lines.sort(key=lambda item: item[0])
+    lines.sort(key=lambda item: Path(item[0]))
     return {'version': TREE_VERSION, 'root_mode': stat.S_IMODE(root.stat().st_mode), 'entries': entries,
             'tree_sha256': hashlib.sha256(''.join(row[1] for row in lines).encode('utf-8')).hexdigest(),
             'file_count': len(lines), 'symlink_count': 0}

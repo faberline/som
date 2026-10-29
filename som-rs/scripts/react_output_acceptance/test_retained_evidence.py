@@ -54,6 +54,17 @@ def fixture():
     return root, repo, profile, qa, module
 
 class RetainedEvidenceTests(unittest.TestCase):
+    def test_inventory_uses_frozen_path_order_when_lexical_order_differs(self):
+        root = Path(tempfile.mkdtemp(prefix='som-retained-order-', dir=os.environ['RUNNER_TEMP']))
+        (root / 'lib/cli').mkdir(parents=True)
+        (root / 'lib/cli.js').write_bytes(b'outer')
+        (root / 'lib/cli/entry.js').write_bytes(b'inner')
+        rows = [('lib/cli/entry.js', b'inner'), ('lib/cli.js', b'outer')]
+        stream = ''.join(name + '\0' + hashlib.sha256(data).hexdigest() + '\n' for name, data in rows).encode()
+        result = evidence.tree_inventory(root)
+        self.assertEqual(result['tree_sha256'], hashlib.sha256(stream).hexdigest())
+        self.assertEqual(result['file_count'], 2)
+
     def test_retains_complete_shared_bytes_and_before_after_sources(self):
         root, repo, profile, qa, module = fixture()
         out = root / 'qa-profile-evidence'
