@@ -23,9 +23,9 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           for entry in \
-            'audit.py 84f361f6177e8f95cf6fd52fd7a42bd7d38937b8641af97f4d8d2fd0b13f6023' \
+            'audit.py a890881f227147b6d0ec1421b706420e7f31a43f62f56bbc4a86d0353e2d254e' \
             'wheel_audit.py bb830eff1c37e2f104e2a84158419698bfd65b02c99c10c02b8950aa908c2512' \
-            'test_audit.py f2bfb4a3c1b9203f428b128abd5c1974f1a7bbecc603bd8b320e3ff6afc4b994' \
+            'test_audit.py 0ce3226fab166e073b62d9b32bd6cebf917058047f6e9ef0891e5c7dba22ff51' \
             'test_wheel_audit.py f73386008cd528cbadb9be8839e205725849159ba3f71de7ddaf895ec50b0002'; do
             set -- $entry
             test "$(sha256sum "$1" | cut -d ' ' -f 1)" = "$2"

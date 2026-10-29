@@ -78,7 +78,7 @@ class TarChecks(unittest.TestCase):
         key = 'a' * 64
         root = audit.QA + '/closures/' + key + '/cache/'
         items = [(root + 'archive-v0/target%02d' % n, 'dir', None) for n in range(80)]
-        items += [(root + 'wheels-v5/index/item%02d' % n, 'sym',
+        items += [(root + 'wheels-v5/' + ('index' if n < 40 else 'pypi') + '/item%02d' % n, 'sym',
                    audit.TEMP + '/' + root + 'archive-v0/target%02d' % n) for n in range(80)]
         with mock.patch.object(audit, 'EXPECTED_CACHE_LINKS', 80):
             with make_tar(items) as tar:
@@ -89,6 +89,33 @@ class TarChecks(unittest.TestCase):
                 with self.subTest(target=target), make_tar(changed) as tar, self.assertRaises(audit.AuditError):
                     audit.index_tar(tar)
             with make_tar(items[:-1]) as tar, self.assertRaises(audit.AuditError):
+                audit.index_tar(tar)
+            changed = list(items)
+            changed[-1] = (root + 'wheels-v5/other/item79', 'sym', changed[-1][2])
+            with make_tar(changed) as tar, self.assertRaises(audit.AuditError) as caught:
+                audit.index_tar(tar)
+            detail = json.loads(str(caught.exception).split(': ', 1)[1])
+            self.assertEqual(detail, {'name_length':len(changed[-1][0]), 'name_sha256':sha(changed[-1][0].encode()),
+                                      'target_length':len(changed[-1][2]), 'target_sha256':sha(changed[-1][2].encode())})
+            self.assertNotIn(changed[-1][0], str(caught.exception))
+            self.assertNotIn(changed[-1][2], str(caught.exception))
+            changed[-1] = (root + 'wheels-v5/other/"' + 'x' * 800, 'sym', changed[-1][2])
+            with make_tar(changed) as tar, self.assertRaises(audit.AuditError) as caught:
+                audit.index_tar(tar)
+            detail = str(caught.exception).split(': ', 1)[1]
+            self.assertLess(len(detail), 256)
+            self.assertEqual(json.loads(detail)['name_length'], len(changed[-1][0]))
+            self.assertNotIn('xxx', detail)
+            changed[-1] = (root + 'wheels-v5/pypi/item79', 'sym', audit.TEMP + '/' + root + 'archive-v0/')
+            with make_tar(changed) as tar, self.assertRaises(audit.AuditError) as caught:
+                audit.index_tar(tar)
+            self.assertIn('absolute TAR link leaves pinned cache', str(caught.exception))
+            changed[-1] = (root + 'wheels-v5/pypi/item79', 'sym', audit.TEMP + '/' + root + 'archive-v0//')
+            with make_tar(changed) as tar, self.assertRaises(audit.AuditError) as caught:
+                audit.index_tar(tar)
+            self.assertIn('absolute TAR link leaves pinned cache', str(caught.exception))
+            changed[-1] = (root + 'wheels-v5/index/item79', 'sym', audit.TEMP + '/' + root + 'archive-v0/target79')
+            with make_tar(changed) as tar, self.assertRaises(audit.AuditError):
                 audit.index_tar(tar)
 
     def test_traversal_duplicate_and_link_parent(self):

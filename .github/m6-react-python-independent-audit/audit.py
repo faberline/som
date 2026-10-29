@@ -121,6 +121,7 @@ def unpack(source, destination):
 
 def index_tar(tar):
     entries, total, absolute_cache_links = {}, 0, {}
+    cache_link_groups = {'index':0, 'pypi':0}
     for member in tar.getmembers():
         name = clean(member.name)
         need(name not in entries and (name in (QA,RT) or name.startswith(QA+'/') or name.startswith(RT+'/')), 'TAR path differs')
@@ -132,11 +133,17 @@ def index_tar(tar):
             target = member.linkname
             need(target and not any(c in target for c in ('\\','\x00','\n','\r')), 'TAR symlink refused')
             if target.startswith('/'):
-                match = re.fullmatch(QA + r'/closures/([0-9a-f]{64})/cache/wheels-v5/index/.+', name)
-                need(match is not None, 'absolute TAR link outside pinned cache index')
+                detail = json.dumps({'name_length':len(name), 'name_sha256':sha(name.encode('utf-8','surrogatepass')),
+                                     'target_length':len(target), 'target_sha256':sha(target.encode('utf-8','surrogatepass'))},
+                                    sort_keys=True, separators=(',',':'))
+                match = re.fullmatch(QA + r'/closures/([0-9a-f]{64})/cache/wheels-v5/(index|pypi)/.+', name)
+                need(match is not None, 'absolute TAR link outside pinned cache paths: '+detail)
+                cache_link_groups[match[2]] += 1
                 prefix = TEMP+'/'+QA+'/closures/'+match[1]+'/cache/archive-v0/'
-                need(target.startswith(prefix), 'absolute TAR link leaves pinned cache')
+                need(target.startswith(prefix) and len(target) > len(prefix), 'absolute TAR link leaves pinned cache: '+detail)
                 dest = clean(target.removeprefix(TEMP+'/'))
+                archive_root = QA+'/closures/'+match[1]+'/cache/archive-v0'
+                need(dest.startswith(archive_root+'/'), 'absolute TAR link leaves pinned cache: '+detail)
                 absolute_cache_links[name] = dest
             else:
                 dest = posixpath.normpath(posixpath.join(posixpath.dirname(name), target))
@@ -158,6 +165,8 @@ def index_tar(tar):
     need(len(absolute_cache_links) == EXPECTED_CACHE_LINKS
          and sum(member.issym() for member in entries.values()) == EXPECTED_CACHE_LINKS,
          'fixed absolute cache symlink inventory differs')
+    need(cache_link_groups == ({'index':40, 'pypi':40} if EXPECTED_CACHE_LINKS == 80 else {'index':0, 'pypi':0}),
+         'fixed cache symlink group inventory differs')
     return entries
 
 def data(tar, entries, name, limit=MAX_FILE):
