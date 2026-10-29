@@ -1,0 +1,17 @@
+name: M6 React Python payload synthetic fixture
+on:
+  push:
+    branches: [codex/m6-api-payload-fixture-20261029]
+permissions:
+  contents: read
+jobs:
+  synthetic-only:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Check synthetic adapter controls only
+        run: |
+          python3 -I -S -B -c 'import runpy,sys; sys.path.insert(0,".github/m6-api-payload-fixture"); runpy.run_path(".github/m6-api-payload-fixture/synthetic_fixture.py",run_name="__main__")'
