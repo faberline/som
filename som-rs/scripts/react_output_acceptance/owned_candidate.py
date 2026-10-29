@@ -3,6 +3,7 @@
 The new Mac path alone uses this owner. Missing ownership or wait is never success.
 """
 import contextlib
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -10,6 +11,7 @@ import runpy
 import signal
 import subprocess
 import sys
+import time
 from unittest import mock
 
 class OwnershipError(ValueError):pass
@@ -48,9 +50,34 @@ class CandidateOwner:
         self.events.append({'kind':'preparer-exit','exit_code':status})
         if status==0:need(self.process is not None and self.process.poll() is None)
         return status
-    def wait_after_signal(self, timeout=10):
-        proc=self.process;need(proc is not None and proc.poll() is None and os.getpgid(proc.pid)==proc.pid)
+    def wait_after_signal(self, timeout=10, grace=0.25):
+        proc=self.process
+        # Never poll/wait before group signals: an unreaped direct child reserves
+        # its PID, so this PID cannot be recycled as a new process-group ID.
+        need(proc is not None and proc.returncode is None and signal.getsignal(signal.SIGCHLD)==signal.SIG_DFL)
+        # ps reads identity without waitpid. A zombie is still our unreaped
+        # child and keeps its PID reserved; any other owner/PGID is refused.
+        identity_argv=['/bin/ps','-ww','-p',str(proc.pid),'-o','pid=,ppid=,pgid=,stat=,command=']
+        result=subprocess.run(identity_argv,capture_output=True,check=False,timeout=10)
+        fields=result.stdout.decode().strip().split(None,4)
+        need(result.returncode==0 and len(fields)==5 and fields[0]==str(proc.pid)
+             and fields[1]==str(os.getpid()) and fields[2]==str(proc.pid)
+             and (fields[3].startswith('Z') or fields[4]==' '.join(self.argv))
+             and os.getpgid(proc.pid)==proc.pid)
+        with (self.out/'candidate-signal-identity.stdout').open('xb') as f:f.write(result.stdout)
+        with (self.out/'candidate-signal-identity.stderr').open('xb') as f:f.write(result.stderr)
+        self.events.append({'kind':'candidate-signal-identity','pid':proc.pid,'parent_pid':os.getpid(),
+                            'pgid':proc.pid,'state':fields[3],'argv':identity_argv,'exit_code':result.returncode,
+                            'stdout_sha256':hashlib.sha256(result.stdout).hexdigest(),
+                            'stderr_sha256':hashlib.sha256(result.stderr).hexdigest()})
         os.killpg(proc.pid,signal.SIGTERM)
+        self.events.append({'kind':'candidate-signal','pid':proc.pid,'signal':'TERM'})
+        time.sleep(grace)
+        try:
+            os.killpg(proc.pid,signal.SIGKILL)
+            self.events.append({'kind':'candidate-signal','pid':proc.pid,'signal':'KILL'})
+        except ProcessLookupError:
+            self.events.append({'kind':'candidate-signal','pid':proc.pid,'signal':'KILL','group':'absent'})
         try:
             code=proc.wait(timeout=timeout)
             self.events.append({'kind':'candidate-wait','pid':proc.pid,'state':'completed','exit_code':code})

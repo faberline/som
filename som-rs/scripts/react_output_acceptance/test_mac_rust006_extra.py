@@ -382,14 +382,16 @@ class OwnedCandidateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp).resolve();candidate=root/'candidate';candidate.mkdir()
             owner=owned_candidate.CandidateOwner(root,candidate,18919)
-            proc=mock.Mock();proc.pid=7123;proc.poll.return_value=None
+            proc=mock.Mock();proc.pid=7123;proc.returncode=None
             proc.wait.side_effect=[subprocess.TimeoutExpired('fixture',1),-9];owner.process=proc
+            command=('7123 '+str(os.getpid())+' 7123 S '+' '.join(owner.argv)+'\n').encode()
             with mock.patch.object(owned_candidate.os,'getpgid',return_value=7123), \
+                 mock.patch.object(owned_candidate.subprocess,'run',return_value=subprocess.CompletedProcess([],0,command,b'')), \
                  mock.patch.object(owned_candidate.os,'killpg') as kill:
                 with self.assertRaises(subprocess.TimeoutExpired):owner.wait_after_signal(timeout=1)
-            self.assertEqual([call.args[1] for call in kill.call_args_list],[owned_candidate.signal.SIGTERM,owned_candidate.signal.SIGKILL])
-            self.assertEqual([event['state'] for event in owner.events],['timeout','completed'])
-            self.assertEqual(owner.events[1]['kind'],'candidate-cleanup-wait')
+            self.assertEqual([call.args[1] for call in kill.call_args_list],[owned_candidate.signal.SIGTERM,owned_candidate.signal.SIGKILL,owned_candidate.signal.SIGKILL])
+            self.assertEqual([event['state'] for event in owner.events if event['kind'].endswith('wait')],['timeout','completed'])
+            self.assertEqual(owner.events[-1]['kind'],'candidate-cleanup-wait')
 
     def test_candidate_audit_checks_wait_and_observed_descendants(self):
         import hashlib
@@ -412,15 +414,21 @@ class OwnedCandidateTests(unittest.TestCase):
             observation('owner-candidate-cwd',['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn'],0,f'p{pid}\nn{candidate}\n'.encode())
             observation('owner-candidate-listener',listener,0,b'1234\n')
             observation('owner-candidate-table-before',table,0,b'1234 123 1234 candidate\n1235 1234 1234 worker\n')
+            ident_argv=['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,stat=,command=']
+            identity=(f'{pid} {parent} {pid} S '+' '.join(argv)+'\n').encode()
+            (out/'candidate-signal-identity.stdout').write_bytes(identity);(out/'candidate-signal-identity.stderr').write_bytes(b'')
+            events.append({'kind':'candidate-signal-identity','pid':pid,'parent_pid':parent,'pgid':pid,'argv':ident_argv,'exit_code':0,'state':'S',
+                           'stdout_sha256':hashlib.sha256(identity).hexdigest(),'stderr_sha256':hashlib.sha256(b'').hexdigest()})
+            events.extend([{'kind':'candidate-signal','pid':pid,'signal':'TERM'}, {'kind':'candidate-signal','pid':pid,'signal':'KILL'}])
             events.append({'kind':'candidate-wait','pid':pid,'state':'completed','exit_code':-15})
             observation('owner-candidate-table-after',table,0,b'1 0 1 init\n')
             observation('owner-candidate-listener-after',listener,1,b'')
             def save(): (out/'candidate-owner.json').write_text(json.dumps({'version':'som.m6-owned-candidate.v1','product_acceptance_passed':False,'events':events}))
             save();self.assertEqual(audit.audit(out,candidate)['observed_processes_absent'],2)
-            events[6]['state']='timeout';save()
+            wait=next(e for e in events if e['kind']=='candidate-wait');wait['state']='timeout';save()
             with self.assertRaises(ValueError):audit.audit(out,candidate)
-            events[6]['state']='completed';after=out/'owner-candidate-table-after.stdout';after.write_bytes(b'1 0 1 init\n1235 1 1234 worker\n')
-            events[7]['stdout_sha256']=hashlib.sha256(after.read_bytes()).hexdigest();save()
+            wait['state']='completed';after=out/'owner-candidate-table-after.stdout';after.write_bytes(b'1 0 1 init\n1235 1 1234 worker\n')
+            next(e for e in events if e.get('name')=='owner-candidate-table-after')['stdout_sha256']=hashlib.sha256(after.read_bytes()).hexdigest();save()
             with self.assertRaises(ValueError):audit.audit(out,candidate)
 
     def test_real_macos_owned_candidate_audit(self):
@@ -452,6 +460,54 @@ class OwnedCandidateTests(unittest.TestCase):
             finally:
                 if owner.process is not None and owner.process.poll() is None:
                     owner.process.terminate();owner.process.wait(timeout=10)
+
+    def test_macos_orphan_and_term_ignoring_descendant_cleanup(self):
+        import subprocess,time,signal
+        import owned_candidate
+        csrc="""#include <sys/types.h>
+#include <unistd.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+int main(void){pid_t p=fork();if(p<0)return 2;if(p==0){signal(SIGTERM,SIG_IGN);FILE*f=fopen(getenv("FIXTURE_PID"),"w");if(!f)_exit(3);fprintf(f,"%d",getpid());fclose(f);for(;;)pause();}if(getenv("FIXTURE_ORPHAN")){sleep(2);_exit(0);}for(;;)pause();}
+"""
+        for mode in ('orphan','term'):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as temp:
+                root=Path(temp).resolve();candidate=root/'candidate';candidate.mkdir();(candidate/'assets').mkdir()
+                source=root/'fixture.c';source.write_text(csrc);binary=candidate/'som'
+                subprocess.run(['cc',str(source),'-o',str(binary)],check=True,timeout=30)
+                preparer=root/'preparer.py';preparer.write_text('import subprocess,sys\nfrom pathlib import Path\nc=Path(sys.argv[1])\nsubprocess.Popen([str(c/"som"),"serve","--assets",str(c/"assets"),"--port","18919"],cwd=c,start_new_session=True)\n')
+                owner=owned_candidate.CandidateOwner(root,candidate,18919);env=dict(os.environ,FIXTURE_PID=str(root/'child.pid'))
+                if mode=='orphan':env['FIXTURE_ORPHAN']='1'
+                try:
+                    self.assertEqual(owner.run_preparer(preparer,[str(candidate)],env,timeout=10),0)
+                    for _ in range(100):
+                        if (root/'child.pid').is_file():break
+                        time.sleep(.05)
+                    else:self.fail('descendant did not start')
+                    child=int((root/'child.pid').read_text())
+                    if mode=='orphan':
+                        for _ in range(100):
+                            state=subprocess.run(['/bin/ps','-p',str(owner.process.pid),'-o','stat='],capture_output=True,text=True).stdout.strip()
+                            if state.startswith('Z'):break
+                            time.sleep(.05)
+                        else:self.fail('leader did not become an unreaped zombie')
+                    self.assertIsNone(owner.process.returncode)
+                    owner.wait_after_signal(timeout=10,grace=.1)
+                    signals=[event['signal'] for event in owner.events if event['kind']=='candidate-signal']
+                    self.assertEqual(signals,['TERM','KILL'])
+                    for _ in range(100):
+                        result=subprocess.run(['/bin/ps','-p',str(child),'-o','stat='],capture_output=True,text=True)
+                        if result.returncode!=0 or result.stdout.strip().startswith('Z'):break
+                        time.sleep(.05)
+                    else:self.fail('TERM-ignoring descendant is still running')
+                finally:
+                    # The direct child is not polled before group cleanup.
+                    if owner.process is not None and owner.process.returncode is None:
+                        try:
+                            if os.getpgid(owner.process.pid)==owner.process.pid:os.killpg(owner.process.pid,signal.SIGKILL)
+                        except ProcessLookupError:pass
+                        owner.process.wait(timeout=10)
 
     def test_preparer_child_remains_owned_and_has_real_wait(self):
         import subprocess

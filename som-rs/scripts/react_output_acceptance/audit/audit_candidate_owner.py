@@ -26,11 +26,25 @@ def audit(out,candidate):
     waits=[(i,e) for i,e in enumerate(events) if e.get('kind')=='candidate-wait']
     prep=[(i,e) for i,e in enumerate(events) if e.get('kind')=='preparer-exit']
     need(len(starts)==len(waits)==len(prep)==1);si,start=starts[0];wi,wait=waits[0];pi,exit=prep[0]
+    identities=[(i,e) for i,e in enumerate(events) if e.get('kind')=='candidate-signal-identity']
+    signals=[(i,e) for i,e in enumerate(events) if e.get('kind')=='candidate-signal']
+    need(len(identities)==1 and len(signals)==2);ii,identity=identities[0]
     pid=start['pid'];parent=start['parent_pid'];argv=[str(candidate/'som'),'serve','--assets',str(candidate/'assets'),'--port','18919']
     need(type(pid) is int and pid>1 and type(parent) is int and parent>1 and si<pi<wi
          and start['argv']==runtime['argv']==argv and start['cwd']==str(candidate) and exit['exit_code']==0
          and runtime['pid']==pid and runtime['port']==18919 and wait['pid']==pid and wait['state']=='completed'
          and type(wait['exit_code']) is int and sha(read(candidate/'som'))==runtime['binary_sha256']==build['binary_sha256'])
+    identity_argv=['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,stat=,command=']
+    id_stdout=read(out/'candidate-signal-identity.stdout');id_stderr=read(out/'candidate-signal-identity.stderr')
+    parts=id_stdout.decode().strip().split(None,4)
+    need(identity.get('pid')==pid and identity.get('parent_pid')==parent and identity.get('pgid')==pid
+         and identity.get('argv')==identity_argv and identity.get('exit_code')==0 and
+         identity.get('stdout_sha256')==sha(id_stdout) and identity.get('stderr_sha256')==sha(id_stderr) and not id_stderr
+         and len(parts)==5 and parts[:3]==[str(pid),str(parent),str(pid)]
+         and identity.get('state')==parts[3] and (parts[3].startswith('Z') or parts[4]==' '.join(argv))
+         and pi<ii<signals[0][0]<signals[1][0]<wi
+         and [e.get('signal') for _,e in signals]==['TERM','KILL']
+         and all(e.get('pid')==pid for _,e in signals))
     definitions={
       'owner-candidate-ps':['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command='],
       'owner-candidate-cwd':['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn'],
