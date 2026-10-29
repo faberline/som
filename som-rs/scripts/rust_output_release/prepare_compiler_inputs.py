@@ -11,6 +11,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -25,6 +26,57 @@ BASELINE_PINS = {
     'runtime.json': '7c4ba46a498bb0f601bd67ff77f99dfe75e4ee1669d6af3c53f3b338a550b970',
     'source.json': 'd40578d8845fff8bfeff627924aa501e56f3973eddb09c2d871e25adec2bbbe5',
 }
+FINAL_CANARY_COMPILE_SHA = {
+    ('python', 'PAIR_V7_FLOW_CONTRACT'): '1e3817f10bdafd70ed7cf21e6a5adba42432ed5bbf07abf9a4096add4cd35b19',
+    ('python', 'services14-0000'): '817e7e80d907a029a7c0063770e5cf6d9e5a7565f26eace1b8444f57c6846734',
+    ('rust', 'example-v1'): '6acb39533d290ac836446ccb613c059592019ba90755dcf8133d3198f9ac20c5',
+    ('rust', 'example-v5'): '129990e19ee15fa9a3a685d75afad315198dbc4593b41d2da8e583afb8bf0c84',
+}
+
+
+def final_receipt(path, expected_sha, revision):
+    """Check the supplied Mac acceptance receipt; the caller owns its authority."""
+    rc.require(path.is_absolute() and all(not part.is_symlink() for part in (path, *path.parents)),
+               'acceptance receipt must be a physical absolute path')
+    rc.require(re.fullmatch(r'[0-9a-f]{64}', expected_sha) is not None and rc.digest(path) == expected_sha,
+               'acceptance receipt identity differs')
+    rc.require(re.fullmatch(r'[0-9a-f]{40}', revision) is not None, 'final source revision required')
+    accepted = parse(path.read_bytes())
+    candidate = accepted.get('candidate', {})
+    audit = accepted.get('independent_audit', {})
+    rc.require(accepted.get('version') == 'som.react-output-acceptance-evidence.v1'
+               and accepted.get('status') == 'accepted_after_independent_raw_audit'
+               and candidate.get('source_commit') == revision
+               and re.fullmatch(r'[0-9a-f]{64}', candidate.get('binary_sha256', '')) is not None
+               and candidate['binary_sha256'] != '59dab78a0f401a86e028c186285a888cfdf304b2d077e167d46b20d1131a3308'
+               and accepted.get('baseline', {}).get('binary_sha256') == BASELINE_PINS['som']
+               and re.fullmatch(r'[0-9a-f]{64}', audit.get('summary_sha256', '')) is not None
+               and re.fullmatch(r'[0-9a-f]{64}', audit.get('audit_sha256', '')) is not None,
+               'final Mac acceptance receipt differs')
+    return accepted
+
+
+def final_review(accepted):
+    """Join the receipt to the separately retained review of these same bytes."""
+    review = accepted.get('independent_review', {})
+    relative = review.get('path', '')
+    expected = review.get('sha256', '')
+    rc.require(isinstance(relative, str) and relative and not Path(relative).is_absolute()
+               and '..' not in Path(relative).parts and Path(relative).as_posix() == relative
+               and isinstance(expected, str) and re.fullmatch(r'[0-9a-f]{64}', expected) is not None,
+               'independent review reference differs')
+    path = rc.REPO / relative
+    rc.require(all(not part.is_symlink() for part in (path, *path.parents)) and rc.digest(path) == expected,
+               'independent review bytes differ')
+    record = parse(path.read_bytes())
+    rc.require(record.get('version') == 'som.react-output-independent-acceptance-review.v1'
+               and record.get('findings') == []
+               and record.get('candidate_binary_sha256') == accepted['candidate']['binary_sha256']
+               and record.get('compiler_source_commit') == accepted['candidate']['source_commit']
+               and record.get('audit_sha256') == accepted['independent_audit']['audit_sha256']
+               and record.get('raw_run_sha256') == accepted['report_sha256']['run/run.json'],
+               'independent review does not bind this acceptance')
+    return path
 
 
 def parse(raw):
@@ -173,18 +225,41 @@ def main():
     parser.add_argument('--raw-root', type=Path, required=True)
     parser.add_argument('--audit-root', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
+    parser.add_argument('--mac-accepted-receipt', type=Path)
+    parser.add_argument('--mac-accepted-receipt-sha256')
+    parser.add_argument('--mac-candidate-revision')
     args = parser.parse_args()
     raw, audit_root, out = args.raw_root.resolve(), args.audit_root.resolve(), args.out.resolve()
     rc.require(not out.exists(), 'preserve existing release inputs')
-    receipt_path = rc.REPO / RECEIPT
-    rc.require(rc.digest(receipt_path) == RECEIPT_SHA, 'accepted #130 receipt differs')
-    accepted = rc.load(receipt_path)
+    values = (args.mac_accepted_receipt, args.mac_accepted_receipt_sha256, args.mac_candidate_revision)
+    rc.require(all(value is None for value in values) or all(value is not None for value in values),
+               'all final Mac acceptance inputs are required together')
+    final_mac = args.mac_accepted_receipt is not None
+    if final_mac:
+        receipt_path = args.mac_accepted_receipt
+        accepted = final_receipt(receipt_path, args.mac_accepted_receipt_sha256, args.mac_candidate_revision)
+        review_path = final_review(accepted)
+        audit_summary_sha = accepted['independent_audit']['summary_sha256']
+    else:
+        receipt_path = rc.REPO / RECEIPT
+        rc.require(rc.digest(receipt_path) == RECEIPT_SHA, 'accepted #130 receipt differs')
+        accepted = rc.load(receipt_path)
+        audit_summary_sha = AUDIT_SUMMARY_SHA
     source, audited = Sources(raw), Sources(audit_root)
     for relative, expected in accepted['report_sha256'].items():
         source.read(relative, expected)
+    actual_run = source.json('run/run.json') if final_mac else None
+    if final_mac:
+        rc.require(actual_run.get('passed') is True and actual_run.get('failed') == []
+                   and actual_run.get('not_run') == [] and actual_run.get('record_raw_http') is True,
+                   'final raw acceptance run is not complete')
+        for key in ('candidate_url', 'baseline_url'):
+            rc.require(isinstance(actual_run.get(key), str) and actual_run[key].startswith('http://127.0.0.1:'),
+                       'final acceptance URL differs')
+        rc.require(actual_run['candidate_url'] != actual_run['baseline_url'], 'candidate and baseline URLs match')
     source.read('summary.json', accepted['runtime']['original_summary_sha256'])
     audited.read('audit.json', accepted['independent_audit']['audit_sha256'])
-    summary = audited.json('summary.json', AUDIT_SUMMARY_SHA)
+    summary = audited.json('summary.json', audit_summary_sha)
     rc.require(summary['passed'] is True and summary['audit_totals']['failed'] == summary['audit_totals']['unrun'] == 0,
                'retained independent audit did not pass')
     candidate = raw / 'candidate'
@@ -208,14 +283,28 @@ def main():
             cc, request, response = source.call('python', compile_id)
             ac, arequest, aresponse = source.call('python', assemble_id)
             rc.require(cc['url'].endswith('/v1/compile') and ac['url'].endswith('/v1/assemble'), 'Python canary routes differ')
+            if final_mac:
+                base = actual_run['candidate_url' if side == 'candidate' else 'baseline_url']
+                rc.require(cc['url'] == base + '/v1/compile' and ac['url'] == base + '/v1/assemble'
+                           and hashlib.sha256(request).hexdigest() == FINAL_CANARY_COMPILE_SHA['python', name],
+                           'Python canary case or compiler side differs')
             destination.append(pin.case(side, 'python', name, request, response, arequest, aresponse,
                 {'kind': 'captured_http', 'compile_call': compile_id, 'assemble_call': assemble_id}, family))
     for name, new_compile, old_compile, assemble_id in [('example-v1', 1, 5, 14), ('example-v5', 17, 20, 26)]:
-        _, request, response = source.call('rust', new_compile)
-        _, arequest, aresponse = source.call('rust', assemble_id)
+        new_call, request, response = source.call('rust', new_compile)
+        assembly_call, arequest, aresponse = source.call('rust', assemble_id)
+        if final_mac:
+            rc.require(new_call['url'] == actual_run['candidate_url'] + '/v1/compile'
+                       and assembly_call['url'] == actual_run['candidate_url'] + '/v1/assemble'
+                       and hashlib.sha256(request).hexdigest() == FINAL_CANARY_COMPILE_SHA['rust', name],
+                       'Rust candidate canary case differs')
         canaries['rust'].append(pin.case('candidate', 'rust', name, request, response, arequest, aresponse,
             {'kind': 'captured_http', 'compile_call': new_compile, 'assemble_call': assemble_id}))
-        _, request, response = source.call('rust', old_compile)
+        old_call, request, response = source.call('rust', old_compile)
+        if final_mac:
+            rc.require(old_call['url'] == actual_run['baseline_url'] + '/v1/compile'
+                       and hashlib.sha256(request).hexdigest() == FINAL_CANARY_COMPILE_SHA['rust', name],
+                       'Rust previous canary case differs')
         previous_request = compact({'bundle': parse(response)['bundle']})
         before['rust'].append(pin.case('previous', 'rust', name, request, response, previous_request, aresponse,
             {'kind': 'captured_compile_and_derived_assemble', 'compile_call': old_compile,
@@ -248,13 +337,16 @@ def main():
             ('binary', 'som'), ('runtime', 'runtime.json'), ('build', 'build.json'), ('source', 'source.json'))},
             'assets': {'path': str(directory / 'assets'), 'manifest_sha256': runtime['health']['asset_manifest_sha256']}}
 
+    acceptance_assertions = ({'/status': 'accepted_after_independent_raw_audit',
+                              '/candidate/source_commit': args.mac_candidate_revision,
+                              '/candidate/binary_sha256': accepted['candidate']['binary_sha256']} if final_mac else {
+                              '/status': 'accepted_after_independent_raw_audit',
+                              '/source_boundary/frozen_contracts_tests_compiler_targets_and_templates_unchanged': True})
     config = {'version': 'som.compiler-output-switch-prerequisites.v1', 'profile': 'compiler-only',
               'repo': str(rc.REPO), 'base_controller': {'path': str(rc.BASE_PATH), 'sha256': rc.BASE_SHA256},
               'candidate': compiler(candidate), 'previous': compiler(previous),
               'gates': {
-                  'accepted_issue130': {**binding(receipt_path), 'assertions': {
-                      '/status': 'accepted_after_independent_raw_audit',
-                      '/source_boundary/frozen_contracts_tests_compiler_targets_and_templates_unchanged': True}},
+                  'accepted_issue130': {**binding(receipt_path), 'assertions': acceptance_assertions},
                   'complete_runtime': {**binding(raw / 'run/run.json'), 'assertions': {'/passed': True, '/failed': [], '/not_run': []}},
                   'independent_audit': {**binding(audit_root / 'audit.json'), 'assertions': {'/totals/failed': 0, '/totals/unrun': 0}},
                   'audit_summary': {**binding(audit_root / 'summary.json'), 'assertions': {'/passed': True}}},
@@ -264,6 +356,12 @@ def main():
                                        'tree_sha256': rc.formatter_tree_sha(formatter)},
               'cli_calibration': calibration,
               'source_files': source.files, 'audit_source_files': audited.files}
+    if final_mac:
+        config['gates']['independent_source_review'] = {**binding(review_path), 'assertions': {
+            '/candidate_binary_sha256': accepted['candidate']['binary_sha256'],
+            '/compiler_source_commit': args.mac_candidate_revision,
+            '/audit_sha256': accepted['independent_audit']['audit_sha256'],
+            '/raw_run_sha256': accepted['report_sha256']['run/run.json'], '/findings': []}}
     rc.check_prerequisites(config)
     (out / 'prerequisites.json').write_text(json.dumps(config, indent=1) + '\n')
     print(json.dumps({'passed': True, 'candidate_cases': {k: len(v) for k, v in canaries.items()},

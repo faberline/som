@@ -61,6 +61,47 @@ class CompilerInputTests(unittest.TestCase):
         self.root = Path(temporary.name).resolve()
         self.rc, self.producer, self.runner = modules()
 
+    def test_final_mac_receipt_and_independent_review_are_exactly_joined(self):
+        revision, binary, audit, raw = '1' * 40, '2' * 64, '3' * 64, '4' * 64
+        review_path = self.root / 'evidence/review.json'
+        review = {'version': 'som.react-output-independent-acceptance-review.v1', 'findings': [],
+                  'candidate_binary_sha256': binary, 'compiler_source_commit': revision,
+                  'audit_sha256': audit, 'raw_run_sha256': raw}
+        write(review_path, review)
+        accepted = {'version': 'som.react-output-acceptance-evidence.v1',
+                    'status': 'accepted_after_independent_raw_audit',
+                    'candidate': {'source_commit': revision, 'binary_sha256': binary},
+                    'baseline': {'binary_sha256': self.producer.BASELINE_PINS['som']},
+                    'independent_audit': {'summary_sha256': '5' * 64, 'audit_sha256': audit},
+                    'independent_review': {'path': 'evidence/review.json', 'sha256': digest(review_path)},
+                    'report_sha256': {'run/run.json': raw}}
+        receipt = self.root / 'receipt.json'
+        write(receipt, accepted)
+        with mock.patch.object(self.rc, 'REPO', self.root, create=True):
+            self.assertEqual(self.producer.final_receipt(receipt, digest(receipt), revision), accepted)
+            self.assertEqual(self.producer.final_review(accepted), review_path)
+            with self.assertRaises(RuntimeError):
+                self.producer.final_receipt(receipt, '0' * 64, revision)
+            with self.assertRaises(RuntimeError):
+                self.producer.final_receipt(receipt, digest(receipt), '9' * 40)
+            review['candidate_binary_sha256'] = '9' * 64
+            write(review_path, review)
+            accepted['independent_review']['sha256'] = digest(review_path)
+            with self.assertRaises(RuntimeError):
+                self.producer.final_review(accepted)
+
+    def test_final_mac_receipt_refuses_old_binary(self):
+        accepted = {'version': 'som.react-output-acceptance-evidence.v1',
+                    'status': 'accepted_after_independent_raw_audit',
+                    'candidate': {'source_commit': '1' * 40,
+                                  'binary_sha256': '59dab78a0f401a86e028c186285a888cfdf304b2d077e167d46b20d1131a3308'},
+                    'baseline': {'binary_sha256': self.producer.BASELINE_PINS['som']},
+                    'independent_audit': {'summary_sha256': '5' * 64, 'audit_sha256': '3' * 64}}
+        receipt = self.root / 'old.json'
+        write(receipt, accepted)
+        with self.assertRaises(RuntimeError):
+            self.producer.final_receipt(receipt, digest(receipt), '1' * 40)
+
     def test_protected_port_guard_only_reads_listener_metadata(self):
         with mock.patch.object(self.runner.subprocess, 'run', return_value=types.SimpleNamespace(
                 returncode=1, stdout=b'', stderr=b'')) as command, \

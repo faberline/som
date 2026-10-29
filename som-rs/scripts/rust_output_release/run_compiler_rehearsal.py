@@ -148,7 +148,13 @@ def main():
     parser.add_argument('--raw-root', type=Path, required=True)
     parser.add_argument('--audit-root', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
+    parser.add_argument('--mac-accepted-receipt', type=Path)
+    parser.add_argument('--mac-accepted-receipt-sha256')
+    parser.add_argument('--mac-candidate-revision')
     args = parser.parse_args()
+    mac_values = (args.mac_accepted_receipt, args.mac_accepted_receipt_sha256, args.mac_candidate_revision)
+    rc.require(all(value is None for value in mac_values) or all(value is not None for value in mac_values),
+               'all final Mac acceptance inputs are required together')
     rc.require(os.environ.get('GITHUB_ACTIONS') == 'true'
                and os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted'
                and os.environ.get('RUNNER_OS') == 'macOS'
@@ -165,9 +171,13 @@ def main():
                'tag': 'not authorized or created', 'github_release': 'not authorized or created',
                'source_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=rc.REPO, text=True).strip()}
     try:
+        mac_args = ([] if args.mac_accepted_receipt is None else [
+            '--mac-accepted-receipt', str(args.mac_accepted_receipt),
+            '--mac-accepted-receipt-sha256', args.mac_accepted_receipt_sha256,
+            '--mac-candidate-revision', args.mac_candidate_revision])
         for name, argv in [
                 ('prepare', [sys.executable, str(HERE / 'prepare_compiler_inputs.py'), '--raw-root', str(args.raw_root.resolve()),
-                             '--audit-root', str(args.audit_root.resolve()), '--out', str(out / 'run/inputs')]),
+                             '--audit-root', str(args.audit_root.resolve()), '--out', str(out / 'run/inputs'), *mac_args]),
                 ('rehearse', [sys.executable, str(HERE / 'rehearse.py'), '--prerequisites', str(out / 'run/inputs/prerequisites.json'),
                               '--out', str(out / 'run/rehearsal')])]:
             call = supervision.invoke(argv, rc.REPO, out, name, timeout=1800, grace=300,
