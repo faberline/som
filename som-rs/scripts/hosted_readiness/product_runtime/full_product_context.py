@@ -33,6 +33,7 @@ GOLDENS_SHA256 = 'ea573d3c842d367b32538ad8b9fec01608b4f05f676a07a80d9b9acf81a69a
 BASELINE = 'som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json'
 BASELINE_SHA256 = '650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9'
 DEPENDENCY_GUARD = 'som-rs/scripts/hosted_readiness/dependency_candidate.py'
+NATIVE_AUTHORITY = 'som-rs/scripts/hosted_readiness/native_qa_authority.py'
 ENV = 'SOM_FULL_PRODUCT_CONTEXT'
 _ACTIVE = None
 
@@ -149,9 +150,16 @@ class GitSourceFinder(importlib.abc.MetaPathFinder, importlib.abc.Loader):
             return None
         require(origin.suffix == '.py', 'repository extension or bytecode import refused')
         name = origin.relative_to(self.sources.root).as_posix()
+        if _ACTIVE is not None and getattr(_ACTIVE, 'qa_mode', None) == 'native-qa-v1':
+            require(name in _ACTIVE.qa_source_authority['admitted_repository_python_sources'],
+                    'repository QA source is outside sealed authority')
         self.pending[fullname] = (origin, self.sources.read(name))
-        return importlib.util.spec_from_file_location(fullname, origin, loader=self,
-            submodule_search_locations=[str(origin.parent)] if found.submodule_search_locations is not None else None)
+        spec = importlib.machinery.ModuleSpec(fullname, self, origin=str(origin),
+                                               is_package=found.submodule_search_locations is not None)
+        if found.submodule_search_locations is not None:
+            spec.submodule_search_locations = [str(origin.parent)]
+        spec.has_location = True
+        return spec
 
     def create_module(self, spec):
         return None
@@ -194,6 +202,16 @@ class Context:
             require(temporary in value.parents and '..' not in value.parts and value.is_dir()
                     and not any(item.is_symlink() for item in (value, *value.parents)),
                     'regular hosted input root required: ' + key)
+        self.qa_mode = self.data.get('qa_mode', 'experimental-preparation')
+        require(self.qa_mode in {'experimental-preparation', 'historical', 'native-qa-v1'}, 'known explicit QA source mode required')
+        self.qa_source_authority = None
+        self.qa_import_controls = None
+        if self.qa_mode != 'experimental-preparation':
+            authority = self.module('native_qa_authority', NATIVE_AUTHORITY)
+            paths = self.sources.git('ls-tree', '-r', '--name-only', self.helper_revision).decode().splitlines()
+            self.qa_source_authority = authority.verify(self.sources.read, self.qa_mode, paths, helper_revision=self.helper_revision, candidate_revision=self.candidate_revision)
+            if self.qa_mode == 'native-qa-v1':
+                self.qa_import_controls = authority.install_raw_finder(self.sources.read, self.repo, self.qa_source_authority)
         guard = self.module('dependency_guard', DEPENDENCY_GUARD)
         self.candidate_admission = guard.verify_candidate_inputs(self.repo, self.helper_revision,
             self.candidate_revision, Path(self.data['assembly_root']))
@@ -297,6 +315,22 @@ class Context:
         require(self.data.get('transport') == 'recorded-assembled-products', 'recorded transport not selected')
         key = digest(canonical(prompt))
         require(target in {'python', 'rust'}, 'recorded product target differs')
+        if target == 'python' and self.data.get('qa_mode') == 'native-qa-v1':
+            helper = self.module('current_input_context',
+                'som-rs/scripts/hosted_readiness/product_runtime/current_input_context.py')
+            current = helper.lookup_files(self, prompt, identity)
+            if current is not None:
+                directory = self.work / 'current-input-reads'
+                directory.mkdir(parents=True, exist_ok=True)
+                with self.input_lock:
+                    sequence = self.cache.get('current_input_sequence', 0)
+                    self.cache['current_input_sequence'] = sequence + 1
+                record = {'target': target, 'requested_id': identity, 'prompt_sha256': key,
+                          'source_role': current['source_role'], 'named_inputs': current['rows'],
+                          'candidate_revision': self.candidate_revision, 'compiler_request_performed': False,
+                          'files_map_sha256': digest(canonical(current['files']))}
+                (directory / f'{os.getpid()}-{sequence:06d}.json').write_bytes(canonical(record) + b'\n')
+                return dict(current['files'])
         with self.input_lock:
             rows = self.python_rows() if target == 'python' else self.rust_rows()
         matches = [row for row in rows if digest(canonical(row['prompt'])) == key
@@ -315,6 +349,20 @@ class Context:
         (directory / f'{os.getpid()}-{index:06d}.json').write_bytes(canonical(record) + b'\n')
         return dict(matches[0]['files'])
 
+    def current_inputs(self, refresh=False):
+        helper = self.module('current_input_context',
+            'som-rs/scripts/hosted_readiness/product_runtime/current_input_context.py')
+        return helper.rows(self, refresh=refresh)
+
+
+    def current_refusal(self, identity, language):
+        if self.data.get('qa_mode') != 'native-qa-v1':
+            return None
+        helper = self.module('current_input_context',
+            'som-rs/scripts/hosted_readiness/product_runtime/current_input_context.py')
+        return helper.refusal(self, identity, language)
+
+
     def legacy_cases(self):
         rows = [row for row in self.python_rows() if row['cohort'] == 'python_legacy']
         require(len(rows) == 544, 'whole 544 legacy input cohort required')
@@ -331,13 +379,22 @@ class Context:
                        and row['golden']['files_map_sha256'] == expected['product_sha256']]
             if expected['family'] != 'rs':
                 matches = [row for row in matches if row['id'] == expected['id']]
-            prompt = matches[0]['prompt'] if matches else self.native_prompt(expected)
+            current = None
+            if self.data.get('qa_mode') == 'native-qa-v1' and expected['family'] == 'rs':
+                helper = self.module('current_input_context',
+                    'som-rs/scripts/hosted_readiness/product_runtime/current_input_context.py')
+                current = helper.phase2_input(self, expected)
+            prompt = current['prompt'] if current else (matches[0]['prompt'] if matches else self.native_prompt(expected))
             require(digest(canonical(prompt)) == expected['prompt_sha256'], 'phase2 frozen prompt differs')
             def missing(identity=expected['id']):
                 raise Refusal('required historical/fixed-before Python file authority missing: ' + identity)
-            files = matches[0]['files'] if matches else None
+            files = current['files'] if current else (matches[0]['files'] if matches else None)
             row = {**expected, 'load_prompt': lambda prompt=prompt: prompt,
                    'load_files': (lambda files=files: files) if files is not None else missing}
+            if current is not None:
+                row['historical_product_sha256'] = current['historical_product_sha256']
+                row['product_sha256'] = current['product_sha256']
+                row['current_input_role'] = current['source_role']
             require(prompt['version'] == expected['prompt_version'], 'phase2 prompt version differs')
             row['capabilities'] = bool(prompt.get('capabilities'))
             actual_checker, standard = checker(row)
@@ -587,12 +644,33 @@ class Context:
                 'RUSTC': str(rust['rustc']), 'CARGO': str(rust['cargo']), 'RUSTFMT': str(rust['rustfmt']),
                 'UV_OFFLINE': '1', 'UV_PYTHON_DOWNLOADS': 'never',
                 'SOM_PRODUCT_PYTHON': str(runtime['tools']['python']), 'SOM_PRODUCT_UV': str(runtime['tools']['uv'])}
+        if self.qa_mode == 'native-qa-v1':
+            source = os.environ.get('GITHUB_SHA')
+            require(type(source) is str and re.fullmatch('[0-9a-f]{40}', source) is not None
+                    and source == self.helper_revision == self.candidate_revision,
+                    'native child requires the actual same-candidate GitHub source')
+            environment['GITHUB_SHA'] = source
+            for key in ('GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT'):
+                value = os.environ.get(key)
+                require(type(value) is str and re.fullmatch('[1-9][0-9]*', value) is not None,
+                        'native child requires actual GitHub run identity: ' + key)
+                environment[key] = value
+            require(os.environ.get('GITHUB_REPOSITORY') == 'faberline/som',
+                    'native child requires the admitted GitHub repository')
+            environment['GITHUB_REPOSITORY'] = 'faberline/som'
         if os.environ.get('SOM_DEPENDENCY_ACTIONS_TOKEN'):
             environment['SOM_DEPENDENCY_ACTIONS_TOKEN'] = os.environ['SOM_DEPENDENCY_ACTIONS_TOKEN']
         return environment
 
     def verify(self):
         self.sources.verify()
+        if self.qa_import_controls is not None:
+            self.qa_import_controls.verify_installed()
+        if self.qa_source_authority is not None:
+            authority = self.module('native_qa_authority', NATIVE_AUTHORITY)
+            paths = self.sources.git('ls-tree', '-r', '--name-only', self.helper_revision).decode().splitlines()
+            require(authority.verify(self.sources.read, self.qa_mode, paths, helper_revision=self.helper_revision, candidate_revision=self.candidate_revision) == self.qa_source_authority,
+                    'numbered QA source authority changed during the run')
         # Re-read complete original inputs. Cached text maps cannot prove that
         # the transported source products stayed unchanged during the run.
         self.cache.pop('python_rows', None)
@@ -606,6 +684,9 @@ class Context:
                 and current['helper_revision'] == self.helper_revision
                 and current['candidate_revision'] == self.candidate_revision,
                 'candidate admission changed during the product run')
+        if 'current_companion_rows' in self.cache:
+            before = self.cache['current_companion_rows']
+            require(self.current_inputs(refresh=True) == before, 'current own-candidate input capture changed')
         runtime = self.runtime()
         runtime['reuse'].verify_installed_tree(Path(self.data['runtime_root']), runtime['inventory'], runtime['qualification'])
         runtime['sources'].verify()
@@ -690,6 +771,10 @@ def postgres_bin():
     return context().verify_postgres()
 
 
+def current_refusal(identity, language):
+    return context().current_refusal(identity, language)
+
+
 def legacy_cases():
     return context().legacy_cases()
 
@@ -741,5 +826,24 @@ def tool_command(script, arguments):
     require(ctx.repo in script.parents and script.suffix == '.py', 'fixed repository checker required')
     relative_path = script.relative_to(ctx.repo).as_posix()
     ctx.sources.read(relative_path)
+    arguments = list(arguments)
+    if ctx.qa_mode == 'native-qa-v1' and relative_path in {
+            'som-rs/tests/rust-output-v1/check_contract.py',
+            'som-rs/tests/typescript-output-v1/check_contract.py'}:
+        require(ctx.qa_source_authority is not None and ctx.qa_source_authority['source_authority_active'] is True,
+                'sealed QA authority required before choosing native receipt mode')
+        require(not any(value == '--qa-mode' or value.startswith('--qa-mode=') for value in arguments),
+                'QA source mode comes from the checked context')
+        arguments += ['--qa-mode', 'native-qa-v1']
     return [str(observer_python()), '-B', str(ctx.repo / 'som-rs/scripts/hosted_readiness/run_full_products.py'),
             '--execute-tool', relative_path, '--', *arguments]
+
+
+def native_contract_host():
+    ctx = context()
+    require(ctx.qa_mode == 'native-qa-v1' and ctx.qa_source_authority is not None
+            and ctx.qa_source_authority['source_authority_active'] is True,
+            'sealed exact native QA source authority required before host tools')
+    tools = ctx.rust_tools()
+    postgres = ctx.verify_postgres()
+    return {**tools, **{name: postgres / name for name in ('postgres', 'initdb', 'pg_ctl')}}

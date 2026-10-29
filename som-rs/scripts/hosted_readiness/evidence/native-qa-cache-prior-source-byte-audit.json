@@ -1,0 +1,82 @@
+{
+  "version": "som.source-only.patch-byte-audit.v1",
+  "patch_sha256": "1f1f8988b9674a15f69dacf6be6009fa487af9d1dfc37cf3791e1eb728eb2053",
+  "files": [
+    {
+      "path": ".github/workflows/rust-dependency-preparation.yml",
+      "before_sha256": "a6633463d499132fce37ec46e2b4378b72a01c5384469f914db53341890a4511",
+      "after_sha256": "8cae30e1126410edac2b8aab469753c91c181598a2a69b843e08298a05a7a021",
+      "manifest_matches": true
+    },
+    {
+      "path": ".github/workflows/rust-hosted-readiness.yml",
+      "before_sha256": "9c900d487fe2ff620e7f8bd253603c73db3d9101543334efd8df8d9e67f288dd",
+      "after_sha256": "3b7ab3037c98d14e80147421958d0f82bbf6ff1bbe6347c25b7fcc8edc8e6073",
+      "manifest_matches": true
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_python/produce_wheels.py",
+      "before_sha256": "2d99b38693d9234f8135ba409f401586a6de2c7164e018f7359ab10cbeadd224",
+      "after_sha256": "80ae55c54b9f4bbeb01d5584af68afef41975674faf899874aa1a79cce30f7f6",
+      "manifest_matches": true
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_python/test_produce_wheels.py",
+      "before_sha256": "cd73f44e9b6a70296dd104860ce5594c30fb8d7fcbf8bc2806e90f4114ed4fe8",
+      "after_sha256": "5c7940e2e8d74fbcc942fdfe9ad1e62775d10c6b77568eb67558e43a6621f707",
+      "manifest_matches": true
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py",
+      "before_sha256": "c3e20e1fce469c613172f5129cecc7004ba0b5c757d7d5bdf9807eb119ecdedd",
+      "after_sha256": "554830ac8efad099a6b8d77edec5c2b075813aa0365d43d9984c36ea1cc9d7f9",
+      "manifest_matches": true
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/readiness.json",
+      "before_sha256": "4c9176e02c8a9d7d8318ec779d092c31d8f91a71f24b6500af5b247f75c4c9a2",
+      "after_sha256": "77a8181e6d7c0cc7cc7e222fb630ce57c92adf2f89610b537449595116070482",
+      "manifest_matches": true
+    }
+  ],
+  "ast": {
+    "som-rs/scripts/hosted_readiness/product_python/produce_wheels.py": {
+      "changed_existing_functions": [
+        "main"
+      ],
+      "new_functions": [
+        "prepare_frozen_url_cache"
+      ],
+      "removed_functions": []
+    },
+    "som-rs/scripts/hosted_readiness/product_python/test_produce_wheels.py": {
+      "changed_existing_functions": [],
+      "new_functions": [
+        "WheelProducerTests.test_frozen_url_cache_preparation_is_separate_from_offline_product_sync",
+        "WheelProducerTests.test_cache_preparation_rejects_changed_wheel_before_any_command",
+        "WheelProducerTests.test_cache_preparation_does_not_reuse_existing_seed_output",
+        "WheelProducerTests.test_failed_cache_preparation_preserves_seed_and_never_qualifies_an_environment",
+        "WheelProducerTests.test_cache_preparation_rejects_extra_installed_hook_before_cleanup",
+        "WheelProducerTests.test_cache_preparation_refuses_source_change_after_native_sync"
+      ],
+      "removed_functions": [],
+      "original_test_count": 58,
+      "original_tests_unchanged": true
+    },
+    "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py": {
+      "changed_existing_functions": [
+        "Context.prepare_python"
+      ],
+      "new_functions": [],
+      "removed_functions": []
+    }
+  },
+  "context_pins": [
+    {
+      "json_key": "/source_files/som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py",
+      "value": "554830ac8efad099a6b8d77edec5c2b075813aa0365d43d9984c36ea1cc9d7f9",
+      "matches": true
+    }
+  ],
+  "local_project_code_executed": false
+}

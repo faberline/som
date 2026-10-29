@@ -1,0 +1,208 @@
+{
+  "reviewer": "/root/native_policy_role_audit",
+  "review_kind": "Independent source-only rereview",
+  "author_is_reviewer": false,
+  "verdict": "APPROVED_FOR_GITHUB_FIXTURE_VALIDATION_ONLY",
+  "findings": [],
+  "local_operations": "Read source, stdlib AST/JSON/hash and saved data only. No project/helper imports, tests, builds, native/compiler commands, service, resolver, restore or author script execution.",
+  "repository_Git_tracker_writes": false,
+  "github_tests": "unrun",
+  "real_final_candidate_execution": "unrun",
+  "sealing_approved": false,
+  "compiler_acceptance_passed": false,
+  "product_acceptance_passed": false,
+  "whole_acceptance_complete": false,
+  "aw": {
+    "own_session_id": "a4f89387-5783-4ef3-95e0-243600286bad",
+    "preflight_id": "bfdcb030-ee98-4ad2-8137-162d868bad18",
+    "update_session": "not exposed; no borrowed identity or claimed scope update",
+    "root_worktree_claim_preserved": true
+  },
+  "version": "som.semantic-gates-V3-independent-source-rereview.v1",
+  "manifest": {
+    "path": "/private/tmp/som-m12-candidate-semantic-gates-v3/proposal-manifest.json",
+    "sha256": "ab4ebd0f661b56b82847e993a07da5e2c7a5c67e97afaf833509746aa320f00a",
+    "bytes": 3270
+  },
+  "runner": {
+    "path": "/private/tmp/som-m12-candidate-semantic-gates-v3/som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py",
+    "sha256": "70e216b3a434ae1beebced9a93ba97911e470c2846b2997d79aacbb65c42e18d",
+    "bytes": 80735
+  },
+  "previous_review": {
+    "path": "/private/tmp/som-m12-candidate-semantic-gates-v2-independent-review.json",
+    "sha256": "bd197b574fe1552ded63ac31506f6bd1840feed3e153eb0403a733dbaec01b2b"
+  },
+  "summary": "The last P1 is fixed in inspected source. The consumer re-executes the original CLI and15 phase2 recipe assertions against one exact saved raw request queue, then requires the full ordered2039 pair suffix. No new source defect found in this bounded rereview.",
+  "fixed_finding": {
+    "id": "SEMANTIC-JOIN-FROZEN-REFUSAL-ORACLES",
+    "status": "FIXED_IN_REVIEWED_SOURCE",
+    "CLI": "The exact admitted raw check_cli module and frozen phase2 profile load through JoinModules. Only its transport hooks change. Original main/check/check_typescript_refusal/phase2_code logic consumes retained full CLI streams, return codes, captured requests and controls. The whole recomputed original report must equal the saved report and pass. This reinstates plain-versus-explicit-Python stdout byte equality, original negative code/profile rules and the explicit TypeScript out-of-scope refusal assertion.",
+    "recipes": "The exact original nine-function recipe closure, fixed RUST_ASSETS assignment and three target helper functions are selected as untouched AST nodes from admitted raw source. Future annotation behavior is preserved. Their namespace has explicit stdlib data and minimal builtins; selected bodies contain no imports. The source-derived PLAN, examples, negatives and offline post hook drive the original15 result assertions.",
+    "raw_oracles": "Each generated full request must equal the next saved HTTP request bytes and route. Original refusal_row rechecks status/code/pointer and selected span bytes. Original phase2_refusals retains A6 current collision and positive A8 complete renamed compile/assemble response equality, plus all six PUBLIC_v6 recipes. Recomputed15 rows must equal saved rows and pass. Saved row flags cannot replace the transcript.",
+    "queue_closure": "The transcript starts at0 and consumes original CLI and recipe calls once in actual order. The remaining indices must be precisely2039 ordered old/refused+rebased pairs and exactly4078 HTTP calls. Missing, extra, reused, reordered or substituted calls cannot be hidden behind the saved15 names."
+  },
+  "integrity_and_preservation": {
+    "all7_manifest_file_hashes_and_sizes_match": true,
+    "four_Python_sources_AST_valid": true,
+    "all62_previous_fixture_method_AST_exact": true,
+    "fixture_counts": [
+      {
+        "file": "som-rs/scripts/hosted_readiness/test_run_candidate_semantic_gates.py",
+        "old": 35,
+        "new": 43,
+        "all_original_method_AST_exact": true,
+        "added": [
+          "test_A6_current_collision_and_A8_positive_rename_comparison_are_mandatory",
+          "test_missing_or_substituted_recipe_HTTP_calls_cannot_keep_passing_rows",
+          "test_original_CLI_main_replay_consumes_all_named_transports_without_native_execution",
+          "test_original_fifteen_recipe_assertions_replay_the_complete_positive_transcript",
+          "test_plain_and_explicit_Python_stdout_must_be_identical_bytes",
+          "test_recipe_status_code_pointer_and_span_are_rechecked_from_raw",
+          "test_rehashed_TypeScript_refusal_cannot_become_a_success_bundle",
+          "test_rehashed_negative_CLI_code_must_match_the_original_expected_code"
+        ]
+      },
+      {
+        "file": "som-rs/scripts/hosted_readiness/test_run_experimental_native_cnl.py",
+        "old": 27,
+        "new": 27,
+        "all_original_method_AST_exact": true,
+        "added": []
+      }
+    ],
+    "total_GitHub_unrun_fixtures": 70,
+    "CNL_driver_and_test_bytes_unchanged": true,
+    "previous2041_2050_2045_2039_join_scope_preserved": true,
+    "proof_roots_API": "verify_result(root, source_reader, helper_revision, candidate_revision, gate, *, repo=None, proof_roots=None)",
+    "mandatory_success_inputs": [
+      "repo",
+      "proof_roots.assembly_root",
+      "proof_roots.python_inputs_root",
+      "proof_roots.rust_inputs_root",
+      "proof_roots.carrier_root"
+    ],
+    "graph_catalog_authority_preserved": true,
+    "source_and_carrier_checks": "V2 actual restored carrier universe/mode/bytes, original-build role, current run/attempt, source-native authority, raw health, one owner/socket, complete full CLI command waits and cleanup checks remain. New CLI/profile/carrier helper paths must all be admitted before import. JoinModules restores sys.path on exit.",
+    "corrected_owner_example_path": "Both callback and replay now use som-rs/contracts/compiler-v1/examples/v1.prompt.json, matching the unchanged frozen tool EXAMPLES root. The former som-rs/examples/v1.prompt.json did not exist."
+  },
+  "selected_function_AST_evidence": {
+    "som-rs/som-targets/qa/check_rust_products.py": {
+      "source_sha256": "4e77dd27a46580be6e8ecfaed2f1eb0c840a8a19b8f75b9539e5fb8c4f57c50c",
+      "functions": {
+        "h": "bbf28448aafcf716a57bbe3f0d7c0b3254cb3e930ced1a7f47bc44d01a6a4443",
+        "rehash": "c1745bb10611a6ea6ea0849c43ba5fde8678458cabfd25fa6c7282429f6e3b6a",
+        "rename_field": "6fae5ea83560bf5870f51cf2869a5d259e65f0dbc69bc46cc5d3d93764054eb9",
+        "python_compile": "00a9b70eadda6d5f276f95785663a1454ce5173b526468f11d7c4b80af9848ef",
+        "with_shared": "34a2ae6330217471b6277293a66ab659583a5d45986b68c97ee68b7870c2a778",
+        "base_recipes": "a7bd38c01d0a82ec94e239147a7ef1e27084d4e8b0f47f60194b97707ffeebb2",
+        "renamed": "83d4cb248c3bf579ca4afd8944cfadf92e0bcbf418feb0e2f2228eeafdc346a6",
+        "refusal_row": "e386ace4160acca98a596f8c913772475e3a3de690bb0bd460bb57925045ce73",
+        "phase2_refusals": "3dfb375dc57e76c9da245b0d08aa7848ff1fb1e708885c054722b692556b618a"
+      },
+      "no_import_in_selected_bodies": true
+    },
+    "som-rs/som-targets/qa/check_targets.py": {
+      "source_sha256": "8b95242ff7bab0da4c7e6f29a2f8735ea6482177044fcd5661f7174c8df0db75",
+      "functions": {
+        "sha": "dea79c6f27569a38d82038122b2cae9bc0632df0be3d9e9dba2c9e9b7187659e",
+        "dump": "13c5ca26ddabfead32a9306b1eda31f20fbec32690ccc40ac6304acf6d75ffa9",
+        "resolve": "27260cef58a67b89c93e86cd8e1c7325911fa7c25cbc901dd0cf476c660dc2fa"
+      },
+      "no_import_in_selected_bodies": true
+    }
+  },
+  "fixture_review": {
+    "new_methods": 8,
+    "positive_cases": "Original CLI main consumes all synthetic named transports with saved streams. Original15 recipes consume a complete positive synthetic transcript. A sentinel forbids Popen and live sockets during the positive CLI replay.",
+    "mutations": [
+      "TypeScript required refusal replaced by200 bundle with rehashed child/control outputs",
+      "different exact plain and explicit-Python stdout bytes while both parse to their HTTP bundle",
+      "wrong original expected negative CLI code",
+      "missing or substituted recipe raw calls",
+      "wrong recipe raw status, code, pointer or selected span",
+      "A6 replaced by old unsupported-target behavior",
+      "A8 positive raw response/files changed while its renamed control stays unchanged"
+    ],
+    "scope_limit": "These eight fixtures use the real unchanged original assertion bodies with synthetic inputs/metadata and fake retained native streams. They do not execute the fake binary, rerun the actual corpus or establish final candidate acceptance. All70 methods are unrun."
+  },
+  "evidence": [
+    {
+      "path": "/private/tmp/som-m12-candidate-semantic-gates-v3/som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py",
+      "sha256": "70e216b3a434ae1beebced9a93ba97911e470c2846b2997d79aacbb65c42e18d",
+      "lines": [
+        748,
+        811
+      ],
+      "purpose": "Fresh source authority admits original CLI/profile before any helper executes"
+    },
+    {
+      "path": "/private/tmp/som-m12-candidate-semantic-gates-v3/som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py",
+      "sha256": "70e216b3a434ae1beebced9a93ba97911e470c2846b2997d79aacbb65c42e18d",
+      "lines": [
+        881,
+        939
+      ],
+      "purpose": "Exact raw transcript queue and retained CLI process streams"
+    },
+    {
+      "path": "/private/tmp/som-m12-candidate-semantic-gates-v3/som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py",
+      "sha256": "70e216b3a434ae1beebced9a93ba97911e470c2846b2997d79aacbb65c42e18d",
+      "lines": [
+        946,
+        968
+      ],
+      "purpose": "Original complete CLI main/check assertions and full report equality"
+    },
+    {
+      "path": "/private/tmp/som-m12-candidate-semantic-gates-v3/som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py",
+      "sha256": "70e216b3a434ae1beebced9a93ba97911e470c2846b2997d79aacbb65c42e18d",
+      "lines": [
+        971,
+        1017
+      ],
+      "purpose": "Exact original nine-plus-three AST function closure and frozen sources"
+    },
+    {
+      "path": "/private/tmp/som-m12-candidate-semantic-gates-v3/som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py",
+      "sha256": "70e216b3a434ae1beebced9a93ba97911e470c2846b2997d79aacbb65c42e18d",
+      "lines": [
+        1020,
+        1048
+      ],
+      "purpose": "Original15 assertions and complete ordered4078-call suffix"
+    },
+    {
+      "path": "/private/tmp/som-m12-candidate-semantic-gates-v3/som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py",
+      "sha256": "70e216b3a434ae1beebced9a93ba97911e470c2846b2997d79aacbb65c42e18d",
+      "lines": [
+        1051,
+        1121
+      ],
+      "purpose": "New replay is part of the successful full saved-result verifier"
+    },
+    {
+      "path": "/Users/chrischeng/.codex/worktrees/70ce/som/som-rs/scripts/rust_output_acceptance/check_cli.py",
+      "sha256": "7f6f447597c2e9f497e50d060ca36f62e291eeea344bf3e16db326d39a536dca",
+      "lines": [
+        173,
+        282
+      ],
+      "purpose": "Original TypeScript refusal, phase2 code and plain/Python assertions"
+    },
+    {
+      "path": "/Users/chrischeng/.codex/worktrees/70ce/som/som-rs/som-targets/qa/check_rust_products.py",
+      "sha256": "4e77dd27a46580be6e8ecfaed2f1eb0c840a8a19b8f75b9539e5fb8c4f57c50c",
+      "lines": [
+        299,
+        375
+      ],
+      "purpose": "Original diagnostic span/status/code and positive A8 behavior"
+    }
+  ],
+  "next_required": [
+    "Integrate this exact source and narrow Context repair with the final graph and native source controls. Preserve Root and M6 ownership.",
+    "Refresh final exact source/profile maps after actual integration and obtain final source authority review.",
+    "Run all70 fixtures on GitHub. Then run the fresh common final candidate callbacks and independent full trusted-catalog raw joins. This source review grants no seal or product/whole acceptance."
+  ]
+}

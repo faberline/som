@@ -285,6 +285,13 @@ def fixture_case(out: pathlib.Path, case: dict, fixture: dict, language: str = "
     outcome: Any = None
     product = out / "work" / key(case["id"]) / "product"
     try:
+        if language == "python" and os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+            from full_product_context import current_refusal
+            negative = current_refusal(case["id"], "python")
+            if negative is not None:
+                row.update(passed=True, outcome_role="current-compiler-refusal-no-product", product_executed=False,
+                           current_refusal=negative)
+                return finish(out, case, row, negative, started)
         prompt, files = load(case)
         if language == "rust":
             files = rust_files(qa_url, case, prompt, row)
@@ -337,6 +344,13 @@ def suite_case(out: pathlib.Path, case: dict, host: Any, language: str = "python
     row: dict[str, Any] = {**public_row(case), "language": language, "passed": False, "problems": []}
     outcome: Any = None
     try:
+        if language == "python" and os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+            from full_product_context import current_refusal
+            negative = current_refusal(case["id"], "python")
+            if negative is not None:
+                row.update(passed=True, outcome_role="current-compiler-refusal-no-product", product_executed=False,
+                           current_refusal=negative)
+                return finish(out, case, row, negative, started)
         prompt, files = load(case)
         if language == "rust":
             files = rust_files(host.qa, case, prompt, row)

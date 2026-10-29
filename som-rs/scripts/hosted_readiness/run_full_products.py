@@ -45,7 +45,7 @@ def digest(raw):
     return hashlib.sha256(raw).hexdigest()
 
 
-def load_context_module(repo, revision):
+def load_context_module(repo, revision, qa_mode=None, candidate_revision=None):
     """Bootstrap only exact committed raw Python, including this entry point."""
     repo = Path(repo).absolute()
     require(re.fullmatch('[0-9a-f]{40}', revision), 'full helper source commit required')
@@ -63,11 +63,42 @@ def load_context_module(repo, revision):
         require(raw == path.read_bytes(), 'bootstrap source differs from committed bytes')
         return raw
     require(source(SELF) == Path(__file__).read_bytes(), 'entry point differs from helper commit')
+    native_authority = None
+    if qa_mode == 'native-qa-v1':
+        require(revision == candidate_revision and revision != 'f59e28d910ff4adb16e3becfdc82bd2978ca84fa',
+                'native QA entry requires one new exact source candidate')
+        path = 'som-rs/scripts/hosted_readiness/native_qa_authority.py'
+        authority_raw = source(path)
+        authority_name = '_som_full_native_source_admission'
+        authority = sys.modules.get(authority_name)
+        if authority is None:
+            authority = ModuleType(authority_name)
+            authority.__file__, authority.__cached__, authority.__package__ = str(repo / path), None, ''
+            authority.__som_raw_sha256__ = digest(authority_raw)
+            sys.modules[authority_name] = authority
+            exec(compile(authority_raw, authority.__file__, 'exec', dont_inherit=True), authority.__dict__)
+        require(authority.__som_raw_sha256__ == digest(authority_raw), 'preloaded native authority source differs')
+        tracked = git('ls-tree', '-r', '-z', '--name-only', revision)
+        require(tracked.endswith(b'\0'), 'complete tracked source inventory required')
+        paths = [name.decode('utf-8', 'strict') for name in tracked.split(b'\0') if name]
+        require(paths == sorted(set(paths)), 'ordered complete tracked source inventory required')
+        native_authority = authority.verify(source, mode='native-qa-v1', source_paths=paths,
+            helper_revision=revision, candidate_revision=candidate_revision)
+        require(native_authority.get('source_authority_active') is True
+                and native_authority.get('mode') == 'native-qa-v1'
+                and native_authority.get('helper_revision') == revision
+                and native_authority.get('candidate_revision') == candidate_revision
+                and native_authority.get('product_acceptance_passed') is False
+                and native_authority.get('compiler_acceptance_passed') is False
+                and native_authority.get('whole_acceptance_complete') is False, 'native QA entry source authority is pending or mismatched')
+    elif qa_mode not in {None, 'historical', 'experimental-preparation'}:
+        raise ValueError('unknown source authority mode')
     raw = source(CONTEXT)
     require('full_product_context' not in sys.modules, 'preloaded context module refused')
     module = ModuleType('full_product_context')
     module.__file__, module.__cached__, module.__package__ = str(repo / CONTEXT), None, ''
     module.__som_raw_sha256__ = digest(raw)
+    module.__som_native_source_authority__ = native_authority
     sys.modules[module.__name__] = module
     exec(compile(raw, module.__file__, 'exec', dont_inherit=True), module.__dict__)
     return module
@@ -77,40 +108,81 @@ def execute_tool(arguments):
     require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'GitHub Linux execution only')
     context_path = Path(os.environ['SOM_FULL_PRODUCT_CONTEXT'])
     data = json.loads(context_path.read_bytes())
-    module = load_context_module(Path(data['repo']), data['helper_revision'])
-    sources = module.SourceBytes(Path(data['repo']), data['helper_revision'])
-    sources.read(SELF)
-    sources.read(CONTEXT)
-    module.install_source_finder(sources)
-    tool = arguments[0]
-    module.relative(tool)
-    require(tool.endswith('.py'), 'fixed repository Python checker required')
-    raw = sources.read(tool)
-    name = '__main__'
-    target = ModuleType(name)
-    target.__file__, target.__package__, target.__cached__ = str(sources.root / tool), '', None
-    old_main, old_argv = sys.modules[name], sys.argv
-    sys.modules[name], sys.argv = target, [target.__file__, *arguments[1:]]
-    sys.path.insert(0, str(sources.root / 'som-core/src'))
-    sys.path.insert(0, str((sources.root / tool).parent))
+    work = Path(data['work_root']).absolute()
+    temporary = Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
+    require(temporary in work.parents and work.is_dir() and '..' not in work.parts
+            and not any(part.is_symlink() for part in (work, *work.parents)), 'owned checker evidence root required')
+    module, ctx, sources, old_main, old_argv = None, None, None, None, None
+    entry_error, legacy_finder, legacy_finder_owned, old_path = None, None, False, None
+    tool = arguments[0] if arguments else ''
+    proof = {'version': 'som.full-product-checker-postcheck.v1', 'tool': tool, 'pid': os.getpid(),
+             'helper_revision': data['helper_revision'], 'candidate_revision': data['candidate_revision'],
+             'stage': data['stage'], 'shard': data['shard'], 'entry_executed': False,
+             'source_runtime_tools_inputs_unchanged': False, 'product_acceptance_passed': False}
     try:
+        module = load_context_module(Path(data['repo']), data['helper_revision'], data.get('qa_mode'), data['candidate_revision'])
+        ctx = module.Context(context_path)
+        module._ACTIVE = ctx
+        sources = ctx.sources
+        sources.read(SELF)
+        sources.read(CONTEXT)
+        module.relative(tool)
+        require(tool.endswith('.py'), 'fixed repository Python checker required')
+        if data.get('qa_mode') == 'native-qa-v1':
+            authority = ctx.qa_source_authority
+            require(authority == module.__som_native_source_authority__
+                    and authority['source_authority_active'] is True
+                    and tool in authority['admitted_repository_python_sources'],
+                    'entry itself must have exact sealed native source authority before read or execution')
+        else:
+            before_finders = tuple(sys.meta_path)
+            legacy_finder = module.install_source_finder(sources)
+            legacy_finder_owned = legacy_finder not in before_finders and legacy_finder in sys.meta_path
+            require(legacy_finder_owned and getattr(legacy_finder, 'sources', None) is sources,
+                    'new owned legacy raw source guard required')
+        # Native Context owns its lease. The old modes keep their original raw Git finder.
+        raw = sources.read(tool)
+        proof['entry_sha256'] = digest(raw)
+        name = '__main__'
+        target = ModuleType(name)
+        target.__file__, target.__package__, target.__cached__ = str(sources.root / tool), '', None
+        target.__som_raw_sha256__ = digest(raw)
+        old_main, old_argv = sys.modules[name], sys.argv
+        sys.modules[name], sys.argv = target, [target.__file__, *arguments[1:]]
+        old_path = list(sys.path)
+        sys.path.insert(0, str(sources.root / 'som-core/src'))
+        sys.path.insert(0, str((sources.root / tool).parent))
+        proof['entry_executed'] = True
         try:
             exec(compile(raw, target.__file__, 'exec', dont_inherit=True), target.__dict__)
+            proof['entry_exit_code'] = 0
             return 0
         except SystemExit as result:
-            return result.code if isinstance(result.code, int) else (0 if result.code is None else 1)
+            code = result.code if isinstance(result.code, int) else (0 if result.code is None else 1)
+            proof['entry_exit_code'] = code
+            return code
+    except BaseException as error:
+        entry_error = error
+        proof['error'] = type(error).__name__ + ': ' + str(error)
+        raise
     finally:
-        sources.verify()
-        if module._ACTIVE is not None:
-            module._ACTIVE.verify()
-            proof = {'version': 'som.full-product-checker-postcheck.v1', 'tool': tool,
-                     'pid': os.getpid(), 'helper_revision': module._ACTIVE.helper_revision,
-                     'candidate_revision': module._ACTIVE.candidate_revision,
-                     'stage': module._ACTIVE.data['stage'], 'shard': module._ACTIVE.data['shard'],
-                     'source_sha256': dict(sorted(sources.pins.items())),
-                     'source_runtime_tools_inputs_unchanged': True, 'product_acceptance_passed': False}
-            save(module._ACTIVE.work / 'checker-postchecks' / (str(os.getpid()) + '.json'), proof)
-        sys.modules[name], sys.argv = old_main, old_argv
+        try:
+            require(ctx is not None and sources is not None, 'source/context admission did not complete')
+            if legacy_finder is not None:
+                require(legacy_finder in sys.meta_path, 'legacy raw source guard changed during checker execution')
+            sources.verify()
+            ctx.verify()
+            proof.update(source_sha256=dict(sorted(sources.pins.items())), source_runtime_tools_inputs_unchanged=True)
+        except BaseException as error:
+            proof['postcheck_error'] = type(error).__name__ + ': ' + str(error)
+            if entry_error is None: raise
+        finally:
+            try:
+                save(work / 'checker-postchecks' / (str(os.getpid()) + '.json'), proof)
+            finally:
+                if legacy_finder_owned and legacy_finder in sys.meta_path: sys.meta_path.remove(legacy_finder)
+                if old_path is not None: sys.path[:] = old_path
+                if old_main is not None: sys.modules['__main__'], sys.argv = old_main, old_argv
 
 
 @contextmanager

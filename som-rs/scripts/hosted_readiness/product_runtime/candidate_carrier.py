@@ -96,7 +96,7 @@ def pack(args):
     require(actual == expected, 'already tested binary, asset or formatter bytes changed before packing')
     args.out.mkdir(mode=0o700, parents=False, exist_ok=False)
     archive_path = args.out / 'candidate.tar.gz'
-    with tarfile.open(archive_path, 'x:gz') as archive:
+    with tarfile.open(archive_path, 'x:gz', format=tarfile.USTAR_FORMAT) as archive:
         for name, (source, item) in sorted(members.items()):
             header = tarfile.TarInfo(clean(name))
             header.mode, header.size = item['mode'], item['size']

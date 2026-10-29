@@ -1,0 +1,2720 @@
+{
+  "version": "som.native-metadata-acceptance-policy.v1",
+  "activation_rule": "Only active when these exact bytes are bound by the latest sealed corresponding numbered receipt after independent review. A scratch draft is not active and grants no acceptance.",
+  "issue": [
+    141,
+    146
+  ],
+  "scope": "Exact native tools, complete frozen-to-native QA source substitution, and exact metadata digest leaves only. Every original semantic and product obligation stays mandatory.",
+  "architecture": "Fixed CNL to DSL to Code. No model, weights, training, MLX or Apple Silicon requirement.",
+  "supported_hosts": [
+    "x86_64-unknown-linux-gnu",
+    "aarch64-apple-darwin"
+  ],
+  "native_contract": {
+    "path": "som-rs/contracts/native-tools-v1/CONTRACT.md",
+    "sha256": "47d72cabd57bdb380171a54f4dddeeabf25693c3781cabb483c572c162efac6e"
+  },
+  "native_artifacts": {
+    "path": "som-rs/contracts/native-tools-v1/artifacts.json",
+    "sha256": "959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193"
+  },
+  "accepted_before": {
+    "binary_sha256": "2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c",
+    "source_commit": "8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af",
+    "role": "pinned_accepted_pre_react_default_read_only"
+  },
+  "preserved_compiler_contract": {
+    "path": "som-rs/contracts/compiler-v1/CONTRACT.md",
+    "sha256": "cf0a1727f924fd5b43df976ab8ca98c811d10e39d9ba41b6434f99f57fc65f3e",
+    "descriptor_rule": "SHA256 of these exact raw file bytes; not H(receipt.files)"
+  },
+  "comparison_rule": {
+    "raw_utf8": "All bytes outside the exact approved SHA256 string value spans must match. Preserve spacing, member order, lengths outside those spans, diagnostics and HTTP status.",
+    "digest_values": "Derive old and current values independently from the pinned before artifact and complete committed owning factory/source vectors. Never accept caller-selected expected digests.",
+    "payload": "Recompute old and current payload hashes from their own complete assets, prompt and DSL using the frozen canonical rule. Never merely ignore payload.",
+    "requests": "Each named/form/method/endpoint request must bind its actual complete raw SHA256. Retain duplicate named slots. Fresh before replacements retain a separate role; never relabel historical missing bytes as recovered.",
+    "forbidden_exception": [
+      "compiler_contract",
+      "grammar",
+      "catalog",
+      "block_library",
+      "selection_policy",
+      "literal_policy",
+      "serializer",
+      "semantic_contracts",
+      "prompt",
+      "dsl",
+      "descriptor_ids",
+      "status",
+      "diagnostic",
+      "selection_or_scope"
+    ]
+  },
+  "product_rule": "Every generated file and complete file map remains byte-identical to accepted authority. Every applicable frozen quality, build, test, format, behavior, CLI, negative, old-bundle and rebase gate remains mandatory. No sampling, new skip, ignored test or relaxed result.",
+  "same_candidate_rule": "All applicable gates use one recorded source and exact candidate binary/assets identity per supported platform. Same version text does not join different binaries. The prior M6 59da proof is historical authority, not current native acceptance.",
+  "runtime_rule": "The unchanged logical tool versions, profiles and command semantics remain mandatory. Verify actual native bytes and version before use. Complete offline dependency closure, services, ownership, waits, cleanup and independent raw audit remain required.",
+  "product_rust_tools": "Before any full Rust product gate, independently admit all six actual native tools: rustc, cargo, rustfmt, cargo-fmt, cargo-clippy and clippy-driver. Bind each version, raw executable SHA256, official archive/source/license provenance and owned absolute path. A minimal Cargo installation or metadata closure does not qualify this toolchain. Preserve the complete frozen offline crate inventory; a checked relocation must bind any moved vendor configuration.",
+  "evidence_roles": "Contract/source review, input preparation, compiler/assembly byte proof, dependency qualification and full product acceptance remain distinct.",
+  "chronology": {
+    "version": "som.native-acceptance-chronology.v1",
+    "implementation_already_existed": true,
+    "prior_work_relabelled_as_preimplementation": false,
+    "scope": "native_tools_and_metadata_only",
+    "acceptance_rule": "prospective_full_same_candidate_gates",
+    "historical_receipt_bytes_changed": false,
+    "historical_results_promoted_to_current_acceptance": false
+  },
+  "product_acceptance_passed": false,
+  "target": "python",
+  "amendment": 5,
+  "allowed_compile_digest_leaves": [
+    {
+      "path": "/bundle/assets/backend/sha256",
+      "when": "every accepted Python prompt version",
+      "authority": "complete compiler backend_manifest() source vector"
+    },
+    {
+      "path": "/bundle/assets/formatter/sha256",
+      "when": "only som.prompt.v6 and som.prompt.v7, and only if the actual per-host native Ruff descriptor differs",
+      "authority": "exact native Ruff SHA plus frozen formatter version and profile; v1-v5 render-only descriptor stays exact"
+    },
+    {
+      "path": "/bundle/hashes/payload_sha256",
+      "when": "the exact independently recomputed payload changes because a permitted leaf changes",
+      "authority": "both full old/current payload recomputations"
+    }
+  ],
+  "rebase": "For every applicable old bundle, first require the normal asset mismatch refusal. Rebase only the named native backend/formatter digest leaves and recompute payload. Keep prompt, DSL and every other asset exact; require identical product files.",
+  "required_full_scope": [
+    "all 127 public and 544 legacy named products, both typed target forms and every frozen CNL form",
+    "all compiler-v1 diagnostics, scope, schema, deterministic repeat and CLI obligations",
+    "all applicable Python product quality and behavior gates under the frozen commands",
+    "the explicit same-candidate Amendment006 and React/TypeScript regression obligations as separately owned and sealed"
+  ],
+  "qa_authority_state": "PENDING",
+  "sealing_dependencies": [
+    "Final shared source and exact QA/tool/profile maps must include the settled M6 source boundary and formal capture source generalized to the new candidate. No capture output is required before sealing.",
+    "Run all18 preserved chronology fixture bodies and new exact-QA source fixtures on GitHub. Results are unrun in this proposal.",
+    "Obtain fresh root independent review of the complete expanded QA authority, final numbered H(files), target constants and full owning factory vectors. The old62e98478 review does not approve these expanded maps."
+  ],
+  "qa_source_admission": {
+    "mode": "native-qa-v1",
+    "basis_source_revision": "9763e9b86f36a99229b70d8c571734e9a740e81c",
+    "frozen_sources": {
+      "som-core/scripts/business_database_checks.py": "04b493488d1752ad7ef49cadf64b3c5ccdd4f6741790de38b0491b7e2277b69a",
+      "som-core/scripts/business_test_support.py": "53947d38670f86c801d63e59f53d1a54f7a3a343be8c8eb55309d6205dec6f02",
+      "som-core/scripts/composed_evidence.py": "33eca98ac550f142d67d8e4184e1a38ef19d0fa2135f4079927c80cd57364312",
+      "som-core/scripts/fixture_guard.py": "a5dd8c5f9490856285e175efc5299d38ceb4002f7df3c46890a22328ebd1a7d9",
+      "som-core/scripts/flow_gcs_fixture.py": "b54d1b3b27fddd457ddcd075ebf8f7fccc485434d8aca48cf42abe1fa3aa9856",
+      "som-core/scripts/flow_row_history.py": "b626cdbc2a2942a2474cfa8d5a7784e8dc6f35b93298d276932d44cbc331b7ba",
+      "som-core/scripts/flow_test_backends.py": "243cff1e3bd4fe37d05fd218abbf0cc50fa9d1aa6d4d5aa8b3416c591e8e6240",
+      "som-core/scripts/local_business_services.py": "9345e0a82d621ba322c377f55ffa191d7754ad7dbbf7ba80fcceda4a9541ecc3",
+      "som-core/scripts/local_flow_services.py": "029ce1d0dbdefe98c5d47fc984330e686bcd7cbf54e9ac9469a397245731dfd2",
+      "som-core/scripts/m3_local_fixture.py": "14610dabdd276f89ff8429735da0904e88d2934f949bd942039392dd54184439",
+      "som-core/scripts/verify_composed_services.py": "701ec23cfa7978cb5934e6d17a5de80bc86d95487ccc651386147c3a0ce2ae31",
+      "som-core/src/som_core/__init__.py": "654787391f426548a06af79d6ae1d2eb7e989a2f5c81cfecb8498d0d2a335042",
+      "som-core/src/som_core/assemble.py": "cdd93691f11906ec18d34a5569fd3f6cb39df5e217f0bf77e8b924d6f5e6de0e",
+      "som-core/src/som_core/business.py": "c07af14470c165fb5496d019179ee5c1951a3d2ddfef98354a267062e4747e97",
+      "som-core/src/som_core/cli.py": "5c85dc4d838edf8c385216cb3e1c666441cd63f885739fdf453a37d9bea2ccfa",
+      "som-core/src/som_core/compact_names.py": "5131a4d92b95f78e9a89c00d0508b7189be11b02c4e9afbb46ed888a2a601928",
+      "som-core/src/som_core/composed.py": "a65fd965d1e56b050d900961768176835aba97d994d1793a27f6a66a3e05a58b",
+      "som-core/src/som_core/dataset.py": "94744fb3b2702c6081da8c90a3480a7900d36c649de13d9f59d7d7078efe1ae9",
+      "som-core/src/som_core/dsl.py": "54e0171b3390eb5a170ed2ee266bb2e55dadd6b4d115100b7fae8fe0f44c300d",
+      "som-core/src/som_core/dsl_pairs.py": "ac178a5c8ce0498498fd65d89f93b20891e0d6edbf8843319896acabddc6153c",
+      "som-core/src/som_core/evaluate.py": "0d31f0733bc11bcc90a033f6114ebcc76339ce58cabebedc12110bdb191d2dee",
+      "som-core/src/som_core/flow.py": "92a7228ed3c96965c8326e70fa9edfec90fe0150e56cbeae7131de1f11f057fe",
+      "som-core/src/som_core/flow_codec.py": "4f85a70fe04ad1fb35bf9846088f599fca4052aff554295222e5d2b9cff632d2",
+      "som-core/src/som_core/flow_compact.py": "6e57b94b5fa5665b819a0e66f25af98e073712736b8c06d229b8b7ccfcd101c1",
+      "som-core/src/som_core/flow_constraints.py": "bb3d8b0f9ce17d92841496c9ed790dbb554a12591fc11f02bb59d576a6756494",
+      "som-core/src/som_core/flow_m3_data.py": "a6817431bbfb7482b6b9460fee3428acc4cef86c8d82ad69f55f66dbc884f1c6",
+      "som-core/src/som_core/flow_m3_evidence.py": "be6022d03745e919f89249811d8a00b52c0d3a09a12c7c365df234c0081180b3",
+      "som-core/src/som_core/flow_m3_target.py": "94f8b095188f9984f5d48b2c52f5fe1f7682577ca66ffd45fcb3e8018a94cc7a",
+      "som-core/src/som_core/generate.py": "f0e1d83e1553d13814eef7e2e88f1cb6590838e6d15e0f3dba8c0cb118c86350",
+      "som-core/src/som_core/mcp_server.py": "16e1f8003f601c5300235a2757d8ef8b4e849b465bee7e752a8680910e850f9b",
+      "som-core/src/som_core/paths.py": "4b39961fbef9fdb720b40222d919796286e93686f779f9ac1ce74fa8dda1ce43",
+      "som-core/src/som_core/prompt.py": "f331303b4d6662cbc93b8f6c533e6001f5a37aa7e33accc9be8cf54def71e38c",
+      "som-core/src/som_core/quality.py": "04fcfaf21b564f613c0d3395796bb28ae93601c5d2be1dde988c6f243aa483c4",
+      "som-core/src/som_core/records.py": "6b7f63a490811275747a4c7d3517d73fad2c58beade072c66fcaa2a891e08192",
+      "som-core/src/som_core/related.py": "3b19fbbfb7026b1e287622c6bf04def69e7080025c2f12c48ce2c1abf6e47dd7",
+      "som-core/src/som_core/rule_planner.py": "2035f0bc6e5762d7149dec11017e11ba5df749d04776e99f2332c0f50c6684f0",
+      "som-core/src/som_core/train.py": "f70d7b41c997f1144fced3ecbcdd63796b6f6fa723222fe18453e4d096d28b84",
+      "som-core/src/som_core/train_composed.py": "ad44b30590b21e2d9fcb819e93848ec059deb2730bb9878394f730fe4a0244c1",
+      "som-core/src/som_core/train_flow.py": "7a4404f8e42c27bb4a74cacc33aed1a3cbe59adb229ec66ba2a2d20ae9ad2a8c",
+      "som-core/src/som_core/train_flow_m3.py": "dfbf8ca417804e67d7d430b99df2882bdb9df6375f9ba0d6927459fbcca3a334",
+      "som-core/src/som_core/train_v1.py": "7be726d974b437d70288e743ba94374be96398bc5289d5100c30150f96646cb3",
+      "som-core/src/som_core/v1.py": "fc82db5016eb1befc4b076e1f611f99f25e89c71a9f6e10cddedae29693d32ce",
+      "som-core/src/som_core/wire.py": "228a5e205edf021b893228f8a83dc24dcc259caeb542589d62a69903020b2416",
+      "som-rs/behavior/check_behavior.py": "01d0fcc87ab326f00525f478e5f15eabe3275e69837c17841b55f196845db7df",
+      "som-rs/behavior/faults.py": "db7adef4a6f0f19f2f6301ed4d70ccddf6921cca6a9abc564c936fc2f8ee8a7b",
+      "som-rs/behavior/hosts.py": "2e350522225e10087737ddfd2824e84508e8c295662eb6805a607fdd27f3f69b",
+      "som-rs/behavior/phase2/adapt.py": "ffe4d965331ccc4127e02b3fd83a626b5569660e00393f7b6e22f9d0ea7b62f0",
+      "som-rs/behavior/phase2/adapted/MANIFEST.json": "b679187b5c6cb120aa6a98c6164c63b7be75fd198cdfb7fb10b6b3b22511304b",
+      "som-rs/behavior/phase2/adapted/audit_business_transactions.py": "ca0a575a38d8e208fc3fc45d9f65016a3f03f14970b3cefbac3882de976515c7",
+      "som-rs/behavior/phase2/adapted/flow_branch_cases.py": "6eb98bae26071237a2198159c7faa2d0f0d06a38bffa5d3315936ffb529eccc1",
+      "som-rs/behavior/phase2/adapted/flow_fault_checks.py": "169aa9f0586adedd046ce07f24dbc0cc98d262c0313f5279dd2491abd22aed05",
+      "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py": "0c16601ddc33adc8c27788d192b4b93ed40730b740e7bdb5c2ba2480a4cbc0c7",
+      "som-rs/behavior/phase2/adapted/verify_business_workflows.py": "d8f206ac3cae7c09df92619bb19ea5c3b8c0889c21d6df4a1edf57d2049e14b0",
+      "som-rs/behavior/phase2/adapted/verify_composed_journeys.py": "867629d0605fef876e457d0f5378b69304d4a3ac746e34aee4372a50679451ab",
+      "som-rs/behavior/phase2/adapted/verify_composed_related.py": "439a2bfc0318f3f19818ae1cdc9a3eb8445e993a892a3c55dfa93deb879d86df",
+      "som-rs/behavior/phase2/adapted/verify_composed_subsets.py": "c8b2ff63c22ac9acebef5be17dbb6fb16b66c03041938cae0576b6bfbe1b8bdb",
+      "som-rs/behavior/phase2/adapted/verify_composed_transactions.py": "5095a31e0333c0561a14a7073c95acb468b4479b648fcd7200dea5a37be27ea1",
+      "som-rs/behavior/phase2/adapted/verify_flow_service.py": "c14225c5080021beba6b9b84b49c6ff5653275bcce348d351bee9c4d8964abd5",
+      "som-rs/behavior/phase2/adapted/verify_related.py": "640be9c12dfd398a877ef7fc3d1660fa41fc5b9f60deec16bfdcb41ca7d533cc",
+      "som-rs/behavior/phase2/check_phase2.py": "7c37aa4cc6f40c988eb48da92873ffbdf8fab76a2faf8d953107c2fd1d6ff1b9",
+      "som-rs/behavior/phase2/make_rs_products.py": "0f4097f289efdf2a734130816caa8bfe3d6299c4a71ffb1cc5d46a036a0b9dbd",
+      "som-rs/behavior/phase2/phase2_host.py": "ca46edc076e51d43711223f70b97af0c35fbb4bf413c66da374aca72562d4449",
+      "som-rs/behavior/suite.py": "1f7fbd9bbd340aa4457fdbbbc256ebcc5add742bdf86cd1f390c28329a0c7d83",
+      "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6",
+      "som-rs/scripts/compiler_acceptance/paths.py": "7fdee8d1a58559d72c05fc9bc4e956d694764c0ab83a7ad7ba7178c0de7dd91f",
+      "som-rs/scripts/compiler_acceptance/qa_harness.py": "f0c1cf96e1cf60ee692c7e9c3272757efef92498b52f4ac426e40b54142851a2",
+      "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513",
+      "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "66361c04b8c7069868aa03205dbb33f9d28ede06e55ea262326671b91108316b"
+    },
+    "native_sources": {
+      "som-core/scripts/business_database_checks.py": "04b493488d1752ad7ef49cadf64b3c5ccdd4f6741790de38b0491b7e2277b69a",
+      "som-core/scripts/business_test_support.py": "53947d38670f86c801d63e59f53d1a54f7a3a343be8c8eb55309d6205dec6f02",
+      "som-core/scripts/composed_evidence.py": "33eca98ac550f142d67d8e4184e1a38ef19d0fa2135f4079927c80cd57364312",
+      "som-core/scripts/fixture_guard.py": "a5dd8c5f9490856285e175efc5299d38ceb4002f7df3c46890a22328ebd1a7d9",
+      "som-core/scripts/flow_gcs_fixture.py": "b54d1b3b27fddd457ddcd075ebf8f7fccc485434d8aca48cf42abe1fa3aa9856",
+      "som-core/scripts/flow_row_history.py": "b626cdbc2a2942a2474cfa8d5a7784e8dc6f35b93298d276932d44cbc331b7ba",
+      "som-core/scripts/flow_test_backends.py": "243cff1e3bd4fe37d05fd218abbf0cc50fa9d1aa6d4d5aa8b3416c591e8e6240",
+      "som-core/scripts/local_business_services.py": "9345e0a82d621ba322c377f55ffa191d7754ad7dbbf7ba80fcceda4a9541ecc3",
+      "som-core/scripts/local_flow_services.py": "029ce1d0dbdefe98c5d47fc984330e686bcd7cbf54e9ac9469a397245731dfd2",
+      "som-core/scripts/m3_local_fixture.py": "7c6163ce7f2ac10ea2e424d462a66416887db45f2e029e5d6434f36fc3dd0d42",
+      "som-core/scripts/verify_composed_services.py": "701ec23cfa7978cb5934e6d17a5de80bc86d95487ccc651386147c3a0ce2ae31",
+      "som-core/src/som_core/__init__.py": "654787391f426548a06af79d6ae1d2eb7e989a2f5c81cfecb8498d0d2a335042",
+      "som-core/src/som_core/assemble.py": "cdd93691f11906ec18d34a5569fd3f6cb39df5e217f0bf77e8b924d6f5e6de0e",
+      "som-core/src/som_core/business.py": "c07af14470c165fb5496d019179ee5c1951a3d2ddfef98354a267062e4747e97",
+      "som-core/src/som_core/cli.py": "5c85dc4d838edf8c385216cb3e1c666441cd63f885739fdf453a37d9bea2ccfa",
+      "som-core/src/som_core/compact_names.py": "5131a4d92b95f78e9a89c00d0508b7189be11b02c4e9afbb46ed888a2a601928",
+      "som-core/src/som_core/composed.py": "a65fd965d1e56b050d900961768176835aba97d994d1793a27f6a66a3e05a58b",
+      "som-core/src/som_core/dataset.py": "94744fb3b2702c6081da8c90a3480a7900d36c649de13d9f59d7d7078efe1ae9",
+      "som-core/src/som_core/dsl.py": "54e0171b3390eb5a170ed2ee266bb2e55dadd6b4d115100b7fae8fe0f44c300d",
+      "som-core/src/som_core/dsl_pairs.py": "ac178a5c8ce0498498fd65d89f93b20891e0d6edbf8843319896acabddc6153c",
+      "som-core/src/som_core/evaluate.py": "0d31f0733bc11bcc90a033f6114ebcc76339ce58cabebedc12110bdb191d2dee",
+      "som-core/src/som_core/flow.py": "92a7228ed3c96965c8326e70fa9edfec90fe0150e56cbeae7131de1f11f057fe",
+      "som-core/src/som_core/flow_codec.py": "4f85a70fe04ad1fb35bf9846088f599fca4052aff554295222e5d2b9cff632d2",
+      "som-core/src/som_core/flow_compact.py": "6e57b94b5fa5665b819a0e66f25af98e073712736b8c06d229b8b7ccfcd101c1",
+      "som-core/src/som_core/flow_constraints.py": "bb3d8b0f9ce17d92841496c9ed790dbb554a12591fc11f02bb59d576a6756494",
+      "som-core/src/som_core/flow_m3_data.py": "a6817431bbfb7482b6b9460fee3428acc4cef86c8d82ad69f55f66dbc884f1c6",
+      "som-core/src/som_core/flow_m3_evidence.py": "be6022d03745e919f89249811d8a00b52c0d3a09a12c7c365df234c0081180b3",
+      "som-core/src/som_core/flow_m3_target.py": "94f8b095188f9984f5d48b2c52f5fe1f7682577ca66ffd45fcb3e8018a94cc7a",
+      "som-core/src/som_core/generate.py": "f0e1d83e1553d13814eef7e2e88f1cb6590838e6d15e0f3dba8c0cb118c86350",
+      "som-core/src/som_core/mcp_server.py": "16e1f8003f601c5300235a2757d8ef8b4e849b465bee7e752a8680910e850f9b",
+      "som-core/src/som_core/paths.py": "4b39961fbef9fdb720b40222d919796286e93686f779f9ac1ce74fa8dda1ce43",
+      "som-core/src/som_core/prompt.py": "f331303b4d6662cbc93b8f6c533e6001f5a37aa7e33accc9be8cf54def71e38c",
+      "som-core/src/som_core/quality.py": "04fcfaf21b564f613c0d3395796bb28ae93601c5d2be1dde988c6f243aa483c4",
+      "som-core/src/som_core/records.py": "6b7f63a490811275747a4c7d3517d73fad2c58beade072c66fcaa2a891e08192",
+      "som-core/src/som_core/related.py": "3b19fbbfb7026b1e287622c6bf04def69e7080025c2f12c48ce2c1abf6e47dd7",
+      "som-core/src/som_core/rule_planner.py": "2035f0bc6e5762d7149dec11017e11ba5df749d04776e99f2332c0f50c6684f0",
+      "som-core/src/som_core/train.py": "f70d7b41c997f1144fced3ecbcdd63796b6f6fa723222fe18453e4d096d28b84",
+      "som-core/src/som_core/train_composed.py": "ad44b30590b21e2d9fcb819e93848ec059deb2730bb9878394f730fe4a0244c1",
+      "som-core/src/som_core/train_flow.py": "7a4404f8e42c27bb4a74cacc33aed1a3cbe59adb229ec66ba2a2d20ae9ad2a8c",
+      "som-core/src/som_core/train_flow_m3.py": "dfbf8ca417804e67d7d430b99df2882bdb9df6375f9ba0d6927459fbcca3a334",
+      "som-core/src/som_core/train_v1.py": "7be726d974b437d70288e743ba94374be96398bc5289d5100c30150f96646cb3",
+      "som-core/src/som_core/v1.py": "fc82db5016eb1befc4b076e1f611f99f25e89c71a9f6e10cddedae29693d32ce",
+      "som-core/src/som_core/wire.py": "228a5e205edf021b893228f8a83dc24dcc259caeb542589d62a69903020b2416",
+      "som-rs/behavior/check_behavior.py": "01d0fcc87ab326f00525f478e5f15eabe3275e69837c17841b55f196845db7df",
+      "som-rs/behavior/faults.py": "db7adef4a6f0f19f2f6301ed4d70ccddf6921cca6a9abc564c936fc2f8ee8a7b",
+      "som-rs/behavior/hosts.py": "2dc1dc43fd77a3fa8079c6c73462cc1fa7324246a83d56417ef666790287ec9f",
+      "som-rs/behavior/phase2/adapt.py": "ffe4d965331ccc4127e02b3fd83a626b5569660e00393f7b6e22f9d0ea7b62f0",
+      "som-rs/behavior/phase2/adapted/MANIFEST.json": "b679187b5c6cb120aa6a98c6164c63b7be75fd198cdfb7fb10b6b3b22511304b",
+      "som-rs/behavior/phase2/adapted/audit_business_transactions.py": "ca0a575a38d8e208fc3fc45d9f65016a3f03f14970b3cefbac3882de976515c7",
+      "som-rs/behavior/phase2/adapted/flow_branch_cases.py": "6eb98bae26071237a2198159c7faa2d0f0d06a38bffa5d3315936ffb529eccc1",
+      "som-rs/behavior/phase2/adapted/flow_fault_checks.py": "169aa9f0586adedd046ce07f24dbc0cc98d262c0313f5279dd2491abd22aed05",
+      "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py": "0c16601ddc33adc8c27788d192b4b93ed40730b740e7bdb5c2ba2480a4cbc0c7",
+      "som-rs/behavior/phase2/adapted/verify_business_workflows.py": "d8f206ac3cae7c09df92619bb19ea5c3b8c0889c21d6df4a1edf57d2049e14b0",
+      "som-rs/behavior/phase2/adapted/verify_composed_journeys.py": "867629d0605fef876e457d0f5378b69304d4a3ac746e34aee4372a50679451ab",
+      "som-rs/behavior/phase2/adapted/verify_composed_related.py": "439a2bfc0318f3f19818ae1cdc9a3eb8445e993a892a3c55dfa93deb879d86df",
+      "som-rs/behavior/phase2/adapted/verify_composed_subsets.py": "c8b2ff63c22ac9acebef5be17dbb6fb16b66c03041938cae0576b6bfbe1b8bdb",
+      "som-rs/behavior/phase2/adapted/verify_composed_transactions.py": "5095a31e0333c0561a14a7073c95acb468b4479b648fcd7200dea5a37be27ea1",
+      "som-rs/behavior/phase2/adapted/verify_flow_service.py": "c14225c5080021beba6b9b84b49c6ff5653275bcce348d351bee9c4d8964abd5",
+      "som-rs/behavior/phase2/adapted/verify_related.py": "640be9c12dfd398a877ef7fc3d1660fa41fc5b9f60deec16bfdcb41ca7d533cc",
+      "som-rs/behavior/phase2/check_phase2.py": "a66505a04053f3adb4e88dc56b06e18dfae1d1ccce988627f2c76aa391faf105",
+      "som-rs/behavior/phase2/make_rs_products.py": "0f4097f289efdf2a734130816caa8bfe3d6299c4a71ffb1cc5d46a036a0b9dbd",
+      "som-rs/behavior/phase2/phase2_host.py": "695cd7a15001eddd29f5312a147ddc05764425ac9369eb78eab84d4d2e8ed582",
+      "som-rs/behavior/suite.py": "1f7fbd9bbd340aa4457fdbbbc256ebcc5add742bdf86cd1f390c28329a0c7d83",
+      "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6",
+      "som-rs/scripts/compiler_acceptance/paths.py": "7fdee8d1a58559d72c05fc9bc4e956d694764c0ab83a7ad7ba7178c0de7dd91f",
+      "som-rs/scripts/compiler_acceptance/qa_harness.py": "f0c1cf96e1cf60ee692c7e9c3272757efef92498b52f4ac426e40b54142851a2",
+      "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513",
+      "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "66361c04b8c7069868aa03205dbb33f9d28ede06e55ea262326671b91108316b"
+    },
+    "replacements": {
+      "som-core/scripts/m3_local_fixture.py": {
+        "old_sha256": "14610dabdd276f89ff8429735da0904e88d2934f949bd942039392dd54184439",
+        "new_sha256": "7c6163ce7f2ac10ea2e424d462a66416887db45f2e029e5d6434f36fc3dd0d42",
+        "obligation": "Keep the same fresh PostgreSQL cluster and all fixture semantics. Only select integrity-checked native PostgreSQL paths."
+      },
+      "som-rs/behavior/hosts.py": {
+        "old_sha256": "2e350522225e10087737ddfd2824e84508e8c295662eb6805a607fdd27f3f69b",
+        "new_sha256": "2dc1dc43fd77a3fa8079c6c73462cc1fa7324246a83d56417ef666790287ec9f",
+        "obligation": "Keep the same generated files, PostgreSQL17.7 probes, complete behavior assertions, ports, real waits and cleanup. Admit only checked native tool and current named input transport paths."
+      },
+      "som-rs/behavior/phase2/check_phase2.py": {
+        "old_sha256": "7c37aa4cc6f40c988eb48da92873ffbdf8fab76a2faf8d953107c2fd1d6ff1b9",
+        "new_sha256": "a66505a04053f3adb4e88dc56b06e18dfae1d1ccce988627f2c76aa391faf105",
+        "obligation": "Keep every named case, duplicate slot, parity/refusal expectation and behavior assertion. Retain shard order and complete join. Exact current products and refusals require final-candidate raw captures."
+      },
+      "som-rs/behavior/phase2/phase2_host.py": {
+        "old_sha256": "ca46edc076e51d43711223f70b97af0c35fbb4bf413c66da374aca72562d4449",
+        "new_sha256": "695cd7a15001eddd29f5312a147ddc05764425ac9369eb78eab84d4d2e8ed582",
+        "obligation": "Keep every request, response normalization and service assertion. Only select checked native Rust/Python environment paths and record actual child wait/cleanup."
+      }
+    },
+    "operational_sources": {
+      "som-rs/scripts/hosted_readiness/complete_rust_inputs.py": "9ef5c1bacba959d68f2aec8b62be18c5c0c0b51cdbe7e3341e9d8a23d650469c",
+      "som-rs/scripts/hosted_readiness/dependency_candidate.py": "02c4d5982138a83586289ae348a06f0f5ca71552c2562614cda4a6e9a13bf86b",
+      "som-rs/scripts/hosted_readiness/evidence/3fee-full-compile-assembly-independent-byte-audit.json": "fafc43b5dd5d7159dc00c27355972700f59ba52354a087b8d6ad0e7b8cb5fa79",
+      "som-rs/scripts/hosted_readiness/evidence/ca-carrier-copy-source-review.json": "7d522e60ebe98b2fcbdc7b811d08dca4d61283c4fbc3cba7ca8a68c7b94ef0c7",
+      "som-rs/scripts/hosted_readiness/evidence/ca-frozen-url-cache-source-review.json": "dde2def4686e87cc587d08001a493e84c11c1235e8fd3da7ad78394d5a1b6b1b",
+      "som-rs/scripts/hosted_readiness/evidence/candidate-semantic-v3-source-review.json": "1c8c49c68122feafb7cc5b93d904071121de2c72693649ac8f7314ed29574860",
+      "som-rs/scripts/hosted_readiness/evidence/cargo-assembly-size-controller-source-review.json": "cdc3e00f31f9c49408734b8e50542f175b72c8879d8f926b568cb6681ec2144c",
+      "som-rs/scripts/hosted_readiness/evidence/cargo-closure-independent-source-review.json": "439531ed393eee7e464481660badba0c18ee9d5dcc6e99ea05a7cd64f1401163",
+      "som-rs/scripts/hosted_readiness/evidence/cargo-e686-failure-independent-byte-audit.json": "4c30c45e1a9bbdc69926bd9322e796a3bc2102671e727d9cc24c31218d71c6d0",
+      "som-rs/scripts/hosted_readiness/evidence/cargo-source-loader-independent-source-review.json": "e1eebd5b1ec49627399014f0b17bc6ace989447242d00f2da9f41631b3a6705f",
+      "som-rs/scripts/hosted_readiness/evidence/checked-reference-independent-source-review-v1.json": "5af9b2559c179f5cdac4b4008170147b1d25276b331b3362348fd783bb64b013",
+      "som-rs/scripts/hosted_readiness/evidence/ci-qualification-2f8708ddce.json": "f7a791bf166809e509b72bc3c7ec8dbe0188afa0cc74a19dc9ce82200f84ed25",
+      "som-rs/scripts/hosted_readiness/evidence/cnl-companion-source-review.json": "a8b016832609b4af5f926bad6a74a4e07bb50cef71437929cbbd3c3bd4c7e6ca",
+      "som-rs/scripts/hosted_readiness/evidence/coverage6-fixed-before-capture-inputs.json": "7b0b99ef462ab76656c7f21c93307943a4d93e4a270236eb9f2023359d30f260",
+      "som-rs/scripts/hosted_readiness/evidence/current28-context-v2-source-review.json": "019a65b8d6e5c7aa20f429e3ac2541f6c04bec7e5b174d209e745575aaed18df",
+      "som-rs/scripts/hosted_readiness/evidence/current68-native-v2-source-review.json": "22fddf26b5dc65ffe035e4ed0bc43885fda410f7606f0d14fd631bef8ef46ec7",
+      "som-rs/scripts/hosted_readiness/evidence/dependency-iteration-independent-source-review.json": "dd2469bde1787f5e6c6bcd56b1398534ad75cc7059d5392dc487cbf4674257ce",
+      "som-rs/scripts/hosted_readiness/evidence/dependency-normalization-independent-source-review.json": "e1bc057edf43f702847aba3f33318871f1d32dc101ebb6729c69bb77649b49db",
+      "som-rs/scripts/hosted_readiness/evidence/e686-f59-factory-source-controller-equality.json": "64c734c8a16ff2fddef8386962b7dcf2e1f9be1e94d64fead16f8dca0f14a42a",
+      "som-rs/scripts/hosted_readiness/evidence/early-raw-helper-independent-source-review.json": "197562e34357f769eac3c59213fa49494e8a82e2f916d0f17b5488303255a516",
+      "som-rs/scripts/hosted_readiness/evidence/experimental-native-compile-independent-source-review.json": "0ab6568b9f3ba97a3fb7ad82229f0252a34f341a90ad0b87c3c1362465abd3a5",
+      "som-rs/scripts/hosted_readiness/evidence/f59-cargo-normalization-independent-byte-audit.json": "2b5753630f4b2a6b327da900b86a0013993f2a3288706c20f4d831f6e4d97bea",
+      "som-rs/scripts/hosted_readiness/evidence/f59-carrier-recovery-source-review.json": "1ce5373dac905bee14ed7b14115de01378dc8f4051493cf7c353c969e3992f72",
+      "som-rs/scripts/hosted_readiness/evidence/f59-full-compile-assembly-independent-byte-audit.json": "3d769389f85fdd0d94a77d1405cb07b25a1756de32be8e2fc80bd9cd684f024e",
+      "som-rs/scripts/hosted_readiness/evidence/f59-native-descriptor-vector-independent-review.json": "1d9247175a8196e7b8eda226130938c2e5f53cfb0327901fa8ddd92c8db34d2c",
+      "som-rs/scripts/hosted_readiness/evidence/f59-native-descriptor-vector-source-proof.json": "1b926be4e306caccc670e7dde25497ad501597acbf19cc7ff3ba11eb5722b8de",
+      "som-rs/scripts/hosted_readiness/evidence/f59-native-macos-source-preview.json": "d3b1a26ef1bccb25361c5412a5074b24e486c3f945badd6905d4137ea18113e0",
+      "som-rs/scripts/hosted_readiness/evidence/f59-observed-native-candidate-identities.json": "12b9184abb2fcb4471df9d1deb275c90d19a851d54dda97067f890deb003dc86",
+      "som-rs/scripts/hosted_readiness/evidence/fixtures-a7d37b-independent-review.json": "74368289f71209b4db31c015add2c222a4f978cd71fd2ec0a4274e8aa8f38444",
+      "som-rs/scripts/hosted_readiness/evidence/full-product-runner-source-review.json": "87e4d6e89f9b96928ed5c2bc2bf0cd230fa257e71682501b7985e89ee09cd04e",
+      "som-rs/scripts/hosted_readiness/evidence/full-product-workflow-shape-review.json": "d6230f2c49a83eea1088df37ee12fdcd84cffbf2da0050eacec80fbd7ba84735",
+      "som-rs/scripts/hosted_readiness/evidence/full-product-workflow-source-review.json": "776cfb1a79f1d91dea3c3b9c5988b101d47a75479633dc5591fe3aa5497f1679",
+      "som-rs/scripts/hosted_readiness/evidence/input-bf3a04-controller-byte-audit.json": "90a7a0b22f09445de3e362bd93256e3e698980d1aa78cbc8a28e832c720d2a5b",
+      "som-rs/scripts/hosted_readiness/evidence/input-preparation-09ced5-independent-review.json": "692d1ab3a102193e73be6ad64b0ffd4feeb8335d2574e24e90513ca5492cfe6c",
+      "som-rs/scripts/hosted_readiness/evidence/m6-same-candidate-gate-matrix.json": "05b3cf1d4e1c30b7e8e89db1472f8ef1556fd6c844e4e2fee10525b14e3a81bf",
+      "som-rs/scripts/hosted_readiness/evidence/m6-source-integration-controller-check.json": "bb96615e63590c21c463f76457d97917dba5c7a7416c8260e34cdf6efd5cfd76",
+      "som-rs/scripts/hosted_readiness/evidence/m6-ts125-authority-relationship-review.json": "ee65453b55b52c7f78df3344dfc8f2e256b9da18c33d24e1d87233286471f1f5",
+      "som-rs/scripts/hosted_readiness/evidence/native-assembly-independent-source-review.json": "182efeeb8aece4c6c6f14265a2b10c37ac9699078162079caf143d26a68b8127",
+      "som-rs/scripts/hosted_readiness/evidence/native-compile-bf3a04-controller-byte-audit.json": "c2a85b32a9cea8ff5edc998fda73c07564796aa9bcb81bc8457ca134809cf38f",
+      "som-rs/scripts/hosted_readiness/evidence/native-entry-v2-source-review.json": "4c05651531a49028c2ffb9081eead41607b5e92b2ec605239f6a9a5736d6de05",
+      "som-rs/scripts/hosted_readiness/evidence/native-qa-Cargo-prior-data-audit.json": "03c434582d9cb5cc41ae6f005995ddaf52a72e534cae47f6029ae5355e118474",
+      "som-rs/scripts/hosted_readiness/evidence/native-qa-Cargo-registry-package-audit.json": "3f45b99a51dcb2a006a756b41e9785495b5d2a8ad0fe41c20b5dea43827cc361",
+      "som-rs/scripts/hosted_readiness/evidence/native-qa-cache-prior-source-byte-audit.json": "eca6e64e58f731af04573aa265792bcd1eeb0df467851e3898cc0bc8610f6799",
+      "som-rs/scripts/hosted_readiness/evidence/native-qa-rust6-archive-installed-audit.json": "e6568d8a3c7e3dcfa8e88dc8d73b71c065de6dfa9eef3ed84d8f764b072c7052",
+      "som-rs/scripts/hosted_readiness/evidence/native-qa-rust6-command-source-data-audit.json": "6b378a865659a1d1e2f65352a69b79098b249de82d1215d4d56be6dcfec0b7ac",
+      "som-rs/scripts/hosted_readiness/evidence/native-qa-rust6-controller-source-review.json": "e1bd70c0dd30b75e023ef37a8ce866ec445baed0d17b754faac12aa95f0cca9f",
+      "som-rs/scripts/hosted_readiness/evidence/native-qa-source-v2b-review.json": "05abe94d6538926175fa781f71319772f269d89d935b8124cafc0658906ffd1f",
+      "som-rs/scripts/hosted_readiness/evidence/native-tools-ed56f2cedf-independent-review.json": "27d2e42f1cc7447cb03fa335910fc7ece5c43a7f2444e39902b6b6ca7a1273b5",
+      "som-rs/scripts/hosted_readiness/evidence/native-tools-ed56f2cedf.json": "5678f274804bf8cdcbf8d4ec25444501a49b4aa5648a46f8e2945965ad7dc16a",
+      "som-rs/scripts/hosted_readiness/evidence/owned-compile-driver-independent-source-review.json": "1538d53b5f7a228bb0539ee210ce52b4da1365ea4241ba33a839c433619ce3db",
+      "som-rs/scripts/hosted_readiness/evidence/product-runtime-source-authority-review.json": "ed7b785f78213b9bd0deafb600a3f5265df6e4a434a805726da4279fe351e22f",
+      "som-rs/scripts/hosted_readiness/evidence/public-goldens-independent-review-v1.json": "e9036e91083f1b0ff29a091a76a46916061e5caf613c7da4ba99bfb4e6de1c02",
+      "som-rs/scripts/hosted_readiness/evidence/public-inputs-2f8708ddce-independent-review.json": "17e105f15f1e9a2e72efdcec0cf7b8b0994539f4b54bb1ed094be599812a4dc0",
+      "som-rs/scripts/hosted_readiness/evidence/public-inputs-a7d37b-independent-review.json": "ef0cc5e08a59f27caee407abdf075666aadb19e8e255757918e4176ba80f04f8",
+      "som-rs/scripts/hosted_readiness/evidence/public-reconstruction-source-review-v1.json": "d25968c1296660898368c504edbf134b9cdba457c03bc42bfc4468d6adb92cb3",
+      "som-rs/scripts/hosted_readiness/evidence/python-environment-consumer-independent-source-review.json": "dc9164f63eebc87e2f04461148a737c040d62cd3689aaf16a10fae329ae7d52b",
+      "som-rs/scripts/hosted_readiness/evidence/python-environment-id-independent-source-review.json": "95e9aa4d24f1861f948661cd54d1b3dc9fab3d3beb007a8d2d91b58cea0723e3",
+      "som-rs/scripts/hosted_readiness/evidence/rs22-fixed-before-capture-inputs.json": "27bc7b3bd140d8855d3ac1a19b266940ebd85718d28946ccdfeb710fe668e294",
+      "som-rs/scripts/hosted_readiness/evidence/runtime-bf3a04-controller-byte-audit.json": "7a2c04a65866474bd773b9722274c09c36646951fa7848d62e4b20b2cb94e75f",
+      "som-rs/scripts/hosted_readiness/evidence/runtime-capsule-source-review.json": "378a2d6639037c4c9603907914ec27f3b59d6df3bd4c4697aa4ebeadf1cce782",
+      "som-rs/scripts/hosted_readiness/evidence/runtime-reuse-independent-data-audit.json": "233a14ba9a77bd3a0ca2042c649d5f917c6e57e5cb6ca6bc37b74ebb273cd24d",
+      "som-rs/scripts/hosted_readiness/evidence/runtime-reuse-independent-source-data-review-v2.json": "5adc804e6d3a4309e3c2d547b31cff091d1bfdfa73dd8197a9a7b09d9856c721",
+      "som-rs/scripts/hosted_readiness/evidence/rust-mapper-and-companion-independent-source-review.json": "f3f80eb166469213560b4b37e06921143caa135dd84e33c12988b8148f4b9305",
+      "som-rs/scripts/hosted_readiness/evidence/rust-product-tools-controller-source-data-review.json": "e1bd70c0dd30b75e023ef37a8ce866ec445baed0d17b754faac12aa95f0cca9f",
+      "som-rs/scripts/hosted_readiness/evidence/rust6-gh-d6-archive-installed-audit.json": "e6568d8a3c7e3dcfa8e88dc8d73b71c065de6dfa9eef3ed84d8f764b072c7052",
+      "som-rs/scripts/hosted_readiness/evidence/rust6-gh-d6-command-source-audit.json": "6b378a865659a1d1e2f65352a69b79098b249de82d1215d4d56be6dcfec0b7ac",
+      "som-rs/scripts/hosted_readiness/evidence/supplement-distribution-approval-v1.json": "0571aa9013e875c37c2baf94a3a7959b093020857f43f706400127e7661b3075",
+      "som-rs/scripts/hosted_readiness/evidence/supplement-integration-independent-review-v1.json": "12547b719d7136474849b0481000355b34ac0860f90b8606e5106a35ef993df6",
+      "som-rs/scripts/hosted_readiness/evidence/supplement-sensitivity-review-v1.json": "c2b15eebfedfc975c9872e8218e69631f6c8f8fe7adae1716d29956fda08f258",
+      "som-rs/scripts/hosted_readiness/evidence/ts065-baseline-independent-review-v1.json": "f758d692adb018d743ba70193c80c1bca257cd0a4dd8974d93acc7d62d2c558e",
+      "som-rs/scripts/hosted_readiness/evidence/ts125-before-independent-source-data-review.json": "26d019f707003bd165cd5ba97620a416155b7433964967c408fabf08fe53e460",
+      "som-rs/scripts/hosted_readiness/evidence/ts125-before-source-data-review-v1.json": "9b0dce30a42e993ff332ddad07ef89aaee3efa23b0e5c5d6a92d2f8b83151497",
+      "som-rs/scripts/hosted_readiness/evidence/ts125-fresh-before-independent-join.json": "73839841c3cb7403063266889c9989eb9e13bc4fe3b39f143b951249bcfe9347",
+      "som-rs/scripts/hosted_readiness/evidence/ts125-fresh-before-independent-review.json": "9d74285565724d6623b105986f9994916bfa559c0dc8079080b807699994e2c3",
+      "som-rs/scripts/hosted_readiness/evidence/ts125-fresh-plaintext-independent-audit.json": "c90fc3a7622ba22f8d2e83504755547788165be0bcd9cd5ae3b9d81641a94631",
+      "som-rs/scripts/hosted_readiness/evidence/ts125-reconstructed-independent-source-data-review.json": "dd9ac4f774e59de9d13328b354b35502dc98756b342eac51ce2c26177daa2436",
+      "som-rs/scripts/hosted_readiness/evidence/ts125-reconstructed-request-authoring-review-v1.json": "953acb4fb6eb4fc08c7a6d044a9a2c5c9046a1a224946ab48072467abeb98f5c",
+      "som-rs/scripts/hosted_readiness/evidence/wheel-compressed-tags-source-review.json": "85b0c2ed816ccd41e5b76741229917bc293240cad997ecb9441a3b60a4f15c76",
+      "som-rs/scripts/hosted_readiness/evidence/wheel-d6-first-failure-byte-audit.json": "ddbfa4538314fb7aa3d19a11b07901bc7b969a13ba5791bdf7ecce7a9df69ac0",
+      "som-rs/scripts/hosted_readiness/evidence/wheel-producer-independent-final-source-review.json": "378ee9b666d1974d7f1e4e99a52b7dc9d2865d65525510def2675072b0934a68",
+      "som-rs/scripts/hosted_readiness/evidence/wheel-runtime-workflow-independent-review.json": "68c210e916f7fb0477db6beb3957d5ec82d96c20b924c0b083b69cfe3c480b33",
+      "som-rs/scripts/hosted_readiness/experimental_native_compile.py": "1c772df746c8a87d84f8635fab55a669a919824a5ce0f650319c8eff8957aaf7",
+      "som-rs/scripts/hosted_readiness/export_goldens.py": "b35440acbb5455fe90517d62fd860762c03882aa81b7ec5542f869cc1b40cc66",
+      "som-rs/scripts/hosted_readiness/export_ts065_goldens.py": "174aadaa92a53c3e58d0315fbc04a75d296f1a0a09413ff2a9e1542d151ec61c",
+      "som-rs/scripts/hosted_readiness/export_ts125_goldens.py": "d1f541d9729b219853a84c5332f60799e415646e80e09504518c4ab7cbcaea02",
+      "som-rs/scripts/hosted_readiness/inputs/dependency-iteration-f59-v1.json": "cc2611be2ccaab1d6a71887903cc3a69b7e2550d48e7bf8ae6785d725325339f",
+      "som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json": "ea573d3c842d367b32538ad8b9fec01608b4f05f676a07a80d9b9acf81a69a8b",
+      "som-rs/scripts/hosted_readiness/inputs/quality-checked-recipe-v1.json": "64429c01d823eafdad4439b75a45664316539ff57b25d3cbbf2bba8c475d2f2a",
+      "som-rs/scripts/hosted_readiness/inputs/supplement-fixtures-v1.json": "fe68f59c26554510c87b94eae81fec3da7202e22bb8a158606dc1b869f9af711",
+      "som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json": "650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9",
+      "som-rs/scripts/hosted_readiness/inputs/ts125-baseline-hashes-v1.json": "7009c29b93714dc1a827236b4ebeb255efc99c91c61460bc7a5ded49c902c868",
+      "som-rs/scripts/hosted_readiness/inputs/ts125-source-reconstructed-before-requests-v1.json": "fe0408c4449a019d8c81efe72f8930db117f4a027896609924d28ad87b4642e9",
+      "som-rs/scripts/hosted_readiness/map_rust_inputs.py": "4e67dadbce7213917ab05b5fe29d685bec595493c7608c93de334338801c94b7",
+      "som-rs/scripts/hosted_readiness/native-tools.json": "c41822f85508259dd20a35872bd46e1c35b9baa59599a7ade457a2c836ff5bd5",
+      "som-rs/scripts/hosted_readiness/native_qa_authority.py": "024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1",
+      "som-rs/scripts/hosted_readiness/preflight.py": "f37f6c717dd66f5402e24bc1525c685ed647efe7f691cd50c4be88c086aa542f",
+      "som-rs/scripts/hosted_readiness/product_python/environment-plan.json": "2a3f142a5f2759bdd8dfdbc4b9b42b145a753e880bcbd412fe41205f71f9bb55",
+      "som-rs/scripts/hosted_readiness/product_python/produce_wheels.py": "c9151e7b09b0d7fcadcc203f72b83bf1135f2da260becf2034f4228b26299a39",
+      "som-rs/scripts/hosted_readiness/product_python/qualify_python.py": "59db9a937fd226dbff97482129f1b8b6955c5b6d501020745ee70981ce4d96ff",
+      "som-rs/scripts/hosted_readiness/product_python/test_produce_wheels.py": "970aeb0fed1965f4dac68408c16402e3858f4233b8f14b6638ed1e12dfb5fb9b",
+      "som-rs/scripts/hosted_readiness/product_python/test_qualify_python.py": "6526d14f3fc9cab47a3a185563624da9fb65174d4ecec400be4ced6bce391e8b",
+      "som-rs/scripts/hosted_readiness/product_python/uv099-installer-authority.json": "e166303c1376a77d6e92ae19d9ff0eddcdd24c3adbde8381ff835274bb850358",
+      "som-rs/scripts/hosted_readiness/product_python/wheel-policy.json": "7a7532ed476f2e983fedfdf4304f8034765efb51df89caac604ad89c953442d7",
+      "som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py": "cfb7c594e35b17f672969a56b711dec58097100901a73a412c784ef21aa5d2c9",
+      "som-rs/scripts/hosted_readiness/product_runtime/consume_cargo.py": "78d57b5bad258cced8fd7b0776b1ccc01b599942d8a59ed95c8caa8babfc156e",
+      "som-rs/scripts/hosted_readiness/product_runtime/current_input_context.py": "d2de38a9962213381bb3b59045d3ddf39075a385f6f82db9c21ceb1baa654185",
+      "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py": "b6a2ea4dc31f1e6847b245aefdc37b354b487757a786464053c1321d344c410a",
+      "som-rs/scripts/hosted_readiness/product_runtime/provision_cargo.py": "299741b9ce379d858e65955151adc261cd17ae9ecbcf9cb69032130a7e3a3e94",
+      "som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py": "f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3",
+      "som-rs/scripts/hosted_readiness/product_runtime/qualify_rust_tools.py": "a60aa7d8163eeba02ed07a942f2d8d529c722aa346cdf1d3b3213deb70e0ad8b",
+      "som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py": "2a92e2df47fb05e76677fbb84e9cbb7f12d07d90eb8019bd816b5fe6b5588598",
+      "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json": "7a2c04a65866474bd773b9722274c09c36646951fa7848d62e4b20b2cb94e75f",
+      "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json": "4aaca5ef284440fd64bd50723619425201417937b4d635bb3c5d2d5835226b68",
+      "som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py": "1385e58948c8252bcd5169586cf36527e11906ecad438a190eb726ade5470a4c",
+      "som-rs/scripts/hosted_readiness/product_runtime/source-pins.json": "a4208c342bc9e923509bc5ba7ce6a9a1adfe3143d55b6215f0a313b4833550b2",
+      "som-rs/scripts/hosted_readiness/product_runtime/test_current_input_context.py": "a9e4b93fecc31a3fc23f9b4117fbd9ca92acb434df634437e9fdbafa864a6846",
+      "som-rs/scripts/hosted_readiness/product_runtime/test_provision_cargo.py": "7c706f082a0445ff6d380cd9cae7478293c945766390fe971a0b3bfadc4111c3",
+      "som-rs/scripts/hosted_readiness/product_runtime/test_qualify_runtime.py": "0c485472105483e12fbf971b658659990f250b5b666ee97997f2cf9ed32f3362",
+      "som-rs/scripts/hosted_readiness/product_runtime/test_qualify_rust_tools.py": "ab471139928593091e108b7d6bac4e483b724364603cc275f1be93d60aedd66c",
+      "som-rs/scripts/hosted_readiness/product_runtime/test_reuse_runtime.py": "00efdba666a1c8057142747f6482b569f56b85e6fe571dfcebbfb1c0decb1c29",
+      "som-rs/scripts/hosted_readiness/product_runtime/test_runtime_capsule.py": "36e8d5c78caeb61b29745064aa4250b93b42f4db85c0096e35177cf60f4abd2d",
+      "som-rs/scripts/hosted_readiness/prove_checked_reference.py": "7507dd9c5ac3d0e90f12be2506c283fa4760fdf61f38e6c9d372975b6bdd63b8",
+      "som-rs/scripts/hosted_readiness/provision_native.py": "97158732941f4f3cf025b07794dd020636fce6642304bd892445804c123f24bf",
+      "som-rs/scripts/hosted_readiness/raw_digest_compat.py": "a025bd99b56dafc4de65c268318f583e117adfe16988d61bb9180cb5e8da0896",
+      "som-rs/scripts/hosted_readiness/readiness.json": "a39468bcdcdc319bafa2740faa8edb4c0ccf04569eac96e30c94984748eeb5d9",
+      "som-rs/scripts/hosted_readiness/reconstruct_public_inputs.py": "7ad8856988b2abb1bb10125489873aba922abf1a13fa155b71afa73ea4e28b67",
+      "som-rs/scripts/hosted_readiness/reconstruct_ts125_requests.py": "2a44d7171562d25b18f81d4015ea0b1aef72d68ef10aa00ee412ae65a75deaa0",
+      "som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py": "70e216b3a434ae1beebced9a93ba97911e470c2846b2997d79aacbb65c42e18d",
+      "som-rs/scripts/hosted_readiness/run_current_python_companions.py": "916ba1ded5547a6e3de5238850785cf3079647b1aa56ba7035a86222fef58a3b",
+      "som-rs/scripts/hosted_readiness/run_experimental_native_assembly.py": "f37eddbcec79963312c936c752fd897d9ed1906c3e2b0adc3241eb0ace4d8eaa",
+      "som-rs/scripts/hosted_readiness/run_experimental_native_cnl.py": "0036b83bf5bc90322ad40b055c4de0f7f32be4f8c05af433a7756f37e7edc092",
+      "som-rs/scripts/hosted_readiness/run_experimental_native_compile.py": "bb3653edc9021b1476d659276fbf9a549ba33de594fad9dac3713ac368b37d87",
+      "som-rs/scripts/hosted_readiness/run_full_products.py": "e1d10ba99668977bc100d7d08229b19cc8d51ba359a7ee3fd1211696b906cf78",
+      "som-rs/scripts/hosted_readiness/test_complete_rust_inputs.py": "234681f5fe6ceb7effd900139d010e2863056b6c7d83fec6ccb12b520347b086",
+      "som-rs/scripts/hosted_readiness/test_current_child_environment.py": "9353e999858d23425906391a7fe9f9471f82b1de2121b9dbbe58b60550fdafc4",
+      "som-rs/scripts/hosted_readiness/test_dependency_candidate.py": "09af29e65ec163943fdfddcb6c8bcf5bffc78b859afe38e5c334669a9e65cbfe",
+      "som-rs/scripts/hosted_readiness/test_experimental_native_compile.py": "d8290ce893c5bd6a12505afb11887d3234509f23a59029b0cb06652c70cab877",
+      "som-rs/scripts/hosted_readiness/test_export_goldens.py": "9fd543c18d7360285169efee8f42ae65d0fd1d1320cab0006563a31c13cbb777",
+      "som-rs/scripts/hosted_readiness/test_export_ts065_goldens.py": "9d786a5ef930de5edea249ffad4cf31a87e40e5224bc28500e42356e8d11920b",
+      "som-rs/scripts/hosted_readiness/test_export_ts125_goldens.py": "2ff1d12e06b1fa711da1904de4c607d0c882054702b6539d4d6363eabdd3fad2",
+      "som-rs/scripts/hosted_readiness/test_map_rust_inputs.py": "781eb9a3a89fde491eaa76e41229e141637d397b97fe5f27e6964447ebdff64a",
+      "som-rs/scripts/hosted_readiness/test_native_entry_barrier.py": "57ca1234ec10b4e3b6bad15bda3cc8d86f7e709f2e441b97a7af34c8dca4512f",
+      "som-rs/scripts/hosted_readiness/test_native_qa_authority.py": "3ef86787c524b0650e6ec5115ad06e7726996b961396b8a5ddb09aa7ed53a9f4",
+      "som-rs/scripts/hosted_readiness/test_native_qa_imports.py": "2ad1d5b8d7bfb7950828a633641f3e8d46c701aa45bde61c104e92dc730321b4",
+      "som-rs/scripts/hosted_readiness/test_native_receipt_chronology.py": "dadc59f1321436958925f4d27a2eca69822058d6722399d5dec056a5574329eb",
+      "som-rs/scripts/hosted_readiness/test_preflight.py": "63263a35ef4047d66dec89701c99ed75186fca3e90532cb6eb31423bd7130246",
+      "som-rs/scripts/hosted_readiness/test_prove_checked_reference.py": "7acaa3bafd78f3bac4aa8ac1fb1ca094c30feb7b087506c9d7dbf6b79bd27d09",
+      "som-rs/scripts/hosted_readiness/test_provision_native.py": "924917d2389139fad0f5d9a7f6e559e69b4331d33551e15384c7b52d42272875",
+      "som-rs/scripts/hosted_readiness/test_raw_digest_compat.py": "99d425e7a7392534ee8635bdad2ed33c5ae60afbff4aa799761b47b3a09e8d37",
+      "som-rs/scripts/hosted_readiness/test_reconstruct_public_inputs.py": "679ef2803607356f16744d396ec7234c3f079feecdb3921ad1fac61d4d77fb08",
+      "som-rs/scripts/hosted_readiness/test_reconstruct_ts125_requests.py": "9f4423d80b0fb4a14c2383f52e93b1e4c25924d976408843d625cfedcffbf9ce",
+      "som-rs/scripts/hosted_readiness/test_run_candidate_semantic_gates.py": "874ae2c78ad59842ac47fbf5ed21c55ae1153e7f1417e8be403ccfdf16eb1277",
+      "som-rs/scripts/hosted_readiness/test_run_current_python_companions.py": "ed6d4c8b2c3826f232bc16066a2359c4de814e92f1535310bd78bb5ad728d47c",
+      "som-rs/scripts/hosted_readiness/test_run_experimental_native_assembly.py": "e4ca3673b84ba88681c13fece69cab9c2817459a6698a8bc9037389c03943635",
+      "som-rs/scripts/hosted_readiness/test_run_experimental_native_cnl.py": "0f9f4698873547480525602f4419f98bd8f7ad3cbac6a1f69fc06809e3f800a3",
+      "som-rs/scripts/hosted_readiness/test_run_experimental_native_compile.py": "efbc86603ea45c4ee1ef787bb2c69caa2b52e17d7f34cf6926c395733bdc76c5",
+      "som-rs/scripts/hosted_readiness/test_run_full_products.py": "34537f7fb6c79fb1f9ed4d6c1ad1adaaf20206ca03447d1ec7cff8385a9a04f1"
+    },
+    "operational_scope_rule": "Complete exact .py/.json inventory below som-rs/scripts/hosted_readiness at the final Git source. No wildcard permission for new source.",
+    "profiles": {
+      "rust_product": {
+        "path": "som-rs/contracts/native-tools-v1/product-rust-tools-v1.json",
+        "sha256": "f18ee32b1efe1452b119ee2184f52514f3e661208817d65307ccd71851bbc13a"
+      },
+      "runtime_sources": {
+        "path": "som-rs/scripts/hosted_readiness/product_runtime/source-pins.json",
+        "sha256": "a4208c342bc9e923509bc5ba7ce6a9a1adfe3143d55b6215f0a313b4833550b2"
+      },
+      "runtime_qualification": {
+        "path": "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json",
+        "sha256": "4aaca5ef284440fd64bd50723619425201417937b4d635bb3c5d2d5835226b68"
+      },
+      "runtime_byte_audit": {
+        "path": "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json",
+        "sha256": "7a2c04a65866474bd773b9722274c09c36646951fa7848d62e4b20b2cb94e75f"
+      },
+      "wheel_policy": {
+        "path": "som-rs/scripts/hosted_readiness/product_python/wheel-policy.json",
+        "sha256": "7a7532ed476f2e983fedfdf4304f8034765efb51df89caac604ad89c953442d7"
+      },
+      "wheel_environment": {
+        "path": "som-rs/scripts/hosted_readiness/product_python/environment-plan.json",
+        "sha256": "2a3f142a5f2759bdd8dfdbc4b9b42b145a753e880bcbd412fe41205f71f9bb55"
+      },
+      "uv_installer": {
+        "path": "som-rs/scripts/hosted_readiness/product_python/uv099-installer-authority.json",
+        "sha256": "e166303c1376a77d6e92ae19d9ff0eddcdd24c3adbde8381ff835274bb850358"
+      },
+      "native_compiler_tools": {
+        "path": "som-rs/contracts/native-tools-v1/artifacts.json",
+        "sha256": "959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193"
+      }
+    },
+    "prior_evidence": {
+      "native-qa-rust6-command-source-data-audit.json": {
+        "path": "som-rs/scripts/hosted_readiness/evidence/native-qa-rust6-command-source-data-audit.json",
+        "sha256": "6b378a865659a1d1e2f65352a69b79098b249de82d1215d4d56be6dcfec0b7ac",
+        "role": "bounded prior source/data evidence; no final candidate or expanded-policy acceptance"
+      },
+      "native-qa-rust6-archive-installed-audit.json": {
+        "path": "som-rs/scripts/hosted_readiness/evidence/native-qa-rust6-archive-installed-audit.json",
+        "sha256": "e6568d8a3c7e3dcfa8e88dc8d73b71c065de6dfa9eef3ed84d8f764b072c7052",
+        "role": "bounded prior source/data evidence; no final candidate or expanded-policy acceptance"
+      },
+      "native-qa-rust6-controller-source-review.json": {
+        "path": "som-rs/scripts/hosted_readiness/evidence/native-qa-rust6-controller-source-review.json",
+        "sha256": "e1bd70c0dd30b75e023ef37a8ce866ec445baed0d17b754faac12aa95f0cca9f",
+        "role": "bounded prior source/data evidence; no final candidate or expanded-policy acceptance"
+      },
+      "native-qa-cache-prior-source-byte-audit.json": {
+        "path": "som-rs/scripts/hosted_readiness/evidence/native-qa-cache-prior-source-byte-audit.json",
+        "sha256": "eca6e64e58f731af04573aa265792bcd1eeb0df467851e3898cc0bc8610f6799",
+        "role": "bounded prior source/data evidence; no final candidate or expanded-policy acceptance"
+      },
+      "native-qa-Cargo-prior-data-audit.json": {
+        "path": "som-rs/scripts/hosted_readiness/evidence/native-qa-Cargo-prior-data-audit.json",
+        "sha256": "03c434582d9cb5cc41ae6f005995ddaf52a72e534cae47f6029ae5355e118474",
+        "role": "bounded prior source/data evidence; no final candidate or expanded-policy acceptance"
+      },
+      "native-qa-Cargo-registry-package-audit.json": {
+        "path": "som-rs/scripts/hosted_readiness/evidence/native-qa-Cargo-registry-package-audit.json",
+        "sha256": "3f45b99a51dcb2a006a756b41e9785495b5d2a8ad0fe41c20b5dea43827cc361",
+        "role": "bounded prior source/data evidence; no final candidate or expanded-policy acceptance"
+      }
+    },
+    "cargo_scope": {
+      "phase1_registry_packages": 203,
+      "phase2_registry_packages": 334,
+      "registry_union_packages": 352,
+      "license_files": 647,
+      "reference_lock_sha256": "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20",
+      "reference_phase2_lock_sha256": "0483374722515e3daa7f8509708abb9c551f1bc1815f9110e6662b893db443ad",
+      "registry_package_audit_sha256": "3f45b99a51dcb2a006a756b41e9785495b5d2a8ad0fe41c20b5dea43827cc361",
+      "rule": "Keep the complete frozen lock union, actual registry checksum/source inventory and every license. Relocation may change only the checked configuration prefix; preserve11/12 reference bytes and each original freeze."
+    },
+    "runtime_rule": "Recheck exact qualified native bytes, versions, inventories, waits and group cleanup before use; no source-only product acceptance.",
+    "capture_order": [
+      "Review final source and GitHub fixtures.",
+      "Fix final production metadata, numbered receipt maps and exact tool/QA pins in one batch.",
+      "Independently review final complete factory vectors and numbered H(files), then seal and integrate matching target constants.",
+      "Build the new common candidate and bind fresh source/candidate admission.",
+      "Run final68 compile forms and64 own-bundle assemblies once against that candidate.",
+      "Run all applicable full gates and independent raw audit."
+    ],
+    "f59_capture_role": "Preparation source only. No f59/e84 capture output is a sealing prerequisite or final candidate proof. Final capture source must be generalized to the final candidate before sealing; no borrowed old outputs.",
+    "product_acceptance_passed": false,
+    "qa_support_roots": [
+      "som-core/scripts/m3_local_fixture.py",
+      "som-core/scripts/verify_python_quality.py",
+      "som-core/scripts/verify_service_v3.py",
+      "som-rs/behavior/check_behavior.py",
+      "som-rs/behavior/hosts.py",
+      "som-rs/behavior/phase2/check_phase2.py",
+      "som-rs/behavior/phase2/phase2_host.py",
+      "som-rs/scripts/rust_output_acceptance/check_cli.py",
+      "som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py",
+      "som-rs/scripts/rust_output_acceptance/python_replay.py",
+      "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py",
+      "som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py",
+      "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py",
+      "som-rs/som-targets/qa/check_phase2_products.py",
+      "som-rs/som-targets/qa/check_rust_products.py",
+      "som-rs/som-targets/qa/check_targets.py"
+    ],
+    "qa_support_search_roots": [
+      "som-rs/som-targets/qa",
+      "som-rs/behavior",
+      "som-rs/behavior/phase2",
+      "som-rs/behavior/phase2/adapted",
+      "som-rs/tests/rust-output-v1",
+      "som-rs/tests/typescript-output-v1",
+      "som-rs/tests/react-output-v1",
+      "som-rs/scripts/compiler_acceptance",
+      "som-rs/scripts/rust_output_acceptance",
+      "som-rs/scripts/typescript_output_acceptance",
+      "som-rs/scripts/react_output_acceptance",
+      "som-core/scripts",
+      "som-core/src",
+      "som-rs/scripts/hosted_readiness",
+      "som-rs/scripts/hosted_readiness/product_runtime",
+      "som-rs/scripts/hosted_readiness/product_python"
+    ],
+    "qa_support_sources": {
+      "som-core/scripts/audit_business_transactions.py": "2f8f617bed62963db89066db18772bbd08f9ae31bac54166aee322191eb4122a",
+      "som-core/scripts/flow_branch_cases.py": "52aeb03342c99a985ade2cb833e7a6f0b657bfa3eb6ed603cc74b4ef3a4241ac",
+      "som-core/scripts/flow_fault_checks.py": "a20be84fb254c52197a673ecc51db15fa05ea8ddbd188f6d1baa3a21f967ea47",
+      "som-core/scripts/flow_provider_fault_checks.py": "27b814508cc3cfc35f5f020fcd02f831f7fcfb40bc20fc4d8c74772993d6a58a",
+      "som-core/scripts/quality_policy.py": "365c9002e1efdb2fa22a12a9a0ea3079a991bfddf79d9b33333acde67c17d392",
+      "som-core/scripts/verify_business_workflows.py": "45edd24a39ea095212d43285ca57c5e742f7ab4c914b0def3824244ef33d7a48",
+      "som-core/scripts/verify_composed_journeys.py": "b39a29d181d023dd9bf71aed72b8602cb06224b7880159732499cde90f8b286c",
+      "som-core/scripts/verify_composed_related.py": "0b02c9e05b930f300d1168fb292c7fa863826d0be87d8eed70a712bb9a53dc29",
+      "som-core/scripts/verify_composed_subsets.py": "97d33fb63aa061190ede56b4ff2179d28927b2211b3bf46b3e3487a30b8c18ae",
+      "som-core/scripts/verify_composed_transactions.py": "2cc9931592f8bf32a458aee32274125c6ac347b817191375090c011c69d07a85",
+      "som-core/scripts/verify_flow_service.py": "6cd3b8932d5c9c092f12baeca442814c66cbc3fe22cc10cdee100e126827fbbe",
+      "som-core/scripts/verify_python_quality.py": "c0d1e43fa332396c0ec5a3ad82977f7a655c62e11919e854733559e9ddf3300d",
+      "som-core/scripts/verify_related.py": "ec9cc11116c2ceb46dac687da9291faefd7c56aefbb282a5e088e1b5272b1ba1",
+      "som-core/scripts/verify_service_v3.py": "f2d1a13a291cda286a7524d98c61e13aa8000f6850cc4e6f8c1d88c84e6f832e",
+      "som-rs/scripts/react_output_acceptance/check_target.py": "00e0ac437bdba2f8ddf5f03b5b417c7a229a55ddc33aa75673bc93cfd55eadb3",
+      "som-rs/scripts/react_output_acceptance/cli_raw.py": "43f32984b95d212bfead28eacbfa61f96cbea17295eb65a249e1f5e25e3dd328",
+      "som-rs/scripts/rust_output_acceptance/check_cli.py": "7f6f447597c2e9f497e50d060ca36f62e291eeea344bf3e16db326d39a536dca",
+      "som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py": "7f9155b6cea577ff06e424d6ec43d6d2dc33262c586fef066f9e6004fd30864d",
+      "som-rs/scripts/rust_output_acceptance/python_replay.py": "069736b5956a6deeb5ce75ba5b5ee454b592bbc6ab8dc9ec285448d06c300d9c",
+      "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py": "ebe4fbe58d54ac6e89ea48f11a6a2b622ed450589864e289327ecb6fd8f51180",
+      "som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py": "157ea2a0c1a5c442674ba0b87ff02e7812e8ca69ca65bab329b7525babbcffbe",
+      "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py": "f99ff77f78ef80a1e9ff010e9cb669d0219b7ba3b8a4082b29ebbd267c7d309a",
+      "som-rs/scripts/typescript_output_acceptance/check_target.py": "d58aceb3139f714f8659fc7a13de1a4c06b170a23b5ec6aeabb197e9ff666203",
+      "som-rs/som-targets/qa/check_phase2_products.py": "5b82f6ed8e841604407af9b933b053208b04500adf6cbe6f626b6d4e6f96ebf2",
+      "som-rs/som-targets/qa/check_rust_products.py": "4e77dd27a46580be6e8ecfaed2f1eb0c840a8a19b8f75b9539e5fb8c4f57c50c",
+      "som-rs/som-targets/qa/check_targets.py": "8b95242ff7bab0da4c7e6f29a2f8735ea6482177044fcd5661f7174c8df0db75",
+      "som-rs/tests/react-output-v1/build_case_inventory.py": "262e49b431f26ea6734bec45e1e34d14ed66b36febb070026b11d94b229c2575",
+      "som-rs/tests/react-output-v1/common.py": "56c7318db6cbd85e27e6ac3c168de3cb9591e9c66cdb751b7d039ce3c8e3da73",
+      "som-rs/tests/react-output-v1/react_profile.py": "4fb08644d4766ecc2733cb72ab620471cfe760ce6696f18090f9f8581b484c66",
+      "som-rs/tests/react-output-v1/tree_sha.py": "b047ae9ac44eb76df4a33cabc0ae20fb8258480069b17be0825c83921dfefc3c"
+    },
+    "qa_support_edges": [
+      {
+        "from": "som-core/scripts/audit_business_transactions.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-core/scripts/audit_business_transactions.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-core/scripts/audit_business_transactions.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/audit_business_transactions.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/composed_evidence.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/composed_evidence.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/flow_fault_checks.py",
+        "import": "som_core.flow",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/scripts/flow_fault_checks.py",
+        "import": "som_core.flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "from": "som-core/scripts/flow_fault_checks.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/flow_fault_checks.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/flow_provider_fault_checks.py",
+        "import": "flow_fault_checks",
+        "source": "som-core/scripts/flow_fault_checks.py"
+      },
+      {
+        "from": "som-core/scripts/flow_provider_fault_checks.py",
+        "import": "flow_fault_checks",
+        "source": "som-rs/behavior/phase2/adapted/flow_fault_checks.py"
+      },
+      {
+        "from": "som-core/scripts/flow_test_backends.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-core/scripts/flow_test_backends.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-core/scripts/local_flow_services.py",
+        "import": "flow_gcs_fixture",
+        "source": "som-core/scripts/flow_gcs_fixture.py"
+      },
+      {
+        "from": "som-core/scripts/local_flow_services.py",
+        "import": "local_business_services",
+        "source": "som-core/scripts/local_business_services.py"
+      },
+      {
+        "from": "som-core/scripts/m3_local_fixture.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "from": "som-core/scripts/m3_local_fixture.py",
+        "import": "local_business_services",
+        "source": "som-core/scripts/local_business_services.py"
+      },
+      {
+        "from": "som-core/scripts/m3_local_fixture.py",
+        "import": "local_flow_services",
+        "source": "som-core/scripts/local_flow_services.py"
+      },
+      {
+        "from": "som-core/scripts/verify_business_workflows.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/verify_business_workflows.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_journeys.py",
+        "import": "audit_business_transactions",
+        "source": "som-core/scripts/audit_business_transactions.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_journeys.py",
+        "import": "audit_business_transactions",
+        "source": "som-rs/behavior/phase2/adapted/audit_business_transactions.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_journeys.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_journeys.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_journeys.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_journeys.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_related.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_related.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_related.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_related.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "audit_business_transactions",
+        "source": "som-core/scripts/audit_business_transactions.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "audit_business_transactions",
+        "source": "som-rs/behavior/phase2/adapted/audit_business_transactions.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "composed_evidence",
+        "source": "som-core/scripts/composed_evidence.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "fixture_guard",
+        "source": "som-core/scripts/fixture_guard.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "som_core",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "som_core.composed",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "som_core.composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "som_core.v1",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "som_core.v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_journeys",
+        "source": "som-core/scripts/verify_composed_journeys.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_journeys",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_related",
+        "source": "som-core/scripts/verify_composed_related.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_related.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_subsets",
+        "source": "som-core/scripts/verify_composed_subsets.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_subsets",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_transactions",
+        "source": "som-core/scripts/verify_composed_transactions.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_transactions",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_subsets.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_subsets.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_composed_journeys",
+        "source": "som-core/scripts/verify_composed_journeys.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_composed_journeys",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_composed_transactions",
+        "source": "som-core/scripts/verify_composed_transactions.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_composed_transactions",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_transactions.py",
+        "import": "audit_business_transactions",
+        "source": "som-core/scripts/audit_business_transactions.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_transactions.py",
+        "import": "audit_business_transactions",
+        "source": "som-rs/behavior/phase2/adapted/audit_business_transactions.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_transactions.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_transactions.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_transactions.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/verify_composed_transactions.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "audit_business_transactions",
+        "source": "som-core/scripts/audit_business_transactions.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "audit_business_transactions",
+        "source": "som-rs/behavior/phase2/adapted/audit_business_transactions.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "composed_evidence",
+        "source": "som-core/scripts/composed_evidence.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "fixture_guard",
+        "source": "som-core/scripts/fixture_guard.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_branch_cases",
+        "source": "som-core/scripts/flow_branch_cases.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_branch_cases",
+        "source": "som-rs/behavior/phase2/adapted/flow_branch_cases.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_fault_checks",
+        "source": "som-core/scripts/flow_fault_checks.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_fault_checks",
+        "source": "som-rs/behavior/phase2/adapted/flow_fault_checks.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_provider_fault_checks",
+        "source": "som-core/scripts/flow_provider_fault_checks.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_provider_fault_checks",
+        "source": "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_row_history",
+        "source": "som-core/scripts/flow_row_history.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_test_backends",
+        "source": "som-core/scripts/flow_test_backends.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "verify_composed_services",
+        "source": "som-core/scripts/verify_composed_services.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/verify_flow_service.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-core/scripts/verify_python_quality.py",
+        "import": "quality_policy",
+        "source": "som-core/scripts/quality_policy.py"
+      },
+      {
+        "from": "som-core/scripts/verify_related.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-core/scripts/verify_related.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-core/scripts/verify_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "from": "som-core/scripts/verify_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "from": "som-core/scripts/verify_service_v3.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "from": "som-core/scripts/verify_service_v3.py",
+        "import": "som_core.v1",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/scripts/verify_service_v3.py",
+        "import": "som_core.v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/assemble.py",
+        "import": ".records",
+        "source": "som-core/src/som_core/records.py"
+      },
+      {
+        "from": "som-core/src/som_core/business.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/cli.py",
+        "import": ".assemble",
+        "source": "som-core/src/som_core/assemble.py"
+      },
+      {
+        "from": "som-core/src/som_core/cli.py",
+        "import": ".evaluate",
+        "source": "som-core/src/som_core/evaluate.py"
+      },
+      {
+        "from": "som-core/src/som_core/cli.py",
+        "import": ".records",
+        "source": "som-core/src/som_core/records.py"
+      },
+      {
+        "from": "som-core/src/som_core/cli.py",
+        "import": ".train",
+        "source": "som-core/src/som_core/train.py"
+      },
+      {
+        "from": "som-core/src/som_core/composed.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/composed.py",
+        "import": ".related",
+        "source": "som-core/src/som_core/related.py"
+      },
+      {
+        "from": "som-core/src/som_core/composed.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/dsl.py",
+        "import": "som_core.dataset",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/dsl.py",
+        "import": "som_core.dataset",
+        "source": "som-core/src/som_core/dataset.py"
+      },
+      {
+        "from": "som-core/src/som_core/dsl.py",
+        "import": "som_core.paths",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/dsl.py",
+        "import": "som_core.paths",
+        "source": "som-core/src/som_core/paths.py"
+      },
+      {
+        "from": "som-core/src/som_core/dsl.py",
+        "import": "som_core.train",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/dsl.py",
+        "import": "som_core.train",
+        "source": "som-core/src/som_core/train.py"
+      },
+      {
+        "from": "som-core/src/som_core/dsl_pairs.py",
+        "import": "som_core.dsl",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/dsl_pairs.py",
+        "import": "som_core.dsl",
+        "source": "som-core/src/som_core/dsl.py"
+      },
+      {
+        "from": "som-core/src/som_core/dsl_pairs.py",
+        "import": "som_core.generate",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/dsl_pairs.py",
+        "import": "som_core.generate",
+        "source": "som-core/src/som_core/generate.py"
+      },
+      {
+        "from": "som-core/src/som_core/dsl_pairs.py",
+        "import": "som_core.prompt",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/dsl_pairs.py",
+        "import": "som_core.prompt",
+        "source": "som-core/src/som_core/prompt.py"
+      },
+      {
+        "from": "som-core/src/som_core/evaluate.py",
+        "import": ".assemble",
+        "source": "som-core/src/som_core/assemble.py"
+      },
+      {
+        "from": "som-core/src/som_core/evaluate.py",
+        "import": ".dataset",
+        "source": "som-core/src/som_core/dataset.py"
+      },
+      {
+        "from": "som-core/src/som_core/evaluate.py",
+        "import": ".paths",
+        "source": "som-core/src/som_core/paths.py"
+      },
+      {
+        "from": "som-core/src/som_core/evaluate.py",
+        "import": ".records",
+        "source": "som-core/src/som_core/records.py"
+      },
+      {
+        "from": "som-core/src/som_core/evaluate.py",
+        "import": ".train",
+        "source": "som-core/src/som_core/train.py"
+      },
+      {
+        "from": "som-core/src/som_core/evaluate.py",
+        "import": ".wire",
+        "source": "som-core/src/som_core/wire.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow.py",
+        "import": ".composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow.py",
+        "import": ".quality",
+        "source": "som-core/src/som_core/quality.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow.py",
+        "import": ".related",
+        "source": "som-core/src/som_core/related.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_codec.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_codec.py",
+        "import": ".composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_codec.py",
+        "import": ".flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_codec.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_compact.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_compact.py",
+        "import": ".compact_names",
+        "source": "som-core/src/som_core/compact_names.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_compact.py",
+        "import": ".composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_compact.py",
+        "import": ".flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_compact.py",
+        "import": ".flow_codec",
+        "source": "som-core/src/som_core/flow_codec.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_compact.py",
+        "import": ".quality",
+        "source": "som-core/src/som_core/quality.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_compact.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_constraints.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_constraints.py",
+        "import": ".composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_constraints.py",
+        "import": ".flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_constraints.py",
+        "import": ".flow_codec",
+        "source": "som-core/src/som_core/flow_codec.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_constraints.py",
+        "import": ".flow_compact",
+        "source": "som-core/src/som_core/flow_compact.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_constraints.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_m3_data.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_m3_data.py",
+        "import": ".composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_m3_data.py",
+        "import": ".flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_m3_data.py",
+        "import": ".flow_codec",
+        "source": "som-core/src/som_core/flow_codec.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_m3_data.py",
+        "import": ".flow_compact",
+        "source": "som-core/src/som_core/flow_compact.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_m3_data.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_m3_evidence.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_m3_evidence.py",
+        "import": ".flow_compact",
+        "source": "som-core/src/som_core/flow_compact.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_m3_target.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_m3_target.py",
+        "import": ".flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_m3_target.py",
+        "import": ".flow_codec",
+        "source": "som-core/src/som_core/flow_codec.py"
+      },
+      {
+        "from": "som-core/src/som_core/flow_m3_target.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/generate.py",
+        "import": "som_core.dsl",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/generate.py",
+        "import": "som_core.dsl",
+        "source": "som-core/src/som_core/dsl.py"
+      },
+      {
+        "from": "som-core/src/som_core/generate.py",
+        "import": "som_core.evaluate",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/generate.py",
+        "import": "som_core.evaluate",
+        "source": "som-core/src/som_core/evaluate.py"
+      },
+      {
+        "from": "som-core/src/som_core/generate.py",
+        "import": "som_core.prompt",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/generate.py",
+        "import": "som_core.prompt",
+        "source": "som-core/src/som_core/prompt.py"
+      },
+      {
+        "from": "som-core/src/som_core/mcp_server.py",
+        "import": "som_core.dsl",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/mcp_server.py",
+        "import": "som_core.dsl",
+        "source": "som-core/src/som_core/dsl.py"
+      },
+      {
+        "from": "som-core/src/som_core/mcp_server.py",
+        "import": "som_core.generate",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/mcp_server.py",
+        "import": "som_core.generate",
+        "source": "som-core/src/som_core/generate.py"
+      },
+      {
+        "from": "som-core/src/som_core/mcp_server.py",
+        "import": "som_core.prompt",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/mcp_server.py",
+        "import": "som_core.prompt",
+        "source": "som-core/src/som_core/prompt.py"
+      },
+      {
+        "from": "som-core/src/som_core/quality.py",
+        "import": "som_core",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/quality.py",
+        "import": "som_core.composed",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/quality.py",
+        "import": "som_core.composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "from": "som-core/src/som_core/quality.py",
+        "import": "som_core.v1",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/quality.py",
+        "import": "som_core.v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/related.py",
+        "import": ".business",
+        "source": "som-core/src/som_core/business.py"
+      },
+      {
+        "from": "som-core/src/som_core/related.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/rule_planner.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/rule_planner.py",
+        "import": ".composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "from": "som-core/src/som_core/rule_planner.py",
+        "import": ".quality",
+        "source": "som-core/src/som_core/quality.py"
+      },
+      {
+        "from": "som-core/src/som_core/rule_planner.py",
+        "import": ".related",
+        "source": "som-core/src/som_core/related.py"
+      },
+      {
+        "from": "som-core/src/som_core/rule_planner.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/train.py",
+        "import": ".dataset",
+        "source": "som-core/src/som_core/dataset.py"
+      },
+      {
+        "from": "som-core/src/som_core/train.py",
+        "import": ".dsl",
+        "source": "som-core/src/som_core/dsl.py"
+      },
+      {
+        "from": "som-core/src/som_core/train.py",
+        "import": ".dsl_pairs",
+        "source": "som-core/src/som_core/dsl_pairs.py"
+      },
+      {
+        "from": "som-core/src/som_core/train.py",
+        "import": ".generate",
+        "source": "som-core/src/som_core/generate.py"
+      },
+      {
+        "from": "som-core/src/som_core/train.py",
+        "import": ".paths",
+        "source": "som-core/src/som_core/paths.py"
+      },
+      {
+        "from": "som-core/src/som_core/train.py",
+        "import": ".wire",
+        "source": "som-core/src/som_core/wire.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_composed.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_composed.py",
+        "import": ".composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_composed.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow.py",
+        "import": ".composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow.py",
+        "import": ".flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow.py",
+        "import": ".flow_codec",
+        "source": "som-core/src/som_core/flow_codec.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow.py",
+        "import": ".flow_compact",
+        "source": "som-core/src/som_core/flow_compact.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow.py",
+        "import": ".quality",
+        "source": "som-core/src/som_core/quality.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow_m3.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow_m3.py",
+        "import": ".composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow_m3.py",
+        "import": ".flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow_m3.py",
+        "import": ".flow_codec",
+        "source": "som-core/src/som_core/flow_codec.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow_m3.py",
+        "import": ".flow_compact",
+        "source": "som-core/src/som_core/flow_compact.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow_m3.py",
+        "import": ".flow_constraints",
+        "source": "som-core/src/som_core/flow_constraints.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow_m3.py",
+        "import": ".flow_m3_data",
+        "source": "som-core/src/som_core/flow_m3_data.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow_m3.py",
+        "import": ".flow_m3_evidence",
+        "source": "som-core/src/som_core/flow_m3_evidence.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow_m3.py",
+        "import": ".flow_m3_target",
+        "source": "som-core/src/som_core/flow_m3_target.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow_m3.py",
+        "import": ".quality",
+        "source": "som-core/src/som_core/quality.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_flow_m3.py",
+        "import": ".train_flow",
+        "source": "som-core/src/som_core/train_flow.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_v1.py",
+        "import": ".related",
+        "source": "som-core/src/som_core/related.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_v1.py",
+        "import": ".train_composed",
+        "source": "som-core/src/som_core/train_composed.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_v1.py",
+        "import": ".train_flow",
+        "source": "som-core/src/som_core/train_flow.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_v1.py",
+        "import": ".train_flow_m3",
+        "source": "som-core/src/som_core/train_flow_m3.py"
+      },
+      {
+        "from": "som-core/src/som_core/train_v1.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-core/src/som_core/v1.py",
+        "import": ".composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "from": "som-core/src/som_core/v1.py",
+        "import": ".flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "from": "som-core/src/som_core/v1.py",
+        "import": ".flow_compact",
+        "source": "som-core/src/som_core/flow_compact.py"
+      },
+      {
+        "from": "som-core/src/som_core/v1.py",
+        "import": ".related",
+        "source": "som-core/src/som_core/related.py"
+      },
+      {
+        "from": "som-core/src/som_core/wire.py",
+        "import": ".records",
+        "source": "som-core/src/som_core/records.py"
+      },
+      {
+        "from": "som-rs/behavior/check_behavior.py",
+        "import": "faults",
+        "source": "som-rs/behavior/faults.py"
+      },
+      {
+        "from": "som-rs/behavior/check_behavior.py",
+        "import": "hosts",
+        "source": "som-rs/behavior/hosts.py"
+      },
+      {
+        "from": "som-rs/behavior/check_behavior.py",
+        "import": "suite",
+        "source": "som-rs/behavior/suite.py"
+      },
+      {
+        "from": "som-rs/behavior/hosts.py",
+        "import": "check_rust_products",
+        "source": "som-rs/som-targets/qa/check_rust_products.py"
+      },
+      {
+        "from": "som-rs/behavior/hosts.py",
+        "import": "check_targets",
+        "source": "som-rs/som-targets/qa/check_targets.py"
+      },
+      {
+        "from": "som-rs/behavior/hosts.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/audit_business_transactions.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/audit_business_transactions.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/audit_business_transactions.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/audit_business_transactions.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/audit_business_transactions.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/flow_fault_checks.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/flow_fault_checks.py",
+        "import": "som_core.flow",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/flow_fault_checks.py",
+        "import": "som_core.flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/flow_fault_checks.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/flow_fault_checks.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py",
+        "import": "flow_fault_checks",
+        "source": "som-core/scripts/flow_fault_checks.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py",
+        "import": "flow_fault_checks",
+        "source": "som-rs/behavior/phase2/adapted/flow_fault_checks.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_business_workflows.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_business_workflows.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+        "import": "audit_business_transactions",
+        "source": "som-core/scripts/audit_business_transactions.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+        "import": "audit_business_transactions",
+        "source": "som-rs/behavior/phase2/adapted/audit_business_transactions.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_composed_journeys",
+        "source": "som-core/scripts/verify_composed_journeys.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_composed_journeys",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_composed_transactions",
+        "source": "som-core/scripts/verify_composed_transactions.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_composed_transactions",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+        "import": "audit_business_transactions",
+        "source": "som-core/scripts/audit_business_transactions.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+        "import": "audit_business_transactions",
+        "source": "som-rs/behavior/phase2/adapted/audit_business_transactions.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "audit_business_transactions",
+        "source": "som-core/scripts/audit_business_transactions.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "audit_business_transactions",
+        "source": "som-rs/behavior/phase2/adapted/audit_business_transactions.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "composed_evidence",
+        "source": "som-core/scripts/composed_evidence.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "fixture_guard",
+        "source": "som-core/scripts/fixture_guard.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_branch_cases",
+        "source": "som-core/scripts/flow_branch_cases.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_branch_cases",
+        "source": "som-rs/behavior/phase2/adapted/flow_branch_cases.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_fault_checks",
+        "source": "som-core/scripts/flow_fault_checks.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_fault_checks",
+        "source": "som-rs/behavior/phase2/adapted/flow_fault_checks.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_provider_fault_checks",
+        "source": "som-core/scripts/flow_provider_fault_checks.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_provider_fault_checks",
+        "source": "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_row_history",
+        "source": "som-core/scripts/flow_row_history.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_test_backends",
+        "source": "som-core/scripts/flow_test_backends.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "verify_composed_services",
+        "source": "som-core/scripts/verify_composed_services.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_related.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_related.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_related.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/adapted/verify_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "hosts",
+        "source": "som-rs/behavior/hosts.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "m3_local_fixture",
+        "source": "som-core/scripts/m3_local_fixture.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "qa_harness",
+        "source": "som-rs/scripts/compiler_acceptance/qa_harness.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "rust_profile_phase2",
+        "source": "som-rs/tests/rust-output-v1/rust_profile_phase2.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "suite",
+        "source": "som-rs/behavior/suite.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "verify_composed_services",
+        "source": "som-core/scripts/verify_composed_services.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "verify_flow_service",
+        "source": "som-core/scripts/verify_flow_service.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "verify_flow_service",
+        "source": "som-rs/behavior/phase2/adapted/verify_flow_service.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/make_rs_products.py",
+        "import": "qa_harness",
+        "source": "som-rs/scripts/compiler_acceptance/qa_harness.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/make_rs_products.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/phase2_host.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/phase2_host.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-rs/behavior/phase2/phase2_host.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "paths",
+        "source": "som-rs/scripts/compiler_acceptance/paths.py"
+      },
+      {
+        "from": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.composed",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "from": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.flow",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "from": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.related",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.related",
+        "source": "som-core/src/som_core/related.py"
+      },
+      {
+        "from": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.v1",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "from": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/complete_rust_inputs.py",
+        "import": "export_goldens",
+        "source": "som-rs/scripts/hosted_readiness/export_goldens.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/complete_rust_inputs.py",
+        "import": "map_rust_inputs",
+        "source": "som-rs/scripts/hosted_readiness/map_rust_inputs.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/complete_rust_inputs.py",
+        "import": "reconstruct_public_inputs",
+        "source": "som-rs/scripts/hosted_readiness/reconstruct_public_inputs.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/export_ts125_goldens.py",
+        "import": "export_ts065_goldens",
+        "source": "som-rs/scripts/hosted_readiness/export_ts065_goldens.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/map_rust_inputs.py",
+        "import": "export_goldens",
+        "source": "som-rs/scripts/hosted_readiness/export_goldens.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/map_rust_inputs.py",
+        "import": "reconstruct_public_inputs",
+        "source": "som-rs/scripts/hosted_readiness/reconstruct_public_inputs.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/product_runtime/consume_cargo.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/prove_checked_reference.py",
+        "import": "export_goldens",
+        "source": "som-rs/scripts/hosted_readiness/export_goldens.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/prove_checked_reference.py",
+        "import": "reconstruct_public_inputs",
+        "source": "som-rs/scripts/hosted_readiness/reconstruct_public_inputs.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/reconstruct_public_inputs.py",
+        "import": "export_goldens",
+        "source": "som-rs/scripts/hosted_readiness/export_goldens.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/reconstruct_ts125_requests.py",
+        "import": "export_ts065_goldens",
+        "source": "som-rs/scripts/hosted_readiness/export_ts065_goldens.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_experimental_native_assembly.py",
+        "import": "export_goldens",
+        "source": "som-rs/scripts/hosted_readiness/export_goldens.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_experimental_native_assembly.py",
+        "import": "prove_checked_reference",
+        "source": "som-rs/scripts/hosted_readiness/prove_checked_reference.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_experimental_native_assembly.py",
+        "import": "reconstruct_public_inputs",
+        "source": "som-rs/scripts/hosted_readiness/reconstruct_public_inputs.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_experimental_native_assembly.py",
+        "import": "run_experimental_native_compile",
+        "source": "som-rs/scripts/hosted_readiness/run_experimental_native_compile.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_experimental_native_compile.py",
+        "import": "experimental_native_compile",
+        "source": "som-rs/scripts/hosted_readiness/experimental_native_compile.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_experimental_native_compile.py",
+        "import": "export_goldens",
+        "source": "som-rs/scripts/hosted_readiness/export_goldens.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_experimental_native_compile.py",
+        "import": "map_rust_inputs",
+        "source": "som-rs/scripts/hosted_readiness/map_rust_inputs.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "check_phase2",
+        "source": "som-rs/behavior/phase2/check_phase2.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "check_phase2_products",
+        "source": "som-rs/som-targets/qa/check_phase2_products.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "check_rust_products",
+        "source": "som-rs/som-targets/qa/check_rust_products.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "hosts",
+        "source": "som-rs/behavior/hosts.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "m3_local_fixture",
+        "source": "som-core/scripts/m3_local_fixture.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/test_complete_rust_inputs.py",
+        "import": "test_map_rust_inputs",
+        "source": "som-rs/scripts/hosted_readiness/test_map_rust_inputs.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/test_prove_checked_reference.py",
+        "import": "prove_checked_reference",
+        "source": "som-rs/scripts/hosted_readiness/prove_checked_reference.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/test_reconstruct_public_inputs.py",
+        "import": "reconstruct_public_inputs",
+        "source": "som-rs/scripts/hosted_readiness/reconstruct_public_inputs.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/test_run_experimental_native_assembly.py",
+        "import": "run_experimental_native_assembly",
+        "source": "som-rs/scripts/hosted_readiness/run_experimental_native_assembly.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/test_run_experimental_native_assembly.py",
+        "import": "test_run_experimental_native_compile",
+        "source": "som-rs/scripts/hosted_readiness/test_run_experimental_native_compile.py"
+      },
+      {
+        "from": "som-rs/scripts/hosted_readiness/test_run_experimental_native_compile.py",
+        "import": "run_experimental_native_compile",
+        "source": "som-rs/scripts/hosted_readiness/run_experimental_native_compile.py"
+      },
+      {
+        "from": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/react-output-v1/build_case_inventory.py"
+      },
+      {
+        "from": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/rust-output-v1/build_case_inventory.py"
+      },
+      {
+        "from": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/typescript-output-v1/build_case_inventory.py"
+      },
+      {
+        "from": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "check_cli",
+        "source": "som-rs/scripts/rust_output_acceptance/check_cli.py"
+      },
+      {
+        "from": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "check_python_baseline",
+        "source": "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py"
+      },
+      {
+        "from": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "cli_raw",
+        "source": "som-rs/scripts/react_output_acceptance/cli_raw.py"
+      },
+      {
+        "from": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "react_profile",
+        "source": "som-rs/tests/react-output-v1/react_profile.py"
+      },
+      {
+        "from": "som-rs/scripts/rust_output_acceptance/check_cli.py",
+        "import": "rust_profile_phase2",
+        "source": "som-rs/tests/rust-output-v1/rust_profile_phase2.py"
+      },
+      {
+        "from": "som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py",
+        "import": "check_phase2",
+        "source": "som-rs/behavior/phase2/check_phase2.py"
+      },
+      {
+        "from": "som-rs/scripts/rust_output_acceptance/python_replay.py",
+        "import": "qa_harness",
+        "source": "som-rs/scripts/compiler_acceptance/qa_harness.py"
+      },
+      {
+        "from": "som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py",
+        "import": "check_target",
+        "source": "som-rs/scripts/react_output_acceptance/check_target.py"
+      },
+      {
+        "from": "som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py",
+        "import": "check_target",
+        "source": "som-rs/scripts/typescript_output_acceptance/check_target.py"
+      },
+      {
+        "from": "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py",
+        "import": "check_phase2",
+        "source": "som-rs/behavior/phase2/check_phase2.py"
+      },
+      {
+        "from": "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py",
+        "import": "qa_harness",
+        "source": "som-rs/scripts/compiler_acceptance/qa_harness.py"
+      },
+      {
+        "from": "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "from": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/react-output-v1/build_case_inventory.py"
+      },
+      {
+        "from": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/rust-output-v1/build_case_inventory.py"
+      },
+      {
+        "from": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/typescript-output-v1/build_case_inventory.py"
+      },
+      {
+        "from": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "import": "check_python_baseline",
+        "source": "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py"
+      },
+      {
+        "from": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "import": "ts_profile",
+        "source": "som-rs/tests/typescript-output-v1/ts_profile.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "check_phase2",
+        "source": "som-rs/behavior/phase2/check_phase2.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "check_rust_products",
+        "source": "som-rs/som-targets/qa/check_rust_products.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "check_targets",
+        "source": "som-rs/som-targets/qa/check_targets.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "hosts",
+        "source": "som-rs/behavior/hosts.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "m3_local_fixture",
+        "source": "som-core/scripts/m3_local_fixture.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_rust_products.py",
+        "import": "check_targets",
+        "source": "som-rs/som-targets/qa/check_targets.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_rust_products.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_targets.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_targets.py",
+        "import": "python_replay",
+        "source": "som-rs/scripts/rust_output_acceptance/python_replay.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_targets.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "from": "som-rs/som-targets/qa/check_targets.py",
+        "import": "rust_profile_phase2",
+        "source": "som-rs/tests/rust-output-v1/rust_profile_phase2.py"
+      },
+      {
+        "from": "som-rs/tests/react-output-v1/build_case_inventory.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/tests/react-output-v1/build_case_inventory.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/tests/react-output-v1/common.py",
+        "import": "react_profile",
+        "source": "som-rs/tests/react-output-v1/react_profile.py"
+      },
+      {
+        "from": "som-rs/tests/rust-output-v1/build_case_inventory.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "from": "som-rs/tests/rust-output-v1/build_negative_cases.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "from": "som-rs/tests/rust-output-v1/build_phase2_behavior.py",
+        "import": "check_phase2",
+        "source": "som-rs/behavior/phase2/check_phase2.py"
+      },
+      {
+        "from": "som-rs/tests/rust-output-v1/build_phase2_behavior.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "from": "som-rs/tests/rust-output-v1/build_phase2_inventory.py",
+        "import": "check_phase2",
+        "source": "som-rs/behavior/phase2/check_phase2.py"
+      },
+      {
+        "from": "som-rs/tests/rust-output-v1/build_phase2_inventory.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "from": "som-rs/tests/rust-output-v1/build_phase2_inventory.py",
+        "import": "rust_profile_phase2",
+        "source": "som-rs/tests/rust-output-v1/rust_profile_phase2.py"
+      },
+      {
+        "from": "som-rs/tests/rust-output-v1/check_contract.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "from": "som-rs/tests/rust-output-v1/check_contract.py",
+        "import": "qa_harness",
+        "source": "som-rs/scripts/compiler_acceptance/qa_harness.py"
+      },
+      {
+        "from": "som-rs/tests/rust-output-v1/check_contract.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "from": "som-rs/tests/rust-output-v1/check_python_controls.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "from": "som-rs/tests/typescript-output-v1/build_case_inventory.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/tests/typescript-output-v1/build_case_inventory.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/tests/typescript-output-v1/build_negative_cases.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/tests/typescript-output-v1/build_negative_cases.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/tests/typescript-output-v1/build_target_examples.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/tests/typescript-output-v1/build_target_examples.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/tests/typescript-output-v1/check_contract.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/tests/typescript-output-v1/check_contract.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/tests/typescript-output-v1/check_contract.py",
+        "import": "tree_sha",
+        "source": "som-rs/tests/react-output-v1/tree_sha.py"
+      },
+      {
+        "from": "som-rs/tests/typescript-output-v1/check_contract.py",
+        "import": "tree_sha",
+        "source": "som-rs/tests/typescript-output-v1/tree_sha.py"
+      },
+      {
+        "from": "som-rs/tests/typescript-output-v1/check_python_controls.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/tests/typescript-output-v1/check_python_controls.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "from": "som-rs/tests/typescript-output-v1/common.py",
+        "import": "ts_profile",
+        "source": "som-rs/tests/typescript-output-v1/ts_profile.py"
+      }
+    ],
+    "manual_source_loads": [
+      {
+        "caller": "som-rs/tests/react-output-v1/common.py",
+        "module": "rust_build_negative_cases",
+        "path": "som-rs/tests/rust-output-v1/build_negative_cases.py",
+        "caller_sha256": "56c7318db6cbd85e27e6ac3c168de3cb9591e9c66cdb751b7d039ce3c8e3da73",
+        "sha256": "6c0d9313452a8e44f93b981babadf3b7ab433a96d3d9020e56f1004a62f7c7c7"
+      },
+      {
+        "caller": "som-rs/tests/typescript-output-v1/common.py",
+        "module": "rust_build_negative_cases",
+        "path": "som-rs/tests/rust-output-v1/build_negative_cases.py",
+        "caller_sha256": "77b92f00cdf13d66c54c1069e215bc8de479953887bc853e4316275b02a24497",
+        "sha256": "6c0d9313452a8e44f93b981babadf3b7ab433a96d3d9020e56f1004a62f7c7c7"
+      }
+    ],
+    "native_python_phase2_outcomes": {
+      "mode": "native-qa-v1",
+      "named_rows": 584,
+      "real_product_gate_rows": 582,
+      "current_compiler_refusal_rows": [
+        "RS12_CNL_V3_FILTER_LIMIT",
+        "RS13_JSON_V3_FILTER_OFFSET"
+      ],
+      "refusal_status": 400,
+      "refusal_code": "INVALID_VALUE",
+      "raw_refusal_forms": 4,
+      "refusal_product_role": "No product exists. Record exact current compiler-refusal/no-product; no product pass or historical product substitution.",
+      "diagnostic_rule": "Compare the complete source-derived diagnostic and actual raw request/reply forms from the new same candidate. Never relabel omitted-target bytes as explicit-python bytes.",
+      "source_rule": "Compiler-v1 Amendment004 and exact current phase2_expected. No generic400 shortcut or unsupported-positive waiver.",
+      "whole_scope_rule": "Keep every584 named row, exact summary, workers, real waits, exits and cleanup. Run every applicable gate on all582 real products.",
+      "repaired_current_ids": [
+        "RS07_CNL_FIELD_SELF",
+        "RS14_CNL_V5_FOREIGN_KEY_SELF",
+        "RS16_CNL_V5_FIRST_REFUSAL"
+      ],
+      "repaired_product_role": "Use only fresh verified current files for the current role. Keep each old product_sha256 separately as unchanged historical provenance.",
+      "python_quality_named_rows": 671,
+      "python_quality_rule": "Current28 lookup fallback does not add or remove any of the671 frozen Python quality rows.",
+      "historical_hashes_rewritten": false
+    },
+    "qa_support_owner_rule": "Exact static source closure of all admitted Python helpers plus the declared full gate/entry roots. Root/M6 must supply each final dynamic entry root before final map refresh. No all-repository fallback."
+  },
+  "previous_receipt": {
+    "path": "som-rs/evidence/rust-compiler-contract-amendment-004.json",
+    "sha256": "2f0c12e6fed43b8364649a0afff207e72b15738179cf56a8ff69036e4534f42c"
+  }
+}
