@@ -26,6 +26,7 @@ class LocalCaptureFixture(unittest.TestCase):
         (logs / 'collector.postcheck.json').write_text('{"postcheck":"fixture"}')
         self.report = {'version': 'som.m6-react-graph-callback.v1', 'gate': subject.GATE,
             'helper_revision': self.rev, 'candidate_revision': self.rev, 'product_acceptance_passed': False,
+            'owned_waits_complete': False, 'owned_cleanup_complete': False,
             'bound_source_sha256': {subject.SELF: subject.sha(self.source)},
             'rows': [{'id': 'collector', 'streams_complete': True,
                 'stdout': 'logs/collector.stdout', 'stderr': 'logs/collector.stderr',

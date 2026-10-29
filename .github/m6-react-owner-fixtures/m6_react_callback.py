@@ -23,10 +23,12 @@ GRAPH = 'som-rs/scripts/hosted_readiness/same_candidate_graph.py'
 CONTEXT = 'som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py'
 COLLECTOR = 'som-rs/scripts/react_output_acceptance/run_acceptance.py'
 AUDITOR = 'som-rs/scripts/react_output_acceptance/audit/audit130.py'
+LAUNCHER = 'som-rs/scripts/hosted_readiness/run_current_candidate_gate.py'
 GATE = 'm6-react003'
 # Fail closed until the graph supplies reviewed source, owner and restored-run joins.
 GRAPH_INTEGRATION_REVIEWED = False
 OWNER_INTEGRATION_REVIEWED = False
+OWNER_DOMAIN_REVIEWED = False
 HEX = re.compile(r'[0-9a-f]{40}\Z')
 
 
@@ -370,8 +372,20 @@ def command_evidence(ctx, out, name, command):
 def fallback_command_streams(ctx, out, name, command):
     """One bounded best-effort copy after an unexpected evidence-handler error."""
     row = {'id': name, 'command': dict(command), 'streams_complete': False, 'postcheck': None,
-           'capture_errors': [], 'fallback_unverified': True}
+           'capture_errors': [], 'fallback_unverified': True, 'unverified_existing_streams': []}
     for kind in ('stdout', 'stderr'):
+        relative_dest = 'logs/' + name + '.' + kind
+        destination = out / relative_dest
+        existing = None
+        try:
+            if destination.exists() or destination.is_symlink():
+                existing = read(destination)
+                row[kind] = relative_dest
+                row[kind + '_observed_sha256'] = sha(existing)
+                row['unverified_existing_streams'].append(kind)
+        except (OSError, ValueError, TypeError) as error:
+            row['capture_errors'].append({'stage': kind + '_existing', 'error': type(error).__name__ + ': ' + str(error)})
+            continue
         if kind not in command:
             row['capture_errors'].append({'stage': kind, 'error': 'original stream path unavailable'})
             continue
@@ -381,10 +395,9 @@ def fallback_command_streams(ctx, out, name, command):
                     and all(part not in ('', '.', '..') for part in relative_source.parts),
                     'unsafe original stream path')
             raw = read(ctx.work / relative_source)
-            relative_dest = 'logs/' + name + '.' + kind
-            destination = out / relative_dest
-            if destination.exists() or destination.is_symlink():
-                require(read(destination) == raw, 'previously retained stream bytes differ')
+            if existing is not None:
+                require(existing == raw, 'previously retained stream bytes differ')
+                row['unverified_existing_streams'].remove(kind)
             else:
                 save(destination, raw)
             row[kind] = relative_dest
@@ -418,7 +431,18 @@ def run_command(ctx, module, repo, env, out, report, label, script, arguments, t
                 report.setdefault('command_evidence_errors', []).append(
                     {'stage': label + '_fallback', 'error': type(secondary).__name__ + ': ' + str(secondary)})
         raise
-    return command_evidence(ctx, out, label, command)
+    try:
+        return command_evidence(ctx, out, label, command)
+    except Exception as error:
+        report.setdefault('command_evidence_errors', []).append(
+            {'stage': label, 'error': type(error).__name__ + ': ' + str(error)})
+        try:
+            return fallback_command_streams(ctx, out, label, command)
+        except Exception as secondary:
+            report.setdefault('command_evidence_errors', []).append(
+                {'stage': label + '_fallback', 'error': type(secondary).__name__ + ': ' + str(secondary)})
+            return {'id': label, 'command': dict(command), 'streams_complete': False,
+                    'postcheck': None, 'capture_errors': [], 'fallback_unverified': True}
 
 
 def validate_args(args, ctx, graph):
@@ -563,6 +587,9 @@ def check_local_capture_consistency(root, source_reader, helper_revision, candid
     require(isinstance(files, dict), 'callback inventory missing')
     observed = inventory(root)
     observed.pop('result.json', None)
+    # The launcher may write exactly this second, separately verified result
+    # after the first verification. verify_result checks its content below.
+    observed.pop('verified-result.json', None)
     require(observed == files, 'callback evidence file universe differs')
     pins = result.get('bound_source_sha256')
     require(isinstance(pins, dict) and SELF in pins and all(isinstance(k, str) and isinstance(v, str)
@@ -608,10 +635,79 @@ def check_local_capture_consistency(root, source_reader, helper_revision, candid
             'product_acceptance_passed': False}
 
 
-def verify_result(root, source_reader, helper_revision, candidate_revision, gate=GATE, *, repo, proof_roots):
-    """Fail closed until graph-owned service cleanup and sealed run join exist."""
+def verify_react_raw_domain(root, source_reader, helper_revision, candidate_revision, gate, *, repo, proof_roots):
+    """Refuse while the React raw-run restore and input authority are unresolved.
+
+    Local matching hashes, command exit booleans and the collector's audit
+    output do not independently prove the named product checks. A completed
+    verifier must rederive those checks against authenticated inputs and a
+    restored run before this guard can change.
+    """
     check_local_capture_consistency(root, source_reader, helper_revision, candidate_revision, gate)
-    raise ValueError('M6 callback independent graph verifier is not implemented')
+    require(OWNER_DOMAIN_REVIEWED, 'M6 independent raw domain verifier is not implemented')
+    raise ValueError('M6 authenticated input and restored-run bindings are not implemented')
+
+
+def shared_postclose_proof(root, source_reader, helper_revision, candidate_revision, gate, *, repo, proof_roots):
+    """Load and execute only the launcher bytes supplied by source authority."""
+    name = '_som_m6_react_postclose_launcher'
+    require(name not in sys.modules, 'preloaded post-close launcher refused')
+    raw = source_reader(LAUNCHER)
+    require(type(raw) is bytes and bool(raw), 'source-bound launcher bytes required')
+    module = ModuleType(name)
+    module.__file__ = str(physical(repo) / LAUNCHER)
+    module.__cached__, module.__package__, module.__som_raw_sha256__ = None, '', sha(raw)
+    sys.modules[name] = module
+    try:
+        exec(compile(raw, module.__file__, 'exec', dont_inherit=True), module.__dict__)
+        require(sys.modules.get(name) is module and callable(getattr(module, 'verify_owner_postclose', None)),
+                'post-close launcher source or verifier differs')
+        proof = module.verify_owner_postclose(root, source_reader, helper_revision, candidate_revision,
+                                              gate, repo=repo, proof_roots=proof_roots)
+        require(sys.modules.get(name) is module, 'post-close launcher module changed')
+        return proof
+    finally:
+        if sys.modules.get(name) is module:
+            del sys.modules[name]
+
+
+def verify_result(root, source_reader, helper_revision, candidate_revision, gate=GATE, *, repo, proof_roots):
+    """Return a new result only after owner raw audit and shared post-close proof."""
+    root = physical(root)
+    capture_raw = read(root / 'result.json')
+    capture = strict_json(capture_raw)
+    require(capture.get('owned_waits_complete') is False and capture.get('owned_cleanup_complete') is False,
+            'capture shared cleanup must remain pending')
+    domain = verify_react_raw_domain(root, source_reader, helper_revision, candidate_revision, gate,
+                                     repo=repo, proof_roots=proof_roots)
+    shared = shared_postclose_proof(root, source_reader, helper_revision, candidate_revision, gate,
+                                    repo=repo, proof_roots=proof_roots)
+    expected = {'version', 'gate', 'helper_revision', 'candidate_revision', 'capture_result_sha256',
+                'context_sha256', 'artifact_inputs_sha256', 'services_manifest_sha256',
+                'layout_binding_sha256', 'source_admission_sha256', 'owner_adapter', 'proof_files_sha256',
+                'bound_source_sha256', 'owned_waits_complete', 'owned_cleanup_complete',
+                'product_acceptance_passed'}
+    require(type(shared) is dict and set(shared) == expected
+            and shared.get('version') == 'som.owner-shared-postclose-proof.v1'
+            and shared.get('gate') == gate and shared.get('helper_revision') == helper_revision
+            and shared.get('candidate_revision') == candidate_revision
+            and shared.get('capture_result_sha256') == sha(capture_raw)
+            and shared.get('owned_waits_complete') is True and shared.get('owned_cleanup_complete') is True
+            and shared.get('product_acceptance_passed') is False, 'shared post-close proof differs')
+    require(type(domain) is dict and domain.get('complete') is True
+            and domain.get('all_required_passed') is True and domain.get('raw_logs_complete') is True,
+            'React raw domain incomplete')
+    require(read(root / 'result.json') == capture_raw, 'capture bytes changed during verification')
+    verified = {'version': 'som.m6-react-verified-owner.v1', 'gate': gate,
+                'helper_revision': helper_revision, 'candidate_revision': candidate_revision,
+                'capture_result_sha256': sha(capture_raw), 'shared_postclose_proof': shared,
+                'react_domain_proof': domain, 'complete': True, 'all_required_passed': True,
+                'owned_waits_complete': True, 'owned_cleanup_complete': True,
+                'raw_logs_complete': True, 'product_acceptance_passed': False}
+    verified_path = root / 'verified-result.json'
+    if verified_path.exists() or verified_path.is_symlink():
+        require(strict_json(read(verified_path)) == verified, 'retained verified result differs')
+    return verified
 
 
 def main(argv=None):
