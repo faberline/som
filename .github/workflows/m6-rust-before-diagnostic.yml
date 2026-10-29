@@ -1,0 +1,70 @@
+name: M6 issue 131 sealed capture diagnostic
+on:
+  push:
+    branches: [codex/m6-rust-before-diagnostic-run]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  diagnostic:
+    runs-on: macos-26
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Download and bind the failed sealed artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/faberline/som/actions/artifacts/12883028279 > "$RUNNER_TEMP/meta.json"
+          gh api repos/faberline/som/actions/artifacts/12883028279/zip > "$RUNNER_TEMP/sealed.zip"
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib,stat,zipfile
+          root=pathlib.Path(os.environ['RUNNER_TEMP']);meta=json.loads((root/'meta.json').read_bytes());origin=meta['workflow_run']
+          if (meta['id'],meta['name'],meta['size_in_bytes'],meta['digest'],meta['expired'])!=(12883028279,'m6-rust-fresh-before-sealed',680352,'sha256:fa0f05bd4bf13d2bf87f86ccd4e1082d240ea59ea0f4fa7876e52c56bbc6ee5a',False):raise SystemExit('artifact identity refused')
+          if (origin['id'],origin['head_sha'],origin['repository_id'])!=(40842278553,'2c60b2f677b9bfb3260e4bef569978ba41514e92',1390374878):raise SystemExit('artifact origin refused')
+          raw=(root/'sealed.zip').read_bytes()
+          if len(raw)!=680352 or hashlib.sha256(raw).hexdigest()!='fa0f05bd4bf13d2bf87f86ccd4e1082d240ea59ea0f4fa7876e52c56bbc6ee5a':raise SystemExit('artifact bytes refused')
+          dst=root/'sealed';dst.mkdir(mode=0o700)
+          with zipfile.ZipFile(root/'sealed.zip') as archive:
+              members=archive.infolist()
+              if {x.filename for x in members}!={'evidence-index.json','package-000.manifest.json','package-000.sealed'} or len(members)!=3:raise SystemExit('artifact members refused')
+              for member in members:
+                  if stat.S_IFMT(member.external_attr>>16) not in (0,stat.S_IFREG) or member.file_size>16*1024*1024:raise SystemExit('member refused')
+                  with archive.open(member) as source,(dst/member.filename).open('xb') as target:target.write(source.read())
+          digest=hashlib.sha256((dst/'evidence-index.json').read_bytes()).hexdigest()
+          (root/'index-sha').write_text(digest)
+          PY
+      - name: Restore in runner scratch
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
+        run: |
+          node som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs --root "$RUNNER_TEMP/sealed" --out "$RUNNER_TEMP/restored" --index-sha256 "$(cat "$RUNNER_TEMP/index-sha")" > /dev/null
+      - name: Report bounded status only
+        run: |
+          python3 - <<'PY'
+          import collections,json,os,pathlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'restored/run/rust-before-assemble'
+          receipt=json.loads((root/'receipt.json').read_bytes()); rows=receipt.get('rows',[])
+          error=receipt.get('error');reason=None
+          known=['baseline health differs','process evidence command failed','process identity differs','listener is not exclusively owned by baseline','owned process mapped executable inode is unverified','process identity changed during capture','baseline startup timed out']
+          if type(error) is str:
+              reason=next((x for x in known if error.endswith(x)),'other')
+          events=[]
+          owner=root/'candidate-owner.json'
+          if owner.exists():events=json.loads(owner.read_bytes()).get('events',[])
+          result={'artifact_id':12883028279,'capture_head':'2c60b2f677b9bfb3260e4bef569978ba41514e92',
+                  'role':receipt.get('role'),'passed':receipt.get('passed'),'stage':receipt.get('stage'),
+                  'capture_error_reason':reason,'capture_error_type':error.split(':',1)[0] if type(error) is str else receipt.get('error_type'),
+                  'rows':len(rows),'comparison':dict(collections.Counter(row.get('comparison') for row in rows)),
+                  'statuses':dict(collections.Counter(str(row.get('status')) for row in rows)),
+                  'unrun':receipt.get('unrun'),'wait_exit':receipt.get('wait_exit'),
+                  'port_free_after':receipt.get('port_free_after'),'process_group_gone':receipt.get('process_group_gone'),
+                  'assets_unchanged':receipt.get('assets_unchanged'),'cleanup_errors':receipt.get('cleanup_errors'),
+                  'process_start_recorded':'process_start' in receipt,'process_end_recorded':'process_end' in receipt,
+                  'owner_wait_states':[{'kind':e.get('kind'),'state':e.get('state'),'exit_code':e.get('exit_code')} for e in events if e.get('kind') in ('candidate-wait','candidate-cleanup-wait')],
+                  'historical_wire':False,'product_acceptance':'not_run'}
+          print(json.dumps(result,sort_keys=True))
+          PY
