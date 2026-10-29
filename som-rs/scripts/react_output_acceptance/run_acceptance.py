@@ -1128,7 +1128,17 @@ def main(argv: list[str] | None = None) -> int:
         if qa_before is not None:
             recorder = load_api_recorder(repo)
             api_module, _, api_evidence_module = recorder.load_linux_sources(repo, bound_retained=retained_evidence)
-            api_context = api_module.validate(args.api_profile, repo, bound_node_module=sys.modules['linux_qa_profile'])
+            native_module = sys.modules.get('full_product_context')
+            native_context = native_module.context() if native_module is not None and callable(getattr(native_module, 'context', None)) else None
+            if native_context is not None and native_context.qa_mode == 'native-qa-v1':
+                provider_path = 'som-rs/scripts/react_output_acceptance/react_api_python_payload.py'
+                retained_evidence.need(provider_path in native_context.qa_source_authority['admitted_repository_python_sources'],
+                                       'native API provider source not admitted')
+                native_context.sources.read(provider_path)
+                provider = native_context.module('react_api_python_payload', provider_path)
+                api_module, api_context = provider.collector_validate(native_context, args.api_profile)
+            else:
+                api_context = api_module.validate(args.api_profile, repo, bound_node_module=sys.modules['linux_qa_profile'])
             retained_evidence.need(api_context['node_profile_path'] == args.qa_profile
                                    and api_context['profile_sha256'] == qa_before['sha256'], 'API QA profile differs')
             if args.python is not None:

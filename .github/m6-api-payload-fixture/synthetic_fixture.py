@@ -32,6 +32,7 @@ class Fixture(unittest.TestCase):
         self.values = {subject.SELF: b'fixture provider bound by synthetic source authority',
                        subject.CONTEXT: b'fixture Context source',
                        subject.NATIVE_AUTHORITY: b'fixture native authority source',
+                       subject.NODE: b'fixture Node profile source',
                        subject.PRODUCER: b'fixture wheel producer source',
                        subject.REUSE: b'fixture runtime reuse source',
                        subject.QUALIFY: b'fixture runtime qualification source',
@@ -106,12 +107,21 @@ class Fixture(unittest.TestCase):
         with self.assertRaises(subject.PayloadError):
             subject.admit(self.ctx, self.python)
         self.ctx.qa_source_authority['source_authority_active'] = True
-        sys.modules['retained_evidence'] = SimpleNamespace()
+        fake = SimpleNamespace(sealed_files=lambda *_: self.fail('preloaded receipt must not be used'))
+        sys.modules['retained_evidence'] = fake
+        try:
+            subject.admit(self.ctx, self.python)
+            self.assertIs(sys.modules['retained_evidence'], fake)
+        finally:
+            del sys.modules['retained_evidence']
+
+    def test_private_helper_preload_is_refused(self):
+        sys.modules['_som_react_private_retained'] = SimpleNamespace()
         try:
             with self.assertRaises(subject.PayloadError):
                 subject.admit(self.ctx, self.python)
         finally:
-            del sys.modules['retained_evidence']
+            del sys.modules['_som_react_private_retained']
 
     def test_verifier_failure_is_not_accepted(self):
         self.values[subject.LIVE] = b'_binding = None\ndef bound_sources(repo,revision):\n global _binding\n _binding={"repo":repo,"revision":revision,"reuse":None}\n return _binding,None,None\ndef verify(profile): raise ValueError("rejected live inputs")\n'

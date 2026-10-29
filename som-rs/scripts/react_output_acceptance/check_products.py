@@ -698,7 +698,17 @@ def main() -> int:
             cache = qa["cache"]
             recorder = load_api_recorder(REPO)
             api_context_module, _, _ = recorder.load_linux_sources(REPO, bound_retained=retained_evidence)
-            api_qa = api_context_module.validate(args.api_profile, REPO, bound_node_module=linux_qa_profile)
+            native_module = sys.modules.get('full_product_context')
+            native_context = native_module.context() if native_module is not None and callable(getattr(native_module, 'context', None)) else None
+            if native_context is not None and native_context.qa_mode == 'native-qa-v1':
+                provider_path = 'som-rs/scripts/react_output_acceptance/react_api_python_payload.py'
+                retained_evidence.need(provider_path in native_context.qa_source_authority['admitted_repository_python_sources'],
+                                       'native API provider source not admitted')
+                native_context.sources.read(provider_path)
+                provider = native_context.module('react_api_python_payload', provider_path)
+                api_context_module, api_qa = provider.collector_validate(native_context, args.api_profile)
+            else:
+                api_qa = api_context_module.validate(args.api_profile, REPO, bound_node_module=linux_qa_profile)
             check_contract = api_context_module.bind_repository_imports(REPO, api_qa['_source_shas'], 'contract')
             retained_evidence.need(api_qa['node_profile_path'] == qa['profile_path']
                                    and api_qa['profile_sha256'] == qa['profile_sha256']

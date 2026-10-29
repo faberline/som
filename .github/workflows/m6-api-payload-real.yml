@@ -1,7 +1,7 @@
 name: M6 React API payload real live verifier fixture
 on:
   push:
-    branches: [codex/m6-api-closure-complete-20261029]
+    branches: [codex/m6-api-collector-namespace-20261029]
 permissions:
   contents: read
   actions: read
@@ -80,6 +80,17 @@ jobs:
       - name: Build and verify fresh offline React QA venv
         run: |
           "$RUNNER_TEMP/som-product-runtime-qualification/install/python/bin/python3.12" -I -S -B "$GITHUB_WORKSPACE/.github/m6-venv-fixtures/provision_live.py" --repo "$GITHUB_WORKSPACE" --source-revision "$GITHUB_SHA" --runtime "$RUNNER_TEMP/som-product-runtime-qualification" --out "$RUNNER_TEMP/som-react-python-closure" --tar "$RUNNER_TEMP/react39-inputs/source/react-python-qa-closure.tar" --audit "$RUNNER_TEMP/react39-inputs/audit/react-python-independent-audit.json"
+      - name: Restore reviewed public Node QA closure
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/faberline/som/actions/artifacts/12873066929 > "$RUNNER_TEMP/react-producer-artifact.json"
+          jq -e '.id == 12873066929 and .workflow_run.id == 40817465924 and .expired == false and .digest == "sha256:10a7f2bf058be21c670ddac89afece05c305ee717b9a879de4c95256fd6fe2dc"' "$RUNNER_TEMP/react-producer-artifact.json" >/dev/null
+          gh api repos/faberline/som/actions/artifacts/12873066929/zip > "$RUNNER_TEMP/react-qa-artifact.zip"
+          test "$(sha256sum .github/m6-api-payload-fixture/unpack_artifact.py | cut -d ' ' -f 1)" = 7aeb95bbd2f6198d8814bce1f406026dcea9e0aba1ab542ae66ad3a48022b9a9
+          test "$(sha256sum .github/m6-api-payload-fixture/restore_inputs.py | cut -d ' ' -f 1)" = 795c8a140a62842c0ab0b148b72df70b8bbce79c24400821f6d79cdb9a399b5e
+          python3 -I -S -B .github/m6-api-payload-fixture/unpack_artifact.py "$RUNNER_TEMP/react-qa-artifact.zip" "$RUNNER_TEMP/react-linux-qa-public-inputs.tar"
+          python3 -I -S -B .github/m6-api-payload-fixture/restore_inputs.py --tar "$RUNNER_TEMP/react-linux-qa-public-inputs.tar" --expected-tar-sha256 5f453d9e3f4fc17e36c9c16d17dacc157a34915fc7c9e477f49da3e81b807171
       - name: Exercise actual live verifier with synthetic authority
         env:
           SOM_NATIVE_RUNTIME_ROOT: ${{ runner.temp }}/som-product-runtime-qualification

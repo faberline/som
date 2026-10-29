@@ -8,6 +8,7 @@ and the native source closure must both bind this source before use.
 from __future__ import annotations
 
 import hashlib
+from contextlib import contextmanager
 import os
 from pathlib import Path
 import re
@@ -20,6 +21,7 @@ SELF = 'som-rs/scripts/react_output_acceptance/react_api_python_payload.py'
 RETAINED = 'som-rs/scripts/react_output_acceptance/retained_evidence.py'
 API = 'som-rs/scripts/react_output_acceptance/linux_api_context.py'
 LIVE = 'som-rs/scripts/react_output_acceptance/linux_api_live_inputs.py'
+NODE = 'som-rs/tests/react-output-v1/linux_qa_profile.py'
 CONTEXT = 'som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py'
 PRODUCER = 'som-rs/scripts/hosted_readiness/product_python/produce_wheels.py'
 REUSE = 'som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py'
@@ -29,7 +31,7 @@ NATIVE_AUTHORITY = 'som-rs/scripts/hosted_readiness/native_qa_authority.py'
 # trusted caller and Context.runtime's source-bound helpers. The provisioner
 # and metadata probe are checked as recorded inputs; this path does not run them.
 REPOSITORY_PYTHON_EXECUTION_CLOSURE = frozenset((
-    SELF, CONTEXT, NATIVE_AUTHORITY, RETAINED, API, LIVE, PRODUCER, REUSE, QUALIFY,
+    SELF, CONTEXT, NATIVE_AUTHORITY, RETAINED, API, LIVE, NODE, PRODUCER, REUSE, QUALIFY,
 ))
 PRODUCER_MODULE = 'som_react_api_verified_wheel_producer'
 HEX = re.compile(r'[0-9a-f]{64}\Z')
@@ -71,6 +73,74 @@ def load_source(ctx, relative, name):
         raise
     need(sys.modules.get(name) is module, 'verifier identity changed')
     return module
+
+
+class _PrivateModules:
+    """Private verifier names; every other module uses the real registry."""
+    def __init__(self, retained):
+        self.private = {'retained_evidence': retained}
+        self.names = frozenset(('retained_evidence', PRODUCER_MODULE))
+
+    def __contains__(self, name):
+        return name in self.private if name in self.names else name in sys.modules
+
+    def __getitem__(self, name):
+        return self.private[name] if name in self.names else sys.modules[name]
+
+    def __setitem__(self, name, value):
+        if name in self.names:
+            self.private[name] = value
+        else:
+            sys.modules[name] = value
+
+    def __delitem__(self, name):
+        if name in self.names:
+            del self.private[name]
+        else:
+            del sys.modules[name]
+
+    def get(self, name, default=None):
+        return self.private.get(name, default) if name in self.names else sys.modules.get(name, default)
+
+    def pop(self, name, *default):
+        return self.private.pop(name, *default) if name in self.names else sys.modules.pop(name, *default)
+
+
+class _PrivateSys:
+    def __init__(self, retained):
+        self.modules = _PrivateModules(retained)
+
+    def __getattr__(self, name):
+        return getattr(sys, name)
+
+
+@contextmanager
+def _private_helpers(ctx):
+    """Compile fresh authenticated modules without touching collector names."""
+    modules = {}
+    try:
+        for relative, name in ((RETAINED, '_som_react_private_retained'),
+                               (API, '_som_react_api_payload_context'),
+                               (LIVE, '_som_react_api_payload_live')):
+            modules[name] = load_source(ctx, relative, name)
+        private_sys = _PrivateSys(modules['_som_react_private_retained'])
+        modules['_som_react_api_payload_context'].sys = private_sys
+        modules['_som_react_api_payload_live'].sys = private_sys
+        yield modules['_som_react_api_payload_context'], modules['_som_react_api_payload_live']
+    finally:
+        for name, module in reversed(tuple(modules.items())):
+            if sys.modules.get(name) is module:
+                del sys.modules[name]
+
+
+def _bind_live(live_verifier, ctx, repo, runtime):
+    need(live_verifier._binding is None, 'preloaded live verifier state refused')
+    binding, _sources, _raw_sources = live_verifier.bound_sources(repo, ctx.helper_revision)
+    need(binding is live_verifier._binding and binding['reuse'] is None
+         and binding['repo'] == repo and binding['revision'] == ctx.helper_revision,
+         'fresh source-bound live verifier required')
+    binding.update(reuse=runtime['reuse'], qualification=runtime['qualification'],
+                   runtime_inventory=runtime['inventory'], tools=runtime['tools'], native=runtime['identity'])
 
 
 class AdmittedPayload(tuple):
@@ -137,33 +207,20 @@ def admit(ctx, executable):
          == (selected_stat.st_dev, selected_stat.st_ino), 'interpreter inode differs')
 
     with LOCK:
-        modules = {}
-        need(PRODUCER_MODULE not in sys.modules, 'preloaded wheel producer refused')
-        try:
-            modules['retained_evidence'] = load_source(ctx, RETAINED, 'retained_evidence')
-            modules['_som_react_api_payload_context'] = load_source(ctx, API, '_som_react_api_payload_context')
-            api = modules['_som_react_api_payload_context']
+        with _private_helpers(ctx) as (api, live_verifier):
             repo2, path, profile, auth, auth_sha, profile_sha, receipt_sha = api.inputs(profile_path, repo)
             need(repo2 == repo and path == profile_path and profile['venv'] == str(venv)
                  and profile['runtime_root'] == str(runtime_root), 'API profile runtime differs from native Context')
             need(all(auth['source_sha256'][name] == hashlib.sha256(ctx.sources.read(name)).hexdigest()
-                     for name in (RETAINED, API, LIVE, PRODUCER, REUSE, QUALIFY)),
+                     for name in (RETAINED, API, LIVE, NODE, PRODUCER, REUSE, QUALIFY)),
                  'native and React source authorities differ')
-            modules['_som_react_api_payload_live'] = load_source(ctx, LIVE, '_som_react_api_payload_live')
-            live_verifier = modules['_som_react_api_payload_live']
             # Context.runtime() already ran the exact source-bound
             # admitted_runtime(). Its fixed module names cannot be loaded a
             # second time in this process. Seed only the verifier's private
             # runtime cache with that same verified object, never with a
             # caller-supplied verifier or receipt. bound_sources authenticates
             # the complete React map and exact Git source before the reuse.
-            need(live_verifier._binding is None, 'preloaded live verifier state refused')
-            binding, _sources, _raw_sources = live_verifier.bound_sources(repo, ctx.helper_revision)
-            need(binding is live_verifier._binding and binding['reuse'] is None
-                 and binding['repo'] == repo and binding['revision'] == ctx.helper_revision,
-                 'fresh source-bound live verifier required')
-            binding.update(reuse=runtime['reuse'], qualification=runtime['qualification'],
-                           runtime_inventory=runtime['inventory'], tools=runtime['tools'], native=runtime['identity'])
+            _bind_live(live_verifier, ctx, repo, runtime)
             live = live_verifier.verify(profile)
             keys = {'status', 'python', 'pg_bin', 'live_receipt_sha256', 'runtime_receipt_sha256',
                     'closure_receipt_sha256', 'venv_inventory_sha256', 'requirements_count', 'wheel_count'}
@@ -186,12 +243,44 @@ def admit(ctx, executable):
             ctx.qa_import_controls.verify_installed()
             return AdmittedPayload(('som.native-python-startup-payload.v1', 'react-api-qa', str(selected),
                                     str(site), str(base), *hashes, 39, 40, ctx.helper_revision, False, False))
-        finally:
-            live_module = modules.get('_som_react_api_payload_live')
-            binding = getattr(live_module, '_binding', None)
-            producer = binding.get('producer') if isinstance(binding, dict) else None
-            if producer is not None and sys.modules.get(PRODUCER_MODULE) is producer:
-                del sys.modules[PRODUCER_MODULE]
-            for name, module in reversed(tuple(modules.items())):
-                if sys.modules.get(name) is module:
-                    del sys.modules[name]
+
+
+def collector_validate(ctx, profile_path):
+    """Run the complete original API validator with a fresh private namespace.
+
+    The trusted native collector supplies only its real Context and fixed
+    profile path. No verifier, module, receipt, or runtime is supplied by it.
+    The returned source-bound API module owns the context's recheck functions.
+    """
+    temp = physical_directory(Path(os.environ['RUNNER_TEMP']))
+    path = temp / 'som-react-api-context.json'
+    need(Path(profile_path) == path, 'exact API profile required')
+    venv = temp / 'som-react-python-closure/environments/react-api-qa/venv'
+    proof = admit(ctx, venv / 'bin/python').record()
+    repo, runtime = physical_directory(ctx.repo), ctx.runtime()
+    runtime_root = physical_directory(Path(ctx.data['runtime_root']))
+    with LOCK:
+        with _private_helpers(ctx) as (api, live):
+            repo2, path2, profile, auth, auth_sha, profile_sha, receipt_sha = api.inputs(path, repo)
+            need(repo2 == repo and path2 == path and profile['runtime_root'] == str(runtime_root)
+                 and auth_sha == proof['api_authority_sha256'] and profile_sha == proof['api_profile_sha256']
+                 and receipt_sha == proof['live_receipt_sha256'], 'collector profile or receipt differs')
+            need(all(auth['source_sha256'][name] == hashlib.sha256(ctx.sources.read(name)).hexdigest()
+                     for name in (RETAINED, API, LIVE, NODE, PRODUCER, REUSE, QUALIFY)),
+                 'collector source authorities differ')
+            node_name = '_som_react_api_payload_node'
+            node = load_source(ctx, NODE, node_name)
+            try:
+                _bind_live(live, ctx, repo, runtime)
+                result = api.verify(repo, path, profile, auth, auth_sha, profile_sha, receipt_sha, node, live)
+                need(result['python'] == proof['python']
+                     and result['runtime_receipt_sha256'] == proof['runtime_receipt_sha256']
+                     and result['live_receipt_sha256'] == proof['live_receipt_sha256']
+                     and result['venv_inventory_sha256'] == proof['venv_inventory_sha256'],
+                     'collector live verification differs from admitted payload')
+                runtime['reuse'].verify_installed_tree(runtime_root, runtime['inventory'], runtime['qualification'])
+                ctx.qa_import_controls.verify_installed()
+                return api, result
+            finally:
+                if sys.modules.get(node_name) is node:
+                    del sys.modules[node_name]
