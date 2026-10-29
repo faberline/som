@@ -152,6 +152,19 @@ def prepare(inventory, evidence, run, checker, sealed):
         need(refused_row['passed'] is True and refused_row['qa_status'] == 400
              and refused_row['request_sha256'] == refused_row['qa_request_sha256'] == sha(request),
              'original serializer request identity')
+        prior_calls = by_response.get((refused_row['request_sha256'], refused_row['qa_response_sha256']), [])
+        prior_sources = []
+        for call in prior_calls:
+            call_name = f"run/rust-baseline-raw/calls/{call['id']:06d}"
+            need(json.loads(bound(call_name + '.json')) == call and call['complete'] is True
+                 and call['error'] is None and call['status'] == 400
+                 and call['request_file'] == f"calls/{call['id']:06d}.request.raw"
+                 and call['response_file'] == f"calls/{call['id']:06d}.response.raw", 'prior refusal call')
+            prior_request = bound(call_name + '.request.raw')
+            prior_response = bound(call_name + '.response.raw')
+            need(prior_request == request and sha(prior_request) == call['request_sha256']
+                 and sha(prior_response) == call['response_sha256'], 'prior refusal raw request differs')
+            prior_sources.append(call_name + '.request.raw')
         if phase == 'phase1':
             files_sha = phase1[case]['files_sha256']
         else:
@@ -186,6 +199,8 @@ def prepare(inventory, evidence, run, checker, sealed):
         plan.append({'slot_id': slot['slot_id'], 'case': case, 'phase': phase,
                      'method': 'POST', 'endpoint': '/v1/assemble', 'request_sha256': sha(request),
                      'prior_candidate_refusal_request_sha256': refused_row['request_sha256'],
+                     'prior_candidate_raw_request_state': 'verified' if prior_sources else 'unavailable',
+                     'prior_candidate_raw_request_sources': prior_sources,
                      'expected_files_sha256': files_sha, 'expected_source': 'accepted-130-rebased-and-run003',
                      'accepted_response_sha256': row['qa_response_sha256'],
                      'baseline_compile_response_sha256': sha(raw), 'request': request})
@@ -252,6 +267,31 @@ def count_unrun(plan, rows):
     return len(plan) - len(rows) + sum(row['comparison'] == 'unrun' for row in rows)
 
 
+def finalize_capture(result, proc, owner, binary, asset_root, assets, plan, out):
+    errors = []
+    def attempt(name, function, fallback):
+        try:
+            return function()
+        except Exception as exc:
+            errors.append({'stage': name, 'error_type': type(exc).__name__})
+            return fallback
+    if proc is not None:
+        result['wait_exit'] = attempt('direct_wait', lambda: owner.wait_after_signal(timeout=15), None)
+        attempt('owner_receipt', owner.save, None)
+    result['port_free_after'] = attempt('port_check', free_port, False)
+    result['process_group_gone'] = proc is None or attempt('group_check', lambda: group_gone(proc.pid), False)
+    result['baseline_sha256_after'] = attempt('baseline_recheck', lambda: sha(read(binary)), None)
+    result['assets_unchanged'] = attempt('asset_recheck', lambda: asset_identity(asset_root) == assets, False)
+    result['cleanup_errors'] = errors
+    result['unrun'] = count_unrun(plan, result['rows'])
+    result['passed'] = (result['error'] is None and result['unrun'] == 0 and
+                        all(row['matched'] for row in result['rows']) and result['port_free_after'] and
+                        result['process_group_gone'] and result['assets_unchanged'] and
+                        result['baseline_sha256_after'] == BASELINE_SHA and
+                        result['wait_exit'] is not None and not errors)
+    write(out / 'receipt.json', pretty(result))
+
+
 def execute(args, checker):
     need(os.environ.get('GITHUB_ACTIONS') == 'true' and os.environ.get('RUNNER_OS') == 'macOS'
          and os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted'
@@ -266,45 +306,55 @@ def execute(args, checker):
               'product_acceptance': 'not_run', 'passed': False, 'unrun': 697,
               'stage': 'source_preparation', 'error_type': type(exc).__name__}))
         raise
-    public_plan = [{k: v for k, v in item.items() if k != 'request'} for item in plan]
-    for item in plan:
-        write(out / 'requests' / (str(item['slot_id']) + '.raw'), item['request'])
-    write(out / 'plan.json', pretty({'role': 'fresh-before', 'historical_wire': False,
-                                   'product_acceptance': 'not_run', 'slots': public_plan, 'refusals': refused}))
-    binary = args.baseline / 'som'
-    need(sha(read(binary)) == BASELINE_SHA, 'baseline binary identity')
-    release_path = args.repo / 'som-rs/evidence/typescript-output-release-2026-10-22-issue65.json'
-    release = load(release_path)['candidate']
-    need(release['binary_sha256'] == BASELINE_SHA and
-         release['build_commit'] == '8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af' and
-         binary.stat().st_size == release['binary_bytes'], 'accepted release identity')
-    identity = {'release_record_sha256': sha(read(release_path)), 'build_commit': release['build_commit']}
-    for name, field in (('source.json', 'source_json_sha256'), ('build.json', 'build_receipt_sha256'),
-                        ('runtime.json', 'runtime_receipt_sha256')):
-        identity[name] = sha(read(args.baseline / name))
-        need(identity[name] == release[field], 'accepted baseline provenance differs')
-    binary_file = subprocess.run(['/usr/bin/file', str(binary)], capture_output=True, check=True, timeout=10)
-    description = binary_file.stdout.decode('utf-8').strip()
-    need('Mach-O' in description and 'arm64' in description, 'baseline binary platform differs')
-    identity['binary_description'] = description
-    assets = asset_identity(args.baseline / 'assets')
-    need(free_port(), 'QA port already in use')
-    health = load(args.baseline / 'runtime.json')['health']
-    env = {k: os.environ[k] for k in ('PATH', 'HOME', 'TMPDIR', 'LANG') if k in os.environ}
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-    argv = [str(binary), 'serve', '--assets', str(args.baseline / 'assets'), '--port', str(PORT)]
-    result = {'role': 'fresh-before', 'historical_wire': False, 'product_acceptance': 'not_run',
-              'baseline_sha256': BASELINE_SHA, 'argv': argv, 'port': PORT,
-              'baseline_provenance': identity, 'assets': assets,
-              'runner': {'platform': platform.platform(), 'machine': platform.machine(),
-                         'python': sys.version, 'python_executable': sys.executable,
-                         'github_sha': os.environ.get('GITHUB_SHA'), 'github_run_id': os.environ.get('GITHUB_RUN_ID'),
-                         'github_run_attempt': os.environ.get('GITHUB_RUN_ATTEMPT')},
-              'owner_pid': os.getpid(), 'pid': None, 'wait_exit': None,
-              'process_group_gone': False, 'port_free_after': False, 'rows': [], 'error': None}
-    proc = None
-    from owned_candidate import CandidateOwner
-    owner = CandidateOwner(out, args.baseline, PORT)
+    stage = 'request_freeze'
+    try:
+        public_plan = [{k: v for k, v in item.items() if k != 'request'} for item in plan]
+        for item in plan:
+            write(out / 'requests' / (str(item['slot_id']) + '.raw'), item['request'])
+        write(out / 'plan.json', pretty({'role': 'fresh-before', 'historical_wire': False,
+                                       'product_acceptance': 'not_run', 'slots': public_plan, 'refusals': refused}))
+        stage = 'baseline_provenance'
+        binary = args.baseline / 'som'
+        need(sha(read(binary)) == BASELINE_SHA, 'baseline binary identity')
+        release_path = args.repo / 'som-rs/evidence/typescript-output-release-2026-10-22-issue65.json'
+        release = load(release_path)['candidate']
+        need(release['binary_sha256'] == BASELINE_SHA and
+             release['build_commit'] == '8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af' and
+             binary.stat().st_size == release['binary_bytes'], 'accepted release identity')
+        identity = {'release_record_sha256': sha(read(release_path)), 'build_commit': release['build_commit']}
+        for name, field in (('source.json', 'source_json_sha256'), ('build.json', 'build_receipt_sha256'),
+                            ('runtime.json', 'runtime_receipt_sha256')):
+            identity[name] = sha(read(args.baseline / name))
+            need(identity[name] == release[field], 'accepted baseline provenance differs')
+        binary_file = subprocess.run(['/usr/bin/file', str(binary)], capture_output=True, check=True, timeout=10)
+        description = binary_file.stdout.decode('utf-8').strip()
+        need('Mach-O' in description and 'arm64' in description, 'baseline binary platform differs')
+        identity['binary_description'] = description
+        assets = asset_identity(args.baseline / 'assets')
+        stage = 'port_check'
+        need(free_port(), 'QA port already in use')
+        health = load(args.baseline / 'runtime.json')['health']
+        env = {k: os.environ[k] for k in ('PATH', 'HOME', 'TMPDIR', 'LANG') if k in os.environ}
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        argv = [str(binary), 'serve', '--assets', str(args.baseline / 'assets'), '--port', str(PORT)]
+        result = {'role': 'fresh-before', 'historical_wire': False, 'product_acceptance': 'not_run',
+                  'baseline_sha256': BASELINE_SHA, 'argv': argv, 'port': PORT,
+                  'baseline_provenance': identity, 'assets': assets,
+                  'runner': {'platform': platform.platform(), 'machine': platform.machine(),
+                             'python': sys.version, 'python_executable': sys.executable,
+                             'github_sha': os.environ.get('GITHUB_SHA'), 'github_run_id': os.environ.get('GITHUB_RUN_ID'),
+                             'github_run_attempt': os.environ.get('GITHUB_RUN_ATTEMPT')},
+                  'owner_pid': os.getpid(), 'pid': None, 'wait_exit': None,
+                  'process_group_gone': False, 'port_free_after': False, 'rows': [], 'error': None}
+        proc = None
+        stage = 'owner_setup'
+        from owned_candidate import CandidateOwner
+        owner = CandidateOwner(out, args.baseline, PORT)
+    except Exception as exc:
+        write(out / 'receipt.json', pretty({'role': 'fresh-before', 'historical_wire': False,
+              'product_acceptance': 'not_run', 'passed': False, 'unrun': 697,
+              'stage': stage, 'error_type': type(exc).__name__}))
+        raise
     try:
         with (out / 'baseline.stdout').open('xb') as stdout, (out / 'baseline.stderr').open('xb') as stderr:
             proc = subprocess.Popen(argv, cwd=args.baseline, env=env, stdin=subprocess.DEVNULL,
@@ -348,23 +398,7 @@ def execute(args, checker):
     except Exception as exc:
         result['error'] = type(exc).__name__ + ': ' + str(exc)
     finally:
-        if proc is not None:
-            try:
-                result['wait_exit'] = owner.wait_after_signal(timeout=15)
-            except Exception as exc:
-                result['cleanup_error'] = type(exc).__name__ + ': ' + str(exc)
-            owner.save()
-        result['port_free_after'] = free_port()
-        result['process_group_gone'] = proc is None or group_gone(proc.pid)
-        result['baseline_sha256_after'] = sha(read(binary))
-        result['assets_unchanged'] = asset_identity(args.baseline / 'assets') == assets
-        result['unrun'] = count_unrun(plan, result['rows'])
-        result['passed'] = (result['error'] is None and result['unrun'] == 0 and
-                            all(row['matched'] for row in result['rows']) and result['port_free_after'] and
-                            result['process_group_gone'] and result['assets_unchanged'] and
-                            result['baseline_sha256_after'] == BASELINE_SHA and
-                            result['wait_exit'] is not None and 'cleanup_error' not in result)
-        write(out / 'receipt.json', pretty(result))
+        finalize_capture(result, proc, owner, binary, args.baseline / 'assets', assets, plan, out)
     return 0 if result['passed'] else 1
 
 

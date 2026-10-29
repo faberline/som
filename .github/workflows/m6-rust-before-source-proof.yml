@@ -122,5 +122,5 @@ jobs:
           import capture,check_rust_baseline
           plan,expected,refusals=capture.prepare(scripts/'frozen-before-slots.json',temp/'evidence',temp/'approved-inputs/.local/rust-compiler-goal/acceptance/rust-output-055/run-003',check_rust_baseline,temp/'evidence-sealed')
           if len(plan)!=697 or len(expected)!=697 or len(refusals)!=2:raise SystemExit('source counts differ')
-          print(json.dumps({'prepared':len(plan),'refusals':len(refusals),'runtime_comparison':'unrun','product_acceptance':'not_run'},sort_keys=True))
+          print(json.dumps({'prepared':len(plan),'refusals':len(refusals),'prior_candidate_raw_verified':sum(x['prior_candidate_raw_request_state']=='verified' for x in plan),'prior_candidate_raw_unavailable':sum(x['prior_candidate_raw_request_state']=='unavailable' for x in plan),'runtime_comparison':'unrun','product_acceptance':'not_run'},sort_keys=True))
           INNER
