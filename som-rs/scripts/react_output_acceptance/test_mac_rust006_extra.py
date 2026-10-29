@@ -457,13 +457,22 @@ class ParityIndependentChecks(unittest.TestCase):
         reader=norm.Normalizer(prompt)
         row={'id':17,'weight':3,'count':4,'created_at':'2026-01-01T00:00:00Z','updated_at':'2026-01-01T00:00:01Z'}
         expected={'id':'id#1','weight':3.0,'count':4,'created_at':'<timestamp>','updated_at':'<timestamp>'}
-        record={'status':200,'path':'/things/17'}
-        self.assertTrue(reader.check(record,{'body':expected},json.dumps(row).encode()))
+        record={'status':200,'path':'/things/17','method':'POST','step':'create'}
+        normalized={'body':expected,'request':{'path':'/things/17'}}
+        self.assertTrue(reader.check(record,normalized,json.dumps(row).encode()))
         changed=dict(row,weight=4)
-        with self.assertRaises(ValueError):reader.check(record,{'body':expected},json.dumps(changed).encode())
+        with self.assertRaises(ValueError):reader.check(record,normalized,json.dumps(changed).encode())
         changed=dict(row,updated_at='2025-01-01T00:00:00Z')
-        with self.assertRaises(ValueError):reader.check(record,{'body':expected},json.dumps(changed).encode())
-        with self.assertRaises(ValueError):reader.check(record,{'body':expected},b'{"invalid":"\xff"}')
+        with self.assertRaises(ValueError):reader.check(record,normalized,json.dumps(changed).encode())
+        with self.assertRaises(ValueError):reader.check(record,normalized,b'{"invalid":"\xff"}')
+        record.update(method='PATCH',step='things: empty patch')
+        normalized['request']['path']='/things/{id#1}'
+        self.assertTrue(reader.check(record,normalized,json.dumps(row).encode()))
+        row['updated_at']='2026-01-01T00:00:02Z'
+        with self.assertRaises(ValueError):reader.check(record,normalized,json.dumps(row).encode())
+        record['step']='things: patch weight'
+        self.assertTrue(reader.check(record,normalized,json.dumps(row).encode()))
+        with self.assertRaises(ValueError):reader.check(record,normalized,json.dumps(row).encode())
 
     def test_recompute_parent_child_batch_and_foreign_key(self):
         import audit_product_normalization as norm
@@ -473,9 +482,9 @@ class ParityIndependentChecks(unittest.TestCase):
         body={'parent':{'id':50,**stamp},'children':[{'id':80,'parent_id':50,**stamp}]}
         expected={'parent':{'id':'id#1','created_at':'<timestamp>','updated_at':'<timestamp>'},
                   'children':[{'id':'id#1','parent_id':'id#1','created_at':'<timestamp>','updated_at':'<timestamp>'}]}
-        self.assertTrue(reader.check({'status':201,'path':'/parents/with-children'},{'body':expected},json.dumps(body).encode()))
+        self.assertTrue(reader.check({'status':201,'path':'/parents/with-children','method':'POST','step':'batch'}, {'body':expected,'request':{'path':'/parents/with-children'}},json.dumps(body).encode()))
         body['children'][0]['parent_id']=99
-        with self.assertRaises(ValueError):reader.check({'status':201,'path':'/parents/with-children'},{'body':expected},json.dumps(body).encode())
+        with self.assertRaises(ValueError):reader.check({'status':201,'path':'/parents/with-children','method':'POST','step':'batch'}, {'body':expected,'request':{'path':'/parents/with-children'}},json.dumps(body).encode())
 
     def test_validation_error_raw_response_and_request(self):
         import audit_mac_parity as audit

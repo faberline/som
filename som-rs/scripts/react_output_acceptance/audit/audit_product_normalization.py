@@ -29,7 +29,7 @@ def timestamp(value):
 
 class Normalizer:
     def __init__(self,prompt):
-        self.prompt=prompt;self.version=prompt['version'];self.tokens={};self.stamps={}
+        self.prompt=prompt;self.version=prompt['version'];self.tokens={};self.stamps={};self.stamp_rule=None
         if self.version=='som.prompt.v5':
             self.parent=prompt['resources']['parent'];self.child=prompt['resources']['child']
             self.tables=[self.parent,self.child];self.fk=prompt['relation']['foreign_key']
@@ -60,7 +60,10 @@ class Normalizer:
         if self.version in ('som.prompt.v3','som.prompt.v4','som.prompt.v5') and type(token) is str:
             created=timestamp(row.get('created_at'));updated=timestamp(row.get('updated_at'))
             need(created<=updated);prior=self.stamps.get((table['table'],token))
-            if prior:need(created==prior[0] and updated>=prior[1])
+            if prior:
+                need(created==prior[0] and updated>=prior[1])
+                if self.stamp_rule=='same':need(updated==prior[1])
+                if self.stamp_rule=='advance':need(updated>prior[1])
             self.stamps[(table['table'],token)]=(created,updated)
         return out
     def table_for_path(self,path):
@@ -78,7 +81,28 @@ class Normalizer:
         if type(body) is list:return [self.row(table,item) for item in body]
         if type(body) is dict and 'id' in body:return self.row(table,body)
         return body
+    def check_path(self,record,normalized):
+        symbolic=normalized['request']['path']; need(type(symbolic) is str and type(record['path']) is str)
+        def resolve(match):
+            before=symbolic[:match.start()]
+            table=self.child if self.child is not None and self.child['path'] in before else self.parent
+            matches=[raw for raw,token in self.tokens.get(table['table'],{}).items() if token==match.group(1)]
+            need(len(matches)==1);return str(matches[0])
+        actual=re.sub(r'\{(id#[0-9]+)\}',resolve,symbolic)
+        need(actual==record['path'])
+    def rule(self,record):
+        if record['method']!='PATCH':return None
+        table=self.table_for_path(record['path']);step=record['step'];name=table['table']
+        if step==name+': empty patch':return 'same'
+        allowed={name+': patch every field'}
+        for field in table['fields']:
+            field_name=field['name']
+            allowed.update({name+': patch '+field_name,name+': patch '+field_name+' to null',
+                            name+': patch '+field_name+' to 255 characters'})
+        return 'advance' if step in allowed else None
     def check(self,record,normalized,response):
+        self.check_path(record,normalized)
+        self.stamp_rule=self.rule(record)
         if not 200<=record['status']<300 or record['status']==204:return False
         body=parse_json(response.decode('utf-8'))
         need(same(self.success(record['path'],body),normalized['body']))
