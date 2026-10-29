@@ -55,6 +55,10 @@ def main(phase):
     if phase == 'fetch':
         need(bool(os.environ.get('GH_TOKEN')) and 'M6_INPUTS_KEYRING' not in os.environ,
              'fetch step token boundary differs')
+        version = subprocess.check_output(['gh', '--version'], text=True, timeout=30).splitlines()[0]
+        need(re.fullmatch(r'gh version 2\.103\.0 \(2026-10-21\)', version) is not None,
+             'unreviewed GitHub CLI version; fetch refused')
+        print('reviewed GitHub CLI version: ' + version, flush=True)
         directory.mkdir(mode=0o700, exist_ok=False)
         subprocess.run(['git', 'init', '--quiet', str(source)], check=True, timeout=120)
         subprocess.run(['git', '-C', str(source), 'remote', 'add', 'origin', 'https://github.com/faberline/som.git'],

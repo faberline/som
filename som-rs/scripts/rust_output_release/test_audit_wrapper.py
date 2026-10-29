@@ -44,6 +44,10 @@ class WrapperTests(unittest.TestCase):
         self.run_patch = mock.patch.object(wrapper.subprocess, 'run', side_effect=self.fake_run)
         self.run_patch.start()
         self.addCleanup(self.run_patch.stop)
+        self.version_patch = mock.patch.object(wrapper.subprocess, 'check_output',
+                                              return_value='gh version 2.103.0 (2026-10-21)\n')
+        self.version = self.version_patch.start()
+        self.addCleanup(self.version_patch.stop)
 
     def fake_run(self, args, **kwargs):
         self.calls.append((args, dict(os.environ)))
@@ -75,6 +79,14 @@ class WrapperTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'token boundary'):
             wrapper.main('fetch')
         self.assertEqual(self.calls, [])
+
+    def test_unreviewed_gh_version_refused_before_network(self):
+        os.environ['GH_TOKEN'] = 'synthetic-token'
+        self.version.return_value = 'gh version 2.104.0 (2026-11-01)\n'
+        with self.assertRaisesRegex(RuntimeError, 'unreviewed GitHub CLI version'):
+            wrapper.main('fetch')
+        self.assertEqual(self.calls, [])
+        self.assertFalse((self.root / 'm6-independent-raw-audit').exists())
 
     def test_changed_binding_refused_before_inspect(self):
         os.environ['GH_TOKEN'] = 'synthetic-token'
