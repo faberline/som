@@ -1,8 +1,6 @@
 name: M6 two-source historical input proof
 on:
-  push:
-    branches:
-      - codex/m6-mac-rust006-fixtures-20261029
+  workflow_dispatch:
 permissions:
   contents: read
   actions: read

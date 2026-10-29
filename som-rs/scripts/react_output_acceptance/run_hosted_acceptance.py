@@ -190,6 +190,48 @@ def stop_candidate(out: Path, env: dict) -> dict:
     return record
 
 
+def stop_owned_candidate(out, env, owner):
+    """Stop the actual direct child. The raw audit remains a separate gate."""
+    record={'stopped':False,'ownership_verified':False,'direct_wait':'unverified','cleanup':'requires-independent-audit'}
+    if owner is None or owner.process is None:
+        return record
+    proc=owner.process;candidate=out/'candidate';pid=proc.pid
+    def observe(name,argv):
+        code=logged(out,name,argv,env,timeout=30)
+        owner.events.append({'kind':'os-command','name':name,'argv':argv,'exit_code':code,
+                             'stdout_sha256':sha(out/(name+'.stdout')),'stderr_sha256':sha(out/(name+'.stderr'))})
+        return code
+    try:
+        runtime,build=load(candidate/'runtime.json'),load(candidate/'build.json')
+        digest=sha(candidate/'som')
+        need(pid==runtime['pid'] and runtime['argv']==owner.argv and runtime['port']==CANDIDATE_PORT
+             and digest==runtime['binary_sha256']==build['binary_sha256'] and os.getpgid(pid)==pid)
+        need(observe('owner-candidate-ps',['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command='])==0)
+        need(observe('owner-candidate-cwd',['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn'])==0)
+        need(observe('owner-candidate-listener',['/usr/sbin/lsof','-nP',f'-iTCP:{CANDIDATE_PORT}','-sTCP:LISTEN','-t'])==0)
+        need(observe('owner-candidate-table-before',['/bin/ps','-axo','pid=,ppid=,pgid=,command='])==0)
+        fields=(out/'owner-candidate-ps.stdout').read_text().strip().split(None,3)
+        need(len(fields)==4 and fields[0]==str(pid) and fields[1]==str(os.getpid()) and fields[2]==str(pid)
+             and fields[3]==' '.join(owner.argv))
+        cwd=[x[1:] for x in (out/'owner-candidate-cwd.stdout').read_text().splitlines() if x.startswith('n')]
+        need(cwd==[str(candidate)] and (out/'owner-candidate-listener.stdout').read_text().split()==[str(pid)])
+        record['ownership_verified']=True
+    except (OSError,ValueError,KeyError,TypeError,AttributeError,subprocess.SubprocessError):
+        pass
+    try:
+        # Cleanup still runs after a failed observation, but cannot become verified.
+        result=owner.wait_after_signal(timeout=10)
+        record['direct_wait']={'pid':pid,'exit_code':result,'completed':True}
+        table_code=observe('owner-candidate-table-after',['/bin/ps','-axo','pid=,ppid=,pgid=,command='])
+        listener_code=observe('owner-candidate-listener-after',['/usr/sbin/lsof','-nP',f'-iTCP:{CANDIDATE_PORT}','-sTCP:LISTEN','-t'])
+        need(table_code==0 and listener_code==1 and not (out/'owner-candidate-listener-after.stdout').read_bytes())
+        record['stopped']=True
+    except (OSError,ValueError,KeyError,TypeError,AttributeError,subprocess.SubprocessError):
+        pass
+    try:owner.save()
+    except OSError:record['stopped']=False
+    return record
+
 def verdict(out: Path, summary: dict) -> bool:
     build, runtime = load(out / "candidate/build.json"), load(out / "candidate/runtime.json")
     run, audit = load(out / "run/run.json"), load(out / "audit.json")
@@ -232,6 +274,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.candidate_revision is not None and (args.approved_input_config is None or args.provenance_root is None):
         parser.error("the approved two-source input provenance is required")
     stage, out, baseline = "runner", None, None
+    candidate_owner = None
     summary = {"version": "som.m6-hosted-acceptance.v1", "passed": False, "status": "failed",
                "failed_stage": None, "product_suites": "not_run", "head_before": None,
                "head_after": None, "candidate_binary_sha256": None, "step_count": 0,
@@ -286,9 +329,15 @@ def main(argv: list[str] | None = None) -> int:
         bootstrap = bootstrap_assets(frozen / "assets", staged_assets, out)
         summary["bootstrap_assets_receipt_sha256"] = sha(out / "bootstrap-assets.json")
         stage = "candidate"
-        need(logged(out, "prepare", [sys.executable, str(HERE.parent / "rust_output_acceptance/prepare_candidate.py"),
-                     "--out", str(out / "candidate"), "--port", str(CANDIDATE_PORT), "--package-assets",
-                     str(frozen / "assets/ruff"), "--prettier", env["SOM_TS_PRETTIER"]], env) == 0)
+        preparer=HERE.parent / "rust_output_acceptance/prepare_candidate.py"
+        prepare_args=["--out",str(out / "candidate"),"--port",str(CANDIDATE_PORT),"--package-assets",
+                      str(frozen / "assets/ruff"),"--prettier",env["SOM_TS_PRETTIER"]]
+        if args.candidate_revision is None:
+            need(logged(out,"prepare",[sys.executable,str(preparer),*prepare_args],env)==0)
+        else:
+            import owned_candidate
+            candidate_owner=owned_candidate.CandidateOwner(out,out/'candidate',CANDIDATE_PORT)
+            need(candidate_owner.run_preparer(preparer,prepare_args,env)==0)
         stage = "candidate-assets"
         candidate_assets = asset_files(out / "candidate/assets")
         need(candidate_assets == bootstrap["source_files"] == asset_files(staged_assets) == asset_files(frozen / "assets"))
@@ -387,7 +436,9 @@ def main(argv: list[str] | None = None) -> int:
         summary["failed_stage"] = summary["failed_stage"] or stage
     finally:
         if out is not None and out.is_dir():
-            cleanup = {"baseline_stopped": baseline is None, "candidate": stop_candidate(out, env)}
+            cleanup = {"baseline_stopped": baseline is None, "candidate":
+                       (stop_owned_candidate(out,env,candidate_owner) if args.candidate_revision is not None
+                        else stop_candidate(out,env))}
             if baseline is not None:
                 try:
                     baseline.terminate()
@@ -401,6 +452,10 @@ def main(argv: list[str] | None = None) -> int:
                     summary["head_after"] = head(out, "head-after", env)
                 need(summary["head_before"] is not None and summary["head_before"] == summary["head_after"]
                      and cleanup["baseline_stopped"] and cleanup["candidate"]["stopped"])
+                if args.candidate_revision is not None:
+                    need(cleanup['candidate'].get('ownership_verified') is True and
+                         type(cleanup['candidate'].get('direct_wait')) is dict and
+                         cleanup['candidate']['direct_wait'].get('completed') is True)
             except (OSError, ValueError, subprocess.SubprocessError):
                 summary["passed"] = False
                 summary["failed_stage"] = summary["failed_stage"] or "cleanup-or-head"

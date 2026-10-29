@@ -374,6 +374,32 @@ class UnorderedParityWireTests(unittest.TestCase):
                 with self.assertRaises(ValueError):parity_audit.raw_exchange_index(raw)
 
 
+class OwnedCandidateTests(unittest.TestCase):
+    def test_preparer_child_remains_owned_and_has_real_wait(self):
+        import subprocess
+        import owned_candidate
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();candidate=root/'candidate';candidate.mkdir();(candidate/'assets').mkdir()
+            binary=candidate/'som';binary.write_text('#!'+sys.executable+'\nimport time\ntime.sleep(120)\n');binary.chmod(0o755)
+            preparer=root/'preparer.py'
+            preparer.write_text('import subprocess,sys\nfrom pathlib import Path\nc=Path(sys.argv[1])\nsubprocess.Popen([str(c/"som"),"serve","--assets",str(c/"assets"),"--port","18919"],cwd=c,start_new_session=True)\nprint("prepared")\n')
+            owner=owned_candidate.CandidateOwner(root,candidate,18919)
+            try:
+                self.assertEqual(owner.run_preparer(preparer,[str(candidate)],dict(os.environ),timeout=10),0)
+                pid=owner.process.pid
+                parent=subprocess.check_output(['/bin/ps','-p',str(pid),'-o','ppid='],text=True).strip()
+                self.assertEqual(parent,str(os.getpid()))
+                self.assertEqual((root/'prepare.stdout').read_text(),'prepared\n')
+                result=owner.wait_after_signal(timeout=10)
+                self.assertIsInstance(result,int);owner.save()
+                receipt=json.loads((root/'candidate-owner.json').read_bytes())
+                waits=[e for e in receipt['events'] if e['kind']=='candidate-wait']
+                self.assertEqual(len(waits),1);self.assertEqual(waits[0]['pid'],pid)
+                self.assertEqual(waits[0]['state'],'completed');self.assertEqual(waits[0]['exit_code'],result)
+            finally:
+                if owner.process is not None and owner.process.poll() is None:
+                    owner.process.terminate();owner.process.wait(timeout=10)
+
 class DerivedInstallTests(unittest.TestCase):
     def test_exclusive_install_rejects_collision_and_tampering(self):
         import hashlib
