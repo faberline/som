@@ -274,6 +274,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.candidate_revision is not None and (args.approved_input_config is None or args.provenance_root is None):
         parser.error("the approved two-source input provenance is required")
     stage, out, baseline = "runner", None, None
+    frozen = None
     candidate_owner = None
     summary = {"version": "som.m6-hosted-acceptance.v1", "passed": False, "status": "failed",
                "failed_stage": None, "product_suites": "not_run", "head_before": None,
@@ -441,12 +442,24 @@ def main(argv: list[str] | None = None) -> int:
                        (stop_owned_candidate(out,env,candidate_owner) if args.candidate_revision is not None
                         else stop_candidate(out,env))}
             if baseline is not None:
-                try:
-                    baseline.terminate()
-                    baseline.wait(timeout=10)
-                    cleanup["baseline_stopped"] = True
-                except (OSError, subprocess.SubprocessError):
-                    pass
+                if args.candidate_revision is None:
+                    try:
+                        baseline.terminate()
+                        baseline.wait(timeout=10)
+                        cleanup["baseline_stopped"] = True
+                    except (OSError, subprocess.SubprocessError):
+                        pass
+                else:
+                    try:
+                        import baseline_cleanup
+                        baseline_cleanup.stop(out,env,baseline,frozen)
+                        summary['baseline_cleanup_audit_exit_code']=logged(out,'baseline-cleanup-audit',[
+                            sys.executable,str(HERE/'audit/audit_baseline_cleanup.py'),'--out',str(out),
+                            '--frozen',str(frozen),'--audit',str(out/'baseline-cleanup-audit.json')],env)
+                        cleanup['baseline_stopped']=summary['baseline_cleanup_audit_exit_code']==0 and \
+                            load(out/'baseline-cleanup-audit.json').get('baseline_observed_cleanup')=='passed'
+                    except (OSError,ValueError,KeyError,TypeError,subprocess.SubprocessError):
+                        cleanup['baseline_stopped']=False
             summary["cleanup"] = cleanup
             if args.candidate_revision is not None:
                 try:

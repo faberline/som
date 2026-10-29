@@ -374,6 +374,34 @@ class UnorderedParityWireTests(unittest.TestCase):
                 with self.assertRaises(ValueError):parity_audit.raw_exchange_index(raw)
 
 
+class BaselineCleanupTests(unittest.TestCase):
+    def test_real_macos_direct_baseline_wait_and_missing_evidence(self):
+        import hashlib,socket,subprocess,time
+        import baseline_cleanup,audit_baseline_cleanup
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();frozen=root/'frozen';frozen.mkdir();(frozen/'assets').mkdir()
+            source=root/'fixture.c';source.write_text('#include <sys/types.h>\n#include <sys/socket.h>\n#include <netinet/in.h>\n#include <unistd.h>\nint main(void){int s=socket(AF_INET,SOCK_STREAM,0);int v=1;setsockopt(s,SOL_SOCKET,SO_REUSEADDR,&v,sizeof(v));struct sockaddr_in a={0};a.sin_family=AF_INET;a.sin_port=htons(18917);a.sin_addr.s_addr=htonl(INADDR_LOOPBACK);if(bind(s,(void*)&a,sizeof(a))||listen(s,4))return 2;for(;;)pause();}\n')
+            binary=frozen/'som';subprocess.run(['cc',str(source),'-o',str(binary)],check=True,timeout=30)
+            argv=[str(binary),'serve','--assets',str(frozen/'assets'),'--port','18917']
+            process=subprocess.Popen(argv,cwd=frozen,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            try:
+                for _ in range(100):
+                    try:
+                        with socket.create_connection(('127.0.0.1',18917),timeout=.1):break
+                    except OSError:time.sleep(.05)
+                else:self.fail('fake baseline did not listen')
+                result=baseline_cleanup.stop(root,dict(os.environ),process,frozen)
+                self.assertEqual(result['pid'],process.pid)
+                proof=audit_baseline_cleanup.audit(root,frozen,expected_sha=hashlib.sha256(binary.read_bytes()).hexdigest())
+                self.assertEqual(proof['baseline_pid'],process.pid);self.assertTrue(proof['listener_absent'])
+                self.assertEqual(proof['outside_observed_descendants'],'unverified')
+                receipt=json.loads((root/'baseline-cleanup.json').read_bytes())
+                next(e for e in receipt['events'] if e['kind']=='wait')['state']='timeout'
+                (root/'baseline-cleanup.json').write_text(json.dumps(receipt))
+                with self.assertRaises(ValueError):audit_baseline_cleanup.audit(root,frozen,expected_sha=hashlib.sha256(binary.read_bytes()).hexdigest())
+            finally:
+                if process.poll() is None:process.terminate();process.wait(timeout=10)
+
 class WorkflowOriginTests(unittest.TestCase):
     def test_origin_source_and_runner_metadata_are_bound(self):
         import subprocess
