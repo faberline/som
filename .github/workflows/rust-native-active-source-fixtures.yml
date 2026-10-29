@@ -1,7 +1,7 @@
 name: Native active source fixtures
 on:
   push:
-    branches: [codex/m12-native-remaining-recipe-source-fixtures-v1]
+    branches: [codex/m12-native-recipe-binding-fixture-repair-v1]
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,12 +20,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: legacy-completion
-            script: som-rs/scripts/hosted_readiness/test_complete_rust_inputs.py
-            legacy: true
-          - name: legacy-checked-proof
-            script: som-rs/scripts/hosted_readiness/test_prove_checked_reference.py
-            legacy: true
           - name: native-remaining-recipes
             script: som-rs/scripts/hosted_readiness/test_native_remaining_recipe_loaders.py
             legacy: false

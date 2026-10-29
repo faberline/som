@@ -9,6 +9,7 @@ SourceSeal is qualified by these fixtures.
 from __future__ import annotations
 
 import ast
+from copy import deepcopy
 from contextlib import contextmanager
 import json
 import os
@@ -177,7 +178,7 @@ class RemainingFixture(protocol.Fixture):
                 callers.append({'role': parent, 'function': '_native_serializer_runtime'
                                 if parent == COMPLETE else '_native_checked_runtime'})
             entry = super().add_role(target, data['source'], (REPO / data['source']).read_bytes(),
-                    module=data['module'], bindings=data['bindings'], callers=callers)
+                    module=data['module'], bindings=deepcopy(data['bindings']), callers=callers)
             entry['package'], entry['is_package'] = data['package'], data['is_package']
         self.import_group({
             'complete_rust_inputs': COMPLETE,
