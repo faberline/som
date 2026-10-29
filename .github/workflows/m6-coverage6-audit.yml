@@ -1,0 +1,81 @@
+name: M6 coverage six independent evidence audit (not acceptance)
+on:
+  push:
+    branches:
+      - 'codex/m6-coverage6-audit-20261029-*'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Test independent audit fixtures
+        working-directory: .github/m6-coverage6-audit
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python3 -m unittest -v test_audit_coverage
+  audit:
+    needs: fixtures
+    if: github.repository == 'faberline/som' && endsWith(github.ref, '-run')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Download exact encrypted capture artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: '40813501907'
+          artifact-ids: '12870604561'
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/coverage6-sealed-audit
+      - name: Bind the audited evidence decoder before using the key
+        run: |
+          python3 - <<'PY'
+          import hashlib, pathlib
+          p = pathlib.Path('som-rs/scripts/react_output_acceptance/sealed_inputs.mjs')
+          if p.is_symlink() or hashlib.sha256(p.read_bytes()).hexdigest() != 'bda649080df1fced5ac6cfabdc300d9d9b1b3d9a53a1240c11fdce80e0b1e9c9':
+              raise SystemExit('evidence decoder differs')
+          PY
+      - name: Restore encrypted capture without exposing raw data
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: node .github/m6-coverage6-audit/restore.mjs
+      - name: Audit raw observations and retain acceptance boundary
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 - <<'PY'
+          import hashlib, os, pathlib
+          p = pathlib.Path(os.environ['RUNNER_TEMP']) / 'coverage6-raw-audit/summary.json'
+          if hashlib.sha256(p.read_bytes()).hexdigest() != 'dd160276cbad3aa3c4191ab544914ae02d7c7b922c17d77da97714f881e7a11f':
+              raise SystemExit('capture summary pin differs')
+          PY
+          python3 .github/m6-coverage6-audit/audit_coverage.py --capture "$RUNNER_TEMP/coverage6-raw-audit" --repo "$GITHUB_WORKSPACE" > "$RUNNER_TEMP/coverage6-independent-audit.json"
+          python3 - <<'PY'
+          import json, os, pathlib
+          p = pathlib.Path(os.environ['RUNNER_TEMP']) / 'coverage6-independent-audit.json'
+          result = json.loads(p.read_bytes())
+          if result.get('result') != 'fresh-baseline-raw-checked' or result.get('product_acceptance') is not False:
+              raise SystemExit('audit result differs')
+          print(json.dumps(result, sort_keys=True))
+          PY
+      - name: Save non-sensitive audit result
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: m6-coverage6-independent-audit
+          path: ${{ runner.temp }}/coverage6-independent-audit.json
+          if-no-files-found: error
+          retention-days: 30
