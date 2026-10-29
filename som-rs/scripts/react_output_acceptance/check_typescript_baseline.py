@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import pathlib
 import re
 import sys
@@ -64,6 +65,19 @@ def post(url: str, route: str, body: str) -> tuple[int, bytes]:
     except urllib.error.HTTPError as error:
         with error:
             return error.code, error.read()
+
+
+def native_digest_context():
+    if not os.environ.get('SOM_FULL_PRODUCT_CONTEXT'):
+        return None
+    import full_product_context as hosted
+    ctx = hosted.context()
+    if ctx.qa_mode != 'native-qa-v1':
+        return None
+    path = 'som-rs/scripts/hosted_readiness/typescript_native_digests.py'
+    if path not in ctx.qa_source_authority['admitted_repository_python_sources']:
+        raise ValueError('native baseline digest adapter is outside exact source admission')
+    return ctx, ctx.module('typescript_regression_native_digests', path)
 
 
 def without_allowed(reply: Any) -> Any:
@@ -128,7 +142,17 @@ def check_request(qa: str, baseline: str, body: str, out: pathlib.Path,
     except (ValueError, UnicodeDecodeError) as error:
         problems.append(f"invalid compile JSON: {error}")
         return problems, record
-    if compact(without_allowed(qa_reply)) != compact(without_allowed(base_reply)):
+    native = native_digest_context()
+    qa_comparison, base_comparison = qa_reply, base_reply
+    if native is not None and qa_status == base_status == 200:
+        try:
+            record['native_digest_proof'] = native[1].compare(native[0], 'typescript', base_raw, qa_raw)
+            qa_comparison, base_comparison = json.loads(compact(qa_reply)), json.loads(compact(base_reply))
+            qa_comparison['bundle']['assets']['formatter']['sha256'] = None
+            base_comparison['bundle']['assets']['formatter']['sha256'] = None
+        except ValueError as error:
+            problems.append('native source digest proof refused: ' + str(error))
+    if compact(without_allowed(qa_comparison)) != compact(without_allowed(base_comparison)):
         problems.append("compile replies differ outside the allowed members")
     if qa_status != 200 or base_status != 200:
         problems.append("compile did not return a bundle")
@@ -262,6 +286,11 @@ def main() -> int:
         "seconds": round(time.monotonic() - started, 3),
         "cases": rows,
     }
+    native = native_digest_context()
+    if native is not None:
+        report['historical_allowed_differences'] = report['allowed_differences']
+        report['allowed_differences'] = list(native[1].LEAVES)
+        report['comparison_mode'] = 'native-qa-v1:exact-source-owned-digest-SHA-leaves'
     (args.out / "report.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps({key: report[key] for key in
                       ("status", "total", "passed_count", "failed_count", "not_run_count", "problems")}))

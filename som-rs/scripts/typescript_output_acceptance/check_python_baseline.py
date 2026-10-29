@@ -17,6 +17,7 @@ import argparse
 import concurrent.futures
 import hashlib
 import json
+import os
 import pathlib
 import re
 import sys
@@ -341,6 +342,19 @@ def _empty_row(item: dict[str, Any], variant: str, status: str, reason: str | No
     }
 
 
+def native_digest_context():
+    if not os.environ.get('SOM_FULL_PRODUCT_CONTEXT'):
+        return None
+    import full_product_context as hosted
+    ctx = hosted.context()
+    if ctx.qa_mode != 'native-qa-v1':
+        return None
+    path = 'som-rs/scripts/hosted_readiness/typescript_native_digests.py'
+    if path not in ctx.qa_source_authority['admitted_repository_python_sources']:
+        raise ValueError('native Python baseline digest adapter is outside exact source admission')
+    return ctx, ctx.module('typescript_regression_native_digests', path)
+
+
 def evaluate_variant(
     qa_url: str,
     baseline_url: str,
@@ -417,11 +431,19 @@ def evaluate_variant(
     row["baseline"]["compile_status"] = base_comp_status
     row["baseline"]["compile_response_sha256"] = base_comp_sha
 
+    native = native_digest_context()
     compile_passed = qa_comp_status == base_comp_status and qa_comp_raw == base_comp_raw
+    if native is not None and qa_comp_status == base_comp_status == 200:
+        try:
+            row['native_digest_proof'] = native[1].compare(native[0], 'python', base_comp_raw, qa_comp_raw)
+            compile_passed = True
+        except (ValueError, KeyError, TypeError) as error:
+            compile_passed = False
+            reasons.append('native Python source digest proof refused: ' + str(error))
     row["compile"]["passed"] = compile_passed
     if qa_comp_status != base_comp_status:
         reasons.append(f"compile HTTP status differs: qa={qa_comp_status}, baseline={base_comp_status}")
-    elif qa_comp_raw != base_comp_raw:
+    elif not compile_passed and not reasons:
         reasons.append("compile response bytes differ")
 
     assemble_passed = False
