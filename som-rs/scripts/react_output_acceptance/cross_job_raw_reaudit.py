@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Recheck bounded Mac raw evidence on a new GH job without impersonating the old job.
 
-This draft does not implement the original twelve-step audit remapping or final
-product acceptance. All recorded PID and inode values describe the source job.
+The original twelve-step audit runs only when the checked-out workspace and
+restored output retain the same logical paths. Recorded PIDs and inodes describe
+the source job. This tool does not issue product acceptance.
 """
 import argparse
 import json
@@ -18,6 +19,7 @@ import audit_mac_parity as parity
 import audit_candidate_owner as owner
 import audit_baseline_cleanup as baseline
 import external_acceptance_readback as readback
+import post_acceptance_audit as post
 
 REPO=HERE.parents[2]
 
@@ -47,7 +49,7 @@ def check_cross_source(lifecycle,raw,paths,revision):
     need(manifest.get('argv')==expected and manifest.get('exit_code')==0)
     return {'source_revision':revision,'source_files':len(sources),'source_job_values':'recorded-not-live'}
 
-def recheck(restored,config,provenance,revision):
+def recheck(restored,config,provenance,revision,origin_run_id=None,origin_attempt=None):
     paths=old_paths(restored,revision);run=restored/'run';candidate=restored/'candidate';rust=run/'rust006-extra'
     lifecycle=run/'rust006-parity-lifecycle';raw=run/'rust006-parity-http';parity_out=run/'rust006-parity'
     public=REPO/'.local/rust-compiler-goal/acceptance/public-products-003b'
@@ -71,9 +73,16 @@ def recheck(restored,config,provenance,revision):
     check('rust-postgres-observed-stop',lambda:extra.audit_cluster(rust/'cluster-lifecycle',paths['out']/'run/rust006-extra/cluster-work'))
     check('candidate-observed-cleanup',lambda:owner.audit(restored,candidate,paths['candidate'],evidence/'candidate-owner.json'))
     check('baseline-observed-cleanup',lambda:baseline.audit(restored,REPO/'.local/m6-hosted/baseline',original_frozen=paths['baseline'],receipt_path=evidence/'baseline-cleanup.json'))
-    rows.append({'id':'original-12-step-recheck','status':'unverified','reason':'cross-job path mapping not implemented'})
-    rows.append({'id':'rust-command-records-recheck','status':'unverified','reason':'cross-job path mapping not implemented'})
-    return {'version':'som.m6-cross-job-raw-reaudit.draft.v1','status':'incomplete','rows':rows,
+    def original_gate():
+        # audit130 compares absolute recorded paths in JSON and raw OS output.
+        # Do not rewrite those bytes. Require the reviewer workspace and restore
+        # root to have the exact original logical path; otherwise refuse.
+        need(REPO==paths['repo'] and restored==paths['out'])
+        return post.audit_original_gate(REPO,restored,candidate,run,revision)
+    check('original-12-step-recheck',original_gate)
+    check('rust-command-records-recheck',lambda:extra.audit_command_records(rust,candidate,public,legacy,parity_out/'report-parity.json',origin_repo=paths['repo'],origin_out=paths['out'],origin_run_id=origin_run_id,origin_attempt=origin_attempt))
+    status='raw-checks-complete' if all(row['status']=='passed' for row in rows) else 'incomplete'
+    return {'version':'som.m6-cross-job-raw-reaudit.draft.v1','status':status,'rows':rows,
             'origin_source_revision':revision,'origin_processes':'historical-observations-only',
             'current_runner':'independent-reviewer','product_acceptance_passed':False}
 
@@ -90,10 +99,10 @@ def main():
         artifact=readback.gh_api(prefix+'artifacts/'+a.artifact_id)
         need(gh_run.get('id')==int(a.run_id) and artifact.get('id')==int(a.artifact_id))
         authority=readback.check(a.archive,a.restored,gh_run,jobs,artifact,a.head)
-        result=recheck(a.restored,a.approved_input_config,a.provenance_root,a.head);result['origin_authority']=authority
+        result=recheck(a.restored,a.approved_input_config,a.provenance_root,a.head,gh_run['id'],gh_run['run_attempt']);result['origin_authority']=authority
     except Exception as exc:result={'version':'som.m6-cross-job-raw-reaudit.draft.v1','status':'incomplete',
                                     'product_acceptance_passed':False,'error_type':type(exc).__name__}
     with a.out.open('x') as stream:json.dump(result,stream,sort_keys=True,indent=2);stream.write('\n')
     print(json.dumps({'status':result['status'],'product_acceptance_passed':False}))
-    return 1
+    return 0 if result['status']=='raw-checks-complete' else 1
 if __name__=='__main__':raise SystemExit(main())

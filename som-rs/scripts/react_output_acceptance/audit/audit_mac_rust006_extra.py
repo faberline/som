@@ -623,7 +623,7 @@ def audit_candidate(run, candidate, expected_revision, original_candidate=None):
 
 
 
-def audit_command_records(run, candidate, public, legacy, parity):
+def audit_command_records(run, candidate, public, legacy, parity, *, origin_repo=None, origin_out=None, origin_run_id=None, origin_attempt=None):
     import subprocess
     report=json_file(run/'collector.json')
     revision=report['candidate_revision']
@@ -656,23 +656,32 @@ def audit_command_records(run, candidate, public, legacy, parity):
          and runner.get('RUNNER_ENVIRONMENT')=='github-hosted' and runner.get('RUNNER_OS')=='macOS'
          and runner.get('RUNNER_ARCH')=='ARM64' and all(type(runner.get(k)) is str and runner[k].isdigit()
              for k in ('GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT')), 'runner identity differs')
-    python=REPO/'som-rs/runtime/acceptance-m3-venv/bin/python'
-    script=REPO/'som-rs/scripts/react_output_acceptance'
+    if origin_repo is None:
+        origin_repo=REPO;origin_run=run;origin_candidate=candidate;origin_public=public;origin_legacy=legacy;origin_parity=parity
+    else:
+        need(origin_out is not None and type(origin_run_id) is int and type(origin_attempt) is int, 'original job authority missing')
+        need(runner['GITHUB_RUN_ID']==str(origin_run_id) and runner['GITHUB_RUN_ATTEMPT']==str(origin_attempt), 'original runner authority differs')
+        origin_run=origin_out/'run/rust006-extra';origin_candidate=origin_out/'candidate'
+        origin_public=origin_repo/'.local/rust-compiler-goal/acceptance/public-products-003b'
+        origin_legacy=origin_repo/'.local/rust-compiler-goal/acceptance/legacy544/run-005'
+        origin_parity=origin_out/'run/rust006-parity/report-parity.json'
+    python=origin_repo/'som-rs/runtime/acceptance-m3-venv/bin/python'
+    script=origin_repo/'som-rs/scripts/react_output_acceptance'
     expected=[
-        [python,script/'record_rust006_http.py','--out',run/'raw-python-replay','--',
-         REPO/'som-rs/scripts/rust_output_acceptance/python_replay.py','--asset-break','--base-url',QA,
-         '--public-run',public,'--legacy-run',legacy,'--out',run/'python-replay.json'],
-        [python,script/'record_rust006_http.py','--out',run/'raw-validate-cases','--',
-         REPO/'som-rs/tests/rust-output-v1/validate_cases.py','--base-url',QA,'--out',run/'validate-cases.json'],
-        [python,script/'mac_rust006_cluster.py','--raw-out',run/'raw-rust-refusals',
-         '--lifecycle',run/'cluster-lifecycle','--cluster-root',run/'cluster-work','--','--qa',QA,
-         '--work',run/'rust-products-work','--target-dir',run/'rust-target','--out',run/'rust-products.json',
-         '--no-gates','--refusals','phase2','--parity',parity]]
+        [python,script/'record_rust006_http.py','--out',origin_run/'raw-python-replay','--',
+         origin_repo/'som-rs/scripts/rust_output_acceptance/python_replay.py','--asset-break','--base-url',QA,
+         '--public-run',origin_public,'--legacy-run',origin_legacy,'--out',origin_run/'python-replay.json'],
+        [python,script/'record_rust006_http.py','--out',origin_run/'raw-validate-cases','--',
+         origin_repo/'som-rs/tests/rust-output-v1/validate_cases.py','--base-url',QA,'--out',origin_run/'validate-cases.json'],
+        [python,script/'mac_rust006_cluster.py','--raw-out',origin_run/'raw-rust-refusals',
+         '--lifecycle',origin_run/'cluster-lifecycle','--cluster-root',origin_run/'cluster-work','--','--qa',QA,
+         '--work',origin_run/'rust-products-work','--target-dir',origin_run/'rust-target','--out',origin_run/'rust-products.json',
+         '--no-gates','--refusals','phase2','--parity',origin_parity]]
     names=('python-replay','validate-cases','rust-refusals')
     rows=report.get('rows')
     need(type(rows) is list and len(rows)==3 and report.get('execution_complete') is True
          and report.get('product_acceptance_passed') is False,'command set incomplete')
-    need(report.get('candidate_dir')==str(candidate) and report.get('parity_sha256')==sha(read(parity))
+    need(report.get('candidate_dir')==str(origin_candidate) and report.get('parity_sha256')==sha(read(parity))
          and report.get('public_result_sha256')==sha(read(public/'result.json'))
          and report.get('legacy_result_sha256')==sha(read(legacy/'result.json')), 'command inputs differ')
     env_keys={'HOME','PATH','TMPDIR','LANG','LC_ALL','LC_CTYPE','CI','SDKROOT','DEVELOPER_DIR','CARGO_HOME',
@@ -680,7 +689,7 @@ def audit_command_records(run, candidate, public, legacy, parity):
               'CARGO_NET_OFFLINE','PYTHONDONTWRITEBYTECODE','SOM_TS_PRETTIER'}
     for index,(row,name,argv) in enumerate(zip(rows,names,expected),1):
         need(type(row) is dict and row.get('index')==index and row.get('name')==name
-             and row.get('argv')==[str(x) for x in argv] and row.get('cwd')==str(REPO)
+             and row.get('argv')==[str(x) for x in argv] and row.get('cwd')==str(origin_repo)
              and row.get('state')=='completed' and type(row.get('pid')) is int and row['pid']>1
              and type(row.get('exit_code')) is int and row['exit_code']==0
              and type(row.get('wait_result')) is int and row['wait_result']==0, 'direct command wait differs')

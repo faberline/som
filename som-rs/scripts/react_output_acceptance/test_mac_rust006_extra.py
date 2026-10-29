@@ -167,7 +167,7 @@ class CrossJobRawTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp).resolve();old={'repo':Path('/old/repo'),'out':Path('/old/repo/.local/m6-hosted/acceptance'),
                 'candidate':Path('/old/repo/.local/m6-hosted/acceptance/candidate'),'baseline':Path('/old/repo/.local/m6-hosted/baseline')}
-            names=('approved_inputs','audit_candidate','audit_replay','audit_cases','audit_refusals','audit_cluster')
+            names=('approved_inputs','audit_candidate','audit_replay','audit_cases','audit_refusals','audit_cluster','audit_command_records')
             with mock.patch.object(cross,'old_paths',return_value=old),mock.patch.object(cross,'check_cross_source',return_value={}), \
                  mock.patch.multiple(cross.extra,**{name:mock.DEFAULT for name in names}) as mocks, \
                  mock.patch.object(cross.parity,'audit_parity_postgres',return_value={}),mock.patch.object(cross.parity,'audit_wire',return_value={}) as wire, \
@@ -177,6 +177,11 @@ class CrossJobRawTests(unittest.TestCase):
                 self.assertFalse(result['product_acceptance_passed']);self.assertEqual(result['status'],'incomplete')
                 self.assertEqual(wire.call_args.args[-1],old['out']/'rust006-parity-target/debug/som_app')
                 self.assertTrue(any(row['id']=='original-12-step-recheck' and row['status']=='unverified' for row in result['rows']))
+                with mock.patch.object(cross,'REPO',old['repo']),mock.patch.object(cross.post,'audit_original_gate',return_value={'steps':12}):
+                    result=cross.recheck(old['out'],root/'config',root,'a'*40,44,1)
+                self.assertTrue(any(row['id']=='original-12-step-recheck' and row['status']=='passed' for row in result['rows']))
+                self.assertEqual(result['status'],'raw-checks-complete')
+                self.assertFalse(result['product_acceptance_passed'])
 
 
 class ProductArtifactBindingTests(unittest.TestCase):
@@ -620,6 +625,23 @@ class CommandRawAuditTests(unittest.TestCase):
                 raise AssertionError(argv)
             with mock.patch.object(audit,'REPO',root), mock.patch('subprocess.check_output',side_effect=fake_git):
                 self.assertEqual(audit.audit_command_records(run,candidate,public,legacy,parity)['commands'],3)
+                oldrepo=Path('/historical/som');oldout=oldrepo/'.local/m6-hosted/acceptance'
+                mapping={str(run):str(oldout/'run/rust006-extra'),str(candidate):str(oldout/'candidate'),
+                         str(public):str(oldrepo/'.local/rust-compiler-goal/acceptance/public-products-003b'),
+                         str(legacy):str(oldrepo/'.local/rust-compiler-goal/acceptance/legacy544/run-005'),
+                         str(parity):str(oldout/'run/rust006-parity/report-parity.json'),str(root):str(oldrepo)}
+                def remap(value):
+                    for current,old in mapping.items():
+                        if value==current or value.startswith(current+'/'):return old+value[len(current):]
+                    return value
+                original=json.loads(json.dumps(report));mapped=json.loads(json.dumps(report))
+                mapped['candidate_dir']=remap(mapped['candidate_dir'])
+                for item in mapped['rows']:
+                    item['argv']=[remap(value) for value in item['argv']];item['cwd']=str(oldrepo)
+                (run/'collector.json').write_text(json.dumps(mapped))
+                self.assertEqual(audit.audit_command_records(run,candidate,public,legacy,parity,origin_repo=oldrepo,origin_out=oldout,origin_run_id=123,origin_attempt=1)['commands'],3)
+                with self.assertRaises(ValueError):audit.audit_command_records(run,candidate,public,legacy,parity,origin_repo=oldrepo,origin_out=oldout,origin_run_id=123,origin_attempt=2)
+                (run/'collector.json').write_text(json.dumps(original))
                 (run/'logs/python-replay.stdout').write_bytes(b'tampered')
                 with self.assertRaises(ValueError):audit.audit_command_records(run,candidate,public,legacy,parity)
 
