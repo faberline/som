@@ -226,7 +226,7 @@
     "som-rs/scripts/hosted_readiness/run_full_products.py": "66461c0beeabf3ff7186d9923fafe1e31c7076d2c9b929f14faac01acfcd8303",
     "som-rs/scripts/hosted_readiness/product_runtime/consume_cargo.py": "78d57b5bad258cced8fd7b0776b1ccc01b599942d8a59ed95c8caa8babfc156e",
     "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py": "554830ac8efad099a6b8d77edec5c2b075813aa0365d43d9984c36ea1cc9d7f9",
-    "som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py": "662501e5dbc8f84954bc5020c28e7d63069417077264a5b43104d334b5ac0968"
+    "som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py": "cfb7c594e35b17f672969a56b711dec58097100901a73a412c784ef21aa5d2c9"
   },
   "inventories": [
     {

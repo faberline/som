@@ -246,6 +246,27 @@ class CarrierProvenanceTests(unittest.TestCase):
                     path.write_bytes(original)
                     path.chmod(mode)
 
+    def test_long_license_paths_roundtrip_without_pax_headers(self):
+        path = self.root / 'native/licenses/node' / ('component-' + 'x' * 80) / 'LICENSE'
+        path.parent.mkdir(parents=True)
+        path.write_bytes(b'Synthetic public license; never executed.\n')
+        self.assertGreater(len(path.relative_to(self.root).as_posix()), 100)
+        record = carrier.pack(self.args)
+        with carrier.tarfile.open(self.args.out / 'candidate.tar.gz', 'r:gz') as archive:
+            self.assertTrue(all(not member.pax_headers for member in archive))
+        restored = carrier.restore(self.args.out, self.root / 'restored', self.manifest, self.args.candidate_revision)
+        self.assertEqual(restored['identity'], self.proof['initial_identities'])
+        self.assertEqual((self.root / 'restored' / path.relative_to(self.root)).read_bytes(), path.read_bytes())
+        self.assertEqual(record['files'][path.relative_to(self.root).as_posix()]['sha256'], carrier.digest(path.read_bytes()))
+
+    def test_too_long_paths_fail_instead_of_selecting_extended_headers(self):
+        path = self.root / 'native/licenses' / ('a' * 100) / ('b' * 100) / ('c' * 100) / 'LICENSE'
+        path.parent.mkdir(parents=True)
+        path.write_bytes(b'Synthetic public license.\n')
+        with self.assertRaises(ValueError):
+            carrier.pack(self.args)
+        self.assertFalse((self.args.out / 'carrier.json').exists())
+
 
 class Phase2ResultTests(unittest.TestCase):
     def setUp(self):

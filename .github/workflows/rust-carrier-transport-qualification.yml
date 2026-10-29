@@ -1,0 +1,276 @@
+name: Exact recorded carrier USTAR transport qualification
+
+on:
+  push:
+    branches:
+      - codex/m12-carrier-ustar-qualification
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: rust-carrier-transport-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  transport-fixtures:
+    name: Run all 34 carrier and full-product fixtures on GitHub
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Run exact unchanged 32 fixtures and two USTAR integrity cases
+        run: |
+          python3 -I -S -B som-rs/scripts/hosted_readiness/test_run_full_products.py 2>&1 | tee transport-fixtures.log
+      - name: Preserve all fixture output
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: carrier-transport-fixtures
+          path: transport-fixtures.log
+          if-no-files-found: error
+          retention-days: 30
+
+  recorded-candidate-carrier:
+    name: Rebuild exact f59 bytes, pack USTAR and restore the real carrier
+    needs: transport-fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      actions: read
+    env:
+      RUSTUP_TOOLCHAIN: 1.96.1
+      CARGO_TERM_COLOR: never
+      CARGO_BUILD_JOBS: 2
+      RUST_BACKTRACE: 1
+      PYTHONDONTWRITEBYTECODE: "1"
+      SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
+      HELPER_REVISION: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Fetch the exact original compiler source as metadata
+        run: git fetch --no-tags --depth=1 origin f59e28d910ff4adb16e3becfdc82bd2978ca84fa
+      - name: Create the narrow raw Git source launcher
+        run: |
+          umask 077
+          set -o noclobber
+          cat > "$RUNNER_TEMP/som-carrier-bound-source.py" <<'PY'
+          import os, pathlib, re, stat, subprocess, sys, types
+          repo, revision, name = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+          assert repo.is_absolute() and re.fullmatch('[0-9a-f]{40}', revision)
+          assert name in {'som-rs/scripts/hosted_readiness/dependency_candidate.py',
+                          'som-rs/scripts/hosted_readiness/provision_native.py',
+                          'som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py'}
+          def git(*args):
+              return subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(repo), *args],
+                                             stderr=subprocess.DEVNULL)
+          assert git('rev-parse', '--verify', 'HEAD^{commit}').decode().strip() == revision
+          entry = git('ls-tree', '-z', revision, '--', name)
+          assert entry.count(b'\0') == 1 and entry.endswith(b'\t' + name.encode() + b'\0')
+          assert entry.startswith((b'100644 blob ', b'100755 blob '))
+          path = repo / name
+          assert not any(part.is_symlink() for part in (path, *path.parents))
+          with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), 'rb') as stream:
+              info = os.fstat(stream.fileno())
+              assert stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_size <= 2**20
+              body = stream.read(2**20 + 1)
+          assert len(body) <= 2**20 and body == git('cat-file', 'blob', revision + ':' + name)
+          module = types.ModuleType('__main__')
+          module.__file__, module.__package__, module.__cached__ = str(path), '', None
+          sys.modules['__main__'], sys.argv = module, [str(path), *sys.argv[4:]]
+          exec(compile(body, str(path), 'exec', dont_inherit=True), module.__dict__)
+          PY
+      - name: Restore the complete recorded compiler and assembly proof
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: "40805208879"
+          artifact-ids: "12868189241"
+          github-token: ${{ github.token }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/som-carrier-assembly-proof
+      - name: Require all original compiler inputs before building
+        env:
+          HELPER_REVISION: ${{ github.sha }}
+        run: |
+          python3 -I -S -B "$RUNNER_TEMP/som-carrier-bound-source.py" \
+            "$GITHUB_WORKSPACE" "$HELPER_REVISION" \
+            som-rs/scripts/hosted_readiness/dependency_candidate.py verify \
+            --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" \
+            --candidate-revision f59e28d910ff4adb16e3becfdc82bd2978ca84fa \
+            --assembly-root "$RUNNER_TEMP/som-carrier-assembly-proof/_temp/som-unsealed-native-compile"
+          printf 'CARGO_TARGET_DIR=%s/som-experimental-cargo-target\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Install the original native compiler toolchain
+        run: |
+          rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal --component rustfmt 2>&1 | tee carrier-tools.log
+          rustc -vV | tee -a carrier-tools.log
+          cargo -vV | tee -a carrier-tools.log
+          rustfmt --version | tee -a carrier-tools.log
+          sha256sum "$(rustup which rustc)" "$(rustup which cargo)" "$(rustup which rustfmt)" | tee -a carrier-tools.log
+      - name: Fetch only the original locked compiler dependencies
+        run: |
+          cargo fetch --locked --manifest-path som-rs/Cargo.toml 2>&1 | tee carrier-fetch.log
+          cargo fetch --locked --manifest-path som-rs/som-targets/Cargo.toml 2>&1 | tee -a carrier-fetch.log
+      - name: Provision the original verified native formatters
+        run: |
+          python3 -I -S -B "$RUNNER_TEMP/som-carrier-bound-source.py" \
+            "$GITHUB_WORKSPACE" "$HELPER_REVISION" \
+            som-rs/scripts/hosted_readiness/provision_native.py \
+            --manifest som-rs/contracts/native-tools-v1/artifacts.json \
+            --out "$RUNNER_TEMP/som-native-tools" \
+            --rustfmt "$(rustup which rustfmt)" 2>&1 | tee carrier-native.log
+          cat "$RUNNER_TEMP/som-native-tools/github.env" >> "$GITHUB_ENV"
+      - name: Recreate the original compiler asset files
+        run: |
+          cargo run --locked --offline --manifest-path som-rs/Cargo.toml \
+            --bin som-compiler-assets -- \
+            --destination som-rs/compiler-assets/current \
+            --formatter "$SOM_RUFF" 2>&1 | tee carrier-assets.log
+      - name: Build once and record the actual new binary hash
+        run: |
+          cargo build --locked --offline --manifest-path som-rs/som-targets/Cargo.toml --bin som 2>&1 | tee carrier-build.log
+          sha256sum "$CARGO_TARGET_DIR/debug/som" | tee -a carrier-build.log
+      - name: Copy the exact built inputs into an owned single-link staging directory
+        run: |
+          python3 -I -S -B - "$CARGO_TARGET_DIR/debug/som" "$SOM_RUSTFMT" "$RUNNER_TEMP" <<'PY'
+          import hashlib, json, os, pathlib, stat, sys
+          temporary = pathlib.Path(sys.argv[3])
+          root = temporary / 'som-carrier-regular-inputs'
+          assert temporary.is_absolute() and not any(p.is_symlink() for p in (root, *root.parents))
+          root.mkdir(mode=0o700)
+          proof = json.loads((temporary / 'som-carrier-assembly-proof/_temp/som-unsealed-native-compile/manifest.json').read_bytes())
+          expected = {'binary': proof['initial_identities']['binary'],
+                      'rustfmt': proof['initial_identities']['tools']['SOM_RUSTFMT']}
+          record = {'version': 'som.carrier-single-link-staging.v1', 'files': {}, 'product_acceptance_passed': False}
+          fields = ('st_dev', 'st_ino', 'st_nlink', 'st_mode', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
+          for name, argument in zip(('binary', 'rustfmt'), sys.argv[1:3]):
+              source = pathlib.Path(argument)
+              assert source.is_absolute() and not any(p.is_symlink() for p in (source, *source.parents))
+              with os.fdopen(os.open(source, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), 'rb') as stream:
+                  before = os.fstat(stream.fileno())
+                  assert stat.S_ISREG(before.st_mode) and 0 < before.st_nlink and before.st_size <= 300 * 1024**2
+                  body = stream.read(300 * 1024**2 + 1)
+                  identity = {'sha256': hashlib.sha256(body).hexdigest(), 'size': len(body), 'mode': stat.S_IMODE(before.st_mode)}
+                  print(json.dumps({'source': str(source), 'nlink': before.st_nlink, **identity}), flush=True)
+                  assert identity == {key: expected[name][key] for key in identity}
+                  destination = root / name
+                  with destination.open('xb') as output:
+                      output.write(body)
+                      os.fchmod(output.fileno(), identity['mode'])
+                      output.flush()
+                      os.fsync(output.fileno())
+                  after = os.fstat(stream.fileno())
+                  assert all(getattr(before, key) == getattr(after, key) for key in fields)
+                  assert all(getattr(after, key) == getattr(source.lstat(), key) for key in fields)
+                  stream.seek(0)
+                  assert stream.read(300 * 1024**2 + 1) == body
+              installed = destination.stat()
+              assert stat.S_ISREG(installed.st_mode) and installed.st_nlink == 1
+              assert installed.st_size == identity['size'] and stat.S_IMODE(installed.st_mode) == identity['mode']
+              assert hashlib.sha256(destination.read_bytes()).hexdigest() == identity['sha256']
+              record['files'][name] = {'source': str(source), 'source_nlink': before.st_nlink,
+                                      'staged': str(destination), 'staged_nlink': installed.st_nlink, **identity}
+          (root / 'receipt.json').write_text(json.dumps(record, sort_keys=True) + '\n')
+          PY
+      - name: Recheck source and require exact recorded binary, assets and tools
+        env:
+          HELPER_REVISION: ${{ github.sha }}
+        run: |
+          python3 -I -S -B "$RUNNER_TEMP/som-carrier-bound-source.py" \
+            "$GITHUB_WORKSPACE" "$HELPER_REVISION" \
+            som-rs/scripts/hosted_readiness/dependency_candidate.py verify \
+            --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" \
+            --candidate-revision f59e28d910ff4adb16e3becfdc82bd2978ca84fa \
+            --assembly-root "$RUNNER_TEMP/som-carrier-assembly-proof/_temp/som-unsealed-native-compile"
+          python3 -I -S -B "$RUNNER_TEMP/som-carrier-bound-source.py" \
+            "$GITHUB_WORKSPACE" "$HELPER_REVISION" \
+            som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py \
+            --byte-identical-rebuild \
+            --candidate-revision f59e28d910ff4adb16e3becfdc82bd2978ca84fa \
+            --compile-manifest "$RUNNER_TEMP/som-carrier-assembly-proof/_temp/som-unsealed-native-compile/manifest.json" \
+            --binary "$RUNNER_TEMP/som-carrier-regular-inputs/binary" \
+            --assets "$GITHUB_WORKSPACE/som-rs/compiler-assets/current" \
+            --native "$RUNNER_TEMP/som-native-tools" --rustfmt "$RUNNER_TEMP/som-carrier-regular-inputs/rustfmt" \
+            --out "$RUNNER_TEMP/som-tested-candidate-carrier"
+      - name: Restore the actual packed carrier and verify every resulting byte
+        run: |
+          python3 -I -S -B - "$GITHUB_WORKSPACE" "$HELPER_REVISION" "$RUNNER_TEMP" <<'PYCODE'
+          import hashlib, json, os, pathlib, re, stat, subprocess, sys, types
+          repo, revision, temporary = pathlib.Path(sys.argv[1]), sys.argv[2], pathlib.Path(sys.argv[3])
+          name = 'som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py'
+          def git(*args):
+              return subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(repo), *args], stderr=subprocess.DEVNULL)
+          assert re.fullmatch('[0-9a-f]{40}', revision)
+          assert git('rev-parse', '--verify', 'HEAD^{commit}').decode().strip() == revision
+          entry = git('ls-tree', '-z', revision, '--', name)
+          assert entry.count(b'\0') == 1 and entry.endswith(b'\t' + name.encode() + b'\0')
+          assert entry.startswith((b'100644 blob ', b'100755 blob '))
+          path = repo / name
+          assert not any(part.is_symlink() for part in (path, *path.parents))
+          with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), 'rb') as stream:
+              info = os.fstat(stream.fileno())
+              assert stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_size <= 2**20
+              body = stream.read(2**20 + 1)
+          assert len(body) <= 2**20 and body == git('cat-file', 'blob', revision + ':' + name)
+          module = types.ModuleType('bound_carrier_restore')
+          module.__file__, module.__package__, module.__cached__ = str(path), '', None
+          exec(compile(body, str(path), 'exec', dont_inherit=True), module.__dict__)
+          carrier = temporary / 'som-tested-candidate-carrier'
+          proof = temporary / 'som-carrier-assembly-proof/_temp/som-unsealed-native-compile/manifest.json'
+          before = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in carrier.iterdir()}
+          restored = module.restore(carrier, temporary / 'som-restored-ustar-candidate', proof,
+                                    'f59e28d910ff4adb16e3becfdc82bd2978ca84fa')
+          receipt = json.loads((carrier / 'carrier.json').read_bytes())
+          assert receipt['compiler_rebuilt'] is True
+          assert receipt['github']['GITHUB_SHA'] == revision
+          assert receipt['github']['GITHUB_RUN_ID'] == os.environ['GITHUB_RUN_ID']
+          assert receipt['github']['GITHUB_RUN_ATTEMPT'] == os.environ['GITHUB_RUN_ATTEMPT']
+          assert module.tree(restored['root']) == receipt['files']
+          assert before == {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in carrier.iterdir()}
+          assert path.read_bytes() == body
+          assert git('rev-parse', '--verify', 'HEAD^{commit}').decode().strip() == revision
+          report = {'version': 'som.actual-ustar-carrier-roundtrip.v1',
+                    'helper_revision': revision, 'candidate_revision': receipt['candidate_revision'],
+                    'compiler_rebuilt': True, 'origin_role': receipt['origin_role'],
+                    'carrier_files_sha256': before, 'restore_source_sha256': hashlib.sha256(body).hexdigest(),
+                    'restored_files': module.tree(restored['root']), 'tested_identities': restored['identity'],
+                    'actual_pack_restore_passed': True, 'product_acceptance_passed': False}
+          (temporary / 'som-ustar-restore-roundtrip.json').write_text(json.dumps(report, sort_keys=True) + '\n')
+          print(json.dumps({'actual_pack_restore_passed': True, 'restored_files': len(report['restored_files']),
+                            'compiler_rebuilt': True, 'product_acceptance_passed': False}))
+          PYCODE
+      - name: Verify unchanged dependency locks
+        if: always()
+        run: git diff --exit-code -- som-rs/Cargo.lock som-rs/som-targets/Cargo.lock
+      - name: Preserve the exact recovered carrier and all build evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: recorded-f59-ustar-roundtrip
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            carrier-tools.log
+            carrier-fetch.log
+            carrier-native.log
+            carrier-assets.log
+            carrier-build.log
+            ${{ runner.temp }}/som-carrier-regular-inputs/receipt.json
+            ${{ runner.temp }}/som-tested-candidate-carrier
+
+            ${{ runner.temp }}/som-ustar-restore-roundtrip.json
+            ${{ runner.temp }}/som-restored-ustar-candidate
