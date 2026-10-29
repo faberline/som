@@ -35,6 +35,20 @@ SELF = BASE + 'run_candidate_semantic_gates.py'
 CONTEXT = BASE + 'product_runtime/full_product_context.py'
 AUTHORITY = BASE + 'native_qa_authority.py'
 VERSION = 'som.same-candidate-semantic-gates.v1'
+_NATIVE_SEMANTIC_VARIANTS = {
+    '__main__': 'semantic.entry',
+    '_som_graph_semantic_gate_data': 'semantic.graph',
+    '_som_full_current_gate_semantic': 'semantic.common-runtime',
+    '_som_current_gate_semantic_verify': 'semantic.common-verify',
+    '_som_owner_postclose_semantic': 'semantic.common-postclose',
+}
+
+
+def _native_semantic_prefix():
+    require(type(__name__) is str and __name__ in _NATIVE_SEMANTIC_VARIANTS,
+            'unlisted native semantic namespace')
+    return _NATIVE_SEMANTIC_VARIANTS[__name__]
+
 
 
 def require(condition, message):
@@ -87,7 +101,58 @@ def save(path, value):
         stream.write(canonical(value) + b'\n')
 
 
-def bootstrap(repo, revision):
+
+def _native_controls(repo=None, revision=None, candidate=None):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    if revision is not None:
+        require(revision == controls.helper_revision == candidate == controls.candidate_revision,
+                'active caller helper/candidate identity differs')
+    if repo is not None:
+        require(Path(repo).absolute() == controls.root, 'active caller repository differs')
+    return controls
+
+
+def _native_secondary(primary, phase, secondary):
+    try:
+        previous = BaseException.__getattribute__(primary, '__som_native_caller_secondary_errors__')
+    except AttributeError:
+        previous = ()
+    BaseException.__setattr__(primary, '__som_native_caller_secondary_errors__',
+                             (*previous, {'phase': phase, 'exception': secondary}))
+
+
+@contextmanager
+def _borrowed_native(sources):
+    lease = _native_controls(sources.root, sources.revision, sources.revision).borrow()
+    primary = None
+    try:
+        lease.verify_installed()
+        yield lease
+        sources.verify()
+    except BaseException as error:
+        primary = error
+        raise
+    finally:
+        errors = []
+        for phase, operation in (('source-postcheck', sources.verify),
+                                 ('controls-postcheck', lease.verify_installed),
+                                 ('borrow-close', lease.close)):
+            try:
+                operation()
+            except BaseException as secondary:
+                errors.append((phase, secondary))
+        if errors:
+            if primary is None:
+                phase, primary = errors.pop(0)
+                for phase, secondary in errors:
+                    _native_secondary(primary, phase, secondary)
+                raise primary
+            for phase, secondary in errors:
+                _native_secondary(primary, phase, secondary)
+
+
+def bootstrap(repo, revision, *, native=False, candidate=None):
     require(re.fullmatch('[0-9a-f]{40}', revision) is not None, 'full helper revision required')
     def git(*args):
         return subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(repo), *args],
@@ -100,6 +165,13 @@ def bootstrap(repo, revision):
                 and entry.startswith((b'100644 blob ', b'100755 blob ')), 'regular committed bootstrap required')
         require(read(repo / name) == git('cat-file', 'blob', revision + ':' + name), 'bootstrap bytes differ from Git')
     raw = read(repo / CONTEXT)
+    if native:
+        controls = _native_controls(repo, revision, candidate)
+        require(controls.role_sources['runtime.context'] == CONTEXT, 'fixed semantic Context source differs')
+        module = controls.load_module('runtime.context')
+        require(module.__file__ == str(repo / CONTEXT) and module.__som_raw_sha256__ == sha(raw),
+                'semantic Context bytes differ from Git')
+        return module
     require('full_product_context' not in sys.modules, 'unbound context preload refused')
     module = ModuleType('full_product_context')
     module.__file__, module.__package__, module.__cached__ = str(repo / CONTEXT), '', None
@@ -328,11 +400,20 @@ def execute(args, module, ctx, authority, admission):
                 and result['actual_rows'] == cnl.EXPECTED and result['cleanup']['cleanup_passed'] is True,
                 'complete CNL2050 gate failed')
         return {'cnl_manifest_sha256': sha(read(args.out / 'cnl/manifest.json')), 'complete': True}
-    # The raw source finder binds these transitive imports before execution.
-    import importlib
-    sys.path.insert(0, str(args.repo / BASE))
-    driver = importlib.import_module('run_experimental_native_compile')
-    complete = importlib.import_module('complete_rust_inputs')
+    if ctx.qa_mode == 'native-qa-v1':
+        controls = _native_controls(args.repo, args.helper_revision, args.candidate_revision)
+        require(controls.role_sources['semantic.capture.driver'] == BASE + 'run_experimental_native_compile.py'
+                and controls.role_sources['semantic.capture.complete'] == BASE + 'complete_rust_inputs.py',
+                'fixed semantic capture helper sources differ')
+        sources.read(BASE + 'run_experimental_native_compile.py'); sources.read(BASE + 'complete_rust_inputs.py')
+        driver = controls.load_module('semantic.capture.driver')
+        complete = controls.load_module('semantic.capture.complete')
+    else:
+        # The raw source finder binds these transitive imports before execution.
+        import importlib
+        sys.path.insert(0, str(args.repo / BASE))
+        driver = importlib.import_module('run_experimental_native_compile')
+        complete = importlib.import_module('complete_rust_inputs')
     checker = driver.experiment.ExperimentalChecker(args.repo)
     jobs, reused, completed, inputs, rust_tree = cnl.frozen_inputs(driver, complete, checker, args.repo,
         Path(ctx.data['python_inputs_root']), Path(ctx.data['rust_inputs_root']), args.out, args.candidate_revision)
@@ -503,6 +584,30 @@ class JoinModules(importlib.abc.MetaPathFinder, importlib.abc.Loader):
         sys.meta_path.remove(self)
         sys.path[:] = self.previous_sys_path
         for name in self.loaded: sys.modules.pop(name, None)
+
+
+
+@contextmanager
+def _native_join_modules(sources, paths):
+    controls = _native_controls(sources.root, sources.revision, sources.revision)
+    required = ('run_experimental_native_cnl', 'export_goldens', 'raw_digest_compat', 'reconstruct_public_inputs',
+                'map_rust_inputs', 'complete_rust_inputs', 'experimental_native_compile', 'run_experimental_native_compile',
+                'run_experimental_native_assembly', 'prove_checked_reference', '_som_semantic_join_carrier',
+                'rust_profile_phase2', '_som_semantic_original_cli')
+    require(set(paths) == set(required), 'fixed semantic join helper universe differs')
+    raw = {name: sources.read(path) for name, path in paths.items()}
+    prefix = _native_semantic_prefix()
+    roles = {name: prefix + '.join.' + name.strip('_').replace('_', '-') for name in required}
+    require(all(controls.role_sources[roles[name]] == path for name, path in paths.items()),
+            'fixed semantic join helper source differs')
+    modules = {}
+    for name in required:
+        modules[name] = controls.load_module(roles[name])
+        require(modules[name].__file__ == str(sources.root / paths[name])
+                and modules[name].__som_raw_sha256__ == sha(raw[name]), 'semantic join helper bytes differ')
+    yield modules
+    sources.verify()
+    controls.verify_installed()
 
 
 def proof_roots_data(roots, saved_root, repo):
@@ -748,8 +853,12 @@ def verify_full_command(directory, command, row, expected_binary, expected_cwd):
 def trusted_proof_bundle(repo, source_reader, helper_revision, candidate_revision, roots, saved_root, expected_admission):
     require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'saved proof verification runs only on GitHub Linux')
     sources = JoinSources(repo, helper_revision, source_reader)
-    authority = fresh_module(sources, '_som_semantic_join_authority', AUTHORITY)
-    try:
+    with _borrowed_native(sources) as controls:
+        authority_raw = sources.read(AUTHORITY)
+        require(controls.role_sources['bootstrap.authority'] == AUTHORITY, 'fixed semantic join authority source differs')
+        authority = controls.load_module('bootstrap.authority')
+        require(authority.__file__ == str(sources.root / AUTHORITY)
+                and authority.__som_raw_sha256__ == sha(authority_raw), 'semantic join authority bytes differ')
         admission = authority.verify(sources.read, 'native-qa-v1', path_set(sources), helper_revision, candidate_revision)
         require(admission == expected_admission and admission.get('source_authority_active') is True, 'fresh numbered semantic source admission differs')
         required = ('run_experimental_native_cnl', 'export_goldens', 'raw_digest_compat', 'reconstruct_public_inputs',
@@ -760,13 +869,13 @@ def trusted_proof_bundle(repo, source_reader, helper_revision, candidate_revisio
         paths['rust_profile_phase2'] = 'som-rs/tests/rust-output-v1/rust_profile_phase2.py'
         paths['_som_semantic_original_cli'] = CLI_SOURCE
         require(set(paths.values()) <= set(admission['admitted_repository_python_sources']), 'semantic verifier helper is outside exact sealed source authority')
-        with JoinModules(sources, paths):
-            driver = importlib.import_module('run_experimental_native_compile')
-            complete = importlib.import_module('complete_rust_inputs')
-            cnl = importlib.import_module('run_experimental_native_cnl')
-            assembly = importlib.import_module('run_experimental_native_assembly')
-            checked = importlib.import_module('prove_checked_reference')
-            carrier = importlib.import_module('_som_semantic_join_carrier')
+        with _native_join_modules(sources, paths) as modules:
+            driver = modules['run_experimental_native_compile']
+            complete = modules['complete_rust_inputs']
+            cnl = modules['run_experimental_native_cnl']
+            assembly = modules['run_experimental_native_assembly']
+            checked = modules['prove_checked_reference']
+            carrier = modules['_som_semantic_join_carrier']
             before = {name: file_inventory(path) for name, path in roots.items()}
             temporary = Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
             require(not any(temporary == p or p in temporary.parents for p in (sources.root, saved_root, *roots.values())), 'verification scratch overlaps protected input')
@@ -800,15 +909,14 @@ def trusted_proof_bundle(repo, source_reader, helper_revision, candidate_revisio
                         and carrier.identities(saved_carrier) == restored['identity'], 'saved restored carrier universe, modes or bytes differ')
                 yield SimpleNamespace(sources=sources, authority=authority, admission=admission, driver=driver, cnl=cnl,
                     checker=checker, jobs=jobs, proof=proof, cnl_jobs=cnl_jobs, oracle=oracle, normal=normal,
-                    assembly_sha=assembly_sha, carrier=restored, carrier_record=carrier_record)
+                    assembly_sha=assembly_sha, carrier=restored, carrier_record=carrier_record,
+                    original_cli=modules['_som_semantic_original_cli'])
                 proof.verify(); reused.verify()
                 require(cnl.tree_hashes(roots['rust_inputs_root']) == rust_tree
                         and before == {name: file_inventory(path) for name, path in roots.items()}, 'trusted proof/input files changed during semantic join')
                 require(authority.verify(sources.read, 'native-qa-v1', path_set(sources), helper_revision, candidate_revision) == admission,
                         'native source authority changed during semantic join')
                 sources.verify()
-    finally:
-        sys.modules.pop('_som_semantic_join_authority', None)
 
 
 def verify_result(root, source_reader, helper_revision, candidate_revision, gate, *, repo=None, proof_roots=None):
@@ -912,6 +1020,35 @@ class OfflineTranscript:
         return row['status'], response
 
 
+
+class NativeRefusalTargets(OfflineTranscript):
+    """Exact transcript data plus fixed original target assertion functions."""
+    @property
+    def EXAMPLES(self):
+        return _native_controls().root / 'som-rs/contracts/compiler-v1/examples'
+
+    def sha(self, value):
+        controls = _native_controls()
+        role = _native_semantic_prefix() + '.original.targets'
+        require(controls.role_sources[role] == TARGET_ASSERTION_SOURCE, 'fixed target fragment source differs')
+        with controls.load_fragment(role) as original:
+            return original.sha(value)
+
+    def dump(self, value):
+        controls = _native_controls()
+        role = _native_semantic_prefix() + '.original.targets'
+        require(controls.role_sources[role] == TARGET_ASSERTION_SOURCE, 'fixed target fragment source differs')
+        with controls.load_fragment(role) as original:
+            return original.dump(value)
+
+    def resolve(self, value, pointer):
+        controls = _native_controls()
+        role = _native_semantic_prefix() + '.original.targets'
+        require(controls.role_sources[role] == TARGET_ASSERTION_SOURCE, 'fixed target fragment source differs')
+        with controls.load_fragment(role) as original:
+            return original.resolve(value, pointer)
+
+
 class OfflineCli:
     """Supply the retained CLI child streams to the unchanged CLI assertions."""
     def __init__(self, root, commands, transcript):
@@ -1002,6 +1139,61 @@ def selected_original_functions(sources, path, names, namespace, assignments=())
     return SimpleNamespace(**{name: scope[name] for name in (*names, *assignments)}), provenance
 
 
+
+def _original_fragment_provenance(sources, path, names, assignments=()):
+    """Keep every old selector check and provenance without executing AST."""
+    raw = sources.read(path)
+    tree = ast.parse(raw, filename=str(sources.root / path))
+    definitions = [node for node in tree.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name in names]
+    require(len(definitions) == len(names) and {node.name for node in definitions} == set(names)
+            and all(isinstance(node, ast.FunctionDef) and not node.decorator_list for node in definitions),
+            'exact original assertion function closure is missing or ambiguous')
+    selected_assignments = []
+    for name in assignments:
+        found = [node for node in tree.body if isinstance(node, ast.Assign)
+                 and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name) and node.targets[0].id == name]
+        require(len(found) == 1, 'exact original assertion global is missing or ambiguous')
+        value = ast.literal_eval(found[0].value)
+        require(name == 'RUST_ASSETS' and value == ('catalog', 'block_library', 'backend', 'formatter'),
+                'unreviewed original assertion global')
+        selected_assignments.extend(found)
+    nodes = sorted([*definitions, *selected_assignments], key=lambda node: node.lineno)
+    require(any(isinstance(node, ast.ImportFrom) and node.module == '__future__'
+                and any(alias.name == 'annotations' for alias in node.names) for node in tree.body),
+            'original assertion annotation semantics differ')
+    module = ast.fix_missing_locations(ast.Module(body=nodes, type_ignores=[]))
+    # This is an audit of exact untouched source nodes, not rewritten assertions.
+    provenance = {'path': path, 'raw_sha256': sha(raw),
+                  'function_AST_sha256': {node.name: sha(ast.dump(node, include_attributes=False).encode()) for node in definitions},
+                  'assignment_AST_sha256': {node.targets[0].id: sha(ast.dump(node, include_attributes=False).encode()) for node in selected_assignments}}
+    return provenance
+
+
+
+@contextmanager
+def _native_original_refusal_assertions(sources, transcript):
+    for name in ('v1', 'v3', 'v6'):
+        sources.read('som-rs/contracts/compiler-v1/examples/' + name + '.prompt.json')
+    plan = parse_saved(sources.read('som-rs/contracts/rust-output-v1/acceptance-plan.json'))
+    sources.read('som-rs/contracts/rust-output-v1/negative-cases.json')
+    targets = NativeRefusalTargets(transcript.root, transcript.rows, transcript.base)
+    targets.cursor = transcript.cursor
+    contract = sources.root / 'som-rs/contracts/rust-output-v1'
+    provenance = {
+        'targets': _original_fragment_provenance(sources, TARGET_ASSERTION_SOURCE, TARGET_ASSERTION_FUNCTIONS),
+        'recipes': _original_fragment_provenance(sources, RUST_RECIPE_SOURCE, RUST_RECIPE_FUNCTIONS,
+                                                assignments=('RUST_ASSETS',)),
+    }
+    controls = _native_controls(sources.root, sources.revision, sources.revision)
+    role = _native_semantic_prefix() + '.original.recipes'
+    require(controls.role_sources[role] == RUST_RECIPE_SOURCE, 'fixed refusal recipe source differs')
+    try:
+        with controls.load_fragment(role) as recipes:
+            yield recipes, targets, provenance
+    finally:
+        transcript.cursor = targets.cursor
+
+
 def original_refusal_assertions(sources, transcript):
     for name in ('v1', 'v3', 'v6'):
         sources.read('som-rs/contracts/compiler-v1/examples/' + name + '.prompt.json')
@@ -1031,14 +1223,14 @@ def replay_original_gate_assertions(root, details, trusted):
     require({CLI_SOURCE, RUST_RECIPE_SOURCE, TARGET_ASSERTION_SOURCE} <=
             set(trusted.admission['admitted_repository_python_sources']), 'original assertion source is outside sealed QA admission')
     transcript = OfflineTranscript(root, details['http_rows'], 'http://127.0.0.1:18979')
-    cli = importlib.import_module('_som_semantic_original_cli')
+    cli = trusted.original_cli
     require(getattr(cli, '__som_raw_sha256__', None) == sha(trusted.sources.read(CLI_SOURCE)), 'original CLI raw source binding differs')
     with tempfile.TemporaryDirectory(prefix='som-original-gate-replay-', dir=Path(os.environ['RUNNER_TEMP']).resolve(strict=True)) as directory:
         replay_cli_assertions(cli, root, details['cli_refusals']['cli'], details['cli_refusals']['cli_commands'], transcript,
             Path(directory) / 'original-cli.json', Path(root) / 'restored-candidate/binary')
-        recipes, targets, _ = original_refusal_assertions(trusted.sources, transcript)
-        base_prompt = parse_saved(trusted.sources.read('som-rs/contracts/compiler-v1/examples/v1.prompt.json'))
-        replay_refusal_assertions(recipes, targets, transcript, base_prompt, details['cli_refusals']['assemble_refusals'])
+        with _native_original_refusal_assertions(trusted.sources, transcript) as (recipes, targets, provenance):
+            base_prompt = parse_saved(trusted.sources.read('som-rs/contracts/compiler-v1/examples/v1.prompt.json'))
+            replay_refusal_assertions(recipes, targets, targets, base_prompt, details['cli_refusals']['assemble_refusals'])
     prefix = transcript.cursor
     rows = details['old_bundle_rebase']['rows']
     require([(row['old_http_index'], row['rebased_http_index']) for row in rows]
@@ -1139,9 +1331,14 @@ def main(argv=None):
     temporary = Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
     require(temporary in args.out.parents and not args.out.exists() and '..' not in args.out.parts
             and not any(p.is_symlink() for p in args.out.parents), 'new owned gate output required')
-    module = bootstrap(args.repo, args.helper_revision)
+    module = bootstrap(args.repo, args.helper_revision, native=True, candidate=args.candidate_revision)
     sources = module.SourceBytes(args.repo, args.helper_revision)
-    authority = module.bound_module(sources, '_som_semantic_authority', AUTHORITY)
+    controls = _native_controls(args.repo, args.helper_revision, args.candidate_revision)
+    authority_raw = sources.read(AUTHORITY)
+    require(controls.role_sources['bootstrap.authority'] == AUTHORITY, 'fixed semantic authority source differs')
+    authority = controls.load_module('bootstrap.authority')
+    require(authority.__file__ == str(sources.root / AUTHORITY)
+            and authority.__som_raw_sha256__ == sha(authority_raw), 'semantic authority bytes differ')
     admission = authority.verify(sources.read, args.qa_mode, path_set(sources), args.helper_revision, args.candidate_revision)
     require(admission['source_authority_active'] is True, 'sealed source authority required')
     data = json.loads(read(args.product_context))
@@ -1153,7 +1350,7 @@ def main(argv=None):
     ctx.sources.read(SELF)
     module._ACTIVE = ctx
     require(Path(sys.executable).resolve() == module.observer_python().resolve(), 'qualified observer Python required')
-    module.install_source_finder(ctx.sources)
+    controls.verify_installed()
     sys.path[:0] = [str(args.repo / 'som-rs/tests/rust-output-v1'), str(args.repo / 'som-rs/som-targets/qa'),
                    str(args.repo / 'som-rs/scripts/compiler_acceptance')]
     protected = [args.repo, args.assembly_root, args.carrier_root, args.product_context,

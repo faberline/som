@@ -36,6 +36,17 @@ def plain(name):
     return c.plain_module(reader, name)
 
 
+def native_fixture(case, **options):
+    relative = c.BASE + 'test_run_candidate_semantic_gates.py'
+    raw = reader(relative)
+    assert raw == subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(REPO),
+        'cat-file', 'blob', helper + ':' + relative])
+    module = ModuleType('_companion_source_owned_native_fixture')
+    module.__file__ = str(REPO / relative)
+    exec(compile(raw, module.__file__, 'exec', dont_inherit=True), module.__dict__)
+    return module.core_native_fixture(case, kind='companions', **options)
+
+
 class TempCase(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
@@ -442,17 +453,23 @@ class FinalCandidateSourceAuthorityTests(TempCase):
         reader.assert_not_called()
 
     def test_native_authority_is_called_with_the_complete_source_inventory_and_identity_pair(self):
-        body = b"def verify(source_reader, mode, source_paths, helper_revision=None, candidate_revision=None):\n    assert source_paths == ['all-tracked.json', 'all-tracked.py']\n    return {'mode': mode, 'source_authority_active': True, 'helper_revision': helper_revision, 'candidate_revision': candidate_revision, 'product_acceptance_passed': False, 'compiler_acceptance_passed': False, 'whole_acceptance_complete': False}\n"
-        observed = []
-        def selected(name):
-            observed.append(name)
-            return body
-        before = (c.CANDIDATE, c.BINARY_SHA, c.BEFORE_BINARY, c.FIXED_BEFORE_AUTHORITY)
-        record = c.native_source_authority(selected, ['all-tracked.json', 'all-tracked.py'], '1' * 40, '1' * 40)
-        self.assertEqual(record['candidate_revision'], '1' * 40)
-        self.assertFalse(record['product_acceptance_passed'])
-        self.assertEqual(observed, [c.BASE + 'native_qa_authority.py'])
-        self.assertEqual((c.CANDIDATE, c.BINARY_SHA, c.BEFORE_BINARY, c.FIXED_BEFORE_AUTHORITY), before)
+        body = "def verify(source_reader, mode, source_paths, helper_revision=None, candidate_revision=None):\n    assert source_paths == ['all-tracked.json', 'all-tracked.py']\n    return {'mode': mode, 'source_authority_active': True, 'helper_revision': helper_revision, 'candidate_revision': candidate_revision, 'product_acceptance_passed': False, 'compiler_acceptance_passed': False, 'whole_acceptance_complete': False}\n"
+        fixture = native_fixture(self, authority_body=body)
+        try:
+            module = fixture.controller()
+            observed = []
+            def selected(name):
+                observed.append(name)
+                return fixture.raw[name]
+            before = (module.CANDIDATE, module.BINARY_SHA, module.BEFORE_BINARY, module.FIXED_BEFORE_AUTHORITY)
+            record = module.native_source_authority(selected, ['all-tracked.json', 'all-tracked.py'], '1' * 40, '1' * 40)
+            self.assertEqual(record['candidate_revision'], '1' * 40)
+            self.assertFalse(record['product_acceptance_passed'])
+            self.assertEqual(observed, [c.BASE + 'native_qa_authority.py'])
+            self.assertEqual((module.CANDIDATE, module.BINARY_SHA, module.BEFORE_BINARY, module.FIXED_BEFORE_AUTHORITY), before)
+            self.assertIs(fixture.domain.records['bootstrap.authority'].module, fixture.authority)
+        finally:
+            fixture.stack.close()
 
     def test_pending_authority_or_product_acceptance_claim_cannot_select_final_capture(self):
         template = "def verify(source_reader, mode, source_paths, helper_revision=None, candidate_revision=None):\n    return {record!r}\n"
@@ -462,9 +479,13 @@ class FinalCandidateSourceAuthorityTests(TempCase):
         for field, value in [('source_authority_active', False), ('candidate_revision', '2' * 40),
                              ('product_acceptance_passed', True), ('compiler_acceptance_passed', True),
                              ('whole_acceptance_complete', True)]:
-            body = template.format(record={**good, field: value}).encode()
-            with self.subTest(field=field), self.assertRaises(ValueError):
-                c.native_source_authority(lambda _: body, ['tracked.json'], '1' * 40, '1' * 40)
+            fixture = native_fixture(self, authority_body=template.format(record={**good, field: value}))
+            try:
+                module = fixture.controller()
+                with self.subTest(field=field), self.assertRaisesRegex(ValueError, 'native source authority remains pending'):
+                    module.native_source_authority(fixture.raw.__getitem__, ['tracked.json'], '1' * 40, '1' * 40)
+            finally:
+                fixture.stack.close()
 
     def test_recorded_default_does_not_silently_select_a_new_candidate(self):
         args = SimpleNamespace(candidate_revision='1' * 40, helper_revision='1' * 40)
@@ -514,83 +535,157 @@ class CompleteProofFactorySourceTests(TempCase):
 
 class CaptureImportLeaseTests(TempCase):
     def fixture(self):
-        import importlib.util
-        import marshal
-        import struct
-        root = self.root
-        safe = root / 'safe.py'; safe.write_bytes(b"VALUE = 'checked raw source'\n")
-        marker = root / 'pyc-executed'
-        payload = compile("from pathlib import Path\nPath(" + repr(str(marker)) + ").write_text('BAD')\nVALUE='untrusted PYC'\n", str(safe), 'exec')
-        cache = Path(importlib.util.cache_from_source(str(safe))); cache.parent.mkdir()
-        cache.write_bytes(importlib.util.MAGIC_NUMBER + struct.pack('<III', 0, int(safe.stat().st_mtime), safe.stat().st_size) + marshal.dumps(payload))
-        caller_text = ("import importlib.util\nspec=importlib.util.spec_from_file_location('_lease_safe', " + repr(str(safe))
-            + ")\nvalue=importlib.util.module_from_spec(spec)\nspec.loader.exec_module(value)\nRESULT=value.VALUE\n")
-        caller = root / 'caller.py'; caller.write_text(caller_text)
-        values = {'safe.py': safe.read_bytes(), 'caller.py': caller_text.encode(),
-                  c.BASE + 'product_runtime/full_product_context.py': b'# fixture Context metadata\n'}
-        body = reader(c.BASE + 'native_qa_authority.py')
-        values[c.BASE + 'native_qa_authority.py'] = body
-        authority = {'mode': 'native-qa-v1', 'source_authority_active': True,
-                     'admitted_repository_python_sources': list(values),
-                     'manual_source_loads': [{'caller': 'caller.py', 'module': '_lease_safe', 'path': 'safe.py',
-                        'caller_sha256': c.sha(values['caller.py']), 'sha256': c.sha(values['safe.py'])}]}
-        source = SimpleNamespace(root=root, read=lambda name: values[name])
-        return source, authority, values, marker
+        return native_fixture(self)
 
-    def run_main(self, source, authority, values, fail=False):
-        from contextlib import contextmanager
-        @contextmanager
-        def modules(): yield {}
-        def actual_probe(*_):
-            probe = ModuleType('_lease_caller')
-            probe.__file__, probe.__som_raw_sha256__ = str(self.root / 'caller.py'), c.sha(values['caller.py'])
-            exec(compile(values['caller.py'], probe.__file__, 'exec', dont_inherit=True), probe.__dict__)
-            self.assertEqual(probe.RESULT, 'checked raw source')
-            if fail: raise RuntimeError('capture failed after import')
-            return 0
-        argv = ['current68', '--repo', str(self.root), '--helper-revision', '1' * 40,
-                '--candidate-revision', '1' * 40, '--qa-mode', 'native-qa-v1']
-        for key in ('assembly-root', 'carrier-root', 'restored-candidate', 'out'):
-            argv += ['--' + key, str(self.root / key)]
-        with mock.patch.object(sys, 'argv', argv), mock.patch.object(c, 'Sources', return_value=source),              mock.patch.object(c, 'selected_current_identity', return_value=authority),              mock.patch.object(c, 'BoundModules', return_value=SimpleNamespace(installed=modules)),              mock.patch.object(c, 'run', side_effect=actual_probe):
-            return c.main()
+    def run_main(self, fixture, fail=False):
+        # This is the actual capture borrow/manual-loader scope, not a mocked
+        # production main/run or a full-product capture positive.
+        probe = fixture.probe()
+        result = probe.capture(probe.Sources(), fail)
+        self.assertEqual(result, 'checked raw source')
+        self.assertTrue(probe.BORROWED[-1]._closed)
+        return 0
 
     def test_owned_import_and_manual_guards_close_on_success_and_failure_without_using_matching_pyc(self):
         import importlib.util
-        source, authority, values, marker = self.fixture()
         before_spec, before_meta = importlib.util.spec_from_file_location, list(sys.meta_path)
-        with mock.patch.dict(sys.modules, {'full_product_context': ModuleType('full_product_context')}):
-            self.assertEqual(self.run_main(source, authority, values), 0)
-            self.assertIs(importlib.util.spec_from_file_location, before_spec)
-            self.assertEqual(sys.meta_path, before_meta)
+        fixture = self.fixture()
+        try:
+            protected = importlib.util.spec_from_file_location
+            self.assertEqual(self.run_main(fixture), 0)
+            self.assertIs(importlib.util.spec_from_file_location, protected)
+            fixture.controls.verify_installed()
             with self.assertRaisesRegex(RuntimeError, 'capture failed'):
-                self.run_main(source, authority, values, fail=True)
+                self.run_main(fixture, fail=True)
+            self.assertTrue(fixture.probe().BORROWED[-1]._closed)
+            fixture.controls.verify_installed()
+            self.assertFalse(fixture.marker.exists())
+        finally:
+            # Core closes before its fixture's patch.dict module restoration.
+            fixture.stack.close()
         self.assertIs(importlib.util.spec_from_file_location, before_spec)
         self.assertEqual(sys.meta_path, before_meta)
-        self.assertFalse(marker.exists())
+        self.assertFalse(fixture.marker.exists())
 
     def test_borrowed_context_import_guards_remain_owned_by_context_after_capture(self):
         import importlib.util
-        source, authority, values, marker = self.fixture()
-        actual = ModuleType('_actual_lease_authority')
-        actual.__file__, actual.__cached__, actual.__package__ = str(self.root / 'actual_authority.py'), None, ''
-        exec(compile(values[c.BASE + 'native_qa_authority.py'], actual.__file__, 'exec', dont_inherit=True), actual.__dict__)
-        empty = ModuleType('full_product_context')
-        with mock.patch.dict(sys.modules, {'full_product_context': empty}):
-            owner = actual.install_raw_finder(source.read, self.root, authority)
-            context = SimpleNamespace(repo=self.root, qa_mode='native-qa-v1', qa_source_authority=authority,
-                                      qa_import_controls=owner)
-            empty.__som_raw_sha256__ = c.sha(values[c.BASE + 'product_runtime/full_product_context.py'])
-            empty._ACTIVE = context
-            protected = importlib.util.spec_from_file_location
+        fixture = self.fixture()
+        protected = importlib.util.spec_from_file_location
+        try:
+            owner = fixture.controls
+            self.assertTrue(owner._owns)
+            self.assertEqual(self.run_main(fixture), 0)
+            owner.verify_installed()
+            self.assertIs(importlib.util.spec_from_file_location, protected)
+            self.assertFalse(owner._closed)
+            self.assertTrue(fixture.probe().BORROWED[-1]._closed)
+            self.assertFalse(fixture.marker.exists())
+        finally:
+            fixture.stack.close()
+
+
+class NativeCompanionProtocolTests(TempCase):
+    def test_authority_wrong_raw_source_or_identity_cannot_borrow_seed(self):
+        fixture = native_fixture(self)
+        try:
+            module = fixture.controller()
+            with self.assertRaisesRegex(ValueError, 'actual native authority bytes differ'):
+                module.native_source_authority(lambda name: fixture.raw[name] + b'\n# foreign bytes\n',
+                    ['tracked.json'], '1' * 40, '1' * 40)
+            with self.assertRaisesRegex(ValueError, 'helper/candidate identity differs'):
+                module._native_controls(revision='2' * 40, candidate='2' * 40)
+            self.assertEqual(list(fixture.body_markers.iterdir()), [])
+        finally:
+            fixture.stack.close()
+
+    def test_unlisted_companion_prefix_refuses_without_a_plain_loader_fallback(self):
+        fixture = native_fixture(self, variant='_unknown_companion_owner')
+        try:
+            module = fixture.controller()
+            with self.assertRaisesRegex(ValueError, 'unlisted native companion namespace'):
+                module._native_companion_prefix()
+            self.assertEqual(list(fixture.body_markers.iterdir()), [])
+        finally:
+            fixture.stack.close()
+
+    def test_actual_entry_whole_nine_role_preflight_precedes_any_helper_body(self):
+        import ast
+        fixture = native_fixture(self, entry=True)
+        original_trace = sys.gettrace()
+        try:
+            def git(*arguments):
+                return subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(fixture.root), *arguments],
+                    env={'PATH': '/usr/bin:/bin', 'GIT_CONFIG_NOSYSTEM': '1', 'GIT_CONFIG_GLOBAL': '/dev/null',
+                         'GIT_AUTHOR_NAME': 'Native preflight fixture', 'GIT_AUTHOR_EMAIL': 'fixture@example.invalid',
+                         'GIT_COMMITTER_NAME': 'Native preflight fixture', 'GIT_COMMITTER_EMAIL': 'fixture@example.invalid'},
+                    stderr=subprocess.DEVNULL, timeout=30)
+            git('init', '--quiet'); git('add', '--', *sorted(fixture.raw))
+            git('-c', 'commit.gpgsign=false', 'commit', '--quiet', '--no-verify', '-m', 'Explicit native entry protocol')
+            revision = git('rev-parse', 'HEAD').decode().strip()
+            fixture.transfer.revision = fixture.domain.revision = revision
+            fixture.transfer.verify_entry_source = lambda path: self.assertEqual(path, c.SELF)
+            line = next(node.lineno for node in ast.walk(ast.parse(fixture.raw[c.SELF]))
+                if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call)
+                and isinstance(node.value.func, ast.Name) and node.value.func.id == 'require'
+                and len(node.value.args) == 2 and isinstance(node.value.args[1], ast.Constant)
+                and node.value.args[1].value == 'fixed current capture helper source differs')
+            last = next(reversed(fixture.group_roles.values())); original_row = fixture.rows[last]
+            arguments = ['--repo', str(fixture.root), '--helper-revision', revision,
+                         '--candidate-revision', revision, '--qa-mode', 'native-qa-v1']
+            for name in ('assembly-root', 'carrier-root', 'restored-candidate', 'out'):
+                arguments += ['--' + name, str(fixture.root.parent / name)]
+            for mode in ('mismatch', 'missing'):
+                reached = []
+                def trace(frame, event, argument):
+                    record = fixture.domain.records.get('caller')
+                    if (event == 'line' and not reached and frame.f_lineno == line and record is not None
+                            and frame.f_globals is record.namespace and frame.f_code.co_qualname == 'main'
+                            and any(frame.f_code is code for code in record.codes.values())):
+                        reached.append('actual-main-group-preflight')
+                        if mode == 'mismatch': original_row['source'] = c.SELF
+                        else: fixture.rows.pop(last)
+                    return trace
+                try:
+                    sys.settrace(trace)
+                    if mode == 'mismatch':
+                        with self.assertRaisesRegex(ValueError, '^fixed current capture helper source differs$'):
+                            fixture.seeds[fixture.core.ENTRY_MODULE]['module']._trusted_run(fixture.controls, 'caller', arguments)
+                    else:
+                        with self.assertRaises(KeyError) as missing:
+                            fixture.seeds[fixture.core.ENTRY_MODULE]['module']._trusted_run(fixture.controls, 'caller', arguments)
+                        self.assertEqual(missing.exception.args, (last,))
+                finally:
+                    sys.settrace(original_trace)
+                    original_row['source'] = fixture.group_paths[next(reversed(fixture.group_paths))]
+                    fixture.rows[last] = original_row
+                self.assertEqual(reached, ['actual-main-group-preflight'])
+                self.assertEqual(len(fixture.group_paths), 9)
+                self.assertEqual(list(fixture.body_markers.iterdir()), [])
+                self.assertNotIn('caller', fixture.domain.records)
+                fixture.controls.verify_installed()
+        finally:
+            sys.settrace(original_trace)
+            fixture.stack.close()
+
+    def test_borrower_success_and_failure_never_remove_the_owner_finder_or_spec(self):
+        import importlib.util
+        for manual_variant in ('typescript', 'react'):
+            fixture = native_fixture(self, manual_variant=manual_variant)
             try:
-                self.assertEqual(self.run_main(source, authority, values), 0)
-                owner.verify_installed()
-                self.assertIs(importlib.util.spec_from_file_location, protected)
-                self.assertFalse(owner.closed)
+                probe = fixture.probe(); finder, spec = fixture.domain.finder, importlib.util.spec_from_file_location
+                self.assertEqual(probe.capture(probe.Sources()), 'checked raw source')
+                first = probe.BORROWED[-1]
+                with self.assertRaisesRegex(RuntimeError, '^capture failed after import$'):
+                    probe.capture(probe.Sources(), True)
+                second = probe.BORROWED[-1]
+                self.assertIsNot(first, second)
+                self.assertTrue(first._closed and second._closed)
+                self.assertFalse(fixture.controls._closed)
+                self.assertIn(finder, sys.meta_path); self.assertIs(importlib.util.spec_from_file_location, spec)
+                fixture.controls.verify_installed()
+                self.assertFalse(fixture.marker.exists())
             finally:
-                owner.close()
-        self.assertFalse(marker.exists())
+                fixture.stack.close()
 
 
 if __name__ == '__main__':

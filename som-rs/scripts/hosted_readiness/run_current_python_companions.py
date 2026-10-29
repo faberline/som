@@ -47,6 +47,18 @@ CANDIDATE = 'f59e28d910ff4adb16e3becfdc82bd2978ca84fa'
 BINARY_SHA = 'e84ac8f06e243d60d8fc64459d6a5d35cff64d84a85d3e48f3cae275be8d36f5'
 PORT = 18978
 VERSION = 'som.current-python-companions.v1'
+_NATIVE_COMPANION_VARIANTS = {
+    '__main__': 'companions.entry',
+    '_som_graph_current_companion_data': 'companions.graph',
+    '_som_full_current_capture': 'companions.context',
+}
+
+
+def _native_companion_prefix():
+    require(type(__name__) is str and __name__ in _NATIVE_COMPANION_VARIANTS,
+            'unlisted native companion namespace')
+    return _NATIVE_COMPANION_VARIANTS[__name__]
+
 REFUSALS = {'RS12_CNL_V3_FILTER_LIMIT': 'limit', 'RS13_JSON_V3_FILTER_OFFSET': 'offset'}
 DIAGNOSTIC_SOURCES = {
     'som-rs/src/python_names.rs': '22ab53da0538580165f792d3c47c0080a12c7dd8c2d86c5881c793827df6beec',
@@ -99,6 +111,57 @@ def ordered(value):
     if type(value) is list:
         return [ordered(item) for item in value]
     return value
+
+
+
+def _native_controls(repo=None, revision=None, candidate=None):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    if revision is not None:
+        require(revision == controls.helper_revision == candidate == controls.candidate_revision,
+                'active caller helper/candidate identity differs')
+    if repo is not None:
+        require(Path(repo).absolute() == controls.root, 'active caller repository differs')
+    return controls
+
+
+def _native_secondary(primary, phase, secondary):
+    try:
+        previous = BaseException.__getattribute__(primary, '__som_native_caller_secondary_errors__')
+    except AttributeError:
+        previous = ()
+    BaseException.__setattr__(primary, '__som_native_caller_secondary_errors__',
+                             (*previous, {'phase': phase, 'exception': secondary}))
+
+
+@contextmanager
+def _borrowed_native(sources):
+    lease = _native_controls(sources.root, sources.revision, sources.revision).borrow()
+    primary = None
+    try:
+        lease.verify_installed()
+        yield lease
+        sources.verify()
+    except BaseException as error:
+        primary = error
+        raise
+    finally:
+        errors = []
+        for phase, operation in (('source-postcheck', sources.verify),
+                                 ('controls-postcheck', lease.verify_installed),
+                                 ('borrow-close', lease.close)):
+            try:
+                operation()
+            except BaseException as secondary:
+                errors.append((phase, secondary))
+        if errors:
+            if primary is None:
+                phase, primary = errors.pop(0)
+                for phase, secondary in errors:
+                    _native_secondary(primary, phase, secondary)
+                raise primary
+            for phase, secondary in errors:
+                _native_secondary(primary, phase, secondary)
 
 
 def plain_module(source_reader, name):
@@ -246,9 +309,11 @@ def native_source_authority(source_reader, source_paths, helper_revision, candid
     require(type(source_paths) in {list, tuple, set} and source_paths, 'complete tracked source paths required')
     path = BASE + 'native_qa_authority.py'
     raw = source_reader(path)
-    module = ModuleType('_som_current_companion_native_source_authority')
-    module.__file__, module.__cached__, module.__package__ = path, None, ''
-    exec(compile(raw, path, 'exec', dont_inherit=True), module.__dict__)
+    controls = _native_controls(revision=helper_revision, candidate=candidate_revision)
+    require(controls.role_sources['bootstrap.authority'] == path, 'fixed native authority source differs')
+    module = controls.load_module('bootstrap.authority')
+    require(module.__file__ == str(controls.root / path) and module.__som_raw_sha256__ == sha(raw),
+            'actual native authority bytes differ')
     record = module.verify(source_reader, mode='native-qa-v1', source_paths=source_paths,
                            helper_revision=helper_revision, candidate_revision=candidate_revision)
     require(record.get('mode') == 'native-qa-v1' and record.get('source_authority_active') is True
@@ -957,8 +1022,19 @@ def verify_capture(root, source_reader, helper_revision, candidate_revision, adm
                 and factory_sources == proof['initial_identities']['source']
                 and all(sha(source_reader(name)) == pin for name, pin in factory_sources.items()),
                 'whole same-candidate factory source authority differs')
-    export = plain_module(source_reader, 'export_goldens')
-    modules = {'raw_digest_compat': plain_module(source_reader, 'raw_digest_compat')}
+    if qa_authority is not None:
+        controls = _native_controls(revision=helper_revision, candidate=candidate_revision)
+        prefix = _native_companion_prefix()
+        export_role, digest_role = prefix + '.verify.export-goldens', prefix + '.verify.raw-digest-compat'
+        require(controls.role_sources[export_role] == MODULES['export_goldens']
+                and controls.role_sources[digest_role] == MODULES['raw_digest_compat'],
+                'fixed current verifier helper sources differ')
+        source_reader(MODULES['export_goldens']); source_reader(MODULES['raw_digest_compat'])
+        export = controls.load_module(export_role)
+        modules = {'raw_digest_compat': controls.load_module(digest_role)}
+    else:
+        export = plain_module(source_reader, 'export_goldens')
+        modules = {'raw_digest_compat': plain_module(source_reader, 'raw_digest_compat')}
     oracle = RefusalOracle(type('Reader', (), {'read': staticmethod(source_reader)})(), modules)
     proof = parse(read(Path(assembly_root) / 'manifest.json'))
     require(proof['tested_sha'] == candidate_revision and proof['experiment_complete'] is True
@@ -1068,23 +1144,22 @@ def main():
     args = parser.parse_args()
     sources = Sources(args.repo, args.helper_revision)
     args._native_source_authority = selected_current_identity(args, sources)
-    lease = None
     if args._native_source_authority is not None:
-        path = BASE + 'native_qa_authority.py'
-        raw = sources.read(path)
-        authority_module = ModuleType('_som_current_companion_admitted_loader')
-        authority_module.__file__, authority_module.__package__, authority_module.__cached__ = str(sources.root / path), '', None
-        exec(compile(raw, authority_module.__file__, 'exec', dont_inherit=True), authority_module.__dict__)
-        lease = authority_module.install_raw_finder(sources.read, sources.root, args._native_source_authority)
-    try:
-        with BoundModules(sources).installed() as modules:
+        with _borrowed_native(sources) as controls:
+            require(_native_companion_prefix() == 'companions.entry', 'current capture needs its fixed entry namespace')
+            raw = {name: sources.read(path) for name, path in MODULES.items()}
+            roles = {name: 'companions.entry.capture.' + name.replace('_', '-') for name in MODULES}
+            require(all(controls.role_sources[roles[name]] == path for name, path in MODULES.items()),
+                    'fixed current capture helper source differs')
+            modules = {}
+            for name, path in MODULES.items():
+                modules[name] = controls.load_module(roles[name])
+                require(modules[name].__file__ == str(sources.root / path)
+                        and modules[name].__som_raw_sha256__ == sha(raw[name]), 'current capture helper bytes differ')
+            require(set(modules) == set(MODULES), 'loaded helper closure differs')
             return run(args, sources, modules)
-    finally:
-        if lease is not None:
-            try:
-                lease.verify_installed()
-            finally:
-                if lease.owns_controls: lease.close()
+    with BoundModules(sources).installed() as modules:
+        return run(args, sources, modules)
 
 
 if __name__ == '__main__':

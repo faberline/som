@@ -22,6 +22,179 @@ p.__file__ = str(source)
 exec(compile(source.read_bytes(), str(source), 'exec', dont_inherit=True), p.__dict__)
 
 
+def protocol_source(relative):
+    """Use tracked raw fixture/source bytes; never a Python import loader."""
+    repo = Path(__file__).resolve().parents[3]
+    raw = (repo / relative).read_bytes()
+    assert raw == p.subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(repo),
+        'cat-file', 'blob', os.environ['HELPER_REVISION'] + ':' + relative])
+    return raw
+
+
+def core_native_fixture(case, kind='semantic', authority_body=None, entry=False, variant=None, manual_variant='typescript'):
+    """Actual Core and production caller. Transfer/data/helpers are protocol doubles."""
+    import ast
+    from unittest import mock
+    base = 'som-rs/scripts/hosted_readiness/'
+    protocol = ModuleType('_semantic_companion_actual_core_fixture')
+    protocol.__file__ = str(Path(__file__).with_name('test_native_active_controls.py'))
+    exec(compile(protocol_source(base + 'test_native_active_controls.py'), protocol.__file__, 'exec', dont_inherit=True), protocol.__dict__)
+    relative = base + ('run_candidate_semantic_gates.py' if kind == 'semantic' else 'run_current_python_companions.py')
+    production = protocol_source(relative)
+    expected = {'semantic': '372e9e9d8b6a8d3d346a3ddc0abb447baa69e3aa3934249a22c7ae088e36fa08',
+                'companions': '93147d315bf22d9b0a99ddeff290cfab8fa4e6b8deb659cd81f2880243ddcadc'}
+    case.assertEqual(hashlib.sha256(production).hexdigest(), expected[kind])
+    if variant is None: variant = '_som_graph_semantic_gate_data' if kind == 'semantic' else '_som_full_current_capture'
+    prefix = 'semantic.graph' if kind == 'semantic' else 'companions.context'
+    authority_path = base + 'native_qa_authority.py'
+    if authority_body is None:
+        authority_body = '''def verify(source_reader, mode, source_paths, helper_revision=None, candidate_revision=None):
+    return {'mode': mode, 'source_authority_active': True,
+        'helper_revision': helper_revision, 'candidate_revision': candidate_revision,
+        'product_acceptance_passed': False, 'compiler_acceptance_passed': False,
+        'whole_acceptance_complete': False}
+'''
+    suffix = ('\n# Explicit protocol admission body; not production activation.\n' + authority_body).encode()
+    required = ('run_experimental_native_cnl', 'export_goldens', 'raw_digest_compat', 'reconstruct_public_inputs',
+                'map_rust_inputs', 'complete_rust_inputs', 'experimental_native_compile', 'run_experimental_native_compile',
+                'run_experimental_native_assembly', 'prove_checked_reference', '_som_semantic_join_carrier',
+                'rust_profile_phase2', '_som_semantic_original_cli') if kind == 'semantic' else (
+                'export_goldens', 'raw_digest_compat', 'reconstruct_public_inputs', 'map_rust_inputs', 'complete_rust_inputs',
+                'experimental_native_compile', 'run_experimental_native_compile', 'dependency_candidate', 'candidate_carrier')
+    paths = {name: base + 'synthetic-native-group/' + name + '.py' for name in required}
+    if kind == 'companions':
+        # Use the real MODULES data by parsing its fixed source-owned module once
+        # later; these are the exact declared production paths, not body imports.
+        paths = {name: base + name + '.py' for name in required}
+        paths['candidate_carrier'] = base + 'product_runtime/candidate_carrier.py'
+    target_source = p.TARGET_ASSERTION_SOURCE
+    recipe_source = p.RUST_RECIPE_SOURCE
+    target_names, recipe_names = p.TARGET_ASSERTION_FUNCTIONS, p.RUST_RECIPE_FUNCTIONS
+    selected_pins = {'targets': '6107ee5270305e019cb7556f0c46afb855a3c5fa1e5963051a6af39ed06ce178',
+                     'recipes': '828a9e815de0039bcac3d47daad0ce815f2413a2eb58d79c58953432413bb26e'}
+    class Transfer(protocol.ProtocolTransfer):
+        def __init__(self, fixture):
+            super().__init__(fixture)
+            caller, target = fixture.manual_caller, fixture.manual_target
+            self.admission['manual_source_loads'] = [{'caller': caller, 'module': 'rust_build_negative_cases', 'path': target,
+                'caller_sha256': fixture.core.sha(fixture.raw[caller]), 'sha256': fixture.core.sha(fixture.raw[target])}]
+    class Fixture(protocol.Fixture):
+        def synthetic_seed(self, name, path, raw):
+            if path == authority_path: raw = (raw.encode() if type(raw) is str else raw) + suffix
+            module, code = super().synthetic_seed(name, path, raw)
+            module.__file__ = str(self.root / path)
+            module.__som_raw_sha256__ = hashlib.sha256(self.raw[path]).hexdigest()
+            return module, code
+        def add_role(self, role, path, raw, **kwargs):
+            if role == 'bootstrap.authority': kwargs['callers'] = [{'role': 'caller', 'function': 'native_source_authority'}]
+            if role == 'caller':
+                path, raw = relative, production
+                kwargs.update(module='__main__' if entry else variant,
+                    bindings={'__som_native_active_controls__': {'kind': 'active-controls'}})
+            result = super().add_role(role, path, raw, **kwargs)
+            if role != 'caller': return result
+            self.group_paths, self.group_roles = paths, {}
+            self.body_markers = self.root / 'helper-body-markers'; self.body_markers.mkdir()
+            for name, member in paths.items():
+                target_role = (prefix + '.join.' + name.strip('_').replace('_', '-') if kind == 'semantic'
+                               else 'companions.entry.capture.' + name.replace('_', '-'))
+                self.group_roles[name] = target_role
+                marker = self.body_markers / name
+                body = 'from pathlib import Path\nPath(' + repr(str(marker)) + ').write_text("BODY")\nVALUE = 41\n'
+                super().add_role(target_role, member, body,
+                    callers=[{'role': 'caller', 'function': '_native_join_modules' if kind == 'semantic' else 'main'}])
+            if kind == 'semantic':
+                for label, member, names in (('targets', target_source, target_names), ('recipes', recipe_source, recipe_names)):
+                    original = protocol_source(member)
+                    nodes = [n for n in ast.parse(original).body if isinstance(n, ast.FunctionDef) and n.name in names]
+                    selector = {'kind': 'top-level-functions', 'names': list(names),
+                        'ast_sha256': hashlib.sha256(ast.dump(ast.Module(body=nodes, type_ignores=[]), include_attributes=False).encode()).hexdigest()}
+                    case.assertEqual(selector['ast_sha256'], selected_pins[label])
+                    bindings = {'json': {'kind': 'stdlib', 'module': 'json'}, 'hashlib': {'kind': 'stdlib', 'module': 'hashlib'}}
+                    if label == 'recipes': bindings.update(copy={'kind': 'stdlib', 'module': 'copy'},
+                        CONTRACT={'kind': 'local-data', 'local': 'contract', 'type': 'path'},
+                        PLAN={'kind': 'local-data', 'local': 'plan', 'type': 'json'},
+                        RUST_ASSETS={'kind': 'source-constant', 'source': recipe_source, 'name': 'RUST_ASSETS'},
+                        targets={'kind': 'local-instance', 'local': 'targets', 'type_role': 'caller', 'type_name': 'NativeRefusalTargets',
+                            'fields': {'root': 'path', 'rows': 'json', 'base': 'str', 'cursor': 'int'}})
+                    callers = ([{'role': 'caller', 'function': 'NativeRefusalTargets.' + name} for name in target_names]
+                               if label == 'targets' else [{'role': 'caller', 'function': '_native_original_refusal_assertions'}])
+                    row = super().add_role(prefix + '.original.' + label, member, original, kind='fragment', callers=callers, bindings=bindings)
+                    row['selector'] = selector
+                for member in ['som-rs/contracts/compiler-v1/examples/' + name + '.prompt.json' for name in ('v1', 'v3', 'v6')] + [
+                        'som-rs/contracts/rust-output-v1/acceptance-plan.json', 'som-rs/contracts/rust-output-v1/negative-cases.json']:
+                    original = protocol_source(member); self.raw[member] = original
+                    target = self.root / member; target.parent.mkdir(parents=True, exist_ok=True); target.write_bytes(original)
+            case.assertIn(manual_variant, {'typescript', 'react'})
+            self.manual_caller = 'som-rs/tests/' + manual_variant + '-output-v1/common.py'
+            self.manual_target = 'som-rs/tests/rust-output-v1/build_negative_cases.py'
+            manual = '''import importlib.util
+import pathlib
+RUST_TOOLS = pathlib.Path(__file__).resolve().parents[1] / 'rust-output-v1'
+_spec = importlib.util.spec_from_file_location('rust_build_negative_cases', RUST_TOOLS / 'build_negative_cases.py')
+assert _spec and _spec.loader
+rust_cases = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(rust_cases)
+def run(): return rust_cases.VALUE
+'''
+            original_manual = ast.parse(protocol_source(self.manual_caller))
+            synthetic_manual = ast.parse(manual)
+            for attribute in ('spec_from_file_location', 'exec_module'):
+                def calls(tree):
+                    return [ast.dump(node, include_attributes=False) for node in ast.walk(tree)
+                            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                            and node.func.attr == attribute]
+                case.assertEqual(calls(original_manual), calls(synthetic_manual))
+            super().add_role('fixture.manual', self.manual_caller, manual,
+                callers=[{'role': 'fixture.probe', 'function': 'capture'}])
+            super().add_role('fixture.builder', self.manual_target, "VALUE = 'checked raw source'\n",
+                module='rust_build_negative_cases', callers=[{'role': 'fixture.manual', 'function': '<module>'}])
+            pins = {member: hashlib.sha256(value).hexdigest() for member, value in self.raw.items()}
+            probe = '''from pathlib import Path
+import hashlib
+ROOT = Path(ROOT_LITERAL)
+PINS = PINS_LITERAL
+BORROWED = []
+class Sources:
+    def __init__(self):
+        self.root, self.revision, self.seen, self.verify_calls, self.failure = ROOT, '1' * 40, {}, 0, None
+    def read(self, name):
+        raw = (self.root / name).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != PINS[name]: raise ValueError('protocol original source bytes differ')
+        self.seen[name] = PINS[name]
+        return raw
+    def verify(self):
+        self.verify_calls += 1
+        if self.failure is not None: raise self.failure
+        for name in list(self.seen): self.read(name)
+def capture(sources, fail=False):
+    with borrowed(sources) as lease:
+        BORROWED.append(lease)
+        value = lease.load_module('fixture.manual').run()
+        if fail: raise RuntimeError('capture failed after import')
+        return value
+'''.replace('ROOT_LITERAL', repr(str(self.root))).replace('PINS_LITERAL', repr(pins))
+            super().add_role('fixture.probe', base + 'synthetic-native-probe.py', probe,
+                bindings={'borrowed': {'kind': 'role-export', 'role': 'caller', 'attribute': '_borrowed_native'}})
+            return result
+    with mock.patch.object(protocol, 'ProtocolTransfer', Transfer):
+        f = Fixture(case, entry=entry)
+    f.transfer.revision = f.domain.revision = '1' * 40
+    f.production_path, f.kind = relative, kind
+    f.controller = lambda: f.domain.load_known('caller', f.domain.prepare('caller'), None)
+    def probe_module():
+        f.controller()
+        return f.domain.load_known('fixture.probe', f.domain.prepare('fixture.probe'), None)
+    f.probe = probe_module
+    f.sources = lambda: f.probe().Sources()
+    f.marker = f.root / 'pyc-executed'
+    target = f.root / f.manual_target; info = target.stat()
+    cache = Path(importlib.util.cache_from_source(str(target))); cache.parent.mkdir()
+    cache.write_bytes(importlib.util.MAGIC_NUMBER + struct.pack('<III', 0, int(info.st_mtime), info.st_size)
+        + marshal.dumps(compile('from pathlib import Path\nPath(' + repr(str(f.marker)) + ').write_text("BAD")\nVALUE="untrusted PYC"\n', str(target), 'exec')))
+    return f
+
+
 class SemanticIntegrity(unittest.TestCase):
     def bundle(self):
         original = {'version': 'som.dsl-bundle.v2', 'target': 'rust', 'prompt': {'name': 'frozen'},
@@ -639,6 +812,261 @@ class OriginalAssertionReplay(unittest.TestCase):
             changed[a8]['response'] = b'{"status":"ok","files":{"foreign.txt":"wrong"}}'
             data.rows = self.write_frames(data.root, changed)
             with self.assertRaises(ValueError): self.replay_recipes(data)
+
+
+class NativeSemanticProtocolTests(unittest.TestCase):
+    # Reuse the untouched original transcript factory and raw wire writer.
+    actual_sources = OriginalAssertionReplay.actual_sources
+    write_frames = OriginalAssertionReplay.write_frames
+    recipe_fixture = OriginalAssertionReplay.recipe_fixture
+
+    def native_replay(self, data, fixture, prefix=0):
+        module = fixture.controller(); sources = fixture.sources()
+        transcript = module.OfflineTranscript(data.root, data.rows, 'http://127.0.0.1:18979')
+        transcript.cursor = prefix
+        with module._native_original_refusal_assertions(sources, transcript) as (recipes, targets, provenance):
+            self.assertIs(type(targets), module.NativeRefusalTargets)
+            self.assertEqual(set(vars(targets)), {'root', 'rows', 'base', 'cursor'})
+            self.assertEqual(recipes.RUST_ASSETS, ('catalog', 'block_library', 'backend', 'formatter'))
+            self.assertEqual(provenance, data.provenance)
+            self.assertEqual(targets.cursor, prefix)
+            rows = module.replay_refusal_assertions(recipes, targets, targets, data.prompt, data.saved)
+        self.assertEqual(transcript.cursor, len(data.rows))
+        self.assertEqual(targets.cursor, transcript.cursor)
+        return rows
+
+    def test_native_full_fifteen_refusals_use_actual_typed_fragments_and_one_cursor(self):
+        with tempfile.TemporaryDirectory() as d:
+            data = self.recipe_fixture(Path(d)); fixture = core_native_fixture(self)
+            try:
+                self.assertEqual(self.native_replay(data, fixture), data.saved)
+                self.assertEqual(len(data.saved), 15)
+                self.assertGreater(fixture.domain.fragment_counter, 3)
+                self.assertFalse(any('.original.' in key for key in fixture.domain.records))
+                # Model an already consumed prefix, then consume base compile plus
+                # every refusal on the single real NativeRefusalTargets cursor.
+                data.rows = self.write_frames(data.root, [copy.deepcopy(data.frames[0]), *data.frames])
+                self.assertEqual(self.native_replay(data, fixture, prefix=1), data.saved)
+            finally:
+                fixture.stack.close()
+
+    def test_native_status_code_pointer_and_span_mutations_reach_original_assertions(self):
+        with tempfile.TemporaryDirectory() as d:
+            data = self.recipe_fixture(Path(d)); original = copy.deepcopy(data.frames); fixture = core_native_fixture(self)
+            try:
+                self.assertEqual(self.native_replay(data, fixture), data.saved)
+                index = next(i for i, frame in enumerate(original) if frame['route'] == '/v1/assemble' and frame['status'] != 200)
+                for field in ('status', 'code', 'pointer', 'span'):
+                    changed = copy.deepcopy(original); frame = changed[index]; reply = json.loads(frame['response'])
+                    if field == 'status': frame['status'] = 422
+                    elif field == 'code': reply['code'] = 'INVALID_SCHEMA'
+                    elif field == 'pointer': reply['diagnostics'][0]['prompt_pointer'] = '/bundle/target'
+                    else: reply['diagnostics'][0].update(byte_start=0, byte_end=1)
+                    frame['response'] = p.canonical(reply); data.rows = self.write_frames(data.root, changed)
+                    with self.subTest(field=field), self.assertRaises(ValueError): self.native_replay(data, fixture)
+            finally:
+                fixture.stack.close()
+
+    def test_native_A6_A8_missing_reordered_and_raw_hash_controls_remain_mandatory(self):
+        with tempfile.TemporaryDirectory() as d:
+            data = self.recipe_fixture(Path(d)); original = copy.deepcopy(data.frames); fixture = core_native_fixture(self)
+            try:
+                self.assertEqual(self.native_replay(data, fixture), data.saved)
+                a6 = next(i for i, frame in enumerate(original) if frame['route'] == '/v1/assemble'
+                          and json.loads(frame['response']).get('code') == 'INVALID_VALUE')
+                a8 = next(i for i, frame in enumerate(original) if frame['route'] == '/v1/assemble' and frame['status'] == 200)
+                changed_a6 = copy.deepcopy(original); changed_a6[a6].update(status=422, response=b'{"code":"UNSUPPORTED_TARGET"}')
+                changed_a8 = copy.deepcopy(original); changed_a8[a8]['response'] = b'{"status":"ok","files":{"foreign.txt":"wrong"}}'
+                reordered = copy.deepcopy(original); reordered[2], reordered[3] = reordered[3], reordered[2]
+                for label, frames in [('A6', changed_a6), ('A8', changed_a8), ('missing', original[:2] + original[3:]),
+                                      ('reordered', reordered)]:
+                    data.rows = self.write_frames(data.root, frames)
+                    with self.subTest(label=label), self.assertRaises(ValueError): self.native_replay(data, fixture)
+                data.rows = self.write_frames(data.root, original)
+                raw = data.root / 'http/00001/response.raw'; raw.write_bytes(raw.read_bytes() + b' ')
+                with self.assertRaisesRegex(ValueError, 'raw HTTP record differs'): self.native_replay(data, fixture)
+            finally:
+                fixture.stack.close()
+
+    def test_whole_thirteen_role_preflight_runs_before_the_first_helper_body(self):
+        fixture = core_native_fixture(self)
+        try:
+            module, sources = fixture.controller(), fixture.sources()
+            self.assertEqual(len(fixture.group_roles), 13)
+            last = fixture.group_roles[next(reversed(fixture.group_roles))]
+            row = fixture.rows[last]; original = row['source']
+            row['source'] = fixture.production_path
+            try:
+                with self.assertRaisesRegex(ValueError, 'fixed semantic join helper source differs'):
+                    with module._native_join_modules(sources, fixture.group_paths): pass
+                self.assertEqual(list(fixture.body_markers.iterdir()), [])
+            finally:
+                row['source'] = original
+            del fixture.rows[last]
+            try:
+                with self.assertRaises(KeyError) as missing:
+                    with module._native_join_modules(sources, fixture.group_paths): pass
+                self.assertEqual(missing.exception.args, (last,))
+                self.assertEqual(list(fixture.body_markers.iterdir()), [])
+            finally:
+                fixture.rows[last] = row
+            with module._native_join_modules(sources, fixture.group_paths) as modules:
+                self.assertEqual(set(modules), set(fixture.group_paths))
+                self.assertTrue(all(value.VALUE == 41 for value in modules.values()))
+            self.assertEqual(len(list(fixture.body_markers.iterdir())), 13)
+            fixture.controls.verify_installed()
+        finally:
+            fixture.stack.close()
+
+    def test_unknown_prefix_missing_binding_and_wrong_identity_refuse_before_helper_body(self):
+        with self.assertRaises(ModuleNotFoundError) as missing: p._native_controls()
+        self.assertEqual(missing.exception.name, '_som_native_active_controls_binding')
+        fixture = core_native_fixture(self, variant='_unlisted_semantic_protocol')
+        try:
+            module, sources = fixture.controller(), fixture.sources()
+            with self.assertRaisesRegex(ValueError, 'unlisted native semantic namespace'):
+                with module._native_join_modules(sources, fixture.group_paths): pass
+            with self.assertRaisesRegex(ValueError, 'helper/candidate identity differs'):
+                module._native_controls(revision='2' * 40, candidate='2' * 40)
+            with self.assertRaisesRegex(ValueError, 'repository differs'):
+                module._native_controls(fixture.root.parent)
+            self.assertEqual(list(fixture.body_markers.iterdir()), [])
+        finally:
+            fixture.stack.close()
+
+    def test_primary_identity_and_all_secondary_steps_survive_real_guard_and_close_faults(self):
+        fixture = core_native_fixture(self)
+        primary, source_error, close_error = RuntimeError('original body failure'), ValueError('source-postcheck failure'), OSError('borrow-close fault')
+        previous_trace = sys.gettrace(); observed = []
+        try:
+            module, sources = fixture.controller(), fixture.sources()
+            sources.failure = source_error
+            lease = None
+            close_code = fixture.core._Lease.close.__code__
+            def trace(frame, event, argument):
+                if event == 'call' and frame.f_code is close_code and frame.f_globals is fixture.core.__dict__:
+                    actual = frame.f_locals['self']
+                    if not actual._owns:
+                        observed.append('actual-borrow-close-entered')
+                        raise close_error
+                return trace
+            try:
+                caught, body_traceback = None, None
+                try:
+                    with module._borrowed_native(sources) as lease:
+                        fixture.domain.finder.allowed.add('unlisted-fault.py')
+                        sys.settrace(trace)
+                        raise primary
+                except RuntimeError as error:
+                    caught, body_traceback = error, error.__traceback__
+                self.assertIs(caught, primary)
+                traceback_codes = []
+                original_traceback = body_traceback
+                while original_traceback is not None:
+                    traceback_codes.append(original_traceback.tb_frame.f_code)
+                    original_traceback = original_traceback.tb_next
+                self.assertIn(self.test_primary_identity_and_all_secondary_steps_survive_real_guard_and_close_faults.__func__.__code__,
+                              traceback_codes)
+                secondary = primary.__som_native_caller_secondary_errors__
+                self.assertEqual([item['phase'] for item in secondary], ['source-postcheck', 'controls-postcheck', 'borrow-close'])
+                self.assertIs(secondary[0]['exception'], source_error)
+                self.assertIs(secondary[2]['exception'], close_error)
+                self.assertIn('original finder source admission', str(secondary[1]['exception']))
+                self.assertEqual(observed, ['actual-borrow-close-entered'])
+                self.assertGreaterEqual(sources.verify_calls, 1)
+                self.assertFalse(fixture.controls._closed)
+            finally:
+                sys.settrace(previous_trace)
+                fixture.domain.finder.allowed.discard('unlisted-fault.py')
+                sources.failure = None
+                if lease is not None: lease.close()
+            fixture.controls.verify_installed()
+        finally:
+            sys.settrace(previous_trace)
+            fixture.stack.close()
+
+    def test_original_fragment_names_order_raw_hash_and_constant_are_source_bound(self):
+        with tempfile.TemporaryDirectory() as d:
+            data = self.recipe_fixture(Path(d)); fixture = core_native_fixture(self)
+            try:
+                self.assertEqual(self.native_replay(data, fixture), data.saved)
+                for suffix in ('targets', 'recipes'):
+                    role = 'semantic.graph.original.' + suffix; selector = fixture.rows[role]['selector']
+                    original = list(selector['names']); selector['names'] = original[:-1]
+                    try:
+                        with self.subTest(selector=suffix), self.assertRaisesRegex(ValueError, 'original fragment AST differs'):
+                            self.native_replay(data, fixture)
+                    finally:
+                        selector['names'] = original
+                # Even a forged protocol source-hash update cannot replace the
+                # separately pinned original function-node order.
+                import ast
+                member = p.RUST_RECIPE_SOURCE
+                original_raw = fixture.raw[member]
+                original_pin = fixture.policy['sources'][member]['sha256']
+                tree = ast.parse(original_raw)
+                positions = [i for i, node in enumerate(tree.body) if isinstance(node, ast.FunctionDef)
+                             and node.name in p.RUST_RECIPE_FUNCTIONS]
+                tree.body[positions[0]], tree.body[positions[1]] = tree.body[positions[1]], tree.body[positions[0]]
+                reordered = ast.unparse(tree).encode()
+                fixture.raw[member] = reordered
+                fixture.policy['sources'][member]['sha256'] = p.sha(reordered)
+                try:
+                    with self.assertRaisesRegex(ValueError, 'exact original fragment AST differs'):
+                        self.native_replay(data, fixture)
+                finally:
+                    fixture.raw[member] = original_raw
+                    fixture.policy['sources'][member]['sha256'] = original_pin
+                for member, mutation in ((p.TARGET_ASSERTION_SOURCE, lambda raw: raw + b'\n# foreign raw bytes\n'),
+                        (p.RUST_RECIPE_SOURCE, lambda raw: raw.replace(b'"catalog", "block_library", "backend", "formatter"',
+                                                                       b'"foreign", "block_library", "backend", "formatter"', 1))):
+                    original = fixture.raw[member]; changed = mutation(original)
+                    self.assertNotEqual(changed, original)
+                    fixture.raw[member] = changed
+                    try:
+                        with self.subTest(source=member), self.assertRaisesRegex(ValueError, 'role source bytes changed'):
+                            self.native_replay(data, fixture)
+                    finally:
+                        fixture.raw[member] = original
+                recipe = fixture.root / p.RUST_RECIPE_SOURCE; original = recipe.read_bytes()
+                recipe.write_bytes(original + b'\n# physical changed recipe\n')
+                try:
+                    with self.assertRaisesRegex(ValueError, 'protocol original source bytes differ'):
+                        self.native_replay(data, fixture)
+                finally:
+                    recipe.write_bytes(original)
+            finally:
+                fixture.stack.close()
+
+    def test_typed_target_foreign_hook_and_extra_field_are_refused_before_fragment_use(self):
+        with tempfile.TemporaryDirectory() as d:
+            data = self.recipe_fixture(Path(d)); fixture = core_native_fixture(self); hooks = []
+            try:
+                self.assertEqual(self.native_replay(data, fixture), data.saved)
+                module = fixture.controller(); owner = module.NativeRefusalTargets
+                def foreign(self, name):
+                    hooks.append(name)
+                    raise AssertionError('foreign hook executed')
+                owner.__getattribute__ = foreign
+                try:
+                    with self.assertRaisesRegex(ValueError, 'source-owned typed class namespace changed'):
+                        self.native_replay(data, fixture)
+                    self.assertEqual(hooks, [])
+                finally:
+                    del owner.__getattribute__
+                previous = sys.gettrace()
+                def extra(frame, event, argument):
+                    if event == 'line' and frame.f_globals is module.__dict__ and frame.f_code.co_qualname == '_native_original_refusal_assertions':
+                        target = frame.f_locals.get('targets')
+                        if type(target) is owner: object.__getattribute__(target, '__dict__')['unexpected'] = None
+                    return extra
+                try:
+                    sys.settrace(extra)
+                    with self.assertRaisesRegex(ValueError, 'local object fields differ'): self.native_replay(data, fixture)
+                finally:
+                    sys.settrace(previous)
+            finally:
+                fixture.stack.close()
 
 
 if __name__ == '__main__':

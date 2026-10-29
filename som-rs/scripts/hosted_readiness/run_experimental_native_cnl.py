@@ -155,6 +155,58 @@ class BoundModules(importlib.abc.MetaPathFinder, importlib.abc.Loader):
                 sys.modules.pop(name, None)
 
 
+def _native_controls(repo, revision):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    require(Path(repo).absolute() == controls.root
+            and revision == controls.helper_revision == controls.candidate_revision,
+            "native CNL source owner differs")
+    return controls
+
+
+@contextmanager
+def _native_bound_modules(sources):
+    require(type(sources) is Sources, "source-owned native CNL inputs required")
+    controls = _native_controls(sources.root, sources.revision)
+    targets = {
+        "export_goldens": "cnl.entry.helper.export-goldens",
+        "raw_digest_compat": "cnl.entry.helper.raw-digest-compat",
+        "reconstruct_public_inputs": "cnl.entry.helper.reconstruct-public-inputs",
+        "map_rust_inputs": "cnl.entry.helper.map-rust-inputs",
+        "complete_rust_inputs": "cnl.entry.helper.complete-rust-inputs",
+        "experimental_native_compile": "cnl.entry.helper.experimental-native-compile",
+        "run_experimental_native_compile": "cnl.entry.helper.run-experimental-native-compile",
+    }
+    require(__name__ == "__main__" and set(targets) == set(MODULES),
+            "fixed native CNL entry closure required")
+    for name, role in targets.items():
+        sources.read(MODULES[name])
+        require(controls.role_sources.get(role) == MODULES[name], "native CNL helper role source differs")
+    sources.verify()
+    lease, primary = controls.borrow(), None
+    try:
+        modules = {}
+        for name, role in targets.items():
+            modules[name] = lease.load_module(role)
+        require(set(modules) == set(MODULES), "native CNL helper closure differs")
+        require(all(module.__file__ == str(sources.root / MODULES[name])
+                    for name, module in modules.items()), "actual native CNL helper source differs")
+        lease.verify_installed()
+        yield modules
+        lease.verify_installed()
+        sources.verify()
+    except BaseException as error:
+        primary = error
+        raise
+    finally:
+        try:
+            lease.close()
+        except BaseException as secondary:
+            if primary is None:
+                raise
+            BaseException.__setattr__(primary, '__som_native_cnl_close_error__', secondary)
+
+
 def tree_hashes(root):
     result = {}
     require(root.is_dir() and not root.is_symlink(), "input tree required")
@@ -576,5 +628,27 @@ def main(argv=None):
         return 2
 
 
+def native_main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    for name in ("repo", "python-inputs", "rust-inputs", "typed-proof", "binary", "assets", "out", "ruff", "rustfmt", "node", "prettier"):
+        parser.add_argument("--" + name, required=True, type=Path)
+    parser.add_argument("--tested-sha", required=True)
+    parser.add_argument("--port", required=True, type=int)
+    parser.add_argument("--carrier-root", type=Path)
+    args = parser.parse_args(argv)
+    try:
+        require(os.environ.get("GITHUB_ACTIONS") == "true" and sys.platform == "linux", "GitHub Linux runner only")
+        require(Path(__file__).absolute() == args.repo.absolute() / SELF, "fixed source path required")
+        sources = Sources(args.repo, args.tested_sha)
+        with _native_bound_modules(sources) as modules:
+            driver = modules["run_experimental_native_compile"]
+            complete = modules["complete_rust_inputs"]
+            return run(args, sources, driver, complete)
+    except Exception as error:
+        print(json.dumps({"state": "experimental-unsealed", "product_acceptance_passed": False, "experiment_complete": False,
+                          "error": type(error).__name__, "reason": str(error) if isinstance(error, Refusal) else "see preserved evidence"}))
+        return 2
+
+
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(native_main())
