@@ -206,6 +206,65 @@ class OwnerCapture(unittest.TestCase):
         self.assertFalse(result['rows'][0]['streams_complete'])
         self.assertFalse(result['complete'])
 
+    def test_successful_command_with_handler_failure_preserves_success_and_streams(self):
+        original = subject.command_evidence
+        def fail_collector(ctx, out, name, command):
+            if name == 'collector':
+                raise RuntimeError('fixture capture handler failed after successful command')
+            return original(ctx, out, name, command)
+        with mock.patch.object(subject, 'command_evidence', side_effect=fail_collector):
+            result = self.invoke()
+        row = result['rows'][0]
+        self.assertEqual(row['command']['exit_code'], 0)
+        self.assertTrue(row['command']['wait_completed'])
+        self.assertIn('fixture capture handler failed', result['command_evidence_errors'][0]['error'])
+        self.assertNotIn('error', result)
+        self.assertEqual((self.out / 'logs/collector.stdout').read_bytes(), b'stdout:m6-react-collector')
+        self.assertEqual((self.out / 'logs/collector.stderr').read_bytes(), b'stderr:m6-react-collector')
+        self.assertTrue(row['fallback_unverified']); self.assertFalse(row['streams_complete'])
+        self.assertFalse(result['complete']); self.assertFalse(result['product_acceptance_passed'])
+
+    def test_saved_stream_is_inventoried_unverified_when_original_is_unreadable(self):
+        original = subject.command_evidence
+        def partial_handler(ctx, out, name, command):
+            if name == 'collector':
+                subject.save(out / 'logs/collector.stdout', b'stdout:m6-react-collector')
+                raise RuntimeError('fixture handler failed after saving stdout')
+            return original(ctx, out, name, command)
+        original_read = subject.read
+        def missing_source(path, *args, **kwargs):
+            if Path(path) == self.ctx.work / 'stdout0':
+                raise PermissionError('fixture original stdout unavailable')
+            return original_read(path, *args, **kwargs)
+        with mock.patch.object(subject, 'command_evidence', side_effect=partial_handler), \
+             mock.patch.object(subject, 'read', side_effect=missing_source):
+            result = self.invoke()
+        row = result['rows'][0]
+        self.assertEqual(row['command']['exit_code'], 0); self.assertTrue(row['command']['wait_completed'])
+        self.assertEqual(row['unverified_existing_streams'], ['stdout'])
+        self.assertIn('PermissionError', row['capture_errors'][0]['error'])
+        self.assertEqual(result['saved_files_sha256']['logs/collector.stdout'],
+                         subject.sha(b'stdout:m6-react-collector'))
+        self.assertEqual((self.out / 'logs/collector.stderr').read_bytes(), b'stderr:m6-react-collector')
+        self.assertTrue(row['fallback_unverified']); self.assertFalse(row['streams_complete'])
+        self.assertFalse(result['complete']); self.assertFalse(result['product_acceptance_passed'])
+
+    def test_successful_command_status_survives_both_capture_handlers_failing(self):
+        original = subject.command_evidence
+        def fail_collector(ctx, out, name, command):
+            if name == 'collector':
+                raise RuntimeError('fixture first handler failure')
+            return original(ctx, out, name, command)
+        with mock.patch.object(subject, 'command_evidence', side_effect=fail_collector), \
+             mock.patch.object(subject, 'fallback_command_streams', side_effect=OSError('fixture fallback failure')):
+            result = self.invoke()
+        row = result['rows'][0]
+        self.assertEqual(row['command']['exit_code'], 0); self.assertTrue(row['command']['wait_completed'])
+        self.assertEqual([item['stage'] for item in result['command_evidence_errors']],
+                         ['collector', 'collector_fallback'])
+        self.assertTrue(row['fallback_unverified']); self.assertFalse(row['streams_complete'])
+        self.assertFalse(result['complete']); self.assertFalse(result['product_acceptance_passed'])
+
     def test_fallback_retains_readable_stream_and_marks_unreadable_stream(self):
         self.interrupt = True
         original = subject.read

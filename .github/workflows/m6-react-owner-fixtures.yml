@@ -1,7 +1,7 @@
 name: Test unsealed React owner capture
 on:
   push:
-    branches: [codex/m6-react-owner-adapter-v4-20261029]
+    branches: [codex/m6-react-owner-adapter-v5-20261029]
   workflow_dispatch:
 permissions:
   contents: read

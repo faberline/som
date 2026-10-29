@@ -370,8 +370,20 @@ def command_evidence(ctx, out, name, command):
 def fallback_command_streams(ctx, out, name, command):
     """One bounded best-effort copy after an unexpected evidence-handler error."""
     row = {'id': name, 'command': dict(command), 'streams_complete': False, 'postcheck': None,
-           'capture_errors': [], 'fallback_unverified': True}
+           'capture_errors': [], 'fallback_unverified': True, 'unverified_existing_streams': []}
     for kind in ('stdout', 'stderr'):
+        relative_dest = 'logs/' + name + '.' + kind
+        destination = out / relative_dest
+        existing = None
+        try:
+            if destination.exists() or destination.is_symlink():
+                existing = read(destination)
+                row[kind] = relative_dest
+                row[kind + '_observed_sha256'] = sha(existing)
+                row['unverified_existing_streams'].append(kind)
+        except (OSError, ValueError, TypeError) as error:
+            row['capture_errors'].append({'stage': kind + '_existing', 'error': type(error).__name__ + ': ' + str(error)})
+            continue
         if kind not in command:
             row['capture_errors'].append({'stage': kind, 'error': 'original stream path unavailable'})
             continue
@@ -381,10 +393,9 @@ def fallback_command_streams(ctx, out, name, command):
                     and all(part not in ('', '.', '..') for part in relative_source.parts),
                     'unsafe original stream path')
             raw = read(ctx.work / relative_source)
-            relative_dest = 'logs/' + name + '.' + kind
-            destination = out / relative_dest
-            if destination.exists() or destination.is_symlink():
-                require(read(destination) == raw, 'previously retained stream bytes differ')
+            if existing is not None:
+                require(existing == raw, 'previously retained stream bytes differ')
+                row['unverified_existing_streams'].remove(kind)
             else:
                 save(destination, raw)
             row[kind] = relative_dest
@@ -418,7 +429,18 @@ def run_command(ctx, module, repo, env, out, report, label, script, arguments, t
                 report.setdefault('command_evidence_errors', []).append(
                     {'stage': label + '_fallback', 'error': type(secondary).__name__ + ': ' + str(secondary)})
         raise
-    return command_evidence(ctx, out, label, command)
+    try:
+        return command_evidence(ctx, out, label, command)
+    except Exception as error:
+        report.setdefault('command_evidence_errors', []).append(
+            {'stage': label, 'error': type(error).__name__ + ': ' + str(error)})
+        try:
+            return fallback_command_streams(ctx, out, label, command)
+        except Exception as secondary:
+            report.setdefault('command_evidence_errors', []).append(
+                {'stage': label + '_fallback', 'error': type(secondary).__name__ + ': ' + str(secondary)})
+            return {'id': label, 'command': dict(command), 'streams_complete': False,
+                    'postcheck': None, 'capture_errors': [], 'fallback_unverified': True}
 
 
 def validate_args(args, ctx, graph):
