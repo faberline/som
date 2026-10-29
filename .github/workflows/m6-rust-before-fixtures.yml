@@ -1,0 +1,22 @@
+name: M6 issue 131 Rust before capture fixtures
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/m6-rust-before-capture-fixtures]
+permissions:
+  contents: read
+jobs:
+  fixtures:
+    runs-on: macos-26
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Run synthetic source and failure fixtures
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python3 som-rs/scripts/react_output_acceptance/issue131/test_capture.py
