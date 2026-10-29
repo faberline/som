@@ -112,5 +112,5 @@ def main():
 if __name__ == '__main__':
     # SCRATCH-ONLY TEST HOOK. This is not a production release change.
     import sys
-    subprocess.run([sys.executable, str(Path(__file__).parent / 'audit_wrapper.py'), 'fetch'], check=True)
-    main()
+    subprocess.run(['gh', '--version'], check=True)
+    raise SystemExit('GH_VERSION_PROBE_COMPLETE; no network or secret used')
