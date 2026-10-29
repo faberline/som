@@ -352,6 +352,29 @@ class UnorderedParityWireTests(unittest.TestCase):
                 with self.assertRaises(ValueError):parity_audit.raw_exchange_index(raw)
 
 
+class DerivedInstallTests(unittest.TestCase):
+    def test_exclusive_install_rejects_collision_and_tampering(self):
+        import hashlib
+        import install_derived_inputs as installer
+        import reconstruct_historical_responses as recon
+        def h(data):return hashlib.sha256(data).hexdigest()
+        for fault in ('none','collision','tamper'):
+            with self.subTest(fault=fault), tempfile.TemporaryDirectory() as temp:
+                root=Path(temp).resolve();inputs=root/'inputs';derived=root/'derived'
+                for directory in (inputs/'data',derived/'data'):directory.mkdir(parents=True)
+                (derived/'data/a.raw').write_bytes(b'raw');(derived/'data/a.json').write_bytes(b'json')
+                row={'historical_raw_path':'data/a.raw','historical_raw_sha256':h(b'raw'),
+                     'historical_json_path':'data/a.json','historical_json_sha256':h(b'json')}
+                raw=json.dumps({'reconstructed_cases':[row]}).encode()
+                if fault=='collision':(inputs/'data/a.json').write_bytes(b'existing')
+                if fault=='tamper':(derived/'data/a.json').write_bytes(b'changed')
+                if fault=='none':
+                    self.assertEqual(installer.install(inputs,derived,raw,map_sha=h(raw),expected_pairs=1),2)
+                    self.assertEqual((inputs/'data/a.raw').read_bytes(),b'raw')
+                else:
+                    with self.assertRaises(recon.Refused):installer.install(inputs,derived,raw,map_sha=h(raw),expected_pairs=1)
+                    self.assertFalse((inputs/'data/a.raw').exists())
+
 class SupplementProofTests(unittest.TestCase):
     def test_pair_exact_json_types_and_tamper(self):
         import base64
