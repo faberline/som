@@ -1,0 +1,11 @@
+{
+  "head": "57f0d249af7cdf06dbd2f2008f8c2275fe2bf257",
+  "run_id": 40863011173,
+  "attempt": 1,
+  "job_id": 123410697132,
+  "artifact_id": 12892064549,
+  "artifact_sha256": "8d24fc4779a6585b4b5ecc7dfd5d5744f19345de80ce9cb1ac0a18a762389c8d",
+  "artifact_bytes": 111991966,
+  "auditor_sha256": "0969e81d0cc50d37bca0d7cd21e980a0982f841e830f5f1e6f54cbee5814041e",
+  "producer_binding_sha256": "ed8094a5f084447b459b271bd50f2e4fcf4a3650a394fa6ba0ca94f300540db9"
+}
