@@ -194,4 +194,9 @@ def main():
 
 
 if __name__ == '__main__':
+    # SCRATCH TEST INSTRUMENTATION ONLY. Not an authorized release source.
+    print('SYNTHETIC_STANDIN_LOOPBACK_BEGIN', flush=True)
+    subprocess.run([sys.executable, '-m', 'unittest', '-v', 'test_recovery_loopback'],
+                   cwd=str(HERE), check=True, timeout=600)
+    print('SYNTHETIC_STANDIN_LOOPBACK_END; BEGIN_ACCEPTED_59DA_REHEARSAL', flush=True)
     main()
