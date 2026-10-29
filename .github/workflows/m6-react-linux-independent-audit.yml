@@ -1,0 +1,63 @@
+name: M6 React Linux QA independent evidence audit (not acceptance)
+on:
+  push:
+    branches:
+      - codex/m6-react-linux-audit-20261029
+permissions:
+  contents: read
+  actions: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Check audit fixtures
+        working-directory: .github/m6-react-linux-independent-audit
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest -v test_audit test_unpack_artifact
+      - name: Check original run and artifact metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/40817465924" > "$RUNNER_TEMP/react-run.json"
+          jq -e '.id == 40817465924 and .head_sha == "62637173ffeecde2655482377a218b22bf54618a" and .status == "completed" and .conclusion == "success"' "$RUNNER_TEMP/react-run.json" > /dev/null
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/40817465924/jobs" > "$RUNNER_TEMP/react-jobs.json"
+          jq -e '
+            .jobs | sort_by(.name) as $jobs |
+            ($jobs | map(.name)) == ["fixtures", "probe"] and
+            all($jobs[]; .head_sha == "62637173ffeecde2655482377a218b22bf54618a" and .status == "completed" and .conclusion == "success" and (.steps | length > 0 and all(.[]; .conclusion == "success"))) and
+            ([$jobs[] | select(.name == "fixtures") | .steps[] | select(.name == "Run synthetic fixtures on GitHub") | .conclusion] == ["success"]) and
+            ([$jobs[] | select(.name == "probe") | .steps[] | select(.name == "Prepare exact public sources" or .name == "Seed a new cache from the frozen lock" or .name == "Observe an offline reference install" or .name == "Retain public inputs and raw results with file modes" or .name == "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02") | .name] | sort) == (["Prepare exact public sources", "Seed a new cache from the frozen lock", "Observe an offline reference install", "Retain public inputs and raw results with file modes", "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"] | sort)
+          ' "$RUNNER_TEMP/react-jobs.json" > /dev/null
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/12873066929" > "$RUNNER_TEMP/react-artifact.json"
+          jq -e '.id == 12873066929 and .workflow_run.id == 40817465924 and .expired == false and .size_in_bytes == 523384472 and .digest == "sha256:10a7f2bf058be21c670ddac89afece05c305ee717b9a879de4c95256fd6fe2dc"' "$RUNNER_TEMP/react-artifact.json" > /dev/null
+      - name: Download and bind public evidence
+        working-directory: .github/m6-react-linux-independent-audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/12873066929/zip" > "$RUNNER_TEMP/react-qa-artifact.zip"
+          python3 unpack_artifact.py "$RUNNER_TEMP/react-qa-artifact.zip" "$RUNNER_TEMP/react-linux-qa-public-inputs.tar"
+      - name: Independently inspect retained evidence
+        working-directory: .github/m6-react-linux-independent-audit
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          tar_sha="$(sha256sum "$RUNNER_TEMP/react-linux-qa-public-inputs.tar" | cut -d ' ' -f 1)"
+          python3 audit.py --repo "$GITHUB_WORKSPACE" --tar "$RUNNER_TEMP/react-linux-qa-public-inputs.tar" --expected-tar-sha256 "$tar_sha" --source-commit 62637173ffeecde2655482377a218b22bf54618a --output "$RUNNER_TEMP/react-linux-independent-audit.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: react-linux-independent-audit
+          path: |
+            ${{ runner.temp }}/react-linux-independent-audit.json
+            ${{ runner.temp }}/react-run.json
+            ${{ runner.temp }}/react-jobs.json
+            ${{ runner.temp }}/react-artifact.json
+          if-no-files-found: warn
+          retention-days: 7
