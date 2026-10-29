@@ -63,6 +63,9 @@ class CaptureTests(unittest.TestCase):
             rows.extend([{'phase': key[0], 'id': case, 'check': 'compile_equal', 'passed': True,
                           'baseline_status': 200, 'baseline_response_sha256': digest(self.compile_response),
                           'baseline_request_sha256': digest(self.compile_request)},
+                         {'phase': key[0], 'id': case, 'check': 'baseline_bundle_refused', 'passed': True,
+                          'qa_status': 400, 'request_sha256': digest(capture.jbytes({'bundle': {'prompt': '中文'}})),
+                          'qa_request_sha256': digest(capture.jbytes({'bundle': {'prompt': '中文'}}))},
                          {'phase': key[0], 'id': case, 'check': 'rebased_files', 'passed': True, 'qa_status': 200,
                           'files_sha256': self.files_sha, 'recorded_files_sha256': self.files_sha,
                           'qa_request_sha256': digest(self.qa_request), 'qa_response_sha256': digest(self.qa_response)}])
@@ -125,6 +128,25 @@ class CaptureTests(unittest.TestCase):
     def test_modified_run003_fails_closed(self):
         self.put(self.run / 'rust-products.json', b'{}')
         with self.assertRaises(ValueError):
+            self.prepare()
+
+    def test_refusal_request_sha_mismatch_fails_closed(self):
+        report = json.loads(self.report_path.read_bytes())
+        report['rows'][1]['request_sha256'] = '0' * 64
+        report['rows'][1]['qa_request_sha256'] = '0' * 64
+        self.write(self.report_path, report)
+        capture.REPORT_SHA = digest(self.report_path.read_bytes())
+        manifest_path = self.sealed / 'manifest.json'
+        manifest = json.loads(manifest_path.read_bytes())
+        entry = next(x for x in manifest['files'] if x['path'] == 'run/rust-baseline/report.json')
+        entry['sha256'] = capture.REPORT_SHA
+        self.write(manifest_path, manifest)
+        index_path = self.sealed / 'evidence-index.json'
+        index = json.loads(index_path.read_bytes())
+        index['packages'][0]['manifest_sha256'] = digest(manifest_path.read_bytes())
+        self.write(index_path, index)
+        capture.EVIDENCE_INDEX_SHA = digest(index_path.read_bytes())
+        with self.assertRaisesRegex(ValueError, 'original serializer request identity'):
             self.prepare()
 
     def test_modified_refusal_fails_closed(self):
