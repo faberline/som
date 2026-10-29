@@ -1,7 +1,7 @@
 name: Native active source fixtures
 on:
   push:
-    branches: [codex/m12-native-shared-semantic-source-fixtures-v1]
+    branches: [codex/m12-native-remaining-recipe-source-fixtures-v1]
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,20 +20,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: public-reconstruction
-            script: som-rs/scripts/hosted_readiness/test_reconstruct_public_inputs.py
+          - name: legacy-completion
+            script: som-rs/scripts/hosted_readiness/test_complete_rust_inputs.py
             legacy: true
-          - name: legacy-cnl
-            script: som-rs/scripts/hosted_readiness/test_run_experimental_native_cnl.py
+          - name: legacy-checked-proof
+            script: som-rs/scripts/hosted_readiness/test_prove_checked_reference.py
             legacy: true
-          - name: native-shared-helpers
-            script: som-rs/scripts/hosted_readiness/test_native_shared_helper_callers.py
-            legacy: false
-          - name: native-semantic
-            script: som-rs/scripts/hosted_readiness/test_run_candidate_semantic_gates.py
-            legacy: false
-          - name: native-companions
-            script: som-rs/scripts/hosted_readiness/test_run_current_python_companions.py
+          - name: native-remaining-recipes
+            script: som-rs/scripts/hosted_readiness/test_native_remaining_recipe_loaders.py
             legacy: false
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262

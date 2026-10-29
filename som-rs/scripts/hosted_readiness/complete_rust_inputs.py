@@ -19,6 +19,7 @@ from pathlib import Path
 import shutil
 import sys
 import tempfile
+from types import ModuleType
 
 import map_rust_inputs as mapper
 import reconstruct_public_inputs as replay
@@ -130,6 +131,93 @@ def serializer_runtime(sources):
                 del sys.modules[name]
 
 
+_NATIVE_SERIALIZER_ROLES = {'_som_active_cnl_entry_helper_complete_rust_inputs': {'module': '_som_active_cnl_entry_helper_complete_rust_inputs_recipe_serializer',
+                                                       'serializer': 'cnl.entry.helper.complete-rust-inputs.recipe.serializer'},
+ '_som_active_companions_entry_capture_complete_rust_inputs': {'module': '_som_active_companions_entry_capture_complete_rust_inputs_recipe_serializer',
+                                                               'serializer': 'companions.entry.capture.complete-rust-inputs.recipe.serializer'},
+ '_som_active_semantic_capture_complete': {'module': '_som_active_semantic_capture_complete_recipe_serializer',
+                                           'serializer': 'semantic.capture.complete.recipe.serializer'},
+ '_som_active_semantic_capture_driver_imports_complete_rust_inputs': {'module': '_som_active_semantic_capture_driver_imports_complete_rust_inputs_recipe_serializer',
+                                                                      'serializer': 'semantic.capture.driver.imports.complete-rust-inputs.recipe.serializer'},
+ '_som_active_semantic_common_postclose_join_complete_rust_inputs': {'module': '_som_active_semantic_common_postclose_join_complete_rust_inputs_recipe_serializer',
+                                                                     'serializer': 'semantic.common-postclose.join.complete-rust-inputs.recipe.serializer'},
+ '_som_active_semantic_common_runtime_join_complete_rust_inputs': {'module': '_som_active_semantic_common_runtime_join_complete_rust_inputs_recipe_serializer',
+                                                                   'serializer': 'semantic.common-runtime.join.complete-rust-inputs.recipe.serializer'},
+ '_som_active_semantic_common_verify_join_complete_rust_inputs': {'module': '_som_active_semantic_common_verify_join_complete_rust_inputs_recipe_serializer',
+                                                                  'serializer': 'semantic.common-verify.join.complete-rust-inputs.recipe.serializer'},
+ '_som_active_semantic_entry_join_complete_rust_inputs': {'module': '_som_active_semantic_entry_join_complete_rust_inputs_recipe_serializer',
+                                                          'serializer': 'semantic.entry.join.complete-rust-inputs.recipe.serializer'},
+ '_som_active_semantic_graph_join_complete_rust_inputs': {'module': '_som_active_semantic_graph_join_complete_rust_inputs_recipe_serializer',
+                                                          'serializer': 'semantic.graph.join.complete-rust-inputs.recipe.serializer'}}
+
+
+def _serializer_native_mode():
+    if __name__ in {'complete_rust_inputs', '__main__'} and '__som_native_active_controls__' not in globals():
+        return False
+    require(type(__name__) is str and type(_NATIVE_SERIALIZER_ROLES) is dict
+            and __name__ in _NATIVE_SERIALIZER_ROLES, 'unlisted native companion serializer namespace')
+    require('__som_native_active_controls__' in globals(), 'native companion controls binding is absent')
+    return True
+
+
+def _native_serializer_controls():
+    require(_serializer_native_mode(), 'native companion serializer controls required')
+    try:
+        from _som_native_active_controls_binding import controls
+    except ImportError as error:
+        raise Refusal('actual Core companion serializer import binding required') from error
+    controls.verify_installed()
+    target = _NATIVE_SERIALIZER_ROLES[__name__]
+    require(type(target) is dict and set(target) == {'serializer', 'module'}
+            and all(type(value) is str for value in target.values())
+            and controls.role_sources.get(target['serializer']) == replay.SERIALIZER,
+            'fixed companion serializer role/source differs')
+    return controls, target
+
+
+@contextmanager
+def _native_serializer_runtime(sources):
+    controls, target = _native_serializer_controls()
+    require(type(sources) is Sources and type(sources.repo) is type(controls.root) and sources.repo == controls.root,
+            'actual source-owned native companion inputs required')
+    sources.verify()
+    require(sources.pins[replay.SERIALIZER] == replay.RUNTIME_PINS[replay.SERIALIZER]
+            and sources.pins[replay.STATEMENT_MAP] == replay.RUNTIME_PINS[replay.STATEMENT_MAP],
+            'independent serializer pins differ')
+    lease = controls.borrow(); primary = None
+    try:
+        module = lease.load_module(target['serializer'])
+        require(type(module) is ModuleType and module.__name__ == target['module']
+                and module.__file__ == str(sources.repo / replay.SERIALIZER) and module.__cached__ is None
+                and module.__som_raw_sha256__ == sources.pins[replay.SERIALIZER],
+                'actual Core companion serializer identity differs')
+        lease.verify_installed()
+        yield module.serialize_prompt
+    except BaseException as error:
+        primary = error
+        raise
+    finally:
+        secondary = None
+        try:
+            lease.verify_installed(); sources.verify()
+        except BaseException as error:
+            secondary = error
+        try:
+            lease.close()
+        except BaseException as error:
+            if secondary is None: secondary = error
+            else: BaseException.__setattr__(secondary, '__som_serializer_close_error__', error)
+        if secondary is not None:
+            if primary is None: raise secondary
+            BaseException.__setattr__(primary, '__som_native_serializer_postcheck_error__', secondary)
+
+
+def _serializer_recipe(sources):
+    if not _serializer_native_mode():
+        return serializer_runtime(sources)
+    return _native_serializer_runtime(sources)
+
+
 def sorted_objects(value):
     if isinstance(value, dict):
         return {key: sorted_objects(value[key]) for key in sorted(value)}
@@ -206,6 +294,11 @@ def complete(repo, inputs, goldens, out, tested_sha):
     require(not out.exists() and out != repo and repo not in out.parents and out != inputs and inputs not in out.parents,
             "completion output must be new and outside source/input trees")
     no_symlinks(out)
+    if _serializer_native_mode():
+        controls, _ = _native_serializer_controls()
+        require(type(repo) is type(controls.root) and repo == controls.root
+                and tested_sha == controls.helper_revision == controls.candidate_revision,
+                'native companion source/revision differs before Sources construction')
     out.parent.mkdir(parents=True, exist_ok=True)
     sources = Sources(repo, goldens)
     negative = {row["id"]: row for row in sources.document(mapper.NEGATIVE)["cases"] if row["id"].startswith("RS")}
@@ -226,7 +319,7 @@ def complete(repo, inputs, goldens, out, tested_sha):
             row["requests"]["json"] = add_request(stage, row, "json", mapper.compact({"format": "som.prompt-json.v1", "prompt": prompt, "target": "rust"}), provenance)
             row["canonical_typed_prompt_sha256"] = value_sha(prompt)
             row["typed_prompt_proof"] = "public example and explicit authoring edits matched frozen canonical prompt hash; CNL compiler semantics unrun"
-        with serializer_runtime(sources) as serialize:
+        with _serializer_recipe(sources) as serialize:
             statement_map = sources.document(replay.STATEMENT_MAP)
             for row in missing_cnl:
                 prompt = parse(request_bytes(stage, row["requests"]["json"]))["prompt"]

@@ -1,4 +1,4 @@
-"""Run three original legacy fixture files through the existing strict bootstrap.
+"""Run five original legacy fixture files through the existing strict bootstrap.
 
 This is a bounded GitHub source-test adapter. It grants no native authority.
 """
@@ -18,6 +18,8 @@ ENTRIES = frozenset(BASE + name for name in (
     'test_experimental_native_compile.py',
     'test_reconstruct_public_inputs.py',
     'test_run_experimental_native_cnl.py',
+    'test_complete_rust_inputs.py',
+    'test_prove_checked_reference.py',
 ))
 
 
