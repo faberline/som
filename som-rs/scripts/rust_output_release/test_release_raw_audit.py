@@ -289,6 +289,8 @@ class CompleteAuditTests(ExchangeTests):
         self.head = 'c' * 40
         self.config['candidate']['binary']['sha256'] = audit.CANDIDATE_SHA256
         self.config['previous']['binary']['sha256'] = audit.PREVIOUS_SHA256
+        self.config['base_controller'] = {'path': self.repo + '/som-rs/scripts/compiler_default_switch.py',
+                                          'sha256': audit.BASE_CONTROLLER_SHA256}
         self.report.update({'version': 'som.rust-output-switch-rehearsal.v1', 'passed': True,
                             'profile': 'compiler-only', 'live_default_accessed': False, 'script_sha256': {}})
         config_raw = json.dumps(self.config).encode()
@@ -394,6 +396,17 @@ class CompleteAuditTests(ExchangeTests):
         self.summary['candidate_binary_sha256'] = '0' * 64
         self.summary_path.write_text(json.dumps(self.summary))
         with self.assertRaisesRegex(ValueError, 'binary hashes mismatch'): self.raw()
+
+    def test_base_controller_pin_mismatch_refused(self):
+        self.config['base_controller']['sha256'] = '0' * 64
+        config_raw = json.dumps(self.config).encode()
+        (self.root / 'run/inputs/prerequisites.json').write_bytes(config_raw)
+        self.report['prerequisites']['sha256'] = audit.sha(config_raw)
+        path = self.root / 'run/rehearsal/rehearsal.json'
+        path.write_text(json.dumps(self.report))
+        self.summary['rehearsal_sha256'] = audit.digest(path)
+        self.summary_path.write_text(json.dumps(self.summary))
+        with self.assertRaisesRegex(ValueError, 'base controller binding mismatch'): self.raw()
 
     def test_missing_scenario_refused(self):
         self.report['scenarios'].pop()

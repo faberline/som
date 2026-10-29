@@ -27,6 +27,7 @@ WORKFLOW_PATH = '.github/workflows/m6-release.yml'
 WORKFLOW_SHA256 = '163584a9ae3a7045b6a939ada696b50b0565bc913dd15de6f577981f8382381e'
 CANDIDATE_SHA256 = '59dab78a0f401a86e028c186285a888cfdf304b2d077e167d46b20d1131a3308'
 PREVIOUS_SHA256 = '2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c'
+BASE_CONTROLLER_SHA256 = '289a8470c5de2a183b01c8a138ecb4bc6cfe80a624f0291b32b779cc854bfb12'
 RESTORE_SOURCES = {
     'som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs':
         'ac5bfe21853712a38a8f5f032f44a4151c7bf7c2c54b669095704ba20e84a822',
@@ -181,6 +182,8 @@ def check_checkout(source, head):
     require(digest(regular(source, WORKFLOW_PATH)) == WORKFLOW_SHA256, 'workflow source mismatch')
     for path, expected in RESTORE_SOURCES.items():
         require(digest(regular(source, path)) == expected, 'evidence restorer source mismatch')
+    require(digest(regular(source, 'som-rs/scripts/compiler_default_switch.py')) == BASE_CONTROLLER_SHA256,
+            'base controller source mismatch')
 
 
 def check_source(source, head, report):
@@ -389,6 +392,8 @@ def check_raw(root, source, head):
     config_file = regular(root, 'run/inputs/prerequisites.json')
     require(digest(config_file) == report['prerequisites']['sha256'], 'prerequisites hash mismatch')
     config = json.loads(config_file.read_bytes())
+    require(config['base_controller'] == {'path': config['repo'] + '/som-rs/scripts/compiler_default_switch.py',
+                                          'sha256': BASE_CONTROLLER_SHA256}, 'base controller binding mismatch')
     canonical = json.dumps(config, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode()
     require(report['prerequisites_receipt_sha256'] == sha(canonical)
             and summary['prerequisites_sha256'] == digest(config_file), 'prerequisites receipt mismatch')
