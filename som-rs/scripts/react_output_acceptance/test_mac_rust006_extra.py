@@ -352,6 +352,57 @@ class UnorderedParityWireTests(unittest.TestCase):
                 with self.assertRaises(ValueError):parity_audit.raw_exchange_index(raw)
 
 
+class ProductHTTPBytesTests(unittest.TestCase):
+    def test_concurrent_case_sequences_and_exact_bytes(self):
+        import concurrent.futures, hashlib, http.client, http.server, threading, types
+        from unittest import mock
+        import product_http_recorder
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def do_POST(self):
+                data=self.rfile.read(int(self.headers['Content-Length']))
+                self.send_response(200); self.send_header('Content-Type','application/octet-stream'); self.end_headers()
+                self.wfile.write(data[::-1])
+            def log_message(self,*args): pass
+        server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Handler)
+        thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+        base='http://127.0.0.1:'+str(server.server_port)
+        def send(base,method,path,body,content_type):
+            conn=http.client.HTTPConnection('127.0.0.1',server.server_port,timeout=5)
+            try:
+                conn.request(method,path,body,{'Content-Type':content_type}); response=conn.getresponse()
+                return response.status,response.getheader('content-type'),response.read()
+            finally:conn.close()
+        suite=types.SimpleNamespace()
+        class Run:
+            def call(self,step,category):
+                return suite.http_send(base,'POST','/data',b'\x00\xff\x01','application/octet-stream')
+            def strict(self): self.call('strict','bounds')
+        def run(prompt,base,send=None):
+            result=Run(); result.call('main','crud'); return result
+        suite.Run=Run; suite.run=run; suite.http_send=send
+        try:
+            with tempfile.TemporaryDirectory() as temp:
+                out=Path(temp)/'http'; observer=product_http_recorder.ProductRecorder(out,suite)
+                def parity_case(case):
+                    python=suite.run({},base); rust=suite.run({},base); rust.strict()
+                with mock.patch.object(suite,'http_send',observer.send), mock.patch.object(suite,'run',observer.run), \
+                     mock.patch.object(Run,'strict',lambda owner:observer.strict(owner)):
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+                        list(pool.map(parity_case,[{'id':'case-'+str(i)} for i in range(4)]))
+                self.assertTrue(observer.finish())
+                result=json.loads((out/'manifest.json').read_bytes());self.assertEqual(len(result['calls']),12)
+                groups={}
+                for row in result['calls']:
+                    key=(row['case'],row['target']);groups.setdefault(key,[]).append(row['sequence'])
+                    request=(out/row['request_file']).read_bytes(); response=(out/row['response_file']).read_bytes()
+                    self.assertEqual(request,b'\x00\xff\x01');self.assertEqual(response,b'\x01\xff\x00')
+                    self.assertEqual(row['request_sha256'],hashlib.sha256(request).hexdigest())
+                    self.assertEqual(row['response_sha256'],hashlib.sha256(response).hexdigest())
+                self.assertEqual(len(groups),8)
+                for (case,target),seq in groups.items():self.assertEqual(seq,[1] if target=='python' else [1,2])
+        finally:
+            server.shutdown();server.server_close();thread.join(timeout=5)
+
 class ParityIndependentChecks(unittest.TestCase):
     def test_validation_error_raw_response_and_request(self):
         import audit_mac_parity as audit

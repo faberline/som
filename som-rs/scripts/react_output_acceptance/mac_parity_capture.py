@@ -8,6 +8,7 @@ from pathlib import Path
 import subprocess
 import sys
 import threading
+import importlib
 from unittest import mock
 from record_api import Recorder
 
@@ -65,12 +66,24 @@ def main():
     lifecycle.mkdir(parents=True,mode=0o700)
     import record_rust006_http
     observer=TrackingRecorder(lifecycle)
+    # Load the same suite module that check_behavior imports. Record at its
+    # transport seam without changing the HTTP result consumed by the suite.
+    sys.path.insert(0, str(CHECKER.parent))
+    try:
+        suite=importlib.import_module('suite')
+    finally:
+        sys.path.pop(0)
+    import product_http_recorder
+    product=product_http_recorder.ProductRecorder(lifecycle/'product-http',suite)
     code=1
     try:
-        with mock.patch.object(subprocess,'run',observer.run), mock.patch.object(subprocess,'Popen',observer.popen):
+        with mock.patch.object(subprocess,'run',observer.run), mock.patch.object(subprocess,'Popen',observer.popen), \
+             mock.patch.object(suite,'http_send',product.send), mock.patch.object(suite,'run',product.run), \
+             mock.patch.object(suite.Run,'strict',lambda owner: product.strict(owner)):
             code=record_rust006_http.run_checker(raw,CHECKER,['parity','--qa','http://127.0.0.1:18919',
                  '--out',str(parity),'--target-dir',str(target),'--python',str(python),'--jobs','4'])
     finally:
+        if not product.finish(): observer.errors.append('ProductHTTPRecordingFailed')
         starts=[e for e in observer.events if e.get('kind')=='postmaster' and e.get('phase')=='after-start']
         if starts:
             try:
