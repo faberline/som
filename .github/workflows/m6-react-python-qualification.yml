@@ -1,26 +1,26 @@
-name: M6 React 39-pin Python QA closure (not product acceptance)
+name: M6 React fresh Python venv proof (not product acceptance)
 on:
-  push:
-    branches:
-      - codex/m6-react-python-qualification-20261029
+  workflow_dispatch:
 permissions:
   contents: read
   actions: read
 jobs:
-  qualification:
+  fresh-offline-venv:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - name: Bind reviewed qualification source
-        working-directory: .github/m6-react-python-closure
+      - name: Bind the venv provision source before execution
         run: |
+          set -eu
+          path=.github/m6-venv-fixtures/provision_live.py
+          expected=d912a1c4c88c84dd2c29af64713985b367fcf70dbfc173b8ca95c7b2d7539ef1
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          test "$(sha256sum qualify_react_python.py | cut -d ' ' -f 1)" = c83660e629f743a759a8c9511345e9ed1568bd153f667fd2605956e006c26cdb
-          test "$(git show "$GITHUB_SHA:.github/m6-react-python-closure/qualify_react_python.py" | sha256sum | cut -d ' ' -f 1)" = c83660e629f743a759a8c9511345e9ed1568bd153f667fd2605956e006c26cdb
+          test "$(sha256sum "$path" | cut -d ' ' -f 1)" = "$expected"
+          test "$(git show "$GITHUB_SHA:$path" | sha256sum | cut -d ' ' -f 1)" = "$expected"
           for entry in \
             'som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py 2a92e2df47fb05e76677fbb84e9cbb7f12d07d90eb8019bd816b5fe6b5588598' \
             'som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3' \
@@ -31,10 +31,33 @@ jobs:
             test "$(sha256sum "$GITHUB_WORKSPACE/$1" | cut -d ' ' -f 1)" = "$2"
             test "$(git show "$GITHUB_SHA:$1" | sha256sum | cut -d ' ' -f 1)" = "$2"
           done
+      - name: Acquire and bind source and independent audit artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          d="$RUNNER_TEMP/react39-inputs"
+          mkdir -m 700 "$d"
+          gh api repos/faberline/som/actions/runs/40821432963 > "$d/source-run.json"
+          gh api repos/faberline/som/actions/artifacts/12874482658 > "$d/source-artifact.json"
+          gh api repos/faberline/som/actions/runs/40823392027 > "$d/audit-run.json"
+          gh api repos/faberline/som/actions/artifacts/12875218806 > "$d/audit-artifact.json"
+          jq -e '.id == 40821432963 and .head_sha == "071c55b0f02e2325a6f0993636d5330005b6a4fe" and .status == "completed" and .conclusion == "success" and .repository.id == 1390374878' "$d/source-run.json" >/dev/null
+          jq -e '.id == 12874482658 and .expired == false and .digest == "sha256:d568ebe48167bec64b4d067f1e2e246b625e16852fc6201bef3689c13c7850bf" and .workflow_run.id == 40821432963 and .workflow_run.head_sha == "071c55b0f02e2325a6f0993636d5330005b6a4fe" and .workflow_run.repository_id == 1390374878' "$d/source-artifact.json" >/dev/null
+          jq -e '.id == 40823392027 and .head_sha == "980fb40bde910d467bfcf125bbaade5b6009d033" and .status == "completed" and .conclusion == "success" and .repository.id == 1390374878' "$d/audit-run.json" >/dev/null
+          jq -e '.id == 12875218806 and .expired == false and .digest == "sha256:6aa5750a1b98f0aff12e3145963b73f44cc1f087339905a8ebab8f0e659bbb00" and .workflow_run.id == 40823392027 and .workflow_run.head_sha == "980fb40bde910d467bfcf125bbaade5b6009d033" and .workflow_run.repository_id == 1390374878' "$d/audit-artifact.json" >/dev/null
+          gh api repos/faberline/som/actions/artifacts/12874482658/zip > "$d/source.zip"
+          gh api repos/faberline/som/actions/artifacts/12875218806/zip > "$d/audit.zip"
+          test "$(sha256sum "$d/source.zip" | cut -d ' ' -f 1)" = d568ebe48167bec64b4d067f1e2e246b625e16852fc6201bef3689c13c7850bf
+          test "$(sha256sum "$d/audit.zip" | cut -d ' ' -f 1)" = 6aa5750a1b98f0aff12e3145963b73f44cc1f087339905a8ebab8f0e659bbb00
+          mkdir "$d/source" "$d/audit"
+          unzip -q "$d/source.zip" -d "$d/source"
+          unzip -q "$d/audit.zip" -d "$d/audit"
+          test "$(sha256sum "$d/source/react-python-qa-closure.tar" | cut -d ' ' -f 1)" = 8a1ead27a72911acb9af76c622311c5924ad91073b3fc9a221a44db6a0dd4e3b
+          test "$(sha256sum "$d/audit/react-python-independent-audit.json" | cut -d ' ' -f 1)" = 3fb0075a6795d4f4efcb0845f8ee05dcf16947f7e946954a02a3835677eb8389
       - name: Create runtime transport directory
-        working-directory: ${{ runner.temp }}
         run: mkdir -m 700 "$RUNNER_TEMP/som-runtime-reuse-control"
-      - name: Download the source-qualified runtime artifact
+      - name: Download source-qualified runtime artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           repository: faberline/som
@@ -43,38 +66,38 @@ jobs:
           merge-multiple: true
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/som-runtime-reuse-control/transport
-      - name: Restore and verify runtime
+      - name: Restore and verify qualified runtime
         working-directory: ${{ runner.temp }}/som-runtime-reuse-control
         env:
           SOM_RUNTIME_ACTIONS_TOKEN: ${{ github.token }}
           PYTHONDONTWRITEBYTECODE: '1'
         run: |
-          python3 -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py" --repo "$GITHUB_WORKSPACE" --source-revision "$GITHUB_SHA" --artifact-root "$RUNNER_TEMP/som-runtime-reuse-control/transport" --out "$RUNNER_TEMP/som-product-runtime-qualification"
-      - name: Qualify separate React QA wheel closure
-        env:
-          PYTHONDONTWRITEBYTECODE: '1'
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py" --repo "$GITHUB_WORKSPACE" --source-revision "$GITHUB_SHA" --artifact-root "$RUNNER_TEMP/som-runtime-reuse-control/transport" --out "$RUNNER_TEMP/som-product-runtime-qualification"
+      - name: Build and verify fresh offline React QA venv
         run: |
-          "$RUNNER_TEMP/som-product-runtime-qualification/install/python/bin/python3.12" -I -S -B "$GITHUB_WORKSPACE/.github/m6-react-python-closure/qualify_react_python.py" --repo "$GITHUB_WORKSPACE" --source-revision "$GITHUB_SHA" --runtime "$RUNNER_TEMP/som-product-runtime-qualification" --out "$RUNNER_TEMP/som-react-python-closure"
-      - name: Package qualification and failure evidence with file modes
+          "$RUNNER_TEMP/som-product-runtime-qualification/install/python/bin/python3.12" -I -S -B "$GITHUB_WORKSPACE/.github/m6-venv-fixtures/provision_live.py" --repo "$GITHUB_WORKSPACE" --source-revision "$GITHUB_SHA" --runtime "$RUNNER_TEMP/som-product-runtime-qualification" --out "$RUNNER_TEMP/som-react-python-closure" --tar "$RUNNER_TEMP/react39-inputs/source/react-python-qa-closure.tar" --audit "$RUNNER_TEMP/react39-inputs/audit/react-python-independent-audit.json"
+      # A same-job API test must use the live venv before the runner exits.
+      # This standalone draft performs no product API test or acceptance.
+      - name: Retain proof and failure evidence
         if: always()
         working-directory: ${{ runner.temp }}
         run: |
           paths=()
-          for path in som-react-python-closure som-product-runtime-qualification/receipt.json som-product-runtime-qualification/artifact-origin.json som-product-runtime-qualification/qualification-evidence som-product-runtime-qualification/licenses som-product-runtime-qualification/logs; do
+          for path in react39-inputs/source-run.json react39-inputs/source-artifact.json react39-inputs/audit-run.json react39-inputs/audit-artifact.json react39-inputs/audit/react-python-independent-audit.json som-react-python-closure/environments/react-api-qa/live-provision-receipt.json som-react-python-closure/environments/react-api-qa/live-installed-files.json som-react-python-closure/environments/react-api-qa/live-installed-metadata.json som-react-python-closure/probe-installed-metadata.py som-react-python-closure/logs som-product-runtime-qualification/receipt.json som-product-runtime-qualification/artifact-origin.json som-product-runtime-qualification/qualification-evidence som-product-runtime-qualification/logs; do
             if [ -e "$path" ]; then paths+=("$path"); fi
           done
           if [ "${#paths[@]}" -gt 0 ]; then
-            tar -cf "$RUNNER_TEMP/react-python-qa-closure.tar" "${paths[@]}"
-            sha256sum "$RUNNER_TEMP/react-python-qa-closure.tar" > "$RUNNER_TEMP/react-python-qa-closure.tar.sha256"
+            tar -cf "$RUNNER_TEMP/react-live-venv-proof.tar" "${paths[@]}"
+            sha256sum "$RUNNER_TEMP/react-live-venv-proof.tar" > "$RUNNER_TEMP/react-live-venv-proof.tar.sha256"
           fi
-      - name: Preserve qualification and failure evidence
+      - name: Upload proof and failure evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: react-python-qa-closure
+          name: react-live-venv-proof
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 14
           path: |
-            ${{ runner.temp }}/react-python-qa-closure.tar
-            ${{ runner.temp }}/react-python-qa-closure.tar.sha256
+            ${{ runner.temp }}/react-live-venv-proof.tar
+            ${{ runner.temp }}/react-live-venv-proof.tar.sha256
