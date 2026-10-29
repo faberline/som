@@ -1,0 +1,109 @@
+name: M6 old-candidate bounded refusal fixture
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/m6-rust-refusal-integration-20261029]
+permissions:
+  contents: read
+  actions: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  proof:
+    runs-on: macos-26
+    timeout-minutes: 180
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify source and fetch approved input revision
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+          git fetch --no-tags --depth=1 origin 55eb7f5c3b21d4f3b57eb721ab60c6aa97e10db3
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, subprocess
+          import sys
+          sys.path.insert(0, 'som-rs/scripts/react_output_acceptance')
+          from reconstruct_historical_responses import valid_manifest_name
+          commit='55eb7f5c3b21d4f3b57eb721ab60c6aa97e10db3'
+          target=pathlib.Path(os.environ['RUNNER_TEMP'])/'input-packages'; target.mkdir(mode=0o700)
+          def blob(name):
+              return subprocess.check_output(['git','show',commit+':'+name])
+          raw=blob('inputs-index.json')
+          if hashlib.sha256(raw).hexdigest() != '78375feb14ed286ac5df4c52f13d5d1ae301b2057d5e3894edf0f36c2705c498': raise SystemExit('input index refused')
+          (target/'inputs-index.json').write_bytes(raw)
+          for item in json.loads(raw)['packages']:
+              name=item['manifest']
+              if not valid_manifest_name(name): raise SystemExit('manifest name refused')
+              data=blob(name)
+              if hashlib.sha256(data).hexdigest()!=item['manifest_sha256']: raise SystemExit('manifest refused')
+              (target/name).write_bytes(data)
+          PY
+      - name: Download and verify approved encrypted evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/faberline/som/actions/artifacts/12843589912 > "$RUNNER_TEMP/metadata.json"
+          gh api repos/faberline/som/actions/artifacts/12843589912/zip > "$RUNNER_TEMP/evidence.zip"
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, stat, zipfile
+          temp=pathlib.Path(os.environ['RUNNER_TEMP']); meta=json.loads((temp/'metadata.json').read_bytes()); run=meta.get('workflow_run',{})
+          if (meta.get('id'),meta.get('name'),meta.get('size_in_bytes'),meta.get('digest'),meta.get('expired')) != (12843589912,'m6-sealed-raw-evidence',249935784,'sha256:33fbad9d63cfa257636384b9b7c10e1406f2306922e4f28e8189c79f703b041e',False): raise SystemExit('artifact metadata refused')
+          if (run.get('id'),run.get('head_sha'),run.get('repository_id')) != (40743738705,'40cffc13b3bff35e3ea5804b9f43a49cdef7b3c0',1390374878): raise SystemExit('artifact origin refused')
+          archive=temp/'evidence.zip'
+          with archive.open('rb') as stream: digest=hashlib.file_digest(stream,'sha256').hexdigest()
+          if archive.stat().st_size != 249935784 or digest != '33fbad9d63cfa257636384b9b7c10e1406f2306922e4f28e8189c79f703b041e': raise SystemExit('artifact bytes refused')
+          dest=temp/'evidence-sealed'; dest.mkdir(mode=0o700)
+          with zipfile.ZipFile(archive) as z:
+              members=z.infolist(); names=[m.filename for m in members]
+              expected={'evidence-index.json'} | {f'package-{i:03d}.{s}' for i in range(23) for s in ('sealed','manifest.json')}
+              if len(set(names))!=len(names) or set(names)!=expected or sum(m.file_size for m in members)>512*1024*1024: raise SystemExit('artifact members refused')
+              for m in members:
+                  if stat.S_IFMT(m.external_attr>>16) not in (0,stat.S_IFREG) or not 0<=m.file_size<=128*1024*1024: raise SystemExit('artifact member refused')
+                  with z.open(m) as source, (dest/m.filename).open('xb') as target:
+                      count=0
+                      while chunk:=source.read(1024*1024):
+                          count+=len(chunk)
+                          if count>m.file_size: raise SystemExit('artifact length refused')
+                          target.write(chunk)
+                      if count!=m.file_size: raise SystemExit('artifact length refused')
+          if hashlib.sha256((dest/'evidence-index.json').read_bytes()).hexdigest()!='3759239392208eab81bf740ca9ca2a41465be3e3e4995de2bd255774f4596bea': raise SystemExit('evidence index refused')
+          PY
+      - name: Restore approved inputs and evidence
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          python3 som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py --repo-root "$GITHUB_WORKSPACE" --config "$GITHUB_WORKSPACE/som-rs/scripts/react_output_acceptance/hosted_inputs.json" --out "$RUNNER_TEMP/inputs" --node "$(command -v node)" > /dev/null
+          node som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs --root "$RUNNER_TEMP/evidence-sealed" --out "$RUNNER_TEMP/evidence" --index-sha256 3759239392208eab81bf740ca9ca2a41465be3e3e4995de2bd255774f4596bea > /dev/null
+      - name: Provision frozen public tools
+        run: |
+          python3 - <<'EOF'
+          import json, pathlib, re, subprocess
+          cfg=json.loads(pathlib.Path('som-rs/scripts/react_output_acceptance/macos_bottles.json').read_bytes())['frozen_file_supplement']
+          if cfg['repository']!='faberline/som' or not re.fullmatch('[0-9a-f]{40}', cfg['commit']): raise SystemExit('tool source refused')
+          subprocess.run(['git','fetch','--no-tags','--depth=1','origin',cfg['commit']],check=True)
+          EOF
+          python3 som-rs/scripts/react_output_acceptance/provision_macos.py --out "$RUNNER_TEMP/m6-provision"
+          /opt/homebrew/opt/python@3.12/bin/python3.12 -m venv som-rs/runtime/acceptance-m3-venv
+          som-rs/runtime/acceptance-m3-venv/bin/python -m pip install -r som-rs/scripts/react_output_acceptance/hosted_python_requirements.txt
+          som-rs/runtime/acceptance-m3-venv/bin/python -m pip check
+      - name: Run the bounded raw refusal fixture
+        run: |
+          test ! -e .local
+          test ! -L .local
+          mv "$RUNNER_TEMP/inputs/.local" .local
+          som-rs/runtime/acceptance-m3-venv/bin/python som-rs/scripts/react_output_acceptance/refusal_integration_fixture.py | tee "$RUNNER_TEMP/bounded-summary.json"
+          printf 'Old candidate fixture only. Product gates and parity were not run. This is not product acceptance.\n' >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload the safe fixture summary
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: m6-bounded-refusal-summary
+          path: ${{ runner.temp }}/bounded-summary.json
+          if-no-files-found: error
+          retention-days: 7
