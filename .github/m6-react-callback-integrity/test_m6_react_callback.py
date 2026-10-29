@@ -102,6 +102,23 @@ class CallbackFixture(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'shared owner integration is not implemented'):
             subject.run_gate(Unavailable(), Unavailable(), Unavailable(), Unavailable(), subject.GATE)
 
+    def test_explicit_owner_inputs_form_the_frozen_collector_and_auditor_clis(self):
+        args = subject.collector_arguments(candidate_dir=self.candidate,
+            collector_out=self.args.collector_out, baseline_url=self.args.baseline,
+            legacy_run=self.legacy, rust_baseline_run=self.rust, python=Path('/fixture/venv/python'),
+            qa_profile=self.qa, api_profile=self.api)
+        self.assertEqual(args, ['--candidate', str(self.candidate), '--out', str(self.args.collector_out),
+            '--baseline', 'http://127.0.0.1:18979', '--legacy-run', str(self.legacy),
+            '--rust-baseline-run', str(self.rust), '--python', '/fixture/venv/python',
+            '--protected-default', 'absent', '--cleanup-products-runtime', '--record-raw-http',
+            '--qa-profile', str(self.qa), '--api-profile', str(self.api)])
+        audit = subject.auditor_arguments(repo=self.repo, collector_out=self.args.collector_out,
+            audit_out=self.repo / '.local/audit.json', api_closure_tar=self.tar)
+        self.assertEqual(audit, ['--repo', str(self.repo), '--run', str(self.args.collector_out),
+            '--out', str(self.repo / '.local/audit.json'), '--api-closure-tar', str(self.tar)])
+        with self.assertRaises(TypeError):
+            subject.collector_arguments(candidate_dir=self.candidate)
+
     def test_enabling_outer_guard_alone_still_blocks_bootstrap(self):
         with mock.patch.dict(os.environ, {'GITHUB_ACTIONS': 'true',
                 'RUNNER_ENVIRONMENT': 'github-hosted', 'RUNNER_OS': 'Linux'}), \

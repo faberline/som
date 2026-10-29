@@ -193,6 +193,22 @@ def safe_child_environment(ctx, environ):
     return env
 
 
+def collector_arguments(*, candidate_dir, collector_out, baseline_url, legacy_run,
+                        rust_baseline_run, python, qa_profile, api_profile):
+    """Map explicit owner inputs to the existing collector CLI without running it."""
+    return ['--candidate', str(candidate_dir), '--out', str(collector_out),
+            '--baseline', baseline_url, '--legacy-run', str(legacy_run),
+            '--rust-baseline-run', str(rust_baseline_run), '--python', str(python),
+            '--protected-default', 'absent', '--cleanup-products-runtime', '--record-raw-http',
+            '--qa-profile', str(qa_profile), '--api-profile', str(api_profile)]
+
+
+def auditor_arguments(*, repo, collector_out, audit_out, api_closure_tar):
+    """Map explicit raw inputs to the existing auditor CLI without running it."""
+    return ['--repo', str(repo), '--run', str(collector_out), '--out', str(audit_out),
+            '--api-closure-tar', str(api_closure_tar)]
+
+
 def run(args):
     require(os.environ.get('GITHUB_ACTIONS') == 'true' and
             os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted' and
@@ -221,11 +237,9 @@ def run(args):
     venv = physical(Path(api_profile['venv']))
     python = venv / 'bin/python'
     require(python.is_file(), 'live venv interpreter missing')
-    collect_args = ['--candidate', str(args.candidate_dir), '--out', str(args.collector_out),
-                    '--baseline', args.baseline, '--legacy-run', str(args.legacy_run),
-                    '--rust-baseline-run', str(args.rust_baseline_run), '--python', str(python),
-                    '--protected-default', 'absent', '--cleanup-products-runtime', '--record-raw-http',
-                    '--qa-profile', str(args.qa_profile), '--api-profile', str(args.api_profile)]
+    collect_args = collector_arguments(candidate_dir=args.candidate_dir, collector_out=args.collector_out,
+        baseline_url=args.baseline, legacy_run=args.legacy_run, rust_baseline_run=args.rust_baseline_run,
+        python=python, qa_profile=args.qa_profile, api_profile=args.api_profile)
     audit_out = repo / '.local' / ('m6-react-audit-' + out.name + '.json')
     physical(audit_out, exists=False)
     require(not audit_out.exists(), 'fresh audit output required')
@@ -234,8 +248,8 @@ def run(args):
                                           collect_args, timeout=18000))
         ctx.verify(); sources.verify()
         if args.collector_out.is_dir():
-            audit_args = ['--repo', str(repo), '--run', str(args.collector_out), '--out', str(audit_out),
-                          '--api-closure-tar', str(args.api_closure_tar)]
+            audit_args = auditor_arguments(repo=repo, collector_out=args.collector_out,
+                                          audit_out=audit_out, api_closure_tar=args.api_closure_tar)
             report['rows'].append(run_command(ctx, module, repo, env, out, report, 'audit', AUDITOR,
                                               audit_args, timeout=7200))
             if audit_out.is_file():
