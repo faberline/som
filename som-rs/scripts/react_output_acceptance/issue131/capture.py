@@ -267,13 +267,13 @@ def count_unrun(plan, rows):
     return len(plan) - len(rows) + sum(row['comparison'] == 'unrun' for row in rows)
 
 
-def process_evidence(proc, argv, binary, out, stage, initial=None):
+def process_evidence(proc, argv, binary, out, stage, initial=None, prelaunch=None):
     pid = str(proc.pid)
     commands = {
         'identity': ['/bin/ps', '-ww', '-p', pid, '-o', 'pid=,ppid=,pgid=,stat=,command='],
         'start_time': ['/bin/ps', '-p', pid, '-o', 'lstart='],
         'listeners': ['/usr/sbin/lsof', '-nP', '-iTCP:' + str(PORT), '-sTCP:LISTEN', '-Fp'],
-        'executable': ['/usr/sbin/lsof', '-nP', '-a', '-p', pid, '-d', 'txt', '-Fn'],
+        'executable': ['/usr/sbin/lsof', '-nP', '-a', '-p', pid, '-d', 'txt', '-FfDin'],
     }
     results, receipt = {}, {}
     for name, command in commands.items():
@@ -291,16 +291,26 @@ def process_evidence(proc, argv, binary, out, stage, initial=None):
     need(listeners == [pid], 'listener is not exclusively owned by baseline')
     info = binary.stat()
     executable_identity = (info.st_dev, info.st_ino)
-    observed = False
+    if prelaunch is not None:
+        need(executable_identity == (prelaunch['binary_device'], prelaunch['binary_inode'])
+             and info.st_size == prelaunch['binary_size'], 'baseline file identity changed')
+    records, record = [], None
     for line in results['executable'].splitlines():
-        if line.startswith('n'):
+        if line.startswith('f'):
+            record = {'fd': line[1:]}
+            records.append(record)
+        elif record is not None and line[:1] in ('D', 'i', 'n'):
+            need(line[0] not in record, 'duplicate executable evidence field')
+            record[line[0]] = line[1:]
+    observed = False
+    for record in records:
+        if record['fd'] == 'txt' and 'D' in record and 'i' in record:
             try:
-                candidate = Path(line[1:]).stat()
-                if (candidate.st_dev, candidate.st_ino) == executable_identity:
+                if (int(record['D'], 0), int(record['i'], 10)) == executable_identity:
                     observed = True
-            except OSError:
+            except ValueError:
                 pass
-    need(observed, 'owned process executable inode differs')
+    need(observed, 'owned process mapped executable inode is unverified')
     start_time = results['start_time']
     need(bool(start_time), 'process start time missing')
     identity = {'pid': proc.pid, 'parent_pid': os.getpid(), 'pgid': proc.pid, 'start_time': start_time,
@@ -382,6 +392,11 @@ def execute(args, checker):
         need('Mach-O' in description and 'arm64' in description, 'baseline binary platform differs')
         identity['binary_description'] = description
         assets = asset_identity(args.baseline / 'assets')
+        binary_stat = binary.stat()
+        prelaunch = {'binary_device': binary_stat.st_dev, 'binary_inode': binary_stat.st_ino,
+                     'binary_size': binary_stat.st_size}
+        need(sha(read(binary)) == BASELINE_SHA and binary.stat().st_ino == binary_stat.st_ino
+             and binary.stat().st_dev == binary_stat.st_dev, 'baseline prelaunch identity differs')
         stage = 'port_check'
         need(free_port(), 'QA port already in use')
         health = load(args.baseline / 'runtime.json')['health']
@@ -391,6 +406,7 @@ def execute(args, checker):
         result = {'role': 'fresh-before', 'historical_wire': False, 'product_acceptance': 'not_run',
                   'baseline_sha256': BASELINE_SHA, 'argv': argv, 'port': PORT,
                   'baseline_provenance': identity, 'assets': assets,
+                  'binary_prelaunch': prelaunch,
                   'runner': {'platform': platform.platform(), 'machine': platform.machine(),
                              'python': sys.version, 'python_executable': sys.executable,
                              'github_sha': os.environ.get('GITHUB_SHA'), 'github_run_id': os.environ.get('GITHUB_RUN_ID'),
@@ -431,7 +447,7 @@ def execute(args, checker):
                 except (urllib.error.URLError, TimeoutError):
                     need(time.monotonic() < deadline, 'baseline startup timed out')
                     time.sleep(0.25)
-            result['process_start'] = process_evidence(proc, argv, binary, out, 'start')
+            result['process_start'] = process_evidence(proc, argv, binary, out, 'start', prelaunch=prelaunch)
             for item in plan:
                 slot = str(item['slot_id'])
                 row = {'slot_id': item['slot_id'], 'status': None, 'response_sha256': None,
