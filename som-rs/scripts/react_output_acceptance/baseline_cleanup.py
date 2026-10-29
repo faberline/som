@@ -4,6 +4,8 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import signal
+import time
 
 PORT=18917
 
@@ -29,23 +31,45 @@ def stop(out,env,process,frozen):
                 row[key]={'file':filename,'sha256':sha(raw)}
         except (OSError,subprocess.SubprocessError) as exc:row['error_type']=type(exc).__name__
         result['events'].append(row)
-    command('ps',['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command='])
+    command('ps',['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,stat=,command='])
     command('cwd',['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn'])
     command('listener',['/usr/sbin/lsof','-nP',f'-iTCP:{PORT}','-sTCP:LISTEN','-t'])
     command('before',['/bin/ps','-axo','pid=,ppid=,pgid=,command='])
+    verified=False
     try:
-        process.terminate();result['events'].append({'kind':'signal','pid':pid,'signal':'TERM','state':'sent'})
-    except OSError as exc:
-        result['events'].append({'kind':'signal','pid':pid,'signal':'TERM','state':'error','errno':exc.errno})
-    try:
-        code=process.wait(timeout=10);result['events'].append({'kind':'wait','pid':pid,'state':'completed','exit_code':code})
-    except subprocess.TimeoutExpired:
-        result['events'].append({'kind':'wait','pid':pid,'state':'timeout','exit_code':None})
-        try:process.kill();result['events'].append({'kind':'cleanup-signal','pid':pid,'signal':'KILL','state':'sent'})
-        except OSError as exc:result['events'].append({'kind':'cleanup-signal','pid':pid,'signal':'KILL','state':'error','errno':exc.errno})
-        try:
-            code=process.wait(timeout=10);result['events'].append({'kind':'cleanup-wait','pid':pid,'state':'completed','exit_code':code})
-        except subprocess.SubprocessError:result['events'].append({'kind':'cleanup-wait','pid':pid,'state':'unverified','exit_code':None})
+        ps=(out/'baseline-cleanup-ps.stdout').read_bytes().decode().strip().split(None,4)
+        cwd=(out/'baseline-cleanup-cwd.stdout').read_bytes().decode().splitlines()
+        listeners=(out/'baseline-cleanup-listener.stdout').read_bytes().decode().split()
+        verified=(all(e.get('exit_code')==0 and not e.get('error_type') for e in result['events'][:3]) and
+                  process.returncode is None and signal.getsignal(signal.SIGCHLD)==signal.SIG_DFL and
+                  len(ps)==5 and ps[0]==str(pid) and ps[1]==str(os.getpid()) and ps[2].isdigit() and
+                  not ps[3].startswith('Z') and ps[4]==' '.join(result['argv']) and
+                  [x[1:] for x in cwd if x.startswith('p')]==[str(pid)] and
+                  [x[1:] for x in cwd if x.startswith('n')]==[str(frozen)] and listeners==[str(pid)])
+    except (OSError,ValueError):pass
+    signal_event={'kind':'signal','pid':pid,'signal':'TERM','state':'skipped-unverified'}
+    if verified:
+        try:os.kill(pid,signal.SIGTERM);signal_event['state']='syscall-succeeded'
+        except OSError as exc:signal_event.update(state='syscall-error',errno=exc.errno)
+    result['events'].append(signal_event)
+    def reap(timeout):
+        deadline=time.monotonic()+timeout
+        while True:
+            try:waited,status=os.waitpid(pid,os.WNOHANG)
+            except ChildProcessError:return {'kind':'wait','pid':pid,'state':'not-a-child','exit_code':None}
+            if waited==pid:
+                code=os.waitstatus_to_exitcode(status);process.returncode=code
+                return {'kind':'wait','pid':pid,'state':'reaped','waited_pid':waited,'raw_status':status,'exit_code':code}
+            if time.monotonic()>=deadline:return {'kind':'wait','pid':pid,'state':'timeout','exit_code':None}
+            time.sleep(.05)
+    if process.returncode is None:
+        wait=reap(10);result['events'].append(wait)
+        if wait['state']=='timeout' and verified:
+            try:
+                os.kill(pid,signal.SIGKILL);result['events'].append({'kind':'cleanup-signal','pid':pid,'signal':'KILL','state':'syscall-succeeded'})
+            except OSError as exc:result['events'].append({'kind':'cleanup-signal','pid':pid,'signal':'KILL','state':'syscall-error','errno':exc.errno})
+            cleanup=reap(10);cleanup['kind']='cleanup-wait';result['events'].append(cleanup)
+    else:result['events'].append({'kind':'wait','pid':pid,'state':'already-reaped','exit_code':process.returncode})
     command('after',['/bin/ps','-axo','pid=,ppid=,pgid=,command='])
     command('listener-after',['/usr/sbin/lsof','-nP',f'-iTCP:{PORT}','-sTCP:LISTEN','-t'])
     with (out/'baseline-cleanup.json').open('x') as f:json.dump(result,f,indent=2,sort_keys=True);f.write('\n')

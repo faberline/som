@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 
 BASELINE_SHA='2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c'
@@ -26,7 +27,7 @@ def audit(out,frozen,expected_sha=BASELINE_SHA):
          and type(pid) is int and pid>1 and type(parent) is int and parent>1 and receipt.get('argv')==argv
          and receipt.get('cwd')==str(frozen) and sha(read(frozen/'som'))==expected_sha)
     names=('ps','cwd','listener','before','after','listener-after')
-    definitions=[['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,command='],
+    definitions=[['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,stat=,command='],
                  ['/usr/sbin/lsof','-a','-p',str(pid),'-d','cwd','-Fn'],
                  ['/usr/sbin/lsof','-nP','-iTCP:18917','-sTCP:LISTEN','-t'],
                  ['/bin/ps','-axo','pid=,ppid=,pgid=,command='],
@@ -46,10 +47,13 @@ def audit(out,frozen,expected_sha=BASELINE_SHA):
     waits=[(i,e) for i,e in enumerate(events) if e.get('kind')=='wait']
     need(len(starts)==len(waits)==1);si,sig=starts[0];wi,wait=waits[0]
     need(all(positions[name]<si for name in names[:4]) and si<wi and all(positions[name]>wi for name in names[4:])
-         and sig=={'kind':'signal','pid':pid,'signal':'TERM','state':'sent'}
-         and wait.get('pid')==pid and wait.get('state')=='completed' and type(wait.get('exit_code')) is int)
-    ps=command['ps'][1].decode().strip().split(None,3)
-    need(len(ps)==4 and ps[0]==str(pid) and ps[1]==str(parent) and ps[2].isdigit() and ps[3]==' '.join(argv))
+         and sig=={'kind':'signal','pid':pid,'signal':'TERM','state':'syscall-succeeded'}
+         and wait.get('pid')==wait.get('waited_pid')==pid and wait.get('state')=='reaped'
+         and type(wait.get('raw_status')) is int and type(wait.get('exit_code')) is int
+         and os.waitstatus_to_exitcode(wait['raw_status'])==wait['exit_code'])
+    ps=command['ps'][1].decode().strip().split(None,4)
+    need(len(ps)==5 and ps[0]==str(pid) and ps[1]==str(parent) and ps[2].isdigit()
+         and not ps[3].startswith('Z') and ps[4]==' '.join(argv))
     cwd=command['cwd'][1].decode().splitlines()
     need([x[1:] for x in cwd if x.startswith('p')]==[str(pid)] and [x[1:] for x in cwd if x.startswith('n')]==[str(frozen)])
     need(command['listener'][1].decode().split()==[str(pid)])

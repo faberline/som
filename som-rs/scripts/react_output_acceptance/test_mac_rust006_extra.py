@@ -234,6 +234,32 @@ class ClusterRawAuditTests(unittest.TestCase):
                 with self.assertRaises(ValueError): audit.audit_cluster(lifecycle)
 
 
+    def test_postgres_observed_stop_positive_missing_and_tamper(self):
+        from unittest import mock
+        import audit_mac_rust006_extra as audit
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();lifecycle=self.create(root);run=lifecycle.parent
+            (run/'collector.json').write_text(json.dumps({'candidate_revision':'a'*40}))
+            def invoke(index):
+                result=root/('result-'+str(index)+'.json')
+                argv=['audit','--run',str(run),'--candidate',str(root/'candidate'),'--public-run',str(root/'public'),
+                      '--legacy-run',str(root/'legacy'),'--parity',str(root/'parity'),'--out',str(result),
+                      '--approved-input-config',str(root/'config'),'--provenance-root',str(root)]
+                with mock.patch.object(sys,'argv',argv),mock.patch.object(audit,'REPO',root), \
+                     mock.patch.object(audit,'approved_inputs',return_value=object()), \
+                     mock.patch.object(audit,'audit_replay',return_value={}),mock.patch.object(audit,'audit_cases',return_value={}), \
+                     mock.patch.object(audit,'audit_refusals',return_value={}),mock.patch.object(audit,'audit_candidate',return_value={}), \
+                     mock.patch.object(audit,'audit_command_records',return_value={}):
+                    self.assertEqual(audit.main(),1)
+                return next(r for r in json.loads(result.read_bytes())['rows'] if r['id']=='postgres-observed-stop')
+            row=invoke(1);self.assertEqual(row['status'],'passed');self.assertEqual(row['evidence']['unobserved_descendants'],'unverified')
+            receipt=json.loads((lifecycle/'receipt.json').read_text());after=receipt['events'][-1]['table']['stdout']
+            original=(lifecycle/after['file']).read_bytes();(lifecycle/after['file']).write_bytes(b'tamper')
+            self.assertEqual(invoke(2)['status'],'failed');(lifecycle/after['file']).write_bytes(original)
+            del receipt['events'][-1]['table'];(lifecycle/'receipt.json').write_text(json.dumps(receipt))
+            self.assertEqual(invoke(3)['status'],'failed')
+
+
 class ApprovedInputBindingTests(unittest.TestCase):
     def test_approved_manifest_binds_actual_request_and_rejects_tamper(self):
         import hashlib
@@ -375,6 +401,30 @@ class UnorderedParityWireTests(unittest.TestCase):
 
 
 class BaselineCleanupTests(unittest.TestCase):
+    def test_naturally_exited_baseline_never_claims_term_sent(self):
+        import hashlib,subprocess,time
+        import baseline_cleanup,audit_baseline_cleanup
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();frozen=root/'frozen';frozen.mkdir();(frozen/'assets').mkdir()
+            source=root/'fixture.c';source.write_text('int main(void){return 0;}\n');binary=frozen/'som'
+            subprocess.run(['cc',str(source),'-o',str(binary)],check=True,timeout=30)
+            proc=subprocess.Popen([str(binary),'serve','--assets',str(frozen/'assets'),'--port','18917'],cwd=frozen)
+            try:
+                for _ in range(100):
+                    state=subprocess.run(['/bin/ps','-p',str(proc.pid),'-o','stat='],capture_output=True,text=True).stdout.strip()
+                    if state.startswith('Z'):break
+                    time.sleep(.05)
+                else:self.fail('fake baseline did not become zombie')
+                self.assertIsNone(proc.returncode)
+                receipt=baseline_cleanup.stop(root,dict(os.environ),proc,frozen)
+                signal_event=next(e for e in receipt['events'] if e['kind']=='signal')
+                wait_event=next(e for e in receipt['events'] if e['kind']=='wait')
+                self.assertEqual(signal_event['state'],'skipped-unverified')
+                self.assertEqual(wait_event['state'],'reaped');self.assertEqual(wait_event['waited_pid'],proc.pid)
+                with self.assertRaises(ValueError):audit_baseline_cleanup.audit(root,frozen,expected_sha=hashlib.sha256(binary.read_bytes()).hexdigest())
+            finally:
+                if proc.returncode is None:proc.wait(timeout=10)
+
     def test_real_macos_direct_baseline_wait_and_missing_evidence(self):
         import hashlib,socket,subprocess,time
         import baseline_cleanup,audit_baseline_cleanup
