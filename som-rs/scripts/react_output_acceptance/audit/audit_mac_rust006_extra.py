@@ -575,6 +575,74 @@ def audit_candidate(run, candidate, expected_revision):
     return {'binary_sha256':digest,'pid':pid,'port':port,'source_files':len(source['files'])}
 
 
+
+def audit_command_records(run, candidate, public, legacy, parity):
+    import subprocess
+    report=json_file(run/'collector.json')
+    revision=report['candidate_revision']
+    need(type(revision) is str and re.fullmatch('[0-9a-f]{40}',revision), 'source revision missing')
+    actual=subprocess.check_output(['/usr/bin/git','--no-replace-objects','-C',str(REPO),
+                                    'rev-parse','--verify','HEAD^{commit}'],timeout=30).decode().strip()
+    need(actual==revision, 'source HEAD differs')
+    sources=('som-rs/scripts/react_output_acceptance/mac_rust006_extra.py',
+             'som-rs/scripts/react_output_acceptance/mac_rust006_cluster.py',
+             'som-rs/scripts/react_output_acceptance/record_rust006_http.py',
+             'som-rs/scripts/react_output_acceptance/record_api.py',
+             'som-rs/scripts/rust_output_acceptance/python_replay.py',
+             'som-rs/tests/rust-output-v1/validate_cases.py',
+             'som-rs/som-targets/qa/check_rust_products.py',
+             'som-rs/behavior/hosts.py')
+    for rel in sources:
+        entry=subprocess.check_output(['/usr/bin/git','--no-replace-objects','-C',str(REPO),
+                                       'ls-tree','-z',revision,'--',rel],timeout=30)
+        need(entry.startswith((b'100644 blob ',b'100755 blob ')) and
+             entry.endswith(b'\t'+rel.encode()+b'\0') and entry.count(b'\0')==1,'source Git entry differs')
+        raw=subprocess.check_output(['/usr/bin/git','--no-replace-objects','-C',str(REPO),
+                                     'show',revision+':'+rel],timeout=30)
+        need(raw==read(REPO/rel),'executable source differs from Git')
+    runner=report.get('runner')
+    need(type(runner) is dict and runner.get('GITHUB_SHA')==revision and runner.get('GITHUB_ACTIONS')=='true'
+         and runner.get('RUNNER_ENVIRONMENT')=='github-hosted' and runner.get('RUNNER_OS')=='macOS'
+         and runner.get('RUNNER_ARCH')=='ARM64' and all(type(runner.get(k)) is str and runner[k].isdigit()
+             for k in ('GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT')), 'runner identity differs')
+    python=REPO/'som-rs/runtime/acceptance-m3-venv/bin/python'
+    script=REPO/'som-rs/scripts/react_output_acceptance'
+    expected=[
+        [python,script/'record_rust006_http.py','--out',run/'raw-python-replay','--',
+         REPO/'som-rs/scripts/rust_output_acceptance/python_replay.py','--asset-break','--base-url',QA,
+         '--public-run',public,'--legacy-run',legacy,'--out',run/'python-replay.json'],
+        [python,script/'record_rust006_http.py','--out',run/'raw-validate-cases','--',
+         REPO/'som-rs/tests/rust-output-v1/validate_cases.py','--base-url',QA,'--out',run/'validate-cases.json'],
+        [python,script/'mac_rust006_cluster.py','--raw-out',run/'raw-rust-refusals',
+         '--lifecycle',run/'cluster-lifecycle','--cluster-root',run/'cluster-work','--','--qa',QA,
+         '--work',run/'rust-products-work','--target-dir',run/'rust-target','--out',run/'rust-products.json',
+         '--no-gates','--refusals','phase2','--parity',parity]]
+    names=('python-replay','validate-cases','rust-refusals')
+    rows=report.get('rows')
+    need(type(rows) is list and len(rows)==3 and report.get('execution_complete') is True
+         and report.get('product_acceptance_passed') is False,'command set incomplete')
+    need(report.get('candidate_dir')==str(candidate) and report.get('parity_sha256')==sha(read(parity))
+         and report.get('public_result_sha256')==sha(read(public/'result.json'))
+         and report.get('legacy_result_sha256')==sha(read(legacy/'result.json')), 'command inputs differ')
+    env_keys={'HOME','PATH','TMPDIR','LANG','LC_ALL','LC_CTYPE','CI','SDKROOT','DEVELOPER_DIR','CARGO_HOME',
+              'RUSTUP_HOME','GITHUB_ACTIONS','RUNNER_ENVIRONMENT','RUNNER_OS','RUNNER_ARCH','RUNNER_TEMP',
+              'CARGO_NET_OFFLINE','PYTHONDONTWRITEBYTECODE','SOM_TS_PRETTIER'}
+    for index,(row,name,argv) in enumerate(zip(rows,names,expected),1):
+        need(type(row) is dict and row.get('index')==index and row.get('name')==name
+             and row.get('argv')==[str(x) for x in argv] and row.get('cwd')==str(REPO)
+             and row.get('state')=='completed' and type(row.get('pid')) is int and row['pid']>1
+             and type(row.get('exit_code')) is int and row['exit_code']==0
+             and type(row.get('wait_result')) is int and row['wait_result']==0, 'direct command wait differs')
+        env=row.get('environment')
+        need(type(env) is dict and set(env)<=env_keys and env.get('CARGO_NET_OFFLINE')=='true'
+             and env.get('PYTHONDONTWRITEBYTECODE')=='1', 'child environment differs')
+        for stream in ('stdout','stderr'):
+            rel=f'logs/{name}.{stream}'
+            need(row.get(stream)==rel and row.get(stream+'_sha256')==sha(read(run/rel)), 'direct command log differs')
+    return {'commands':len(rows),'source_revision':revision,'runner_id':runner['GITHUB_RUN_ID'],
+            'run_attempt':runner['GITHUB_RUN_ATTEMPT']}
+
+
 def main():
     p=argparse.ArgumentParser()
     for name in ('run','candidate','public-run','legacy-run','parity','out'): p.add_argument('--'+name,type=Path,required=True)
@@ -596,12 +664,16 @@ def main():
                          ('phase2-rust-refusals', lambda:audit_refusals(args.run/'raw-rust-refusals',args.legacy_run,require_inputs())),
                          ('candidate-source-and-process', lambda:audit_candidate(args.run,args.candidate,
                               json_file(args.run/'collector.json')['candidate_revision'])),
-                         ('postgres-cleanup', lambda:audit_cluster(args.run/'cluster-lifecycle'))]:
-        try: report['rows'].append({'id':name,'status':'passed','evidence':action()})
+                         ('postgres-cleanup', lambda:audit_cluster(args.run/'cluster-lifecycle')),
+                         ('command-records', lambda:audit_command_records(args.run,args.candidate,args.public_run,args.legacy_run,args.parity))]:
+        try:
+            evidence=action()
+            status='unrun' if name=='postgres-cleanup' and evidence.get('unobserved_descendants')=='unverified' else 'passed'
+            report['rows'].append({'id':name,'status':status,'evidence':evidence})
         except Exception as exc: report['rows'].append({'id':name,'status':'failed','error':type(exc).__name__ + ': ' + str(exc)})
     # No affirmative outcome until the refusal recipes, source provenance,
     # process/port ownership and PostgreSQL teardown can all be rederived.
-    for name in ('independent-command-provenance', 'same-candidate-parity', 'outer-owned-candidate-cleanup'):
+    for name in ('outer-run-head-provenance', 'same-candidate-parity', 'outer-owned-candidate-cleanup'):
         report['rows'].append({'id':name,'status':'unrun','reason':'independent raw rule not implemented'})
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open('x') as f: json.dump(report,f,sort_keys=True,indent=2); f.write('\n')

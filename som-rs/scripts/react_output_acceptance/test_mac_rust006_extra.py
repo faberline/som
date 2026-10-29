@@ -264,5 +264,59 @@ class ApprovedInputBindingTests(unittest.TestCase):
         self.assertIsNone(audit.HISTORIC_RESPONSE_APPROVED_INDEX_SHA256)
 
 
+class CommandRawAuditTests(unittest.TestCase):
+    def test_fixed_commands_wait_and_log_tamper(self):
+        import hashlib
+        from unittest import mock
+        import audit_mac_rust006_extra as audit
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();run=root/'run';run.mkdir();(run/'logs').mkdir()
+            candidate=root/'candidate';candidate.mkdir()
+            public=root/'public';legacy=root/'legacy';public.mkdir();legacy.mkdir()
+            parity=root/'parity.json';parity.write_bytes(b'parity')
+            (public/'result.json').write_bytes(b'public');(legacy/'result.json').write_bytes(b'legacy')
+            rels=('som-rs/scripts/react_output_acceptance/mac_rust006_extra.py',
+                  'som-rs/scripts/react_output_acceptance/mac_rust006_cluster.py',
+                  'som-rs/scripts/react_output_acceptance/record_rust006_http.py',
+                  'som-rs/scripts/react_output_acceptance/record_api.py',
+                  'som-rs/scripts/rust_output_acceptance/python_replay.py',
+                  'som-rs/tests/rust-output-v1/validate_cases.py',
+                  'som-rs/som-targets/qa/check_rust_products.py','som-rs/behavior/hosts.py')
+            for rel in rels:
+                path=root/rel;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(rel.encode())
+            python=root/'som-rs/runtime/acceptance-m3-venv/bin/python';script=root/'som-rs/scripts/react_output_acceptance'
+            qa='http://127.0.0.1:18919'
+            expected=[
+                [python,script/'record_rust006_http.py','--out',run/'raw-python-replay','--',root/'som-rs/scripts/rust_output_acceptance/python_replay.py','--asset-break','--base-url',qa,'--public-run',public,'--legacy-run',legacy,'--out',run/'python-replay.json'],
+                [python,script/'record_rust006_http.py','--out',run/'raw-validate-cases','--',root/'som-rs/tests/rust-output-v1/validate_cases.py','--base-url',qa,'--out',run/'validate-cases.json'],
+                [python,script/'mac_rust006_cluster.py','--raw-out',run/'raw-rust-refusals','--lifecycle',run/'cluster-lifecycle','--cluster-root',run/'cluster-work','--','--qa',qa,'--work',run/'rust-products-work','--target-dir',run/'rust-target','--out',run/'rust-products.json','--no-gates','--refusals','phase2','--parity',parity]]
+            names=('python-replay','validate-cases','rust-refusals');rows=[]
+            for i,(name,argv) in enumerate(zip(names,expected),1):
+                row={'index':i,'name':name,'argv':list(map(str,argv)),'cwd':str(root),'state':'completed',
+                     'pid':100+i,'exit_code':0,'wait_result':0,'environment':{'CARGO_NET_OFFLINE':'true','PYTHONDONTWRITEBYTECODE':'1'}}
+                for stream in ('stdout','stderr'):
+                    rel=f'logs/{name}.{stream}';data=(name+stream).encode();(run/rel).write_bytes(data)
+                    row[stream]=rel;row[stream+'_sha256']=hashlib.sha256(data).hexdigest()
+                rows.append(row)
+            sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+            rev='a'*40
+            runner={'GITHUB_SHA':rev,'GITHUB_ACTIONS':'true','RUNNER_ENVIRONMENT':'github-hosted','RUNNER_OS':'macOS',
+                    'RUNNER_ARCH':'ARM64','GITHUB_RUN_ID':'123','GITHUB_RUN_ATTEMPT':'1'}
+            report={'candidate_revision':rev,'candidate_dir':str(candidate),'parity_sha256':sha(parity),
+                    'public_result_sha256':sha(public/'result.json'),'legacy_result_sha256':sha(legacy/'result.json'),
+                    'runner':runner,'rows':rows,'execution_complete':True,'product_acceptance_passed':False}
+            (run/'collector.json').write_text(json.dumps(report))
+            def fake_git(argv,timeout):
+                if 'rev-parse' in argv:return (rev+'\n').encode()
+                if 'ls-tree' in argv:
+                    rel=argv[-1];return b'100644 blob '+b'0'*40+b'\t'+rel.encode()+b'\0'
+                if 'show' in argv:return (root/argv[-1].split(':',1)[1]).read_bytes()
+                raise AssertionError(argv)
+            with mock.patch.object(audit,'REPO',root), mock.patch('subprocess.check_output',side_effect=fake_git):
+                self.assertEqual(audit.audit_command_records(run,candidate,public,legacy,parity)['commands'],3)
+                (run/'logs/python-replay.stdout').write_bytes(b'tampered')
+                with self.assertRaises(ValueError):audit.audit_command_records(run,candidate,public,legacy,parity)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -69,7 +69,8 @@ def git(*args):
 def record_command(out, index, name, argv, cwd, env, timeout=7200):
     stdout, stderr = out / 'logs' / (name + '.stdout'), out / 'logs' / (name + '.stderr')
     row = {'index': index, 'name': name, 'argv': [str(v) for v in argv], 'cwd': str(cwd),
-           'exit_code': None, 'wait_result': None, 'state': 'not_started', 'cleanup': 'unverified'}
+           'exit_code': None, 'wait_result': None, 'state': 'not_started', 'cleanup': 'unverified',
+           'environment': dict(env)}
     start = time.monotonic()
     try:
         with stdout.open('xb') as out_stream, stderr.open('xb') as err_stream:
@@ -160,6 +161,8 @@ def main():
     report = {'version': 'som.m6-mac-rust006-extra.v1', 'candidate_revision': args.candidate_revision,
               'candidate_binary_sha256': digest, 'candidate_dir': str(candidate),
               'source_sha256': sha(candidate / 'source.json'), 'parity_sha256': sha(args.parity),
+              'runner': {key: os.environ.get(key) for key in ('GITHUB_SHA','GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT',
+                         'GITHUB_ACTIONS','RUNNER_ENVIRONMENT','RUNNER_OS','RUNNER_ARCH')},
               'public_result_sha256': sha(args.public_run / 'result.json'),
               'legacy_result_sha256': sha(args.legacy_run / 'result.json'), 'rows': [],
               'execution_complete': False, 'product_acceptance_passed': False,
