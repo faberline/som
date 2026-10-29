@@ -20,7 +20,7 @@ CHECKER=REPO/'som-rs/behavior/check_behavior.py'
 PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/parity_product_files.py', 'som-rs/scripts/react_output_acceptance/parity_rust_build.py', 'som-rs/scripts/react_output_acceptance/parity_python_runtime.py', 'som-rs/scripts/react_output_acceptance/parity_python_probe.py', 'som-rs/scripts/react_output_acceptance/parity_python_authority.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py', 'som-rs/tests/rust-output-v1/rust_profile.py', 'som-rs/tests/rust-output-v1/rust_profile_phase2.py', 'som-rs/scripts/rust_output_acceptance/python_replay.py', 'som-rs/scripts/compiler_acceptance/qa_harness.py', 'som-rs/scripts/compiler_acceptance/paths.py', 'som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py', 'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py', 'som-rs/scripts/react_output_acceptance/install_derived_inputs.py', 'som-rs/scripts/react_output_acceptance/audit_supplement_provision.py', 'som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py', 'som-rs/scripts/react_output_acceptance/mac_rust006_extra.py', 'som-rs/scripts/react_output_acceptance/owned_candidate.py', 'som-rs/scripts/react_output_acceptance/audit/audit_candidate_owner.py', 'som-rs/scripts/react_output_acceptance/audit_workflow_origin.py', 'som-rs/scripts/react_output_acceptance/baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/audit/audit_baseline_cleanup.py', 'som-rs/scripts/react_output_acceptance/post_acceptance_audit.py', 'som-rs/scripts/react_output_acceptance/stage_final_evidence.py', 'som-rs/scripts/react_output_acceptance/external_acceptance_readback.py', 'som-rs/scripts/react_output_acceptance/cross_job_raw_reaudit.py', 'som-rs/scripts/react_output_acceptance/audit/audit130.py', 'som-rs/scripts/react_output_acceptance/audit/api_raw.py', 'som-rs/scripts/react_output_acceptance/audit/baseline_raw.py', 'som-rs/scripts/react_output_acceptance/audit/render_rules.py', 'som-rs/scripts/react_output_acceptance/audit/refusal_rules.py')
 
 def source_hashes():
-    return {name:hashlib.sha256((REPO/name).read_bytes()).hexdigest() for name in PARITY_SOURCES}
+    return {name:hashlib.sha256((REPO/name).read_bytes()).hexdigest() for name in PARITY_SOURCES + ('som-rs/scripts/react_output_acceptance/macos_bottles.json','som-rs/scripts/react_output_acceptance/provision_macos.py')}
 
 def postgres_tool_hashes():
     contract=json.loads((REPO/'som-rs/contracts/rust-output-v1/toolchain.json').read_bytes())['postgresql']
@@ -47,10 +47,12 @@ class TrackingRecorder(Recorder):
             event={'kind':'child-start','identity':identity,'pid':proc.pid,'argv':words,
                    'cwd':os.fspath(kw.get('cwd') or Path.cwd())}
             if isinstance(words,list) and (words[1:3]==['-m','uvicorn'] or words[1:]==['build','--locked','--offline','-q']):
-                supplied=kw.get('env') or {}
+                supplied=kw.get('env') if kw.get('env') is not None else os.environ
                 allowed=('PYTHONPATH','PYTHONDONTWRITEBYTECODE','SOM_BEHAVIOR_PACKAGE','CARGO_TARGET_DIR',
                          'CARGO_NET_OFFLINE','RUSTC','CARGO','RUSTFMT','PATH')
                 event['environment']={key:supplied[key] for key in allowed if key in supplied}
+                if words[1:3]==['-m','uvicorn']:
+                    event['unexpected_python_environment_keys']=sorted(key for key in supplied if key.startswith('PYTHON') and key not in ('PYTHONPATH','PYTHONDONTWRITEBYTECODE'))
             self.events.append(event)
         original=proc.wait
         local=threading.local();direct_exit=[]
@@ -127,7 +129,8 @@ def main():
     import record_rust006_http
     observer=TrackingRecorder(lifecycle)
     import parity_python_authority
-    python_authority=parity_python_authority.capture(observer,lifecycle,python,HERE/'parity_python_probe.py',REPO)
+    python_authority=parity_python_authority.capture(observer,lifecycle,python,HERE/'parity_python_probe.py',REPO,
+        Path(os.environ['RUNNER_TEMP'])/'m6-provision/report.json')
     import mac_rust006_extra as candidate_probe
     probe=lifecycle/'candidate-probe';probe.mkdir(mode=0o700);(probe/'logs').mkdir(mode=0o700)
     runtime=json.loads((candidate/'runtime.json').read_bytes())

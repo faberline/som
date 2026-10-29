@@ -47,7 +47,7 @@ def audit_sources(revision,lifecycle,raw,parity_out):
     need(os.environ.get('GITHUB_SHA')==revision and os.environ.get('GITHUB_ACTIONS')=='true'
          and os.environ.get('RUNNER_ENVIRONMENT')=='github-hosted' and os.environ.get('RUNNER_OS')=='macOS'
          and os.environ.get('RUNNER_ARCH')=='ARM64','parity runner identity differs')
-    sources=verify_git_sources(REPO,revision,PARITY_SOURCES)
+    sources=verify_git_sources(REPO,revision,PARITY_SOURCES + ('som-rs/scripts/react_output_acceptance/macos_bottles.json','som-rs/scripts/react_output_acceptance/provision_macos.py'))
     need(sources['som-rs/scripts/react_output_acceptance/audit/independent_behavior_oracle.py']==REVIEWED_ORACLE_SHA,
          'reviewed oracle source differs')
     receipt=a.json_file(lifecycle/'receipt.json')
@@ -378,7 +378,7 @@ def audit_product_files(lifecycle, expected):
     need(set(indexed)==set(expected)==set(owner_map),'product snapshot case set differs')
     return {'case_targets':len(indexed),'file_count':sum(len(x['files']) for x in indexed.values())}
 
-def audit_python_authority(lifecycle,original_repo,expected_version='3.12.11'):
+def audit_python_authority(lifecycle,original_repo,expected_version='3.12.11',provision_binary='/opt/homebrew/opt/python@3.12/bin/python3.12'):
     receipt=a.json_file(lifecycle/'receipt.json');events=receipt['events'];row=receipt.get('python_authority')
     need(type(row) is dict and row.get('state')=='completed' and row.get('exit_code')==0,'Python authority missing')
     executable=str(original_repo/'som-rs/runtime/acceptance-m3-venv/bin/python')
@@ -406,6 +406,34 @@ def audit_python_authority(lifecycle,original_repo,expected_version='3.12.11'):
         need(code==0 and len(fields)==2 and all(x.isdigit() and int(x)>0 for x in fields),'Python base prefix stat differs')
         prefixes.append(fields)
     need(prefixes[0]==prefixes[1],'Python base prefix resolves to another directory')
+    bottle_bytes=a.read(lifecycle/'python-bottles.json')
+    need(bottle_bytes==a.read(REPO/'som-rs/scripts/react_output_acceptance/macos_bottles.json'),'Python bottle source differs')
+    bottle=a.obj(bottle_bytes);provision=a.obj(a.read(lifecycle/'python-provision-report.json'))
+    need(bottle.get('version')=='som.react-output-macos-bottles.v1' and bottle.get('python',{}).get('binary')==provision_binary
+         and bottle.get('python',{}).get('version')==expected_version,'Python bottle policy differs')
+    entries=[entry for entry in bottle.get('bottles',[]) if entry.get('formula')=='python@3.12']
+    packages=[entry for entry in provision.get('packages',[]) if entry.get('formula')=='python@3.12']
+    need(len(entries)==len(packages)==1,'Python bottle package missing')
+    spec=entries[0];package=packages[0];check=provision.get('python',{})
+    need(provision.get('version')=='som.react-output-macos-provision.v1' and provision.get('status')=='passed'
+         and provision.get('stage')=='complete' and provision.get('manifest_sha256')==a.sha(bottle_bytes)
+         and package.get('status')=='passed' and package.get('version')==spec.get('version')==expected_version
+         and package.get('revision')==spec.get('revision') and package.get('expected_keg_directory')==spec.get('expected_keg_directory')
+         and package.get('selected_archive_sha256')==spec.get('archive_sha256') and package.get('selected_target')==spec.get('target')
+         and package.get('selected_bottle_rebuild')==spec.get('bottle_rebuild')
+         and check.get('status')=='passed' and check.get('binary')==provision_binary
+         and check.get('expected_version')=='Python '+expected_version
+         and {x.get('label') for x in check.get('checks',[]) if x.get('status')=='passed' and x.get('exit_code')==0}=={'version','stdlib_and_bundled_ensurepip'},'Python provision receipt differs')
+    framework=str(Path(provision_binary).parent.parent/'Frameworks/Python.framework/Versions/3.12')
+    need(row.get('provision_binary')==provision_binary and row.get('provision_framework')==framework,'Python provision path differs')
+    code,raw=a.command_raw(lifecycle,row['provision_framework_stat'],['/usr/bin/stat','-L','-f','%d %i',framework])
+    need(code==0 and raw.decode().split()==prefixes[1],'Python venv base is not provisioned framework')
+    binary_stats=[]
+    for name,path in (('provision_binary_stat',provision_binary),('base_executable_stat',info['base_executable'])):
+        code,raw=a.command_raw(lifecycle,row[name],['/usr/bin/stat','-L','-f','%d %i %z %Lp',path]);fields=raw.decode().split()
+        need(code==0 and len(fields)==4 and all(x.isdigit() for x in fields),'Python provisioned binary stat missing')
+        binary_stats.append(fields)
+    need(binary_stats[0]==binary_stats[1],'Python base executable is not provisioned interpreter')
     for name in ('image','launcher'):
         item=row[name+'_stat_value'] if name=='launcher' else row['image_stat']
         file=row[name+'_file'];digest=row[name+'_sha256'];expected='python-authority-'+name+'.raw'
@@ -435,13 +463,13 @@ def audit_python_authority(lifecycle,original_repo,expected_version='3.12.11'):
     return {'launcher_sha256':row['launcher_sha256'],'launcher_stat':row['launcher_stat_value'],
             'image_sha256':row['image_sha256'],'image_stat':row['image_stat'],'version':expected_version}
 
-def audit_python_runtimes(lifecycle,cases,files,original_repo,expected_version='3.12.11'):
+def audit_python_runtimes(lifecycle,cases,files,original_repo,expected_version='3.12.11',provision_binary='/opt/homebrew/opt/python@3.12/bin/python3.12'):
     import ast
     source=ast.parse(a.read(REPO/'som-rs/behavior/hosts.py').decode('utf-8'))
     values=[ast.literal_eval(node.value) for node in source.body if isinstance(node,ast.Assign)
             and any(isinstance(t,ast.Name) and t.id=='HOST_SHIM' for t in node.targets)]
     need(len(values)==1 and type(values[0]) is str,'frozen Python shim missing');shim_expected=values[0].encode()
-    authority=audit_python_authority(lifecycle,original_repo,expected_version)
+    authority=audit_python_authority(lifecycle,original_repo,expected_version,provision_binary)
     receipt=a.json_file(lifecycle/'receipt.json');events=receipt['events'];rows=receipt.get('python_runtimes')
     owners=a.json_file(lifecycle/'product-http/manifest.json')['owners'];owner_map={o['case']:o for o in owners if o.get('target')=='python'}
     need(type(rows) is list and len(owner_map)==len(cases),'Python runtime inventory missing')
@@ -469,6 +497,7 @@ def audit_python_runtimes(lifecycle,cases,files,original_repo,expected_version='
         children=[(i,e) for i,e in enumerate(events[pre[0][0]+1:owner['start_event']],pre[0][0]+1) if e.get('kind')=='child-start' and e.get('pid')==owner['pid']]
         need(len(children)==1 and children[0][1].get('argv')==argv and children[0][1].get('cwd')==cwd,'Python server child differs')
         env=children[0][1].get('environment');need(type(env) is dict and env.get('PYTHONPATH')==cwd and env.get('PYTHONDONTWRITEBYTECODE')=='1','Python import path differs')
+        need(children[0][1].get('unexpected_python_environment_keys')==[],'Unexpected Python environment keys')
         if version!='som.prompt.v5':need(env.get('SOM_BEHAVIOR_PACKAGE')==package,'Python shim package differs')
         snapshot=events[owner['start_event']];pid=owner['pid'];image_row=row.get('image')
         need(type(image_row) is dict and type(image_row.get('path')) is str and Path(image_row['path']).is_absolute()

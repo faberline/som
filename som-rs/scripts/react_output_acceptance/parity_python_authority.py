@@ -9,8 +9,13 @@ import subprocess
 
 MAX_IMAGE=128*1024*1024
 
-def capture(observer,root,python,probe,cwd):
+def capture(observer,root,python,probe,cwd,provision_report,provision_binary=Path('/opt/homebrew/opt/python@3.12/bin/python3.12')):
     root=Path(root);python=Path(python);probe=Path(probe);cwd=Path(cwd)
+    provision_binary=Path(provision_binary)
+    for name,path in (('python-provision-report.json',Path(provision_report)),('python-bottles.json',cwd/'som-rs/scripts/react_output_acceptance/macos_bottles.json')):
+        data=path.read_bytes()
+        if len(data)>8*1024*1024:raise ValueError('Python authority input too large')
+        with (root/name).open('xb') as stream:stream.write(data)
     argv=[str(python),'-I',str(probe)]
     env={key:value for key,value in os.environ.items() if key not in ('PYTHONPATH','PYTHONHOME','PYTHONSTARTUP')}
     proc=observer.popen(argv,cwd=str(cwd),env=env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -34,13 +39,18 @@ def capture(observer,root,python,probe,cwd):
         row['image_file']=filename;row['image_sha256']=digest
         row['image_stat']={'device':before.st_dev,'inode':before.st_ino,'bytes':before.st_size,'mode':before.st_mode&0o777}
         pid=str(proc.pid)
+        row['provision_binary']=str(provision_binary)
+        row['provision_framework']=str(provision_binary.parent.parent/'Frameworks/Python.framework/Versions/3.12')
         for name,command in (
             ('ps',['/bin/ps','-ww','-p',pid,'-o','pid=,ppid=,pgid=,command=']),
             ('lsof',['/usr/sbin/lsof','-nP','-a','-p',pid,'-d','txt','-FfDin']),
             ('stat',['/usr/bin/stat','-L','-f','%d %i %z %Lp',str(image)]),
             ('launcher_stat',['/usr/bin/stat','-L','-f','%d %i %z %Lp',str(python)]),
             ('base_prefix_stat',['/usr/bin/stat','-L','-f','%d %i',info['base_prefix']]),
-            ('base_real_stat',['/usr/bin/stat','-L','-f','%d %i',info['base_prefix_real']])):
+            ('base_real_stat',['/usr/bin/stat','-L','-f','%d %i',info['base_prefix_real']]),
+            ('provision_framework_stat',['/usr/bin/stat','-L','-f','%d %i',row['provision_framework']]),
+            ('provision_binary_stat',['/usr/bin/stat','-L','-f','%d %i %z %Lp',str(provision_binary)]),
+            ('base_executable_stat',['/usr/bin/stat','-L','-f','%d %i %z %Lp',info['base_executable']])):
             row[name]=observer.command(command)
         proc.stdin.write(b'x');proc.stdin.flush();tail,stderr=proc.communicate(timeout=30)
         row['stdout']=observer.retain('python-authority.stdout',line+tail)

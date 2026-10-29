@@ -1,5 +1,6 @@
 """GitHub-only process, raw protocol and port fixtures for the draft collector."""
 import json
+import hashlib
 import os
 from pathlib import Path
 import sys
@@ -23,6 +24,17 @@ class HostedAdmissionTests(unittest.TestCase):
         self.assertFalse(hosted.FINAL_MAC_ADAPTER_REVIEWED)
         with self.assertRaises(SystemExit):
             hosted.main(['--out', '.local/m6-hosted/unused', '--candidate-revision', 'a' * 40])
+
+    def test_python_environment_records_unexpected_names_only(self):
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as temp:
+            observer=parity.TrackingRecorder(Path(temp))
+            fake=mock.MagicMock();fake.pid=12345
+            observer.original_popen=mock.Mock(return_value=fake)
+            observer.popen(['/venv/bin/python','-m','uvicorn','app:app'],env={'PYTHONPATH':'/work','PYTHONHOME':'sensitive-fixture-value'})
+            event=observer.events[0]
+            self.assertEqual(event['unexpected_python_environment_keys'],['PYTHONHOME'])
+            self.assertNotIn('sensitive-fixture-value',json.dumps(event))
 
 
 class RawProtocolTests(unittest.TestCase):
@@ -221,10 +233,23 @@ class ProductArtifactBindingTests(unittest.TestCase):
             (cwd/'uvicorn.py').write_text('print("fixture module started",flush=True)\nimport socket,sys\np=int(sys.argv[sys.argv.index("--port")+1])\ns=socket.socket();s.bind(("127.0.0.1",p));s.listen(4)\nwhile True:\n c,_=s.accept();c.close()\n')
             with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
             argv=[str(python),'-m','uvicorn','som_behavior_host:app','--app-dir',str(shim.parent),'--host','127.0.0.1','--port',str(port),'--no-access-log','--log-level','warning']
-            env=dict(os.environ,PYTHONPATH=str(cwd),PYTHONDONTWRITEBYTECODE='1',SOM_BEHAVIOR_PACKAGE='pkg')
+            env={key:value for key,value in os.environ.items() if not key.startswith('PYTHON')}
+            env.update(PYTHONPATH=str(cwd),PYTHONDONTWRITEBYTECODE='1',SOM_BEHAVIOR_PACKAGE='pkg')
             probe=root/'som-rs/scripts/react_output_acceptance/parity_python_probe.py';probe.parent.mkdir(parents=True)
             shutil.copyfile(Path(__file__).resolve().parent/'parity_python_probe.py',probe)
-            observer=parity.TrackingRecorder(life);proof=authority.capture(observer,life,python,probe,root)
+            version='.'.join(map(str,sys.version_info[:3]))
+            opt=root/'approved-python';(opt/'bin').mkdir(parents=True)
+            provision_binary=opt/'bin/python3.12';provision_binary.symlink_to(Path(sys._base_executable).resolve())
+            framework=opt/'Frameworks/Python.framework/Versions/3.12';framework.parent.mkdir(parents=True)
+            framework.symlink_to(Path(sys.base_prefix).resolve(),target_is_directory=True)
+            spec={'formula':'python@3.12','version':version,'revision':1,'expected_keg_directory':'fixture-keg','archive_sha256':'a'*64,'target':'fixture','bottle_rebuild':0}
+            bottle={'version':'som.react-output-macos-bottles.v1','python':{'binary':str(provision_binary),'version':version},'bottles':[spec]}
+            bottle_path=probe.parent/'macos_bottles.json';bottle_path.write_text(json.dumps(bottle))
+            package={**{k:spec[k] for k in ('formula','version','revision','expected_keg_directory')},'status':'passed','selected_archive_sha256':spec['archive_sha256'],'selected_target':spec['target'],'selected_bottle_rebuild':0}
+            provision={'version':'som.react-output-macos-provision.v1','status':'passed','stage':'complete','manifest_sha256':hashlib.sha256(bottle_path.read_bytes()).hexdigest(),'packages':[package],
+                       'python':{'status':'passed','binary':str(provision_binary),'expected_version':'Python '+version,'checks':[{'label':label,'status':'passed','exit_code':0} for label in ('version','stdlib_and_bundled_ensurepip')]}}
+            provision_path=root/'report.json';provision_path.write_text(json.dumps(provision))
+            observer=parity.TrackingRecorder(life);proof=authority.capture(observer,life,python,probe,root,provision_path,provision_binary)
             caps=runtimes.Runtimes(life/'python-runtimes');row=caps.capture('example',cwd,argv)
             observer.events.append({'kind':'product-files-launch','snapshot_id':1,'case':'example','target':'python','cwd':str(cwd)})
             observer.events.append({'kind':'python-runtime','runtime_id':1,'case':'example','cwd':str(cwd)})
@@ -251,9 +276,8 @@ class ProductArtifactBindingTests(unittest.TestCase):
             (life/'receipt.json').write_text(json.dumps({'events':observer.events,'python_runtimes':caps.rows,'python_authority':proof}))
             (http/'manifest.json').write_text(json.dumps({'owners':[{'case':'example','target':'python','pid':proc.pid,'base':'http://127.0.0.1:'+str(port),'start_event':start}]}))
             with mock.patch.object(audit,'REPO',root):
-                version='.'.join(map(str,sys.version_info[:3]))
                 try:
-                    observed=audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version)
+                    observed=audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version,str(provision_binary))
                 except ValueError as exc:
                     fake_info=json.loads((life/'python-authority.stdout').read_bytes())
                     fake_ps=(life/proof['ps']['stdout']['file']).read_text()
@@ -262,10 +286,23 @@ class ProductArtifactBindingTests(unittest.TestCase):
                 saved=json.loads((life/'receipt.json').read_text())
                 child=next(e for e in saved['events'] if e.get('kind')=='child-start' and e.get('pid')==proc.pid)
                 child['environment']['PYTHONPATH']='/wrong';(life/'receipt.json').write_text(json.dumps(saved))
-                with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version)
+                with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version,str(provision_binary))
                 child['environment']['PYTHONPATH']=str(cwd);(life/'receipt.json').write_text(json.dumps(saved))
+                child['unexpected_python_environment_keys']=['PYTHONHOME'];(life/'receipt.json').write_text(json.dumps(saved))
+                with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version,str(provision_binary))
+                child['unexpected_python_environment_keys']=[];(life/'receipt.json').write_text(json.dumps(saved))
+                changed=json.loads((life/'python-provision-report.json').read_text());changed['packages'][0]['selected_archive_sha256']='b'*64
+                (life/'python-provision-report.json').write_text(json.dumps(changed))
+                with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version,str(provision_binary))
+                (life/'python-provision-report.json').write_text(json.dumps(provision))
+                wrong=json.loads((life/'receipt.json').read_text())
+                stat=wrong['python_authority']['provision_framework_stat']['stdout'];stat_path=life/stat['file']
+                original=stat_path.read_bytes();fake=b'999999 999999\n';stat_path.write_bytes(fake);stat['sha256']=hashlib.sha256(fake).hexdigest()
+                (life/'receipt.json').write_text(json.dumps(wrong))
+                with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version,str(provision_binary))
+                stat_path.write_bytes(original);(life/'receipt.json').write_text(json.dumps(saved))
                 (life/'python-runtimes'/row['shim_file']).write_text('tampered')
-                with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version)
+                with self.assertRaises(ValueError):audit.audit_python_runtimes(life,{'example':{'version':'som.prompt.v1'}},{('example','python'):{'pkg/api.py':'fixture'}},root,version,str(provision_binary))
 
     def test_real_macho_binary_build_wait_and_process_image(self):
         import shutil,socket,subprocess,time
