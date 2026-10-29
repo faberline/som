@@ -224,7 +224,17 @@ def _job_display_name(workflow, job):
     # tags, aliases and quoted/multiline variants need a separate source review.
     _require(re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9 ._()/\-]*', display),
              'unsupported source job display-name expression')
-    matrices = re.findall(r'(?m)^      matrix:.*$', block)
+    properties = list(re.finditer(r'(?m)^    ([A-Za-z0-9_-]+):(.*)$', block))
+    strategies = [position for position, match in enumerate(properties) if match.group(1) == 'strategy']
+    _require(len(strategies) <= 1, 'ambiguous source job strategy')
+    strategy = ''
+    if strategies:
+        position = strategies[0]
+        header = properties[position]
+        _require(not header.group(2).strip(), 'source job strategy must be an exact block')
+        strategy_end = properties[position + 1].start() if position + 1 < len(properties) else len(block)
+        strategy = block[header.end():strategy_end]
+    matrices = re.findall(r'(?m)^      matrix:.*$', strategy)
     _require(len(matrices) <= 1, 'ambiguous source job matrix')
     return display, bool(matrices)
 

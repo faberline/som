@@ -131,6 +131,35 @@ class Fixture:
         self.main.__file__ = str(self.root / BOOTSTRAP_PATH)
 
 
+class SourceStrategyParentTests(unittest.TestCase):
+    def test_actual_outputs_matrix_is_not_a_strategy_or_a_job_name_suffix_grant(self):
+        f = Fixture(self)
+        workflow = (f.root / CALLED_WORKFLOW).read_text()
+        self.assertIn('    outputs:\n      matrix:', workflow)
+        for job in f.module._CALLED_JOBS:
+            display, matrix = f.module._job_display_name(workflow, job)
+            self.assertEqual(display, job)
+            self.assertEqual(matrix, job in {'products', 'required-callbacks'})
+        f.select_job('bind')
+        with f.bootstrap() as bootstrap:
+            self.assertEqual(bootstrap._binding['job'], 'bind')
+        f.job['name'] += ' (unlisted-output-matrix-suffix)'
+        with self.assertRaises(ValueError):
+            f.bootstrap()
+
+    def test_duplicate_or_inline_strategy_cannot_hide_in_an_outputs_block(self):
+        f = Fixture(self)
+        workflow = (f.root / CALLED_WORKFLOW).read_text()
+        inline = workflow.replace('  bind:\n', '  bind:\n    strategy: {matrix: {unlisted: [x]}}\n', 1)
+        with self.assertRaisesRegex(ValueError, 'source job strategy must be an exact block'):
+            f.module._job_display_name(inline, 'bind')
+        duplicate = workflow.replace('  bind:\n',
+            '  bind:\n    strategy:\n      matrix:\n        first: [x]\n'
+            '    strategy:\n      matrix:\n        second: [y]\n', 1)
+        with self.assertRaisesRegex(ValueError, 'ambiguous source job strategy'):
+            f.module._job_display_name(duplicate, 'bind')
+
+
 class NativeSourceBootstrapTests(unittest.TestCase):
     def setUp(self):
         self.assertEqual(os.environ.get('GITHUB_ACTIONS'), 'true', 'fixtures must run on GitHub')

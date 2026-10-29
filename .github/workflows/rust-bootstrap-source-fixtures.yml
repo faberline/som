@@ -1,7 +1,7 @@
 name: Native source bootstrap fixtures
 on:
   push:
-    branches: [codex/m12-bootstrap-source-fixtures-v2]
+    branches: [codex/m12-bootstrap-matrix-repair]
   workflow_dispatch:
 permissions:
   contents: read
@@ -25,7 +25,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
           git rev-parse HEAD > tested-sha.txt
           python3 --version > python-version.txt 2>&1
-      - name: Run all29 bootstrap source fixtures
+      - name: Run all31 bootstrap source fixtures
         run: |
           python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/test_native_source_bootstrap.py" -v 2>&1 | tee source-fixtures.log
       - name: Retain complete source output and first failures
