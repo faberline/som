@@ -452,7 +452,7 @@ class OwnedCandidateTests(unittest.TestCase):
                 (candidate/'runtime.json').write_text(json.dumps({'pid':owner.process.pid,'argv':owner.argv,'port':18919,'binary_sha256':digest}))
                 (candidate/'build.json').write_text(json.dumps({'binary_sha256':digest}))
                 diag=subprocess.run(['/bin/ps','-ww','-p',str(owner.process.pid),'-o','pid=,ppid=,pgid=,stat=,command='],capture_output=True,text=True)
-                print('FAKE_IDENTITY',repr(diag.stdout),repr(diag.stderr),diag.returncode,flush=True)
+                print('FAKE_IDENTITY',repr(diag.stdout),repr(diag.stderr),diag.returncode,'sigchld',repr(__import__('signal').getsignal(__import__('signal').SIGCHLD)),flush=True)
                 cleanup=hosted.stop_owned_candidate(root,env,owner)
                 self.assertTrue(cleanup['ownership_verified']);self.assertTrue(cleanup['direct_wait']['completed'])
                 self.assertTrue(cleanup['stopped'])
@@ -494,6 +494,8 @@ int main(void){pid_t p=fork();if(p<0)return 2;if(p==0){signal(SIGTERM,SIG_IGN);F
                             if state.startswith('Z'):break
                             time.sleep(.05)
                         else:self.fail('leader did not become an unreaped zombie')
+                    diag=subprocess.run(['/bin/ps','-ww','-p',str(owner.process.pid),'-o','pid=,ppid=,pgid=,stat=,command='],capture_output=True,text=True)
+                    print('FAKE_ORPHAN_IDENTITY',mode,repr(diag.stdout),repr(diag.stderr),diag.returncode,'sigchld',repr(signal.getsignal(signal.SIGCHLD)),flush=True)
                     self.assertIsNone(owner.process.returncode)
                     owner.wait_after_signal(timeout=10,grace=.1)
                     signals=[event['signal'] for event in owner.events if event['kind']=='candidate-signal']
