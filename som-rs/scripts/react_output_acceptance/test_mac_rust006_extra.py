@@ -135,6 +135,17 @@ class IndependentRawTests(unittest.TestCase):
                 response.write_bytes(b'{"files":{"main.py":"tampered"}}')
                 with self.assertRaises(ValueError): audit.audit_cases(raw)
 
+    def test_refusal_rehash_and_pointer_are_derived_from_request(self):
+        import audit_mac_rust006_extra as audit
+        bundle={'version':'v','prompt':{'key':'x'},'dsl':{'files':[]},'assets':{'x':1},
+                'hashes':{'prompt_sha256':'stale','dsl_sha256':'stale','payload_sha256':'stale'}}
+        changed=audit.rehash(bundle)
+        self.assertEqual(changed['hashes']['prompt_sha256'], audit.h(changed['prompt']))
+        self.assertEqual(changed['hashes']['dsl_sha256'], audit.h(changed['dsl']))
+        self.assertEqual(changed['hashes']['payload_sha256'], audit.h({k:v for k,v in changed.items() if k!='hashes'}))
+        self.assertEqual(audit.pointer({'bundle':{'a/b':[{'~name':'wire'}]}}, '/bundle/a~1b/0/~0name'), 'wire')
+        self.assertEqual(bundle['hashes']['payload_sha256'], 'stale')
+
     def test_final_audit_stays_incomplete(self):
         import audit_mac_rust006_extra as audit
         self.assertEqual(audit.ALLOWED, {'backend','block_library','catalog','compiler_contract','selection_policy'})
