@@ -404,7 +404,7 @@
       "som-rs/scripts/hosted_readiness/run_experimental_native_compile.py": "bb3653edc9021b1476d659276fbf9a549ba33de594fad9dac3713ac368b37d87",
       "som-rs/scripts/hosted_readiness/run_full_products.py": "2b70ccff557f1e647e1f85204d09f959a74334bbdbe065744063026c0131e22b",
       "som-rs/scripts/hosted_readiness/run_same_candidate_contracts.py": "05e6f9b4443790482d52eff4caa482217f2b5a875c5d591699bae8121f87e2ba",
-      "som-rs/scripts/hosted_readiness/run_source_fixtures.py": "315a292f523c01ea9671812f580a871521802a079daac781c67a57a06b81d5a5",
+      "som-rs/scripts/hosted_readiness/run_source_fixtures.py": "590d500eeae87c7d5cfde02bad87acc95ef15cf95057034788881e991ab2ca9a",
       "som-rs/scripts/hosted_readiness/same_candidate_graph.py": "61b45cdf7c706c5eb9a34998d542a092b2afb09b00d68b36df61b2ad4798973e",
       "som-rs/scripts/hosted_readiness/sealed_current_raw.py": "92bc6ffaf8d575a882a24fb563e055c8136b4bc17b2a231c9c170c4305992c29",
       "som-rs/scripts/hosted_readiness/test_complete_rust_inputs.py": "234681f5fe6ceb7effd900139d010e2863056b6c7d83fec6ccb12b520347b086",

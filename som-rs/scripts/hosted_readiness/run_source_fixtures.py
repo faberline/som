@@ -113,7 +113,7 @@ def verify_sources(repo, revision, expected):
         require(len(raw) == wanted['bytes'] and sha(raw) == wanted['sha256'], 'tracked source changed: ' + name)
         if name.endswith('.py'):
             python_roots.add(path.parent)
-    roots = [p for p in python_roots if not any(other in p.parents for other in python_roots)]
+    roots = [p for p in python_roots if not any(parent in python_roots for parent in p.parents)]
     for root in roots:
         for path in root.rglob('*'):
             name = path.relative_to(repo).as_posix()
