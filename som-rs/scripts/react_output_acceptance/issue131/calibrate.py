@@ -11,6 +11,7 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+import traceback
 import stat
 import urllib.parse
 
@@ -271,6 +272,10 @@ def main():
     try:
         return run(a.repo,a.input_root,a.evidence,a.sealed,a.inventory,a.out,a.config)
     except Exception as exc:
+        trace=[{'file':Path(frame.filename).name,'line':frame.lineno,'function':frame.name}
+               for frame in traceback.extract_tb(exc.__traceback__)]
+        print(json.dumps({'error_type':type(exc).__name__,'source_trace':trace,
+                          'runtime_comparison':'unrun','product_acceptance':'not_run'},sort_keys=True))
         a.out.parent.mkdir(parents=True,exist_ok=True)
         with a.out.open('x') as f:
             json.dump({'version':'som.recorded-before-calibration.v1','passed':False,
