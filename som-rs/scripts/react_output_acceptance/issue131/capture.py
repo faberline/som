@@ -148,6 +148,10 @@ def prepare(inventory, evidence, run, checker, sealed):
         doc = json.loads(raw)
         need(doc.get('status') == 'ok' and type(doc.get('bundle')) is dict, 'baseline bundle')
         request = jbytes({'bundle': doc['bundle']})
+        refused_row = rows[(phase, case, 'baseline_bundle_refused')]
+        need(refused_row['passed'] is True and refused_row['qa_status'] == 400
+             and refused_row['request_sha256'] == refused_row['qa_request_sha256'] == sha(request),
+             'original serializer request identity')
         if phase == 'phase1':
             files_sha = phase1[case]['files_sha256']
         else:
@@ -181,6 +185,7 @@ def prepare(inventory, evidence, run, checker, sealed):
         expected[identity] = maps[0]
         plan.append({'slot_id': slot['slot_id'], 'case': case, 'phase': phase,
                      'method': 'POST', 'endpoint': '/v1/assemble', 'request_sha256': sha(request),
+                     'prior_candidate_refusal_request_sha256': refused_row['request_sha256'],
                      'expected_files_sha256': files_sha, 'expected_source': 'accepted-130-rebased-and-run003',
                      'accepted_response_sha256': row['qa_response_sha256'],
                      'baseline_compile_response_sha256': sha(raw), 'request': request})
