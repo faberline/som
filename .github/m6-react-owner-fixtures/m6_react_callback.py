@@ -839,6 +839,44 @@ def verify_react_raw_domain(root, source_reader, helper_revision, candidate_revi
     require(not capture.get('error') and not capture.get('capture_error')
             and not capture.get('audit_capture_error') and not capture.get('finalization_errors')
             and not capture.get('command_evidence_errors'), 'React capture has failure evidence')
+    context_raw = read(root.parent / 'context.input.json')
+    context = strict_json(context_raw)
+    require(sha(context_raw) == shared.get('context_sha256') and type(context) is dict
+            and context.get('repo') == str(repo) and context.get('helper_revision') == candidate_revision
+            and context.get('candidate_revision') == candidate_revision and context.get('qa_mode') == 'native-qa-v1',
+            'React command context differs from shared proof')
+    inputs = context.get('m6_react_inputs')
+    expected_input_keys = {'baseline_profile', 'legacy_run', 'rust_baseline_run', 'qa_profile',
+                           'api_profile', 'api_closure_tar', 'collector_out', 'audit_out'}
+    require(type(inputs) is dict and set(inputs) == expected_input_keys
+            and all(type(value) is str and value for value in inputs.values()), 'React context inputs differ')
+    paths = capture.get('input_paths')
+    require(type(paths) is dict and set(paths) == expected_input_keys | {'candidate_dir'}
+            and all(paths[name] == inputs[name] for name in expected_input_keys),
+            'React recorded input paths differ from source-bound context')
+    original = physical(paths['collector_out'])
+    candidate = physical(paths['candidate_dir'])
+    require(repo / '.local' in original.parents and candidate == root.parent / 'candidate',
+            'React run or owned candidate path differs')
+    api = strict_json(read(physical(paths['api_profile']), 1024 * 1024))
+    require(type(api) is dict and api.get('version') == 'som.react-linux-api-profile.v1'
+            and api.get('node_profile') == paths['qa_profile'] and type(api.get('venv')) is str,
+            'React API profile differs')
+    python = physical(Path(api['venv'])) / 'bin/python'
+    collector_args = collector_arguments(candidate_dir=candidate, collector_out=original,
+        baseline_url='http://127.0.0.1:18979', legacy_run=paths['legacy_run'],
+        rust_baseline_run=paths['rust_baseline_run'], python=python,
+        qa_profile=paths['qa_profile'], api_profile=paths['api_profile'])
+    audit_args = auditor_arguments(repo=repo, collector_out=original, audit_out=Path(paths['audit_out']),
+                                   api_closure_tar=paths['api_closure_tar'], candidate_dir=candidate)
+    observer = context.get('observer_python')
+    require(type(observer) is str and Path(observer).is_absolute(), 'React observer Python differs')
+    driver = 'som-rs/scripts/hosted_readiness/run_full_products.py'
+    source_reader(CONTEXT); source_reader(driver)
+    expected_commands = {
+        'collector': [observer, '-I', '-S', '-B', str(repo / driver), '--execute-tool', COLLECTOR, '--', *collector_args],
+        'audit': [observer, '-I', '-S', '-B', str(repo / driver), '--execute-tool', AUDITOR, '--', *audit_args],
+    }
     rows = capture.get('rows')
     require(type(rows) is list and [row.get('id') for row in rows] == ['collector', 'audit'],
             'both React commands are required')
@@ -851,7 +889,9 @@ def verify_react_raw_domain(root, source_reader, helper_revision, candidate_revi
                 and not row.get('fallback_unverified') and type(command.get('pid')) is int
                 and command['pid'] > 0 and command.get('exit_code') == expected_exit
                 and command.get('wait_completed') is True and command.get('owned_group_cleanup_passed') is True
-                and row.get('postcheck') is not None, 'React command wait, cleanup or logs differ')
+                and row.get('postcheck') is not None and command.get('cwd') == str(repo)
+                and command.get('argv') == expected_commands[row['id']],
+                'React command argv, cwd, wait, cleanup or logs differ')
         post = strict_json(read(root / row['postcheck']))
         tool = COLLECTOR if row['id'] == 'collector' else AUDITOR
         require(post.get('version') == 'som.full-product-checker-postcheck.v1'
@@ -863,21 +903,13 @@ def verify_react_raw_domain(root, source_reader, helper_revision, candidate_revi
         pins = post.get('source_sha256')
         require(type(pins) is dict and tool in pins and all(sha(source_reader(p)) == v for p, v in pins.items()),
                 'React command source bytes differ')
-    paths = capture.get('input_paths')
-    require(type(paths) is dict and type(paths.get('collector_out')) is str
-            and type(paths.get('candidate_dir')) is str and type(paths.get('api_closure_tar')) is str,
-            'React capture input paths missing')
-    original = physical(paths['collector_out'])
-    candidate = physical(paths['candidate_dir'])
-    require(repo / '.local' in original.parents and candidate == root.parent / 'candidate',
-            'React run or owned candidate path differs')
     copied = capture.get('collector_capture')
     require(type(copied) is dict and type(copied.get('copied_sha256')) is dict
             and not copied.get('errors') and copied.get('source_stability_verified') is True
             and copied.get('regular_file_modes_preserved') is True, 'React retained collector inventory missing')
     snapshot = copied.get('source_snapshot')
     require(type(snapshot) is dict and snapshot == scan_capture_source(original)
-            and type(snapshot.get('files')) is dict and type(snapshot.get('excluded')) is list
+            and type(snapshot.get('files')) is dict and snapshot.get('excluded') == []
             and sorted(copied.get('excluded', []), key=lambda item: item['path']) == snapshot['excluded'],
             'React collector source tree differs from captured source')
     retained = inventory(root / 'collector')
@@ -927,11 +959,22 @@ def verify_react_raw_domain(root, source_reader, helper_revision, candidate_revi
                         'React owned candidate file differs')
             elif name.startswith('.local/'):
                 raw = bound.read(repo / name)
-                identity = approved.get(name) or original_approved.get(name)
-                require(type(identity) is dict and identity['sha256'] == digest == sha(raw)
-                        and identity['bytes'] == len(raw)
-                        and stat.S_IMODE((repo / name).stat().st_mode) == identity['mode'],
-                        'React input is absent from an approved source role')
+                bound_record = bound.files.get(name)
+                require(type(bound_record) is dict and bound_record.get('sha256') == digest == sha(raw)
+                        and bound_record.get('bytes') == len(raw), 'React input source role differs')
+                if bound_record.get('source') == 'later-capture-derived':
+                    # These are the 1,336 previously missing files. Their bytes
+                    # come from the verified mapping and later capture, not
+                    # from the old input manifest or an original wire record.
+                    require(name not in approved and name not in original_approved
+                            and stat.S_IMODE((repo / name).stat().st_mode) == 0o644,
+                            'derived React input identity or mode differs')
+                else:
+                    identity = approved.get(name)
+                    require(type(identity) is dict and identity['sha256'] == digest
+                            and identity['bytes'] == len(raw)
+                            and stat.S_IMODE((repo / name).stat().st_mode) == identity['mode'],
+                            'React input is absent from an approved source role')
             else:
                 require(sha(source_reader(name)) == digest, 'React audit source differs from bound source')
     require(all('@owned-candidate/' + n in audited for n in ('som', 'build.json', 'runtime.json'))

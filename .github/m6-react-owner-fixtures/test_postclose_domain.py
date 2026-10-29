@@ -30,6 +30,24 @@ class DomainBoundaryTests(unittest.TestCase):
         self.closure=top/'closure.tar'; self.closure.write_bytes(b'closure')
         self.copy=s.copy_capture(self.original,self.owner/'collector')
         self.source=b'synthetic source'; self.rev='a'*40
+        venv=top/'venv';venv.mkdir(); qa=top/'qa.json';qa.write_text('{}')
+        api=top/'api.json';api.write_text(json.dumps({'version':'som.react-linux-api-profile.v1',
+                                                       'node_profile':str(qa),'venv':str(venv)}))
+        self.inputs={'baseline_profile':'som-rs/scripts/hosted_readiness/baseline.json',
+                     'legacy_run':str(top/'legacy'),'rust_baseline_run':str(top/'rust'),
+                     'qa_profile':str(qa),'api_profile':str(api),'api_closure_tar':str(self.closure),
+                     'collector_out':str(self.original),'audit_out':str(self.repo/'.local/audit.json')}
+        observer=str(top/'observer/bin/python');driver='som-rs/scripts/hosted_readiness/run_full_products.py'
+        context={'repo':str(self.repo),'helper_revision':self.rev,'candidate_revision':self.rev,
+                 'qa_mode':'native-qa-v1','observer_python':observer,'m6_react_inputs':self.inputs}
+        (self.shared/'context.input.json').write_text(json.dumps(context))
+        collect=s.collector_arguments(candidate_dir=self.candidate,collector_out=self.original,
+                  baseline_url='http://127.0.0.1:18979',legacy_run=self.inputs['legacy_run'],
+                  rust_baseline_run=self.inputs['rust_baseline_run'],python=venv/'bin/python',
+                  qa_profile=self.inputs['qa_profile'],api_profile=self.inputs['api_profile'])
+        audit_args=s.auditor_arguments(repo=self.repo,collector_out=self.original,
+                       audit_out=Path(self.inputs['audit_out']),api_closure_tar=self.closure,candidate_dir=self.candidate)
+        expected={'collector':collect,'audit':audit_args}
         self.rows=[]
         for name,tool,code in [('collector',s.COLLECTOR,0),('audit',s.AUDITOR,1)]:
             log=self.owner/'logs'; log.mkdir(exist_ok=True)
@@ -42,7 +60,8 @@ class DomainBoundaryTests(unittest.TestCase):
             row={'id':name,'streams_complete':True,'capture_errors':[],
                  'stdout':'logs/'+name+'.stdout','stderr':'logs/'+name+'.stderr',
                  'postcheck':'logs/'+name+'.postcheck.json','postcheck_sha256':s.sha(postpath.read_bytes()),
-                 'command':{'argv':['synthetic'], 'pid':100+code,'exit_code':code,'wait_completed':True,
+                 'command':{'argv':[observer,'-I','-S','-B',str(self.repo/driver),'--execute-tool',tool,'--',*expected[name]],
+                            'cwd':str(self.repo),'pid':100+code,'exit_code':code,'wait_completed':True,
                             'owned_group_cleanup_passed':True,'stdout':'raw-out','stderr':'raw-err',
                             'stdout_sha256':s.sha((log/(name+'.stdout')).read_bytes()),
                             'stderr_sha256':s.sha((log/(name+'.stderr')).read_bytes())}}
@@ -59,18 +78,22 @@ class DomainBoundaryTests(unittest.TestCase):
                      'candidate_revision':self.rev,'product_acceptance_passed':False,
                      'owned_waits_complete':False,'owned_cleanup_complete':False,'rows':self.rows,
                      'bound_source_sha256':{s.SELF:s.sha(self.source)},'audit_sha256':s.sha((self.owner/'audit.json').read_bytes()),
-                     'collector_capture':self.copy,'input_paths':{'collector_out':str(self.original),
-                     'candidate_dir':str(self.candidate),'api_closure_tar':str(self.closure)}}
+                     'collector_capture':self.copy,'input_paths':{**self.inputs,'candidate_dir':str(self.candidate)}}
         self.save()
-        self.shared_proof={'owned_waits_complete':True,'owned_cleanup_complete':True}
+        self.shared_proof={'owned_waits_complete':True,'owned_cleanup_complete':True,
+                           'context_sha256':s.sha((self.shared/'context.input.json').read_bytes())}
         self.approved={'.local/approved.raw':{'sha256':s.sha(b'approved input'),'bytes':len(b'approved input'),
                                                'mode':self.input.stat().st_mode & 0o777}}
+        self.derived_files={}
     def save(self):
         self.report['saved_files_sha256']={k:v for k,v in s.inventory(self.owner).items() if k!='result.json'}
         (self.owner/'result.json').write_text(json.dumps(self.report))
     @contextlib.contextmanager
     def derived(self,*args):
+        files={'.local/approved.raw':{'sha256':s.sha(b'approved input'),'bytes':len(b'approved input')},
+               **self.derived_files}
         class Bound:
+            def __init__(_):_.files=files
             def read(_,path):return Path(path).read_bytes()
         yield Bound()
     @contextlib.contextmanager
@@ -103,6 +126,49 @@ class DomainBoundaryTests(unittest.TestCase):
     def test_unbound_input_or_audit_failure_is_not_accepted(self):
         self.approved.clear()
         with self.assertRaises(ValueError):self.check()
+
+    def test_command_argv_cwd_and_output_path_must_match_context(self):
+        for operation in ('argv','cwd','output'):
+            with self.subTest(operation=operation):
+                old=json.loads(json.dumps(self.report))
+                if operation=='argv':self.report['rows'][0]['command']['argv'][-1]='tampered'
+                elif operation=='cwd':self.report['rows'][0]['command']['cwd']='/tmp/other'
+                else:self.report['input_paths']['collector_out']=str(self.repo/'.local/other')
+                self.save()
+                with self.assertRaises(ValueError):self.check()
+                self.report=old;self.save()
+
+    def test_source_symlink_or_special_file_is_not_complete(self):
+        import shutil
+        for kind in ('symlink','fifo'):
+            with self.subTest(kind=kind):
+                item=self.original/kind
+                if kind=='symlink':item.symlink_to('request.raw')
+                else:os.mkfifo(item)
+                shutil.rmtree(self.owner/'collector')
+                self.report['collector_capture']=s.copy_capture(self.original,self.owner/'collector')
+                self.save()
+                with self.assertRaisesRegex(ValueError,'source tree differs'):
+                    self.check()
+                item.unlink()
+                shutil.rmtree(self.owner/'collector')
+                self.report['collector_capture']=s.copy_capture(self.original,self.owner/'collector')
+                self.save()
+
+    def test_derived_roles_are_not_relabelled_as_approved_manifest(self):
+        path=self.repo/'.local/derived.raw';path.write_bytes(b'derived')
+        path.chmod(0o644)
+        self.derived_files['.local/derived.raw']={'sha256':s.sha(b'derived'),'bytes':7,'source':'later-capture-derived'}
+        self.audit['files']['.local/derived.raw']=s.sha(b'derived')
+        (self.owner/'audit.json').write_text(json.dumps(self.audit));self.report['audit_sha256']=s.sha((self.owner/'audit.json').read_bytes());self.save()
+        self.assertTrue(self.check()['complete'])
+        self.approved['.local/derived.raw']={'sha256':s.sha(b'derived'),'bytes':7,'mode':0o644}
+        with self.assertRaisesRegex(ValueError, 'derived React input identity'):
+            self.check()
+        del self.approved['.local/derived.raw']
+        path.chmod(0o600)
+        with self.assertRaisesRegex(ValueError, 'derived React input identity'):
+            self.check()
         self.audit['totals']['unrun']=1
         (self.owner/'audit.json').write_text(json.dumps(self.audit));self.report['audit_sha256']=s.sha((self.owner/'audit.json').read_bytes());self.save()
         with self.assertRaises(ValueError):self.check()
