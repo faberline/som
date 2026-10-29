@@ -1,0 +1,18 @@
+name: Test M6 independent parity oracle
+on:
+  push:
+    branches:
+      - codex/m6-mac-parity-oracle-fixtures-20261029
+permissions:
+  contents: read
+jobs:
+  oracle:
+    runs-on: macos-26
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Test prompt-derived oracle against frozen suite
+        run: python3 -B .github/m6-parity-oracle/test_independent_behavior_oracle.py
