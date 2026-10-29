@@ -24,6 +24,17 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test -z "$(git status --porcelain)"
+      - name: Fetch the pinned public tool supplement
+        run: |
+          python3 - <<'INNER'
+          import json,pathlib,re,subprocess
+          config=json.loads(pathlib.Path('som-rs/scripts/react_output_acceptance/macos_bottles.json').read_bytes())
+          supplement=config['frozen_file_supplement']
+          if supplement['repository']!='faberline/som' or not re.fullmatch(r'[0-9a-f]{40}',supplement['commit']):raise SystemExit('tool supplement identity refused')
+          subprocess.run(['git','fetch','--no-tags','--depth=1','origin',supplement['commit']],check=True)
+          INNER
+      - name: Provision the frozen tool closure
+        run: python3 som-rs/scripts/react_output_acceptance/provision_macos.py --out "$RUNNER_TEMP/m6-provision"
       - name: Fetch the approved 18-package inputs and original manifest revision
         run: |
           git fetch --no-tags --depth=1 origin 1de8f05430a72f8d76f6159786cca71b0ae1a911 55eb7f5c3b21d4f3b57eb721ab60c6aa97e10db3
@@ -110,6 +121,16 @@ jobs:
               if path.is_symlink() or not path.is_file() or path.stat().st_size!=entry['bytes'] or stat.S_IMODE(path.stat().st_mode)!=entry['mode'] or hashlib.sha256(path.read_bytes()).hexdigest()!=entry['sha256']:
                   raise SystemExit('approved input differs')
           if selected[baseline+'som']['sha256']!='2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c':raise SystemExit('baseline identity differs')
+          tool={'/opt/homebrew/Cellar/rust/1.96.1/bin/rustfmt':'2c56fd066853c80c786a8a3a0e5434b7f808ace8b2cf66ae6e1a13566aa2815f','/opt/homebrew/Cellar/node/26.5.0/bin/node':'70851490e028b3d699a8d6d4e1de909af2a989359ae807974c92af9c6580a8e8','/opt/homebrew/Cellar/node/26.5.0/lib/libnode.147.dylib':'0c2dfacde99b9381ec37fbd222891271c7f455cc0524294928e3e34199d57ec3'}
+          for name,want in tool.items():
+              path=pathlib.Path(name)
+              if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest()!=want:raise SystemExit('frozen tool identity differs')
+          prettier=root/'.local/m6-hosted/prettier'; digest=hashlib.sha256()
+          for path in sorted(p for p in prettier.rglob('*') if p.is_file() or p.is_symlink()):
+              relative=path.relative_to(prettier).as_posix()
+              entry='symlink:'+os.readlink(path) if path.is_symlink() else hashlib.sha256(path.read_bytes()).hexdigest()
+              digest.update((relative+'\0'+entry+'\n').encode())
+          if digest.hexdigest()!='f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299':raise SystemExit('frozen prettier identity differs')
           print(json.dumps({'approved_input_index_sha256':config['index_sha256'],'baseline_files':len(observed_baseline),'run003_files':len(selected)-len(observed_baseline),'product_acceptance':'not_run'},sort_keys=True))
           INNER
       - name: Capture fresh-before Rust assemble calls
@@ -123,6 +144,7 @@ jobs:
             --sealed "$RUNNER_TEMP/evidence-sealed" \
             --run003 "$RUNNER_TEMP/approved-inputs/.local/rust-compiler-goal/acceptance/rust-output-055/run-003" \
             --baseline "$RUNNER_TEMP/approved-inputs/.local/m6-hosted/baseline" \
+            --prettier "$RUNNER_TEMP/approved-inputs/.local/m6-hosted/prettier" \
             --out "$RUNNER_TEMP/fresh-before/run/rust-before-assemble"
       - name: Seal fresh-before raw evidence
         id: seal
