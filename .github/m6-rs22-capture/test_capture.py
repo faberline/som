@@ -182,18 +182,26 @@ class CaptureFixtureTests(unittest.TestCase):
         self.assertTrue(receipt["wait_completed"])
         self.assertEqual(receipt["post_wait_poll"], -9)
 
+    def test_owned_listener_requires_unique_child_pid_and_numeric_descriptors(self):
+        self.assertTrue(capture.owned_listener_records(b'p22922\nf6\n', 22922))
+        self.assertTrue(capture.owned_listener_records(b'p42\nf6\nf7\n', 42))
+        for raw in (b'p42\n', b'p99\nf6\n', b'p42\nf6\np99\nf7\n',
+                    b'p42\nf6\nf6\n', b'p42\nf6\nf06\n', b'p42\nftext\n', b'p42\nf6', b'p42\nf6\n\n', b'p42\r\nf6\r\n', b'p42\rf6\n'):
+            with self.subTest(raw=raw):
+                self.assertFalse(capture.owned_listener_records(raw, 42))
+
     def test_owned_listener_preserves_raw_on_success_and_failure(self):
         class Result:
             returncode = 0
-            stdout = b'p42\n'
+            stdout = b'p42\nf6\n'
             stderr = b''
         with tempfile.TemporaryDirectory() as tmp, patch.object(capture.subprocess, "run", return_value=Result()):
             run = Path(tmp) / "run"
             run.mkdir()
             observation = {}
             capture.owned_listener(42, run / "success", observation)
-            self.assertEqual(observation["stdout"], "p42\n")
-            self.assertEqual((run / "success" / "stdout.raw").read_bytes(), b'p42\n')
+            self.assertEqual(observation["stdout"], "p42\nf6\n")
+            self.assertEqual((run / "success" / "stdout.raw").read_bytes(), b'p42\nf6\n')
             Result.stdout = b'p999\n'
             observation = {}
             with self.assertRaises(capture.Refusal):

@@ -186,6 +186,17 @@ def no_listener(port):
             "stderr_sha256": sha(result.stderr), "stdout": "", "stderr": ""}
 
 
+def owned_listener_records(raw, pid):
+    if type(raw) is not bytes or type(pid) is not int or pid <= 0 or not raw.endswith(b"\n"):
+        return False
+    lines = raw.splitlines()
+    if len(lines) < 2 or b"\n".join(lines) + b"\n" != raw or lines[0] != f"p{pid}".encode("ascii"):
+        return False
+    descriptors = lines[1:]
+    return (all(re.fullmatch(rb"f(?:0|[1-9][0-9]*)", item) is not None for item in descriptors)
+            and len(set(descriptors)) == len(descriptors))
+
+
 def owned_listener(pid, folder, observation):
     folder.mkdir()
     observation.update({"port": PORT, "pid": pid, "attempted": True, "exit_code": None})
@@ -208,7 +219,7 @@ def owned_listener(pid, folder, observation):
                         "stdout_sha256": sha(stdout), "stderr_sha256": sha(stderr)})
     if error is not None:
         raise error
-    need(result.returncode == 0 and not stderr and stdout.splitlines() == [f"p{pid}".encode()],
+    need(result.returncode == 0 and not stderr and owned_listener_records(stdout, pid),
          "listener ownership differs")
     observation.update({"stdout": stdout.decode("ascii"), "stderr": ""})
 
