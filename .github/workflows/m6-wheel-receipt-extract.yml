@@ -1,0 +1,52 @@
+name: M6 wheel failure receipt extraction (not acceptance)
+on:
+  push:
+    branches:
+      - 'codex/m6-wheel-receipt-20261029'
+permissions:
+  actions: read
+  contents: read
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Fetch exact previously published wheel qualification artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          repository: faberline/som
+          run-id: '40813734189'
+          artifact-ids: '12870664899'
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/wheel-source
+      - name: Bind exact source receipt to the failed iteration
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          root = pathlib.Path(os.environ['RUNNER_TEMP']) / 'wheel-source'
+          path = root / 'som-python-wheel-qualification/receipt.json'
+          if path.is_symlink() or not path.is_file() or path.stat().st_size > 10_000_000:
+              raise SystemExit('source receipt missing')
+          raw = path.read_bytes()
+          receipt = json.loads(raw)
+          if (receipt.get('version') != 'som.hosted-python-wheel-closure-qualification.v1'
+              or receipt.get('source_revision') != 'd6cb045c215b72730a939dbbba2d59223832be43'
+              or receipt.get('helper_revision') != 'd6cb045c215b72730a939dbbba2d59223832be43'
+              or receipt.get('candidate_revision') != 'f59e28d910ff4adb16e3becfdc82bd2978ca84fa'
+              or receipt.get('state') != 'failed; preserved partial qualification evidence'
+              or receipt.get('wheel_closure_qualification_complete') is not False
+              or receipt.get('all_named_environment_checks_complete') is not False
+              or receipt.get('product_acceptance_passed') is not False):
+              raise SystemExit('receipt identity or state differs')
+          print(json.dumps({'receipt_sha256': hashlib.sha256(raw).hexdigest(), 'bytes': len(raw),
+                            'state': 'failed; preserved partial qualification evidence',
+                            'product_acceptance': False}, sort_keys=True))
+          PY
+      - name: Retain the same already-published receipt only
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: m6-wheel-failure-existing-receipt
+          path: ${{ runner.temp }}/wheel-source/som-python-wheel-qualification/receipt.json
+          if-no-files-found: error
+          retention-days: 7
