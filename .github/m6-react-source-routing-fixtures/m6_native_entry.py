@@ -81,6 +81,7 @@ def bootstrap(repo, revision, candidate, context_path):
     graph.__som_raw_sha256__ = sha(raw)
     exec(compile(raw, graph.__file__, 'exec', dont_inherit=True), graph.__dict__)
     sources, _, authority = graph.admit_source(repo, revision, candidate)
+    need(sources.read(GRAPH) == raw, 'source-bound graph differs')
     need(sources.read(SELF) == read(Path(__file__).absolute()), 'entry source differs')
     need(all(path in authority['admitted_repository_python_sources'] for path in
              (SELF, CONTEXT, RETAINED, API_CONTEXT)), 'required entry/bootstrap sources not admitted')

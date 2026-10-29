@@ -315,6 +315,8 @@ def main(argv=None):
         args = parser.parse_args(argv)
         command = args.checker[1:] if args.checker[:1] == ["--"] else args.checker
         need(command and all(type(value) is str for value in command))
+        if args.qa_mode is None:
+            return run_checker(args.out, command[0], command[1:])
         return run_checker(args.out, command[0], command[1:], args.qa_mode)
     except Exception:
         print(REFUSAL, file=sys.stderr)
