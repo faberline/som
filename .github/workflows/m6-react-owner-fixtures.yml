@@ -1,0 +1,17 @@
+name: Test unsealed React owner capture
+on:
+  push:
+    branches: [codex/m6-react-owner-adapter-fixtures-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fixture:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Run owner and callback synthetic fixtures
+        run: |
+          python3 -I -S -B -c 'import sys,unittest; sys.path.insert(0,".github/m6-react-owner-fixtures"); suite=unittest.defaultTestLoader.discover(".github/m6-react-owner-fixtures",pattern="test_*.py"); result=unittest.TextTestRunner(verbosity=2).run(suite); sys.exit(not result.wasSuccessful())'
