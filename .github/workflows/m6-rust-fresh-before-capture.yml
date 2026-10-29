@@ -57,7 +57,7 @@ jobs:
         env:
           M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
         run: |
-          python3 som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py --repo-root "$GITHUB_WORKSPACE" --config "$RUNNER_TEMP/m6-final-input-config.json" --out "$RUNNER_TEMP/approved-inputs" --node node
+          python3 som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py --repo-root "$GITHUB_WORKSPACE" --config "$RUNNER_TEMP/m6-final-input-config.json" --out "$RUNNER_TEMP/approved-inputs" --node /opt/homebrew/Cellar/node/26.5.0/bin/node
       - name: Independently verify the approved supplement
         run: python3 som-rs/scripts/react_output_acceptance/audit_supplement_provision.py
       - name: Download and verify approved encrypted evidence
@@ -94,7 +94,7 @@ jobs:
         env:
           M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
         run: |
-          node som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs --root "$RUNNER_TEMP/evidence-sealed" --out "$RUNNER_TEMP/evidence" --index-sha256 3759239392208eab81bf740ca9ca2a41465be3e3e4995de2bd255774f4596bea > /dev/null
+          /opt/homebrew/Cellar/node/26.5.0/bin/node som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs --root "$RUNNER_TEMP/evidence-sealed" --out "$RUNNER_TEMP/evidence" --index-sha256 3759239392208eab81bf740ca9ca2a41465be3e3e4995de2bd255774f4596bea > /dev/null
       - name: Bind approved binary, source, assets, and run-003 input files
         run: |
           python3 - <<'INNER'
@@ -152,7 +152,7 @@ jobs:
         env:
           M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
         run: |
-          node som-rs/scripts/react_output_acceptance/seal_hosted_evidence.mjs --root "$RUNNER_TEMP/fresh-before" --out "$RUNNER_TEMP/sealed-fresh-before"
+          /opt/homebrew/Cellar/node/26.5.0/bin/node som-rs/scripts/react_output_acceptance/seal_hosted_evidence.mjs --root "$RUNNER_TEMP/fresh-before" --out "$RUNNER_TEMP/sealed-fresh-before"
       - name: Retain encrypted evidence only
         if: ${{ always() && steps.seal.outcome == 'success' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
