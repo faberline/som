@@ -254,7 +254,13 @@ def execute(args, checker):
     out = args.out
     need(not out.exists(), 'output already exists')
     out.mkdir(parents=True, mode=0o700)
-    plan, expected, refused = prepare(args.inventory, args.evidence, args.run003, checker, args.sealed)
+    try:
+        plan, expected, refused = prepare(args.inventory, args.evidence, args.run003, checker, args.sealed)
+    except Exception as exc:
+        write(out / 'receipt.json', pretty({'role': 'fresh-before', 'historical_wire': False,
+              'product_acceptance': 'not_run', 'passed': False, 'unrun': 697,
+              'stage': 'source_preparation', 'error_type': type(exc).__name__}))
+        raise
     public_plan = [{k: v for k, v in item.items() if k != 'request'} for item in plan]
     for item in plan:
         write(out / 'requests' / (str(item['slot_id']) + '.raw'), item['request'])
