@@ -1,4 +1,4 @@
-name: M6 issue 131 Rust source preparation proof
+name: M6 recorded before calibration proof
 on:
   workflow_dispatch:
   push:
