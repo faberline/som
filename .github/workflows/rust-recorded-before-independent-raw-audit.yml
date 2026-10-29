@@ -1,7 +1,7 @@
 name: Independent recorded before plaintext data audit
 on:
   push:
-    branches: [codex/m12-recorded-before-independent-raw-audit]
+    branches: [codex/m12-recorded-before-independent-raw-audit-v2]
   workflow_dispatch:
 permissions:
   contents: read
@@ -24,7 +24,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - name: Check exact source and run five bounded fixtures
+      - name: Check exact source and run all seven bounded fixtures
         run: |
           test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
           git rev-parse HEAD > tested-sha.txt

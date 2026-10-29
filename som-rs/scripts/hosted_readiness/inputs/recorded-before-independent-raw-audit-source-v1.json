@@ -6,8 +6,8 @@
   "data_source_admission_complete": true,
   "files": {
     ".github/workflows/rust-recorded-before-independent-raw-audit.yml": {
-      "bytes": 3917,
-      "sha256": "0c9a2efb6282d27fbd1399618dc17814c6032a7eee45edc498fd635695a1b980"
+      "bytes": 3925,
+      "sha256": "2c9f19f52f87311b296b30083d1bba332c21e38b4b3b6beae7dc83693f12b91b"
     },
     "som-rs/contracts/native-tools-v1/artifacts.json": {
       "bytes": 29314,
@@ -18,8 +18,8 @@
       "sha256": "f8e649ea96bac3f5e62ef01537c4c517a857e0743d05fb38028d013faf08b640"
     },
     "som-rs/scripts/hosted_readiness/audit_recorded_before_raw.py": {
-      "bytes": 42934,
-      "sha256": "1bc6cefa9730b75ec5b418db6aef7dbe0cc8458a4a0b870df1bf708a58f344df"
+      "bytes": 47730,
+      "sha256": "a0cde5b1d7a47299a3e419334b900d5153ccf59834f64f5c1c2d1d5770c1581c"
     },
     "som-rs/scripts/hosted_readiness/inputs/recorded-before-profile-v1.json": {
       "bytes": 1945,
@@ -46,8 +46,8 @@
       "sha256": "b263de598d5b8ce204e1bf0871560038a434556b8e71880ebf055ef152bfc891"
     },
     "som-rs/scripts/hosted_readiness/test_recorded_before_independent_raw_audit.py": {
-      "bytes": 6652,
-      "sha256": "7b1616ab085eaa00a5ce36f5149ce961dac8934f0754c7aa0e52314cea7d4a52"
+      "bytes": 9540,
+      "sha256": "049dd4ed9b641dd51a037964de0db12d18733135917adb056f385907cda34ec9"
     },
     "som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py": {
       "bytes": 15371,

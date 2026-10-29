@@ -22,6 +22,7 @@ import time
 import traceback
 from types import ModuleType
 import zipfile
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 BASE = 'som-rs/scripts/hosted_readiness/'
 SELF = BASE + 'audit_recorded_before_raw.py'
@@ -359,21 +360,79 @@ def verify_inputs(source):
         need('sha256:'+value==pin['digest'] and size==pin['size_in_bytes'],'whole producer ZIP differs')
 
 
+def producer_job(source):
+    """Read only this one frozen producer job. The shared Graph API stays unchanged."""
+    source.verify()
+    token=os.environ['SOM_DEPENDENCY_ACTIONS_TOKEN']
+    need(token and '\n' not in token and '\r' not in token,'actual read-only Actions token required')
+    request=Request('https://api.github.com/repos/faberline/som/actions/jobs/'+str(PRODUCER_JOB),
+        headers={'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28',
+                 'User-Agent':'som-independent-data-producer-job','Authorization':'Bearer '+token})
+    class NoRedirect(HTTPRedirectHandler):
+        def redirect_request(self,*args,**kwargs):raise ValueError('producer job metadata redirect refused')
+    with build_opener(NoRedirect()).open(request,timeout=30) as response:
+        need(response.status==200,'producer job metadata status differs')
+        raw=response.read(1024**2+1)
+    need(len(raw)<=1024**2,'producer job metadata exceeds bound')
+    job=parse(raw)
+    need(job['id']==PRODUCER_JOB and job['run_id']==PRODUCER_RUN and job['run_attempt']==1
+         and job['head_sha']==PRODUCER_HEAD and job['name']=='recorded-before-data'
+         and job['status']=='completed' and job['conclusion']=='success'
+         and type(job['steps']) is list and job['steps']
+         and all(step['status']=='completed' and step['conclusion']=='success' for step in job['steps']),
+         'exact original successful producer job required')
+    source.verify()
+    return job
+
+
+def prepare_node(source,node,evidence):
+    """Prepare the independently pinned public crypto tool before reading old inputs."""
+    pins=parse(source.read(PIN));rows=[r for r in pins['tools'] if r['tool']=='node'
+        and r.get('host')=='x86_64-unknown-linux-gnu']
+    need(len(rows)==1,'one exact public Node source pin required');pin=rows[0]
+    need(pin['url']=='https://nodejs.org/dist/v26.5.0/node-v26.5.0-linux-x64.tar.xz'
+         and pin['archive_sha256']=='9f619528f1db5ddc41dccf54211066fb42228d69a156733c69cb9d6cc92e358c',
+         'fixed independent official Node source required')
+    request=Request(pin['url'],headers={'User-Agent':'som-independent-data-crypto-tool'})
+    with build_opener().open(request,timeout=60) as response:
+        need(response.geturl().startswith('https://nodejs.org/'),'official Node redirect differs')
+        body=response.read(pin['archive_bytes']+1)
+    need(len(body)==pin['archive_bytes'] and sha(body)==pin['archive_sha256'],'whole official Node archive differs')
+    write(node/'original.tar.xz',body)
+    selected={pin['executable_member']:pin['executable_sha256'],**pin['licenses']}
+    need(len(pin['licenses'])==152 and pin['executable_member'] not in pin['licenses'],'complete separate Node notice scope required')
+    with tarfile.open(fileobj=io.BytesIO(body),mode='r:xz') as tar:
+        members=tar.getmembers();need(len(members)==len({m.name for m in members}),'duplicate official Node member')
+        for name,digest in selected.items():
+            relative(name);member=tar.getmember(name)
+            need(member.isfile() and not member.linkname and 0<=member.size<=MAX,'regular official Node member required')
+            raw=tar.extractfile(member).read();need(len(raw)==member.size and sha(raw)==digest,'official Node member differs')
+            target=node/'bin/node' if name==pin['executable_member'] else node/'notices'/name
+            write(target,raw,0o755 if name==pin['executable_member'] else 0o644)
+    transport=source.module('transport');before=transport.checked_node(source,node/'bin/node')
+    command([node/'bin/node','--version'],node,evidence/'independent-node-version',environment=bounded_env(),timeout=30)
+    need(raw_file(evidence/'independent-node-version/stdout.raw').decode().strip()=='v'+pin['version']
+         and transport.checked_node(source,node/'bin/node')==before,'actual independent Node probe differs')
+    dump(evidence/'independent-node-source.json',{'archive_sha256':pin['archive_sha256'],
+        'executable_sha256':pin['executable_sha256'],'notices':pin['licenses'],
+        'role':'data crypto tool only; public source retained in original producer artifact',
+        'native_Context_or_service_qualified':False,'product_acceptance_passed':False})
+    source.verify()
+
+
 def prepare(source):
     root,evidence,node=paths();need(not root.exists(),'fresh audit root required');root.mkdir(mode=0o700)
     for p in (evidence,node,root/'downloads'):p.mkdir(mode=0o700)
     dump(evidence/'source-admission.json',{'scope':SCOPE,'source_revision':source.revision,
         'declaration_sha256':sha(source.declaration_raw),'files':source.declaration['files'],
         'actual_workflow':source.workflow_record,'native_qa_source_admission_complete':False,'product_acceptance_passed':False})
+    prepare_node(source,node,evidence)
     run=source.graph.github_json('faberline/som',f'/actions/runs/{PRODUCER_RUN}')
     need(run['id']==PRODUCER_RUN and run['run_attempt']==1 and run['head_sha']==PRODUCER_HEAD
          and run['path'].split('@',1)[0]==PRODUCER_WORKFLOW and run['conclusion']=='success'
          and run['repository']['full_name']=='faberline/som','original successful producer run required')
-    jobs=source.graph.github_json('faberline/som',f'/actions/runs/{PRODUCER_RUN}/jobs?filter=latest&per_page=100')
-    need(jobs['total_count']==1 and len(jobs['jobs'])==1 and jobs['jobs'][0]['id']==PRODUCER_JOB
-         and jobs['jobs'][0]['conclusion']=='success'
-         and all(s['conclusion']=='success' for s in jobs['jobs'][0]['steps']),'original successful producer job required')
-    dump(evidence/'producer-run.json',run);dump(evidence/'producer-jobs.json',jobs)
+    job=producer_job(source)
+    dump(evidence/'producer-run.json',run);dump(evidence/'producer-job.json',job)
     for role,pin in PRODUCER['artifacts'].items():
         actual=source.graph.artifact_metadata('faberline/som',pin['id']);dump(evidence/(role+'-metadata.json'),actual)
         environment=bounded_env();environment['GH_TOKEN']=os.environ['SOM_DEPENDENCY_ACTIONS_TOKEN']
@@ -387,7 +446,7 @@ def prepare(source):
     with zipfile.ZipFile(root/'downloads/node.zip') as archive:
         body=archive.read(prefix+'original.tar.xz')
         need(sha(body)==pin['archive_sha256'] and len(body)==pin['archive_bytes'],'original official Node archive differs')
-        write(node/'original.tar.xz',body)
+        need(raw_file(node/'original.tar.xz')==body,'producer public Node archive differs from independent source')
         expected={prefix+'original.tar.xz','som/som/tested-sha.txt','som/som/python-version.txt'}
         need(archive.read('som/som/tested-sha.txt').decode().strip()==PRODUCER_HEAD,'Node artifact source SHA differs')
         with tarfile.open(fileobj=io.BytesIO(body),mode='r:xz') as tar:
@@ -397,9 +456,9 @@ def prepare(source):
             for name,digest in selected.items():
                 member=tar.getmember(name);need(member.isfile() and not member.linkname,'regular official source member required')
                 raw=tar.extractfile(member).read();need(sha(raw)==digest,'official source member differs')
-                if name==pin['executable_member']:write(node/'bin/node',raw,0o755)
+                if name==pin['executable_member']:need(raw_file(node/'bin/node')==raw,'producer Node executable differs')
                 else:
-                    need(archive.read(prefix+'notices/'+name)==raw,'uploaded notice differs');write(node/'notices'/relative(name),raw,0o644)
+                    need(archive.read(prefix+'notices/'+name)==raw==raw_file(node/'notices'/relative(name)),'uploaded notice differs')
                     expected.add(prefix+'notices/'+name)
         need(set(archive.namelist())==expected,'complete public source ZIP universe differs')
     source.module('transport').checked_node(source,node/'bin/node');source.verify()
@@ -619,6 +678,15 @@ def seal(source):
         elif errors:raise ValueError('audit transport evidence retention failed')
 
 
+def safe_failure_diagnostic(phase,error):
+    """Publish only fixed phase, type and code locations, never messages or locals."""
+    need(phase in {'prepare','provision','audit','seal'},'fixed audit diagnostic phase required')
+    return {'phase':phase,'error_type':type(error).__name__,
+        'source_frames':[{'file':Path(frame.filename).name,'line':frame.lineno,'function':frame.name}
+            for frame in traceback.extract_tb(error.__traceback__)],
+        'exception_message_or_payload_published':False,'product_acceptance_passed':False}
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--repo',type=Path,required=True)
     parser.add_argument('--revision',required=True);parser.add_argument('--phase',choices=('prepare','provision','audit','seal'),required=True)
@@ -627,6 +695,7 @@ def main():
         source=AuditSources(args.repo,args.revision)
         {'prepare':prepare,'provision':provision,'audit':audit,'seal':seal}[args.phase](source)
     except BaseException as error:
+        sys.stderr.write(json.dumps(safe_failure_diagnostic(args.phase,error),sort_keys=True)+'\n')
         _,evidence,_=paths()
         if evidence.is_dir():
             try:dump(evidence/('first-failure-'+args.phase+'.json'),{'phase':args.phase,'type':type(error).__name__,

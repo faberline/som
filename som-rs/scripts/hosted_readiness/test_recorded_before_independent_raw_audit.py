@@ -8,7 +8,9 @@ import subprocess
 import sys
 import tempfile
 from types import ModuleType
+from types import SimpleNamespace
 import unittest
+from unittest import mock
 import warnings
 import zipfile
 
@@ -26,6 +28,50 @@ def subject():
 
 
 class IndependentRawAuditSource(unittest.TestCase):
+    def test_producer_job_uses_only_the_fixed_endpoint_and_refuses_changed_identity(self):
+        module=subject();calls=[];checks=[]
+        job={'id':module.PRODUCER_JOB,'run_id':module.PRODUCER_RUN,'run_attempt':1,
+            'head_sha':module.PRODUCER_HEAD,'name':'recorded-before-data','status':'completed',
+            'conclusion':'success','steps':[{'status':'completed','conclusion':'success'}]}
+        class Response:
+            status=200
+            def __enter__(self):return self
+            def __exit__(self,*args):return False
+            def read(self,limit):
+                self_case.assertEqual(limit,1024**2+1)
+                return json.dumps(current[0]).encode()
+        class Opener:
+            def open(self,request,timeout):
+                calls.append(request.full_url);self_case.assertEqual(timeout,30)
+                return Response()
+        self_case=self;current=[job]
+        source=SimpleNamespace(verify=lambda:checks.append('actual-source-double'))
+        with mock.patch.dict(os.environ,{'SOM_DEPENDENCY_ACTIONS_TOKEN':'synthetic-read-only-token'}), \
+             mock.patch.object(module,'build_opener',return_value=Opener()) as opened:
+            self.assertEqual(module.producer_job(source),job)
+            for key,value in [('id',1),('run_id',1),('run_attempt',2),('head_sha','0'*40),
+                              ('name','unlisted-job'),('conclusion','failure'),('steps',[])]:
+                current[0]={**job,key:value}
+                with self.subTest(key=key),self.assertRaises(ValueError):module.producer_job(source)
+            handler=opened.call_args.args[0]
+            with self.assertRaisesRegex(ValueError,'redirect refused'):handler.redirect_request()
+        self.assertTrue(calls)
+        self.assertEqual(set(calls),{'https://api.github.com/repos/faberline/som/actions/jobs/'+str(module.PRODUCER_JOB)})
+        self.assertGreater(len(checks),1)
+
+    def test_safe_failure_diagnostic_keeps_locations_without_message_body_or_key(self):
+        module=subject();secret='synthetic-private-key-and-request-body-must-not-be-published'
+        try:raise RuntimeError(secret)
+        except RuntimeError as original:diagnostic=module.safe_failure_diagnostic('prepare',original)
+        raw=json.dumps(diagnostic)
+        self.assertNotIn(secret,raw);self.assertEqual(diagnostic['phase'],'prepare')
+        self.assertEqual(diagnostic['error_type'],'RuntimeError')
+        self.assertFalse(diagnostic['exception_message_or_payload_published'])
+        self.assertTrue(diagnostic['source_frames'])
+        self.assertEqual(set(diagnostic['source_frames'][0]),{'file','line','function'})
+        self.assertIsInstance(diagnostic['source_frames'][0]['line'],int)
+        with self.assertRaises(ValueError):module.safe_failure_diagnostic(secret,RuntimeError(secret))
+
     def test_real_command_keeps_full_streams_terminal_wait_and_original_timeout(self):
         module=subject()
         with tempfile.TemporaryDirectory() as directory:
