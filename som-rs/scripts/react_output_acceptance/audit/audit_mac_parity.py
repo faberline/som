@@ -14,6 +14,7 @@ import re
 from pathlib import Path
 import sys
 import audit_mac_rust006_extra as a
+import audit_product_normalization as independent_normalization
 
 REPO=Path(__file__).resolve().parents[4]
 QA='http://127.0.0.1:18919'
@@ -182,7 +183,7 @@ def audit_product_owners(root, manifest, groups):
              'product call is not bound to case process')
     return len(owners)
 
-def audit_product_http(root, transcripts, *, require_owners=True):
+def audit_product_http(root, transcripts, prompts, *, require_owners=True, check_normalization=True):
     """Join retained byte-exact product exchanges to each saved suite transcript."""
     from urllib.parse import urlsplit
     manifest=a.json_file(root/'manifest.json')
@@ -206,7 +207,10 @@ def audit_product_http(root, transcripts, *, require_owners=True):
              and type(row.get('body_present')) is bool and (row['body_present'] or not request), 'product raw bytes differ')
     need(manifest.get('bytes')==byte_count and set(groups)==set(transcripts),'product call inventory differs')
     owner_count=audit_product_owners(root,manifest,groups) if require_owners else None
+    normalized_successes=0
     for key,records in transcripts.items():
+        need(key[0] in prompts,'source prompt missing')
+        normalizer=independent_normalization.Normalizer(prompts[key[0]]) if check_normalization else None
         calls=groups[key];need(len(calls)==len(records),'product call count differs')
         for row,(record,normalized) in zip(calls,records):
             request=a.read(root/row['request_file']);response=a.read(root/row['response_file'])
@@ -217,8 +221,9 @@ def audit_product_http(root, transcripts, *, require_owners=True):
                  and row.get('status')==record.get('status') and row.get('response_content_type')==record.get('response_content_type')
                  and body==record.get('body') and response.decode('utf-8','replace')==record.get('response'),
                  'product raw call and transcript differ')
+            if normalizer is not None: normalized_successes += normalizer.check(record,normalized,response)
     return {'case_targets':len(groups),'calls':len(manifest['calls']),'bytes':byte_count,'observed_owners':owner_count,
-            'source_origin':'pending','normalization':'partially-verified','behavior_oracle':'unverified',
+            'source_origin':'pending','normalized_successes':normalized_successes,'timestamp_advance_semantics':'unverified','behavior_oracle':'unverified',
             'unobserved_descendants':'unverified'}
 
 def audit_wire(root,parity_out,legacy,bound,product_http):
@@ -283,7 +288,7 @@ def audit_wire(root,parity_out,legacy,bound,product_http):
                 need(record['status']==200,'post-strict check failed')
         transcript_steps+=steps;strict_steps+=strict
     need(not any(indexed.values()),'unexpected parity compiler calls')
-    product_evidence=audit_product_http(product_http,transcripts)
+    product_evidence=audit_product_http(product_http,transcripts,dict(cases))
     return {'product_http':product_evidence,'cases':len(cases),'compiler_calls':total,'parity_steps':transcript_steps,'strict_steps':strict_steps,
             'checked_error_or_empty_bodies':checked_errors,'success_body_normalization':'unverified','behavior_oracle':'unverified'}
 

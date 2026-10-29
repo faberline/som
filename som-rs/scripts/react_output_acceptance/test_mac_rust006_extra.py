@@ -439,17 +439,44 @@ class ProductHTTPBytesTests(unittest.TestCase):
                     transcripts.setdefault(key,[]).append(({'step':row['step'],'method':row['method'],'path':row['path'],
                         'content_type':row['content_type'],'body':req,'status':row['status'],
                         'response_content_type':row['response_content_type'],'response':res},{'step':row['step'],'category':row['category']}))
-                self.assertEqual(audit.audit_product_http(out,transcripts,require_owners=False)['calls'],12)
+                self.assertEqual(audit.audit_product_http(out,transcripts,{case:{} for case,_ in groups},require_owners=False,check_normalization=False)['calls'],12)
                 first=result['calls'][0]; tamper=out/first['response_file']; original=tamper.read_bytes()
                 tamper.write_bytes(original+b'!')
-                with self.assertRaises(ValueError):audit.audit_product_http(out,transcripts,require_owners=False)
+                with self.assertRaises(ValueError):audit.audit_product_http(out,transcripts,{case:{} for case,_ in groups},require_owners=False,check_normalization=False)
                 tamper.write_bytes(original)
                 key=(first['case'],first['target']);transcripts[key][0][0]['status']=201
-                with self.assertRaises(ValueError):audit.audit_product_http(out,transcripts,require_owners=False)
+                with self.assertRaises(ValueError):audit.audit_product_http(out,transcripts,{case:{} for case,_ in groups},require_owners=False,check_normalization=False)
         finally:
             server.shutdown();server.server_close();thread.join(timeout=5)
 
 class ParityIndependentChecks(unittest.TestCase):
+    def test_recompute_success_row_ids_timestamps_and_number_types(self):
+        import audit_product_normalization as norm
+        prompt={'version':'som.prompt.v3','resource':{'table':'things','path':'/things',
+                'fields':[{'name':'weight','type':'float'},{'name':'count','type':'int'}]}}
+        reader=norm.Normalizer(prompt)
+        row={'id':17,'weight':3,'count':4,'created_at':'2026-01-01T00:00:00Z','updated_at':'2026-01-01T00:00:01Z'}
+        expected={'id':'id#1','weight':3.0,'count':4,'created_at':'<timestamp>','updated_at':'<timestamp>'}
+        record={'status':200,'path':'/things/17'}
+        self.assertTrue(reader.check(record,{'body':expected},json.dumps(row).encode()))
+        changed=dict(row,weight=4)
+        with self.assertRaises(ValueError):reader.check(record,{'body':expected},json.dumps(changed).encode())
+        changed=dict(row,updated_at='2025-01-01T00:00:00Z')
+        with self.assertRaises(ValueError):reader.check(record,{'body':expected},json.dumps(changed).encode())
+        with self.assertRaises(ValueError):reader.check(record,{'body':expected},b'{"invalid":"\xff"}')
+
+    def test_recompute_parent_child_batch_and_foreign_key(self):
+        import audit_product_normalization as norm
+        prompt={'version':'som.prompt.v5','resources':{'parent':{'table':'parents','path':'/parents','fields':[]},
+                'child':{'table':'children','path':'/children','fields':[]}},'relation':{'foreign_key':'parent_id'}}
+        reader=norm.Normalizer(prompt); stamp={'created_at':'2026-01-01T00:00:00Z','updated_at':'2026-01-01T00:00:00Z'}
+        body={'parent':{'id':50,**stamp},'children':[{'id':80,'parent_id':50,**stamp}]}
+        expected={'parent':{'id':'id#1','created_at':'<timestamp>','updated_at':'<timestamp>'},
+                  'children':[{'id':'id#1','parent_id':'id#1','created_at':'<timestamp>','updated_at':'<timestamp>'}]}
+        self.assertTrue(reader.check({'status':201,'path':'/parents/with-children'},{'body':expected},json.dumps(body).encode()))
+        body['children'][0]['parent_id']=99
+        with self.assertRaises(ValueError):reader.check({'status':201,'path':'/parents/with-children'},{'body':expected},json.dumps(body).encode())
+
     def test_validation_error_raw_response_and_request(self):
         import audit_mac_parity as audit
         raw={'step':'bad input','method':'POST','body':'{}','content_type':'application/json',
