@@ -1,0 +1,92 @@
+name: M6 TypeScript draft sealed-role transport proof
+on:
+  push:
+    branches: [codex/m6-ts-role-sealed-transport-proof-v2]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  roles:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Check source and run bounded fixtures
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+          python3 -B -m unittest discover -s .github/m6-ts-role-transport -p 'test_*.py' -v
+      - name: Bind approved 19-package input index
+        run: |
+          git fetch --no-tags --depth=1 origin 02cd9e79cdcedfef92816f67a3ccdf2e089964ab
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib,subprocess
+          commit='02cd9e79cdcedfef92816f67a3ccdf2e089964ab'
+          raw=subprocess.check_output(['git','show',commit+':inputs-index.json'])
+          sha=hashlib.sha256(raw).hexdigest()
+          if sha!='6953812ebe0f388cefe77ec90e8659a8f70d6e8ccf9517f6417e7a3b9b774c28':raise SystemExit('input index refused')
+          (pathlib.Path(os.environ['RUNNER_TEMP'])/'input-config.json').write_text(json.dumps({'version':'som.m6-hosted-inputs.v1','commit':commit,'index_sha256':sha})+'\n')
+          PY
+      - name: Restore approved inputs in runner scratch
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
+        run: |
+          python3 som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py --repo-root "$GITHUB_WORKSPACE" --config "$RUNNER_TEMP/input-config.json" --out "$RUNNER_TEMP/approved-inputs" --node "$(command -v node)" > /dev/null
+      - name: Derive official Node npm source
+        run: |
+          python3 .github/m6-ts-role-transport/derive_node_tools.py --pin som-rs/contracts/native-tools-v1/artifacts.json --out "$RUNNER_TEMP/node-tools" --metadata "$RUNNER_TEMP/node-inventory.json"
+      - name: Materialize and bind draft source roles
+        run: |
+          mkdir -m 700 "$RUNNER_TEMP/packet"
+          python3 .github/m6-ts-role-transport/materialize_roles.py --profile "$GITHUB_WORKSPACE/.github/m6-ts-role-transport/typescript-regression-input-profile-draft.json" --approved "$RUNNER_TEMP/approved-inputs" --node-root "$RUNNER_TEMP/node-tools" --out "$RUNNER_TEMP/packet/run"
+      - name: Split the verified Node binary for bounded transport
+        run: python3 .github/m6-ts-role-transport/node_chunk_transport.py split --run "$RUNNER_TEMP/packet/run"
+      - name: Preserve the complete Node npm tree in a bounded archive
+        run: python3 .github/m6-ts-role-transport/node_role_transport.py pack --profile "$GITHUB_WORKSPACE/.github/m6-ts-role-transport/typescript-regression-input-profile-draft.json" --run "$RUNNER_TEMP/packet/run"
+      - name: Seal all draft role bytes
+        id: seal
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
+        run: |
+          node som-rs/scripts/react_output_acceptance/seal_hosted_evidence.mjs --root "$RUNNER_TEMP/packet" --out "$RUNNER_TEMP/role-sealed"
+      - name: Restore sealed role bytes in runner scratch
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V2 }}
+        run: |
+          index_sha="$(shasum -a 256 "$RUNNER_TEMP/role-sealed/evidence-index.json" | cut -d ' ' -f 1)"
+          node som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs --root "$RUNNER_TEMP/role-sealed" --out "$RUNNER_TEMP/role-restored" --index-sha256 "$index_sha" > /dev/null
+      - name: Reassemble Node and verify all restored role bytes
+        run: |
+          python3 .github/m6-ts-role-transport/node_role_transport.py restore --profile "$GITHUB_WORKSPACE/.github/m6-ts-role-transport/typescript-regression-input-profile-draft.json" --run "$RUNNER_TEMP/role-restored/run"
+          python3 .github/m6-ts-role-transport/node_chunk_transport.py restore --run "$RUNNER_TEMP/role-restored/run"
+          python3 .github/m6-ts-role-transport/verify_restored_roles.py --profile "$GITHUB_WORKSPACE/.github/m6-ts-role-transport/typescript-regression-input-profile-draft.json" --run "$RUNNER_TEMP/role-restored/run"
+      - name: Retain encrypted draft transport only
+        id: upload
+        if: ${{ always() && steps.seal.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ts-role-transport-draft-sealed
+          path: ${{ runner.temp }}/role-sealed/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Bind exact same-run artifact metadata and ZIP bytes
+        if: ${{ steps.upload.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+        run: |
+          gh api "repos/faberline/som/actions/artifacts/$ARTIFACT_ID" > "$RUNNER_TEMP/role-artifact.json"
+          gh api "repos/faberline/som/actions/artifacts/$ARTIFACT_ID/zip" > "$RUNNER_TEMP/role-artifact.zip"
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib
+          temp=pathlib.Path(os.environ['RUNNER_TEMP']);meta=json.loads((temp/'role-artifact.json').read_bytes());origin=meta['workflow_run']
+          archive=temp/'role-artifact.zip'
+          with archive.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
+          if meta['id']!=int(os.environ['ARTIFACT_ID']) or meta['name']!='ts-role-transport-draft-sealed' or meta['expired'] or meta['digest']!='sha256:'+digest or origin['id']!=int(os.environ['GITHUB_RUN_ID']) or origin['head_sha']!=os.environ['GITHUB_SHA'] or origin['repository_id']!=1390374878:raise SystemExit('artifact origin or bytes differ')
+          print(json.dumps({'artifact_id':meta['id'],'artifact_sha256':digest,'artifact_bytes':archive.stat().st_size,'product_acceptance':'not_run'},sort_keys=True))
+          PY
