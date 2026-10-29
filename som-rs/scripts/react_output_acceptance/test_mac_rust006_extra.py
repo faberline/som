@@ -352,5 +352,56 @@ class UnorderedParityWireTests(unittest.TestCase):
                 with self.assertRaises(ValueError):parity_audit.raw_exchange_index(raw)
 
 
+class HistoricalReconstructionTests(unittest.TestCase):
+    def test_exact_bytes_and_source_tampering(self):
+        import base64
+        import hashlib
+        import reconstruct_historical_responses as recon
+        def h(data): return hashlib.sha256(data).hexdigest()
+        def put(path, data):
+            path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(data)
+        def enc(obj): return json.dumps(obj, ensure_ascii=False, indent=2).encode() + b'\n'
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); inputs = root / 'inputs'; restored = root / 'restored'; sealed = root / 'sealed'; later = root / 'later'
+            prefix = '.local/rust-compiler-goal/acceptance/public-products-003b/000'
+            request = b'{"original":true}'; body = b'{"result":"test"}'
+            wire = base64.b64encode(body) + b'\n'; wrapped = enc({'http_status': 200, 'body': {'result':'test'}})
+            request_name = prefix + '/assemble.request.raw'; raw_name = 'run/python-baseline-raw/calls/000009.response.raw'
+            put(restored / request_name, request); put(later / raw_name, body)
+            def manifest(name, payload, cipher):
+                return {'version':'som.m6-sealed-inputs-manifest.v1','cipher_sha256':h(cipher),'uncompressed_bytes':len(payload),
+                        'total_files':1,'files':[{'path':name,'sha256':h(payload),'bytes':len(payload),'mode':420}]}
+            old_manifest = enc(manifest(request_name, request, b'old'))
+            new_cipher = b'authenticated ciphertext placeholder'; new_manifest = enc(manifest(raw_name, body, new_cipher))
+            entry = {'archive':'package-000.sealed','manifest':'package-000.manifest.json','manifest_sha256':h(new_manifest),
+                     'cipher_sha256':h(new_cipher),'total_files':1,'bytes':len(body)}
+            put(inputs / 'package-000.manifest.json',old_manifest)
+            old_index = enc({'version':'som.m6-input-index.v1','packages':[{'archive':'package-000.sealed','manifest':'package-000.manifest.json','manifest_sha256':h(old_manifest)}]})
+            put(inputs / 'inputs-index.json',old_index)
+            put(sealed / 'package-000.manifest.json',new_manifest); put(sealed / 'package-000.sealed',new_cipher)
+            new_index = enc({'version':'som.m6-evidence-index.v1','packages':[entry]})
+            put(sealed / 'evidence-index.json',new_index)
+            mapping = {'artifact':{'artifact_id':12843589912,'run_id':40743738705,'head_sha':'40cffc13b3bff35e3ea5804b9f43a49cdef7b3c0','evidence_index_sha256':h(new_index)},
+                       'historical_input_index_sha256':h(old_index),'reconstructed_cases':[{'source':'public','index':0,'status':200,'source_request_equal':False,
+                       'historical_request_sha256':h(request),'later_baseline_request_sha256':h(b'other'),
+                       'historical_raw_path':prefix+'/assemble.response.raw.b64','historical_json_path':prefix+'/assemble.response.json',
+                       'historical_raw_sha256':h(wire),'historical_json_sha256':h(wrapped),'decoded_response_sha256':h(body),
+                       'source_candidates':[{'path':raw_name,'size':len(body),'package':entry['archive'],'manifest':entry['manifest'],
+                                             'manifest_sha256':entry['manifest_sha256'],'cipher_sha256':entry['cipher_sha256']}]}]}
+            raw_map = enc(mapping)
+            def run(): return recon.derive(raw_map, inputs, restored, sealed, later, map_sha=h(raw_map), input_sha=h(old_index), evidence_sha=h(new_index), expected_count=1)
+            result = run()
+            self.assertEqual(result[prefix+'/assemble.response.raw.b64'],wire)
+            self.assertEqual(result[prefix+'/assemble.response.json'],wrapped)
+            for target, original in ((restored / request_name, request), (later / raw_name,body), (sealed / 'package-000.sealed',new_cipher)):
+                with self.subTest(target=str(target)):
+                    target.write_bytes(original + b'!')
+                    with self.assertRaises(recon.Refused): run()
+                    target.write_bytes(original)
+            changed = raw_map.replace(h(wire).encode(), b'0'*64)
+            with self.assertRaises(recon.Refused):
+                recon.derive(changed, inputs, restored, sealed, later, map_sha=h(raw_map), input_sha=h(old_index), evidence_sha=h(new_index), expected_count=1)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
