@@ -450,7 +450,7 @@
   ],
   "source_capture_role": "original retained calls vs future fresh 2bce recapture remain distinct",
   "status": "draft_not_acceptance",
-  "typed_artifact_input_manifest_sha256": "428e948240ca94c5be26e390fe9d058e6570087ec4cac700ab949c38b0bc2486",
+  "typed_artifact_input_manifest_sha256": "428e948240ca94c5be26e390fe7d058e6570087ec4cac700ab949c38b0bc2486",
   "typed_companions": "unrun_source_mapping_available",
   "typed_source_packet_sha256": "27bc7b3bd140d8855d3ac1a19b266940ebd85718d28946ccdfeb710fe668e294",
   "version": "som.rs22.before-evidence-matrix.v1"

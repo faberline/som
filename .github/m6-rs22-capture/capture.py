@@ -22,8 +22,8 @@ import urllib.request
 
 BASELINE = "2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c"
 OLD_SOURCE = "8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af"
-MATRIX_SHA = "70187dec623302b5556a3d09ffe2ea63f278e12074d1b6d8e7ffa17bb9ab030a"
-INPUT_SHA = "428e948240ca94c5be26e390fe9d058e6570087ec4cac700ab949c38b0bc2486"
+MATRIX_SHA = "ebf77d94f2a58a55e19b9de4b9e339635e292f51d5bbe4e949d274463bad0578"
+INPUT_SHA = "428e948240ca94c5be26e390fe7d058e6570087ec4cac700ab949c38b0bc2486"
 NEGATIVE_SHA = "9bb36d689ad4be26e608ac8be779a1a8bb8db043d37788b5819c9fe1bf402e22"
 PHASE2_SHA = "b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6"
 VECTORS_SHA = "dd09b41f49702f70098574f638e10ea33646366a77dfa486539f324d6f9ff83f"
@@ -165,6 +165,19 @@ def identity(root):
     return runtime["health"]
 
 
+def identity_observation(root, folder):
+    folder.mkdir()
+    observations = {}
+    for name in PINS:
+        raw = physical_file(root, name)
+        digest = sha(raw)
+        need(digest == PINS[name], "baseline observed identity differs")
+        observations[name] = {"sha256": digest, "bytes": len(raw)}
+        if name in ("build.json", "runtime.json", "source.json", "assets/manifest.json"):
+            observations[name]["raw"] = save(folder / name.replace("/", "_"), raw)
+    return observations
+
+
 def no_listener(port):
     result = subprocess.run(["/usr/sbin/lsof", "-nP", "-a", f"-iTCP:{port}", "-sTCP:LISTEN", "-Fp"],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10, check=False)
@@ -211,6 +224,7 @@ def input_rows(repo, inputs, matrix_path):
     matrix_raw = physical_file(repo, ".github/m6-rs22-capture/input-matrix.json")
     need(sha(matrix_raw) == MATRIX_SHA, "matrix differs")
     matrix = parse(matrix_raw)
+    need(matrix.get("typed_artifact_input_manifest_sha256") == INPUT_SHA, "matrix artifact identity differs")
     negative_raw = physical_file(repo, "som-rs/contracts/rust-output-v1/negative-cases.json")
     phase_raw = physical_file(repo, "som-rs/contracts/rust-output-v1/phase2/case-inventory.json")
     vectors_raw = physical_file(repo, "som-rs/contracts/compiler-v1/canonical-vectors.json")
@@ -321,6 +335,38 @@ def guarded_output(repo, out):
             break
 
 
+def stop_child(process, cleanup):
+    cleanup.update({"pid": process.pid, "child_started": True, "terminate_attempted": False,
+                    "terminate_sent": False, "kill_attempted": False, "kill_sent": False,
+                    "wait_completed": False, "wait_returncode": None, "post_wait_poll": None})
+    if process.poll() is None:
+        cleanup["terminate_attempted"] = True
+        try:
+            process.terminate()
+            cleanup["terminate_sent"] = True
+        except OSError as exc:
+            cleanup["terminate_error_type"] = type(exc).__name__
+            cleanup["escalated"] = True
+    try:
+        if cleanup["escalated"]:
+            raise subprocess.TimeoutExpired("terminate", 0)
+        wait_returncode = process.wait(timeout=15)
+    except subprocess.TimeoutExpired:
+        cleanup["escalated"] = True
+        if process.poll() is None:
+            cleanup["kill_attempted"] = True
+            process.kill()
+            cleanup["kill_sent"] = True
+        wait_returncode = process.wait(timeout=5)
+    cleanup["wait_completed"] = True
+    cleanup["wait_returncode"] = wait_returncode
+    cleanup["post_wait_poll"] = process.poll()
+    need(type(wait_returncode) is int and type(cleanup["post_wait_poll"]) is int
+         and cleanup["post_wait_poll"] == wait_returncode,
+         "child wait not confirmed")
+    cleanup["child_stopped"] = True
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
     for flag in ("root", "inputs", "matrix", "out"):
@@ -329,7 +375,7 @@ def main(argv=None):
     summary = {"version": "som.rs22.fresh-baseline-capture.v1", "status": "unrun", "product_acceptance_passed": False,
                "role": "fresh fixed 2bce baseline observation; not historical wire recovery", "source_commit": None,
                "baseline_binary_sha256": BASELINE, "rows": [], "ports": {"before": {}, "after": {}},
-               "cleanup": {"child_stopped": False, "escalated": False}}
+               "cleanup": {"child_started": False, "child_stopped": False, "escalated": False}}
     process, root, stage = None, None, "host"
     try:
         need(os.environ.get("GITHUB_ACTIONS") == "true" and os.environ.get("RUNNER_ENVIRONMENT") == "github-hosted"
@@ -353,6 +399,7 @@ def main(argv=None):
         baseline = repo / ".local/m6-hosted/baseline"
         stage = "baseline_identity"
         health = identity(baseline)
+        summary["identity_before"] = identity_observation(baseline, run / "identity-before")
         stage = "ports"
         for port in (PORT, 8765, 18765):
             summary["ports"]["before"][str(port)] = no_listener(port)
@@ -370,10 +417,14 @@ def main(argv=None):
                 need(process.poll() is None and time.monotonic() < deadline, "baseline startup failed")
                 try:
                     status, raw = http("GET", "/healthz")
-                    need(status == 200 and parse(raw) == health, "baseline health differs")
-                    break
                 except OSError:
                     time.sleep(0.1)
+                    continue
+                health_folder = run / "health"
+                health_folder.mkdir()
+                summary["health"] = {"status": status, "response": save(health_folder / "response.raw", raw)}
+                need(status == 200 and parse(raw) == health, "baseline health differs")
+                break
             summary["ports"]["owned"] = owned_listener(process.pid)
             stage = "capture"
             for i, (row, case, native, rust_raw, typed) in enumerate(rows):
@@ -387,6 +438,7 @@ def main(argv=None):
                          "native and typed files differ")
         stage = "post_identity"
         need(identity(baseline) == health, "baseline changed")
+        summary["identity_after"] = identity_observation(baseline, run / "identity-after")
         need(input_rows(repo, args.inputs, args.matrix) == rows, "capture source inputs changed")
         after = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True,
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10).stdout.decode().strip()
@@ -400,22 +452,12 @@ def main(argv=None):
     finally:
         if process is not None:
             try:
-                if process.poll() is None:
-                    process.terminate()
-                try:
-                    process.wait(timeout=15)
-                except subprocess.TimeoutExpired:
-                    summary["cleanup"]["escalated"] = True
+                stop_child(process, summary["cleanup"])
+                if summary["cleanup"]["escalated"]:
                     summary["status"] = "failed"
-                    if process.poll() is None:
-                        process.kill()
-                    process.wait(timeout=5)
-                summary["cleanup"]["child_stopped"] = True
-            except (OSError, subprocess.SubprocessError):
+            except (OSError, ValueError, subprocess.SubprocessError):
                 summary["status"] = "failed"
                 summary["cleanup"]["child_stopped"] = False
-        elif root is not None:
-            summary["cleanup"]["child_stopped"] = True
         if root is not None:
             try:
                 for port in (PORT, 8765, 18765):

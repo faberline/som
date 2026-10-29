@@ -68,7 +68,7 @@ jobs:
           python3 - <<'PY_INNER'
           import hashlib, pathlib
           path = pathlib.Path(r"${{ runner.temp }}") / 'rs22-public-input/_temp/som-rust-complete-inputs/manifest.json'
-          if path.is_symlink() or not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != '428e948240ca94c5be26e390fe9d058e6570087ec4cac700ab949c38b0bc2486':
+          if path.is_symlink() or not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != '428e948240ca94c5be26e390fe7d058e6570087ec4cac700ab949c38b0bc2486':
               raise SystemExit('typed input manifest differs')
           PY_INNER
       - name: Verify protected listeners are absent before QA

@@ -1,10 +1,11 @@
 """Synthetic RS22 capture checks; execute only on a GitHub runner."""
 import json
 import os
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import capture
 
@@ -101,6 +102,85 @@ class CaptureFixtureTests(unittest.TestCase):
         case = {"expected": {"code": "INVALID_VALUE"}}
         with self.assertRaises(capture.Refusal):
             capture.expected_error(400, b'{"code":"OTHER","diagnostics":[{}]}', case, b'{}', False)
+
+    def test_identity_observation_saves_receipts_and_observed_hashes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "baseline"
+            root.mkdir()
+            (root / "assets").mkdir()
+            (root / "build.json").write_bytes(b'{"complete":true}')
+            (root / "assets" / "manifest.json").write_bytes(b'{"files":[]}')
+            (root / "assets" / "tool").write_bytes(b'actual tool bytes')
+            run = Path(tmp) / "run"
+            run.mkdir()
+            pins = {"build.json": capture.sha(b'{"complete":true}'),
+                    "assets/manifest.json": capture.sha(b'{"files":[]}'),
+                    "assets/tool": capture.sha(b'actual tool bytes')}
+            with patch.object(capture, "PINS", pins):
+                observed = capture.identity_observation(root, run / "identity-before")
+            with patch.object(capture, "PINS", {"assets/tool": "0" * 64}), self.assertRaises(capture.Refusal):
+                capture.identity_observation(root, run / "identity-mismatch")
+            self.assertEqual(observed["assets/tool"]["sha256"], capture.sha(b'actual tool bytes'))
+            self.assertNotIn("raw", observed["assets/tool"])
+            self.assertEqual((run / "identity-before" / "build.json").read_bytes(), b'{"complete":true}')
+            self.assertEqual(observed["assets/manifest.json"]["raw"]["path"],
+                             "run/identity-before/assets_manifest.json")
+
+    def test_child_cleanup_records_actual_wait_and_escalation(self):
+        child = Mock(pid=123)
+        child.poll.side_effect = [None, -15]
+        child.wait.return_value = -15
+        receipt = {"child_stopped": False, "escalated": False}
+        capture.stop_child(child, receipt)
+        self.assertEqual(receipt, {"child_started": True, "child_stopped": True, "escalated": False, "pid": 123,
+                                   "terminate_attempted": True, "terminate_sent": True,
+                                   "kill_attempted": False, "kill_sent": False, "wait_completed": True,
+                                   "wait_returncode": -15, "post_wait_poll": -15})
+        child.terminate.assert_called_once()
+        child.kill.assert_not_called()
+
+        child = Mock(pid=456)
+        child.poll.side_effect = [None, None, -9]
+        child.wait.side_effect = [subprocess.TimeoutExpired("child", 15), -9]
+        receipt = {"child_stopped": False, "escalated": False}
+        capture.stop_child(child, receipt)
+        self.assertTrue(receipt["escalated"])
+        self.assertTrue(receipt["kill_sent"])
+        self.assertEqual(receipt["wait_returncode"], -9)
+        self.assertEqual(receipt["post_wait_poll"], -9)
+
+        child = Mock(pid=789)
+        child.poll.side_effect = [None, None]
+        child.wait.return_value = -15
+        receipt = {"child_stopped": False, "escalated": False}
+        with self.assertRaises(capture.Refusal):
+            capture.stop_child(child, receipt)
+        self.assertFalse(receipt["child_stopped"])
+
+        child = Mock(pid=900)
+        child.poll.side_effect = [None, None]
+        child.wait.side_effect = [subprocess.TimeoutExpired("child", 15), subprocess.TimeoutExpired("child", 5)]
+        receipt = {"child_stopped": False, "escalated": False}
+        with self.assertRaises(subprocess.TimeoutExpired):
+            capture.stop_child(child, receipt)
+        self.assertTrue(receipt["kill_sent"])
+        self.assertFalse(receipt["wait_completed"])
+        self.assertIsNone(receipt["wait_returncode"])
+        self.assertFalse(receipt["child_stopped"])
+
+        child = Mock(pid=901)
+        child.poll.side_effect = [None, None, -9]
+        child.terminate.side_effect = OSError("synthetic")
+        child.wait.return_value = -9
+        receipt = {"child_stopped": False, "escalated": False}
+        capture.stop_child(child, receipt)
+        self.assertTrue(receipt["terminate_attempted"])
+        self.assertFalse(receipt["terminate_sent"])
+        self.assertEqual(receipt["terminate_error_type"], "OSError")
+        self.assertTrue(receipt["escalated"])
+        self.assertTrue(receipt["kill_sent"])
+        self.assertTrue(receipt["wait_completed"])
+        self.assertEqual(receipt["post_wait_poll"], -9)
 
     def test_port_probe_refuses_listener_and_unknown_outcome(self):
         class Result:
