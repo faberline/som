@@ -87,6 +87,16 @@ class PostCloseProtocolTests(unittest.TestCase):
         self.assertEqual(value, {'synthetic': True})
         self.assertNotIn('_som_m6_react_postclose_launcher', sys.modules)
 
+    def test_load_real_source_bound_auditor_modules(self):
+        from pathlib import Path
+        import sys
+        repo=Path(os.environ['GITHUB_WORKSPACE']).resolve()
+        def reader(path):
+            return (repo / ('.github/m6-react-owner-fixtures/audit130.py' if path == subject.AUDITOR else path)).read_bytes()
+        with subject.source_bound_auditor(reader, repo) as module:
+            self.assertTrue(callable(module.run_audit))
+            self.assertEqual(module.__som_raw_sha256__,subject.sha(reader(subject.AUDITOR)))
+        self.assertTrue(all(name not in sys.modules for name in subject.AUDIT_MODULES))
     def test_owner_requires_every_executed_source_in_verified_admission(self):
         admission={'source_authority_active':True,'helper_revision':self.rev,'candidate_revision':self.rev,
                    'product_acceptance_passed':False,'compiler_acceptance_passed':False,
