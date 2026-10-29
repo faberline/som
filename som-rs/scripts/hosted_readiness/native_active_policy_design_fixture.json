@@ -1,0 +1,1788 @@
+{
+  "compiler_acceptance_passed": false,
+  "complete": false,
+  "design": {
+    "edges": [
+      {
+        "caller": "som-core/scripts/audit_business_transactions.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-core/scripts/audit_business_transactions.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-core/scripts/audit_business_transactions.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/audit_business_transactions.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/composed_evidence.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/composed_evidence.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/flow_fault_checks.py",
+        "import": "som_core.flow",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-core/scripts/flow_fault_checks.py",
+        "import": "som_core.flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "caller": "som-core/scripts/flow_fault_checks.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/flow_fault_checks.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/flow_provider_fault_checks.py",
+        "import": "flow_fault_checks",
+        "source": "som-core/scripts/flow_fault_checks.py"
+      },
+      {
+        "caller": "som-core/scripts/flow_provider_fault_checks.py",
+        "import": "flow_fault_checks",
+        "source": "som-rs/behavior/phase2/adapted/flow_fault_checks.py"
+      },
+      {
+        "caller": "som-core/scripts/flow_test_backends.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-core/scripts/flow_test_backends.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-core/scripts/local_flow_services.py",
+        "import": "flow_gcs_fixture",
+        "source": "som-core/scripts/flow_gcs_fixture.py"
+      },
+      {
+        "caller": "som-core/scripts/local_flow_services.py",
+        "import": "local_business_services",
+        "source": "som-core/scripts/local_business_services.py"
+      },
+      {
+        "caller": "som-core/scripts/m3_local_fixture.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "caller": "som-core/scripts/m3_local_fixture.py",
+        "import": "local_business_services",
+        "source": "som-core/scripts/local_business_services.py"
+      },
+      {
+        "caller": "som-core/scripts/m3_local_fixture.py",
+        "import": "local_flow_services",
+        "source": "som-core/scripts/local_flow_services.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_business_workflows.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_business_workflows.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_journeys.py",
+        "import": "audit_business_transactions",
+        "source": "som-core/scripts/audit_business_transactions.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_journeys.py",
+        "import": "audit_business_transactions",
+        "source": "som-rs/behavior/phase2/adapted/audit_business_transactions.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_journeys.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_journeys.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_journeys.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_journeys.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_related.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_related.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_related.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_related.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "audit_business_transactions",
+        "source": "som-core/scripts/audit_business_transactions.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "audit_business_transactions",
+        "source": "som-rs/behavior/phase2/adapted/audit_business_transactions.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "composed_evidence",
+        "source": "som-core/scripts/composed_evidence.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "fixture_guard",
+        "source": "som-core/scripts/fixture_guard.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "som_core",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "som_core.composed",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "som_core.composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "som_core.v1",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "som_core.v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_journeys",
+        "source": "som-core/scripts/verify_composed_journeys.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_journeys",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_related",
+        "source": "som-core/scripts/verify_composed_related.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_related.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_subsets",
+        "source": "som-core/scripts/verify_composed_subsets.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_subsets",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_transactions",
+        "source": "som-core/scripts/verify_composed_transactions.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_services.py",
+        "import": "verify_composed_transactions",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_subsets.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_subsets.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_composed_journeys",
+        "source": "som-core/scripts/verify_composed_journeys.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_composed_journeys",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_composed_transactions",
+        "source": "som-core/scripts/verify_composed_transactions.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_composed_transactions",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_subsets.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_transactions.py",
+        "import": "audit_business_transactions",
+        "source": "som-core/scripts/audit_business_transactions.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_transactions.py",
+        "import": "audit_business_transactions",
+        "source": "som-rs/behavior/phase2/adapted/audit_business_transactions.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_transactions.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_transactions.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_transactions.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_composed_transactions.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "audit_business_transactions",
+        "source": "som-core/scripts/audit_business_transactions.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "audit_business_transactions",
+        "source": "som-rs/behavior/phase2/adapted/audit_business_transactions.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "composed_evidence",
+        "source": "som-core/scripts/composed_evidence.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "fixture_guard",
+        "source": "som-core/scripts/fixture_guard.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_branch_cases",
+        "source": "som-core/scripts/flow_branch_cases.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_branch_cases",
+        "source": "som-rs/behavior/phase2/adapted/flow_branch_cases.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_fault_checks",
+        "source": "som-core/scripts/flow_fault_checks.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_fault_checks",
+        "source": "som-rs/behavior/phase2/adapted/flow_fault_checks.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_provider_fault_checks",
+        "source": "som-core/scripts/flow_provider_fault_checks.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_provider_fault_checks",
+        "source": "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_row_history",
+        "source": "som-core/scripts/flow_row_history.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "flow_test_backends",
+        "source": "som-core/scripts/flow_test_backends.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "verify_composed_services",
+        "source": "som-core/scripts/verify_composed_services.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_flow_service.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_related.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_related.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-core/scripts/verify_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-core/src/som_core/business.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "caller": "som-core/src/som_core/composed.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-core/src/som_core/composed.py",
+        "import": ".related",
+        "source": "som-core/src/som_core/related.py"
+      },
+      {
+        "caller": "som-core/src/som_core/composed.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow.py",
+        "import": ".composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow.py",
+        "import": ".quality",
+        "source": "som-core/src/som_core/quality.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow.py",
+        "import": ".related",
+        "source": "som-core/src/som_core/related.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow_codec.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow_codec.py",
+        "import": ".composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow_codec.py",
+        "import": ".flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow_codec.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow_compact.py",
+        "import": ".",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow_compact.py",
+        "import": ".compact_names",
+        "source": "som-core/src/som_core/compact_names.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow_compact.py",
+        "import": ".composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow_compact.py",
+        "import": ".flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow_compact.py",
+        "import": ".flow_codec",
+        "source": "som-core/src/som_core/flow_codec.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow_compact.py",
+        "import": ".quality",
+        "source": "som-core/src/som_core/quality.py"
+      },
+      {
+        "caller": "som-core/src/som_core/flow_compact.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "caller": "som-core/src/som_core/quality.py",
+        "import": "som_core",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-core/src/som_core/quality.py",
+        "import": "som_core.composed",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-core/src/som_core/quality.py",
+        "import": "som_core.composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "caller": "som-core/src/som_core/quality.py",
+        "import": "som_core.v1",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-core/src/som_core/quality.py",
+        "import": "som_core.v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "caller": "som-core/src/som_core/related.py",
+        "import": ".business",
+        "source": "som-core/src/som_core/business.py"
+      },
+      {
+        "caller": "som-core/src/som_core/related.py",
+        "import": ".v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "caller": "som-core/src/som_core/v1.py",
+        "import": ".composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "caller": "som-core/src/som_core/v1.py",
+        "import": ".flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "caller": "som-core/src/som_core/v1.py",
+        "import": ".flow_compact",
+        "source": "som-core/src/som_core/flow_compact.py"
+      },
+      {
+        "caller": "som-core/src/som_core/v1.py",
+        "import": ".related",
+        "source": "som-core/src/som_core/related.py"
+      },
+      {
+        "caller": "som-rs/behavior/hosts.py",
+        "import": "check_rust_products",
+        "source": "som-rs/som-targets/qa/check_rust_products.py"
+      },
+      {
+        "caller": "som-rs/behavior/hosts.py",
+        "import": "check_targets",
+        "source": "som-rs/som-targets/qa/check_targets.py"
+      },
+      {
+        "caller": "som-rs/behavior/hosts.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/audit_business_transactions.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/audit_business_transactions.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/audit_business_transactions.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/audit_business_transactions.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/audit_business_transactions.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/flow_fault_checks.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/flow_fault_checks.py",
+        "import": "som_core.flow",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/flow_fault_checks.py",
+        "import": "som_core.flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/flow_fault_checks.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/flow_fault_checks.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py",
+        "import": "flow_fault_checks",
+        "source": "som-core/scripts/flow_fault_checks.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py",
+        "import": "flow_fault_checks",
+        "source": "som-rs/behavior/phase2/adapted/flow_fault_checks.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_business_workflows.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_business_workflows.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+        "import": "audit_business_transactions",
+        "source": "som-core/scripts/audit_business_transactions.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+        "import": "audit_business_transactions",
+        "source": "som-rs/behavior/phase2/adapted/audit_business_transactions.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_composed_journeys",
+        "source": "som-core/scripts/verify_composed_journeys.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_composed_journeys",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_journeys.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_composed_transactions",
+        "source": "som-core/scripts/verify_composed_transactions.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_composed_transactions",
+        "source": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+        "import": "audit_business_transactions",
+        "source": "som-core/scripts/audit_business_transactions.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+        "import": "audit_business_transactions",
+        "source": "som-rs/behavior/phase2/adapted/audit_business_transactions.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "audit_business_transactions",
+        "source": "som-core/scripts/audit_business_transactions.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "audit_business_transactions",
+        "source": "som-rs/behavior/phase2/adapted/audit_business_transactions.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "composed_evidence",
+        "source": "som-core/scripts/composed_evidence.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "fixture_guard",
+        "source": "som-core/scripts/fixture_guard.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_branch_cases",
+        "source": "som-core/scripts/flow_branch_cases.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_branch_cases",
+        "source": "som-rs/behavior/phase2/adapted/flow_branch_cases.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_fault_checks",
+        "source": "som-core/scripts/flow_fault_checks.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_fault_checks",
+        "source": "som-rs/behavior/phase2/adapted/flow_fault_checks.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_provider_fault_checks",
+        "source": "som-core/scripts/flow_provider_fault_checks.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_provider_fault_checks",
+        "source": "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_row_history",
+        "source": "som-core/scripts/flow_row_history.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "flow_test_backends",
+        "source": "som-core/scripts/flow_test_backends.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "verify_composed_services",
+        "source": "som-core/scripts/verify_composed_services.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_related.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_related.py",
+        "import": "business_test_support",
+        "source": "som-core/scripts/business_test_support.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_related.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-core/scripts/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/adapted/verify_related.py",
+        "import": "verify_business_workflows",
+        "source": "som-rs/behavior/phase2/adapted/verify_business_workflows.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "hosts",
+        "source": "som-rs/behavior/hosts.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "m3_local_fixture",
+        "source": "som-core/scripts/m3_local_fixture.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "qa_harness",
+        "source": "som-rs/scripts/compiler_acceptance/qa_harness.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "rust_profile_phase2",
+        "source": "som-rs/tests/rust-output-v1/rust_profile_phase2.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "suite",
+        "source": "som-rs/behavior/suite.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "verify_composed_services",
+        "source": "som-core/scripts/verify_composed_services.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "verify_flow_service",
+        "source": "som-core/scripts/verify_flow_service.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/check_phase2.py",
+        "import": "verify_flow_service",
+        "source": "som-rs/behavior/phase2/adapted/verify_flow_service.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/phase2_host.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/phase2_host.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/phase2/phase2_host.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-rs/behavior/typescript/host.py",
+        "import": "hosts",
+        "source": "som-rs/behavior/hosts.py"
+      },
+      {
+        "caller": "som-rs/behavior/typescript/host.py",
+        "import": "tree_sha",
+        "source": "som-rs/tests/react-output-v1/tree_sha.py"
+      },
+      {
+        "caller": "som-rs/behavior/typescript/host.py",
+        "import": "tree_sha",
+        "source": "som-rs/tests/typescript-output-v1/tree_sha.py"
+      },
+      {
+        "caller": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "paths",
+        "source": "som-rs/scripts/compiler_acceptance/paths.py"
+      },
+      {
+        "caller": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.composed",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.composed",
+        "source": "som-core/src/som_core/composed.py"
+      },
+      {
+        "caller": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.flow",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.flow",
+        "source": "som-core/src/som_core/flow.py"
+      },
+      {
+        "caller": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.related",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.related",
+        "source": "som-core/src/som_core/related.py"
+      },
+      {
+        "caller": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.v1",
+        "source": "som-core/src/som_core/__init__.py"
+      },
+      {
+        "caller": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+        "import": "som_core.v1",
+        "source": "som-core/src/som_core/v1.py"
+      },
+      {
+        "caller": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "check_phase2",
+        "source": "som-rs/behavior/phase2/check_phase2.py"
+      },
+      {
+        "caller": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "check_phase2_products",
+        "source": "som-rs/som-targets/qa/check_phase2_products.py"
+      },
+      {
+        "caller": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "check_rust_products",
+        "source": "som-rs/som-targets/qa/check_rust_products.py"
+      },
+      {
+        "caller": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "caller": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "hosts",
+        "source": "som-rs/behavior/hosts.py"
+      },
+      {
+        "caller": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "m3_local_fixture",
+        "source": "som-core/scripts/m3_local_fixture.py"
+      },
+      {
+        "caller": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "caller": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-rs/scripts/hosted_readiness/run_full_products.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_bundles.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/react-output-v1/build_case_inventory.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_bundles.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/rust-output-v1/build_case_inventory.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_bundles.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/typescript-output-v1/build_case_inventory.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_bundles.py",
+        "import": "check_python_baseline",
+        "source": "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_bundles.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_bundles.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_bundles.py",
+        "import": "render_reference",
+        "source": "som-rs/tests/react-output-v1/render_reference.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_products.py",
+        "import": "check_contract",
+        "source": "som-rs/tests/react-output-v1/check_contract.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_products.py",
+        "import": "check_contract",
+        "source": "som-rs/tests/rust-output-v1/check_contract.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_products.py",
+        "import": "check_contract",
+        "source": "som-rs/tests/typescript-output-v1/check_contract.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_products.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_products.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_products.py",
+        "import": "retained_evidence",
+        "source": "som-rs/scripts/react_output_acceptance/retained_evidence.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/react-output-v1/build_case_inventory.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/rust-output-v1/build_case_inventory.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/typescript-output-v1/build_case_inventory.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "check_cli",
+        "source": "som-rs/scripts/rust_output_acceptance/check_cli.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "check_python_baseline",
+        "source": "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "cli_raw",
+        "source": "som-rs/scripts/react_output_acceptance/cli_raw.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_target.py",
+        "import": "react_profile",
+        "source": "som-rs/tests/react-output-v1/react_profile.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_typescript_baseline.py",
+        "import": "check_bundles",
+        "source": "som-rs/scripts/react_output_acceptance/check_bundles.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/check_typescript_baseline.py",
+        "import": "check_bundles",
+        "source": "som-rs/scripts/typescript_output_acceptance/check_bundles.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/native_owner_input_binding.py",
+        "import": "reconstruct_historical_responses",
+        "source": "som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/native_owner_input_binding.py",
+        "import": "verify_historical_response_provenance",
+        "source": "som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/record_api.py",
+        "import": "retained_evidence",
+        "source": "som-rs/scripts/react_output_acceptance/retained_evidence.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/run_acceptance.py",
+        "import": "retained_evidence",
+        "source": "som-rs/scripts/react_output_acceptance/retained_evidence.py"
+      },
+      {
+        "caller": "som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py",
+        "import": "reconstruct_historical_responses",
+        "source": "som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py"
+      },
+      {
+        "caller": "som-rs/scripts/rust_output_acceptance/check_cli.py",
+        "import": "rust_profile_phase2",
+        "source": "som-rs/tests/rust-output-v1/rust_profile_phase2.py"
+      },
+      {
+        "caller": "som-rs/scripts/rust_output_acceptance/python_replay.py",
+        "import": "qa_harness",
+        "source": "som-rs/scripts/compiler_acceptance/qa_harness.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_bundles.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/react-output-v1/build_case_inventory.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_bundles.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/rust-output-v1/build_case_inventory.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_bundles.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/typescript-output-v1/build_case_inventory.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_bundles.py",
+        "import": "check_python_baseline",
+        "source": "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_bundles.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_bundles.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py",
+        "import": "check_target",
+        "source": "som-rs/scripts/react_output_acceptance/check_target.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py",
+        "import": "check_target",
+        "source": "som-rs/scripts/typescript_output_acceptance/check_target.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py",
+        "import": "check_phase2",
+        "source": "som-rs/behavior/phase2/check_phase2.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py",
+        "import": "qa_harness",
+        "source": "som-rs/scripts/compiler_acceptance/qa_harness.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/react-output-v1/build_case_inventory.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/rust-output-v1/build_case_inventory.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "import": "build_case_inventory",
+        "source": "som-rs/tests/typescript-output-v1/build_case_inventory.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "import": "check_python_baseline",
+        "source": "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+        "import": "ts_profile",
+        "source": "som-rs/tests/typescript-output-v1/ts_profile.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "business_database_checks",
+        "source": "som-core/scripts/business_database_checks.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "check_phase2",
+        "source": "som-rs/behavior/phase2/check_phase2.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "check_rust_products",
+        "source": "som-rs/som-targets/qa/check_rust_products.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "check_targets",
+        "source": "som-rs/som-targets/qa/check_targets.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "hosts",
+        "source": "som-rs/behavior/hosts.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "m3_local_fixture",
+        "source": "som-core/scripts/m3_local_fixture.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "phase2_host",
+        "source": "som-rs/behavior/phase2/phase2_host.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "verify_related",
+        "source": "som-core/scripts/verify_related.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_phase2_products.py",
+        "import": "verify_related",
+        "source": "som-rs/behavior/phase2/adapted/verify_related.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_rust_products.py",
+        "import": "check_targets",
+        "source": "som-rs/som-targets/qa/check_targets.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_rust_products.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_targets.py",
+        "import": "full_product_context",
+        "source": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_targets.py",
+        "import": "python_replay",
+        "source": "som-rs/scripts/rust_output_acceptance/python_replay.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_targets.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "caller": "som-rs/som-targets/qa/check_targets.py",
+        "import": "rust_profile_phase2",
+        "source": "som-rs/tests/rust-output-v1/rust_profile_phase2.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/build_case_inventory.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/build_case_inventory.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/check_contract.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/check_contract.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/check_contract.py",
+        "import": "render_reference",
+        "source": "som-rs/tests/react-output-v1/render_reference.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/check_contract.py",
+        "import": "tree_sha",
+        "source": "som-rs/tests/react-output-v1/tree_sha.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/check_contract.py",
+        "import": "tree_sha",
+        "source": "som-rs/tests/typescript-output-v1/tree_sha.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/check_python_controls.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/check_python_controls.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/common.py",
+        "import": "react_profile",
+        "source": "som-rs/tests/react-output-v1/react_profile.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/run_api_contract.py",
+        "import": "typescript",
+        "source": "som-rs/behavior/typescript/__init__.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/run_api_contract.py",
+        "import": "typescript.host",
+        "source": "som-rs/behavior/typescript/__init__.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/run_api_contract.py",
+        "import": "typescript.host",
+        "source": "som-rs/behavior/typescript/host.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/run_gates.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/run_gates.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/run_gates.py",
+        "import": "linux_qa_profile",
+        "source": "som-rs/tests/react-output-v1/linux_qa_profile.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/run_gates.py",
+        "import": "tree_sha",
+        "source": "som-rs/tests/react-output-v1/tree_sha.py"
+      },
+      {
+        "caller": "som-rs/tests/react-output-v1/run_gates.py",
+        "import": "tree_sha",
+        "source": "som-rs/tests/typescript-output-v1/tree_sha.py"
+      },
+      {
+        "caller": "som-rs/tests/rust-output-v1/build_case_inventory.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "caller": "som-rs/tests/rust-output-v1/build_negative_cases.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "caller": "som-rs/tests/rust-output-v1/check_contract.py",
+        "import": "qa_harness",
+        "source": "som-rs/scripts/compiler_acceptance/qa_harness.py"
+      },
+      {
+        "caller": "som-rs/tests/rust-output-v1/check_contract.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "caller": "som-rs/tests/rust-output-v1/check_python_controls.py",
+        "import": "rust_profile",
+        "source": "som-rs/tests/rust-output-v1/rust_profile.py"
+      },
+      {
+        "caller": "som-rs/tests/typescript-output-v1/build_case_inventory.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/tests/typescript-output-v1/build_case_inventory.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/tests/typescript-output-v1/check_contract.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/tests/typescript-output-v1/check_contract.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/tests/typescript-output-v1/check_contract.py",
+        "import": "tree_sha",
+        "source": "som-rs/tests/react-output-v1/tree_sha.py"
+      },
+      {
+        "caller": "som-rs/tests/typescript-output-v1/check_contract.py",
+        "import": "tree_sha",
+        "source": "som-rs/tests/typescript-output-v1/tree_sha.py"
+      },
+      {
+        "caller": "som-rs/tests/typescript-output-v1/check_python_controls.py",
+        "import": "common",
+        "source": "som-rs/tests/react-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/tests/typescript-output-v1/check_python_controls.py",
+        "import": "common",
+        "source": "som-rs/tests/typescript-output-v1/common.py"
+      },
+      {
+        "caller": "som-rs/tests/typescript-output-v1/common.py",
+        "import": "ts_profile",
+        "source": "som-rs/tests/typescript-output-v1/ts_profile.py"
+      }
+    ],
+    "search_roots": [
+      "som-rs/som-targets/qa",
+      "som-rs/behavior",
+      "som-rs/behavior/phase2",
+      "som-rs/behavior/phase2/adapted",
+      "som-rs/tests/rust-output-v1",
+      "som-rs/tests/typescript-output-v1",
+      "som-rs/tests/react-output-v1",
+      "som-rs/scripts/compiler_acceptance",
+      "som-rs/scripts/rust_output_acceptance",
+      "som-rs/scripts/typescript_output_acceptance",
+      "som-rs/scripts/react_output_acceptance",
+      "som-core/scripts",
+      "som-core/src",
+      "som-rs/scripts/hosted_readiness",
+      "som-rs/scripts/hosted_readiness/product_runtime",
+      "som-rs/scripts/hosted_readiness/product_python"
+    ],
+    "source_inventory_sha256": "0d08cd0c59e12970cc36613125617d36a7580e8f0839fe02c3e73b84e5c554ca",
+    "source_paths": [
+      "som-core/scripts/audit_business_transactions.py",
+      "som-core/scripts/business_database_checks.py",
+      "som-core/scripts/business_test_support.py",
+      "som-core/scripts/composed_evidence.py",
+      "som-core/scripts/fixture_guard.py",
+      "som-core/scripts/flow_branch_cases.py",
+      "som-core/scripts/flow_fault_checks.py",
+      "som-core/scripts/flow_gcs_fixture.py",
+      "som-core/scripts/flow_provider_fault_checks.py",
+      "som-core/scripts/flow_row_history.py",
+      "som-core/scripts/flow_test_backends.py",
+      "som-core/scripts/local_business_services.py",
+      "som-core/scripts/local_flow_services.py",
+      "som-core/scripts/m3_local_fixture.py",
+      "som-core/scripts/verify_business_workflows.py",
+      "som-core/scripts/verify_composed_journeys.py",
+      "som-core/scripts/verify_composed_related.py",
+      "som-core/scripts/verify_composed_services.py",
+      "som-core/scripts/verify_composed_subsets.py",
+      "som-core/scripts/verify_composed_transactions.py",
+      "som-core/scripts/verify_flow_service.py",
+      "som-core/scripts/verify_related.py",
+      "som-core/src/som_core/__init__.py",
+      "som-core/src/som_core/business.py",
+      "som-core/src/som_core/compact_names.py",
+      "som-core/src/som_core/composed.py",
+      "som-core/src/som_core/flow.py",
+      "som-core/src/som_core/flow_codec.py",
+      "som-core/src/som_core/flow_compact.py",
+      "som-core/src/som_core/quality.py",
+      "som-core/src/som_core/related.py",
+      "som-core/src/som_core/v1.py",
+      "som-rs/behavior/hosts.py",
+      "som-rs/behavior/phase2/adapted/audit_business_transactions.py",
+      "som-rs/behavior/phase2/adapted/flow_branch_cases.py",
+      "som-rs/behavior/phase2/adapted/flow_fault_checks.py",
+      "som-rs/behavior/phase2/adapted/flow_provider_fault_checks.py",
+      "som-rs/behavior/phase2/adapted/verify_business_workflows.py",
+      "som-rs/behavior/phase2/adapted/verify_composed_journeys.py",
+      "som-rs/behavior/phase2/adapted/verify_composed_related.py",
+      "som-rs/behavior/phase2/adapted/verify_composed_subsets.py",
+      "som-rs/behavior/phase2/adapted/verify_composed_transactions.py",
+      "som-rs/behavior/phase2/adapted/verify_flow_service.py",
+      "som-rs/behavior/phase2/adapted/verify_related.py",
+      "som-rs/behavior/phase2/check_phase2.py",
+      "som-rs/behavior/phase2/phase2_host.py",
+      "som-rs/behavior/suite.py",
+      "som-rs/behavior/typescript/__init__.py",
+      "som-rs/behavior/typescript/host.py",
+      "som-rs/scripts/compiler_acceptance/paths.py",
+      "som-rs/scripts/compiler_acceptance/qa_harness.py",
+      "som-rs/scripts/hosted_readiness/native_qa_authority.py",
+      "som-rs/scripts/hosted_readiness/product_python/produce_wheels.py",
+      "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py",
+      "som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py",
+      "som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py",
+      "som-rs/scripts/hosted_readiness/run_current_candidate_gate.py",
+      "som-rs/scripts/hosted_readiness/run_full_products.py",
+      "som-rs/scripts/hosted_readiness/same_candidate_graph.py",
+      "som-rs/scripts/react_output_acceptance/audit/api_raw.py",
+      "som-rs/scripts/react_output_acceptance/audit/audit130.py",
+      "som-rs/scripts/react_output_acceptance/audit/baseline_raw.py",
+      "som-rs/scripts/react_output_acceptance/audit/linux_input_raw.py",
+      "som-rs/scripts/react_output_acceptance/audit/linux_install_map.py",
+      "som-rs/scripts/react_output_acceptance/audit/refusal_rules.py",
+      "som-rs/scripts/react_output_acceptance/audit/render_rules.py",
+      "som-rs/scripts/react_output_acceptance/check_bundles.py",
+      "som-rs/scripts/react_output_acceptance/check_products.py",
+      "som-rs/scripts/react_output_acceptance/check_target.py",
+      "som-rs/scripts/react_output_acceptance/check_typescript_baseline.py",
+      "som-rs/scripts/react_output_acceptance/cli_raw.py",
+      "som-rs/scripts/react_output_acceptance/linux_api_context.py",
+      "som-rs/scripts/react_output_acceptance/linux_api_evidence.py",
+      "som-rs/scripts/react_output_acceptance/linux_api_host.py",
+      "som-rs/scripts/react_output_acceptance/linux_api_live_inputs.py",
+      "som-rs/scripts/react_output_acceptance/m6_native_entry.py",
+      "som-rs/scripts/react_output_acceptance/m6_react_callback.py",
+      "som-rs/scripts/react_output_acceptance/native_owner_input_binding.py",
+      "som-rs/scripts/react_output_acceptance/react_api_python_payload.py",
+      "som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py",
+      "som-rs/scripts/react_output_acceptance/record_api.py",
+      "som-rs/scripts/react_output_acceptance/record_http.py",
+      "som-rs/scripts/react_output_acceptance/retained_evidence.py",
+      "som-rs/scripts/react_output_acceptance/run_acceptance.py",
+      "som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py",
+      "som-rs/scripts/rust_output_acceptance/check_cli.py",
+      "som-rs/scripts/rust_output_acceptance/python_replay.py",
+      "som-rs/scripts/typescript_output_acceptance/check_bundles.py",
+      "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py",
+      "som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py",
+      "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py",
+      "som-rs/scripts/typescript_output_acceptance/check_target.py",
+      "som-rs/som-targets/qa/check_phase2_products.py",
+      "som-rs/som-targets/qa/check_rust_products.py",
+      "som-rs/som-targets/qa/check_targets.py",
+      "som-rs/tests/react-output-v1/build_case_inventory.py",
+      "som-rs/tests/react-output-v1/check_contract.py",
+      "som-rs/tests/react-output-v1/check_python_controls.py",
+      "som-rs/tests/react-output-v1/common.py",
+      "som-rs/tests/react-output-v1/linux_qa_profile.py",
+      "som-rs/tests/react-output-v1/react_profile.py",
+      "som-rs/tests/react-output-v1/render_reference.py",
+      "som-rs/tests/react-output-v1/run_api_contract.py",
+      "som-rs/tests/react-output-v1/run_gates.py",
+      "som-rs/tests/react-output-v1/tree_sha.py",
+      "som-rs/tests/rust-output-v1/build_case_inventory.py",
+      "som-rs/tests/rust-output-v1/build_negative_cases.py",
+      "som-rs/tests/rust-output-v1/check_contract.py",
+      "som-rs/tests/rust-output-v1/check_python_controls.py",
+      "som-rs/tests/rust-output-v1/rust_profile.py",
+      "som-rs/tests/rust-output-v1/rust_profile_phase2.py",
+      "som-rs/tests/typescript-output-v1/build_case_inventory.py",
+      "som-rs/tests/typescript-output-v1/check_contract.py",
+      "som-rs/tests/typescript-output-v1/check_python_controls.py",
+      "som-rs/tests/typescript-output-v1/common.py",
+      "som-rs/tests/typescript-output-v1/tree_sha.py",
+      "som-rs/tests/typescript-output-v1/ts_profile.py"
+    ],
+    "static_inventory_sha256": "8c3681fcc2e8662ef7f07e595a11f05169544f6c7695f1d72f241fbdfe6d2b54"
+  },
+  "product_acceptance_passed": false,
+  "role": "Exact original design data for an explicitly incomplete protocol policy fixture; no source seal or activation.",
+  "source_examples_sha256": "93dbf590ceb0712ff8e79790e14dc1ed01e4527a1eaae784e5fc07f21c6f58ea",
+  "source_policy_sealed": false,
+  "version": "som.native-active-policy-design.fixture.v1",
+  "whole_acceptance_complete": false
+}

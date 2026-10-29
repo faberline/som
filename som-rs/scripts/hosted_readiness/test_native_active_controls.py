@@ -223,6 +223,7 @@ class ActiveProtocolTests(unittest.TestCase):
     def test_preloaded_target_namespace_is_refused_without_replacement(self):
         f = Fixture(self)
         foreign = ModuleType(f.rows['target']['module'])
+        f.caller()  # Keep the owned caller in patch.dict's saved module dictionary.
         with mock.patch.dict(sys.modules, {foreign.__name__: foreign}):
             with self.assertRaisesRegex(ValueError, 'preloaded'):
                 f.run()
@@ -265,10 +266,14 @@ class ActiveProtocolTests(unittest.TestCase):
     def test_actual_source_function_defaults_change_is_refused_before_use(self):
         f = Fixture(self, 'def run(controls, reader=None):\n    return controls.load_module("target")\n')
         caller = f.caller()
-        caller.run.__defaults__ = (object(),)
-        with self.assertRaisesRegex(ValueError, 'invocation bindings changed'):
-            f.run()
-        caller.run.__defaults__ = (None,)
+        original_defaults = caller.run.__defaults__
+        try:
+            caller.run.__defaults__ = (object(),)
+            with self.assertRaisesRegex(ValueError, 'invocation bindings changed'):
+                f.run()
+        finally:
+            caller.run.__defaults__ = original_defaults
+        self.assertIs(caller.run.__defaults__, original_defaults)
         self.assertNotIn('target', f.domain.records)
 
     def test_body_error_survives_foreign_namespace_cleanup_refusal(self):
@@ -287,6 +292,7 @@ class ActiveProtocolTests(unittest.TestCase):
     def test_group_load_uses_private_aliases_and_keeps_collector_module_unchanged(self):
         f = Fixture(self, 'def run(controls):\n    return controls.load_private_group("m6.api.payload")\n')
         collector = ModuleType('retained_evidence')
+        f.caller()  # Keep the owned caller in patch.dict's saved module dictionary.
         with mock.patch.dict(sys.modules, {'retained_evidence': collector}):
             with f.run() as group:
                 self.assertEqual(set(group), {'retained', 'api', 'live', 'node'})
@@ -300,6 +306,7 @@ class ActiveProtocolTests(unittest.TestCase):
         f = Fixture(self, 'def run(controls):\n    return controls.load_private_group("m6.api.payload")\n')
         name = f.core.PRIVATE['node'][2]
         collision = ModuleType(name)
+        f.caller()  # Keep the owned caller in patch.dict's saved module dictionary.
         with mock.patch.dict(sys.modules, {name: collision}):
             with self.assertRaisesRegex(ValueError, 'namespace collision'):
                 f.run()
@@ -367,8 +374,20 @@ class ActiveProtocolTests(unittest.TestCase):
     def test_pending_complete_policy_is_an_explicit_refusal(self):
         f = Fixture(self)
         schema = (REPO / BASE / 'native_active_roles.schema.json').read_bytes()
-        pending = json.loads((REPO / f.core.POLICY).read_bytes())
-        pending['complete'], pending['pending'] = False, ['explicit protocol pending source map']
+        design_raw = (HERE / 'native_active_policy_design_fixture.json').read_bytes()
+        self.assertEqual(hashlib.sha256(design_raw).hexdigest(),
+                         '35bbd6403930ad790d6a6bccac176138f1fd541f5b07a103479c8546f146a875')
+        design_fixture = json.loads(design_raw)
+        pending = {**f.policy, 'version': 'som.native-active-role-policy.v1',
+                   'complete': False, 'pending': ['explicit protocol pending source map'],
+                   'product_acceptance_passed': False, 'compiler_acceptance_passed': False,
+                   'whole_acceptance_complete': False, 'design': design_fixture['design'],
+                   'groups': {'m6.api.payload': {
+                       **f.policy['groups']['m6.api.payload'],
+                       'members': {name: role for name, (role, _, _) in f.core.PRIVATE.items()},
+                       'producer_role': 'm6.api.producer'}}}
+        schema_value = json.loads(schema)
+        f.core.validate(pending, schema_value, schema_value)
         examples = json.dumps(pending).encode()
         original = f.transfer.read
         def read(path):

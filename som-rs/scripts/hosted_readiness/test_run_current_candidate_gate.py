@@ -236,17 +236,42 @@ class GateIntegrity(unittest.TestCase):
             context.write_bytes(p.canonical({'repo':str(repo),'helper_revision':revision,'candidate_revision':revision,
                 'qa_mode':'native-qa-v1','native_source_authority':admission,'build_provenance_root':str(provenance),
                 **{name:str(value) for name,value in roots.items()},**resources,'gate_adapters':{}}))
+            # Keep real Git/source checks. Only the active loader is a
+            # finite protocol double for this missing-owner refusal fixture.
+            bound = p.Sources(repo, revision)
+            authority_raw = bound.read(p.AUTHORITY)
+            self.assertEqual(authority_raw, (repo / p.AUTHORITY).read_bytes())
+            authority = ModuleType('_actual_missing_owner_authority_protocol_fixture')
+            authority.__file__ = str(repo / p.AUTHORITY)
+            authority.__som_raw_sha256__ = p.sha(authority_raw)
+            exec(compile(authority_raw, authority.__file__, 'exec', dont_inherit=True), authority.__dict__)
+            committed_verify = authority.verify
+            authority.verify = mock.Mock(wraps=committed_verify)
+            lease = SimpleNamespace(verify_installed=mock.Mock(), close=mock.Mock(),
+                load_module=mock.Mock(return_value=authority))
+            controls = SimpleNamespace(borrow=mock.Mock(return_value=lease))
             real_popen=subprocess.Popen
             def git_only(argv,*args,**kwargs):
                 if argv[0]!='/usr/bin/git':raise AssertionError('no native child')
                 return real_popen(argv,*args,**kwargs)
             with mock.patch.dict(os.environ,{'RUNNER_TEMP':str(root)}), \
+                 mock.patch.object(p, '_native_controls', return_value=controls) as acquire, \
+                 mock.patch.object(p, 'raw_module', side_effect=AssertionError('legacy raw loader must not execute')), \
                  mock.patch.object(p.subprocess,'Popen',side_effect=git_only):
                 with self.assertRaisesRegex(ValueError,'actual explicit owner'):
                     p.main(['--gate','m6-react003','--repo',str(repo),'--helper-revision',revision,
                         '--candidate-revision',revision,'--product-context',str(context),
                         '--assembly-root',str(roots['assembly_root']),'--carrier-root',str(roots['carrier_root']),
                         '--out',str(root/'output'),'--qa-mode','native-qa-v1','--port','18978'])
+            acquire.assert_called_once()
+            actual_sources = acquire.call_args.args[0]
+            self.assertEqual(actual_sources.root, repo)
+            self.assertEqual(actual_sources.revision, revision)
+            controls.borrow.assert_called_once_with()
+            lease.load_module.assert_called_once_with('bootstrap.authority')
+            authority.verify.assert_called_once_with(actual_sources.read, 'native-qa-v1', actual_sources.paths(), revision, revision)
+            self.assertEqual(lease.verify_installed.call_count, 2)
+            lease.close.assert_called_once_with()
             self.assertFalse(marker.exists())
 
     def test_manager_stops_and_waits_both_owned_groups_without_rechecking_a_stopped_peer(self):

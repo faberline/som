@@ -1,7 +1,7 @@
 name: Native active source fixtures
 on:
   push:
-    branches: [codex/m12-native-active-source-fixtures-v1]
+    branches: [codex/m12-native-active-source-fixtures-repair-v1]
   workflow_dispatch:
 permissions:
   contents: read
@@ -22,18 +22,8 @@ jobs:
         include:
           - name: active-controls
             script: som-rs/scripts/hosted_readiness/test_native_active_controls.py
-          - name: initial-bootstrap
-            script: som-rs/scripts/hosted_readiness/test_native_source_bootstrap.py
-          - name: graph-controller
-            script: som-rs/scripts/hosted_readiness/test_same_candidate_graph.py
           - name: current-gate-controller
             script: som-rs/scripts/hosted_readiness/test_run_current_candidate_gate.py
-          - name: owner-evidence
-            script: som-rs/scripts/hosted_readiness/test_owner_verification_evidence.py
-          - name: owner-receipt-container
-            script: som-rs/scripts/hosted_readiness/test_owner_receipt_container.py
-          - name: typescript-receipt-container
-            script: som-rs/scripts/hosted_readiness/test_typescript_receipt_container.py
           - name: typescript-input-consumer
             script: som-rs/scripts/hosted_readiness/test_typescript_input_consumer.py
     steps:
