@@ -100,6 +100,18 @@ class PreparePublicFixtures(unittest.TestCase):
             with self.assertRaises(p.Refusal):
                 p.extract_node(blob, row, Path(tmp))
 
+    def test_type_package_named_root_and_mixed_roots(self):
+        metadata = json.dumps({'name': '@types/aria-query', 'version': '1.0.0'}).encode()
+        row = {'name': '@types/aria-query', 'version': '1.0.0'}
+        good = tar_data([('aria-query/package.json', metadata, None), ('aria-query/LICENSE', b'L', None)])
+        self.assertEqual(p.inspect_package(good, row)['metadata_sha256'], p.sha(metadata))
+        mixed = tar_data([('aria-query/package.json', metadata, None), ('package/other', b'x', None)])
+        with self.assertRaises(p.Refusal):
+            p.inspect_package(mixed, row)
+        wrong = tar_data([('other/package.json', metadata, None)])
+        with self.assertRaises(p.Refusal):
+            p.inspect_package(wrong, row)
+
 
 if __name__ == '__main__':
     unittest.main()

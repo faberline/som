@@ -126,20 +126,27 @@ def inspect_package(blob, row):
     except (tarfile.TarError, OSError) as exc:
         raise Refusal('npm tarball invalid') from exc
     need(0 < len(members) <= 20000, 'npm member count differs')
-    names, license_files, metadata, expanded = set(), {}, None, 0
+    names, license_files, metadata, expanded, package_root = set(), {}, None, 0, None
+    allowed_roots = {'package'}
+    if row['name'].startswith('@types/'):
+        types_root = row['name'].removeprefix('@types/')
+        need(types_root and '/' not in types_root and relative(types_root) == types_root, 'type package root invalid')
+        allowed_roots.add(types_root)
     for member in members:
         name = relative(member.name)
-        need(name == 'package' or name.startswith('package/'),
+        root_name = name.split('/', 1)[0]
+        need(root_name in allowed_roots and (package_root is None or root_name == package_root),
              'npm member outside package: ' + json.dumps(name[:256], ensure_ascii=True))
+        package_root = root_name
         need(name not in names and 0 <= member.size <= 32 * 1024 * 1024, 'npm member repeated or too large')
         names.add(name)
         expanded += member.size
         need(expanded <= MAX_TOTAL, 'npm expanded bytes exceed bound')
         need(member.isfile() or member.isdir(), 'npm special or linked entry refused')
-        if member.isfile() and (name == 'package/package.json' or re.search(r'(^|/)(?:licen[cs]e|copying)(?:\.[^/]*)?$', name, re.I)):
+        if member.isfile() and (name == package_root + '/package.json' or re.search(r'(^|/)(?:licen[cs]e|copying)(?:\.[^/]*)?$', name, re.I)):
             data = archive.extractfile(member).read(member.size + 1)
             need(len(data) == member.size, 'npm member truncated')
-            if name == 'package/package.json':
+            if name == package_root + '/package.json':
                 metadata = data
             else:
                 license_files[name] = sha(data)
