@@ -837,6 +837,112 @@ def source_bound_auditor(source_reader, repo):
                 del sys.modules[name]
 
 
+def join_recorded_named_rows(original, oracle_root, table, calls, *, expected_counts):
+    """Join already source-verified oracle rows to the freshly audited owner raw bytes."""
+    from collections import Counter, defaultdict
+    from urllib.parse import urlsplit
+
+    original, oracle_root = physical(original), physical(oracle_root)
+    identity_keys = {'slot_id', 'cohort', 'group', 'case', 'phase', 'form', 'variant', 'method', 'endpoint'}
+    roles = set(expected_counts)
+    require(type(table) is list and type(calls) is list, 'oracle rows missing')
+    selected = [entry for entry in table if type(entry) is dict and type(entry.get('identity')) is dict
+                and entry['identity'].get('cohort') in roles]
+    require(Counter(entry['identity']['cohort'] for entry in selected) == Counter(expected_counts),
+            'oracle named role inventory differs')
+    reports = {}
+    for name in ('python', 'rust', 'ts'):
+        reports[name] = strict_json(read(original / (name + '-baseline/report.json')))
+    py = {(r['source'], r['id'], r['variant']): r for r in reports['python']['rows']}
+    ru = {(r['phase'], r['id']): r for r in reports['rust']['rows'] if r['check'] == 'compile_equal'}
+    ts = {(r['group'], r['id']): r for r in reports['ts']['cases']}
+    require(len(py) == len(reports['python']['rows']) and
+            len(ru) == sum(r['check'] == 'compile_equal' for r in reports['rust']['rows']) and
+            len(ts) == len(reports['ts']['cases']), 'repeated owner named row')
+    used, named, slots, slot_keys = set(), Counter(), {}, {}
+    for entry in selected:
+        i = entry['identity']; cohort = i['cohort']; action = i['endpoint'].removeprefix('/v1/')
+        require(set(i) == identity_keys and i['method'] == 'POST' and action in ('compile','assemble')
+                and type(i['slot_id']) is str and i['slot_id'] not in slots, 'oracle slot identity differs')
+        if cohort == 'react_python':
+            name = (cohort, i['group'], i['case'], i['variant'], action)
+            row = py[(i['group'], i['case'], i['variant'])]
+            req, resp, status = (row['baseline_' + action + '_request_sha256'],
+                                 row['baseline_' + action + '_response_sha256'], row['baseline_' + action + '_status'])
+        elif cohort == 'rust006':
+            require(action == 'compile', 'unexpected Rust baseline role')
+            name = (cohort, i['phase'], i['case'], action)
+            row = ru[(i['phase'], i['case'])]
+            req, resp, status = row['baseline_request_sha256'], row['baseline_response_sha256'], row['baseline_status']
+        else:
+            name = (cohort, i['group'], i['case'], i['form'], action)
+            case = ts[(i['group'], i['case'])]
+            matches = [r for r in case['requests'] if r['form'] == i['form']]
+            require(len(matches) == 1, 'TypeScript named form differs')
+            row = matches[0]
+            req = row['body_sha256'] if action == 'compile' else row['baseline_assemble_request_sha256']
+            prefix = 'baseline' if action == 'compile' else 'baseline_assemble'
+            resp, status = row[prefix + '_sha256'], row[prefix + '_status']
+        require(name not in used and (req, status, resp) == (entry['request_sha256'], entry['status'], entry['response_sha256']),
+                'owner named row differs from oracle slot')
+        used.add(name); slots[i['slot_id']] = i
+        slot_keys[i['slot_id']] = (i['endpoint'], req, status, resp)
+        named[slot_keys[i['slot_id']]] += 1
+    require(len(used) == len(selected), 'oracle slot scope incomplete')
+    def raw(base, relative):
+        require(type(relative) is str and relative and not Path(relative).is_absolute()
+                and '..' not in Path(relative).parts, 'raw file path differs')
+        return read(base / relative)
+    owner = Counter()
+    for role in ('python', 'rust'):
+        base = original / (role + '-baseline-raw')
+        manifest = strict_json(read(base / 'manifest.json'))
+        for call in manifest['calls']:
+            url = urlsplit(call['url'])
+            if url.port != 18979:
+                continue
+            require(url.scheme == 'http' and url.hostname == '127.0.0.1' and not url.query and not url.fragment
+                    and call['method'] == 'POST' and call['complete'] is True and call['error'] is None,
+                    'owner baseline call differs')
+            request, response = raw(base,call['request_file']), raw(base,call['response_file'])
+            require(sha(request) == call['request_sha256'] and sha(response) == call['response_sha256'],
+                    'owner baseline raw bytes differ')
+            owner[(url.path, sha(request), call['status'], sha(response), request, response)] += 1
+    for case in reports['ts']['cases']:
+        for row in case['requests']:
+            for action in ('compile','assemble'):
+                prefix = 'baseline' if action == 'compile' else 'baseline_assemble'
+                request_name = row['request_file'] if action == 'compile' else row['baseline_assemble_request_file']
+                request = raw(original/'ts-baseline', request_name)
+                response = raw(original/'ts-baseline', row[prefix + '_response_file'])
+                owner[('/v1/'+action, sha(request), row[prefix+'_status'], sha(response), request, response)] += 1
+    observed = Counter()
+    for call in calls:
+        if call['method'] == 'GET' and call['endpoint'] == '/healthz':
+            continue
+        require(call['method'] == 'POST' and call['complete'] is True and call['oracle_miss'] is False
+                and call['request_body_complete'] is True and call['error'] is None, 'oracle raw call incomplete')
+        request, response = raw(oracle_root,call['request_file']), raw(oracle_root,call['response_file'])
+        require(sha(request) == call['request_sha256'] and sha(response) == call['response_sha256'],
+                'oracle raw bytes differ')
+        key = (call['endpoint'], sha(request), call['status'], sha(response), request, response)
+        candidates = call['matching_named_slots']
+        require(type(candidates) is list and any(type(i) is dict and slots.get(i.get('slot_id')) == i and slot_keys.get(i.get('slot_id')) == key[:4] for i in candidates),
+                'oracle call has no matching owner slot')
+        observed[key] += 1
+    require(owner == observed, 'owner and oracle raw calls differ')
+    require(Counter({key: sum(count for full, count in owner.items() if full[:4] == key) for key in named}) == named,
+            'owner raw calls do not cover all named slots')
+    require(sum(owner.values()) == sum(named.values()), 'unexpected owner baseline call')
+    return {'complete': True, 'named_slots': len(selected), 'raw_calls': sum(owner.values()),
+            'named_role_counts': dict(expected_counts), 'duplicate_wire_caller_identity': 'indistinguishable'}
+
+
+def verify_recorded_named_scope(root, source_reader, *, repo, original, shared):
+    """Reject until the source-bound oracle and its named joins are available."""
+    raise ValueError('recorded oracle named raw scope is not yet verified')
+
+
 def verify_react_raw_domain(root, source_reader, helper_revision, candidate_revision, gate, *, repo, proof_roots, shared):
     """Rederive the React audit from retained bytes and separately bound inputs."""
     repo = physical(repo)
@@ -986,10 +1092,14 @@ def verify_react_raw_domain(root, source_reader, helper_revision, candidate_revi
     require(all('@owned-candidate/' + n in audited for n in ('som', 'build.json', 'runtime.json'))
             and shared.get('owned_waits_complete') is True and shared.get('owned_cleanup_complete') is True,
             'React candidate or shared post-close evidence missing')
+    named_scope = verify_recorded_named_scope(root, source_reader, repo=repo, original=original, shared=shared)
+    require(type(named_scope) is dict and named_scope.get('complete') is True,
+            'recorded oracle named raw scope differs')
     require(read(root / 'audit.json') == audit_raw and snapshot == scan_capture_source(original),
             'React audit or collector source changed during verification')
     return {'version': 'som.m6-react-domain-proof.v1', 'complete': True, 'all_required_passed': True,
             'raw_logs_complete': True, 'product_acceptance_passed': False,
+            'recorded_named_scope': named_scope,
             'audit_sha256': sha(audit_raw), 'audited_file_count': len(audited),
             'candidate_pid': current_runtime['pid'], 'candidate_binary_sha256': sha(read(candidate / 'som')),
             'approved_input_index_sha256': INPUT_INDEX_SHA,
