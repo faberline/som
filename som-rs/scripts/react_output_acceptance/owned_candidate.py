@@ -26,11 +26,20 @@ class CandidateOwner:
         need(port not in (8765,18765) and 1<=port<=65535)
     def run_preparer(self, script, arguments, env, *, timeout=14400):
         original=subprocess.Popen;before_argv=sys.argv;before_env=dict(os.environ);old_handler=signal.getsignal(signal.SIGALRM)
+        original_poll=None
         def spawn(argv,*args,**kwargs):
+            nonlocal original_poll
             if isinstance(argv,(list,tuple)) and list(map(os.fspath,argv))==self.argv:
                 need(self.process is None and kwargs.get('start_new_session') is True and
                      Path(kwargs.get('cwd'))==self.candidate)
-                proc=original(argv,*args,**kwargs);self.process=proc
+                proc=original(argv,*args,**kwargs);self.process=proc;original_poll=proc.poll
+                def non_reaping_poll():
+                    result=subprocess.run(['/bin/ps','-p',str(proc.pid),'-o','pid=,ppid=,pgid=,stat='],
+                                          capture_output=True,check=False,timeout=10)
+                    fields=result.stdout.decode().split()
+                    if result.returncode!=0 or len(fields)!=4 or fields[:3]!=[str(proc.pid),str(os.getpid()),str(proc.pid)]:return -1
+                    return -1 if fields[3].startswith('Z') else None
+                proc.poll=non_reaping_poll
                 self.events.append({'kind':'candidate-start','pid':proc.pid,'parent_pid':os.getpid(),'argv':self.argv,'cwd':str(self.candidate)})
                 return proc
             return original(argv,*args,**kwargs)
@@ -47,8 +56,9 @@ class CandidateOwner:
         finally:
             signal.setitimer(signal.ITIMER_REAL,0);signal.signal(signal.SIGALRM,old_handler)
             sys.argv=before_argv;os.environ.clear();os.environ.update(before_env)
+            if self.process is not None and original_poll is not None:self.process.poll=original_poll
         self.events.append({'kind':'preparer-exit','exit_code':status})
-        if status==0:need(self.process is not None and self.process.poll() is None)
+        if status==0:need(self.process is not None and self.process.returncode is None)
         return status
     def wait_after_signal(self, timeout=10, grace=0.25):
         proc=self.process
@@ -62,16 +72,33 @@ class CandidateOwner:
         fields=result.stdout.decode().strip().split(None,4)
         need(result.returncode==0 and len(fields)==5 and fields[0]==str(proc.pid)
              and fields[1]==str(os.getpid()) and fields[2]==str(proc.pid)
-             and (fields[3].startswith('Z') or fields[4]==' '.join(self.argv))
-             and os.getpgid(proc.pid)==proc.pid)
-        with (self.out/'candidate-signal-identity.stdout').open('xb') as f:f.write(result.stdout)
-        with (self.out/'candidate-signal-identity.stderr').open('xb') as f:f.write(result.stderr)
+             and (fields[3].startswith('Z') or fields[4]==' '.join(self.argv)))
+        # Darwin getpgid returns ESRCH for zombies. If the leader exits
+        # between ps and getpgid, re-read identity without reaping it.
+        if not fields[3].startswith('Z'):
+            try:
+                need(os.getpgid(proc.pid)==proc.pid)
+            except ProcessLookupError:
+                result=subprocess.run(identity_argv,capture_output=True,check=False,timeout=10)
+                fields=result.stdout.decode().strip().split(None,4)
+                need(proc.returncode is None and result.returncode==0 and len(fields)==5 and
+                     fields[:3]==[str(proc.pid),str(os.getpid()),str(proc.pid)] and fields[3].startswith('Z'))
+        evidence_ok=True
+        try:
+            with (self.out/'candidate-signal-identity.stdout').open('xb') as f:f.write(result.stdout)
+            with (self.out/'candidate-signal-identity.stderr').open('xb') as f:f.write(result.stderr)
+        except OSError as exc:
+            evidence_ok=False
+            self.events.append({'kind':'candidate-evidence-error','error_type':type(exc).__name__})
         self.events.append({'kind':'candidate-signal-identity','pid':proc.pid,'parent_pid':os.getpid(),
                             'pgid':proc.pid,'state':fields[3],'argv':identity_argv,'exit_code':result.returncode,
                             'stdout_sha256':hashlib.sha256(result.stdout).hexdigest(),
                             'stderr_sha256':hashlib.sha256(result.stderr).hexdigest()})
-        os.killpg(proc.pid,signal.SIGTERM)
-        self.events.append({'kind':'candidate-signal','pid':proc.pid,'signal':'TERM'})
+        try:
+            os.killpg(proc.pid,signal.SIGTERM)
+            self.events.append({'kind':'candidate-signal','pid':proc.pid,'signal':'TERM'})
+        except ProcessLookupError:
+            self.events.append({'kind':'candidate-signal','pid':proc.pid,'signal':'TERM','group':'absent'})
         time.sleep(grace)
         try:
             os.killpg(proc.pid,signal.SIGKILL)
@@ -81,6 +108,7 @@ class CandidateOwner:
         try:
             code=proc.wait(timeout=timeout)
             self.events.append({'kind':'candidate-wait','pid':proc.pid,'state':'completed','exit_code':code})
+            need(evidence_ok)
             return code
         except subprocess.TimeoutExpired:
             self.events.append({'kind':'candidate-wait','pid':proc.pid,'state':'timeout','exit_code':None})

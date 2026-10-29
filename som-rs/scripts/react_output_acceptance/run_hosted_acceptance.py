@@ -226,8 +226,8 @@ def stop_owned_candidate(out, env, owner):
         listener_code=observe('owner-candidate-listener-after',['/usr/sbin/lsof','-nP',f'-iTCP:{CANDIDATE_PORT}','-sTCP:LISTEN','-t'])
         need(table_code==0 and listener_code==1 and not (out/'owner-candidate-listener-after.stdout').read_bytes())
         record['stopped']=True
-    except (OSError,ValueError,KeyError,TypeError,AttributeError,subprocess.SubprocessError):
-        pass
+    except (OSError,ValueError,KeyError,TypeError,AttributeError,subprocess.SubprocessError) as exc:
+        record['cleanup_error_type']=type(exc).__name__
     try:owner.save()
     except OSError:record['stopped']=False
     return record

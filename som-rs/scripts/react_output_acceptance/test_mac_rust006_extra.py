@@ -375,6 +375,26 @@ class UnorderedParityWireTests(unittest.TestCase):
 
 
 class OwnedCandidateTests(unittest.TestCase):
+    def test_identity_live_to_zombie_race_rechecks_before_signal(self):
+        import subprocess
+        from unittest import mock
+        import owned_candidate
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();candidate=root/'candidate';candidate.mkdir()
+            owner=owned_candidate.CandidateOwner(root,candidate,18919)
+            proc=mock.Mock();proc.pid=7123;proc.returncode=None;proc.wait.return_value=0;owner.process=proc
+            live=('7123 '+str(os.getpid())+' 7123 S '+' '.join(owner.argv)+'\n').encode()
+            zombie=('7123 '+str(os.getpid())+' 7123 Z <defunct>\n').encode()
+            replies=[subprocess.CompletedProcess([],0,live,b''),subprocess.CompletedProcess([],0,zombie,b'')]
+            with mock.patch.object(owned_candidate.os,'getpgid',side_effect=ProcessLookupError), \
+                 mock.patch.object(owned_candidate.subprocess,'run',side_effect=replies) as ps, \
+                 mock.patch.object(owned_candidate.os,'killpg') as kill:
+                self.assertEqual(owner.wait_after_signal(timeout=1,grace=0),0)
+            self.assertEqual(ps.call_count,2);self.assertEqual(kill.call_count,2)
+            identity=next(e for e in owner.events if e['kind']=='candidate-signal-identity')
+            self.assertEqual(identity['state'],'Z')
+            self.assertIn(b'<defunct>',(root/'candidate-signal-identity.stdout').read_bytes())
+
     def test_timeout_kills_owned_group_but_never_counts_as_success(self):
         import subprocess
         from unittest import mock
@@ -454,6 +474,7 @@ class OwnedCandidateTests(unittest.TestCase):
                 diag=subprocess.run(['/bin/ps','-ww','-p',str(owner.process.pid),'-o','pid=,ppid=,pgid=,stat=,command='],capture_output=True,text=True)
                 print('FAKE_IDENTITY',repr(diag.stdout),repr(diag.stderr),diag.returncode,'sigchld',repr(__import__('signal').getsignal(__import__('signal').SIGCHLD)),flush=True)
                 cleanup=hosted.stop_owned_candidate(root,env,owner)
+                print('FAKE_CLEANUP_METADATA',json.dumps(cleanup,sort_keys=True),flush=True)
                 self.assertTrue(cleanup['ownership_verified']);self.assertTrue(cleanup['direct_wait']['completed'])
                 self.assertTrue(cleanup['stopped'])
                 evidence=audit_candidate_owner.audit(root,candidate)
@@ -478,11 +499,11 @@ int main(void){pid_t p=fork();if(p<0)return 2;if(p==0){signal(SIGTERM,SIG_IGN);F
                 root=Path(temp).resolve();candidate=root/'candidate';candidate.mkdir();(candidate/'assets').mkdir()
                 source=root/'fixture.c';source.write_text(csrc);binary=candidate/'som'
                 subprocess.run(['cc',str(source),'-o',str(binary)],check=True,timeout=30)
-                preparer=root/'preparer.py';preparer.write_text('import subprocess,sys\nfrom pathlib import Path\nc=Path(sys.argv[1])\nsubprocess.Popen([str(c/"som"),"serve","--assets",str(c/"assets"),"--port","18919"],cwd=c,start_new_session=True)\n')
+                preparer=root/'preparer.py';preparer.write_text('import subprocess,sys,time\nfrom pathlib import Path\nc=Path(sys.argv[1])\np=subprocess.Popen([str(c/"som"),"serve","--assets",str(c/"assets"),"--port","18919"],cwd=c,start_new_session=True)\nif sys.argv[2]=="orphan":\n time.sleep(2.5)\n if p.poll() is None or p.returncode is not None:raise SystemExit(9)\n raise SystemExit(3)\n')
                 owner=owned_candidate.CandidateOwner(root,candidate,18919);env=dict(os.environ,FIXTURE_PID=str(root/'child.pid'))
                 if mode=='orphan':env['FIXTURE_ORPHAN']='1'
                 try:
-                    self.assertEqual(owner.run_preparer(preparer,[str(candidate)],env,timeout=10),0)
+                    self.assertEqual(owner.run_preparer(preparer,[str(candidate),mode],env,timeout=10),3 if mode=='orphan' else 0)
                     for _ in range(100):
                         if (root/'child.pid').is_file():break
                         time.sleep(.05)
@@ -506,21 +527,54 @@ int main(void){pid_t p=fork();if(p<0)return 2;if(p==0){signal(SIGTERM,SIG_IGN);F
                         time.sleep(.05)
                     else:self.fail('TERM-ignoring descendant is still running')
                 finally:
-                    # The direct child is not polled before group cleanup.
+                    failure_in_flight=sys.exc_info()[0] is not None
+                    # Test-only recovery: verify the still-unreaped direct child
+                    # through ps before ever signalling its group, including zombies.
                     if owner.process is not None and owner.process.returncode is None:
+                        pid=owner.process.pid
                         try:
-                            if os.getpgid(owner.process.pid)==owner.process.pid:os.killpg(owner.process.pid,signal.SIGKILL)
-                        except ProcessLookupError:pass
-                        owner.process.wait(timeout=10)
+                            result=subprocess.run(['/bin/ps','-ww','-p',str(pid),'-o','pid=,ppid=,pgid=,stat=,command='],capture_output=True,text=True,timeout=10)
+                            fields=result.stdout.strip().split(None,4)
+                            safe=(result.returncode==0 and len(fields)==5 and fields[:3]==[str(pid),str(os.getpid()),str(pid)]
+                                  and signal.getsignal(signal.SIGCHLD)==signal.SIG_DFL
+                                  and (fields[3].startswith('Z') or fields[4]==' '.join(owner.argv)))
+                            if not safe:raise AssertionError('fixture cleanup identity is unverified')
+                            try:os.killpg(pid,signal.SIGKILL)
+                            except ProcessLookupError:pass
+                            owner.process.wait(timeout=10)
+                        except (OSError,subprocess.SubprocessError,AssertionError) as cleanup_error:
+                            print('fixture cleanup unverified: '+type(cleanup_error).__name__,file=sys.stderr)
+                            if not failure_in_flight:raise
+
+    def test_identity_evidence_write_failure_still_cleans_owned_child(self):
+        import subprocess
+        import owned_candidate
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();candidate=root/'candidate';candidate.mkdir();(candidate/'assets').mkdir()
+            source=root/'fixture.c';source.write_text('#include <unistd.h>\nint main(void){for(;;)pause();}\n')
+            binary=candidate/'som';subprocess.run(['cc',str(source),'-o',str(binary)],check=True,timeout=30)
+            preparer=root/'preparer.py';preparer.write_text('import subprocess,sys\nfrom pathlib import Path\nc=Path(sys.argv[1])\nsubprocess.Popen([str(c/"som"),"serve","--assets",str(c/"assets"),"--port","18919"],cwd=c,start_new_session=True)\n')
+            owner=owned_candidate.CandidateOwner(root,candidate,18919)
+            try:
+                self.assertEqual(owner.run_preparer(preparer,[str(candidate)],dict(os.environ),timeout=10),0)
+                (root/'candidate-signal-identity.stdout').write_bytes(b'existing')
+                with self.assertRaises(owned_candidate.OwnershipError):owner.wait_after_signal(timeout=10,grace=.05)
+                self.assertIsInstance(owner.process.returncode,int)
+                self.assertEqual((root/'candidate-signal-identity.stdout').read_bytes(),b'existing')
+                self.assertTrue(any(e['kind']=='candidate-evidence-error' for e in owner.events))
+                self.assertTrue(any(e['kind']=='candidate-wait' and e['state']=='completed' for e in owner.events))
+            finally:
+                if owner.process is not None and owner.process.returncode is None:
+                    owner.process.terminate();owner.process.wait(timeout=10)
 
     def test_preparer_child_remains_owned_and_has_real_wait(self):
         import subprocess
         import owned_candidate
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp).resolve();candidate=root/'candidate';candidate.mkdir();(candidate/'assets').mkdir()
-            binary=candidate/'som';binary.write_text('#!'+sys.executable+'\nimport time\ntime.sleep(120)\n');binary.chmod(0o755)
+            binary=candidate/'som';source=root/'fixture.c';source.write_text('#include <unistd.h>\nint main(void){for(;;)pause();}\n');subprocess.run(['cc',str(source),'-o',str(binary)],check=True,timeout=30)
             preparer=root/'preparer.py'
-            preparer.write_text('import subprocess,sys\nfrom pathlib import Path\nc=Path(sys.argv[1])\nsubprocess.Popen([str(c/"som"),"serve","--assets",str(c/"assets"),"--port","18919"],cwd=c,start_new_session=True)\nprint("prepared")\n')
+            preparer.write_text('import subprocess,sys\nfrom pathlib import Path\nc=Path(sys.argv[1])\np=subprocess.Popen([str(c/"som"),"serve","--assets",str(c/"assets"),"--port","18919"],cwd=c,start_new_session=True)\nif p.poll() is not None:raise SystemExit(4)\nprint("prepared")\n')
             owner=owned_candidate.CandidateOwner(root,candidate,18919)
             try:
                 self.assertEqual(owner.run_preparer(preparer,[str(candidate)],dict(os.environ),timeout=10),0)
