@@ -185,6 +185,16 @@ def validate_args(args, ctx, graph):
     return compile_proof
 
 
+def safe_child_environment(ctx, environ):
+    env = ctx.child_environment()
+    for key in ('RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH', 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT'):
+        if key in environ:
+            env[key] = environ[key]
+    env.pop('UV_NO_INSTALLER_METADATA', None)
+    env.pop('SOM_DEPENDENCY_ACTIONS_TOKEN', None)
+    return env
+
+
 def run(args):
     require(os.environ.get('GITHUB_ACTIONS') == 'true' and
             os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted' and
@@ -208,11 +218,7 @@ def run(args):
               'remaining': ['source-bound candidate and baseline owner/cleanup join',
                             'sealed restored-run mapping and independent verifier',
                             'collector child source routing and reviewed React003 authority']}
-    env = ctx.child_environment()
-    for key in ('RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH', 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT'):
-        if key in os.environ:
-            env[key] = os.environ[key]
-    env.pop('UV_NO_INSTALLER_METADATA', None)
+    env = safe_child_environment(ctx, os.environ)
     api_profile = json.loads(read(args.api_profile, 1024 * 1024))
     venv = physical(Path(api_profile['venv']))
     python = venv / 'bin/python'

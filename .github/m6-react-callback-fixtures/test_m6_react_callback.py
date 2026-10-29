@@ -74,6 +74,17 @@ class CallbackFixture(unittest.TestCase):
             subject.verify_result(self.args.out, lambda _: b'', self.rev, self.rev,
                                   repo=self.repo, proof_roots={})
 
+    def test_child_environment_excludes_transport_token_and_qualification_setting(self):
+        ctx = SimpleNamespace(child_environment=lambda: {'PATH': '/bin',
+            'SOM_DEPENDENCY_ACTIONS_TOKEN': 'must-not-propagate', 'UV_NO_INSTALLER_METADATA': '1'})
+        actual = subject.safe_child_environment(ctx, {'RUNNER_ENVIRONMENT': 'github-hosted',
+                                                        'GITHUB_SHA': self.rev, 'GH_TOKEN': 'do-not-copy'})
+        self.assertEqual(actual['RUNNER_ENVIRONMENT'], 'github-hosted')
+        self.assertEqual(actual['GITHUB_SHA'], self.rev)
+        self.assertNotIn('SOM_DEPENDENCY_ACTIONS_TOKEN', actual)
+        self.assertNotIn('UV_NO_INSTALLER_METADATA', actual)
+        self.assertNotIn('GH_TOKEN', actual)
+
     def test_timed_out_command_keeps_partial_raw_logs_without_success(self):
         work = Path(self.temp.name) / 'work'; work.mkdir()
         out = Path(self.temp.name) / 'saved'; out.mkdir()
