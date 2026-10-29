@@ -608,6 +608,23 @@ class ParityIndependentChecks(unittest.TestCase):
             owner={'id':1,'case':'live-case','target':'rust','base':base,'pid':proc.pid,'start_event':start,'stop_event':stop}
             self.assertEqual(audit.audit_product_owners(http,{'owners':[owner]},{('live-case','rust'):[{'owner':1,'base':base}]}),1)
 
+    def test_parity_sources_match_selected_git_revision(self):
+        import audit_mac_parity as audit
+        import subprocess
+        with tempfile.TemporaryDirectory() as temp:
+            repo=Path(temp).resolve()
+            subprocess.run(['git','init','-q',str(repo)],check=True)
+            (repo/'source.py').write_bytes(b'original\n')
+            subprocess.run(['git','-C',str(repo),'add','source.py'],check=True)
+            subprocess.run(['git','-C',str(repo),'-c','user.name=Fixture','-c','user.email=fixture@example.invalid',
+                            'commit','-qm','fixture'],check=True)
+            revision=subprocess.check_output(['git','-C',str(repo),'rev-parse','HEAD'],text=True).strip()
+            self.assertEqual(audit.verify_git_sources(repo,revision,['source.py'])['source.py'],
+                             __import__('hashlib').sha256(b'original\n').hexdigest())
+            (repo/'source.py').write_bytes(b'tampered\n')
+            with self.assertRaises(ValueError):audit.verify_git_sources(repo,revision,['source.py'])
+            with self.assertRaises(ValueError):audit.verify_git_sources(repo,'0'*40,['source.py'])
+
     def test_missing_product_capture_refused(self):
         import audit_mac_parity as audit
         from unittest import mock

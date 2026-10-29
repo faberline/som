@@ -9,6 +9,7 @@ import subprocess
 import sys
 import threading
 import importlib
+import hashlib
 import contextlib
 from unittest import mock
 from record_api import Recorder
@@ -16,6 +17,10 @@ from record_api import Recorder
 HERE=Path(__file__).resolve().parent
 REPO=HERE.parents[2]
 CHECKER=REPO/'som-rs/behavior/check_behavior.py'
+PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py')
+
+def source_hashes():
+    return {name:hashlib.sha256((REPO/name).read_bytes()).hexdigest() for name in PARITY_SOURCES}
 
 def need(value,reason):
     if not value:raise ValueError(reason)
@@ -71,6 +76,8 @@ def main():
     need(all(x.is_relative_to(REPO/'.local') and not x.exists() and not x.is_symlink()
              and not any(parent.is_symlink() for parent in x.parents) for x in paths), 'new owned paths required')
     raw,lifecycle,parity,target=paths
+    before_sources=source_hashes()
+    revision=os.environ.get('GITHUB_SHA')
     python=Path(os.path.abspath(args.python))
     need(python==REPO/'som-rs/runtime/acceptance-m3-venv/bin/python' and python.is_file(), 'frozen venv required')
     lifecycle.mkdir(parents=True,mode=0o700)
@@ -134,6 +141,7 @@ def main():
                 observer.errors.append('DirectChildWaitMissing')
             if any(e.get('state')=='unverified' for e in waits):observer.errors.append('WaitUnverified')
         receipt={'version':'som.m6-mac-parity-capture.v1','exit_code':code,'events':observer.events,
+                 'source_revision':revision,'source_before':before_sources,'source_after':source_hashes(),
                  'recording_errors':observer.errors,'product_acceptance_passed':False,
                  'cleanup':'requires-independent-raw-audit'}
         (lifecycle/'receipt.json').write_text(json.dumps(receipt,indent=2,sort_keys=True)+'\n')

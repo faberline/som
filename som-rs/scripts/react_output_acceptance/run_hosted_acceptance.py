@@ -332,6 +332,7 @@ def main(argv: list[str] | None = None) -> int:
                     str(args.python), str(HERE / "audit/audit_mac_parity.py"),
                     "--raw", str(out / "run/rust006-parity-http"), "--parity-out", str(parity.parent),
                     "--product-http", str(out / "run/rust006-parity-lifecycle/product-http"),
+                    "--candidate-revision", args.candidate_revision,
                     "--public-run", str(public), "--legacy-run", str(legacy),
                     "--out", str(out / "run/rust006-parity-audit.json")], env)
             except (OSError, subprocess.SubprocessError):

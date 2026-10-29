@@ -19,9 +19,41 @@ import audit_product_oracle as independent_oracle
 
 REPO=Path(__file__).resolve().parents[4]
 QA='http://127.0.0.1:18919'
+PARITY_SOURCES=('som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py', 'som-rs/scripts/react_output_acceptance/mac_parity_capture.py', 'som-rs/scripts/react_output_acceptance/product_http_recorder.py', 'som-rs/scripts/react_output_acceptance/record_rust006_http.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_parity.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_normalization.py', 'som-rs/scripts/react_output_acceptance/audit/audit_product_oracle.py', 'som-rs/scripts/react_output_acceptance/audit/audit_mac_rust006_extra.py', 'som-rs/behavior/check_behavior.py', 'som-rs/behavior/suite.py', 'som-rs/behavior/hosts.py', 'som-rs/behavior/faults.py', 'som-rs/som-targets/qa/check_targets.py', 'som-rs/som-targets/qa/check_rust_products.py')
 
 def need(ok,why):
     if not ok:raise ValueError(why)
+
+def verify_git_sources(repo, revision, names):
+    import subprocess
+    need(re.fullmatch('[0-9a-f]{40}',revision) is not None,'parity revision invalid')
+    actual=subprocess.check_output(['/usr/bin/git','--no-replace-objects','-C',str(repo),'rev-parse','--verify','HEAD^{commit}'],timeout=30).decode().strip()
+    need(actual==revision,'parity source HEAD differs')
+    result={}
+    for name in names:
+        entry=subprocess.check_output(['/usr/bin/git','--no-replace-objects','-C',str(repo),'ls-tree','-z',revision,'--',name],timeout=30)
+        need(entry.startswith((b'100644 blob ',b'100755 blob ')) and entry.endswith(b'\t'+name.encode()+b'\0')
+             and entry.count(b'\0')==1,'parity source Git entry differs')
+        raw=subprocess.check_output(['/usr/bin/git','--no-replace-objects','-C',str(repo),'show',revision+':'+name],timeout=30)
+        need(raw==a.read(repo/name),'parity executed source differs from Git')
+        result[name]=a.sha(raw)
+    return result
+
+def audit_sources(revision,lifecycle,raw,parity_out):
+    import os
+    need(os.environ.get('GITHUB_SHA')==revision and os.environ.get('GITHUB_ACTIONS')=='true'
+         and os.environ.get('RUNNER_ENVIRONMENT')=='github-hosted' and os.environ.get('RUNNER_OS')=='macOS'
+         and os.environ.get('RUNNER_ARCH')=='ARM64','parity runner identity differs')
+    sources=verify_git_sources(REPO,revision,PARITY_SOURCES)
+    receipt=a.json_file(lifecycle/'receipt.json')
+    need(receipt.get('source_revision')==revision and receipt.get('source_before')==sources and receipt.get('source_after')==sources,
+         'parity collector source snapshot differs')
+    manifest=a.json_file(raw/'manifest.json')
+    checker=REPO/'som-rs/behavior/check_behavior.py';python=REPO/'som-rs/runtime/acceptance-m3-venv/bin/python'
+    expected=[str(checker),'parity','--qa',QA,'--out',str(parity_out),
+              '--target-dir',str(parity_out.parent.parent/'rust006-parity-target'),'--python',str(python),'--jobs','4']
+    need(manifest.get('argv')==expected and manifest.get('exit_code')==0, 'parity checker command differs')
+    return {'source_files':len(sources),'revision':revision,'outer_invocation_provenance':'unverified'}
 
 def source_cases(legacy,bound):
     contract=REPO/'som-rs/contracts/rust-output-v1'
@@ -300,9 +332,12 @@ def main():
     p=argparse.ArgumentParser()
     for x in ('raw','parity-out','public-run','legacy-run','out'):p.add_argument('--'+x,type=Path,required=True)
     p.add_argument('--product-http',type=Path,required=True)
+    p.add_argument('--candidate-revision',required=True)
     args=p.parse_args();need(not args.out.exists(),'new report required')
     result={'version':'som.m6-mac-parity-audit.draft.v1','status':'unrun','product_acceptance_passed':False,'rows':[]}
     try:
+        source=audit_sources(args.candidate_revision,args.product_http.parent,args.raw,args.parity_out)
+        result['rows'].append({'id':'same-head-sources','status':'observed','evidence':source})
         bound=a.approved_inputs(args.public_run,args.legacy_run)
         result['rows'].append({'id':'raw-structure','status':'observed','evidence':audit_wire(args.raw,args.parity_out,args.legacy_run,bound,args.product_http)})
     except Exception as exc:result['rows'].append({'id':'raw-structure','status':'unrun','error':type(exc).__name__+': '+str(exc)})
