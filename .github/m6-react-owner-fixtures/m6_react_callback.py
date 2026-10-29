@@ -47,7 +47,41 @@ DERIVED_SOURCES = {
     'som-rs/scripts/react_output_acceptance/verify_historical_response_provenance.py': '82efed50d624cfe1929de5448ca756bbec5c28f8f04ba652fe8286fc285f5d1b',
     'som-rs/scripts/react_output_acceptance/historical-response-reuse-map.json': '3b06627c31626238960d38ddb9e772e57c900a98a28ba6407790ca8196edd8ca',
 }
+# Transitive manual Python execution includes the collector's pre-provider
+# chain and the provider's runtime/profile closure, not only direct loads here.
+COLLECTOR_MANUAL_SOURCES = frozenset({
+    'som-rs/scripts/react_output_acceptance/retained_evidence.py',
+    'som-rs/tests/react-output-v1/linux_qa_profile.py',
+    'som-rs/scripts/react_output_acceptance/record_api.py',
+    'som-rs/scripts/react_output_acceptance/linux_api_context.py',
+    'som-rs/scripts/react_output_acceptance/linux_api_host.py',
+    'som-rs/scripts/react_output_acceptance/linux_api_evidence.py',
+    'som-rs/scripts/react_output_acceptance/react_api_python_payload.py',
+    'som-rs/scripts/react_output_acceptance/linux_api_live_inputs.py',
+    'som-rs/scripts/hosted_readiness/product_python/produce_wheels.py',
+    'som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py',
+    'som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py',
+    'som-rs/tests/rust-output-v1/rust_profile.py',
+    'som-rs/tests/react-output-v1/tree_sha.py',
+    'som-rs/tests/react-output-v1/react_profile.py',
+    'som-rs/tests/react-output-v1/common.py',
+    'som-rs/tests/react-output-v1/check_contract.py',
+    'som-rs/tests/rust-output-v1/build_negative_cases.py',
+    'som-rs/scripts/compiler_acceptance/paths.py',
+    'som-rs/scripts/compiler_acceptance/qa_harness.py',
+    'som-rs/scripts/rust_output_acceptance/python_replay.py',
+    'som-rs/tests/rust-output-v1/rust_profile_phase2.py',
+    'som-rs/som-targets/qa/check_targets.py',
+    'som-rs/som-targets/qa/check_rust_products.py',
+    'som-rs/tests/typescript-output-v1/tree_sha.py',
+    'som-rs/behavior/hosts.py',
+    'som-rs/behavior/typescript/__init__.py',
+    'som-rs/behavior/typescript/host.py',
+    'som-rs/scripts/react_output_acceptance/m6_native_entry.py',
+    'som-rs/tests/react-output-v1/run_api_contract.py',
+})
 EXECUTABLE_SOURCES = frozenset({SELF, COLLECTOR, AUDITOR, LAUNCHER, CONTEXT, AUTHORITY, DRIVER, ORACLE,
+    *COLLECTOR_MANUAL_SOURCES,
     *[AUDIT_BASE + name + '.py' for name in AUDIT_MODULES],
     *[path for path in DERIVED_SOURCES if path.endswith('.py')]})
 HEX = re.compile(r'[0-9a-f]{40}\Z')

@@ -122,12 +122,13 @@ class PostCloseProtocolTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'absent from React003'):
                 subject.admit_owner_executables(self.root,reader,self.rev,self.rev,repo=self.root.parent)
         receipt['files'][subject.INPUT_PROFILE]=subject.sha(b'source')
-        admission['admitted_repository_python_sources'].remove(subject.LAUNCHER)
-        (self.root.parent/'context.input.json').write_text(json.dumps(context))
-        authority=('def verify(*args):\n    return '+repr(admission)+'\n').encode()
-        with mock.patch.object(subject,'git',side_effect=git):
-            with self.assertRaisesRegex(ValueError,'scope not admitted'):
-                subject.admit_owner_executables(self.root,reader,self.rev,self.rev,repo=self.root.parent)
+        for omitted in sorted(subject.EXECUTABLE_SOURCES):
+            admission['admitted_repository_python_sources']=sorted(subject.EXECUTABLE_SOURCES-{omitted})
+            (self.root.parent/'context.input.json').write_text(json.dumps(context))
+            authority=('def verify(*args):\n    return '+repr(admission)+'\n').encode()
+            with self.subTest(omitted=omitted), mock.patch.object(subject,'git',side_effect=git):
+                with self.assertRaisesRegex(ValueError,'scope not admitted'):
+                    subject.admit_owner_executables(self.root,reader,self.rev,self.rev,repo=self.root.parent)
 
 
 if __name__ == '__main__':
