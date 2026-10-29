@@ -1,0 +1,43 @@
+name: M6 TypeScript Node source role proof
+on:
+  push:
+    branches: [codex/m6-ts-node-role-proof-v2]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  node-source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Check exact source
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+      - name: Derive complete Node npm source inventory
+        run: |
+          python3 .github/m6-ts-node-role-fixture/derive_node_tools.py --pin som-rs/contracts/native-tools-v1/artifacts.json --out "$RUNNER_TEMP/ts-node-tools" --metadata "$RUNNER_TEMP/ts-node-tools-draft.json"
+      - name: Check Node and npm versions on runner
+        run: |
+          python3 - <<'PY'
+          import json,os,pathlib,subprocess
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'ts-node-tools'
+          node=root/'bin/node'; npm=root/'lib/node_modules/npm/bin/npm-cli.js'
+          env=dict(os.environ,PATH=str(root/'bin')+':/usr/bin:/bin',HOME=os.environ['RUNNER_TEMP'],npm_config_update_notifier='false')
+          expected=json.loads((root/'lib/node_modules/npm/package.json').read_bytes())['version']
+          observed_node=subprocess.run([str(node),'--version'],capture_output=True,check=True,text=True,timeout=30,env=env)
+          observed_npm=subprocess.run([str(node),str(npm),'--version'],capture_output=True,check=True,text=True,timeout=30,env=env)
+          if observed_node.stdout.strip()!='v26.5.0' or observed_npm.stdout.strip()!=expected or observed_node.stderr or observed_npm.stderr:raise SystemExit('Node or npm runtime version differs')
+          print(json.dumps({'node_version':observed_node.stdout.strip(),'npm_version':observed_npm.stdout.strip(),'product_acceptance':'not_run'},sort_keys=True))
+          PY
+      - name: Retain draft public-source inventory
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ts-node-tools-public-source-inventory-draft
+          path: ${{ runner.temp }}/ts-node-tools-draft.json
+          if-no-files-found: error
+          retention-days: 14
