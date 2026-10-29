@@ -44,7 +44,9 @@ class NamedJoin(unittest.TestCase):
         self.put(self.oracle/self.calls[0]['response_file'],b'tampered')
         with self.assertRaises(ValueError):self.check()
     def test_reject_missing_and_extra_calls(self):
-        self.calls.pop()
+        removed=self.calls.pop()
+        with self.assertRaises(ValueError):self.check()
+        self.calls.append(removed);self.calls.append(dict(removed))
         with self.assertRaises(ValueError):self.check()
     def test_identical_wire_slots_keep_distinct_multiplicity(self):
         first=self.calls[0]; duplicate=self.calls[2]
