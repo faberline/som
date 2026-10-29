@@ -36,12 +36,153 @@ def original_function(relative,name,namespace):
     return namespace[name]
 
 
+def native_source_module_fixture(case, purpose):
+    """Real Core/registered command module; authority/Context/data are protocol doubles."""
+    import subprocess
+    case.assertIn(purpose, {'commands', 'suite'})
+    case.assertTrue(sys.flags.isolated and sys.flags.no_site and sys.dont_write_bytecode)
+    revision = os.environ['HELPER_REVISION']
+    case.assertRegex(revision, r'^[0-9a-f]{40}$')
+    case.assertEqual(subprocess.check_output(['/usr/bin/git','--no-replace-objects','-C',str(REPO),
+        'rev-parse','HEAD']).decode().strip(), revision)
+    pins = {'som-rs/behavior/suite.py': {'bytes': 49360,
+                              'sha256': '1f7fbd9bbd340aa4457fdbbbc256ebcc5add742bdf86cd1f390c28329a0c7d83'},
+ 'som-rs/behavior/typescript/host.py': {'bytes': 22790,
+                                        'sha256': 'bab520b2874fcb5c770b694ac63a511e18a61a06c25f475ea34da04901c8f310'},
+ 'som-rs/behavior/typescript/suite.py': {'bytes': 28185,
+                                         'sha256': 'e040c9e7af9394eb38ff15bc2ba471b72075f22a1b32b7479273e46133ca29fd'},
+ 'som-rs/contracts/typescript-output-v1/reference/package-lock.json': {'bytes': 8692,
+                                                                       'sha256': 'd5daa744e5efc0c7ad754e42930b34880a077ca2a38b466003786931a9f56606'},
+ 'som-rs/contracts/typescript-output-v1/reference/package.json': {'bytes': 571,
+                                                                  'sha256': '02b2aa2b167dcf5f9282c8c04a7d8deb8f77888d1fa2c5726ea4e98d17b5eaa7'},
+ 'som-rs/contracts/typescript-output-v1/reference/tsconfig.json': {'bytes': 494,
+                                                                   'sha256': 'e1bb40b56013abf2525a53023ebc1ce455d176fe4c0c5061d18a563f25962fae'},
+ 'som-rs/scripts/hosted_readiness/native_active_controls.py': {'bytes': 75955,
+                                                               'sha256': 'eb0f804a8aa7de0857213d34478adc869fe51f7259c5552439dca109e4e6a038'},
+ 'som-rs/scripts/hosted_readiness/native_active_roles.schema.json': {'bytes': 11323,
+                                                                     'sha256': '29711f2ac4a3a8f1afccbf21625238ff28f63214fde1f2bf9f2615cf40ca7942'},
+ 'som-rs/scripts/hosted_readiness/native_qa_authority.py': {'bytes': 31631,
+                                                            'sha256': '024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1'},
+ 'som-rs/scripts/hosted_readiness/test_native_active_controls.py': {'bytes': 48496,
+                                                                    'sha256': '1a5852fb1693bcb921fcb19e9a20fb8281751e85f6f0ea2805b88323d230a201'},
+ 'som-rs/scripts/hosted_readiness/test_native_ts_command_rust_fragments.py': {'bytes': 26663,
+                                                                              'sha256': 'dfbeca77f578430e0d250ff4f47bddf42e142e11c4a4aad3d98e1db8dcec503d'},
+ 'som-rs/scripts/hosted_readiness/typescript_regression_cli_rust_proof.py': {'bytes': 22318,
+                                                                             'sha256': '5514c594ec8e0dadd8ca4b0e1f0a2e5cab8fb0586786c16b99fc8dcb16816051'},
+ 'som-rs/scripts/hosted_readiness/typescript_regression_product_commands.py': {'bytes': 21510,
+                                                                               'sha256': '4912adc7bb8bda695d266a5209ebaef1c3db36cbba42dd6b0c940ed9801fce79'},
+ 'som-rs/scripts/hosted_readiness/typescript_regression_product_proof.py': {'bytes': 37319,
+                                                                            'sha256': '69dd4311ae2429e3673f792eaa1e8cadb1c86884fd45cb45fb09eecb98943294'},
+ 'som-rs/som-targets/qa/check_rust_products.py': {'bytes': 36051,
+                                                  'sha256': '08d49d57aa77773df87c14c50b92afb0d543a59f4b05c44793f34cf185440ea0'},
+ 'som-rs/som-targets/qa/check_targets.py': {'bytes': 24044,
+                                            'sha256': '8b95242ff7bab0da4c7e6f29a2f8735ea6482177044fcd5661f7174c8df0db75'},
+ 'som-rs/som-targets/qa/check_ts_products.py': {'bytes': 41606,
+                                                'sha256': 'fb52e35d465779a31affad4078e9209050f55ade3803e6931881bc523e2271d1'}}
+    raw_sources = {}
+    for relative, expected in pins.items():
+        path = REPO / relative
+        case.assertFalse(any(part.is_symlink() for part in (path, *path.parents)))
+        case.assertTrue(path.is_file() and path.stat().st_nlink == 1)
+        raw = path.read_bytes()
+        case.assertEqual({'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}, expected)
+        case.assertEqual(raw, subprocess.check_output(['/usr/bin/git','--no-replace-objects','-C',str(REPO),
+            'cat-file','blob',revision + ':' + relative]))
+        raw_sources[relative] = raw
+    relative = 'som-rs/scripts/hosted_readiness/test_native_ts_command_rust_fragments.py'
+    module = ModuleType('_som_old_ts_source_command_core_protocol_fixture')
+    module.__file__, module.__package__, module.__cached__ = str(REPO / relative), '', None
+    exec(compile(raw_sources[relative], module.__file__, 'exec', dont_inherit=True), module.__dict__)
+    # Give each old case its own plain-data binding prototype, even in one process.
+    module.ROLES = json.loads(json.dumps(module.ROLES))
+    if purpose == 'suite':
+        module.ROLES.update({'ts.product-proof': {'bindings': {'__som_native_active_controls__': {'kind': 'active-controls'}},
+                      'callers': [],
+                      'group': None,
+                      'is_package': False,
+                      'kind': 'module',
+                      'module': '_som_full_full_typescript_product_raw_proof',
+                      'package': '',
+                      'source': 'som-rs/scripts/hosted_readiness/typescript_regression_product_proof.py'},
+ 'ts.product.suite': {'bindings': {'base_suite': {'kind': 'role-module',
+                                                  'role': 'ts.product.suite-base'}},
+                      'callers': [{'function': 'SourceModules.load', 'role': 'ts.product-proof'}],
+                      'group': None,
+                      'is_package': False,
+                      'kind': 'module',
+                      'module': '_som_typescript_product_proof_suite',
+                      'package': '',
+                      'source': 'som-rs/behavior/typescript/suite.py'},
+ 'ts.product.suite-base': {'bindings': {},
+                           'callers': [{'function': 'SourceModules.load', 'role': 'ts.product-proof'}],
+                           'group': None,
+                           'is_package': False,
+                           'kind': 'module',
+                           'module': 'som_behavior_base_suite',
+                           'package': '',
+                           'source': 'som-rs/behavior/suite.py'}})
+        module.CMD = 'ts.product-proof'
+    fixture = module.FragmentFixture(case)
+    def close_owned_core_first():
+        try:
+            fixture.finish()
+        finally:
+            fixture.stack.close()
+    # Registered after the fixture's own stack cleanup and the original product
+    # temp cleanup. Core closes before either source/module table is removed.
+    case.addCleanup(close_owned_core_first)
+    return fixture.run(), fixture.ctx, fixture
+
+
+
+def native_source_command_module(case):
+    return native_source_module_fixture(case, 'commands')[0]
+
+
+def native_source_suite_module(case):
+    return native_source_module_fixture(case, 'suite')
+
+
+@contextmanager
+def fail_after_registered_suite_body(case, fixture, failure):
+    """Raise only at the real enrolled suite module's original return event."""
+    previous = sys.gettrace()
+    case.assertIsNone(previous, 'fixture requires its own isolated trace slot')
+    completed = []
+    def trace(frame, event, argument):
+        record = fixture.domain.records.get('ts.product.suite')
+        if event == 'return' and record is not None and frame.f_globals is record.namespace:
+            exact = [code for code in record.codes.values() if code.co_name == '<module>']
+            if any(frame.f_code is code for code in exact):
+                case.assertEqual(len(exact), 1)
+                case.assertIn('TsRun', record.namespace)
+                case.assertIs(record.namespace['base_suite'], fixture.domain.records['ts.product.suite-base'].module)
+                completed.append(frame.f_code)
+                raise failure
+        return trace
+    sys.settrace(trace)
+    try:
+        yield completed
+    finally:
+        # Python clears a trace when that trace raises. Do not overwrite a
+        # later foreign tracer. Preserve the original assertion if one exists.
+        current = sys.gettrace()
+        if current is trace or current is None:
+            sys.settrace(previous)
+        else:
+            primary = sys.exc_info()[1]
+            secondary = AssertionError('suite return tracer replaced by later owner')
+            if primary is None:
+                raise secondary
+            BaseException.__setattr__(primary, '__som_suite_trace_cleanup_secondary__', secondary)
+
+
 class SourceCommandTests(unittest.TestCase):
     def setUp(self):
-        self.command=load('typescript_regression_product_commands')
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup);self.root=Path(self.tmp.name).resolve()
         for name in ('src/main.ts','src/app.ts','test/api.test.ts','extra.ts','node_modules/ignore.ts'):
             path=self.root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(b'fixed source')
+        self.command=native_source_command_module(self)
         self.expected=self.command.source_command_vectors((REPO/self.command.CHECKER).read_bytes(),self.root,
             '/qualified/node','/qualified/npm-cli.js')
 
@@ -78,11 +219,19 @@ class SourceCommandTests(unittest.TestCase):
 
 class OwnedReplayStateTests(unittest.TestCase):
     def setUp(self):
-        self.checker=load('typescript_regression_checker');self.proof=load('typescript_regression_product_proof')
+        self.checker=load('typescript_regression_checker')
         self.path_before=list(sys.path);self.addCleanup(lambda:sys.path.__setitem__(slice(None),self.path_before))
         for name in ('som_behavior_base_suite','_som_typescript_product_proof_suite'):
             if name in sys.modules:self.fail('fresh isolated source fixture process required')
         self.ctx=SimpleNamespace(repo=REPO,sources=SimpleNamespace(read=lambda path:(REPO/path).read_bytes()))
+        if self._testMethodName in {
+                'test_actual_suite_load_and_close_restore_only_its_added_path',
+                'test_actual_suite_failure_and_close_restore_path',
+                'test_preexisting_suite_path_and_later_unrelated_entry_are_preserved',
+                'test_suite_close_refuses_foreign_path_replacement_without_clobbering_it'}:
+            self.proof,self.ctx,self.suite_fixture=native_source_suite_module(self)
+        else:
+            self.proof=load('typescript_regression_product_proof')
 
     def descriptor(self):
         before={'backend':{'sha256':'b'*64},'target_contract':{'sha256':'c'*64},'formatter':{'sha256':'d'*64}}
@@ -114,39 +263,49 @@ class OwnedReplayStateTests(unittest.TestCase):
         self.assertIs(target.compute_expected_ts_specific_descriptors,replacement)
 
     def test_actual_suite_load_and_close_restore_only_its_added_path(self):
-        expected=str(REPO/'som-rs/behavior');sys.path[:]=[value for value in sys.path if value!=expected]
+        expected=str(self.ctx.repo/'som-rs/behavior');sys.path[:]=[value for value in sys.path if value!=expected]
         before=list(sys.path);source=self.proof.SourceModules(self.ctx)
         try:source.suite();self.assertIn(expected,sys.path)
         finally:source.close()
         self.assertEqual(sys.path,before)
 
+
     def test_actual_suite_failure_and_close_restore_path(self):
-        expected=str(REPO/'som-rs/behavior');sys.path[:]=[value for value in sys.path if value!=expected]
+        expected=str(self.ctx.repo/'som-rs/behavior');sys.path[:]=[value for value in sys.path if value!=expected]
         before=list(sys.path)
-        def read(path):
-            raw=(REPO/path).read_bytes()
-            return raw+b'\nraise RuntimeError("injected after actual suite body")\n' if path==self.proof.SUITE else raw
-        source=self.proof.SourceModules(SimpleNamespace(repo=REPO,sources=SimpleNamespace(read=read)))
+        source=self.proof.SourceModules(self.ctx)
+        first=RuntimeError('injected after actual suite body')
         try:
-            with self.assertRaisesRegex(RuntimeError,'after actual suite body'):source.suite()
+            with fail_after_registered_suite_body(self,self.suite_fixture,first) as completed:
+                with self.assertRaisesRegex(RuntimeError,'after actual suite body') as caught:source.suite()
+            self.assertIs(caught.exception,first)
+            self.assertEqual(len(completed),1)
         finally:source.close()
         self.assertEqual(sys.path,before)
 
+
     def test_preexisting_suite_path_and_later_unrelated_entry_are_preserved(self):
-        expected=str(REPO/'som-rs/behavior');sys.path.insert(0,expected)
+        expected=str(self.ctx.repo/'som-rs/behavior');sys.path.insert(0,expected)
         source=self.proof.SourceModules(self.ctx);later='fixture-later-owner-search-path'
         try:source.suite();sys.path.append(later)
         finally:source.close()
         self.assertIs(sys.path[0],expected);self.assertIn(later,sys.path)
 
+
     def test_suite_close_refuses_foreign_path_replacement_without_clobbering_it(self):
-        expected=str(REPO/'som-rs/behavior');sys.path[:]=[value for value in sys.path if value!=expected]
+        expected=str(self.ctx.repo/'som-rs/behavior');sys.path[:]=[value for value in sys.path if value!=expected]
         source=self.proof.SourceModules(self.ctx);source.suite();owned=source.owned_path_entries[0][1]
         replacement=expected.encode().decode();self.assertIsNot(replacement,owned)
         sys.path[next(i for i,value in enumerate(sys.path) if value is owned)]=replacement
         with self.assertRaisesRegex(ValueError,'module/path ownership'):source.close()
         self.assertTrue(any(value is replacement for value in sys.path))
+        base=self.suite_fixture.domain.records['ts.product.suite-base'].module
+        self.assertIs(sys.modules['som_behavior_base_suite'],base)
+        self.assertFalse(self.suite_fixture.domain.closed)
+        self.suite_fixture.finish()
+        self.assertTrue(self.suite_fixture.domain.closed)
         self.assertNotIn('som_behavior_base_suite',sys.modules)
+
 
 
 class OriginalFailureEvidenceTests(unittest.TestCase):

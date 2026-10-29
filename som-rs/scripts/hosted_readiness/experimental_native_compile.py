@@ -36,7 +36,8 @@ _NATIVE_RAW_COMPAT_ROLES = {
     '_som_active_semantic_capture_driver_imports_experimental_native_compile': 'semantic.capture.driver.imports.experimental-native-compile.raw-compat',
     '_som_active_cnl_entry_helper_experimental_native_compile': 'cnl.entry.helper.experimental-native-compile.raw-compat',
     '_som_active_context_current_refusal_checker': 'context.current-refusal-checker.raw-compat',
-    '_som_active_context_typescript_regression_native_factory': 'context.typescript-regression-native-factory.raw-compat'
+    '_som_active_context_typescript_regression_native_factory': 'context.typescript-regression-native-factory.raw-compat',
+    '_som_ts_domain_typescript_regression_native_factory': 'ts.domain.typescript-regression-native-factory.raw-compat'
 }
 
 

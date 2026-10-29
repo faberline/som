@@ -16,7 +16,7 @@ from pathlib import Path
 import re
 import stat
 import sys
-from types import ModuleType, SimpleNamespace
+from types import ModuleType
 from urllib.parse import urlsplit
 
 BASE = 'som-rs/scripts/hosted_readiness/'
@@ -112,9 +112,19 @@ def members(root):
     return result
 
 
+def _native_controls(ctx):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    require(ctx.qa_mode == 'native-qa-v1' and Path(ctx.repo).absolute() == controls.root
+            and ctx.helper_revision == controls.helper_revision == ctx.candidate_revision == controls.candidate_revision,
+            'actual native TypeScript product proof source identity required')
+    return controls
+
+
 class SourceModules:
-    """Own fresh raw modules and the one fixed alias the original suite expects."""
+    """Track Core-owned fixed modules and only this scope's suite path entry."""
     def __init__(self, ctx):
+        _native_controls(ctx)
         self.ctx, self.owned, self.pins = ctx, [], {}
         self.owned_path_entries = []
 
@@ -124,28 +134,44 @@ class SourceModules:
         return raw
 
     def load(self, path, name):
-        require(name not in sys.modules, 'preloaded product proof helper refused: ' + name)
-        raw = self.raw(path)
-        module = ModuleType(name)
-        module.__file__, module.__package__, module.__cached__ = str(Path(self.ctx.repo) / path), '', None
-        module.__som_raw_sha256__ = sha(raw)
-        sys.modules[name] = module; self.owned.append((name, module))
-        exec(compile(raw, module.__file__, 'exec', dont_inherit=True), module.__dict__)
+        require(type(path) is str and type(name) is str, 'fixed product proof source/name text required')
+        choices = {(BASE_SUITE, 'som_behavior_base_suite'): 'ts.product.suite-base',
+                   (SUITE, '_som_typescript_product_proof_suite'): 'ts.product.suite'}
+        if (path, name) not in choices:
+            require(name not in sys.modules, 'preloaded product proof helper refused: ' + name)
+            raise ValueError('native product proof has no general module loader')
+        role = choices[(path, name)]
+        controls = _native_controls(self.ctx)
+        require(controls.role_sources[role] == path, 'fixed product proof module source differs')
+        # Core owns preload refusal and cached namespace identity before body exec.
+        module = controls.load_module(role)
+        require(type(module) is ModuleType and module.__name__ == name
+                and module.__file__ == str(Path(self.ctx.repo) / path), 'fixed product proof module namespace differs')
+        self.raw(path)
+        if not any(old_name == name and old_module is module for old_name, old_module in self.owned):
+            self.owned.append((name, module))
         return module
 
-    def original_functions(self, path, names, namespace):
-        """Execute original AST function bodies with explicit data-only globals."""
+    def original_functions(self, path, names, namespace=None):
+        """Return a fixed Core fragment scope; no caller globals are admitted."""
+        require(namespace is None, 'native product fragments do not accept caller globals or callbacks')
+        require(type(path) is str and type(names) in {list, tuple, set, frozenset}
+                and all(type(name) is str for name in names), 'fixed product fragment selector text required')
+        if path == CHECKER and set(names) == {
+                'make_gate', 'schema_differences', 'evaluate_schema_equivalence', 'evaluate_parity', 'evaluate_strict_refusals'}:
+            role = 'ts.product.gate-assertions'
+        elif path == RUST_CHECKER and set(names) == {'schema'}:
+            role = 'ts.product.schema'
+        else:
+            raise ValueError('native product proof has no general AST fragment loader')
         raw = self.raw(path); tree = ast.parse(raw)
         nodes = [node for node in tree.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
                  and node.name in names]
         require({node.name for node in nodes} == set(names) and len(nodes) == len(names),
                 'original product assertion function set changed')
-        result = dict(namespace)
-        source = ast.Module(body=[ast.ImportFrom(module='__future__', names=[ast.alias(name='annotations')], level=0),
-                                  *nodes], type_ignores=[])
-        ast.fix_missing_locations(source)
-        exec(compile(source, str(Path(self.ctx.repo) / path), 'exec', dont_inherit=True), result)
-        return SimpleNamespace(**result)
+        controls = _native_controls(self.ctx)
+        require(controls.role_sources[role] == path, 'fixed original product fragment source differs')
+        return controls.load_fragment(role)
 
     def suite(self):
         base = self.load(BASE_SUITE, 'som_behavior_base_suite')
@@ -178,9 +204,7 @@ class SourceModules:
     def close(self):
         failures = []
         for name, value in reversed(self.owned):
-            if sys.modules.get(name) is value:
-                del sys.modules[name]
-            else:
+            if sys.modules.get(name) is not value:
                 failures.append(name)
         self.owned.clear()
         for path_list, owned in reversed(self.owned_path_entries):
@@ -191,6 +215,7 @@ class SourceModules:
                 failures.append('suite sys.path entry replaced by later owner')
         self.owned_path_entries.clear()
         require(not failures, 'product proof module/path ownership changed: ' + ', '.join(failures))
+        _native_controls(self.ctx).verify_installed()
 
 
 def typed(value):
@@ -518,91 +543,88 @@ def verify(ctx, owner_root, capture):
     try:
         source.raw(SELF)
         suite = source.suite()
-        checker = source.original_functions(CHECKER,
-            {'make_gate', 'schema_differences', 'evaluate_schema_equivalence', 'evaluate_parity', 'evaluate_strict_refusals'},
-            {'json': json, 'ts_suite': suite,
-             'EXCLUDED_SCHEMA_TABLES': source.constant(CHECKER, 'EXCLUDED_SCHEMA_TABLES'),
-             'DIVERGENCE_IDS': source.constant(CHECKER, 'DIVERGENCE_IDS')})
-        entries = source_products(source, owner_root, capture)
-        report_raw = read(owner_root / 'capture/ts-products/report.json'); report = parse(report_raw)
-        require([row['id'] for row in report['products']] == [entry['id'] for entry in entries],
-                'all source product report identities/order required')
-        root = owner_root / 'capture/raw-checkers/05'
-        postcheck = parse(read(root / 'checker-postcheck.json'))
-        require(postcheck['tool'] == CHECKER and postcheck['source_sha256'] == source.pins[CHECKER]
-                and postcheck['entry_executed'] is True and postcheck['exit_code'] == 0
-                and postcheck['postcheck_complete'] is True, 'actual source product entry/postcheck differs')
-        replay = ProductReplay(root / 'product-http', postcheck['product_http_rows'])
-        actual_commands = commands(root / 'raw-commands')
-        artifacts = parse(source.raw(ARTIFACTS))
-        nodes = [row for row in artifacts['tools'] if row['tool'] == 'node'
-                 and row['host'] == 'x86_64-unknown-linux-gnu' and row['version'] == '26.5.0']
-        require(len(nodes) == 1 and report['toolchain']['node_sha256'] == nodes[0]['executable_sha256'],
-                'actual source-qualified native Node identity differs')
-        owned_processes = processes(report, capture, nodes[0]['executable_sha256'])
-        schema_rows = postcheck.get('schema_rows')
-        require(type(schema_rows) is list and len(schema_rows) == 2 * len(entries), 'every actual schema query capture required')
-        require(members(root / 'schema-raw') == {f'{n:06d}/result.json' for n in range(len(schema_rows))},
-                'complete schema raw member universe differs')
-        proofs = []
-        for n, (entry, product) in enumerate(zip(entries, report['products'])):
-            cid, prompt, gates = entry['id'], entry['prompt'], product['gates']
-            require(product['files_sha256'] == entry['files_sha256'], 'product commands did not use exact assembled source files')
-            key = re.sub('[^a-z0-9]+', '_', cid.lower()).strip('_')
-            schemas = []
-            for k, role in enumerate(('typescript', 'python')):
-                index = 2 * n + k; row = schema_rows[index]
-                require(row['index'] == index and parse(read(root / 'schema-raw' / f'{index:06d}/result.json')) == row
-                        and row['excluded'] == ['alembic_version', '_som_ts_migrations'], 'schema raw identity/exclusions differ')
-                sql = SchemaReplay(row)
-                original = source.original_functions(RUST_CHECKER, {'schema'}, {'psycopg': sql})
-                value = original.schema(row['url'], tuple(row['excluded'])); sql.finish()
-                require(value == row['schema'] == gates['schema_equivalence'][role + '_schema'],
-                        'original raw schema SQL result differs from reported migration schema')
-                schemas.append(value)
-            gate = gates['schema_equivalence']
-            expected = checker.evaluate_schema_equivalence(*schemas, gate['command'], gate['duration_ms'])
-            assert_gate(gate, expected)
-            migrations = schema_migration_join(schema_rows[2 * n:2 * n + 2], product, key,
-                                               actual_commands, owned_processes)
-            py_base = replay.next_base(); python_run = suite.run(prompt, py_base, send=replay.sender(py_base))
-            ts_base = replay.next_base(); ts_run = suite.run(prompt, ts_base, send=replay.sender(ts_base))
-            require(py_base != ts_base, 'Python and TypeScript behavior endpoints must be separate owned processes')
-            owners = [product_owner(owned_processes, role, key, base) for role, base in
-                      (('python_product', py_base), ('typescript_product', ts_base))]
-            script_steps, script_failures = len(ts_run.transcript), len(ts_run.failures)
-            ts_run.strict()
-            for language, result in (('py', python_run), ('ts', ts_run)):
-                raw = read(owner_root / 'capture/ts-products/raw' / f'{language}_{key}.json')
-                require(parse(raw) == {'raw': result.raw, 'transcript': result.transcript, 'failures': result.failures},
-                        'source-replayed complete product raw/transcript/assertions differ')
-                require(sha(raw) == gates['parity']['python_raw_sha256' if language == 'py' else 'typescript_raw_sha256'],
-                        'product parity raw hash differs')
-            parity = suite.TsRun(ts_run.prof, ts_run.send)
-            parity.transcript, parity.raw, parity.failures = (ts_run.transcript[:script_steps],
-                ts_run.raw[:script_steps], ts_run.failures[:script_failures])
-            differences = suite.compare(python_run.transcript, parity.transcript)
-            gate = gates['parity']
-            expected = checker.evaluate_parity(python_run, parity, differences, gate['duration_ms'], gate['command'],
-                gate['python_raw_sha256'], gate['typescript_raw_sha256'])
-            assert_gate(gate, expected)
-            gate = gates['strict_refusals']
-            expected = checker.evaluate_strict_refusals(ts_run.transcript[script_steps:],
-                ts_run.failures[script_failures:], gate['duration_ms'], gate['command'])
-            assert_gate(gate, expected)
-            proofs.append({'id': cid, 'files_sha256': entry['files_sha256'], 'schema_pair': [2 * n, 2 * n + 1],
-                           'schema_migration_command_indices': migrations, 'product_owner_pids': owners,
-                           'parity_steps': script_steps, 'strict_steps': len(ts_run.transcript) - script_steps})
-        replay.finish()
-        return {'version': 'som.typescript-regression-product-raw-proof.v1',
-                'replacement_rows': {row: {'complete': True, 'all_required_passed': True} for row in ROWS},
-                'helper_revision': ctx.helper_revision, 'candidate_revision': ctx.candidate_revision,
-                'report_sha256': sha(report_raw), 'bound_source_sha256': dict(sorted(source.pins.items())),
-                'products': proofs, 'raw_product_http_calls': replay.index,
-                'process_and_migration_joins_complete': True,
-                'required_external_proofs': ['common current Context runtime/source/tool postclose proof',
-                                            'all remaining owner domain and whole-capture proofs'],
-                'product_acceptance_passed': False}
+        with source.original_functions(CHECKER,
+                {'make_gate', 'schema_differences', 'evaluate_schema_equivalence', 'evaluate_parity', 'evaluate_strict_refusals'}) as checker:
+            entries = source_products(source, owner_root, capture)
+            report_raw = read(owner_root / 'capture/ts-products/report.json'); report = parse(report_raw)
+            require([row['id'] for row in report['products']] == [entry['id'] for entry in entries],
+                    'all source product report identities/order required')
+            root = owner_root / 'capture/raw-checkers/05'
+            postcheck = parse(read(root / 'checker-postcheck.json'))
+            require(postcheck['tool'] == CHECKER and postcheck['source_sha256'] == source.pins[CHECKER]
+                    and postcheck['entry_executed'] is True and postcheck['exit_code'] == 0
+                    and postcheck['postcheck_complete'] is True, 'actual source product entry/postcheck differs')
+            replay = ProductReplay(root / 'product-http', postcheck['product_http_rows'])
+            actual_commands = commands(root / 'raw-commands')
+            artifacts = parse(source.raw(ARTIFACTS))
+            nodes = [row for row in artifacts['tools'] if row['tool'] == 'node'
+                     and row['host'] == 'x86_64-unknown-linux-gnu' and row['version'] == '26.5.0']
+            require(len(nodes) == 1 and report['toolchain']['node_sha256'] == nodes[0]['executable_sha256'],
+                    'actual source-qualified native Node identity differs')
+            owned_processes = processes(report, capture, nodes[0]['executable_sha256'])
+            schema_rows = postcheck.get('schema_rows')
+            require(type(schema_rows) is list and len(schema_rows) == 2 * len(entries), 'every actual schema query capture required')
+            require(members(root / 'schema-raw') == {f'{n:06d}/result.json' for n in range(len(schema_rows))},
+                    'complete schema raw member universe differs')
+            proofs = []
+            for n, (entry, product) in enumerate(zip(entries, report['products'])):
+                cid, prompt, gates = entry['id'], entry['prompt'], product['gates']
+                require(product['files_sha256'] == entry['files_sha256'], 'product commands did not use exact assembled source files')
+                key = re.sub('[^a-z0-9]+', '_', cid.lower()).strip('_')
+                schemas = []
+                for k, role in enumerate(('typescript', 'python')):
+                    index = 2 * n + k; row = schema_rows[index]
+                    require(row['index'] == index and parse(read(root / 'schema-raw' / f'{index:06d}/result.json')) == row
+                            and row['excluded'] == ['alembic_version', '_som_ts_migrations'], 'schema raw identity/exclusions differ')
+                    sql = SchemaReplay(row)
+                    with source.original_functions(RUST_CHECKER, {'schema'}) as original:
+                        value = original.schema(row['url'], tuple(row['excluded'])); sql.finish()
+                    require(value == row['schema'] == gates['schema_equivalence'][role + '_schema'],
+                            'original raw schema SQL result differs from reported migration schema')
+                    schemas.append(value)
+                gate = gates['schema_equivalence']
+                expected = checker.evaluate_schema_equivalence(*schemas, gate['command'], gate['duration_ms'])
+                assert_gate(gate, expected)
+                migrations = schema_migration_join(schema_rows[2 * n:2 * n + 2], product, key,
+                                                   actual_commands, owned_processes)
+                py_base = replay.next_base(); python_run = suite.run(prompt, py_base, send=replay.sender(py_base))
+                ts_base = replay.next_base(); ts_run = suite.run(prompt, ts_base, send=replay.sender(ts_base))
+                require(py_base != ts_base, 'Python and TypeScript behavior endpoints must be separate owned processes')
+                owners = [product_owner(owned_processes, role, key, base) for role, base in
+                          (('python_product', py_base), ('typescript_product', ts_base))]
+                script_steps, script_failures = len(ts_run.transcript), len(ts_run.failures)
+                ts_run.strict()
+                for language, result in (('py', python_run), ('ts', ts_run)):
+                    raw = read(owner_root / 'capture/ts-products/raw' / f'{language}_{key}.json')
+                    require(parse(raw) == {'raw': result.raw, 'transcript': result.transcript, 'failures': result.failures},
+                            'source-replayed complete product raw/transcript/assertions differ')
+                    require(sha(raw) == gates['parity']['python_raw_sha256' if language == 'py' else 'typescript_raw_sha256'],
+                            'product parity raw hash differs')
+                parity = suite.TsRun(ts_run.prof, ts_run.send)
+                parity.transcript, parity.raw, parity.failures = (ts_run.transcript[:script_steps],
+                    ts_run.raw[:script_steps], ts_run.failures[:script_failures])
+                differences = suite.compare(python_run.transcript, parity.transcript)
+                gate = gates['parity']
+                expected = checker.evaluate_parity(python_run, parity, differences, gate['duration_ms'], gate['command'],
+                    gate['python_raw_sha256'], gate['typescript_raw_sha256'])
+                assert_gate(gate, expected)
+                gate = gates['strict_refusals']
+                expected = checker.evaluate_strict_refusals(ts_run.transcript[script_steps:],
+                    ts_run.failures[script_failures:], gate['duration_ms'], gate['command'])
+                assert_gate(gate, expected)
+                proofs.append({'id': cid, 'files_sha256': entry['files_sha256'], 'schema_pair': [2 * n, 2 * n + 1],
+                               'schema_migration_command_indices': migrations, 'product_owner_pids': owners,
+                               'parity_steps': script_steps, 'strict_steps': len(ts_run.transcript) - script_steps})
+            replay.finish()
+            return {'version': 'som.typescript-regression-product-raw-proof.v1',
+                    'replacement_rows': {row: {'complete': True, 'all_required_passed': True} for row in ROWS},
+                    'helper_revision': ctx.helper_revision, 'candidate_revision': ctx.candidate_revision,
+                    'report_sha256': sha(report_raw), 'bound_source_sha256': dict(sorted(source.pins.items())),
+                    'products': proofs, 'raw_product_http_calls': replay.index,
+                    'process_and_migration_joins_complete': True,
+                    'required_external_proofs': ['common current Context runtime/source/tool postclose proof',
+                                                'all remaining owner domain and whole-capture proofs'],
+                    'product_acceptance_passed': False}
     except BaseException as error:
         primary = error
         raise

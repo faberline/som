@@ -1,7 +1,7 @@
 """Replay the original CLI and nested Rust bundle/refusal assertions."""
 from __future__ import annotations
 import traceback
-from contextlib import redirect_stdout, redirect_stderr
+from contextlib import contextmanager, redirect_stdout, redirect_stderr
 import ast
 import copy
 import hashlib
@@ -25,6 +25,84 @@ INPUTS = BASE + 'typescript_regression_inputs.py'
 UNCHANGED = 'som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py'
 BASELINE = 'som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py'
 CURRENT = 'http://127.0.0.1:18978'
+
+
+PROFILE = BASE + 'inputs/typescript-regression-inputs-v1.json'
+
+
+class _InputEnvironment:
+    def __init__(self):
+        self.environ = {'SOM_FULL_PRODUCT_CONTEXT': 'source-bound-data-replay'}
+
+
+class _InputMetadata:
+    def __init__(self, repo, bindings, profile):
+        require(type(bindings) is dict and type(profile) is str, 'exact native input metadata data required')
+        self.repo, self.bindings, self.profile = repo, bindings, profile
+
+    def context(self): return self
+    @property
+    def qa_mode(self): return 'native-qa-v1'
+    @property
+    def data(self): return {'typescript_regression_inputs': self.bindings}
+    @property
+    def cache(self): return {'typescript_replay_input_bindings': self.bindings}
+    @property
+    def sources(self): return self
+    def read(self, path):
+        require(path == PROFILE, 'unlisted native input metadata source read')
+        return self.profile
+
+
+class _InputTargets:
+    def __init__(self, repo): self.repo = repo
+    @property
+    def REPO(self): return self.repo
+    def sha(self, raw):
+        _native_controls()
+        return _native_original_target_sha(raw)
+
+
+def _native_controls(ctx=None):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    require(controls.role_sources.get('ctx.full-original-cli-rust-raw-proof') == SELF,
+            'fixed native CLI/Rust source role required')
+    if ctx is not None:
+        require(ctx.qa_mode == 'native-qa-v1' and Path(ctx.repo).absolute() == controls.root
+                and ctx.helper_revision == controls.helper_revision == ctx.candidate_revision == controls.candidate_revision,
+                'actual native CLI/Rust context identity required')
+    return controls
+
+
+@contextmanager
+def _native_input_key(ctx, view, snapshot):
+    controls = _native_controls(ctx)
+    require(snapshot[RUST] == ctx.sources.read(RUST) and snapshot[PROFILE] == ctx.sources.read(PROFILE),
+            'actual native input metadata source bytes differ')
+    bindings = view.cache.get('typescript_replay_input_bindings', view.data['typescript_regression_inputs'])
+    environment, metadata, targets = (_InputEnvironment(),
+        _InputMetadata(controls.root, bindings, snapshot[PROFILE].decode('utf-8', 'strict')),
+        _InputTargets(controls.root))
+    lease, primary = controls.borrow(), None
+    try:
+        with lease.load_fragment('ts.cli-rust.input-source-key') as original:
+            yield original.input_source_key
+    except BaseException as error:
+        primary = error
+        raise
+    finally:
+        failure = {'primary': None, 'traceback': None, 'failure': None, 'secondary': []}
+        if primary is not None:
+            remember_failure(failure, 'original_native_input_key_assertion', primary)
+        for role, action in (('native_input_key_source_postcheck', lease.verify_installed),
+                             ('native_input_key_borrow_close', lease.close)):
+            try:
+                action()
+            except BaseException as error:
+                remember_failure(failure, role, error)
+        if failure['secondary'] or primary is None:
+            raise_primary(failure)
 
 
 def failure_record(error):
@@ -223,25 +301,24 @@ def nested_rust(ctx, root, capture, out):
         definitions = [node for node in ast.parse(snapshot[RUST]).body if isinstance(node, ast.FunctionDef)
                        and node.name == 'input_source_key']
         require(len(definitions) == 1, 'exact source-owned native input metadata key adapter required')
-        namespace = dict(vars(module))
-        namespace['os'] = SimpleNamespace(environ={'SOM_FULL_PRODUCT_CONTEXT': 'source-bound-data-replay'})
-        selected = ast.Module(body=[ast.ImportFrom(module='__future__', names=[ast.alias(name='annotations')], level=0),
-                                    *definitions], type_ignores=[]); ast.fix_missing_locations(selected)
-        exec(compile(selected, str(Path(ctx.repo) / RUST), 'exec', dont_inherit=True), namespace)
-        module.input_source_key = namespace['input_source_key']
-        sys.argv = [str(Path(ctx.repo) / RUST), *replay_args]
-        with main.MainGuards(view, root, capture, out, tape), redirect_stdout(stdout), redirect_stderr(stderr):
-            code = module.main()
-        saved = parse(read(root / 'capture/rust-products.json')); result = parse(read(output))
-        require(code == 0 and result == saved and saved['summary']['failed'] == []
-                and saved['summary']['blocked'] == []
-                and saved['summary']['bundle_checks'] == {'passed': 115, 'total': 115}
-                and saved['summary']['assemble_refusals'] == {'passed': 15, 'total': 15},
-                'original full115 Rust bundle/fifteen-recipe assertions differ')
-        return {'original_bundle_cases': 115, 'original_phase2_recipes': 15, **tape.finish(),
-            'report_sha256': sha(read(root / 'capture/rust-products.json')),
-            'replaces': ['rust.amendment005.7', 'rust.phase2.A6_amendment_004',
-                         'rust.phase2.refusals_amendment_004'], 'product_acceptance_passed': False}
+        with _native_input_key(ctx, view, snapshot) as input_key:
+            module.input_source_key = input_key
+            try:
+                sys.argv = [str(Path(ctx.repo) / RUST), *replay_args]
+                with main.MainGuards(view, root, capture, out, tape), redirect_stdout(stdout), redirect_stderr(stderr):
+                    code = module.main()
+                saved = parse(read(root / 'capture/rust-products.json')); result = parse(read(output))
+                require(code == 0 and result == saved and saved['summary']['failed'] == []
+                        and saved['summary']['blocked'] == []
+                        and saved['summary']['bundle_checks'] == {'passed': 115, 'total': 115}
+                        and saved['summary']['assemble_refusals'] == {'passed': 15, 'total': 15},
+                        'original full115 Rust bundle/fifteen-recipe assertions differ')
+                return {'original_bundle_cases': 115, 'original_phase2_recipes': 15, **tape.finish(),
+                    'report_sha256': sha(read(root / 'capture/rust-products.json')),
+                    'replaces': ['rust.amendment005.7', 'rust.phase2.A6_amendment_004',
+                                 'rust.phase2.refusals_amendment_004'], 'product_acceptance_passed': False}
+            finally:
+                module.input_source_key = previous_key
     finally:
         module.targets.post, module.targets.LEGACY = previous_post, previous_legacy
         module.pinned_toolchain, module.input_source_key = previous_pinned, previous_key

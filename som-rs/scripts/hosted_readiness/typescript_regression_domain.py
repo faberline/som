@@ -30,6 +30,213 @@ WHEELS = BASE + 'product_python/produce_wheels.py'
 RUST_TOOLS = BASE + 'product_runtime/qualify_rust_tools.py'
 CLI_RUST = BASE + 'typescript_regression_cli_rust_proof.py'
 PRODUCT_COMMANDS = BASE + 'typescript_regression_product_commands.py'
+CONTEXT = BASE + 'product_runtime/full_product_context.py'
+NATIVE_RUNTIME = BASE + 'product_runtime/native_runtime_verifier.py'
+NATIVE_RUST_TOOLS = BASE + 'product_runtime/native_rust_tool_verifier.py'
+_DOMAIN_RUNTIME_AUDIT = 'som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json'
+_DOMAIN_RUNTIME_META_FILES = {'receipt.json', 'installed-files.json', 'source-pins.json', 'build-intermediates.json'}
+_DOMAIN_RUNTIME_MAX_META = 8388608
+_DOMAIN_RUNTIME_MAX_FILE = 268435456
+_DOMAIN_RUNTIME_MAX_TOTAL = 2147483648
+_DOMAIN_MODULE_ROLES = {
+    'current_typescript_refusal_rebase': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_rebase.py',
+        'ts.domain.current-typescript-refusal-rebase'
+    ),
+    'explicit_input_teardown': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_inputs.py',
+        'ts.domain.explicit-input-teardown'
+    ),
+    'full_original_baseline_http_replay': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_http_replay.py',
+        'ts.domain.full-original-baseline-http-replay'
+    ),
+    'full_original_cli_rust_raw_proof': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_cli_rust_proof.py',
+        'ctx.full-original-cli-rust-raw-proof'
+    ),
+    'full_original_product_command_proof': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_product_commands.py',
+        'ctx.full-original-product-command-proof'
+    ),
+    'full_original_pure_main_replay': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_main_replay.py',
+        'ts.domain.full-original-pure-main-replay'
+    ),
+    'full_typescript_product_raw_proof': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_product_proof.py',
+        'ts.product-proof'
+    ),
+    'native_digest_source_factory': (
+        'som-rs/scripts/hosted_readiness/typescript_native_digests.py',
+        'ts.domain.native-digest-source-factory'
+    ),
+    'original_step_constructor': (
+        'som-rs/scripts/typescript_output_acceptance/run_acceptance.py',
+        'ts.domain.original-step-constructor'
+    ),
+    'ts_main_replay_0': (
+        'som-rs/scripts/hosted_readiness/raw_digest_compat.py',
+        'ts.domain.ts-main-replay-0'
+    ),
+    'ts_main_replay_1': (
+        'som-rs/scripts/hosted_readiness/typescript_native_digests.py',
+        'ts.domain.ts-main-replay-1'
+    ),
+    'ts_main_replay_10': (
+        'som-rs/tests/rust-output-v1/check_python_controls.py',
+        'ts.domain.ts-main-replay-10'
+    ),
+    'ts_main_replay_11': (
+        'som-rs/tests/rust-output-v1/validate_cases.py',
+        'ts.domain.ts-main-replay-11'
+    ),
+    'ts_main_replay_12': (
+        'som-rs/tests/typescript-output-v1/check_python_controls.py',
+        'ts.domain.ts-main-replay-12'
+    ),
+    'ts_main_replay_2': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_checker.py',
+        'ts.domain.ts-main-replay-2'
+    ),
+    'ts_main_replay_3': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_inputs.py',
+        'ts.domain.ts-main-replay-3'
+    ),
+    'ts_main_replay_4': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_owner.py',
+        'ts.domain.ts-main-replay-4'
+    ),
+    'ts_main_replay_5': (
+        'som-rs/scripts/rust_output_acceptance/python_replay.py',
+        'ts.domain.ts-main-replay-5'
+    ),
+    'ts_main_replay_6': (
+        'som-rs/scripts/typescript_output_acceptance/check_bundles.py',
+        'ts.domain.ts-main-replay-6'
+    ),
+    'ts_main_replay_7': (
+        'som-rs/scripts/typescript_output_acceptance/check_rt_diagnostics.py',
+        'ts.domain.ts-main-replay-7'
+    ),
+    'ts_main_replay_8': (
+        'som-rs/scripts/typescript_output_acceptance/check_target.py',
+        'ts.domain.ts-main-replay-8'
+    ),
+    'ts_main_replay_9': (
+        'som-rs/scripts/typescript_output_acceptance/run_acceptance.py',
+        'ts.domain.ts-main-replay-9'
+    ),
+    'typescript_cli_original_assertions': (
+        'som-rs/scripts/rust_output_acceptance/check_cli.py',
+        'ts.domain.typescript-cli-original-assertions'
+    ),
+    'typescript_cli_raw_commands': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_product_proof.py',
+        'ts.domain.typescript-cli-raw-commands'
+    ),
+    'typescript_cli_strict_http': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_http_replay.py',
+        'ts.domain.typescript-cli-strict-http'
+    ),
+    'typescript_data_input_origin_graph': (
+        'som-rs/scripts/hosted_readiness/same_candidate_graph.py',
+        'ts.domain.typescript-data-input-origin-graph'
+    ),
+    'typescript_data_runtime_authority': (
+        'som-rs/scripts/hosted_readiness/product_python/produce_wheels.py',
+        'ts.domain.typescript-data-runtime-authority'
+    ),
+    'typescript_fresh_case_record_loader': (
+        'som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py',
+        'ts.domain.typescript-fresh-case-record-loader'
+    ),
+    'typescript_full_product_command_data': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_product_proof.py',
+        'ts.domain.typescript-full-product-command-data'
+    ),
+    'typescript_http_replay_input_adapter': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_inputs.py',
+        'ts.domain.typescript-http-replay-input-adapter'
+    ),
+    'typescript_http_replay_native_digests': (
+        'som-rs/scripts/hosted_readiness/typescript_native_digests.py',
+        'ts.domain.typescript-http-replay-native-digests'
+    ),
+    'typescript_http_replay_original_python': (
+        'som-rs/scripts/typescript_output_acceptance/check_python_baseline.py',
+        'ts.domain.typescript-http-replay-original-python'
+    ),
+    'typescript_http_replay_original_rust': (
+        'som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py',
+        'ts.domain.typescript-http-replay-original-rust'
+    ),
+    'typescript_independent_runtime_metadata_support': (
+        'som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py',
+        'ts.domain.typescript-independent-runtime-metadata-support'
+    ),
+    'typescript_independent_rust_metadata_support': (
+        'som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py',
+        'ts.domain.typescript-independent-rust-metadata-support'
+    ),
+    'typescript_native_rust_metadata_verifier': (
+        'som-rs/scripts/hosted_readiness/product_runtime/native_rust_tool_verifier.py',
+        'ts.domain.typescript-native-rust-metadata-verifier'
+    ),
+    'typescript_nested_original_rust_assertions': (
+        'som-rs/som-targets/qa/check_rust_products.py',
+        'ts.domain.typescript-nested-original-rust-assertions'
+    ),
+    'typescript_nested_raw_command_proof': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_product_proof.py',
+        'ts.domain.typescript-nested-raw-command-proof'
+    ),
+    'typescript_nested_strict_http': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_http_replay.py',
+        'ts.domain.typescript-nested-strict-http'
+    ),
+    'typescript_nested_write_guards': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_main_replay.py',
+        'ts.domain.typescript-nested-write-guards'
+    ),
+    'typescript_regression_native_digests': (
+        'som-rs/scripts/hosted_readiness/typescript_native_digests.py',
+        'ts.domain.typescript-regression-native-digests'
+    ),
+    'typescript_regression_native_factory': (
+        'som-rs/scripts/hosted_readiness/experimental_native_compile.py',
+        'ts.domain.typescript-regression-native-factory'
+    ),
+    'typescript_regression_original_bundles': (
+        'som-rs/scripts/typescript_output_acceptance/check_bundles.py',
+        'ts.domain.typescript-regression-original-bundles'
+    ),
+    'typescript_regression_raw_digest': (
+        'som-rs/scripts/hosted_readiness/raw_digest_compat.py',
+        'ts.domain.typescript-regression-raw-digest'
+    ),
+    'typescript_unchanged_actual_commands': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_product_proof.py',
+        'ts.domain.typescript-unchanged-actual-commands'
+    ),
+    'typescript_unchanged_explicit_inputs': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_inputs.py',
+        'ts.domain.typescript-unchanged-explicit-inputs'
+    ),
+    'typescript_unchanged_main_guards': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_main_replay.py',
+        'ts.domain.typescript-unchanged-main-guards'
+    ),
+    'typescript_unchanged_original_checker': (
+        'som-rs/scripts/rust_output_acceptance/check_rust_unchanged.py',
+        'ts.domain.typescript-unchanged-original-checker'
+    ),
+    'typescript_unchanged_strict_tape': (
+        'som-rs/scripts/hosted_readiness/typescript_regression_http_replay.py',
+        'ts.domain.typescript-unchanged-strict-tape'
+    )
+}
+
 
 
 def failure_record(error):
@@ -81,34 +288,132 @@ def load(reader, repo, name, path):
     return result
 
 
+def _native_controls(repo=None, helper=None, candidate=None):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    if repo is not None:
+        require(type(repo) in {str, type(Path())} and Path(repo).absolute() == controls.root,
+                'actual Domain repository differs from active source owner')
+    if helper is not None:
+        require(type(helper) is str and type(candidate) is str
+                and helper == candidate == controls.helper_revision == controls.candidate_revision,
+                'actual Domain helper/candidate differ from active source owner')
+    return controls
+
+
+def _native_sources(repo, helper, candidate, admission):
+    controls = _native_controls(repo, helper, candidate)
+    require(type(admission) is dict, 'actual Domain source admission data required')
+    module = controls.load_module('runtime.context')
+    require(module.__file__ == str(controls.root / CONTEXT)
+            and module.SourceBytes is __som_native_SourceBytes__,
+            'actual Core-owned SourceBytes class required')
+    sources = __som_native_SourceBytes__(controls.root, controls.helper_revision)
+    authority = controls.load_module('bootstrap.authority')
+    paths = sources.git('ls-tree', '-r', '--name-only', helper).decode('utf-8', 'strict').splitlines()
+    actual = authority.verify(sources.read, 'native-qa-v1', paths,
+                              helper_revision=helper, candidate_revision=candidate)
+    require(actual == admission and actual.get('source_authority_active') is True,
+            'actual source-derived Domain admission differs')
+    return sources
+
+
 class SourceFactories:
     """A data-only source factory reader. It is not a runtime environment."""
     def __init__(self, repo, reader, helper, candidate, admission, data):
-        self.repo, self.helper_revision, self.candidate_revision = Path(repo), helper, candidate
+        controls = _native_controls(repo, helper, candidate)
+        self.repo, self.helper_revision, self.candidate_revision = controls.root, helper, candidate
         self.qa_mode, self.qa_source_authority, self.data = 'native-qa-v1', admission, data
-        self.sources = SimpleNamespace(read=reader)
+        # The public reader argument remains API data. It never loads code.
+        self.sources = _native_sources(self.repo, helper, candidate, admission)
         self.cache, self.modules, self.names = {}, {}, []
+        self.fragments, self.closed, self.lease = [], False, controls.borrow()
 
     def module(self, key, path):
+        controls = _native_controls()
+        require(type(self) is SourceFactories and type(self.closed) is bool and not self.closed,
+                'actual open Domain SourceFactories required')
+        require(type(self.lease) is type(controls), 'actual borrowed Domain module lease required')
+        self.lease.verify_installed()
+        require(type(key) is str and type(path) is str and type(_DOMAIN_MODULE_ROLES) is dict,
+                'fixed Domain module key/path required')
+        require(type(self.qa_source_authority) is dict
+                and type(self.qa_source_authority.get('admitted_repository_python_sources')) is list
+                and all(type(value) is str for value in self.qa_source_authority['admitted_repository_python_sources']),
+                'source-owned Domain source path inventory required')
         require(path in self.qa_source_authority['admitted_repository_python_sources'],
                 'data factory helper is outside exact source admission')
-        if key not in self.modules:
-            name = '_som_ts_domain_' + key
-            self.modules[key] = load(self.sources.read, self.repo, name, path)
-            self.names.append(name)
-        return self.modules[key]
+        require(type(self.repo) is type(controls.root) and self.repo == controls.root
+                and self.helper_revision == controls.helper_revision
+                and self.candidate_revision == controls.candidate_revision
+                and type(self.sources) is __som_native_SourceBytes__
+                and type(self.sources.root) is type(controls.root) and self.sources.root == controls.root
+                and type(self.sources.revision) is str and self.sources.revision == controls.helper_revision
+                and type(self.sources.pins) is dict
+                and self.lease.root == controls.root
+                and self.lease.helper_revision == controls.helper_revision
+                and self.lease.candidate_revision == controls.candidate_revision,
+                'Domain module source owner differs')
+        original_key = key
+        choice = _DOMAIN_MODULE_ROLES.get(key)
+        require(type(choice) is tuple and len(choice) == 2
+                and all(type(value) is str for value in choice) and choice[0] == path,
+                'unlisted fixed Domain module key/path')
+        role = choice[1]
+        require(controls.role_sources.get(role) == path, 'fixed Domain module role source differs')
+        self.sources.read(path)
+        module = controls.load_module(role)
+        require(type(module) is ModuleType and module.__name__ == '_som_ts_domain_' + original_key
+                and module.__file__ == str(self.repo / path), 'actual Domain module namespace/source differs')
+        require(type(self.modules) is dict and (original_key not in self.modules
+                or self.modules[original_key] is module), 'Domain cached module ownership differs')
+        self.modules[original_key] = module
+        return module
 
     def close(self):
-        primary = None
+        controls = _native_controls()
+        require(type(self) is SourceFactories, 'actual Domain SourceFactories cleanup required')
+        if self.closed:
+            return
+        require(type(self.sources) is __som_native_SourceBytes__
+                and type(self.sources.root) is type(controls.root) and self.sources.root == controls.root
+                and type(self.sources.revision) is str and self.sources.revision == controls.helper_revision
+                and type(self.sources.pins) is dict and type(self.fragments) is list,
+                'actual Domain source/fragment ownership required')
+        primary, primary_trace, secondary = None, None, []
         if self.cache.get('typescript_regression_input_binding_closers'):
             try:
                 self.module('explicit_input_teardown', BASE + 'typescript_regression_inputs.py').close(self)
             except BaseException as error:
-                primary = error
-        for name in reversed(self.names):
-            sys.modules.pop(name, None)
+                primary, primary_trace = error, error.__traceback__
+        for scope in reversed(self.fragments):
+            try:
+                scope.close()
+            except BaseException as error:
+                if primary is None:
+                    primary, primary_trace = error, error.__traceback__
+                else:
+                    secondary.append(error)
+        for action in (self.sources.verify, controls.verify_installed):
+            try:
+                action()
+            except BaseException as error:
+                if primary is None:
+                    primary, primary_trace = error, error.__traceback__
+                else:
+                    secondary.append(error)
+        try:
+            require(type(self.lease) is type(controls), 'actual borrowed Domain lease required')
+            self.lease.close()
+        except BaseException as error:
+            if primary is None:
+                primary, primary_trace = error, error.__traceback__
+            else:
+                secondary.append(error)
+        self.closed = True
         if primary is not None:
-            raise primary
+            BaseException.__setattr__(primary, '__som_typescript_domain_cleanup_secondary__', tuple(secondary))
+            raise primary.with_traceback(primary_trace)
 
 
 def command_proof(owner, root, capture, expected):
@@ -262,6 +567,9 @@ def auxiliary_proof(owner, root, steps):
 
 
 def runtime_proof(ctx, owner, capture, data):
+    _native_controls()
+    require(type(ctx) is SourceFactories and type(ctx.closed) is bool and not ctx.closed,
+            'actual open Domain runtime metadata source factory required')
     wheels = ctx.module('typescript_data_runtime_authority', WHEELS)
     sources = wheels.Sources(ctx.repo, ctx.helper_revision)
     policy = owner.parse(sources.read(wheels.POLICY))
@@ -282,24 +590,77 @@ def runtime_proof(ctx, owner, capture, data):
     require(len(support_pin) == 1 and ast.literal_eval(support_pin[0]) == sha(ctx.sources.read(wheels.RUNTIME_SUPPORT)),
             'original runtime support source SHA differs')
     require(name not in sys.modules, 'fresh independent runtime metadata namespace required')
-    reused = ModuleType(name); reused.__file__, reused.__package__, reused.__cached__ = str(ctx.repo / reuse_path), '', None
-    reused.__som_raw_sha256__, reused.q = sha(raw_reuse), support
-    sys.modules[name] = reused; ctx.names.append(name)
-    selected = ast.Module(body=[node for node in parsed.body if node is not q_nodes[0]], type_ignores=[])
-    ast.fix_missing_locations(selected)
-    exec(compile(selected, reused.__file__, 'exec', dont_inherit=True), reused.__dict__)
-    previous_bound = wheels.bound_module
+    controls = _native_controls(ctx.repo, ctx.helper_revision, ctx.candidate_revision)
+    ctx.sources.read(NATIVE_RUNTIME)
+    require(controls.role_sources.get('ts.domain.runtime-verifier') == NATIVE_RUNTIME,
+            'fixed independent Domain runtime verifier source required')
+    reused = controls.load_fragment('ts.domain.runtime-verifier')
+    ctx.fragments.append(reused)
+    require(reused.q is support, 'actual independent Domain runtime support required')
     def fresh_runtime_module(used_sources, requested, path):
         require(wheels.MODULES.get(requested) == path == reuse_path,
                 'only the exact original runtime metadata role can use this fresh namespace')
         require(used_sources.read(path) == raw_reuse, 'runtime metadata source differs from current Git')
         return reused
-    try:
-        wheels.bound_module = fresh_runtime_module
-        reused, qualification, inventory, tools, native = wheels.admitted_runtime(
-            Path(data['runtime_root']), sources, policy, ctx.helper_revision)
-    finally:
-        wheels.bound_module = previous_bound
+    def admitted_metadata():
+        RUNTIME_SUPPORT, QUALIFICATION = wheels.RUNTIME_SUPPORT, wheels.QUALIFICATION
+        BYTE_AUDIT, SOURCE_PINS, REUSE = wheels.BYTE_AUDIT, wheels.SOURCE_PINS, wheels.REUSE
+        PYTHON, re = wheels.PYTHON, wheels.re
+        require, sha, read, parse = wheels.require, wheels.sha, wheels.read, wheels.parse
+        no_links, file_sha, bound_module = wheels.no_links, wheels.file_sha, fresh_runtime_module
+        def admitted_runtime(root, sources, policy, revision):
+            # reuse_runtime imports this shared helper. Bind it before that import.
+            sources.read(RUNTIME_SUPPORT)
+            qualification_raw, audit_raw = sources.read(QUALIFICATION), sources.read(BYTE_AUDIT)
+            source_pins_raw = sources.read(SOURCE_PINS)
+            reuse = bound_module(sources, "som_native_reuse_for_wheels", REUSE)
+            require(sha(audit_raw) == policy["native_authority"]["controller_byte_audit_sha256"], "controller native byte audit differs")
+            qualification = reuse.qualification_data(qualification_raw, audit_raw, source_pins_raw)
+            require(str(root) == qualification["install_prefix"], "native Python root differs from its qualified build prefix")
+            require(qualification["transport_files"]["installed-files.json"] == policy["native_authority"]["qualified_inventory_sha256"], "qualified native inventory authority differs")
+            raw = read(root / "receipt.json")
+            receipt = parse(raw)
+            require(receipt.get("version") == "som.product-runtime-reuse.v1"
+                    and receipt.get("status") == "audited_runtime_reinstalled_and_rechecked_for_hosted_tests"
+                    and receipt.get("tested_sha") == revision and receipt.get("qualified_for") == "later_GitHub_tests_only"
+                    and receipt.get("installed_tree_verified_before") is True and receipt.get("installed_tree_verified_after") is True
+                    and receipt.get("product_runtime_ready") is False and receipt.get("product_acceptance_passed") is False,
+                    "verified native reuse receipt required")
+            binding = receipt.get("qualification", {})
+            require(binding.get("manifest_sha256") == sha(qualification_raw) and binding.get("audit_sha256") == sha(audit_raw)
+                    and binding.get("installed_inventory_sha256") == policy["native_authority"]["qualified_inventory_sha256"],
+                    "reuse receipt qualification source bindings differ")
+            inventory = reuse.read_inventory(root / "qualification-evidence/installed-files.json", qualification)
+            verified = reuse.verify_installed_tree(root, inventory, qualification)
+            admitted = receipt.get("admitted_executables", {})
+            require(set(admitted) == set(qualification["admitted_paths"]) and len(admitted) == 41, "complete native binary recheck required")
+            for name, row in admitted.items():
+                require(row.get("status") == "hash_and_version_rechecked" and row.get("version_exit_code") == 0
+                        and row.get("qualified_for") == "later_GitHub_tests_only"
+                        and row.get("authority") == "controller_audited_saved_artifact"
+                        and row.get("sha256") == inventory[name]["sha256"], "one of the complete native tool rechecks failed")
+            tools = {}
+            for name, relative_path in (("python", "install/python/bin/python3.12"), ("uv", "install/uv/bin/uv")):
+                row = admitted[relative_path]
+                path = root / relative_path
+                no_links(path)
+                require(path.is_file() and path.stat().st_mode & 0o111, "qualified executable is not regular executable")
+                require(row.get("status") == "hash_and_version_rechecked" and row.get("version_exit_code") == 0
+                        and row.get("qualified_for") == "later_GitHub_tests_only"
+                        and row.get("authority") == "controller_audited_saved_artifact"
+                        and row.get("sha256") == policy["native_sha256"][name] == file_sha(path), "native tool admission differs")
+                text = row.get("version_stdout", "")
+                require(isinstance(text, str) and (text.strip() == "Python " + PYTHON if name == "python"
+                                                 else re.match(r"uv 0\.9\.9(?:\s|$)", text) is not None), "native version differs")
+                tools[name] = path
+            record = {"reuse_receipt_sha256": sha(raw), "tree": verified,
+                      "qualification_sha256": sources.pins[QUALIFICATION]["sha256"],
+                      "inventory_sha256": qualification["transport_files"]["installed-files.json"],
+                      "python_sha256": policy["native_sha256"]["python"], "uv_sha256": policy["native_sha256"]["uv"],
+                      "qualification_scope": "temporary saved artifact reuse for GitHub qualification; not permanent readiness"}
+            return reuse, qualification, inventory, tools, record
+        return admitted_runtime(Path(data['runtime_root']), sources, policy, ctx.helper_revision)
+    reused, qualification, inventory, tools, native = admitted_metadata()
     reused.verify_installed_tree(Path(data['runtime_root']), inventory, qualification)
     for path, pin in sources.pins.items():
         require(sha(ctx.sources.read(path)) == pin['sha256'], 'runtime source role differs from exact current Git')
@@ -318,12 +679,9 @@ def runtime_proof(ctx, owner, capture, data):
             'exact original Rust metadata support bootstrap/SHA required')
     rust_name = '_som_ts_domain_independent_rust_tool_metadata'
     require(rust_name not in sys.modules, 'fresh independent Rust metadata namespace required')
-    rust = ModuleType(rust_name); rust.__file__, rust.__package__, rust.__cached__ = str(ctx.repo / RUST_TOOLS), '', None
-    rust.__som_raw_sha256__, rust.q = sha(rust_raw), support
-    sys.modules[rust_name] = rust; ctx.names.append(rust_name)
-    selected = ast.Module(body=[node for node in rust_tree.body if node is not rust_q[0]], type_ignores=[])
-    ast.fix_missing_locations(selected)
-    exec(compile(selected, rust.__file__, 'exec', dont_inherit=True), rust.__dict__)
+    rust = ctx.module('typescript_native_rust_metadata_verifier', NATIVE_RUST_TOOLS)
+    require(rust.q is ctx.module('typescript_independent_rust_metadata_support', wheels.RUNTIME_SUPPORT),
+            'actual independent Domain Rust metadata support required')
     profile = rust.profile_data(ctx.sources.read('som-rs/contracts/native-tools-v1/product-rust-tools-v1.json'))
     rust.verify_qualification(Path(data['rust_tools_root']), profile, ctx.helper_revision)
     rust.verify_install_tree(Path(data['rust_tools_root']), profile)
@@ -398,6 +756,8 @@ def required_unrun_obligations(before_role):
 
 
 def verify(root, source_reader, helper, candidate, *, repo, admission, shared_proof, verification_evidence_root):
+    controls = _native_controls(repo, helper, candidate)
+    require(type(admission) is dict, 'actual source admission data required')
     require(admission.get('source_authority_active') is True
             and admission.get('helper_revision') == admission.get('candidate_revision') == helper == candidate,
             'actual native source authority before domain helper execution required')
@@ -407,8 +767,14 @@ def verify(root, source_reader, helper, candidate, *, repo, admission, shared_pr
             'complete TypeScript raw-domain source admission required')
     owner_name, audit_name = '_som_ts_domain_owner_contract', '_som_ts_domain_original_raw_audit'
     initial_modules = dict(sys.modules)
-    owner = load(source_reader, repo, owner_name, OWNER)
-    ctx = None
+    native_sources = _native_sources(repo, helper, candidate, admission)
+    source_reader = native_sources.read
+    require(controls.role_sources.get('ts.domain.owner-contract') == OWNER,
+            'fixed Domain owner contract source required')
+    owner = controls.load_module('ts.domain.owner-contract')
+    require(owner.__file__ == str(controls.root / OWNER) and owner.__name__ == owner_name,
+            'actual Domain owner contract namespace/source differs')
+    ctx, audit_transitions = None, []
     try:
         raw = owner.read(root / 'result.json'); capture = owner.parse(raw)
         data = owner.parse(owner.read(root / 'context.input.json'))
@@ -472,7 +838,11 @@ def verify(root, source_reader, helper, candidate, *, repo, admission, shared_pr
         rebase = ctx.module('current_typescript_refusal_rebase', REBASE)
         raw_rebase = rebase.verify_capture(ctx, root / 'capture/typescript002-refusal-rebase',
                                           root / 'inputs/legacy_run/run-005')
-        audit = load(source_reader, repo, audit_name, RAW_AUDIT)
+        require(controls.role_sources.get('ts.domain.original-raw-audit') == RAW_AUDIT,
+                'fixed Domain original raw audit source required')
+        audit = controls.load_module('ts.domain.original-raw-audit')
+        require(audit.__file__ == str(controls.root / RAW_AUDIT) and audit.__name__ == audit_name,
+                'actual Domain original raw audit namespace/source differs')
         original_reader = audit.Reader
         mappings = [
             (str(Path(capture['original_run'])), root / 'capture'),
@@ -511,14 +881,24 @@ def verify(root, source_reader, helper, candidate, *, repo, admission, shared_pr
                     require(source_reader(path.relative_to(repo).as_posix()) == body,
                             'raw audit contract/data differs from exact current Git')
                 return body
+        # Preserve every inherited original method as a direct source-owned
+        # slot. Core can then check both original and adapter function origins.
+        for name, value in type.__getattribute__(original_reader, '__dict__').items():
+            if name not in type.__getattribute__(BoundReader, '__dict__') and callable(value):
+                setattr(BoundReader, name, value)
+        audit_transitions.append((audit, 'Reader', original_reader, BoundReader))
         audit.Reader = BoundReader
         # Explicit current-mode source expectations. The archived auditor and its
         # historical constants remain byte exact in Git; no old acceptance runs.
         digest = ctx.module('native_digest_source_factory', DIGESTS)
         factory, _, _, ts_after = digest.authorities(ctx, 'typescript')
         _, _, _, rust_after = digest.authorities(ctx, 'rust')
+        original_candidate = audit.CAND_REL
+        audit_transitions.extend([(audit, 'TS_TC_SHA', audit.TS_TC_SHA, ts_after['target_contract']),
+                                  (audit, 'RS_TC_SHA', audit.RS_TC_SHA, rust_after['target_contract'])])
         audit.TS_TC_SHA, audit.RS_TC_SHA = ts_after['target_contract'], rust_after['target_contract']
         audit.CAND_REL = str(root.parent / 'candidate')
+        audit_transitions.append((audit, 'CAND_REL', original_candidate, audit.CAND_REL))
         original_assets = audit.Audit.expected_ts_assets
         def current_assets(instance, row):
             result = original_assets(instance, row)
@@ -526,6 +906,7 @@ def verify(root, source_reader, helper, candidate, *, repo, admission, shared_pr
             result['formatter']['sha256'] = ts_after['formatter']
             require(result['backend']['sha256'] == ts_after['backend'], 'native TypeScript backend source vector differs')
             return result
+        audit_transitions.append((audit.Audit, 'expected_ts_assets', original_assets, current_assets))
         audit.Audit.expected_ts_assets = current_assets
         check = audit.Audit(repo, root / 'capture')
         families = ('python_unchanged', 'target_selection', 'scope_checks', 'bundle_checks',
@@ -572,6 +953,15 @@ def verify(root, source_reader, helper, candidate, *, repo, admission, shared_pr
         failure = {'primary': None, 'traceback': None, 'failure': None, 'secondary': []}
         if primary is not None:
             remember_failure(failure, 'original_domain_assertion', primary)
+        for namespace, key, before, installed in reversed(audit_transitions):
+            try:
+                require(type(namespace) in {ModuleType, type}, 'owned raw audit namespace type differs')
+                values = (ModuleType.__getattribute__(namespace, '__dict__') if type(namespace) is ModuleType
+                          else type.__getattribute__(namespace, '__dict__'))
+                require(values.get(key) is installed, 'raw audit adapter was replaced by another owner: ' + key)
+                setattr(namespace, key, before)
+            except BaseException as error:
+                remember_failure(failure, 'domain_raw_audit_restore_' + key, error)
         if ctx is not None:
             try:
                 ctx.close()
@@ -585,8 +975,6 @@ def verify(root, source_reader, helper, candidate, *, repo, admission, shared_pr
                                 'product_acceptance_passed': False}) + b'\n')
                 except BaseException as evidence:
                     remember_failure(failure, 'domain_source_cleanup_evidence', evidence)
-        sys.modules.pop(audit_name, None)
-        sys.modules.pop(owner_name, None)
         for name, module in list(sys.modules.items()):
             if name in initial_modules:
                 continue
@@ -597,9 +985,16 @@ def verify(root, source_reader, helper, candidate, *, repo, admission, shared_pr
                     try:
                         require(getattr(module, '__som_raw_sha256__', None) == sha(source_reader(relative)),
                                 'unbound new source module cannot be silently removed')
-                        sys.modules.pop(name, None)
+                        # Core retains this exact namespace and actual ledger.
+                        controls.verify_installed()
                     except BaseException as error:
                         remember_failure(failure, 'domain_source_module_postcheck_' + name, error)
+        for phase, action in (('domain_exact_source_postcheck', native_sources.verify),
+                              ('domain_active_ledger_postcheck', controls.verify_installed)):
+            try:
+                action()
+            except BaseException as error:
+                remember_failure(failure, phase, error)
         if failure['primary'] is not None:
             try:
                 with (Path(verification_evidence_root) / 'domain-first-failure.json').open('xb') as stream:

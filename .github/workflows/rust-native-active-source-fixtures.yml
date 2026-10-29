@@ -1,7 +1,7 @@
 name: Native active source fixtures
 on:
   push:
-    branches: [codex/m12-ts-producer-retention-source-fixtures-v1]
+    branches: [codex/m12-native-ts-domain-command-source-fixtures-v1]
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,8 +20,23 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: producer-raw-retention
-            script: som-rs/scripts/hosted_readiness/test_typescript_input_producer_retention.py
+          - name: native-domain
+            script: som-rs/scripts/hosted_readiness/test_native_ts_domain_callers.py
+            legacy: false
+          - name: native-command-rust
+            script: som-rs/scripts/hosted_readiness/test_native_ts_command_rust_fragments.py
+            legacy: false
+          - name: ts-v2-contract
+            script: som-rs/scripts/hosted_readiness/test_typescript_regression_v2_contract.py
+            legacy: false
+          - name: ts-v3-failures
+            script: som-rs/scripts/hosted_readiness/test_typescript_regression_v3_failures.py
+            legacy: false
+          - name: ts-v3-replay
+            script: som-rs/scripts/hosted_readiness/test_typescript_regression_v3_replay.py
+            legacy: false
+          - name: shared-helper-regression
+            script: som-rs/scripts/hosted_readiness/test_native_shared_helper_callers.py
             legacy: false
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
