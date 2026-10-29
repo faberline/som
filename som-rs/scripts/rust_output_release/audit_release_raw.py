@@ -9,6 +9,7 @@ contacts recorded ports, signals recorded PIDs, or uploads plaintext.
 from __future__ import annotations
 
 import argparse
+import base64
 from collections import Counter
 import hashlib
 import json
@@ -32,6 +33,8 @@ CANDIDATE_SHA256 = '59dab78a0f401a86e028c186285a888cfdf304b2d077e167d46b20d1131a
 PREVIOUS_SHA256 = '2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c'
 BASE_CONTROLLER_SHA256 = '289a8470c5de2a183b01c8a138ecb4bc6cfe80a624f0291b32b779cc854bfb12'
 GH_BINARY_SHA256 = '1ffcdcff76db02ff4f9de0fbf784ed4b6d18e434e89450db314b3f77d0f9443b'
+MAC_NODE = Path('/opt/homebrew/Cellar/node/26.5.0/bin/node')
+MAC_NODE_SHA256 = '70851490e028b3d699a8d6d4e1de909af2a989359ae807974c92af9c6580a8e8'
 RESTORE_SOURCES = {
     'som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs':
         'ac5bfe21853712a38a8f5f032f44a4151c7bf7c2c54b669095704ba20e84a822',
@@ -260,7 +263,7 @@ def check_source(source, head, report):
                 'producer source differs: ' + name)
 
 
-def decrypt_original_zip(archive, root, source):
+def decrypt_original_zip(archive, root, source, node='node'):
     """Restore the authenticated ZIP using the pinned producer's source."""
     require(not root.exists() and root.parent.is_dir(), 'restore target must be fresh')
     runner_temp = Path(os.environ['RUNNER_TEMP']).resolve()
@@ -275,6 +278,20 @@ def decrypt_original_zip(archive, root, source):
             index_raw = z.read('evidence-index.json')
             index = json.loads(index_raw)
             require(index.get('version') == 'som.m6-evidence-index.v1' and index['packages'], 'invalid index')
+            ring = json.loads(os.environ['M6_INPUTS_KEYRING'])
+            valid_names = isinstance(ring, dict) and all(isinstance(k, str) and HASH.fullmatch(k) for k in ring)
+            key_present = valid_names and index.get('key_id') in ring
+            print(json.dumps({'phase': 'restore_preflight', 'keyring_names_valid': bool(valid_names),
+                              'selected_key_present': bool(key_present)}), flush=True)
+            require(key_present, 'selected evidence key is absent')
+            try:
+                key = bytearray(base64.b64decode(ring[index['key_id']], validate=True))
+            except (ValueError, TypeError):
+                raise ValueError('selected evidence key has invalid encoding') from None
+            require(len(key) == 32 and base64.b64encode(key).decode() == ring[index['key_id']],
+                    'selected evidence key has invalid encoding')
+            key[:] = bytes(len(key))
+            del key, ring
             expected = {'evidence-index.json'}
             for i, item in enumerate(index['packages']):
                 manifest, cipher = f'package-{i:03}.manifest.json', f'package-{i:03}.sealed'
@@ -286,10 +303,14 @@ def decrypt_original_zip(archive, root, source):
                     for block in iter(lambda: src.read(1024 * 1024), b''):
                         dst.write(block)
         script = regular(source, 'som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs')
-        done = subprocess.run(['node', str(script), '--root', str(sealed), '--out', str(root),
+        done = subprocess.run([str(node), str(script), '--root', str(sealed), '--out', str(root),
                                '--index-sha256', sha(index_raw)], stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE, timeout=1200, check=False)
-        require(done.returncode == 0, 'authenticated evidence restoration failed')
+        if done.returncode != 0:
+            kind = 'restorer_refusal' if done.stderr == b'hosted evidence restore refused\n' else 'node_or_runtime_error'
+            print(json.dumps({'phase': 'restore_failure', 'exit_code': done.returncode,
+                              'stderr_kind': kind, 'stderr_bytes': len(done.stderr)}), flush=True)
+            raise ValueError('authenticated evidence restoration failed')
         receipt = json.loads(done.stdout)
         require(receipt['status'] == 'restored' and receipt['index_sha256'] == sha(index_raw),
                 'restoration receipt mismatch')
@@ -636,7 +657,8 @@ def main():
     verify_receipt(args.identity, args.identity_sha256, expected, archive)
     root = args.restored.resolve()
     require(not root.exists(), 'restore target is not fresh')
-    restoration = decrypt_original_zip(archive, root, source)
+    require(MAC_NODE.is_file() and digest(MAC_NODE) == MAC_NODE_SHA256, 'pinned macOS Node binary differs')
+    restoration = decrypt_original_zip(archive, root, source, MAC_NODE)
     universe = verify_universe(archive, root)
     require(restoration['index_sha256'] == universe['index_sha256']
             and restoration['package_count'] == universe['packages']

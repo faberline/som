@@ -125,6 +125,11 @@ class AuthenticatedRestoreTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'authenticated evidence restoration failed'):
             audit.decrypt_original_zip(self.archive, self.root / 'restored', self.source)
 
+    def test_selected_key_absent_reports_only_safe_status(self):
+        os.environ['M6_INPUTS_KEYRING'] = json.dumps({'b' * 64: self.ring['a' * 64]})
+        with self.assertRaisesRegex(ValueError, 'selected evidence key is absent'):
+            audit.decrypt_original_zip(self.archive, self.root / 'restored', self.source)
+
     def test_tampered_cipher_refused(self):
         with zipfile.ZipFile(self.archive, 'r') as z:
             files = {i.filename: z.read(i.filename) for i in z.infolist()}
