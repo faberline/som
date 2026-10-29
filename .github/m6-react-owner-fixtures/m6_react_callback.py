@@ -93,7 +93,7 @@ COLLECTOR_MANUAL_SOURCES = frozenset({
     'som-rs/tests/typescript-output-v1/check_python_controls.py',
     'som-rs/tests/react-output-v1/run_gates.py',
 })
-EXECUTABLE_SOURCES = frozenset({SELF, COLLECTOR, AUDITOR, LAUNCHER, CONTEXT, AUTHORITY, DRIVER, ORACLE,
+EXECUTABLE_SOURCES = frozenset({SELF, COLLECTOR, AUDITOR, LAUNCHER, GRAPH, CONTEXT, AUTHORITY, DRIVER, ORACLE,
     *COLLECTOR_MANUAL_SOURCES,
     *[AUDIT_BASE + name + '.py' for name in AUDIT_MODULES],
     *[path for path in DERIVED_SOURCES if path.endswith('.py')]})
