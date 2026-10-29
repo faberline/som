@@ -396,8 +396,16 @@ def audit_python_authority(lifecycle,original_repo,expected_version='3.12.11'):
     need(info.get('pid')==row['pid'] and info.get('executable')==executable and info.get('prefix')==str(Path(executable).parent.parent)
          and info.get('version')==expected_version and type(info.get('base_executable')) is str and Path(info['base_executable']).is_absolute()
          and type(info.get('base_prefix')) is str and Path(info['base_prefix']).is_absolute()
+         and type(info.get('base_prefix_real')) is str and Path(info['base_prefix_real']).is_absolute()
          and type(info.get('native_image')) is str and Path(info['native_image']).is_absolute()
-         and Path(info['native_image']).is_relative_to(Path(info['base_prefix'])),'Python venv authority differs')
+         and Path(info['native_image']).is_relative_to(Path(info['base_prefix_real']))
+         and Path(info['base_executable']).is_relative_to(Path(info['base_prefix_real'])),'Python venv authority differs')
+    prefixes=[]
+    for name,path in (('base_prefix_stat',info['base_prefix']),('base_real_stat',info['base_prefix_real'])):
+        code,raw=a.command_raw(lifecycle,row[name],['/usr/bin/stat','-L','-f','%d %i',path]);fields=raw.decode().split()
+        need(code==0 and len(fields)==2 and all(x.isdigit() and int(x)>0 for x in fields),'Python base prefix stat differs')
+        prefixes.append(fields)
+    need(prefixes[0]==prefixes[1],'Python base prefix resolves to another directory')
     for name in ('image','launcher'):
         item=row[name+'_stat_value'] if name=='launcher' else row['image_stat']
         file=row[name+'_file'];digest=row[name+'_sha256'];expected='python-authority-'+name+'.raw'

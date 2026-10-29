@@ -38,7 +38,9 @@ def capture(observer,root,python,probe,cwd):
             ('ps',['/bin/ps','-ww','-p',pid,'-o','pid=,ppid=,pgid=,command=']),
             ('lsof',['/usr/sbin/lsof','-nP','-a','-p',pid,'-d','txt','-FfDin']),
             ('stat',['/usr/bin/stat','-L','-f','%d %i %z %Lp',str(image)]),
-            ('launcher_stat',['/usr/bin/stat','-L','-f','%d %i %z %Lp',str(python)])):
+            ('launcher_stat',['/usr/bin/stat','-L','-f','%d %i %z %Lp',str(python)]),
+            ('base_prefix_stat',['/usr/bin/stat','-L','-f','%d %i',info['base_prefix']]),
+            ('base_real_stat',['/usr/bin/stat','-L','-f','%d %i',info['base_prefix_real']])):
             row[name]=observer.command(command)
         proc.stdin.write(b'x');proc.stdin.flush();tail,stderr=proc.communicate(timeout=30)
         row['stdout']=observer.retain('python-authority.stdout',line+tail)

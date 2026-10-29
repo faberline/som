@@ -13,7 +13,7 @@ if not 0<size.value<1024*1024:raise SystemExit(2)
 buffer=ctypes.create_string_buffer(size.value)
 if function(buffer,ctypes.byref(size))!=0:raise SystemExit(2)
 report={'pid':os.getpid(),'executable':sys.executable,'prefix':sys.prefix,'base_prefix':sys.base_prefix,
-        'base_executable':getattr(sys,'_base_executable',None),'version':'.'.join(map(str,sys.version_info[:3])),
+        'base_executable':getattr(sys,'_base_executable',None),'base_prefix_real':os.path.realpath(sys.base_prefix),'version':'.'.join(map(str,sys.version_info[:3])),
         'native_image':os.path.realpath(os.fsdecode(buffer.value))}
 print(json.dumps(report,sort_keys=True),flush=True)
 if sys.stdin.buffer.read(1)!=b'x':raise SystemExit(2)
