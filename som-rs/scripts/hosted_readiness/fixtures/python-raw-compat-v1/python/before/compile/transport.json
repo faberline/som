@@ -1,0 +1,28 @@
+{
+  "bytes": 4035,
+  "headers": [
+    [
+      "content-type",
+      "application/json"
+    ],
+    [
+      "content-length",
+      "4035"
+    ],
+    [
+      "connection",
+      "close"
+    ],
+    [
+      "date",
+      "Thu, 29 Oct 2026 16:10:17 GMT"
+    ]
+  ],
+  "method": "POST",
+  "owned_pid": 10211,
+  "port": 19061,
+  "read_complete": true,
+  "route": "/v1/compile",
+  "sha256": "85a2fa60890628b6972490103fa1d598de7bf824f9a59e2e8d62404d83a417a3",
+  "status": 200
+}

@@ -1,0 +1,78 @@
+name: Python retained raw data whole57
+on:
+  push:
+    branches: [codex/m12-python-raw-response-data57-v1]
+  workflow_dispatch:
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+env:
+  HELPER_REVISION: ${{ github.sha }}
+  HISTORICAL_SOURCE: 8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af
+  PYTHONDONTWRITEBYTECODE: '1'
+jobs:
+  whole-retained-data:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Bind actual source and exact interpreter
+        run: |
+          test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
+          git rev-parse HEAD > tested-sha.txt
+          git rev-parse 'HEAD^{tree}' > tested-tree.txt
+          python3 --version > python-version.txt 2>&1
+          git --version > git-version.txt
+          test "$(cat python-version.txt)" = 'Python 3.12.3'
+          git ls-tree -r HEAD -- .github/workflows/python-raw-response-data57.yml som-code-python/data/block-contracts/composed-quality.json som-code-python/data/block-contracts/composed.json som-code-python/data/block-contracts/flow-v7-compact.json som-code-python/data/block-contracts/flow-v7.json som-core/block_templates/flow_compact/engine.py.tpl som-core/block_templates/flow_compact/forward_support.py.tpl som-rs/Cargo.lock som-rs/Cargo.toml som-rs/contracts/compiler-v1/canonical-vectors.json som-rs/contracts/native-tools-v1/CONTRACT.md som-rs/contracts/native-tools-v1/artifacts.json som-rs/contracts/python-literal-encoding.v1.json som-rs/contracts/python-quality-v1/pyproject.toml som-rs/contracts/related-business.v1.md som-rs/contracts/related-flow.v1.md som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/DATA_PROOF.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/before/assemble/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/before/assemble/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/before/assemble/transport.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/before/compile/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/before/compile/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/before/compile/transport.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/candidate/assemble/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/candidate/assemble/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/candidate/assemble/transport.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/candidate/compile/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/candidate/compile/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/candidate/compile/transport.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/proposal-manifest.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/before/assemble/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/before/assemble/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/before/assemble/transport.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/before/compile/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/before/compile/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/before/compile/transport.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/candidate/assemble/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/candidate/assemble/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/candidate/assemble/transport.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/candidate/compile/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/candidate/compile/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/candidate/compile/transport.json som-rs/scripts/hosted_readiness/python_backend_source_data.py som-rs/scripts/hosted_readiness/python_raw_response_compat.py som-rs/scripts/hosted_readiness/raw_digest_compat.py som-rs/scripts/hosted_readiness/test_python_backend_source_data.py som-rs/scripts/hosted_readiness/test_python_raw_response_compat.py som-rs/scripts/hosted_readiness/test_raw_digest_compat.py som-rs/src/business.rs som-rs/src/cnl.rs som-rs/src/cnl_semantics.rs som-rs/src/compiler.rs som-rs/src/composed.rs som-rs/src/flow.rs som-rs/src/flow_compact.rs som-rs/src/json_diagnostics.rs som-rs/src/lib.rs som-rs/src/main.rs som-rs/src/planner.rs som-rs/src/python_names.rs som-rs/src/quality.rs som-rs/src/related.rs som-rs/src/strict_json.rs > selected-git-blobs.txt
+          sha256sum -- .github/workflows/python-raw-response-data57.yml som-code-python/data/block-contracts/composed-quality.json som-code-python/data/block-contracts/composed.json som-code-python/data/block-contracts/flow-v7-compact.json som-code-python/data/block-contracts/flow-v7.json som-core/block_templates/flow_compact/engine.py.tpl som-core/block_templates/flow_compact/forward_support.py.tpl som-rs/Cargo.lock som-rs/Cargo.toml som-rs/contracts/compiler-v1/canonical-vectors.json som-rs/contracts/native-tools-v1/CONTRACT.md som-rs/contracts/native-tools-v1/artifacts.json som-rs/contracts/python-literal-encoding.v1.json som-rs/contracts/python-quality-v1/pyproject.toml som-rs/contracts/related-business.v1.md som-rs/contracts/related-flow.v1.md som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/DATA_PROOF.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/before/assemble/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/before/assemble/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/before/assemble/transport.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/before/compile/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/before/compile/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/before/compile/transport.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/candidate/assemble/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/candidate/assemble/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/candidate/assemble/transport.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/candidate/compile/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/candidate/compile/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/omitted/candidate/compile/transport.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/proposal-manifest.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/before/assemble/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/before/assemble/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/before/assemble/transport.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/before/compile/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/before/compile/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/before/compile/transport.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/candidate/assemble/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/candidate/assemble/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/candidate/assemble/transport.json som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/candidate/compile/request.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/candidate/compile/response.raw som-rs/scripts/hosted_readiness/fixtures/python-raw-compat-v1/python/candidate/compile/transport.json som-rs/scripts/hosted_readiness/python_backend_source_data.py som-rs/scripts/hosted_readiness/python_raw_response_compat.py som-rs/scripts/hosted_readiness/raw_digest_compat.py som-rs/scripts/hosted_readiness/test_python_backend_source_data.py som-rs/scripts/hosted_readiness/test_python_raw_response_compat.py som-rs/scripts/hosted_readiness/test_raw_digest_compat.py som-rs/src/business.rs som-rs/src/cnl.rs som-rs/src/cnl_semantics.rs som-rs/src/compiler.rs som-rs/src/composed.rs som-rs/src/flow.rs som-rs/src/flow_compact.rs som-rs/src/json_diagnostics.rs som-rs/src/lib.rs som-rs/src/main.rs som-rs/src/planner.rs som-rs/src/python_names.rs som-rs/src/quality.rs som-rs/src/related.rs som-rs/src/strict_json.rs > source-files-sha256.txt
+      - name: Supply only the exact immutable old source objects
+        run: |
+          git --no-replace-objects -c protocol.version=2 fetch --no-tags --depth=1 origin "$HISTORICAL_SOURCE"
+          test "$(git --no-replace-objects rev-parse --verify 'FETCH_HEAD^{commit}')" = "$HISTORICAL_SOURCE"
+          git --no-replace-objects cat-file -e "$HISTORICAL_SOURCE^{commit}"
+          git --no-replace-objects rev-parse --verify "$HISTORICAL_SOURCE^{commit}" > historical-source.txt
+          test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
+      - name: Run all three complete fixture files and retain each result
+        run: |
+          set -o pipefail
+          set +e
+          overall_status=0
+          for fixture in test_python_raw_response_compat test_python_backend_source_data test_raw_digest_compat; do
+            python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/$fixture.py" -v 2>&1 | tee "$fixture.log"
+            pipeline_status=("${PIPESTATUS[@]}")
+            printf '%s\n' "${pipeline_status[0]}" > "$fixture-python-exit-code.txt"
+            printf '%s\n' "${pipeline_status[1]}" > "$fixture-tee-exit-code.txt"
+            if [ "${pipeline_status[0]}" -ne 0 ] || [ "${pipeline_status[1]}" -ne 0 ]; then overall_status=1; fi
+          done
+          exit "$overall_status"
+      - name: Retain full source identity and all first failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: python-retained-raw-data-whole57
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            tested-sha.txt
+            tested-tree.txt
+            python-version.txt
+            git-version.txt
+            selected-git-blobs.txt
+            source-files-sha256.txt
+            historical-source.txt
+            test_python_raw_response_compat.log
+            test_python_raw_response_compat-python-exit-code.txt
+            test_python_raw_response_compat-tee-exit-code.txt
+            test_python_backend_source_data.log
+            test_python_backend_source_data-python-exit-code.txt
+            test_python_backend_source_data-tee-exit-code.txt
+            test_raw_digest_compat.log
+            test_raw_digest_compat-python-exit-code.txt
+            test_raw_digest_compat-tee-exit-code.txt

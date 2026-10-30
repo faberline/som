@@ -1,0 +1,110 @@
+{
+  "version": "som.root.approved-mac-retained-v1-raw-fixture-manifest.v1",
+  "members": {
+    "omitted/before/compile/request.raw": {
+      "bytes": 600,
+      "sha256": "154de99f48bf44c6054258a21e0cdbbaacf8794971d2950ea44ca0461a58824e"
+    },
+    "omitted/before/compile/response.raw": {
+      "bytes": 4035,
+      "sha256": "85a2fa60890628b6972490103fa1d598de7bf824f9a59e2e8d62404d83a417a3"
+    },
+    "omitted/before/compile/transport.json": {
+      "bytes": 468,
+      "sha256": "151c5a986e0268bf619504aa22018aee03f214c1df1f8d1b64bf0308d251f956"
+    },
+    "omitted/before/assemble/request.raw": {
+      "bytes": 4021,
+      "sha256": "d5ca56f0e57a1a1e8d9fea4d66b8f4dbc630d4fd78243657aecb77d901deb7ba"
+    },
+    "omitted/before/assemble/response.raw": {
+      "bytes": 5156,
+      "sha256": "2d35cf5c6c8f870eaa727f4adc807087d1f2ff9e0d4c865e880d0fc24c00259b"
+    },
+    "omitted/before/assemble/transport.json": {
+      "bytes": 469,
+      "sha256": "56108b5ebfc28124a4abbd1c448f8ebf8db5d08101b0b879a93bb253fab0e353"
+    },
+    "omitted/candidate/compile/request.raw": {
+      "bytes": 600,
+      "sha256": "154de99f48bf44c6054258a21e0cdbbaacf8794971d2950ea44ca0461a58824e"
+    },
+    "omitted/candidate/compile/response.raw": {
+      "bytes": 4035,
+      "sha256": "f1d9e2ab46dd1aba0f536a90101b080bff5dd08dfedabb9cb029467d56bc82f2"
+    },
+    "omitted/candidate/compile/transport.json": {
+      "bytes": 468,
+      "sha256": "323eb3b2472e405bc61595811ce51c44224ba7da4407ef24ec948c08b3f7c304"
+    },
+    "omitted/candidate/assemble/request.raw": {
+      "bytes": 4021,
+      "sha256": "6930742b07a28dcc6c283251d9b97ac7eab6701b8aca84c1397902ce4c1957c2"
+    },
+    "omitted/candidate/assemble/response.raw": {
+      "bytes": 5156,
+      "sha256": "2d35cf5c6c8f870eaa727f4adc807087d1f2ff9e0d4c865e880d0fc24c00259b"
+    },
+    "omitted/candidate/assemble/transport.json": {
+      "bytes": 469,
+      "sha256": "45e4c41bd15bdf9f13c676aa3aff19c6f87ff55e38cb32947a8019024ffb3174"
+    },
+    "python/before/compile/request.raw": {
+      "bytes": 618,
+      "sha256": "e3cee4ca7e97c1161482aff5b7d0a41838aade8c88da0ffce3675679a6120e40"
+    },
+    "python/before/compile/response.raw": {
+      "bytes": 4035,
+      "sha256": "85a2fa60890628b6972490103fa1d598de7bf824f9a59e2e8d62404d83a417a3"
+    },
+    "python/before/compile/transport.json": {
+      "bytes": 468,
+      "sha256": "151c5a986e0268bf619504aa22018aee03f214c1df1f8d1b64bf0308d251f956"
+    },
+    "python/before/assemble/request.raw": {
+      "bytes": 4021,
+      "sha256": "d5ca56f0e57a1a1e8d9fea4d66b8f4dbc630d4fd78243657aecb77d901deb7ba"
+    },
+    "python/before/assemble/response.raw": {
+      "bytes": 5156,
+      "sha256": "2d35cf5c6c8f870eaa727f4adc807087d1f2ff9e0d4c865e880d0fc24c00259b"
+    },
+    "python/before/assemble/transport.json": {
+      "bytes": 469,
+      "sha256": "56108b5ebfc28124a4abbd1c448f8ebf8db5d08101b0b879a93bb253fab0e353"
+    },
+    "python/candidate/compile/request.raw": {
+      "bytes": 618,
+      "sha256": "e3cee4ca7e97c1161482aff5b7d0a41838aade8c88da0ffce3675679a6120e40"
+    },
+    "python/candidate/compile/response.raw": {
+      "bytes": 4035,
+      "sha256": "f1d9e2ab46dd1aba0f536a90101b080bff5dd08dfedabb9cb029467d56bc82f2"
+    },
+    "python/candidate/compile/transport.json": {
+      "bytes": 468,
+      "sha256": "323eb3b2472e405bc61595811ce51c44224ba7da4407ef24ec948c08b3f7c304"
+    },
+    "python/candidate/assemble/request.raw": {
+      "bytes": 4021,
+      "sha256": "6930742b07a28dcc6c283251d9b97ac7eab6701b8aca84c1397902ce4c1957c2"
+    },
+    "python/candidate/assemble/response.raw": {
+      "bytes": 5156,
+      "sha256": "2d35cf5c6c8f870eaa727f4adc807087d1f2ff9e0d4c865e880d0fc24c00259b"
+    },
+    "python/candidate/assemble/transport.json": {
+      "bytes": 469,
+      "sha256": "45e4c41bd15bdf9f13c676aa3aff19c6f87ff55e38cb32947a8019024ffb3174"
+    },
+    "DATA_PROOF.json": {
+      "bytes": 6728,
+      "sha256": "362e6b6de7dde2be3f88af08a9e541abc397a1b2a14d62e62601f7870715cab5"
+    }
+  },
+  "raw_fixture_members": 24,
+  "raw_source_bytes_unchanged": true,
+  "data_proof_only": true,
+  "active_policy": false,
+  "product_acceptance_passed": false
+}
