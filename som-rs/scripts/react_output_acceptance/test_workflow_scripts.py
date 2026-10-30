@@ -28,7 +28,7 @@ class WorkflowScriptsTests(unittest.TestCase):
         self.check_inline_python("m6-retained-audit.yml", 3)
 
     def test_release_inline_python_is_valid_before_any_conditional_stage_runs(self):
-        self.check_inline_python("m6-release.yml", 1)
+        self.check_inline_python("m6-release.yml", 4)
 
 
 if __name__ == "__main__":
