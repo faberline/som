@@ -1,0 +1,40 @@
+{
+  "version": "som.independent-hosted-workflow-integration-source-review.v1",
+  "reviewer": "wheel_final_review",
+  "scope": "Final source-only review of product-runtime-reuse and the first-build dispatch condition in the current workflow",
+  "workflow": {
+    "path": ".github/workflows/rust-hosted-readiness.yml",
+    "sha256": "81067fab64bf1b903c3b48dc88124b068e34fb4222634adf113f22bc04f839e6"
+  },
+  "result": "no_actionable_source_finding_in_reviewed_workflow_integration",
+  "findings": [],
+  "observations": [
+    "The reuse owner job waits for fixture-tests and the complete same-run native compile and assembly job. It uses Ubuntu22.04 and a 120 minute job limit.",
+    "The job grants only contents:read and actions:read. Checkout uses the declared pull-request head or workflow SHA with persistent Git credentials disabled.",
+    "The original native artifact is addressed by exact repository, run ID and artifact ID. merge-multiple:true extracts the single ID directly into the committed consumer's expected transport root. The API token is supplied only to the download and origin check steps.",
+    "The reuse helper checks the artifact origin and complete saved byte inventory before restoring the exact qualified prefix. It rechecks all native hashes and versions before exporting fixed tool paths. The workflow reads github.env only after that successful step.",
+    "The existing 27 runtime fixtures and the new runtime-reuse fixtures run before reinstallation. All project/native/test execution remains on GitHub.",
+    "The current assembly download uses its same-run exact artifact name. The tested-sha check uses the same som/som/tested-sha.txt layout as the prior successful cross-job input flow. The full assembly manifest path matches the producer and consumer paths.",
+    "The wheel fixtures, whole product environment consumer and full wheel producer use only the admitted Python path with -I -S -B. Producer inputs refer to the exact new environment inventory, same-candidate assembly tree and rechecked native prefix.",
+    "The final wheel upload runs with always(). It preserves input inventory, top-level receipt, probe bytes, logs, all named environment receipts and failed environments, locks, publisher metadata, wheel bytes and audits. Mutable dependency caches are excluded.",
+    "The reuse upload also runs with always() and preserves the stage marker, origin, qualification evidence, receipt, licenses, command logs and emitted fixed paths.",
+    "The original first-build job is now optional through workflow_dispatch boolean rebuild_product_runtime, default false. It has no downstream ownership edge that would skip the reuse path. A fresh full byte and version reuse check still runs for each new candidate job.",
+    "No obvious path mismatch, missing producer output, missing dependency or unconditional rebuild was found. The 120 minute limit permits the new work to execute; actual duration and all command results remain to be measured on GitHub."
+  ],
+  "external_primary_source_check": {
+    "url": "https://docs.github.com/en/rest/about-the-rest-api/api-versions?apiVersion=2026-03-10",
+    "claim": "The native origin check's X-GitHub-Api-Version:2026-03-10 is a supported GitHub REST API version."
+  },
+  "limits": [
+    "This is a source integration review. No workflow, test, project, helper, installer, native executable or product was run locally.",
+    "No YAML validator or GitHub runner result is claimed by this record. The root must bind this exact workflow hash in the next commit and inspect actual runner results.",
+    "The saved native artifact remains temporary. Optional rebuilding and successful reuse do not establish permanent readiness or full product acceptance.",
+    "The independent complete wheel producer source review is separately recorded at SHA256 378ee9b666d1974d7f1e4e99a52b7dc9d2865d65525510def2675072b0934a68."
+  ],
+  "tests_run": false,
+  "project_imports_run": false,
+  "native_programs_run": false,
+  "repository_files_written": false,
+  "product_runtime_ready": false,
+  "product_acceptance_passed": false
+}

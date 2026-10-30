@@ -1,0 +1,49 @@
+{
+  "version": "som.m12.full-product-workflow-integration-independent-source-review.v1",
+  "reviewed_at_utc": "2026-10-29T04:01:04.503Z",
+  "verdict": "APPROVED_BOUNDED_SOURCE_INTEGRATION",
+  "reviewer": "native_policy_closure",
+  "reviewed_workflows": {
+    ".github/workflows/rust-dependency-preparation.yml": {
+      "sha256": "a6633463d499132fce37ec46e2b4378b72a01c5384469f914db53341890a4511"
+    },
+    ".github/workflows/rust-hosted-readiness.yml": {
+      "sha256": "9c900d487fe2ff620e7f8bd253603c73db3d9101543334efd8df8d9e67f288dd"
+    }
+  },
+  "source_dependency": {
+    "manifest_sha256": "f06813a630fa6c005198a1dcf555fda1f0a57ecd4c9f0b4938666b606a22b805",
+    "patch_sha256": "fcb39116770524b43484b3fcb92584a412f7db38f08a23e7e05ddabd7310ca24",
+    "independent_source_review_sha256": "87e4d6e89f9b96928ed5c2bc2bf0cd230fa257e71682501b7985e89ee09cd04e"
+  },
+  "findings": [],
+  "resolved_integration_finding": {
+    "original": "Broad recursive result.json discovery included quality-evidence result.json files emitted by original verify_python_quality.py:56. The strict join correctly refuses these nonshard documents.",
+    "fix": "The workflow enumerates exactly33 artifact names (8quality/1phase1/8phase2Python/16phase2Rust). Download root entries must equal that set. Every receipt is exactly artifact/som-full-product-run/result.json with no linked parents, regular type and single link. The NUL list passes only these original shard receipts to strict source join. Nested quality evidence remains uploaded."
+  },
+  "reviewed_boundaries": {
+    "DAG": "All needs references exist. All32 fixture definitions run in dependency-helper-fixtures before producers and carrier. The full matrix depends on the real current-helper wheel, Cargo and six-tool producer jobs. Join always runs and rejects missing artifacts/shards. No intentionally skipped compiler job is a matrix prerequisite.",
+    "matrix": "Exact frozen33 rows (8/1/8/16), fail-fast false, Ubuntu22, exact stage/index/count arguments; matches workflow-matrix.json as plain data.",
+    "source_identity": "Each checkout and helper variable preserves inputs.helper_revision or PR head or github.sha. Every matrix instance fetches literal f59 before guard use. Existing exact candidate/helper/source admission checks remain.",
+    "runtime": "Each matrix job restores fixed audited runtime40740849594/12840425819 at the admitted prefix. Each freshly qualifies all157 installed Rust files and six tools, and the consumer rechecks them.",
+    "artifact_shapes": "Wheel producer common ancestor is RUNNER_TEMP, matching wheel-root/som-python-wheel-qualification. Cargo producer common ancestor is som-cargo-closure-run, matching cargo-root/closure. The fixed original compile artifact uses _temp/som-unsealed-native-compile. Product upload common ancestor is RUNNER_TEMP, matching each exact artifact/som-full-product-run/result.json.",
+    "carrier": "Integrated recorded-candidate-carrier YAML object equals reviewed ce1add90 fragment exactly, including helper job environment and bound raw launcher. Current recorded-input product preparation does not consume this carrier or fabricate fresh refusals.",
+    "summary": "Both workflows retain the large wheel upload and add always small python-wheel-qualification-summary uploads of the same producer receipt. No failure or acceptance status changes.",
+    "product_gates": "No product assertion, complete named cohort, missing6/18 current input failure, current-refusal carrier block, pending ordinary installed-scope audit or false acceptance flag changes."
+  },
+  "local_checks": {
+    "YAML_metadata": "passed for both files",
+    "all_need_references": "passed",
+    "fixed33_matrix_vs_saved_source_JSON": "passed",
+    "integrated_carrier_vs_approved_fragment": "passed",
+    "fixed_receipt_enumeration_AST": "passed"
+  },
+  "all32_fixtures_and_full33_product_jobs": "unrun; GitHub only",
+  "local_project_helper_imports_tests_builds_services_native": "none",
+  "repository_writes_by_reviewer": false,
+  "product_acceptance_passed": false,
+  "product_runtime_ready": false,
+  "release_ready": false,
+  "next_step": "Root may freeze these exact workflow bytes with the reviewed source successor and independently reviewed exact wheel-tag correction. Run GitHub checks and inspect all real failures and joined receipts before milestone acceptance."
+}
+

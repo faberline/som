@@ -1,0 +1,62 @@
+{
+  "version": "som.public-golden-export-independent-review.v1",
+  "verdict": "APPROVED",
+  "scope": "Source and exact hash-only metadata artifact privacy/scope review before public copy; not policy or product acceptance.",
+  "reviewed_source_files": {
+    "som-rs/scripts/hosted_readiness/export_goldens.py": "b35440acbb5455fe90517d62fd860762c03882aa81b7ec5542f869cc1b40cc66",
+    "som-rs/scripts/hosted_readiness/test_export_goldens.py": "9fd543c18d7360285169efee8f42ae65d0fd1d1320cab0006563a31c13cbb777"
+  },
+  "reviewed_candidate": {
+    "sha256": "ea573d3c842d367b32538ad8b9fec01608b4f05f676a07a80d9b9acf81a69a8b",
+    "bytes": 3120174,
+    "public_copy": "som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json"
+  },
+  "counts": {
+    "python_public": 127,
+    "python_legacy": 544,
+    "rust_phase1": 115,
+    "rust_phase2": 584,
+    "legacy_distinct_prompts": 540,
+    "legacy_blocked_typed_rows": 11,
+    "legacy_blocked_distinct_prompts": 10,
+    "legacy_generator_rows_unrun": 90,
+    "checked_dsl_rows_blocked": 2,
+    "checked_public_recipe_rows_unrun": 1,
+    "rust_phase2_products": 582,
+    "rust_phase2_refusals": 2
+  },
+  "rows": 1370,
+  "public_source_files": 35,
+  "checks": {
+    "source_field_allowlist_and_redacted_errors": true,
+    "raw_body_fields_absent": true,
+    "private_absolute_paths_absent": true,
+    "raw_product_filename_strings_absent": true,
+    "all_digest_fields_are_hex_or_declared_inactive_null": true,
+    "public_source_revision_hashes_match_git": true,
+    "public_anchor_pointer_values_match": true,
+    "all_Python_aggregate_and_per_file_hashes_match_accepted_raw_assemblies": true,
+    "legacy_order_scopes_and_duplicate_prompt_jobs_preserved": true,
+    "Rust_phase1_mixed_prompt_hash_schema_preserved": true,
+    "Rust_aggregate_hashes_match_accepted_records": true,
+    "Rust_missing_per_file_evidence_explicit_null": true,
+    "phase2_current_refusal_policy_separate_from_historical_observation": true,
+    "phase2_behavior_standard_flag_and_assembly_variant_separate": true,
+    "no_projected_raw_compile_hash": true,
+    "blocked_and_unrun_scope_preserved": true
+  },
+  "duplicate_legacy_prompt_group_sizes": [
+    2,
+    2,
+    3
+  ],
+  "privacy_findings": [],
+  "scope_findings": [],
+  "limits": [
+    "Approval is specific to the reviewed candidate bytes and source snapshots.",
+    "No raw private baseline distribution is authorized by this review.",
+    "No compatibility masking or payload policy is selected or approved.",
+    "No local project imports, tests, builds, compiler/product/runtime execution ran.",
+    "Fixture execution remains for GitHub; complete current behavior/byte gates remain unrun."
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "version": "som.independent-source-review.v1",
+  "reviewer": "compile_driver_review",
+  "scope": "Bounded Cargo source-loader/PYC fix only; continuation of independent Cargo352 closure source review.",
+  "base_candidate": "e686642dce2895dd876e7efa7239913db2d62cf0",
+  "files": {
+    "patch": {
+      "path": "/private/tmp/som-m12-cargo-source-loader-fix.patch",
+      "sha256": "299cd7f68fbd103512a9cceab8a187fe0b0e55e6c0e0a17a006f32605f932025",
+      "bytes": 11372
+    },
+    "source": {
+      "path": "/private/tmp/som-m12-provision-cargo.py",
+      "sha256": "55b46e315b393d8ff4712b0fc0fd3b473910ff4b02b38874534872ed9e26cd7b",
+      "bytes": 36380
+    },
+    "tests": {
+      "path": "/private/tmp/som-m12-test-provision-cargo.py",
+      "sha256": "205cc142a5e0e45f65fb65d4689f9d90f73423886fe9c09e4eae4cfa8e737dec",
+      "bytes": 28464
+    },
+    "trusted_support": {
+      "path": "/Users/chrischeng/.codex/worktrees/70ce/som/som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py",
+      "sha256": "f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3",
+      "bytes": 32535
+    }
+  },
+  "result": "source_review_passed_no_remaining_finding_in_bounded_delta",
+  "findings": [],
+  "source_observations": [
+    "Bootstrap support authority is the literal reviewed f3c6 source hash, checked before execution and independently equal to current support bytes. Fixed suffix, absolute path without parent traversal, symlink/nonregular parent, regular single-link file, bounded read and file-descriptor type checks precede hashing.",
+    "Bootstrap rejects preloaded support name and compiles exactly the hashed bytes into a fresh registered ModuleType. It has no source loader or bytecode cache fallback and removes the registered name if execution fails.",
+    "The existing full GitHEAD/regular-blob binding still binds script, support, checker, raw compatibility helper, frozen golden inputs, target manifest and lock files before helper use.",
+    "The two bound helper calls now take immutable bytes directly from bind_sources output, enforce the fixed helper name/path mapping, reject preloaded names and compile those bytes into fresh registered modules. There is no working-path reread or .pyc loader.",
+    "The checker imports raw_digest_compat only after that fixed name is populated from the bound blob. Its dataclasses see the registered module.",
+    "The rest of Cargo352 source and job fragment remains covered by the earlier source review. This delta does not establish current runtime reuse or wheel-producer correctness."
+  ],
+  "verification": {
+    "source_ast_parse": "passed",
+    "test_ast_parse": "passed",
+    "test_definitions": 26,
+    "added_test_definitions": [
+      "test_bootstrap_ignores_valid_matching_timestamp_cache",
+      "test_bootstrap_rejects_dirty_support_before_compile",
+      "test_bootstrap_rejects_linked_or_copied_support_paths",
+      "test_bootstrap_refuses_preloaded_unbound_module",
+      "test_bound_helper_ignores_valid_cache_and_uses_git_blob_bytes",
+      "test_bound_helper_does_not_reread_mutable_source_after_binding",
+      "test_bound_helper_refuses_preloaded_unbound_module"
+    ],
+    "added_fixture_review": "Seven reviewed cases cover matching timestamp/size malicious support and helper caches; dirty support refusal before compile; symlink, hardlink and copied path refusal; preloaded support/helper refusal; and using bound blob bytes after the mutable helper file changes.",
+    "test_execution": "unrun_locally_GitHub_only",
+    "project_or_helper_imports": "not_executed_locally",
+    "candidate_builds_native_tools_servers_products": "not_executed_locally"
+  },
+  "limits": [
+    "Source and fixture design review only. AST parsing does not run the source or tests.",
+    "The direct compile calls are candidate behavior reviewed as source, not executed locally.",
+    "Runtime reuse loader approval is separate and remains reopened until its own final review.",
+    "Original Cargo closure execution and full product gates remain unrun for this delta.",
+    "Product acceptance and runtime readiness remain false; native metadata policy remains unsealed."
+  ],
+  "product_acceptance_passed": false,
+  "runtime_ready": false,
+  "native_metadata_policy": "unsealed",
+  "previous_review": {
+    "path": "/private/tmp/som-m12-independent-cargo-closure-source-review.json",
+    "sha256": "439531ed393eee7e464481660badba0c18ee9d5dcc6e99ea05a7cd64f1401163"
+  }
+}

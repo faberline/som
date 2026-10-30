@@ -1,0 +1,216 @@
+{
+  "artifact_review": {
+    "artifact_id": 12868189241,
+    "assembly_manifest_sha256": "674b31d0b3069fc253a64cdac7777851f42884d0a820d072622b07009fe30440",
+    "asset_manifest_canonical_sha256": "fa84fd05dbb68264e63a32ad3fd024ef7328b33031b4be3dd20a908d1309ad22",
+    "candidate_binary_saved_sha256": "e84ac8f06e243d60d8fc64459d6a5d35cff64d84a85d3e48f3cae275be8d36f5",
+    "compile_manifest_sha256": "c8a9d5d36926e9b78277cdedfebf895a3d3a297fe08e5d2bbb96023bc69b1161",
+    "complete_file_count": 37535,
+    "complete_file_inventory_canonical_sha256": "6b9bc4ea69f7f661cdfa6d7f2f19b14ec28eaedc53a892bbb22392e8a8fecc3d",
+    "compressed_bytes": 152260107,
+    "enforcement": "GitHub API exact origin, repository, candidate run, artifact ID/digest/size/expiry; full extracted 37535-file inventory rehash and both manifest/source identity checks before use; rechecked by final consumer steps.",
+    "expires_at": "2026-11-12T02:39:12Z",
+    "github_zip_digest": "sha256:ba106c71a8a1798757afab0bb11d6e4b2378a45588187aa27d036179d6ebb6f2",
+    "name": "experimental-unsealed-native-compile",
+    "old_binary_executed_by_reuse_route": false,
+    "reviewed_byte_audit_sha256": "3d769389f85fdd0d94a77d1405cb07b25a1756de32be8e2fc80bd9cd684f024e",
+    "run_id": 40805208879,
+    "saved_bytes_rehashed_by_this_source_review": false,
+    "saved_bytes_review_boundary": "The package preserves exact pins from the approved f59 independent byte audit. Actual downloaded bytes are checked on GitHub. This review independently checked source/table/audit bindings, not a new download.",
+    "zip_digest_locally_recomputed": false
+  },
+  "baseline": {
+    "candidate_revision": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+    "existing_root_normalization_changes_preserved": true,
+    "head_during_review": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+    "repo": "/Users/chrischeng/.codex/worktrees/70ce/som",
+    "repository_writes_by_reviewer": false
+  },
+  "local_checks": [
+    {
+      "name": "11 frozen file byte lengths and SHA-256 values",
+      "status": "passed"
+    },
+    {
+      "name": "frozen patch byte length and SHA-256",
+      "status": "passed"
+    },
+    {
+      "name": "Python AST parse and exact 20/26 fixture-definition counts",
+      "status": "passed"
+    },
+    {
+      "name": "root vs frozen uv_lock_inventory and cargo_omission AST equality",
+      "status": "passed"
+    },
+    {
+      "name": "git apply --check against current root working bytes",
+      "status": "passed"
+    },
+    {
+      "name": "all 139/168 original Git source SHA-256 values and protected485 working OIDs",
+      "status": "passed"
+    },
+    {
+      "name": "workflow YAML metadata and source/DAG review",
+      "status": "passed"
+    },
+    {
+      "name": "guard, consumer, wheel, Cargo, runtime and six-tool fixtures",
+      "status": "unrun; GitHub only"
+    },
+    {
+      "name": "actual dependency preparation and six-tool version/whole-runtime qualification",
+      "status": "unrun; GitHub only"
+    },
+    {
+      "name": "compiler builds, native execution and full products",
+      "status": "unrun by reviewer"
+    }
+  ],
+  "material_findings": [],
+  "next_step": "Root may integrate this exact patch, freeze the new helper commit and run the focused GitHub workflow once. Recheck actual outputs and receipts before any later product acceptance claim.",
+  "patch": {
+    "bytes": 123846,
+    "path": "/private/tmp/som-m12-dependency-iteration/dependency-iteration.patch",
+    "sha256": "ff95ac48e72ce0b03ba8da04b5ab9b7bc00cc491a89036b453151f961117847b"
+  },
+  "policy_sealed": false,
+  "product_acceptance_passed": false,
+  "prohibited_local_activity_performed": [],
+  "release_ready": false,
+  "resolved_findings": [
+    {
+      "finding": "Rejecting every symbolic-link entry refused the real historical blocks/current alias.",
+      "resolution": "Only som-code-python/data/blocks/current may retain mode120000 and exact flow-v7-compact target. The target, Git OID, parent and resolved directory are checked. Unknown aliases still refuse. One fixture covers unchanged and changed targets."
+    },
+    {
+      "finding": "Shallow helper checkout omitted the exact old candidate Git object.",
+      "resolution": "Classifier and both artifact-consuming jobs fetch the exact f59 object with --no-tags --depth=1 before source comparison."
+    },
+    {
+      "finding": "Early scratch consumer copies were based on old normalization source.",
+      "resolution": "The frozen patch is based on root current working bytes. AST bodies of uv_lock_inventory and cargo_omission match the root working files exactly; normalization tests are not changed."
+    }
+  ],
+  "reviewed_at_utc": "2026-10-29T03:28:48.749424+00:00",
+  "reviewed_files": [
+    {
+      "bytes": 17070,
+      "fixture_definitions": null,
+      "new": true,
+      "path": ".github/workflows/rust-dependency-preparation.yml",
+      "sha256": "2705352c235125daeef002b1cdc2a7149d5f8b7ded73ddc3831b1f51fb8b2d6d"
+    },
+    {
+      "bytes": 34148,
+      "fixture_definitions": null,
+      "new": false,
+      "path": ".github/workflows/rust-hosted-readiness.yml",
+      "sha256": "830cb624ef29c4fe626df54e848cabd44f599559f2793918de7c3faa6bc24373"
+    },
+    {
+      "bytes": 3451,
+      "fixture_definitions": null,
+      "new": true,
+      "path": "som-rs/scripts/hosted_readiness/DEPENDENCY_ITERATION.md",
+      "sha256": "cdefe0382ae1c3ec15290f7f684be1ee8812f52bac8fbe2f5307795d754bdd80"
+    },
+    {
+      "bytes": 21388,
+      "fixture_definitions": null,
+      "new": true,
+      "path": "som-rs/scripts/hosted_readiness/dependency_candidate.py",
+      "sha256": "02c4d5982138a83586289ae348a06f0f5ca71552c2562614cda4a6e9a13bf86b"
+    },
+    {
+      "bytes": 14649,
+      "fixture_definitions": null,
+      "new": false,
+      "path": "som-rs/scripts/hosted_readiness/evidence/f59-full-compile-assembly-independent-byte-audit.json",
+      "sha256": "3d769389f85fdd0d94a77d1405cb07b25a1756de32be8e2fc80bd9cd684f024e"
+    },
+    {
+      "bytes": 40663,
+      "fixture_definitions": null,
+      "new": true,
+      "path": "som-rs/scripts/hosted_readiness/inputs/dependency-iteration-f59-v1.json",
+      "sha256": "cc2611be2ccaab1d6a71887903cc3a69b7e2550d48e7bf8ae6785d725325339f"
+    },
+    {
+      "bytes": 77124,
+      "fixture_definitions": null,
+      "new": false,
+      "path": "som-rs/scripts/hosted_readiness/product_python/produce_wheels.py",
+      "sha256": "98b93770188054fefe4586ac4be76d45e0488a64dc173c93b27c0ee93b909e68"
+    },
+    {
+      "bytes": 22586,
+      "fixture_definitions": null,
+      "new": false,
+      "path": "som-rs/scripts/hosted_readiness/product_python/qualify_python.py",
+      "sha256": "59db9a937fd226dbff97482129f1b8b6955c5b6d501020745ee70981ce4d96ff"
+    },
+    {
+      "bytes": 18651,
+      "fixture_definitions": 26,
+      "new": false,
+      "path": "som-rs/scripts/hosted_readiness/product_python/test_qualify_python.py",
+      "sha256": "6526d14f3fc9cab47a3a185563624da9fb65174d4ecec400be4ced6bce391e8b"
+    },
+    {
+      "bytes": 37637,
+      "fixture_definitions": null,
+      "new": false,
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/provision_cargo.py",
+      "sha256": "299741b9ce379d858e65955151adc261cd17ae9ecbcf9cb69032130a7e3a3e94"
+    },
+    {
+      "bytes": 14704,
+      "fixture_definitions": 20,
+      "new": true,
+      "path": "som-rs/scripts/hosted_readiness/test_dependency_candidate.py",
+      "sha256": "09af29e65ec163943fdfddcb6c8bcf5bffc78b859afe38e5c334669a9e65cbfe"
+    }
+  ],
+  "reviewer": "native_policy_closure",
+  "role": "independent bounded source reviewer; not package author",
+  "runtime_ready": false,
+  "scope": "Current helper Git HEAD may read the fixed f59 compile/assembly data for dependency preparation only. This is source approval to integrate and run the GitHub checks; it is not a test or product acceptance result.",
+  "source_handoff": {
+    "path": "/private/tmp/som-m12-dependency-iteration/source-handoff.json",
+    "sha256": "1d25ef144920e1c74ab67917cab6877fd8478e733e14357879903fc126805538"
+  },
+  "source_identity_review": {
+    "all_original_pin_hashes_checked_against_candidate_git_blobs": true,
+    "all_protected_working_file_git_oids_match_candidate": true,
+    "compile_assembly_source_pins": 168,
+    "factory_source_pins": 139,
+    "new_helper_modules": "Each consumer loads candidate guard from its raw current Git blob, using a fresh bound module. Each consumer keeps candidate and helper identities separate.",
+    "new_profile_exception": "Only the exact unreferenced som-rs/contracts/native-tools-v1/product-rust-tools-v1.json preparation file is excluded from protected compiler-contract tree comparison. Source changes that start using it require a full candidate.",
+    "old_candidate_source_records_rewritten": false,
+    "protected_tracked_entries": 485,
+    "raw_compiler_contract_and_factory_pins_not_exempted": true,
+    "working_difference_in_old_source_maps": {
+      "som-rs/scripts/hosted_readiness/experimental_native_compile.py": {
+        "factory_input": false,
+        "role": "separately reviewed early raw helper bootstrap; original source evidence retained",
+        "sha256": "1c772df746c8a87d84f8635fab55a669a919824a5ce0f650319c8eff8957aaf7"
+      }
+    }
+  },
+  "verdict": "APPROVED_BOUNDED_DEPENDENCY_PREPARATION_SOURCE_CHANGE",
+  "version": "som.m12.dependency-iteration-independent-source-review.v1",
+  "workflow_review": {
+    "artifact_origin_unavailable": "refuses; does not silently launch a large rebuild",
+    "changed_candidate_inputs": "selects complete current candidate path; explicit dependency-only mode refuses",
+    "focus": "20 guard fixture definitions, 26 qualify_python definitions, existing wheel/Cargo/runtime fixtures, all Python environment bindings/closures, all 352 Cargo registry packages, separate six-tool qualification",
+    "full_product_tests_skipped_do_not_count_as_pass": true,
+    "helper_only_pr": "source guard and fixtures run; eligible current helper calls focused reusable workflow from the same commit",
+    "job_need_references": "all references resolve; no dependency-preparation need points to a deliberately skipped full candidate job",
+    "manual_default": "full current candidate; explicit dependency_preparation_only selects pinned reuse only when eligible",
+    "permissions": "contents read and actions read only; exact checkout/download/upload action SHAs; fixed cross-run artifact IDs with merge-multiple true",
+    "six_tool_implementation": "This reviewer authored the separate six-tool package. Root independently approved that code. This review checked its workflow invocation only and makes no independent approval claim for that implementation.",
+    "yaml_metadata_parse": "passed for both frozen workflow files"
+  }
+}

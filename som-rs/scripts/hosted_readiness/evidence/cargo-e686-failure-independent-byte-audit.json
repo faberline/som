@@ -1,0 +1,40 @@
+{
+  "version": "som.cargo-e686-failure-independent-saved-byte-audit.v1",
+  "classification": "public_source_and_hash_review_metadata",
+  "reviewer_aw_session_id": "4661414a-d611-4432-8b70-cad7941c36c9",
+  "tested_sha": "e686642dce2895dd876e7efa7239913db2d62cf0",
+  "run_url": "https://github.com/faberline/som/actions/runs/40751160293",
+  "job_id": 123047699228,
+  "artifact_id": 12845770620,
+  "artifact_github_attested_zip_sha256": "7f50f31f1635063f12106b1c9fdc6a4fc22ff7af652ca024e32794b77a5b1b77",
+  "zip_digest_independently_recomputed": false,
+  "receipt_sha256": "b91d9cc8691fe882824962e5b4488a276b8966a5f75bbe65ba394a8b25ba9414",
+  "commands_zero_exit_and_all_saved_log_hashes_checked": 35,
+  "source_git_blob_raw_hashes_and_oids_checked": 11,
+  "frozen_lock_counts": {
+    "phase1": 203,
+    "phase2": 334
+  },
+  "frozen_registry_union_count": 352,
+  "failure": {
+    "type": "Refusal",
+    "message": "missing, linked, or oversized input"
+  },
+  "input_receipts_emitted": false,
+  "downloaded_package_records": 0,
+  "product_builds": "unrun",
+  "product_acceptance_passed": false,
+  "method": "Parse and hash saved metadata/log/Git blob output only. No project/helper imports, tests, builds, tools, installs or services ran.",
+  "source_trace_and_exact_input": {
+    "state": "cause established by exact failing candidate source, saved failed receipt stage and same-candidate input bytes; no local helper execution",
+    "description": "All11 source bindings and the352-package lock union completed. No selected-input receipt was emitted. In the candidate source, the first generic safe_read after that state is checked_receipt(assembly/manifest.json) at select_products entry. Its16MiB default rejects the independently read exacte686 complete assembly manifest of19333107B.",
+    "assembly_manifest_sha256": "48d8de955226a263247468ad1811c55f4bd9b61c8fa94701de2a5f6ddea625aa",
+    "assembly_manifest_bytes": 19333107,
+    "assembly_manifest_tested_sha": "e686642dce2895dd876e7efa7239913db2d62cf0",
+    "assembly_manifest_observations": 2045,
+    "assembly_manifest_python_products": 671,
+    "assembly_manifest_rust_products": 697,
+    "max_blob_bytes": 16777216,
+    "size_exceeds_limit": true
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "version": "som.experimental-native-compile.independent-source-review.v1",
+  "verdict": "approved within source-only experimental checker scope",
+  "state": "experimental-unsealed",
+  "product_acceptance": false,
+  "reviewed_sources": [
+    {
+      "repository_path": "som-rs/scripts/hosted_readiness/experimental_native_compile.py",
+      "raw_sha256": "d2f85ffbb58b5a0114b1e3e61aec6776e75d02477597364d4f7306ecfe8c1b3e",
+      "bytes": 26727,
+      "source_syntax": "AST parsed without execution",
+      "synthetic_test_functions": 0
+    },
+    {
+      "repository_path": "som-rs/scripts/hosted_readiness/test_experimental_native_compile.py",
+      "raw_sha256": "407a574d4a05a98c43ef8975f62b9d1ca054ba4a785512de0ef0c9c7e2645181",
+      "bytes": 17722,
+      "source_syntax": "AST parsed without execution",
+      "synthetic_test_functions": 20
+    }
+  ],
+  "raw_digest_helper": {
+    "repository_path": "som-rs/scripts/hosted_readiness/raw_digest_compat.py",
+    "raw_sha256": "a025bd99b56dafc4de65c268318f583e117adfe16988d61bb9180cb5e8da0896",
+    "committed_object_equality": "verified"
+  },
+  "proposal": {
+    "file_name": "som-m12-native-metadata-policy-proposal.json",
+    "raw_sha256": "eec2f316379ddbff4eb0a63610d537fca93effacf8e3736ba7a5884d2b8cd189",
+    "approval": "not granted by this review"
+  },
+  "independent_factory_data": {
+    "source_commit": "09ced52261c13e8da5fce2b2b51d59e0c8641d4a",
+    "factory_region_count": 11,
+    "backend_vectors": {
+      "python": {
+        "file_count": 29,
+        "backend_sha256": "92941b7adeb9c7555d4abdfb06d24b4a1bf92c9c1e2617a2a0c4cb5d3e529d0e"
+      },
+      "rust": {
+        "file_count": 13,
+        "backend_sha256": "9c8064cb49c4d9465273b6935a8266ff679f96ef17b1b1c0401065c7671474b1"
+      },
+      "typescript": {
+        "file_count": 9,
+        "backend_sha256": "d65a22b29c259314629df529f256a15e407fb3db9ac7437d1d32beab85a29b79"
+      }
+    },
+    "active_target_receipts": {
+      "rust": {
+        "repository_path": "som-rs/evidence/rust-output-contract-amendment-007.json",
+        "raw_sha256": "225b98c2bc01e79c5c6e13ad17f93adda68717498d70fa7577e65930813f9144",
+        "files_map_sha256": "090b9060a5b5f24d8e6994072f4e6c8a796110790b119229650cf0e4a52bee3c",
+        "file_count": 55,
+        "amendment": 7
+      },
+      "typescript": {
+        "repository_path": "som-rs/evidence/typescript-output-contract-amendment-003.json",
+        "raw_sha256": "7052daacfc89bf468e399e09f635e6d773187177eb684a0399d46d8ddf650089",
+        "files_map_sha256": "17ffc6028d66657381464a4d6beaecc1e097f54e421168777e5959cfbdaf063f",
+        "file_count": 38,
+        "amendment": 3
+      }
+    },
+    "formatter_sha256": {
+      "python_formatted": "ca325bc0efdad4d3f8e4e8209814832fdb68947be16c8bd79bd3da92b2da3851",
+      "python_render_only": "a6a6e62d4ad875f8aec308a0fd9c55e8ac576d8129d57fb935bdfc5bc4529b94",
+      "rust": "dbb30c6037c51a2bacb94d46e2d6435d9487531c06cf82330fdee0bda507db0d",
+      "typescript": "6070ceb6d781121f6175b7c3992f3aa58bd56f6d871e08f2ff426020bb30f50b"
+    },
+    "verified_committed_source_file_count": 139,
+    "claimed_source_pin_count": 138,
+    "before_descriptor_count": 9,
+    "baseline_compile_qa_authority": {
+      "python_rows": 1342,
+      "rust_compile_rows": 699
+    }
+  },
+  "source_findings": [],
+  "review_checks": [
+    "Repository reads bind each complete source byte sequence to the recorded Git object. The checker and raw digest helper must also match their committed local sources at execution.",
+    "All 11 owning factory regions match their explicit text pins. Complete backend vectors have 29 Python, 13 Rust and 9 TypeScript source entries.",
+    "All 138 source pins claimed by the supplied factory analysis were independently rehashed and compared with Git objects. One extra baseline file was read for 139 committed files total.",
+    "Sealed Rust007 and TypeScript003 receipt maps match all 55 and 38 referenced files, their target IDs, map hashes and current owning source constants. This review does not seal future amendments.",
+    "The nine accepted before descriptors match the pinned accepted QA canary and health metadata. Before hashes come from accepted independent authority, not the current response.",
+    "After backend descriptors derive from complete committed vectors. Native formatter descriptors derive from committed Linux artifact pins, exact source constants and the frozen profile rules. The accepted macOS descriptor and Prettier tree rules also match.",
+    "Compile row lookup retains the latest accepted QA raw response hash and separately records the older control hash. It covers 1342 named Python compile rows and 699 named Rust compile rows.",
+    "HTTP statuses must be exact integers. Refusals use verify_frozen with an empty exception list.",
+    "Successful replies validate current prompt, DSL and complete payload hashes. The old payload hash is computed from a complete semantic copy with only admitted current asset digests replaced by independently pinned before digests.",
+    "verify_frozen checks exact literal digest spans and the accepted QA raw response hash. All bytes outside admitted digest values remain frozen, including descriptor IDs, other hashes, JSON spelling, spacing and order.",
+    "Python v1-v5 render-only formatter descriptors remain exact and outside the admitted digest list. Python v6-v7 may use the separately pinned formatted descriptor.",
+    "TypeScript full-inventory verification always rejects scope. Canary observations do not supply a full TypeScript baseline.",
+    "All success and failure report paths retain experimental-unsealed state and product_acceptance false. Old-bundle rejection, assembly bytes, file maps, behavior and full product gates remain explicitly unrun.",
+    "The 20 synthetic tests cover accepted Python/Rust exchanges, refusals, identity/status failures, semantic/raw changes, forged descriptors, baseline authority, canonical vectors, complete vectors, artifact/profile pins, sealed receipt drift, source Git equality and experimental CLI failure. No production test bypass was added."
+  ],
+  "limits": {
+    "checker_execution": "unrun",
+    "synthetic_test_execution": "unrun",
+    "compiler_formatter_build_core_imports": "not performed",
+    "current_or_old_payload_runtime_results": "unrun; algorithms source-reviewed only",
+    "new_compatibility_policy": "not approved",
+    "product_acceptance": "not granted",
+    "implementation_state_at_review": "checker and test files applied as untracked source; execution requires them to be committed under the checker own-source rule"
+  }
+}

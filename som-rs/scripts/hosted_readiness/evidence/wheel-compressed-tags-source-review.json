@@ -1,0 +1,112 @@
+{
+  "version": "som.m12.wheel-tag-fix-independent-source-review.v1",
+  "reviewed_at_utc": "2026-10-29T04:07:21.598Z",
+  "reviewer": "native_policy_closure",
+  "verdict": "APPROVED_BOUNDED_WHEEL_TAG_SOURCE_FIX",
+  "patch": {
+    "path": "/private/tmp/som-m12-wheel-tag-fix/wheel-tag-fix.patch",
+    "sha256": "07217e78b333e3fe32fbd24dda3a0b03a2a6d28e58cfacee2cc33b5b7191b2d1"
+  },
+  "source_handoff": {
+    "path": "/private/tmp/som-m12-wheel-tag-fix/source-handoff.json",
+    "sha256": "79209782dce167374f342f12d1309b83e8a764c2afb1cf26c3ae4951683e921b"
+  },
+  "author_actual_data_proof": {
+    "path": "/private/tmp/som-m12-wheel-tag-fix/actual-first-wheel-proof.json",
+    "sha256": "adf98be1256777bc5660b6d49b619dc1f78a10ceae617042ad89b7e89648106c"
+  },
+  "independent_actual_data_audit": {
+    "path": "/private/tmp/som-m12-wheel-tag-independent-raw-data-audit.json",
+    "sha256": "ddbfa4538314fb7aa3d19a11b07901bc7b969a13ba5791bdf7ecce7a9df69ac0"
+  },
+  "reviewed_source_files": [
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_python/produce_wheels.py",
+      "before_sha256": "98b93770188054fefe4586ac4be76d45e0488a64dc173c93b27c0ee93b909e68",
+      "after_sha256": "2d99b38693d9234f8135ba409f401586a6de2c7164e018f7359ab10cbeadd224",
+      "bytes": 77926
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_python/test_produce_wheels.py",
+      "before_sha256": "8ce076e65f9c05ac6a6221e31e5d2e7dafd50b6754b22c6dc085ab5a324b70bd",
+      "after_sha256": "cd73f44e9b6a70296dd104860ce5594c30fb8d7fcbf8bc2806e90f4114ed4fe8",
+      "bytes": 54132
+    }
+  ],
+  "findings": [],
+  "source_review": {
+    "only_production_delta": "Adds expanded_wheel_tags and changes audit_wheel metadata/filename comparison. Every other production function AST, including wheel_rank, remains identical.",
+    "comparison": "Both metadata header triples and the complete filename triple use the same bounded Cartesian expansion across Python, ABI and platform axes. All normalized metadata tags are retained. Exact whole-set equality remains required; there is no subset, intersection or compatible-tag filtering of the metadata comparison.",
+    "refusals": "Missing metadata tags, malformed/empty/whitespace/extra components, malformed compressed filenames, changed Python/ABI/platform, subset, superset and additional unknown metadata tags fail. The unchanged wheel_rank still rejects unrecognized-only or foreign incompatible filenames. Publisher origin selection, locked whole-wheel digest and all archive/RECORD checks remain unchanged.",
+    "bounds": "Each input tag is limited to4096 characters and a strict lowercase ASCII token grammar. Per-tag Cartesian product is checked at4096 before allocation; union is capped at4096. WHEEL metadata also receives the existing MAX_METADATA byte bound.",
+    "original_bytes": "Expansion is in memory only. Original wheel ZIP, WHEEL and RECORD bytes remain the values stored, hashed, preserved and verified. Semantic equality cannot waive any strong RECORD digest or size.",
+    "scope": "No change to dependency constraints, selected publisher sources, foreign package refusal, full installed scope, ordinary product commands, candidate/helper identities or acceptance flags."
+  },
+  "actual_first_failure": {
+    "run_id": 40813734189,
+    "job_id": 123250352369,
+    "helper_revision": "d6cb045c215b72730a939dbbba2d59223832be43",
+    "candidate_revision": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+    "whole_zip": {
+      "path": "/private/tmp/som-m12-wheel-d6-connector.zip",
+      "bytes": 230525569,
+      "sha256": "81c968eb5d853c1c21873cb173ce2998c2be5da076e40c1b2c26527e96a71ccf",
+      "locally_rehashed": true
+    },
+    "wheel_sha256": "8f57a69461af2a5fa6e6bbd7a5f60d3b7e6cebb687f55106933188e79ad155c1",
+    "wheel_bytes": 2002028,
+    "WHEEL_sha256": "4b590c84487a132922c1cce886162614d0b8daa88395ee8313882f7f82c7b9c9",
+    "RECORD_sha256": "f70cb35cdd67f27e4d26c49773e602279a479d9c445788a63c7106d5b116a80e",
+    "five_copies": "All five original wheel copies match their original outer ZIP member and saved extracted wheel bytes. All9 RECORD rows per copy, including raw file hashes/sizes and empty self entry, were independently checked with stdlib CSV/ZIP/hash calculations. Every original publisher metadata SHA, exact selected URL/size/digest and target locked digest was checked.",
+    "raw_tag": "cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64",
+    "expanded_tags": [
+      "cp312-cp312-manylinux2014_x86_64",
+      "cp312-cp312-manylinux_2_17_x86_64"
+    ],
+    "diagnosis": "The literal metadata singleton differs from the filename expanded set. Their complete Cartesian expansions are identical. This actual immutable wheel confirms the representation mismatch; it does not constitute a new qualification pass."
+  },
+  "primary_source_verification": [
+    {
+      "url": "https://github.com/pypa/packaging/blob/24.2/src/packaging/tags.py#L96",
+      "ref": "24.2",
+      "tag_tree_sha": "d8e3b31b734926ebbcaff654279f6855a73e052f",
+      "blob_oid": "f5903402abb5a0aed37bb23914f678ef7e34a554",
+      "sha256": "085aab2730337365cd19ec5eac7fff4fe639230abb59bb185ec88b1112d6c58d",
+      "bytes": 21014,
+      "independently_fetched_from_official_GitHub": true,
+      "raw_blob_oid_recomputed": true,
+      "tag_tree_entry_matches": true,
+      "review": "parse_tag constructs the Cartesian set from all three compressed fields. Read as source only, never imported."
+    },
+    {
+      "url": "https://github.com/PyO3/maturin/blob/v1.8.3/src/module_writer.rs#L570",
+      "ref": "v1.8.3",
+      "tag_tree_sha": "c200385c764593d983e35c69d2c5be866526900a",
+      "blob_oid": "c97fa7f6c1833659d46a0da4c8805095b6b1f70e",
+      "sha256": "6032127c0ff214c4501abe5c9d6ef224d630c1943f63ea964706d2493538fba9",
+      "bytes": 54555,
+      "independently_fetched_from_official_GitHub": true,
+      "raw_blob_oid_recomputed": true,
+      "tag_tree_entry_matches": true,
+      "review": "wheel_file writes the supplied tag values into headers. The actual saved WHEEL identifies maturin1.8.3 and its compressed form. The review does not claim metadata recommendations require compressed fields."
+    }
+  ],
+  "fixture_source_review": {
+    "old47_function_ASTs_identical": true,
+    "new_definitions": 11,
+    "total_definitions": 58,
+    "meaningful_cases": "Actual compressed platforms, already expanded metadata, all3 Cartesian axes, Python/ABI/platform mismatches, subset/superset/unknown metadata, empty/malformed/missing tags, malformed filename, incompatible family, unchanged raw RECORD rejection and pre-allocation expansion bounds.",
+    "execution": "all58 unrun; GitHub only"
+  },
+  "integration_review": {
+    "git_apply_check": "passed against the current dirty full-product proposal without applying",
+    "worker_extra_artifact_fragment": "Excluded. Root already integrated and independently reviewed its own small-summary uploads.",
+    "repository_writes_by_reviewer": false
+  },
+  "local_activity": "Source/AST/Git metadata, official raw source reads, stdlib ZIP/CSV/JSON/hash data only. No project/helper/package import, test, resolver, build, native program or service execution.",
+  "wheel_qualification_complete": false,
+  "product_acceptance_passed": false,
+  "product_runtime_ready": false,
+  "release_ready": false,
+  "next_step": "Root may apply exact patch07217e78 with the reviewed full-product proposal. Run all58 fixtures and actual dependency/product checks on GitHub. Retain any next real failure and all pending acceptance gates."
+}

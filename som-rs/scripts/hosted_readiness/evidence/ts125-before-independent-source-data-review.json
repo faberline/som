@@ -1,0 +1,149 @@
+{
+  "version": "som.ts125-independent-source-and-metadata-review.v1",
+  "verdict": "APPROVED_BOUNDED_SOURCE_AND_HISTORICAL_METADATA",
+  "reviewer": "independent child reviewer; not exporter or metadata author",
+  "review_kind": "source/AST and independent stdlib historical raw-file/archive/JSON/hash audit only",
+  "source_review_passed": true,
+  "metadata_accuracy_review_passed": true,
+  "actionable_source_findings": [],
+  "reviewed_files": {
+    "som-rs/scripts/hosted_readiness/export_ts125_goldens.py": "d1f541d9729b219853a84c5332f60799e415646e80e09504518c4ab7cbcaea02",
+    "som-rs/scripts/hosted_readiness/test_export_ts125_goldens.py": "2ff1d12e06b1fa711da1904de4c607d0c882054702b6539d4d6363eabdd3fad2",
+    "som-rs/scripts/hosted_readiness/inputs/ts125-baseline-hashes-v1.json": "7009c29b93714dc1a827236b4ebeb255efc99c91c61460bc7a5ded49c902c868",
+    "som-rs/scripts/hosted_readiness/export_ts065_goldens.py": "174aadaa92a53c3e58d0315fbc04a75d296f1a0a09413ff2a9e1542d151ec61c"
+  },
+  "patch_sha256": "acad66726ed9fb2397c5d93cc6a0c423ec92621ad65ec61fe71bb016914790de",
+  "author_review_sha256": "9b0dce30a42e993ff332ddad07ef89aaee3efa23b0e5c5d6a92d2f8b83151497",
+  "independent_data_audit_sha256": "08a761368318739ab9a6e9edbce861956449ae6cb387b0ed181cf672a6eff7d9",
+  "independent_data_audit": {
+    "version": "som.ts125-independent-metadata-audit.v1",
+    "passed": true,
+    "accepted_source_index_files": 97,
+    "public_sources": 36,
+    "accepted_source_archive_files": 150,
+    "receipt_chain_steps": 13,
+    "directory_files": {
+      "target/responses": 819,
+      "bundles/responses": 881,
+      "bundles/products": 1376
+    },
+    "ordered_cases": 125,
+    "compile_forms": 246,
+    "recorded_request_hashes_by_form": {
+      "json": 119,
+      "cnl": 21
+    },
+    "unavailable_request_hashes_by_form": {
+      "json": 6,
+      "cnl": 100
+    },
+    "bundle_assembly_request_hashes_unavailable": 125,
+    "product_file_hashes": 1375,
+    "target_history_rows": 791,
+    "assemble_refusals": 12,
+    "separate_canary_operations": 6,
+    "duplicate_prompt_rows_preserved": 2,
+    "product_acceptance_passed": false,
+    "local_project_execution": "none; independent stdlib metadata read/hash only"
+  },
+  "accepted_header_raw_sha256": "086d83c57e90ec3c2da85b23d450987bbe2e9b2a6a2bb955ab2cb9d67119355a",
+  "owning_source_role_comparisons": [
+    {
+      "path": "som-rs/contracts/typescript-output-v1/case-inventory.json",
+      "public_review_source_raw_sha256": "f45572b155c89808bae9153c7a833da779ad043fb4c0a34002de9c9ef26dee0c",
+      "accepted_before_sha256": [
+        "f45572b155c89808bae9153c7a833da779ad043fb4c0a34002de9c9ef26dee0c"
+      ],
+      "accepted_after_sha256": [
+        "f45572b155c89808bae9153c7a833da779ad043fb4c0a34002de9c9ef26dee0c"
+      ],
+      "current_bytes_match_accepted_snapshots": true
+    },
+    {
+      "path": "som-rs/contracts/typescript-output-v1/target-examples.json",
+      "public_review_source_raw_sha256": "fac94a5cb3295c5cb26c39f541ef395f6fa6ca1a99f25ca8cb5b3ff16f1aa6c5",
+      "accepted_before_sha256": [
+        "fac94a5cb3295c5cb26c39f541ef395f6fa6ca1a99f25ca8cb5b3ff16f1aa6c5"
+      ],
+      "accepted_after_sha256": [
+        "fac94a5cb3295c5cb26c39f541ef395f6fa6ca1a99f25ca8cb5b3ff16f1aa6c5"
+      ],
+      "current_bytes_match_accepted_snapshots": true
+    },
+    {
+      "path": "som-rs/scripts/typescript_output_acceptance/check_target.py",
+      "public_review_source_raw_sha256": "d58aceb3139f714f8659fc7a13de1a4c06b170a23b5ec6aeabb197e9ff666203",
+      "accepted_before_sha256": [
+        "d58aceb3139f714f8659fc7a13de1a4c06b170a23b5ec6aeabb197e9ff666203"
+      ],
+      "accepted_after_sha256": [
+        "d58aceb3139f714f8659fc7a13de1a4c06b170a23b5ec6aeabb197e9ff666203"
+      ],
+      "current_bytes_match_accepted_snapshots": true
+    },
+    {
+      "path": "som-rs/scripts/typescript_output_acceptance/check_bundles.py",
+      "public_review_source_raw_sha256": "8a00d50826f3e0cc74ada9c9ab5d0e93e3bdd591e1f35629e660b613bf619a44",
+      "accepted_before_sha256": [
+        "8a00d50826f3e0cc74ada9c9ab5d0e93e3bdd591e1f35629e660b613bf619a44"
+      ],
+      "accepted_after_sha256": [
+        "8a00d50826f3e0cc74ada9c9ab5d0e93e3bdd591e1f35629e660b613bf619a44"
+      ],
+      "current_bytes_match_accepted_snapshots": true
+    },
+    {
+      "path": "som-rs/scripts/typescript_output_acceptance/run_acceptance.py",
+      "public_review_source_raw_sha256": "54ee04d9c0e514f1dd3d2df384818aa594a4aadb21616996ba64554dca1f4119",
+      "accepted_before_sha256": [
+        "54ee04d9c0e514f1dd3d2df384818aa594a4aadb21616996ba64554dca1f4119"
+      ],
+      "accepted_after_sha256": [
+        "54ee04d9c0e514f1dd3d2df384818aa594a4aadb21616996ba64554dca1f4119"
+      ],
+      "current_bytes_match_accepted_snapshots": true
+    },
+    {
+      "path": "som-rs/som-targets/qa/check_ts_products.py",
+      "public_review_source_raw_sha256": "fb52e35d465779a31affad4078e9209050f55ade3803e6931881bc523e2271d1",
+      "accepted_before_sha256": [
+        "945b09924b8c0b0a8f8c539b2a297353918d308063575f27ccbaeab42bb1b121"
+      ],
+      "accepted_after_sha256": [
+        "945b09924b8c0b0a8f8c539b2a297353918d308063575f27ccbaeab42bb1b121"
+      ],
+      "current_bytes_match_accepted_snapshots": false
+    },
+    {
+      "path": "som-rs/behavior/typescript/host.py",
+      "public_review_source_raw_sha256": "bab520b2874fcb5c770b694ac63a511e18a61a06c25f475ea34da04901c8f310",
+      "accepted_before_sha256": [],
+      "accepted_after_sha256": [],
+      "current_bytes_match_accepted_snapshots": false
+    }
+  ],
+  "checked": [
+    "Exact public release to summary/header to all13 step receipts; all97 indexed local sources and36 public pins; acceptance chain reaches the public release",
+    "All150 accepted source archive members match accepted source.json; exact old negative JSON selected despite current source drift",
+    "All819 target responses,881 bundle responses and1376 product-tree files recompute their accepted directory digests",
+    "All125 frozen ordered cases preserve25 nonlegacy plus100 legacy rows,246 compile forms and two duplicate-prompt named slots",
+    "Every compile raw response/repeat, complete prompt/DSL/payload hash, direct request binding, status and form association checked",
+    "All125 assemble raw response/repeats and1375 per-file hashes match reports, aggregate maps and retained products",
+    "All791 historical target rows and12 assembly refusals retain exact report identities, request/response digest roles and statuses; historical scope stays separate",
+    "All6 separate accepted canary operations match exact raw files; canary status remains null; two canary assemble requests are not relabelled as bundle-run captures",
+    "All106 missing directly recorded compile request hashes and125 missing bundle-run assemble request hashes stay null; no current-candidate backfill",
+    "All19 synthetic test definitions and AST syntax inspected; standard patch apply-check passed; old650c artifact is unchanged"
+  ],
+  "limits": [
+    "Tests remain unrun; execute only on GitHub",
+    "The export is historical hash metadata, not current TypeScript gate or full product acceptance",
+    "The recorded request hash gaps remain real. Separate source-reconstructed hashes would require explicit reconstruction proof and authority labels, and must not replace recorded fields",
+    "Archive omission is not absence of before-writer authority: accepted header before/after tool snapshots bind check_target.py,check_bundles.py and run_acceptance.py to the exact reviewed public bytes. The artifact says reconstruction is unrun and the writers are absent from the archive; it does not assert the header has no writer pins",
+    "The current public check_ts_products.py review source differs from the accepted header version. Its hash-map rule was independently checked against all actual accepted raw responses/products; do not call the current product checker exact accepted-before source",
+    "Generic inherited accepted_receipts still mark three directory entries unchecked; this separate export supplies exact verified_directory_receipts for those three trees. The unrelated rt-diagnostics tree stays outside this new audit"
+  ],
+  "policy_state": "unsealed",
+  "product_acceptance_passed": false,
+  "full_typescript_acceptance_granted": false,
+  "local_project_imports_tests_builds_servers_native_execution": "none"
+}

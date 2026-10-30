@@ -1,0 +1,27 @@
+{
+  "version": "som.product-runtime-first-build-saved-byte-audit.v1",
+  "tested_sha": "bf3a04a0eee05d633b9b68ffe4e7e2885583dcd5",
+  "run_url": "https://github.com/faberline/som/actions/runs/40740849594",
+  "artifact_id": 12840425819,
+  "artifact_github_digest": "a7ccf8732ce89e82eaa4d351a4ca096c263f4268c6cd708e447e8652d4ff8167",
+  "review_kind": "controller stdlib source/log/binary-byte audit only; no local tool execution",
+  "qualification_evidence_verified": true,
+  "receipt_sha256": "a5a801c984b3f781e1139dfe3de68cb1c7c8fcc9b4d40bfbae3283edaee693eb",
+  "installed_inventory_sha256": "ac9df6b242d0a5016dd32317af27475e64d652dd38ccc8663743b0537f9cd63c",
+  "job_log_sha256": "1cf43945f72f86ff209bf07c85a6ae14806aa4ee14cc37060c1bd9031937ff08",
+  "source_archive_records": 6,
+  "license_files": 13,
+  "regular_installed_files": 10102,
+  "transport_dereferenced_aliases": 11,
+  "admitted_elf_version_observations": 41,
+  "commands_zero_exit_and_log_hashes_verified": 107,
+  "synthetic_tests_passed": 27,
+  "limits": [
+    "GitHub artifact upload dereferenced eleven aliases and normalized file modes; a reuse installer must restore only inventory-bound internal links and executable modes before GitHub requalification",
+    "Archive compressed bytes are not in this artifact; archive hashes rely on reviewed committed downloader and saved qualification evidence",
+    "Exact first-build bytes are qualified for a later integrity/version recheck on GitHub; no local executable ran",
+    "Database services, Moto, dependency closure, product behavior and full acceptance remain unrun"
+  ],
+  "product_runtime_ready": false,
+  "product_acceptance_passed": false
+}

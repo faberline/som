@@ -1,0 +1,352 @@
+{
+  "version": "som.independent-wheel-producer-frozen-source-review.v1",
+  "reviewer": "wheel_final_review",
+  "scope": "Source-only review of the complete frozen wheel producer and synthetic fixtures. Metadata hashing and byte comparisons only.",
+  "result": "no_actionable_source_finding_in_reviewed_frozen_patch",
+  "findings": [],
+  "patch": {
+    "sha256": "4418903756e502e1b02c909e683eadd9c3d65aa05c1b5998068c105d463b2cac",
+    "bytes": 175866,
+    "all_five_added_file_bytes_match_reviewed_scratch": true
+  },
+  "files": [
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_python/WHEEL_CLOSURE.md",
+      "bytes": 8355,
+      "sha256": "42dbaa661b9823fb0d6f677962caf9bb02f6c337c46a9ca9103840a7c6124adf"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_python/produce_wheels.py",
+      "bytes": 75758,
+      "sha256": "4378c09f94d4c08dcac2d6bda54a42be73c02f4466a5a8f9cdea4cdd97962d26",
+      "ast_parse": "passed"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_python/test_produce_wheels.py",
+      "bytes": 46894,
+      "sha256": "4f7a5af554a589ab433661465435620b03eb47fafb680b9387702633c6787f76",
+      "ast_parse": "passed"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_python/uv099-installer-authority.json",
+      "bytes": 39611,
+      "sha256": "e166303c1376a77d6e92ae19d9ff0eddcdd24c3adbde8381ff835274bb850358",
+      "json_parse": "passed"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_python/wheel-policy.json",
+      "bytes": 2379,
+      "sha256": "7a7532ed476f2e983fedfdf4304f8034765efb51df89caac604ad89c953442d7",
+      "json_parse": "passed"
+    }
+  ],
+  "workflow_fragment": {
+    "sha256": "c4f34a0efc145236bc22d9107bf2789f0a77b09fef7ef3a688d47cbf0559a614",
+    "bytes": 3868,
+    "scope": "Fragment reviewed. Root must review final workflow integration, owning native reuse dependency, same-candidate artifact path and sufficient timeout."
+  },
+  "observations": [
+    "Fresh registered helper modules compile only the exact committed Git blob bytes after working-tree equality. No SourceFileLoader or cached PYC supplies helper code.",
+    "The source-bound consumer checks all 671 frozen Python slots and both compile/assembly variants. Physical environment id is separate from the accepted product_id. Old products remain explicitly bound to the declared observer route.",
+    "Dependency reuse keys exact requirement bytes and admitted native identity. Real products keep their pyproject bytes, dependency groups, extras and constraints. Only the declared observer receives a synthesized project.",
+    "Official PyPI/Pythonhosted URLs, frozen universal/target hashes, wheel archive bounds, root identity, exact member RECORD hashes and license bytes are checked. Additive offline pins retain original requirements and extras.",
+    "Every named project uses its own original lock and venv. Only admitted Python and uv file hashes can start children. Child groups are waited and stopped; failure evidence is retained.",
+    "Every installed file, link and directory must match the source-derived scope before any metadata probe. Unknown hooks, code, scripts, metadata, modified root RECORD and payload changes fail. Nested metadata/data/RECORD remain ordinary immutable wheel bytes.",
+    "The actual root RECORD, .data relocation, console wrappers, shebang and seed rules match pinned uv 0.9.9 source. The final BAT transform matches its pinned Git attributes and all ten templates occur once in the exact qualified uv bytes.",
+    "The installed metadata probe uses the admitted base Python with -I -S -B and an explicit distribution search path as data. Installed site does not enter sys.path. No uv command follows sync. Before/after installed inventories must match.",
+    "UV_NO_INSTALLER_METADATA and disabled bytecode are explicit per-command qualification modes. They do not alter product source dependencies or claim the later product mode passed.",
+    "Successful venv cleanup requires a saved qualification checkpoint and independently rechecked installed-file, metadata and lock hashes. Failed environments remain. Product/runtime readiness flags stay false."
+  ],
+  "official_installer_source_pins_recomputed": [
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-install-wheel/src/install.rs",
+      "sha256": "19ce0bdc4ea025c3ca88fa9d0c82d0386838be5e440dbecb3b92d0a1a9a9c1c4",
+      "bytes": 5931
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-install-wheel/src/lib.rs",
+      "sha256": "f6794429f79fe77b09e44584c33068065fc3bf0fdb4a9ec9e471546cdd78ac7b",
+      "bytes": 3306
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-install-wheel/src/linker.rs",
+      "sha256": "7bcffc8e36510603dfa24622b64570cea5262b3ce0a2755725db80ca54026f9f",
+      "bytes": 23900
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-install-wheel/src/record.rs",
+      "sha256": "00dfe5060b5e2f51881bb0603f545e904de3df79688ce8a073102de252774935",
+      "bytes": 446
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-install-wheel/src/script.rs",
+      "sha256": "8f700411b9b4158c4282db56fc82c930f29be39fe73ec667f8c1e8b48cad93c3",
+      "bytes": 7647
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-install-wheel/src/uninstall.rs",
+      "sha256": "e38023010de5e60f77f9b27554005eacff2bca6b7b9cd1acb530329305c730e3",
+      "bytes": 12386
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-install-wheel/src/wheel.rs",
+      "sha256": "f420e4bd3c8ec4751ed263fcc86e05551f6539d26492d9344f126ad098e58a86",
+      "bytes": 45531
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-virtualenv/src/_virtualenv.py",
+      "sha256": "6cf30c56faf2a55228914dbbd17f8088ed371ebb08f5e7fa6fd931f913fcaf1d",
+      "bytes": 4342
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-virtualenv/src/lib.rs",
+      "sha256": "59c9a21ad376d8de8f3d3380abb9976409f3d6365be26be75cb3137b0e7932ab",
+      "bytes": 2089
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-virtualenv/src/virtualenv.rs",
+      "sha256": "c4e9f49324f99ff61075264c16acd98bf704e5a380602b02f528435fe9135071",
+      "bytes": 35028
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-installer/src/installer.rs",
+      "sha256": "ffc3e0f8f76b2950ea5f8ead47f65c08eda39ed8798bc8fa51ef532354b95e6b",
+      "bytes": 6445
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-installer/src/plan.rs",
+      "sha256": "ab1d08adf4f875d47d4ae54911b3b30ac0ca583de38132c5e78afdb5bed61d1f",
+      "bytes": 34328
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-python/src/interpreter.rs",
+      "sha256": "eb470bb7e851448fa37bd0cd4d052c4922a9782aee725d66924a568292db8399",
+      "bytes": 52211
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-python/src/sysconfig/mod.rs",
+      "sha256": "eac54771de7d9548649996fab4170edbcf02c1293234728e9432f0afbfc818c9",
+      "bytes": 14431
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-fs/src/cachedir.rs",
+      "sha256": "33f8fb4448e46e1a77a105166c9cec3af45af680c949347c5bdb55e411a17438",
+      "bytes": 1769
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv/src/commands/project/mod.rs",
+      "sha256": "6d4c929fdbcf5d5adf75a1154342f15240b9c990c6135835c76d720e2dd2f7b2",
+      "bytes": 102335
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv/src/commands/project/sync.rs",
+      "sha256": "f76d632aacf7aa9b712e587f41ff9d09c6adf0c77ebd686e6df0ccc92cb12e1b",
+      "bytes": 45714
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-version/src/lib.rs",
+      "sha256": "56244bd779ca7895cc41f4e0dd12ec8d298f3fa34d4553e776f2c8aa050c88ae",
+      "bytes": 355
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-distribution-types/src/cached.rs",
+      "sha256": "2513f07129f401f355384fcbf7e87e9f4aa4f9b855e407ce9d9b6c1959425510",
+      "bytes": 7281
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-flags/src/lib.rs",
+      "sha256": "c8e1dd6ba9ef588615271789a2d63e4aae65c30b22f9c132ad94143f46ba1cd3",
+      "bytes": 599
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-cache-info/src/lib.rs",
+      "sha256": "07f78d2c256e5400211fed13192013266fef87689efa54009e81a1cf5dcf84c6",
+      "bytes": 115
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-cache-info/src/cache_info.rs",
+      "sha256": "71ea002a3478541d67a5aee50098b6128b8c745103517d0dd52eaa7050d0ac8d",
+      "bytes": 16728
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-cache-info/src/timestamp.rs",
+      "sha256": "e73592bd2b8b13fcd3eade1a9f591c6646e07d3febe3aa39dd4d996ab429ae22",
+      "bytes": 1818
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-python/src/environment.rs",
+      "sha256": "5628a3459b3cac81a78a005c136a837e7ca422c9e065c105c44f032edfb20565",
+      "bytes": 13495
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-shell/src/lib.rs",
+      "sha256": "ab97277a04675c53b22172154e31e4305f0c87cf0bdc013bc751a709bf5bcbe5",
+      "bytes": 13160
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-fs/src/lib.rs",
+      "sha256": "fb25d23c96dac062222e70215e87af915dc0910cd3a9c858a7193d94874abc5f",
+      "bytes": 35606
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-shell/src/shlex.rs",
+      "sha256": "aa5616e8beb192c484c4e3c9a67c5efaf6ef4a0b21080b3569094e08b1ee42a7",
+      "bytes": 2018
+    }
+  ],
+  "official_cli_source_pins_recomputed": [
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/crates/uv-cli/src/lib.rs",
+      "sha256": "f965839e8611950970ce799b4f45d23182a57e23155d8b8e69788b807c01a181",
+      "bytes": 281335
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/docs/reference/cli.md",
+      "sha256": "c656f275a6e44d5dc5cfa5b771df5308b122807b3def6a8dba26286cdacc0d9d",
+      "bytes": 885447
+    },
+    {
+      "url": "https://github.com/astral-sh/uv/blob/0.9.9/docs/pip/compile.md",
+      "sha256": "c85989ed665587bb8971f148788147d018e3006e4d1286b8ff368c041f60626e",
+      "bytes": 7460
+    }
+  ],
+  "qualified_uv_sha256": "83f28650272b5543e939debbc7a5578d087952399fd945e9267b1db0ccc27d33",
+  "seed_template_byte_comparisons": [
+    {
+      "name": "_virtualenv.py",
+      "official_git_bytes_sha256": "6cf30c56faf2a55228914dbbd17f8088ed371ebb08f5e7fa6fd931f913fcaf1d",
+      "qualified_binary_template_sha256": "6cf30c56faf2a55228914dbbd17f8088ed371ebb08f5e7fa6fd931f913fcaf1d",
+      "qualified_binary_exact_occurrences": 1,
+      "transform": "none"
+    },
+    {
+      "name": "activate",
+      "official_git_bytes_sha256": "da9ed3e695c978104fa91f1e676798cad56b090a0647335da7f5181edc397f39",
+      "qualified_binary_template_sha256": "da9ed3e695c978104fa91f1e676798cad56b090a0647335da7f5181edc397f39",
+      "qualified_binary_exact_occurrences": 1,
+      "transform": "none"
+    },
+    {
+      "name": "activate.bat",
+      "official_git_bytes_sha256": "e9937030235de6b76b8a35b3ba4a9a2cd9b3adcf8f9f0e3ca418dc9642554331",
+      "qualified_binary_template_sha256": "a9a6ac456644c7c0e9ea9efb8c194862e91f818082864d8d9c5b58a7f1968bf9",
+      "qualified_binary_exact_occurrences": 1,
+      "transform": "CRLF per pinned .gitattributes"
+    },
+    {
+      "name": "activate.csh",
+      "official_git_bytes_sha256": "bbf691bc12f84a2980df2ff775ac788debabbc1ec79574491d2cf9242d9ad8eb",
+      "qualified_binary_template_sha256": "bbf691bc12f84a2980df2ff775ac788debabbc1ec79574491d2cf9242d9ad8eb",
+      "qualified_binary_exact_occurrences": 1,
+      "transform": "none"
+    },
+    {
+      "name": "activate.fish",
+      "official_git_bytes_sha256": "741ef7288c294ce3cb9ed9d35312e69fda5b0f13b0abd96b848257576ccc2d20",
+      "qualified_binary_template_sha256": "741ef7288c294ce3cb9ed9d35312e69fda5b0f13b0abd96b848257576ccc2d20",
+      "qualified_binary_exact_occurrences": 1,
+      "transform": "none"
+    },
+    {
+      "name": "activate.nu",
+      "official_git_bytes_sha256": "c19a0b1f359c5e3d0e8f2901d62a4c48d5fdc861e0e954956c59b8511b72eecd",
+      "qualified_binary_template_sha256": "c19a0b1f359c5e3d0e8f2901d62a4c48d5fdc861e0e954956c59b8511b72eecd",
+      "qualified_binary_exact_occurrences": 1,
+      "transform": "none"
+    },
+    {
+      "name": "activate.ps1",
+      "official_git_bytes_sha256": "eadbf353b750c99954f797f1d466b60c2718bf9acb9792301a5cc35bb2c03a90",
+      "qualified_binary_template_sha256": "eadbf353b750c99954f797f1d466b60c2718bf9acb9792301a5cc35bb2c03a90",
+      "qualified_binary_exact_occurrences": 1,
+      "transform": "none"
+    },
+    {
+      "name": "activate_this.py",
+      "official_git_bytes_sha256": "d9ba890a15afe4fc1edabc0d1fd90bd2af2a440ce597e306f5f331691875385b",
+      "qualified_binary_template_sha256": "d9ba890a15afe4fc1edabc0d1fd90bd2af2a440ce597e306f5f331691875385b",
+      "qualified_binary_exact_occurrences": 1,
+      "transform": "none"
+    },
+    {
+      "name": "deactivate.bat",
+      "official_git_bytes_sha256": "9b205eb1eba00fbbfd6ddd30f6e03f64f415b8b29da9f97b1823fb44de919fb3",
+      "qualified_binary_template_sha256": "13ea86073a9ee43a66e3549312599dd47ff315758b4ca5a0406faf041fb82300",
+      "qualified_binary_exact_occurrences": 1,
+      "transform": "CRLF per pinned .gitattributes"
+    },
+    {
+      "name": "pydoc.bat",
+      "official_git_bytes_sha256": "9bd6480f163aa4be93473876dc155c4b710a0bae1e915fd56470bbf5b57c342a",
+      "qualified_binary_template_sha256": "2a8eb66d1bc7b73adcd3c6f59e2383e0a7fe9412609c1f9d1870e35035ee6fee",
+      "qualified_binary_exact_occurrences": 1,
+      "transform": "CRLF per pinned .gitattributes"
+    }
+  ],
+  "synthetic_test_definitions": {
+    "count": 46,
+    "names": [
+      "test_exact_dependency_bytes_and_native_identity_define_deduplication",
+      "test_hashed_target_lock_keeps_every_transitive_package",
+      "test_unhashed_broad_marker_url_or_override_lock_refused",
+      "test_duplicate_and_forbidden_locked_packages_refused",
+      "test_supported_cpython_abi3_and_pure_tags",
+      "test_wrong_python_abi_os_cpu_or_glibc_refused",
+      "test_publisher_selection_requires_both_lock_and_official_hash",
+      "test_nonpublisher_credentials_ports_fragments_and_query_refused",
+      "test_wheel_record_all_members_and_notice_bytes_verified",
+      "test_missing_record_member_is_not_accepted_from_archive_hash_alone",
+      "test_wrong_metadata_identity_and_wheel_tags_refused",
+      "test_traversal_link_and_duplicate_zip_member_refused",
+      "test_expansion_bound_checked_before_member_reads",
+      "test_universal_lock_refuses_foreign_source_and_model_dependency",
+      "test_real_project_bytes_and_original_extras_input_drive_offline_closure",
+      "test_named_offline_environment_keeps_receipts_and_cleans_only_successful_venv",
+      "test_failed_environment_and_logs_are_preserved",
+      "test_changed_frozen_wheel_blocks_named_environment_before_process",
+      "test_installed_code_bytes_are_bound_even_when_metadata_versions_match",
+      "test_cleanup_refuses_failed_foreign_or_linked_environment",
+      "test_only_observer_gets_declared_observer_project",
+      "test_runner_uses_clean_env_and_records_failure_log_hashes",
+      "test_timeout_stops_only_owned_group_and_keeps_logs",
+      "test_owned_descendants_are_stopped_even_after_parent_exit",
+      "test_native_changed_before_child_blocks_process_creation",
+      "test_output_overlap_and_symlink_refused_before_mutation",
+      "test_duplicate_json_and_nonfinite_numbers_refused",
+      "test_whole_runtime_tree_and_all41_receipt_rows_required_before_child",
+      "test_reuse_receipt_self_ready_or_wrong_revision_refused",
+      "test_runtime_binary_change_cannot_be_hidden_by_reuse_flags",
+      "test_source_regular_git_blob_and_working_bytes_must_match",
+      "test_module_dirty_source_is_refused_before_import",
+      "test_matching_timestamp_pyc_is_ignored_and_only_bound_raw_executes",
+      "test_wrong_helper_path_and_preloaded_helper_are_refused",
+      "test_unknown_installed_hooks_code_scripts_metadata_and_record_changes_refused",
+      "test_exact_seed_cfg_hook_and_symlink_bytes_are_required",
+      "test_console_wrapper_and_generated_record_follow_exact_uv_source",
+      "test_nested_payload_metadata_record_and_data_directory_stay_immutable",
+      "test_empty_exact_data_directories_relocate_but_nested_payload_data_does_not",
+      "test_data_only_probe_never_executes_installed_site_or_pth_hooks",
+      "test_direct_base_python_without_no_site_flags_is_refused",
+      "test_injected_installed_hook_blocks_probe_before_any_python_child",
+      "test_qualified_hash_and_command_receipts_exist_before_cleanup",
+      "test_actual_main_base_python_version_call_has_no_site_flags",
+      "test_complete671_bindings_preserve_separate_observer_and_product_inputs",
+      "test_receipt_cannot_hide_partial_scope_or_changed_product_requirements"
+    ],
+    "status": "unrun; must execute on GitHub runner"
+  },
+  "limits": [
+    "No producer, helper, checker, test, installer, package, resolver, native binary, server or product was imported or executed locally.",
+    "AST parsing, byte inspection and source review do not prove GitHub command success, real dependency resolution, installed scope compatibility, license approval or product acceptance.",
+    "Runtime reuse helper and Cargo PYC deltas are separately reviewed by the root team. This record does not independently approve their complete code.",
+    "The saved native artifact is temporary and expires. Full product, quality, behavior, frozen uv-run mode and independent wheel/license audits remain unrun."
+  ],
+  "tests_run": false,
+  "project_imports_run": false,
+  "native_programs_run": false,
+  "repository_files_written": false,
+  "product_acceptance_passed": false,
+  "product_runtime_ready": false,
+  "native_metadata_policy": "unsealed"
+}

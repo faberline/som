@@ -1,0 +1,82 @@
+{
+  "acceptance_policy_approved_by_this_review": false,
+  "changed_paths_in_reviewed_contract_test_target_source_scope": [
+    "som-rs/contracts/rust-output-v1/native-tools.json",
+    "som-rs/contracts/typescript-output-v1/native-tools.json",
+    "som-rs/som-targets/src/rust/format.rs",
+    "som-rs/som-targets/src/rust/mod.rs",
+    "som-rs/som-targets/src/typescript/format.rs",
+    "som-rs/som-targets/src/typescript/mod.rs",
+    "som-rs/src/compiler.rs"
+  ],
+  "combined_M6_M12_acceptance_granted": false,
+  "compatible_authority_mapping": {
+    "before_response_and_product": "All246 before compile reply raw hashes and246 per-form before+M6 assemble reply raw hashes match immutable historical accepted authority. All2750 named-side product file hashes match history.",
+    "current_side": "Current in this M6 map means binary59dab78a/source40cffc13. It does not mean the later M12 native candidate.",
+    "derived": "146 source-reconstructed compile and125 bundle assemble digests remain derived. Every available derived digest matches fresh before request bytes.",
+    "fresh_recorded": "100 legacy CNL complete request bodies are new fresh before/M6 captures, not recovered run65 encodings. Exact requests, before/current replies, target/forms, full product UTF8bytes and named duplicates verified.",
+    "historical_original": "Original recorded request fields remain immutable. All140 available compile request calibrations match exact fresh bytes.",
+    "metadata_join_history": "Prior metadata-only report remains unchanged. This separate final audit records later plaintext verification.",
+    "old_bundle_use": "Preserve captured old bundle bytes for required rejection checks. Controlled rebases must bind current independently admitted descriptors, recompute the exact payload hash and preserve every other field. New request captures remain new evidence."
+  },
+  "local_project_programs_tests_builds_services": "not_run",
+  "m6_review_input_bytes": 5111,
+  "m6_review_input_raw_sha256": "b15cf51ecc1bbd993ee61a35cb6270051e23374639f24bb87de39fa6246f1630",
+  "no_new_private_or_encryption_prerequisite": true,
+  "plaintext_TS125_audit_raw_sha256": "c90fc3a7622ba22f8d2e83504755547788165be0bcd9cd5ae3b9d81641a94631",
+  "platform_relationship": "The accepted M6 Darwin binary remains valid historical evidence. Each new native host binary needs its own identity and full applicable checks under reviewed native tool pins. No Apple Silicon architectural requirement follows from the historical toolchain.",
+  "prior_M6_source_revision": "40cffc13b3bff35e3ea5804b9f43a49cdef7b3c0",
+  "repository": "faberline/som",
+  "review_kind": "independent saved-data and source read only",
+  "source_compatibility_boundaries": [
+    {
+      "impact": "Current compiler backend now includes native-tools contract/artifacts and compiler source changes. Derive exact candidate asset file changes from reviewed native authority. Preserve exact checks for every unaffected file. This is a source risk, not a claimed runtime failure.",
+      "line": 280,
+      "observation": "Current runner requires all candidate asset bytes, including manifest.json, to equal old baseline/bootstrap bytes.",
+      "path": "som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py"
+    },
+    {
+      "impact": "Native policy/source changes alter descriptors. They need explicit before/current pins and compatibility authority, even when product text stays identical.",
+      "line": 83,
+      "observation": "backend_manifest includes contracts/native-tools-v1/CONTRACT.md and artifacts.json. Its source text and native metadata feed compiler assets and backend descriptors.",
+      "path": "som-rs/src/compiler.rs"
+    },
+    {
+      "impact": "An unsealed native-tool policy or a new collector mask cannot silently change this frozen rule. Any needed acceptance extension needs exact numbered scope, old/new hashes and independent review.",
+      "observation": "Frozen M6 Python rule requires full baseline response byte equality.",
+      "path": "som-rs/contracts/react-output-v1/acceptance-plan.json",
+      "pointer": "/python_unchanged"
+    },
+    {
+      "impact": "The plaintext audit verified exactly those three members. It grants no formatter/compiler_contract/grammar/catalog/serializer/prompt/DSL/status/diagnostic exception.",
+      "observation": "Frozen M6 TS/Rust compile exceptions name only backend, target_contract and payload_sha256.",
+      "path": "som-rs/contracts/react-output-v1/acceptance-plan.json",
+      "pointer": "/typescript_unchanged"
+    },
+    {
+      "impact": "Keep missing/partial checks3,5,7,8,9 explicit. Equivalent aggregate/file comparisons do not replace missing required named-tool receipts on the same candidate.",
+      "observation": "The12-stage M6 React runner and its React-plan auditor do not contain all named Rust amendment006 tool executions.",
+      "path": "som-rs/contracts/rust-output-v1/acceptance-plan.json",
+      "pointer": "/amendment006/checks"
+    }
+  ],
+  "source_file_sha256": {
+    "som-rs/contracts/react-output-v1/acceptance-plan.json": "c3145cdc4528357dba8faa9e80ce2687204eef7c2812581366ab34d7df33792f",
+    "som-rs/contracts/rust-output-v1/acceptance-plan.json": "bea96ef0e19eb5d2e9923cba5e8a41d05df2ac95e0d55baf2d080a5f9f76a83d",
+    "som-rs/contracts/typescript-output-v1/acceptance-plan.json": "17478469d02bf362e6d394ef9081ff4e842eeab239fbfc89550fba92951d35f5",
+    "som-rs/scripts/react_output_acceptance/check_typescript_baseline.py": "349989e3db643dea3ad5403aba2c946d62c402c71664bd7a80bf4e880a606e36",
+    "som-rs/scripts/react_output_acceptance/run_hosted_acceptance.py": "5e40fb0845b4beac9c3b46da9fa9e22b6c6db587d888ad1809192b367aaab455",
+    "som-rs/scripts/typescript_output_acceptance/check_python_baseline.py": "ebe4fbe58d54ac6e89ea48f11a6a2b622ed450589864e289327ecb6fd8f51180",
+    "som-rs/src/compiler.rs": "49c8309e102b1f7c686c8a975ed8b2c81d0133557c0443d8986474ca41cd9f3c"
+  },
+  "source_review_passed": true,
+  "source_revision_observed": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+  "tracker_state_mutated": false,
+  "unchanged_source_groups": [
+    "React frozen contract files",
+    "React frozen tests",
+    "React renderer source",
+    "Rust and TypeScript previously frozen acceptance plans and tests"
+  ],
+  "version": "som.m12-M6-TS125-source-authority-relationship-review.v1"
+}

@@ -1,0 +1,5271 @@
+{
+  "version": "som.supplement-fixtures.publication-candidate.v1",
+  "state": "historical synthetic regression fixtures; current product acceptance not established",
+  "source_review_packet_sha256": "143b4f58b64654279b7388c6dcf502953a81b73c7568947d678edf7cfa2fc960",
+  "public_golden_export_sha256": "ea573d3c842d367b32538ad8b9fec01608b4f05f676a07a80d9b9acf81a69a8b",
+  "accepted_legacy_result_sha256": "445b34112c974b2bcc70472f374b22ac8289e073d12e9c7042c7f8e252e89e56",
+  "counts": {
+    "typed_input_rows": 11,
+    "distinct_typed_prompts": 10,
+    "checked_dsl_rows": 2
+  },
+  "typed_inputs": [
+    {
+      "id": "supplement-gcs-object-read",
+      "legacy_index": 532,
+      "family": "supplement12",
+      "variant": "standard",
+      "typed_input": {
+        "capabilities": {
+          "auth": "jwt",
+          "database": "postgresql",
+          "group_field": "unit",
+          "storage": "gcs",
+          "value_field": "amount",
+          "workflow": "decimal_summary"
+        },
+        "contract": {
+          "id": "related-flow.v1",
+          "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+        },
+        "flow": {
+          "inputs": [
+            {
+              "name": "parent",
+              "type": "parent_input"
+            },
+            {
+              "name": "child",
+              "type": "child_input"
+            },
+            {
+              "name": "choose",
+              "type": "boolean"
+            },
+            {
+              "name": "children",
+              "type": "children_input"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            }
+          ],
+          "name": "publish",
+          "result": {
+            "object": {
+              "field": "sha256",
+              "step": "stored"
+            },
+            "parent": {
+              "field": "title",
+              "step": "created_parent"
+            }
+          },
+          "steps": [
+            {
+              "args": {},
+              "name": "access",
+              "op": "authorize",
+              "undo": null
+            },
+            {
+              "name": "write_tx",
+              "op": "transaction",
+              "steps": [
+                {
+                  "args": {
+                    "children": {
+                      "input": "children"
+                    },
+                    "parent": {
+                      "input": "parent"
+                    }
+                  },
+                  "name": "batch_rows",
+                  "op": "batch.create",
+                  "undo": "delete_created"
+                }
+              ]
+            },
+            {
+              "args": {
+                "parent_id": {
+                  "field": "parent.id",
+                  "step": "batch_rows"
+                }
+              },
+              "name": "created_parent",
+              "op": "parent.get",
+              "undo": null
+            },
+            {
+              "condition": {
+                "left": {
+                  "input": "choose"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": true,
+                  "type": "boolean"
+                }
+              },
+              "else": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "no_export",
+                  "op": "workflow.run",
+                  "undo": null
+                }
+              ],
+              "exports": {
+                "exported": {
+                  "else": {
+                    "field": "",
+                    "step": "no_export"
+                  },
+                  "then": {
+                    "field": "",
+                    "step": "yes_export"
+                  }
+                }
+              },
+              "name": "choice",
+              "op": "if",
+              "then": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "yes_export",
+                  "op": "workflow.run",
+                  "undo": null
+                }
+              ]
+            },
+            {
+              "args": {
+                "body": {
+                  "field": "body",
+                  "step": "exported"
+                },
+                "key": {
+                  "input": "key"
+                }
+              },
+              "name": "stored",
+              "op": "object.put",
+              "undo": "delete_created"
+            },
+            {
+              "args": {
+                "key": {
+                  "input": "key"
+                }
+              },
+              "name": "read_object",
+              "op": "object.get",
+              "undo": null
+            }
+          ]
+        },
+        "migration": {
+          "down_revision": null,
+          "revision": "f0205"
+        },
+        "operations": [
+          {
+            "action": "create",
+            "scope": "parent"
+          },
+          {
+            "action": "get",
+            "scope": "parent"
+          },
+          {
+            "action": "list",
+            "scope": "parent"
+          },
+          {
+            "action": "patch",
+            "scope": "parent"
+          },
+          {
+            "action": "delete",
+            "scope": "parent"
+          },
+          {
+            "action": "create",
+            "scope": "child"
+          },
+          {
+            "action": "get",
+            "scope": "child"
+          },
+          {
+            "action": "list",
+            "scope": "child"
+          },
+          {
+            "action": "patch",
+            "scope": "child"
+          },
+          {
+            "action": "delete",
+            "scope": "child"
+          },
+          {
+            "action": "batch_create",
+            "scope": "batch"
+          }
+        ],
+        "package": "flow_app_205",
+        "relation": {
+          "foreign_key": "owner_id",
+          "on_delete": "restrict"
+        },
+        "resources": {
+          "child": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "code",
+                "required": true,
+                "type": "str",
+                "unique": true
+              },
+              {
+                "name": "amount",
+                "required": true,
+                "type": "float",
+                "unique": false
+              },
+              {
+                "name": "unit",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "due",
+                "required": false,
+                "type": "date",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "count",
+                "required": true,
+                "type": "int",
+                "unique": false
+              }
+            ],
+            "name": "Child",
+            "path": "/children",
+            "query": {
+              "date_field": "due",
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "children"
+          },
+          "parent": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "servings",
+                "required": true,
+                "type": "int",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "due",
+                "required": false,
+                "type": "date",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              }
+            ],
+            "name": "Parent",
+            "path": "/parents",
+            "query": {
+              "date_field": "due",
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "parents"
+          }
+        },
+        "version": "som.prompt.v7"
+      },
+      "prompt_sha256": "8afe599ebc4d7852577839a89245d097864bb6ed9a83599a2f9484f40510595a",
+      "cnl_sha256": "a986f7d4d927547f7173b15cbd8a2b37ce0daa67b58e2f541e1a306941b9a1c8",
+      "product_sha256": "d3b7dd8bc5ab3794bbde7481a82522c60dea01b8315c10a8ccb93199c3a9944d"
+    },
+    {
+      "id": "supplement-mongodb-batch",
+      "legacy_index": 533,
+      "family": "supplement12",
+      "variant": "standard",
+      "typed_input": {
+        "capabilities": {
+          "auth": "jwt",
+          "database": "mongodb",
+          "group_field": "unit",
+          "storage": "s3",
+          "value_field": "amount",
+          "workflow": "decimal_summary"
+        },
+        "contract": {
+          "id": "related-flow.v1",
+          "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+        },
+        "flow": {
+          "inputs": [
+            {
+              "name": "parent",
+              "type": "parent_input"
+            },
+            {
+              "name": "child",
+              "type": "child_input"
+            },
+            {
+              "name": "choose",
+              "type": "boolean"
+            },
+            {
+              "name": "children",
+              "type": "children_input"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            }
+          ],
+          "name": "publish",
+          "result": {
+            "object": {
+              "field": "sha256",
+              "step": "stored"
+            },
+            "parent": {
+              "field": "id",
+              "step": "created_parent"
+            }
+          },
+          "steps": [
+            {
+              "args": {},
+              "name": "access",
+              "op": "authorize",
+              "undo": null
+            },
+            {
+              "name": "write_tx",
+              "op": "transaction",
+              "steps": [
+                {
+                  "args": {
+                    "children": {
+                      "input": "children"
+                    },
+                    "parent": {
+                      "input": "parent"
+                    }
+                  },
+                  "name": "batch_rows",
+                  "op": "batch.create",
+                  "undo": "delete_created"
+                }
+              ]
+            },
+            {
+              "args": {
+                "parent_id": {
+                  "field": "parent.id",
+                  "step": "batch_rows"
+                }
+              },
+              "name": "created_parent",
+              "op": "parent.get",
+              "undo": null
+            },
+            {
+              "args": {
+                "parent_id": {
+                  "field": "id",
+                  "step": "created_parent"
+                }
+              },
+              "name": "listed_children",
+              "op": "child.list",
+              "undo": null
+            },
+            {
+              "condition": {
+                "left": {
+                  "input": "choose"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": true,
+                  "type": "boolean"
+                }
+              },
+              "else": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "no_export",
+                  "op": "workflow.run",
+                  "undo": null
+                }
+              ],
+              "exports": {
+                "exported": {
+                  "else": {
+                    "field": "",
+                    "step": "no_export"
+                  },
+                  "then": {
+                    "field": "",
+                    "step": "yes_export"
+                  }
+                }
+              },
+              "name": "choice",
+              "op": "if",
+              "then": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "yes_export",
+                  "op": "workflow.run",
+                  "undo": null
+                }
+              ]
+            },
+            {
+              "args": {
+                "body": {
+                  "field": "body",
+                  "step": "exported"
+                },
+                "key": {
+                  "input": "key"
+                }
+              },
+              "name": "stored",
+              "op": "object.put",
+              "undo": "delete_created"
+            }
+          ]
+        },
+        "migration": {
+          "down_revision": null,
+          "revision": "f0201"
+        },
+        "operations": [
+          {
+            "action": "create",
+            "scope": "parent"
+          },
+          {
+            "action": "get",
+            "scope": "parent"
+          },
+          {
+            "action": "list",
+            "scope": "parent"
+          },
+          {
+            "action": "patch",
+            "scope": "parent"
+          },
+          {
+            "action": "delete",
+            "scope": "parent"
+          },
+          {
+            "action": "create",
+            "scope": "child"
+          },
+          {
+            "action": "get",
+            "scope": "child"
+          },
+          {
+            "action": "list",
+            "scope": "child"
+          },
+          {
+            "action": "patch",
+            "scope": "child"
+          },
+          {
+            "action": "delete",
+            "scope": "child"
+          },
+          {
+            "action": "batch_create",
+            "scope": "batch"
+          }
+        ],
+        "package": "flow_app_201",
+        "relation": {
+          "foreign_key": "owner_id",
+          "on_delete": "restrict"
+        },
+        "resources": {
+          "child": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "code",
+                "required": true,
+                "type": "str",
+                "unique": true
+              },
+              {
+                "name": "amount",
+                "required": true,
+                "type": "float",
+                "unique": false
+              },
+              {
+                "name": "unit",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "due",
+                "required": false,
+                "type": "date",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "count",
+                "required": true,
+                "type": "int",
+                "unique": false
+              }
+            ],
+            "name": "Child",
+            "path": "/children",
+            "query": {
+              "date_field": "due",
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "children"
+          },
+          "parent": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "servings",
+                "required": true,
+                "type": "int",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "due",
+                "required": false,
+                "type": "date",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              }
+            ],
+            "name": "Parent",
+            "path": "/parents",
+            "query": {
+              "date_field": "due",
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "parents"
+          }
+        },
+        "version": "som.prompt.v7"
+      },
+      "prompt_sha256": "6f6c9ec123c8a5edc9c4c731e33fbfac5ee550a906dfc9b167418ee674fe2699",
+      "cnl_sha256": "ea351f98ad5df66aae1615523d9a52f0573d7d5a4454e2ba3ca23e7420d0380a",
+      "product_sha256": "cb3c13f48709b7da5747f2d5db052a968ee2a028088e816919f510e95ec8fc22"
+    },
+    {
+      "id": "supplement-mongodb-child-patch-read",
+      "legacy_index": 534,
+      "family": "supplement12",
+      "variant": "standard",
+      "typed_input": {
+        "capabilities": {
+          "auth": "jwt",
+          "database": "mongodb",
+          "group_field": "unit",
+          "storage": "s3",
+          "value_field": "amount",
+          "workflow": "decimal_summary"
+        },
+        "contract": {
+          "id": "related-flow.v1",
+          "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+        },
+        "flow": {
+          "inputs": [
+            {
+              "name": "parent",
+              "type": "parent_input"
+            },
+            {
+              "name": "child",
+              "type": "child_input"
+            },
+            {
+              "name": "choose",
+              "type": "boolean"
+            },
+            {
+              "name": "patch",
+              "type": "child_patch"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            }
+          ],
+          "name": "publish",
+          "result": {
+            "object": {
+              "field": "sha256",
+              "step": "stored"
+            },
+            "parent": {
+              "field": "id",
+              "step": "created_parent"
+            }
+          },
+          "steps": [
+            {
+              "args": {},
+              "name": "access",
+              "op": "authorize",
+              "undo": null
+            },
+            {
+              "name": "write_tx",
+              "op": "transaction",
+              "steps": [
+                {
+                  "args": {
+                    "data": {
+                      "input": "parent"
+                    }
+                  },
+                  "name": "created_parent",
+                  "op": "parent.create",
+                  "undo": "delete_created"
+                },
+                {
+                  "args": {
+                    "data": {
+                      "input": "child"
+                    },
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "created_child",
+                  "op": "child.create",
+                  "undo": "delete_created"
+                },
+                {
+                  "args": {
+                    "child_id": {
+                      "field": "id",
+                      "step": "created_child"
+                    },
+                    "data": {
+                      "input": "patch"
+                    },
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "changed_child",
+                  "op": "child.patch",
+                  "undo": "restore_patch"
+                }
+              ]
+            },
+            {
+              "args": {
+                "child_id": {
+                  "field": "id",
+                  "step": "created_child"
+                },
+                "parent_id": {
+                  "field": "id",
+                  "step": "created_parent"
+                }
+              },
+              "name": "read_child",
+              "op": "child.get",
+              "undo": null
+            },
+            {
+              "condition": {
+                "left": {
+                  "input": "choose"
+                },
+                "op": "ne",
+                "right": {
+                  "literal": true,
+                  "type": "boolean"
+                }
+              },
+              "else": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "no_export",
+                  "op": "workflow.run",
+                  "undo": null
+                }
+              ],
+              "exports": {
+                "exported": {
+                  "else": {
+                    "field": "",
+                    "step": "no_export"
+                  },
+                  "then": {
+                    "field": "",
+                    "step": "yes_export"
+                  }
+                }
+              },
+              "name": "choice",
+              "op": "if",
+              "then": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "yes_export",
+                  "op": "workflow.run",
+                  "undo": null
+                }
+              ]
+            },
+            {
+              "args": {
+                "body": {
+                  "field": "body",
+                  "step": "exported"
+                },
+                "key": {
+                  "input": "key"
+                }
+              },
+              "name": "stored",
+              "op": "object.put",
+              "undo": "delete_created"
+            }
+          ]
+        },
+        "migration": {
+          "down_revision": null,
+          "revision": "f0202"
+        },
+        "operations": [
+          {
+            "action": "create",
+            "scope": "parent"
+          },
+          {
+            "action": "get",
+            "scope": "parent"
+          },
+          {
+            "action": "list",
+            "scope": "parent"
+          },
+          {
+            "action": "patch",
+            "scope": "parent"
+          },
+          {
+            "action": "delete",
+            "scope": "parent"
+          },
+          {
+            "action": "create",
+            "scope": "child"
+          },
+          {
+            "action": "get",
+            "scope": "child"
+          },
+          {
+            "action": "list",
+            "scope": "child"
+          },
+          {
+            "action": "patch",
+            "scope": "child"
+          },
+          {
+            "action": "delete",
+            "scope": "child"
+          },
+          {
+            "action": "batch_create",
+            "scope": "batch"
+          }
+        ],
+        "package": "flow_app_202",
+        "relation": {
+          "foreign_key": "owner_id",
+          "on_delete": "restrict"
+        },
+        "resources": {
+          "child": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "code",
+                "required": true,
+                "type": "str",
+                "unique": true
+              },
+              {
+                "name": "amount",
+                "required": true,
+                "type": "float",
+                "unique": false
+              },
+              {
+                "name": "unit",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "due",
+                "required": false,
+                "type": "date",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "count",
+                "required": true,
+                "type": "int",
+                "unique": false
+              }
+            ],
+            "name": "Child",
+            "path": "/children",
+            "query": {
+              "date_field": "due",
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "children"
+          },
+          "parent": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "servings",
+                "required": true,
+                "type": "int",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "due",
+                "required": false,
+                "type": "date",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              }
+            ],
+            "name": "Parent",
+            "path": "/parents",
+            "query": {
+              "date_field": "due",
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "parents"
+          }
+        },
+        "version": "som.prompt.v7"
+      },
+      "prompt_sha256": "c824388ed285fb494412e91aeb28deaa9aa4a8b2d6bb81de80a1390b8d201832",
+      "cnl_sha256": "7c6d3ba99c31ca9bd4221a0dfe47fd19d87df4a169c58d4edadc41458cacf26c",
+      "product_sha256": "e537e7a1973ff22933d541a5021fe6d3b7a49edecf3932512a7e79eab37245f7"
+    },
+    {
+      "id": "supplement-mongodb-child-patch-read-checked",
+      "legacy_index": 535,
+      "family": "supplement12",
+      "variant": "checked",
+      "typed_input": {
+        "capabilities": {
+          "auth": "jwt",
+          "database": "mongodb",
+          "group_field": "unit",
+          "storage": "s3",
+          "value_field": "amount",
+          "workflow": "decimal_summary"
+        },
+        "contract": {
+          "id": "related-flow.v1",
+          "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+        },
+        "flow": {
+          "inputs": [
+            {
+              "name": "parent",
+              "type": "parent_input"
+            },
+            {
+              "name": "child",
+              "type": "child_input"
+            },
+            {
+              "name": "choose",
+              "type": "boolean"
+            },
+            {
+              "name": "patch",
+              "type": "child_patch"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            }
+          ],
+          "name": "publish",
+          "result": {
+            "object": {
+              "field": "sha256",
+              "step": "stored"
+            },
+            "parent": {
+              "field": "id",
+              "step": "created_parent"
+            }
+          },
+          "steps": [
+            {
+              "args": {},
+              "name": "access",
+              "op": "authorize",
+              "undo": null
+            },
+            {
+              "name": "write_tx",
+              "op": "transaction",
+              "steps": [
+                {
+                  "args": {
+                    "data": {
+                      "input": "parent"
+                    }
+                  },
+                  "name": "created_parent",
+                  "op": "parent.create",
+                  "undo": "delete_created"
+                },
+                {
+                  "args": {
+                    "data": {
+                      "input": "child"
+                    },
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "created_child",
+                  "op": "child.create",
+                  "undo": "delete_created"
+                },
+                {
+                  "args": {
+                    "child_id": {
+                      "field": "id",
+                      "step": "created_child"
+                    },
+                    "data": {
+                      "input": "patch"
+                    },
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "changed_child",
+                  "op": "child.patch",
+                  "undo": "restore_patch"
+                }
+              ]
+            },
+            {
+              "args": {
+                "child_id": {
+                  "field": "id",
+                  "step": "created_child"
+                },
+                "parent_id": {
+                  "field": "id",
+                  "step": "created_parent"
+                }
+              },
+              "name": "read_child",
+              "op": "child.get",
+              "undo": null
+            },
+            {
+              "condition": {
+                "left": {
+                  "input": "choose"
+                },
+                "op": "ne",
+                "right": {
+                  "literal": true,
+                  "type": "boolean"
+                }
+              },
+              "else": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "no_export",
+                  "op": "workflow.run",
+                  "undo": null
+                }
+              ],
+              "exports": {
+                "exported": {
+                  "else": {
+                    "field": "",
+                    "step": "no_export"
+                  },
+                  "then": {
+                    "field": "",
+                    "step": "yes_export"
+                  }
+                }
+              },
+              "name": "choice",
+              "op": "if",
+              "then": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "yes_export",
+                  "op": "workflow.run",
+                  "undo": null
+                }
+              ]
+            },
+            {
+              "args": {
+                "body": {
+                  "field": "body",
+                  "step": "exported"
+                },
+                "key": {
+                  "input": "key"
+                }
+              },
+              "name": "stored",
+              "op": "object.put",
+              "undo": "delete_created"
+            }
+          ]
+        },
+        "migration": {
+          "down_revision": null,
+          "revision": "f0202"
+        },
+        "operations": [
+          {
+            "action": "create",
+            "scope": "parent"
+          },
+          {
+            "action": "get",
+            "scope": "parent"
+          },
+          {
+            "action": "list",
+            "scope": "parent"
+          },
+          {
+            "action": "patch",
+            "scope": "parent"
+          },
+          {
+            "action": "delete",
+            "scope": "parent"
+          },
+          {
+            "action": "create",
+            "scope": "child"
+          },
+          {
+            "action": "get",
+            "scope": "child"
+          },
+          {
+            "action": "list",
+            "scope": "child"
+          },
+          {
+            "action": "patch",
+            "scope": "child"
+          },
+          {
+            "action": "delete",
+            "scope": "child"
+          },
+          {
+            "action": "batch_create",
+            "scope": "batch"
+          }
+        ],
+        "package": "flow_app_202",
+        "relation": {
+          "foreign_key": "owner_id",
+          "on_delete": "restrict"
+        },
+        "resources": {
+          "child": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "code",
+                "required": true,
+                "type": "str",
+                "unique": true
+              },
+              {
+                "name": "amount",
+                "required": true,
+                "type": "float",
+                "unique": false
+              },
+              {
+                "name": "unit",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "due",
+                "required": false,
+                "type": "date",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "count",
+                "required": true,
+                "type": "int",
+                "unique": false
+              }
+            ],
+            "name": "Child",
+            "path": "/children",
+            "query": {
+              "date_field": "due",
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "children"
+          },
+          "parent": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "servings",
+                "required": true,
+                "type": "int",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "due",
+                "required": false,
+                "type": "date",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              }
+            ],
+            "name": "Parent",
+            "path": "/parents",
+            "query": {
+              "date_field": "due",
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "parents"
+          }
+        },
+        "version": "som.prompt.v7"
+      },
+      "prompt_sha256": "c824388ed285fb494412e91aeb28deaa9aa4a8b2d6bb81de80a1390b8d201832",
+      "cnl_sha256": "7c6d3ba99c31ca9bd4221a0dfe47fd19d87df4a169c58d4edadc41458cacf26c",
+      "product_sha256": "43bd5595515dff5a7fb783d1fd4f71d1c65ba42092b6c98987c391e9559c44c6"
+    },
+    {
+      "id": "supplement-mongodb-csv-import",
+      "legacy_index": 536,
+      "family": "supplement12",
+      "variant": "standard",
+      "typed_input": {
+        "capabilities": {
+          "auth": "jwt",
+          "database": "mongodb",
+          "group_field": null,
+          "storage": "s3",
+          "value_field": null,
+          "workflow": "csv"
+        },
+        "contract": {
+          "id": "related-flow.v1",
+          "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+        },
+        "flow": {
+          "inputs": [
+            {
+              "name": "parent",
+              "type": "parent_input"
+            },
+            {
+              "name": "child",
+              "type": "child_input"
+            },
+            {
+              "name": "choose",
+              "type": "boolean"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "csv",
+              "type": "string"
+            }
+          ],
+          "name": "publish",
+          "result": {
+            "object": {
+              "field": "sha256",
+              "step": "stored"
+            },
+            "parent": {
+              "field": "title",
+              "step": "created_parent"
+            }
+          },
+          "steps": [
+            {
+              "args": {},
+              "name": "access",
+              "op": "authorize",
+              "undo": null
+            },
+            {
+              "name": "first_tx",
+              "op": "transaction",
+              "steps": [
+                {
+                  "args": {
+                    "data": {
+                      "input": "parent"
+                    }
+                  },
+                  "name": "created_parent",
+                  "op": "parent.create",
+                  "undo": "delete_created"
+                }
+              ]
+            },
+            {
+              "name": "second_tx",
+              "op": "transaction",
+              "steps": [
+                {
+                  "args": {
+                    "csv": {
+                      "input": "csv"
+                    },
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "imported",
+                  "op": "workflow.import",
+                  "undo": "delete_created"
+                }
+              ]
+            },
+            {
+              "condition": {
+                "left": {
+                  "input": "choose"
+                },
+                "op": "ne",
+                "right": {
+                  "literal": true,
+                  "type": "boolean"
+                }
+              },
+              "else": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "no_export",
+                  "op": "workflow.run",
+                  "undo": null
+                }
+              ],
+              "exports": {
+                "exported": {
+                  "else": {
+                    "field": "",
+                    "step": "no_export"
+                  },
+                  "then": {
+                    "field": "",
+                    "step": "yes_export"
+                  }
+                }
+              },
+              "name": "choice",
+              "op": "if",
+              "then": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "yes_export",
+                  "op": "workflow.run",
+                  "undo": null
+                }
+              ]
+            },
+            {
+              "args": {
+                "body": {
+                  "field": "body",
+                  "step": "exported"
+                },
+                "key": {
+                  "input": "key"
+                }
+              },
+              "name": "stored",
+              "op": "object.put",
+              "undo": "delete_created"
+            }
+          ]
+        },
+        "migration": {
+          "down_revision": null,
+          "revision": "f0204"
+        },
+        "operations": [
+          {
+            "action": "create",
+            "scope": "parent"
+          },
+          {
+            "action": "get",
+            "scope": "parent"
+          },
+          {
+            "action": "list",
+            "scope": "parent"
+          },
+          {
+            "action": "patch",
+            "scope": "parent"
+          },
+          {
+            "action": "delete",
+            "scope": "parent"
+          },
+          {
+            "action": "create",
+            "scope": "child"
+          },
+          {
+            "action": "get",
+            "scope": "child"
+          },
+          {
+            "action": "list",
+            "scope": "child"
+          },
+          {
+            "action": "patch",
+            "scope": "child"
+          },
+          {
+            "action": "delete",
+            "scope": "child"
+          },
+          {
+            "action": "batch_create",
+            "scope": "batch"
+          }
+        ],
+        "package": "flow_app_204",
+        "relation": {
+          "foreign_key": "owner_id",
+          "on_delete": "restrict"
+        },
+        "resources": {
+          "child": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "code",
+                "required": true,
+                "type": "str",
+                "unique": true
+              },
+              {
+                "name": "amount",
+                "required": true,
+                "type": "float",
+                "unique": false
+              },
+              {
+                "name": "unit",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "due",
+                "required": false,
+                "type": "date",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "count",
+                "required": true,
+                "type": "int",
+                "unique": false
+              }
+            ],
+            "name": "Child",
+            "path": "/children",
+            "query": {
+              "date_field": "due",
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "children"
+          },
+          "parent": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "servings",
+                "required": true,
+                "type": "int",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "due",
+                "required": false,
+                "type": "date",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              }
+            ],
+            "name": "Parent",
+            "path": "/parents",
+            "query": {
+              "date_field": "due",
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "parents"
+          }
+        },
+        "version": "som.prompt.v7"
+      },
+      "prompt_sha256": "bec47fd20ef6070ade85823387497b15a5c8503a5aa74eae491911de679baf86",
+      "cnl_sha256": "5d8e5fd851043c57db4f04d840824f1dbac61bb4d2542e046fc8fd65b0136f9f",
+      "product_sha256": "9f8715a92040d61fa0b99dd68c302ce92de4717a1cdd00baf6c85e1781e9bcd8"
+    },
+    {
+      "id": "supplement-mongodb-parent-list",
+      "legacy_index": 537,
+      "family": "supplement12",
+      "variant": "standard",
+      "typed_input": {
+        "capabilities": {
+          "auth": "jwt",
+          "database": "mongodb",
+          "group_field": "unit",
+          "storage": "s3",
+          "value_field": "amount",
+          "workflow": "decimal_summary"
+        },
+        "contract": {
+          "id": "related-flow.v1",
+          "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+        },
+        "flow": {
+          "inputs": [
+            {
+              "name": "parent",
+              "type": "parent_input"
+            },
+            {
+              "name": "child",
+              "type": "child_input"
+            },
+            {
+              "name": "choose",
+              "type": "boolean"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            }
+          ],
+          "name": "publish",
+          "result": {
+            "object": {
+              "field": "sha256",
+              "step": "stored"
+            },
+            "parent": {
+              "field": "title",
+              "step": "created_parent"
+            }
+          },
+          "steps": [
+            {
+              "args": {},
+              "name": "access",
+              "op": "authorize",
+              "undo": null
+            },
+            {
+              "name": "write_tx",
+              "op": "transaction",
+              "steps": [
+                {
+                  "args": {
+                    "data": {
+                      "input": "parent"
+                    }
+                  },
+                  "name": "created_parent",
+                  "op": "parent.create",
+                  "undo": "delete_created"
+                },
+                {
+                  "args": {
+                    "data": {
+                      "input": "child"
+                    },
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "created_child",
+                  "op": "child.create",
+                  "undo": "delete_created"
+                }
+              ]
+            },
+            {
+              "args": {},
+              "name": "listed_parents",
+              "op": "parent.list",
+              "undo": null
+            },
+            {
+              "condition": {
+                "left": {
+                  "input": "choose"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": true,
+                  "type": "boolean"
+                }
+              },
+              "else": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "no_export",
+                  "op": "workflow.run",
+                  "undo": null
+                }
+              ],
+              "exports": {
+                "exported": {
+                  "else": {
+                    "field": "",
+                    "step": "no_export"
+                  },
+                  "then": {
+                    "field": "",
+                    "step": "yes_export"
+                  }
+                }
+              },
+              "name": "choice",
+              "op": "if",
+              "then": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "yes_export",
+                  "op": "workflow.run",
+                  "undo": null
+                }
+              ]
+            },
+            {
+              "args": {
+                "body": {
+                  "field": "body",
+                  "step": "exported"
+                },
+                "key": {
+                  "input": "key"
+                }
+              },
+              "name": "stored",
+              "op": "object.put",
+              "undo": "delete_created"
+            }
+          ]
+        },
+        "migration": {
+          "down_revision": null,
+          "revision": "f0203"
+        },
+        "operations": [
+          {
+            "action": "create",
+            "scope": "parent"
+          },
+          {
+            "action": "get",
+            "scope": "parent"
+          },
+          {
+            "action": "list",
+            "scope": "parent"
+          },
+          {
+            "action": "patch",
+            "scope": "parent"
+          },
+          {
+            "action": "delete",
+            "scope": "parent"
+          },
+          {
+            "action": "create",
+            "scope": "child"
+          },
+          {
+            "action": "get",
+            "scope": "child"
+          },
+          {
+            "action": "list",
+            "scope": "child"
+          },
+          {
+            "action": "patch",
+            "scope": "child"
+          },
+          {
+            "action": "delete",
+            "scope": "child"
+          },
+          {
+            "action": "batch_create",
+            "scope": "batch"
+          }
+        ],
+        "package": "flow_app_203",
+        "relation": {
+          "foreign_key": "owner_id",
+          "on_delete": "restrict"
+        },
+        "resources": {
+          "child": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "code",
+                "required": true,
+                "type": "str",
+                "unique": true
+              },
+              {
+                "name": "amount",
+                "required": true,
+                "type": "float",
+                "unique": false
+              },
+              {
+                "name": "unit",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "due",
+                "required": false,
+                "type": "date",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "count",
+                "required": true,
+                "type": "int",
+                "unique": false
+              }
+            ],
+            "name": "Child",
+            "path": "/children",
+            "query": {
+              "date_field": "due",
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "children"
+          },
+          "parent": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "servings",
+                "required": true,
+                "type": "int",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "due",
+                "required": false,
+                "type": "date",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              }
+            ],
+            "name": "Parent",
+            "path": "/parents",
+            "query": {
+              "date_field": "due",
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "parents"
+          }
+        },
+        "version": "som.prompt.v7"
+      },
+      "prompt_sha256": "5f2fd8759627e681868254d07856b4839a4a592cf57886674c039c267dfec751",
+      "cnl_sha256": "c3a48b38a76237a21cabe5641a86dca44835a38b67be5b56954d1ed9efd51105",
+      "product_sha256": "e20675225ba59d0e641592b6d03d96717b03998d9a93d3f2c985a30cda2ca63b"
+    },
+    {
+      "id": "supplement-mongodb-parent-patch",
+      "legacy_index": 538,
+      "family": "supplement12",
+      "variant": "standard",
+      "typed_input": {
+        "capabilities": {
+          "auth": "jwt",
+          "database": "mongodb",
+          "group_field": "unit",
+          "storage": "s3",
+          "value_field": "amount",
+          "workflow": "decimal_summary"
+        },
+        "contract": {
+          "id": "related-flow.v1",
+          "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+        },
+        "flow": {
+          "inputs": [
+            {
+              "name": "parent",
+              "type": "parent_input"
+            },
+            {
+              "name": "child",
+              "type": "child_input"
+            },
+            {
+              "name": "choose",
+              "type": "boolean"
+            },
+            {
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "name": "parent_patch",
+              "type": "parent_patch"
+            }
+          ],
+          "name": "publish",
+          "result": {
+            "object": {
+              "field": "sha256",
+              "step": "stored"
+            },
+            "parent": {
+              "field": "id",
+              "step": "created_parent"
+            }
+          },
+          "steps": [
+            {
+              "args": {},
+              "name": "access",
+              "op": "authorize",
+              "undo": null
+            },
+            {
+              "name": "first_tx",
+              "op": "transaction",
+              "steps": [
+                {
+                  "args": {
+                    "data": {
+                      "input": "parent"
+                    }
+                  },
+                  "name": "created_parent",
+                  "op": "parent.create",
+                  "undo": "delete_created"
+                }
+              ]
+            },
+            {
+              "name": "second_tx",
+              "op": "transaction",
+              "steps": [
+                {
+                  "args": {
+                    "data": {
+                      "input": "child"
+                    },
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "created_child",
+                  "op": "child.create",
+                  "undo": "delete_created"
+                },
+                {
+                  "args": {
+                    "data": {
+                      "input": "parent_patch"
+                    },
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "changed_parent",
+                  "op": "parent.patch",
+                  "undo": "restore_patch"
+                }
+              ]
+            },
+            {
+              "condition": {
+                "left": {
+                  "input": "choose"
+                },
+                "op": "ne",
+                "right": {
+                  "literal": true,
+                  "type": "boolean"
+                }
+              },
+              "else": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "no_export",
+                  "op": "workflow.run",
+                  "undo": null
+                }
+              ],
+              "exports": {
+                "exported": {
+                  "else": {
+                    "field": "",
+                    "step": "no_export"
+                  },
+                  "then": {
+                    "field": "",
+                    "step": "yes_export"
+                  }
+                }
+              },
+              "name": "choice",
+              "op": "if",
+              "then": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "yes_export",
+                  "op": "workflow.run",
+                  "undo": null
+                }
+              ]
+            },
+            {
+              "args": {
+                "body": {
+                  "field": "body",
+                  "step": "exported"
+                },
+                "key": {
+                  "input": "key"
+                }
+              },
+              "name": "stored",
+              "op": "object.put",
+              "undo": "delete_created"
+            }
+          ]
+        },
+        "migration": {
+          "down_revision": null,
+          "revision": "f0200"
+        },
+        "operations": [
+          {
+            "action": "create",
+            "scope": "parent"
+          },
+          {
+            "action": "get",
+            "scope": "parent"
+          },
+          {
+            "action": "list",
+            "scope": "parent"
+          },
+          {
+            "action": "patch",
+            "scope": "parent"
+          },
+          {
+            "action": "delete",
+            "scope": "parent"
+          },
+          {
+            "action": "create",
+            "scope": "child"
+          },
+          {
+            "action": "get",
+            "scope": "child"
+          },
+          {
+            "action": "list",
+            "scope": "child"
+          },
+          {
+            "action": "patch",
+            "scope": "child"
+          },
+          {
+            "action": "delete",
+            "scope": "child"
+          },
+          {
+            "action": "batch_create",
+            "scope": "batch"
+          }
+        ],
+        "package": "flow_app_200",
+        "relation": {
+          "foreign_key": "owner_id",
+          "on_delete": "restrict"
+        },
+        "resources": {
+          "child": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "code",
+                "required": true,
+                "type": "str",
+                "unique": true
+              },
+              {
+                "name": "amount",
+                "required": true,
+                "type": "float",
+                "unique": false
+              },
+              {
+                "name": "unit",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "due",
+                "required": false,
+                "type": "date",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "count",
+                "required": true,
+                "type": "int",
+                "unique": false
+              }
+            ],
+            "name": "Child",
+            "path": "/children",
+            "query": {
+              "date_field": "due",
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "children"
+          },
+          "parent": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "servings",
+                "required": true,
+                "type": "int",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "due",
+                "required": false,
+                "type": "date",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              }
+            ],
+            "name": "Parent",
+            "path": "/parents",
+            "query": {
+              "date_field": "due",
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "parents"
+          }
+        },
+        "version": "som.prompt.v7"
+      },
+      "prompt_sha256": "0c09c8713fc1143e323dba76a42e0d5d3fd60f24de7dc63929891c50c8943e7a",
+      "cnl_sha256": "78892f13e9e096556409077700d91c505975de3d9cbf6871e51d4dc57ed0c380",
+      "product_sha256": "d810eaf4294d1de829037b4c63d9a9fc32df922df37b534c6b330d1576bd9940"
+    },
+    {
+      "id": "supplement-mongodb-query-boolean",
+      "legacy_index": 539,
+      "family": "supplement12",
+      "variant": "standard",
+      "typed_input": {
+        "capabilities": {
+          "auth": "firebase",
+          "database": "mongodb",
+          "group_field": null,
+          "storage": "none",
+          "value_field": null,
+          "workflow": "json_export"
+        },
+        "contract": {
+          "id": "related-flow.v1",
+          "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+        },
+        "flow": {
+          "inputs": [
+            {
+              "name": "parent_id",
+              "type": "integer"
+            }
+          ],
+          "name": "publish",
+          "result": {
+            "value": {
+              "field": "title",
+              "step": "found"
+            }
+          },
+          "steps": [
+            {
+              "args": {},
+              "name": "access",
+              "op": "authorize",
+              "undo": null
+            },
+            {
+              "args": {
+                "parent_id": {
+                  "input": "parent_id"
+                }
+              },
+              "name": "found",
+              "op": "parent.get",
+              "undo": null
+            }
+          ]
+        },
+        "migration": {
+          "down_revision": null,
+          "revision": "f1001"
+        },
+        "operations": [
+          {
+            "action": "create",
+            "scope": "parent"
+          },
+          {
+            "action": "get",
+            "scope": "parent"
+          },
+          {
+            "action": "list",
+            "scope": "parent"
+          },
+          {
+            "action": "patch",
+            "scope": "parent"
+          },
+          {
+            "action": "delete",
+            "scope": "parent"
+          },
+          {
+            "action": "create",
+            "scope": "child"
+          },
+          {
+            "action": "get",
+            "scope": "child"
+          },
+          {
+            "action": "list",
+            "scope": "child"
+          },
+          {
+            "action": "patch",
+            "scope": "child"
+          },
+          {
+            "action": "delete",
+            "scope": "child"
+          },
+          {
+            "action": "batch_create",
+            "scope": "batch"
+          }
+        ],
+        "package": "flow_app_1001",
+        "relation": {
+          "foreign_key": "owner_id",
+          "on_delete": "restrict"
+        },
+        "resources": {
+          "child": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "code",
+                "required": true,
+                "type": "str",
+                "unique": true
+              },
+              {
+                "name": "amount",
+                "required": true,
+                "type": "float",
+                "unique": false
+              },
+              {
+                "name": "unit",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "count",
+                "required": true,
+                "type": "int",
+                "unique": false
+              }
+            ],
+            "name": "Child",
+            "path": "/children",
+            "query": {
+              "date_field": null,
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "children"
+          },
+          "parent": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "servings",
+                "required": true,
+                "type": "int",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              }
+            ],
+            "name": "Parent",
+            "path": "/parents",
+            "query": {
+              "date_field": null,
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "parents"
+          }
+        },
+        "version": "som.prompt.v7"
+      },
+      "prompt_sha256": "38489b5b37c71e1d2825a4a3b2933c535b647c42451b403140b6dc348307c627",
+      "cnl_sha256": "6bfc4c50e997ea86c9caae041fa400f5c0690981181d95798ac739ce955dc3b5",
+      "product_sha256": "9221945b77bef91aa6a9ed5b69a95c7a7db44f5a6aaf2428e032d79de5ffb65f"
+    },
+    {
+      "id": "supplement-mongodb-query-plain",
+      "legacy_index": 540,
+      "family": "supplement12",
+      "variant": "standard",
+      "typed_input": {
+        "capabilities": {
+          "auth": "firebase",
+          "database": "mongodb",
+          "group_field": null,
+          "storage": "none",
+          "value_field": null,
+          "workflow": "json_export"
+        },
+        "contract": {
+          "id": "related-flow.v1",
+          "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+        },
+        "flow": {
+          "inputs": [
+            {
+              "name": "parent_id",
+              "type": "integer"
+            }
+          ],
+          "name": "publish",
+          "result": {
+            "value": {
+              "field": "title",
+              "step": "found"
+            }
+          },
+          "steps": [
+            {
+              "args": {},
+              "name": "access",
+              "op": "authorize",
+              "undo": null
+            },
+            {
+              "args": {
+                "parent_id": {
+                  "input": "parent_id"
+                }
+              },
+              "name": "found",
+              "op": "parent.get",
+              "undo": null
+            }
+          ]
+        },
+        "migration": {
+          "down_revision": null,
+          "revision": "f1001"
+        },
+        "operations": [
+          {
+            "action": "create",
+            "scope": "parent"
+          },
+          {
+            "action": "get",
+            "scope": "parent"
+          },
+          {
+            "action": "list",
+            "scope": "parent"
+          },
+          {
+            "action": "patch",
+            "scope": "parent"
+          },
+          {
+            "action": "delete",
+            "scope": "parent"
+          },
+          {
+            "action": "create",
+            "scope": "child"
+          },
+          {
+            "action": "get",
+            "scope": "child"
+          },
+          {
+            "action": "list",
+            "scope": "child"
+          },
+          {
+            "action": "patch",
+            "scope": "child"
+          },
+          {
+            "action": "delete",
+            "scope": "child"
+          },
+          {
+            "action": "batch_create",
+            "scope": "batch"
+          }
+        ],
+        "package": "flow_app_1001",
+        "relation": {
+          "foreign_key": "owner_id",
+          "on_delete": "restrict"
+        },
+        "resources": {
+          "child": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "code",
+                "required": true,
+                "type": "str",
+                "unique": true
+              },
+              {
+                "name": "amount",
+                "required": true,
+                "type": "float",
+                "unique": false
+              },
+              {
+                "name": "unit",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "count",
+                "required": true,
+                "type": "int",
+                "unique": false
+              }
+            ],
+            "name": "Child",
+            "path": "/children",
+            "query": {
+              "date_field": null,
+              "filter_field": null,
+              "max_limit": 100
+            },
+            "table": "children"
+          },
+          "parent": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "servings",
+                "required": true,
+                "type": "int",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              }
+            ],
+            "name": "Parent",
+            "path": "/parents",
+            "query": {
+              "date_field": null,
+              "filter_field": null,
+              "max_limit": 100
+            },
+            "table": "parents"
+          }
+        },
+        "version": "som.prompt.v7"
+      },
+      "prompt_sha256": "6efca395e28bc09507c115014e02c6facc131d21642230edc27157d54cfdca00",
+      "cnl_sha256": "542293005d9d0d030861ae8c7e60e7dc38be8501034592c1cf234bfa8a161873",
+      "product_sha256": "a08e1de2198c333f7431949f0f5d4ca302ec2b383a1be762274b6c7a1a92a28d"
+    },
+    {
+      "id": "supplement-postgresql-query-boolean",
+      "legacy_index": 542,
+      "family": "supplement12",
+      "variant": "standard",
+      "typed_input": {
+        "capabilities": {
+          "auth": "jwt",
+          "database": "postgresql",
+          "group_field": null,
+          "storage": "none",
+          "value_field": null,
+          "workflow": "json_export"
+        },
+        "contract": {
+          "id": "related-flow.v1",
+          "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+        },
+        "flow": {
+          "inputs": [
+            {
+              "name": "parent_id",
+              "type": "integer"
+            }
+          ],
+          "name": "publish",
+          "result": {
+            "value": {
+              "field": "id",
+              "step": "found"
+            }
+          },
+          "steps": [
+            {
+              "args": {},
+              "name": "access",
+              "op": "authorize",
+              "undo": null
+            },
+            {
+              "args": {
+                "parent_id": {
+                  "input": "parent_id"
+                }
+              },
+              "name": "found",
+              "op": "parent.get",
+              "undo": null
+            }
+          ]
+        },
+        "migration": {
+          "down_revision": null,
+          "revision": "f1000"
+        },
+        "operations": [
+          {
+            "action": "create",
+            "scope": "parent"
+          },
+          {
+            "action": "get",
+            "scope": "parent"
+          },
+          {
+            "action": "list",
+            "scope": "parent"
+          },
+          {
+            "action": "patch",
+            "scope": "parent"
+          },
+          {
+            "action": "delete",
+            "scope": "parent"
+          },
+          {
+            "action": "create",
+            "scope": "child"
+          },
+          {
+            "action": "get",
+            "scope": "child"
+          },
+          {
+            "action": "list",
+            "scope": "child"
+          },
+          {
+            "action": "patch",
+            "scope": "child"
+          },
+          {
+            "action": "delete",
+            "scope": "child"
+          },
+          {
+            "action": "batch_create",
+            "scope": "batch"
+          }
+        ],
+        "package": "flow_app_1000",
+        "relation": {
+          "foreign_key": "owner_id",
+          "on_delete": "restrict"
+        },
+        "resources": {
+          "child": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "code",
+                "required": true,
+                "type": "str",
+                "unique": true
+              },
+              {
+                "name": "amount",
+                "required": true,
+                "type": "float",
+                "unique": false
+              },
+              {
+                "name": "unit",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "count",
+                "required": true,
+                "type": "int",
+                "unique": false
+              }
+            ],
+            "name": "Child",
+            "path": "/children",
+            "query": {
+              "date_field": null,
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "children"
+          },
+          "parent": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "servings",
+                "required": true,
+                "type": "int",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              }
+            ],
+            "name": "Parent",
+            "path": "/parents",
+            "query": {
+              "date_field": null,
+              "filter_field": "active",
+              "max_limit": 100
+            },
+            "table": "parents"
+          }
+        },
+        "version": "som.prompt.v7"
+      },
+      "prompt_sha256": "17e5d85737069fc76b442f834be738d9146b9541e39170b1936d2efed2467b2a",
+      "cnl_sha256": "ed3991888022412a826b95db3255e7e9dac0e739f2011c4320b38e442e0e8eb3",
+      "product_sha256": "571fc7235ac18f974a46677c037a649387ba601db58235b1f357d4f1aefadac2"
+    },
+    {
+      "id": "supplement-postgresql-query-plain",
+      "legacy_index": 543,
+      "family": "supplement12",
+      "variant": "standard",
+      "typed_input": {
+        "capabilities": {
+          "auth": "jwt",
+          "database": "postgresql",
+          "group_field": null,
+          "storage": "none",
+          "value_field": null,
+          "workflow": "json_export"
+        },
+        "contract": {
+          "id": "related-flow.v1",
+          "sha256": "716ae3f08c8ca79b50f757884b9140acc842d2213157c51ea4b9fd3b17d92091"
+        },
+        "flow": {
+          "inputs": [
+            {
+              "name": "parent_id",
+              "type": "integer"
+            }
+          ],
+          "name": "publish",
+          "result": {
+            "value": {
+              "field": "id",
+              "step": "found"
+            }
+          },
+          "steps": [
+            {
+              "args": {},
+              "name": "access",
+              "op": "authorize",
+              "undo": null
+            },
+            {
+              "args": {
+                "parent_id": {
+                  "input": "parent_id"
+                }
+              },
+              "name": "found",
+              "op": "parent.get",
+              "undo": null
+            }
+          ]
+        },
+        "migration": {
+          "down_revision": null,
+          "revision": "f1000"
+        },
+        "operations": [
+          {
+            "action": "create",
+            "scope": "parent"
+          },
+          {
+            "action": "get",
+            "scope": "parent"
+          },
+          {
+            "action": "list",
+            "scope": "parent"
+          },
+          {
+            "action": "patch",
+            "scope": "parent"
+          },
+          {
+            "action": "delete",
+            "scope": "parent"
+          },
+          {
+            "action": "create",
+            "scope": "child"
+          },
+          {
+            "action": "get",
+            "scope": "child"
+          },
+          {
+            "action": "list",
+            "scope": "child"
+          },
+          {
+            "action": "patch",
+            "scope": "child"
+          },
+          {
+            "action": "delete",
+            "scope": "child"
+          },
+          {
+            "action": "batch_create",
+            "scope": "batch"
+          }
+        ],
+        "package": "flow_app_1000",
+        "relation": {
+          "foreign_key": "owner_id",
+          "on_delete": "restrict"
+        },
+        "resources": {
+          "child": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "code",
+                "required": true,
+                "type": "str",
+                "unique": true
+              },
+              {
+                "name": "amount",
+                "required": true,
+                "type": "float",
+                "unique": false
+              },
+              {
+                "name": "unit",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "count",
+                "required": true,
+                "type": "int",
+                "unique": false
+              }
+            ],
+            "name": "Child",
+            "path": "/children",
+            "query": {
+              "date_field": null,
+              "filter_field": null,
+              "max_limit": 100
+            },
+            "table": "children"
+          },
+          "parent": {
+            "fields": [
+              {
+                "name": "title",
+                "required": true,
+                "type": "str",
+                "unique": false
+              },
+              {
+                "name": "servings",
+                "required": true,
+                "type": "int",
+                "unique": false
+              },
+              {
+                "default": false,
+                "name": "active",
+                "required": false,
+                "type": "bool",
+                "unique": false
+              },
+              {
+                "default": null,
+                "name": "memo",
+                "required": false,
+                "type": "str",
+                "unique": false
+              }
+            ],
+            "name": "Parent",
+            "path": "/parents",
+            "query": {
+              "date_field": null,
+              "filter_field": null,
+              "max_limit": 100
+            },
+            "table": "parents"
+          }
+        },
+        "version": "som.prompt.v7"
+      },
+      "prompt_sha256": "ccfbfa63a152703d9e68778f987cfae718d63166d0bb5da7129bdeff587e4fd3",
+      "cnl_sha256": "f97fee8c37c70b1e8c6a63b39814843adc3b84b77eab9fd81be80b9a52cb7b82",
+      "product_sha256": "d6d42ff989e89f982719d37404e55207b94b3f1541ee0456e4b05a7d5625429d"
+    }
+  ],
+  "checked_dsl_inputs": [
+    {
+      "id": "supplement-mongodb-child-patch-read-checked",
+      "legacy_index": 535,
+      "family": "supplement12",
+      "variant": "checked",
+      "prompt_sha256": "c824388ed285fb494412e91aeb28deaa9aa4a8b2d6bb81de80a1390b8d201832",
+      "checked_dsl_input": {
+        "version": "som.dsl.v3",
+        "files": [
+          {
+            "path": "{package}/schema_v001.py",
+            "blocks": [
+              {
+                "name": "base",
+                "id": "compact.v7.orm.composed.mongo.base",
+                "params": {},
+                "refs": []
+              },
+              {
+                "name": "parent",
+                "id": "compact.v7.orm.composed.mongo.parent",
+                "params": {
+                  "date_field": {
+                    "$ref": "parent.date_field"
+                  },
+                  "fields": {
+                    "$ref": "parent.fields"
+                  },
+                  "filter_field": {
+                    "$ref": "parent.filter_field"
+                  },
+                  "table": {
+                    "$ref": "parent.table"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "base"
+                  }
+                ]
+              },
+              {
+                "name": "child",
+                "id": "compact.v7.orm.composed.mongo.child",
+                "params": {
+                  "date_field": {
+                    "$ref": "child.date_field"
+                  },
+                  "fields": {
+                    "$ref": "child.fields"
+                  },
+                  "filter_field": {
+                    "$ref": "child.filter_field"
+                  },
+                  "foreign_key": {
+                    "$ref": "relation.foreign_key"
+                  },
+                  "table": {
+                    "$ref": "child.table"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "base"
+                  },
+                  {
+                    "symbol": "parent"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "path": "{package}/schemas.py",
+            "blocks": [
+              {
+                "name": "bounds",
+                "id": "compact.schema.related.bounds",
+                "params": {},
+                "refs": []
+              },
+              {
+                "name": "parent",
+                "id": "compact.schema.related.parent",
+                "params": {
+                  "fields": {
+                    "$ref": "parent.fields"
+                  },
+                  "name": {
+                    "$ref": "parent.name"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "bounds"
+                  }
+                ]
+              },
+              {
+                "name": "child",
+                "id": "compact.schema.related.child",
+                "params": {
+                  "fields": {
+                    "$ref": "child.fields"
+                  },
+                  "foreign_key": {
+                    "$ref": "relation.foreign_key"
+                  },
+                  "name": {
+                    "$ref": "child.name"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "bounds"
+                  }
+                ]
+              },
+              {
+                "name": "batch",
+                "id": "compact.schema.related.batch",
+                "params": {
+                  "child_name": {
+                    "$ref": "child.name"
+                  },
+                  "parent_name": {
+                    "$ref": "parent.name"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "parent"
+                  },
+                  {
+                    "symbol": "child"
+                  }
+                ]
+              },
+              {
+                "id": "compact.schema.flow",
+                "name": "flow",
+                "params": {
+                  "child_name": {
+                    "$ref": "child.name"
+                  },
+                  "flow_inputs": {
+                    "$ref": "flow.inputs"
+                  },
+                  "parent_name": {
+                    "$ref": "parent.name"
+                  },
+                  "flow_name": {
+                    "$ref": "flow.name"
+                  },
+                  "plan_hash": {
+                    "$ref": "flow.hash"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "bounds"
+                  },
+                  {
+                    "symbol": "parent"
+                  },
+                  {
+                    "symbol": "child"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "path": "{package}/app.py",
+            "blocks": [
+              {
+                "name": "head",
+                "id": "compact.v7.api.business.head.mongodb",
+                "params": {
+                  "child_name": {
+                    "$ref": "child.name"
+                  },
+                  "parent_name": {
+                    "$ref": "parent.name"
+                  }
+                },
+                "refs": []
+              },
+              {
+                "name": "parent_create",
+                "id": "compact.v7.api.mongo.parent.create",
+                "params": {
+                  "path": {
+                    "$ref": "parent.path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "parent_get",
+                "id": "compact.v7.api.mongo.parent.get",
+                "params": {
+                  "path": {
+                    "$ref": "parent.item_path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "parent_list",
+                "id": "compact.v7.api.mongo.parent.list.date",
+                "params": {
+                  "max_limit": {
+                    "$ref": "parent.max_limit"
+                  },
+                  "path": {
+                    "$ref": "parent.path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "parent_patch",
+                "id": "compact.v7.api.mongo.parent.patch",
+                "params": {
+                  "path": {
+                    "$ref": "parent.item_path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "parent_delete",
+                "id": "compact.v7.api.mongo.parent.delete",
+                "params": {
+                  "path": {
+                    "$ref": "parent.item_path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "child_create",
+                "id": "compact.v7.api.mongo.child.create",
+                "params": {
+                  "path": {
+                    "$ref": "child.path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "child_get",
+                "id": "compact.v7.api.mongo.child.get",
+                "params": {
+                  "path": {
+                    "$ref": "child.item_path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "child_list",
+                "id": "compact.v7.api.mongo.child.list.date",
+                "params": {
+                  "max_limit": {
+                    "$ref": "child.max_limit"
+                  },
+                  "path": {
+                    "$ref": "child.path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "child_patch",
+                "id": "compact.v7.api.mongo.child.patch",
+                "params": {
+                  "path": {
+                    "$ref": "child.item_path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "child_delete",
+                "id": "compact.v7.api.mongo.child.delete",
+                "params": {
+                  "path": {
+                    "$ref": "child.item_path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "batch",
+                "id": "compact.v7.api.mongo.batch",
+                "params": {
+                  "path": {
+                    "$ref": "batch.path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "workflow",
+                "id": "compact.v7.api.business.workflow.decimal_summary",
+                "params": {
+                  "parent_path": {
+                    "$ref": "parent.path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "tail",
+                "id": "compact.v7.api.tail",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "head"
+                  },
+                  {
+                    "symbol": "parent_create"
+                  },
+                  {
+                    "symbol": "parent_get"
+                  },
+                  {
+                    "symbol": "parent_list"
+                  },
+                  {
+                    "symbol": "parent_patch"
+                  },
+                  {
+                    "symbol": "parent_delete"
+                  },
+                  {
+                    "symbol": "child_create"
+                  },
+                  {
+                    "symbol": "child_get"
+                  },
+                  {
+                    "symbol": "child_list"
+                  },
+                  {
+                    "symbol": "child_patch"
+                  },
+                  {
+                    "symbol": "child_delete"
+                  },
+                  {
+                    "symbol": "batch"
+                  },
+                  {
+                    "symbol": "workflow"
+                  }
+                ]
+              },
+              {
+                "name": "app",
+                "id": "compact.v7.service.business.app.mongodb",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "tail"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "path": "tests/test_{package}.py",
+            "blocks": [
+              {
+                "name": "head",
+                "id": "compact.test.business.head.mongodb",
+                "params": {
+                  "package": {
+                    "$ref": "package"
+                  }
+                },
+                "refs": []
+              },
+              {
+                "name": "parent",
+                "id": "compact.test.related.payload.parent",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "child",
+                "id": "compact.test.related.payload.child",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "test",
+                "id": "compact.v7.test.composed.behavior",
+                "params": {
+                  "routes": {
+                    "$ref": "contract.routes"
+                  },
+                  "flow_name": {
+                    "$ref": "flow.name"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  },
+                  {
+                    "symbol": "parent"
+                  },
+                  {
+                    "symbol": "child"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "path": "{package}/migrate.py",
+            "blocks": [
+              {
+                "name": "migration",
+                "id": "compact.v7.migration.mongo",
+                "params": {
+                  "child_table": {
+                    "$ref": "child.table"
+                  },
+                  "parent_table": {
+                    "$ref": "parent.table"
+                  }
+                },
+                "refs": []
+              }
+            ]
+          },
+          {
+            "path": "{package}/database.py",
+            "blocks": [
+              {
+                "name": "database",
+                "id": "compact.v7.service.business.database.mongodb",
+                "params": {},
+                "refs": []
+              },
+              {
+                "id": "compact.service.flow.store.mongodb",
+                "name": "store",
+                "params": {
+                  "child_date": {
+                    "$ref": "child.date_field"
+                  },
+                  "child_filter": {
+                    "$ref": "child.filter_field"
+                  },
+                  "child_table": {
+                    "$ref": "child.table"
+                  },
+                  "foreign_key": {
+                    "$ref": "relation.foreign_key"
+                  },
+                  "parent_date": {
+                    "$ref": "parent.date_field"
+                  },
+                  "parent_filter": {
+                    "$ref": "parent.filter_field"
+                  },
+                  "parent_table": {
+                    "$ref": "parent.table"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "database"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "path": "{package}/__init__.py",
+            "blocks": [
+              {
+                "name": "init",
+                "id": "compact.service.init",
+                "params": {},
+                "refs": []
+              }
+            ]
+          },
+          {
+            "path": "pyproject.toml",
+            "blocks": [
+              {
+                "name": "project",
+                "id": "compact.v7.service.business.project",
+                "params": {
+                  "package": {
+                    "$ref": "package"
+                  }
+                },
+                "refs": []
+              }
+            ]
+          },
+          {
+            "path": "README.md",
+            "blocks": [
+              {
+                "name": "readme",
+                "id": "compact.service.business.readme.mongodb",
+                "params": {
+                  "package": {
+                    "$ref": "package"
+                  }
+                },
+                "refs": []
+              },
+              {
+                "name": "auth",
+                "id": "compact.readme.auth.jwt",
+                "params": {},
+                "refs": []
+              },
+              {
+                "name": "storage",
+                "id": "compact.readme.storage.s3",
+                "params": {},
+                "refs": []
+              },
+              {
+                "name": "workflow",
+                "id": "compact.readme.workflow.decimal_summary",
+                "params": {},
+                "refs": []
+              }
+            ]
+          },
+          {
+            "path": "{package}/integrations.py",
+            "blocks": [
+              {
+                "name": "auth_common",
+                "id": "compact.auth.common",
+                "params": {
+                  "package": {
+                    "$ref": "package"
+                  }
+                },
+                "refs": []
+              },
+              {
+                "name": "auth",
+                "id": "compact.auth.jwt",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "auth_common"
+                  }
+                ]
+              },
+              {
+                "name": "storage_common",
+                "id": "compact.storage.common",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "auth"
+                  }
+                ]
+              },
+              {
+                "name": "storage",
+                "id": "compact.storage.s3",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "storage_common"
+                  }
+                ]
+              },
+              {
+                "id": "compact.storage.flow.s3",
+                "name": "flow_storage",
+                "params": {
+                  "versioned": {
+                    "$ref": "flow.versioned"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "storage"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "path": "{package}/flows.py",
+            "blocks": [
+              {
+                "id": "compact.workflow.flow.decimal_summary",
+                "name": "workflow_helper",
+                "params": {
+                  "group_field": {
+                    "$ref": "capabilities.group_field"
+                  },
+                  "value_field": {
+                    "$ref": "capabilities.value_field"
+                  }
+                },
+                "refs": []
+              },
+              {
+                "id": "compact.api.flow.engine.mongodb",
+                "name": "engine",
+                "params": {
+                  "flow_program": {
+                    "$ref": "flow.program"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "workflow_helper"
+                  }
+                ]
+              },
+              {
+                "id": "flow.mongodb.authorize",
+                "name": "reg_flow_mongodb_authorize",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.mongodb.transaction",
+                "name": "reg_flow_mongodb_transaction",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.mongodb.parent.create",
+                "name": "reg_flow_mongodb_parent_create",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.mongodb.undo.delete_created",
+                "name": "reg_flow_mongodb_undo_delete_created",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.mongodb.child.create",
+                "name": "reg_flow_mongodb_child_create",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.mongodb.child.patch",
+                "name": "reg_flow_mongodb_child_patch",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.mongodb.undo.restore_patch",
+                "name": "reg_flow_mongodb_undo_restore_patch",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.mongodb.child.get.checked",
+                "name": "reg_flow_mongodb_child_get_checked",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.if",
+                "name": "reg_flow_if",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.mongodb.workflow.run",
+                "name": "reg_flow_mongodb_workflow_run",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.s3.object.put",
+                "name": "reg_flow_s3_object_put",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.s3.undo.delete_created",
+                "name": "reg_flow_s3_undo_delete_created",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "flow": {
+          "name": "publish",
+          "steps": [
+            {
+              "args": {},
+              "name": "access",
+              "undo": null,
+              "id": "flow.mongodb.authorize"
+            },
+            {
+              "name": "write_tx",
+              "steps": [
+                {
+                  "args": {
+                    "data": {
+                      "input": "parent"
+                    }
+                  },
+                  "name": "created_parent",
+                  "undo": "flow.mongodb.undo.delete_created",
+                  "id": "flow.mongodb.parent.create"
+                },
+                {
+                  "args": {
+                    "data": {
+                      "input": "child"
+                    },
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "created_child",
+                  "undo": "flow.mongodb.undo.delete_created",
+                  "id": "flow.mongodb.child.create"
+                },
+                {
+                  "args": {
+                    "child_id": {
+                      "field": "id",
+                      "step": "created_child"
+                    },
+                    "data": {
+                      "input": "patch"
+                    },
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "changed_child",
+                  "undo": "flow.mongodb.undo.restore_patch",
+                  "id": "flow.mongodb.child.patch"
+                }
+              ],
+              "id": "flow.mongodb.transaction"
+            },
+            {
+              "args": {
+                "child_id": {
+                  "field": "id",
+                  "step": "created_child"
+                },
+                "parent_id": {
+                  "field": "id",
+                  "step": "created_parent"
+                }
+              },
+              "name": "read_child",
+              "undo": null,
+              "id": "flow.mongodb.child.get.checked"
+            },
+            {
+              "condition": {
+                "left": {
+                  "input": "choose"
+                },
+                "op": "ne",
+                "right": {
+                  "literal": true,
+                  "type": "boolean"
+                }
+              },
+              "else": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "no_export",
+                  "undo": null,
+                  "id": "flow.mongodb.workflow.run"
+                }
+              ],
+              "exports": {
+                "exported": {
+                  "else": {
+                    "field": "",
+                    "step": "no_export"
+                  },
+                  "then": {
+                    "field": "",
+                    "step": "yes_export"
+                  }
+                }
+              },
+              "name": "choice",
+              "then": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "yes_export",
+                  "undo": null,
+                  "id": "flow.mongodb.workflow.run"
+                }
+              ],
+              "id": "flow.if"
+            },
+            {
+              "args": {
+                "body": {
+                  "field": "body",
+                  "step": "exported"
+                },
+                "key": {
+                  "input": "key"
+                }
+              },
+              "name": "stored",
+              "undo": "flow.s3.undo.delete_created",
+              "id": "flow.s3.object.put"
+            }
+          ],
+          "result": {
+            "object": {
+              "field": "sha256",
+              "step": "stored"
+            },
+            "parent": {
+              "field": "id",
+              "step": "created_parent"
+            }
+          }
+        }
+      },
+      "dsl_sha256": "25f43b7b38c70f8fcc778915c45a5b63268266274aad37f5d2bc296623c85843"
+    },
+    {
+      "id": "supplement-postgresql-child-read-checked",
+      "legacy_index": 541,
+      "family": "supplement12",
+      "variant": "checked",
+      "prompt_sha256": "04918b752bce4fc41fd4fc58603fd0b689bf3de3e7800a895aae3ec7760e800c",
+      "checked_dsl_input": {
+        "version": "som.dsl.v3",
+        "files": [
+          {
+            "path": "{package}/schema_v001.py",
+            "blocks": [
+              {
+                "name": "base",
+                "id": "compact.orm.base",
+                "params": {},
+                "refs": []
+              },
+              {
+                "name": "parent",
+                "id": "compact.v7.orm.related.parent.date",
+                "params": {
+                  "date_field": {
+                    "$ref": "parent.date_field"
+                  },
+                  "fields": {
+                    "$ref": "parent.fields"
+                  },
+                  "filter_field": {
+                    "$ref": "parent.filter_field"
+                  },
+                  "name": {
+                    "$ref": "parent.name"
+                  },
+                  "table": {
+                    "$ref": "parent.table"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "base"
+                  }
+                ]
+              },
+              {
+                "name": "child",
+                "id": "compact.v7.orm.related.child.date",
+                "params": {
+                  "date_field": {
+                    "$ref": "child.date_field"
+                  },
+                  "fields": {
+                    "$ref": "child.fields"
+                  },
+                  "filter_field": {
+                    "$ref": "child.filter_field"
+                  },
+                  "foreign_key": {
+                    "$ref": "relation.foreign_key"
+                  },
+                  "name": {
+                    "$ref": "child.name"
+                  },
+                  "table": {
+                    "$ref": "child.table"
+                  },
+                  "target": {
+                    "$ref": "relation.target"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "base"
+                  },
+                  {
+                    "symbol": "parent"
+                  }
+                ]
+              },
+              {
+                "id": "compact.orm.flow.journal",
+                "name": "journal",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "base"
+                  },
+                  {
+                    "symbol": "child"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "path": "{package}/schemas.py",
+            "blocks": [
+              {
+                "name": "bounds",
+                "id": "compact.schema.related.bounds",
+                "params": {},
+                "refs": []
+              },
+              {
+                "name": "parent",
+                "id": "compact.schema.related.parent",
+                "params": {
+                  "fields": {
+                    "$ref": "parent.fields"
+                  },
+                  "name": {
+                    "$ref": "parent.name"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "bounds"
+                  }
+                ]
+              },
+              {
+                "name": "child",
+                "id": "compact.schema.related.child",
+                "params": {
+                  "fields": {
+                    "$ref": "child.fields"
+                  },
+                  "foreign_key": {
+                    "$ref": "relation.foreign_key"
+                  },
+                  "name": {
+                    "$ref": "child.name"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "bounds"
+                  }
+                ]
+              },
+              {
+                "name": "batch",
+                "id": "compact.schema.related.batch",
+                "params": {
+                  "child_name": {
+                    "$ref": "child.name"
+                  },
+                  "parent_name": {
+                    "$ref": "parent.name"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "parent"
+                  },
+                  {
+                    "symbol": "child"
+                  }
+                ]
+              },
+              {
+                "id": "compact.schema.flow",
+                "name": "flow",
+                "params": {
+                  "child_name": {
+                    "$ref": "child.name"
+                  },
+                  "flow_inputs": {
+                    "$ref": "flow.inputs"
+                  },
+                  "parent_name": {
+                    "$ref": "parent.name"
+                  },
+                  "flow_name": {
+                    "$ref": "flow.name"
+                  },
+                  "plan_hash": {
+                    "$ref": "flow.hash"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "bounds"
+                  },
+                  {
+                    "symbol": "parent"
+                  },
+                  {
+                    "symbol": "child"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "path": "{package}/app.py",
+            "blocks": [
+              {
+                "name": "head",
+                "id": "compact.v7.api.business.head.postgresql",
+                "params": {
+                  "child_name": {
+                    "$ref": "child.name"
+                  },
+                  "parent_name": {
+                    "$ref": "parent.name"
+                  }
+                },
+                "refs": []
+              },
+              {
+                "name": "parent_create",
+                "id": "compact.v7.api.related.parent.create",
+                "params": {
+                  "path": {
+                    "$ref": "parent.path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "parent_get",
+                "id": "compact.v7.api.related.parent.get",
+                "params": {
+                  "path": {
+                    "$ref": "parent.item_path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "parent_list",
+                "id": "compact.v7.api.related.parent.list.date",
+                "params": {
+                  "max_limit": {
+                    "$ref": "parent.max_limit"
+                  },
+                  "path": {
+                    "$ref": "parent.path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "parent_patch",
+                "id": "compact.v7.api.related.parent.patch",
+                "params": {
+                  "path": {
+                    "$ref": "parent.item_path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "parent_delete",
+                "id": "compact.v7.api.related.parent.delete",
+                "params": {
+                  "path": {
+                    "$ref": "parent.item_path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "child_create",
+                "id": "compact.v7.api.related.child.create",
+                "params": {
+                  "path": {
+                    "$ref": "child.path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "child_get",
+                "id": "compact.v7.api.related.child.get",
+                "params": {
+                  "path": {
+                    "$ref": "child.item_path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "child_list",
+                "id": "compact.v7.api.related.child.list.date",
+                "params": {
+                  "max_limit": {
+                    "$ref": "child.max_limit"
+                  },
+                  "path": {
+                    "$ref": "child.path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "child_patch",
+                "id": "compact.v7.api.related.child.patch",
+                "params": {
+                  "path": {
+                    "$ref": "child.item_path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "child_delete",
+                "id": "compact.v7.api.related.child.delete",
+                "params": {
+                  "path": {
+                    "$ref": "child.item_path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "batch",
+                "id": "compact.v7.api.related.batch",
+                "params": {
+                  "path": {
+                    "$ref": "batch.path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "workflow",
+                "id": "compact.v7.api.business.workflow.decimal_summary",
+                "params": {
+                  "parent_path": {
+                    "$ref": "parent.path"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "tail",
+                "id": "compact.v7.api.tail",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "head"
+                  },
+                  {
+                    "symbol": "parent_create"
+                  },
+                  {
+                    "symbol": "parent_get"
+                  },
+                  {
+                    "symbol": "parent_list"
+                  },
+                  {
+                    "symbol": "parent_patch"
+                  },
+                  {
+                    "symbol": "parent_delete"
+                  },
+                  {
+                    "symbol": "child_create"
+                  },
+                  {
+                    "symbol": "child_get"
+                  },
+                  {
+                    "symbol": "child_list"
+                  },
+                  {
+                    "symbol": "child_patch"
+                  },
+                  {
+                    "symbol": "child_delete"
+                  },
+                  {
+                    "symbol": "batch"
+                  },
+                  {
+                    "symbol": "workflow"
+                  }
+                ]
+              },
+              {
+                "name": "app",
+                "id": "compact.v7.service.business.app.postgresql",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "tail"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "path": "tests/test_{package}.py",
+            "blocks": [
+              {
+                "name": "head",
+                "id": "compact.test.business.head.postgresql",
+                "params": {
+                  "package": {
+                    "$ref": "package"
+                  }
+                },
+                "refs": []
+              },
+              {
+                "name": "parent",
+                "id": "compact.test.related.payload.parent",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "child",
+                "id": "compact.test.related.payload.child",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "test",
+                "id": "compact.v7.test.composed.behavior",
+                "params": {
+                  "routes": {
+                    "$ref": "contract.routes"
+                  },
+                  "flow_name": {
+                    "$ref": "flow.name"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "head"
+                  },
+                  {
+                    "symbol": "parent"
+                  },
+                  {
+                    "symbol": "child"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "path": "alembic/versions/{migration.revision}_{package}.py",
+            "blocks": [
+              {
+                "name": "head",
+                "id": "compact.migration.related.head",
+                "params": {
+                  "revision": {
+                    "$ref": "migration.revision"
+                  },
+                  "package": {
+                    "$ref": "package"
+                  }
+                },
+                "refs": []
+              },
+              {
+                "name": "parent",
+                "id": "compact.v7.migration.related.parent.date",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "head"
+                  }
+                ]
+              },
+              {
+                "name": "child",
+                "id": "compact.v7.migration.related.child.date",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "head"
+                  },
+                  {
+                    "symbol": "parent"
+                  }
+                ]
+              },
+              {
+                "id": "compact.migration.flow.journal",
+                "name": "journal",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "child"
+                  }
+                ]
+              },
+              {
+                "name": "tail",
+                "id": "compact.v7.migration.related.tail",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "parent"
+                  },
+                  {
+                    "symbol": "child"
+                  },
+                  {
+                    "symbol": "journal"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "path": "{package}/database.py",
+            "blocks": [
+              {
+                "name": "database",
+                "id": "compact.v7.service.database",
+                "params": {},
+                "refs": []
+              },
+              {
+                "id": "compact.service.flow.store.postgresql",
+                "name": "store",
+                "params": {
+                  "child_date": {
+                    "$ref": "child.date_field"
+                  },
+                  "child_filter": {
+                    "$ref": "child.filter_field"
+                  },
+                  "child_table": {
+                    "$ref": "child.table"
+                  },
+                  "foreign_key": {
+                    "$ref": "relation.foreign_key"
+                  },
+                  "parent_date": {
+                    "$ref": "parent.date_field"
+                  },
+                  "parent_filter": {
+                    "$ref": "parent.filter_field"
+                  },
+                  "parent_table": {
+                    "$ref": "parent.table"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "database"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "path": "{package}/__init__.py",
+            "blocks": [
+              {
+                "name": "init",
+                "id": "compact.service.init",
+                "params": {},
+                "refs": []
+              }
+            ]
+          },
+          {
+            "path": "alembic/env.py",
+            "blocks": [
+              {
+                "name": "env",
+                "id": "compact.service.alembic.env",
+                "params": {
+                  "package": {
+                    "$ref": "package"
+                  }
+                },
+                "refs": []
+              }
+            ]
+          },
+          {
+            "path": "pyproject.toml",
+            "blocks": [
+              {
+                "name": "project",
+                "id": "compact.v7.service.business.project",
+                "params": {
+                  "package": {
+                    "$ref": "package"
+                  }
+                },
+                "refs": []
+              }
+            ]
+          },
+          {
+            "path": "README.md",
+            "blocks": [
+              {
+                "name": "readme",
+                "id": "compact.service.business.readme.postgresql",
+                "params": {
+                  "package": {
+                    "$ref": "package"
+                  }
+                },
+                "refs": []
+              },
+              {
+                "name": "auth",
+                "id": "compact.readme.auth.jwt",
+                "params": {},
+                "refs": []
+              },
+              {
+                "name": "storage",
+                "id": "compact.readme.storage.s3",
+                "params": {},
+                "refs": []
+              },
+              {
+                "name": "workflow",
+                "id": "compact.readme.workflow.decimal_summary",
+                "params": {},
+                "refs": []
+              }
+            ]
+          },
+          {
+            "path": "{package}/integrations.py",
+            "blocks": [
+              {
+                "name": "auth_common",
+                "id": "compact.auth.common",
+                "params": {
+                  "package": {
+                    "$ref": "package"
+                  }
+                },
+                "refs": []
+              },
+              {
+                "name": "auth",
+                "id": "compact.auth.jwt",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "auth_common"
+                  }
+                ]
+              },
+              {
+                "name": "storage_common",
+                "id": "compact.storage.common",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "auth"
+                  }
+                ]
+              },
+              {
+                "name": "storage",
+                "id": "compact.storage.s3",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "storage_common"
+                  }
+                ]
+              },
+              {
+                "id": "compact.storage.flow.s3",
+                "name": "flow_storage",
+                "params": {
+                  "versioned": {
+                    "$ref": "flow.versioned"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "storage"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "path": "{package}/flows.py",
+            "blocks": [
+              {
+                "id": "compact.workflow.flow.decimal_summary",
+                "name": "workflow_helper",
+                "params": {
+                  "group_field": {
+                    "$ref": "capabilities.group_field"
+                  },
+                  "value_field": {
+                    "$ref": "capabilities.value_field"
+                  }
+                },
+                "refs": []
+              },
+              {
+                "id": "compact.api.flow.engine.postgresql",
+                "name": "engine",
+                "params": {
+                  "flow_program": {
+                    "$ref": "flow.program"
+                  }
+                },
+                "refs": [
+                  {
+                    "symbol": "workflow_helper"
+                  }
+                ]
+              },
+              {
+                "id": "flow.postgresql.authorize",
+                "name": "reg_flow_postgresql_authorize",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.postgresql.transaction",
+                "name": "reg_flow_postgresql_transaction",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.postgresql.parent.create",
+                "name": "reg_flow_postgresql_parent_create",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.postgresql.undo.delete_created",
+                "name": "reg_flow_postgresql_undo_delete_created",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.postgresql.child.create",
+                "name": "reg_flow_postgresql_child_create",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.postgresql.child.patch",
+                "name": "reg_flow_postgresql_child_patch",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.postgresql.undo.restore_patch",
+                "name": "reg_flow_postgresql_undo_restore_patch",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.postgresql.child.get.checked",
+                "name": "reg_flow_postgresql_child_get_checked",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.if",
+                "name": "reg_flow_if",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.postgresql.workflow.run",
+                "name": "reg_flow_postgresql_workflow_run",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.s3.object.put",
+                "name": "reg_flow_s3_object_put",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              },
+              {
+                "id": "flow.s3.undo.delete_created",
+                "name": "reg_flow_s3_undo_delete_created",
+                "params": {},
+                "refs": [
+                  {
+                    "symbol": "engine"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "flow": {
+          "name": "publish",
+          "steps": [
+            {
+              "args": {},
+              "name": "access",
+              "undo": null,
+              "id": "flow.postgresql.authorize"
+            },
+            {
+              "name": "write_tx",
+              "steps": [
+                {
+                  "args": {
+                    "data": {
+                      "input": "parent"
+                    }
+                  },
+                  "name": "created_parent",
+                  "undo": "flow.postgresql.undo.delete_created",
+                  "id": "flow.postgresql.parent.create"
+                },
+                {
+                  "args": {
+                    "data": {
+                      "input": "child"
+                    },
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "created_child",
+                  "undo": "flow.postgresql.undo.delete_created",
+                  "id": "flow.postgresql.child.create"
+                },
+                {
+                  "args": {
+                    "child_id": {
+                      "field": "id",
+                      "step": "created_child"
+                    },
+                    "data": {
+                      "input": "patch"
+                    },
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "changed_child",
+                  "undo": "flow.postgresql.undo.restore_patch",
+                  "id": "flow.postgresql.child.patch"
+                }
+              ],
+              "id": "flow.postgresql.transaction"
+            },
+            {
+              "args": {
+                "child_id": {
+                  "field": "id",
+                  "step": "created_child"
+                },
+                "parent_id": {
+                  "field": "id",
+                  "step": "created_parent"
+                }
+              },
+              "name": "read_child",
+              "undo": null,
+              "id": "flow.postgresql.child.get.checked"
+            },
+            {
+              "condition": {
+                "left": {
+                  "input": "choose"
+                },
+                "op": "ne",
+                "right": {
+                  "literal": true,
+                  "type": "boolean"
+                }
+              },
+              "else": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "no_export",
+                  "undo": null,
+                  "id": "flow.postgresql.workflow.run"
+                }
+              ],
+              "exports": {
+                "exported": {
+                  "else": {
+                    "field": "",
+                    "step": "no_export"
+                  },
+                  "then": {
+                    "field": "",
+                    "step": "yes_export"
+                  }
+                }
+              },
+              "name": "choice",
+              "then": [
+                {
+                  "args": {
+                    "parent_id": {
+                      "field": "id",
+                      "step": "created_parent"
+                    }
+                  },
+                  "name": "yes_export",
+                  "undo": null,
+                  "id": "flow.postgresql.workflow.run"
+                }
+              ],
+              "id": "flow.if"
+            },
+            {
+              "args": {
+                "body": {
+                  "field": "body",
+                  "step": "exported"
+                },
+                "key": {
+                  "input": "key"
+                }
+              },
+              "name": "stored",
+              "undo": "flow.s3.undo.delete_created",
+              "id": "flow.s3.object.put"
+            }
+          ],
+          "result": {
+            "object": {
+              "field": "sha256",
+              "step": "stored"
+            },
+            "parent": {
+              "field": "id",
+              "step": "created_parent"
+            }
+          }
+        }
+      },
+      "dsl_sha256": "f2719da9e0ddff075850925d0ba0b9ec545261ecd3ba9476c1c2b1b6c4c7726c"
+    }
+  ]
+}

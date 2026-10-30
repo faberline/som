@@ -16,6 +16,9 @@ from local_business_services import port
 from local_flow_services import FlowFixture
 
 PG_BIN = Path("/opt/homebrew/opt/postgresql@17/bin")
+if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+    from full_product_context import postgres_bin
+    PG_BIN = postgres_bin()
 
 
 @contextmanager

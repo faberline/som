@@ -1,0 +1,194 @@
+{
+  "version": "som.m12-ts065-exact-output-independent-review.v1",
+  "verdict": "approved within exact metadata accuracy, portability and field-allowlist scope",
+  "candidate": {
+    "file_name": "som-m12-ts065-hashes-candidate.json",
+    "raw_sha256": "650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9",
+    "bytes": 3768134
+  },
+  "applied_source_files": [
+    {
+      "repository_path": "som-rs/scripts/hosted_readiness/export_ts065_goldens.py",
+      "raw_sha256": "174aadaa92a53c3e58d0315fbc04a75d296f1a0a09413ff2a9e1542d151ec61c",
+      "bytes": 26792,
+      "ast_parse": "passed",
+      "synthetic_test_functions": 0
+    },
+    {
+      "repository_path": "som-rs/scripts/hosted_readiness/test_export_ts065_goldens.py",
+      "raw_sha256": "9d786a5ef930de5edea249ffad4cf31a87e40e5224bc28500e42356e8d11920b",
+      "bytes": 25908,
+      "ast_parse": "passed",
+      "synthetic_test_functions": 15
+    }
+  ],
+  "supersedes_source_review_v1": true,
+  "source_review_correction": "The first source review missed the rebased_files-specific map fields. The revised source and exact output reviews cover all rows and all three Rust check schemas.",
+  "private_input_authority": {
+    "raw_route_sha256": "663632b8985c3dfbfdbc09d30c078c71eaf07f16376ff3658d0dcb665561d422",
+    "public_release_raw_sha256": "f8e649ea96bac3f5e62ef01537c4c517a857e0743d05fb38028d013faf08b640",
+    "public_source_revision": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2"
+  },
+  "verified_counts": {
+    "public_source_file_pins": 36,
+    "local_source_file_pins": 97,
+    "source_acceptance_bindings": 100,
+    "accepted_receipts": 13,
+    "receipt_outputs": 19,
+    "unchecked_directory_outputs": 4,
+    "python_result_rows": 1342,
+    "rust_result_rows": 2093,
+    "canary_reference_files": 54,
+    "canary_descriptor_observations": 12,
+    "candidate_source_manifest_files": 150
+  },
+  "row_schema_review": [
+    {
+      "cohort": "python",
+      "check": "python",
+      "row_count": 1342,
+      "field_names": [
+        "baseline_assemble_request_sha256",
+        "baseline_assemble_response_sha256",
+        "baseline_assemble_status",
+        "baseline_compile_request_sha256",
+        "baseline_compile_response_sha256",
+        "baseline_compile_status",
+        "compile_request_sha256",
+        "id",
+        "passed",
+        "qa_assemble_request_sha256",
+        "qa_assemble_response_sha256",
+        "qa_assemble_status",
+        "qa_compile_request_sha256",
+        "qa_compile_response_sha256",
+        "qa_compile_status",
+        "row_index",
+        "source",
+        "status",
+        "variant"
+      ],
+      "field_schema_count": 1
+    },
+    {
+      "cohort": "rust",
+      "check": "compile_equal",
+      "row_count": 699,
+      "field_names": [
+        "baseline_request_sha256",
+        "baseline_response_sha256",
+        "baseline_status",
+        "check",
+        "id",
+        "passed",
+        "phase",
+        "qa_request_sha256",
+        "qa_response_sha256",
+        "qa_status",
+        "request_sha256",
+        "response_sha256",
+        "row_index",
+        "status"
+      ],
+      "field_schema_count": 1,
+      "status_pairs": [
+        {
+          "qa": 200,
+          "baseline": 200,
+          "count": 697
+        },
+        {
+          "qa": 400,
+          "baseline": 400,
+          "count": 2
+        }
+      ],
+      "qa_equals_older_baseline_response_count": 2
+    },
+    {
+      "cohort": "rust",
+      "check": "baseline_bundle_refused",
+      "row_count": 697,
+      "field_names": [
+        "baseline_request_sha256",
+        "baseline_response_sha256",
+        "baseline_status",
+        "check",
+        "id",
+        "passed",
+        "phase",
+        "qa_request_sha256",
+        "qa_response_sha256",
+        "qa_status",
+        "request_sha256",
+        "response_sha256",
+        "row_index",
+        "status"
+      ],
+      "field_schema_count": 1,
+      "status_pairs": [
+        {
+          "qa": 400,
+          "baseline": null,
+          "count": 697
+        }
+      ],
+      "qa_equals_older_baseline_response_count": 0
+    },
+    {
+      "cohort": "rust",
+      "check": "rebased_files",
+      "row_count": 697,
+      "field_names": [
+        "baseline_request_sha256",
+        "baseline_response_sha256",
+        "baseline_status",
+        "check",
+        "files_sha256",
+        "id",
+        "passed",
+        "phase",
+        "qa_request_sha256",
+        "qa_response_sha256",
+        "qa_status",
+        "recorded_files_sha256",
+        "request_sha256",
+        "response_sha256",
+        "row_index",
+        "status"
+      ],
+      "field_schema_count": 1,
+      "status_pairs": [
+        {
+          "qa": 200,
+          "baseline": null,
+          "count": 697
+        }
+      ],
+      "qa_equals_older_baseline_response_count": 0,
+      "equal_complete_file_map_pairs": 697
+    }
+  ],
+  "accuracy_checks": [
+    "Every candidate baseline digest/status field equals its exact accepted report row and pinned index row.",
+    "All original IDs, phases, checks and variants match the public named inventories and reconstruction bindings.",
+    "QA response hashes retain latest accepted candidate authority. Older control hashes remain separate.",
+    "All 697 rebased complete file-map hash pairs are retained and equal.",
+    "All 13 receipt files and output hash references match their public acceptance chain.",
+    "Raw manifest, canonical manifest and canonical backend digests are verified under their distinct rules.",
+    "Health descriptors and 12 canary observations match their accepted source files."
+  ],
+  "portability_and_allowlist_checks": [
+    "Complete output field schema reviewed. Host absolute paths, raw source/product bodies and raw private product filenames are absent.",
+    "Public repository-relative source pins and digest JSON pointers are retained.",
+    "No intrinsic sensitivity is inferred from prior unpublished status. Host-specific provenance is excluded for the requested portable metadata format."
+  ],
+  "limits": {
+    "exporter_execution_by_reviewer": "unrun",
+    "synthetic_tests": "unrun",
+    "directory_tree_digest_recomputation": "unchecked for four recorded outputs",
+    "canary_payload_hash_recomputation": "unrun",
+    "new_compatibility_policy": "not approved",
+    "current_product_acceptance": "not granted"
+  }
+}

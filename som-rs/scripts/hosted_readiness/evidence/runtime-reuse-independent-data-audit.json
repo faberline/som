@@ -1,0 +1,260 @@
+{
+  "admitted_components": {
+    "mongodb": 1,
+    "postgresql": 35,
+    "python": 1,
+    "redis": 3,
+    "uv": 1
+  },
+  "admitted_expected_hash_and_version_pins": {
+    "install/mongodb/bin/mongod": {
+      "sha256": "891300d61048fa5694178eeaf1f7a0077fab35d5b9744fedb7a0a30304a3ec12",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "2c31fc80437273ff8a7ef7352ca69cc304efc5085c298db777f66c5ad2829678"
+    },
+    "install/postgresql/bin/clusterdb": {
+      "sha256": "595f6cddb8cae1db9e33dce5bd46e59740fe01fc6465cb08954d5c91dda91ede",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "5a62fe1249fb649cffaa65e09ce837043e092663067207c96f536890858b548f"
+    },
+    "install/postgresql/bin/createdb": {
+      "sha256": "79f185763511b7a5f43943d50a5c51cb50298123537fc93379886648f4fa0f5b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "3d0498178bef973d2730d87ec3aac8ea1e899f442d3f6638fbee8e5ee5f22dae"
+    },
+    "install/postgresql/bin/createuser": {
+      "sha256": "902665f8ba233b93357a1aa32415a9f5a219e8dee36d3664462424f015f73cbb",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "ae612489643655bdddddd5fddedd6d80cef0c2eadcc8c0f1024d1c1482c6f8aa"
+    },
+    "install/postgresql/bin/dropdb": {
+      "sha256": "3ce8369178589a819b7c607ab2c1f3840f5f825970f380905d72beac768385c9",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "bbbc0cc5a7144a57026b8c118d92a4701895fa7f4fc8aeebe726d5bb52d41c2b"
+    },
+    "install/postgresql/bin/dropuser": {
+      "sha256": "e37d8c24b643038476f0b3e8f748fa906d3ca39681bfff48851604a57e61a2d3",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "bb681ecf856878e8e4735b98ca9720b89e92661d95c6e77425481f240fb8431b"
+    },
+    "install/postgresql/bin/ecpg": {
+      "sha256": "1a1863ad887b5fa964fd9fee611a5994db959dd31a8bbacef5305373f71a5aa5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "961510744d858c5aa94ff2ea51e5a988610501f08112f2651c99c030e922195c"
+    },
+    "install/postgresql/bin/initdb": {
+      "sha256": "5df35cf4eea4c56039d42226ca564921069fdd422136cba8ab9aab2a7676488b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "d9a211f295d97dd2ba88ee7b45fef4d562f0affd512d326702b57215f736960d"
+    },
+    "install/postgresql/bin/pg_amcheck": {
+      "sha256": "4c5e8b6adf78f6094c520e3c5bf218d5ecd7a7de7dc323d82f74c4f85a7c48eb",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "5c753197e9ddbd2cc3d43f3e1471b5288ecee6467fb7ed4b6c34c99c0507922f"
+    },
+    "install/postgresql/bin/pg_archivecleanup": {
+      "sha256": "3195fa94cf1bfed46c7669990bb6ef4bc6b579a7cc0296b0c9661c25b670c4cf",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "51ecae1fa0fce540275c14036f9b1578ff50540f9e17a1f6d1f13b874bcb5e20"
+    },
+    "install/postgresql/bin/pg_basebackup": {
+      "sha256": "8e0addc11ebc12cac331b867de69847c425a33a3dd76b410f2f9b9ffd5f497fe",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "8e136ce1512241505f70bdf19ee40cb5c05a4a68057414e5592e8b802eda6891"
+    },
+    "install/postgresql/bin/pg_checksums": {
+      "sha256": "03ab78239e07c83ef8b72277bdf12c1ef986c69c681440d80c41093693b7e6ab",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "950033714d574ad35384de0a7fd85675e9d036caeccf28728e739fb63c51ec95"
+    },
+    "install/postgresql/bin/pg_combinebackup": {
+      "sha256": "f12ce4a324d213ed85e3cee08a176e188404f898883ff5535b714efb541c664e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "9e9fdaa430d614ae1785c453b5ffebbb6c5d300c3a2207b4280986ce8418b406"
+    },
+    "install/postgresql/bin/pg_config": {
+      "sha256": "2f5a4c5a6f436fb483c0f453bbedb91e8599783f40f439ebc418780b12aa2163",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "47b51e33d2407fd8600e8e018e7dcfc6f432e9192bcae96fe5243570807f4f4e"
+    },
+    "install/postgresql/bin/pg_controldata": {
+      "sha256": "30b99a011094c5f1d2e4077acad77fdbba036d5bfbd96bd8453427d5bf1f567a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "6f8603f06773bbf9378e45bdc86ef522a8d789cbe7ac6f605f368794272d03f4"
+    },
+    "install/postgresql/bin/pg_createsubscriber": {
+      "sha256": "9f53eaac1b157f754422c3929d2a3c4ee997e8675cbdbe71e16c27c8ad121511",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "251f669101b59493ff0a08d15a5cd67b5bb3441b7b43bc7c7a5140b6b0d44a09"
+    },
+    "install/postgresql/bin/pg_ctl": {
+      "sha256": "a01762e05cc3a354178abead32cce2c72e8f15d5598320d601b9bf767915ad7f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "b7703f234c71e919c283fd6847ca12dbf93f239c66b3bc46db9577806d229c17"
+    },
+    "install/postgresql/bin/pg_dump": {
+      "sha256": "3de8793cbab81955b3e20744be6a08b0f040895ceff41ec66e293188fecfd191",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "d9b7d06d804bc123949179855f2f922a0035858a396b12eddb2640954394f6e1"
+    },
+    "install/postgresql/bin/pg_dumpall": {
+      "sha256": "e86390c54d904c3a53192cacf600b7e8cb71d33b43a395bc6f97b10369971de2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "593b4a4faa26e2e5deb7d59cc717d28dc6f30443e161378d7af99225c7d46473"
+    },
+    "install/postgresql/bin/pg_isready": {
+      "sha256": "a88692675d42a118349b814a9952e599ca0217d7342f7c16f9743d1181846d74",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "e2ddd840820959aa1c69a4729c9289c494e9ee549ef3398b7969b037b96f78dd"
+    },
+    "install/postgresql/bin/pg_receivewal": {
+      "sha256": "de3fd893e7b6e2e0e1563eb7e3d1a2f1a3121cc7bf019b68ce759c90eb72b81f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "e6c7a4bbc2f82c3278ed76d4dd86c6061c11c64978da2546c97f6d261663f000"
+    },
+    "install/postgresql/bin/pg_recvlogical": {
+      "sha256": "0ee0fae63767c3b804fb29bcfb285d4f6971cb161b523185f585b659a9266c7b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "a9e98c13d865f8a1373594e73d189025eb608f5faf110bdfd1803583e96a6091"
+    },
+    "install/postgresql/bin/pg_resetwal": {
+      "sha256": "087634d7dd12d8378a55d672296d818d4e1c5fefe71913844ddb79e4e5839f6b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "40e60782a00a2376c5b5ba962dc34cd9409ac57cddc4ce793515444854079266"
+    },
+    "install/postgresql/bin/pg_restore": {
+      "sha256": "9b35b2b96323173d74c40554fd9d4f2dde5bce7069f6e1193adc00e92db5f86b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "ba4f924aed1fa404d9e4edbc611520316eafef494691da8bf8c9328da41e0a5b"
+    },
+    "install/postgresql/bin/pg_rewind": {
+      "sha256": "f396a2e7f0e616bc68345c92f203874f92fe49027d6b57478a81da93e467ce27",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "ef8bd60e74192e30b1ed5c1267a3eb17e7e7fe531d0ee7ed6b57f56a5aad448b"
+    },
+    "install/postgresql/bin/pg_test_fsync": {
+      "sha256": "3aa53f72461e4664d444c21dd43613640cdc20c2ab9a8b58a259160a5531f70f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "f336f88cc9514e21f085d21295d7a874b6b01246bfaadf7f203e3f1404149b15"
+    },
+    "install/postgresql/bin/pg_test_timing": {
+      "sha256": "51bb45d825ddb638e2be9ff6cbd4683a6189e6e8d617e9a3bd2849fd65a410ff",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "fb836d2bddde648410d09c908527740aefea35434c828742f2ec4a8d97c449a9"
+    },
+    "install/postgresql/bin/pg_upgrade": {
+      "sha256": "eb33432cefc086a4da322660559a46fb6f57c2f44501561de2db10bc8d5e1194",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "3759216efd5b5011e94cbc5c1e08b90d1d7a22f6ff4e720e29ebd6b97b1813bc"
+    },
+    "install/postgresql/bin/pg_verifybackup": {
+      "sha256": "d6431d032598c3e45373f8ce7d46fa22fc05e231c77cbe6ccb80d02985f20371",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "e661a02db8ee8da55d9b96d9c93fc4c2be84ddbe866b1e40106784b697be40bf"
+    },
+    "install/postgresql/bin/pg_waldump": {
+      "sha256": "3f180395247b58da6f5542dc141f8e4df100dbc9fa0d190b6576e42ecb1dfb65",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "d25fa3e9f28202ac78e94481642c67081b6ba613b2915062b4e08da0f8dfc396"
+    },
+    "install/postgresql/bin/pg_walsummary": {
+      "sha256": "56f93883044807c3abe90b1527a54c2c19946ce2188f39c8963e5ea100f8c263",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "224332b0dc8cfef3a4bf64cf665fa0727525cd41d942095edc3063175a7b1697"
+    },
+    "install/postgresql/bin/pgbench": {
+      "sha256": "4bd0cf7a0ddca4b98f9e708af6f5a3d0876f591b5431a5ac47f4c1bd4a7a1a54",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "b94502219a43f9df8a29cde1f8b964fad2dc9ccc9aaa5f2b7df62c9717b2f782"
+    },
+    "install/postgresql/bin/postgres": {
+      "sha256": "27403a740d2e42528925c5b8264c302ec1f3b0025c76b263dfb398b0a6f6f94b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "8f17d3e6a8befd834f7f3372b69c074ebdb96c4242493a70e55749307313518b"
+    },
+    "install/postgresql/bin/psql": {
+      "sha256": "9d355cff90eb8090deb242d968bf6e6f1b827446229f7830301f333784bb01b4",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "65776b06837f597bbe68ab3d759335166935cd15270e7775ea83e3b272a84bf8"
+    },
+    "install/postgresql/bin/reindexdb": {
+      "sha256": "b7f7e43cf97ac36fd7d7633d0c03c78b7d527aa1cfbdde72a1f8d92f87488df2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "d04facac446f5820d67acaa469f100fa6d6c340124ee21ef0ea0b302a2ba3e7f"
+    },
+    "install/postgresql/bin/vacuumdb": {
+      "sha256": "415e7b1fa9fb72ff20987770e21f1216ba157e8c6ed3ccbc040e244a973a0f05",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "25a30d8d8edf384a5e14d3cd3a06a42b3f446d2ef94ef999c05af74985dc29f8"
+    },
+    "install/python/bin/python3.12": {
+      "sha256": "8d0f57448252a3a8f8065b889648de2f1ca8959ea3f3fa029a94204bb9325c10",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "8eea2bd52b89a2bd9e3d040b6d16f5164ab656ba74b7f9a1e5c9547a480d2577"
+    },
+    "install/redis/bin/redis-benchmark": {
+      "sha256": "331a58f26d0297fee67921d36f87b681340fa6ded008cc1b76e231b9986dad25",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "581bf8abf52e80080bb900df229ee0e1b4ecbcba7c282f42f9b830007bc3bfd4"
+    },
+    "install/redis/bin/redis-cli": {
+      "sha256": "3c95659940b4f1c32f88cc10345ca0e37303587054ef4c4fd2f6358ceb13a465",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "283c04ab7567a99feae38a7c3dbe8d9509604fb66ee14400c40071e3bb52126d"
+    },
+    "install/redis/bin/redis-server": {
+      "sha256": "9afcdd5bf7088e17e55a7361a7946bccab23a2ecb5d96f46833c65214cde6363",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "3e60e02ed12c2b610027c2e996ab827565f7302ff990686d608615ccb14943ef"
+    },
+    "install/uv/bin/uv": {
+      "sha256": "83f28650272b5543e939debbc7a5578d087952399fd945e9267b1db0ccc27d33",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "version_stdout_sha256": "c4e9d32e7aa66ba9b237c4700455600a833df4d158216d4ce1cb35553be977af"
+    }
+  },
+  "all_original_transport_directories": "matched",
+  "all_original_transport_file_hashes": "matched",
+  "counts": {
+    "admitted_ELF_files": 41,
+    "command_stdout_stderr_logs": 214,
+    "license_files": 13,
+    "original_transport_files": 10344,
+    "recorded_executable_flags": 210,
+    "regular_installed_files": 10102,
+    "source_archive_records": 6,
+    "transport_dereferenced_aliases": 11,
+    "zero_exit_commands": 107
+  },
+  "limits": [
+    "Compressed source archives are absent. Their digests use reviewed committed source pins and saved first-build admission evidence.",
+    "Original artifact ZIP bytes were not re-downloaded. Live GitHub metadata tuple and all extracted original transport files were independently checked.",
+    "No restored native executable, helper, project import, test, build, server or product gate was run locally."
+  ],
+  "local_job_log": "separately fetched data; excluded from original transport; raw hash independently matched",
+  "original_artifact": {
+    "artifact_id": 12840425819,
+    "artifact_sha256": "a7ccf8732ce89e82eaa4d351a4ca096c263f4268c6cd708e447e8652d4ff8167",
+    "expires_at": "2026-11-27T18:06:33Z",
+    "live_api_expired": false,
+    "repository": "faberline/som",
+    "run_id": 40740849594,
+    "source_revision": "bf3a04a0eee05d633b9b68ffe4e7e2885583dcd5"
+  },
+  "original_python_core_module_stdout_sha256": "32035520be0e3bf974d032c1dc964acc8b3074cc2c19e0df8d8a40faf9883eb4",
+  "product_acceptance_passed": false,
+  "product_runtime_ready": false,
+  "reviewed_input_sha256": {
+    "som-m12-reuse-runtime.py": "cb27682ec9818bac8249cd3ec4f5dd5e5b514707d05a5f861aba47adfe1c8db2",
+    "som-m12-runtime-bf3-byte-audit.json": "7a2c04a65866474bd773b9722274c09c36646951fa7848d62e4b20b2cb94e75f",
+    "som-m12-runtime-bf3-qualification.json": "4aaca5ef284440fd64bd50723619425201417937b4d635bb3c5d2d5835226b68",
+    "som-m12-runtime-reuse-job.yml": "3604121b60b0f9450f48ce1046aeff0ebcae3c439799b73aa2a5b91f8fa8fdb0",
+    "som-m12-runtime-reuse.patch": "739c160fbc2e3dd49eceefbba9857a5176f2bd4a6716eaea968c22ca053ed048",
+    "som-m12-test-reuse-runtime.py": "f751432aa7b7699a17ae3ef56cd1324c0a42313525899586ea3386cd6433ab4d"
+  },
+  "source_support_sha256": "f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3",
+  "synthetic_test_definitions": 18,
+  "synthetic_tests": "unrun; GitHub only",
+  "verdict": "MATCHED_QUALIFIED_FIRST_BUILD_BYTES",
+  "version": "som.runtime-reuse-independent-saved-data-audit.v1"
+}

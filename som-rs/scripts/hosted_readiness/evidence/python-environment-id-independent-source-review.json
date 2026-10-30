@@ -1,0 +1,24 @@
+{
+  "version": "som.m12-python-environment-id-delta-source-review.v1",
+  "reviewer": "independent compile_driver_review agent; not the fix author",
+  "base_commit": "e686642dce2895dd876e7efa7239913db2d62cf0",
+  "scope": "Bounded source review of the environment consumer physical-ID versus frozen-product-ID fix and its main-emission regression.",
+  "source_review_passed": true,
+  "actionable_findings_remaining": [],
+  "files": {
+    "som-rs/scripts/hosted_readiness/product_python/qualify_python.py": "51308a0d643db52e9d66d2cb7114af2656b3a7ee688376756fdf79893adcee61",
+    "som-rs/scripts/hosted_readiness/product_python/test_qualify_python.py": "85355a39146a0310a3ba821ca8261f145fa0f1239a5c283e26c6b4c867d4c7f1"
+  },
+  "finding_resolved": "The consumer previously overwrote the physical product-NNNN environment id with the frozen case id. It now preserves id for the actual output directory and emits product_id as separate provenance. This matches the wheel consumer schema without changing product bytes or requirements.",
+  "reviewed_checks": [
+    "The implementation delta changes only metadata assignment after write_environment. Original input validation, all671 product/both-variant byte checks, requirement groups and false readiness/acceptance flags stay in force.",
+    "The new test calls main, mocks only independently covered source/product validation, reads the actual emitted receipt and project file, and checks id,product_id,venv path and physical output directory.",
+    "The source and all25 test definitions pass AST parsing. No helper, test, package, compiler or runtime was executed locally."
+  ],
+  "tests_defined": 25,
+  "tests_executed": false,
+  "actual_hosted_consumer_execution": "unrun",
+  "product_runtime_ready": false,
+  "product_acceptance_passed": false,
+  "next_step": "Root may commit this exact bounded fix and run its25 tests and the actual full consumer on GitHub. The wheel producer remains under separate critical review."
+}

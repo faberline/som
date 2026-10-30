@@ -1,0 +1,82 @@
+{
+  "version": "som.native-descriptor-vector-independent-source-metadata-review.v1",
+  "reviewer": "native_policy_review",
+  "reviewer_aw_session_id": "1b435a13-dead-4a25-8d05-834009957510",
+  "reviewed_proof_raw_sha256": "1b926be4e306caccc670e7dde25497ad501597acbf19cc7ff3ba11eb5722b8de",
+  "reviewed_proof_bytes": 36656,
+  "current_source_commit": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+  "source_pins_equal_git_blobs_and_working_bytes": 139,
+  "complete_backend_vectors": {
+    "python": {
+      "entries": 29,
+      "sha256": "92941b7adeb9c7555d4abdfb06d24b4a1bf92c9c1e2617a2a0c4cb5d3e529d0e",
+      "source_owner": "som-rs/src/compiler.rs"
+    },
+    "rust": {
+      "entries": 13,
+      "sha256": "9c8064cb49c4d9465273b6935a8266ff679f96ef17b1b1c0401065c7671474b1",
+      "source_owner": "som-rs/som-targets/src/rust/mod.rs"
+    },
+    "typescript": {
+      "entries": 9,
+      "sha256": "d65a22b29c259314629df529f256a15e407fb3db9ac7437d1d32beab85a29b79",
+      "source_owner": "som-rs/som-targets/src/typescript/mod.rs"
+    }
+  },
+  "current_observed_after_descriptors": {
+    "python_backend": "92941b7adeb9c7555d4abdfb06d24b4a1bf92c9c1e2617a2a0c4cb5d3e529d0e",
+    "rust_backend": "9c8064cb49c4d9465273b6935a8266ff679f96ef17b1b1c0401065c7671474b1",
+    "typescript_backend": "d65a22b29c259314629df529f256a15e407fb3db9ac7437d1d32beab85a29b79",
+    "python_formatted_formatter": "ca325bc0efdad4d3f8e4e8209814832fdb68947be16c8bd79bd3da92b2da3851",
+    "python_render_only_formatter": "a6a6e62d4ad875f8aec308a0fd9c55e8ac576d8129d57fb935bdfc5bc4529b94",
+    "typescript_formatter": "6070ceb6d781121f6175b7c3992f3aa58bd56f6d871e08f2ff426020bb30f50b",
+    "rust_formatter": "dbb30c6037c51a2bacb94d46e2d6435d9487531c06cf82330fdee0bda507db0d",
+    "rust_target_contract": "090b9060a5b5f24d8e6994072f4e6c8a796110790b119229650cf0e4a52bee3c",
+    "typescript_target_contract": "17ffc6028d66657381464a4d6beaecc1e097f54e421168777e5959cfbdaf063f"
+  },
+  "native_host": "x86_64-unknown-linux-gnu",
+  "native_artifact_map_raw_sha256": "959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193",
+  "native_tool_pin_identities": {
+    "ruff": {
+      "version": "0.16.6",
+      "host": "x86_64-unknown-linux-gnu",
+      "archive_sha256": "d72c591a96986ee4268860e2b7235082129ca5e4cb9cbba653a4b57c11893757",
+      "executable_sha256": "03b22709bb8f62028a0732423eaac6f7792235bbcb05b3feaddaac3d992318d8"
+    },
+    "rustfmt": {
+      "version": "1.9.0",
+      "host": "x86_64-unknown-linux-gnu",
+      "archive_sha256": "dcee5627f709f387cdca416a1d2ae9e6c2581cd117cdb4fd097c56c196384662",
+      "executable_sha256": "dbb30c6037c51a2bacb94d46e2d6435d9487531c06cf82330fdee0bda507db0d"
+    },
+    "node": {
+      "version": "26.5.0",
+      "host": "x86_64-unknown-linux-gnu",
+      "archive_sha256": "9f619528f1db5ddc41dccf54211066fb42228d69a156733c69cb9d6cc92e358c",
+      "executable_sha256": "3de740a941a630439b22b79aafb383f4912b76354a2694765e8d59a033746538"
+    }
+  },
+  "before_descriptor_authority": "Exact immutable TS065 health and accepted canary metadata; role is descriptor provenance, not a new full gate result.",
+  "active_target_receipts": {
+    "rust": {
+      "path": "som-rs/evidence/rust-output-contract-amendment-007.json",
+      "raw_sha256": "225b98c2bc01e79c5c6e13ad17f93adda68717498d70fa7577e65930813f9144",
+      "target_sha256": "090b9060a5b5f24d8e6994072f4e6c8a796110790b119229650cf0e4a52bee3c",
+      "file_hashes_recomputed": 55
+    },
+    "typescript": {
+      "path": "som-rs/evidence/typescript-output-contract-amendment-003.json",
+      "raw_sha256": "7052daacfc89bf468e399e09f635e6d773187177eb684a0399d46d8ddf650089",
+      "target_sha256": "17ffc6028d66657381464a4d6beaecc1e097f54e421168777e5959cfbdaf063f",
+      "file_hashes_recomputed": 38
+    }
+  },
+  "compiler_contract_raw_sha256": "cf0a1727f924fd5b43df976ab8ca98c811d10e39d9ba41b6434f99f57fc65f3e",
+  "saved_e686_checker_raw_sha256": "cbfe36177d8683b6f4867678c8546b15c27ceff2c2a3df6ed555cbe721f9ceca",
+  "saved_e686_factories_equal_current_sources": true,
+  "verdict": "approved_current_preview_source_and_saved_metadata_only",
+  "findings": [],
+  "future_policy_descriptors_approved": false,
+  "full_native_or_combined_acceptance_granted": false,
+  "local_execution": "Independent stdlib source/metadata hashing and Git object reads only. No project code import, test, build, compiler, formatter or service ran."
+}

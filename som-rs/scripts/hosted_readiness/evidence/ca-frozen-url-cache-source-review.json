@@ -1,0 +1,121 @@
+{
+  "version": "som.m12.frozen-cache.independent-source-review.v2",
+  "review_mode": "source reads, stdlib AST and hashes, saved-data audit only",
+  "basis": "ca22309e52125f2c1dccf7d0ad20f0c80fd64fc4",
+  "candidate_revision": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+  "patch_sha256": "f7b87ea4f811f3fa7ee9b364dd702ad953248fb976737e04ef6e0f5d7f6ecbeb",
+  "previous_review": {
+    "path": "/private/tmp/som-m12-ca-cache-fix-independent-review.json",
+    "sha256": "80b35143ab80499ca384df0bdf6173a4e3588ae276d5ecd92b93ce55789d5f48",
+    "unchanged": true
+  },
+  "source_manifest_note": "The v1 manifest after hashes are not v2 authority. They were used only to verify baseline and v1 reconstruction. This report pins v2 current source bytes directly and verifies exact reverse/forward patch application in memory.",
+  "source_byte_audit": {
+    "path": "/private/tmp/som-m12-ca-cache-fix-source-byte-audit-v2.json",
+    "sha256": "53e5000c8c0df5655fa85b3a15fee95acfe3ea62e50072ded623e468ba8ada1e"
+  },
+  "v2_source_files": [
+    {
+      "path": ".github/workflows/rust-dependency-preparation.yml",
+      "before_sha256": "a6633463d499132fce37ec46e2b4378b72a01c5384469f914db53341890a4511",
+      "v2_sha256": "8cae30e1126410edac2b8aab469753c91c181598a2a69b843e08298a05a7a021"
+    },
+    {
+      "path": ".github/workflows/rust-hosted-readiness.yml",
+      "before_sha256": "9c900d487fe2ff620e7f8bd253603c73db3d9101543334efd8df8d9e67f288dd",
+      "v2_sha256": "3b7ab3037c98d14e80147421958d0f82bbf6ff1bbe6347c25b7fcc8edc8e6073"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_python/produce_wheels.py",
+      "before_sha256": "2d99b38693d9234f8135ba409f401586a6de2c7164e018f7359ab10cbeadd224",
+      "v2_sha256": "c9151e7b09b0d7fcadcc203f72b83bf1135f2da260becf2034f4228b26299a39"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_python/test_produce_wheels.py",
+      "before_sha256": "cd73f44e9b6a70296dd104860ce5594c30fb8d7fcbf8bc2806e90f4114ed4fe8",
+      "v2_sha256": "970aeb0fed1965f4dac68408c16402e3858f4233b8f14b6638ed1e12dfb5fb9b"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py",
+      "before_sha256": "c3e20e1fce469c613172f5129cecc7004ba0b5c757d7d5bdf9807eb119ecdedd",
+      "v2_sha256": "554830ac8efad099a6b8d77edec5c2b075813aa0365d43d9984c36ea1cc9d7f9"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/readiness.json",
+      "before_sha256": "4c9176e02c8a9d7d8318ec779d092c31d8f91a71f24b6500af5b247f75c4c9a2",
+      "v2_sha256": "77a8181e6d7c0cc7cc7e222fb630ce57c92adf2f89610b537449595116070482"
+    }
+  ],
+  "source_review_passed": true,
+  "findings": [],
+  "resolved_findings": [
+    {
+      "previous_priority": "P2",
+      "title": "Keep command receipts when a full-product cache seed fails",
+      "resolution": "Helper finally copies its complete command slice into record before writing receipt.json, on both success and failure. The earlier success record still keeps commands before before-cleanup.json and seed deletion. The failure fixture now checks exactly one command and its exact cache-fixture-frozen-url-cache label.",
+      "resolution_verified_by": "source review and AST only; fixture execution remains unrun"
+    }
+  ],
+  "v1_to_v2_delta": [
+    "prepare_frozen_url_cache finally adds record[commands] = runner.report[commands][start:] before dump.",
+    "The existing added failure test adds two assertions for saved command count and exact label.",
+    "No other source bytes differ from the reviewed v1 after files."
+  ],
+  "verified_source_properties": [
+    "All six after-source hashes match the manifest and exact patch. Reverse application in memory yields all six before hashes.",
+    "Producer changed existing functions: main only. prepare_frozen_url_cache is the only added producer function. Runner and provision_named AST remain unchanged.",
+    "All 58 original test ASTs remain unchanged. Six new test methods are present. No local tests ran.",
+    "Frozen cache preparation rechecks audited wheel closure and official frozen URL/hash lock policy. It uses admitted UV/Python, no build, no index and a separate owned seed venv.",
+    "Complete installed member, RECORD, UV seed asset and directory guards precede any installed-code execution. Seed cleanup follows saved inventory/checkpoint and a second installed inventory equality check.",
+    "Named qualification still performs its original offline lock and offline/frozen sync in separate owned named venvs.",
+    "Full-product preparation creates its own new product cache. Its seed environment is separate from the empty product .venv. Ordinary product UV mode keeps UV_OFFLINE=1 and does not receive UV_NO_INSTALLER_METADATA.",
+    "readiness.json source_files pin equals the exact modified full_product_context.py SHA256.",
+    "Qualification workflows retain raw logs, receipts, failed environments and new cache-preparation evidence under always upload steps. Full-product whole work-root upload includes seed raw logs and cache-preparation files.",
+    "Carrier staging copies only bytes equal to old candidate binary/rustfmt SHA256,size,mode, checks source fd/path and before/after bytes, and creates owned exclusive single-link outputs.",
+    "Original candidate_carrier.py SHA256 remains 662501e5dbc8f84954bc5020c28e7d63069417077264a5b43104d334b5ac0968. Its single-link input checks and complete tested binary/assets/tools comparisons remain intact.",
+    "Failed full-product seed command records now remain in cache-preparation receipt.json, including real Runner argv, environment, exit, owned cleanup and stdout/stderr hash fields when a child command was started.",
+    "All original 58 test ASTs remain unchanged. Total tests: 64. Only one of the six added tests changes from v1.",
+    "No changes to official URL/hash policy, cache ownership, installed-byte guards, cleanup guard, original named offline/frozen commands, full-product metadata mode, context source pin or carrier staging occurred between v1 and v2."
+  ],
+  "saved_failure_evidence": {
+    "run_id": "40816018679",
+    "receipt_sha256": "b978a52c8c8a773f2ab5e1befb4b61440d2e38e07b2f41aca3ba696d8ce55a6c",
+    "stderr_sha256": "34583400674358447646e0ac2a166674dcf552bfcb0f9e839946923d4aa27ca0",
+    "stderr_bytes": 571,
+    "failure": "observer-offline-frozen-sync, missing frozen fastapi 0.118.0 original URL cache entry",
+    "qualified_closures": 5,
+    "qualified_closure_wheel_counts": [
+      80,
+      22,
+      62,
+      81,
+      81
+    ],
+    "named_environments_failed": 1,
+    "named_environments_unrun": 667,
+    "full_raw_artifact_zip_locally_verified": false,
+    "full_raw_log_bytes_independently_checked": false,
+    "independently_checked_raw_log_scope": "Only the supplied 571-byte observer stderr matched its receipt SHA256 and size. The supplied summary ZIP contains only receipt.json."
+  },
+  "local_project_code_executed": false,
+  "local_tests_builds_compiler_native_or_services_run": false,
+  "tests_execution": "unrun; GitHub runners only",
+  "actual_new_cache_seed_run_passed": false,
+  "actual_carrier_pack_passed": false,
+  "product_runtime_ready": false,
+  "product_acceptance_passed": false,
+  "whole_plan_accepted": false,
+  "aw": {
+    "own_session_id": "53d8a309-aeb5-4667-ad68-178f9437a2cb",
+    "registration": "admitted",
+    "repo_claim_acquired": false,
+    "unavailable_tools": [
+      "read_inbox",
+      "list_sessions",
+      "heartbeat"
+    ]
+  },
+  "repository_writes": false,
+  "git_or_tracker_actions": false,
+  "next_step": "Run all required GitHub tests and real dependency/product/carrier gates for the exact committed v2 source. Keep acceptance false until all required evidence passes. Preserve the first failure and v1 review."
+}
