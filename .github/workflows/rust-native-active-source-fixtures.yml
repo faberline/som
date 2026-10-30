@@ -1,7 +1,7 @@
-name: Native active source fixtures
+name: API V5 whole34 source qualification
 on:
   push:
-    branches: [codex/m12-native-m6-driver57-source-v1]
+    branches: [codex/m12-native-api-v5-whole34-c870-v1]
   workflow_dispatch:
 permissions:
   contents: read
@@ -13,44 +13,85 @@ env:
   PYTHONDONTWRITEBYTECODE: '1'
 jobs:
   source-fixtures:
-    name: source-fixtures (${{ matrix.name }})
+    name: source-fixtures (whole-native-api-whole34)
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: driver-whole52
-            script: som-rs/scripts/hosted_readiness/test_run_full_products.py
-          - name: m6-context-whole5
-            script: som-rs/scripts/hosted_readiness/test_native_m6_callback_context.py
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.sha }}
           fetch-depth: 2
           persist-credentials: false
-      - name: Record actual source and interpreter
+      - name: Bind actual source and exact interpreter
         run: |
           test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
           git rev-parse HEAD > tested-sha.txt
+          git rev-parse 'HEAD^{tree}' > tested-tree.txt
           python3 --version > python-version.txt 2>&1
-      - name: Run the complete selected source fixture file
-        env:
-          SOURCE_FIXTURE_SCRIPT: ${{ matrix.script }}
+          python3 -I -S -B -c 'import sys; assert sys.version_info[:3] == (3, 12, 3), "API source fixture requires Python 3.12.3"' >> python-version.txt 2>&1
+          git ls-tree HEAD -- .github/workflows/rust-native-active-source-fixtures.yml som-rs/scripts/react_output_acceptance/native_recording_owner.py som-rs/scripts/react_output_acceptance/native_recorded_subprocess.py som-rs/scripts/react_output_acceptance/test_native_m6_recorded_subprocess.py som-rs/scripts/hosted_readiness/native_active_controls.py som-rs/scripts/hosted_readiness/native_qa_authority.py som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py som-rs/scripts/hosted_readiness/test_native_active_controls.py > selected-git-blobs.txt
+          sha256sum .github/workflows/rust-native-active-source-fixtures.yml som-rs/scripts/react_output_acceptance/native_recording_owner.py som-rs/scripts/react_output_acceptance/native_recorded_subprocess.py som-rs/scripts/react_output_acceptance/test_native_m6_recorded_subprocess.py som-rs/scripts/hosted_readiness/native_active_controls.py som-rs/scripts/hosted_readiness/native_qa_authority.py som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py som-rs/scripts/hosted_readiness/test_native_active_controls.py > selected-source-sha256.txt
+          sha256sum som-rs/scripts/react_output_acceptance/native_recording_owner.py > owner-source-sha256.txt
+          sha256sum som-rs/scripts/react_output_acceptance/native_recorded_subprocess.py > facade-source-sha256.txt
+          sha256sum som-rs/scripts/react_output_acceptance/test_native_m6_recorded_subprocess.py > fixture-source-sha256.txt
+      - name: Retain actual target unittest source and version
+        run: |
+          python3 -I -S -B - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          import sys
+          import unittest
+          assert sys.version_info[:3] == (3, 12, 3)
+          path = Path(unittest.case.__file__).resolve(strict=True)
+          assert path.is_relative_to(Path(sys.base_prefix).resolve(strict=True))
+          raw = path.read_bytes()
+          raw.decode('utf-8', 'strict')
+          Path('stdlib-unittest-case.py').write_bytes(raw)
+          Path('stdlib-unittest-case.json').write_text(json.dumps({
+              'path': str(path), 'bytes': len(raw),
+              'sha256': hashlib.sha256(raw).hexdigest(),
+              'Python': sys.version, 'flags': {name: getattr(sys.flags, name) for name in dir(sys.flags)
+                  if not name.startswith('_') and type(getattr(sys.flags, name)) is int},
+              'flags_repr': repr(sys.flags), 'data_only': True}, sort_keys=True) + '\n')
+          Path('interpreter.json').write_text(json.dumps({
+              'version': sys.version, 'version_info': list(sys.version_info),
+              'executable': sys.executable, 'base_prefix': sys.base_prefix,
+              'isolated': sys.flags.isolated, 'no_site': sys.flags.no_site,
+              'dont_write_bytecode': sys.dont_write_bytecode,
+              'flags': {name: getattr(sys.flags, name) for name in dir(sys.flags)
+                  if not name.startswith('_') and type(getattr(sys.flags, name)) is int},
+              'flags_repr': repr(sys.flags)}, sort_keys=True) + '\n')
+          PY
+      - name: Run the complete selected whole34 successor file
         run: |
           set -o pipefail
-          sha256sum "$SOURCE_FIXTURE_SCRIPT" > fixture-source-sha256.txt
-          python3 -I -S -B "$GITHUB_WORKSPACE/$SOURCE_FIXTURE_SCRIPT" -v 2>&1 | tee source-fixtures.log
-      - name: Retain complete output and first failures
+          set +e
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/react_output_acceptance/test_native_m6_recorded_subprocess.py" -v 2>&1 | tee source-fixtures.log
+          pipeline_status=("${PIPESTATUS[@]}")
+          printf '%s\n' "${pipeline_status[0]}" > fixture-exit-code.txt
+          printf '%s\n' "${pipeline_status[1]}" > tee-exit-code.txt
+          if [ "${pipeline_status[0]}" -ne 0 ]; then exit "${pipeline_status[0]}"; fi
+          exit "${pipeline_status[1]}"
+      - name: Retain complete output and all identity evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: native-active-source-fixtures-${{ matrix.name }}
+          name: native-api-v5-whole34-c870
           if-no-files-found: error
           retention-days: 30
           path: |
             tested-sha.txt
+            tested-tree.txt
             python-version.txt
+            interpreter.json
+            stdlib-unittest-case.py
+            stdlib-unittest-case.json
+            selected-git-blobs.txt
+            selected-source-sha256.txt
+            owner-source-sha256.txt
+            facade-source-sha256.txt
             fixture-source-sha256.txt
+            fixture-exit-code.txt
+            tee-exit-code.txt
             source-fixtures.log
