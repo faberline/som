@@ -1,0 +1,4077 @@
+{
+  "version": "som.native-before-node-startup-source-profile.v1",
+  "future_repository_path": "som-rs/scripts/hosted_readiness/native_first_launch_profile_v1.json",
+  "meaning": "Finite source-derived candidates and explicit branch rules, not an already observed module set or a source/acceptance seal.",
+  "python": "3.12.11",
+  "python_ELF_sha256": "8d0f57448252a3a8f8065b889648de2f1ca8959ea3f3fa029a94204bb9325c10",
+  "release_archive_sha256": "c30bb24b7f1e9a19b11b55a546434f74e739bb4c271a3e3a80ff4380d49f7adb",
+  "installed_inventory_sha256": "ac9df6b242d0a5016dd32317af27475e64d652dd38ccc8663743b0537f9cd63c",
+  "initial_source_roots": [
+    "__future__",
+    "argparse",
+    "ast",
+    "builtins",
+    "hashlib",
+    "importlib.util",
+    "importlib.abc",
+    "importlib.machinery",
+    "json",
+    "os",
+    "pathlib",
+    "re",
+    "stat",
+    "subprocess",
+    "sys",
+    "threading",
+    "types",
+    "urllib.request",
+    "encodings",
+    "encodings.utf_8",
+    "encodings.ascii",
+    "encodings.latin_1",
+    "encodings.idna",
+    "codecs",
+    "io",
+    "abc",
+    "_collections_abc",
+    "zipimport",
+    "importlib._bootstrap",
+    "importlib._bootstrap_external"
+  ],
+  "selected_lazy_roots": [
+    "locale",
+    "struct",
+    "calendar",
+    "typing",
+    "unicodedata",
+    "stringprep",
+    "marshal",
+    "_md5",
+    "_sha1",
+    "_sha2",
+    "_sha3",
+    "_blake2",
+    "_hashlib"
+  ],
+  "source_modules": {
+    "__future__": {
+      "member": "Python-3.12.11/Lib/__future__.py",
+      "package": false,
+      "sha256": "981d4c398849f9ebcab72300d9c1fe288fd6d7f28957b3b3fa3a493a5836d95c",
+      "bytes": 5218
+    },
+    "_collections_abc": {
+      "member": "Python-3.12.11/Lib/_collections_abc.py",
+      "package": false,
+      "sha256": "d4945c8410c4bab351741b04bca3de066f7c27ed7e38df89e206a96617102ffb",
+      "bytes": 32089
+    },
+    "_compression": {
+      "member": "Python-3.12.11/Lib/_compression.py",
+      "package": false,
+      "sha256": "3ad5d60627477a60939ee44fc1bb3a05dbe8fb52f0f75039b8f5d8f1a278b981",
+      "bytes": 5681
+    },
+    "_py_abc": {
+      "member": "Python-3.12.11/Lib/_py_abc.py",
+      "package": false,
+      "sha256": "f9c6fe3dd9b51bd7d93f867356e9d362600c924febfd903ee1c6e298860dca92",
+      "bytes": 6189
+    },
+    "_pydatetime": {
+      "member": "Python-3.12.11/Lib/_pydatetime.py",
+      "package": false,
+      "sha256": "a03268abe53ccab406fa29cdfcf75b89f7f485d9e6523e00c448ff7a9961dd26",
+      "bytes": 92087
+    },
+    "_threading_local": {
+      "member": "Python-3.12.11/Lib/_threading_local.py",
+      "package": false,
+      "sha256": "e1bf3dae66d0bfa63c8bb8a1d10c611203c35c636f7f5191fd56105788ef29cb",
+      "bytes": 7220
+    },
+    "_weakrefset": {
+      "member": "Python-3.12.11/Lib/_weakrefset.py",
+      "package": false,
+      "sha256": "91895a451d06e9f521a1171b31b9b19bc9740f35af00d4fa106338ab7167c9ac",
+      "bytes": 5893
+    },
+    "abc": {
+      "member": "Python-3.12.11/Lib/abc.py",
+      "package": false,
+      "sha256": "e558702a95cdce3febd289da021715d2b92bc43995b8a1bc58dfa1c3d8010287",
+      "bytes": 6538
+    },
+    "argparse": {
+      "member": "Python-3.12.11/Lib/argparse.py",
+      "package": false,
+      "sha256": "7cc582dcb3b76e2c957f78a3f74e9809d6c311d6aab7bcaa2c9954d0cbff5f30",
+      "bytes": 101155
+    },
+    "ast": {
+      "member": "Python-3.12.11/Lib/ast.py",
+      "package": false,
+      "sha256": "b515c23dbbc459329d3b802a3aac742cc456d7472e66f7ed6e9dc97e40596d7d",
+      "bytes": 64452
+    },
+    "base64": {
+      "member": "Python-3.12.11/Lib/base64.py",
+      "package": false,
+      "sha256": "8d1f608dbf030d11d6ec4df9e4c55b73fb68cdfbd9f53a7c91684a93b55564b5",
+      "bytes": 20635
+    },
+    "bisect": {
+      "member": "Python-3.12.11/Lib/bisect.py",
+      "package": false,
+      "sha256": "f1cf7b85fc36b5da249813fc5ab97d9464f8cc1bc817f7146206fa2713e35999",
+      "bytes": 3423
+    },
+    "bz2": {
+      "member": "Python-3.12.11/Lib/bz2.py",
+      "package": false,
+      "sha256": "76ab3252924e71e859d7d90e8d3db13b6554975cfcac0fdadced4de7f8779330",
+      "bytes": 11847
+    },
+    "calendar": {
+      "member": "Python-3.12.11/Lib/calendar.py",
+      "package": false,
+      "sha256": "0010004d32c694e4afa554db2434952040819c09c438e88d465dcf6d9fb63718",
+      "bytes": 25864
+    },
+    "codecs": {
+      "member": "Python-3.12.11/Lib/codecs.py",
+      "package": false,
+      "sha256": "7b7839e53a77961153240aecfe11edc8054d05b1dedd83894450dae21ec05785",
+      "bytes": 36870
+    },
+    "collections": {
+      "member": "Python-3.12.11/Lib/collections/__init__.py",
+      "package": true,
+      "sha256": "7fdb04dd248ab37909f46d2085bfee56b32d7e91e49ad3a2fad99c453295659b",
+      "bytes": 52378
+    },
+    "collections.abc": {
+      "member": "Python-3.12.11/Lib/collections/abc.py",
+      "package": false,
+      "sha256": "9cb4208f99128a0489b6c8e6c61637617dd7d4250c59e065491957eda084dd10",
+      "bytes": 119
+    },
+    "contextlib": {
+      "member": "Python-3.12.11/Lib/contextlib.py",
+      "package": false,
+      "sha256": "8b7a477f978a8532852fd81e241c78182516bc4975d672d580a5848a76e11eb6",
+      "bytes": 27637
+    },
+    "copyreg": {
+      "member": "Python-3.12.11/Lib/copyreg.py",
+      "package": false,
+      "sha256": "c8eda41f05c6bf95a4da4726a530409d2485ae060b8d019b3a8034389a15d3e9",
+      "bytes": 7614
+    },
+    "datetime": {
+      "member": "Python-3.12.11/Lib/datetime.py",
+      "package": false,
+      "sha256": "ef20dc6b3554cd585dddffdc573f1f9a7a54c522f2a3fb4576c44edbb1e14238",
+      "bytes": 268
+    },
+    "dis": {
+      "member": "Python-3.12.11/Lib/dis.py",
+      "package": false,
+      "sha256": "44c0b389c96124d8fb5cb0bc41c7a2aa7a6848ef4001b4000dcbd858efa4a1a2",
+      "bytes": 30227
+    },
+    "email": {
+      "member": "Python-3.12.11/Lib/email/__init__.py",
+      "package": true,
+      "sha256": "e4f46e3414c4602c9abb8b404a45e84412fc49dbe38a3d163f9575132dc7c93e",
+      "bytes": 1764
+    },
+    "email._encoded_words": {
+      "member": "Python-3.12.11/Lib/email/_encoded_words.py",
+      "package": false,
+      "sha256": "4178321600c0a19ca04cfe8542ce44487f339d15d89a473b58cea63c0b230217",
+      "bytes": 8541
+    },
+    "email._parseaddr": {
+      "member": "Python-3.12.11/Lib/email/_parseaddr.py",
+      "package": false,
+      "sha256": "4308932872acbf4a674312a45a49b870e48026e3dfedc878ee2f512ddf2f30ba",
+      "bytes": 17821
+    },
+    "email._policybase": {
+      "member": "Python-3.12.11/Lib/email/_policybase.py",
+      "package": false,
+      "sha256": "284be073d7fe99d1021958e6dbeefe4c98a6c00021ea465d01aac71338d1579f",
+      "bytes": 15535
+    },
+    "email.base64mime": {
+      "member": "Python-3.12.11/Lib/email/base64mime.py",
+      "package": false,
+      "sha256": "e2b4b87a5f42a8c5780e343f675513bbcc6abdd23fa14f8f1a7d4f7d72304770",
+      "bytes": 3551
+    },
+    "email.charset": {
+      "member": "Python-3.12.11/Lib/email/charset.py",
+      "package": false,
+      "sha256": "a90653f13a4dc5eb3205079dda1d62561a8bf9a7b45585f5dbf90aa31a966680",
+      "bytes": 17063
+    },
+    "email.encoders": {
+      "member": "Python-3.12.11/Lib/email/encoders.py",
+      "package": false,
+      "sha256": "690b275529788cc48e8f541a2aef321dc31e92f75764ac7924896db72d8a9555",
+      "bytes": 1778
+    },
+    "email.errors": {
+      "member": "Python-3.12.11/Lib/email/errors.py",
+      "package": false,
+      "sha256": "dbfb4bbfc85e9d556d3385dc6356518846d8a122bc643b171ea61b6e8dc42c8b",
+      "bytes": 3814
+    },
+    "email.feedparser": {
+      "member": "Python-3.12.11/Lib/email/feedparser.py",
+      "package": false,
+      "sha256": "6046239fcdd6977d1c25841581cabedaeec8046cc5fedcb8ff2d6450a36442bd",
+      "bytes": 22796
+    },
+    "email.header": {
+      "member": "Python-3.12.11/Lib/email/header.py",
+      "package": false,
+      "sha256": "4d9baa908ad5288dd8fad8cf20b3802ffac77ba1642727804a633b201c56e5ca",
+      "bytes": 24092
+    },
+    "email.iterators": {
+      "member": "Python-3.12.11/Lib/email/iterators.py",
+      "package": false,
+      "sha256": "1080a2d03779176d6d45f6ecd976dbe69f5579f7e4e83b75224c3f92fd258102",
+      "bytes": 2129
+    },
+    "email.message": {
+      "member": "Python-3.12.11/Lib/email/message.py",
+      "package": false,
+      "sha256": "57fc451e7bc431389706dc00c0ff2456aee2c41f4786a5bce8475b9870f70684",
+      "bytes": 48215
+    },
+    "email.parser": {
+      "member": "Python-3.12.11/Lib/email/parser.py",
+      "package": false,
+      "sha256": "88890ea9994c55ff7d6c1fd570fece2785f51ed407ee95df4aff946e250bcd66",
+      "bytes": 4975
+    },
+    "email.quoprimime": {
+      "member": "Python-3.12.11/Lib/email/quoprimime.py",
+      "package": false,
+      "sha256": "77b454bd3ba3b5e3776be28ae3a0fd8de5d1e50d5b8ee10dd539c37c2bd68082",
+      "bytes": 9864
+    },
+    "email.utils": {
+      "member": "Python-3.12.11/Lib/email/utils.py",
+      "package": false,
+      "sha256": "65d259aded3b7d29609d320decdb59cb0a0f7f0e5c453e1d3c380e8a4a5d61c9",
+      "bytes": 16071
+    },
+    "encodings": {
+      "member": "Python-3.12.11/Lib/encodings/__init__.py",
+      "package": true,
+      "sha256": "78c4744d407690f321565488710b5aaf6486b5afa8d185637aa1e7633ab59cd8",
+      "bytes": 5884
+    },
+    "encodings.aliases": {
+      "member": "Python-3.12.11/Lib/encodings/aliases.py",
+      "package": false,
+      "sha256": "6fdcc49ba23a0203ae6cf28e608f8e6297d7c4d77d52e651db3cb49b9564c6d2",
+      "bytes": 15677
+    },
+    "encodings.ascii": {
+      "member": "Python-3.12.11/Lib/encodings/ascii.py",
+      "package": false,
+      "sha256": "578aa1173f7cc60dad2895071287fe6182bd14787b3fbf47a6c7983dfe3675e3",
+      "bytes": 1248
+    },
+    "encodings.idna": {
+      "member": "Python-3.12.11/Lib/encodings/idna.py",
+      "package": false,
+      "sha256": "9ca58e82d12b171f25d57239ad237dae5c44214a70f2f4f39358c2759b8b9013",
+      "bytes": 9710
+    },
+    "encodings.latin_1": {
+      "member": "Python-3.12.11/Lib/encodings/latin_1.py",
+      "package": false,
+      "sha256": "b75503e532a27c636477396c855209ff5f3036536d2a4bede0a576c89382b60c",
+      "bytes": 1264
+    },
+    "encodings.utf_8": {
+      "member": "Python-3.12.11/Lib/encodings/utf_8.py",
+      "package": false,
+      "sha256": "ba0cac060269583523ca9506473a755203037c57d466a11aa89a30a5f6756f3d",
+      "bytes": 1005
+    },
+    "enum": {
+      "member": "Python-3.12.11/Lib/enum.py",
+      "package": false,
+      "sha256": "f35e542d8c4c1d2b5e910138d726fa48774925f3c4dc5462793ebcb66aa55501",
+      "bytes": 81540
+    },
+    "fnmatch": {
+      "member": "Python-3.12.11/Lib/fnmatch.py",
+      "package": false,
+      "sha256": "6683da36e47af523f3f41e18ad244d837783e19e98911cc0b7415dea81494ebc",
+      "bytes": 5999
+    },
+    "functools": {
+      "member": "Python-3.12.11/Lib/functools.py",
+      "package": false,
+      "sha256": "de4a1d37c795e2a065124b5c49357893433bc6bb111b41277ccc9930ef08d4c9",
+      "bytes": 37940
+    },
+    "genericpath": {
+      "member": "Python-3.12.11/Lib/genericpath.py",
+      "package": false,
+      "sha256": "2b0b35d2206778af4081cf81dd9b513876e72c35a55bec941402e1fa62b1f1aa",
+      "bytes": 5572
+    },
+    "gettext": {
+      "member": "Python-3.12.11/Lib/gettext.py",
+      "package": false,
+      "sha256": "a5c249a522b6b8e3aa6f1b12a8bcc09508b99ad612b58d2fc973db27ea3b7cc3",
+      "bytes": 21320
+    },
+    "hashlib": {
+      "member": "Python-3.12.11/Lib/hashlib.py",
+      "package": false,
+      "sha256": "6dbdebf270868b391080e21dc9687eddfaf321c965ad979f68d3f5c423c613ab",
+      "bytes": 9349
+    },
+    "http": {
+      "member": "Python-3.12.11/Lib/http/__init__.py",
+      "package": true,
+      "sha256": "17f4f6832cfc84b5b9600414bab80b77e67ccb611bdfed10a3f2beca9d0d568b",
+      "bytes": 8308
+    },
+    "http.client": {
+      "member": "Python-3.12.11/Lib/http/client.py",
+      "package": false,
+      "sha256": "a34fb28ab2cf55ed3a6a4ee4d78fc235d69f004afba7a6d3308d5bcb30f17dcc",
+      "bytes": 57304
+    },
+    "importlib": {
+      "member": "Python-3.12.11/Lib/importlib/__init__.py",
+      "package": true,
+      "sha256": "d540b5ac137fcb3e26a8d5f2939649e34373c6685f98a30a9f682cf231be5854",
+      "bytes": 4784
+    },
+    "importlib._abc": {
+      "member": "Python-3.12.11/Lib/importlib/_abc.py",
+      "package": false,
+      "sha256": "80aab7931dc999dee581c8b8b56fcd973fe156335a96ceeaf6acfc03cebf10e8",
+      "bytes": 1354
+    },
+    "importlib._bootstrap": {
+      "member": "Python-3.12.11/Lib/importlib/_bootstrap.py",
+      "package": false,
+      "sha256": "d112d54b7831cf4a818d4841d5ff8003b54df220a6dabafa61f67d7c7a5603f7",
+      "bytes": 57057
+    },
+    "importlib._bootstrap_external": {
+      "member": "Python-3.12.11/Lib/importlib/_bootstrap_external.py",
+      "package": false,
+      "sha256": "9bde390a6f254cf6641bfdba053084c1d506c7324c142131c695d030662ab63d",
+      "bytes": 69406
+    },
+    "importlib.abc": {
+      "member": "Python-3.12.11/Lib/importlib/abc.py",
+      "package": false,
+      "sha256": "5f9cb36ca1bce9d5df00bc8d4d7f46b7ea2353dfa99292ad7f099affddfb5d03",
+      "bytes": 7612
+    },
+    "importlib.machinery": {
+      "member": "Python-3.12.11/Lib/importlib/machinery.py",
+      "package": false,
+      "sha256": "d045cd7ecf2a12b6ecbfbef79eb114e87ef2ebd756f5b705f73e6f3266e3dede",
+      "bytes": 880
+    },
+    "importlib.resources": {
+      "member": "Python-3.12.11/Lib/importlib/resources/__init__.py",
+      "package": true,
+      "sha256": "4146e1d00d56a783d4087f15257f0c284fae52e71fa3f20613fa268d911bf6d5",
+      "bytes": 532
+    },
+    "importlib.resources._adapters": {
+      "member": "Python-3.12.11/Lib/importlib/resources/_adapters.py",
+      "package": false,
+      "sha256": "be9ac919b51e1db6a35fa5c2b8c3fa27794caea0a2f8ffcc4e5ce225447b8df9",
+      "bytes": 4482
+    },
+    "importlib.resources._common": {
+      "member": "Python-3.12.11/Lib/importlib/resources/_common.py",
+      "package": false,
+      "sha256": "a0de4a899a2aa787b052f92f516b39f80b183c3f0d409d1305cc6dc374f18870",
+      "bytes": 5486
+    },
+    "importlib.resources._legacy": {
+      "member": "Python-3.12.11/Lib/importlib/resources/_legacy.py",
+      "package": false,
+      "sha256": "79c566fdf1a61129683e38e8c11a660d6233dd84422456ae5dd230e658a7857f",
+      "bytes": 2949
+    },
+    "importlib.resources.abc": {
+      "member": "Python-3.12.11/Lib/importlib/resources/abc.py",
+      "package": false,
+      "sha256": "a726c48590b21ba5532f0c654735991571bc0ecafe88145cb8891d82cd364e5e",
+      "bytes": 5203
+    },
+    "importlib.util": {
+      "member": "Python-3.12.11/Lib/importlib/util.py",
+      "package": false,
+      "sha256": "671f2995653f673f6d5056a1089debef473bc28ae7114f7a8db71475733d6876",
+      "bytes": 10994
+    },
+    "inspect": {
+      "member": "Python-3.12.11/Lib/inspect.py",
+      "package": false,
+      "sha256": "5c54ebf0bfdc25397750e5d0f63800751650ee50e65325ff3ea4069c9bfa5f75",
+      "bytes": 127125
+    },
+    "io": {
+      "member": "Python-3.12.11/Lib/io.py",
+      "package": false,
+      "sha256": "7cec3cb8ac004058dd0a5af246e6d950fb59c7ddd0058fda48bcb3fcb98d8822",
+      "bytes": 3582
+    },
+    "ipaddress": {
+      "member": "Python-3.12.11/Lib/ipaddress.py",
+      "package": false,
+      "sha256": "ba8d3389ff084fcb232b48204ec04f2b3ea4bd0eadf7b18c814947d185de2c64",
+      "bytes": 81414
+    },
+    "json": {
+      "member": "Python-3.12.11/Lib/json/__init__.py",
+      "package": true,
+      "sha256": "d5d41e2c29049515d295d81a6d40b4890fbec8d8482cfb401630f8ef2f77e4d5",
+      "bytes": 14020
+    },
+    "json.decoder": {
+      "member": "Python-3.12.11/Lib/json/decoder.py",
+      "package": false,
+      "sha256": "382cd02af6f7efede5a6d4abbcda1015e5c7a75794b0016022878f9cf32a24f6",
+      "bytes": 12525
+    },
+    "json.encoder": {
+      "member": "Python-3.12.11/Lib/json/encoder.py",
+      "package": false,
+      "sha256": "52bfb1b66029cc70fa3bd7fe11df9f2e03922d413407a341b387a22c987f24f8",
+      "bytes": 16075
+    },
+    "json.scanner": {
+      "member": "Python-3.12.11/Lib/json/scanner.py",
+      "package": false,
+      "sha256": "572958017eae8842eeddd0e3d18d3c56cc0a197348224915e1d87ce937841764",
+      "bytes": 2434
+    },
+    "keyword": {
+      "member": "Python-3.12.11/Lib/keyword.py",
+      "package": false,
+      "sha256": "18c2be738c04ad20ad375f6a71db34b3823c7f40b0340f5294d0e89f3c9b093b",
+      "bytes": 1073
+    },
+    "linecache": {
+      "member": "Python-3.12.11/Lib/linecache.py",
+      "package": false,
+      "sha256": "9eb9194707991b49f9fea67a5222b0e6a0e49c865cdffc69fbc80a1f829e77fb",
+      "bytes": 5800
+    },
+    "locale": {
+      "member": "Python-3.12.11/Lib/locale.py",
+      "package": false,
+      "sha256": "3988c5419552d5b9f0bef3695102376f79357f0f440e9cd1f32c501f966e6ef3",
+      "bytes": 78599
+    },
+    "logging": {
+      "member": "Python-3.12.11/Lib/logging/__init__.py",
+      "package": true,
+      "sha256": "43f86bbc08fdd5c7b6e697abffe1381f534a92bb32e1f1aee8360d6a142592a1",
+      "bytes": 83437
+    },
+    "lzma": {
+      "member": "Python-3.12.11/Lib/lzma.py",
+      "package": false,
+      "sha256": "58fb9d2fdc8a8af7b25e218f17ea3b51bdfa53bdf40f440ab33c605974ca5c2e",
+      "bytes": 13277
+    },
+    "ntpath": {
+      "member": "Python-3.12.11/Lib/ntpath.py",
+      "package": false,
+      "sha256": "cc5bbd52912519e5640018e947a35e8bfb4c46d12dc539e129120dc2b688faf4",
+      "bytes": 32324
+    },
+    "nturl2path": {
+      "member": "Python-3.12.11/Lib/nturl2path.py",
+      "package": false,
+      "sha256": "560e42264a337d0d41b42713fbda072890997161aca8b7397cca8967a23f8b63",
+      "bytes": 2374
+    },
+    "opcode": {
+      "member": "Python-3.12.11/Lib/opcode.py",
+      "package": false,
+      "sha256": "192f6008508f28d3273bff42eaea9b01c8394dab1607cd36aea778bdd166c3a6",
+      "bytes": 13174
+    },
+    "operator": {
+      "member": "Python-3.12.11/Lib/operator.py",
+      "package": false,
+      "sha256": "b2af20f67667203c1730e686cc5d0427becc94db4c97f1d3efe3ed2158473f6a",
+      "bytes": 10965
+    },
+    "os": {
+      "member": "Python-3.12.11/Lib/os.py",
+      "package": false,
+      "sha256": "54c43a1fc69c979c70d8f7d097174cee163bfe59937723ee353043dd4a0211e1",
+      "bytes": 40821
+    },
+    "pathlib": {
+      "member": "Python-3.12.11/Lib/pathlib.py",
+      "package": false,
+      "sha256": "10ba48ae8063cfe7589436041d0d4628c05f427c7709cf8e75e486f8930cc32c",
+      "bytes": 51052
+    },
+    "posixpath": {
+      "member": "Python-3.12.11/Lib/posixpath.py",
+      "package": false,
+      "sha256": "4e55373f6c9182e506b826f91b785b951078adaf3189e5cd032ee774a08fea38",
+      "bytes": 17483
+    },
+    "quopri": {
+      "member": "Python-3.12.11/Lib/quopri.py",
+      "package": false,
+      "sha256": "a1cd7f3b22033d32151209886cc855d4b71cc4c83530769f920097582339013a",
+      "bytes": 7184
+    },
+    "random": {
+      "member": "Python-3.12.11/Lib/random.py",
+      "package": false,
+      "sha256": "de48263a837339c7e01cf9f3c4d756696e0e0775f7778eb9cf81ad5b00134569",
+      "bytes": 34689
+    },
+    "re": {
+      "member": "Python-3.12.11/Lib/re/__init__.py",
+      "package": true,
+      "sha256": "8ff3c37c63b917fcf8dc8d50993a502292a3dc159e41de4f4018c72a53d1c07b",
+      "bytes": 16315
+    },
+    "re._casefix": {
+      "member": "Python-3.12.11/Lib/re/_casefix.py",
+      "package": false,
+      "sha256": "1b12d9136f23db6c3f6f26053fefc15ca964b886838c7b9c1fabf8d2efc1e5c8",
+      "bytes": 5444
+    },
+    "re._compiler": {
+      "member": "Python-3.12.11/Lib/re/_compiler.py",
+      "package": false,
+      "sha256": "c75620761098a70ed75b9accef63ef2881d8abb6d4e5cbfd10074bd165eefe4d",
+      "bytes": 26399
+    },
+    "re._constants": {
+      "member": "Python-3.12.11/Lib/re/_constants.py",
+      "package": false,
+      "sha256": "fa4fdb200f238f9e7817b63892b0d69833d8165134801e775e10cc113348a375",
+      "bytes": 5930
+    },
+    "re._parser": {
+      "member": "Python-3.12.11/Lib/re/_parser.py",
+      "package": false,
+      "sha256": "a51a85b37cf3f44ba7ff25754da5f31306e4ccfa6eb3c017f9d37bdf4e770840",
+      "bytes": 41201
+    },
+    "reprlib": {
+      "member": "Python-3.12.11/Lib/reprlib.py",
+      "package": false,
+      "sha256": "e177bc70da83a7fbcde6fd261dc15da34e8a20873b1cccd4f9a1f8f27cca3779",
+      "bytes": 7148
+    },
+    "selectors": {
+      "member": "Python-3.12.11/Lib/selectors.py",
+      "package": false,
+      "sha256": "1eeb102373e18c96311203f30c516e785bd8642275aa0bd66e43a284c9692385",
+      "bytes": 19671
+    },
+    "shutil": {
+      "member": "Python-3.12.11/Lib/shutil.py",
+      "package": false,
+      "sha256": "f9f0102a9ed087271f914d74b07866464d3e716afe9ee10760a5eb90f7db0f33",
+      "bytes": 56762
+    },
+    "signal": {
+      "member": "Python-3.12.11/Lib/signal.py",
+      "package": false,
+      "sha256": "0363c964c90ac0b3e515de5749205e6e6454051a1211058375d84d91eab6071a",
+      "bytes": 2495
+    },
+    "socket": {
+      "member": "Python-3.12.11/Lib/socket.py",
+      "package": false,
+      "sha256": "7d4d4c66e6f4bcc961ab462c4f08002ca97def8713a4be1c7373bdbd970a5274",
+      "bytes": 37815
+    },
+    "ssl": {
+      "member": "Python-3.12.11/Lib/ssl.py",
+      "package": false,
+      "sha256": "039a0e3f1782e14824b1624c7ffefc2de31714b4a9994424be45a4271966097c",
+      "bytes": 50904
+    },
+    "stat": {
+      "member": "Python-3.12.11/Lib/stat.py",
+      "package": false,
+      "sha256": "052af0327eae6941b69b05c088b3e748f79995635f80ac4cc7125eb333eb4c77",
+      "bytes": 5485
+    },
+    "string": {
+      "member": "Python-3.12.11/Lib/string.py",
+      "package": false,
+      "sha256": "24aeae1f0526250f442022022bf98df9a823b1cb330543ee79e70e44907462e9",
+      "bytes": 11786
+    },
+    "stringprep": {
+      "member": "Python-3.12.11/Lib/stringprep.py",
+      "package": false,
+      "sha256": "60b6c83581093029312efb6670b11c540090b3f78bcf72264467b494f02f21a5",
+      "bytes": 12917
+    },
+    "struct": {
+      "member": "Python-3.12.11/Lib/struct.py",
+      "package": false,
+      "sha256": "9c231f9497caf513a22dee8f790b07f969b0e45854a0bdd6dd84b492e08c2856",
+      "bytes": 257
+    },
+    "subprocess": {
+      "member": "Python-3.12.11/Lib/subprocess.py",
+      "package": false,
+      "sha256": "85d29b2bf0249f5436838298c9a60ee93508b1102e9ac43b001f8a7e7ae8f375",
+      "bytes": 88747
+    },
+    "tempfile": {
+      "member": "Python-3.12.11/Lib/tempfile.py",
+      "package": false,
+      "sha256": "2eea4401f4f29d0d3647ed6fc8bcf6aa1daf879c8aa407a8ea310edac9dfc317",
+      "bytes": 32386
+    },
+    "textwrap": {
+      "member": "Python-3.12.11/Lib/textwrap.py",
+      "package": false,
+      "sha256": "62867e40cdea6669b361f72af4d7daf0359f207c92cbeddfc7c7506397c1f31c",
+      "bytes": 19718
+    },
+    "threading": {
+      "member": "Python-3.12.11/Lib/threading.py",
+      "package": false,
+      "sha256": "846f450ae794e4aab823a163f8c71d27751148af33e91dd3de886686a4e8ebfb",
+      "bytes": 60200
+    },
+    "token": {
+      "member": "Python-3.12.11/Lib/token.py",
+      "package": false,
+      "sha256": "1a4d994ce9744f4bfe2d964fc24d112a1e76796a08c2e45a2d73c82a8587f922",
+      "bytes": 2511
+    },
+    "tokenize": {
+      "member": "Python-3.12.11/Lib/tokenize.py",
+      "package": false,
+      "sha256": "026f566ac63e60d69c8185a3880831b657accc5eac984fadf271fc99a5e5825d",
+      "bytes": 21570
+    },
+    "traceback": {
+      "member": "Python-3.12.11/Lib/traceback.py",
+      "package": false,
+      "sha256": "2c44af2848836d9af0c7b3547469695cd22586c64274d362eafcf466af284bd6",
+      "bytes": 46393
+    },
+    "types": {
+      "member": "Python-3.12.11/Lib/types.py",
+      "package": false,
+      "sha256": "345474ef027a1273f353da9bdc1f7c18f65335e72e681bcc0376774cc51f2405",
+      "bytes": 10993
+    },
+    "typing": {
+      "member": "Python-3.12.11/Lib/typing.py",
+      "package": false,
+      "sha256": "be92d60fb8382bb29ead21c128825d7c96d0e8c915b44f840791e49f5a8d554c",
+      "bytes": 118836
+    },
+    "urllib": {
+      "member": "Python-3.12.11/Lib/urllib/__init__.py",
+      "package": true,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "urllib.error": {
+      "member": "Python-3.12.11/Lib/urllib/error.py",
+      "package": false,
+      "sha256": "d12b3cc66af3f42a8ebe63e1c91d24f92c6237b6a93a3702938dffabd812d77b",
+      "bytes": 2415
+    },
+    "urllib.parse": {
+      "member": "Python-3.12.11/Lib/urllib/parse.py",
+      "package": false,
+      "sha256": "e6af7f475262f1de335bb2e41e26adb94d6103977cf5fe1ddc430dc6a3b1623f",
+      "bytes": 45676
+    },
+    "urllib.request": {
+      "member": "Python-3.12.11/Lib/urllib/request.py",
+      "package": false,
+      "sha256": "b9e541ae5703eb881128a4f76ebc0f00ef7ea56e8724883df413d6447ea59729",
+      "bytes": 103515
+    },
+    "urllib.response": {
+      "member": "Python-3.12.11/Lib/urllib/response.py",
+      "package": false,
+      "sha256": "7e6c3b6d7a95f0d74f5968f51a87adae8a51bf42390cdfec98c7a99203e7bb76",
+      "bytes": 2361
+    },
+    "warnings": {
+      "member": "Python-3.12.11/Lib/warnings.py",
+      "package": false,
+      "sha256": "6405e281882932205eae641b2d31fba7776f94517a206d289465a1caffbf310e",
+      "bytes": 21909
+    },
+    "weakref": {
+      "member": "Python-3.12.11/Lib/weakref.py",
+      "package": false,
+      "sha256": "56f8d313fb74019e53eb9287400702fbce788b7fe30e097b0b6e06296f3f080c",
+      "bytes": 21513
+    },
+    "zipimport": {
+      "member": "Python-3.12.11/Lib/zipimport.py",
+      "package": false,
+      "sha256": "a96f1d7a7b6aaf421a3cf382b94b1422f4f0ad452fdd0bb61d635b560d7a4e91",
+      "bytes": 27840
+    }
+  },
+  "module_body_literal_edges": [
+    {
+      "caller": "_collections_abc",
+      "target": "abc",
+      "line": 35
+    },
+    {
+      "caller": "_collections_abc",
+      "target": "sys",
+      "line": 36
+    },
+    {
+      "caller": "_compression",
+      "target": "io",
+      "line": 3
+    },
+    {
+      "caller": "_compression",
+      "target": "sys",
+      "line": 4
+    },
+    {
+      "caller": "_py_abc",
+      "target": "_weakrefset",
+      "line": 1
+    },
+    {
+      "caller": "_pydatetime",
+      "target": "math",
+      "line": 12
+    },
+    {
+      "caller": "_pydatetime",
+      "target": "operator",
+      "line": 14
+    },
+    {
+      "caller": "_pydatetime",
+      "target": "sys",
+      "line": 13
+    },
+    {
+      "caller": "_pydatetime",
+      "target": "time",
+      "line": 11
+    },
+    {
+      "caller": "_threading_local",
+      "target": "contextlib",
+      "line": 132
+    },
+    {
+      "caller": "_threading_local",
+      "target": "threading",
+      "line": 242
+    },
+    {
+      "caller": "_threading_local",
+      "target": "weakref",
+      "line": 131
+    },
+    {
+      "caller": "_weakrefset",
+      "target": "_weakref",
+      "line": 5
+    },
+    {
+      "caller": "_weakrefset",
+      "target": "types",
+      "line": 6
+    },
+    {
+      "caller": "abc",
+      "target": "_abc",
+      "line": 85
+    },
+    {
+      "caller": "abc",
+      "target": "_py_abc",
+      "line": 89
+    },
+    {
+      "caller": "argparse",
+      "target": "gettext",
+      "line": 94
+    },
+    {
+      "caller": "argparse",
+      "target": "os",
+      "line": 88
+    },
+    {
+      "caller": "argparse",
+      "target": "re",
+      "line": 89
+    },
+    {
+      "caller": "argparse",
+      "target": "sys",
+      "line": 90
+    },
+    {
+      "caller": "argparse",
+      "target": "warnings",
+      "line": 92
+    },
+    {
+      "caller": "ast",
+      "target": "_ast",
+      "line": 29
+    },
+    {
+      "caller": "ast",
+      "target": "contextlib",
+      "line": 30
+    },
+    {
+      "caller": "ast",
+      "target": "enum",
+      "line": 31
+    },
+    {
+      "caller": "ast",
+      "target": "re",
+      "line": 28
+    },
+    {
+      "caller": "ast",
+      "target": "sys",
+      "line": 27
+    },
+    {
+      "caller": "base64",
+      "target": "binascii",
+      "line": 11
+    },
+    {
+      "caller": "base64",
+      "target": "re",
+      "line": 9
+    },
+    {
+      "caller": "base64",
+      "target": "struct",
+      "line": 10
+    },
+    {
+      "caller": "bisect",
+      "target": "_bisect",
+      "line": 112
+    },
+    {
+      "caller": "bz2",
+      "target": "_bz2",
+      "line": 17
+    },
+    {
+      "caller": "bz2",
+      "target": "_compression",
+      "line": 15
+    },
+    {
+      "caller": "bz2",
+      "target": "builtins",
+      "line": 12
+    },
+    {
+      "caller": "bz2",
+      "target": "io",
+      "line": 13
+    },
+    {
+      "caller": "bz2",
+      "target": "os",
+      "line": 14
+    },
+    {
+      "caller": "calendar",
+      "target": "datetime",
+      "line": 9
+    },
+    {
+      "caller": "calendar",
+      "target": "enum",
+      "line": 10
+    },
+    {
+      "caller": "calendar",
+      "target": "itertools",
+      "line": 12
+    },
+    {
+      "caller": "calendar",
+      "target": "locale",
+      "line": 11
+    },
+    {
+      "caller": "calendar",
+      "target": "sys",
+      "line": 8
+    },
+    {
+      "caller": "calendar",
+      "target": "warnings",
+      "line": 13
+    },
+    {
+      "caller": "codecs",
+      "target": "_codecs",
+      "line": 16
+    },
+    {
+      "caller": "codecs",
+      "target": "builtins",
+      "line": 10
+    },
+    {
+      "caller": "codecs",
+      "target": "encodings",
+      "line": 1129
+    },
+    {
+      "caller": "codecs",
+      "target": "sys",
+      "line": 11
+    },
+    {
+      "caller": "collections",
+      "target": "_collections",
+      "line": 42
+    },
+    {
+      "caller": "collections",
+      "target": "_collections",
+      "line": 49
+    },
+    {
+      "caller": "collections",
+      "target": "_collections",
+      "line": 54
+    },
+    {
+      "caller": "collections",
+      "target": "_collections",
+      "line": 340
+    },
+    {
+      "caller": "collections",
+      "target": "_collections",
+      "line": 351
+    },
+    {
+      "caller": "collections",
+      "target": "_collections",
+      "line": 540
+    },
+    {
+      "caller": "collections",
+      "target": "_collections_abc",
+      "line": 29
+    },
+    {
+      "caller": "collections",
+      "target": "_weakref",
+      "line": 39
+    },
+    {
+      "caller": "collections",
+      "target": "itertools",
+      "line": 32
+    },
+    {
+      "caller": "collections",
+      "target": "itertools",
+      "line": 33
+    },
+    {
+      "caller": "collections",
+      "target": "itertools",
+      "line": 34
+    },
+    {
+      "caller": "collections",
+      "target": "keyword",
+      "line": 35
+    },
+    {
+      "caller": "collections",
+      "target": "operator",
+      "line": 36
+    },
+    {
+      "caller": "collections",
+      "target": "operator",
+      "line": 37
+    },
+    {
+      "caller": "collections",
+      "target": "reprlib",
+      "line": 38
+    },
+    {
+      "caller": "collections",
+      "target": "sys",
+      "line": 30
+    },
+    {
+      "caller": "collections.abc",
+      "target": "_collections_abc",
+      "line": 1
+    },
+    {
+      "caller": "collections.abc",
+      "target": "_collections_abc",
+      "line": 2
+    },
+    {
+      "caller": "collections.abc",
+      "target": "_collections_abc",
+      "line": 3
+    },
+    {
+      "caller": "contextlib",
+      "target": "_collections_abc",
+      "line": 5
+    },
+    {
+      "caller": "contextlib",
+      "target": "abc",
+      "line": 2
+    },
+    {
+      "caller": "contextlib",
+      "target": "collections",
+      "line": 6
+    },
+    {
+      "caller": "contextlib",
+      "target": "functools",
+      "line": 7
+    },
+    {
+      "caller": "contextlib",
+      "target": "os",
+      "line": 3
+    },
+    {
+      "caller": "contextlib",
+      "target": "sys",
+      "line": 4
+    },
+    {
+      "caller": "contextlib",
+      "target": "types",
+      "line": 8
+    },
+    {
+      "caller": "datetime",
+      "target": "_datetime",
+      "line": 2
+    },
+    {
+      "caller": "datetime",
+      "target": "_datetime",
+      "line": 3
+    },
+    {
+      "caller": "datetime",
+      "target": "_pydatetime",
+      "line": 5
+    },
+    {
+      "caller": "datetime",
+      "target": "_pydatetime",
+      "line": 6
+    },
+    {
+      "caller": "dis",
+      "target": "collections",
+      "line": 5
+    },
+    {
+      "caller": "dis",
+      "target": "io",
+      "line": 6
+    },
+    {
+      "caller": "dis",
+      "target": "opcode",
+      "line": 8
+    },
+    {
+      "caller": "dis",
+      "target": "opcode",
+      "line": 9
+    },
+    {
+      "caller": "dis",
+      "target": "sys",
+      "line": 3
+    },
+    {
+      "caller": "dis",
+      "target": "types",
+      "line": 4
+    },
+    {
+      "caller": "email._encoded_words",
+      "target": "base64",
+      "line": 43
+    },
+    {
+      "caller": "email._encoded_words",
+      "target": "binascii",
+      "line": 44
+    },
+    {
+      "caller": "email._encoded_words",
+      "target": "email",
+      "line": 47
+    },
+    {
+      "caller": "email._encoded_words",
+      "target": "email.errors",
+      "line": 47
+    },
+    {
+      "caller": "email._encoded_words",
+      "target": "functools",
+      "line": 45
+    },
+    {
+      "caller": "email._encoded_words",
+      "target": "re",
+      "line": 42
+    },
+    {
+      "caller": "email._encoded_words",
+      "target": "string",
+      "line": 46
+    },
+    {
+      "caller": "email._parseaddr",
+      "target": "calendar",
+      "line": 16
+    },
+    {
+      "caller": "email._parseaddr",
+      "target": "time",
+      "line": 16
+    },
+    {
+      "caller": "email._policybase",
+      "target": "abc",
+      "line": 6
+    },
+    {
+      "caller": "email._policybase",
+      "target": "email",
+      "line": 7
+    },
+    {
+      "caller": "email._policybase",
+      "target": "email",
+      "line": 8
+    },
+    {
+      "caller": "email._policybase",
+      "target": "email.charset",
+      "line": 8
+    },
+    {
+      "caller": "email._policybase",
+      "target": "email.header",
+      "line": 7
+    },
+    {
+      "caller": "email._policybase",
+      "target": "email.utils",
+      "line": 9
+    },
+    {
+      "caller": "email.base64mime",
+      "target": "base64",
+      "line": 37
+    },
+    {
+      "caller": "email.base64mime",
+      "target": "binascii",
+      "line": 38
+    },
+    {
+      "caller": "email.charset",
+      "target": "email",
+      "line": 17
+    },
+    {
+      "caller": "email.charset",
+      "target": "email.base64mime",
+      "line": 14
+    },
+    {
+      "caller": "email.charset",
+      "target": "email.encoders",
+      "line": 18
+    },
+    {
+      "caller": "email.charset",
+      "target": "email.errors",
+      "line": 17
+    },
+    {
+      "caller": "email.charset",
+      "target": "email.quoprimime",
+      "line": 15
+    },
+    {
+      "caller": "email.charset",
+      "target": "functools",
+      "line": 12
+    },
+    {
+      "caller": "email.encoders",
+      "target": "base64",
+      "line": 15
+    },
+    {
+      "caller": "email.encoders",
+      "target": "quopri",
+      "line": 16
+    },
+    {
+      "caller": "email.feedparser",
+      "target": "collections",
+      "line": 28
+    },
+    {
+      "caller": "email.feedparser",
+      "target": "email",
+      "line": 26
+    },
+    {
+      "caller": "email.feedparser",
+      "target": "email._policybase",
+      "line": 27
+    },
+    {
+      "caller": "email.feedparser",
+      "target": "email.errors",
+      "line": 26
+    },
+    {
+      "caller": "email.feedparser",
+      "target": "io",
+      "line": 29
+    },
+    {
+      "caller": "email.feedparser",
+      "target": "re",
+      "line": 24
+    },
+    {
+      "caller": "email.header",
+      "target": "binascii",
+      "line": 14
+    },
+    {
+      "caller": "email.header",
+      "target": "email",
+      "line": 20
+    },
+    {
+      "caller": "email.header",
+      "target": "email.base64mime",
+      "line": 17
+    },
+    {
+      "caller": "email.header",
+      "target": "email.charset",
+      "line": 20
+    },
+    {
+      "caller": "email.header",
+      "target": "email.errors",
+      "line": 19
+    },
+    {
+      "caller": "email.header",
+      "target": "email.quoprimime",
+      "line": 16
+    },
+    {
+      "caller": "email.header",
+      "target": "re",
+      "line": 13
+    },
+    {
+      "caller": "email.iterators",
+      "target": "io",
+      "line": 15
+    },
+    {
+      "caller": "email.iterators",
+      "target": "sys",
+      "line": 14
+    },
+    {
+      "caller": "email.message",
+      "target": "binascii",
+      "line": 9
+    },
+    {
+      "caller": "email.message",
+      "target": "email",
+      "line": 15
+    },
+    {
+      "caller": "email.message",
+      "target": "email",
+      "line": 16
+    },
+    {
+      "caller": "email.message",
+      "target": "email",
+      "line": 18
+    },
+    {
+      "caller": "email.message",
+      "target": "email._encoded_words",
+      "line": 19
+    },
+    {
+      "caller": "email.message",
+      "target": "email._policybase",
+      "line": 17
+    },
+    {
+      "caller": "email.message",
+      "target": "email.charset",
+      "line": 18
+    },
+    {
+      "caller": "email.message",
+      "target": "email.errors",
+      "line": 16
+    },
+    {
+      "caller": "email.message",
+      "target": "email.iterators",
+      "line": 978
+    },
+    {
+      "caller": "email.message",
+      "target": "email.utils",
+      "line": 15
+    },
+    {
+      "caller": "email.message",
+      "target": "io",
+      "line": 12
+    },
+    {
+      "caller": "email.message",
+      "target": "quopri",
+      "line": 11
+    },
+    {
+      "caller": "email.message",
+      "target": "re",
+      "line": 10
+    },
+    {
+      "caller": "email.parser",
+      "target": "email._policybase",
+      "line": 13
+    },
+    {
+      "caller": "email.parser",
+      "target": "email.feedparser",
+      "line": 12
+    },
+    {
+      "caller": "email.parser",
+      "target": "io",
+      "line": 10
+    },
+    {
+      "caller": "email.quoprimime",
+      "target": "re",
+      "line": 42
+    },
+    {
+      "caller": "email.quoprimime",
+      "target": "string",
+      "line": 44
+    },
+    {
+      "caller": "email.utils",
+      "target": "datetime",
+      "line": 30
+    },
+    {
+      "caller": "email.utils",
+      "target": "email._parseaddr",
+      "line": 33
+    },
+    {
+      "caller": "email.utils",
+      "target": "email._parseaddr",
+      "line": 34
+    },
+    {
+      "caller": "email.utils",
+      "target": "email._parseaddr",
+      "line": 35
+    },
+    {
+      "caller": "email.utils",
+      "target": "email._parseaddr",
+      "line": 37
+    },
+    {
+      "caller": "email.utils",
+      "target": "email.charset",
+      "line": 40
+    },
+    {
+      "caller": "email.utils",
+      "target": "os",
+      "line": 25
+    },
+    {
+      "caller": "email.utils",
+      "target": "random",
+      "line": 28
+    },
+    {
+      "caller": "email.utils",
+      "target": "re",
+      "line": 26
+    },
+    {
+      "caller": "email.utils",
+      "target": "socket",
+      "line": 29
+    },
+    {
+      "caller": "email.utils",
+      "target": "time",
+      "line": 27
+    },
+    {
+      "caller": "email.utils",
+      "target": "urllib.parse",
+      "line": 31
+    },
+    {
+      "caller": "encodings",
+      "target": "codecs",
+      "line": 31
+    },
+    {
+      "caller": "encodings",
+      "target": "encodings",
+      "line": 33
+    },
+    {
+      "caller": "encodings",
+      "target": "encodings.aliases",
+      "line": 33
+    },
+    {
+      "caller": "encodings",
+      "target": "sys",
+      "line": 32
+    },
+    {
+      "caller": "encodings.ascii",
+      "target": "codecs",
+      "line": 9
+    },
+    {
+      "caller": "encodings.idna",
+      "target": "codecs",
+      "line": 3
+    },
+    {
+      "caller": "encodings.idna",
+      "target": "re",
+      "line": 3
+    },
+    {
+      "caller": "encodings.idna",
+      "target": "stringprep",
+      "line": 3
+    },
+    {
+      "caller": "encodings.idna",
+      "target": "unicodedata",
+      "line": 4
+    },
+    {
+      "caller": "encodings.latin_1",
+      "target": "codecs",
+      "line": 9
+    },
+    {
+      "caller": "encodings.utf_8",
+      "target": "codecs",
+      "line": 9
+    },
+    {
+      "caller": "enum",
+      "target": "builtins",
+      "line": 2
+    },
+    {
+      "caller": "enum",
+      "target": "functools",
+      "line": 5
+    },
+    {
+      "caller": "enum",
+      "target": "operator",
+      "line": 4
+    },
+    {
+      "caller": "enum",
+      "target": "sys",
+      "line": 1
+    },
+    {
+      "caller": "enum",
+      "target": "types",
+      "line": 3
+    },
+    {
+      "caller": "fnmatch",
+      "target": "functools",
+      "line": 15
+    },
+    {
+      "caller": "fnmatch",
+      "target": "os",
+      "line": 12
+    },
+    {
+      "caller": "fnmatch",
+      "target": "posixpath",
+      "line": 13
+    },
+    {
+      "caller": "fnmatch",
+      "target": "re",
+      "line": 14
+    },
+    {
+      "caller": "functools",
+      "target": "_functools",
+      "line": 226
+    },
+    {
+      "caller": "functools",
+      "target": "_functools",
+      "line": 268
+    },
+    {
+      "caller": "functools",
+      "target": "_functools",
+      "line": 347
+    },
+    {
+      "caller": "functools",
+      "target": "_functools",
+      "line": 645
+    },
+    {
+      "caller": "functools",
+      "target": "_thread",
+      "line": 21
+    },
+    {
+      "caller": "functools",
+      "target": "abc",
+      "line": 17
+    },
+    {
+      "caller": "functools",
+      "target": "collections",
+      "line": 18
+    },
+    {
+      "caller": "functools",
+      "target": "reprlib",
+      "line": 20
+    },
+    {
+      "caller": "functools",
+      "target": "types",
+      "line": 22
+    },
+    {
+      "caller": "genericpath",
+      "target": "os",
+      "line": 6
+    },
+    {
+      "caller": "genericpath",
+      "target": "stat",
+      "line": 7
+    },
+    {
+      "caller": "gettext",
+      "target": "operator",
+      "line": 49
+    },
+    {
+      "caller": "gettext",
+      "target": "os",
+      "line": 50
+    },
+    {
+      "caller": "gettext",
+      "target": "re",
+      "line": 51
+    },
+    {
+      "caller": "gettext",
+      "target": "sys",
+      "line": 52
+    },
+    {
+      "caller": "hashlib",
+      "target": "_hashlib",
+      "line": 170
+    },
+    {
+      "caller": "hashlib",
+      "target": "_hashlib",
+      "line": 182
+    },
+    {
+      "caller": "hashlib",
+      "target": "_hashlib",
+      "line": 190
+    },
+    {
+      "caller": "hashlib",
+      "target": "logging",
+      "line": 247
+    },
+    {
+      "caller": "http",
+      "target": "enum",
+      "line": 1
+    },
+    {
+      "caller": "http.client",
+      "target": "collections.abc",
+      "line": 79
+    },
+    {
+      "caller": "http.client",
+      "target": "email.message",
+      "line": 72
+    },
+    {
+      "caller": "http.client",
+      "target": "email.parser",
+      "line": 71
+    },
+    {
+      "caller": "http.client",
+      "target": "errno",
+      "line": 73
+    },
+    {
+      "caller": "http.client",
+      "target": "http",
+      "line": 74
+    },
+    {
+      "caller": "http.client",
+      "target": "io",
+      "line": 75
+    },
+    {
+      "caller": "http.client",
+      "target": "re",
+      "line": 76
+    },
+    {
+      "caller": "http.client",
+      "target": "socket",
+      "line": 77
+    },
+    {
+      "caller": "http.client",
+      "target": "ssl",
+      "line": 1450
+    },
+    {
+      "caller": "http.client",
+      "target": "sys",
+      "line": 78
+    },
+    {
+      "caller": "http.client",
+      "target": "urllib.parse",
+      "line": 80
+    },
+    {
+      "caller": "importlib",
+      "target": "_imp",
+      "line": 12
+    },
+    {
+      "caller": "importlib",
+      "target": "importlib",
+      "line": 18
+    },
+    {
+      "caller": "importlib",
+      "target": "importlib",
+      "line": 36
+    },
+    {
+      "caller": "importlib",
+      "target": "importlib._bootstrap",
+      "line": 16
+    },
+    {
+      "caller": "importlib",
+      "target": "importlib._bootstrap",
+      "line": 18
+    },
+    {
+      "caller": "importlib",
+      "target": "importlib._bootstrap",
+      "line": 62
+    },
+    {
+      "caller": "importlib",
+      "target": "importlib._bootstrap_external",
+      "line": 34
+    },
+    {
+      "caller": "importlib",
+      "target": "importlib._bootstrap_external",
+      "line": 36
+    },
+    {
+      "caller": "importlib",
+      "target": "sys",
+      "line": 13
+    },
+    {
+      "caller": "importlib",
+      "target": "warnings",
+      "line": 57
+    },
+    {
+      "caller": "importlib._abc",
+      "target": "abc",
+      "line": 3
+    },
+    {
+      "caller": "importlib._abc",
+      "target": "importlib",
+      "line": 2
+    },
+    {
+      "caller": "importlib._abc",
+      "target": "importlib._bootstrap",
+      "line": 2
+    },
+    {
+      "caller": "importlib._bootstrap_external",
+      "target": "_imp",
+      "line": 26
+    },
+    {
+      "caller": "importlib._bootstrap_external",
+      "target": "_io",
+      "line": 27
+    },
+    {
+      "caller": "importlib._bootstrap_external",
+      "target": "_warnings",
+      "line": 29
+    },
+    {
+      "caller": "importlib._bootstrap_external",
+      "target": "marshal",
+      "line": 30
+    },
+    {
+      "caller": "importlib._bootstrap_external",
+      "target": "nt",
+      "line": 35
+    },
+    {
+      "caller": "importlib._bootstrap_external",
+      "target": "posix",
+      "line": 38
+    },
+    {
+      "caller": "importlib._bootstrap_external",
+      "target": "sys",
+      "line": 28
+    },
+    {
+      "caller": "importlib._bootstrap_external",
+      "target": "winreg",
+      "line": 36
+    },
+    {
+      "caller": "importlib.abc",
+      "target": "abc",
+      "line": 15
+    },
+    {
+      "caller": "importlib.abc",
+      "target": "importlib",
+      "line": 2
+    },
+    {
+      "caller": "importlib.abc",
+      "target": "importlib",
+      "line": 3
+    },
+    {
+      "caller": "importlib.abc",
+      "target": "importlib._abc",
+      "line": 14
+    },
+    {
+      "caller": "importlib.abc",
+      "target": "importlib._bootstrap",
+      "line": 5
+    },
+    {
+      "caller": "importlib.abc",
+      "target": "importlib._bootstrap_external",
+      "line": 2
+    },
+    {
+      "caller": "importlib.abc",
+      "target": "importlib._bootstrap_external",
+      "line": 11
+    },
+    {
+      "caller": "importlib.abc",
+      "target": "importlib.machinery",
+      "line": 3
+    },
+    {
+      "caller": "importlib.abc",
+      "target": "importlib.resources",
+      "line": 18
+    },
+    {
+      "caller": "importlib.abc",
+      "target": "importlib.resources.abc",
+      "line": 18
+    },
+    {
+      "caller": "importlib.abc",
+      "target": "warnings",
+      "line": 16
+    },
+    {
+      "caller": "importlib.machinery",
+      "target": "importlib._bootstrap",
+      "line": 3
+    },
+    {
+      "caller": "importlib.machinery",
+      "target": "importlib._bootstrap",
+      "line": 4
+    },
+    {
+      "caller": "importlib.machinery",
+      "target": "importlib._bootstrap",
+      "line": 5
+    },
+    {
+      "caller": "importlib.machinery",
+      "target": "importlib._bootstrap_external",
+      "line": 6
+    },
+    {
+      "caller": "importlib.machinery",
+      "target": "importlib._bootstrap_external",
+      "line": 9
+    },
+    {
+      "caller": "importlib.machinery",
+      "target": "importlib._bootstrap_external",
+      "line": 10
+    },
+    {
+      "caller": "importlib.machinery",
+      "target": "importlib._bootstrap_external",
+      "line": 11
+    },
+    {
+      "caller": "importlib.machinery",
+      "target": "importlib._bootstrap_external",
+      "line": 12
+    },
+    {
+      "caller": "importlib.machinery",
+      "target": "importlib._bootstrap_external",
+      "line": 13
+    },
+    {
+      "caller": "importlib.machinery",
+      "target": "importlib._bootstrap_external",
+      "line": 14
+    },
+    {
+      "caller": "importlib.machinery",
+      "target": "importlib._bootstrap_external",
+      "line": 15
+    },
+    {
+      "caller": "importlib.resources",
+      "target": "importlib.resources._common",
+      "line": 3
+    },
+    {
+      "caller": "importlib.resources",
+      "target": "importlib.resources._legacy",
+      "line": 10
+    },
+    {
+      "caller": "importlib.resources",
+      "target": "importlib.resources.abc",
+      "line": 21
+    },
+    {
+      "caller": "importlib.resources._adapters",
+      "target": "contextlib",
+      "line": 1
+    },
+    {
+      "caller": "importlib.resources._adapters",
+      "target": "importlib.resources",
+      "line": 4
+    },
+    {
+      "caller": "importlib.resources._adapters",
+      "target": "importlib.resources.abc",
+      "line": 4
+    },
+    {
+      "caller": "importlib.resources._adapters",
+      "target": "io",
+      "line": 2
+    },
+    {
+      "caller": "importlib.resources._common",
+      "target": "contextlib",
+      "line": 5
+    },
+    {
+      "caller": "importlib.resources._common",
+      "target": "functools",
+      "line": 4
+    },
+    {
+      "caller": "importlib.resources._common",
+      "target": "importlib",
+      "line": 7
+    },
+    {
+      "caller": "importlib.resources._common",
+      "target": "importlib.resources._adapters",
+      "line": 15
+    },
+    {
+      "caller": "importlib.resources._common",
+      "target": "importlib.resources.abc",
+      "line": 13
+    },
+    {
+      "caller": "importlib.resources._common",
+      "target": "inspect",
+      "line": 8
+    },
+    {
+      "caller": "importlib.resources._common",
+      "target": "itertools",
+      "line": 10
+    },
+    {
+      "caller": "importlib.resources._common",
+      "target": "os",
+      "line": 1
+    },
+    {
+      "caller": "importlib.resources._common",
+      "target": "pathlib",
+      "line": 2
+    },
+    {
+      "caller": "importlib.resources._common",
+      "target": "tempfile",
+      "line": 3
+    },
+    {
+      "caller": "importlib.resources._common",
+      "target": "types",
+      "line": 6
+    },
+    {
+      "caller": "importlib.resources._common",
+      "target": "typing",
+      "line": 12
+    },
+    {
+      "caller": "importlib.resources._common",
+      "target": "warnings",
+      "line": 9
+    },
+    {
+      "caller": "importlib.resources._legacy",
+      "target": "functools",
+      "line": 1
+    },
+    {
+      "caller": "importlib.resources._legacy",
+      "target": "importlib.resources",
+      "line": 9
+    },
+    {
+      "caller": "importlib.resources._legacy",
+      "target": "importlib.resources._common",
+      "line": 9
+    },
+    {
+      "caller": "importlib.resources._legacy",
+      "target": "os",
+      "line": 2
+    },
+    {
+      "caller": "importlib.resources._legacy",
+      "target": "pathlib",
+      "line": 3
+    },
+    {
+      "caller": "importlib.resources._legacy",
+      "target": "types",
+      "line": 4
+    },
+    {
+      "caller": "importlib.resources._legacy",
+      "target": "typing",
+      "line": 7
+    },
+    {
+      "caller": "importlib.resources._legacy",
+      "target": "warnings",
+      "line": 5
+    },
+    {
+      "caller": "importlib.resources.abc",
+      "target": "abc",
+      "line": 1
+    },
+    {
+      "caller": "importlib.resources.abc",
+      "target": "io",
+      "line": 2
+    },
+    {
+      "caller": "importlib.resources.abc",
+      "target": "itertools",
+      "line": 3
+    },
+    {
+      "caller": "importlib.resources.abc",
+      "target": "os",
+      "line": 4
+    },
+    {
+      "caller": "importlib.resources.abc",
+      "target": "pathlib",
+      "line": 5
+    },
+    {
+      "caller": "importlib.resources.abc",
+      "target": "typing",
+      "line": 6
+    },
+    {
+      "caller": "importlib.resources.abc",
+      "target": "typing",
+      "line": 7
+    },
+    {
+      "caller": "importlib.resources.abc",
+      "target": "typing",
+      "line": 8
+    },
+    {
+      "caller": "importlib.util",
+      "target": "_imp",
+      "line": 14
+    },
+    {
+      "caller": "importlib.util",
+      "target": "importlib._abc",
+      "line": 2
+    },
+    {
+      "caller": "importlib.util",
+      "target": "importlib._bootstrap",
+      "line": 3
+    },
+    {
+      "caller": "importlib.util",
+      "target": "importlib._bootstrap",
+      "line": 4
+    },
+    {
+      "caller": "importlib.util",
+      "target": "importlib._bootstrap",
+      "line": 5
+    },
+    {
+      "caller": "importlib.util",
+      "target": "importlib._bootstrap",
+      "line": 6
+    },
+    {
+      "caller": "importlib.util",
+      "target": "importlib._bootstrap_external",
+      "line": 7
+    },
+    {
+      "caller": "importlib.util",
+      "target": "importlib._bootstrap_external",
+      "line": 8
+    },
+    {
+      "caller": "importlib.util",
+      "target": "importlib._bootstrap_external",
+      "line": 9
+    },
+    {
+      "caller": "importlib.util",
+      "target": "importlib._bootstrap_external",
+      "line": 10
+    },
+    {
+      "caller": "importlib.util",
+      "target": "importlib._bootstrap_external",
+      "line": 11
+    },
+    {
+      "caller": "importlib.util",
+      "target": "importlib._bootstrap_external",
+      "line": 12
+    },
+    {
+      "caller": "importlib.util",
+      "target": "sys",
+      "line": 15
+    },
+    {
+      "caller": "importlib.util",
+      "target": "types",
+      "line": 16
+    },
+    {
+      "caller": "inspect",
+      "target": "abc",
+      "line": 144
+    },
+    {
+      "caller": "inspect",
+      "target": "ast",
+      "line": 145
+    },
+    {
+      "caller": "inspect",
+      "target": "builtins",
+      "line": 159
+    },
+    {
+      "caller": "inspect",
+      "target": "collections",
+      "line": 162
+    },
+    {
+      "caller": "inspect",
+      "target": "collections.abc",
+      "line": 147
+    },
+    {
+      "caller": "inspect",
+      "target": "dis",
+      "line": 146
+    },
+    {
+      "caller": "inspect",
+      "target": "enum",
+      "line": 148
+    },
+    {
+      "caller": "inspect",
+      "target": "functools",
+      "line": 158
+    },
+    {
+      "caller": "inspect",
+      "target": "importlib.machinery",
+      "line": 149
+    },
+    {
+      "caller": "inspect",
+      "target": "itertools",
+      "line": 150
+    },
+    {
+      "caller": "inspect",
+      "target": "keyword",
+      "line": 160
+    },
+    {
+      "caller": "inspect",
+      "target": "linecache",
+      "line": 151
+    },
+    {
+      "caller": "inspect",
+      "target": "operator",
+      "line": 161
+    },
+    {
+      "caller": "inspect",
+      "target": "os",
+      "line": 152
+    },
+    {
+      "caller": "inspect",
+      "target": "re",
+      "line": 153
+    },
+    {
+      "caller": "inspect",
+      "target": "sys",
+      "line": 154
+    },
+    {
+      "caller": "inspect",
+      "target": "token",
+      "line": 156
+    },
+    {
+      "caller": "inspect",
+      "target": "tokenize",
+      "line": 155
+    },
+    {
+      "caller": "inspect",
+      "target": "types",
+      "line": 157
+    },
+    {
+      "caller": "inspect",
+      "target": "weakref",
+      "line": 163
+    },
+    {
+      "caller": "io",
+      "target": "_io",
+      "line": 52
+    },
+    {
+      "caller": "io",
+      "target": "_io",
+      "line": 55
+    },
+    {
+      "caller": "io",
+      "target": "_io",
+      "line": 95
+    },
+    {
+      "caller": "io",
+      "target": "abc",
+      "line": 53
+    },
+    {
+      "caller": "ipaddress",
+      "target": "functools",
+      "line": 14
+    },
+    {
+      "caller": "json",
+      "target": "codecs",
+      "line": 108
+    },
+    {
+      "caller": "json",
+      "target": "json.decoder",
+      "line": 106
+    },
+    {
+      "caller": "json",
+      "target": "json.encoder",
+      "line": 107
+    },
+    {
+      "caller": "json.decoder",
+      "target": "_json",
+      "line": 7
+    },
+    {
+      "caller": "json.decoder",
+      "target": "json",
+      "line": 5
+    },
+    {
+      "caller": "json.decoder",
+      "target": "json.scanner",
+      "line": 5
+    },
+    {
+      "caller": "json.decoder",
+      "target": "re",
+      "line": 3
+    },
+    {
+      "caller": "json.encoder",
+      "target": "_json",
+      "line": 6
+    },
+    {
+      "caller": "json.encoder",
+      "target": "_json",
+      "line": 10
+    },
+    {
+      "caller": "json.encoder",
+      "target": "_json",
+      "line": 14
+    },
+    {
+      "caller": "json.encoder",
+      "target": "re",
+      "line": 3
+    },
+    {
+      "caller": "json.scanner",
+      "target": "_json",
+      "line": 5
+    },
+    {
+      "caller": "json.scanner",
+      "target": "re",
+      "line": 3
+    },
+    {
+      "caller": "linecache",
+      "target": "functools",
+      "line": 8
+    },
+    {
+      "caller": "linecache",
+      "target": "os",
+      "line": 10
+    },
+    {
+      "caller": "linecache",
+      "target": "sys",
+      "line": 9
+    },
+    {
+      "caller": "linecache",
+      "target": "tokenize",
+      "line": 11
+    },
+    {
+      "caller": "locale",
+      "target": "_collections_abc",
+      "line": 17
+    },
+    {
+      "caller": "locale",
+      "target": "_locale",
+      "line": 47
+    },
+    {
+      "caller": "locale",
+      "target": "_locale",
+      "line": 639
+    },
+    {
+      "caller": "locale",
+      "target": "builtins",
+      "line": 18
+    },
+    {
+      "caller": "locale",
+      "target": "encodings",
+      "line": 14
+    },
+    {
+      "caller": "locale",
+      "target": "encodings.aliases",
+      "line": 15
+    },
+    {
+      "caller": "locale",
+      "target": "functools",
+      "line": 19
+    },
+    {
+      "caller": "locale",
+      "target": "re",
+      "line": 16
+    },
+    {
+      "caller": "locale",
+      "target": "sys",
+      "line": 13
+    },
+    {
+      "caller": "logging",
+      "target": "atexit",
+      "line": 2280
+    },
+    {
+      "caller": "logging",
+      "target": "collections.abc",
+      "line": 26
+    },
+    {
+      "caller": "logging",
+      "target": "io",
+      "line": 26
+    },
+    {
+      "caller": "logging",
+      "target": "os",
+      "line": 26
+    },
+    {
+      "caller": "logging",
+      "target": "re",
+      "line": 26
+    },
+    {
+      "caller": "logging",
+      "target": "string",
+      "line": 29
+    },
+    {
+      "caller": "logging",
+      "target": "string",
+      "line": 30
+    },
+    {
+      "caller": "logging",
+      "target": "sys",
+      "line": 26
+    },
+    {
+      "caller": "logging",
+      "target": "threading",
+      "line": 44
+    },
+    {
+      "caller": "logging",
+      "target": "time",
+      "line": 26
+    },
+    {
+      "caller": "logging",
+      "target": "traceback",
+      "line": 26
+    },
+    {
+      "caller": "logging",
+      "target": "types",
+      "line": 28
+    },
+    {
+      "caller": "logging",
+      "target": "warnings",
+      "line": 26
+    },
+    {
+      "caller": "logging",
+      "target": "weakref",
+      "line": 26
+    },
+    {
+      "caller": "lzma",
+      "target": "_compression",
+      "line": 29
+    },
+    {
+      "caller": "lzma",
+      "target": "_lzma",
+      "line": 27
+    },
+    {
+      "caller": "lzma",
+      "target": "_lzma",
+      "line": 28
+    },
+    {
+      "caller": "lzma",
+      "target": "builtins",
+      "line": 24
+    },
+    {
+      "caller": "lzma",
+      "target": "io",
+      "line": 25
+    },
+    {
+      "caller": "lzma",
+      "target": "os",
+      "line": 26
+    },
+    {
+      "caller": "ntpath",
+      "target": "_winapi",
+      "line": 47
+    },
+    {
+      "caller": "ntpath",
+      "target": "genericpath",
+      "line": 23
+    },
+    {
+      "caller": "ntpath",
+      "target": "genericpath",
+      "line": 24
+    },
+    {
+      "caller": "ntpath",
+      "target": "nt",
+      "line": 319
+    },
+    {
+      "caller": "ntpath",
+      "target": "nt",
+      "line": 525
+    },
+    {
+      "caller": "ntpath",
+      "target": "nt",
+      "line": 567
+    },
+    {
+      "caller": "ntpath",
+      "target": "nt",
+      "line": 610
+    },
+    {
+      "caller": "ntpath",
+      "target": "nt",
+      "line": 891
+    },
+    {
+      "caller": "ntpath",
+      "target": "nt",
+      "line": 892
+    },
+    {
+      "caller": "ntpath",
+      "target": "nt",
+      "line": 893
+    },
+    {
+      "caller": "ntpath",
+      "target": "nt",
+      "line": 894
+    },
+    {
+      "caller": "ntpath",
+      "target": "nt",
+      "line": 901
+    },
+    {
+      "caller": "ntpath",
+      "target": "os",
+      "line": 20
+    },
+    {
+      "caller": "ntpath",
+      "target": "stat",
+      "line": 22
+    },
+    {
+      "caller": "ntpath",
+      "target": "sys",
+      "line": 21
+    },
+    {
+      "caller": "opcode",
+      "target": "_opcode",
+      "line": 19
+    },
+    {
+      "caller": "operator",
+      "target": "_operator",
+      "line": 414
+    },
+    {
+      "caller": "operator",
+      "target": "_operator",
+      "line": 418
+    },
+    {
+      "caller": "operator",
+      "target": "builtins",
+      "line": 22
+    },
+    {
+      "caller": "os",
+      "target": "_collections_abc",
+      "line": 29
+    },
+    {
+      "caller": "os",
+      "target": "_collections_abc",
+      "line": 699
+    },
+    {
+      "caller": "os",
+      "target": "abc",
+      "line": 25
+    },
+    {
+      "caller": "os",
+      "target": "nt",
+      "line": 75
+    },
+    {
+      "caller": "os",
+      "target": "nt",
+      "line": 77
+    },
+    {
+      "caller": "os",
+      "target": "nt",
+      "line": 83
+    },
+    {
+      "caller": "os",
+      "target": "nt",
+      "line": 88
+    },
+    {
+      "caller": "os",
+      "target": "ntpath",
+      "line": 81
+    },
+    {
+      "caller": "os",
+      "target": "posix",
+      "line": 55
+    },
+    {
+      "caller": "os",
+      "target": "posix",
+      "line": 57
+    },
+    {
+      "caller": "os",
+      "target": "posix",
+      "line": 64
+    },
+    {
+      "caller": "os",
+      "target": "posix",
+      "line": 68
+    },
+    {
+      "caller": "os",
+      "target": "posixpath",
+      "line": 61
+    },
+    {
+      "caller": "os",
+      "target": "posixpath",
+      "line": 96
+    },
+    {
+      "caller": "os",
+      "target": "stat",
+      "line": 27
+    },
+    {
+      "caller": "os",
+      "target": "sys",
+      "line": 26
+    },
+    {
+      "caller": "pathlib",
+      "target": "_collections_abc",
+      "line": 17
+    },
+    {
+      "caller": "pathlib",
+      "target": "errno",
+      "line": 18
+    },
+    {
+      "caller": "pathlib",
+      "target": "fnmatch",
+      "line": 8
+    },
+    {
+      "caller": "pathlib",
+      "target": "functools",
+      "line": 9
+    },
+    {
+      "caller": "pathlib",
+      "target": "io",
+      "line": 10
+    },
+    {
+      "caller": "pathlib",
+      "target": "ntpath",
+      "line": 11
+    },
+    {
+      "caller": "pathlib",
+      "target": "os",
+      "line": 12
+    },
+    {
+      "caller": "pathlib",
+      "target": "posixpath",
+      "line": 13
+    },
+    {
+      "caller": "pathlib",
+      "target": "re",
+      "line": 14
+    },
+    {
+      "caller": "pathlib",
+      "target": "stat",
+      "line": 19
+    },
+    {
+      "caller": "pathlib",
+      "target": "sys",
+      "line": 15
+    },
+    {
+      "caller": "pathlib",
+      "target": "urllib.parse",
+      "line": 20
+    },
+    {
+      "caller": "pathlib",
+      "target": "warnings",
+      "line": 16
+    },
+    {
+      "caller": "posixpath",
+      "target": "genericpath",
+      "line": 28
+    },
+    {
+      "caller": "posixpath",
+      "target": "genericpath",
+      "line": 29
+    },
+    {
+      "caller": "posixpath",
+      "target": "os",
+      "line": 25
+    },
+    {
+      "caller": "posixpath",
+      "target": "posix",
+      "line": 374
+    },
+    {
+      "caller": "posixpath",
+      "target": "stat",
+      "line": 27
+    },
+    {
+      "caller": "posixpath",
+      "target": "sys",
+      "line": 26
+    },
+    {
+      "caller": "quopri",
+      "target": "binascii",
+      "line": 15
+    },
+    {
+      "caller": "random",
+      "target": "_collections_abc",
+      "line": 59
+    },
+    {
+      "caller": "random",
+      "target": "_random",
+      "line": 64
+    },
+    {
+      "caller": "random",
+      "target": "_sha2",
+      "line": 68
+    },
+    {
+      "caller": "random",
+      "target": "bisect",
+      "line": 62
+    },
+    {
+      "caller": "random",
+      "target": "hashlib",
+      "line": 71
+    },
+    {
+      "caller": "random",
+      "target": "itertools",
+      "line": 61
+    },
+    {
+      "caller": "random",
+      "target": "math",
+      "line": 54
+    },
+    {
+      "caller": "random",
+      "target": "math",
+      "line": 55
+    },
+    {
+      "caller": "random",
+      "target": "math",
+      "line": 56
+    },
+    {
+      "caller": "random",
+      "target": "math",
+      "line": 57
+    },
+    {
+      "caller": "random",
+      "target": "operator",
+      "line": 60
+    },
+    {
+      "caller": "random",
+      "target": "os",
+      "line": 58
+    },
+    {
+      "caller": "random",
+      "target": "os",
+      "line": 63
+    },
+    {
+      "caller": "random",
+      "target": "warnings",
+      "line": 53
+    },
+    {
+      "caller": "re",
+      "target": "_sre",
+      "line": 127
+    },
+    {
+      "caller": "re",
+      "target": "copyreg",
+      "line": 338
+    },
+    {
+      "caller": "re",
+      "target": "enum",
+      "line": 124
+    },
+    {
+      "caller": "re",
+      "target": "functools",
+      "line": 126
+    },
+    {
+      "caller": "re",
+      "target": "re",
+      "line": 125
+    },
+    {
+      "caller": "re",
+      "target": "re._compiler",
+      "line": 125
+    },
+    {
+      "caller": "re",
+      "target": "re._parser",
+      "line": 125
+    },
+    {
+      "caller": "re._compiler",
+      "target": "_sre",
+      "line": 13
+    },
+    {
+      "caller": "re._compiler",
+      "target": "re",
+      "line": 14
+    },
+    {
+      "caller": "re._compiler",
+      "target": "re._casefix",
+      "line": 16
+    },
+    {
+      "caller": "re._compiler",
+      "target": "re._constants",
+      "line": 15
+    },
+    {
+      "caller": "re._compiler",
+      "target": "re._parser",
+      "line": 14
+    },
+    {
+      "caller": "re._constants",
+      "target": "_sre",
+      "line": 18
+    },
+    {
+      "caller": "re._parser",
+      "target": "re._constants",
+      "line": 15
+    },
+    {
+      "caller": "reprlib",
+      "target": "_thread",
+      "line": 7
+    },
+    {
+      "caller": "reprlib",
+      "target": "builtins",
+      "line": 5
+    },
+    {
+      "caller": "reprlib",
+      "target": "itertools",
+      "line": 6
+    },
+    {
+      "caller": "selectors",
+      "target": "abc",
+      "line": 8
+    },
+    {
+      "caller": "selectors",
+      "target": "collections",
+      "line": 9
+    },
+    {
+      "caller": "selectors",
+      "target": "collections.abc",
+      "line": 10
+    },
+    {
+      "caller": "selectors",
+      "target": "math",
+      "line": 11
+    },
+    {
+      "caller": "selectors",
+      "target": "select",
+      "line": 12
+    },
+    {
+      "caller": "selectors",
+      "target": "sys",
+      "line": 13
+    },
+    {
+      "caller": "shutil",
+      "target": "_winapi",
+      "line": 44
+    },
+    {
+      "caller": "shutil",
+      "target": "bz2",
+      "line": 23
+    },
+    {
+      "caller": "shutil",
+      "target": "collections",
+      "line": 11
+    },
+    {
+      "caller": "shutil",
+      "target": "errno",
+      "line": 12
+    },
+    {
+      "caller": "shutil",
+      "target": "fnmatch",
+      "line": 10
+    },
+    {
+      "caller": "shutil",
+      "target": "lzma",
+      "line": 30
+    },
+    {
+      "caller": "shutil",
+      "target": "nt",
+      "line": 41
+    },
+    {
+      "caller": "shutil",
+      "target": "os",
+      "line": 7
+    },
+    {
+      "caller": "shutil",
+      "target": "posix",
+      "line": 39
+    },
+    {
+      "caller": "shutil",
+      "target": "stat",
+      "line": 9
+    },
+    {
+      "caller": "shutil",
+      "target": "sys",
+      "line": 8
+    },
+    {
+      "caller": "shutil",
+      "target": "warnings",
+      "line": 13
+    },
+    {
+      "caller": "shutil",
+      "target": "zlib",
+      "line": 16
+    },
+    {
+      "caller": "signal",
+      "target": "_signal",
+      "line": 1
+    },
+    {
+      "caller": "signal",
+      "target": "_signal",
+      "line": 2
+    },
+    {
+      "caller": "signal",
+      "target": "enum",
+      "line": 3
+    },
+    {
+      "caller": "socket",
+      "target": "_socket",
+      "line": 52
+    },
+    {
+      "caller": "socket",
+      "target": "_socket",
+      "line": 53
+    },
+    {
+      "caller": "socket",
+      "target": "array",
+      "line": 552
+    },
+    {
+      "caller": "socket",
+      "target": "array",
+      "line": 564
+    },
+    {
+      "caller": "socket",
+      "target": "enum",
+      "line": 56
+    },
+    {
+      "caller": "socket",
+      "target": "errno",
+      "line": 59
+    },
+    {
+      "caller": "socket",
+      "target": "io",
+      "line": 55
+    },
+    {
+      "caller": "socket",
+      "target": "os",
+      "line": 55
+    },
+    {
+      "caller": "socket",
+      "target": "selectors",
+      "line": 55
+    },
+    {
+      "caller": "socket",
+      "target": "sys",
+      "line": 55
+    },
+    {
+      "caller": "ssl",
+      "target": "_ssl",
+      "line": 100
+    },
+    {
+      "caller": "ssl",
+      "target": "_ssl",
+      "line": 102
+    },
+    {
+      "caller": "ssl",
+      "target": "_ssl",
+      "line": 103
+    },
+    {
+      "caller": "ssl",
+      "target": "_ssl",
+      "line": 104
+    },
+    {
+      "caller": "ssl",
+      "target": "_ssl",
+      "line": 108
+    },
+    {
+      "caller": "ssl",
+      "target": "_ssl",
+      "line": 109
+    },
+    {
+      "caller": "ssl",
+      "target": "_ssl",
+      "line": 111
+    },
+    {
+      "caller": "ssl",
+      "target": "_ssl",
+      "line": 117
+    },
+    {
+      "caller": "ssl",
+      "target": "_ssl",
+      "line": 121
+    },
+    {
+      "caller": "ssl",
+      "target": "_ssl",
+      "line": 258
+    },
+    {
+      "caller": "ssl",
+      "target": "base64",
+      "line": 263
+    },
+    {
+      "caller": "ssl",
+      "target": "collections",
+      "line": 96
+    },
+    {
+      "caller": "ssl",
+      "target": "enum",
+      "line": 97
+    },
+    {
+      "caller": "ssl",
+      "target": "enum",
+      "line": 98
+    },
+    {
+      "caller": "ssl",
+      "target": "errno",
+      "line": 264
+    },
+    {
+      "caller": "ssl",
+      "target": "os",
+      "line": 95
+    },
+    {
+      "caller": "ssl",
+      "target": "socket",
+      "line": 260
+    },
+    {
+      "caller": "ssl",
+      "target": "socket",
+      "line": 261
+    },
+    {
+      "caller": "ssl",
+      "target": "socket",
+      "line": 262
+    },
+    {
+      "caller": "ssl",
+      "target": "sys",
+      "line": 94
+    },
+    {
+      "caller": "ssl",
+      "target": "warnings",
+      "line": 265
+    },
+    {
+      "caller": "stat",
+      "target": "_stat",
+      "line": 193
+    },
+    {
+      "caller": "string",
+      "target": "_string",
+      "line": 21
+    },
+    {
+      "caller": "string",
+      "target": "collections",
+      "line": 53
+    },
+    {
+      "caller": "string",
+      "target": "re",
+      "line": 52
+    },
+    {
+      "caller": "stringprep",
+      "target": "unicodedata",
+      "line": 8
+    },
+    {
+      "caller": "struct",
+      "target": "_struct",
+      "line": 13
+    },
+    {
+      "caller": "struct",
+      "target": "_struct",
+      "line": 14
+    },
+    {
+      "caller": "struct",
+      "target": "_struct",
+      "line": 15
+    },
+    {
+      "caller": "subprocess",
+      "target": "_posixsubprocess",
+      "line": 104
+    },
+    {
+      "caller": "subprocess",
+      "target": "_winapi",
+      "line": 81
+    },
+    {
+      "caller": "subprocess",
+      "target": "_winapi",
+      "line": 82
+    },
+    {
+      "caller": "subprocess",
+      "target": "builtins",
+      "line": 43
+    },
+    {
+      "caller": "subprocess",
+      "target": "contextlib",
+      "line": 53
+    },
+    {
+      "caller": "subprocess",
+      "target": "errno",
+      "line": 44
+    },
+    {
+      "caller": "subprocess",
+      "target": "fcntl",
+      "line": 58
+    },
+    {
+      "caller": "subprocess",
+      "target": "io",
+      "line": 45
+    },
+    {
+      "caller": "subprocess",
+      "target": "locale",
+      "line": 46
+    },
+    {
+      "caller": "subprocess",
+      "target": "msvcrt",
+      "line": 71
+    },
+    {
+      "caller": "subprocess",
+      "target": "os",
+      "line": 47
+    },
+    {
+      "caller": "subprocess",
+      "target": "select",
+      "line": 118
+    },
+    {
+      "caller": "subprocess",
+      "target": "selectors",
+      "line": 119
+    },
+    {
+      "caller": "subprocess",
+      "target": "signal",
+      "line": 49
+    },
+    {
+      "caller": "subprocess",
+      "target": "sys",
+      "line": 50
+    },
+    {
+      "caller": "subprocess",
+      "target": "threading",
+      "line": 51
+    },
+    {
+      "caller": "subprocess",
+      "target": "time",
+      "line": 48
+    },
+    {
+      "caller": "subprocess",
+      "target": "time",
+      "line": 54
+    },
+    {
+      "caller": "subprocess",
+      "target": "types",
+      "line": 55
+    },
+    {
+      "caller": "subprocess",
+      "target": "warnings",
+      "line": 52
+    },
+    {
+      "caller": "tempfile",
+      "target": "_thread",
+      "line": 49
+    },
+    {
+      "caller": "tempfile",
+      "target": "errno",
+      "line": 44
+    },
+    {
+      "caller": "tempfile",
+      "target": "functools",
+      "line": 39
+    },
+    {
+      "caller": "tempfile",
+      "target": "io",
+      "line": 41
+    },
+    {
+      "caller": "tempfile",
+      "target": "os",
+      "line": 42
+    },
+    {
+      "caller": "tempfile",
+      "target": "random",
+      "line": 45
+    },
+    {
+      "caller": "tempfile",
+      "target": "shutil",
+      "line": 43
+    },
+    {
+      "caller": "tempfile",
+      "target": "sys",
+      "line": 46
+    },
+    {
+      "caller": "tempfile",
+      "target": "types",
+      "line": 47
+    },
+    {
+      "caller": "tempfile",
+      "target": "warnings",
+      "line": 40
+    },
+    {
+      "caller": "tempfile",
+      "target": "weakref",
+      "line": 48
+    },
+    {
+      "caller": "textwrap",
+      "target": "re",
+      "line": 8
+    },
+    {
+      "caller": "threading",
+      "target": "_collections",
+      "line": 12
+    },
+    {
+      "caller": "threading",
+      "target": "_thread",
+      "line": 5
+    },
+    {
+      "caller": "threading",
+      "target": "_thread",
+      "line": 1307
+    },
+    {
+      "caller": "threading",
+      "target": "_thread",
+      "line": 1567
+    },
+    {
+      "caller": "threading",
+      "target": "_thread",
+      "line": 1644
+    },
+    {
+      "caller": "threading",
+      "target": "_threading_local",
+      "line": 1646
+    },
+    {
+      "caller": "threading",
+      "target": "_weakrefset",
+      "line": 9
+    },
+    {
+      "caller": "threading",
+      "target": "collections",
+      "line": 14
+    },
+    {
+      "caller": "threading",
+      "target": "collections",
+      "line": 1312
+    },
+    {
+      "caller": "threading",
+      "target": "functools",
+      "line": 6
+    },
+    {
+      "caller": "threading",
+      "target": "itertools",
+      "line": 10
+    },
+    {
+      "caller": "threading",
+      "target": "os",
+      "line": 3
+    },
+    {
+      "caller": "threading",
+      "target": "sys",
+      "line": 4
+    },
+    {
+      "caller": "threading",
+      "target": "time",
+      "line": 8
+    },
+    {
+      "caller": "threading",
+      "target": "traceback",
+      "line": 1311
+    },
+    {
+      "caller": "tokenize",
+      "target": "_tokenize",
+      "line": 37
+    },
+    {
+      "caller": "tokenize",
+      "target": "builtins",
+      "line": 27
+    },
+    {
+      "caller": "tokenize",
+      "target": "codecs",
+      "line": 28
+    },
+    {
+      "caller": "tokenize",
+      "target": "collections",
+      "line": 29
+    },
+    {
+      "caller": "tokenize",
+      "target": "functools",
+      "line": 30
+    },
+    {
+      "caller": "tokenize",
+      "target": "io",
+      "line": 31
+    },
+    {
+      "caller": "tokenize",
+      "target": "itertools",
+      "line": 32
+    },
+    {
+      "caller": "tokenize",
+      "target": "re",
+      "line": 33
+    },
+    {
+      "caller": "tokenize",
+      "target": "sys",
+      "line": 34
+    },
+    {
+      "caller": "tokenize",
+      "target": "token",
+      "line": 35
+    },
+    {
+      "caller": "tokenize",
+      "target": "token",
+      "line": 36
+    },
+    {
+      "caller": "tokenize",
+      "target": "token",
+      "line": 42
+    },
+    {
+      "caller": "traceback",
+      "target": "collections.abc",
+      "line": 3
+    },
+    {
+      "caller": "traceback",
+      "target": "contextlib",
+      "line": 8
+    },
+    {
+      "caller": "traceback",
+      "target": "itertools",
+      "line": 4
+    },
+    {
+      "caller": "traceback",
+      "target": "linecache",
+      "line": 5
+    },
+    {
+      "caller": "traceback",
+      "target": "sys",
+      "line": 6
+    },
+    {
+      "caller": "traceback",
+      "target": "textwrap",
+      "line": 7
+    },
+    {
+      "caller": "types",
+      "target": "sys",
+      "line": 4
+    },
+    {
+      "caller": "typing",
+      "target": "_typing",
+      "line": 36
+    },
+    {
+      "caller": "typing",
+      "target": "abc",
+      "line": 22
+    },
+    {
+      "caller": "typing",
+      "target": "collections",
+      "line": 23
+    },
+    {
+      "caller": "typing",
+      "target": "collections",
+      "line": 24
+    },
+    {
+      "caller": "typing",
+      "target": "collections.abc",
+      "line": 25
+    },
+    {
+      "caller": "typing",
+      "target": "contextlib",
+      "line": 27
+    },
+    {
+      "caller": "typing",
+      "target": "copyreg",
+      "line": 26
+    },
+    {
+      "caller": "typing",
+      "target": "functools",
+      "line": 28
+    },
+    {
+      "caller": "typing",
+      "target": "operator",
+      "line": 29
+    },
+    {
+      "caller": "typing",
+      "target": "re",
+      "line": 30
+    },
+    {
+      "caller": "typing",
+      "target": "sys",
+      "line": 31
+    },
+    {
+      "caller": "typing",
+      "target": "types",
+      "line": 32
+    },
+    {
+      "caller": "typing",
+      "target": "types",
+      "line": 34
+    },
+    {
+      "caller": "typing",
+      "target": "warnings",
+      "line": 33
+    },
+    {
+      "caller": "urllib.error",
+      "target": "io",
+      "line": 13
+    },
+    {
+      "caller": "urllib.error",
+      "target": "urllib.response",
+      "line": 14
+    },
+    {
+      "caller": "urllib.parse",
+      "target": "collections",
+      "line": 34
+    },
+    {
+      "caller": "urllib.parse",
+      "target": "functools",
+      "line": 35
+    },
+    {
+      "caller": "urllib.parse",
+      "target": "ipaddress",
+      "line": 40
+    },
+    {
+      "caller": "urllib.parse",
+      "target": "math",
+      "line": 36
+    },
+    {
+      "caller": "urllib.parse",
+      "target": "re",
+      "line": 37
+    },
+    {
+      "caller": "urllib.parse",
+      "target": "types",
+      "line": 38
+    },
+    {
+      "caller": "urllib.parse",
+      "target": "warnings",
+      "line": 39
+    },
+    {
+      "caller": "urllib.request",
+      "target": "_scproxy",
+      "line": 2683
+    },
+    {
+      "caller": "urllib.request",
+      "target": "base64",
+      "line": 84
+    },
+    {
+      "caller": "urllib.request",
+      "target": "bisect",
+      "line": 85
+    },
+    {
+      "caller": "urllib.request",
+      "target": "contextlib",
+      "line": 97
+    },
+    {
+      "caller": "urllib.request",
+      "target": "email",
+      "line": 86
+    },
+    {
+      "caller": "urllib.request",
+      "target": "hashlib",
+      "line": 87
+    },
+    {
+      "caller": "urllib.request",
+      "target": "http.client",
+      "line": 88
+    },
+    {
+      "caller": "urllib.request",
+      "target": "io",
+      "line": 89
+    },
+    {
+      "caller": "urllib.request",
+      "target": "nturl2path",
+      "line": 1679
+    },
+    {
+      "caller": "urllib.request",
+      "target": "os",
+      "line": 90
+    },
+    {
+      "caller": "urllib.request",
+      "target": "re",
+      "line": 91
+    },
+    {
+      "caller": "urllib.request",
+      "target": "socket",
+      "line": 92
+    },
+    {
+      "caller": "urllib.request",
+      "target": "ssl",
+      "line": 111
+    },
+    {
+      "caller": "urllib.request",
+      "target": "string",
+      "line": 93
+    },
+    {
+      "caller": "urllib.request",
+      "target": "sys",
+      "line": 94
+    },
+    {
+      "caller": "urllib.request",
+      "target": "tempfile",
+      "line": 96
+    },
+    {
+      "caller": "urllib.request",
+      "target": "time",
+      "line": 95
+    },
+    {
+      "caller": "urllib.request",
+      "target": "urllib.error",
+      "line": 101
+    },
+    {
+      "caller": "urllib.request",
+      "target": "urllib.parse",
+      "line": 102
+    },
+    {
+      "caller": "urllib.request",
+      "target": "urllib.response",
+      "line": 107
+    },
+    {
+      "caller": "urllib.request",
+      "target": "warnings",
+      "line": 98
+    },
+    {
+      "caller": "urllib.response",
+      "target": "tempfile",
+      "line": 9
+    },
+    {
+      "caller": "warnings",
+      "target": "_warnings",
+      "line": 567
+    },
+    {
+      "caller": "warnings",
+      "target": "sys",
+      "line": 3
+    },
+    {
+      "caller": "weakref",
+      "target": "_collections_abc",
+      "line": 24
+    },
+    {
+      "caller": "weakref",
+      "target": "_weakref",
+      "line": 12
+    },
+    {
+      "caller": "weakref",
+      "target": "_weakrefset",
+      "line": 22
+    },
+    {
+      "caller": "weakref",
+      "target": "itertools",
+      "line": 26
+    },
+    {
+      "caller": "weakref",
+      "target": "sys",
+      "line": 25
+    },
+    {
+      "caller": "zipimport",
+      "target": "_imp",
+      "line": 20
+    },
+    {
+      "caller": "zipimport",
+      "target": "_io",
+      "line": 21
+    },
+    {
+      "caller": "zipimport",
+      "target": "_warnings",
+      "line": 25
+    },
+    {
+      "caller": "zipimport",
+      "target": "importlib._bootstrap",
+      "line": 19
+    },
+    {
+      "caller": "zipimport",
+      "target": "importlib._bootstrap_external",
+      "line": 17
+    },
+    {
+      "caller": "zipimport",
+      "target": "importlib._bootstrap_external",
+      "line": 18
+    },
+    {
+      "caller": "zipimport",
+      "target": "marshal",
+      "line": 22
+    },
+    {
+      "caller": "zipimport",
+      "target": "sys",
+      "line": 23
+    },
+    {
+      "caller": "zipimport",
+      "target": "time",
+      "line": 24
+    }
+  ],
+  "source_rule": "For a source module actually present, require this exact release source hash at the corresponding installed Lib path, membership in the exact qualified inventory, and the concrete loader/cache/frozen rule. Extra candidates do not authorize their functions, callbacks or branch execution.",
+  "native_module_names": [
+    "_abc",
+    "_ast",
+    "_bisect",
+    "_blake2",
+    "_bz2",
+    "_codecs",
+    "_collections",
+    "_datetime",
+    "_functools",
+    "_hashlib",
+    "_imp",
+    "_io",
+    "_json",
+    "_locale",
+    "_lzma",
+    "_md5",
+    "_opcode",
+    "_operator",
+    "_posixsubprocess",
+    "_random",
+    "_sha1",
+    "_sha2",
+    "_sha3",
+    "_signal",
+    "_socket",
+    "_sre",
+    "_ssl",
+    "_stat",
+    "_string",
+    "_struct",
+    "_thread",
+    "_tokenize",
+    "_typing",
+    "_warnings",
+    "_weakref",
+    "array",
+    "atexit",
+    "binascii",
+    "builtins",
+    "errno",
+    "fcntl",
+    "itertools",
+    "marshal",
+    "math",
+    "posix",
+    "select",
+    "sys",
+    "time",
+    "unicodedata",
+    "zlib"
+  ],
+  "platform_only_rejected_in_actual_Linux_prefix": [
+    "_scproxy",
+    "_winapi",
+    "msvcrt",
+    "nt",
+    "winreg"
+  ],
+  "forbidden_actual_modules": [
+    "site",
+    "_sitebuiltins",
+    "sitecustomize",
+    "usercustomize",
+    "runpy",
+    "_distutils_hack",
+    "setuptools",
+    "pkg_resources",
+    "ctypes",
+    "multiprocessing",
+    "asyncio",
+    "pdb",
+    "coverage",
+    "trace",
+    "doctest"
+  ],
+  "fixed_module_aliases": {
+    "os.path": "posixpath",
+    "_frozen_importlib": "importlib._bootstrap",
+    "_frozen_importlib_external": "importlib._bootstrap_external"
+  },
+  "fixed_nonmodule_entries": [
+    {
+      "name": "typing.io",
+      "actual_value": "qualified typing module namespace io export by identity",
+      "type": "the same qualified typing namespace _DeprecatedType export by identity",
+      "source": "Lib/typing.py:3333-3334"
+    },
+    {
+      "name": "typing.re",
+      "actual_value": "qualified typing module namespace re export by identity",
+      "type": "the same qualified typing namespace _DeprecatedType export by identity",
+      "source": "Lib/typing.py:3347-3348"
+    }
+  ],
+  "nonmodule_rule": "Read only native module/type dictionaries with exact types and string keys. For the two named aliases use type.__getattribute__, not deprecated metaclass attribute hooks. No other non-ModuleType sys.modules value is admitted.",
+  "frozen_names": [
+    "_frozen_importlib",
+    "_frozen_importlib_external",
+    "zipimport",
+    "abc",
+    "codecs",
+    "io",
+    "_collections_abc",
+    "genericpath",
+    "ntpath",
+    "posixpath",
+    "os.path",
+    "os",
+    "stat",
+    "importlib.util",
+    "importlib.machinery"
+  ],
+  "frozen_rule": "Only these names/aliases, whose code is in the exact qualified Python ELF. Join canonical code filename and complete CodeType tree to compile of the pinned release source using the same frozen filename and optimize0. No generic frozen-name exception.",
+  "codecs_dynamic_names": [
+    "encodings.utf_8",
+    "encodings.ascii",
+    "encodings.latin_1",
+    "encodings.idna"
+  ],
+  "codecs_rule": "The exact C.UTF-8/UTF8 JSON/ASCII HTTP/Latin1 header/API hostname path may resolve only these source-pinned codecs. IDNA brings the separately pinned stringprep/unicodedata path. A new codec/name is not silently added.",
+  "native_rule": "A name being in sys.builtin_module_names alone is insufficient. Require this fixed native name, exact BuiltinImporter with qualified ELF attribution, or exact ExtensionFileLoader at a regular qualified-inventory ELF under the installed Python lib-dynload tree. No nonstdlib extension origin.",
+  "unresolved_dynamic_import_policy": "Any reachable nonliteral import/callback not accounted for by the selected prefix table below makes source qualification NOT_ESTABLISHED. A later sys.modules/maps snapshot cannot repair a transient earlier execution.",
+  "runtime_observation": "UNRUN",
+  "SourceSeal": false,
+  "product_acceptance_passed": false
+}
