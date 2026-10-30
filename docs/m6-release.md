@@ -89,16 +89,35 @@ The summary's `protected_ports_unused` claim was incorrect.
 That run is not final release acceptance.
 The corrected run above replaces that evidence.
 
+PR [#151](https://github.com/faberline/som/pull/151) later changed the switch
+recovery path. It can attempt recovery when the candidate has exited, after
+the recorded owner, port, receipt, and pointers pass the required checks.
+Recovery can still fail and need an operator.
+The updated helpers passed the [GitHub rehearsal](https://github.com/faberline/som/actions/runs/40863011173).
+An [independent raw audit](https://github.com/faberline/som/actions/runs/40878250023)
+checked that rehearsal's saved evidence. The rehearsal did not retain each
+HTTP status, route, CLI exit code, or an independent wait record. The recorded
+process and protected-port observations remain producer attestations.
+
 ## Production change
+
+**Do not run the commands below under the current runner-only restriction.**
+The production tools start local services and run local HTTP and CLI canaries.
+The user chose to keep tests and services on GitHub runners.
+A production approval does not change that restriction.
+First provide a reviewed way to satisfy it without removing the required checks.
+The commands below are a historical deployment draft, not an executable plan.
 
 First prepare a concrete deployment package and rollback command.
 Bind the exact candidate binary, assets, formatter tree, accepted receipts, release scripts, and current default receipt.
 Resolve write ownership of the production checkout before changing it.
 The current production checkout is `/Users/chrischeng/faberlines/som`.
 The managed development worktree does not hold the production default receipt.
-Read-only process inspection found no listener on port `8765` and no process with the receipt's recorded PID.
-The deployment plan must first start the same accepted previous compiler.
-It must save and check its fresh process identity before the normal switch can proceed.
+An earlier read-only inspection found no listener on port `8765` and no process with the receipt's recorded PID.
+Check the current state again before any authorized production action.
+If the previous default is stopped, a future plan must verify the current state
+before it starts the same accepted previous compiler. It must save and check
+the fresh process identity before the normal switch can proceed.
 Starting that production service is part of the pending explicit approval.
 
 Present the tested candidate, current default, QA evidence, deployment paths, and rollback command to the user.
@@ -110,20 +129,22 @@ Keep the previous binary, assets, and switch evidence for recovery.
 Do not change the 127 public or 544 legacy product files.
 Do not change the frozen React contract.
 
-The deployment package passed independent data review.
-Its 163 file records and 97 active file bindings match their hashes.
+The earlier deployment package passed independent data review before PR #151.
+At that review, its 163 file records and 97 active file bindings matched their hashes.
 The prepared production prerequisites hash is `2ca65ac03f0aec41abc9be3e7264005e3b4555e8c297919e3ab6928afe0cda5c`.
 This differs from the hosted prerequisites because the file paths name the production checkout.
-The data review confirmed that only those paths changed.
+That data review confirmed that only those paths changed.
+PR #151 changed `switch.py`, so the earlier package and approval bindings are stale.
+Rebind and independently review the package against the tested helper bytes
+before requesting any production approval.
 
-Install the prepared payload at `/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/react-131-release-001` after primary ownership is clear.
-Install only the tested `release_common.py`, `switch.py`, `check_default.py`, and `resume_default.py` helper bytes.
-Check each recorded old file hash before installation.
-Keep byte and mode backups.
-Check each new hash before any service action.
-Keep the frozen `compiler_default_switch.py` unchanged.
+The historical draft targets `/Users/chrischeng/faberlines/som/.local/rust-compiler-goal/acceptance/react-131-release-001`.
+Any replacement plan must use the tested `release_common.py`, `switch.py`, `check_default.py`, and `resume_default.py` helper bytes.
+It must check each old file hash before installation and keep byte and mode backups.
+It must check each new hash before any service action.
+It must keep the frozen `compiler_default_switch.py` unchanged.
 
-The operator commands are listed below.
+The historical operator commands are listed below for review only.
 The approval files do not exist until the user explicitly approves the start, switch, and recovery plan.
 After a verified resume, bind the switch approval to the fresh receipt that the resume wrote.
 
