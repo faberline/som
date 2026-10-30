@@ -33,7 +33,7 @@ REPO=HERE.parents[2]
 BASE='som-rs/scripts/hosted_readiness/'
 SELF='som-rs/scripts/react_output_acceptance/record_http.py'
 CONTEXT=BASE+'product_runtime/full_product_context.py'
-PINS={SELF:'28fd8c3e86ea0208387e57b25ad3ca4b78ec2d5367005c93e477affd44ad3c92',
+PINS={SELF:'9ff11648d68e6f84120d98a91feefbff65b6f4c25fb6208a33c50bf1da1a4e56',
       CONTEXT:'7329f3dc88d63957a7ac33c847ec3416f4a7b35b8c7b10793154f22a5516a440',
       BASE+'native_active_controls.py':'eb0f804a8aa7de0857213d34478adc869fe51f7259c5552439dca109e4e6a038',
       BASE+'native_qa_authority.py':'024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1',
@@ -202,6 +202,13 @@ class GitTransfer(protocol.ProtocolTransfer):
 
 class HttpFixture(protocol.Fixture):
     def __init__(self,case):
+        # Sequential subtests own distinct Core domains and fixed module names.
+        # Close the preceding real owner before constructing the next fixture.
+        previous_fixture=getattr(case,'_som_http_fixture_owner',None)
+        if previous_fixture is not None:
+            previous_fixture.ctx.qa_import_controls.close()
+            previous_fixture.stack.close()
+            case.assertTrue(previous_fixture.domain.closed)
         key='SOM_FULL_PRODUCT_CONTEXT';present=key in os.environ;previous=os.environ.get(key)
         def restore_environment():
             if present:os.environ[key]=previous
@@ -225,6 +232,7 @@ class HttpFixture(protocol.Fixture):
         case.addCleanup(lambda:[close() for close in self.original_response_closes])
         self.initial=self.seeds['_som_native_trusted_bootstrap_entry']['module']
         self.sequence=0;self.transports=[]
+        case._som_http_fixture_owner=self
 
     def synthetic_seed(self,name,path,raw):
         if name=='_som_native_trusted_bootstrap_entry':
@@ -1524,6 +1532,12 @@ CONTEXT_SOURCE=CONTEXT_SOURCE.replace('def context():return _ACTIVE\n',
 
 class ConsumerFixture(V4Fixture):
     """Synthetic controls only. No qualified runtime, Context or native origin."""
+    def invoke(self,**kwargs):
+        # These identity/trace witnesses use the existing direct source route.
+        # The production CLI keeps its unchanged error-to-exit-code behavior.
+        kwargs.setdefault('direct',True)
+        return super().invoke(**kwargs)
+
     def __init__(self,case):
         super().__init__(case)
         self.data.PROVIDER=self.native_provider
@@ -1556,6 +1570,7 @@ class ConsumerFixture(V4Fixture):
         if role=='m6.api.producer':
             super().add_role('fixture.http.consumer-nested-caller',BASE+'synthetic_http_consumer_nested.py',
                 CALLER_SOURCE,kind='entry',module='__main__',
+                bindings={'__som_native_active_controls__':{'kind':'active-controls'}},
                 callers=[{'role':'bootstrap.entry','function':'_trusted_run'}])
             self.rows['fixture.http.call']['callers'].append(
                 {'role':'fixture.http.consumer-nested-caller','function':'<module>'})

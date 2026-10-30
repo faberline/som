@@ -1474,6 +1474,7 @@ class _NativeRecordingState:
     def finish_all(self):
         problems = []
         for issue in tuple(_native_recording_issue(self, cleanup=True)['calls']):
+            reported_before = len(_native_recording_issue(self, cleanup=True)['finalizations'])
             try:
                 state = issue[0]
                 _native_need(type(state) is _NativeCallState and state.owner is self, 'original finalizer owner changed')
@@ -1481,7 +1482,10 @@ class _NativeRecordingState:
                              and state.seals[0].signature is issue[3][0], 'original independent finalizer signature changed')
                 _native_check_invocation(issue[3][0])()
             except BaseException as error:
-                _native_safe_finalization(self, state.number, False, error, False)
+                # The actual finalizer records its own attempted write failure.
+                # Record an outer refusal only when no finalization was reached.
+                if len(_native_recording_issue(self, cleanup=True)['finalizations']) == reported_before:
+                    _native_safe_finalization(self, state.number, False, error, False)
                 _native_safe_failure(self, 'finish-http-call', error)
                 problems.append(error)
         if problems:
@@ -1727,13 +1731,16 @@ class _NativeExitState:
     def exit(self, response, et, value, trace):
         row = frame = None
         acquired, escaping = False, None
+        failure_phase = 'response-exit'
         try:
             _native_need(type(self) is _NativeExitState and type(self.owner) is _NativeRecordingState,
                          'actual constructor-issued exit state required')
             _native_need(value is None and et is None and trace is None or _native_is_error(value)
                          and et is type(value) and (trace is None or type(trace) is TracebackType),
                          'explicit response exit arguments differ')
+            failure_phase = 'close-source-guard'
             _NativeRecordingState.guard(self.owner)
+            failure_phase = 'response-exit'
             issue = _NativeRecordingState.descriptor_check(self.owner, self.patch['descriptor'], self.patch)
             _native_need(issue[5] is self and self.original is issue[6], 'original exit state or delegate changed')
             row = _NativeRecordingState.response_row(self.owner, response)
@@ -1755,7 +1762,7 @@ class _NativeExitState:
             primary = later if value is None else value
             escaping = primary
             if primary is not later:
-                _native_safe_failure(self.owner, 'response-exit', primary, later)
+                _native_safe_failure(self.owner, failure_phase, primary, later)
             raise BaseException.with_traceback(primary, _native_trace(later) if value is None else trace)
         finally:
             if row is not None and acquired:

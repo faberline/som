@@ -2,7 +2,7 @@ name: Native HTTP combined whole source fixtures
 on:
   push:
     branches:
-      - codex/m12-native-http-whole-v1
+      - codex/m12-native-http-whole-v4
   workflow_dispatch:
 permissions:
   contents: read
@@ -14,7 +14,7 @@ defaults:
     shell: bash
 jobs:
   whole:
-    if: github.repository == 'faberline/som' && github.ref == 'refs/heads/codex/m12-native-http-whole-v1'
+    if: github.repository == 'faberline/som' && github.ref == 'refs/heads/codex/m12-native-http-whole-v4'
     runs-on: ubuntu-24.04
     timeout-minutes: 100
     steps:
@@ -31,11 +31,11 @@ jobs:
           cat > "$WHOLE_EVIDENCE/source_bind.py" <<'PY'
           import ast, hashlib, json, os, re, stat, subprocess, sys, traceback
           from pathlib import Path
-          BASE = '49393e8ce2e1551472eb0158495f858f683c9d68'
+          BASE = '4b60f4aad930e160fda84e6b217a8d0ec0ed758a'
           WORKFLOW = '.github/workflows/native-http-whole.yml'
           DATA_PATH = '.github/ci/native-http-whole-v1.json'
           DATA_RAW = (Path(os.environ['WHOLE_EVIDENCE'])/'fixed-data.json').read_bytes()
-          if hashlib.sha256(DATA_RAW).hexdigest() != '95f5add73fdea845cd3d4edaae9c0469fb9aeb29256d29de20e6540e94ebea58':
+          if hashlib.sha256(DATA_RAW).hexdigest() != '5a728bcea56438cc8e5c4db5884bffd7aa8c07bbff6a1c473c0aad7467c24d34':
               raise ValueError('fixed whole-suite data bytes differ')
           DATA = json.loads(DATA_RAW)
           EXPECTED, SUITES, CHANGES = DATA['expected'], DATA['suites'], DATA['changes']
@@ -94,7 +94,7 @@ jobs:
                       'control data verifier flags mismatch')
               require(os.environ['GITHUB_ACTIONS']=='true' and sys.platform=='linux','GitHub Linux control lane only')
               require(os.environ['GITHUB_REPOSITORY']=='faberline/som','wrong public repository')
-              require(os.environ['GITHUB_REF']=='refs/heads/codex/m12-native-http-whole-v1','wrong finite branch')
+              require(os.environ['GITHUB_REF']=='refs/heads/codex/m12-native-http-whole-v4','wrong finite branch')
               require(os.environ['GITHUB_EVENT_NAME'] in ('push','workflow_dispatch'),'wrong event')
               head=git('rev-parse','HEAD').decode().strip();report['HEAD']=head
               require(re.fullmatch('[0-9a-f]{40}',head) is not None and head==os.environ['GITHUB_SHA'],'actual HEAD mismatch')
@@ -113,7 +113,7 @@ jobs:
               require(git('status','--porcelain=v1','-z','--untracked-files=all')==b'','checkout must remain entirely clean')
               for name in sorted(EXPECTED):
                   read_source(name)
-              require(sha(read_source(DATA_PATH)) == '95f5add73fdea845cd3d4edaae9c0469fb9aeb29256d29de20e6540e94ebea58', 'tracked fixed CI data differs')
+              require(sha(read_source(DATA_PATH)) == '5a728bcea56438cc8e5c4db5884bffd7aa8c07bbff6a1c473c0aad7467c24d34', 'tracked fixed CI data differs')
               report['methods'] = {}
               for suite in SUITES:
                   parsed = ast.parse((REPO/suite['path']).read_bytes())
@@ -185,7 +185,7 @@ jobs:
 
           root = Path(os.environ['WHOLE_EVIDENCE'])
           data_raw = (root / 'fixed-data.json').read_bytes()
-          if hashlib.sha256(data_raw).hexdigest() != '95f5add73fdea845cd3d4edaae9c0469fb9aeb29256d29de20e6540e94ebea58':
+          if hashlib.sha256(data_raw).hexdigest() != '5a728bcea56438cc8e5c4db5884bffd7aa8c07bbff6a1c473c0aad7467c24d34':
               raise ValueError('fixed whole-suite data bytes differ')
           SUITES = json.loads(data_raw)['suites']
           key = sys.argv[1]
@@ -271,7 +271,7 @@ jobs:
           data_failure = None
           try:
               data_raw = (root / 'fixed-data.json').read_bytes()
-              if hashlib.sha256(data_raw).hexdigest() != '95f5add73fdea845cd3d4edaae9c0469fb9aeb29256d29de20e6540e94ebea58':
+              if hashlib.sha256(data_raw).hexdigest() != '5a728bcea56438cc8e5c4db5884bffd7aa8c07bbff6a1c473c0aad7467c24d34':
                   raise ValueError('fixed whole-suite data bytes differ')
               DATA = json.loads(data_raw)
               SUITES, EXPECTED = DATA['suites'], DATA['expected']
@@ -403,7 +403,7 @@ jobs:
           WHOLE_EVIDENCE: ${{ runner.temp }}/som-native-http-whole-evidence
         run: |
           set -euo pipefail
-          printf '%s  %s\n' '95f5add73fdea845cd3d4edaae9c0469fb9aeb29256d29de20e6540e94ebea58' "$GITHUB_WORKSPACE/.github/ci/native-http-whole-v1.json" | /usr/bin/sha256sum --check --strict
+          printf '%s  %s\n' '5a728bcea56438cc8e5c4db5884bffd7aa8c07bbff6a1c473c0aad7467c24d34' "$GITHUB_WORKSPACE/.github/ci/native-http-whole-v1.json" | /usr/bin/sha256sum --check --strict
           /usr/bin/cp "$GITHUB_WORKSPACE/.github/ci/native-http-whole-v1.json" "$WHOLE_EVIDENCE/fixed-data.json"
       - name: Select control CPython3.12.11
         id: setup
@@ -515,7 +515,7 @@ jobs:
         timeout-minutes: 5
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: native-http-whole-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          name: native-http-whole-v4-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/som-native-http-whole-evidence
           if-no-files-found: error
           retention-days: 30
