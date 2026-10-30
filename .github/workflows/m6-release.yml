@@ -71,6 +71,111 @@ jobs:
       - name: Rehearse the four targets and five recovery scenarios offline
         run: |
           /opt/homebrew/opt/python@3.12/bin/python3.12 som-rs/scripts/rust_output_release/run_compiler_rehearsal.py --raw-root "$GITHUB_WORKSPACE/.local/m6-hosted/acceptance" --audit-root "$RUNNER_TEMP/m6-release-audit" --out "$GITHUB_WORKSPACE/.local/rust-compiler-goal/acceptance/react-131"
+      - name: Pin the reviewed hosted canary source
+        run: |
+          /opt/homebrew/opt/python@3.12/bin/python3.12 - <<'PY'
+          import hashlib
+          from pathlib import Path
+          pins = {
+              'som-rs/scripts/rust_output_release/release_common.py': '968a5c77dc809f3bb4f76cbdcdbc5d26f447de8a13ce1dc390d6e18124725b75',
+              'som-rs/scripts/compiler_default_switch.py': '289a8470c5de2a183b01c8a138ecb4bc6cfe80a624f0291b32b779cc854bfb12',
+              'som-rs/scripts/rust_output_release/prepare_compiler_inputs.py': '71bfece9c8b1f113ff5d94dcf7be39f150bdd66e83a87dc470b43155943b2246',
+              'som-rs/scripts/rust_output_release/check_default.py': 'b13479a60441a2aacdad803d209c6735332f8bae1ab56ab2cad5b464adc9a35f',
+              'som-rs/scripts/react_output_acceptance/restore_hosted_evidence.mjs': 'ac5bfe21853712a38a8f5f032f44a4151c7bf7c2c54b669095704ba20e84a822',
+              'som-rs/scripts/react_output_acceptance/seal_hosted_evidence.mjs': '3ebba4db4a2ada98c14d6ce015d1659acc3c8976f2131f4cd0fcf6cb07dee575',
+              'som-rs/scripts/react_output_acceptance/sealed_inputs.mjs': 'bda649080df1fced5ac6cfabdc300d9d9b1b3d9a53a1240c11fdce80e0b1e9c9',
+              'som-rs/scripts/rust_output_release/rehearsal_anchor.py': '61b7a9fe0a4c64694e00ade7b60a18ebf7125d7804ba57a174e14eebd6f45141',
+              'som-rs/scripts/rust_output_release/run_hosted_canaries.py': '8a35aecefdc54a6c4dc047bce7f8643b37b77d9db4c2d1ccd7b2e256c732fc3c',
+              'som-rs/scripts/rust_output_release/test_hosted_canaries_integration.py': 'a4d8b19d0b7eb86ee51f68602f6eeb29eed00994f341d2ff4e23a65442aae355',
+              'som-rs/scripts/rust_output_release/verify_canary_completion.py': '2dc4bedecc6b2e2d7819fb830e4b88579cbb03ce0d488623e5173fa00fd37808',
+              'som-rs/scripts/rust_output_release/verify_sealed_canary.py': '985d1fa48cac2487c68937212cf115d0f4c1fec1aff8941a94c710695335f169',
+          }
+          try:
+              for name, expected in pins.items():
+                  path = Path(name)
+                  if path.is_symlink() or not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+                      raise ValueError('source pin differs')
+          except Exception:
+              raise SystemExit('hosted canary source pin failed')
+          PY
+      - name: Provision the audited public GH CLI
+        run: |
+          /opt/homebrew/opt/python@3.12/bin/python3.12 - <<'PY'
+          import hashlib, importlib.util, os, re, subprocess, sys
+          from pathlib import Path
+          try:
+              directory = Path(os.environ['RUNNER_TEMP']) / 'm6-canary-gh'
+              directory.mkdir(mode=0o700)
+              source = directory / 'audit_wrapper.py'
+              public_env = {k: v for k, v in os.environ.items() if not re.search(r'(TOKEN|SECRET|PASSWORD|KEY|CREDENTIAL)', k, re.I) and k != 'SSH_AUTH_SOCK'}
+              url = 'https://raw.githubusercontent.com/faberline/som/3f69d11b2476c939c7fc7651aec2a928bfb254d8/som-rs/scripts/rust_output_release/audit_wrapper.py'
+              result = subprocess.run(['/usr/bin/curl', '--disable', '--fail', '--silent', '--show-error', '--location', '--proto', '=https', '--proto-redir', '=https', '--max-redirs', '5', '--max-time', '180', '--max-filesize', '65536', '--output', str(source), url], env=public_env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=200)
+              if result.returncode != 0 or hashlib.sha256(source.read_bytes()).hexdigest() != '07fe2362d1a29de5bac85429a365e7fdf8d8eb2298b26745be88dd5af1c149f5':
+                  raise ValueError('audited installer differs')
+              spec = importlib.util.spec_from_file_location('m6_reviewed_gh', source)
+              module = importlib.util.module_from_spec(spec)
+              spec.loader.exec_module(module)
+              module.install_gh(directory)
+          except BaseException:
+              print('GH CLI provisioning failed', file=sys.stderr)
+              raise SystemExit(1)
+          PY
+      - name: Fetch the fixed sealed prior rehearsal
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          umask 077
+          test ! -e "$RUNNER_TEMP/m6-canary-prior.zip"
+          test ! -L "$RUNNER_TEMP/m6-canary-prior.zip"
+          "$RUNNER_TEMP/m6-canary-gh/tool/gh" api repos/faberline/som/actions/artifacts/12892064549/zip > "$RUNNER_TEMP/m6-canary-prior.zip" 2>/dev/null
+          /opt/homebrew/opt/python@3.12/bin/python3.12 - <<'PY'
+          import hashlib, os
+          from pathlib import Path
+          p = Path(os.environ['RUNNER_TEMP']) / 'm6-canary-prior.zip'
+          with p.open('rb') as f:
+              actual = hashlib.file_digest(f, 'sha256').hexdigest()
+          if p.stat().st_size != 111991966 or actual != '8d24fc4779a6585b4b5ecc7dfd5d5744f19345de80ce9cb1ac0a18a762389c8d':
+              raise SystemExit('sealed prior archive refused')
+          PY
+      - name: Run hosted fake canaries with accepted inputs and real CLI
+        id: hosted_fake
+        env:
+          GH_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+          M6_AUDIT_GH: ${{ runner.temp }}/m6-canary-gh/tool/gh
+        run: |
+          umask 077
+          mkdir -m 700 "$RUNNER_TEMP/m6-hosted-canary-raw"
+          /opt/homebrew/opt/python@3.12/bin/python3.12 som-rs/scripts/rust_output_release/test_hosted_canaries_integration.py --prerequisites "$GITHUB_WORKSPACE/.local/rust-compiler-goal/acceptance/react-131/run/inputs/prerequisites.json" --prior-archive "$RUNNER_TEMP/m6-canary-prior.zip" --out "$RUNNER_TEMP/m6-hosted-canary-raw/run"
+      - name: Verify both hosted fake role receipts
+        id: hosted_fake_complete
+        if: ${{ always() && steps.hosted_fake.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+          M6_AUDIT_GH: ${{ runner.temp }}/m6-canary-gh/tool/gh
+        run: |
+          /opt/homebrew/opt/python@3.12/bin/python3.12 som-rs/scripts/rust_output_release/verify_canary_completion.py --prerequisites "$GITHUB_WORKSPACE/.local/rust-compiler-goal/acceptance/react-131/run/inputs/prerequisites.json" --prior-archive "$RUNNER_TEMP/m6-canary-prior.zip" --raw-root "$RUNNER_TEMP/m6-hosted-canary-raw" --step-outcome '${{ steps.hosted_fake.outcome }}'
+      - name: Seal hosted fake canary evidence
+        id: hosted_fake_seal
+        if: ${{ always() && (steps.hosted_fake.outcome == 'success' || steps.hosted_fake.outcome == 'failure') }}
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          test -d "$RUNNER_TEMP/m6-hosted-canary-raw/run"
+          if ! /opt/homebrew/Cellar/node/26.5.0/bin/node som-rs/scripts/react_output_acceptance/seal_hosted_evidence.mjs --root "$RUNNER_TEMP/m6-hosted-canary-raw" --out "$RUNNER_TEMP/m6-hosted-canary-sealed" > /dev/null 2>&1; then
+            echo 'hosted fake evidence sealing failed' >&2
+            exit 1
+          fi
+          /opt/homebrew/opt/python@3.12/bin/python3.12 som-rs/scripts/rust_output_release/verify_sealed_canary.py --raw-root "$RUNNER_TEMP/m6-hosted-canary-raw" --sealed-root "$RUNNER_TEMP/m6-hosted-canary-sealed"
+      - name: Keep sealed hosted fake evidence
+        if: ${{ always() && steps.hosted_fake_seal.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: m6-hosted-canary-evidence
+          path: ${{ runner.temp }}/m6-hosted-canary-sealed/
+          if-no-files-found: error
+          retention-days: 30
       - name: Seal the raw rehearsal evidence
         if: always()
         env:
