@@ -33,7 +33,8 @@ The release rehearsal does not replace this full acceptance.
 Use [m6-release.yml](../.github/workflows/m6-release.yml) on a GitHub-hosted macOS 26 runner.
 The macOS tools preserve the historical tool hashes.
 Portable tool work belongs to [M12](https://github.com/faberline/som/milestone/18).
-All project tests, builds, and QA services run on GitHub runners.
+Run all project tests on GitHub runners.
+Local development is limited to Cargo lint and formatting checks.
 
 The workflow downloads two exact #130 artifacts.
 It checks their repository, run, source commit, length, archive hash, index, and member set.
@@ -101,11 +102,12 @@ process and protected-port observations remain producer attestations.
 
 ## Production change
 
-**Do not run the commands below under the current runner-only restriction.**
-The production tools start local services and run local HTTP and CLI canaries.
-The user chose to keep tests and services on GitHub runners.
-A production approval does not change that restriction.
-First provide a reviewed way to satisfy it without removing the required checks.
+**Do not run the commands below in their current form.**
+The production service may run on the designated host after explicit approval.
+All tests must run on GitHub runners, including the HTTP and CLI canaries.
+The current tools run those canaries locally during the switch and checks.
+First provide a reviewed way to run the tests on GitHub without removing the required checks.
+A production approval does not authorize local tests.
 The commands below are a historical deployment draft, not an executable plan.
 
 First prepare a concrete deployment package and rollback command.
