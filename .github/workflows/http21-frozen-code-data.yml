@@ -1,0 +1,717 @@
+name: HTTP21 frozen code data only
+
+on:
+  push:
+    branches: [codex/m12-http21-frozen-code-data-v1]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  observe-fixed-code-data:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Initialize fixed public evidence
+        timeout-minutes: 1
+        env:
+          FROZEN_DATA_ROOT: ${{ runner.temp }}/http21-frozen-code-data-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test ! -e "$FROZEN_DATA_ROOT"
+          mkdir -m 700 -- "$FROZEN_DATA_ROOT"
+          printf '%s\n' '{"status":"NOT_RUN","F11_passed":false,"HTTP21_passed":false,"native_authority":false,"SourceSeal":false,"source_authority":false,"receipt_admission":false,"product_acceptance":false,"full671_passed":false,"full12_passed":false,"M12_passed":false}' > "$FROZEN_DATA_ROOT/initial.json"
+      - name: Checkout exact observation source
+        timeout-minutes: 3
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Select fixed control CPython
+        timeout-minutes: 4
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.11'
+          architecture: x64
+          check-latest: false
+      - name: Prepare literal observer only
+        timeout-minutes: 1
+        env:
+          FROZEN_DATA_ROOT: ${{ runner.temp }}/http21-frozen-code-data-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          umask 077
+          cat > "$FROZEN_DATA_ROOT/observer.py" <<'PY_OBSERVER'
+          """FRESH_NEW_CONTROL_DATA_OBSERVATION. Never execute either code object.
+          
+          This is a two-input data observer. It is not an F11 test or an authority check.
+          It cannot recover the hidden values of the old failed process.
+          """
+          import _imp
+          import builtins
+          import hashlib
+          import json
+          import marshal
+          import os
+          from pathlib import Path
+          import stat
+          import struct
+          import subprocess
+          import sys
+          import traceback
+          from types import BuiltinFunctionType, CodeType
+          
+          BASE = '49393e8ce2e1551472eb0158495f858f683c9d68'
+          REPOSITORY = 'faberline/som'
+          BRANCH = 'refs/heads/codex/m12-http21-frozen-code-data-v1'
+          WORKFLOW = '.github/workflows/http21-frozen-code-data.yml'
+          BINARY_SHA256 = '51692a4ce6baa29dac1a78f26ced89b85a749bf1cef0ee471a56469967039f1d'
+          PAIRS = (
+              ('_frozen_importlib', 'importlib._bootstrap', '_bootstrap.py', 57057,
+               'd112d54b7831cf4a818d4841d5ff8003b54df220a6dabafa61f67d7c7a5603f7'),
+              ('_frozen_importlib_external', 'importlib._bootstrap_external', '_bootstrap_external.py', 69406,
+               '9bde390a6f254cf6641bfdba053084c1d506c7324c142131c695d030662ab63d'),
+          )
+          CODE_FIELDS = ('co_argcount', 'co_posonlyargcount', 'co_kwonlyargcount', 'co_nlocals',
+                         'co_stacksize', 'co_flags', 'co_code', 'co_consts', 'co_names',
+                         'co_varnames', 'co_filename', 'co_name', 'co_qualname', 'co_firstlineno',
+                         'co_linetable', 'co_exceptiontable', 'co_freevars', 'co_cellvars')
+          MAX_SOURCE = 2 * 1024 * 1024
+          MAX_NODES = 1000000
+          MAX_DEPTH = 256
+          MAX_OUTPUT = 32 * 1024 * 1024
+          FALSE_FIELDS = ('F11_passed', 'HTTP21_passed', 'native_authority', 'SourceSeal',
+                          'source_authority', 'receipt_admission', 'product_acceptance',
+                          'full671_passed', 'full12_passed', 'M12_passed')
+          
+          
+          def main():
+              evidence = Path(os.environ['FROZEN_DATA_ROOT'])
+              repository = Path(os.environ['GITHUB_WORKSPACE'])
+              errors = []
+              output_bytes = 0
+              node_visits = 0
+              observations = []
+              git_checks = {}
+          
+              def remember(where, error):
+                  if any(item[0] is error for item in errors):
+                      return
+                  tb = error.__traceback__
+                  errors.append((error, tb, {'where': where,
+                      'type': type(error).__module__ + '.' + type(error).__qualname__,
+                      'message': str(error),
+                      'traceback': ''.join(traceback.format_exception(type(error), error, tb))}))
+          
+              def write_bytes(relative, raw):
+                  nonlocal output_bytes
+                  fd = None
+                  primary = None
+                  try:
+                      if type(raw) is not bytes or output_bytes + len(raw) > MAX_OUTPUT:
+                          raise ValueError('observer aggregate output bound; output is incomplete')
+                      path = evidence / relative
+                      path.parent.mkdir(parents=True, exist_ok=True)
+                      fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+                      offset = 0
+                      while offset < len(raw):
+                          count = os.write(fd, raw[offset:])
+                          if count <= 0:
+                              raise OSError('observer output write made no progress')
+                          offset += count
+                          output_bytes += count
+                  except BaseException as error:
+                      remember('write:' + relative, error)
+                      primary = (error, error.__traceback__)
+                  finally:
+                      if fd is not None:
+                          try:
+                              os.close(fd)
+                          except BaseException as error:
+                              remember('close-output:' + relative, error)
+                              if primary is None:
+                                  primary = (error, error.__traceback__)
+                  if primary is not None:
+                      raise primary[0].with_traceback(primary[1])
+          
+              def write_json(relative, value):
+                  raw = (json.dumps(value, ensure_ascii=True, separators=(',', ':'),
+                                    allow_nan=False) + '\n').encode('ascii')
+                  write_bytes(relative, raw)
+          
+              def identity(info):
+                  return [info.st_dev, info.st_ino, info.st_mode, info.st_nlink,
+                          info.st_size, info.st_mtime_ns, info.st_ctime_ns]
+          
+              def source_read(leaf, expected_size, expected_sha, phase):
+                  path = Path(sys._stdlib_dir) / 'importlib' / leaf
+                  fd = None
+                  primary = None
+                  answer = None
+                  try:
+                      parents = []
+                      for parent in reversed(path.parents):
+                          info = parent.lstat()
+                          if not stat.S_ISDIR(info.st_mode) or stat.S_ISLNK(info.st_mode):
+                              raise ValueError('fixed stdlib source has a nonphysical ancestor')
+                          parents.append((str(parent), info.st_dev, info.st_ino, info.st_mode))
+                      before = path.lstat()
+                      if (not stat.S_ISREG(before.st_mode) or stat.S_IMODE(before.st_mode) != 0o644
+                              or before.st_nlink != 1 or before.st_size != expected_size
+                              or before.st_size > MAX_SOURCE):
+                          raise ValueError('fixed stdlib regular0644/nlink1/size data differs')
+                      fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+                      opened = os.fstat(fd)
+                      if identity(opened) != identity(before):
+                          raise ValueError('fixed stdlib opened identity differs')
+                      chunks = []
+                      size = 0
+                      while True:
+                          chunk = os.read(fd, 65536)
+                          if not chunk:
+                              break
+                          size += len(chunk)
+                          if size > MAX_SOURCE:
+                              raise ValueError('fixed stdlib source byte bound')
+                          chunks.append(chunk)
+                      raw = b''.join(chunks)
+                      after_fd, after_path = os.fstat(fd), path.lstat()
+                      write_json('reads/' + leaf + '.' + phase + '.json', {
+                          'path': str(path), 'before': identity(before), 'opened': identity(opened),
+                          'after_fd': identity(after_fd), 'after_path': identity(after_path),
+                          'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
+                          'expected_bytes': expected_size, 'expected_sha256': expected_sha,
+                          'qualified': False, 'meaning': 'raw read observations before all source guards; no source admission'})
+                      if identity(before) != identity(after_fd) or identity(before) != identity(after_path):
+                          raise ValueError('fixed stdlib source changed during read')
+                      after_parents = []
+                      for parent in reversed(path.parents):
+                          info = parent.lstat()
+                          if not stat.S_ISDIR(info.st_mode) or stat.S_ISLNK(info.st_mode):
+                              raise ValueError('fixed stdlib ancestor became nonphysical')
+                          after_parents.append((str(parent), info.st_dev, info.st_ino, info.st_mode))
+                      if parents != after_parents or len(raw) != expected_size or hashlib.sha256(raw).hexdigest() != expected_sha:
+                          raise ValueError('fixed stdlib complete bytes or ancestry differs')
+                      answer = (raw, {'path': str(path), 'identity': identity(before),
+                                      'parents': parents, 'bytes': len(raw), 'sha256': expected_sha})
+                  except BaseException as error:
+                      remember('read-stdlib:' + leaf, error)
+                      primary = (error, error.__traceback__)
+                  finally:
+                      if fd is not None:
+                          try:
+                              os.close(fd)
+                          except BaseException as error:
+                              remember('close-stdlib:' + leaf, error)
+                              if primary is None:
+                                  primary = (error, error.__traceback__)
+                  if primary is not None:
+                      raise primary[0].with_traceback(primary[1])
+                  return answer
+          
+              def binary_observation():
+                  path = Path(sys.executable).resolve(strict=True)
+                  fd = None
+                  primary = None
+                  row = None
+                  try:
+                      before = path.lstat()
+                      if not stat.S_ISREG(before.st_mode):
+                          raise ValueError('control interpreter must be a regular file')
+                      fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+                      if identity(os.fstat(fd)) != identity(before):
+                          raise ValueError('control interpreter opened identity differs')
+                      digest = hashlib.sha256()
+                      size = 0
+                      while True:
+                          chunk = os.read(fd, 65536)
+                          if not chunk:
+                              break
+                          digest.update(chunk)
+                          size += len(chunk)
+                      if identity(os.fstat(fd)) != identity(before) or identity(path.lstat()) != identity(before):
+                          raise ValueError('control interpreter changed during hash read')
+                      row = {'executable': str(path), 'identity': identity(before),
+                             'binary_sha256': digest.hexdigest(), 'binary_bytes': size}
+                  except BaseException as error:
+                      remember('control-binary-read', error)
+                      primary = (error, error.__traceback__)
+                  finally:
+                      if fd is not None:
+                          try:
+                              os.close(fd)
+                          except BaseException as error:
+                              remember('control-binary-close', error)
+                              if primary is None:
+                                  primary = (error, error.__traceback__)
+                  if primary is not None:
+                      raise primary[0].with_traceback(primary[1])
+                  return row
+          
+              def visit(depth):
+                  nonlocal node_visits
+                  node_visits += 1
+                  if depth > MAX_DEPTH or node_visits > MAX_NODES:
+                      raise ValueError('aggregate code-data node/depth bound; observation incomplete')
+          
+              def encode(value, depth=0):
+                  visit(depth)
+                  kind = type(value)
+                  if kind is CodeType:
+                      return {'type': 'code', 'fields': [
+                          {'field': field, 'value': encode(object.__getattribute__(value, field), depth + 1)}
+                          for field in CODE_FIELDS]}
+                  if kind is tuple:
+                      return {'type': 'tuple', 'items': [encode(item, depth + 1) for item in value]}
+                  if kind is frozenset:
+                      members = [encode(item, depth + 1) for item in value]
+                      members.sort(key=lambda item: json.dumps(item, ensure_ascii=True, separators=(',', ':')))
+                      return {'type': 'frozenset', 'members': members,
+                              'order': 'unordered membership; sorted for data dump only'}
+                  if kind is str:
+                      return {'type': 'str', 'value': value}
+                  if kind is bytes:
+                      return {'type': 'bytes', 'hex': value.hex()}
+                  if kind is bool:
+                      return {'type': 'bool', 'value': value}
+                  if kind is int:
+                      return {'type': 'int', 'decimal': str(value)}
+                  if kind is float:
+                      return {'type': 'float', 'ieee754_binary64_be': struct.pack('>d', value).hex()}
+                  if kind is complex:
+                      return {'type': 'complex', 'real_binary64_be': struct.pack('>d', value.real).hex(),
+                              'imag_binary64_be': struct.pack('>d', value.imag).hex()}
+                  if kind is type(None):
+                      return {'type': 'None'}
+                  if kind is type(Ellipsis):
+                      return {'type': 'Ellipsis'}
+                  raise ValueError('unexpected code-data type; no arbitrary object repr or fallback')
+          
+              def summary(value):
+                  kind = type(value)
+                  if kind is CodeType:
+                      return {'type': 'code', 'name': object.__getattribute__(value, 'co_name'),
+                              'qualname': object.__getattribute__(value, 'co_qualname')}
+                  if kind is tuple:
+                      return {'type': 'tuple', 'length': len(value)}
+                  if kind is frozenset:
+                      return {'type': 'frozenset', 'length': len(value)}
+                  return encode(value)
+          
+              def compare_data(actual, expected, progress):
+                  pending = [(actual, expected, [], 0)]
+                  visited = 0
+                  differences = 0
+                  appendix = []
+                  first_difference = None
+                  while pending:
+                      left, right, path, depth = pending.pop()
+                      visited += 1
+                      original_bound_passed = visited <= MAX_NODES
+                      progress.update({'data_walk_visit': visited, 'path': path,
+                                       'original_visited_bound_passed': original_bound_passed,
+                                       'type_identity_equal': None,
+                                       'meaning': 'fresh probe traversal only; old failed process values remain unknown'})
+                      if not original_bound_passed:
+                          raise ValueError('original comparison visited bound exceeded; not a type mismatch')
+                      visit(depth)
+                      same_type = type(left) is type(right)
+                      progress['type_identity_equal'] = same_type
+                      reason = None
+                      kind = type(left)
+                      if not same_type:
+                          reason = 'original constant-type predicate differs'
+                      elif kind is CodeType:
+                          pending.extend((object.__getattribute__(left, field), object.__getattribute__(right, field),
+                                          path + [field], depth + 1) for field in CODE_FIELDS)
+                      elif kind is tuple:
+                          if len(left) != len(right):
+                              reason = 'original tuple-length predicate differs'
+                          else:
+                              pending.extend((a, b, path + [index], depth + 1)
+                                             for index, (a, b) in enumerate(zip(left, right)))
+                      elif kind is frozenset:
+                          allowed = (str, bytes, int, float, complex, bool, type(None), tuple)
+                          if not all(type(item) in allowed for item in left | right) or left != right:
+                              reason = 'original frozenset predicate differs'
+                      elif kind not in (str, bytes, int, float, complex, bool, type(None), type(Ellipsis)) or left != right:
+                          reason = 'original scalar-field predicate differs'
+                      if reason is not None:
+                          differences += 1
+                          item = {'path': path, 'reason': reason, 'data_walk_visit': visited,
+                                  'original_visited_bound_passed': original_bound_passed,
+                                  'type_identity_equal': same_type,
+                                  'actual': summary(left), 'compile0': summary(right)}
+                          if first_difference is None:
+                              first_difference = item
+                          if len(appendix) < 256:
+                              appendix.append(item)
+                  return {'provenance': 'FRESH_NEW_CONTROL_DATA_OBSERVATION',
+                          'result': 'OBSERVED_PAIR_DIFFERENT' if differences else 'OBSERVED_PAIR_EQUAL',
+                          'original_field_order': list(CODE_FIELDS),
+                          'ordering': 'original LIFO fields and tuple indices; after first rejection, continue only as a bounded data difference walk',
+                          'difference_count': differences, 'first_difference': first_difference,
+                          'difference_appendix_first256': appendix, 'data_walk_visits': visited,
+                          'first_original_rejection_visit': None if first_difference is None else first_difference['data_walk_visit'],
+                          'original_visit_limit': MAX_NODES,
+                          'count_definition': 'one structural difference per mismatched type, tuple length, frozenset or scalar; incomparable children not traversed; complete typed trees retained',
+                          'old_5cdd_hidden_values': 'NOT_EXPORTED_NOT_RECOVERED'}
+          
+              def git(*args):
+                  result = subprocess.run(['/usr/bin/git', '-C', str(repository), *args],
+                                          stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, check=False)
+                  if result.returncode != 0:
+                      raise ValueError('fixed local Git data read failed')
+                  return result.stdout
+          
+              def source_join(phase):
+                  if repository != repository.resolve(strict=True) or not repository.is_dir():
+                      raise ValueError('physical checkout required')
+                  if os.environ.get('GITHUB_REPOSITORY') != REPOSITORY or os.environ.get('GITHUB_REF') != BRANCH:
+                      raise ValueError('fixed repository/ref required')
+                  head = git('rev-parse', 'HEAD').decode('ascii').strip()
+                  if head != os.environ.get('GITHUB_SHA') or head != os.environ.get('GITHUB_WORKFLOW_SHA'):
+                      raise ValueError('actual Git/GitHub/workflow SHA join differs')
+                  commit = git('cat-file', 'commit', head)
+                  parents = [line[7:].decode('ascii') for line in commit.split(b'\n\n', 1)[0].splitlines() if line.startswith(b'parent ')]
+                  if parents != [BASE] or git('ls-tree', '-z', BASE, '--', WORKFLOW):
+                      raise ValueError('exact single parent and absent workflow required')
+                  diff = git('diff', '--name-status', '-z', BASE, head, '--')
+                  if diff != b'A\0' + WORKFLOW.encode() + b'\0' or git('status', '--porcelain=v1', '-z', '--untracked-files=all'):
+                      raise ValueError('exact1A and clean checkout required')
+                  path = repository / WORKFLOW
+                  for parent in (path.parent, *path.parent.parents):
+                      if not parent.is_dir() or parent.is_symlink():
+                          raise ValueError('physical workflow ancestry required')
+                  info = path.lstat()
+                  if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o644 or info.st_nlink != 1:
+                      raise ValueError('regular0644 workflow required')
+                  raw = path.read_bytes()
+                  oid = hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+                  if git('ls-tree', '-z', head, '--', WORKFLOW) != ('100644 blob ' + oid + '\t' + WORKFLOW).encode() + b'\0':
+                      raise ValueError('workflow Git blob/mode differs')
+                  if git('cat-file', 'blob', oid) != raw or identity(path.lstat()) != identity(info):
+                      raise ValueError('complete workflow bytes changed')
+                  write_bytes(phase + '/commit.raw', commit)
+                  write_bytes(phase + '/diff.raw', diff)
+                  write_bytes(phase + '/workflow.yml', raw)
+                  row = {'HEAD': head, 'parents': parents, 'repository': REPOSITORY, 'ref': BRANCH,
+                         'workflow_SHA': os.environ['GITHUB_WORKFLOW_SHA'], 'workflow_blob_oid': oid,
+                         'workflow_sha256': hashlib.sha256(raw).hexdigest(), 'workflow_identity': identity(info),
+                         'clean_checkout': True, 'actual_diff': '1A', 'native_authority': False}
+                  write_json(phase + '/source.json', row)
+                  git_checks[phase] = row
+          
+              binary_before = None
+              script_sha = None
+              try:
+                  script_sha = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+                  write_json('observer-source.json', {'sha256': script_sha, 'file': str(Path(__file__)),
+                                                    'native_authority': False})
+                  binary_before = binary_observation()
+                  write_json('interpreter.json', {**binary_before,
+                      'version': list(sys.version_info),
+                      'flags': {'isolated': sys.flags.isolated, 'no_site': sys.flags.no_site,
+                                'dont_write_bytecode': sys.flags.dont_write_bytecode, 'optimize': sys.flags.optimize,
+                                'hash_randomization': sys.flags.hash_randomization},
+                      'marshal_version': marshal.version, 'native_authority': False})
+                  if sys.version_info[:3] != (3, 12, 11) or sys.platform != 'linux' or os.uname().machine != 'x86_64':
+                      raise ValueError('fixed Linux x64 CPython3.12.11 required')
+                  if (sys.flags.isolated, sys.flags.no_site, sys.flags.dont_write_bytecode, sys.flags.optimize) != (1, 1, 1, 0):
+                      raise ValueError('exact-I-S-B/optimization0 required')
+                  if binary_before['binary_sha256'] != BINARY_SHA256:
+                      raise ValueError('fixed actual control binary hash differs; no fallback')
+                  if (type(_imp.get_frozen_object) is not BuiltinFunctionType or _imp.get_frozen_object.__self__ is not _imp
+                          or _imp.get_frozen_object.__name__ != 'get_frozen_object'
+                          or type(builtins.compile) is not BuiltinFunctionType or builtins.compile.__self__ is not builtins
+                          or builtins.compile.__name__ != 'compile'):
+                      raise ValueError('original fixed builtin code-data readers required')
+                  write_json('readers.json', {'frozen': {'name': _imp.get_frozen_object.__name__, 'owner': '_imp'},
+                      'compile': {'name': builtins.compile.__name__, 'owner': 'builtins'}, 'native_authority': False})
+                  write_json('github.json', {key: os.environ.get(key) for key in (
+                      'GITHUB_REPOSITORY', 'GITHUB_SHA', 'GITHUB_WORKFLOW_SHA', 'GITHUB_REF',
+                      'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_JOB', 'GITHUB_WORKFLOW_REF')})
+                  source_join('pre')
+                  for frozen_id, canonical, leaf, size, digest in PAIRS:
+                      row = {'frozen_id': frozen_id, 'canonical': canonical, 'complete': False,
+                             'provenance': 'FRESH_NEW_CONTROL_DATA_OBSERVATION'}
+                      before = None
+                      try:
+                          raw, before = source_read(leaf, size, digest, 'pre')
+                          write_bytes(canonical + '/source.py', raw)
+                          write_json(canonical + '/source-pre.json', before)
+                          expected = builtins.compile(raw, '<frozen ' + canonical + '>', 'exec', dont_inherit=True, optimize=0)
+                          actual = _imp.get_frozen_object(frozen_id)
+                          if type(actual) is not CodeType or type(expected) is not CodeType:
+                              raise ValueError('fixed readers did not return exact CodeType data')
+                          actual_tree, expected_tree = encode(actual), encode(expected)
+                          write_json(canonical + '/actual.tree.json', actual_tree)
+                          write_json(canonical + '/compile0.tree.json', expected_tree)
+                          write_bytes(canonical + '/actual.marshal', marshal.dumps(actual))
+                          write_bytes(canonical + '/compile0.marshal', marshal.dumps(expected))
+                          progress = {}
+                          row['comparison_progress'] = progress
+                          difference = compare_data(actual, expected, progress)
+                          difference['typed_tree_data_equal'] = actual_tree == expected_tree
+                          difference['comparison_semantics'] = 'pair result and difference count use original18-field predicates; exact typed dumps separately retain float bits and frozenset element types without changing those predicates'
+                          write_json(canonical + '/differences.json', difference)
+                          row['comparison'] = difference
+                          row['complete'] = True
+                      except BaseException as error:
+                          remember('observe:' + canonical, error)
+                      finally:
+                          try:
+                              raw_after, after = source_read(leaf, size, digest, 'post')
+                              write_json(canonical + '/source-post.json', after)
+                              if before is None or before != after:
+                                  raise ValueError('complete stdlib source pre/post identities differ or pre-read missing')
+                          except BaseException as error:
+                              row['complete'] = False
+                              remember('post-stdlib:' + canonical, error)
+                          observations.append(row)
+              except BaseException as error:
+                  remember('fixed-control-or-source-pre', error)
+              finally:
+                  try:
+                      binary_after = binary_observation()
+                      write_json('interpreter-post.json', binary_after)
+                      if binary_before is None or binary_before != binary_after:
+                          raise ValueError('complete control binary pre/post identities differ or pre-read missing')
+                      if script_sha is None or hashlib.sha256(Path(__file__).read_bytes()).hexdigest() != script_sha:
+                          raise ValueError('observer script bytes changed or initial script observation missing')
+                  except BaseException as error:
+                      remember('control-binary-or-script-post', error)
+                  try:
+                      source_join('post')
+                      if 'pre' not in git_checks or git_checks['pre'] != git_checks['post']:
+                          raise ValueError('complete Git/workflow source pre/post join differs')
+                  except BaseException as error:
+                      remember('source-post', error)
+                  for name, value in (('errors.json', [item[2] for item in errors]),
+                                      ('limits.json', {'source_bytes_each': MAX_SOURCE, 'aggregate_nodes': MAX_NODES,
+                                                       'depth': MAX_DEPTH, 'aggregate_output_bytes': MAX_OUTPUT,
+                                                       'actual_aggregate_node_visits': node_visits})):
+                      try:
+                          write_json(name, value)
+                      except BaseException as error:
+                          remember('final-evidence:' + name, error)
+                  outcome = {'version': 'som.http21.fixed-two-code-data-observation.v1',
+                             'provenance': 'FRESH_NEW_CONTROL_DATA_OBSERVATION',
+                             'observation_complete': len(observations) == 2 and all(row['complete'] for row in observations) and not errors,
+                             'observations': observations, 'first_error': None if not errors else errors[0][2],
+                             'later_errors': [item[2] for item in errors[1:]],
+                             'old_5cdd_hidden_values': 'NOT_EXPORTED_NOT_RECOVERED',
+                             'process_state_limit': 'same binary/source pins do not establish the old hash seed, import order, object state or visited values',
+                             'node_visits': node_visits, 'output_bytes_before_outcome': output_bytes}
+                  for field in FALSE_FIELDS:
+                      outcome[field] = False
+                  try:
+                      write_json('outcome.json', outcome)
+                  except BaseException as error:
+                      remember('outcome-write', error)
+              if errors:
+                  first, tb, record = errors[0]
+                  for later in errors[1:]:
+                      BaseException.add_note(first, 'Later independent data/evidence failure: ' + json.dumps(later[2], ensure_ascii=True))
+                  try:
+                      traceback.print_exception(type(first), first, tb)
+                  except BaseException as error:
+                      remember('first-error-raw-write', error)
+                      BaseException.add_note(first, 'Later raw traceback output failed: ' + str(error))
+                      try:
+                          write_json('terminal-output-errors.json', [item[2] for item in errors])
+                      except BaseException as evidence_error:
+                          remember('terminal-output-error-evidence', evidence_error)
+                  raise first.with_traceback(tb)
+              try:
+                  print(json.dumps({'observation_complete': True,
+                      'pair_results': [row['comparison']['result'] for row in observations],
+                      'F11_passed': False, 'HTTP21_passed': False, 'native_authority': False,
+                      'SourceSeal': False, 'M12_passed': False}))
+              except BaseException as error:
+                  remember('terminal-summary-output', error)
+                  primary_tb = error.__traceback__
+                  try:
+                      write_json('terminal-output-errors.json', [item[2] for item in errors])
+                  except BaseException as later:
+                      remember('terminal-summary-error-evidence', later)
+                      BaseException.add_note(error, 'Later terminal evidence write failed: ' + str(later))
+                  raise error.with_traceback(primary_tb)
+          
+          
+          if __name__ == '__main__':
+              main()
+          PY_OBSERVER
+          chmod 400 "$FROZEN_DATA_ROOT/observer.py"
+      - name: Observe the two fixed code-data pairs once
+        timeout-minutes: 5
+        env:
+          FROZEN_DATA_ROOT: ${{ runner.temp }}/http21-frozen-code-data-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          umask 077
+          set +e
+          python -I -S -B "$FROZEN_DATA_ROOT/observer.py" 2>&1 | /usr/bin/tee "$FROZEN_DATA_ROOT/observer.merged.raw" 2> "$FROZEN_DATA_ROOT/tee.stderr.raw"
+          pipeline=( "${PIPESTATUS[@]}" )
+          set -e
+          printf '%s\n' "${pipeline[@]}" > "$FROZEN_DATA_ROOT/observer.pipeline-exits"
+          test "${#pipeline[@]}" -eq 2
+          if test "${pipeline[0]}" -ne 0; then exit "${pipeline[0]}"; fi
+          if test "${pipeline[1]}" -ne 0; then exit "${pipeline[1]}"; fi
+      - name: Always inventory all available data without another observation
+        if: always()
+        timeout-minutes: 3
+        env:
+          FROZEN_DATA_ROOT: ${{ runner.temp }}/http21-frozen-code-data-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          umask 077
+          python -I -S -B - <<'PY_COLLECTOR'
+          """Always retain available fixed-observer data. Never run the observer again."""
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import stat
+          import sys
+          import traceback
+          
+          MAX_OUTPUT = 32 * 1024 * 1024
+          FALSE_FIELDS = ('F11_passed', 'HTTP21_passed', 'native_authority', 'SourceSeal',
+                          'source_authority', 'receipt_admission', 'product_acceptance',
+                          'full671_passed', 'full12_passed', 'M12_passed')
+          CANONICAL = ('importlib._bootstrap', 'importlib._bootstrap_external')
+          
+          
+          def main():
+              root = Path(os.environ['FROZEN_DATA_ROOT'])
+              root.mkdir(mode=0o700, parents=False, exist_ok=True)
+              problems = []
+              report = {'version': 'som.http21.fixed-code-data.collection.v1',
+                        'provenance': 'FRESH_NEW_CONTROL_DATA_OBSERVATION',
+                        'data_checks_complete_before_inventory': False,
+                        'old_5cdd_hidden_values': 'NOT_EXPORTED_NOT_RECOVERED',
+                        'observation_is_not_F11_or_HTTP21_acceptance': True}
+              for field in FALSE_FIELDS:
+                  report[field] = False
+              try:
+                  expected = ['initial.json', 'observer.py', 'observer-source.json', 'interpreter.json',
+                              'interpreter-post.json', 'readers.json', 'github.json', 'errors.json',
+                              'limits.json', 'outcome.json', 'observer.merged.raw', 'tee.stderr.raw',
+                              'observer.pipeline-exits']
+                  for phase in ('pre', 'post'):
+                      expected += [phase + '/' + leaf for leaf in ('commit.raw', 'diff.raw', 'workflow.yml', 'source.json')]
+                  for canonical in CANONICAL:
+                      expected += [canonical + '/' + leaf for leaf in (
+                          'source.py', 'source-pre.json', 'source-post.json', 'actual.tree.json',
+                          'compile0.tree.json', 'actual.marshal', 'compile0.marshal', 'differences.json')]
+                      leaf = '_bootstrap.py' if canonical == 'importlib._bootstrap' else '_bootstrap_external.py'
+                      expected += ['reads/' + leaf + '.' + phase + '.json' for phase in ('pre', 'post')]
+                  report['missing_files'] = [name for name in expected if not (root / name).is_file()]
+                  if report['missing_files']:
+                      raise ValueError('missing evidence remains incomplete, never an observed equal/different result')
+                  exits = (root / 'observer.pipeline-exits').read_bytes()
+                  report['actual_pipeline_raw'] = exits.decode('ascii', errors='strict')
+                  if exits != b'0\n0\n':
+                      raise ValueError('actual Python and tee must both finish zero')
+                  outcome = json.loads((root / 'outcome.json').read_bytes())
+                  if outcome['provenance'] != 'FRESH_NEW_CONTROL_DATA_OBSERVATION' or outcome['observation_complete'] is not True:
+                      raise ValueError('observer did not complete both fixed data observations')
+                  if outcome['first_error'] is not None or outcome['later_errors'] != []:
+                      raise ValueError('actual observer error evidence is not empty')
+                  if any(outcome[field] is not False for field in FALSE_FIELDS):
+                      raise ValueError('observation must never grant F11/native/product/milestone authority')
+                  rows = outcome['observations']
+                  if len(rows) != 2 or tuple(row['canonical'] for row in rows) != CANONICAL or any(row['complete'] is not True for row in rows):
+                      raise ValueError('both exact fixed canonical observations required')
+                  results = [row['comparison']['result'] for row in rows]
+                  if any(result not in ('OBSERVED_PAIR_EQUAL', 'OBSERVED_PAIR_DIFFERENT') for result in results):
+                      raise ValueError('missing data is not a comparison result')
+                  report['pair_results'] = results
+                  pre = json.loads((root / 'pre/source.json').read_bytes())
+                  post = json.loads((root / 'post/source.json').read_bytes())
+                  if pre != post or pre['actual_diff'] != '1A':
+                      raise ValueError('exact Git/workflow pre/post identities required')
+                  for canonical in CANONICAL:
+                      source_pre = json.loads((root / canonical / 'source-pre.json').read_bytes())
+                      source_post = json.loads((root / canonical / 'source-post.json').read_bytes())
+                      if source_pre != source_post:
+                          raise ValueError('exact stdlib source pre/post identities required')
+                  limits = json.loads((root / 'limits.json').read_bytes())
+                  if limits['actual_aggregate_node_visits'] > 1000000:
+                      raise ValueError('node bound refusal cannot be counted as complete')
+                  report['data_checks_complete_before_inventory'] = True
+              except BaseException as error:
+                  problems.append({'where': 'complete-observation-evidence-check',
+                                   'type': type(error).__module__ + '.' + type(error).__qualname__,
+                                   'message': str(error),
+                                   'traceback': ''.join(traceback.format_exception(type(error), error, error.__traceback__))})
+              report['problems'] = problems
+              try:
+                  (root / 'collection.json').write_text(json.dumps(report, ensure_ascii=True, indent=2) + '\n')
+              except BaseException as error:
+                  problems.append({'where': 'collection-report-write', 'message': str(error),
+                                   'traceback': ''.join(traceback.format_exception(type(error), error, error.__traceback__))})
+              members = {}
+              total = 0
+              for path in sorted(root.rglob('*')):
+                  relative = str(path.relative_to(root))
+                  if relative == 'members.json':
+                      continue
+                  try:
+                      info = path.lstat()
+                      if stat.S_ISDIR(info.st_mode):
+                          continue
+                      if not stat.S_ISREG(info.st_mode):
+                          raise ValueError('nonregular available evidence member')
+                      raw = path.read_bytes()
+                      total += len(raw)
+                      members[relative] = {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
+                                           'mode': format(stat.S_IMODE(info.st_mode), '04o')}
+                  except BaseException as error:
+                      problems.append({'where': 'available-member-inventory', 'member': relative,
+                                       'message': str(error),
+                                       'traceback': ''.join(traceback.format_exception(type(error), error, error.__traceback__))})
+              inventory = {'version': 'som.http21.fixed-code-data.complete-members.v1',
+                           'self_excluded_only': 'members.json', 'members': members,
+                           'available_member_bytes_excluding_self': total,
+                           'problems': problems, 'native_authority': False, 'SourceSeal': False}
+              raw_inventory = (json.dumps(inventory, ensure_ascii=True, indent=2) + '\n').encode('ascii')
+              if total + len(raw_inventory) > MAX_OUTPUT:
+                  problems.append({'where': 'total-artifact-output-bound', 'message': 'available output exceeds32MiB; observation incomplete'})
+                  report['data_checks_complete_before_inventory'] = False
+                  raw_inventory = (json.dumps(inventory, ensure_ascii=True, indent=2) + '\n').encode('ascii')
+              try:
+                  (root / 'members.json').write_bytes(raw_inventory)
+              except BaseException as error:
+                  problems.append({'where': 'member-inventory-write', 'message': str(error),
+                                   'traceback': ''.join(traceback.format_exception(type(error), error, error.__traceback__))})
+              if problems:
+                  for problem in problems:
+                      print(json.dumps(problem, ensure_ascii=True), file=sys.stderr)
+                  raise SystemExit(1)
+              print(json.dumps({'complete_fixed_data_observation': True, 'pair_results': report['pair_results'],
+                                'F11_passed': False, 'HTTP21_passed': False, 'native_authority': False,
+                                'SourceSeal': False, 'M12_passed': False}))
+          
+          
+          if __name__ == '__main__':
+              main()
+          PY_COLLECTOR
+      - name: Always upload complete available public data
+        if: always()
+        timeout-minutes: 3
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: http21-frozen-code-data-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/http21-frozen-code-data-${{ github.run_id }}-${{ github.run_attempt }}/
+          include-hidden-files: true
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
