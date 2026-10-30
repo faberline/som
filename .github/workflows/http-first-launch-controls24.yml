@@ -1,0 +1,352 @@
+name: HTTP first-launch 24 control fixtures
+on:
+  push:
+    branches:
+      - codex/m12-http-first-launch-controls24-v2
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: http24-controls-${{ github.ref }}
+  cancel-in-progress: false
+defaults:
+  run:
+    shell: bash
+jobs:
+  controls24:
+    if: github.repository == 'faberline/som' && github.ref == 'refs/heads/codex/m12-http-first-launch-controls24-v2'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Initialize bounded nonsecret evidence
+        id: evidence
+        timeout-minutes: 1
+        env:
+          HTTP24_EVIDENCE: ${{ runner.temp }}/som-http24-control-evidence
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -m 700 "$HTTP24_EVIDENCE"
+          mkdir -m 700 "$HTTP24_EVIDENCE/tmp"
+          printf '%s\n' '{"status":"NOT_RUN","controls24_passed":false,"native_authority":false,"SourceSeal":false,"M12_passed":false,"old136":"UNRUN","invalid_phase_runtime":"NOT_SUPPLIED"}' > "$HTTP24_EVIDENCE/outcome.json"
+      - name: Checkout exact candidate without stored credentials
+        id: checkout
+        timeout-minutes: 2
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Select control CPython 3.12.11
+        id: setup
+        timeout-minutes: 3
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.11'
+          architecture: x64
+          check-latest: false
+      - name: Record actual control interpreter and stdlib data
+        id: interpreter
+        timeout-minutes: 2
+        env:
+          HTTP24_EVIDENCE: ${{ runner.temp }}/som-http24-control-evidence
+          SETUP_PYTHON: ${{ steps.setup.outputs.python-path }}
+        run: |
+          set -euo pipefail
+          "$SETUP_PYTHON" -I -S -B - <<'PY'
+          import hashlib,json,os,stat,sys,traceback
+          from pathlib import Path
+          root=Path(os.environ['HTTP24_EVIDENCE'])
+          row={'version':'som.http24.control-interpreter.v1','qualified_product_runtime':False,'ready':False}
+          try:
+              binary=Path(sys.executable).resolve(strict=True)
+              row.update(version=list(sys.version_info),implementation=sys.implementation.name,executable=str(binary),
+                  binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(),binary_mode=oct(stat.S_IMODE(binary.stat().st_mode)),
+                  flags={'isolated':sys.flags.isolated,'no_site':sys.flags.no_site,'dont_write_bytecode':sys.flags.dont_write_bytecode,
+                         'optimize':sys.flags.optimize},orig_argv=sys.orig_argv,setup_action='a26af69be951a213d495a4c3e4e4022e16d87065')
+              if sys.version_info[:3]!=(3,12,11) or sys.implementation.name!='cpython' or row['flags']!={'isolated':1,'no_site':1,'dont_write_bytecode':1,'optimize':0}:
+                  raise ValueError('exact isolated control interpreter required')
+              row['stdlib_data']={}
+              for leaf in ('_bootstrap.py','_bootstrap_external.py'):
+                  path=Path(sys._stdlib_dir)/'importlib'/leaf;raw=path.read_bytes()
+                  (root/('control-stdlib-'+leaf)).write_bytes(raw)
+                  row['stdlib_data'][str(path)]={'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest(),'mode':oct(stat.S_IMODE(path.stat().st_mode))}
+              (root/'control-python.path').write_text(str(binary)+'\n')
+              with open(os.environ['GITHUB_OUTPUT'],'a') as output:
+                  output.write('path='+str(binary)+'\n')
+              row['ready']=True
+          except BaseException:
+              (root/'interpreter.failure.traceback.txt').write_text(traceback.format_exc())
+              raise
+          finally:
+              (root/'interpreter.json').write_text(json.dumps(row,sort_keys=True,indent=2)+'\n')
+          PY
+      - name: Bind full reviewed source before the single fixture run
+        id: pre
+        timeout-minutes: 3
+        env:
+          HTTP24_EVIDENCE: ${{ runner.temp }}/som-http24-control-evidence
+          CONTROL_PYTHON: ${{ steps.interpreter.outputs.path }}
+        run: |
+          set -euo pipefail
+          cat > "$HTTP24_EVIDENCE/source_bind.py" <<'PY'
+          import ast, hashlib, json, os, re, stat, subprocess, sys, traceback
+          from pathlib import Path
+          BASE = '49393e8ce2e1551472eb0158495f858f683c9d68'
+          WORKFLOW = '.github/workflows/http-first-launch-controls24.yml'
+          EXPECTED = {'.github/workflows/rust-hosted-readiness.yml': {'bytes': 64432, 'sha256': '65f136f9579330e3bf87a151c6e28f063dfd4c1a53d6a579794480cb98baf977', 'git_blob_oid': 'ae444c5383a49585acc7adc97245dbee051a45bd', 'git_mode': '100644'}, '.github/workflows/rust-same-candidate-products.yml': {'bytes': 40974, 'sha256': '9b9d16b06cec79b72a74b734c5e114686c2db97e5936048242b5778d02c6ef4c', 'git_blob_oid': '206f3a5604731f9688a192cce747fbb00a6dda74', 'git_mode': '100644'}, 'som-rs/scripts/hosted_readiness/native_first_launch_profile_v1.json': {'bytes': 85991, 'sha256': '0937e44ad864c497e04f56fd07f6e048c7a538e072f27bdfdd58708921d198bb', 'git_blob_oid': '35a71d90a51ecc230867e46214a86303eb3b04fc', 'git_mode': '100644'}, 'som-rs/scripts/hosted_readiness/native_source_bootstrap.py': {'bytes': 128059, 'sha256': 'd69f36f0c94b32a3ad50c2d6d67805af71782155d62cdf79d3d7aa32a0647266', 'git_blob_oid': 'cfaac897bcd9ee7d16ebeaf0f606a5f0df8e6268', 'git_mode': '100644'}, 'som-rs/scripts/hosted_readiness/product_python/wheel-policy.json': {'bytes': 2379, 'sha256': '7a7532ed476f2e983fedfdf4304f8034765efb51df89caac604ad89c953442d7', 'git_blob_oid': 'ead01dacb6b03265356a8a170e086808b32ec77d', 'git_mode': '100644'}, 'som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py': {'bytes': 32535, 'sha256': 'f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3', 'git_blob_oid': 'b571f76acb0ac2a494b444fb2ac14ac45f8ea9ca', 'git_mode': '100644'}, 'som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py': {'bytes': 30566, 'sha256': '2a92e2df47fb05e76677fbb84e9cbb7f12d07d90eb8019bd816b5fe6b5588598', 'git_blob_oid': '8a55d0140f0f67fbe28468d3d619efc35eb5d511', 'git_mode': '100644'}, 'som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json': {'bytes': 1662, 'sha256': '7a2c04a65866474bd773b9722274c09c36646951fa7848d62e4b20b2cb94e75f', 'git_blob_oid': '6fff4442ba3b9073276642e0ea937db26cd8aae2', 'git_mode': '100644'}, 'som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json': {'bytes': 3708, 'sha256': '4aaca5ef284440fd64bd50723619425201417937b4d635bb3c5d2d5835226b68', 'git_blob_oid': '2c6a06914b420fc00e8257ee34ef8d06b8f2094c', 'git_mode': '100644'}, 'som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py': {'bytes': 33773, 'sha256': '1385e58948c8252bcd5169586cf36527e11906ecad438a190eb726ade5470a4c', 'git_blob_oid': '0b2c69843d63f43d9b4a99739c9368e42ca533f1', 'git_mode': '100644'}, 'som-rs/scripts/hosted_readiness/product_runtime/source-pins.json': {'bytes': 5972, 'sha256': 'a4208c342bc9e923509bc5ba7ce6a9a1adfe3143d55b6215f0a313b4833550b2', 'git_blob_oid': '7b55b0619ceb1c8109889259b95b241baf785b05', 'git_mode': '100644'}, 'som-rs/scripts/hosted_readiness/test_native_first_launch.py': {'bytes': 126148, 'sha256': 'f23f56cfd7ac611306b5c2e1877e9a81b0b0e5bcd4c50d2049c15a58b9d9aed2', 'git_blob_oid': '37a67b6e1a36b65ccf858e2f8fe643882346490a', 'git_mode': '100644'}}
+          METHODS = {'test_stat_exact_52_fields_signed_values_and_one_task': '9b1efcd898bd2a3d54eb1ec57a59ccced139b0bd241652a9e6a3b8630af40ec3', 'test_complete_kernel_argv_and_original_sys_arrays': 'dd0bcbe3c7f2d8999a760d3c6591de5596df8fb580452f490acdf6d8099859c6', 'test_maps_fixed_categories_bounds_and_executable_refusal': 'deba7f84efee8fc414f2423f37cfc59e5fc28dc4b0170721d23b88b05a49c474', 'test_elf_header_load_dynamic_and_string_ranges': 'df6a00e4f9590325bb3d9231947107571e33bb4f8ea1373b33d68b56a81494b7', 'test_fixed_reader_roles_host_leaf_and_every_physical_ancestor': 'd69874223b0d49293d2909c331da19092e1630649264a4026ba0b13576e0ad82', 'test_reader_stable_bounds_primary_traceback_and_once_close': 'd8d4fe71caf481fd83006d8187c7b8a96f6c53bb7b30e102c243f74f50751d80', 'test_private_environment_exact_names_values_and_no_secret_output': '9bb7ba9043823eee964e1c210b8fd0d95af77c833eab57e51168730ab467d449', 'test_private_environment_cleanup_keeps_first_error': '3e1220750c76f3eecf5812b625d4cd952eb1f328515ec022d316c57e2a8fa912', 'test_runtime_source_capsule_restore_origin_and_archive_join': '3e85e64fa33d0073f2b9e423a96ff5d04948ea7461f22a7e02cf230644274200', 'test_complete_inventory_modes_aliases_and_all_cache_bytes': '12e363b9886b814a70ae230c2db53dbf74c4ac9d8202c9c855410de0315b646d', 'test_module_native_namespaces_and_only_pinned_aliases': 'b7a77f8b7fb6cc5e59aee5e411bece043e6d9a4b2b7f2bc29c55f383b566ac30', 'test_source_frozen_normal_cache_association_and_complete_code_tree': '4fa912a9070081b43a3653fac70893a20a45608d543320d28dbcd994428c8a2d', 'test_native_module_file_graph_instrumentation_and_no_wheel_startup': '3fc839e84c617bd2665c68fe8e6cb6f0b1d42aa64173d30d83a05924e5199ddf', 'test_host_dependency_config_package_locale_and_loader_graph': 'c747f21d7867f44e9fe0738cb11e0e2b0ffce6491003d729234ee11e4d658ad8', 'test_origin_single_token_static_suffix_and_all_tail_variable_refusals': 'ae2eef250d2000db4aada6309d9af73ed9d18df2813d97ae8ba3dc787be00c73', 'test_report_completed_schema_bounded_data_and_exclusive_files': '9474ac779f402550bf7239d74c033661960d8ead1f95790352ef9758514edc1c', 'test_report_partial_write_fsync_reverse_close_and_primary_error': 'c59189d3eb781fbe67411e0b807b7241d7da9eeb92c71f6c4678c0f144565099', 'test_marker_is_flushed_only_after_all_owned_report_fds_close': '2eb39f0e430bccc780404ef096bfbaafa97c8a8f2ae83987fe4a68df3a595255', 'test_orchestrator_phase_failures_keep_primary_and_never_enter_target': '8adddd2d99b8ad67ed8c3396cbffd1b2aa16669b7def0c42a2d4640d533825c8', 'test_original_main_calls_once_before_target_and_other_calls_are_silent': '4f4cee63cdf6300e16312c9495fad586a292e585d721b2ecbe98b336ab0dfe19', 'test_original_workflow_pipeline_retains_both_real_exit_statuses': 'fc597f27f5033c1582f93cb0e9577612f902e43420ab7cfe7fc6916b78bcb2fd', 'test_frozen_build_expected_nested_literal_oracle_and_unchanged_compile_data': 'ff53a0676704a77416208975cc15d92afed03f0a455acd0e3e7cf139aa3477c2', 'test_frozen_build_expected_builtin_sort_and_repr_fallback_literal_goldens': 'f942c80c8302edaaac8bd56fcfea358c1539aa7727ab68fba23e028d9232d305', 'test_frozen_build_expected_refuses_foreign_subclasses_hooks_and_finite_bounds': 'ef861c92b49dbeb85aabfb19307db13655fd7a35b0109089ae350dd4a6e38dad'}
+          CHANGES = {'.github/workflows/rust-hosted-readiness.yml': 'M', '.github/workflows/rust-same-candidate-products.yml': 'A', 'som-rs/scripts/hosted_readiness/native_first_launch_profile_v1.json': 'A', 'som-rs/scripts/hosted_readiness/native_source_bootstrap.py': 'A', 'som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py': 'A', 'som-rs/scripts/hosted_readiness/test_native_first_launch.py': 'A', '.github/workflows/http-first-launch-controls24.yml': 'A'}
+          EVIDENCE = Path(os.environ['HTTP24_EVIDENCE'])
+          REPO = Path(os.environ['GITHUB_WORKSPACE'])
+          PHASE = sys.argv[1]
+          if PHASE not in ('pre', 'post'):
+              raise ValueError('only two fixed data phases')
+          report = {'version':'som.http24.source-binding.v1','phase':PHASE,'qualified':False,'files':{},
+                    'old136_execution':'UNRUN','invalid_phase_runtime':'NOT_SUPPLIED',
+                    'native_authority':False,'SourceSeal':False,'M12_passed':False}
+          def require(condition, message):
+              if not condition:
+                  raise ValueError(message)
+          def sha(raw): return hashlib.sha256(raw).hexdigest()
+          def blob(raw): return hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          def write_json(path, value):
+              path.write_text(json.dumps(value,sort_keys=True,indent=2)+'\n')
+          def git(*arguments):
+              result=subprocess.run(['/usr/bin/git','-C',str(REPO),*arguments],check=False,
+                  stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=30,
+                  env={'PATH':'/usr/bin:/bin','GIT_CONFIG_GLOBAL':'/dev/null',
+                       'GIT_CONFIG_NOSYSTEM':'1','LC_ALL':'C'})
+              if result.returncode:
+                  report.setdefault('git_failures',[]).append({'arguments':arguments,'exit':result.returncode,
+                      'stdout_hex':result.stdout.hex(),'stderr_hex':result.stderr.hex()})
+              result.check_returncode()
+              return result.stdout
+          def physical(path):
+              require(not any(item.is_symlink() for item in (path,*path.parents)),'physical source path required')
+          def read_source(name):
+              path=REPO/name
+              physical(path)
+              before=path.lstat()
+              require(stat.S_ISREG(before.st_mode) and stat.S_IMODE(before.st_mode)==0o644 and before.st_nlink==1,
+                      'exact regular0644/nlink1 source required: '+name)
+              raw=path.read_bytes();after=path.lstat()
+              identity=lambda s:[s.st_dev,s.st_ino,s.st_mode,s.st_nlink,s.st_uid,s.st_gid,s.st_size,s.st_mtime_ns,s.st_ctime_ns]
+              require(identity(before)==identity(after),'source changed during read: '+name)
+              artifact_name='workflows/'+name.rsplit('/',1)[1] if name.startswith('.github/workflows/') else name
+              copied=EVIDENCE/PHASE/'source'/artifact_name
+              copied.parent.mkdir(parents=True,exist_ok=True);copied.write_bytes(raw)
+              row={'bytes':len(raw),'sha256':sha(raw),'git_blob_oid':blob(raw),'git_mode':'100644','physical_identity':identity(before),
+                   'phase_relative_artifact_path':str(copied.relative_to(EVIDENCE/PHASE))}
+              report['files'][name]=row
+              entry=git('ls-tree','HEAD','--',name).decode().strip()
+              require(entry=='100644 blob '+row['git_blob_oid']+'\t'+name,'actual Git source mismatch: '+name)
+              if name in EXPECTED:
+                  require({key:row[key] for key in EXPECTED[name]}==EXPECTED[name],'reviewed source pin mismatch: '+name)
+              return raw
+          try:
+              require(sys.version_info[:3]==(3,12,11) and sys.implementation.name=='cpython','exact control CPython3.12.11 required')
+              require(sys.flags.isolated==1 and sys.flags.no_site==1 and sys.flags.dont_write_bytecode==1 and sys.flags.optimize==0,
+                      'control data verifier flags mismatch')
+              require(os.environ['GITHUB_ACTIONS']=='true' and sys.platform=='linux','GitHub Linux control lane only')
+              require(os.environ['GITHUB_REPOSITORY']=='faberline/som','wrong public repository')
+              require(os.environ['GITHUB_REF']=='refs/heads/codex/m12-http-first-launch-controls24-v2','wrong finite branch')
+              require(os.environ['GITHUB_EVENT_NAME'] in ('push','workflow_dispatch'),'wrong event')
+              head=git('rev-parse','HEAD').decode().strip();report['HEAD']=head
+              require(re.fullmatch('[0-9a-f]{40}',head) is not None and head==os.environ['GITHUB_SHA'],'actual HEAD mismatch')
+              require(os.environ['GITHUB_WORKFLOW_SHA']==head,'executed workflow SHA mismatch')
+              require(os.environ['GITHUB_WORKFLOW_REF']=='faberline/som/'+WORKFLOW+'@'+os.environ['GITHUB_REF'],'executed workflow ref mismatch')
+              commit=git('cat-file','commit',head);(EVIDENCE/(PHASE+'.commit.raw')).write_bytes(commit)
+              parents=[line[7:].decode() for line in commit.split(b'\n\n',1)[0].splitlines() if line.startswith(b'parent ')]
+              report['parents'],report['base']=parents,BASE
+              require(parents==[BASE],'exact single parent/base required')
+              difference=git('diff-tree','--no-commit-id','--no-renames','--name-status','-r','-z',BASE,head)
+              (EVIDENCE/(PHASE+'.diff.raw')).write_bytes(difference)
+              items=difference.rstrip(b'\0').split(b'\0')
+              require(len(items)==len(CHANGES)*2,'unexpected payload diff size')
+              actual={items[i+1].decode():items[i].decode() for i in range(0,len(items),2)}
+              require(actual==CHANGES,'exact finite payload A/M set required')
+              require(git('status','--porcelain=v1','-z','--untracked-files=all')==b'','checkout must remain entirely clean')
+              for name in sorted(EXPECTED):
+                  raw=read_source(name)
+                  if name.endswith('/test_native_first_launch.py'):
+                      parsed=ast.parse(raw)
+                      classes=[node for node in parsed.body if isinstance(node,ast.ClassDef) and node.name=='FirstLaunchControlTests']
+                      require(len(classes)==1,'one original test class required')
+                      methods=[node for node in classes[0].body if isinstance(node,ast.FunctionDef) and node.name.startswith('test_')]
+                      actual_methods={node.name:sha(ast.dump(node,include_attributes=False).encode()) for node in methods}
+                      require(len(methods)==24 and actual_methods==METHODS,'exact complete24 whole method ASTs required')
+                      require([node.name for node in methods]==list(METHODS),'exact24 source method order required')
+                      require(all(not node.decorator_list for node in methods),'no test decorators or skips')
+                      report['methods']=actual_methods
+                      write_json(EVIDENCE/(PHASE+'.methods.json'),[{'name':node.name,'whole_AST':ast.dump(node,include_attributes=False),
+                          'whole_AST_sha256':actual_methods[node.name]} for node in methods])
+              read_source(WORKFLOW)
+              # No self hash can be embedded. Actual bytes equal HEAD blob and executed
+              # workflow SHA. Root must separately select the final reviewed commit.
+              report['workflow_self_binding']='actual file = HEAD blob = executed github.workflow_sha; final reviewed commit selected externally by Root'
+              old11='som-rs/scripts/react_output_acceptance/test_record_http.py'
+              old_raw=(REPO/old11).read_bytes()
+              require(sha(old_raw)=='46b27c64ea46ec1402f234547c4015a9756f13f843a8cfe677d290ebd91619d7','old11 complete source changed')
+              require(git('show',BASE+':'+old11)==old_raw,'old11 differs from base')
+              old_copy=EVIDENCE/PHASE/'protected'/old11;old_copy.parent.mkdir(parents=True,exist_ok=True);old_copy.write_bytes(old_raw)
+              absent=['som-rs/scripts/hosted_readiness/test_native_source_bootstrap.py',
+                      'som-rs/scripts/hosted_readiness/test_native_active_controls.py',
+                      'som-rs/scripts/react_output_acceptance/test_native_m6_record_http.py']
+              for name in absent:
+                  require(git('ls-tree','HEAD','--',name)==b'' and not (REPO/name).exists(),'unselected old fixture must remain outside this minimal assembly')
+              report['old136_protection']={'old11':sha(old_raw),'other125':'not adopted or executed; preserved in frozen author packet',
+                  'exact_payload_diff_excludes_all_old_files':True,'absent_paths':absent}
+              if PHASE=='post':
+                  before=json.loads((EVIDENCE/'pre.json').read_bytes())
+                  require(before.get('qualified') is True,'pre binding was not qualified')
+                  require(before['HEAD']==head and before['files']==report['files'] and before['methods']==report['methods'],
+                          'complete source/modes/blob/physical identities changed across fixture')
+              report['qualified']=True
+          except BaseException:
+              (EVIDENCE/(PHASE+'.failure.traceback.txt')).write_text(traceback.format_exc())
+              raise
+          finally:
+              # Retain every still-readable fixed public source even if an earlier gate
+              # failed. These final snapshots are explicitly not qualification evidence.
+              report['available_source_snapshots']={}
+              for name in (*EXPECTED,WORKFLOW):
+                  try:
+                      path=REPO/name;physical(path);before=path.lstat()
+                      require(stat.S_ISREG(before.st_mode) and before.st_size<=1048576,'bounded regular archive source required')
+                      raw=path.read_bytes();after=path.lstat()
+                      require((before.st_dev,before.st_ino,before.st_mode,before.st_size,before.st_mtime_ns,before.st_ctime_ns)==
+                              (after.st_dev,after.st_ino,after.st_mode,after.st_size,after.st_mtime_ns,after.st_ctime_ns),'archive source changed during read')
+                      leaf='workflows/'+name.rsplit('/',1)[1] if name.startswith('.github/workflows/') else name
+                      target=EVIDENCE/PHASE/'available-source'/leaf
+                      target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(raw)
+                      report['available_source_snapshots'][name]={'artifact_path':str(target.relative_to(EVIDENCE)),
+                          'bytes':len(raw),'sha256':sha(raw),'mode':oct(stat.S_IMODE(before.st_mode)),
+                          'proof_kind':'available bounded public data only, not a passing gate'}
+                  except BaseException:
+                      report['available_source_snapshots'][name]={'proof_kind':'MISSING_OR_UNREADABLE',
+                          'actual_traceback':traceback.format_exc()}
+              write_json(EVIDENCE/(PHASE+'.json'),report)
+          PY
+          "$CONTROL_PYTHON" -I -S -B "$HTTP24_EVIDENCE/source_bind.py" pre
+      - name: Run complete 24 methods once with real tee
+        id: fixture
+        timeout-minutes: 8
+        env:
+          HTTP24_EVIDENCE: ${{ runner.temp }}/som-http24-control-evidence
+          CONTROL_PYTHON: ${{ steps.interpreter.outputs.path }}
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/env -i PATH=/usr/bin:/bin HOME="$HOME" TMPDIR="$HTTP24_EVIDENCE/tmp" LANG=C.UTF-8 LC_ALL=C.UTF-8 GITHUB_ACTIONS=true \
+            "$CONTROL_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/test_native_first_launch.py" -v 2>&1 \
+            | /usr/bin/tee "$HTTP24_EVIDENCE/fixture.merged.raw" 2> "$HTTP24_EVIDENCE/tee.stderr.raw"
+          pipeline=( "${PIPESTATUS[@]}" )
+          set -e
+          printf '%s\n' "${pipeline[@]}" > "$HTTP24_EVIDENCE/fixture.pipeline-exits"
+          test "${#pipeline[@]}" -eq 2
+          if test "${pipeline[0]}" -ne 0; then exit "${pipeline[0]}"; fi
+          if test "${pipeline[1]}" -ne 0; then exit "${pipeline[1]}"; fi
+      - name: Bind all source again even after a fixture failure
+        id: post
+        if: always() && steps.interpreter.outcome == 'success' && steps.pre.outcome != 'skipped'
+        timeout-minutes: 3
+        env:
+          HTTP24_EVIDENCE: ${{ runner.temp }}/som-http24-control-evidence
+          CONTROL_PYTHON: ${{ steps.interpreter.outputs.path }}
+        run: |
+          set -euo pipefail
+          test -f "$HTTP24_EVIDENCE/source_bind.py"
+          "$CONTROL_PYTHON" -I -S -B "$HTTP24_EVIDENCE/source_bind.py" post
+      - name: Preserve actual outcome and every available evidence member
+        id: outcome
+        if: always() && steps.interpreter.outcome == 'success'
+        timeout-minutes: 2
+        env:
+          HTTP24_EVIDENCE: ${{ runner.temp }}/som-http24-control-evidence
+          CONTROL_PYTHON: ${{ steps.interpreter.outputs.path }}
+          HTTP24_INTERPRETER: ${{ steps.interpreter.outcome }}
+          HTTP24_PRE: ${{ steps.pre.outcome }}
+          HTTP24_FIXTURE: ${{ steps.fixture.outcome }}
+          HTTP24_POST: ${{ steps.post.outcome }}
+        run: |
+          set -euo pipefail
+          "$CONTROL_PYTHON" -I -S -B - <<'PY'
+          import hashlib,json,os,re,stat,sys,traceback
+          from pathlib import Path
+          root=Path(os.environ['HTTP24_EVIDENCE'])
+          names=['test_stat_exact_52_fields_signed_values_and_one_task', 'test_complete_kernel_argv_and_original_sys_arrays', 'test_maps_fixed_categories_bounds_and_executable_refusal', 'test_elf_header_load_dynamic_and_string_ranges', 'test_fixed_reader_roles_host_leaf_and_every_physical_ancestor', 'test_reader_stable_bounds_primary_traceback_and_once_close', 'test_private_environment_exact_names_values_and_no_secret_output', 'test_private_environment_cleanup_keeps_first_error', 'test_runtime_source_capsule_restore_origin_and_archive_join', 'test_complete_inventory_modes_aliases_and_all_cache_bytes', 'test_module_native_namespaces_and_only_pinned_aliases', 'test_source_frozen_normal_cache_association_and_complete_code_tree', 'test_native_module_file_graph_instrumentation_and_no_wheel_startup', 'test_host_dependency_config_package_locale_and_loader_graph', 'test_origin_single_token_static_suffix_and_all_tail_variable_refusals', 'test_report_completed_schema_bounded_data_and_exclusive_files', 'test_report_partial_write_fsync_reverse_close_and_primary_error', 'test_marker_is_flushed_only_after_all_owned_report_fds_close', 'test_orchestrator_phase_failures_keep_primary_and_never_enter_target', 'test_original_main_calls_once_before_target_and_other_calls_are_silent', 'test_original_workflow_pipeline_retains_both_real_exit_statuses', 'test_frozen_build_expected_nested_literal_oracle_and_unchanged_compile_data', 'test_frozen_build_expected_builtin_sort_and_repr_fallback_literal_goldens', 'test_frozen_build_expected_refuses_foreign_subclasses_hooks_and_finite_bounds']
+          row={'version':'som.http24.control-outcome.v1','status':'UNQUALIFIED','controls24_passed':False,
+              'old136':'UNRUN','old85':'UNRUN','HTTP40plus11':'UNRUN','HTTP_whole54':'UNRUN',
+              'invalid_phase_runtime':'NOT_SUPPLIED/UNREACHABLE_UNDER_SELECTED_CALLER_INTERFACE',
+              'caught_expected_first_throw_tracebacks_raw':'NOT_SUPPLIED_BY_UNCHANGED_FIXTURE; identity assertions are control only',
+              'native_authority':False,'native8':False,'constructor':False,'source':False,'native_source':False,'source_origin':False,'source_seal':False,'SourceSeal':False,
+              'receipt':False,'product':False,'full12':False,'M12_passed':False,
+              'operational_policy':'ABSENT_STOP','eager_provider_anchor':'ABSENT_STOP',
+              'step_outcomes':{key:os.environ.get(key,'UNKNOWN') for key in ('HTTP24_INTERPRETER','HTTP24_PRE','HTTP24_FIXTURE','HTTP24_POST')}}
+          try:
+              raw_path=root/'fixture.merged.raw';raw=raw_path.read_bytes() if raw_path.exists() else b''
+              row['merged_raw_present']=raw_path.exists()
+              row['fixture_argv']=[os.environ.get('CONTROL_PYTHON','UNKNOWN'),'-I','-S','-B',
+                  str(Path(os.environ['GITHUB_WORKSPACE'])/'som-rs/scripts/hosted_readiness/test_native_first_launch.py'),'-v']
+              row['fixture_environment']={'GITHUB_ACTIONS':'true','PATH':'/usr/bin:/bin','LANG':'C.UTF-8','LC_ALL':'C.UTF-8',
+                  'HOME':os.environ['HOME'],'TMPDIR':str(root/'tmp')}
+              row['raw_is_single_merged_stream']=True;row['splitstream_native_stdio_origin']=False
+              sections=raw.find(b'======================================================================\n')
+              if sections>=0:
+                  (root/'fixture.failure-sections.raw').write_bytes(raw[sections:])
+                  row['actual_failure_tracebacks']='verbatim full raw and failure sections; not rewritten'
+              else:
+                  row['actual_failure_tracebacks']='none printed, missing, or interrupted; raw retained without synthesis'
+              exits_path=root/'fixture.pipeline-exits';exits=exits_path.read_bytes().splitlines() if exits_path.exists() else []
+              row['pipeline_exits']=[int(x) for x in exits] if len(exits)==2 and all(x.isdigit() for x in exits) else 'MISSING_OR_UNKNOWN'
+              row['F21_printed_evidence']=[line.decode('utf-8','replace') for line in raw.splitlines() if b'F21 ' in line]
+              required_f21=[b'F21 zero-zero actual pipeline exits=[0, 0]',b'F21 child-seven actual pipeline exits=[7, 0]',
+                  b'F21 tee-failure actual pipeline exits=[0, ',b'F21 both-fail actual pipeline exits=[7, ',
+                  b'F21 interrupted owned wait: no completed pipeline status exists']
+              row['all24_verbose_names_once']=all(raw.count((name+' (__main__.FirstLaunchControlTests.'+name+') ... ').encode())==1 for name in names)
+              row['exact24_summary']=re.search(rb'(?m)^Ran 24 tests in [0-9.]+s\r?$',raw) is not None
+              row['exact_OK_summary']=re.search(rb'(?m)^OK\r?$',raw) is not None
+              pre=json.loads((root/'pre.json').read_bytes()) if (root/'pre.json').exists() else {}
+              post=json.loads((root/'post.json').read_bytes()) if (root/'post.json').exists() else {}
+              row['pre_post_qualified']=pre.get('qualified') is True and post.get('qualified') is True
+              if row['pipeline_exits']==[0,0] and row['all24_verbose_names_once'] and row['exact24_summary'] and row['exact_OK_summary'] and row['pre_post_qualified'] and all(x in raw for x in required_f21) and all(value=='success' for value in row['step_outcomes'].values()):
+                  row['status']='PASS_BOUNDED_24_SYNTHETIC_CONTROLS_ONLY';row['controls24_passed']=True
+          except BaseException:
+              (root/'collector.failure.traceback.txt').write_text(traceback.format_exc())
+              row['collector_failure']='actual traceback retained; unqualified'
+          finally:
+              (root/'outcome.json').write_text(json.dumps(row,sort_keys=True,indent=2)+'\n')
+              members=[]
+              for path in sorted(root.rglob('*')):
+                  if path.name=='members.json' or not path.is_file() or path.is_symlink():continue
+                  raw=path.read_bytes();s=path.lstat()
+                  members.append({'path':str(path.relative_to(root)),'bytes':len(raw),'mode':oct(stat.S_IMODE(s.st_mode)),
+                      'sha256':hashlib.sha256(raw).hexdigest()})
+              (root/'members.json').write_text(json.dumps({'version':'som.http24.available-evidence-members.v1','members':members,
+                  'scope':'only task-owned evidence; no raw parent environment, credentials, tokens or signed URLs'},sort_keys=True,indent=2)+'\n')
+          if not row['controls24_passed']:
+              raise SystemExit(1)
+          PY
+      - name: Record missing control interpreter without claiming a run
+        if: always() && steps.interpreter.outcome != 'success'
+        timeout-minutes: 1
+        env:
+          HTTP24_EVIDENCE: ${{ runner.temp }}/som-http24-control-evidence
+        run: |
+          set -euo pipefail
+          mkdir -p "$HTTP24_EVIDENCE"
+          printf '%s\n' '{"status":"UNQUALIFIED_INTERPRETER_OR_EARLIER_STEP_FAILED","controls24_passed":false,"raw_or_exits":"MISSING_OR_UNKNOWN","native_authority":false,"SourceSeal":false,"M12_passed":false,"old136":"UNRUN","invalid_phase_runtime":"NOT_SUPPLIED"}' > "$HTTP24_EVIDENCE/outcome.json"
+          find "$HTTP24_EVIDENCE" -type f ! -name 'available-members.sha256' ! -name 'available-members.modes' -print0 | sort -z | xargs -0 -r sha256sum > "$HTTP24_EVIDENCE/available-members.sha256"
+          find "$HTTP24_EVIDENCE" -type f ! -name 'available-members.sha256' ! -name 'available-members.modes' -printf '%m %s %P\n' > "$HTTP24_EVIDENCE/available-members.modes"
+      - name: Upload all available bounded control evidence
+        if: always()
+        timeout-minutes: 3
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: http24-controls-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/som-http24-control-evidence/
+          if-no-files-found: error
+          include-hidden-files: false
+          compression-level: 0
+          retention-days: 7
