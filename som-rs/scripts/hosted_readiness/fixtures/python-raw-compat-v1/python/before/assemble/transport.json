@@ -1,0 +1,28 @@
+{
+  "bytes": 5156,
+  "headers": [
+    [
+      "content-type",
+      "application/json"
+    ],
+    [
+      "content-length",
+      "5156"
+    ],
+    [
+      "connection",
+      "close"
+    ],
+    [
+      "date",
+      "Thu, 29 Oct 2026 16:10:17 GMT"
+    ]
+  ],
+  "method": "POST",
+  "owned_pid": 10211,
+  "port": 19061,
+  "read_complete": true,
+  "route": "/v1/assemble",
+  "sha256": "2d35cf5c6c8f870eaa727f4adc807087d1f2ff9e0d4c865e880d0fc24c00259b",
+  "status": 200
+}
