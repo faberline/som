@@ -1,7 +1,7 @@
-name: Native active source fixtures
+name: Native source V3 diagnostics (HOLD)
 on:
   push:
-    branches: [codex/m12-native-m6-driver57-source-v1]
+    branches: [codex/m12-native-http-api66-diagnostic-v1]
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,10 +20,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: driver-whole52
-            script: som-rs/scripts/hosted_readiness/test_run_full_products.py
-          - name: m6-context-whole5
-            script: som-rs/scripts/hosted_readiness/test_native_m6_callback_context.py
+          - name: diagnostic-http-native31
+            script: som-rs/scripts/hosted_readiness/test_native_m6_record_http.py
+          - name: diagnostic-http-legacy11
+            script: som-rs/scripts/react_output_acceptance/test_record_http.py
+          - name: diagnostic-recording24
+            script: som-rs/scripts/react_output_acceptance/test_native_m6_recorded_subprocess.py
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
