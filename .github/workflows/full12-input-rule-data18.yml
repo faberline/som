@@ -1,0 +1,510 @@
+name: Full12 INPUT rule data18
+
+on:
+  push:
+    branches:
+      - codex/m12-input-rule-data18-v1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fixed-data18:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      DATA18_ROOT: ${{ runner.temp }}/som-input-data18-${{ github.run_id }}-${{ github.run_attempt }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out the exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Select exact Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.11'
+          check-latest: false
+      - name: Prepare fixed data18 bootstrap
+        timeout-minutes: 2
+        run: |
+          set -euo pipefail
+          umask 077
+          test ! -e "$DATA18_ROOT"
+          mkdir -m 700 -- "$DATA18_ROOT"
+          cat > "$DATA18_ROOT/bootstrap.py" <<'PY_BOOTSTRAP'
+          """Exact isolated data18 runner, embedded verbatim in the selected workflow.
+          
+          This wrapper records ordinary source/data test evidence. It grants no native,
+          process, source-admission, receipt, product, or milestone authority.
+          """
+          import ast
+          import builtins
+          import datetime
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import stat
+          import subprocess
+          import sys
+          import traceback
+          import types
+          
+          BASE = '49393e8ce2e1551472eb0158495f858f683c9d68'
+          BRANCH = 'refs/heads/codex/m12-input-rule-data18-v1'
+          HELPER = 'som-rs/scripts/hosted_readiness/full12_input_manifest_rule.py'
+          FIXTURE = 'som-rs/scripts/hosted_readiness/test_full12_input_manifest_rule.py'
+          WORKFLOW = '.github/workflows/full12-input-rule-data18.yml'
+          PINS = {
+              HELPER: ('c1f52ddbde7ff1515d2ef40f75d958617becc91194d0bfb1841894269c64a44a',
+                       '589b34afdc8a00f629456844521160da443ed906'),
+              FIXTURE: ('da1de9d71b68faad358419c46a7a35df3d236d7a84e4eb4f872408bdfd348a62',
+                        'dedcb6661287e6d46e76a30c4ff6dffabc71560e'),
+          }
+          EXPECTED_METHODS = {'test_P01_complete_fixed_pair_recomputes_three_identities': '87e2a7094ad3ac43b256d14e8100f1592bced498f237bff873fe2535f9085285', 'test_P02_every_backend_digest_change_refuses': '14e1a213a2f25f8dfbbfa695ee40d9d78a7cb9e3e34bac16142a778cdde74f37', 'test_P02_missing_extra_renamed_equal_count_backend_entries_refuse': 'a8f07cf92e3f9444d3d9010edb75687e72e13e22aa8c4c7449b100ed87f79953', 'test_P02_backend_version_and_digest_schema_refuse': '715902584bcd68cc3d1d95abbafe85acb6f266a1f1acea00d7b4c090494a0cba', 'test_P03_every_nonbackend_value_change_refuses': 'c11a1afd5993d49ded8becb6efadaaaa5351b66367b46368d3ae5472804e10fb', 'test_P03_schema_unknown_missing_keys_and_container_types_refuse': 'c852a70a1d497705e6a1c7374506c7fafe5cf601478287ec8fbc283dd70966f5', 'test_P03_UTF8_duplicate_escaped_nonfinite_and_surrogate_refuse': '1b14f944fdbeeaf1a8454269acadc41eb37333871e292059a1d5a2a8aba6758b', 'test_P03_canonical_spelling_and_one_LF_are_exact': '1d29ca6594c0b363539beacf6f35da0a152bf07d7c4097af43391b92145ca481', 'test_P03_builtin_bytes_and_finite_size_depth_bounds': 'b460389722687d1afdfa86febd9a538113559fe78cfde1b0f897fb82361cf50d', 'test_P05_fixed_before_current_roles_cannot_be_swapped_or_copied': 'f4b8058f89639b6cbe5daa11822fe1e21a4be729e4c6b3459ec449959d62ef2b', 'test_P10_four_synthetic_projections_keep_distinct_complete_QA_maps': '37bfa660e1559d126606ab033c39fb126e817395213289bfab50591b8ed027e6', 'test_P10_missing_extra_duplicate_stale_owner_number_and_order_refuse': 'f62aad0897405f121f5fbc7006f1f7e3f13b1d62b734669be6531d8e5681b5f7', 'test_P10_exact_literals_and_every_forbidden_claim_key_refuse': 'faba16861dd4bd485087e3abfa6feab4c5d21c9b88806f143ccb8eea38a09c6f', 'test_P10_missing_required_keys_and_builtin_types_refuse': '6f7c49baf24458d55927a6c4610eac3b8ac45e89287855517d6d2522d97425cc', 'test_P10_map_revision_syntax_bounds_and_subclasses_refuse': '0139f4395cdc55eb43b04cfe56033b3faae37b1f4e41b5700d80f85914e9976f', 'test_P10_source_revision_and_overlapping_hash_data_must_agree': 'ecf8777a6a679954024de58f6fdde3f2ec9079ce280b0d0222bc216c7f9e77e8', 'test_P10_returned_data_cannot_mutate_input_or_next_diagnostic': 'dcebd01f1defc15c18d369905387b2e12b09e893dca005e07e1b947aa312f335', 'test_P13_data_results_never_claim_full_acceptance_or_rewrite_history': 'b24d325df27b706d11d8d0cd770a6a1d7acff2714cc3522dd555558764d24f7a'}
+          FALSE_FIELDS = ('native_authority', 'receipt_admission', 'source_admission',
+                          'SourceSeal', 'product_acceptance', 'full12_passed', 'M12_passed')
+          
+          
+          def main():
+              if len(sys.argv) != 4:
+                  raise ValueError('fixed wrapper arguments: workspace, actual SHA, evidence root')
+              root = Path(sys.argv[1])
+              expected_head = sys.argv[2]
+              evidence = Path(sys.argv[3])
+              first = None
+              later = []
+              checks = {}
+              normal_exit = None
+              fixture_module = None
+              execution_phase = 'source-pre'
+              bootstrap_raw = Path(__file__).read_bytes()
+              bootstrap_sha = hashlib.sha256(bootstrap_raw).hexdigest()
+          
+              def remember(where, error):
+                  nonlocal first
+                  tb = error.__traceback__
+                  item = {
+                      'where': where,
+                      'type': type(error).__module__ + '.' + type(error).__qualname__,
+                      'message': str(error),
+                      'traceback': ''.join(traceback.format_exception(type(error), error, tb)),
+                  }
+                  if first is None:
+                      first = (error, tb, item)
+                  else:
+                      later.append(item)
+          
+              def write_json(name, value):
+                  (evidence / name).write_text(json.dumps(value, indent=2, sort_keys=True) + '\n')
+          
+              def git(*argv):
+                  completed = subprocess.run(['git', '-C', str(root), *argv],
+                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                             check=False, timeout=30)
+                  if completed.returncode != 0:
+                      raise ValueError('Git data read failed: ' + repr(argv) + ': '
+                                       + completed.stderr.decode('utf-8', errors='replace'))
+                  return completed.stdout
+          
+              def verify_source(phase):
+                  if root != root.resolve(strict=True) or root.is_symlink() or not root.is_dir():
+                      raise ValueError('physical workspace root required')
+                  if sys.version_info[:3] != (3, 12, 11):
+                      raise ValueError('actual Python must be exactly3.12.11')
+                  if (sys.flags.isolated, sys.flags.no_site, sys.flags.dont_write_bytecode) != (1, 1, 1):
+                      raise ValueError('actual isolated/no-site/no-bytecode flags required')
+                  if sys.platform != 'linux' or os.environ.get('GITHUB_REF') != BRANCH:
+                      raise ValueError('fixed Linux dedicated branch required')
+                  head = git('rev-parse', 'HEAD').decode('ascii').strip()
+                  if head != expected_head or os.environ.get('GITHUB_SHA') != expected_head:
+                      raise ValueError('actual HEAD does not match GitHub SHA')
+                  commit = git('cat-file', 'commit', head)
+                  headers = commit.split(b'\n\n', 1)[0].splitlines()
+                  parents = [line[7:].decode('ascii') for line in headers if line.startswith(b'parent ')]
+                  if parents != [BASE]:
+                      raise ValueError('exact single selected parent required')
+                  paths = sorted((HELPER, FIXTURE, WORKFLOW))
+                  if git('ls-tree', '-z', BASE, '--', *paths):
+                      raise ValueError('all three selected paths must be absent in base')
+                  diff = git('diff', '--name-status', '-z', BASE, head, '--').split(b'\0')
+                  if diff[-1:] != [b'']:
+                      raise ValueError('complete NUL Git diff required')
+                  diff = diff[:-1]
+                  pairs = [(diff[index].decode('ascii'), diff[index + 1].decode('utf-8'))
+                           for index in range(0, len(diff), 2)]
+                  if sorted(pairs) != [('A', path) for path in paths]:
+                      raise ValueError('exact three added payload paths required')
+                  source_rows = {}
+                  source_raw = {}
+                  for relative in paths:
+                      path = root / relative
+                      cursor = root
+                      for part in relative.split('/')[:-1]:
+                          cursor = cursor / part
+                          info = cursor.lstat()
+                          if not stat.S_ISDIR(info.st_mode) or stat.S_ISLNK(info.st_mode):
+                              raise ValueError('physical source directory required: ' + relative)
+                      info = path.lstat()
+                      if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o644:
+                          raise ValueError('source must be a regular0644 file: ' + relative)
+                      raw = path.read_bytes()
+                      tree_raw = git('ls-tree', '-z', head, '--', relative)
+                      expected_suffix = b'\t' + relative.encode() + b'\0'
+                      if not tree_raw.endswith(expected_suffix):
+                          raise ValueError('exact Git tree source entry required')
+                      mode, kind, oid = tree_raw[:-len(expected_suffix)].decode('ascii').split()
+                      if (mode, kind) != ('100644', 'blob'):
+                          raise ValueError('exact100644 Git source blob required')
+                      blob_raw = git('cat-file', 'blob', oid)
+                      blob_oid = hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+                      digest = hashlib.sha256(raw).hexdigest()
+                      if raw != blob_raw or blob_oid != oid:
+                          raise ValueError('complete physical/Git blob bytes differ: ' + relative)
+                      if relative in PINS and (digest, oid) != PINS[relative]:
+                          raise ValueError('reviewed fixed source pin differs: ' + relative)
+                      source_rows[relative] = {'bytes': len(raw), 'sha256': digest,
+                                               'blob_oid': oid, 'Git_mode': mode,
+                                               'physical_mode': '0644'}
+                      source_raw[relative] = raw
+                  tree = ast.parse(source_raw[FIXTURE], filename=str(root / FIXTURE))
+                  classes = [node for node in tree.body if isinstance(node, ast.ClassDef)
+                             and node.name == 'Full12InputManifestRuleTests']
+                  if len(classes) != 1:
+                      raise ValueError('exact fixture test class required')
+                  methods = {node.name: hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
+                             for node in classes[0].body if isinstance(node, ast.FunctionDef)
+                             and node.name.startswith('test_')}
+                  if methods != EXPECTED_METHODS or len(methods) != 18:
+                      raise ValueError('all18 exact whole method ASTs required')
+                  if hashlib.sha256(Path(__file__).read_bytes()).hexdigest() != bootstrap_sha:
+                      raise ValueError('bootstrap bytes changed during execution')
+                  result = {'phase': phase, 'status': 'passed_source_data_checks',
+                            'head': head, 'single_parent': parents[0], 'branch': BRANCH,
+                            'sources': source_rows, 'whole_method_ASTs': methods,
+                            'bootstrap_sha256': bootstrap_sha}
+                  for field in FALSE_FIELDS:
+                      result[field] = False
+                  if phase == 'pre':
+                      for relative, raw in source_raw.items():
+                          target = evidence / 'source' / relative
+                          target.parent.mkdir(parents=True, exist_ok=True)
+                          target.write_bytes(raw)
+                  write_json('source-' + phase + '.json', result)
+                  checks[phase] = result
+                  return source_raw
+          
+              try:
+                  interpreter = Path(sys.executable).resolve(strict=True)
+                  write_json('python-version.json', {
+                      'version': list(sys.version_info[:3]), 'full_version': sys.version,
+                      'executable': sys.executable, 'resolved_executable': str(interpreter),
+                      'executable_sha256': hashlib.sha256(interpreter.read_bytes()).hexdigest(),
+                      'executable_mode': oct(stat.S_IMODE(interpreter.stat().st_mode)),
+                      'flags': {'isolated': sys.flags.isolated, 'no_site': sys.flags.no_site,
+                                'dont_write_bytecode': sys.flags.dont_write_bytecode},
+                      'platform': sys.platform,
+                  })
+                  write_json('github-metadata.json', {
+                      key: os.environ.get(key) for key in ('GITHUB_SHA', 'GITHUB_REF',
+                          'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_JOB', 'RUNNER_OS')
+                  })
+                  raw = verify_source('pre')
+                  if 'full12_input_manifest_rule' in sys.modules:
+                      raise ValueError('helper must not be preloaded before fixed source binding')
+                  helper = types.ModuleType('full12_input_manifest_rule')
+                  helper.__file__ = str(root / HELPER)
+                  helper.__cached__ = None
+                  helper.__package__ = ''
+                  helper.__spec__ = None
+                  helper.__loader__ = None
+                  helper.__builtins__ = builtins.__dict__
+                  sys.modules['full12_input_manifest_rule'] = helper
+                  execution_phase = 'helper-exec'
+                  exec(compile(raw[HELPER], helper.__file__, 'exec'), helper.__dict__)
+                  fixture_module = types.ModuleType('__main__')
+                  fixture_module.__file__ = str(root / FIXTURE)
+                  fixture_module.__cached__ = None
+                  fixture_module.__package__ = None
+                  fixture_module.__spec__ = None
+                  fixture_module.__loader__ = None
+                  fixture_module.__builtins__ = builtins.__dict__
+                  sys.modules['__main__'] = fixture_module
+                  sys.argv = [fixture_module.__file__, '-v']
+                  execution_phase = 'fixture-exec'
+                  exec(compile(raw[FIXTURE], fixture_module.__file__, 'exec'), fixture_module.__dict__)
+                  raise ValueError('actual unittest fixture did not emit its normal SystemExit')
+              except BaseException as error:
+                  if (execution_phase == 'fixture-exec' and type(error) is SystemExit
+                          and type(error.code) is int and error.code == 0):
+                      normal_exit = {'type': 'builtins.SystemExit', 'code': 0,
+                                     'meaning': 'observed normal unittest exit; raw18 outcomes still required'}
+                  else:
+                      remember('source-pre/helper-or-fixture-execution', error)
+              finally:
+                  try:
+                      verify_source('post')
+                      if 'pre' in checks and checks['pre']['sources'] != checks['post']['sources']:
+                          raise ValueError('pre/post full source identities differ')
+                  except BaseException as error:
+                      remember('source-post', error)
+                  try:
+                      if normal_exit is not None:
+                          cls = fixture_module.__dict__.get('Full12InputManifestRuleTests')
+                          actual = sorted(name for name, value in vars(cls).items()
+                                          if name.startswith('test_') and type(value) is types.FunctionType)
+                          if actual != sorted(EXPECTED_METHODS):
+                              raise ValueError('actual fixture __main__ class lost an expected method')
+                          if sys.modules.get('__main__') is not fixture_module:
+                              raise ValueError('actual fixture __main__ module binding changed')
+                          if sys.modules.get('full12_input_manifest_rule') is not helper:
+                              raise ValueError('actual fixed helper module binding changed')
+                  except BaseException as error:
+                      remember('post-main-helper-structural-check', error)
+                  for name, value in (
+                          ('first-escaped-exception.json', None if first is None else first[2]),
+                          ('secondary-exceptions.json', later)):
+                      try:
+                          write_json(name, value)
+                      except BaseException as error:
+                          remember('exception-evidence-write:' + name, error)
+                  report = {
+                      'version': 'som.input-data18.bootstrap-report.v1',
+                      'recorded_UTC': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                      'normal_unittest_exit': normal_exit,
+                      'source_check_phases': sorted(checks),
+                      'first_escaped_exception': None if first is None else first[2],
+                      'secondary_exceptions': later,
+                      'expected_method_names': sorted(EXPECTED_METHODS),
+                      'fixture_argv': [str(root / FIXTURE), '-v'],
+                      'bootstrap_sha256': bootstrap_sha,
+                      'raw_output': 'complete merged stdout/stderr; no individual channel identity evidence',
+                      'raw_test_exception_limit': 'unittest retains test exceptions/tracebacks in original merged output; wrapper records first escaped exception object/TB and later source/evidence failures',
+                      'runtime_verdict': 'unqualified_until_raw18_and_two_exits_independently_checked',
+                  }
+                  for field in FALSE_FIELDS:
+                      report[field] = False
+                  try:
+                      write_json('bootstrap-report.json', report)
+                  except BaseException as error:
+                      remember('bootstrap-report-write', error)
+              if first is not None:
+                  for secondary in later:
+                      BaseException.add_note(first[0], 'Later independent failure: ' + json.dumps(secondary, sort_keys=True))
+                  try:
+                      # SystemExit normally suppresses its traceback at process exit.
+                      # Retain the real first escaped traceback in merged raw output too.
+                      traceback.print_exception(type(first[0]), first[0], first[1], file=sys.stderr)
+                  except BaseException as error:
+                      remember('first-failure-raw-evidence-write', error)
+                      BaseException.add_note(first[0], 'Later raw evidence write failed: ' + repr(error))
+                  raise first[0].with_traceback(first[1])
+              if normal_exit is None or sorted(checks) != ['post', 'pre']:
+                  raise ValueError('missing actual normal exit or pre/post source evidence')
+              raise SystemExit(0)
+          
+          
+          if __name__ == '__main__':
+              main()
+          PY_BOOTSTRAP
+          chmod 400 "$DATA18_ROOT/bootstrap.py"
+      - name: Run all18 actual fixture methods
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          umask 077
+          set +e
+          python -I -S -B "$DATA18_ROOT/bootstrap.py" "$GITHUB_WORKSPACE" "$GITHUB_SHA" "$DATA18_ROOT" 2>&1 | tee "$DATA18_ROOT/complete-merged.log"
+          pipeline_status=("${PIPESTATUS[@]}")
+          set -e
+          test "${#pipeline_status[@]}" -eq 2
+          printf '%s\n' "${pipeline_status[0]}" > "$DATA18_ROOT/python-exit-code.txt"
+          printf '%s\n' "${pipeline_status[1]}" > "$DATA18_ROOT/tee-exit-code.txt"
+          if [[ "${pipeline_status[0]}" -ne 0 ]]; then
+            exit "${pipeline_status[0]}"
+          fi
+          if [[ "${pipeline_status[1]}" -ne 0 ]]; then
+            exit "${pipeline_status[1]}"
+          fi
+      - name: Always audit outcomes and inventory complete evidence
+        if: always()
+        timeout-minutes: 3
+        run: |
+          set -euo pipefail
+          umask 077
+          python -I -S -B - "$DATA18_ROOT" <<'PY_FINALIZE'
+          """Always retain and audit available data18 evidence. No native authority."""
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import stat
+          import sys
+          import traceback
+          
+          EXPECTED_METHODS = ['test_P01_complete_fixed_pair_recomputes_three_identities', 'test_P02_backend_version_and_digest_schema_refuse', 'test_P02_every_backend_digest_change_refuses', 'test_P02_missing_extra_renamed_equal_count_backend_entries_refuse', 'test_P03_UTF8_duplicate_escaped_nonfinite_and_surrogate_refuse', 'test_P03_builtin_bytes_and_finite_size_depth_bounds', 'test_P03_canonical_spelling_and_one_LF_are_exact', 'test_P03_every_nonbackend_value_change_refuses', 'test_P03_schema_unknown_missing_keys_and_container_types_refuse', 'test_P05_fixed_before_current_roles_cannot_be_swapped_or_copied', 'test_P10_exact_literals_and_every_forbidden_claim_key_refuse', 'test_P10_four_synthetic_projections_keep_distinct_complete_QA_maps', 'test_P10_map_revision_syntax_bounds_and_subclasses_refuse', 'test_P10_missing_extra_duplicate_stale_owner_number_and_order_refuse', 'test_P10_missing_required_keys_and_builtin_types_refuse', 'test_P10_returned_data_cannot_mutate_input_or_next_diagnostic', 'test_P10_source_revision_and_overlapping_hash_data_must_agree', 'test_P13_data_results_never_claim_full_acceptance_or_rewrite_history']
+          FALSE_FIELDS = ('native_authority', 'receipt_admission', 'source_admission',
+                          'SourceSeal', 'product_acceptance', 'full12_passed', 'M12_passed')
+          SOURCE_PATHS = (
+              '.github/workflows/full12-input-rule-data18.yml',
+              'som-rs/scripts/hosted_readiness/full12_input_manifest_rule.py',
+              'som-rs/scripts/hosted_readiness/test_full12_input_manifest_rule.py',
+          )
+          
+          
+          def main():
+              root = Path(sys.argv[1])
+              root.mkdir(mode=0o700, parents=False, exist_ok=True)
+              failures = []
+              outcomes = []
+              raw = None
+              retention = {}
+              # Retain each available fixed source even if preparation, the fixture, or
+              # a prior source check failed. This capture is data, never an admission.
+              repository = Path(os.environ['GITHUB_WORKSPACE'])
+              for relative in SOURCE_PATHS:
+                  try:
+                      if repository != repository.resolve(strict=True):
+                          raise ValueError('physical repository required for final source retention')
+                      cursor = repository
+                      for part in relative.split('/')[:-1]:
+                          cursor = cursor / part
+                          info = cursor.lstat()
+                          if not stat.S_ISDIR(info.st_mode) or stat.S_ISLNK(info.st_mode):
+                              raise ValueError('nonphysical source parent')
+                      path = repository / relative
+                      info = path.lstat()
+                      if not stat.S_ISREG(info.st_mode):
+                          raise ValueError('nonregular source retention input')
+                      data = path.read_bytes()
+                      target = root / 'source-final' / relative
+                      target.parent.mkdir(parents=True, exist_ok=True)
+                      target.write_bytes(data)
+                      retention[relative] = {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest(),
+                                             'source_mode': format(stat.S_IMODE(info.st_mode), '04o')}
+                  except BaseException as error:
+                      failures.append({'where': 'final-source-retention', 'path': relative,
+                                       'type': type(error).__module__ + '.' + type(error).__qualname__,
+                                       'message': str(error),
+                                       'traceback': ''.join(traceback.format_exception(type(error), error, error.__traceback__))})
+              try:
+                  if sys.version_info[:3] != (3, 12, 11):
+                      raise ValueError('finalizer requires exact Python3.12.11')
+                  raw = (root / 'complete-merged.log').read_bytes()
+                  text = raw.decode('utf-8', errors='strict')
+                  pattern = re.compile(r'^(test_[A-Za-z0-9_]+) \(__main__\.Full12InputManifestRuleTests\.(test_[A-Za-z0-9_]+)\) \.\.\. (.+)$')
+                  for line in text.splitlines():
+                      match = pattern.fullmatch(line)
+                      if match:
+                          first, qualified, result = match.groups()
+                          outcomes.append({'method': first, 'qualified_method': qualified,
+                                           'result': result, 'raw_line': line})
+                  if len(outcomes) != 18 or sorted(row['method'] for row in outcomes) != sorted(EXPECTED_METHODS):
+                      raise ValueError('exact18 distinct actual raw outcomes required')
+                  if any(row['method'] != row['qualified_method'] or row['result'] != 'ok' for row in outcomes):
+                      raise ValueError('all18 actual outcomes must be plain ok')
+                  summaries = re.findall(r'^Ran ([0-9]+) tests? in ([0-9]+\.[0-9]+)s$', text, re.MULTILINE)
+                  if len(summaries) != 1 or summaries[0][0] != '18':
+                      raise ValueError('one actual unittest18 summary required')
+                  if text.splitlines().count('OK') != 1 or re.search(r'^(?:FAILED|ERROR:|FAIL:)', text, re.MULTILINE):
+                      raise ValueError('actual unittest success summary required without errors/failures')
+                  for name in ('python-exit-code.txt', 'tee-exit-code.txt'):
+                      if (root / name).read_bytes() != b'0\n':
+                          raise ValueError('actual zero pipeline exit required: ' + name)
+                  report = json.loads((root / 'bootstrap-report.json').read_bytes())
+                  if (report['normal_unittest_exit']['code'] != 0
+                          or report['source_check_phases'] != ['post', 'pre']
+                          or report['first_escaped_exception'] is not None
+                          or report['secondary_exceptions'] != []
+                          or report['expected_method_names'] != sorted(EXPECTED_METHODS)):
+                      raise ValueError('complete successful bootstrap evidence required')
+                  if any(report[field] is not False for field in FALSE_FIELDS):
+                      raise ValueError('all authority flags must remain false')
+                  pre = json.loads((root / 'source-pre.json').read_bytes())
+                  post = json.loads((root / 'source-post.json').read_bytes())
+                  if pre['sources'] != post['sources'] or pre['head'] != post['head']:
+                      raise ValueError('complete source pre/post identity required')
+                  if json.loads((root / 'first-escaped-exception.json').read_bytes()) is not None:
+                      raise ValueError('unexpected escaped exception record')
+                  if json.loads((root / 'secondary-exceptions.json').read_bytes()) != []:
+                      raise ValueError('unexpected secondary exception record')
+              except BaseException as error:
+                  failures.append({'where': 'actual18-and-source-and-exits-audit',
+                                   'type': type(error).__module__ + '.' + type(error).__qualname__,
+                                   'message': str(error),
+                                   'traceback': ''.join(traceback.format_exception(type(error), error, error.__traceback__))})
+              result = {
+                  'version': 'som.input-data18.actual-outcomes-audit.v1',
+                  'status': 'passed_bounded_data18_checks' if not failures else 'unqualified',
+                  'actual_outcomes': outcomes,
+                  'final_source_retention': retention,
+                  'expected_methods': sorted(EXPECTED_METHODS),
+                  'merged_log_bytes': None if raw is None else len(raw),
+                  'merged_log_sha256': None if raw is None else hashlib.sha256(raw).hexdigest(),
+                  'raw_output_limit': 'merged stdout/stderr only; no individual channel identity evidence',
+                  'failures': failures,
+                  'original_strict_input': 'not_passed',
+                  'original_full12': 'unrun', 'prospective_full12': 'unrun',
+              }
+              for field in FALSE_FIELDS:
+                  result[field] = False
+              try:
+                  (root / 'outcomes-audit.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+              except BaseException as error:
+                  failures.append({'where': 'outcomes-evidence-write', 'message': repr(error)})
+                  traceback.print_exception(type(error), error, error.__traceback__)
+              inventory = {}
+              inventory_errors = []
+              for path in sorted(root.rglob('*')):
+                  relative = str(path.relative_to(root))
+                  if relative == 'complete-member-inventory.json':
+                      continue
+                  try:
+                      info = path.lstat()
+                      if stat.S_ISDIR(info.st_mode):
+                          continue
+                      if not stat.S_ISREG(info.st_mode):
+                          raise ValueError('nonregular evidence member: ' + relative)
+                      data = path.read_bytes()
+                      inventory[relative] = {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest(),
+                                             'physical_mode': format(stat.S_IMODE(info.st_mode), '04o')}
+                  except BaseException as error:
+                      inventory_errors.append({'member': relative, 'message': repr(error)})
+              try:
+                  (root / 'complete-member-inventory.json').write_text(json.dumps({
+                      'version': 'som.input-data18.complete-member-inventory.v1',
+                      'self_excluded_only': 'complete-member-inventory.json',
+                      'members': inventory, 'errors': inventory_errors,
+                  }, indent=2, sort_keys=True) + '\n')
+              except BaseException as error:
+                  inventory_errors.append({'where': 'inventory-write', 'message': repr(error)})
+                  traceback.print_exception(type(error), error, error.__traceback__)
+              if failures or inventory_errors:
+                  for error in failures + inventory_errors:
+                      print(json.dumps(error, sort_keys=True), file=sys.stderr)
+                  raise SystemExit(1)
+              print(json.dumps({'status': 'bounded_data18_ok', 'actual_methods': len(outcomes),
+                                'retained_regular_members': len(inventory),
+                                'native_authority': False, 'SourceSeal': False,
+                                'product_acceptance': False, 'full12_passed': False, 'M12_passed': False}))
+          
+          
+          if __name__ == '__main__':
+              main()
+          PY_FINALIZE
+      - name: Always upload complete available data evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: input-rule-data18-v1
+          path: ${{ env.DATA18_ROOT }}/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
