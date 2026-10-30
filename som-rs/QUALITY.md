@@ -1,5 +1,11 @@
 # Python quality candidate
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../docs/architecture.md).
+
 This is a separate development candidate. `current` stays unchanged.
 The original composed model, blocks, outputs and failed runs stay archived.
 See [the evidence folder](evals/composed-quality-2026-10-01).

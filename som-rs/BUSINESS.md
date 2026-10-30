@@ -1,5 +1,11 @@
 # Business-service candidate
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../docs/architecture.md).
+
 This candidate extends the unreleased `som.prompt.v5` contract.
 The existing `current` model stays in place until all local gates pass.
 

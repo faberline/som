@@ -1,5 +1,11 @@
 # Data pipeline
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../../../docs/architecture.md).
+
 What turns families into training records and keeps the project runnable:
 the test suite, packaging, and the decompiled layer records with the round
 trip that proves them.

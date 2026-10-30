@@ -1,5 +1,11 @@
 # Corpus
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../../../docs/architecture.md).
+
 What a model trainer and a corpus author get from the oracle families: one
 layout, one harness, a label that a fixture earned by running the
 candidates, and the written reason each record is in the corpus. This area

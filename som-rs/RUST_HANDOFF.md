@@ -1,5 +1,12 @@
 # Rust compiler handoff — 2026-10-22
 
+> Current direction — 2026-10-28: fixed algorithms, `CNL → DSL → Code`.
+> No model training, model weights or Apple chip is required.
+> Develop locally. Run builds and tests on GitHub Actions runners.
+> Homebrew paths and binary hashes below record older accepted tools.
+> M12 owns their platform adaptation. Historical results are not a fresh portable acceptance run.
+> Read [the current architecture](../docs/architecture.md).
+
 ## Current default: TypeScript BE phase 1 (#65)
 
 The default on `127.0.0.1:8765` is TypeScript candidate-001 since `2026-10-22T13:55:00.006599+00:00`. It is released as [v0.5.0](https://github.com/faberline/som/releases/tag/v0.5.0) (tag at `8c4a91fbb5`, notes only).

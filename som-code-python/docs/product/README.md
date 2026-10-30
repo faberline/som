@@ -1,5 +1,11 @@
 # SOM code corpus for Python product requirements
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../../../docs/architecture.md).
+
 This corpus project owns the material the Snippet-Oriented Model learns
 Python from: executable oracle families whose gold is the correct,
 idiomatic program the generator must rebuild and whose near misses are

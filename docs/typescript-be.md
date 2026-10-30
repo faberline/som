@@ -1,5 +1,14 @@
 # TypeScript backend quickstart
 
+## Development test host — 2026-10-28
+
+SOM uses fixed rules: `CNL → DSL → Code`.
+It needs no model training or Apple chip.
+For repository development, edit locally and run the build, test and service commands below on a GitHub Actions runner.
+Do not start them on the shared development computer.
+In a runner, `127.0.0.1` refers to that runner's services.
+Read [the current architecture](architecture.md) for test and platform rules.
+
 This guide walks through verifying the pinned Node.js/npm toolchain and offline npm cache, generating a standalone TypeScript backend project with SOM's local service, and installing, type-checking, format-checking, testing, and running it offline ([CONTRACT.md](../som-rs/contracts/typescript-output-v1/CONTRACT.md)).
 
 ## 1. What you get
@@ -45,7 +54,11 @@ As recorded in [scope.json](../som-rs/contracts/typescript-output-v1/scope.json)
 
 ## 2. Check the toolchain and the npm cache
 
-[toolchain.json](../som-rs/contracts/typescript-output-v1/toolchain.json) pins the exact host runtime, package manager, formatter, dependencies, and offline cache:
+The following Homebrew paths and binary hashes record the earlier accepted host.
+They do not make Apple hardware part of the compiler algorithm.
+M12 owns compatible formatter and tool records for GitHub runners.
+The exact commands below still need those tools or a reviewed platform amendment.
+[toolchain.json](../som-rs/contracts/typescript-output-v1/toolchain.json) retains the runtime, package manager, formatter, dependencies and offline cache pins:
 
 - **Node.js (`toolchain.json` `node`):** Homebrew Node `26.5.0` (`v26.5.0`, V8 `14.6.202.34-node.24`) at `/opt/homebrew/Cellar/node/26.5.0/bin/node` (binary SHA-256 `70851490e028b3d699a8d6d4e1de909af2a989359ae807974c92af9c6580a8e8`, `libnode.147.dylib` SHA-256 `0c2dfacde99b9381ec37fbd222891271c7f455cc0524294928e3e34199d57ec3`).
 - **npm (`toolchain.json` `npm`):** npm `11.17.0` at `/opt/homebrew/lib/node_modules/npm` (invoked as `/opt/homebrew/Cellar/node/26.5.0/bin/node /opt/homebrew/lib/node_modules/npm/bin/npm-cli.js`, tree SHA-256 `3a9e0a20999d2a5c9727e911c554cd66230dba9a169fe0f0a6a54bd3dc7f9186` across `1957` files and `9` symlinks).

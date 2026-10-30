@@ -1,5 +1,11 @@
 # Snippet ISA
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../../../docs/architecture.md).
+
 What a generator author gets from the snippet instruction set: a fixed
 vocabulary of verified code templates that the L4 assembler will execute.
 This area spans the README capability `snippet-isa`.

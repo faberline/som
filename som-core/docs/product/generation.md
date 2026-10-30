@@ -1,5 +1,11 @@
 # Generation
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../../../docs/architecture.md).
+
 What a generator user gets once the four layers exist: an intent becomes a
 plan, the plan becomes a topology, the topology becomes an operation list,
 and the operation list becomes files. Each layer generates its record; none

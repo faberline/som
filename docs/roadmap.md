@@ -1,5 +1,10 @@
 # SOM scenario roadmap
 
+The current architecture is fixed-rule [CNL → DSL → Code](architecture.md).
+It has no Apple chip or model-training requirement.
+Each development chat owns one milestone through its active goal.
+Builds and tests run on GitHub Actions runners after local edits are pushed.
+
 This roadmap serves the [goal](goal.md): BE, FE, SRE, and AI code.
 The [Python backend quickstart](python-be.md) walks through generating and running a Python backend project.
 The [Rust backend quickstart](rust-be.md) walks through generating and building a Rust backend project offline.
@@ -36,6 +41,7 @@ The repository is public, so each tag and GitHub release also needs the user's y
 | [M6](https://github.com/faberline/som/milestone/12) | v0.3.0 | A React CRUD client for a generated Python BE (v1–v4) | [#68](https://github.com/faberline/som/issues/68); proposal in [react-output-v1-draft.md](react-output-v1-draft.md), waiting for approval |
 | [M7](https://github.com/faberline/som/milestone/13) | [v0.4.0](https://github.com/faberline/som/releases/tag/v0.4.0) (released 2026-10-22) | `som write --target rust`, an offline build quickstart, and a one-command PostgreSQL run check | [#82](https://github.com/faberline/som/issues/82), [#92](https://github.com/faberline/som/issues/92) |
 | [M8](https://github.com/faberline/som/milestone/14) | [v0.5.0](https://github.com/faberline/som/releases/tag/v0.5.0) (released 2026-10-22) | The current default, TypeScript candidate-001: TypeScript BE phase 1 (v1–v5, PostgreSQL) | [#65](https://github.com/faberline/som/issues/65), [#74](https://github.com/faberline/som/issues/74)–[#76](https://github.com/faberline/som/issues/76), acceptance tooling [#97](https://github.com/faberline/som/issues/97)–[#99](https://github.com/faberline/som/issues/99), [#103](https://github.com/faberline/som/issues/103)–[#105](https://github.com/faberline/som/issues/105), [#109](https://github.com/faberline/som/issues/109); quickstart [#111](https://github.com/faberline/som/issues/111); run-001 audit gaps [#113](https://github.com/faberline/som/issues/113), [#114](https://github.com/faberline/som/issues/114); run-002 audit gaps [#117](https://github.com/faberline/som/issues/117), [#118](https://github.com/faberline/som/issues/118); release tools [#121](https://github.com/faberline/som/issues/121), [#123](https://github.com/faberline/som/issues/123) |
+| [M12](https://github.com/faberline/som/milestone/18) | No release claimed | Rust hosted tests and platform tool adaptation for the fixed compiler | [#141](https://github.com/faberline/som/issues/141); separate from React M6 |
 | [M9](https://github.com/faberline/som/milestone/15) | v0.6.0 | SRE | [#66](https://github.com/faberline/som/issues/66); needs scope |
 | [M10](https://github.com/faberline/som/milestone/16) | v0.7.0 | AI | [#67](https://github.com/faberline/som/issues/67); needs scope |
 

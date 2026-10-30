@@ -1,5 +1,12 @@
 # Current development state — 2026-10-22
 
+> Current direction — 2026-10-28: fixed algorithms, `CNL → DSL → Code`.
+> No model training, model weights or Apple chip is required.
+> Develop locally. Run builds and tests on GitHub Actions runners.
+> Homebrew paths and binary hashes below record older accepted tools.
+> M12 owns their platform adaptation. Historical results are not a fresh portable acceptance run.
+> Read [the current architecture](../docs/architecture.md).
+
 The local default on `127.0.0.1:8765` is TypeScript candidate-001 since `2026-10-22T13:55:00.006599+00:00` (#65).
 It serves the Python, Rust and TypeScript targets without loading a model. The post-switch check passed, with Python, Rust and TypeScript canaries.
 `target typescript` now writes a Node.js 26.5 + Hono + `pg` product for prompt versions 1 to 5 with PostgreSQL; versions 6 and 7 and the other scope.json refusals answer 422 UNSUPPORTED_TARGET. Read [docs/typescript-be.md](../docs/typescript-be.md).

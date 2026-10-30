@@ -1,11 +1,19 @@
 # SOM Rust roadmap — 2026-10-13
 
-This is the current development plan. The human approved two stages.
-Candidate003 has passed independent acceptance and is the local default. M1 and M2 are complete and closed on GitHub.
+> Current direction — 2026-10-28: fixed algorithms, `CNL → DSL → Code`.
+> No model training, model weights or Apple chip is required.
+> Develop locally. Run builds and tests on GitHub Actions runners.
+> Homebrew paths and binary hashes below record older accepted tools.
+> M12 owns their platform adaptation. Historical results are not a fresh portable acceptance run.
+> Read [the current architecture](../docs/architecture.md).
+
+This records the two completed compiler stages approved on 2026-10-13.
+Candidate003 passed independent acceptance and became the first compiler default. M1 and M2 are complete and closed on GitHub.
 The [2026-10-15 progress index](evidence/rust-compiler-progress-2026-10-15.json)
 records the source landing. All seven issues and both milestones are now closed.
 Read [the current status](RUST_STATUS.md) and [the compiler guide](RUST_GUIDE.md).
-The next plan adds Rust output beside Python. Read [the Rust output roadmap](RUST_OUTPUT_ROADMAP.md).
+Rust output followed that plan. Read [the Rust output roadmap](RUST_OUTPUT_ROADMAP.md).
+Current parallel work belongs to React M6 and Rust M12 in [the scenario roadmap](../docs/roadmap.md).
 The compiler became the running default at `2026-10-15T03:08:08.737006+00:00`. Legacy M2 remains saved for rollback.
 
 `CNL → Rust parser and fixed rules → DSL bundle → existing Rust code generator → Python files`
@@ -14,7 +22,7 @@ The first stage is the main change. The second stage keeps the current backend.
 CNL uses fixed English sentences. Data text can include Chinese.
 The flagship agent supplies business choices. The compiler does not guess them.
 No Python parser, model training, weights or inference are needed in the new path.
-Python remains the output language. Existing Python checks remain useful.
+Python was the output language for these first two stages. Existing Python checks remain useful.
 
 ## M1 — CNL to DSL
 
