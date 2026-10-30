@@ -79,6 +79,28 @@ VENV = SOM_RS / "runtime" / "acceptance-m3-venv"
 WORKER_ENV = {"UV_OFFLINE": "1", "PYTHONDONTWRITEBYTECODE": "1", "LC_ALL": "en_US.UTF-8"}
 
 
+def native_retention_context():
+    if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+        from full_product_context import context
+        selected = context()
+        if selected.qa_mode == "native-qa-v1":
+            return selected
+    return None
+
+
+def retained_scratch(directory):
+    selected = native_retention_context()
+    if selected is not None:
+        return selected.native_phase2_scratch(directory)
+    return tempfile.TemporaryDirectory(prefix="som-phase2-", dir=directory,
+                                       ignore_cleanup_errors=True)
+
+
+def current_product_path(requested):
+    selected = native_retention_context()
+    return selected.native_product_path(requested) if selected is not None else requested
+
+
 def key(text: str) -> str:
     return re.sub(r"[^A-Za-z0-9]+", "_", text).strip("_")
 
@@ -285,13 +307,24 @@ def fixture_case(out: pathlib.Path, case: dict, fixture: dict, language: str = "
     outcome: Any = None
     product = out / "work" / key(case["id"]) / "product"
     try:
+        if language == "python" and os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+            from full_product_context import current_refusal
+            negative = current_refusal(case["id"], "python")
+            if negative is not None:
+                row.update(passed=True, outcome_role="current-compiler-refusal-no-product", product_executed=False,
+                           current_refusal=negative)
+                return finish(out, case, row, negative, started)
         prompt, files = load(case)
         if language == "rust":
             files = rust_files(qa_url, case, prompt, row)
             if files is None:
                 row["passed"] = True
                 return finish(out, case, row, row["rust"], started)
-        if product.parent.exists():
+        retention = native_retention_context()
+        if retention is not None:
+            product = retention.new_native_product_root(product, "phase2-fixture")
+            row["native_product_root"] = str(product)
+        elif product.parent.exists():
             shutil.rmtree(product.parent)
         product.mkdir(parents=True)
         write_product(product, files)
@@ -322,10 +355,19 @@ def fixture_case(out: pathlib.Path, case: dict, fixture: dict, language: str = "
         row["traceback"] = traceback.format_exc()[-6000:]
     row["passed"] = not row["problems"]
     venv = product / ".venv"
-    if venv.is_dir() and not venv.is_symlink():
+    retention = native_retention_context()
+    if retention is not None:
+        if product.is_dir():
+            try:
+                row["native_environment_retention"] = retention.retain_native_environments(product, "phase2-fixture")
+            except Exception as error:  # noqa: BLE001
+                row["passed"] = False
+                row["problems"].append(f"native retention: {type(error).__name__}: {error}")
+                row["retention_traceback"] = traceback.format_exc()
+    elif venv.is_dir() and not venv.is_symlink():
         shutil.rmtree(venv)
     binary = product / "som_app"
-    if language == "rust" and binary.is_file() and not binary.is_symlink():
+    if retention is None and language == "rust" and binary.is_file() and not binary.is_symlink():
         binary.unlink()
     return finish(out, case, row, outcome, started)
 
@@ -337,6 +379,13 @@ def suite_case(out: pathlib.Path, case: dict, host: Any, language: str = "python
     row: dict[str, Any] = {**public_row(case), "language": language, "passed": False, "problems": []}
     outcome: Any = None
     try:
+        if language == "python" and os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+            from full_product_context import current_refusal
+            negative = current_refusal(case["id"], "python")
+            if negative is not None:
+                row.update(passed=True, outcome_role="current-compiler-refusal-no-product", product_executed=False,
+                           current_refusal=negative)
+                return finish(out, case, row, negative, started)
         prompt, files = load(case)
         if language == "rust":
             files = rust_files(host.qa, case, prompt, row)
@@ -380,8 +429,7 @@ def worker(out: pathlib.Path, index: int, claims: str, ids: list[str], language:
     if index == 0:
         sys.path.insert(0, str(HERE.parent))
         import hosts
-        with tempfile.TemporaryDirectory(prefix="som-phase2-", dir=out / "fixtures",
-                                         ignore_cleanup_errors=True) as scratch:
+        with retained_scratch(out / "fixtures") as scratch:
             work = pathlib.Path(scratch)
             ports = hosts.Ports()
             with hosts.cluster(work, ports.take()) as pg:

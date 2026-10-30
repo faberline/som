@@ -23,6 +23,7 @@ import concurrent.futures
 import copy
 import hashlib
 import json
+import os
 import pathlib
 import re
 import sys
@@ -585,12 +586,28 @@ def _make_row(
     return row
 
 
+def native_digest_context():
+    if not os.environ.get('SOM_FULL_PRODUCT_CONTEXT'):
+        return None
+    import full_product_context as hosted
+    ctx = hosted.context()
+    if ctx.qa_mode != 'native-qa-v1':
+        return None
+    path = 'som-rs/scripts/hosted_readiness/typescript_native_digests.py'
+    if path not in ctx.qa_source_authority['admitted_repository_python_sources']:
+        raise ValueError('native baseline digest adapter is outside exact source admission')
+    return ctx, ctx.module('typescript_regression_native_digests', path)
+
+
 def evaluate_case(
     qa_url: str,
     baseline_url: str,
     item: dict[str, Any],
 ) -> tuple[list[dict[str, Any]], list[tuple[str, dict[str, bytes]]], bool]:
     """Run all checks for one case. Returns (rows, failed_raw_blobs_per_row, took_refusal_path)."""
+    native = native_digest_context()
+    native_pair_error = None
+    native_pair_proof = None
     case_id: str = item["id"]
     phase_name: str = item["phase"]
     is_refusal: bool = bool(item.get("is_refusal"))
@@ -700,8 +717,8 @@ def evaluate_case(
         )
         blobs = (
             {}
-            if refusal_ok
-            else {"qa.compile.raw": qa_comp_raw, "baseline.compile.raw": base_comp_raw}
+            if refusal_ok and native is None
+            else {"compile.request.raw": compile_req_bytes, "qa.compile.raw": qa_comp_raw, "baseline.compile.raw": base_comp_raw}
         )
         return [row], [("compile_equal", blobs)], True
 
@@ -762,6 +779,15 @@ def evaluate_case(
             if not isinstance(qa_assets, dict) or not isinstance(base_assets, dict):
                 comp_reasons.append("bundle.assets is missing or not an object")
             else:
+                if native is not None:
+                    # Validate complete raw bytes and source-owned SHA leaves first.
+                    try:
+                        native_pair_proof = native[1].compare(native[0], 'rust', base_comp_raw, qa_comp_raw)
+                        qa_assets['formatter']['sha256'] = None
+                        base_assets['formatter']['sha256'] = None
+                    except ValueError as error:
+                        native_pair_error = str(error)
+                        comp_reasons.append('native source digest proof refused: ' + str(error))
                 for allowed_asset in ("backend", "target_contract"):
                     if allowed_asset not in qa_assets or allowed_asset not in base_assets:
                         comp_reasons.append(f"bundle.assets.{allowed_asset} is missing")
@@ -806,17 +832,21 @@ def evaluate_case(
         status="passed" if comp_passed else "failed",
         reason=None if comp_passed else "; ".join(comp_reasons),
     )
+    if native is not None:
+        comp_row['expected_role'] = 'original-judge-label'
+        comp_row['comparison_mode'] = 'native-qa-v1:exact-source-owned-digest-SHA-leaves'
+        comp_row['native_digest_proof'] = native_pair_proof
     rows_out.append(comp_row)
     blobs_out.append(
         (
             "compile_equal",
             {}
-            if comp_passed
-            else {"qa.compile.raw": qa_comp_raw, "baseline.compile.raw": base_comp_raw},
+            if comp_passed and native is None
+            else {"compile.request.raw": compile_req_bytes, "qa.compile.raw": qa_comp_raw, "baseline.compile.raw": base_comp_raw},
         )
     )
 
-    if qa_bundle is None or base_bundle is None:
+    if qa_bundle is None or base_bundle is None or native_pair_error is not None:
         for chk_name, exp_val in (
             ("baseline_bundle_refused", {"http_status": 400, "code": "ASSET_HASH_MISMATCH"}),
             ("rebased_files", {"http_status": 200, "files_sha256": files_sha}),
@@ -856,7 +886,8 @@ def evaluate_case(
                 f"got status={refuse_status} code={refuse_code!r}"
             )
         )
-        refuse_blobs = {} if refuse_passed else {"qa.baseline_bundle_assemble.raw": refuse_raw}
+        refuse_blobs = {} if refuse_passed and native is None else {
+            "baseline.assemble.request.raw": base_asm_req_bytes, "qa.baseline_bundle_assemble.raw": refuse_raw}
     except OSError as err:
         refuse_status = None
         refuse_resp_sha = None
@@ -890,8 +921,13 @@ def evaluate_case(
             rebased_bundle["assets"]["target_contract"] = copy.deepcopy(
                 qa_bundle["assets"]["target_contract"]
             )
+    if native is not None:
+        expected_native_rebase, _ = native[1].rebase(native[0], 'rust', base_comp_raw, qa_comp_raw)
+        rebased_bundle['assets']['formatter']['sha256'] = expected_native_rebase['assets']['formatter']['sha256']
     if isinstance(rebased_bundle.get("hashes"), dict):
         rebased_bundle["hashes"]["payload_sha256"] = compute_bundle_payload_sha256(rebased_bundle)
+    if native is not None and rebased_bundle != expected_native_rebase:
+        raise ValueError('native Rust rebase differs outside exact source-owned digest leaves')
 
     rebased_req_bytes = compact_json_bytes({"bundle": rebased_bundle})
     rebased_req_sha = sha_bytes(rebased_req_bytes)
@@ -920,7 +956,8 @@ def evaluate_case(
 
         reb_passed = not reb_reasons
         reb_reason = None if reb_passed else "; ".join(reb_reasons)
-        reb_blobs = {} if reb_passed else {"qa.rebased_assemble.raw": reb_raw}
+        reb_blobs = {} if reb_passed and native is None else {
+            "rebased.assemble.request.raw": rebased_req_bytes, "qa.rebased_assemble.raw": reb_raw}
     except OSError as err:
         reb_status = None
         reb_resp_sha = None
@@ -1025,7 +1062,7 @@ def main(argv: list[str] | None = None) -> int:
         if took_refusal:
             refusal_cases.append(item["id"])
         for row, (chk_name, raw_blobs) in zip(case_rows, case_blobs):
-            if not row["passed"] and raw_blobs:
+            if (not row["passed"] or native_digest_context() is not None) and raw_blobs:
                 responses_dir.mkdir(parents=True, exist_ok=True)
                 prefix = f"{_safe_filename(row['phase'])}_{_safe_filename(row['id'])}_{_safe_filename(chk_name)}"
                 saved_files: dict[str, str] = {}

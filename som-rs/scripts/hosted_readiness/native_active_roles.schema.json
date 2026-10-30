@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "som.native-active-role-policy.v1",
+  "title": "Finite native loader roles; interface proposal, not a source seal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "complete", "pending", "product_acceptance_passed", "compiler_acceptance_passed", "whole_acceptance_complete", "design", "sources", "static_edges", "roles", "imports", "bridges", "context_keys", "groups"],
+  "properties": {
+    "version": {"const": "som.native-active-role-policy.v1"},
+    "complete": {"type": "boolean"},
+    "pending": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "product_acceptance_passed": {"const": false},
+    "compiler_acceptance_passed": {"const": false},
+    "whole_acceptance_complete": {"const": false},
+    "design": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source_inventory_sha256", "static_inventory_sha256", "source_paths", "edges", "search_roots"],
+      "properties": {
+        "source_inventory_sha256": {"const": "0d08cd0c59e12970cc36613125617d36a7580e8f0839fe02c3e73b84e5c554ca"},
+        "static_inventory_sha256": {"const": "8c3681fcc2e8662ef7f07e595a11f05169544f6c7695f1d72f241fbdfe6d2b54"},
+        "source_paths": {"type": "array", "minItems": 117, "maxItems": 117, "uniqueItems": true, "items": {"$ref": "#/$defs/source"}},
+        "edges": {"type": "array", "minItems": 327, "maxItems": 327, "uniqueItems": true, "items": {"$ref": "#/$defs/edge"}},
+        "search_roots": {"type": "array", "minItems": 16, "maxItems": 16, "uniqueItems": true, "items": {"$ref": "#/$defs/source"}}
+      }
+    },
+    "sources": {"type": "object", "propertyNames": {"$ref": "#/$defs/source"}, "additionalProperties": {"type": "object", "additionalProperties": false, "required": ["sha256", "mode"], "properties": {"sha256": {"$ref": "#/$defs/sha"}, "mode": {"enum": [420, 493]}}}},
+    "static_edges": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/edge"}},
+    "roles": {"type": "object", "propertyNames": {"$ref": "#/$defs/role"}, "additionalProperties": {"$ref": "#/$defs/role_record"}},
+    "imports": {"type": "array", "uniqueItems": true, "items": {"type": "object", "additionalProperties": false, "required": ["caller", "name", "level", "fromlist", "result", "from_roles"], "properties": {"caller": {"$ref": "#/$defs/role"}, "name": {"type": "string"}, "level": {"type": "integer", "minimum": 0}, "fromlist": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}, "result": {"$ref": "#/$defs/role"}, "from_roles": {"type": "object", "propertyNames": {"$ref": "#/$defs/identifier"}, "additionalProperties": {"$ref": "#/$defs/role"}}}}},
+    "bridges": {"type": "array", "uniqueItems": true, "items": {"type": "object", "additionalProperties": false, "required": ["kind", "role", "function"], "properties": {"kind": {"enum": ["context-module", "fragment-wrapper"]}, "role": {"$ref": "#/$defs/role"}, "function": {"$ref": "#/$defs/qualname"}, "source_local": {"$ref": "#/$defs/identifier"}, "names_local": {"$ref": "#/$defs/identifier"}}}},
+    "context_keys": {"type": "object", "propertyNames": {"type": "string", "minLength": 1}, "additionalProperties": {"$ref": "#/$defs/role"}},
+    "groups": {"type": "object", "additionalProperties": false, "required": ["m6.api.payload"], "properties": {"m6.api.payload": {"type": "object", "additionalProperties": false, "required": ["callers", "members", "producer_role"], "properties": {"callers": {"$ref": "#/$defs/callers"}, "members": {"type": "object", "additionalProperties": false, "required": ["retained", "api", "live", "node"], "properties": {"retained": {"const": "m6.api.payload.retained"}, "api": {"const": "m6.api.payload.api"}, "live": {"const": "m6.api.payload.live"}, "node": {"const": "m6.api.payload.node"}}}, "producer_role": {"const": "m6.api.producer"}}}}}
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source": {"type": "string", "minLength": 1, "pattern": "^[^/\\\\]+(?:/[^/\\\\]+)*$"},
+    "role": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$"},
+    "identifier": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"},
+    "qualname": {"type": "string", "pattern": "^(?:<module>|[A-Za-z_][A-Za-z0-9_.<>]*)$"},
+    "edge": {"type": "object", "additionalProperties": false, "required": ["caller", "import", "source"], "properties": {"caller": {"$ref": "#/$defs/source"}, "import": {"type": "string", "minLength": 1}, "source": {"$ref": "#/$defs/source"}}},
+    "callers": {"type": "array", "uniqueItems": true, "items": {"type": "object", "additionalProperties": false, "required": ["role", "function"], "properties": {"role": {"$ref": "#/$defs/role"}, "function": {"$ref": "#/$defs/qualname"}}}},
+    "binding": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["kind", "module"], "properties": {"kind": {"const": "stdlib"}, "module": {"type": "string", "minLength": 1}, "attribute": {"$ref": "#/$defs/qualname"}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "role"], "properties": {"kind": {"const": "role-module"}, "role": {"$ref": "#/$defs/role"}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "role", "attribute"], "properties": {"kind": {"const": "role-export"}, "role": {"$ref": "#/$defs/role"}, "attribute": {"$ref": "#/$defs/qualname"}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "source", "name"], "properties": {"kind": {"const": "source-constant"}, "source": {"$ref": "#/$defs/source"}, "name": {"$ref": "#/$defs/identifier"}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "local", "type_role", "type_name", "fields"], "properties": {"kind": {"const": "local-instance"}, "local": {"$ref": "#/$defs/identifier"}, "type_role": {"$ref": "#/$defs/role"}, "type_name": {"$ref": "#/$defs/qualname"}, "fields": {"type": "object", "propertyNames": {"$ref": "#/$defs/identifier"}, "additionalProperties": {"enum": ["json", "int", "str", "bool", "path"]}}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "local", "type"], "properties": {"kind": {"const": "local-data"}, "local": {"$ref": "#/$defs/identifier"}, "type": {"enum": ["json", "int", "str", "bool", "path"]}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind"], "properties": {"kind": {"const": "active-controls"}}}
+      ]
+    },
+    "role_record": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "source", "module", "package", "is_package", "callers", "closure", "bindings", "group"],
+      "properties": {
+        "kind": {"enum": ["seed", "module", "entry", "private", "fragment"]},
+        "source": {"$ref": "#/$defs/source"},
+        "module": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_.]*$"},
+        "package": {"type": "string", "pattern": "^(?:[A-Za-z_][A-Za-z0-9_.]*)?$"},
+        "is_package": {"type": "boolean"},
+        "callers": {"$ref": "#/$defs/callers"},
+        "closure": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/role"}},
+        "bindings": {"type": "object", "propertyNames": {"$ref": "#/$defs/identifier"}, "additionalProperties": {"$ref": "#/$defs/binding"}},
+        "group": {"enum": [null, "m6.api.payload"]},
+        "selector": {"type": "object", "additionalProperties": false, "required": ["kind", "names", "ast_sha256"], "properties": {"kind": {"enum": ["top-level-functions", "top-level-assignments", "qualified-function", "qualified-assignments"]}, "names": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/qualname"}}, "ast_sha256": {"$ref": "#/$defs/sha"}}}
+      }
+    }
+  },
+  "x-core-invariants": [
+    "This draft is an interface only. complete=false or any pending item refuses activation.",
+    "The tracked policy path is som-rs/scripts/hosted_readiness/native_active_roles.json. Its exact bytes must occur in each real numbered native source-admission operational_sources map. It contains no self SHA or commit field, so no source-seal cycle is required.",
+    "design is the exact frozen117-source/327-edge/16-root inventory data, compared by canonical hash. It is provenance, not the final candidate map. sources and static_edges must describe the complete rederived actual integrated candidate closure, including new helpers and all selected fragment sources.",
+    "Every source is safe relative, regular, physical, single-linked, exact Git blob/mode, no PYC. Every executable role belongs to the actual native admitted Python map. Module/name/package pairs cannot conflict.",
+    "Every closure includes its own role and all actual static targets, parent packages, binding roles and fixed manual dependencies. All member bytes/ASTs are checked before any member executes.",
+    "seed roles are exactly bootstrap.graph, bootstrap.authority, bootstrap.core and bootstrap.entry. They reuse only actual opaque pre-exec ledger records. They never bless an old main or a marker-bearing module.",
+    "entry roles use module __main__, package empty and is_package=false. Only bootstrap.entry/_trusted_run may originate initial entry execution. argv is bounded text data and never selects a source path.",
+    "A fragment requires selector; other kinds forbid it. ast_sha256 hashes ast.dump(ast.Module(body=selected_original_nodes,type_ignores=[]),include_attributes=False). Names select whole original definitions/assignments in original source order; bodies are never rewritten. The original source must already use future annotations.",
+    "Bindings are fixed tracked recipes. No public globals/callback/raw/code/path argument exists. local-instance and local-data inspect only the authenticated originating frame, after fixed bridges. Exact source-owned type and fields are required; foreign callables are refused.",
+    "context-module bridge is only the registered Context.module function from full_product_context.py. Fragment-wrapper bridges must be exact registered source functions and validate source_local/names_local against the requested fixed fragment. An unknown immediate foreign frame refuses; it is never skipped to find a deeper trusted frame.",
+    "imports match actual original AST name/level/fromlist for the caller role. result and from_roles reference fixed roles. Unrelated imports delegate to the actual built-in importer and existing RawQaFinder.",
+    "The private group has exactly the four fixed sources/names for retained/API/live/Node. Its retained_evidence and producer sys.modules aliases are private read-only views; collector-global names remain untouched. Producer is a separate fixed dependency role, never an extra group member.",
+    "Original two common.py to rust_build_negative_cases specs remain exact. The same actual finder and checked_spec objects stay installed. Only a precise owned/source-bound manual-loader method adapter transition is allowed and verified through the actual code/globals ledger.",
+    "Source may seal before products. All product/compiler/whole acceptance flags remain false. Historical/preparation callers are not changed by this native-only core."
+  ]
+}

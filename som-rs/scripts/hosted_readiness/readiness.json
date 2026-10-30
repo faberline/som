@@ -24,7 +24,7 @@
     "som-rs/behavior/phase2/adapted/verify_composed_transactions.py": "5095a31e0333c0561a14a7073c95acb468b4479b648fcd7200dea5a37be27ea1",
     "som-rs/behavior/phase2/adapted/verify_flow_service.py": "c14225c5080021beba6b9b84b49c6ff5653275bcce348d351bee9c4d8964abd5",
     "som-rs/behavior/phase2/adapted/verify_related.py": "640be9c12dfd398a877ef7fc3d1660fa41fc5b9f60deec16bfdcb41ca7d533cc",
-    "som-rs/behavior/phase2/check_phase2.py": "48388c362434ec86a514516f75a8c82610a8852d9092776818f7811143975d52",
+    "som-rs/behavior/phase2/check_phase2.py": "a66505a04053f3adb4e88dc56b06e18dfae1d1ccce988627f2c76aa391faf105",
     "som-rs/behavior/phase2/make_rs_products.py": "0f4097f289efdf2a734130816caa8bfe3d6299c4a71ffb1cc5d46a036a0b9dbd",
     "som-rs/behavior/phase2/phase2_host.py": "695cd7a15001eddd29f5312a147ddc05764425ac9369eb78eab84d4d2e8ed582",
     "som-rs/behavior/suite.py": "1f7fbd9bbd340aa4457fdbbbc256ebcc5add742bdf86cd1f390c28329a0c7d83",
@@ -218,15 +218,15 @@
     "som-rs/tests/rust-output-v1/cases/cov-v5-min.cnl": "627623f91944b13158487086efec5653948be6c2e77a341e0d0ba9410d291e5d",
     "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347",
     "som-rs/tests/rust-output-v1/cases/index.json": "b49af2a7ba842e5dd810d8d010fcf93436474df7f49f1c569367bed1bc94ed1b",
-    "som-rs/tests/rust-output-v1/check_contract.py": "958aacace4f99badd190715140665bb3bf9f08ec0e88c8557b6d24f87a069b15",
+    "som-rs/tests/rust-output-v1/check_contract.py": "70dce1aec81d1f19b240a1f25d877776b6b498eefbd653f5291bb6e1fcdfe737",
     "som-rs/tests/rust-output-v1/check_python_controls.py": "50e081a6a10cdbb7db8e84e094854ef8833f25d3cfa0857cc98e9cb4e9ccd047",
     "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513",
     "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "66361c04b8c7069868aa03205dbb33f9d28ede06e55ea262326671b91108316b",
     "som-rs/tests/rust-output-v1/validate_cases.py": "9b9131de7a56a54c6a9f103da170143bc18ec6d113bedb6f79ea0a7f8453d4bb",
-    "som-rs/scripts/hosted_readiness/run_full_products.py": "66461c0beeabf3ff7186d9923fafe1e31c7076d2c9b929f14faac01acfcd8303",
+    "som-rs/scripts/hosted_readiness/run_full_products.py": "2b70ccff557f1e647e1f85204d09f959a74334bbdbe065744063026c0131e22b",
     "som-rs/scripts/hosted_readiness/product_runtime/consume_cargo.py": "78d57b5bad258cced8fd7b0776b1ccc01b599942d8a59ed95c8caa8babfc156e",
-    "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py": "554830ac8efad099a6b8d77edec5c2b075813aa0365d43d9984c36ea1cc9d7f9",
-    "som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py": "662501e5dbc8f84954bc5020c28e7d63069417077264a5b43104d334b5ac0968"
+    "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py": "fed506968b2d6a762ba41cb226e8b627787bdcd48b46685ec700956b44f25496",
+    "som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py": "cfb7c594e35b17f672969a56b711dec58097100901a73a412c784ef21aa5d2c9"
   },
   "inventories": [
     {
