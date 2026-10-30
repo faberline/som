@@ -1,0 +1,71 @@
+name: Python backend source data whole19
+on:
+  push:
+    branches: [codex/m12-python-backend-source-data19-v1]
+  workflow_dispatch:
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+env:
+  HELPER_REVISION: ${{ github.sha }}
+  HISTORICAL_SOURCE: 8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af
+  PYTHONDONTWRITEBYTECODE: '1'
+jobs:
+  whole-source-data:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Bind actual source and exact interpreter
+        run: |
+          test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
+          git rev-parse HEAD > tested-sha.txt
+          git rev-parse 'HEAD^{tree}' > tested-tree.txt
+          python3 --version > python-version.txt 2>&1
+          git --version > git-version.txt
+          test "$(cat python-version.txt)" = 'Python 3.12.3'
+          git ls-tree HEAD -- som-rs/scripts/hosted_readiness/python_backend_source_data.py som-rs/scripts/hosted_readiness/test_python_backend_source_data.py .github/workflows/python-backend-source-data.yml > selected-git-blobs.txt
+          sha256sum som-rs/scripts/hosted_readiness/python_backend_source_data.py > library-source-sha256.txt
+          sha256sum som-rs/scripts/hosted_readiness/test_python_backend_source_data.py > fixture-source-sha256.txt
+      - name: Supply only the exact immutable old source objects
+        run: |
+          git --no-replace-objects -c protocol.version=2 fetch --no-tags --depth=1 origin "$HISTORICAL_SOURCE"
+          test "$(git --no-replace-objects rev-parse --verify 'FETCH_HEAD^{commit}')" = "$HISTORICAL_SOURCE"
+          git --no-replace-objects cat-file -e "$HISTORICAL_SOURCE^{commit}"
+          git --no-replace-objects rev-parse --verify "$HISTORICAL_SOURCE^{commit}" > historical-source.txt
+          test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
+      - name: Run the complete genuine Git fixture file
+        run: |
+          set -o pipefail
+          set +e
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/test_python_backend_source_data.py" -v 2>&1 | tee source-fixtures.log
+          pipeline_status=("${PIPESTATUS[@]}")
+          printf '%s\n' "${pipeline_status[0]}" > fixture-exit-code.txt
+          printf '%s\n' "${pipeline_status[1]}" > tee-exit-code.txt
+          if [ "${pipeline_status[0]}" -ne 0 ]; then exit "${pipeline_status[0]}"; fi
+          exit "${pipeline_status[1]}"
+      - name: Retain complete source identity and first failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: python-backend-source-data-whole19
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            tested-sha.txt
+            tested-tree.txt
+            python-version.txt
+            git-version.txt
+            selected-git-blobs.txt
+            library-source-sha256.txt
+            fixture-source-sha256.txt
+            historical-source.txt
+            fixture-exit-code.txt
+            tee-exit-code.txt
+            source-fixtures.log
