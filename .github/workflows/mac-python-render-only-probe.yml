@@ -1,0 +1,419 @@
+name: Mac render-only diagnostic whole94
+on:
+  push:
+    branches: [codex/m12-mac-render-only-whole94-v4]
+  workflow_dispatch:
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+concurrency:
+  group: mac-render-only-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  GIT_OPTIONAL_LOCKS: '0'
+jobs:
+  mac-whole94:
+    runs-on: macos-26
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Bind the exact three-file candidate and complete source inventory
+        run: |
+          python3 - <<'PY'
+          import ast, hashlib, json, os, pathlib, stat, subprocess, sys
+          repo = pathlib.Path(os.environ['GITHUB_WORKSPACE']).resolve(strict=True)
+          control = pathlib.Path(os.environ['RUNNER_TEMP']) / 'mac-probe-control'
+          control.mkdir(exist_ok=False)
+          def git(*args):
+              return subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(repo), *args])
+          def digest(raw):
+              return hashlib.sha256(raw).hexdigest()
+          head = git('rev-parse', 'HEAD').decode().strip()
+          if head != os.environ['GITHUB_SHA']:
+              raise SystemExit('actual checkout head differs')
+          base = '49393e8ce2e1551472eb0158495f858f683c9d68'
+          parents = [line[7:] for line in git('cat-file', '-p', head).decode().splitlines() if line.startswith('parent ')]
+          if parents != [base]:
+              raise SystemExit('exact qualified single parent differs')
+          lib = 'som-rs/scripts/hosted_readiness/mac_python_render_only_probe.py'
+          fixture = 'som-rs/scripts/hosted_readiness/mac_python_render_only_probe_checks.py'
+          workflow = '.github/workflows/mac-python-render-only-probe.yml'
+          expected_new = {lib, fixture, workflow}
+          diff = git('diff-tree', '--no-commit-id', '--name-status', '-r', head).decode().splitlines()
+          if {tuple(line.split('\t')) for line in diff} != {('A', name) for name in expected_new}:
+              raise SystemExit('candidate contains changes outside the exact three added files')
+          pins = {lib: '4550b70f727e183d32b6f56c0a2e8b575fda1d1d6e223059897158eccda99ab6',
+                  fixture: '93649b47915c5f5a038d8895f4406300c31a370e97751298f33fe784654e23a0'}
+          for name, expected in pins.items():
+              if digest((repo / name).read_bytes()) != expected:
+                  raise SystemExit('approved source bytes differ')
+          tree = ast.parse((repo / lib).read_bytes())
+          constants = {node.targets[0].id: ast.literal_eval(node.value) for node in tree.body
+                       if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name)
+                       and node.targets[0].id in ('_ROOTS', '_BASE63_PINS', '_FIXED_SOURCE_PINS', '_ASSET_SOURCE')}
+          frozen = {**constants['_BASE63_PINS'], **constants['_FIXED_SOURCE_PINS']}
+          roots = constants['_ROOTS']
+          names = set(git('ls-files', '-z', '--', *roots).decode().rstrip('\0').split('\0'))
+          names.update(frozen)
+          names.update(constants['_ASSET_SOURCE'].values())
+          names.update(expected_new)
+          names.update(('som-rs/src/compiler.rs', 'som-rs/src/quality.rs',
+                        'som-rs/scripts/react_output_acceptance/provision_macos.py',
+                        'som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py',
+                        'som-rs/scripts/react_output_acceptance/sealed_inputs.mjs'))
+          records = {}
+          for name in sorted(names):
+              path = repo / name
+              for parent in (path, *path.parents):
+                  if parent.is_symlink():
+                      raise SystemExit('source path contains a symlink')
+              raw = path.read_bytes()
+              mode, kind, oid_and_name = git('ls-tree', head, '--', name).decode().strip().split(None, 2)
+              oid, found = oid_and_name.split('\t', 1)
+              actual_oid = hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+              if mode not in ('100644', '100755') or kind != 'blob' or found != name or oid != actual_oid:
+                  raise SystemExit('actual source Git blob or mode differs')
+              if stat.S_IMODE(path.stat().st_mode) != (0o755 if mode == '100755' else 0o644):
+                  raise SystemExit('source physical mode differs')
+              if name in frozen and (len(raw) != frozen[name]['bytes'] or digest(raw) != frozen[name]['sha256']):
+                  raise SystemExit('unchanged source dependency differs')
+              records[name] = {'mode': mode, 'blob_oid': oid, 'bytes': len(raw), 'sha256': digest(raw)}
+          matrix = [('mac_python_render_only_probe_checks', 37), ('test_python_raw_response_compat', 25),
+                    ('test_python_backend_source_data', 19), ('test_raw_digest_compat', 13)]
+          inventory = {}
+          for stem, count in matrix:
+              raw = (repo / 'som-rs/scripts/hosted_readiness' / (stem + '.py')).read_bytes()
+              parsed = ast.parse(raw)
+              methods = {cls.name + '.' + node.name: digest(ast.dump(node, include_attributes=False).encode())
+                         for cls in parsed.body if isinstance(cls, ast.ClassDef)
+                         for node in cls.body if isinstance(node, ast.FunctionDef) and node.name.startswith('test_')}
+              if len(methods) != count:
+                  raise SystemExit('complete method inventory differs')
+              inventory[stem] = {'count': count, 'methods': methods, 'source_sha256': digest(raw)}
+          if list(pathlib.Path(os.environ['RUNNER_TEMP']).glob('som-mac-probe-whole-*')):
+              raise SystemExit('fixture workspace already exists')
+          (control / 'tested-sha.txt').write_text(head + '\n')
+          (control / 'tested-tree.txt').write_bytes(git('rev-parse', 'HEAD^{tree}'))
+          (control / 'source-inventory.json').write_text(json.dumps(records, indent=2) + '\n')
+          (control / 'bootstrap-whole94-inventory.json').write_text(json.dumps(inventory, indent=2) + '\n')
+          (control / 'metadata-python.txt').write_text(sys.version + '\n')
+          (control / 'git-version.txt').write_bytes(git('--version'))
+          PY
+      - name: Fetch the immutable public frozen-tool objects
+        run: |
+          set -o pipefail
+          python3 - <<'PY' 2>&1 | tee "$RUNNER_TEMP/mac-probe-control/public-tools-fetch.log"
+          import json, os, pathlib, subprocess
+          repo = pathlib.Path(os.environ['GITHUB_WORKSPACE'])
+          config = json.loads((repo / 'som-rs/scripts/react_output_acceptance/macos_bottles.json').read_bytes())
+          expected = '806ab0fae7a5b8433fab978f35730c28fdc91abc'
+          for key in ('frozen_file_supplement', 'npm_tree_supplement'):
+              spec = config[key]
+              if spec['repository'] != 'faberline/som' or spec['commit'] != expected:
+                  raise SystemExit('fixed public supplement differs')
+          subprocess.run(['/usr/bin/git', '--no-replace-objects', '-C', str(repo), 'fetch', '--no-tags', '--depth=1', 'origin', expected], check=True)
+          actual = subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(repo), 'rev-parse', '--verify', 'FETCH_HEAD^{commit}']).decode().strip()
+          if actual != expected:
+              raise SystemExit('fetched public supplement commit differs')
+          PY
+      - name: Install and verify the unchanged full frozen Mac tool closure
+        run: |
+          set -o pipefail
+          set +e
+          python3 som-rs/scripts/react_output_acceptance/provision_macos.py --out "$RUNNER_TEMP/m6-provision" 2>&1 | tee "$RUNNER_TEMP/mac-probe-control/provision.log"
+          pipeline_status=("${PIPESTATUS[@]}")
+          printf '%s\n' "${pipeline_status[0]}" > "$RUNNER_TEMP/mac-probe-control/provision-python-exit-code.txt"
+          printf '%s\n' "${pipeline_status[1]}" > "$RUNNER_TEMP/mac-probe-control/provision-tee-exit-code.txt"
+          if [ "${pipeline_status[0]}" -ne 0 ] || [ "${pipeline_status[1]}" -ne 0 ]; then exit 1; fi
+      - name: Bind authoritative whole94 inventory at the frozen interpreter
+        run: |
+          /opt/homebrew/opt/python@3.12/bin/python3.12 -I -S -B - <<'PY'
+          import ast, hashlib, json, os, pathlib, sys
+          if sys.version_info[:3] != (3, 12, 11):
+              raise SystemExit('authoritative inventory requires frozen Python 3.12.11')
+          repo = pathlib.Path(os.environ['GITHUB_WORKSPACE']).resolve(strict=True)
+          control = pathlib.Path(os.environ['RUNNER_TEMP']) / 'mac-probe-control'
+          def digest(raw):
+              return hashlib.sha256(raw).hexdigest()
+          matrix = [('mac_python_render_only_probe_checks', 37), ('test_python_raw_response_compat', 25),
+                    ('test_python_backend_source_data', 19), ('test_raw_digest_compat', 13)]
+          inventory = {}
+          for stem, count in matrix:
+              raw = (repo / 'som-rs/scripts/hosted_readiness' / (stem + '.py')).read_bytes()
+              parsed = ast.parse(raw)
+              methods = {cls.name + '.' + node.name: digest(ast.dump(node, include_attributes=False).encode())
+                         for cls in parsed.body if isinstance(cls, ast.ClassDef)
+                         for node in cls.body if isinstance(node, ast.FunctionDef) and node.name.startswith('test_')}
+              if len(methods) != count:
+                  raise SystemExit('complete method inventory differs')
+              inventory[stem] = {'count': count, 'methods': methods, 'source_sha256': digest(raw)}
+          bootstrap = json.loads((control / 'bootstrap-whole94-inventory.json').read_bytes())
+          for stem, record in inventory.items():
+              if (record['source_sha256'], record['count']) != (bootstrap[stem]['source_sha256'], bootstrap[stem]['count']):
+                  raise SystemExit('fixture source bytes or whole method count changed during provision')
+          with (control / 'whole94-inventory.json').open('x') as stream:
+              stream.write(json.dumps(inventory, indent=2) + '\n')
+          with (control / 'whole94-python.txt').open('x') as stream:
+              stream.write(sys.version + '\n')
+          PY
+      - name: Fetch only fixed historical and approved input objects
+        run: |
+          set -o pipefail
+          /opt/homebrew/opt/python@3.12/bin/python3.12 -I -S -B - <<'PY' 2>&1 | tee "$RUNNER_TEMP/mac-probe-control/input-and-history-fetch.log"
+          import os, pathlib, subprocess
+          repo = pathlib.Path(os.environ['GITHUB_WORKSPACE'])
+          for revision in ('8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af', '55eb7f5c3b21d4f3b57eb721ab60c6aa97e10db3'):
+              subprocess.run(['/usr/bin/git', '--no-replace-objects', '-C', str(repo), 'fetch', '--no-tags', '--depth=1', 'origin', revision], check=True)
+              actual = subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(repo), 'rev-parse', '--verify', 'FETCH_HEAD^{commit}']).decode().strip()
+              if actual != revision:
+                  raise SystemExit('fixed fetched commit differs')
+              print(actual)
+          actual_head = subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(repo), 'rev-parse', 'HEAD']).decode().strip()
+          if actual_head != os.environ['GITHUB_SHA']:
+              raise SystemExit('current head changed while fetching data')
+          PY
+      - name: Restore the already approved inputs with the existing restore step
+        env:
+          M6_INPUTS_KEYRING: ${{ secrets.SOM_M6_ACCEPTANCE_INPUTS_V1 }}
+        run: |
+          set -o pipefail
+          set +e
+          /opt/homebrew/opt/python@3.12/bin/python3.12 -I -S -B som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py --repo-root "$GITHUB_WORKSPACE" --config "$GITHUB_WORKSPACE/som-rs/scripts/react_output_acceptance/hosted_inputs.json" --out "$RUNNER_TEMP/m6-inputs" --node /opt/homebrew/Cellar/node/26.5.0/bin/node 2>&1 | tee "$RUNNER_TEMP/mac-probe-control/restore.log"
+          pipeline_status=("${PIPESTATUS[@]}")
+          printf '%s\n' "${pipeline_status[0]}" > "$RUNNER_TEMP/mac-probe-control/restore-python-exit-code.txt"
+          printf '%s\n' "${pipeline_status[1]}" > "$RUNNER_TEMP/mac-probe-control/restore-tee-exit-code.txt"
+          if [ "${pipeline_status[0]}" -ne 0 ] || [ "${pipeline_status[1]}" -ne 0 ]; then exit 1; fi
+          set -e
+          test ! -e .local
+          test ! -L .local
+          mv "$RUNNER_TEMP/m6-inputs/.local" .local
+          chmod -R a-w .local/react-output/npm-cache-001 .local/typescript-output/npm-cache-001
+      - name: Fetch public crates for both unchanged offline manifests
+        env:
+          CARGO_NET_OFFLINE: 'false'
+        run: |
+          /opt/homebrew/opt/python@3.12/bin/python3.12 -I -S -B - <<'PY'
+          import hashlib, json, os, pathlib, subprocess, sys, traceback
+          repo = pathlib.Path(os.environ['GITHUB_WORKSPACE'])
+          control = pathlib.Path(os.environ['RUNNER_TEMP']) / 'mac-probe-control'
+          overall = 0
+          for label, relative in (('root', 'som-rs/Cargo.toml'), ('targets', 'som-rs/som-targets/Cargo.toml')):
+              manifest = repo / relative
+              before = hashlib.sha256(manifest.read_bytes()).hexdigest()
+              command = ['/opt/homebrew/Cellar/rust/1.96.1/bin/cargo', 'fetch', '--locked', '--manifest-path', str(manifest)]
+              record = {'argv': command, 'cwd': str(repo), 'exit_code': None,
+                        'manifest_before_sha256': before, 'CARGO_NET_OFFLINE': os.environ['CARGO_NET_OFFLINE']}
+              try:
+                  with (control / ('crates-' + label + '.stdout')).open('xb') as stdout, (control / ('crates-' + label + '.stderr')).open('xb') as stderr:
+                      record['exit_code'] = subprocess.run(command, cwd=repo, stdin=subprocess.DEVNULL,
+                                                           stdout=stdout, stderr=stderr, check=False).returncode
+              except BaseException as error:
+                  record['error'] = ''.join(traceback.format_exception(error))
+                  overall = 1
+              record['manifest_after_sha256'] = hashlib.sha256(manifest.read_bytes()).hexdigest()
+              if record['exit_code'] != 0 or record['manifest_after_sha256'] != before:
+                  overall = 1
+              (control / ('crates-' + label + '.json')).write_text(json.dumps(record, indent=2) + '\n')
+          raise SystemExit(overall)
+          PY
+      - name: Select and record one physical temporary root for the unchanged fixtures
+        run: |
+          /opt/homebrew/opt/python@3.12/bin/python3.12 -I -S -B - <<'PY'
+          import json, os, pathlib, stat, subprocess, sys, traceback
+          if sys.version_info[:3] != (3, 12, 11):
+              raise SystemExit('physical temporary-root setup requires frozen Python 3.12.11')
+          control = pathlib.Path(os.environ['RUNNER_TEMP']).resolve(strict=True) / 'mac-probe-control'
+          record = {'version': 'som.mac94.physical-temp-selection.v1',
+                    'source_sha': os.environ['GITHUB_SHA'], 'python': sys.executable,
+                    'python_version': sys.version, 'original_TMPDIR': os.environ.get('TMPDIR'),
+                    'original_RUNNER_TEMP': os.environ['RUNNER_TEMP'],
+                    'original_TMPDIR_observations': [], 'selection_completed': False,
+                    'native_authority': False, 'product_acceptance_passed': False}
+          def physical_directories(path):
+              if not path.is_absolute():
+                  raise ValueError('selected temporary path must be absolute')
+              rows = []
+              for item in reversed((path, *path.parents)):
+                  value = item.lstat()
+                  if not stat.S_ISDIR(value.st_mode) or stat.S_ISLNK(value.st_mode):
+                      raise ValueError('selected temporary ancestor must be a physical directory')
+                  rows.append({'path': str(item), 'mode': stat.S_IMODE(value.st_mode),
+                               'device': value.st_dev, 'inode': value.st_ino, 'uid': value.st_uid})
+              return rows
+          original = record['original_TMPDIR']
+          if original is not None:
+              original_path = pathlib.Path(original)
+              if original_path.is_absolute() and len(original_path.parts) <= 128:
+                  for item in reversed((original_path, *original_path.parents)):
+                      row = {'path': str(item)}
+                      try:
+                          value = item.lstat()
+                          row.update(mode=stat.S_IMODE(value.st_mode), file_type=stat.S_IFMT(value.st_mode),
+                                     device=value.st_dev, inode=value.st_ino)
+                          if stat.S_ISLNK(value.st_mode):
+                              row['readlink'] = os.readlink(item)
+                      except OSError as error:
+                          row.update(error_type=type(error).__name__, errno=error.errno)
+                      record['original_TMPDIR_observations'].append(row)
+              else:
+                  record['original_TMPDIR_observation_limit'] = 'not an absolute bounded path; not walked'
+          try:
+              root = pathlib.Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
+              if root == pathlib.Path('/'):
+                  raise ValueError('runner temporary root cannot be the filesystem root')
+              physical_directories(root)
+              selected = root / 'mac94-physical-tmp'
+              if any(value in str(selected) for value in ('\r', '\n', '\x00')):
+                  raise ValueError('selected temporary path cannot contain environment command separators')
+              selected.mkdir(mode=0o700, exist_ok=False)
+              selected.chmod(0o700)
+              record['selected_ancestors'] = physical_directories(selected)
+              value = selected.lstat()
+              if value.st_uid != os.getuid() or stat.S_IMODE(value.st_mode) != 0o700:
+                  raise ValueError('fresh temporary root owner or mode differs')
+              record['selected_TMPDIR'] = str(selected)
+              cold_code = """import json,os,pathlib,stat,sys,tempfile
+          assert sys.version_info[:3] == (3,12,11)
+          expected=pathlib.Path(os.environ['TMPDIR'])
+          actual=pathlib.Path(tempfile.gettempdir())
+          assert actual == expected and actual.resolve(strict=True) == actual
+          for item in (actual,*actual.parents):
+              value=item.lstat()
+              assert stat.S_ISDIR(value.st_mode) and not stat.S_ISLNK(value.st_mode)
+          with tempfile.TemporaryDirectory(prefix='mac94-physical-check-') as name:
+              child=pathlib.Path(name)
+              assert child.parent == expected and child.resolve(strict=True) == child
+              observed={'tempfile_root':str(actual),'created_directory':str(child),'created_mode':stat.S_IMODE(child.lstat().st_mode),'python':sys.executable,'version':sys.version}
+          print(json.dumps(observed))
+          """
+              command = ['/opt/homebrew/opt/python@3.12/bin/python3.12', '-I', '-S', '-B', '-c', cold_code]
+              environment = dict(os.environ)
+              environment['TMPDIR'] = str(selected)
+              completed = subprocess.run(command, env=environment, stdin=subprocess.DEVNULL,
+                                         capture_output=True, check=False, timeout=60)
+              for kind, raw in (('stdout', completed.stdout), ('stderr', completed.stderr)):
+                  with (control / ('physical-temp-cold-probe.' + kind)).open('xb') as stream:
+                      stream.write(raw)
+              record['cold_probe_exit_code'] = completed.returncode
+              record['cold_probe_argv'] = command
+              if completed.returncode != 0 or completed.stderr:
+                  raise ValueError('fresh frozen interpreter did not select the physical temporary root')
+              record['cold_probe'] = json.loads(completed.stdout)
+              if record['cold_probe']['tempfile_root'] != str(selected):
+                  raise ValueError('observed standard tempfile root differs')
+              with pathlib.Path(os.environ['GITHUB_ENV']).open('a') as stream:
+                  stream.write('TMPDIR=' + str(selected) + '\n')
+              record['selection_completed'] = True
+          except BaseException as error:
+              record['error'] = ''.join(traceback.format_exception(error))
+              raise
+          finally:
+              with (control / 'physical-temp-selection.json').open('x') as stream:
+                  json.dump(record, stream, indent=2)
+                  stream.write('\n')
+          PY
+      - name: Run all four whole fixture files at the same frozen Mac interpreter
+        run: |
+          /opt/homebrew/opt/python@3.12/bin/python3.12 --version > "$RUNNER_TEMP/mac-probe-control/python-version.txt" 2>&1
+          test "$(cat "$RUNNER_TEMP/mac-probe-control/python-version.txt")" = 'Python 3.12.11'
+          set -o pipefail
+          set +e
+          overall_status=0
+          for fixture in mac_python_render_only_probe_checks test_python_raw_response_compat test_python_backend_source_data test_raw_digest_compat; do
+            /opt/homebrew/opt/python@3.12/bin/python3.12 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/$fixture.py" -v 2>&1 | tee "$RUNNER_TEMP/mac-probe-control/$fixture.log"
+            pipeline_status=("${PIPESTATUS[@]}")
+            printf '%s\n' "${pipeline_status[0]}" > "$RUNNER_TEMP/mac-probe-control/$fixture-python-exit-code.txt"
+            printf '%s\n' "${pipeline_status[1]}" > "$RUNNER_TEMP/mac-probe-control/$fixture-tee-exit-code.txt"
+            if [ "${pipeline_status[0]}" -ne 0 ] || [ "${pipeline_status[1]}" -ne 0 ]; then overall_status=1; fi
+          done
+          exit "$overall_status"
+      - name: Stage complete diagnostic and per-method raw evidence
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, shutil, stat, sys, traceback
+          temp = pathlib.Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
+          stage = temp / 'mac-probe-artifact'
+          stage.mkdir(exist_ok=False)
+          records, errors, excluded = {}, [], []
+          forbidden_binary = '2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c'
+          def copy_file(source, destination):
+              if source.is_symlink() or not stat.S_ISREG(source.lstat().st_mode):
+                  raise ValueError('only physical regular evidence files are exported')
+              digest = hashlib.sha256()
+              with source.open('rb') as stream:
+                  for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+                      digest.update(chunk)
+              if digest.hexdigest() == forbidden_binary:
+                  raise ValueError('the retained before binary must not be exported')
+              destination.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copy2(source, destination)
+              copied = hashlib.sha256()
+              with destination.open('rb') as stream:
+                  for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+                      copied.update(chunk)
+              if copied.hexdigest() != digest.hexdigest():
+                  raise ValueError('retained evidence copy differs')
+              records[destination.relative_to(stage).as_posix()] = {'bytes': source.stat().st_size,
+                  'sha256': digest.hexdigest(), 'mode': stat.S_IMODE(source.stat().st_mode)}
+          control = temp / 'mac-probe-control'
+          if control.is_dir():
+              for source in sorted(control.rglob('*')):
+                  if source.is_file() or source.is_symlink():
+                      try:
+                          copy_file(source, stage / 'control' / source.relative_to(control))
+                      except BaseException as error:
+                          errors.append(''.join(traceback.format_exception(error)))
+          for name in ('m6-provision/report.json', 'm6-inputs/provision.json'):
+              source = temp / name
+              if source.exists():
+                  try:
+                      copy_file(source, stage / name)
+                  except BaseException as error:
+                      errors.append(''.join(traceback.format_exception(error)))
+          workspaces = sorted(temp.glob('som-mac-probe-whole-*'))
+          if len(workspaces) != 1:
+              errors.append('Expected one fresh fixture workspace; actual count=' + str(len(workspaces)))
+          for workspace in workspaces:
+              for parent, dirs, files in os.walk(workspace, followlinks=False):
+                  parent = pathlib.Path(parent)
+                  keep = []
+                  for name in dirs:
+                      path = parent / name
+                      if path.is_symlink():
+                          errors.append('Evidence directory is a symlink: ' + str(path))
+                      elif name in ('target', 'target-assets', 'source-worktree'):
+                          excluded.append(str(path.relative_to(workspace)))
+                      else:
+                          keep.append(name)
+                  dirs[:] = keep
+                  for name in sorted(files):
+                      source = parent / name
+                      try:
+                          copy_file(source, stage / 'fixture-workspace' / source.relative_to(workspace))
+                      except BaseException as error:
+                          errors.append(''.join(traceback.format_exception(error)))
+          summary = {'version': 'som.mac-probe.staged-artifacts.v1', 'run_id': os.environ['GITHUB_RUN_ID'],
+                     'attempt': os.environ['GITHUB_RUN_ATTEMPT'], 'source_sha': os.environ['GITHUB_SHA'],
+                     'files': records, 'errors': errors, 'excluded_build_cache_and_duplicate_source': excluded,
+                     'source_archive_is_retained': 'fixture-workspace/genuine-positive/source.tar' in records,
+                     'native_authority': False, 'product_acceptance_passed': False}
+          (stage / 'artifact-members.json').write_text(json.dumps(summary, indent=2) + '\n')
+          if errors:
+              raise SystemExit('evidence staging failed; partial evidence retained')
+          PY
+      - name: Retain full raw evidence and every first failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: mac-render-only-whole94-v4
+          path: ${{ runner.temp }}/mac-probe-artifact/
+          if-no-files-found: error
+          retention-days: 30
