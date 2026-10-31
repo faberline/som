@@ -28,6 +28,47 @@ import threading
 import time
 from collections.abc import Iterator
 
+# Native mode uses fixed source bindings. A globals flag grants no authority.
+_NATIVE_API = '__som_native_active_controls__' in globals()
+if _NATIVE_API:
+    from _som_native_active_controls_binding import controls as _native_controls
+    from types import FunctionType as _NativeFunction, ModuleType as _NativeModule
+    _native_controls.verify_installed()
+    if (_native_controls is not __som_native_active_controls__
+            or _native_controls.role_sources.get('m6.api.host.base') != 'som-rs/behavior/hosts.py'
+            or __file__ != str(_native_controls.root / 'som-rs/behavior/hosts.py')
+            or __name__ != '_som_m6_api_original_base_hosts'
+            or type(__som_native_API_subprocess__) is not _NativeModule
+            or type(__som_native_API_tools__) is not _NativeFunction):
+        raise ValueError('actual fixed native API host/runner bindings required')
+    _native_facade = _NativeModule.__getattribute__(__som_native_API_subprocess__, '__dict__')
+    if (_native_facade.get('__file__') != str(_native_controls.root /
+            _native_controls.role_sources['m6.api.recording.subprocess'])
+            or sys.modules.get(_native_facade.get('__name__')) is not __som_native_API_subprocess__
+            or __som_native_API_tools__.__globals__.get('__file__') != str(_native_controls.root /
+                _native_controls.role_sources['m6.api.case.consumer'])):
+        raise ValueError('fixed stable native API facade/getter source differs')
+    _NATIVE_API_TOOLS = __som_native_API_tools__()
+    _native_keys = ('python', 'node', 'npm_cli', 'cache', 'pg_bin', 'lsof', 'ps', 'site')
+    if (type(_NATIVE_API_TOOLS) is not dict or not all(type(key) is str for key in _NATIVE_API_TOOLS)
+            or not all(key in _NATIVE_API_TOOLS and type(_NATIVE_API_TOOLS[key]) is str
+                       and _NATIVE_API_TOOLS[key] for key in _native_keys)):
+        raise ValueError('actual source-owned native API tool data required')
+    for _native_key in _native_keys:
+        _native_path = pathlib.Path(_NATIVE_API_TOOLS[_native_key])
+        if not _native_path.is_absolute() or '..' in _native_path.parts:
+            raise ValueError('absolute exact native API tool path required')
+    if (_NATIVE_API_TOOLS['lsof'] != '/usr/bin/lsof'
+            or _NATIVE_API_TOOLS['ps'] != '/bin/ps'):
+        raise ValueError('fixed Linux lsof/ps paths required')
+    # Only this module's alias changes. The real stdlib module stays installed.
+    subprocess = __som_native_API_subprocess__
+    _native_controls.verify_installed()
+else:
+    if '_som_native_active_controls' in sys.modules:
+        raise ValueError('native API host/runner has no fixed binding')
+
+
 HERE = pathlib.Path(__file__).resolve().parent
 SOM_RS = HERE.parent
 sys.path.insert(0, str(SOM_RS / "som-targets" / "qa"))
@@ -41,6 +82,10 @@ PG_BIN = pathlib.Path(PG["bin_dir"])
 if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
     import full_product_context as hosted_products
     PG_BIN = hosted_products.postgres_bin()
+if _NATIVE_API:
+    if PG_BIN != pathlib.Path(_NATIVE_API_TOOLS['pg_bin']):
+        raise ValueError('actual Context/provider PostgreSQL paths differ')
+    PG_BIN = pathlib.Path(_NATIVE_API_TOOLS['pg_bin'])
 FORBIDDEN_PORTS = frozenset({8765, 18765})
 QA_PORTS = range(18919, 19000)
 READY_SECONDS = 180
@@ -180,8 +225,48 @@ def package(files: dict[str, str]) -> str:
     return names.pop()
 
 
+def _native_process_identity(pid: int) -> tuple[int, int, int, int] | None:
+    """Read one same-user Linux process identity; this data grants no ownership."""
+    if type(pid) is not int or pid <= 1 or sys.platform != 'linux':
+        return None
+    root = pathlib.Path('/proc') / str(pid)
+    try:
+        info = root.stat()
+        if info.st_uid != os.geteuid():
+            return None
+        raw = (root / 'stat').read_text(encoding='ascii')
+        head, separator, tail = raw.rpartition(')')
+        fields = tail.split()
+        if (not separator or not head.startswith(str(pid) + ' (') or len(fields) < 20
+                or fields[0] in ('Z', 'X', 'x')
+                or not all(value.isdecimal() for value in (fields[1], fields[2], fields[19]))):
+            return None
+        return int(fields[19]), int(fields[1]), int(fields[2]), info.st_uid
+    except (OSError, ValueError, UnicodeError):
+        return None
+
+
+def _native_listening(pid: int, port: int) -> bool:
+    """Require this same-user live PID, not a stranger on the requested port."""
+    if type(port) is not int or port not in QA_PORTS or port in FORBIDDEN_PORTS:
+        return False
+    before = _native_process_identity(pid)
+    if before is None:
+        return False
+    done = subprocess.run(
+        [_NATIVE_API_TOOLS['lsof'], '-nP', '-a', '-p', str(pid), f'-iTCP:{port}', '-sTCP:LISTEN', '-t'],
+        capture_output=True, text=True, check=False,
+    )
+    if type(done.returncode) is not int or done.returncode != 0 or type(done.stdout) is not str:
+        return False
+    tokens = done.stdout.split()
+    return bool(tokens) and all(token == str(pid) for token in tokens) and before == _native_process_identity(pid)
+
+
 def listening(pid: int, port: int) -> bool:
     """Whether this process itself listens on the port, so a stranger on it is never taken for it."""
+    if _NATIVE_API:
+        return _native_listening(pid, port)
     done = subprocess.run(["lsof", "-nP", "-a", "-p", str(pid), f"-iTCP:{port}", "-sTCP:LISTEN", "-t"],
                           capture_output=True, text=True)
     return str(pid) in done.stdout.split()

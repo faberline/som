@@ -1,0 +1,521 @@
+name: Native collector and case whole controls
+on:
+  push:
+    branches:
+      - codex/m12-native-collector-controls-v3
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: native-collector-controls-${{ github.ref }}
+  cancel-in-progress: false
+defaults:
+  run:
+    shell: bash
+jobs:
+  whole:
+    if: github.repository == 'faberline/som' && github.ref == 'refs/heads/codex/m12-native-collector-controls-v3'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 127
+    steps:
+      - name: Initialize evidence and fixed data programs
+        timeout-minutes: 2
+        env:
+          WHOLE_EVIDENCE: ${{ runner.temp }}/som-native-collector-controls-evidence
+          WHOLE_TMP: ${{ runner.temp }}/som-native-collector-controls-tmp
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -m 700 "$WHOLE_EVIDENCE" "$WHOLE_TMP"
+          printf '%s\n' '{"status":"NOT_RUN","all_whole_suites_passed":false,"native_origin_qualified":false,"SourceSeal":false,"full671":false,"full12":false,"M12_passed":false}' > "$WHOLE_EVIDENCE/outcome.json"
+          cat > "$WHOLE_EVIDENCE/source_bind.py" <<'PY'
+          import ast, hashlib, json, os, re, stat, subprocess, sys, traceback
+          from pathlib import Path
+          BASE = '4b60f4aad930e160fda84e6b217a8d0ec0ed758a'
+          WORKFLOW = '.github/workflows/native-collector-controls.yml'
+          DATA_PATH = '.github/ci/native-collector-controls-v1.json'
+          DATA_RAW = (Path(os.environ['WHOLE_EVIDENCE'])/'fixed-data.json').read_bytes()
+          if hashlib.sha256(DATA_RAW).hexdigest() != '748bb70b7e41296328425a00637f1e79ec417eee96141f769a00aecc0adeb611':
+              raise ValueError('fixed whole-suite data bytes differ')
+          DATA = json.loads(DATA_RAW)
+          EXPECTED, SUITES, CHANGES = DATA['expected'], DATA['suites'], DATA['changes']
+          EVIDENCE = Path(os.environ['WHOLE_EVIDENCE'])
+          REPO = Path(os.environ['GITHUB_WORKSPACE'])
+          PHASE = sys.argv[1]
+          if PHASE not in ('pre', 'post'):
+              raise ValueError('only two fixed data phases')
+          report = {'version':'som.native-collector-controls.source-binding.v1','phase':PHASE,'qualified':False,'files':{},
+                    'scope':'selected whole synthetic source/protocol files; runtime status is separate',
+                    'native_authority':False,'SourceSeal':False,'M12_passed':False}
+          def require(condition, message):
+              if not condition:
+                  raise ValueError(message)
+          def sha(raw): return hashlib.sha256(raw).hexdigest()
+          def blob(raw): return hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          def write_json(path, value):
+              path.write_text(json.dumps(value,sort_keys=True,indent=2)+'\n')
+          def git(*arguments):
+              result=subprocess.run(['/usr/bin/git','-C',str(REPO),*arguments],check=False,
+                  stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=30,
+                  env={'PATH':'/usr/bin:/bin','GIT_CONFIG_GLOBAL':'/dev/null',
+                       'GIT_CONFIG_NOSYSTEM':'1','LC_ALL':'C'})
+              if result.returncode:
+                  report.setdefault('git_failures',[]).append({'arguments':arguments,'exit':result.returncode,
+                      'stdout_hex':result.stdout.hex(),'stderr_hex':result.stderr.hex()})
+              result.check_returncode()
+              return result.stdout
+          def physical(path):
+              require(not any(item.is_symlink() for item in (path,*path.parents)),'physical source path required')
+          def read_source(name):
+              path=REPO/name
+              physical(path)
+              before=path.lstat()
+              expected_mode = EXPECTED[name]['git_mode'] if name in EXPECTED else '100644'
+              require(expected_mode in ('100644','100755'), 'fixed regular Git mode required: '+name)
+              require(stat.S_ISREG(before.st_mode) and stat.S_IMODE(before.st_mode)==(int(expected_mode,8)&0o777) and before.st_nlink==1,
+                      'exact regular Git-preserved mode/nlink1 source required: '+name)
+              raw=path.read_bytes();after=path.lstat()
+              identity=lambda s:[s.st_dev,s.st_ino,s.st_mode,s.st_nlink,s.st_uid,s.st_gid,s.st_size,s.st_mtime_ns,s.st_ctime_ns]
+              require(identity(before)==identity(after),'source changed during read: '+name)
+              artifact_name='github/'+name[8:] if name.startswith('.github/') else name
+              copied=EVIDENCE/PHASE/'source'/artifact_name
+              copied.parent.mkdir(parents=True,exist_ok=True);copied.write_bytes(raw)
+              row={'bytes':len(raw),'sha256':sha(raw),'git_blob_oid':blob(raw),'git_mode':expected_mode,'physical_identity':identity(before),
+                   'phase_relative_artifact_path':str(copied.relative_to(EVIDENCE/PHASE))}
+              report['files'][name]=row
+              entry=git('ls-tree','HEAD','--',name).decode().strip()
+              require(entry==expected_mode+' blob '+row['git_blob_oid']+'\t'+name,'actual Git source mismatch: '+name)
+              if name in EXPECTED:
+                  require({key:row[key] for key in EXPECTED[name]}==EXPECTED[name],'reviewed source pin mismatch: '+name)
+              return raw
+          try:
+              require(sys.version_info[:3]==(3,12,11) and sys.implementation.name=='cpython','exact control CPython3.12.11 required')
+              require(sys.flags.isolated==1 and sys.flags.no_site==1 and sys.flags.dont_write_bytecode==1 and sys.flags.optimize==0,
+                      'control data verifier flags mismatch')
+              require(os.environ['GITHUB_ACTIONS']=='true' and sys.platform=='linux','GitHub Linux control lane only')
+              require(os.environ['GITHUB_REPOSITORY']=='faberline/som','wrong public repository')
+              require(os.environ['GITHUB_REF']=='refs/heads/codex/m12-native-collector-controls-v3','wrong finite branch')
+              require(os.environ['GITHUB_EVENT_NAME'] in ('push','workflow_dispatch'),'wrong event')
+              head=git('rev-parse','HEAD').decode().strip();report['HEAD']=head
+              require(re.fullmatch('[0-9a-f]{40}',head) is not None and head==os.environ['GITHUB_SHA'],'actual HEAD mismatch')
+              require(os.environ['GITHUB_WORKFLOW_SHA']==head,'executed workflow SHA mismatch')
+              require(os.environ['GITHUB_WORKFLOW_REF']=='faberline/som/'+WORKFLOW+'@'+os.environ['GITHUB_REF'],'executed workflow ref mismatch')
+              commit=git('cat-file','commit',head);(EVIDENCE/(PHASE+'.commit.raw')).write_bytes(commit)
+              parents=[line[7:].decode() for line in commit.split(b'\n\n',1)[0].splitlines() if line.startswith(b'parent ')]
+              report['parents'],report['base']=parents,BASE
+              require(parents==[BASE],'exact single parent/base required')
+              difference=git('diff-tree','--no-commit-id','--no-renames','--name-status','-r','-z',BASE,head)
+              (EVIDENCE/(PHASE+'.diff.raw')).write_bytes(difference)
+              items=difference.rstrip(b'\0').split(b'\0')
+              require(len(items)==len(CHANGES)*2,'unexpected payload diff size')
+              actual={items[i+1].decode():items[i].decode() for i in range(0,len(items),2)}
+              require(actual==CHANGES,'exact finite payload A/M set required')
+              require(git('status','--porcelain=v1','-z','--untracked-files=all')==b'','checkout must remain entirely clean')
+              for name in sorted(EXPECTED):
+                  read_source(name)
+              require(sha(read_source(DATA_PATH)) == '748bb70b7e41296328425a00637f1e79ec417eee96141f769a00aecc0adeb611', 'tracked fixed CI data differs')
+              report['methods'] = {}
+              for suite in SUITES:
+                  parsed = ast.parse((REPO/suite['path']).read_bytes())
+                  methods = []
+                  full = []
+                  for cls in parsed.body:
+                      if not isinstance(cls,ast.ClassDef):
+                          continue
+                      for node in cls.body:
+                          if not isinstance(node,ast.FunctionDef) or not node.name.startswith('test_'):
+                              continue
+                          name = cls.name+'.'+node.name
+                          raw_ast = ast.dump(node,include_attributes=False)
+                          assertions = [ast.dump(value,include_attributes=False) for value in ast.walk(node)
+                              if isinstance(value,ast.Assert) or isinstance(value,ast.Call) and isinstance(value.func,ast.Attribute)
+                              and value.func.attr.startswith('assert')]
+                          methods.append({'name':name,'sha256':sha(raw_ast.encode()),'assert_count':len(assertions)})
+                          full.append({'name':name,'whole_method_AST':raw_ast,'whole_method_AST_sha256':sha(raw_ast.encode()),
+                              'complete_assertion_ASTs':assertions})
+                  require(methods==suite['methods'],'complete whole-method/assert inventory differs: '+suite['key'])
+                  report['methods'][suite['key']] = methods
+                  write_json(EVIDENCE/(PHASE+'.'+suite['key']+'.methods.json'),full)
+              read_source(WORKFLOW)
+              # No self hash can be embedded. Actual bytes equal HEAD blob and executed
+              # workflow SHA. Root must separately select the final reviewed commit.
+              report['workflow_self_binding']='actual file = HEAD blob = executed github.workflow_sha; final reviewed commit selected externally by Root'
+              if PHASE=='post':
+                  before=json.loads((EVIDENCE/'pre.json').read_bytes())
+                  require(before.get('qualified') is True,'pre binding was not qualified')
+                  require(before['HEAD']==head and before['files']==report['files'] and before['methods']==report['methods'],
+                          'complete source/modes/blob/physical identities changed across fixture')
+              report['qualified']=True
+          except BaseException:
+              (EVIDENCE/(PHASE+'.failure.traceback.txt')).write_text(traceback.format_exc())
+              raise
+          finally:
+              # Retain every still-readable fixed public source even if an earlier gate
+              # failed. These final snapshots are explicitly not qualification evidence.
+              report['available_source_snapshots']={}
+              for name in (*EXPECTED,DATA_PATH,WORKFLOW):
+                  try:
+                      path=REPO/name;physical(path);before=path.lstat()
+                      require(stat.S_ISREG(before.st_mode) and before.st_size<=1048576,'bounded regular archive source required')
+                      raw=path.read_bytes();after=path.lstat()
+                      require((before.st_dev,before.st_ino,before.st_mode,before.st_size,before.st_mtime_ns,before.st_ctime_ns)==
+                              (after.st_dev,after.st_ino,after.st_mode,after.st_size,after.st_mtime_ns,after.st_ctime_ns),'archive source changed during read')
+                      leaf='github/'+name[8:] if name.startswith('.github/') else name
+                      target=EVIDENCE/PHASE/'available-source'/leaf
+                      target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(raw)
+                      report['available_source_snapshots'][name]={'artifact_path':str(target.relative_to(EVIDENCE)),
+                          'bytes':len(raw),'sha256':sha(raw),'mode':oct(stat.S_IMODE(before.st_mode)),
+                          'proof_kind':'available bounded public data only, not a passing gate'}
+                  except BaseException:
+                      report['available_source_snapshots'][name]={'proof_kind':'MISSING_OR_UNREADABLE',
+                          'actual_traceback':traceback.format_exc()}
+              write_json(EVIDENCE/(PHASE+'.json'),report)
+          PY
+          cat > "$WHOLE_EVIDENCE/launch.py" <<'PY'
+          """Future GitHub-only whole-file child wait recorder; never run locally."""
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import signal
+          import subprocess
+          import sys
+          import time
+          import traceback
+
+          root = Path(os.environ['WHOLE_EVIDENCE'])
+          data_raw = (root / 'fixed-data.json').read_bytes()
+          if hashlib.sha256(data_raw).hexdigest() != '748bb70b7e41296328425a00637f1e79ec417eee96141f769a00aecc0adeb611':
+              raise ValueError('fixed whole-suite data bytes differ')
+          SUITES = json.loads(data_raw)['suites']
+          key = sys.argv[1]
+          selected = [row for row in SUITES if row['key'] == key]
+          if len(selected) != 1 or len(sys.argv) != 2:
+              raise ValueError('one fixed whole-suite key required')
+          suite = selected[0]
+          report = {'version': 'som.native-collector-controls.child-wait.v1', 'key': key,
+                    'invoked': False, 'wait_completed': False, 'timeout': False,
+                    'returncode': None, 'scope': 'synthetic source/protocol control only',
+                    'timeout_limit_seconds': suite['timeout_seconds'],
+                    'owned_wait_limits_seconds': {'after_TERM': 10, 'after_KILL': 10, 'emergency_finally': 10}}
+          child = None
+          status = 1
+          try:
+              if sys.version_info[:3] != (3, 12, 11) or sys.implementation.name != 'cpython':
+                  raise ValueError('exact control CPython3.12.11 required')
+              if not (sys.flags.isolated and sys.flags.no_site and sys.dont_write_bytecode and sys.flags.optimize == 0):
+                  raise ValueError('exact isolated parent control flags required')
+              argv = [sys.executable, '-I', '-S', '-B',
+                      str(Path(os.environ['GITHUB_WORKSPACE']) / suite['path']), '-v']
+              report.update(argv=argv, started_monotonic=time.monotonic())
+              allowed_environment = ('PATH', 'HOME', 'TMPDIR', 'LANG', 'LC_ALL', 'GITHUB_ACTIONS',
+                                     'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'GITHUB_WORKSPACE', 'RUNNER_TEMP', 'HELPER_REVISION')
+              child_environment = {name: os.environ[name] for name in allowed_environment}
+              report['environment_policy'] = 'token-free synthetic fixture isolation; not actual product-startup provenance'
+              report['allowed_environment_names'] = list(allowed_environment)
+              child = subprocess.Popen(argv, start_new_session=True, env=child_environment)
+              report.update(invoked=True, pid=child.pid)
+              try:
+                  report['returncode'] = child.wait(timeout=suite['timeout_seconds'])
+              except subprocess.TimeoutExpired:
+                  report['timeout'] = True
+                  report['timeout_traceback'] = traceback.format_exc()
+                  traceback.print_exc()
+                  print('OWNED WHOLE FIXTURE TIMEOUT: ' + key, file=sys.stderr, flush=True)
+                  os.killpg(child.pid, signal.SIGTERM)
+                  try:
+                      report['returncode'] = child.wait(timeout=10)
+                  except subprocess.TimeoutExpired:
+                      os.killpg(child.pid, signal.SIGKILL)
+                      report['returncode'] = child.wait(timeout=10)
+              report.update(wait_completed=True, finished_monotonic=time.monotonic())
+              code = report['returncode']
+              status = 1 if report['timeout'] else (code if code >= 0 else 128 - code)
+          except BaseException:
+              report['first_launcher_traceback'] = traceback.format_exc()
+              traceback.print_exc()
+          finally:
+              # Record only the actual wait. A later cleanup error cannot overwrite it.
+              if child is not None and child.poll() is None:
+                  try:
+                      os.killpg(child.pid, signal.SIGKILL)
+                      code = child.wait(timeout=10)
+                      report['emergency_cleanup_wait'] = {'completed': True, 'returncode': code}
+                  except BaseException:
+                      report['emergency_cleanup_traceback'] = traceback.format_exc()
+                      traceback.print_exc()
+              report['launcher_exit'] = status
+              (root / (key + '.child.json')).write_text(json.dumps(report, sort_keys=True, indent=2) + '\n')
+          raise SystemExit(status)
+          PY
+      - name: Write the fixed outcome and inventory program
+        timeout-minutes: 1
+        env:
+          WHOLE_EVIDENCE: ${{ runner.temp }}/som-native-collector-controls-evidence
+        run: |
+          set -euo pipefail
+          cat > "$WHOLE_EVIDENCE/collect.py" <<'PY'
+          """Future GitHub whole-file raw collector. No result is inferred from old runs."""
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import stat
+          import traceback
+
+          WORKFLOW = '.github/workflows/native-collector-controls.yml'
+          DATA_PATH = '.github/ci/native-collector-controls-v1.json'
+          EXPECTED_NAMES = ['som-rs/behavior/hosts.py', 'som-rs/behavior/typescript/host.py', 'som-rs/scripts/hosted_readiness/native_active_controls.py', 'som-rs/scripts/hosted_readiness/native_qa_authority.py', 'som-rs/scripts/hosted_readiness/product_python/produce_wheels.py', 'som-rs/scripts/hosted_readiness/product_python/uv099-installer-authority.json', 'som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py', 'som-rs/scripts/hosted_readiness/product_runtime/consume_cargo.py', 'som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py', 'som-rs/scripts/hosted_readiness/run_full_products.py', 'som-rs/scripts/hosted_readiness/same_candidate_graph.py', 'som-rs/scripts/hosted_readiness/test_native_active_controls.py', 'som-rs/scripts/hosted_readiness/test_native_m6_callback_context.py', 'som-rs/scripts/hosted_readiness/test_native_m6_entry.py', 'som-rs/scripts/hosted_readiness/test_native_python_startup.py', 'som-rs/scripts/hosted_readiness/test_run_full_products.py', 'som-rs/scripts/hosted_readiness/typescript_regression_owner.py', 'som-rs/scripts/react_output_acceptance/check_products.py', 'som-rs/scripts/react_output_acceptance/m6_native_entry.py', 'som-rs/scripts/react_output_acceptance/m6_react_callback.py', 'som-rs/scripts/react_output_acceptance/native_api_full_before.py', 'som-rs/scripts/react_output_acceptance/native_record_api.py', 'som-rs/scripts/react_output_acceptance/native_recorded_subprocess.py', 'som-rs/scripts/react_output_acceptance/native_recording_owner.py', 'som-rs/scripts/react_output_acceptance/react_api_python_payload.py', 'som-rs/scripts/react_output_acceptance/record_api.py', 'som-rs/scripts/react_output_acceptance/record_http.py', 'som-rs/scripts/react_output_acceptance/run_acceptance.py', 'som-rs/scripts/react_output_acceptance/test_check_products_cleanup.py', 'som-rs/scripts/react_output_acceptance/test_native_api_case.py', 'som-rs/scripts/react_output_acceptance/test_native_collector_interop.py', 'som-rs/scripts/react_output_acceptance/test_native_m6_recorded_subprocess.py', 'som-rs/scripts/react_output_acceptance/test_record_api.py', 'som-rs/scripts/react_output_acceptance/test_record_http.py', 'som-rs/scripts/react_output_acceptance/test_run_acceptance.py', 'som-rs/tests/react-output-v1/common.py', 'som-rs/tests/react-output-v1/run_api_contract.py', 'som-rs/tests/react-output-v1/run_gates.py', 'som-rs/tests/react-output-v1/test_native_api_host_controls.py']
+          root = Path(os.environ['WHOLE_EVIDENCE'])
+          data_failure = None
+          try:
+              data_raw = (root / 'fixed-data.json').read_bytes()
+              if hashlib.sha256(data_raw).hexdigest() != '748bb70b7e41296328425a00637f1e79ec417eee96141f769a00aecc0adeb611':
+                  raise ValueError('fixed whole-suite data bytes differ')
+              DATA = json.loads(data_raw)
+              SUITES, EXPECTED = DATA['suites'], DATA['expected']
+          except BaseException:
+              data_failure = traceback.format_exc()
+              SUITES, EXPECTED = [], {}
+          outcome = {'version': 'som.native-collector-controls.outcome.v1', 'status': 'UNQUALIFIED',
+                     'all_whole_suites_passed': False, 'suites': [],
+                     'native_origin_qualified': False, 'product_runtime8d0_qualified': False,
+                     'genuine_Context_factory': False, 'SourceSeal': False,
+                     'full671': False, 'full12': False, 'M12_passed': False,
+                     'raw_stream': 'one original merged stdout/stderr stream per file; no separate channel identity proof',
+                     'caught_expected_exception_tracebacks': 'Only what unchanged fixtures actually print is supplied. No synthetic traceback reconstruction.'}
+          outcome['fixed_data_qualified'] = data_failure is None
+          if data_failure is not None:
+              outcome['fixed_data_failure_traceback'] = data_failure
+          def load(name):
+              path = root / name
+              return json.loads(path.read_bytes()) if path.exists() else {}
+          try:
+              pre, post = load('pre.json'), load('post.json')
+              outcome['pre_post_qualified'] = pre.get('qualified') is True and post.get('qualified') is True
+              outcome['step_outcomes'] = {name: os.environ.get(name, 'UNKNOWN')
+                                          for name in ('WHOLE_INTERPRETER', 'WHOLE_PRE', 'WHOLE_RUN', 'WHOLE_POST')}
+              for suite in SUITES:
+                  key = suite['key']
+                  row = {'key': key, 'path': suite['path'], 'expected_whole_methods': len(suite['methods']), 'passed': False}
+                  outcome['suites'].append(row)
+                  try:
+                      raw_path = root / (key + '.merged.raw')
+                      raw = raw_path.read_bytes() if raw_path.exists() else b''
+                      child = load(key + '.child.json')
+                      exits_path = root / (key + '.pipeline-exits')
+                      exits_raw = exits_path.read_bytes().splitlines() if exits_path.exists() else []
+                      exits = [int(value) for value in exits_raw] if len(exits_raw) == 2 and all(value.isdigit() for value in exits_raw) else None
+                      row.update(raw_present=raw_path.exists(), raw_sha256=hashlib.sha256(raw).hexdigest(),
+                                 raw_bytes=len(raw), child=child, pipeline_exits=exits)
+                      names = []
+                      for method in suite['methods']:
+                          cls, name = method['name'].split('.', 1)
+                          token = (name + ' (__main__.' + cls + '.' + name + ')').encode()
+                          names.append({'name': method['name'], 'verbose_occurrences': raw.count(token)})
+                      row['whole_method_verbose_observations'] = names
+                      count = len(suite['methods'])
+                      summaries = re.findall(rb'(?m)^Ran ([0-9]+) tests? in [0-9.]+s\r?$', raw)
+                      row['exact_whole_summary'] = summaries == [str(count).encode()]
+                      row['exact_OK'] = len(re.findall(rb'(?m)^OK\r?$', raw)) == 1
+                      row['no_skipped_or_expected_fail_summary'] = not re.search(rb'(?m)^(?:OK \(|FAILED|UNEXPECTED SUCCESS|skipped )', raw)
+                      start = raw.find(b'======================================================================\n')
+                      if start >= 0:
+                          (root / (key + '.failure-sections.raw')).write_bytes(raw[start:])
+                      row['passed'] = (row['raw_present'] and exits == [0, 0]
+                          and child.get('invoked') is True and child.get('wait_completed') is True
+                          and child.get('timeout') is False and child.get('returncode') == 0
+                          and child.get('launcher_exit') == 0 and row['exact_whole_summary']
+                          and row['exact_OK'] and row['no_skipped_or_expected_fail_summary']
+                          and all(item['verbose_occurrences'] == 1 for item in names))
+                      if key == 'firstlaunch':
+                          required = [b'F21 zero-zero actual pipeline exits=[0, 0]',
+                              b'F21 child-seven actual pipeline exits=[7, 0]', b'F21 tee-failure actual pipeline exits=[0, ',
+                              b'F21 both-fail actual pipeline exits=[7, ',
+                              b'F21 interrupted owned wait: no completed pipeline status exists']
+                          row['retained_F21_observations'] = all(value in raw for value in required)
+                          row['passed'] = row['passed'] and row['retained_F21_observations']
+                  except BaseException:
+                      row['collector_traceback'] = traceback.format_exc()
+              outcome['expected_total_whole_methods'] = sum(len(suite['methods']) for suite in SUITES)
+              outcome['all_whole_suites_passed'] = (data_failure is None and bool(SUITES) and len(outcome['suites']) == len(SUITES)
+                  and all(row['passed'] for row in outcome['suites']) and outcome['pre_post_qualified']
+                  and all(value == 'success' for value in outcome['step_outcomes'].values()))
+              if outcome['all_whole_suites_passed']:
+                  outcome['status'] = 'PASS_ALL_SELECTED_WHOLE_SYNTHETIC_SOURCE_PROTOCOL_FILES_ONLY'
+          except BaseException:
+              outcome['first_collector_traceback'] = traceback.format_exc()
+          finally:
+              # Preserve each bounded, fixed public source even when pre-binding did not run.
+              outcome['available_source_snapshots'] = {}
+              for name in (*EXPECTED_NAMES, DATA_PATH, WORKFLOW):
+                  try:
+                      source = Path(os.environ['GITHUB_WORKSPACE']) / name
+                      if any(item.is_symlink() for item in (source, *source.parents)):
+                          raise ValueError('physical source required')
+                      before = source.lstat()
+                      if not stat.S_ISREG(before.st_mode) or before.st_size > 2 * 1024**2:
+                          raise ValueError('bounded public source required')
+                      raw = source.read_bytes()
+                      after = source.lstat()
+                      fields = ('st_dev', 'st_ino', 'st_mode', 'st_nlink', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
+                      if any(getattr(before, key) != getattr(after, key) for key in fields):
+                          raise ValueError('available source changed during read')
+                      leaf = 'github/' + name[8:] if name.startswith('.github/') else name
+                      target = root / 'available-source' / leaf
+                      target.parent.mkdir(parents=True, exist_ok=True)
+                      target.write_bytes(raw)
+                      outcome['available_source_snapshots'][name] = {'path': str(target.relative_to(root)),
+                          'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
+                          'original_mode': oct(stat.S_IMODE(before.st_mode)),
+                          'proof_kind': 'available public bytes only; not source-qualification credit'}
+                  except BaseException:
+                      outcome['available_source_snapshots'][name] = {'proof_kind': 'MISSING_OR_UNREADABLE',
+                                                                   'actual_traceback': traceback.format_exc()}
+              (root / 'outcome.json').write_text(json.dumps(outcome, sort_keys=True, indent=2) + '\n')
+              members = []
+              for path in sorted(root.rglob('*')):
+                  if path == root / 'members.json':
+                      continue
+                  state = path.lstat()
+                  if not stat.S_ISREG(state.st_mode) or path.is_symlink():
+                      members.append({'path': str(path.relative_to(root)), 'kind': 'nonregular-not-read', 'mode': oct(stat.S_IMODE(state.st_mode))})
+                      continue
+                  raw = path.read_bytes()
+                  members.append({'path': str(path.relative_to(root)), 'bytes': len(raw),
+                                  'mode': oct(stat.S_IMODE(state.st_mode)), 'sha256': hashlib.sha256(raw).hexdigest()})
+              (root / 'members.json').write_text(json.dumps({'version': 'som.native-collector-controls.members.v1', 'members': members,
+                  'scope': 'all available task-owned evidence files; inventory itself only excluded; no parent environment dump'}, sort_keys=True, indent=2) + '\n')
+          if not outcome['all_whole_suites_passed']:
+              raise SystemExit(1)
+          PY
+      - name: Checkout the exact selected candidate
+        timeout-minutes: 2
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Copy the exact SHA-bound CI data table
+        timeout-minutes: 1
+        env:
+          WHOLE_EVIDENCE: ${{ runner.temp }}/som-native-collector-controls-evidence
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' '748bb70b7e41296328425a00637f1e79ec417eee96141f769a00aecc0adeb611' "$GITHUB_WORKSPACE/.github/ci/native-collector-controls-v1.json" | /usr/bin/sha256sum --check --strict
+          /usr/bin/cp "$GITHUB_WORKSPACE/.github/ci/native-collector-controls-v1.json" "$WHOLE_EVIDENCE/fixed-data.json"
+      - name: Select control CPython3.12.11
+        id: setup
+        timeout-minutes: 3
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12.11'
+          architecture: x64
+          check-latest: false
+      - name: Record actual control interpreter and stdlib data
+        id: interpreter
+        timeout-minutes: 2
+        env:
+          WHOLE_EVIDENCE: ${{ runner.temp }}/som-native-collector-controls-evidence
+          SETUP_PYTHON: ${{ steps.setup.outputs.python-path }}
+        run: |
+          set -euo pipefail
+          "$SETUP_PYTHON" -I -S -B - <<'PY'
+          import hashlib,json,os,stat,sys,traceback
+          from pathlib import Path
+          root=Path(os.environ['WHOLE_EVIDENCE'])
+          row={'version':'som.native-collector-controls.control-interpreter.v1','qualified_product_runtime':False,'ready':False}
+          try:
+              binary=Path(sys.executable).resolve(strict=True)
+              row.update(version=list(sys.version_info),implementation=sys.implementation.name,executable=str(binary),
+                  binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(),binary_mode=oct(stat.S_IMODE(binary.stat().st_mode)),
+                  flags={'isolated':sys.flags.isolated,'no_site':sys.flags.no_site,'dont_write_bytecode':sys.flags.dont_write_bytecode,
+                         'optimize':sys.flags.optimize},orig_argv=sys.orig_argv,setup_action='a26af69be951a213d495a4c3e4e4022e16d87065')
+              if sys.version_info[:3]!=(3,12,11) or sys.implementation.name!='cpython' or row['flags']!={'isolated':1,'no_site':1,'dont_write_bytecode':1,'optimize':0}:
+                  raise ValueError('exact isolated control interpreter required')
+              row['stdlib_data']={}
+              for leaf in ('_bootstrap.py','_bootstrap_external.py'):
+                  path=Path(sys._stdlib_dir)/'importlib'/leaf;raw=path.read_bytes()
+                  (root/('control-stdlib-'+leaf)).write_bytes(raw)
+                  row['stdlib_data'][str(path)]={'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest(),'mode':oct(stat.S_IMODE(path.stat().st_mode))}
+              (root/'control-python.path').write_text(str(binary)+'\n')
+              with open(os.environ['GITHUB_OUTPUT'],'a') as output:
+                  output.write('path='+str(binary)+'\n')
+              row['ready']=True
+          except BaseException:
+              (root/'interpreter.failure.traceback.txt').write_text(traceback.format_exc())
+              raise
+          finally:
+              (root/'interpreter.json').write_text(json.dumps(row,sort_keys=True,indent=2)+'\n')
+          PY
+      - name: Bind all whole source before execution
+        id: pre
+        timeout-minutes: 3
+        env:
+          WHOLE_EVIDENCE: ${{ runner.temp }}/som-native-collector-controls-evidence
+          CONTROL_PYTHON: ${{ steps.interpreter.outputs.path }}
+        run: |
+          set -euo pipefail
+          "$CONTROL_PYTHON" -I -S -B "$WHOLE_EVIDENCE/source_bind.py" pre
+      - name: Run every whole file in a separate owned process
+        id: whole
+        timeout-minutes: 97
+        env:
+          WHOLE_EVIDENCE: ${{ runner.temp }}/som-native-collector-controls-evidence
+          WHOLE_TMP: ${{ runner.temp }}/som-native-collector-controls-tmp
+          CONTROL_PYTHON: ${{ steps.interpreter.outputs.path }}
+        run: |
+          set -euo pipefail
+          overall=0
+          for suite in driver startup recorded collector entry callback legacy_http interop case host cleanup legacy_api; do
+            set +e
+            /usr/bin/env -i PATH=/usr/bin:/bin HOME="$HOME" TMPDIR="$WHOLE_TMP" LANG=C.UTF-8 LC_ALL=C.UTF-8 GITHUB_ACTIONS="$GITHUB_ACTIONS" \
+              RUNNER_ENVIRONMENT="$RUNNER_ENVIRONMENT" RUNNER_OS="$RUNNER_OS" RUNNER_TEMP="$RUNNER_TEMP" \
+              GITHUB_WORKSPACE="$GITHUB_WORKSPACE" HELPER_REVISION="$GITHUB_SHA" WHOLE_EVIDENCE="$WHOLE_EVIDENCE" \
+              "$CONTROL_PYTHON" -I -S -B "$WHOLE_EVIDENCE/launch.py" "$suite" 2>&1 \
+              | /usr/bin/tee "$WHOLE_EVIDENCE/$suite.merged.raw" 2> "$WHOLE_EVIDENCE/$suite.tee.stderr.raw"
+            pipeline=( "${PIPESTATUS[@]}" )
+            set -e
+            printf '%s\n' "${pipeline[@]}" > "$WHOLE_EVIDENCE/$suite.pipeline-exits"
+            if test "${#pipeline[@]}" -ne 2; then overall=1; continue; fi
+            if test "${pipeline[0]}" -ne 0 || test "${pipeline[1]}" -ne 0; then overall=1; fi
+          done
+          exit "$overall"
+      - name: Bind all whole source after execution or failure
+        id: post
+        if: always() && steps.interpreter.outcome == 'success' && steps.pre.outcome != 'skipped'
+        timeout-minutes: 3
+        env:
+          WHOLE_EVIDENCE: ${{ runner.temp }}/som-native-collector-controls-evidence
+          CONTROL_PYTHON: ${{ steps.interpreter.outputs.path }}
+        run: |
+          set -euo pipefail
+          "$CONTROL_PYTHON" -I -S -B "$WHOLE_EVIDENCE/source_bind.py" post
+      - name: Record all outcomes and complete available artifact inventory
+        if: always()
+        timeout-minutes: 3
+        env:
+          WHOLE_EVIDENCE: ${{ runner.temp }}/som-native-collector-controls-evidence
+          CONTROL_PYTHON: ${{ steps.interpreter.outputs.path }}
+          WHOLE_INTERPRETER: ${{ steps.interpreter.outcome }}
+          WHOLE_PRE: ${{ steps.pre.outcome }}
+          WHOLE_RUN: ${{ steps.whole.outcome }}
+          WHOLE_POST: ${{ steps.post.outcome }}
+        run: |
+          set -euo pipefail
+          if test -x "$CONTROL_PYTHON"; then
+            "$CONTROL_PYTHON" -I -S -B "$WHOLE_EVIDENCE/collect.py"
+          else
+            printf '%s\n' 'Control interpreter unavailable; system Python used only to record unavailable evidence, never to run a subject.' > "$WHOLE_EVIDENCE/metadata-only-fallback.txt"
+            /usr/bin/python3 -I -S -B "$WHOLE_EVIDENCE/collect.py"
+          fi
+      - name: Preserve all available task evidence
+        if: always()
+        timeout-minutes: 5
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-collector-controls-v3-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/som-native-collector-controls-evidence
+          if-no-files-found: error
+          retention-days: 30

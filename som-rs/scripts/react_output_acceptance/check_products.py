@@ -31,10 +31,13 @@ import json
 import os
 import pathlib
 import shutil
+import signal
 import stat
 import subprocess
 import sys
 import time
+import threading
+from types import FunctionType
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -43,17 +46,191 @@ from typing import Any, Iterator
 HERE = pathlib.Path(__file__).resolve().parent
 SOM_RS = HERE.parents[1]
 REACT_TESTS = SOM_RS / "tests" / "react-output-v1"
-if str(REACT_TESTS) not in sys.path:
-    sys.path.insert(0, str(REACT_TESTS))
+_native_import_path = sys.path if '__som_native_active_controls__' in globals() else None
+_native_import_items = tuple(sys.path) if _native_import_path is not None else None
+try:
+    if str(REACT_TESTS) not in sys.path:
+        sys.path.insert(0, str(REACT_TESTS))
 
-import check_contract  # type: ignore[import-not-found]  # noqa: E402
-from common import CONTRACT, REPO  # type: ignore[import-not-found]  # noqa: E402
+    import check_contract  # type: ignore[import-not-found]  # noqa: E402
+    from common import CONTRACT, REPO  # type: ignore[import-not-found]  # noqa: E402
+finally:
+    if _native_import_path is not None:
+        # Restore the actual original object even if an import failed. The
+        # fixed Core import rows retain the physical original source targets.
+        sys.path = _native_import_path
+        _native_import_path[:] = _native_import_items
 
 PYTHON = str(SOM_RS / "runtime" / "acceptance-m3-venv" / "bin" / "python")
 FORBIDDEN_PORTS = (8765, 18765)
 NO_PROXY_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 EXPECTED_PRODUCTS = 129
 
+
+
+def _native_invocation(function):
+    if type(function) is not FunctionType:
+        raise ValueError('original products function required')
+    return (function, function.__code__, function.__globals__, function.__builtins__,
+            function.__defaults__, tuple(function.__defaults__ or ()),
+            function.__kwdefaults__, tuple((function.__kwdefaults__ or {}).items()),
+            function.__closure__, tuple((cell, cell.cell_contents)
+                                        for cell in (function.__closure__ or ())))
+
+
+def _native_original(row):
+    function, code, namespace, builtins, defaults, items, keywords, pairs, closure, cells = row
+    if not (type(function) is FunctionType and function.__code__ is code
+            and function.__globals__ is namespace and function.__builtins__ is builtins
+            and function.__defaults__ is defaults and function.__kwdefaults__ is keywords
+            and function.__closure__ is closure and len(defaults or ()) == len(items)
+            and all(a is b for a, b in zip(defaults or (), items))
+            and len(keywords or {}) == len(pairs)
+            and all(key in (keywords or {}) and keywords[key] is value for key, value in pairs)
+            and len(closure or ()) == len(cells)
+            and all(cell is original and cell.cell_contents is value
+                    for cell, (original, value) in zip(closure or (), cells))):
+        raise ValueError('held products invocation changed')
+    return function
+
+
+def _native_products_entry():
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    module, wrapper = __som_native_API_FRAME_GET__(1), __som_native_API_FRAME_GET__()
+    namespace = module.f_globals
+    rows = []
+    for name, value in tuple(namespace.items()):
+        if type(value) is FunctionType and value.__globals__ is namespace:
+            if not any(code is value.__code__ for code in module.f_code.co_consts):
+                raise ValueError('products function is not an actual module-body constant')
+            rows.append((name, _native_invocation(value)))
+    _native_source_handoff = (module, wrapper, namespace, module.f_builtins,
+                              tuple(rows), os.getpid(), threading.get_ident())
+    functions = dict(rows)
+    return _native_original(functions['main'])()
+
+
+
+
+def _native_timeout(number, interrupted):
+    # A real process timer interrupts this same interpreter. It does not invent
+    # a child wait, completion record or TimeoutExpired from a nonexistent child.
+    raise TimeoutError('same-Core nested product step exceeded3600seconds')
+
+
+def _native_deadline_body():
+    if threading.current_thread() is not threading.main_thread():
+        raise ValueError('native product deadline requires original main thread')
+    if signal.getitimer(signal.ITIMER_REAL) != (0.0, 0.0):
+        raise ValueError('native product deadline cannot replace another timer')
+    handler = signal.getsignal(signal.SIGALRM)
+    installed = False
+    primary, trace, secondary = None, None, []
+    try:
+        signal.signal(signal.SIGALRM, _native_timeout)
+        installed = True
+        signal.setitimer(signal.ITIMER_REAL, 3600.0)
+        yield
+    except BaseException as error:
+        primary, trace = error, error.__traceback__
+    finally:
+        if installed:
+            for action in ('cancel', 'restore'):
+                try:
+                    if action == 'cancel':
+                        signal.setitimer(signal.ITIMER_REAL, 0.0)
+                    else:
+                        signal.signal(signal.SIGALRM, handler)
+                except BaseException as error:
+                    if primary is None:
+                        primary, trace = error, error.__traceback__
+                    elif error is not primary:
+                        secondary.append(error)
+    if primary is not None:
+        BaseException.__setattr__(primary, '__som_native_api_deadline_secondary__', tuple(secondary))
+        raise BaseException.with_traceback(primary, trace)
+
+
+def _native_deadline():
+    return contextlib.contextmanager(_native_deadline_body)()
+
+def _native_log_body(log):
+    """Own one merged per-case log, including inherited OS file descriptors."""
+    descriptor, stream = None, None
+    saved = []
+    primary, trace, secondary = None, None, []
+    try:
+        if not (type(log) is type(pathlib.Path()) and log.is_absolute()
+                and not any(path.is_symlink() for path in (log, *log.parents))):
+            raise ValueError('physical native per-case log required')
+        descriptor = os.open(log, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+        info = os.fstat(descriptor)
+        if not (stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_uid == os.geteuid()):
+            raise ValueError('exclusive owned regular native log required')
+        stream = os.fdopen(descriptor, 'w', encoding='utf-8')
+        descriptor = None
+        sys.stdout.flush()
+        sys.stderr.flush()
+        for target in (1, 2):
+            duplicate = os.dup(target)
+            saved.append((target, duplicate))
+            os.dup2(stream.fileno(), target)
+        with contextlib.redirect_stdout(stream), contextlib.redirect_stderr(stream):
+            yield
+    except BaseException as error:
+        primary, trace = error, error.__traceback__
+    finally:
+        # Restore both inherited descriptors even when flush or a close fails.
+        actions = []
+        if stream is not None:
+            actions.append(('flush', stream))
+        for target, duplicate in reversed(saved):
+            actions.append(('restore', (target, duplicate)))
+            actions.append(('close', duplicate))
+        if stream is not None:
+            actions.append(('stream-close', stream))
+        if descriptor is not None:
+            actions.append(('close', descriptor))
+        for action, value in actions:
+            try:
+                if action == 'flush':
+                    value.flush()
+                elif action == 'restore':
+                    os.dup2(value[1], value[0])
+                elif action == 'stream-close':
+                    value.close()
+                else:
+                    os.close(value)
+            except BaseException as error:
+                if primary is None:
+                    primary, trace = error, error.__traceback__
+                elif error is not primary:
+                    secondary.append(error)
+    if primary is not None:
+        BaseException.__setattr__(primary, '__som_native_api_log_secondary__', tuple(secondary))
+        raise BaseException.with_traceback(primary, trace)
+
+
+def _native_log(log):
+    return contextlib.contextmanager(_native_log_body)(log)
+
+def _native_step(argv, log):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    frame = __som_native_API_FRAME_GET__(1)
+    main_frame = frame.f_back.f_back
+    gate_row = main_frame.f_locals['_native_gate_row']
+    _native_original(gate_row)(argv, log)
+    if not (frame.f_code.co_name == 'step' and frame.f_globals is globals()
+            and len(argv) == 5 and argv[0] == str(REACT_TESTS / 'run_gates.py')
+            and argv[3] == '--cache'):
+        raise ValueError('only original nested product gates request is allowed')
+    with _native_deadline(), _native_log(log):
+        code = controls.execute_entry('entry.m6.product-gates', list(argv[1:]))
+    if type(code) is not int:
+        raise ValueError('nested gates entry has no integer completion')
+    return code
 
 def sha(path: pathlib.Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -72,10 +249,18 @@ def post(base_url: str, route: str, body: bytes) -> tuple[int, bytes]:
 
 def python_product(base_url: str, entry: dict[str, Any], case_dir: pathlib.Path) -> str | None:
     """Writes prompt.json and product/ for the Python product of the request without target."""
+    _native = '__som_native_active_controls__' in globals()
+    if _native:
+        case = __som_native_API_FRAME_GET__(1)
+        main_frame = case.f_back
+        rows = main_frame.f_locals['_native_functions']
+        _native_post = _native_original(rows['post'])
+        if case.f_code is not rows['check_case'][1] or case.f_locals.get('entry') is not entry:
+            raise ValueError('original case producer caller required')
     request = json.loads(entry["python_request"])
     if "target" in request:
         return "python_request has a target"
-    status, raw = post(base_url, "/v1/compile", entry["python_request"].encode("utf-8"))
+    status, raw = (_native_post if _native else post)(base_url, "/v1/compile", entry["python_request"].encode("utf-8"))
     (case_dir / "compile.response.json").write_bytes(raw)
     if status != 200:
         return f"python compile returned {status}"
@@ -85,7 +270,7 @@ def python_product(base_url: str, entry: dict[str, Any], case_dir: pathlib.Path)
     if bundle["prompt"] != entry["prompt"]:
         return "python bundle prompt differs from the React bundle prompt"
     body = json.dumps({"bundle": bundle}, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-    status, raw = post(base_url, "/v1/assemble", body.encode("utf-8"))
+    status, raw = (_native_post if _native else post)(base_url, "/v1/assemble", body.encode("utf-8"))
     (case_dir / "assemble.response.json").write_bytes(raw)
     if status != 200:
         return f"python assemble returned {status}"
@@ -99,6 +284,8 @@ def python_product(base_url: str, entry: dict[str, Any], case_dir: pathlib.Path)
 
 
 def step(argv: list[str], log: pathlib.Path) -> int:
+    if '__som_native_active_controls__' in globals():
+        return _native_step(argv, log)
     with log.open("w") as out:
         return subprocess.run([PYTHON, *argv], stdout=out, stderr=subprocess.STDOUT, timeout=3600,
                               check=False).returncode
@@ -132,6 +319,15 @@ def cache_snapshot(cache: pathlib.Path, destination: pathlib.Path) -> dict[str, 
 
 def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: pathlib.Path,
                api: dict[str, Any]) -> dict[str, Any]:
+    _native = '__som_native_active_controls__' in globals()
+    if _native:
+        main_frame = __som_native_API_FRAME_GET__(1)
+        _native_functions = main_frame.f_locals['_native_functions']
+        _native_python = _native_original(_native_functions['python_product'])
+        _native_consumer = main_frame.f_locals['_native_consumer']
+        _native_consume_row = main_frame.f_locals['_native_consume_row']
+        _native_consume = _native_original(_native_consume_row)
+        _native_original(_native_functions['check_case'])
     cid = entry["id"]
     work = out / cid
     work.mkdir()
@@ -151,12 +347,21 @@ def check_case(base_url: str, entry: dict[str, Any], out: pathlib.Path, cache: p
 
     python_dir = work / "python"
     python_dir.mkdir()
-    python_problem = python_product(base_url, entry, python_dir)
+    python_problem = (_native_python if _native else python_product)(base_url, entry, python_dir)
+    if _native:
+        _native_original(_native_functions['python_product'])
+        _native_original(_native_functions['post'])
     report = None
     if python_problem is not None:
         problems.append(python_problem)
     else:
-        codes["api_contract"] = step([str(HERE / "record_api.py"), str(python_dir), str(product),
+        if _native:
+            # This exact source callsite follows the held producer's successful
+            # return. No completion token or expected case row is passed.
+            with _native_deadline(), _native_log(work / 'api.log'):
+                codes['api_contract'] = _native_consume()
+        else:
+            codes["api_contract"] = step([str(HERE / "record_api.py"), str(python_dir), str(product),
                                       str(work / "api"), "--raw-out", str(work / "api-raw")], work / "api.log")
         report_path = work / "api" / "report.json"
         report = json.loads(report_path.read_text()) if report_path.is_file() else None
@@ -316,12 +521,23 @@ def cleanup_case_runtime(out: pathlib.Path, cid: str) -> dict[str, Any]:
 
 
 def main() -> int:
+    _native = '__som_native_active_controls__' in globals()
+    if _native:
+        from _som_native_active_controls_binding import controls
+        _native_source_handoff = __som_native_API_FRAME_GET__(1).f_locals['_native_source_handoff']
+        _native_functions = dict(_native_source_handoff[4])
+        _native_original(_native_functions['main'])
+        _native_consumer = controls.load_module('m6.api.case.consumer')
+        _native_inputs = _native_consumer._main_inputs()
+        _native_consume_row = _native_invocation(_native_consumer._consume)
+        _native_gate_row = _native_invocation(_native_consumer._check_gates)
+        _native_case = _native_original(_native_functions['check_case'])
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", required=True)
     parser.add_argument("--manifest", required=True, type=pathlib.Path)
     parser.add_argument("--out", required=True, type=pathlib.Path)
     toolchain = json.loads((CONTRACT / "toolchain.json").read_text())
-    parser.add_argument("--cache", type=pathlib.Path, default=REPO / toolchain["vendored_cache"]["path"])
+    parser.add_argument("--cache", type=pathlib.Path, default=pathlib.Path(_native_inputs["cache"]) if _native else REPO / toolchain["vendored_cache"]["path"])
     parser.add_argument("--only", nargs="*", default=None)
     parser.add_argument("--cleanup-runtime", action="store_true",
                         help="Remove only each completed case's node_modules and verified stopped PostgreSQL data")
@@ -349,7 +565,9 @@ def main() -> int:
     started = time.time()
     for index, entry in enumerate(entries, 1):
         t0 = time.time()
-        row = check_case(args.url, entry, out, args.cache.resolve(), api)
+        if _native:
+            _native_original(_native_functions['check_case'])
+        row = (_native_case if _native else check_case)(args.url, entry, out, args.cache.resolve(), api)
         if args.cleanup_runtime:
             try:
                 cleanup = cleanup_case_runtime(out, entry["id"])
@@ -385,4 +603,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(_native_products_entry() if '__som_native_active_controls__' in globals() else main())
