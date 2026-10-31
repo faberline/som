@@ -329,7 +329,7 @@ jobs:
         env:
           SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
         run: |
-          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- admit --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --out "$RUNNER_TEMP/formal-build-source-admission.json"
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --entry-role entry.native-graph -- admit --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --out "$RUNNER_TEMP/formal-build-source-admission.json"
       - name: Download this run's complete input proof
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
@@ -830,7 +830,7 @@ jobs:
         env:
           SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
         run: |
-          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- admit --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --out "$RUNNER_TEMP/rust-native-authority.json"
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --entry-role entry.native-graph -- admit --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$HELPER_REVISION" --out "$RUNNER_TEMP/rust-native-authority.json"
       - name: Qualify all six current product Rust tools
         run: |
           python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/product_runtime/qualify_rust_tools.py -- --repo "$GITHUB_WORKSPACE" --source-revision "$HELPER_REVISION" --out "$RUNNER_TEMP/som-rust-product-tools-qualification"

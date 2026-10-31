@@ -236,7 +236,7 @@ class WorkflowClosureTests(unittest.TestCase):
             self.assertEqual(permissions.get('contents'), 'read')
             self.assertEqual(permissions.get('actions'), 'read')
             step = self.step(job, step_name)
-            self.assertIn('--entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- admit', step)
+            self.assertIn('--entry-role entry.native-graph -- admit', step)
             self.assertEqual(self.fields(step, 'env', 8).get('SOM_DEPENDENCY_ACTIONS_TOKEN'), '${{ github.token }}')
             self.assertNotIn('SOM_DEPENDENCY_ACTIONS_TOKEN', self.fields(job, 'env', 4))
         self.assertNotIn('SOM_DEPENDENCY_ACTIONS_TOKEN', self.fields(text, 'env', 0))

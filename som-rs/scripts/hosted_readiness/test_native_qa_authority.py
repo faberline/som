@@ -39,6 +39,8 @@ class NativeQaSourceTests(unittest.TestCase):
             policy = json.loads((REPO / policy_path).read_bytes())
             if activate:
                 policy['qa_authority_state'], policy['sealing_dependencies'] = 'SEALED_AUTHORITY', []
+            else:
+                policy['qa_authority_state'] = 'PENDING'
             policies[target] = policy
             previous_path = f'som-rs/evidence/{prefix}-contract-amendment-{number-1:03d}.json'
             previous_raw = (REPO / previous_path).read_bytes()

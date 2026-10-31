@@ -651,6 +651,77 @@ class NativeSourceBootstrapTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'missing, ambiguous'):
             f.bootstrap()
 
+    def test_actual_operational_policy_accepts_qa_admission_and_refuses_changed_data(self):
+        # Only this method's data interface is doubled. No Core activation,
+        # reserved binding, real Context or source admission is claimed.
+        from types import SimpleNamespace
+        f = Fixture(self)
+        method = f.module._ActiveTransfer.verify_operational_policy
+        paths = (BASE + 'native_active_roles.json', BASE + 'native_active_roles.schema.json')
+        requested = dict(zip(paths, (b'{"fixture_policy":true}\n', b'{"fixture_schema":true}\n'), strict=True))
+        operational = {path: hashlib.sha256(raw).hexdigest() for path, raw in requested.items()}
+        admission = {'operational_sources': operational}
+        leaves = tuple('protocol-numbered-policy-' + str(index) + '.json' for index in range(3))
+        policy_paths = tuple('som-rs/contracts/' + leaf for leaf in leaves)
+
+        def canonical(value):
+            return json.dumps(value, sort_keys=True, ensure_ascii=False,
+                              separators=(',', ':'), allow_nan=False).encode()
+
+        policies = {path: canonical({'qa_source_admission': admission}) for path in policy_paths}
+
+        def check(policy_bytes, requested_bytes):
+            # These are explicit method-level protocol data, not authority.
+            reads, sources = [], {**policy_bytes, **requested_bytes}
+            def read(path):
+                reads.append(path)
+                return sources[path]
+            authority = SimpleNamespace(
+                AUTHORITY={leaf: (None, None, leaf, None) for leaf in leaves},
+                canonical=canonical)
+            transfer_data = SimpleNamespace(authority=authority, read=read,
+                admission={'qa_source_admission_sha256': hashlib.sha256(canonical(admission)).hexdigest()})
+            method(transfer_data, *paths)
+            return reads
+
+        self.assertEqual(check(policies, requested), [*policy_paths, *paths])
+        alias_only = {path: canonical({'source_admission': admission}) for path in policy_paths}
+        with self.assertRaises(KeyError):
+            check(alias_only, requested)
+        tampered = json.loads(policies[policy_paths[-1]])
+        tampered['qa_source_admission']['operational_sources'][paths[0]] = '0' * 64
+        with self.assertRaisesRegex(ValueError, 'actual numbered source admission differs'):
+            check({**policies, policy_paths[-1]: canonical(tampered)}, requested)
+        with self.assertRaisesRegex(ValueError, 'active schema/policy is outside sealed operational sources'):
+            check(policies, {**requested, paths[-1]: requested[paths[-1]] + b' '})
+
+
+
+    def test_declared_graph_callers_use_the_checked_entry_scope(self):
+        # Method data only. This does not activate a Core, Context or bootstrap.
+        import re
+        from types import SimpleNamespace
+        f = Fixture(self)
+        method = f.module._ActiveTransfer.verify_entry_source
+        calls = []
+        for relative in (ROOT_WORKFLOW, CALLED_WORKFLOW):
+            job = None
+            for line in (REPO / relative).read_text().splitlines():
+                found = re.fullmatch(r'  ([A-Za-z_][A-Za-z0-9_-]*):', line)
+                if found:
+                    job = found.group(1)
+                if '--entry-role entry.native-graph -- ' in line:
+                    calls.append(job)
+        self.assertEqual(len(calls), 12)
+        for job in calls:
+            with self.subTest(job=job):
+                data = SimpleNamespace(_owner=SimpleNamespace(_binding={'job': job}))
+                method(data, f.module.GRAPH_ENTRY)
+                with self.assertRaisesRegex(ValueError, 'fixed reviewed job entry set'):
+                    method(data, BASE + 'unlisted-source-fixture.py')
+        with self.assertRaisesRegex(ValueError, 'fixed reviewed job entry set'):
+            method(SimpleNamespace(_owner=SimpleNamespace(_binding={'job': 'products'})),
+                   f.module.GRAPH_ENTRY)
 
 if __name__ == '__main__':
     unittest.main()

@@ -45,15 +45,15 @@ _CALLED_JOBS = ('bind', 'current-python-companions', 'products', 'product-join',
                 'required-callbacks', 'whole-graph-join')
 _ROOT_JOBS = ('experimental-native-compile', 'current-product-rust-tools')
 _ENTRY_ROLES = MappingProxyType({
-    'experimental-native-compile': (BASE + 'product_runtime/current_candidate_layout.py',),
-    'current-product-rust-tools': (BASE + 'product_runtime/qualify_rust_tools.py',),
+    'experimental-native-compile': (BASE + 'product_runtime/current_candidate_layout.py', GRAPH_ENTRY),
+    'current-product-rust-tools': (BASE + 'product_runtime/qualify_rust_tools.py', GRAPH_ENTRY),
     'bind': (GRAPH_ENTRY,),
-    'current-python-companions': (BASE + 'run_current_python_companions.py',),
+    'current-python-companions': (BASE + 'run_current_python_companions.py', GRAPH_ENTRY),
     'products': (BASE + 'run_full_products.py',),
-    'product-join': (BASE + 'run_full_products.py',),
+    'product-join': (BASE + 'run_full_products.py', GRAPH_ENTRY),
     'required-callbacks': (BASE + 'run_full_products.py', BASE + 'run_candidate_semantic_gates.py',
                            BASE + 'run_current_candidate_gate.py', BASE + 'run_same_candidate_contracts.py', M6_ENTRY,
-                           BASE + 'run_typescript_input_consumer.py'),
+                           BASE + 'run_typescript_input_consumer.py', GRAPH_ENTRY),
     'whole-graph-join': (GRAPH_ENTRY,),
 })
 _ADMISSION_IMPORTS = MappingProxyType({
@@ -551,7 +551,7 @@ class _ActiveTransfer:
         expected = None
         for _, _, leaf, _ in self.authority.AUTHORITY.values():
             policy = _parse(self.read('som-rs/contracts/' + leaf))
-            admission = policy['source_admission']
+            admission = policy['qa_source_admission']
             _require(_sha(self.authority.canonical(admission)) == self.admission['qa_source_admission_sha256'],
                      'actual numbered source admission differs from opaque handoff')
             current = admission['operational_sources']

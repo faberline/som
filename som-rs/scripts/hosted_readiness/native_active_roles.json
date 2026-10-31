@@ -32448,7 +32448,7 @@
     },
     "som-rs/scripts/hosted_readiness/native_source_bootstrap.py": {
       "mode": 420,
-      "sha256": "d5c8ceb1a5b0b779662134afdf477fd90cfbc5319cca64e7bb7a8b5fe76ae473"
+      "sha256": "1a61a5ec53102d89f6adafeb936a66a4999d9d2db91b8dc2e7196df48d254576"
     },
     "som-rs/scripts/hosted_readiness/product_python/produce_wheels.py": {
       "mode": 420,
