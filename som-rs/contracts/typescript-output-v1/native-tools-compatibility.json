@@ -497,10 +497,10 @@
       "som-rs/scripts/hosted_readiness/test_native_ts_checker_targets.py": "7ec49ee0fb0ea78c5b78458cdeaca1e31ef3d81e277514b7c0cd15c3bbc4201a",
       "som-rs/scripts/hosted_readiness/test_native_ts_command_rust_fragments.py": "dfbeca77f578430e0d250ff4f47bddf42e142e11c4a4aad3d98e1db8dcec503d",
       "som-rs/scripts/hosted_readiness/test_native_ts_domain_callers.py": "4c0e7d70ca3b8033fcb5c2fbc2bea5524f7377f4c355729d773c4aba92b64c24",
-      "som-rs/scripts/hosted_readiness/test_native_ts_host_fragments.py": "8949fca98bd60d5604db7d95a83168d4d7e564d01d7b45ee27d82a81a503f4ee",
-      "som-rs/scripts/hosted_readiness/test_native_ts_input_fragments.py": "876d1a1c85857601e0005958886aeb5b035187f5426bac90aef306e0112704ae",
+      "som-rs/scripts/hosted_readiness/test_native_ts_host_fragments.py": "10117fc2f5d8384e81b25c23571cd04ef99a92f56930979307865a0e7980c6e4",
+      "som-rs/scripts/hosted_readiness/test_native_ts_input_fragments.py": "a06e12fe24f07f599324788bcb83e1c42bfb6cc3b97952e52b4e03a59bbbfd04",
       "som-rs/scripts/hosted_readiness/test_native_ts_mutable_capture.py": "6d2e77b683fbedced1131e9483a83a7185fa5eea96a21a1aba0e394254de96f8",
-      "som-rs/scripts/hosted_readiness/test_native_ts_nested_context.py": "02e7886efb1a9316a6a1e9be883ece3c71f4135eec8ce8be10075fb052c2012b",
+      "som-rs/scripts/hosted_readiness/test_native_ts_nested_context.py": "52df72688fad516e473c7ed8bf325ef76190466e7f1fb706beebdce097798c50",
       "som-rs/scripts/hosted_readiness/test_native_ts_owner_transport.py": "3f0bf32ed06b72009371bf0cc17d7757b9f97812ec3d84058c5426a1e58e73b5",
       "som-rs/scripts/hosted_readiness/test_native_ts_schema_mutable_capture.py": "c2876dd3f8293ee9b355d683c6e3d970ee645e79620332502daed6774bef1e88",
       "som-rs/scripts/hosted_readiness/test_owner_receipt_container.py": "3c8814f4d3c1b67d8bdc36c714beeb4eba0b3dc8e10d633cd93ea1b6c2fea446",
@@ -535,7 +535,7 @@
       "som-rs/scripts/hosted_readiness/test_typescript_regression_owner.py": "36bb20602da91694526eaa564f7b0ec669a3cc6efdf3d81fc65dbe7d92b03418",
       "som-rs/scripts/hosted_readiness/test_typescript_regression_product_proof.py": "12cf9d028546bfa84294b056d59b3454d3abcb195a172f712f2b65833f56297c",
       "som-rs/scripts/hosted_readiness/test_typescript_regression_raw_capture.py": "7f1d1c7dc11e6f8b10ee663f58b4e2ab7c928db1784b2e3bbe0482c9cb91f1bb",
-      "som-rs/scripts/hosted_readiness/test_typescript_regression_v2_contract.py": "89dd96868ee8355aa6e3f8daf6b238549c008249a0d3ed54efbb16b903282144",
+      "som-rs/scripts/hosted_readiness/test_typescript_regression_v2_contract.py": "078252b6c6acf9fcd9234ec719cca8b9790fdaf24615b09173775755285c2ba2",
       "som-rs/scripts/hosted_readiness/test_typescript_regression_v3_failures.py": "e17f8cd26f108e2fad9b3ef3dad53c02abe9f6b3f43ba5bbee9603c5f68e8eea",
       "som-rs/scripts/hosted_readiness/test_typescript_regression_v3_replay.py": "a05569ca7323398b2be70b75758d200b0492a5caa62a5e64dab6405867d44438",
       "som-rs/scripts/hosted_readiness/typescript_input_consumer.py": "0ccdb2731974619ea448c50b93429cedd6b6f27b41f7c07598750eb32e10ed18",
@@ -617,7 +617,7 @@
       },
       "wheel_environment": {
         "path": "som-rs/scripts/hosted_readiness/product_python/environment-plan.json",
-        "sha256": "2a3f142a5f2759bdd8dfdbc4b9b42b145a753e880bcbd412fe41205f71f9bb55"
+        "sha256": "0092bb7bc6ab8814ff2a4eaf17cbe0d0eaece28735ff7b923aa7c89aedd33dc9"
       },
       "wheel_policy": {
         "path": "som-rs/scripts/hosted_readiness/product_python/wheel-policy.json",

@@ -25,7 +25,7 @@ PINS = {
     NESTED: 'e0b0f1c17f5337aac8ba071d68ae7475fd13617844944cd72f436b0237ab55a6',
     CONTEXT: '7329f3dc88d63957a7ac33c847ec3416f4a7b35b8c7b10793154f22a5516a440',
     BASE + 'native_active_controls.py': 'eead8e03186f8f55812566a11d5aa837fb5cdb542d2c3de9435da9bad6bb5b32',
-    BASE + 'native_source_bootstrap.py': '1a61a5ec53102d89f6adafeb936a66a4999d9d2db91b8dc2e7196df48d254576',
+    BASE + 'native_source_bootstrap.py': '23036aa900c6c22d9547a800444096be7463b8eb97ee1cd79d27ff1cbe593b22',
     BASE + 'native_qa_authority.py': '024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1',
     BASE + 'test_native_active_controls.py': 'f76335be9269618bcec26750895202a896bbe759cfc6ea490d7b8dffddc99e0d',
 }

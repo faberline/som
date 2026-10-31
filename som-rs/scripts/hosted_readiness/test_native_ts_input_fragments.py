@@ -57,7 +57,7 @@ REVIEWED_SHA256 = {
     RUST_PHASE2: '66361c04b8c7069868aa03205dbb33f9d28ede06e55ea262326671b91108316b',
     INVENTORY: 'b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6',
     BASE + 'native_active_controls.py': 'eead8e03186f8f55812566a11d5aa837fb5cdb542d2c3de9435da9bad6bb5b32',
-    BASE + 'native_source_bootstrap.py': '1a61a5ec53102d89f6adafeb936a66a4999d9d2db91b8dc2e7196df48d254576',
+    BASE + 'native_source_bootstrap.py': '23036aa900c6c22d9547a800444096be7463b8eb97ee1cd79d27ff1cbe593b22',
     BASE + 'native_qa_authority.py': '024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1',
     BASE + 'test_native_active_controls.py': 'f76335be9269618bcec26750895202a896bbe759cfc6ea490d7b8dffddc99e0d',
 }
