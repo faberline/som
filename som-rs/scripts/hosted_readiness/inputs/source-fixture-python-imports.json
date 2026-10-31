@@ -1,0 +1,671 @@
+{
+  "dependency_selection": {
+    "alembic": [
+      "sqlalchemy",
+      "mako",
+      "typing-extensions"
+    ],
+    "jsonschema": [
+      "attrs",
+      "jsonschema-specifications",
+      "referencing",
+      "rpds-py"
+    ],
+    "jsonschema-specifications": [
+      "referencing"
+    ],
+    "mako": [
+      "markupsafe"
+    ],
+    "psycopg[binary]": [
+      "typing-extensions",
+      "psycopg-binary"
+    ],
+    "referencing": [
+      "attrs",
+      "rpds-py",
+      "typing-extensions"
+    ],
+    "selection_environment": "CPython 3.12, Linux x86_64; no optional extras except psycopg[binary].",
+    "sqlalchemy": [
+      "greenlet",
+      "typing-extensions"
+    ]
+  },
+  "limitations": [
+    "No package/project import or executable validation ran locally.",
+    "Static top-level import boundary is not proof that every future source fixture has no other dependency.",
+    "Run real fixtures on GitHub and preserve first failures; do not replace real modules with stubs."
+  ],
+  "origin": {
+    "artifact_id": 12875753338,
+    "artifact_zip_sha256": "5288eb795fc00914c7b2f5d0685358cbc70e7ddb6a9220f7c940c8ef39d5c0e8",
+    "candidate_revision": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+    "closure_id": "948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46",
+    "helper_revision": "9763e9b86f36a99229b70d8c571734e9a740e81c",
+    "metadata_notice_audit_sha256": "fd00a38d2e695a93113043400d550a61cbbf0d7738e81c79c634533537368279",
+    "raw_byte_audit_sha256": "4ba8d9995c3c3da01b7c2220c139f5b8baa70d55e510cf3babc50e82d3648ab9",
+    "repository": "faberline/som",
+    "run_id": 40819385522
+  },
+  "packages": [
+    {
+      "bytes": 268719,
+      "filename": "alembic-1.20.0-py3-none-any.whl",
+      "license_declarations": [
+        {
+          "actual_paths": [
+            "alembic-1.20.0.dist-info/licenses/LICENSE"
+          ],
+          "declared": "LICENSE"
+        }
+      ],
+      "license_notice_count": 1,
+      "metadata_sha256": "bd32c118c43955c106bfa4255b2fb5ac9db410b0f7255a4cafb14b9e221ff41c",
+      "name": "alembic",
+      "native_extension_members": [],
+      "pth_or_startup_customizer_members": [],
+      "publisher_json_sha256": "a72690b5b7131f9a18cbf84d9eb61d56a0489575e740b1eae1fca95e6888b81f",
+      "record_sha256": "685b91c6485f10286a3b2b0693285f4a56d01f1138f900309972bb2bf09b0c1e",
+      "requires_dist": [
+        "SQLAlchemy>=2.0",
+        "Mako",
+        "typing-extensions>=4.12",
+        "tomli; python_version < \"3.11\"",
+        "tzdata; extra == \"tz\""
+      ],
+      "requires_python": ">=3.10",
+      "selected_extras": [],
+      "sha256": "77eb101048d95f982c0353e9233404889dcd7a6fc244c107836c0e2fc9cf7d9d",
+      "source_member_audit": "closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/wheel-audits/alembic/inventory.json",
+      "url": "https://files.pythonhosted.org/packages/3f/27/78a89b55b0904d222183164e079b4ca56208e94eff1d35ad1f1ad5be9b06/alembic-1.20.0-py3-none-any.whl",
+      "version": "1.20.0",
+      "wheel_metadata_sha256": "61532836a2b3111b7ec23519c09df7c41180c27165fb872a6d8913b566b88ad1"
+    },
+    {
+      "bytes": 67548,
+      "filename": "attrs-26.1.0-py3-none-any.whl",
+      "license_declarations": [
+        {
+          "actual_paths": [
+            "attrs-26.1.0.dist-info/licenses/LICENSE"
+          ],
+          "declared": "LICENSE"
+        }
+      ],
+      "license_notice_count": 1,
+      "metadata_sha256": "4cd40e690f23bf37cbcad34efd6758e062df1df07c86833f7e3ce95bf1fa38cc",
+      "name": "attrs",
+      "native_extension_members": [],
+      "pth_or_startup_customizer_members": [],
+      "publisher_json_sha256": "a882bf941fb4a0bb748d0194df544121cc130f5fb15a710ab6b804c17d2899b7",
+      "record_sha256": "ece8bf0367609a064951bcf56a1697d8c61b674d0ce7a7d57e0a93777d86b4af",
+      "requires_dist": [],
+      "requires_python": ">=3.9",
+      "selected_extras": [],
+      "sha256": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309",
+      "source_member_audit": "closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/wheel-audits/attrs/inventory.json",
+      "url": "https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl",
+      "version": "26.1.0",
+      "wheel_metadata_sha256": "41c708c5adba6e097513ab8ccb9f1d7865a2fb469e22491a9e01dcc64da459fc"
+    },
+    {
+      "bytes": 621404,
+      "filename": "greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+      "license_declarations": [
+        {
+          "actual_paths": [
+            "greenlet-3.5.6.dist-info/licenses/LICENSE"
+          ],
+          "declared": "LICENSE"
+        },
+        {
+          "actual_paths": [
+            "greenlet-3.5.6.dist-info/licenses/LICENSE.PSF"
+          ],
+          "declared": "LICENSE.PSF"
+        }
+      ],
+      "license_notice_count": 2,
+      "metadata_sha256": "b9b4cbbc1f3165e50fbc4696c433fe82b8a151fde65eede28fb6ec5efb3e1fab",
+      "name": "greenlet",
+      "native_extension_members": [
+        "greenlet/_greenlet.cpython-312-x86_64-linux-gnu.so",
+        "greenlet/tests/_test_extension.cpython-312-x86_64-linux-gnu.so",
+        "greenlet/tests/_test_extension_cpp.cpython-312-x86_64-linux-gnu.so"
+      ],
+      "pth_or_startup_customizer_members": [],
+      "publisher_json_sha256": "c7dc3bdf600092ea1294ae9fac80198bb2b463943668f410f5174c16a4761d74",
+      "record_sha256": "5971269a77a3a3465d9f9e23a9a20841ce2a9d771658e5d57f65be2f0953a016",
+      "requires_dist": [
+        "Sphinx; extra == \"docs\"",
+        "furo; extra == \"docs\"",
+        "objgraph; extra == \"test\"",
+        "psutil; extra == \"test\"",
+        "setuptools; extra == \"test\""
+      ],
+      "requires_python": ">=3.10",
+      "selected_extras": [],
+      "sha256": "975736b002ed080d124cf81a79cb7e05cb26d6b3f5c7a7b651c0fcce70353aa1",
+      "source_member_audit": "closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/wheel-audits/greenlet/inventory.json",
+      "url": "https://files.pythonhosted.org/packages/66/6a/1594f3869c57c149abdb380492529e04d4c0229b5e4d79572c5bd0aaa673/greenlet-3.5.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+      "version": "3.5.6",
+      "wheel_metadata_sha256": "2c61c556d4f00d2ec7a32cf7a27daf3847890586ad39117b398ef4de200198d5"
+    },
+    {
+      "bytes": 90630,
+      "filename": "jsonschema-4.26.0-py3-none-any.whl",
+      "license_declarations": [
+        {
+          "actual_paths": [
+            "jsonschema-4.26.0.dist-info/licenses/COPYING"
+          ],
+          "declared": "COPYING"
+        }
+      ],
+      "license_notice_count": 1,
+      "metadata_sha256": "05b189866ca98a96da3934bf6b83687ced3ff85325273b77e16b705f6d8b26d2",
+      "name": "jsonschema",
+      "native_extension_members": [],
+      "pth_or_startup_customizer_members": [],
+      "publisher_json_sha256": "d0c9ccdfa30c3cdc57b048c2be21123dfb0c2f4d6bef2e8324dcb4eac985cfcf",
+      "record_sha256": "382a461bc5151888cac603114697e4522c3cd6ee2622e4c23929e372556ae180",
+      "requires_dist": [
+        "attrs>=22.2.0",
+        "jsonschema-specifications>=2023.03.6",
+        "referencing>=0.28.4",
+        "rpds-py>=0.25.0",
+        "fqdn; extra == 'format'",
+        "idna; extra == 'format'",
+        "isoduration; extra == 'format'",
+        "jsonpointer>1.13; extra == 'format'",
+        "rfc3339-validator; extra == 'format'",
+        "rfc3987; extra == 'format'",
+        "uri-template; extra == 'format'",
+        "webcolors>=1.11; extra == 'format'",
+        "fqdn; extra == 'format-nongpl'",
+        "idna; extra == 'format-nongpl'",
+        "isoduration; extra == 'format-nongpl'",
+        "jsonpointer>1.13; extra == 'format-nongpl'",
+        "rfc3339-validator; extra == 'format-nongpl'",
+        "rfc3986-validator>0.1.0; extra == 'format-nongpl'",
+        "rfc3987-syntax>=1.1.0; extra == 'format-nongpl'",
+        "uri-template; extra == 'format-nongpl'",
+        "webcolors>=24.6.0; extra == 'format-nongpl'"
+      ],
+      "requires_python": ">=3.10",
+      "selected_extras": [],
+      "sha256": "d489f15263b8d200f8387e64b4c3a75f06629559fb73deb8fdfb525f2dab50ce",
+      "source_member_audit": "closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/wheel-audits/jsonschema/inventory.json",
+      "url": "https://files.pythonhosted.org/packages/69/90/f63fb5873511e014207a475e2bb4e8b2e570d655b00ac19a9a0ca0a385ee/jsonschema-4.26.0-py3-none-any.whl",
+      "version": "4.26.0",
+      "wheel_metadata_sha256": "58b82a17209f9bf2804afe161f2632d0fde933f9bb2792fd936b2474a2e2ac2f"
+    },
+    {
+      "bytes": 18437,
+      "filename": "jsonschema_specifications-2025.9.1-py3-none-any.whl",
+      "license_declarations": [
+        {
+          "actual_paths": [
+            "jsonschema_specifications-2025.9.1.dist-info/licenses/COPYING"
+          ],
+          "declared": "COPYING"
+        }
+      ],
+      "license_notice_count": 1,
+      "metadata_sha256": "35abd41757f32b4ea24756920ded47b70173d77cbc052a5a6d3ab583b2e8d89d",
+      "name": "jsonschema-specifications",
+      "native_extension_members": [],
+      "pth_or_startup_customizer_members": [],
+      "publisher_json_sha256": "91810d8f79384375ad0c0cf631e06903e2790b030d3fad2f1ad657b20ddd839e",
+      "record_sha256": "497d6b8e47548e7fb8e66a8fcefcb717ed1458602e09662719066ce7dfc017dd",
+      "requires_dist": [
+        "referencing>=0.31.0"
+      ],
+      "requires_python": ">=3.9",
+      "selected_extras": [],
+      "sha256": "98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe",
+      "source_member_audit": "closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/wheel-audits/jsonschema-specifications/inventory.json",
+      "url": "https://files.pythonhosted.org/packages/41/45/1a4ed80516f02155c51f51e8cedb3c1902296743db0bbc66608a0db2814f/jsonschema_specifications-2025.9.1-py3-none-any.whl",
+      "version": "2025.9.1",
+      "wheel_metadata_sha256": "aad0b0a12256807936d52d4a6f88a1773236ae527564a688bab4e3fe780e8724"
+    },
+    {
+      "bytes": 80164,
+      "filename": "mako-1.4.3-py3-none-any.whl",
+      "license_declarations": [
+        {
+          "actual_paths": [
+            "mako-1.4.3.dist-info/licenses/LICENSE"
+          ],
+          "declared": "LICENSE"
+        }
+      ],
+      "license_notice_count": 1,
+      "metadata_sha256": "39ea65f21e706265428ea6f2925520f419a10f0113a59318192ed38175d8838b",
+      "name": "mako",
+      "native_extension_members": [],
+      "pth_or_startup_customizer_members": [],
+      "publisher_json_sha256": "d8150ed85799eea2ec6e01c2386e3331c6a01e0caed32b0d6ff0749dec100aa7",
+      "record_sha256": "f88b7718b34601839b5a456776f8fdd010c5620d0ec81e19765e7beffeebb771",
+      "requires_dist": [
+        "MarkupSafe>=2.0",
+        "pytest; extra == \"testing\"",
+        "Babel; extra == \"babel\"",
+        "lingua>=4.16; extra == \"lingua\""
+      ],
+      "requires_python": ">=3.10",
+      "selected_extras": [],
+      "sha256": "723296007c870bfd6b3f0c3230dba7198096e5269297ebf5e4eff9e7ffa39d4f",
+      "source_member_audit": "closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/wheel-audits/mako/inventory.json",
+      "url": "https://files.pythonhosted.org/packages/6d/a0/053d6af3e8f871e0073b4a36732d9e65be77a72e5434c31b94f6af78a6bb/mako-1.4.3-py3-none-any.whl",
+      "version": "1.4.3",
+      "wheel_metadata_sha256": "61532836a2b3111b7ec23519c09df7c41180c27165fb872a6d8913b566b88ad1"
+    },
+    {
+      "bytes": 22985,
+      "filename": "markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "license_declarations": [
+        {
+          "actual_paths": [
+            "markupsafe-3.0.4.dist-info/licenses/LICENSE.txt"
+          ],
+          "declared": "LICENSE.txt"
+        }
+      ],
+      "license_notice_count": 1,
+      "metadata_sha256": "66767d76388ece15d49d50dafb655891ef5d868715e7128e7f7d737a70b353c4",
+      "name": "markupsafe",
+      "native_extension_members": [
+        "markupsafe/_speedups.cpython-312-x86_64-linux-gnu.so"
+      ],
+      "pth_or_startup_customizer_members": [],
+      "publisher_json_sha256": "85cd5bce3f85e67ab0b921be9c9ba144a7cc01a2d02b85ad65b1f8dabeac4c57",
+      "record_sha256": "18127af6c0698d8fa0421a2799e2a81ba1f49caa3577ad230a916855f9a714db",
+      "requires_dist": [],
+      "requires_python": ">=3.9",
+      "selected_extras": [],
+      "sha256": "8e124f974786f831d6043728e38296969d3579db8896fe004682f5758e613581",
+      "source_member_audit": "closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/wheel-audits/markupsafe/inventory.json",
+      "url": "https://files.pythonhosted.org/packages/4f/a7/aeedb5140afa41fc74c225e9184ab96723a6e873b6ee1c9fede7283456d8/markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "version": "3.0.4",
+      "wheel_metadata_sha256": "797631520e4ac7d96fb6e40cd3e5f2d32e39caeb9cf024f466babe3777b7c296"
+    },
+    {
+      "bytes": 215490,
+      "filename": "psycopg-3.3.6-py3-none-any.whl",
+      "license_declarations": [
+        {
+          "actual_paths": [
+            "psycopg-3.3.6.dist-info/licenses/LICENSE.txt"
+          ],
+          "declared": "LICENSE.txt"
+        }
+      ],
+      "license_notice_count": 1,
+      "metadata_sha256": "351960397d6b386beae931f5bfd945e8c1212e9505017d1b15c72d4c33bb00af",
+      "name": "psycopg",
+      "native_extension_members": [],
+      "pth_or_startup_customizer_members": [],
+      "publisher_json_sha256": "67267f5b63adf658b4d04848e36f70fc4b32ffc31e3bc6ea9086117bce8cc96a",
+      "record_sha256": "e1e4ddec640fb29cb158a44029bd5d68612d4793ce1ec6c0a72c0d8c647d7c0a",
+      "requires_dist": [
+        "typing-extensions>=4.6; python_version < \"3.13\"",
+        "tzdata; sys_platform == \"win32\"",
+        "psycopg-c==3.3.6; implementation_name != \"pypy\" and extra == \"c\"",
+        "psycopg-binary==3.3.6; implementation_name != \"pypy\" and extra == \"binary\"",
+        "psycopg-pool; extra == \"pool\"",
+        "anyio>=4.0; extra == \"test\"",
+        "mypy>=2.1.0; implementation_name != \"pypy\" and extra == \"test\"",
+        "pproxy>=2.7; extra == \"test\"",
+        "pytest>=6.2.5; extra == \"test\"",
+        "pytest-cov>=3.0; extra == \"test\"",
+        "pytest-randomly>=3.5; extra == \"test\"",
+        "ast-comments>=1.1.2; extra == \"dev\"",
+        "black>=26.1.0; extra == \"dev\"",
+        "codespell>=2.2; extra == \"dev\"",
+        "cython-lint>=0.21; extra == \"dev\"",
+        "dnspython>=2.1; extra == \"dev\"",
+        "flake8>=4.0; extra == \"dev\"",
+        "isort[colors]>=6.0; extra == \"dev\"",
+        "isort-psycopg>=0.0.3; extra == \"dev\"",
+        "mypy>=2.1.0; extra == \"dev\"",
+        "pre-commit>=4.0.1; extra == \"dev\"",
+        "types-setuptools>=57.4; extra == \"dev\"",
+        "types-shapely>=2.0; extra == \"dev\"",
+        "wheel>=0.37; extra == \"dev\"",
+        "Sphinx>=9.1; extra == \"docs\"",
+        "furo==2025.12.19; extra == \"docs\"",
+        "sphinx-autobuild>=2025.8.25; extra == \"docs\"",
+        "sphinx-autodoc-typehints>=3.10.2; extra == \"docs\""
+      ],
+      "requires_python": ">=3.10",
+      "selected_extras": [
+        "binary"
+      ],
+      "sha256": "a1db9f7148b06a28606767efaca51fa6f9398c5c0a3810519be69d7000bdb631",
+      "source_member_audit": "closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/wheel-audits/psycopg/inventory.json",
+      "url": "https://files.pythonhosted.org/packages/4e/de/748bd7609c71cae5d737f0ba9192f19329f70180ecda8fff3cac02c5abe3/psycopg-3.3.6-py3-none-any.whl",
+      "version": "3.3.6",
+      "wheel_metadata_sha256": "61532836a2b3111b7ec23519c09df7c41180c27165fb872a6d8913b566b88ad1"
+    },
+    {
+      "bytes": 5235723,
+      "filename": "psycopg_binary-3.3.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "license_declarations": [
+        {
+          "actual_paths": [
+            "psycopg_binary-3.3.6.dist-info/licenses/LICENSE.txt"
+          ],
+          "declared": "LICENSE.txt"
+        }
+      ],
+      "license_notice_count": 1,
+      "metadata_sha256": "0a1fb529c1e27ca41655413e669c964bd0d7069e8cc2ab32b192fc98baf37fd5",
+      "name": "psycopg-binary",
+      "native_extension_members": [
+        "psycopg_binary/_psycopg.cpython-312-x86_64-linux-gnu.so",
+        "psycopg_binary/pq.cpython-312-x86_64-linux-gnu.so"
+      ],
+      "pth_or_startup_customizer_members": [],
+      "publisher_json_sha256": "73c5e31cb3c5d454391b3e218a5c7f2d1e693c2cd338e1b63a65cc667a83bfaf",
+      "record_sha256": "55c6aeb628857a75e140c066d79b19a821dbfbeddca86a379a0c7bce67de4760",
+      "requires_dist": [],
+      "requires_python": ">=3.10",
+      "selected_extras": [],
+      "sha256": "1679a1cb93fbe5a6d1fd58d82cbddcc6fcb8c61446ba7cae6eb2a7b19bc585de",
+      "source_member_audit": "closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/wheel-audits/psycopg-binary/inventory.json",
+      "url": "https://files.pythonhosted.org/packages/0a/42/948bb3d2617795093512613fd96ba380e922992c7908fbc073858147d196/psycopg_binary-3.3.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "version": "3.3.6",
+      "wheel_metadata_sha256": "504ac80cc95190c99aea177550563d7939b8fca6b1431c01c0d435e74afbbd0e"
+    },
+    {
+      "bytes": 26766,
+      "filename": "referencing-0.37.0-py3-none-any.whl",
+      "license_declarations": [
+        {
+          "actual_paths": [
+            "referencing-0.37.0.dist-info/licenses/COPYING"
+          ],
+          "declared": "COPYING"
+        }
+      ],
+      "license_notice_count": 1,
+      "metadata_sha256": "c93b00e6ab1524fd60848376604c189a114374776475c25a31d57be47b29de6a",
+      "name": "referencing",
+      "native_extension_members": [],
+      "pth_or_startup_customizer_members": [],
+      "publisher_json_sha256": "a67968d8e03aa45e650fc2ff0d07796676db1a7841ce8e810bf2dba5af689464",
+      "record_sha256": "4cff26d74dfce1cd571ccbee5f58e2dabf748bbe7de1fcc8e4ff487b3a1711f1",
+      "requires_dist": [
+        "attrs>=22.2.0",
+        "rpds-py>=0.7.0",
+        "typing-extensions>=4.4.0; python_version < '3.13'"
+      ],
+      "requires_python": ">=3.10",
+      "selected_extras": [],
+      "sha256": "381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231",
+      "source_member_audit": "closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/wheel-audits/referencing/inventory.json",
+      "url": "https://files.pythonhosted.org/packages/2c/58/ca301544e1fa93ed4f80d724bf5b194f6e4b945841c5bfd555878eea9fcb/referencing-0.37.0-py3-none-any.whl",
+      "version": "0.37.0",
+      "wheel_metadata_sha256": "aad0b0a12256807936d52d4a6f88a1773236ae527564a688bab4e3fe780e8724"
+    },
+    {
+      "bytes": 371261,
+      "filename": "rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "license_declarations": [
+        {
+          "actual_paths": [
+            "rpds_py-2026.9.1.dist-info/licenses/LICENSE"
+          ],
+          "declared": "LICENSE"
+        }
+      ],
+      "license_notice_count": 1,
+      "metadata_sha256": "5d72dca2e387c8d2b4180b68ee87c15b64751e059100a6db58891ec9995445c3",
+      "name": "rpds-py",
+      "native_extension_members": [
+        "rpds/rpds.cpython-312-x86_64-linux-gnu.so"
+      ],
+      "pth_or_startup_customizer_members": [],
+      "publisher_json_sha256": "93808b9ff27aabe26d9a4f03b28422d1d05c3fb8716d88f3826e7ddf4b0b258b",
+      "record_sha256": "b1dcdf1550728e97d06cdd4ad186afa2d4c45a740ed4f975ea30eeec6492dcd5",
+      "requires_dist": [],
+      "requires_python": ">=3.11",
+      "selected_extras": [],
+      "sha256": "addeda51556dac7c1a2f14cda62db8b621cd12afba3091d03a96c72932387eab",
+      "source_member_audit": "closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/wheel-audits/rpds-py/inventory.json",
+      "url": "https://files.pythonhosted.org/packages/1d/6d/b26eb1e75395925b3a142ed351cbed2ec8212f5c9d937aee3df32c701baa/rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "version": "2026.9.1",
+      "wheel_metadata_sha256": "71d661618d9b707f61ac372a0d51047692f4339b639a602bfa5c14ab5e4211d6"
+    },
+    {
+      "bytes": 3337842,
+      "filename": "sqlalchemy-2.0.44-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "license_declarations": [
+        {
+          "actual_paths": [
+            "sqlalchemy-2.0.44.dist-info/licenses/LICENSE"
+          ],
+          "declared": "LICENSE"
+        }
+      ],
+      "license_notice_count": 1,
+      "metadata_sha256": "e62d15c34f193ce3aeef1ac6fc6e2e48ceb616049e9da895dc9027d49dbf951f",
+      "name": "sqlalchemy",
+      "native_extension_members": [
+        "sqlalchemy/cyextension/util.cpython-312-x86_64-linux-gnu.so",
+        "sqlalchemy/cyextension/immutabledict.cpython-312-x86_64-linux-gnu.so",
+        "sqlalchemy/cyextension/processors.cpython-312-x86_64-linux-gnu.so",
+        "sqlalchemy/cyextension/resultproxy.cpython-312-x86_64-linux-gnu.so",
+        "sqlalchemy/cyextension/collections.cpython-312-x86_64-linux-gnu.so"
+      ],
+      "pth_or_startup_customizer_members": [],
+      "publisher_json_sha256": "7bec4c3b58b86b22e4d91f5c8139d9a09ceb9b1003ff56f7291fd5a336200165",
+      "record_sha256": "76afaf4322bdc338b00fcca1ae05d2adbbae7954d71532512919e70e73befe46",
+      "requires_dist": [
+        "importlib-metadata; python_version < \"3.8\"",
+        "greenlet>=1; platform_machine == \"aarch64\" or (platform_machine == \"ppc64le\" or (platform_machine == \"x86_64\" or (platform_machine == \"amd64\" or (platform_machine == \"AMD64\" or (platform_machine == \"win32\" or platform_machine == \"WIN32\")))))",
+        "typing-extensions>=4.6.0",
+        "greenlet>=1; extra == \"asyncio\"",
+        "mypy>=0.910; extra == \"mypy\"",
+        "pyodbc; extra == \"mssql\"",
+        "pymssql; extra == \"mssql-pymssql\"",
+        "pyodbc; extra == \"mssql-pyodbc\"",
+        "mysqlclient>=1.4.0; extra == \"mysql\"",
+        "mysql-connector-python; extra == \"mysql-connector\"",
+        "mariadb!=1.1.10,!=1.1.2,!=1.1.5,>=1.0.1; extra == \"mariadb-connector\"",
+        "cx_oracle>=8; extra == \"oracle\"",
+        "oracledb>=1.0.1; extra == \"oracle-oracledb\"",
+        "psycopg2>=2.7; extra == \"postgresql\"",
+        "pg8000>=1.29.1; extra == \"postgresql-pg8000\"",
+        "greenlet>=1; extra == \"postgresql-asyncpg\"",
+        "asyncpg; extra == \"postgresql-asyncpg\"",
+        "psycopg2-binary; extra == \"postgresql-psycopg2binary\"",
+        "psycopg2cffi; extra == \"postgresql-psycopg2cffi\"",
+        "psycopg>=3.0.7; extra == \"postgresql-psycopg\"",
+        "psycopg[binary]>=3.0.7; extra == \"postgresql-psycopgbinary\"",
+        "pymysql; extra == \"pymysql\"",
+        "greenlet>=1; extra == \"aiomysql\"",
+        "aiomysql>=0.2.0; extra == \"aiomysql\"",
+        "greenlet>=1; extra == \"aioodbc\"",
+        "aioodbc; extra == \"aioodbc\"",
+        "greenlet>=1; extra == \"asyncmy\"",
+        "asyncmy!=0.2.4,!=0.2.6,>=0.2.3; extra == \"asyncmy\"",
+        "greenlet>=1; extra == \"aiosqlite\"",
+        "aiosqlite; extra == \"aiosqlite\"",
+        "typing_extensions!=3.10.0.1; extra == \"aiosqlite\"",
+        "sqlcipher3_binary; extra == \"sqlcipher\""
+      ],
+      "requires_python": ">=3.7",
+      "selected_extras": [],
+      "sha256": "119dc41e7a7defcefc57189cfa0e61b1bf9c228211aba432b53fb71ef367fda1",
+      "source_member_audit": "closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/wheel-audits/sqlalchemy/inventory.json",
+      "url": "https://files.pythonhosted.org/packages/45/e5/5aa65852dadc24b7d8ae75b7efb8d19303ed6ac93482e60c44a585930ea5/sqlalchemy-2.0.44-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "version": "2.0.44",
+      "wheel_metadata_sha256": "692806d05e2b18f66d5748931087f2e9db47aba83aecbcdedee2df934bd69fcf"
+    },
+    {
+      "bytes": 45571,
+      "filename": "typing_extensions-4.16.0-py3-none-any.whl",
+      "license_declarations": [
+        {
+          "actual_paths": [
+            "typing_extensions-4.16.0.dist-info/licenses/LICENSE"
+          ],
+          "declared": "LICENSE"
+        }
+      ],
+      "license_notice_count": 1,
+      "metadata_sha256": "b05084ca1d50879865178d9fff9fabeab61bdfb1f361bfbde95421ffc8f9be46",
+      "name": "typing-extensions",
+      "native_extension_members": [],
+      "pth_or_startup_customizer_members": [],
+      "publisher_json_sha256": "2140da00d62dde967f52d0be0ae28444f1d6a3fe603f52c83c23988c32122d5a",
+      "record_sha256": "44dcf97810bea7b84bcd83890b6674bbcc2f4c5ef899a4887f15d524bdf6bb97",
+      "requires_dist": [],
+      "requires_python": ">=3.9",
+      "selected_extras": [],
+      "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "source_member_audit": "closures/948a7ca7491a2953184063ae7ee9c264e8ce0e3ba684fa347e930d462718cc46/wheel-audits/typing-extensions/inventory.json",
+      "url": "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+      "version": "4.16.0",
+      "wheel_metadata_sha256": "1b68144734c4b66791f27add5d425f3620775585718a03d0f9b110ba3a4d88db"
+    }
+  ],
+  "replaces_profile_sha256": "7cd42dbfe13bef34a831ea11a8ba4498284d1bb844871ab7d2c157dea6b945c5",
+  "scope": "Real native QA hosts/check_rust_products import fixtures on CPython3.12 Linux x86_64. Source fixtures only; no product runtime or ordinary-environment admission.",
+  "source_import_boundary": [
+    {
+      "path": "som-rs/scripts/hosted_readiness/test_native_qa_imports.py",
+      "sha256": "2ad1d5b8d7bfb7950828a633641f3e8d46c701aa45bde61c104e92dc730321b4",
+      "top_level_imports": [
+        "__future__",
+        "hashlib",
+        "importlib",
+        "importlib.util",
+        "marshal",
+        "os",
+        "pathlib",
+        "struct",
+        "subprocess",
+        "sys",
+        "tempfile",
+        "types",
+        "unittest",
+        "unittest"
+      ]
+    },
+    {
+      "path": "som-rs/behavior/hosts.py",
+      "sha256": "2dc1dc43fd77a3fa8079c6c73462cc1fa7324246a83d56417ef666790287ec9f",
+      "top_level_imports": [
+        "__future__",
+        "contextlib",
+        "hashlib",
+        "http.client",
+        "json",
+        "os",
+        "pathlib",
+        "shutil",
+        "signal",
+        "socket",
+        "subprocess",
+        "sys",
+        "threading",
+        "time",
+        "collections.abc",
+        "check_rust_products",
+        "check_targets"
+      ]
+    },
+    {
+      "path": "som-rs/som-targets/qa/check_rust_products.py",
+      "sha256": "4e77dd27a46580be6e8ecfaed2f1eb0c840a8a19b8f75b9539e5fb8c4f57c50c",
+      "top_level_imports": [
+        "__future__",
+        "argparse",
+        "concurrent.futures",
+        "copy",
+        "importlib.util",
+        "json",
+        "os",
+        "pathlib",
+        "re",
+        "subprocess",
+        "sys",
+        "time",
+        "typing",
+        "jsonschema",
+        "psycopg",
+        "referencing",
+        "alembic.operations",
+        "alembic.runtime.migration",
+        "sqlalchemy",
+        "check_targets"
+      ]
+    },
+    {
+      "path": "som-rs/som-targets/qa/check_targets.py",
+      "sha256": "8b95242ff7bab0da4c7e6f29a2f8735ea6482177044fcd5661f7174c8df0db75",
+      "top_level_imports": [
+        "__future__",
+        "argparse",
+        "collections",
+        "concurrent.futures",
+        "hashlib",
+        "json",
+        "os",
+        "pathlib",
+        "sys",
+        "urllib.error",
+        "urllib.request",
+        "typing",
+        "rust_profile",
+        "rust_profile_phase2",
+        "python_replay"
+      ]
+    },
+    {
+      "path": "som-rs/scripts/rust_output_acceptance/python_replay.py",
+      "sha256": "069736b5956a6deeb5ce75ba5b5ee454b592bbc6ab8dc9ec285448d06c300d9c",
+      "top_level_imports": [
+        "__future__",
+        "argparse",
+        "base64",
+        "hashlib",
+        "json",
+        "pathlib",
+        "sys",
+        "time",
+        "urllib.error",
+        "urllib.parse",
+        "urllib.request",
+        "qa_harness"
+      ]
+    },
+    {
+      "path": "som-rs/scripts/compiler_acceptance/qa_harness.py",
+      "sha256": "f0c1cf96e1cf60ee692c7e9c3272757efef92498b52f4ac426e40b54142851a2",
+      "top_level_imports": [
+        "__future__",
+        "argparse",
+        "base64",
+        "copy",
+        "hashlib",
+        "json",
+        "math",
+        "pathlib",
+        "shlex",
+        "subprocess",
+        "sys",
+        "urllib.error",
+        "urllib.request",
+        "urllib.parse",
+        "typing",
+        "paths"
+      ]
+    }
+  ],
+  "version": "som.source-fixture-native-import-thirteen-wheel-manifest.v1"
+}

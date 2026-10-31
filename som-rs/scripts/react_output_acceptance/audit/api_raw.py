@@ -295,7 +295,8 @@ def python_argv_matches(reader, observed: str, launched: list[str], toolchain: d
     return observed == " ".join([framework, *launched[1:]])
 
 
-def cleanup(reader, directory: Path, events: list[dict], api: dict, base: str, work: Path, toolchain: dict) -> int:
+def cleanup(reader, directory: Path, events: list[dict], api: dict, base: str, work: Path, toolchain: dict, linux: dict | None = None) -> int:
+    lsof = linux["lsof"] if linux is not None else "/usr/sbin/lsof"
     processes = api.get("processes")
     need(isinstance(processes, list) and {row.get("role") for row in processes} == {"postgres", "python_product"}
          and len(processes) == 2, "owned API process inventory missing", "unrun")
@@ -335,7 +336,7 @@ def cleanup(reader, directory: Path, events: list[dict], api: dict, base: str, w
             observed_pid, parent, pgid = map(int, columns[:3])
             need(observed_pid == pid and event.get("pgid") == pgid and event.get("pgid_error_errno") is None, "process PID/PGID snapshot differs")
             need(event["ps"]["exit_code"] == 0, "live process snapshot failed")
-            cwd = command(event.get("cwd"), ["/usr/sbin/lsof", "-a", "-p", str(pid), "-d", "cwd", "-Fn"])
+            cwd = command(event.get("cwd"), [lsof, "-a", "-p", str(pid), "-d", "cwd", "-Fn"])
             lines = cwd.decode().splitlines()
             need(event["cwd"]["exit_code"] == 0 and [line[1:] for line in lines if line.startswith("p")] == [str(pid)]
                  and [line[1:] for line in lines if line.startswith("n")] == [expected_cwd], "raw lsof pid/cwd differs")
@@ -344,7 +345,8 @@ def cleanup(reader, directory: Path, events: list[dict], api: dict, base: str, w
             need(table.get(pid) == (parent, pgid), "ps snapshots disagree")
             group = pgid
             if role == "python_product":
-                need(python_argv_matches(reader, columns[3], process["command"], toolchain)
+                need((columns[3] == " ".join(process["command"]) if linux is not None else
+                      python_argv_matches(reader, columns[3], process["command"], toolchain))
                      and pgid == pid, "Python argv or session group differs")
             else:
                 argv = shlex.split(columns[3])
@@ -366,12 +368,12 @@ def cleanup(reader, directory: Path, events: list[dict], api: dict, base: str, w
             need(not any(row[1] == group for row in table.values()), "owned process group remains alive")
         need(command(event.get("ps"), ["/bin/ps", "-ww", "-p", str(pid), "-o", "pid=,ppid=,pgid=,command="]).strip() == b""
              and event["ps"]["exit_code"] == 1, "owned pid remains present")
-        need(command(event.get("cwd"), ["/usr/sbin/lsof", "-a", "-p", str(pid), "-d", "cwd", "-Fn"]).strip() == b""
+        need(command(event.get("cwd"), [lsof, "-a", "-p", str(pid), "-d", "cwd", "-Fn"]).strip() == b""
              and event["cwd"]["exit_code"] == 1, "owned cwd remains present")
         need(event.get("pgid") is None and event.get("pgid_error_errno") == errno.ESRCH, "after-stop getpgid did not report ESRCH")
         port = event.get("port")
         need(integer(port) and 1 <= port <= 65535 and port not in (8765, 18765), "owned QA port missing", "unrun")
-        need(command(event.get("listener"), ["/usr/sbin/lsof", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN", "-t"]).strip() == b""
+        need(command(event.get("listener"), [lsof, "-nP", f"-iTCP:{port}", "-sTCP:LISTEN", "-t"]).strip() == b""
              and event["listener"]["exit_code"] == 1, "owned QA listener remains present")
         need(all(retained(reader, directory, event[key]["stderr"]).strip() == b"" for key in ("ps", "table", "cwd", "listener")),
              "after-stop OS command has an error, so absence is not proved", "unrun")
@@ -379,7 +381,7 @@ def cleanup(reader, directory: Path, events: list[dict], api: dict, base: str, w
             argv = process["command"]
             need("--port" in argv and int(argv[argv.index("--port") + 1]) == port
                  and urllib.parse.urlsplit(base).port == port, "Python service port binding differs")
-            expected = [str(reader.repo / "som-rs/runtime/acceptance-m3-venv/bin/python"), "-m", "uvicorn",
+            expected = [linux["python"] if linux is not None else str(reader.repo / "som-rs/runtime/acceptance-m3-venv/bin/python"), "-m", "uvicorn",
                         "som_behavior_host:app", "--app-dir", str(work / "_shim"), "--host", "127.0.0.1",
                         "--port", str(port), "--no-access-log", "--log-level", "warning"]
             need(argv == expected, "Python server command differs from the frozen runner")
@@ -406,7 +408,140 @@ def cleanup(reader, directory: Path, events: list[dict], api: dict, base: str, w
     return len(processes)
 
 
-def validate(reader, raw_dir: Path, api_report_path: Path, prompt: dict, contract: dict, product_dir: Path) -> dict:
+def linux_equal(left, right):
+    if isinstance(left, dict) and isinstance(right, dict):
+        return set(left) == set(right) and all(linux_equal(left[key], right[key]) for key in left)
+    if isinstance(left, list) and isinstance(right, list):
+        return len(left) == len(right) and all(linux_equal(a, b) for a, b in zip(left, right))
+    return type(left) is type(right) and left == right
+
+
+def linux_context(reader, directory: Path, receipt: dict, linux: dict) -> dict:
+    """Join one case to the caller's independently audited run-level context.
+
+    The caller must establish source, wheel, runtime and profile provenance
+    before calling this function. A case receipt cannot prove that provenance.
+    """
+    need(isinstance(linux, dict), "verified Linux API input context missing", "unrun")
+    keys = ("api_profile_sha256", "node_profile_sha256", "node", "python", "pg_bin", "lsof", "ps", "os_tools")
+    recorded = receipt.get("linux_qa")
+    need(isinstance(recorded, dict) and all(k in linux for k in keys), "Linux API input identity missing", "unrun")
+    need(all(linux_equal(recorded.get(k), linux[k]) for k in keys), "Linux API input identity differs")
+    need(recorded.get("recheck_passed") is True and "recheck_error" not in recorded,
+         "Linux API final case check did not succeed")
+    need(linux["lsof"] == "/usr/bin/lsof" and linux["ps"] == "/bin/ps", "Linux OS tool paths differ")
+    for key in ("node", "python", "pg_bin"):
+        path = linux[key]
+        need(isinstance(path, str) and Path(path).is_absolute() and ".." not in Path(path).parts,
+             "Linux tool path is invalid")
+    tools = linux["os_tools"]
+    need(isinstance(tools, dict) and set(tools) == {"lsof", "ps"}, "Linux OS tool inventory missing", "unrun")
+    for name in ("lsof", "ps"):
+        item = tools[name]
+        need(isinstance(item, dict) and item.get("path") == linux[name]
+             and isinstance(item.get("resolved_path"), str) and Path(item["resolved_path"]).is_absolute()
+             and isinstance(item.get("sha256"), str) and len(item["sha256"]) == 64
+             and all(c in "0123456789abcdef" for c in item["sha256"])
+             and integer(item.get("mode")) and item["mode"] & 0o111,
+             "Linux OS tool metadata differs")
+    return recorded
+
+
+def linux_lifecycle(reader, directory: Path, events: list[dict], api: dict, probe: dict, linux: dict, work: Path) -> None:
+    """Check direct child waits and the source-bound OS observations.
+
+    PostgreSQL's postmaster is a daemon: cleanup() checks pg_ctl -w plus
+    postmaster PID, cwd, descendants and listener absence. It is not a direct
+    child and this function never claims an OS wait for it.
+    """
+    versions = [e for e in events if e.get("kind") == "os-tool-version"]
+    need(len(versions) == 2 and {e.get("tool") for e in versions} == {"lsof", "ps"},
+         "Linux OS tool versions missing", "unrun")
+    for item in versions:
+        name = item["tool"]
+        need(item.get("argv") == [linux[name], "-v" if name == "lsof" else "--version"]
+             and type(item.get("exit_code")) is int and item["exit_code"] == 0
+             and item.get("error_type") is None, "Linux OS tool version command differs")
+        stdout = retained(reader, directory, item.get("stdout"))
+        stderr = retained(reader, directory, item.get("stderr"))
+        need(stdout or stderr, "Linux OS tool version output missing", "unrun")
+    starts = [(i, e) for i, e in enumerate(events) if e.get("kind") == "child-start"]
+    waits = [(i, e) for i, e in enumerate(events) if e.get("kind") == "child-wait"]
+    need(starts and waits, "direct child start/wait evidence missing", "unrun")
+    by_pid = {}
+    for index, item in starts:
+        pid, argv = item.get("pid"), item.get("argv")
+        need(integer(pid) and pid > 1 and pid not in by_pid and isinstance(argv, list) and argv
+             and all(isinstance(x, str) for x in argv) and isinstance(item.get("cwd"), str),
+             "direct child identity differs")
+        by_pid[pid] = (index, item)
+    for index, item in waits:
+        pid = item.get("pid")
+        need(integer(pid) and pid in by_pid and index > by_pid[pid][0]
+             and item.get("state") == "completed" and integer(item.get("exit_code"))
+             and item.get("error_type") is None, "direct child wait is missing or unverified", "unrun")
+    for pid, (_index, _item) in by_pid.items():
+        values = [w["exit_code"] for _, w in waits if w["pid"] == pid]
+        need(values and len(set(values)) == 1, "direct child wait is absent or inconsistent", "unrun")
+
+    def match_record(event: dict, *, pid: int | None = None, cwd: str | None = None):
+        found = [(i, start) for i, start in starts if start["argv"] == event.get("argv")
+                 and (pid is None or start["pid"] == pid)]
+        need(len(found) == 1, "raw command does not identify one direct child", "unrun")
+        index, start = found[0]
+        need(index < events.index(event) and (cwd is None or start["cwd"] == cwd), "raw command order or cwd differs")
+        values = [w["exit_code"] for _, w in waits if w["pid"] == start["pid"]]
+        need(values and all(value == event.get("exit_code") for value in values), "command exit and direct wait differ")
+
+    for event in [e for e in events if e.get("kind") in ("initdb", "pg_ctl")]:
+        match_record(event)
+    match_record(probe, pid=probe.get("pid"), cwd=str(reader.repo))
+    python_rows = [p for p in api["processes"] if p.get("role") == "python_product"]
+    need(len(python_rows) == 1, "Python product process missing", "unrun")
+    python = python_rows[0]
+    launch = [(i, item) for i, item in starts if item["pid"] == python.get("pid")]
+    need(len(launch) == 1 and launch[0][1]["argv"] == python.get("command")
+         and launch[0][1]["cwd"] == str(work / "python"), "Python server child identity differs")
+    exit_values = [w["exit_code"] for _, w in waits if w["pid"] == python["pid"]]
+    need(integer(python.get("exit_code")) and exit_values and all(x == python["exit_code"] for x in exit_values),
+         "Python server wait differs from process report", "unrun")
+    migrate = [item for _, item in starts if item["argv"] == [linux["python"], str(work / "_alembic/migrate.py"),
+                                                               str(work / "_alembic"), str(work / "python/alembic/versions")]]
+    need(len(migrate) == 1 and migrate[0]["cwd"] == str(work / "python")
+         and all(w["exit_code"] == 0 for _, w in waits if w["pid"] == migrate[0]["pid"]),
+         "Python migration child wait differs", "unrun")
+    probe_index = events.index(probe)
+    port = urllib.parse.urlsplit(probe["argv"][3]).port
+    listeners = [(i, event) for i, event in enumerate(events) if event.get("kind") == "listener"
+                 and event.get("argv") == [linux["lsof"], "-nP", "-a", "-p", str(python["pid"]),
+                                            f"-iTCP:{port}", "-sTCP:LISTEN", "-t"]
+                 and event.get("exit_code") == 0]
+    need(any(i < probe_index for i, _ in listeners) and any(i > probe_index for i, _ in listeners),
+         "Python listener before/after API probe missing", "unrun")
+    for _, event in listeners:
+        stdout = retained(reader, directory, event.get("stdout"))
+        stderr = retained(reader, directory, event.get("stderr"))
+        need(stdout.split() == [str(python["pid"]).encode()] and not stderr.strip(), "Python listener PID differs")
+
+
+def linux_invocation(reader, directory: Path, api_report_path: Path, product_dir: Path, linux: dict) -> None:
+    """Bind the recorder child command, wait and log to this specific case."""
+    case_dir = api_report_path.parent.parent
+    invocation = reader.json(case_dir / "api-invocation.json")
+    expected = [linux["python"], str(reader.repo / "som-rs/scripts/react_output_acceptance/record_api.py"),
+                str(case_dir / "python"), str(product_dir), str(api_report_path.parent),
+                "--raw-out", str(directory), "--api-profile", linux["api_profile_path"],
+                "--qa-profile", linux["node_profile_path"], "--full-validation", linux["full_before_path"]]
+    need(invocation.get("version") == "som.react-api-invocation.v1" and invocation.get("argv") == expected
+         and invocation.get("cwd") == str(reader.repo) and invocation.get("outcome") == "exited"
+         and type(invocation.get("exit_code")) is int and invocation["exit_code"] == 0
+         and linux_equal(invocation.get("wait"), {"state": "completed", "exit_code": 0})
+         and invocation.get("failure") is None and invocation.get("log") == "api.log",
+         "API recorder invocation or wait differs")
+    need(reader.hash(case_dir / "api.log") == invocation.get("log_sha256"), "API recorder log differs")
+
+
+def validate(reader, raw_dir: Path, api_report_path: Path, prompt: dict, contract: dict, product_dir: Path, *, linux: dict | None = None) -> dict:
     directory = reader.path(raw_dir)
     receipt = reader.json(directory / "receipt.json")
     need(receipt.get("version") == "som.react-api-raw.v1", "API raw receipt version missing", "unrun")
@@ -416,6 +551,12 @@ def validate(reader, raw_dir: Path, api_report_path: Path, prompt: dict, contrac
     need(receipt.get("api_report_sha256") == reader.hash(api_report_path), "API report binding differs")
     repo = reader.repo
     toolchain = reader.json(repo / "som-rs/contracts/react-output-v1/toolchain.json")
+    if linux is not None:
+        linux_qa = linux_context(reader, directory, receipt, linux)
+        toolchain = {**toolchain, "node": {"binary": linux_qa["node"]},
+                     "postgresql": {"bin_dir": linux_qa["pg_bin"]}}
+    else:
+        need("linux_qa" not in receipt, "Linux evidence requires independently verified input context", "unrun")
     for field, path in (("probe_sha256", repo / "som-rs/tests/react-output-v1/api_contract.mjs"),
                         ("runner_sha256", repo / "som-rs/tests/react-output-v1/run_api_contract.py"),
                         ("hook_sha256", repo / "som-rs/scripts/react_output_acceptance/record_api_fetch.mjs"),
@@ -453,5 +594,8 @@ def validate(reader, raw_dir: Path, api_report_path: Path, prompt: dict, contrac
     need(all(row.get("version") == "som.react-api-fetch.v1" and integer(row.get("sequence")) and row["sequence"] == index
          and row.get("pid") == probe["pid"] for index, row in enumerate(rows, 1)), "API fetch trace sequence/PID differs")
     exchanges = behavior(rows, base, prompt, contract, api["result"])
-    processes = cleanup(reader, directory, events, api, base, api_report_path.parent, toolchain)
+    processes = cleanup(reader, directory, events, api, base, api_report_path.parent, toolchain, linux)
+    if linux is not None:
+        linux_lifecycle(reader, directory, events, api, probe, linux, api_report_path.parent)
+        linux_invocation(reader, directory, api_report_path, product_dir, linux)
     return {"steps": 20, "exchanges": exchanges, "processes": processes}

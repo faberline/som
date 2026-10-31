@@ -14,13 +14,14 @@ import argparse
 import hashlib
 import json
 import pathlib
+import os
+import stat
+import types
 import subprocess
 import sys
 import tomllib
 from typing import Any, Callable
 
-from jsonschema import Draft202012Validator
-from referencing import Registry, Resource
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
@@ -28,6 +29,73 @@ REPO = ROOT.parent
 CONTRACT = ROOT / "contracts" / "rust-output-v1"
 V1 = ROOT / "contracts" / "compiler-v1"
 EVIDENCE = ROOT / "evidence" / "rust-output-v1"
+
+
+def requested_qa_mode():
+    selected = []
+    for index, value in enumerate(sys.argv[1:], start=1):
+        if value == '--qa-mode':
+            if index + 1 >= len(sys.argv):
+                raise ValueError('explicit QA mode value required')
+            selected.append(sys.argv[index + 1])
+        elif value.startswith('--qa-mode='):
+            selected.append(value.split('=', 1)[1])
+    if len(selected) > 1 or (selected and selected[0] not in {'historical', 'native-qa-v1'}):
+        raise ValueError('one known QA mode required')
+    return selected[0] if selected else 'historical'
+
+
+def checked_native_qa_source():
+    """Check exact raw source authority before importing local QA helpers."""
+    relative = 'som-rs/scripts/hosted_readiness/native_qa_authority.py'
+    path = REPO / relative
+    if any(item.is_symlink() for item in (path, *path.parents)):
+        raise ValueError('linked native QA authority source')
+    with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), 'rb') as stream:
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 1024**2:
+            raise ValueError('regular bounded authority source required')
+        raw = stream.read(1024**2 + 1)
+    if hashlib.sha256(raw).hexdigest() != '024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1':
+        raise ValueError('raw native QA authority SHA differs before execution')
+    def git(*arguments):
+        return subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(REPO), *arguments],
+            env={'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8',
+                 'GIT_CONFIG_NOSYSTEM': '1', 'GIT_CONFIG_GLOBAL': '/dev/null'},
+            stderr=subprocess.DEVNULL, timeout=30)
+    revision = git('rev-parse', '--verify', 'HEAD^{commit}').decode().strip()
+    def source(name):
+        if name.startswith('/') or '..' in name.split('/') or '\\' in name:
+            raise ValueError('fixed relative QA source required')
+        entry = git('ls-tree', '-z', revision, '--', name)
+        if entry.count(b'\0') != 1 or not entry.endswith(b'\t' + name.encode() + b'\0') or not entry.startswith((b'100644 blob ', b'100755 blob ')):
+            raise ValueError('regular committed QA source required')
+        file = REPO / name
+        if any(item.is_symlink() for item in (file, *file.parents)):
+            raise ValueError('linked QA source refused')
+        with os.fdopen(os.open(file, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), 'rb') as stream:
+            info = os.fstat(stream.fileno())
+            if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 64 * 1024**2:
+                raise ValueError('regular bounded single-link QA source required')
+            body = stream.read(64 * 1024**2 + 1)
+        if len(body) > 64 * 1024**2 or body != git('cat-file', 'blob', revision + ':' + name):
+            raise ValueError('working QA source differs from exact Git bytes')
+        return body
+    if source(relative) != raw:
+        raise ValueError('authority source changed')
+    module = types.ModuleType('_som_native_qa_authority_before_checker')
+    module.__file__, module.__cached__, module.__package__ = str(path), None, ''
+    exec(compile(raw, str(path), 'exec', dont_inherit=True), module.__dict__)
+    paths = git('ls-tree', '-r', '--name-only', revision).decode().splitlines()
+    authority = module.verify(source, 'native-qa-v1', paths, helper_revision=revision, candidate_revision=revision)
+    module.install_raw_finder(source, REPO, authority)
+    return authority
+
+
+QA_MODE = requested_qa_mode()
+NATIVE_QA_SOURCE_AUTHORITY = checked_native_qa_source() if QA_MODE == 'native-qa-v1' else None
+from referencing import Registry, Resource
+from jsonschema import Draft202012Validator
 
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ROOT / "scripts" / "compiler_acceptance"))
@@ -326,6 +394,13 @@ def check_evidence(report: Report) -> None:
 
 
 def check_host(report: Report) -> None:
+    if QA_MODE == 'native-qa-v1':
+        from full_product_context import native_contract_host
+        tools = native_contract_host()
+        report.check('native host has exact six Rust and three PostgreSQL tools',
+                     set(tools) == {'rustc', 'cargo', 'rustfmt', 'cargo-fmt', 'cargo-clippy',
+                                    'clippy-driver', 'postgres', 'initdb', 'pg_ctl'})
+        return
     toolchain = load(CONTRACT / "toolchain.json")
     rust_bin = pathlib.Path(toolchain["rust"]["bin_dir"])
     for name in ["rustc", "cargo", "rustfmt", "cargo-fmt", "cargo-clippy", "clippy-driver"]:
@@ -335,6 +410,29 @@ def check_host(report: Report) -> None:
     for name in ["postgres", "initdb", "pg_ctl"]:
         path = (pg_bin / name).resolve()
         report.check(f"host {name} hash", path.exists() and sha(path) == toolchain["postgresql"][name]["sha256"])
+
+
+def native_acceptance_order(receipt: dict, receipt_path: pathlib.Path) -> bool:
+    """Admit only this reviewed prospective native amendment with truthful order."""
+    order = receipt.get("implementation_order")
+    review = receipt.get("independent_review")
+    acceptance = receipt.get("acceptance")
+    return (receipt.get("version") == 'som.rust-output-contract-amendment.v1'
+            and receipt_path.name == 'rust-output-contract-amendment-008.json'
+            and type(receipt.get("amendment")) is int and receipt["amendment"] == 8
+            and receipt.get("previous_receipt") == 'som-rs/evidence/rust-output-contract-amendment-007.json'
+            and receipt.get("previous_receipt_sha256") == '225b98c2bc01e79c5c6e13ad17f93adda68717498d70fa7577e65930813f9144'
+            and receipt.get("implementation_already_in_progress") is True
+            and receipt.get("changed_paths") == ['som-rs/tests/rust-output-v1/check_contract.py']
+            and receipt.get("added_paths") == ['som-rs/contracts/rust-output-v1/native-tools-compatibility.json']
+            and type(order) is dict and order == {'version': 'som.native-acceptance-chronology.v1', 'implementation_already_existed': True, 'prior_work_relabelled_as_preimplementation': False, 'scope': 'native_tools_and_metadata_only', 'acceptance_rule': 'prospective_full_same_candidate_gates', 'historical_receipt_bytes_changed': False, 'historical_results_promoted_to_current_acceptance': False}
+            and all(type(order.get(key)) is type(value) for key, value in {'version': 'som.native-acceptance-chronology.v1', 'implementation_already_existed': True, 'prior_work_relabelled_as_preimplementation': False, 'scope': 'native_tools_and_metadata_only', 'acceptance_rule': 'prospective_full_same_candidate_gates', 'historical_receipt_bytes_changed': False, 'historical_results_promoted_to_current_acceptance': False}.items())
+            and type(review) is dict and review.get("final_verdict") == "APPROVED"
+            and review.get("scope") == "native_policy_validator_and_exact_qa_source_maps"
+            and review.get("receipt_files_sha256") == h(receipt.get("files"))
+            == receipt.get("target_contract", {}).get("sha256")
+            and type(acceptance) is dict and acceptance.get("status") == "not_run"
+            and acceptance.get("product_acceptance_passed") is False)
 
 
 def check_receipt(report: Report, receipt_path: pathlib.Path) -> None:
@@ -348,17 +446,48 @@ def check_receipt(report: Report, receipt_path: pathlib.Path) -> None:
                  json.dumps(sorted(present ^ set(receipt["files"]))))
     target = hashlib.sha256(canonical(receipt["files"]).encode()).hexdigest()
     report.check("receipt target_contract hash is H(files)", receipt["target_contract"]["sha256"] == target)
-    report.check("receipt was sealed before implementation",
-                 receipt["status"] == "contract_frozen_before_implementation"
-                 and receipt["implementation_started_before_freeze"] is False)
+    if "amendment" in receipt or receipt_path.name == 'rust-output-contract-amendment-008.json':
+        previous = REPO / receipt["previous_receipt"]
+        report.check("amendment receipt names its previous receipt by hash",
+                     previous.is_file() and hashlib.sha256(previous.read_bytes()).hexdigest()
+                     == receipt["previous_receipt_sha256"])
+        report.check("amendment previous target hash is the previous receipt's",
+                     receipt["target_contract"]["previous_sha256"] == load(previous)["target_contract"]["sha256"])
+        old = load(previous)["files"]
+        changed = sorted(k for k in receipt["files"] if k in old and receipt["files"][k] != old[k])
+        added = sorted(k for k in receipt["files"] if k not in old)
+        report.check("amendment changed_paths and added_paths equal the files map diff",
+                     receipt["changed_paths"] == changed and receipt["added_paths"] == added
+                     and set(old) <= set(receipt["files"]))
+        report.check("amendment changes record each changed path",
+                     [c["path"] for c in receipt["changes"]] == changed)
+        for change in receipt["changes"]:
+            archived = REPO / change["archived_copy"]
+            report.check(f"amendment change {change['path']} hashes",
+                         change["old_sha256"] == old.get(change["path"]) == change["archived_copy_sha256"]
+                         and archived.is_file() and hashlib.sha256(archived.read_bytes()).hexdigest()
+                         == change["old_sha256"] and change["new_sha256"] == receipt["files"][change["path"]])
+        report.check("amendment was sealed after independent review",
+                     receipt["status"] == "amendment_sealed_after_independent_review"
+                     and (native_acceptance_order(receipt, receipt_path)
+                          if receipt.get("amendment") == 8 or receipt_path.name == 'rust-output-contract-amendment-008.json'
+                          else receipt["implementation_already_in_progress"] is False))
+    else:
+        report.check("receipt was sealed before implementation",
+                     receipt["status"] == "contract_frozen_before_implementation"
+                     and receipt["implementation_started_before_freeze"] is False)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--receipt", type=pathlib.Path)
+    parser.add_argument("--qa-mode", choices=("historical", "native-qa-v1"), default="historical")
     parser.add_argument("--host", action="store_true")
     args = parser.parse_args()
     report = Report()
+    if args.receipt and args.receipt.name == 'rust-output-contract-amendment-008.json':
+        report.check('native numbered receipt requires explicit source mode',
+                     args.qa_mode == 'native-qa-v1' and NATIVE_QA_SOURCE_AUTHORITY is not None)
     for name in JSON_FILES:
         try:
             load(CONTRACT / name)

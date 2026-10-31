@@ -1,0 +1,37 @@
+{
+  "version": "som.controller-rust-product-tools-independent-source-data-review.v1",
+  "reviewer": "root_controller_independent_of_qualifier_author",
+  "manifest_sha256": "039587141ec163ef6c6147b341687ab03f75bca88b2c5d09af0cffb711a8da8c",
+  "patch_sha256": "8f0ff265cecc01e03388cae2d8f8c0f0318a5caaa4861a5670b98c39bddb8a9b",
+  "profile_sha256": "f18ee32b1efe1452b119ee2184f52514f3e661208817d65307ccd71851bbc13a",
+  "helper_sha256": "a60aa7d8163eeba02ed07a942f2d8d529c722aa346cdf1d3b3213deb70e0ad8b",
+  "test_sha256": "ab471139928593091e108b7d6bac4e483b724364603cc275f1be93d60aedd66c",
+  "source_metadata_sha256": "bd4429a05bbb869c08774b5de6c69f631526ef205c715b509e590c036417e132",
+  "primary_manifest_sha256": "87eb76c53073e72b766083bed5530820694253b832a762d8385bda5759f03975",
+  "independent_archive_data_check": {
+    "official_component_archives_rehashed": 5,
+    "regular_publisher_files_rehashed": 215,
+    "directories_rechecked": 48,
+    "license_records": 22,
+    "manifest_in_complete_installed_file_union": 157,
+    "source_owned_identical_overlaps_checked": true,
+    "executables_mapped_to_exact_publisher_members": 6,
+    "aliases": 0,
+    "archive_extraction_or_execution": false
+  },
+  "source_verdict": "approved_bounded_source_and_publisher_data_for_GitHub_qualification",
+  "source_observations": [
+    "Literal-bound support compiles exact reviewed bytes before project helper use. Three code/profile/support paths then bind regular working bytes to exact declared Git blobs.",
+    "Only official pinned archives and complete manifest.in file lists supply the installed prefix. Unknown paths, files, directories, modes, links, archive bytes and conflicting merges are refused.",
+    "Every official std/runtime file is retained. Unexecuted installer source and license bytes remain data, with a complete preserved-input check.",
+    "Every six-tool version probe uses a checked exact path and hash, a waited owned child and group cleanup. Complete prefix and source/input bytes are checked after the probes.",
+    "The consumer checks exact profile, full installed/preserved inventory, source binding record, version command arguments, log hashes, exit codes, waits and cleanup.",
+    "The job uses isolated Python -I -S -B on GitHub Ubuntu22.04, retains all failure evidence, and grants no product/runtime acceptance."
+  ],
+  "test_definitions_reviewed": 35,
+  "github_fixtures": "unrun",
+  "actual_six_tool_qualification": "unrun",
+  "product_gates": "unrun",
+  "product_acceptance_passed": false,
+  "local_execution": "source AST, publisher archive member reads/hashes, and Git metadata only; no project/helper imports, tests, tools, builds or services"
+}

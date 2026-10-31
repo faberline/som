@@ -429,7 +429,9 @@ def command_proof(owner, root, capture, expected):
                 and command['owned_group_cleanup_passed'] is True and type(command['pid']) is int and command['pid'] > 0,
                 'actual source command/wait/group cleanup is incomplete')
         argv = [capture['context']['observer_python'], '-I', '-S', '-B',
-                str(Path(capture['context']['repo']) / (BASE + 'run_full_products.py')),
+                str(Path(capture['context']['repo']) / (BASE + 'native_source_bootstrap.py')),
+                '--repo', capture['context']['repo'], '--helper-revision', capture['context']['helper_revision'],
+                '--candidate-revision', capture['context']['candidate_revision'], '--entry-role', 'entry.full-products', '--',
                 '--execute-tool', BASE + 'typescript_regression_checker.py', '--',
                 '--tool', row['script'], '--capture-root',
                 str(Path(capture['original_run']) / 'raw-checkers' / f'{index:02d}'),

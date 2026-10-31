@@ -114,7 +114,7 @@ class InputBindingLifecycleTests(unittest.TestCase):
         # Register before InputFixture: its actual Core closes first.
         self.addCleanup(restore_fixture_modules)
         raw = path.read_bytes()
-        if hashlib.sha256(raw).hexdigest() != '60ea76e7c87e3a6aa2ecc5a86bfcb96c7fa68d793d7ba63a62c92eaf4f774902':
+        if hashlib.sha256(raw).hexdigest() != '300189c75e168ff973ed346868a23ddffeda233d21c8be3821a7db13908437ea':
             raise AssertionError('coupled input fixture differs from reviewed same-head bytes')
         try:
             exec(compile(raw, str(path), 'exec', dont_inherit=True), fixture.__dict__)

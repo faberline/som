@@ -595,6 +595,29 @@ def contract_files() -> list[pathlib.Path]:
                    if path.is_file() and "__pycache__" not in path.parts})
 
 
+def native_acceptance_order(receipt: dict, receipt_path: pathlib.Path) -> bool:
+    """Admit only this reviewed prospective native amendment with truthful order."""
+    order = receipt.get("implementation_order")
+    review = receipt.get("independent_review")
+    acceptance = receipt.get("acceptance")
+    return (receipt.get("version") == 'som.react-output-contract-amendment.v1'
+            and receipt_path.name == 'react-output-contract-amendment-003.json'
+            and type(receipt.get("amendment")) is int and receipt["amendment"] == 3
+            and receipt.get("previous_receipt") == 'som-rs/evidence/react-output-contract-amendment-002.json'
+            and receipt.get("previous_receipt_sha256") == 'eb4e120c2a573dc06cf068841ec7b0b0f0e2349d74ae2bff5df7dcade41fe962'
+            and receipt.get("implementation_already_in_progress") is True
+            and receipt.get("changed_paths") == ['som-rs/tests/react-output-v1/check_contract.py', 'som-rs/tests/react-output-v1/common.py', 'som-rs/tests/react-output-v1/run_api_contract.py', 'som-rs/tests/react-output-v1/run_gates.py']
+            and receipt.get("added_paths") == ['som-rs/tests/react-output-v1/linux_qa_profile.py', 'som-rs/tests/react-output-v1/test_native_api_host_controls.py']
+            and type(order) is dict and order == {'version': 'som.native-acceptance-chronology.v1', 'implementation_already_existed': True, 'prior_work_relabelled_as_preimplementation': False, 'scope': 'native_tools_and_metadata_only', 'acceptance_rule': 'prospective_full_same_candidate_gates', 'historical_receipt_bytes_changed': False, 'historical_results_promoted_to_current_acceptance': False}
+            and all(type(order.get(key)) is type(value) for key, value in {'version': 'som.native-acceptance-chronology.v1', 'implementation_already_existed': True, 'prior_work_relabelled_as_preimplementation': False, 'scope': 'native_tools_and_metadata_only', 'acceptance_rule': 'prospective_full_same_candidate_gates', 'historical_receipt_bytes_changed': False, 'historical_results_promoted_to_current_acceptance': False}.items())
+            and type(review) is dict and review.get("final_verdict") == "APPROVED"
+            and review.get("scope") == "native_policy_validator_and_exact_qa_source_maps"
+            and review.get("receipt_files_sha256") == h(receipt.get("files"))
+            == receipt.get("target_contract", {}).get("sha256")
+            and type(acceptance) is dict and acceptance.get("status") == "not_run"
+            and acceptance.get("product_acceptance_passed") is False)
+
+
 def check_receipt(report: Report, receipt_path: pathlib.Path) -> None:
     receipt = load(receipt_path)
     for rel, digest in receipt["files"].items():
@@ -604,7 +627,7 @@ def check_receipt(report: Report, receipt_path: pathlib.Path) -> None:
     report.check("receipt lists every contract, tool and evidence file", present == set(receipt["files"]),
                  json.dumps(sorted(present ^ set(receipt["files"]))))
     report.check("receipt target_contract hash is H(files)", receipt["target_contract"]["sha256"] == h(receipt["files"]))
-    if "amendment" in receipt:
+    if "amendment" in receipt or receipt_path.name == 'react-output-contract-amendment-003.json':
         previous = REPO / receipt["previous_receipt"]
         report.check("amendment receipt names its previous receipt by hash",
                      previous.is_file() and sha(previous) == receipt["previous_receipt_sha256"])
@@ -626,7 +649,9 @@ def check_receipt(report: Report, receipt_path: pathlib.Path) -> None:
                          and change["new_sha256"] == receipt["files"][change["path"]])
         report.check("amendment was sealed after independent review",
                      receipt["status"] == "amendment_sealed_after_independent_review"
-                     and receipt["implementation_already_in_progress"] is False)
+                     and (native_acceptance_order(receipt, receipt_path)
+                          if receipt.get("amendment") == 3 or receipt_path.name == 'react-output-contract-amendment-003.json'
+                          else receipt["implementation_already_in_progress"] is False))
     else:
         report.check("receipt was sealed before implementation",
                      receipt["status"] == "contract_frozen_before_implementation"

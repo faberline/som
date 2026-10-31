@@ -35,9 +35,9 @@ SELF='som-rs/scripts/react_output_acceptance/record_http.py'
 CONTEXT=BASE+'product_runtime/full_product_context.py'
 PINS={SELF:'ed0dd5841a47cdab12453b64187a3f45d432d481c2acc055ae2ff6f24e844588',
       CONTEXT:'7329f3dc88d63957a7ac33c847ec3416f4a7b35b8c7b10793154f22a5516a440',
-      BASE+'native_active_controls.py':'eb0f804a8aa7de0857213d34478adc869fe51f7259c5552439dca109e4e6a038',
+      BASE+'native_active_controls.py':'eead8e03186f8f55812566a11d5aa837fb5cdb542d2c3de9435da9bad6bb5b32',
       BASE+'native_qa_authority.py':'024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1',
-      BASE+'test_native_active_controls.py':'1a5852fb1693bcb921fcb19e9a20fb8281751e85f6f0ea2805b88323d230a201'}
+      BASE+'test_native_active_controls.py':'f76335be9269618bcec26750895202a896bbe759cfc6ea490d7b8dffddc99e0d'}
 
 def checked(path):
     raw=(REPO/path).read_bytes()

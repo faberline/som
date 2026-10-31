@@ -254,6 +254,8 @@ class PythonProduct:
                 "--port", str(port), "--log-level", "warning"]
 
     def is_product_process(self, process: subprocess.Popen, package: str) -> bool:
+        if os.environ.get("SOM_FULL_PRODUCT_CONTEXT") and hosted_products.context().qa_mode == "native-qa-v1":
+            return hosted_products.context().python_is_product_process(process, self.python, package)
         return process.args[0] == self.python and process.args[3] == package + ".app:app"
 
     def migration_command(self, backend, up: bool) -> list[str]:

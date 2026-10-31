@@ -1,0 +1,34 @@
+{
+  "version": "som.native-entry-barrier-v2-independent-source-review.v1",
+  "reviewer": "root",
+  "author": "cache_fix_review",
+  "proposal_manifest_sha256": "7deba82f0a33f024a08500c01f172852707ff323ab374788aa6b2a2adc63b6ce",
+  "files": [
+    {
+      "path": "som-rs/scripts/hosted_readiness/run_full_products.py",
+      "sha256": "e1d10ba99668977bc100d7d08229b19cc8d51ba359a7ee3fd1211696b906cf78"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/test_native_entry_barrier.py",
+      "sha256": "57ca1234ec10b4e3b6bad15bda3cc8d86f7e709f2e441b97a7af34c8dca4512f"
+    }
+  ],
+  "verdict": "APPROVED_BOUNDED_SOURCE_FOR_GITHUB_FIXTURE_VALIDATION_ONLY",
+  "findings": [],
+  "resolved": [
+    "native source authority checks exact new samehelper/candidate and alltracked source paths before Context body or entry execution",
+    "actual entry itself must be admitted before read or exec",
+    "legacy default/historical/explicit preparation retain actual GitSourceFinder before transitive imports",
+    "owned legacy guard and sys.path restored on success/failure without removing native Context control ownership",
+    "entry failure and postcheck error retained; unknown/pending/unlisted native entries failclosed"
+  ],
+  "fixture_checks": [
+    "two prior native method ASTs exact",
+    "three real added tracked Git/matching timestamp PYC/default and explicit mode regression cases",
+    "real pending005 authority rejects before Context/entry import, not mocked validator failure"
+  ],
+  "github_fixtures": "5unrun",
+  "dependency": "independently reviewed native authority/Context V2; merge only the two exact functions with full graph",
+  "product_acceptance_passed": false,
+  "local_subject_executed": false
+}

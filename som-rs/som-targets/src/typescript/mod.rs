@@ -19,9 +19,9 @@ pub const MAX_FILES: usize = 12;
 pub const MAX_BLOCKS: usize = 64;
 
 pub const TARGET_CONTRACT_ID: &str = "som.typescript-output-contract.v1";
-/// H(files map) of the latest sealed receipt for contracts/typescript-output-v1: amendment 2.
+/// H(files map) for contracts/typescript-output-v1: amendment 4. Receipt status determines authority.
 pub const TARGET_CONTRACT_SHA256: &str =
-    "17ffc6028d66657381464a4d6beaecc1e097f54e421168777e5959cfbdaf063f";
+    "51ccffdad7421a540d51d2dc3100090f16cccc530a93c614990a78e766e8494a";
 pub const CATALOG_ID: &str = "som.typescript-catalog.v1";
 pub const BLOCK_LIBRARY_ID: &str = "som.typescript-block-library.v1";
 pub const BACKEND_ID: &str = "som.typescript-backend.v1";
@@ -694,7 +694,7 @@ mod tests {
 
     #[test]
     fn target_contract_is_the_latest_receipt() {
-        let path = som_rs().join("evidence/typescript-output-contract-amendment-003.json");
+        let path = som_rs().join("evidence/typescript-output-contract-amendment-004.json");
         let receipt: Value =
             serde_json::from_str(&fs::read_to_string(path).expect("receipt")).expect("JSON");
         assert_eq!(canonical_hash(&receipt["files"]), TARGET_CONTRACT_SHA256);

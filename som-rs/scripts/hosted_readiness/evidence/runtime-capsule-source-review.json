@@ -1,0 +1,139 @@
+{
+  "version": "som.same-run-runtime-capsule-independent-source-review.v1",
+  "reviewer": "/root/policy_successor_review",
+  "author": "native_policy_role_audit",
+  "aw_session_id": "1685f38d-ac43-44a1-8fa9-a840a747b519",
+  "basis_repository_head": "9763e9b86f36a99229b70d8c571734e9a740e81c",
+  "proposal_manifest": {
+    "path": "/private/tmp/som-m12-runtime-capsule-v1/proposal-manifest.json",
+    "sha256": "b3e2f4b58efc90f7a31727d6bcaa94fe0b4b13274a66292612a6f688a0d76886"
+  },
+  "source_patch": {
+    "path": "/private/tmp/som-m12-runtime-capsule-v1/source.patch",
+    "sha256": "8cf28dabf0f7f8c891d910e5b1dbd52e441531954230beb6c775a29d2252f512"
+  },
+  "verdict": "APPROVED_BOUNDED_SOURCE_FOR_GITHUB_FIXTURE_AND_REAL_TRANSPORT_VALIDATION_ONLY",
+  "findings": [],
+  "files_independently_rehashed": {
+    "som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py": {
+      "sha256": "1385e58948c8252bcd5169586cf36527e11906ecad438a190eb726ade5470a4c",
+      "bytes": 33773
+    },
+    "som-rs/scripts/hosted_readiness/product_runtime/test_runtime_capsule.py": {
+      "sha256": "36e8d5c78caeb61b29745064aa4250b93b42f4db85c0096e35177cf60f4abd2d",
+      "bytes": 18912
+    },
+    "README.md": {
+      "sha256": "aef8feef5bb624542f192d3cb03902bbd02764befaec5ebeb4f33d016e9d827b",
+      "bytes": 7566
+    },
+    "source.patch": {
+      "sha256": "8cf28dabf0f7f8c891d910e5b1dbd52e441531954230beb6c775a29d2252f512",
+      "bytes": 54140
+    }
+  },
+  "unchanged_original_validator_and_profile_source_sha256": {
+    "som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py": "2a92e2df47fb05e76677fbb84e9cbb7f12d07d90eb8019bd816b5fe6b5588598",
+    "som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py": "f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3",
+    "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json": "4aaca5ef284440fd64bd50723619425201417937b4d635bb3c5d2d5835226b68",
+    "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json": "7a2c04a65866474bd773b9722274c09c36646951fa7848d62e4b20b2cb94e75f",
+    "som-rs/scripts/hosted_readiness/product_runtime/source-pins.json": "a4208c342bc9e923509bc5ba7ce6a9a1adfe3143d55b6215f0a313b4833550b2"
+  },
+  "reviewed_properties": [
+    {
+      "area": "raw source admission",
+      "source_lines": [
+        121,
+        159
+      ],
+      "evidence": "Sources binds all six fixed regular single-link source/profile files to the exact complete helper Git HEAD before validator execution. It compiles its bound REUSE bytes. The unchanged REUSE bootstrap checks the complete support SHA and compiles raw support bytes. Preloaded validator namespaces are refused. No importlib SourceFileLoader or project PYC path is used by this adapter."
+    },
+    {
+      "area": "actual qualified runtime contract",
+      "source_lines": [
+        217,
+        300
+      ],
+      "evidence": "The existing qualification_data, read_inventory, verify_installed_tree, transport_expectations and verify_evidence validators remain unchanged and are invoked. The current reuse receipt must be successful, same helper/run/attempt, complete five-source bound and false for product acceptance. Current41 executable observations and the Python module probe must have the exact recorded version/stdout/stderr/argv associations. Current complete raw logs are rehashed with exact log universe."
+    },
+    {
+      "area": "full native tree and original prefix",
+      "source_lines": [
+        187,
+        214
+      ],
+      "evidence": "The complete current runtime tree includes install stdlib/shared libraries/data/native tools, licenses, old qualification evidence and current raw logs/metadata. Full original inventory and alias authority is checked before scan. Root mode700, explicit directory and file modes, bounded regular single-link files and exact internal sibling aliases are preserved. Unknown aliases, escaping targets, directory links, hardlinks and special files are refused. The original qualified install prefix is required on both sides. No relocation or binary patch is allowed."
+    },
+    {
+      "area": "USTAR archive integrity",
+      "source_lines": [
+        303,
+        380
+      ],
+      "evidence": "Packing explicitly uses USTAR without a PAX fallback. Every complete entry has a bounded safe path/schema/mode/type/size/hash and every parent is a directory. The validator checks exact archive member universe, duplication, canonical header metadata and offsets, body bytes and link targets. Full producer archive SHA and size additionally bind every archive byte. This review does not independently rerun the author10113-name USTAR data check."
+    },
+    {
+      "area": "same-candidate and same-run transport",
+      "source_lines": [
+        383,
+        433
+      ],
+      "evidence": "Helper and candidate are required equal complete SHA parameters with actual helper HEAD. The export manifest binds the source group, current repository/run/attempt, actual qualified prefix, full entries and archive bytes. Restore requires the exact producer manifest SHA plus same-run uploaded artifact ID/name/API digest/current run/expiry. API head_sha remains workflow-context observation and is not relabelled as helper source."
+    },
+    {
+      "area": "restore before any installed execution",
+      "source_lines": [
+        436,
+        515
+      ],
+      "evidence": "Restore checks the complete archive before creating the fresh runtime output. It creates directories and regular files first, then exact internal aliases. It rechecks the entire restored tree, original validators, input archive/manifest and source identities afterward. The adapter does not execute installed native code or start a service. Context.admitted_runtime remains required before product use."
+    },
+    {
+      "area": "owned outputs and failure evidence",
+      "source_lines": [
+        102,
+        108
+      ],
+      "evidence": "Both restore outputs must be new disjoint RUNNER_TEMP descendants outside repository and capsule inputs. Existing outputs are refused. Restore keeps separate API-origin and finally-written restore receipt, retaining failure state. Source/pre-output failures remain CLI/job raw logs. Export keeps partial transport/failure files and grants no manifest success when its before/after qualification comparison fails."
+    },
+    {
+      "area": "flags and provenance",
+      "source_lines": [
+        399,
+        408
+      ],
+      "evidence": "Every transport result keeps product readiness and acceptance false. Historical runtime receipts and environment bytes remain exact. A transport receipt neither substitutes old compiler results nor establishes formal product acceptance."
+    }
+  ],
+  "source_fixture_review": {
+    "test_methods": 33,
+    "names_match_manifest": true,
+    "AST": "valid",
+    "github_execution": "unrun",
+    "coverage": "Meaningful source definitions cover duplicate/nonfinite/path/type/size/mode/link/USTAR/member universe/integrity/run/source/artifact/failure-before-unpack/immutability/no-native-execution cases. Tiny high-level transport fixtures deliberately stub prior qualification; they do not prove actual10102-file qualification or actual same-run transport."
+  },
+  "integration_requirements": [
+    "Set SOM_RUNTIME_ACTIONS_TOKEN to the read-only GitHub token for the capsule metadata request. Graph source currently exports SOM_DEPENDENCY_ACTIONS_TOKEN; those names are different. The graph author was notified. Do not print the token or include it in receipts.",
+    "Use Ubuntu22.04 x86_64, preserve the original RUNNER_TEMP qualified prefix, and export immediately after successful fresh same-run reuse before wheel/product steps mutate any runtime scratch tree.",
+    "Publish the exact two capsule files with upload ID and ZIP digest. Pass producer manifest SHA and those exact upload outputs to all downstream restores. Keep include-hidden-files and always-upload failure evidence.",
+    "Run all33 capsule fixtures and the original runtime-reuse validator suite on GitHub. HELPER_REVISION must be the exact checked source SHA for fixture bootstrap.",
+    "Run an actual full same-run export and restore on GitHub. Independently inspect artifact identity, complete member bytes/modes/link universe and raw current qualification/restore receipts before transport is called ready.",
+    "The graph/native source admission and all actual product commands, waits, cleanup and independent acceptance remain separate gates. Include this exact source in final operational maps before native source seal."
+  ],
+  "wait_and_cleanup_boundary": "Current zero-exit command records are checked against the unchanged source-bound Runner path that calls child.wait before successful return. The capsule does not execute or observe a new native child. It does not create an independent normal-exit process-group observation for old commands, and it grants no whole product wait/cleanup acceptance.",
+  "known_limits": [
+    "GitHub33fixtures are unrun.",
+    "Real same-run capsule transport is unrun.",
+    "Final graph integration has not been independently reviewed by this capsule review.",
+    "This is source approval only; it is not policy sealing, binary admission, runtime product readiness or full acceptance."
+  ],
+  "local_execution": "Source, stdlib AST, Git blob and JSON/hash reads only. No project/helper import, test, native program, build, service or installed code ran.",
+  "repository_edits": false,
+  "Git_or_tracker_mutations": false,
+  "sealing_approved": false,
+  "real_transport_ready": false,
+  "product_runtime_ready": false,
+  "compiler_acceptance_passed": false,
+  "product_acceptance_passed": false,
+  "whole_acceptance_complete": false
+}
