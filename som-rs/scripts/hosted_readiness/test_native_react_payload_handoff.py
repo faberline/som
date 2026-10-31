@@ -31,7 +31,7 @@ CONTEXT = BASE + 'product_runtime/full_product_context.py'
 PROFILE = 'som-rs/contracts/react-output-v1/m12-native-api-payload-owner-v1.json'
 PROVIDER_ROLE = 'fixture.payload.provider'
 EXPECTED = {
-    SELF: '669b2ea374ce905b93d15fa400a613e43c95677dfd1984bb405b413b3c5f035a',
+    SELF: 'c51a70fa90786aca5df4604c4e0b37bdd85a5f9e280f6af6c6f4c3e90d84213d',
     LIVE: '3ead6a90dc0350d143ba7a55b0e3ad9f4e6f62357259a7a4252b6d8362976c7e',
     PRODUCER: '02d06583060b12601f3038709f2d2a9a0643d93cda7670220d592fd821ed580e',
     CONTEXT: '7329f3dc88d63957a7ac33c847ec3416f4a7b35b8c7b10793154f22a5516a440',
