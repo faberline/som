@@ -14,12 +14,14 @@ import json
 import os
 from pathlib import Path
 import re
+import runpy
 import signal
+import stat
 import subprocess
 import sys
 import time
 import traceback
-from types import ModuleType
+from types import FunctionType, ModuleType
 import uuid
 
 SELF = 'som-rs/scripts/hosted_readiness/run_full_products.py'
@@ -30,6 +32,23 @@ PENDING = ('fresh compile and assemble determinism and refusals', 'CLI forwardin
            'old bundle refusal and exact rebase', 'recorded baseline compiler comparisons',
            'ordinary-mode installer file scope independent audit',
            'numbered native policy sealing and independent complete acceptance audit')
+CALLBACK_ADAPTERS = {
+    'typescript-regression': 'som-rs/scripts/hosted_readiness/typescript_regression_owner.py',
+    'm6-react003': 'som-rs/scripts/react_output_acceptance/m6_react_callback.py',
+}
+NATIVE_QA_ENTRIES = {
+    'som-rs/scripts/react_output_acceptance/run_acceptance.py': 'entry.m6.collector',
+    'som-core/scripts/verify_python_quality.py': 'entry.qa.python-quality',
+    'som-core/scripts/verify_service_v3.py': 'entry.qa.legacy-service',
+    'som-rs/behavior/check_behavior.py': 'entry.qa.behavior',
+    'som-rs/behavior/phase2/check_phase2.py': 'entry.qa.phase2-python',
+    'som-rs/tests/rust-output-v1/check_contract.py': 'entry.qa.rust-contract',
+    'som-rs/tests/typescript-output-v1/check_contract.py': 'entry.qa.typescript-contract',
+    'som-rs/scripts/hosted_readiness/typescript_regression_checker.py': 'entry.qa.typescript-wrapper',
+    'som-rs/scripts/hosted_readiness/product_runtime/recorded_before_oracle.py': 'entry.qa.recorded-before',
+    'som-rs/scripts/hosted_readiness/run_experimental_native_cnl.py': 'entry.qa.native-cnl',
+    'som-rs/scripts/react_output_acceptance/m6_native_entry.py': 'entry.qa.m6-native',
+}
 
 
 def require(value, message):
@@ -45,7 +64,16 @@ def digest(raw):
     return hashlib.sha256(raw).hexdigest()
 
 
-def load_context_module(repo, revision):
+def _native_controls(repo, helper_revision, candidate_revision):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    require(Path(repo).absolute() == controls.root and helper_revision == controls.helper_revision
+            == candidate_revision == controls.candidate_revision,
+            'active full-product source identity differs')
+    return controls
+
+
+def load_context_module(repo, revision, qa_mode=None, candidate_revision=None):
     """Bootstrap only exact committed raw Python, including this entry point."""
     repo = Path(repo).absolute()
     require(re.fullmatch('[0-9a-f]{40}', revision), 'full helper source commit required')
@@ -63,54 +91,278 @@ def load_context_module(repo, revision):
         require(raw == path.read_bytes(), 'bootstrap source differs from committed bytes')
         return raw
     require(source(SELF) == Path(__file__).read_bytes(), 'entry point differs from helper commit')
+    native_authority = None
+    if qa_mode == 'native-qa-v1':
+        require(revision == candidate_revision and revision != 'f59e28d910ff4adb16e3becfdc82bd2978ca84fa',
+                'native QA entry requires one new exact source candidate')
+        path = 'som-rs/scripts/hosted_readiness/native_qa_authority.py'
+        authority_raw = source(path)
+        controls = _native_controls(repo, revision, candidate_revision)
+        require(controls.role_sources['bootstrap.authority'] == path, 'fixed native authority seed source differs')
+        authority = controls.load_module('bootstrap.authority')
+        require(authority.__som_raw_sha256__ == digest(authority_raw), 'preloaded native authority source differs')
+        tracked = git('ls-tree', '-r', '-z', '--name-only', revision)
+        require(tracked.endswith(b'\0'), 'complete tracked source inventory required')
+        paths = [name.decode('utf-8', 'strict') for name in tracked.split(b'\0') if name]
+        require(paths == sorted(set(paths)), 'ordered complete tracked source inventory required')
+        native_authority = authority.verify(source, mode='native-qa-v1', source_paths=paths,
+            helper_revision=revision, candidate_revision=candidate_revision)
+        require(native_authority.get('source_authority_active') is True
+                and native_authority.get('mode') == 'native-qa-v1'
+                and native_authority.get('helper_revision') == revision
+                and native_authority.get('candidate_revision') == candidate_revision
+                and native_authority.get('product_acceptance_passed') is False
+                and native_authority.get('compiler_acceptance_passed') is False
+                and native_authority.get('whole_acceptance_complete') is False, 'native QA entry source authority is pending or mismatched')
+    elif qa_mode not in {None, 'historical', 'experimental-preparation'}:
+        raise ValueError('unknown source authority mode')
     raw = source(CONTEXT)
+    if qa_mode == 'native-qa-v1':
+        require(controls.role_sources['runtime.context'] == CONTEXT, 'fixed native Context source differs')
+        module = controls.load_module('runtime.context')
+        require(module.__file__ == str(repo / CONTEXT) and module.__som_raw_sha256__ == digest(raw),
+                'actual Core Context source differs from committed bytes')
+        module.__som_native_source_authority__ = native_authority
+        return module
     require('full_product_context' not in sys.modules, 'preloaded context module refused')
     module = ModuleType('full_product_context')
     module.__file__, module.__cached__, module.__package__ = str(repo / CONTEXT), None, ''
     module.__som_raw_sha256__ = digest(raw)
+    module.__som_native_source_authority__ = native_authority
     sys.modules[module.__name__] = module
     exec(compile(raw, module.__file__, 'exec', dont_inherit=True), module.__dict__)
     return module
+
+
+COLLECTOR = 'som-rs/scripts/react_output_acceptance/run_acceptance.py'
+PROVIDER = 'som-rs/scripts/react_output_acceptance/react_api_python_payload.py'
+
+
+def _native_held_function(function):
+    require(type(function) is FunctionType, 'actual held native source function required')
+    return (function, function.__code__, function.__globals__, function.__builtins__,
+            function.__defaults__, tuple(function.__defaults__ or ()), function.__kwdefaults__,
+            tuple((function.__kwdefaults__ or {}).items()), function.__closure__,
+            tuple((cell, cell.cell_contents) for cell in (function.__closure__ or ())))
+
+
+def _native_check_held(row):
+    function, code, namespace, builtins, defaults, items, keywords, named, closure, cells = row
+    require(type(function) is FunctionType and function.__code__ is code
+            and function.__globals__ is namespace and function.__builtins__ is builtins
+            and function.__defaults__ is defaults and function.__kwdefaults__ is keywords
+            and function.__closure__ is closure and len(defaults or ()) == len(items)
+            and all(a is b for a, b in zip(defaults or (), items))
+            and len(keywords or {}) == len(named)
+            and all(key in (keywords or {}) and keywords[key] is value for key, value in named)
+            and len(closure or ()) == len(cells)
+            and all(cell is original and cell.cell_contents is value
+                    for cell, (original, value) in zip(closure or (), cells)),
+            'held native invocation changed')
+    return function
+
+
+def _native_execute_collector(arguments, context_path, data, work):
+    """One Context/provider lifetime for the original full12 collector."""
+    controls = _native_controls(Path(data['repo']), data['helper_revision'], data['candidate_revision'])
+    provider = __som_native_provider__
+    finalizer = __som_native_provider_collector_finalize__
+    require(type(provider) is ModuleType, 'fixed stable native provider required before activation')
+    provider_values = ModuleType.__getattribute__(provider, '__dict__')
+    require(provider_values.get('_native_collector_finalize') is finalizer
+            and type(finalizer) is FunctionType and finalizer.__globals__ is provider_values
+            and provider_values.get('__file__') == str(controls.root / PROVIDER),
+            'fixed provider finalizer source differs')
+    # These exports are constructed by Core role bindings, before target entry.
+    # Caller data supplies neither an owner nor a close callback.
+    finalizer_row = _native_held_function(finalizer)
+    ctx = module = sources = python_lease = source_lease = None
+    python_close = source_close = None
+    primary, trace, secondary = None, None, []
+    code = None
+    proof = {'version': 'som.full-product-checker-postcheck.v1', 'tool': COLLECTOR,
+             'pid': os.getpid(), 'helper_revision': data['helper_revision'],
+             'candidate_revision': data['candidate_revision'], 'stage': data['stage'], 'shard': data['shard'],
+             'entry_executed': False, 'source_runtime_tools_inputs_unchanged': False,
+             'product_acceptance_passed': False, 'cleanup': {}, 'secondary_errors': []}
+    try:
+        module = load_context_module(controls.root, data['helper_revision'], 'native-qa-v1', data['candidate_revision'])
+        ctx = module.Context(context_path)
+        module._ACTIVE = ctx
+        sources = ctx.sources
+        source_lease, python_lease = ctx.qa_import_controls, ctx.python_controls
+        require(type(source_lease) is type(controls) and type(python_lease) is module.NativePythonLease,
+                'actual Context-owned source and startup leases required')
+        source_close = _native_held_function(type.__getattribute__(type(source_lease), '__dict__')['close'])
+        python_close = _native_held_function(type.__getattribute__(type(python_lease), '__dict__')['close'])
+        sources.read(SELF); sources.read(CONTEXT); sources.read(PROVIDER)
+        authority = ctx.qa_source_authority
+        require(authority == module.__som_native_source_authority__
+                and authority['source_authority_active'] is True
+                and COLLECTOR in authority['admitted_repository_python_sources'],
+                'collector requires its exact sealed source before execution')
+        # Activation admits39/40 using provider/private4/runtime without C.
+        # Full-before is produced later by the stable writer, before validate_case.
+        ctx.activate_python_paths(sys.executable)
+        raw = sources.read(COLLECTOR)
+        require(controls.role_sources.get('entry.m6.collector') == COLLECTOR,
+                'fixed native collector entry source differs')
+        proof.update(entry_sha256=digest(raw), entry_executed=True)
+        try:
+            code = controls.execute_entry('entry.m6.collector', list(arguments[1:]))
+        except SystemExit as terminal:
+            require(terminal.code is None or type(terminal.code) is int,
+                    'integer native collector exit required')
+            code = 0 if terminal.code is None else terminal.code
+        require(type(code) is int, 'native collector has no terminal result')
+        proof['entry_exit_code'] = code
+    except BaseException as error:
+        primary, trace = error, error.__traceback__
+        proof['error'] = type(error).__name__ + ': ' + str(error)
+    # Independent actions preserve the exact first object and traceback.
+    def attempt(name, action):
+        nonlocal primary, trace
+        try:
+            result = action()
+            proof['cleanup'][name] = {'completed': True}
+            return result
+        except BaseException as error:
+            proof['cleanup'][name] = {'completed': False, 'error': type(error).__name__ + ': ' + str(error)}
+            if primary is None:
+                primary, trace = error, error.__traceback__
+            elif error is not primary:
+                secondary.append(error)
+    def final_full_verify():
+        require(ctx is not None and sources is not None, 'collector Context admission did not complete')
+        sources.verify()
+        ctx.verify()
+        proof.update(source_sha256=dict(sorted(sources.pins.items())),
+                     source_runtime_tools_inputs_unchanged=True)
+    # This is the last complete Context/API verification. It precedes release.
+    attempt('last_full_Context_source_verify', final_full_verify)
+    if ctx is not None:
+        def release_provider():
+            held = _native_check_held(finalizer_row)
+            result = held(ctx)
+            proof['provider_release'] = result
+        attempt('provider_private4_then_borrow', release_provider)
+    # After Group removal these are only structural public close operations.
+    # No Context.verify/python_payload/provider/private4 call is made below.
+    if python_lease is not None:
+        attempt('Context_PythonLease_structural_close', lambda: _native_check_held(python_close)(python_lease))
+    if source_lease is not None:
+        attempt('Context_source_borrow_close', lambda: _native_check_held(source_close)(source_lease))
+    proof['secondary_errors'] = [{'type': type(error).__name__, 'message': str(error)} for error in secondary]
+    def retain_proof():
+        destination = work / 'checker-postchecks'
+        destination.mkdir(parents=True, exist_ok=True)
+        with (destination / (str(os.getpid()) + '.json')).open('xb') as stream:
+            stream.write(canonical(proof) + b'\n')
+    attempt('retain_checker_postcheck', retain_proof)
+    if primary is not None:
+        BaseException.__setattr__(primary, '__som_native_collector_secondary__',
+            (*getattr(primary, '__som_native_collector_secondary__', ()), *secondary))
+        BaseException.__setattr__(primary, '__som_native_collector_postcheck__', proof)
+        raise primary.with_traceback(trace)
+    return code
 
 
 def execute_tool(arguments):
     require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'GitHub Linux execution only')
     context_path = Path(os.environ['SOM_FULL_PRODUCT_CONTEXT'])
     data = json.loads(context_path.read_bytes())
-    module = load_context_module(Path(data['repo']), data['helper_revision'])
-    sources = module.SourceBytes(Path(data['repo']), data['helper_revision'])
-    sources.read(SELF)
-    sources.read(CONTEXT)
-    module.install_source_finder(sources)
-    tool = arguments[0]
-    module.relative(tool)
-    require(tool.endswith('.py'), 'fixed repository Python checker required')
-    raw = sources.read(tool)
-    name = '__main__'
-    target = ModuleType(name)
-    target.__file__, target.__package__, target.__cached__ = str(sources.root / tool), '', None
-    old_main, old_argv = sys.modules[name], sys.argv
-    sys.modules[name], sys.argv = target, [target.__file__, *arguments[1:]]
-    sys.path.insert(0, str(sources.root / 'som-core/src'))
-    sys.path.insert(0, str((sources.root / tool).parent))
+    work = Path(data['work_root']).absolute()
+    temporary = Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
+    require(temporary in work.parents and work.is_dir() and '..' not in work.parts
+            and not any(part.is_symlink() for part in (work, *work.parents)), 'owned checker evidence root required')
+    if data.get('qa_mode') == 'native-qa-v1' and arguments and arguments[0] == COLLECTOR:
+        return _native_execute_collector(arguments, context_path, data, work)
+    module, ctx, sources, old_main, old_argv = None, None, None, None, None
+    entry_error, legacy_finder, legacy_finder_owned, old_path = None, None, False, None
+    tool = arguments[0] if arguments else ''
+    proof = {'version': 'som.full-product-checker-postcheck.v1', 'tool': tool, 'pid': os.getpid(),
+             'helper_revision': data['helper_revision'], 'candidate_revision': data['candidate_revision'],
+             'stage': data['stage'], 'shard': data['shard'], 'entry_executed': False,
+             'source_runtime_tools_inputs_unchanged': False, 'product_acceptance_passed': False}
     try:
+        module = load_context_module(Path(data['repo']), data['helper_revision'], data.get('qa_mode'), data['candidate_revision'])
+        ctx = module.Context(context_path)
+        module._ACTIVE = ctx
+        sources = ctx.sources
+        sources.read(SELF)
+        sources.read(CONTEXT)
+        module.relative(tool)
+        require(tool.endswith('.py'), 'fixed repository Python checker required')
+        if data.get('qa_mode') == 'native-qa-v1':
+            authority = ctx.qa_source_authority
+            require(authority == module.__som_native_source_authority__
+                    and authority['source_authority_active'] is True
+                    and tool in authority['admitted_repository_python_sources'],
+                    'entry itself must have exact sealed native source authority before read or execution')
+            ctx.activate_python_paths(sys.executable)
+        else:
+            before_finders = tuple(sys.meta_path)
+            legacy_finder = module.install_source_finder(sources)
+            legacy_finder_owned = legacy_finder not in before_finders and legacy_finder in sys.meta_path
+            require(legacy_finder_owned and getattr(legacy_finder, 'sources', None) is sources,
+                    'new owned legacy raw source guard required')
+        # Native Context owns its lease. The old modes keep their original raw Git finder.
+        raw = sources.read(tool)
+        proof['entry_sha256'] = digest(raw)
+        if data.get('qa_mode') == 'native-qa-v1':
+            controls = _native_controls(sources.root, data['helper_revision'], data['candidate_revision'])
+            require(tool in NATIVE_QA_ENTRIES, 'repository checker has no fixed native entry role')
+            role = NATIVE_QA_ENTRIES[tool]
+            require(controls.role_sources[role] == tool, 'fixed native checker role source differs')
+            proof['entry_executed'] = True
+            try:
+                code = controls.execute_entry(role, list(arguments[1:]))
+                proof['entry_exit_code'] = code
+                return code
+            except SystemExit as result:
+                code = result.code if isinstance(result.code, int) else (0 if result.code is None else 1)
+                proof['entry_exit_code'] = code
+                return code
+        name = '__main__'
+        target = ModuleType(name)
+        target.__file__, target.__package__, target.__cached__ = str(sources.root / tool), '', None
+        target.__som_raw_sha256__ = digest(raw)
+        old_main, old_argv = sys.modules[name], sys.argv
+        sys.modules[name], sys.argv = target, [target.__file__, *arguments[1:]]
+        old_path = list(sys.path)
+        sys.path.insert(0, str(sources.root / 'som-core/src'))
+        sys.path.insert(0, str((sources.root / tool).parent))
+        proof['entry_executed'] = True
         try:
             exec(compile(raw, target.__file__, 'exec', dont_inherit=True), target.__dict__)
+            proof['entry_exit_code'] = 0
             return 0
         except SystemExit as result:
-            return result.code if isinstance(result.code, int) else (0 if result.code is None else 1)
+            code = result.code if isinstance(result.code, int) else (0 if result.code is None else 1)
+            proof['entry_exit_code'] = code
+            return code
+    except BaseException as error:
+        entry_error = error
+        proof['error'] = type(error).__name__ + ': ' + str(error)
+        raise
     finally:
-        sources.verify()
-        if module._ACTIVE is not None:
-            module._ACTIVE.verify()
-            proof = {'version': 'som.full-product-checker-postcheck.v1', 'tool': tool,
-                     'pid': os.getpid(), 'helper_revision': module._ACTIVE.helper_revision,
-                     'candidate_revision': module._ACTIVE.candidate_revision,
-                     'stage': module._ACTIVE.data['stage'], 'shard': module._ACTIVE.data['shard'],
-                     'source_sha256': dict(sorted(sources.pins.items())),
-                     'source_runtime_tools_inputs_unchanged': True, 'product_acceptance_passed': False}
-            save(module._ACTIVE.work / 'checker-postchecks' / (str(os.getpid()) + '.json'), proof)
-        sys.modules[name], sys.argv = old_main, old_argv
+        try:
+            require(ctx is not None and sources is not None, 'source/context admission did not complete')
+            if legacy_finder is not None:
+                require(legacy_finder in sys.meta_path, 'legacy raw source guard changed during checker execution')
+            sources.verify()
+            ctx.verify()
+            proof.update(source_sha256=dict(sorted(sources.pins.items())), source_runtime_tools_inputs_unchanged=True)
+        except BaseException as error:
+            proof['postcheck_error'] = type(error).__name__ + ': ' + str(error)
+            if entry_error is None: raise
+        finally:
+            try:
+                save(work / 'checker-postchecks' / (str(os.getpid()) + '.json'), proof)
+            finally:
+                if legacy_finder_owned and legacy_finder in sys.meta_path: sys.meta_path.remove(legacy_finder)
+                if old_path is not None: sys.path[:] = old_path
+                if old_main is not None: sys.modules['__main__'], sys.argv = old_main, old_argv
 
 
 @contextmanager
@@ -204,10 +456,17 @@ def tool(ctx, script, args, label, timeout=20000):
 
 
 def phase1(ctx):
-    for path in ('som-rs/som-targets/qa', 'som-rs/behavior'):
-        sys.path.insert(0, str(ctx.repo / path))
-    import check_rust_products as products
-    import hosts
+    if ctx.data.get('qa_mode') == 'native-qa-v1':
+        controls = _native_controls(ctx.repo, ctx.helper_revision, ctx.candidate_revision)
+        require(controls.role_sources['full.phase1.products'] == 'som-rs/som-targets/qa/check_rust_products.py'
+                and controls.role_sources['full.hosts'] == 'som-rs/behavior/hosts.py', 'fixed phase1 source roles differ')
+        products = controls.load_module('full.phase1.products')
+        hosts = controls.load_module('full.hosts')
+    else:
+        for path in ('som-rs/som-targets/qa', 'som-rs/behavior'):
+            sys.path.insert(0, str(ctx.repo / path))
+        import check_rust_products as products
+        import hosts
     every = products.acceptance_cases()
     ids = [row['id'] for row in every]
     require(len(ids) == 115 and ctx.data['shard'] == {'index': 0, 'count': 1}, 'whole phase1 job required')
@@ -277,8 +536,14 @@ def phase1(ctx):
 
 
 def phase2_python(ctx):
-    sys.path.insert(0, str(ctx.repo / 'som-rs/behavior/phase2'))
-    import check_phase2 as checker
+    if ctx.data.get('qa_mode') == 'native-qa-v1':
+        controls = _native_controls(ctx.repo, ctx.helper_revision, ctx.candidate_revision)
+        require(controls.role_sources['full.phase2'] == 'som-rs/behavior/phase2/check_phase2.py',
+                'fixed phase2 source role differs')
+        checker = controls.load_module('full.phase2')
+    else:
+        sys.path.insert(0, str(ctx.repo / 'som-rs/behavior/phase2'))
+        import check_phase2 as checker
     every = checker.cases()
     ids = [row['id'] for row in every]
     selected = scoped(ids, ctx.data['shard'])
@@ -296,7 +561,12 @@ def phase2_python(ctx):
 
 def phase2_python_results(ctx, ids, selected, output, key, worker_count, command, error=None):
     """Keep every selected row and bind it to the completed shard process."""
-    from full_product_context import read
+    if ctx.data.get('qa_mode') == 'native-qa-v1':
+        controls = _native_controls(ctx.repo, ctx.helper_revision, ctx.candidate_revision)
+        require(controls.role_sources['runtime.context'] == CONTEXT, 'fixed phase2 result Context source differs')
+        read = controls.load_module('runtime.context').read
+    else:
+        from full_product_context import read
     script = 'som-rs/behavior/phase2/check_phase2.py'
     command_gate = {'passed': bool(error is None and type(command) is dict
                     and type(command.get('exit_code')) is int and command['exit_code'] == 0
@@ -424,13 +694,26 @@ def rust_preparation_without_python(ctx, case, fixture, output):
 
 
 def phase2_rust(ctx):
-    for path in ('som-rs/som-targets/qa', 'som-rs/behavior', 'som-rs/behavior/phase2', 'som-core/scripts'):
-        sys.path.insert(0, str(ctx.repo / path))
-    import check_phase2 as phase2
-    import check_phase2_products as gates
-    import phase2_host
-    from m3_local_fixture import M3Fixture
-    import hosts
+    if ctx.data.get('qa_mode') == 'native-qa-v1':
+        controls = _native_controls(ctx.repo, ctx.helper_revision, ctx.candidate_revision)
+        require(controls.role_sources['full.phase2'] == 'som-rs/behavior/phase2/check_phase2.py'
+                and controls.role_sources['full.phase2-products'] == 'som-rs/som-targets/qa/check_phase2_products.py'
+                and controls.role_sources['full.phase2-host'] == 'som-rs/behavior/phase2/phase2_host.py'
+                and controls.role_sources['full.m3-fixture'] == 'som-core/scripts/m3_local_fixture.py'
+                and controls.role_sources['full.hosts'] == 'som-rs/behavior/hosts.py', 'fixed phase2 Rust source roles differ')
+        phase2 = controls.load_module('full.phase2')
+        gates = controls.load_module('full.phase2-products')
+        phase2_host = controls.load_module('full.phase2-host')
+        M3Fixture = controls.load_module('full.m3-fixture').M3Fixture
+        hosts = controls.load_module('full.hosts')
+    else:
+        for path in ('som-rs/som-targets/qa', 'som-rs/behavior', 'som-rs/behavior/phase2', 'som-core/scripts'):
+            sys.path.insert(0, str(ctx.repo / path))
+        import check_phase2 as phase2
+        import check_phase2_products as gates
+        import phase2_host
+        from m3_local_fixture import M3Fixture
+        import hosts
     every = phase2.cases()
     ids = [row['id'] for row in every]
     selected = set(scoped(ids, ctx.data['shard']))
@@ -455,6 +738,18 @@ def phase2_rust(ctx):
                     continue
                 record = {'id': case['id'], 'passed': False, 'fresh_bundle_checks': 'unrun_no_compiler_carrier'}
                 try:
+                    if case['phase2_expected']['result'] == 'refusal' and ctx.data.get('qa_mode') == 'native-qa-v1':
+                        negative = ctx.current_refusal(case['id'], 'rust')
+                        require(negative is not None and negative['product_executed'] is False,
+                                'fresh exact named current Rust refusal missing')
+                        record.update(passed=True, outcome_role='current-compiler-refusal-no-product',
+                                      product_executed=False, current_refusal=negative,
+                                      fresh_bundle_checks='source-verified-current-typed-compiler-refusal')
+                        save(output / 'cases' / (phase2.key(case['id']) + '.json'), record)
+                        rows.append(record)
+                        save(output / 'gates' / (phase2.key(case['id']) + '.json'), record)
+                        print(case['id'], 'PASS', flush=True)
+                        continue
                     if case['phase2_expected']['result'] == 'refusal':
                         raise ValueError('fresh current refusal requires the same-candidate compiler carrier')
                     try:
@@ -507,15 +802,17 @@ def identity_record(ctx):
             'rust_profile_sha256': digest(profile),
             'wheel_receipt_sha256': digest((Path(ctx.data['wheel_root']) / 'receipt.json').read_bytes()),
             'cargo_receipt_sha256': digest((Path(ctx.data['cargo_root']) / 'receipt.json').read_bytes()),
-            'input_transport': ctx.data['transport']}
+            'input_transport': ctx.data['transport'], 'qa_mode': ctx.data.get('qa_mode', 'historical'),
+            'native_source_admission_sha256': digest(canonical(ctx.data['native_source_authority'])) if ctx.data.get('native_source_authority') else None}
 
 
 def worker(context_path):
     data = json.loads(context_path.read_bytes())
-    module = load_context_module(data['repo'], data['helper_revision'])
+    module = load_context_module(data['repo'], data['helper_revision'], data.get('qa_mode'), data['candidate_revision'])
     ctx = module.Context(context_path)
     module._ACTIVE = ctx
-    module.install_source_finder(ctx.sources)
+    if data.get('qa_mode') == 'native-qa-v1': ctx.activate_python_paths(sys.executable)
+    if data.get('qa_mode') != 'native-qa-v1': module.install_source_finder(ctx.sources)
     ctx.sources.read(SELF)
     stage = data['stage']
     started = time.monotonic()
@@ -547,16 +844,158 @@ def worker(context_path):
                  and report['source_runtime_tools_unchanged']) else 1
 
 
+def m6_callback_input_bindings(args, baselines, protected):
+    """Bind explicit locations. The M6 owner still admits their actual data."""
+    pairs = getattr(args, 'm6_react_input', None) or []
+    gate = getattr(args, 'callback_gate', None)
+    if type(gate) is not str or gate != 'm6-react003':
+        require(not pairs, 'M6 input locations require the fixed M6 callback gate')
+        return {}
+    required = {'baseline_profile', 'legacy_run', 'rust_baseline_run', 'qa_profile',
+                'api_profile', 'api_closure_tar', 'collector_out', 'audit_out'}
+    require(type(pairs) is list and len(pairs) == len(required),
+            'all eight explicit M6 callback input locations required')
+    values = {}
+    for pair in pairs:
+        require(type(pair) in {list, tuple} and len(pair) == 2,
+                'M6 input binding requires exactly NAME VALUE')
+        name, value = pair
+        require(type(name) is str and name in required and name not in values,
+                'unknown or duplicate M6 callback input name')
+        require(type(value) is str and value and '\\' not in value
+                and not any(ord(char) < 32 or ord(char) == 127 for char in value),
+                'M6 callback input value must be a clean explicit string')
+        values[name] = value
+    profile = 'som-rs/scripts/hosted_readiness/inputs/recorded-before-profile-v1.json'
+    require(values['baseline_profile'] == profile and set(baselines) == {profile},
+            'M6 callback requires the exact recorded-before baseline binding')
+    inputs = {}
+    for name in ('legacy_run', 'rust_baseline_run', 'qa_profile', 'api_profile', 'api_closure_tar'):
+        path = Path(values[name])
+        require(path.is_absolute() and str(path) == values[name] and '..' not in path.parts
+                and not any(part.is_symlink() for part in (path, *path.parents)),
+                'M6 callback input path must be physical and absolute')
+        mode = path.lstat().st_mode
+        require(stat.S_ISDIR(mode) if name in {'legacy_run', 'rust_baseline_run'} else stat.S_ISREG(mode),
+                'M6 callback input path has the wrong physical file type')
+        inputs[name] = path
+    local = args.repo.absolute() / '.local'
+    outputs = []
+    for name in ('collector_out', 'audit_out'):
+        path = Path(values[name])
+        require(path.is_absolute() and str(path) == values[name] and '..' not in path.parts
+                and local in path.parents and path.parent.is_dir() and not path.exists()
+                and not any(part.is_symlink() for part in (path, *path.parents)),
+                'M6 callback output must be a new physical repo-local path')
+        require(all(path != other and path not in other.parents and other not in path.parents
+                    for other in [*protected[1:], *map(Path, baselines.values()), *inputs.values(), *outputs]),
+                'M6 callback output overlaps protected input/output or another M6 path')
+        outputs.append(path)
+    return {'m6_react_inputs': values}
+
+
+def callback_context_bindings(args, sources, admission, out):
+    """Bind existing callback inputs. Their owning gate still admits all data."""
+    pairs = getattr(args, 'baseline_input', None) or []
+    gate = getattr(args, 'callback_gate', None)
+    if type(gate) is str and gate == 'm6-react003':
+        m6_pairs = getattr(args, 'm6_react_input', None)
+        require(type(m6_pairs) is list and len(m6_pairs) == 8,
+                'all eight explicit M6 callback input locations required')
+    if not pairs and gate is None:
+        return m6_callback_input_bindings(args, {}, [])
+    require(args.mode == 'sealed-candidate-products' and getattr(args, 'prepare_context_only', False),
+            'callback bindings require sealed prepare-context-only mode')
+    require(type(gate) is str and gate in CALLBACK_ADAPTERS,
+            'callback gate has no finalized fixed source adapter')
+    require(type(pairs) is list and 1 <= len(pairs) <= 32,
+            'one to 32 explicit baseline profile/root bindings required')
+    names = ('assembly_root', 'wheel_root', 'runtime_root', 'rust_tools_root', 'cargo_root',
+             'carrier_root', 'python_inputs_root', 'rust_inputs_root', 'current_companions_root',
+             'build_provenance_root')
+    protected = [args.repo.absolute(), out, args.artifact_inputs.absolute().parent,
+                 *(getattr(args, name).absolute() for name in names)]
+    require(all('..' not in path.parts and not any(part.is_symlink() for part in (path, *path.parents))
+                for path in protected), 'callback protected input paths must be physical and clean')
+    temporary = Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
+    baselines, roots = {}, []
+    for pair in pairs:
+        require(type(pair) in {list, tuple} and len(pair) == 2,
+                'baseline binding requires exactly PROFILE ROOT')
+        profile, locator = pair
+        require(type(profile) is str and profile.startswith('som-rs/scripts/hosted_readiness/')
+                and profile.endswith('.json') and '\\' not in profile
+                and all(part not in {'', '.', '..'} for part in profile.split('/'))
+                and not any(ord(char) < 32 or ord(char) == 127 for char in profile),
+                'baseline profile must be a clean tracked operational JSON source')
+        require(profile not in baselines, 'duplicate baseline profile binding')
+        # The admitted reader proves tracked source and exact physical Git bytes.
+        # JSON shape is not profile/data completeness or product admission.
+        raw = sources.read(profile)
+        def unique(rows):
+            value = {}
+            for key, item in rows:
+                require(key not in value, 'duplicate operational baseline JSON member')
+                value[key] = item
+            return value
+        document = json.loads(raw, object_pairs_hook=unique,
+            parse_constant=lambda _: (_ for _ in ()).throw(ValueError('nonfinite operational baseline JSON')))
+        require(type(document) is dict, 'operational baseline profile must be a JSON object')
+        require(type(locator) is str and locator and '\\' not in locator
+                and not any(ord(char) < 32 or ord(char) == 127 for char in locator),
+                'baseline root must be an explicit physical absolute path')
+        root = Path(locator)
+        require(root.is_absolute() and str(root) == locator and '..' not in root.parts and temporary in root.parents
+                and not any(part.is_symlink() for part in (root, *root.parents))
+                and stat.S_ISDIR(root.lstat().st_mode), 'baseline root must be a physical directory without traversal or links')
+        require(all(root != other and root not in other.parents and other not in root.parents
+                    for other in [*protected, *roots]), 'baseline root overlaps protected input/output or another baseline')
+        baselines[profile] = str(root)
+        roots.append(root)
+    path = CALLBACK_ADAPTERS[gate]
+    require(type(admission) is dict and path in admission.get('admitted_repository_python_sources', []),
+            'fixed callback adapter is not in actual native source admission')
+    adapter_raw = sources.read(path)
+    return {'baseline_inputs': baselines,
+            'gate_adapters': {gate: {'path': path, 'sha256': digest(adapter_raw)}},
+            **m6_callback_input_bindings(args, baselines, protected)}
+
+
 def prepare(args):
     require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'GitHub Linux only')
-    if args.mode != 'experimental-preparation':
-        raise ValueError('official acceptance refuses the unsealed policy and missing same-build compiler carrier')
+    sealed = args.mode == 'sealed-candidate-products'
+    if args.mode not in {'experimental-preparation', 'sealed-candidate-products'}:
+        raise ValueError('official acceptance refuses the unsealed policy and requires separate complete independent acceptance')
+    module, graph, graph_sources = None, None, None
+    if sealed:
+        require(args.helper_revision == args.candidate_revision and args.candidate_revision != 'f59e28d910ff4adb16e3becfdc82bd2978ca84fa',
+                'sealed products require one new final source candidate')
+        require(all(getattr(args, name, None) is not None for name in
+                    ('carrier_root', 'artifact_inputs', 'current_companions_root', 'python_inputs_root', 'rust_inputs_root', 'build_provenance_root')),
+                'all fresh same-run carrier/input/current-companion paths are required')
+        build_root = args.build_provenance_root.absolute()
+        require(build_root == args.assembly_root.absolute().parent / 'som-current-build-provenance'
+                and build_root.is_dir() and not any(path.is_symlink() for path in (build_root, *build_root.parents)),
+                'original same-job build provenance must be the exact assembly artifact sibling')
+        graph_path = 'som-rs/scripts/hosted_readiness/same_candidate_graph.py'
+        graph_raw = subprocess.check_output(['/usr/bin/git', '--no-replace-objects', '-C', str(args.repo),
+            'cat-file', 'blob', args.helper_revision + ':' + graph_path], stderr=subprocess.DEVNULL)
+        require(graph_raw == (args.repo / graph_path).read_bytes(), 'graph source differs from exact helper commit')
+        controls = _native_controls(args.repo, args.helper_revision, args.candidate_revision)
+        require(controls.role_sources['full.graph'] == graph_path, 'fixed full-product Graph source differs')
+        graph = controls.load_module('full.graph')
+        # Formal source/HEAD/workflow binding precedes the native policy and Context loaders.
+        graph_sources, _, graph_authority = graph._admitted_controller_sources(args.repo, args.helper_revision, args.candidate_revision)
+        module = load_context_module(args.repo, args.helper_revision, 'native-qa-v1', args.candidate_revision)
+        require(module.__som_native_source_authority__ == graph_authority, 'graph and Context source authority differ')
     temporary = Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
     out = args.out.absolute()
     require(temporary in out.parents and '..' not in out.parts and not out.exists(), 'new RUNNER_TEMP output required')
     require(args.stage in STAGES, 'named complete product cohort required')
     if args.stage == 'phase1':
         require((args.shard_index, args.shard_count) == (0, 1), 'phase1 keeps the whole 115-case parity report')
+    callback_bindings = callback_context_bindings(args, graph_sources,
+        module.__som_native_source_authority__ if sealed else None, out)
     out.mkdir(mode=0o700)
     for name in ('home', 'tmp', 'observer'):
         (out / name).mkdir()
@@ -567,19 +1006,39 @@ def prepare(args):
             'transport': 'recorded-assembled-products',
             **{name: str(getattr(args, name).absolute()) for name in
                ('assembly_root', 'wheel_root', 'runtime_root', 'rust_tools_root', 'cargo_root')}}
+    if callback_bindings:
+        data.update(callback_bindings)
+    if sealed:
+        data.update(qa_mode='native-qa-v1', native_source_authority=module.__som_native_source_authority__,
+                    source_workflow_binding=graph_sources.workflow_binding,
+                    artifact_inputs=str(args.artifact_inputs.absolute()),
+                    carrier_root=str(args.carrier_root.absolute()),
+                    build_provenance_root=str(args.build_provenance_root.absolute()),
+                    current_companions_root=str(args.current_companions_root.absolute()),
+                    python_inputs_root=str(args.python_inputs_root.absolute()), rust_inputs_root=str(args.rust_inputs_root.absolute()))
+        data['current_carrier_restore'] = graph.restore_current_carrier(graph_sources, args.artifact_inputs, args.assembly_root,
+            args.carrier_root, out / 'candidate', args.helper_revision, args.candidate_revision)
     path = out / 'context.json'
     save(path, data)
     os.environ['SOM_FULL_PRODUCT_CONTEXT'] = str(path)
-    module = load_context_module(args.repo, args.helper_revision)
+    if module is None: module = load_context_module(args.repo, args.helper_revision)
     ctx = module.Context(path)
     module._ACTIVE = ctx
-    module.install_source_finder(ctx.sources)
+    if data.get('qa_mode') != 'native-qa-v1': module.install_source_finder(ctx.sources)
     ctx.sources.read(SELF)
     ctx.python_rows()
     ctx.rust_rows()
     consumer = ctx.module('cargo_consumer', CARGO)
     consumer.prepare(ctx)
     ctx.prepare_python(out / 'observer', {})
+    if getattr(args, 'prepare_context_only', False):
+        require(sealed, 'callback context requires active sealed source mode')
+        ctx.verify()
+        save(out / 'context-prepared.json', {'version': 'som.sealed-callback-context-prepared.v1',
+             'helper_revision': args.helper_revision, 'candidate_revision': args.candidate_revision,
+             'context_sha256': digest(path.read_bytes()), 'product_acceptance_passed': False,
+             'product_rows_run': False})
+        return 0
     command = ctx.command([data['observer_python'], '-B', ctx.repo / SELF, '--worker-context', str(path)],
                           out, ctx.child_environment(), 'whole-frozen-product-cohort', timeout=20000, check=False)
     ctx.verify()
@@ -609,7 +1068,7 @@ def join(args):
         row['receipt_raw_sha256'] = digest(raw)
         grouped[row['stage']].append(row)
     repo = Path(__file__).absolute().parents[3]
-    module = load_context_module(repo, identities['helper_revision'])
+    module = load_context_module(repo, identities['helper_revision'], identities.get('qa_mode'), identities['candidate_revision'])
     sources = module.SourceBytes(repo, identities['helper_revision'])
     for shards in grouped.values():
         for receipt in shards:
@@ -661,10 +1120,102 @@ def join(args):
     return 0 if passed else 1
 
 
+def native_python_bootstrap(arguments):
+    """Enter a qualified Python payload after source admission, without site."""
+    require(sys.flags.isolated and sys.flags.no_site and sys.dont_write_bytecode,
+            'native Python child requires -I -S -B before any project import')
+    path = Path(os.environ['SOM_FULL_PRODUCT_CONTEXT']).absolute()
+    data = json.loads(path.read_bytes())
+    require(data.get('qa_mode') == 'native-qa-v1', 'native Python bootstrap cannot change historical modes')
+    module = load_context_module(data['repo'], data['helper_revision'], 'native-qa-v1', data['candidate_revision'])
+    ctx = module.Context(path); module._ACTIVE = ctx
+    payload = ctx.activate_python_paths(sys.executable)
+    require(arguments, 'Python child target is missing')
+    proof = {'version': 'som.native-python-child-postcheck.v1', 'payload': payload,
+             'original_python_arguments': list(arguments), 'actual_argv': list(sys.orig_argv),
+             'helper_revision': ctx.helper_revision, 'candidate_revision': ctx.candidate_revision,
+             'entry_executed': False, 'postchecks_passed': False, 'product_acceptance_passed': False}
+    old_main, old_argv, old_path = sys.modules['__main__'], sys.argv, list(sys.path)
+    primary = None
+    try:
+        # Product module lookup and script lookup start only after the payload
+        # and repo raw import controls have passed. No site/.pth helper is used.
+        sys.path.insert(0, str(Path.cwd()))
+        if arguments[0] == '-m':
+            require(len(arguments) >= 2 and not arguments[1].startswith('-'), 'Python module name required')
+            sys.argv = [arguments[1], *arguments[2:]]
+            proof['entry_executed'] = True
+            runpy.run_module(arguments[1], run_name='__main__', alter_sys=True)
+        else:
+            if arguments[0] == '-c':
+                require(len(arguments) >= 2, 'Python source argument required')
+                raw, filename, rest = arguments[1].encode(), '<string>', arguments[2:]
+            else:
+                file = Path(arguments[0]).absolute()
+                require(file.suffix == '.py' and (ctx.repo in file.parents or ctx.work in file.parents),
+                        'Python script must be admitted repository or owned generated source')
+                filename, rest = str(file), arguments[1:]
+                if ctx.repo in file.parents:
+                    name = file.relative_to(ctx.repo).as_posix()
+                    require(name in ctx.qa_source_authority['admitted_repository_python_sources'],
+                            'Python script is outside native repository source authority')
+                    raw = ctx.sources.read(name)
+                    controls = _native_controls(ctx.repo, ctx.helper_revision, ctx.candidate_revision)
+                    require(name in NATIVE_QA_ENTRIES, 'repository Python script has no fixed native entry role')
+                    role = NATIVE_QA_ENTRIES[name]
+                    require(controls.role_sources[role] == name, 'fixed repository Python entry source differs')
+                    # Product lookup paths are not a QA import search grant.
+                    sys.path[:] = old_path
+                    proof['entry_executed'] = True
+                    code = controls.execute_entry(role, list(rest))
+                    proof['exit_code'] = code
+                    return code
+                else:
+                    raw = module.read(file)
+                sys.path.insert(0, str(file.parent))
+            target = ModuleType('__main__')
+            target.__file__, target.__package__, target.__cached__ = filename, '', None
+            target.__som_raw_sha256__ = digest(raw)
+            sys.modules['__main__'], sys.argv = target, [filename if filename != '<string>' else '-c', *rest]
+            proof['entry_executed'] = True
+            exec(compile(raw, filename, 'exec', dont_inherit=True), target.__dict__)
+        proof['exit_code'] = 0
+        return 0
+    except SystemExit as result:
+        code = result.code if type(result.code) is int else (0 if result.code is None else 1)
+        if code != 0: primary = result
+        proof['exit_code'] = code
+        return code
+    except BaseException as error:
+        primary = error
+        proof['error'] = type(error).__name__ + ': ' + str(error)
+        raise
+    finally:
+        try:
+            ctx.verify()
+            proof['postchecks_passed'] = True
+        except BaseException as error:
+            proof['postcheck_error'] = type(error).__name__ + ': ' + str(error)
+            if primary is None:
+                primary = error
+                raise
+        finally:
+            proof['source_sha256'] = dict(sorted(ctx.sources.pins.items()))
+            try:
+                save(ctx.work / 'python-startup-postchecks' / f'{os.getpid()}.json', proof)
+            except BaseException:
+                if primary is None: raise
+            finally:
+                sys.modules['__main__'], sys.argv, sys.path[:] = old_main, old_argv, old_path
+
+
 def main(argv=None):
     arguments = list(sys.argv[1:] if argv is None else argv)
     for number in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
         signal.signal(number, lambda number, frame: (_ for _ in ()).throw(KeyboardInterrupt('owned runner interrupted')))
+    if arguments[:1] == ['--native-python-bootstrap']:
+        require(arguments[1:2] == ['--'], 'explicit native Python target separator required')
+        return native_python_bootstrap(arguments[2:])
     if arguments[:1] == ['--execute-tool']:
         rest = arguments[1:]
         require(len(rest) >= 2 and rest[1] == '--', 'explicit checker argument separator required')
@@ -678,16 +1229,25 @@ def main(argv=None):
         parser.add_argument('receipts', type=Path, nargs='+')
         return join(parser.parse_args(arguments[1:]))
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--mode', choices=('experimental-preparation', 'acceptance'), required=True)
+    parser.add_argument('--mode', choices=('experimental-preparation', 'sealed-candidate-products', 'acceptance'), required=True)
     parser.add_argument('--stage', choices=STAGES, required=True)
     parser.add_argument('--repo', type=Path, required=True)
     parser.add_argument('--helper-revision', required=True)
     parser.add_argument('--candidate-revision', required=True)
+    parser.add_argument('--prepare-context-only', action='store_true')
+    parser.add_argument('--callback-gate', choices=tuple(CALLBACK_ADAPTERS))
+    parser.add_argument('--baseline-input', nargs=2, action='append', metavar=('PROFILE', 'ROOT'))
+    parser.add_argument('--m6-react-input', nargs=2, action='append', metavar=('NAME', 'VALUE'))
+    for name in ('carrier-root', 'artifact-inputs', 'current-companions-root', 'python-inputs-root', 'rust-inputs-root', 'build-provenance-root'):
+        parser.add_argument('--' + name, type=Path)
     parser.add_argument('--shard-index', type=int, default=0)
     parser.add_argument('--shard-count', type=int, default=1)
     for name in ('assembly-root', 'wheel-root', 'runtime-root', 'rust-tools-root', 'cargo-root', 'out'):
         parser.add_argument('--' + name, type=Path, required=True)
-    return prepare(parser.parse_args(arguments))
+    parsed = parser.parse_args(arguments)
+    if parsed.callback_gate == 'm6-react003' and len(parsed.m6_react_input or []) != 8:
+        parser.error('all eight explicit M6 callback input locations required')
+    return prepare(parsed)
 
 
 if __name__ == '__main__':

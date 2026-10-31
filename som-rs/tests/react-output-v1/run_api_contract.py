@@ -9,13 +9,57 @@ import pathlib
 import subprocess
 import sys
 
+# Native mode uses fixed source bindings. A globals flag grants no authority.
+_NATIVE_API = '__som_native_active_controls__' in globals()
+if _NATIVE_API:
+    from _som_native_active_controls_binding import controls as _native_controls
+    from types import FunctionType as _NativeFunction, ModuleType as _NativeModule
+    _native_controls.verify_installed()
+    if (_native_controls is not __som_native_active_controls__
+            or _native_controls.role_sources.get('entry.m6.api-contract') != 'som-rs/tests/react-output-v1/run_api_contract.py'
+            or __file__ != str(_native_controls.root / 'som-rs/tests/react-output-v1/run_api_contract.py')
+            or __name__ != '__main__'
+            or type(__som_native_API_subprocess__) is not _NativeModule
+            or type(__som_native_API_tools__) is not _NativeFunction):
+        raise ValueError('actual fixed native API host/runner bindings required')
+    _native_facade = _NativeModule.__getattribute__(__som_native_API_subprocess__, '__dict__')
+    if (_native_facade.get('__file__') != str(_native_controls.root /
+            _native_controls.role_sources['m6.api.recording.subprocess'])
+            or sys.modules.get(_native_facade.get('__name__')) is not __som_native_API_subprocess__
+            or __som_native_API_tools__.__globals__.get('__file__') != str(_native_controls.root /
+                _native_controls.role_sources['m6.api.case.consumer'])):
+        raise ValueError('fixed stable native API facade/getter source differs')
+    _NATIVE_API_TOOLS = __som_native_API_tools__()
+    _native_keys = ('python', 'node', 'npm_cli', 'cache', 'pg_bin', 'lsof', 'ps', 'site')
+    if (type(_NATIVE_API_TOOLS) is not dict or not all(type(key) is str for key in _NATIVE_API_TOOLS)
+            or not all(key in _NATIVE_API_TOOLS and type(_NATIVE_API_TOOLS[key]) is str
+                       and _NATIVE_API_TOOLS[key] for key in _native_keys)):
+        raise ValueError('actual source-owned native API tool data required')
+    for _native_key in _native_keys:
+        _native_path = pathlib.Path(_NATIVE_API_TOOLS[_native_key])
+        if not _native_path.is_absolute() or '..' in _native_path.parts:
+            raise ValueError('absolute exact native API tool path required')
+    if (_NATIVE_API_TOOLS['lsof'] != '/usr/bin/lsof'
+            or _NATIVE_API_TOOLS['ps'] != '/bin/ps'):
+        raise ValueError('fixed Linux lsof/ps paths required')
+    # Only this module's alias changes. The real stdlib module stays installed.
+    subprocess = __som_native_API_subprocess__
+    _native_controls.verify_installed()
+else:
+    if '_som_native_active_controls' in sys.modules:
+        raise ValueError('native API host/runner has no fixed binding')
+
+
 SOM_RS = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(SOM_RS / "behavior"))
 
 from typescript import host as ts_host  # noqa: E402
 
 HERE = pathlib.Path(__file__).resolve().parent
-PYTHON = str(SOM_RS / "runtime" / "acceptance-m3-venv" / "bin" / "python")
+if _NATIVE_API:
+    PYTHON = _NATIVE_API_TOOLS['python']
+else:
+    PYTHON = str(SOM_RS / "runtime" / "acceptance-m3-venv" / "bin" / "python")
 
 
 def product_files(root: pathlib.Path) -> dict[str, str]:

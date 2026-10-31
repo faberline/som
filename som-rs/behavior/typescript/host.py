@@ -22,6 +22,64 @@ import sys
 import time
 from typing import Any, Iterator
 
+# Native modes use separate fixed source bindings. Names alone grant no authority.
+# Any API reserved name selects the API checks, including a partial binding.
+_NATIVE_API = any(name.startswith('__som_native_API_') for name in globals())
+if _NATIVE_API:
+    if not all(name in globals() for name in (
+            '__som_native_active_controls__', '__som_native_API_subprocess__',
+            '__som_native_API_tools__')):
+        raise ValueError('complete fixed native API host bindings required')
+    from _som_native_active_controls_binding import controls as _native_controls
+    from types import FunctionType as _NativeFunction, ModuleType as _NativeModule
+    _native_controls.verify_installed()
+    if (_native_controls is not __som_native_active_controls__
+            or _native_controls.role_sources.get('m6.api.host.typescript') != 'som-rs/behavior/typescript/host.py'
+            or __file__ != str(_native_controls.root / 'som-rs/behavior/typescript/host.py')
+            or __name__ != '_som_m6_api_original_typescript_host'
+            or type(__som_native_API_subprocess__) is not _NativeModule
+            or type(__som_native_API_tools__) is not _NativeFunction):
+        raise ValueError('actual fixed native API host/runner bindings required')
+    _native_facade = _NativeModule.__getattribute__(__som_native_API_subprocess__, '__dict__')
+    if (_native_facade.get('__file__') != str(_native_controls.root /
+            _native_controls.role_sources['m6.api.recording.subprocess'])
+            or sys.modules.get(_native_facade.get('__name__')) is not __som_native_API_subprocess__
+            or __som_native_API_tools__.__globals__.get('__file__') != str(_native_controls.root /
+                _native_controls.role_sources['m6.api.case.consumer'])):
+        raise ValueError('fixed stable native API facade/getter source differs')
+    _NATIVE_API_TOOLS = __som_native_API_tools__()
+    _native_keys = ('python', 'node', 'npm_cli', 'cache', 'pg_bin', 'lsof', 'ps', 'site')
+    if (type(_NATIVE_API_TOOLS) is not dict or not all(type(key) is str for key in _NATIVE_API_TOOLS)
+            or not all(key in _NATIVE_API_TOOLS and type(_NATIVE_API_TOOLS[key]) is str
+                       and _NATIVE_API_TOOLS[key] for key in _native_keys)):
+        raise ValueError('actual source-owned native API tool data required')
+    for _native_key in _native_keys:
+        _native_path = pathlib.Path(_NATIVE_API_TOOLS[_native_key])
+        if not _native_path.is_absolute() or '..' in _native_path.parts:
+            raise ValueError('absolute exact native API tool path required')
+    if (_NATIVE_API_TOOLS['lsof'] != '/usr/bin/lsof'
+            or _NATIVE_API_TOOLS['ps'] != '/bin/ps'):
+        raise ValueError('fixed Linux lsof/ps paths required')
+    # Only this module's alias changes. The real stdlib module stays installed.
+    subprocess = __som_native_API_subprocess__
+    _native_controls.verify_installed()
+elif '__som_native_active_controls__' in globals():
+    # The existing TS adapter keeps its own whole-module role and constructor
+    # views. This path receives no API facade, tool getter or active Context.
+    from _som_native_active_controls_binding import controls as _native_ts_controls
+    _native_ts_controls.verify_installed()
+    if (_native_ts_controls is not __som_native_active_controls__
+            or _native_ts_controls.role_sources.get('ts.checker.original-typescript-host')
+                != 'som-rs/behavior/typescript/host.py'
+            or __file__ != str(_native_ts_controls.root / 'som-rs/behavior/typescript/host.py')
+            or __name__ != '_som_ts_native_original_typescript_host'):
+        raise ValueError('actual fixed native TypeScript host binding required')
+    _native_ts_controls.verify_installed()
+else:
+    if '_som_native_active_controls' in sys.modules:
+        raise ValueError('native API host/runner has no fixed binding')
+
+
 HERE = pathlib.Path(__file__).resolve().parent
 BEHAVIOR_DIR = HERE.parent
 SOM_RS = BEHAVIOR_DIR.parent
@@ -41,9 +99,14 @@ LAYOUT = json.loads((TS_CONTRACT / "product-layout.json").read_text())
 NORMALIZATION = json.loads((TS_CONTRACT / "behavior-normalization.json").read_text())
 PLAN = json.loads((TS_CONTRACT / "acceptance-plan.json").read_text())
 
-NODE_BIN = TOOLCHAIN["node"]["binary"]
-NPM_INVOCATION = TOOLCHAIN["npm"]["invocation"].split()
-PG_BIN_DIR = pathlib.Path(TOOLCHAIN["postgresql"]["bin_dir"])
+if _NATIVE_API:
+    NODE_BIN = _NATIVE_API_TOOLS['node']
+    NPM_INVOCATION = [NODE_BIN, _NATIVE_API_TOOLS['npm_cli']]
+    PG_BIN_DIR = pathlib.Path(_NATIVE_API_TOOLS['pg_bin'])
+else:
+    NODE_BIN = TOOLCHAIN["node"]["binary"]
+    NPM_INVOCATION = TOOLCHAIN["npm"]["invocation"].split()
+    PG_BIN_DIR = pathlib.Path(TOOLCHAIN["postgresql"]["bin_dir"])
 
 FORBIDDEN_PORTS = {8765, 18765}
 BASE_FORBIDDEN_PIDS = {61463}
@@ -100,10 +163,65 @@ def file_sha256(path: pathlib.Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _native_process_identity(pid: int) -> tuple[int, int, int, int] | None:
+    """Read one same-user Linux process identity; this data grants no ownership."""
+    if type(pid) is not int or pid <= 1 or sys.platform != 'linux':
+        return None
+    root = pathlib.Path('/proc') / str(pid)
+    try:
+        info = root.stat()
+        if info.st_uid != os.geteuid():
+            return None
+        raw = (root / 'stat').read_text(encoding='ascii')
+        head, separator, tail = raw.rpartition(')')
+        fields = tail.split()
+        if (not separator or not head.startswith(str(pid) + ' (') or len(fields) < 20
+                or fields[0] in ('Z', 'X', 'x')
+                or not all(value.isdecimal() for value in (fields[1], fields[2], fields[19]))):
+            return None
+        return int(fields[19]), int(fields[1]), int(fields[2]), info.st_uid
+    except (OSError, ValueError, UnicodeError):
+        return None
+
+
+def _native_verify_process_cwd(pid: int, expected_cwd: pathlib.Path) -> tuple[bool, str | None]:
+    """Use fixed Linux lsof and /proc before the original tracker can signal."""
+    before = _native_process_identity(pid)
+    if before is None or type(expected_cwd) is not type(pathlib.Path()):
+        return False, None
+    try:
+        expected = expected_cwd.resolve(strict=True)
+        if (not expected.is_dir() or any(path.is_symlink() for path in (expected_cwd, *expected_cwd.parents))):
+            return False, None
+        done = subprocess.run(
+            [_NATIVE_API_TOOLS['lsof'], '-a', '-p', str(pid), '-d', 'cwd', '-Fn'],
+            capture_output=True, text=True, check=False,
+        )
+        if type(done.returncode) is not int or done.returncode != 0 or type(done.stdout) is not str:
+            return False, None
+        rows = done.stdout.splitlines()
+        owners = [row[1:] for row in rows if row.startswith('p')]
+        names = [row[1:] for row in rows if row.startswith('n')]
+        if owners != [str(pid)] or len(names) != 1:
+            return False, None
+        actual = names[0]
+        proc_cwd = os.readlink(pathlib.Path('/proc') / str(pid) / 'cwd')
+        after = _native_process_identity(pid)
+        if before != after or pathlib.Path(actual).resolve(strict=True) != expected:
+            return False, actual
+        if pathlib.Path(proc_cwd).resolve(strict=True) != expected:
+            return False, actual
+        return True, actual
+    except (OSError, ValueError, UnicodeError):
+        return False, None
+
+
 def verify_process_cwd(pid: int, expected_cwd: pathlib.Path) -> tuple[bool, str | None]:
     """Verify via `lsof -a -p PID -d cwd -Fn` that PID is alive and has expected_cwd."""
     if pid in forbidden_pids():
         return False, None
+    if _NATIVE_API:
+        return _native_verify_process_cwd(pid, expected_cwd)
     done = subprocess.run(
         ["/usr/sbin/lsof", "-a", "-p", str(pid), "-d", "cwd", "-Fn"],
         capture_output=True,
@@ -479,6 +597,10 @@ def typescript_product(
 
 
 def _python_path(root: pathlib.Path) -> str:
+    if _NATIVE_API:
+        # The qualified child bootstrap activates this same API payload. This
+        # source path is retained for original environment/log compatibility.
+        return f"{root}:{_NATIVE_API_TOOLS['site']}"
     venv_site = (
         find_runtime_root()
         / "som-rs"

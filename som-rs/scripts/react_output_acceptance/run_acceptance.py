@@ -27,10 +27,15 @@ import re
 import subprocess
 import sys
 import time
+import stat
+import traceback
+from types import FunctionType, ModuleType
 import urllib.error
 import urllib.parse
 import urllib.request
 from typing import Any
+
+COLLECTOR_SELF = 'som-rs/scripts/react_output_acceptance/run_acceptance.py'
 
 HERE = pathlib.Path(__file__).resolve().parent
 SOM_RS = HERE.parents[1]
@@ -638,6 +643,342 @@ def judge_json_report(exit_code: int, report_path: pathlib.Path, kind: str = "re
     return "failed", f"report missing valid 'passed' field: {passed_val!r}"
 
 
+# Native mode is selected only by the fixed Core binding. A flag grants nothing.
+def _native_route():
+    if '__som_native_active_controls__' in globals():
+        return True
+    if '_som_native_active_controls' in sys.modules:
+        raise ValueError('native collector has no fixed active-controls binding')
+    return False
+
+
+def _native_invocation(function):
+    if type(function) is not FunctionType:
+        raise ValueError('original collector Function required')
+    defaults, keywords, closure = function.__defaults__, function.__kwdefaults__, function.__closure__
+    return (function, function.__code__, function.__globals__, function.__builtins__,
+            defaults, tuple(defaults or ()), keywords, tuple((keywords or {}).items()),
+            closure, tuple((cell, cell.cell_contents) for cell in (closure or ())))
+
+
+def _native_collector_origin():
+    """Read the live module-body -> wrapper -> original main source chain."""
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    frame = sys._getframe(1)
+    wrapper = frame.f_back
+    module = wrapper.f_back if wrapper is not None else None
+    if wrapper is None or module is None:
+        raise ValueError('live original collector module-body and wrapper required')
+    handoff = wrapper.f_locals.get('_native_source_handoff')
+    if (type(handoff) is not tuple or len(handoff) != 8
+            or handoff[0] is not module or handoff[1] is not wrapper
+            or handoff[2] is not frame.f_globals or handoff[3] is not frame.f_builtins
+            or module.f_globals is not frame.f_globals or wrapper.f_globals is not frame.f_globals
+            or module.f_code.co_name != '<module>'
+            or not any(code is wrapper.f_code for code in module.f_code.co_consts)):
+        raise ValueError('collector source handoff is not its actual module-body CodeType')
+    rows = handoff[4]
+    if type(rows) is not tuple or not rows:
+        raise ValueError('held original collector invocations required')
+    expected_main = [row for name, row in rows if name == 'main']
+    if len(expected_main) != 1 or frame.f_code is not expected_main[0][1]:
+        raise ValueError('original live collector main required')
+    if (controls.role_sources.get('entry.m6.collector') != COLLECTOR_SELF
+            or __file__ != str(controls.root / COLLECTOR_SELF)
+            or controls.root != REPO):
+        raise ValueError('fixed collector source/root differs')
+    return handoff
+
+
+def _native_collector_paths(args, out_dir, python_path):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    namespace = ModuleType.__getattribute__(__som_native_context_module__, '__dict__')
+    ctx = namespace.get('_ACTIVE')
+    if type(ctx) is not __som_native_Context__ or __som_native_context_getter__() is not ctx:
+        raise ValueError('actual admitted collector Context required')
+    temporary = pathlib.Path(os.environ['RUNNER_TEMP'])
+    expected_api = temporary / 'som-react-api-context.json'
+    expected_qa = temporary / 'som-react-linux-qa-profile.json'
+    expected_python = temporary / 'som-react-python-closure/environments/react-api-qa/venv/bin/python'
+    if (args.api_profile != expected_api or args.qa_profile != expected_qa
+            or python_path != expected_python or pathlib.Path(sys.executable).absolute() != expected_python):
+        raise ValueError('fixed API/QA profiles and admitted API interpreter required')
+    if (not temporary.is_absolute() or temporary.resolve(strict=True) != temporary
+            or not out_dir.is_absolute() or '..' in out_dir.parts
+            or controls.root / '.local' not in out_dir.parents
+            or any(path.is_symlink() for path in (out_dir, *out_dir.parents))):
+        raise ValueError('original physical repository .local collector C required')
+    # C deliberately stays below repo/.local. Context.work has its own guard.
+    if ctx.repo != controls.root or ctx.qa_mode != 'native-qa-v1':
+        raise ValueError('actual native collector Context source owner differs')
+    proof = __som_native_Context__.python_payload(ctx, sys.executable)
+    if (type(proof) is not dict or proof.get('role') != 'react-api-qa'
+            or proof.get('requirements_count') != 39 or proof.get('wheel_count') != 40
+            or proof.get('python') != str(expected_python) or proof.get('pth_executed') is not False):
+        raise ValueError('actual admitted39/40 API collector interpreter required')
+    return ctx
+
+
+class _NativeStepLogs:
+    """Own fresh raw files, then route both Python streams and OS FD1/FD2."""
+    def __init__(self, stdout_path, stderr_path, primitives=None):
+        self.primitives = primitives if primitives is not None else (
+            os.open, os.close, os.dup, os.dup2, os.fstat, os.stat, os.fsync, os.fdopen, os.geteuid, os.pread, hashlib.sha256)
+        if type(self.primitives) is not tuple or len(self.primitives) != 11:
+            raise ValueError('held collector FD primitive tuple required')
+        self.uid = self.primitives[8]()
+        self.paths = (stdout_path, stderr_path)
+        self.directory = None
+        self.files = []
+        self.identities = []
+        self.saved = []
+        self.streams = None
+        self.routed = False
+        self.text = []
+        self.directory_identity = None
+        self.complete = False
+        self.digests = []
+
+    def _open(self):
+        root = self.paths[0].parent
+        if self.paths[1].parent != root or any(p.is_symlink() for p in (root, *root.parents)):
+            raise ValueError('physical owned collector log directory required')
+        self.directory = self.primitives[0](root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        info = self.primitives[4](self.directory)
+        self.directory_identity = (info.st_dev, info.st_ino)
+        if ((info.st_mode & 0o170000) != 0o040000 or (info.st_mode & 0o7777) != 0o700
+                or info.st_uid != self.uid):
+            raise ValueError('owned0700 raw log directory required')
+        if self.directory_identity != (root.stat().st_dev, root.stat().st_ino):
+            raise ValueError('owned raw log directory identity changed')
+        for path in self.paths:
+            fd = self.primitives[0](path.name, os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+                         0o600, dir_fd=self.directory)
+            self.files.append(fd)
+            info = self.primitives[4](fd)
+            self.identities.append((info.st_dev, info.st_ino))
+            if ((info.st_mode & 0o170000) != 0o100000 or (info.st_mode & 0o7777) != 0o600
+                    or info.st_nlink != 1 or info.st_uid != self.uid):
+                raise ValueError('exclusive owned0600 raw log required')
+        return self
+
+    def __enter__(self):
+        try:
+            return self._open()
+        except BaseException as primary:
+            self._finish(primary, primary.__traceback__)
+            raise
+
+    def capture(self):
+        if self.routed or len(self.files) != 2:
+            raise ValueError('one complete raw log capture required')
+        self.streams = (sys.stdout, sys.stderr, sys.__stdout__, sys.__stderr__)
+        for stream in self.streams:
+            if stream is not None:
+                stream.flush()
+        try:
+            for target in (1, 2):
+                self.saved.append(self.primitives[2](target))
+            for target, fd in zip((1, 2), self.files):
+                self.primitives[3](fd, target, inheritable=True)
+            self.routed = True
+            # TextIOWrapper owns a duplicate. Raw FD writes use the same files.
+            for fd in self.files:
+                duplicate = self.primitives[2](fd)
+                try:
+                    stream = self.primitives[7](duplicate, 'w', encoding='utf-8', errors='backslashreplace', buffering=1)
+                except BaseException:
+                    self.primitives[1](duplicate)
+                    raise
+                self.text.append(stream)
+            sys.stdout, sys.stderr = self.text
+            sys.__stdout__, sys.__stderr__ = self.text
+        except BaseException as primary:
+            self._finish(primary, primary.__traceback__)
+            raise
+
+    def _finish(self, primary, trace):
+        secondary = []
+        def attempt(action):
+            nonlocal primary, trace
+            try:
+                action()
+            except BaseException as error:
+                if primary is None:
+                    primary, trace = error, error.__traceback__
+                else:
+                    secondary.append(error)
+        if self.routed and len(self.files) == 2:
+            def verify_capture():
+                if (len(self.text) != 2 or sys.stdout is not self.text[0] or sys.stderr is not self.text[1]
+                        or sys.__stdout__ is not self.text[0] or sys.__stderr__ is not self.text[1]):
+                    raise ValueError('owned Python capture streams were replaced')
+                for target, expected in zip((1, 2), self.identities):
+                    info = self.primitives[4](target)
+                    if (info.st_dev, info.st_ino) != expected:
+                        raise ValueError('owned native FD capture was replaced')
+            attempt(verify_capture)
+        if self.streams is not None:
+            for stream in getattr(self, 'text', ()):
+                attempt(stream.flush)
+        for target, saved in zip((1, 2), self.saved):
+            attempt(lambda target=target, saved=saved: self.primitives[3](saved, target, inheritable=True))
+        if self.streams is not None:
+            sys.stdout, sys.stderr, sys.__stdout__, sys.__stderr__ = self.streams
+        for stream in getattr(self, 'text', ()):
+            attempt(stream.close)
+        for saved in self.saved:
+            attempt(lambda saved=saved: self.primitives[1](saved))
+        self.saved = []
+        self.routed = False
+        self.text = []
+        self.streams = None
+        for index, fd in enumerate(self.files):
+            def verify(index=index, fd=fd):
+                named = self.primitives[5](self.paths[index].name, dir_fd=self.directory, follow_symlinks=False)
+                actual = self.primitives[4](fd)
+                if (self.identities[index] != (actual.st_dev, actual.st_ino)
+                        or self.identities[index] != (named.st_dev, named.st_ino)
+                        or (named.st_mode & 0o170000) != 0o100000 or (named.st_mode & 0o7777) != 0o600
+                        or named.st_nlink != 1 or named.st_uid != self.uid):
+                    raise ValueError('owned raw log was replaced or changed mode')
+            attempt(verify)
+            def retain_digest(fd=fd):
+                before = self.primitives[4](fd)
+                hasher, offset = self.primitives[10](), 0
+                while offset < before.st_size:
+                    raw = self.primitives[9](fd, min(1024 * 1024, before.st_size - offset), offset)
+                    if type(raw) is not bytes or not raw:
+                        raise ValueError('owned raw log became short while hashing')
+                    hasher.update(raw)
+                    offset += len(raw)
+                after = self.primitives[4](fd)
+                if ((before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns)
+                        != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns)):
+                    raise ValueError('owned raw log changed while hashing')
+                self.digests.append(hasher.hexdigest())
+            attempt(retain_digest)
+            attempt(lambda fd=fd: self.primitives[6](fd))
+            attempt(lambda fd=fd: self.primitives[1](fd))
+        self.files = []
+        if self.directory is not None:
+            def verify_directory():
+                info = self.paths[0].parent.stat()
+                if self.paths[0].parent.is_symlink() or self.directory_identity != (info.st_dev, info.st_ino):
+                    raise ValueError('raw log directory was replaced')
+            attempt(verify_directory)
+            attempt(lambda: self.primitives[1](self.directory))
+            self.directory = None
+        self.complete = primary is None
+        if primary is not None:
+            previous = getattr(primary, '__som_native_collector_secondary__', ())
+            BaseException.__setattr__(primary, '__som_native_collector_secondary__', (*previous, *secondary))
+            if secondary or trace is not primary.__traceback__:
+                raise primary.with_traceback(trace)
+        return False
+
+    def __exit__(self, kind, primary, trace):
+        return self._finish(primary, trace)
+
+
+def _native_run_single_step(step_def, out_dir, repo, scope):
+    # Only the original main may hold the scope. Its source verifies this call
+    # before either fresh file is opened, including the missing-manifest branch.
+    scope.authorize_step(step_def, out_dir, repo)
+    index, step_name = step_def['index'], step_def['step']
+    prefix = f'{index:02d}-{step_name}'
+    stdout_path = out_dir / 'logs' / (prefix + '.stdout')
+    stderr_path = out_dir / 'logs' / (prefix + '.stderr')
+    report_path = step_def['report']
+    requires_manifest = step_def.get('requires_manifest')
+    started_iso, t0 = now_iso(), time.monotonic()
+    primary, trace, launch_error = None, None, None
+    missing = requires_manifest is not None and not requires_manifest.is_file()
+    exit_code = None
+    try:
+        primitives = scope.log_primitives()
+        with _NativeStepLogs(stdout_path, stderr_path, primitives) as logs:
+            if not missing:
+                logs.capture()
+                try:
+                    exit_code = scope.execute_step(step_def)
+                except BaseException as error:
+                    primary, trace = error, error.__traceback__
+                    print('native step raised: ' + type(error).__name__ + ': ' + str(error), file=sys.stderr)
+                    traceback.print_exception(type(error), error, trace, file=sys.stderr)
+    except BaseException as error:
+        if primary is None:
+            primary, trace = error, error.__traceback__
+        elif error is not primary:
+            previous = getattr(primary, '__som_native_collector_secondary__', ())
+            BaseException.__setattr__(primary, '__som_native_collector_secondary__', (*previous, error))
+    if not locals().get('logs') or not logs.complete:
+        if primary is not None:
+            raise primary.with_traceback(trace)
+        raise ValueError('owned raw log capture did not complete')
+    ended_iso = now_iso()
+    if missing:
+        judgment, reason = 'not_run', f'missing required manifest: {requires_manifest}'
+    elif primary is not None:
+        judgment, reason = 'failed', 'native entry failed: ' + type(primary).__name__ + ': ' + str(primary)
+    elif step_def['kind'] == 'contract':
+        judgment, reason = judge_contract_stdout(exit_code, stdout_path)
+    else:
+        judgment, reason = judge_json_report(exit_code, report_path, step_def['kind'])
+    receipt = {'step': step_name, 'index': index, 'argv': step_def['argv'], 'cwd': str(repo),
+               'started_at': started_iso, 'ended_at': ended_iso,
+               'seconds': 0.0 if missing else round(time.monotonic() - t0, 3), 'exit_code': exit_code,
+               'stdout': str(stdout_path), 'stdout_sha256': logs.digests[0],
+               'stderr': str(stderr_path), 'stderr_sha256': logs.digests[1],
+               'report': str(report_path), 'report_sha256': sha_file(report_path) if report_path.is_file() else None,
+               'judgment': judgment, 'passed': judgment == 'passed', 'reason': reason,
+               'execution': 'not_run' if missing else 'same-Core-inprocess-entry',
+               'child_wait_claimed': False}
+    try:
+        write_json(out_dir / 'receipts' / (prefix + '.json'), receipt)
+        scope.finish_step(step_def, receipt)
+    except BaseException as error:
+        if primary is None:
+            primary, trace = error, error.__traceback__
+        else:
+            BaseException.__setattr__(primary, '__som_native_collector_secondary__',
+                (*getattr(primary, '__som_native_collector_secondary__', ()), error))
+    if primary is not None:
+        raise primary.with_traceback(trace)
+    return receipt
+
+
+def _native_collector_entry():
+    module = sys._getframe(1)
+    wrapper = sys._getframe()
+    namespace = module.f_globals
+    # Expected CodeTypes come from the actual original module body. Equal
+    # filenames, reconstructed code, ASTs and current frame values grant nothing.
+    rows = []
+    for name, value in tuple(namespace.items()):
+        if type(value) is FunctionType and value.__globals__ is namespace:
+            if not any(code is value.__code__ for code in module.f_code.co_consts):
+                raise ValueError('collector original top-level CodeType differs')
+            rows.append((name, _native_invocation(value)))
+    classes = []
+    for name, kind in tuple(namespace.items()):
+        if type(kind) is type and kind.__module__ == namespace['__name__']:
+            mro = type.__getattribute__(kind, '__mro__')
+            classes.append((name, kind, mro, tuple((base, tuple(type.__getattribute__(base, '__dict__').items()))
+                                                  for base in mro)))
+    primitives = (os.open, os.close, os.dup, os.dup2, os.fstat, os.stat, os.fsync, os.fdopen, os.geteuid, os.pread, hashlib.sha256)
+    primitive_invocations = tuple(_native_invocation(value) if type(value) is FunctionType else None
+                                  for value in primitives)
+    _native_source_handoff = (module, wrapper, namespace, module.f_builtins,
+                              tuple(rows), tuple(classes), primitives, primitive_invocations)
+    original = [row[1][0] for row in rows if row[0] == 'main']
+    if len(original) != 1:
+        raise ValueError('one original collector main required')
+    return original[0]()
+
+
 def run_single_step(
     step_def: dict[str, Any],
     out_dir: pathlib.Path,
@@ -923,10 +1264,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--record-raw-http", action="store_true",
                         help="Retain every baseline and Python control HTTP exchange for independent acceptance.")
+    if _native_route():
+        parser.add_argument('--qa-profile', type=pathlib.Path, default=None,
+                            help='Fixed hosted QA profile for native collector mode.')
+        parser.add_argument('--api-profile', type=pathlib.Path, default=None,
+                            help='Fixed hosted API profile for native collector mode.')
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
+    _native_enabled = _native_route()
+    _native_source_handoff = _native_collector_origin() if _native_enabled else None
     args = parse_args(argv)
     repo = REPO
     candidate_dir = resolve_repo_path(args.candidate, repo).resolve()
@@ -943,6 +1291,8 @@ def main(argv: list[str] | None = None) -> int:
         else (repo / DEFAULT_PYTHON_REL)
     )
 
+    if _native_enabled:
+        _native_ctx = _native_collector_paths(args, out_dir, python_path)
     try:
         (
             build_doc,
@@ -957,9 +1307,22 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     out_dir = out_dir.resolve()
-    out_dir.mkdir(parents=True, exist_ok=False)
-    (out_dir / "logs").mkdir(parents=True, exist_ok=False)
-    (out_dir / "receipts").mkdir(parents=True, exist_ok=False)
+    if _native_enabled:
+        out_dir.mkdir(mode=0o700, parents=True, exist_ok=False)
+        (out_dir / 'logs').mkdir(mode=0o700, exist_ok=False)
+        (out_dir / 'receipts').mkdir(mode=0o700, exist_ok=False)
+    else:
+        out_dir.mkdir(parents=True, exist_ok=False)
+        (out_dir / "logs").mkdir(parents=True, exist_ok=False)
+        (out_dir / "receipts").mkdir(parents=True, exist_ok=False)
+
+    _native_scope = None
+    if _native_enabled:
+        from _som_native_active_controls_binding import controls as _native_controls
+        _native_controls.verify_installed()
+        _native_session_module = _native_controls.load_module('m6.collector.session')
+        _native_scope = ModuleType.__getattribute__(_native_session_module, '__dict__')['_NATIVE_COLLECTOR']
+        _native_scope.prepare_before()
 
     latest_receipt_path = find_latest_contract_receipt(repo)
     contract_receipt_arg = format_repo_arg(latest_receipt_path, repo)
@@ -1028,9 +1391,16 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     receipts: list[dict[str, Any]] = []
-    for step_def in step_defs:
-        receipt = run_single_step(step_def, out_dir, repo)
-        receipts.append(receipt)
+    if _native_enabled:
+        _native_scope.bind_steps(step_defs)
+        with _native_scope:
+            for step_def in step_defs:
+                receipt = _native_run_single_step(step_def, out_dir, repo, _native_scope)
+                receipts.append(receipt)
+    else:
+        for step_def in step_defs:
+            receipt = run_single_step(step_def, out_dir, repo)
+            receipts.append(receipt)
 
     after_snapshot = capture_identity_snapshot(
         candidate_dir=candidate_dir,
@@ -1123,4 +1493,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(_native_collector_entry() if _native_route() else main())
