@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+"""Verify restored role bytes and normalize the TS cache to read-only."""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import stat
+from role_inventory import inventory
+
+PROFILE_SHA = '1f9cb5d59f3d6c742161fa72c5cc29d15abe0860f82e71f6342b1b2780ea024f'
+
+
+def need(value, reason):
+    if not value:
+        raise ValueError(reason)
+
+
+def physical(path):
+    path = Path(path)
+    need(path.is_absolute() and path.exists() and '..' not in path.parts and
+         not any(p.is_symlink() for p in (path, *path.parents)), 'physical path required')
+    return path
+
+
+def digest(path):
+    h = hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def verify(profile, run):
+    profile = physical(profile); run = physical(run)
+    raw = profile.read_bytes()
+    need(hashlib.sha256(raw).hexdigest() == PROFILE_SHA, 'profile differs')
+    doc = json.loads(raw)
+    need(doc['status'] == 'incomplete' and doc['product_acceptance'] == 'not_run', 'draft profile required')
+    roles = {k: v['files'] for k, v in doc['roles'].items()}
+    roles['rs_prompts'] = doc['siblings']['rs_prompts']['files']
+    for role, expected in roles.items():
+        root = physical(run / ('siblings' if role == 'rs_prompts' else 'roles') / role)
+        if role == 'npm_cache':
+            actual = inventory(root)
+            need(set(actual) == set(expected), 'restored cache universe differs')
+            for name, item in actual.items():
+                need('sha256' in item and item['mode'] in (0o644, 0o444), 'sealed cache source mode differs')
+                (root / name).chmod(0o444)
+            logs = root / '_logs'; logs.mkdir(exist_ok=True)
+            need(not any(logs.iterdir()), 'npm log directory not empty')
+            for folder, dirs, _ in os.walk(root):
+                Path(folder).chmod(0o555)
+                for name in dirs:
+                    (Path(folder) / name).chmod(0o555)
+        need(inventory(root) == expected, 'restored role identity differs')
+    return {'version': 'som.ts-role-transport-restoration-draft.v1', 'status': 'verified-restored-draft-bytes',
+            'profile_sha256': PROFILE_SHA, 'role_counts': {k: len(v) for k, v in roles.items()},
+            'npm_cache_readonly': True, 'npm_empty_logs': True, 'product_acceptance': 'not_run'}
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--profile', type=Path, required=True)
+    parser.add_argument('--run', type=Path, required=True)
+    args = parser.parse_args()
+    need(os.environ.get('GITHUB_ACTIONS') == 'true' and os.environ.get('RUNNER_ENVIRONMENT') == 'github-hosted',
+         'GitHub-hosted runner required')
+    temp = physical(Path(os.environ['RUNNER_TEMP']))
+    need(physical(args.run).is_relative_to(temp), 'runner scratch required')
+    print(json.dumps(verify(args.profile, args.run), sort_keys=True))
+
+
+if __name__ == '__main__':
+    main()

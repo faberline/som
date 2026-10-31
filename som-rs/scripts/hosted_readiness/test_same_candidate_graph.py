@@ -307,7 +307,7 @@ class WorkflowClosureTests(unittest.TestCase):
         revision = self.fields(job, 'env', 4).get('HELPER_REVISION')
         self.assertEqual(revision, '${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}')
         self.assertIn('          ref: ' + revision, job)
-        self.assertIn('--revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- receipt-paths', job)
+        self.assertIn('--revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/run_full_products.py --', job)
         self.assertNotRegex(job, r'(?m)^\s*GITHUB_SHA:')
 
     def test_preparation_join_uses_its_actual_checked_helper_revision(self):

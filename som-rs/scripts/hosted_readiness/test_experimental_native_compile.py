@@ -37,15 +37,47 @@ def wire(value):
     return (json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n").encode()
 
 
+# Exact historical SEALED unit-data view, never current source admission.
+# Receipt bytes, status, files maps, and production checks remain unchanged.
+SEALED_FIXTURE_SOURCES = {'som-rs/tests/rust-output-v1/check_contract.py': {'asset': 'som-rs/evidence/rust-output-contract-archive/check_contract-before-amendment-008.py',
+                                                   'bytes': 21439,
+                                                   'sha256': '958aacace4f99badd190715140665bb3bf9f08ec0e88c8557b6d24f87a069b15'},
+ 'som-rs/som-targets/src/rust/mod.rs': {'asset': '.github/actions/native-active-source-fixtures/compile-sealed-before/rust-mod.rs.txt',
+                                        'bytes': 56512,
+                                        'sha256': '78130eab4e7f51e0c51b4ebfb8fb5c31e2388e9fbc264dc282e811ffa059380d'},
+ 'som-rs/tests/typescript-output-v1/check_contract.py': {'asset': 'som-rs/evidence/typescript-output-contract-archive/check_contract-before-amendment-004.py',
+                                                         'bytes': 28975,
+                                                         'sha256': 'a26c5c59579b609ff0ffe651f57292efd3eb8e4cce95a841232b2e98c409d376'},
+ 'som-rs/som-targets/src/typescript/mod.rs': {'asset': '.github/actions/native-active-source-fixtures/compile-sealed-before/typescript-mod.rs.txt',
+                                              'bytes': 57010,
+                                              'sha256': 'dd164529ba7b321cf6d3ba491cbd2ddd9aa0b2f65d04401849f0259bbc2eb793'}}
+
+
+def sealed_fixture_sources():
+    result = {}
+    for canonical_path, pin in SEALED_FIXTURE_SOURCES.items():
+        raw = (REPO / pin['asset']).read_bytes()
+        if len(raw) != pin['bytes'] or h(raw) != pin['sha256']:
+            raise e.Refusal('sealed fixture source data differs: ' + canonical_path)
+        result[canonical_path] = raw
+    return result
+
+
 class FixtureRepository:
     """Real committed factory text as data; all compile exchanges are synthetic."""
     def __init__(self, overrides=None):
         self.commit = "a" * 40
         self.overrides = {} if overrides is None else overrides
+        self.sealed_sources = sealed_fixture_sources()
         self.pins = {}
 
     def read(self, path):
-        raw = self.overrides[path] if path in self.overrides else (REPO / path).read_bytes()
+        if path in self.overrides:
+            raw = self.overrides[path]
+        elif path in self.sealed_sources:
+            raw = self.sealed_sources[path]
+        else:
+            raw = (REPO / path).read_bytes()
         self.pins[path] = h(raw)
         return raw
 
@@ -305,7 +337,7 @@ class CompileTests(unittest.TestCase):
         member = next(iter(receipt["files"]))
         with self.assertRaisesRegex(e.Refusal, "receipt file differs"):
             e.target_contract(FixtureRepository({member: (REPO / member).read_bytes() + b" "}), "rust")
-        source = (REPO / e.RUST).read_bytes().replace(receipt["target_contract"]["sha256"].encode(), b"0" * 64, 1)
+        source = FixtureRepository().read(e.RUST).replace(receipt["target_contract"]["sha256"].encode(), b"0" * 64, 1)
         with self.assertRaisesRegex(e.Refusal, "owning target constant"):
             e.target_contract(FixtureRepository({e.RUST: source}), "rust")
         future = copy.deepcopy(receipt)

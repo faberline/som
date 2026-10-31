@@ -9,6 +9,7 @@ import sys
 import tempfile
 from types import ModuleType, SimpleNamespace
 import unittest
+from unittest import mock
 
 if os.environ.get('GITHUB_ACTIONS') != 'true':
     raise RuntimeError('GitHub fixtures only')
@@ -167,6 +168,86 @@ class CurrentInputRoles(unittest.TestCase):
             with self.assertRaises(ValueError): p.read(root / 'alias')
 
 
+@contextmanager
+def _native_checker_fixture(case, repo, source):
+    """Actual Core module route; transfer and constructor factory remain doubles."""
+    pins = {'som-rs/scripts/hosted_readiness/native_active_controls.py': {'bytes': 81177,
+                                                               'sha256': 'eead8e03186f8f55812566a11d5aa837fb5cdb542d2c3de9435da9bad6bb5b32'},
+ 'som-rs/scripts/hosted_readiness/test_native_active_controls.py': {'bytes': 61533,
+                                                                    'sha256': 'f76335be9269618bcec26750895202a896bbe759cfc6ea490d7b8dffddc99e0d'},
+ 'som-rs/scripts/hosted_readiness/native_qa_authority.py': {'bytes': 31631,
+                                                            'sha256': '024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1'},
+ 'som-rs/scripts/hosted_readiness/experimental_native_compile.py': {'bytes': 32401,
+                                                                    'sha256': '37480ace8c6c8a58bc2439a8c70e26901ed7ce95d953041999ab7f1ccfff7432'},
+ 'som-rs/scripts/hosted_readiness/raw_digest_compat.py': {'bytes': 8573,
+                                                          'sha256': 'a025bd99b56dafc4de65c268318f583e117adfe16988d61bb9180cb5e8da0896'}}
+    for relative, pin in pins.items():
+        raw = source[relative] if relative in source else (repo / relative).read_bytes()
+        if len(raw) != pin['bytes'] or hashlib.sha256(raw).hexdigest() != pin['sha256']:
+            raise RuntimeError('fixed current-input checker fixture dependency differs: ' + relative)
+    protocol_path = repo / 'som-rs/scripts/hosted_readiness/test_native_active_controls.py'
+    protocol = ModuleType('_current_input_native_checker_protocol_fixture')
+    protocol.__file__, protocol.__cached__, protocol.__package__ = str(protocol_path), None, ''
+    exec(compile(protocol_path.read_bytes(), str(protocol_path), 'exec', dont_inherit=True), protocol.__dict__)
+    rows = {'context.current-refusal-checker': {'bindings': {'__som_native_active_controls__': {'kind': 'active-controls'},
+                                                  '_native_RawDigestError': {'attribute': 'RawDigestError',
+                                                                             'kind': 'role-export',
+                                                                             'role': 'context.current-refusal-checker.raw-compat'},
+                                                  '_native_mask_raw': {'attribute': 'mask_raw',
+                                                                       'kind': 'role-export',
+                                                                       'role': 'context.current-refusal-checker.raw-compat'},
+                                                  '_native_verify_frozen': {'attribute': 'verify_frozen',
+                                                                            'kind': 'role-export',
+                                                                            'role': 'context.current-refusal-checker.raw-compat'},
+                                                  'raw_compat': {'kind': 'role-module',
+                                                                 'role': 'context.current-refusal-checker.raw-compat'}},
+                                     'callers': [{'role': 'caller', 'function': 'run'}],
+                                     'closure': ['context.current-refusal-checker',
+                                                 'context.current-refusal-checker.raw-compat'],
+                                     'group': None,
+                                     'is_package': False,
+                                     'kind': 'module',
+                                     'module': '_som_active_context_current_refusal_checker',
+                                     'package': '',
+                                     'source': 'som-rs/scripts/hosted_readiness/experimental_native_compile.py'},
+ 'context.current-refusal-checker.raw-compat': {'bindings': {},
+                                                'callers': [{'function': '_native_raw_compat',
+                                                             'role': 'context.current-refusal-checker'}],
+                                                'closure': ['context.current-refusal-checker.raw-compat'],
+                                                'group': None,
+                                                'is_package': False,
+                                                'kind': 'module',
+                                                'module': '_som_active_context_current_refusal_checker_reviewed_raw_compat',
+                                                'package': '',
+                                                'source': 'som-rs/scripts/hosted_readiness/raw_digest_compat.py'}}
+    caller = 'def run(controls):\n    return controls.load_module("context.current-refusal-checker")\n'
+    class Transfer(protocol.ProtocolTransfer):
+        def __init__(self, fixture):
+            fixture.rows['caller']['closure'] = ['caller', 'context.current-refusal-checker',
+                                                  'context.current-refusal-checker.raw-compat']
+            for role, row in rows.items():
+                fixture.rows[role]['closure'] = list(row['closure'])
+            super().__init__(fixture)
+    class Fixture(protocol.Fixture):
+        def add_role(self, role, path, raw, **kwargs):
+            result = super().add_role(role, path, raw, **kwargs)
+            if role != 'm6.api.producer':
+                return result
+            for name, template in rows.items():
+                super().add_role(name, template['source'], source[template['source']],
+                    kind=template['kind'], module=template['module'], callers=copy.deepcopy(template['callers']),
+                    bindings=copy.deepcopy(template['bindings']), group=template['group'])
+                (self.root / template['source']).chmod(0o644)
+            return result
+    with mock.patch.object(protocol, 'ProtocolTransfer', Transfer):
+        fixture = Fixture(case, caller)
+    # Each subcase closes its actual owner and existing seed/temp stack now.
+    # The original case-level stack callback is then an idempotent empty close.
+    with fixture.stack:
+        with fixture.controls:
+            yield fixture.run()
+
+
 class RustTypedProcessProof(unittest.TestCase):
     """Use retained process fields and real frozen Rust bytes; start no service."""
 
@@ -185,13 +266,7 @@ class RustTypedProcessProof(unittest.TestCase):
             'som-rs/scripts/hosted_readiness/raw_digest_compat.py',
             'som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json')}
         self.assertEqual(p.sha(source[p.TYPED_DRIVER]), p.TYPED_DRIVER_SHA256)
-        module_name = '_current_input_real_refusal_checker'
-        actual = ModuleType(module_name)
-        actual.__file__ = str(repo / p.CHECKER)
-        previous = sys.modules.get(module_name)
-        sys.modules[module_name] = actual
-        try:
-            exec(compile(source[p.CHECKER], actual.__file__, 'exec', dont_inherit=True), actual.__dict__)
+        with _native_checker_fixture(self, repo, source) as actual:
             baseline = json.loads(source[actual.BASELINE])
             self.assertEqual(p.sha(source[actual.BASELINE]), actual.BASELINE_SHA256)
             accepted = next(item for item in baseline['baselines']['rust']['rows']
@@ -248,11 +323,6 @@ class RustTypedProcessProof(unittest.TestCase):
                     return p.refusal(ctx, identity, 'rust')
                 yield SimpleNamespace(ctx=ctx, proof=proof, record=record, source=source,
                                       root=root, raw_dir=raw_dir, check=check)
-        finally:
-            if previous is None:
-                sys.modules.pop(module_name, None)
-            else:
-                sys.modules[module_name] = previous
 
     def test_both_actual_schema_refusals_pass_without_new_wait_field(self):
         for identity in sorted(p.REFUSALS):

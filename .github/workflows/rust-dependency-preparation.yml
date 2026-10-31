@@ -749,6 +749,8 @@ jobs:
     permissions:
       contents: read
       actions: read
+    env:
+      HELPER_REVISION: ${{ inputs.helper_revision || github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -778,7 +780,7 @@ jobs:
               sys.stdout.buffer.write(str(path).encode() + b'\0')
           PY
           mapfile -d '' receipts < "$RUNNER_TEMP/som-full-product-receipts.list"
-          python3 -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/run_full_products.py" \
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/run_full_products.py -- \
             --join --out "$RUNNER_TEMP/som-full-product-join.json" "${receipts[@]}"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()

@@ -32716,7 +32716,7 @@
     },
     "som-rs/scripts/react_output_acceptance/react_api_python_payload.py": {
       "mode": 420,
-      "sha256": "669b2ea374ce905b93d15fa400a613e43c95677dfd1984bb405b413b3c5f035a"
+      "sha256": "c51a70fa90786aca5df4604c4e0b37bdd85a5f9e280f6af6c6f4c3e90d84213d"
     },
     "som-rs/scripts/react_output_acceptance/reconstruct_historical_responses.py": {
       "mode": 420,

@@ -332,8 +332,13 @@ def _native_acquire(ctx):
     _NATIVE_OWNER = state
     # No operation that can load a private member precedes this ownership row.
     _native_owned_close(state, 'borrow', lease, type(controls))
+    initial_members = state.members
+    cleanup, cleanup_errors = state.cleanup, state.cleanup_errors
+    borrow_row = cleanup[0]
+    group_returned = False
     try:
         group = lease.load_private_group('m6.api.payload')
+        group_returned = True
         state.group = group
         _native_owned_close(state, 'private4', group, __som_native_Group__)
         members = {key: group[key] for key in NATIVE_MEMBERS}
@@ -347,6 +352,40 @@ def _native_acquire(ctx):
         return state
     except BaseException as primary:
         _native_poison(state, primary, acquisition=True)
+        # Core owns failed partial-group rollback. Retire only our fully closed
+        # borrow-only acquisition; retain every unresolved resource journal.
+        if (group_returned is False and _NATIVE_OWNER is state
+                and _NATIVE_FAILURE is primary and type(state) is _NativeOwner):
+            values = object.__getattribute__(state, '__dict__')
+            status = BaseException.__getattribute__(primary, '__som_native_payload_partial_rollback__')
+            acquisition = values.get('acquisition')
+            if (type(values) is dict and values.get('ctx') is ctx
+                    and values.get('controls') is controls and values.get('lease') is lease
+                    and type(acquisition) is tuple and len(acquisition) == 3
+                    and acquisition[0] is ctx and acquisition[1] is controls and acquisition[2] is lease
+                    and values.get('group') is None
+                    and values.get('members') is initial_members and type(initial_members) is dict
+                    and len(initial_members) == 0
+                    and values.get('producer') is None and values.get('binding') is None
+                    and values.get('runtime') is None and values.get('committed') is False
+                    and values.get('failed') is True and values.get('closed') is True
+                    and type(values.get('phase')) is str and values['phase'] == 'closed'
+                    and values.get('cleanup') is cleanup and type(cleanup) is list and len(cleanup) == 1
+                    and cleanup[0] is borrow_row and type(borrow_row) is dict
+                    and type(borrow_row.get('name')) is str and borrow_row['name'] == 'borrow'
+                    and borrow_row.get('value') is lease and borrow_row.get('kind') is type(controls)
+                    and borrow_row.get('attempted') is True and borrow_row.get('closed') is True
+                    and borrow_row.get('error') is None and borrow_row.get('traceback') is None
+                    and values.get('cleanup_errors') is cleanup_errors
+                    and type(cleanup_errors) is list and len(cleanup_errors) == 0
+                    and type(status) is dict and status.get('group_acquired') is False
+                    and status.get('private4_closed') is False and status.get('borrow_closed') is True
+                    and status.get('producer_retained_until_outer_owner_cleanup') is False
+                    and type(status.get('private_names_remaining')) is list
+                    and len(status['private_names_remaining']) == 0
+                    and all(name not in sys.modules for _, _, name in NATIVE_MEMBERS.values())
+                    and PRODUCER_MODULE not in sys.modules):
+                _NATIVE_OWNER = None
         raise
 
 
