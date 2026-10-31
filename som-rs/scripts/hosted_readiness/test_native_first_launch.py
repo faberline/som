@@ -329,8 +329,8 @@ class SnapshotData:
         self.raw, self.calls = raw, []
         self.workflows = {}
         for name, expected, size in (
-                ('.github/workflows/rust-hosted-readiness.yml', '65f136f9579330e3bf87a151c6e28f063dfd4c1a53d6a579794480cb98baf977', 64432),
-                ('.github/workflows/rust-same-candidate-products.yml', WORKFLOW_SHA, 40974)):
+                ('.github/workflows/rust-hosted-readiness.yml', 'd0c1ffaf7bb051d2cef41d74b389615412ccb16ab51809fc671abbb4ba193eb7', 64484),
+                ('.github/workflows/rust-same-candidate-products.yml', WORKFLOW_SHA, 41264)):
             path = self.root / name
             if any(item.is_symlink() for item in (path, *path.parents)):
                 raise AssertionError('linked fixed synthetic workflow input')
