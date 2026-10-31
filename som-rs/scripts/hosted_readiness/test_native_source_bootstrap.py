@@ -125,7 +125,9 @@ class Fixture:
     def select_job(self, job):
         os.environ['GITHUB_JOB'] = job
         direct_names = {'experimental-native-compile': 'Full Python and Rust compile and assembly (unsealed experiment)',
-                        'current-product-rust-tools': 'current-product-rust-tools'}
+                        'current-product-rust-tools': 'current-product-rust-tools',
+                        'typescript-regression-inputs': 'typescript-regression-inputs',
+                        'product-cargo-closure': 'Complete Rust registry closure (product gates unrun)'}
         prefix = direct_names[job] if job in self.module._ROOT_JOBS else 'same-candidate-full-products / ' + job
         self.job['name'] = prefix + (' (phase1, 0, 1)' if job == 'products' else '')
         self.main.__file__ = str(self.root / BOOTSTRAP_PATH)
@@ -722,6 +724,87 @@ class NativeSourceBootstrapTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'fixed reviewed job entry set'):
             method(SimpleNamespace(_owner=SimpleNamespace(_binding={'job': 'products'})),
                    f.module.GRAPH_ENTRY)
+
+    def test_derive_step_trap_keeps_raw_diagnostic_and_original_exit(self):
+        # Only the actual step shell is exercised. Its child is an explicit
+        # synthetic command, not the producer or native source admission.
+        workflow = (REPO / ROOT_WORKFLOW).read_text()
+        marker = '      - name: Derive the complete official Linux Node authority\n'
+        self.assertEqual(workflow.count(marker), 1)
+        block = workflow.split(marker, 1)[1].split('      - name:', 1)[0]
+        self.assertEqual(block.count('        run: |\n'), 1)
+        script = '\n'.join(line[10:] for line in block.split('        run: |\n', 1)[1].splitlines()) + '\n'
+        commands = [line for line in script.splitlines()
+                    if '--entry-role entry.ts-input-producer -- ' in line]
+        self.assertEqual(len(commands), 1)
+        self.assertTrue(commands[0].endswith(' derive-node 3>&-'))
+        self.assertIn('exec 3>&2\n', script)
+        self.assertIn('cat "$RUNNER_TEMP/ts-producer-evidence/derive.stderr" >&3 || true', script)
+        diagnostic = b'synthetic bootstrap diagnostic\n'
+        for exit_code in (0, 1):
+            with self.subTest(exit_code=exit_code), tempfile.TemporaryDirectory(prefix='som-derive-trap-fixture-') as temporary:
+                synthetic = "/bin/sh -c 'printf \"synthetic bootstrap diagnostic\\n\" >&2; exit " + str(exit_code) + "' 3>&-"
+                fixture_script = script.replace(commands[0], synthetic, 1)
+                result = subprocess.run(['/bin/bash', '--noprofile', '--norc', '-e', '-o', 'pipefail',
+                                         '-c', fixture_script], env={'PATH': '/usr/bin:/bin', 'RUNNER_TEMP': temporary},
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
+                evidence = Path(temporary) / 'ts-producer-evidence'
+                self.assertEqual(result.returncode, exit_code)
+                self.assertEqual(result.stdout, b'')
+                self.assertEqual(result.stderr, diagnostic if exit_code else b'')
+                self.assertEqual((evidence / 'derive.stdout').read_bytes(), b'')
+                self.assertEqual((evidence / 'derive.stderr').read_bytes(), diagnostic)
+                terminal = json.loads((evidence / 'derive.step.json').read_bytes())
+                self.assertEqual(set(terminal), {'version', 'step', 'shell_pid', 'exit_code', 'wait_scope',
+                                                 'product_acceptance_passed'})
+                self.assertEqual(terminal['version'], 'som.ts-producer-step-terminal.v1')
+                self.assertEqual(terminal['step'], 'derive')
+                self.assertIs(type(terminal['shell_pid']), int)
+                self.assertGreater(terminal['shell_pid'], 0)
+                self.assertEqual(terminal['exit_code'], exit_code)
+                self.assertEqual(terminal['wait_scope'], 'outer step shell only; nested actual owned records are separate')
+                self.assertIs(terminal['product_acceptance_passed'], False)
+
+
+    def test_fixed_producer_and_cargo_jobs_keep_exact_entry_and_root_scope(self):
+        # Git files and binding code are real. The environment/API rows remain
+        # the existing explicit fixture doubles, not native source admission.
+        f = Fixture(self)
+        snapshot = f.module._GitSnapshot(f.root, f.revision)
+        cases = (
+            ('typescript-regression-inputs', BASE + 'typescript_input_producer.py'),
+            ('product-cargo-closure', BASE + 'product_runtime/provision_cargo.py'),
+        )
+        for job, path in cases:
+            with self.subTest(job=job):
+                f.select_job(job)
+                self.assertEqual(f.module._ENTRY_ROLES[job], (path,))
+                binding = f.module._workflow_binding(snapshot, f.revision, path)
+                self.assertEqual(binding['job'], job)
+                self.assertEqual(binding['root_workflow'], ROOT_WORKFLOW)
+                self.assertEqual(binding['job_api_name'], f.job['name'])
+                self.assertIsNone(binding['called_workflow'])
+                with f.bootstrap() as bootstrap:
+                    self.assertEqual(bootstrap._binding['job'], job)
+                    self.assertIsNone(bootstrap._binding['called_workflow'])
+                requests = list(f.requests)
+                for wrong in (f.module.GRAPH_ENTRY, BASE + 'run_full_products.py',
+                              cases[1][1] if path == cases[0][1] else cases[0][1]):
+                    with self.subTest(job=job, wrong_entry=wrong):
+                        with self.assertRaisesRegex(ValueError, 'unlisted bootstrap entry/job pair'):
+                            f.module._workflow_binding(snapshot, f.revision, wrong)
+                        self.assertEqual(f.requests, requests)
+                with mock.patch.dict(os.environ, {'GITHUB_JOB': job + '-unlisted'}):
+                    with self.assertRaisesRegex(ValueError, 'unlisted formal workflow job'):
+                        f.module._workflow_binding(snapshot, f.revision, path)
+                original = f.job['name']
+                try:
+                    f.job['name'] = 'same-candidate-full-products / ' + original
+                    with self.assertRaisesRegex(ValueError, 'missing, ambiguous'):
+                        f.module._workflow_binding(snapshot, f.revision, path)
+                finally:
+                    f.job['name'] = original
+
 
 if __name__ == '__main__':
     unittest.main()

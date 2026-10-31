@@ -1,23 +1,98 @@
-"""Synthetic integrity checks. Run on GitHub; no real network, Cargo, or child programs."""
+"""Synthetic integrity checks with the real Core protocol fixture. Run on GitHub.
+
+Source authority and Git/process inputs remain explicit test data. These checks
+do not qualify a product Context, native runtime, source admission or SourceSeal.
+No real network, Cargo or product child program is run.
+"""
+import bz2
+import contextlib
+import gzip
 import hashlib
 import io
 import json
+import lzma
 import os
+import platform
+import posixpath
 import py_compile
+import re
+import shutil
+import signal
 import struct
+import subprocess
 import sys
 from pathlib import Path
 import tarfile
 import tempfile
+import time
 import unittest
 from types import ModuleType
 from unittest.mock import patch
+import urllib.parse
+import urllib.request
 
 SUBJECT = Path(__file__).with_name("provision_cargo.py")
-c = ModuleType("provision_cargo")
-c.__file__, c.__cached__ = str(SUBJECT), None
-sys.modules[c.__name__] = c
-exec(compile(SUBJECT.read_bytes(), str(SUBJECT), "exec", dont_inherit=True), c.__dict__)
+c = None
+
+
+def core_fixture_type():
+    path = SUBJECT.parent.parent / "test_native_active_controls.py"
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != "f76335be9269618bcec26750895202a896bbe759cfc6ea490d7b8dffddc99e0d":
+        raise AssertionError("fixed real Core fixture source differs")
+    module = ModuleType("_som_cargo_core_fixture_definition")
+    module.__file__, module.__package__ = str(path), ""
+    sys.modules[module.__name__] = module
+    exec(compile(raw, str(path), "exec", dont_inherit=True), module.__dict__)
+    return module.Fixture
+
+
+class CargoFixture(core_fixture_type()):
+    """Real Core and public lease; authority/raw snapshots are protocol data."""
+    SCRIPT = "som-rs/scripts/hosted_readiness/product_runtime/provision_cargo.py"
+    SUPPORT = "som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py"
+    RAW = "som-rs/scripts/hosted_readiness/raw_digest_compat.py"
+    RAW_ROLE = "context.current-refusal-checker.raw-compat"
+
+    def __init__(self, case, root, payload, *, support_cache=False):
+        self.requested_root, self.payload = Path(root), payload
+        self.support_cache, self.root_selected = support_cache, False
+        caller = ('def run(controls):\n    return controls.load_module("target")\n'
+                  'def wrong_support(controls):\n    return controls.load_module("runtime.qualifier")\n'
+                  'def wrong_raw(controls):\n    return controls.load_module("context.current-refusal-checker.raw-compat")\n')
+        super().__init__(case, caller)
+        # Fixture policy data is set before any subject preparation. No Core
+        # record or ledger is changed. Only the actual subject dependencies run.
+        self.rows['caller']['closure'] = ['caller', 'target', 'runtime.qualifier']
+        self.rows['target']['closure'] = ['target', 'runtime.qualifier']
+        self.rows['runtime.qualifier']['closure'] = ['runtime.qualifier']
+        self.rows[self.RAW_ROLE]['closure'] = [self.RAW_ROLE]
+
+    def source_module(self, name, path):
+        if not self.root_selected:
+            self.root = self.requested_root
+            self.root.mkdir(parents=True, exist_ok=True)
+            self.root_selected = True
+        return super().source_module(name, path)
+
+    def add_role(self, role, path, raw, **kwargs):
+        if role != 'target':
+            return super().add_role(role, path, raw, **kwargs)
+        row = super().add_role('target', self.SCRIPT, SUBJECT.read_bytes(),
+            module='_som_fixture_cargo_subject', callers=[{'role': 'caller', 'function': 'run'}],
+            bindings={'__som_native_active_controls__': {'kind': 'active-controls'}})
+        support = SUBJECT.with_name('qualify_runtime.py').read_bytes()
+        if hashlib.sha256(support).hexdigest() != 'f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3':
+            raise AssertionError('fixed qualifier source differs')
+        super().add_role('runtime.qualifier', self.SUPPORT, support,
+            module='_som_native_runtime_qualifier', callers=[{'role': 'target', 'function': 'bootstrap_support'}])
+        super().add_role(self.RAW_ROLE, self.RAW, self.payload,
+            module='_som_active_context_current_refusal_checker_reviewed_raw_compat',
+            callers=[{'role': 'target', 'function': 'load_bound'}])
+        if self.support_cache:
+            stale_cache(self.root / self.SUPPORT, support,
+                        b"raise AssertionError('unchecked cached support executed')\n")
+        return row
 
 
 def stale_cache(path, source, stale):
@@ -100,6 +175,33 @@ class CargoClosureTests(unittest.TestCase):
         self.out.mkdir()
         self.repo = self.root / "repo"
         self.repo.mkdir()
+        # Each case has a real Core domain. Its immutable raw snapshots and
+        # authority records are explicit unit data, never product admission.
+        payloads = {
+            'test_bound_helper_ignores_valid_cache_and_uses_git_blob_bytes': b"VALUE = 'committed blob bytes'\n",
+            'test_bound_helper_does_not_reread_mutable_source_after_binding': b"VALUE = 'Git blob authority'\n",
+        }
+        payload = payloads.get(self._testMethodName,
+            (SUBJECT.parent.parent / 'raw_digest_compat.py').read_bytes())
+        support_cache = self._testMethodName == 'test_bootstrap_ignores_valid_matching_timestamp_cache'
+        domain_root = self.root / 'bootstrap' if support_cache else self.repo
+        self.core_fixture = CargoFixture(self, domain_root, payload, support_cache=support_cache)
+        global c
+        c = self.core_fixture.run()
+        if self._testMethodName == 'test_bound_helper_ignores_valid_cache_and_uses_git_blob_bytes':
+            stale_cache(self.core_fixture.root / c.RAW, payload, b"VALUE = 'cache'\n")
+        # Preload through the actual subject caller. The unchanged patch.dict
+        # scopes then preserve an already-owned namespace rather than remove a
+        # new module behind Core's lifecycle checks.
+        self.raw_module = c.load_bound('raw_digest_compat', self.core_fixture.root / c.RAW, payload)
+        self.raw_payload = payload
+        if self._testMethodName == 'test_bound_helper_does_not_reread_mutable_source_after_binding':
+            (self.core_fixture.root / c.RAW).unlink()
+        if self._testMethodName == 'test_git_binding_rejects_dirty_lock_or_helper':
+            # The unchanged method creates its own synthetic Git file set.
+            # Remove only the three files created in this owned fixture root.
+            for relative in (c.SCRIPT, c.SUPPORT, c.RAW):
+                (self.repo / relative).unlink()
         self.prefix = "tiny-1.0.0"
         self.bodies = {"Cargo.toml": b'[package]\nname="tiny"\nversion="1.0.0"\nlicense="MIT"\nlicense-file="LICENSE"\n',
                        "Cargo.toml.orig": b"original metadata", "src/lib.rs": b"pub fn real_source() {}\n", "LICENSE": b"MIT fixture notice"}
@@ -566,6 +668,61 @@ class CargoClosureTests(unittest.TestCase):
                         c.provision(args)
                     self.assertFalse(args.out.exists())
         runner.assert_not_called()
+
+
+    def test_genuine_owned_modules_keep_their_source_data_join(self):
+        self.assertIs(c.bootstrap_support(Path(c.q.__file__)), c.q)
+        self.assertIs(c.load_bound('raw_digest_compat', self.core_fixture.root / c.RAW,
+                                   self.raw_payload), self.raw_module)
+        self.assertEqual(c.__som_native_active_controls__.root, self.core_fixture.root)
+        self.assertIsNone(self.raw_module.__cached__)
+        self.assertEqual(self.raw_module.__dict__['__som_raw_sha256__'], c.digest(self.raw_payload))
+
+    def test_missing_changed_marker_and_wrong_raw_refuse_after_genuine_load(self):
+        marker = '__som_raw_sha256__'
+        for module, invoke, exception, message in (
+                (c.q, lambda: c.bootstrap_support(Path(c.q.__file__)), RuntimeError, 'support snapshot differs'),
+                (self.raw_module, lambda: c.load_bound('raw_digest_compat', self.core_fixture.root / c.RAW,
+                                                      self.raw_payload), c.Refusal, 'helper snapshot differs')):
+            original = module.__dict__[marker]
+            try:
+                for replacement in (None, '0' * 64, 1, True):
+                    with self.subTest(source=module.__file__, marker=replacement):
+                        if replacement is None:
+                            module.__dict__.pop(marker)
+                        else:
+                            module.__dict__[marker] = replacement
+                        with self.assertRaisesRegex(exception, message):
+                            invoke()
+                        module.__dict__[marker] = original
+            finally:
+                module.__dict__[marker] = original
+        with self.assertRaisesRegex(c.Refusal, 'helper snapshot differs'):
+            c.load_bound('raw_digest_compat', self.core_fixture.root / c.RAW, self.raw_payload + b'\n')
+
+    def test_real_caller_namespace_source_and_closed_lease_guards_remain(self):
+        caller = self.core_fixture.caller()
+        for function in (caller.wrong_support, caller.wrong_raw):
+            with self.subTest(function=function.__name__):
+                with self.assertRaisesRegex(ValueError, 'fixed caller-to-target role'):
+                    function(self.core_fixture.controls)
+        name = self.raw_module.__name__
+        with patch.dict(sys.modules, {name: ModuleType(name)}):
+            with self.assertRaisesRegex(ValueError, 'owned source module namespace changed'):
+                c.load_bound('raw_digest_compat', self.core_fixture.root / c.RAW, self.raw_payload)
+        path = c.RAW
+        original = self.core_fixture.raw[path]
+        try:
+            self.core_fixture.raw[path] = original + b'\n'
+            with self.assertRaisesRegex(ValueError, 'source bytes changed'):
+                c.load_bound('raw_digest_compat', self.core_fixture.root / c.RAW, self.raw_payload)
+        finally:
+            self.core_fixture.raw[path] = original
+        self.core_fixture.controls.close()
+        with self.assertRaisesRegex(ValueError, 'closed'):
+            self.core_fixture.controls.load_module(CargoFixture.RAW_ROLE)
+        with self.assertRaisesRegex(ValueError, 'CodeType/globals are not registered'):
+            c.load_bound('raw_digest_compat', self.core_fixture.root / c.RAW, self.raw_payload)
 
 
 if __name__ == "__main__":

@@ -46,14 +46,17 @@ def bootstrap_support(path):
         raise RuntimeError("bootstrap support SHA differs")
     if SUPPORT_MODULE in sys.modules:
         raise RuntimeError("bootstrap support module name already loaded")
-    module = ModuleType(SUPPORT_MODULE)
-    module.__file__, module.__cached__, module.__package__ = str(path), None, ""
-    sys.modules[SUPPORT_MODULE] = module
-    try:
-        exec(compile(raw, str(path), "exec", dont_inherit=True), module.__dict__)
-    except BaseException:
-        sys.modules.pop(SUPPORT_MODULE, None)
-        raise
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    if controls.role_sources.get("runtime.qualifier") != SUPPORT or path != controls.root / SUPPORT:
+        raise RuntimeError("fixed native bootstrap support source required")
+    module = controls.load_module("runtime.qualifier")
+    if type(module) is not ModuleType or module.__file__ != str(path) or module.__cached__ is not None:
+        raise RuntimeError("actual native bootstrap support module differs")
+    source_sha = module.__dict__.get("__som_raw_sha256__")
+    if type(source_sha) is not str or source_sha != hashlib.sha256(raw).hexdigest():
+        raise RuntimeError("native bootstrap support snapshot differs")
+    controls.verify_installed()
     return module
 
 
@@ -146,14 +149,19 @@ def load_bound(name, path, raw):
             "fixed bound helper source path required")
     require(type(raw) is bytes and len(raw) <= MAX_BLOB, "bound Git source bytes required")
     require(name not in sys.modules, "bound helper module name already loaded")
-    module = ModuleType(name)
-    module.__file__, module.__cached__, module.__package__ = str(path), None, ""
-    sys.modules[name] = module
-    try:
-        exec(compile(raw, str(path), "exec", dont_inherit=True), module.__dict__)
-    except BaseException:
-        sys.modules.pop(name, None)
-        raise
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    role = {"raw_digest_compat": "context.current-refusal-checker.raw-compat",
+            "_som_cargo_experiment": "context.current-refusal-checker",
+            "_som_cargo_candidate_guard": "graph.dependency"}[name]
+    require(controls.role_sources.get(role) == relative and path == controls.root / relative,
+            "fixed native bound helper source required")
+    module = controls.load_module(role)
+    require(type(module) is ModuleType and module.__file__ == str(path) and module.__cached__ is None,
+            "actual native bound helper module differs")
+    source_sha = module.__dict__.get("__som_raw_sha256__")
+    require(type(source_sha) is str and source_sha == digest(raw), "native bound helper snapshot differs")
+    controls.verify_installed()
     return module
 
 

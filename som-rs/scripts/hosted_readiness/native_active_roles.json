@@ -9874,6 +9874,26 @@
       "level": 0,
       "name": "full_product_context",
       "result": "runtime.context"
+    },
+    {
+      "caller": "entry.ts-transport.materialize",
+      "from_roles": {},
+      "fromlist": [
+        "inventory"
+      ],
+      "level": 0,
+      "name": "role_inventory",
+      "result": "ts.transport.role-inventory"
+    },
+    {
+      "caller": "entry.ts-transport.node-role",
+      "from_roles": {},
+      "fromlist": [
+        "inventory"
+      ],
+      "level": 0,
+      "name": "role_inventory",
+      "result": "ts.transport.role-inventory"
     }
   ],
   "pending": [],
@@ -12518,6 +12538,10 @@
         {
           "function": "refusal",
           "role": "ctx.current-input-context"
+        },
+        {
+          "function": "load_bound",
+          "role": "entry.cargo-provision"
         }
       ],
       "closure": [
@@ -12537,6 +12561,10 @@
         {
           "function": "_native_raw_compat",
           "role": "context.current-refusal-checker"
+        },
+        {
+          "function": "load_bound",
+          "role": "entry.cargo-provision"
         }
       ],
       "closure": [
@@ -12639,6 +12667,10 @@
         {
           "function": "verify_callback",
           "role": "graph.controller"
+        },
+        {
+          "function": "before_runtime",
+          "role": "entry.ts-input-consumer"
         }
       ],
       "closure": [
@@ -12652,7 +12684,11 @@
       "source": "som-rs/scripts/hosted_readiness/run_current_candidate_gate.py"
     },
     "ctx.cargo-producer": {
-      "bindings": {},
+      "bindings": {
+        "__som_native_active_controls__": {
+          "kind": "active-controls"
+        }
+      },
       "callers": [
         {
           "function": "prepare",
@@ -12660,7 +12696,8 @@
         }
       ],
       "closure": [
-        "ctx.cargo-producer"
+        "ctx.cargo-producer",
+        "runtime.qualifier"
       ],
       "group": null,
       "is_package": false,
@@ -13642,6 +13679,32 @@
       "module": "_som_full_typescript_unchanged_strict_tape",
       "package": "",
       "source": "som-rs/scripts/hosted_readiness/typescript_regression_http_replay.py"
+    },
+    "entry.cargo-provision": {
+      "bindings": {
+        "__som_native_active_controls__": {
+          "kind": "active-controls"
+        }
+      },
+      "callers": [
+        {
+          "function": "_trusted_run",
+          "role": "bootstrap.entry"
+        }
+      ],
+      "closure": [
+        "context.current-refusal-checker",
+        "context.current-refusal-checker.raw-compat",
+        "entry.cargo-provision",
+        "graph.dependency",
+        "runtime.qualifier"
+      ],
+      "group": null,
+      "is_package": false,
+      "kind": "entry",
+      "module": "__main__",
+      "package": "",
+      "source": "som-rs/scripts/hosted_readiness/product_runtime/provision_cargo.py"
     },
     "entry.current-gate": {
       "bindings": {
@@ -15227,6 +15290,188 @@
       "package": "",
       "source": "som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py"
     },
+    "entry.ts-input-consumer": {
+      "bindings": {
+        "_BeforeGraph": {
+          "kind": "role-module",
+          "role": "graph.controller"
+        },
+        "_BeforeRuntime": {
+          "kind": "role-module",
+          "role": "controller.current-gate"
+        },
+        "_BeforeStager": {
+          "kind": "role-module",
+          "role": "ts.transport.before-stager"
+        },
+        "_BeforeTransport": {
+          "kind": "role-module",
+          "role": "graph.sealed-raw-stage"
+        },
+        "_SourceBytes": {
+          "attribute": "SourceBytes",
+          "kind": "role-export",
+          "role": "runtime.context"
+        },
+        "__som_native_active_controls__": {
+          "kind": "active-controls"
+        }
+      },
+      "callers": [
+        {
+          "function": "_trusted_run",
+          "role": "bootstrap.entry"
+        }
+      ],
+      "closure": [
+        "controller.current-gate",
+        "entry.ts-input-consumer",
+        "entry.ts-transport.derive-node",
+        "graph.controller",
+        "graph.sealed-raw-stage",
+        "runtime.context",
+        "ts.transport.before-stager",
+        "ts.transport.common",
+        "ts.transport.consumer-data"
+      ],
+      "group": null,
+      "is_package": false,
+      "kind": "entry",
+      "module": "__main__",
+      "package": "",
+      "source": "som-rs/scripts/hosted_readiness/run_typescript_input_consumer.py"
+    },
+    "entry.ts-input-producer": {
+      "bindings": {
+        "_SourceBytes": {
+          "attribute": "SourceBytes",
+          "kind": "role-export",
+          "role": "runtime.context"
+        },
+        "__som_native_active_controls__": {
+          "kind": "active-controls"
+        }
+      },
+      "callers": [
+        {
+          "function": "_trusted_run",
+          "role": "bootstrap.entry"
+        }
+      ],
+      "closure": [
+        "entry.ts-input-producer",
+        "entry.ts-transport.chunks",
+        "entry.ts-transport.derive-node",
+        "entry.ts-transport.materialize",
+        "entry.ts-transport.node-role",
+        "entry.ts-transport.rebuild-pyc",
+        "runtime.context",
+        "ts.transport.consumer-data",
+        "ts.transport.role-inventory"
+      ],
+      "group": null,
+      "is_package": false,
+      "kind": "entry",
+      "module": "__main__",
+      "package": "",
+      "source": "som-rs/scripts/hosted_readiness/typescript_input_producer.py"
+    },
+    "entry.ts-transport.chunks": {
+      "bindings": {},
+      "callers": [
+        {
+          "function": "run_m6",
+          "role": "entry.ts-input-producer"
+        }
+      ],
+      "closure": [
+        "entry.ts-transport.chunks"
+      ],
+      "group": null,
+      "is_package": false,
+      "kind": "entry",
+      "module": "__main__",
+      "package": "",
+      "source": ".github/m6-ts-role-transport/node_chunk_transport.py"
+    },
+    "entry.ts-transport.derive-node": {
+      "bindings": {},
+      "callers": [
+        {
+          "function": "run_m6",
+          "role": "entry.ts-input-producer"
+        },
+        {
+          "function": "run_m6",
+          "role": "ts.transport.common"
+        }
+      ],
+      "closure": [
+        "entry.ts-transport.derive-node"
+      ],
+      "group": null,
+      "is_package": false,
+      "kind": "entry",
+      "module": "__main__",
+      "package": "",
+      "source": ".github/m6-ts-role-transport/derive_node_tools.py"
+    },
+    "entry.ts-transport.materialize": {
+      "bindings": {},
+      "callers": [
+        {
+          "function": "run_m6",
+          "role": "entry.ts-input-producer"
+        }
+      ],
+      "closure": [
+        "entry.ts-transport.materialize",
+        "ts.transport.role-inventory"
+      ],
+      "group": null,
+      "is_package": false,
+      "kind": "entry",
+      "module": "__main__",
+      "package": "",
+      "source": ".github/m6-ts-role-transport/materialize_roles.py"
+    },
+    "entry.ts-transport.node-role": {
+      "bindings": {},
+      "callers": [
+        {
+          "function": "run_m6",
+          "role": "entry.ts-input-producer"
+        }
+      ],
+      "closure": [
+        "entry.ts-transport.node-role",
+        "ts.transport.role-inventory"
+      ],
+      "group": null,
+      "is_package": false,
+      "kind": "entry",
+      "module": "__main__",
+      "package": "",
+      "source": ".github/m6-ts-role-transport/node_role_transport.py"
+    },
+    "entry.ts-transport.rebuild-pyc": {
+      "bindings": {},
+      "callers": [
+        {
+          "function": "run_m6",
+          "role": "entry.ts-input-producer"
+        }
+      ],
+      "closure": [
+        "entry.ts-transport.rebuild-pyc"
+      ],
+      "group": null,
+      "is_package": false,
+      "kind": "entry",
+      "module": "__main__",
+      "package": "",
+      "source": ".github/m6-ts-role-transport/rebuild_npm_pyc.py"
+    },
     "full.business-database-checks": {
       "bindings": {},
       "callers": [
@@ -16327,6 +16572,14 @@
         {
           "function": "main",
           "role": "entry.native-graph"
+        },
+        {
+          "function": "stage_before",
+          "role": "entry.ts-input-consumer"
+        },
+        {
+          "function": "stage_inputs",
+          "role": "ts.transport.before-stager"
         }
       ],
       "closure": [
@@ -16345,6 +16598,10 @@
         {
           "function": "verify_callback",
           "role": "graph.controller"
+        },
+        {
+          "function": "load_bound",
+          "role": "entry.cargo-provision"
         }
       ],
       "closure": [
@@ -16381,6 +16638,14 @@
         {
           "function": "restore_stage_set",
           "role": "graph.controller"
+        },
+        {
+          "function": "stage_before",
+          "role": "entry.ts-input-consumer"
+        },
+        {
+          "function": "stage_inputs",
+          "role": "ts.transport.before-stager"
         }
       ],
       "closure": [
@@ -18393,6 +18658,14 @@
         {
           "function": "prepare",
           "role": "full.cargo-consumer"
+        },
+        {
+          "function": "checked_sources",
+          "role": "entry.ts-input-producer"
+        },
+        {
+          "function": "source_modules",
+          "role": "entry.ts-input-consumer"
         }
       ],
       "closure": [
@@ -18512,6 +18785,14 @@
         {
           "function": "admitted_native_runtime",
           "role": "runtime.wheels"
+        },
+        {
+          "function": "bootstrap_support",
+          "role": "entry.cargo-provision"
+        },
+        {
+          "function": "bootstrap_support",
+          "role": "ctx.cargo-producer"
         }
       ],
       "closure": [
@@ -32167,9 +32448,107 @@
       "module": "ts_profile",
       "package": "",
       "source": "som-rs/tests/typescript-output-v1/ts_profile.py"
+    },
+    "ts.transport.before-stager": {
+      "bindings": {},
+      "callers": [],
+      "closure": [
+        "graph.controller",
+        "graph.sealed-raw-stage",
+        "ts.transport.before-stager"
+      ],
+      "group": null,
+      "is_package": false,
+      "kind": "module",
+      "module": "stage_recorded_before_inputs",
+      "package": "",
+      "source": "som-rs/scripts/hosted_readiness/stage_recorded_before_inputs.py"
+    },
+    "ts.transport.common": {
+      "bindings": {},
+      "callers": [
+        {
+          "function": "source_modules",
+          "role": "entry.ts-input-consumer"
+        }
+      ],
+      "closure": [
+        "entry.ts-transport.derive-node",
+        "ts.transport.common"
+      ],
+      "group": null,
+      "is_package": false,
+      "kind": "module",
+      "module": "typescript_input_producer",
+      "package": "",
+      "source": "som-rs/scripts/hosted_readiness/typescript_input_producer.py"
+    },
+    "ts.transport.consumer-data": {
+      "bindings": {},
+      "callers": [
+        {
+          "function": "consumer_data",
+          "role": "entry.ts-input-producer"
+        },
+        {
+          "function": "source_modules",
+          "role": "entry.ts-input-consumer"
+        }
+      ],
+      "closure": [
+        "ts.transport.consumer-data"
+      ],
+      "group": null,
+      "is_package": false,
+      "kind": "module",
+      "module": "typescript_input_consumer",
+      "package": "",
+      "source": "som-rs/scripts/hosted_readiness/typescript_input_consumer.py"
+    },
+    "ts.transport.role-inventory": {
+      "bindings": {},
+      "callers": [
+        {
+          "function": "<module>",
+          "role": "entry.ts-transport.materialize"
+        },
+        {
+          "function": "<module>",
+          "role": "entry.ts-transport.node-role"
+        }
+      ],
+      "closure": [
+        "ts.transport.role-inventory"
+      ],
+      "group": null,
+      "is_package": false,
+      "kind": "module",
+      "module": "role_inventory",
+      "package": "",
+      "source": "som-rs/scripts/hosted_readiness/role_inventory.py"
     }
   },
   "sources": {
+    ".github/m6-ts-role-transport/derive_node_tools.py": {
+      "mode": 420,
+      "sha256": "2f1278a246f1d120fa866cebcba2482f69808d03c4e3ec69cba4960a7baf7521"
+    },
+    ".github/m6-ts-role-transport/materialize_roles.py": {
+      "mode": 420,
+      "sha256": "d749e4e9c3c867d8c994a7697364f47d3e59edbf3980b9d489e867b50006f230"
+    },
+    ".github/m6-ts-role-transport/node_chunk_transport.py": {
+      "mode": 420,
+      "sha256": "a75711f59b7d6ca549cdf153e64c9ec04fb4e92ef9fab2c2091ffcf2a36f5702"
+    },
+    ".github/m6-ts-role-transport/node_role_transport.py": {
+      "mode": 420,
+      "sha256": "a302f81ca1b7d014da0734880dea15de913a4afc3ba7e843447a091bf15747ce"
+    },
+    ".github/m6-ts-role-transport/rebuild_npm_pyc.py": {
+      "mode": 420,
+      "sha256": "3b2f6036e85951bd6a4331f6a03f386857a2d922ef1144c8aede0afbd7a6d51b"
+    },
     "som-core/scripts/audit_business_transactions.py": {
       "mode": 420,
       "sha256": "2f8f617bed62963db89066db18772bbd08f9ae31bac54166aee322191eb4122a"
@@ -32448,7 +32827,7 @@
     },
     "som-rs/scripts/hosted_readiness/native_source_bootstrap.py": {
       "mode": 420,
-      "sha256": "1a61a5ec53102d89f6adafeb936a66a4999d9d2db91b8dc2e7196df48d254576"
+      "sha256": "23036aa900c6c22d9547a800444096be7463b8eb97ee1cd79d27ff1cbe593b22"
     },
     "som-rs/scripts/hosted_readiness/product_python/produce_wheels.py": {
       "mode": 420,
@@ -32488,7 +32867,7 @@
     },
     "som-rs/scripts/hosted_readiness/product_runtime/provision_cargo.py": {
       "mode": 420,
-      "sha256": "299741b9ce379d858e65955151adc261cd17ae9ecbcf9cb69032130a7e3a3e94"
+      "sha256": "07dad33c70a546e16dc5d21e53f8fa473eac535a368e2e6be41a9b9a07b7963a"
     },
     "som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py": {
       "mode": 420,
@@ -32517,6 +32896,10 @@
     "som-rs/scripts/hosted_readiness/reconstruct_public_inputs.py": {
       "mode": 420,
       "sha256": "fad2dcb172d425c491f8eec3c53a732e2140431d71c68d47c6d33e3929d6f721"
+    },
+    "som-rs/scripts/hosted_readiness/role_inventory.py": {
+      "mode": 420,
+      "sha256": "1d03b9bfc1d02f7d25501bae560780d27634829dbdb34e30482b7e2a4ff10e53"
     },
     "som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py": {
       "mode": 420,
@@ -32561,6 +32944,18 @@
     "som-rs/scripts/hosted_readiness/sealed_current_raw.py": {
       "mode": 420,
       "sha256": "92bc6ffaf8d575a882a24fb563e055c8136b4bc17b2a231c9c170c4305992c29"
+    },
+    "som-rs/scripts/hosted_readiness/stage_recorded_before_inputs.py": {
+      "mode": 420,
+      "sha256": "b263de598d5b8ce204e1bf0871560038a434556b8e71880ebf055ef152bfc891"
+    },
+    "som-rs/scripts/hosted_readiness/typescript_input_consumer.py": {
+      "mode": 420,
+      "sha256": "0ccdb2731974619ea448c50b93429cedd6b6f27b41f7c07598750eb32e10ed18"
+    },
+    "som-rs/scripts/hosted_readiness/typescript_input_producer.py": {
+      "mode": 420,
+      "sha256": "675098eee2967e0ba71a62331a9958ba710b7147f212ec2b5370c70dd5c77c53"
     },
     "som-rs/scripts/hosted_readiness/typescript_native_digests.py": {
       "mode": 420,
@@ -32924,6 +33319,16 @@
     }
   },
   "static_edges": [
+    {
+      "caller": ".github/m6-ts-role-transport/materialize_roles.py",
+      "import": "role_inventory",
+      "source": "som-rs/scripts/hosted_readiness/role_inventory.py"
+    },
+    {
+      "caller": ".github/m6-ts-role-transport/node_role_transport.py",
+      "import": "role_inventory",
+      "source": "som-rs/scripts/hosted_readiness/role_inventory.py"
+    },
     {
       "caller": "som-core/scripts/audit_business_transactions.py",
       "import": "business_database_checks",

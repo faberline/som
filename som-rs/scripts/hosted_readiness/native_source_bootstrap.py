@@ -43,10 +43,13 @@ _CORE_NAME = '_som_native_active_controls'
 _TRUSTED_ENTRY_NAME = '_som_native_trusted_bootstrap_entry'
 _CALLED_JOBS = ('bind', 'current-python-companions', 'products', 'product-join',
                 'required-callbacks', 'whole-graph-join')
-_ROOT_JOBS = ('experimental-native-compile', 'current-product-rust-tools')
+_ROOT_JOBS = ('experimental-native-compile', 'current-product-rust-tools',
+              'typescript-regression-inputs', 'product-cargo-closure')
 _ENTRY_ROLES = MappingProxyType({
     'experimental-native-compile': (BASE + 'product_runtime/current_candidate_layout.py', GRAPH_ENTRY),
     'current-product-rust-tools': (BASE + 'product_runtime/qualify_rust_tools.py', GRAPH_ENTRY),
+    'typescript-regression-inputs': (BASE + 'typescript_input_producer.py',),
+    'product-cargo-closure': (BASE + 'product_runtime/provision_cargo.py',),
     'bind': (GRAPH_ENTRY,),
     'current-python-companions': (BASE + 'run_current_python_companions.py', GRAPH_ENTRY),
     'products': (BASE + 'run_full_products.py',),

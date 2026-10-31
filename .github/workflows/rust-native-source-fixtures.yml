@@ -48,6 +48,20 @@ jobs:
         if: always()
         run: |
           python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/tests/react-output-v1/test_native_api_host_controls.py" -v 2>&1 | tee react-native-source-fixtures.log
+      - name: Run the complete existing Cargo source controls
+        if: always()
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" \
+            --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" \
+            --entry som-rs/scripts/hosted_readiness/product_runtime/test_provision_cargo.py \
+            -- -v 2>&1 | tee cargo-source-fixtures.log
+      - name: Run all 26 existing Python environment source controls
+        if: always()
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" \
+            --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" \
+            --entry som-rs/scripts/hosted_readiness/product_python/test_qualify_python.py \
+            -- -v 2>&1 | tee python-environment-source-fixtures.log
       - name: Preserve all fixture output including first failures
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -60,6 +74,8 @@ jobs:
             python-version.log
             readiness-source-fixtures.log
             react-native-source-fixtures.log
+            cargo-source-fixtures.log
+            python-environment-source-fixtures.log
             ${{ runner.temp }}/som-source-fixture-run
 
   current-context-source-fixtures:
