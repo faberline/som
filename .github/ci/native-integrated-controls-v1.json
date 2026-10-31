@@ -1,0 +1,2774 @@
+{
+  "changes": {
+    ".github/ci/native-integrated-controls-v1.json": "A",
+    ".github/workflows/native-integrated-controls.yml": "A",
+    "som-rs/behavior/hosts.py": "M",
+    "som-rs/behavior/typescript/host.py": "M",
+    "som-rs/scripts/hosted_readiness/product_python/produce_wheels.py": "M",
+    "som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py": "M",
+    "som-rs/scripts/hosted_readiness/run_full_products.py": "M",
+    "som-rs/scripts/hosted_readiness/test_native_m6_callback_context.py": "A",
+    "som-rs/scripts/hosted_readiness/test_native_m6_entry.py": "A",
+    "som-rs/scripts/hosted_readiness/test_native_python_startup.py": "A",
+    "som-rs/scripts/hosted_readiness/test_native_ts_host_fragments.py": "M",
+    "som-rs/scripts/hosted_readiness/test_run_full_products.py": "M",
+    "som-rs/scripts/react_output_acceptance/check_products.py": "M",
+    "som-rs/scripts/react_output_acceptance/m6_native_entry.py": "A",
+    "som-rs/scripts/react_output_acceptance/m6_react_callback.py": "A",
+    "som-rs/scripts/react_output_acceptance/native_api_full_before.py": "A",
+    "som-rs/scripts/react_output_acceptance/native_record_api.py": "A",
+    "som-rs/scripts/react_output_acceptance/native_recorded_subprocess.py": "A",
+    "som-rs/scripts/react_output_acceptance/native_recording_owner.py": "A",
+    "som-rs/scripts/react_output_acceptance/react_api_python_payload.py": "A",
+    "som-rs/scripts/react_output_acceptance/run_acceptance.py": "M",
+    "som-rs/scripts/react_output_acceptance/test_native_api_case.py": "A",
+    "som-rs/scripts/react_output_acceptance/test_native_collector_interop.py": "A",
+    "som-rs/scripts/react_output_acceptance/test_native_m6_recorded_subprocess.py": "A",
+    "som-rs/tests/react-output-v1/common.py": "M",
+    "som-rs/tests/react-output-v1/run_api_contract.py": "M",
+    "som-rs/tests/react-output-v1/run_gates.py": "M",
+    "som-rs/tests/react-output-v1/test_native_api_host_controls.py": "A"
+  },
+  "expected": {
+    "som-rs/behavior/hosts.py": {
+      "bytes": 21391,
+      "git_blob_oid": "7c18d83daf8775c45b362889002ed9d267c9da27",
+      "git_mode": "100644",
+      "sha256": "d874bcbe997c01382cf29e5b3016c10fc5e6c823a9dcc5bbac1fba938e112fe2"
+    },
+    "som-rs/behavior/phase2/check_phase2.py": {
+      "bytes": 28354,
+      "git_blob_oid": "21bec15e74c356c713119724f43b4bee69d2684d",
+      "git_mode": "100644",
+      "sha256": "aa3d786b2fdf834be212dcca0808a95f12be898e9978285287657fb7dd1097d2"
+    },
+    "som-rs/behavior/typescript/host.py": {
+      "bytes": 29697,
+      "git_blob_oid": "4b166a1b8584d43f2464a6c0305cb43a7975c61b",
+      "git_mode": "100644",
+      "sha256": "9a30912b4185fdd5c64dcf0df39c0b6c2cc52a666f0f9405ba23c2c9211c6aef"
+    },
+    "som-rs/contracts/compiler-v1/examples/v1.prompt.json": {
+      "bytes": 722,
+      "git_blob_oid": "6449f8ae931f4586bcf3d681a16a0434bb90229f",
+      "git_mode": "100644",
+      "sha256": "8a0269b81d7831c329c04d3114d3feaaa4c2def6df378a76b6569e9bf282463a"
+    },
+    "som-rs/contracts/compiler-v1/examples/v2.prompt.json": {
+      "bytes": 876,
+      "git_blob_oid": "9480a14daa43505bd8a5d93f3da424f75f186b24",
+      "git_mode": "100644",
+      "sha256": "a5baf60682bb5096eb44d14932de9ff95390f40e02eb5887dddbe0d96206ab3f"
+    },
+    "som-rs/contracts/compiler-v1/examples/v3.prompt.json": {
+      "bytes": 1194,
+      "git_blob_oid": "6e3ca4a622e0b30bdb5ec593549c30320a06e22a",
+      "git_mode": "100644",
+      "sha256": "72361df884e7d4bf28b9a71da5c6dd4c119fde0e19aa78dcb5c4d2a2d45668ed"
+    },
+    "som-rs/contracts/compiler-v1/examples/v4.prompt.json": {
+      "bytes": 1415,
+      "git_blob_oid": "baab56cf216a6adf99420b24d038271d9f60c04a",
+      "git_mode": "100644",
+      "sha256": "6f123ea4ff72b7e0d6cba50278b10a5da1ecc449dd441b2ae0ff480500b8e43a"
+    },
+    "som-rs/contracts/compiler-v1/examples/v5.prompt.json": {
+      "bytes": 3022,
+      "git_blob_oid": "6478e1ef179439216c099ff2b6c51f246b8bf9ce",
+      "git_mode": "100644",
+      "sha256": "65101209a650e209be40ee35d969c6f6764d471a5ea4d71f4561dc054d8bbc39"
+    },
+    "som-rs/contracts/compiler-v1/examples/v6.prompt.json": {
+      "bytes": 2759,
+      "git_blob_oid": "d5273da138842dd257e11f6baf58ba3130a0e940",
+      "git_mode": "100644",
+      "sha256": "33d902b113a2cf203250cc6b5e6b41cea5b02225890ad53e96019114a2bf3722"
+    },
+    "som-rs/contracts/compiler-v1/examples/v7-branch-null.prompt.json": {
+      "bytes": 4921,
+      "git_blob_oid": "362cea168bbe39ec6a3d16314dd0160317651372",
+      "git_mode": "100644",
+      "sha256": "4e3c80e264d13e83c894418f2d011f4dc3b26f94fb5dc094efb719b1b503e522"
+    },
+    "som-rs/contracts/compiler-v1/examples/v7.prompt.json": {
+      "bytes": 4860,
+      "git_blob_oid": "ea66e88a71b0c9d886cbe67b3c16d4bf7b4dc1eb",
+      "git_mode": "100644",
+      "sha256": "2d4a92302f99c30723f49f2ccc642f2c7bf58daf25c8f991002df93746cb5db7"
+    },
+    "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": {
+      "bytes": 343248,
+      "git_blob_oid": "e29abcb6013ec62b177665db8497919e01d1e569",
+      "git_mode": "100644",
+      "sha256": "b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6"
+    },
+    "som-rs/contracts/typescript-output-v1/acceptance-plan.json": {
+      "bytes": 12471,
+      "git_blob_oid": "e58782e5f8fead63342e286433686e90d6b7319b",
+      "git_mode": "100644",
+      "sha256": "17478469d02bf362e6d394ef9081ff4e842eeab239fbfc89550fba92951d35f5"
+    },
+    "som-rs/contracts/typescript-output-v1/behavior-normalization.json": {
+      "bytes": 6461,
+      "git_blob_oid": "2e5df58d4ce4240d906800826e3017b0d55e2ad6",
+      "git_mode": "100644",
+      "sha256": "cc068fe361cfbcb960a299be67143eab06e7a02930a981c122251ff6afb4e8b0"
+    },
+    "som-rs/contracts/typescript-output-v1/product-layout.json": {
+      "bytes": 11378,
+      "git_blob_oid": "233823ce6b42e68345cb1201d028ef8721ce5481",
+      "git_mode": "100644",
+      "sha256": "eec61af43adb02583b86ded51478edb57459098f0899062a69c7591591f7ce47"
+    },
+    "som-rs/contracts/typescript-output-v1/toolchain.json": {
+      "bytes": 20930,
+      "git_blob_oid": "3073d862836ab79e14415f4d3395e48f7933268d",
+      "git_mode": "100644",
+      "sha256": "0875aeb7e60aa72a44bc59c9aef89b971dffc5fc5304813e0b04ec5dc26da618"
+    },
+    "som-rs/scripts/compiler_acceptance/paths.py": {
+      "bytes": 1399,
+      "git_blob_oid": "720526c5d09efe0dc82bf179c711abbf53ca7782",
+      "git_mode": "100644",
+      "sha256": "7fdee8d1a58559d72c05fc9bc4e956d694764c0ab83a7ad7ba7178c0de7dd91f"
+    },
+    "som-rs/scripts/compiler_acceptance/qa_harness.py": {
+      "bytes": 51245,
+      "git_blob_oid": "4602a8e83d52243b1f185ada146d61879c7f536a",
+      "git_mode": "100644",
+      "sha256": "f0c1cf96e1cf60ee692c7e9c3272757efef92498b52f4ac426e40b54142851a2"
+    },
+    "som-rs/scripts/hosted_readiness/bound_source.py": {
+      "bytes": 5371,
+      "git_blob_oid": "12743cf5805f21f4d4d2ac98c2e03f662a07f5a0",
+      "git_mode": "100644",
+      "sha256": "ce60d798978a7e10c6c13739375d8b4b28d12de244d3c02b3688b08ff86a5f15"
+    },
+    "som-rs/scripts/hosted_readiness/http_native_primitives.py": {
+      "bytes": 111,
+      "git_blob_oid": "ecf53853d0aa12a608f72f4cc792037cf3aa3ad7",
+      "git_mode": "100644",
+      "sha256": "562e5ded76e44ba3b14a54428c5d53d09026adc99a6b2ba75b65164178798924"
+    },
+    "som-rs/scripts/hosted_readiness/native_active_controls.py": {
+      "bytes": 75955,
+      "git_blob_oid": "7c9ba3402552f816045eb9b23c217b19e2bb10ba",
+      "git_mode": "100644",
+      "sha256": "eb0f804a8aa7de0857213d34478adc869fe51f7259c5552439dca109e4e6a038"
+    },
+    "som-rs/scripts/hosted_readiness/native_active_policy_design_fixture.json": {
+      "bytes": 70092,
+      "git_blob_oid": "fdbcc23ed2ac09298d998172f0e53782cdf7f0e7",
+      "git_mode": "100644",
+      "sha256": "35bbd6403930ad790d6a6bccac176138f1fd541f5b07a103479c8546f146a875"
+    },
+    "som-rs/scripts/hosted_readiness/native_active_roles.schema.json": {
+      "bytes": 11323,
+      "git_blob_oid": "e033f754266286e2a37892b1b909a7c0c89df166",
+      "git_mode": "100644",
+      "sha256": "29711f2ac4a3a8f1afccbf21625238ff28f63214fde1f2bf9f2615cf40ca7942"
+    },
+    "som-rs/scripts/hosted_readiness/native_first_launch_profile_v1.json": {
+      "bytes": 85991,
+      "git_blob_oid": "35a71d90a51ecc230867e46214a86303eb3b04fc",
+      "git_mode": "100644",
+      "sha256": "0937e44ad864c497e04f56fd07f6e048c7a538e072f27bdfdd58708921d198bb"
+    },
+    "som-rs/scripts/hosted_readiness/native_qa_authority.py": {
+      "bytes": 31631,
+      "git_blob_oid": "0ba9512cb16591e9b7075c801a5285b1db72b726",
+      "git_mode": "100644",
+      "sha256": "024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1"
+    },
+    "som-rs/scripts/hosted_readiness/native_source_bootstrap.py": {
+      "bytes": 128116,
+      "git_blob_oid": "34b8d6d599aae09d2f33e8713b08ce7ecc0b57a9",
+      "git_mode": "100644",
+      "sha256": "d5c8ceb1a5b0b779662134afdf477fd90cfbc5319cca64e7bb7a8b5fe76ae473"
+    },
+    "som-rs/scripts/hosted_readiness/product_python/produce_wheels.py": {
+      "bytes": 87475,
+      "git_blob_oid": "877b2470b57e284ed48565e67c51f303d29a3b35",
+      "git_mode": "100644",
+      "sha256": "02d06583060b12601f3038709f2d2a9a0643d93cda7670220d592fd821ed580e"
+    },
+    "som-rs/scripts/hosted_readiness/product_python/uv099-installer-authority.json": {
+      "bytes": 39611,
+      "git_blob_oid": "f7cb6408b37175c9591973f9dfc8c05f09f8f0dd",
+      "git_mode": "100644",
+      "sha256": "e166303c1376a77d6e92ae19d9ff0eddcdd24c3adbde8381ff835274bb850358"
+    },
+    "som-rs/scripts/hosted_readiness/product_python/wheel-policy.json": {
+      "bytes": 2379,
+      "git_blob_oid": "ead01dacb6b03265356a8a170e086808b32ec77d",
+      "git_mode": "100644",
+      "sha256": "7a7532ed476f2e983fedfdf4304f8034765efb51df89caac604ad89c953442d7"
+    },
+    "som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py": {
+      "bytes": 9388,
+      "git_blob_oid": "de8fa8f3f1fe14bc530d986c962aba838ce65a06",
+      "git_mode": "100644",
+      "sha256": "cfb7c594e35b17f672969a56b711dec58097100901a73a412c784ef21aa5d2c9"
+    },
+    "som-rs/scripts/hosted_readiness/product_runtime/consume_cargo.py": {
+      "bytes": 6335,
+      "git_blob_oid": "0105fdc8f087f72e65ab166d53562eb21409c959",
+      "git_mode": "100644",
+      "sha256": "78d57b5bad258cced8fd7b0776b1ccc01b599942d8a59ed95c8caa8babfc156e"
+    },
+    "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py": {
+      "bytes": 92233,
+      "git_blob_oid": "8a3c524119c998ade38f99a83a0cf900a727218e",
+      "git_mode": "100644",
+      "sha256": "7329f3dc88d63957a7ac33c847ec3416f4a7b35b8c7b10793154f22a5516a440"
+    },
+    "som-rs/scripts/hosted_readiness/product_runtime/qualify_runtime.py": {
+      "bytes": 32535,
+      "git_blob_oid": "b571f76acb0ac2a494b444fb2ac14ac45f8ea9ca",
+      "git_mode": "100644",
+      "sha256": "f3c6f69e922ab0a8f27426a5f597c03f213d40be0fb7fc324ac33f1b48ae66f3"
+    },
+    "som-rs/scripts/hosted_readiness/product_runtime/reuse_runtime.py": {
+      "bytes": 30566,
+      "git_blob_oid": "8a55d0140f0f67fbe28468d3d619efc35eb5d511",
+      "git_mode": "100644",
+      "sha256": "2a92e2df47fb05e76677fbb84e9cbb7f12d07d90eb8019bd816b5fe6b5588598"
+    },
+    "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-byte-audit.json": {
+      "bytes": 1662,
+      "git_blob_oid": "6fff4442ba3b9073276642e0ea937db26cd8aae2",
+      "git_mode": "100644",
+      "sha256": "7a2c04a65866474bd773b9722274c09c36646951fa7848d62e4b20b2cb94e75f"
+    },
+    "som-rs/scripts/hosted_readiness/product_runtime/runtime-bf3-qualification.json": {
+      "bytes": 3708,
+      "git_blob_oid": "2c6a06914b420fc00e8257ee34ef8d06b8f2094c",
+      "git_mode": "100644",
+      "sha256": "4aaca5ef284440fd64bd50723619425201417937b4d635bb3c5d2d5835226b68"
+    },
+    "som-rs/scripts/hosted_readiness/product_runtime/runtime_capsule.py": {
+      "bytes": 33773,
+      "git_blob_oid": "0b2c69843d63f43d9b4a99739c9368e42ca533f1",
+      "git_mode": "100644",
+      "sha256": "1385e58948c8252bcd5169586cf36527e11906ecad438a190eb726ade5470a4c"
+    },
+    "som-rs/scripts/hosted_readiness/product_runtime/source-pins.json": {
+      "bytes": 5972,
+      "git_blob_oid": "7b55b0619ceb1c8109889259b95b241baf785b05",
+      "git_mode": "100644",
+      "sha256": "a4208c342bc9e923509bc5ba7ce6a9a1adfe3143d55b6215f0a313b4833550b2"
+    },
+    "som-rs/scripts/hosted_readiness/readiness.json": {
+      "bytes": 70382,
+      "git_blob_oid": "0bd9aeb0c023b57cb4d2f548d0259e6d0ed8d411",
+      "git_mode": "100644",
+      "sha256": "fa96b731dc58ef1aca6bc284ffb202d82eed70433bafd033f45ee5ac7be762b3"
+    },
+    "som-rs/scripts/hosted_readiness/run_full_products.py": {
+      "bytes": 76669,
+      "git_blob_oid": "b03b1cdcbf461181f521c6b8f24dc112cfac5814",
+      "git_mode": "100644",
+      "sha256": "b9fd4184619cd3bcbee6282348243a2089e4b3ecfa0b7e91f83617ede70ca1ac"
+    },
+    "som-rs/scripts/hosted_readiness/same_candidate_graph.py": {
+      "bytes": 35833,
+      "git_blob_oid": "2940a1a424a9fc8f4a6eda8bed8776144b058cc2",
+      "git_mode": "100644",
+      "sha256": "6f18906833593ebc1a5603afbe1c8e0043e6c7851340d7ebe2e501914d1709b9"
+    },
+    "som-rs/scripts/hosted_readiness/test_native_active_controls.py": {
+      "bytes": 48496,
+      "git_blob_oid": "1792e292e78c4a063d8910d85178928b6c25de65",
+      "git_mode": "100644",
+      "sha256": "1a5852fb1693bcb921fcb19e9a20fb8281751e85f6f0ea2805b88323d230a201"
+    },
+    "som-rs/scripts/hosted_readiness/test_native_first_launch.py": {
+      "bytes": 126148,
+      "git_blob_oid": "b6f686a3e9cf4b29db3529c75edfe8be19e32a20",
+      "git_mode": "100644",
+      "sha256": "59d25808f9211f4b3312d69d443d1f06c6ec5b72b8948356a60b269cf9f23837"
+    },
+    "som-rs/scripts/hosted_readiness/test_native_m6_callback_context.py": {
+      "bytes": 8147,
+      "git_blob_oid": "6dc66383bebfae5f1a2e49a6df727a7c7c161ddf",
+      "git_mode": "100644",
+      "sha256": "81a6d2a6c18ecf26c41f59a777d6871386bfbec1829957e108f0cd8d7020174c"
+    },
+    "som-rs/scripts/hosted_readiness/test_native_m6_entry.py": {
+      "bytes": 18817,
+      "git_blob_oid": "c30b874908c85ef2b6ee5917fed45eb6a9009bd6",
+      "git_mode": "100644",
+      "sha256": "60360891ae587a5c8ce4a7d666e2ad8097328778166dd1e7a9c20c71ce96f90c"
+    },
+    "som-rs/scripts/hosted_readiness/test_native_m6_record_http.py": {
+      "bytes": 112237,
+      "git_blob_oid": "ef576ac3bec136e6e67777ea620fedf85082f59f",
+      "git_mode": "100644",
+      "sha256": "5bbfd767b715ecafaa3d21f87e60dcf0576ccbc2de7f9fa7f7b977c61c3543b1"
+    },
+    "som-rs/scripts/hosted_readiness/test_native_python_startup.py": {
+      "bytes": 50614,
+      "git_blob_oid": "a4d9e182fc496a270937aef99018031b92e2381a",
+      "git_mode": "100644",
+      "sha256": "eec8a32a16feff6eaa871f5fd18b107f224eeb1152f578ba71cc0cd2c06d3f61"
+    },
+    "som-rs/scripts/hosted_readiness/test_native_source_bootstrap.py": {
+      "bytes": 35142,
+      "git_blob_oid": "44d2a04140628e66c62282d1f6adb30397e3c1d2",
+      "git_mode": "100644",
+      "sha256": "7d81877eab0b54d3ae29705debe455ad38e6e63609b913bd4e09d91bf8f864f0"
+    },
+    "som-rs/scripts/hosted_readiness/test_native_ts_host_fragments.py": {
+      "bytes": 31761,
+      "git_blob_oid": "58599c61a2a23a1fa5cc7ba6cc9fdb3755de8596",
+      "git_mode": "100644",
+      "sha256": "59b12fb8e0398c9cf4dcc14440f03e0817d1d46b7d760cc2b50ba6f6e91d9cd1"
+    },
+    "som-rs/scripts/hosted_readiness/test_native_ts_input_fragments.py": {
+      "bytes": 35485,
+      "git_blob_oid": "3e5a5520e395a1dc85d79fe5dbb884a73f78594e",
+      "git_mode": "100644",
+      "sha256": "60ea76e7c87e3a6aa2ecc5a86bfcb96c7fa68d793d7ba63a62c92eaf4f774902"
+    },
+    "som-rs/scripts/hosted_readiness/test_native_ts_nested_context.py": {
+      "bytes": 8389,
+      "git_blob_oid": "cad13f03c5fb0fedf8ce63e5ebeb8e08d63b3eff",
+      "git_mode": "100644",
+      "sha256": "8d8edd43e8fce90b127de256d4f15ee8a9ee21006df58648ab08c968e4ffe0f0"
+    },
+    "som-rs/scripts/hosted_readiness/test_run_full_products.py": {
+      "bytes": 58602,
+      "git_blob_oid": "171000b5a9a85b9ad2e1ec960c9fbcebe370a44c",
+      "git_mode": "100644",
+      "sha256": "c357c64bb1d7cd50d4c240f474ad3ff8f689e19b469e66827ea6180f313435f5"
+    },
+    "som-rs/scripts/hosted_readiness/test_typescript_regression_v2_contract.py": {
+      "bytes": 8127,
+      "git_blob_oid": "4685daba1c5b3cf998b1ec11f73c24dc7cacb7b5",
+      "git_mode": "100644",
+      "sha256": "116723c0cb63fc0fc68a192d672c4a574fbbc24b52e2a879361684e9f0001fdc"
+    },
+    "som-rs/scripts/hosted_readiness/typescript_native_host.py": {
+      "bytes": 54209,
+      "git_blob_oid": "67733c7da00e9f25b48f895779c1d17fce6dc582",
+      "git_mode": "100644",
+      "sha256": "74811b731ca0d7c26f72b5e914742f16c4488ce571370caaa37e07f89d05cbb2"
+    },
+    "som-rs/scripts/hosted_readiness/typescript_regression_domain.py": {
+      "bytes": 61702,
+      "git_blob_oid": "79075618850db5b7ccdcc3105ead2dcf9d47eac3",
+      "git_mode": "100644",
+      "sha256": "35afc2e1a963968d5f471585494a8b78335f06e7ce2727e39dc2ab8c01b981be"
+    },
+    "som-rs/scripts/hosted_readiness/typescript_regression_inputs.py": {
+      "bytes": 24306,
+      "git_blob_oid": "064696f0a19e0345730cf334a7bab3b1eb96383b",
+      "git_mode": "100644",
+      "sha256": "698e8320aceabbf57e84f09035eab997a13e785cc117a5f8d8faef5b0c7992ac"
+    },
+    "som-rs/scripts/hosted_readiness/typescript_regression_nested_rust.py": {
+      "bytes": 12982,
+      "git_blob_oid": "781468c4b33951047b0970fedbc50ad0f66b97f2",
+      "git_mode": "100644",
+      "sha256": "e0b0f1c17f5337aac8ba071d68ae7475fd13617844944cd72f436b0237ab55a6"
+    },
+    "som-rs/scripts/hosted_readiness/typescript_regression_owner.py": {
+      "bytes": 48896,
+      "git_blob_oid": "a07e4f85325493f9810f85ee40f88b49b48384ce",
+      "git_mode": "100644",
+      "sha256": "db90a5f459763359d3438e179dcd7301655d335ef08fcf1d0e194e2ce6d7c493"
+    },
+    "som-rs/scripts/react_output_acceptance/check_products.py": {
+      "bytes": 29673,
+      "git_blob_oid": "fb17e41fb1e93c9709125eb49d306daf751b12ee",
+      "git_mode": "100644",
+      "sha256": "d63ead67679944fb14501ac0212554436be7a5acde3c1f40e17746f3458ac7ae"
+    },
+    "som-rs/scripts/react_output_acceptance/m6_native_entry.py": {
+      "bytes": 51048,
+      "git_blob_oid": "feb8b4693fbc62e77fb216c7d95420b27cc7d6c8",
+      "git_mode": "100644",
+      "sha256": "83887548acdea1f3dfebaab114c1c87ea484881ae427de3d7b3843c6ff72da74"
+    },
+    "som-rs/scripts/react_output_acceptance/m6_react_callback.py": {
+      "bytes": 112607,
+      "git_blob_oid": "75caf5cc77cb132ddf5c247e00affd71c818c273",
+      "git_mode": "100644",
+      "sha256": "d1b84079364106bd16c80ddfd9637982d2f6a4b55380384b279fb02562b9d617"
+    },
+    "som-rs/scripts/react_output_acceptance/native_api_full_before.py": {
+      "bytes": 6184,
+      "git_blob_oid": "7ed5d7ac336530a2b57cfb46ad5b5786b71affe1",
+      "git_mode": "100644",
+      "sha256": "488358c0c8fa9e74a4efd924abed77b15a061b006c64ad399708b7438afcdac2"
+    },
+    "som-rs/scripts/react_output_acceptance/native_record_api.py": {
+      "bytes": 27473,
+      "git_blob_oid": "6e754056f899d0ab4ca4c3c538c8cfa27ac0c44b",
+      "git_mode": "100644",
+      "sha256": "e131eed2dacfac3dcd1b7beb18df74ca30f92119bd1bd4f45ce47cf120538920"
+    },
+    "som-rs/scripts/react_output_acceptance/native_recorded_subprocess.py": {
+      "bytes": 146401,
+      "git_blob_oid": "01caa3287a6bf26b6abf5b78dd4c3211eb6cd0a4",
+      "git_mode": "100644",
+      "sha256": "3994a827adde8b72007fc129cfa2d10bf4c70af52485ab8669768ef1c9dbb285"
+    },
+    "som-rs/scripts/react_output_acceptance/native_recording_owner.py": {
+      "bytes": 10506,
+      "git_blob_oid": "eb089812b1fe16fae4b0b7dfe6e612f0faa52370",
+      "git_mode": "100644",
+      "sha256": "394290413413a260f85fbcad1989b4f81cab8158dc4896fdff9bee981bd3d8ad"
+    },
+    "som-rs/scripts/react_output_acceptance/react_api_python_payload.py": {
+      "bytes": 38802,
+      "git_blob_oid": "2589f5b316a328439e58a6e0267d3b3c66659890",
+      "git_mode": "100644",
+      "sha256": "669b2ea374ce905b93d15fa400a613e43c95677dfd1984bb405b413b3c5f035a"
+    },
+    "som-rs/scripts/react_output_acceptance/record_api.py": {
+      "bytes": 8717,
+      "git_blob_oid": "ce1d2fe6a2d57388fa455cbcf9a2ca77cc1d2ac4",
+      "git_mode": "100644",
+      "sha256": "fc45155420395131f1e6914a18cb62826bf4f009506dd9dd2cd15d425cfb42f3"
+    },
+    "som-rs/scripts/react_output_acceptance/record_http.py": {
+      "bytes": 146293,
+      "git_blob_oid": "ccfbe2bc35e99679c7ae6132d71022a95114d86f",
+      "git_mode": "100644",
+      "sha256": "ed0dd5841a47cdab12453b64187a3f45d432d481c2acc055ae2ff6f24e844588"
+    },
+    "som-rs/scripts/react_output_acceptance/run_acceptance.py": {
+      "bytes": 62268,
+      "git_blob_oid": "35476c5b59c5b974fc09854f47f638c304897183",
+      "git_mode": "100644",
+      "sha256": "4345e68db288d1f4cba06e8a18d4fa9120891938a6c9ffc7f143f9f1d7d91c59"
+    },
+    "som-rs/scripts/react_output_acceptance/test_check_products_cleanup.py": {
+      "bytes": 14543,
+      "git_blob_oid": "65b77cb7410a83ff5d1186153841334b45ad0c5f",
+      "git_mode": "100644",
+      "sha256": "8d3f9cc065203d1440be14fff11696ab92384c6a767b1db62d9294533e42825f"
+    },
+    "som-rs/scripts/react_output_acceptance/test_native_api_case.py": {
+      "bytes": 13196,
+      "git_blob_oid": "003b808106b5d9ee9985806ea7f8aa85319c2026",
+      "git_mode": "100644",
+      "sha256": "508c7e08e0df2d643ea7e08378da9c681926545400ef5a26d5b092f9d2632d14"
+    },
+    "som-rs/scripts/react_output_acceptance/test_native_collector_interop.py": {
+      "bytes": 23311,
+      "git_blob_oid": "e4b981ecf4a297c98c2e59b294deccd0d8ead230",
+      "git_mode": "100644",
+      "sha256": "fedcc690cf7753bbe6761f07f49b65c4aadb584c934a919bab9e0198710a1db6"
+    },
+    "som-rs/scripts/react_output_acceptance/test_native_m6_recorded_subprocess.py": {
+      "bytes": 72704,
+      "git_blob_oid": "a08aeffd0b490bb104c813a4edcb873032c53fff",
+      "git_mode": "100644",
+      "sha256": "ef87783742a87a31e47a5b4719164cbef896883b5f7f44a520bdfa153fb0da7a"
+    },
+    "som-rs/scripts/react_output_acceptance/test_record_api.py": {
+      "bytes": 6239,
+      "git_blob_oid": "3a6f3eb2cc9ab03a6c37b8b3c08d7460f47aac23",
+      "git_mode": "100644",
+      "sha256": "ed96d6e002ac2e12181479b7fd40b56b5c56d3746dc13d06193b409a7e0d5903"
+    },
+    "som-rs/scripts/react_output_acceptance/test_record_http.py": {
+      "bytes": 11943,
+      "git_blob_oid": "7272c92fffa66bbcff9a31194904d635a4e95caa",
+      "git_mode": "100644",
+      "sha256": "46b27c64ea46ec1402f234547c4015a9756f13f843a8cfe677d290ebd91619d7"
+    },
+    "som-rs/scripts/react_output_acceptance/test_run_acceptance.py": {
+      "bytes": 50781,
+      "git_blob_oid": "0f86a5ab3fc9140fd2bddee490eeb658f86bd4a7",
+      "git_mode": "100644",
+      "sha256": "7aded6ef538018aafdd9443fda850d0cbf47d1a83ab8c846616d1aed7d8c3a01"
+    },
+    "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py": {
+      "bytes": 46627,
+      "git_blob_oid": "d13e2eb14b3b1862be084c0065a60ee978ef5f5d",
+      "git_mode": "100644",
+      "sha256": "9a4608a53f271697e5279018825f2a045d032595eaacc5748ef8d1637a9c52ce"
+    },
+    "som-rs/som-targets/qa/check_ts_products.py": {
+      "bytes": 41606,
+      "git_blob_oid": "858021c899129ff3f819055c14f011dcaa3c3450",
+      "git_mode": "100644",
+      "sha256": "fb52e35d465779a31affad4078e9209050f55ade3803e6931881bc523e2271d1"
+    },
+    "som-rs/tests/compiler-v1/cnl-positive-fixtures.json": {
+      "bytes": 628457,
+      "git_blob_oid": "cb0e77202a178ef9d811e9030af62512a2a2367d",
+      "git_mode": "100644",
+      "sha256": "0e8aefb530ce299aa7a445d249efdfa8047104bbb94a0c7913bdd162025e4475"
+    },
+    "som-rs/tests/react-output-v1/common.py": {
+      "bytes": 2310,
+      "git_blob_oid": "92737466472f396e4fe2ff69a3c7b1e8effd7d53",
+      "git_mode": "100644",
+      "sha256": "1010823cef27fc7b2eed652a7da624da1e6dd9a1bdb2b44963568d854626fe60"
+    },
+    "som-rs/tests/react-output-v1/run_api_contract.py": {
+      "bytes": 5278,
+      "git_blob_oid": "f336fc862b0f3417918ab21f45debd9f00da7283",
+      "git_mode": "100644",
+      "sha256": "0318f683db520939cc3c471b003ec2142324bbda24a7d615f75fe80117568300"
+    },
+    "som-rs/tests/react-output-v1/run_gates.py": {
+      "bytes": 8409,
+      "git_blob_oid": "5584d907e3e241fb0fe5f57e7a11d449bc1b4d79",
+      "git_mode": "100644",
+      "sha256": "4bbbd4e04c09dc8fe4b58069c44be0a5de666ad1640429170310307437f55510"
+    },
+    "som-rs/tests/react-output-v1/test_native_api_host_controls.py": {
+      "bytes": 10360,
+      "git_blob_oid": "04b08dd96044c73abdb8e013d17537931f1e70b0",
+      "git_mode": "100644",
+      "sha256": "ff60c7180cd362ab3de08fced72aad005ddbb8241592f07f985642906bf3ccb3"
+    },
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json": {
+      "bytes": 1540,
+      "git_blob_oid": "2b814cd3f3de12c6836ff5bf3aabd5d5cf32821f",
+      "git_mode": "100644",
+      "sha256": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c"
+    },
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json": {
+      "bytes": 1358,
+      "git_blob_oid": "74394716eed9f318299c98bf4a6f0ad9d9f3556b",
+      "git_mode": "100644",
+      "sha256": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53"
+    },
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json": {
+      "bytes": 1562,
+      "git_blob_oid": "bc3f368b65311f5d672335c5379d3652663ce861",
+      "git_mode": "100644",
+      "sha256": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23"
+    },
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json": {
+      "bytes": 1516,
+      "git_blob_oid": "989171d8d3bba4c4257233dd595907b45b3c37b0",
+      "git_mode": "100644",
+      "sha256": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e"
+    },
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.prompt.json": {
+      "bytes": 4472,
+      "git_blob_oid": "b3b201c5e75c40f834a97ea0ed8ce9ec22e2f8ca",
+      "git_mode": "100644",
+      "sha256": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d"
+    },
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json": {
+      "bytes": 2356,
+      "git_blob_oid": "85eced511b0950edb4ed656aaa0b571ea8c1ecd7",
+      "git_mode": "100644",
+      "sha256": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347"
+    },
+    "som-rs/tests/rust-output-v1/cases/index.json": {
+      "bytes": 2639,
+      "git_blob_oid": "ad79b9f27e4395a3b18235384943979ee63d6990",
+      "git_mode": "100644",
+      "sha256": "b49af2a7ba842e5dd810d8d010fcf93436474df7f49f1c569367bed1bc94ed1b"
+    },
+    "som-rs/tests/rust-output-v1/rust_profile.py": {
+      "bytes": 4376,
+      "git_blob_oid": "e948220d7bea9e21007eb342c160a4e5a552f3ca",
+      "git_mode": "100644",
+      "sha256": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513"
+    },
+    "som-rs/tests/rust-output-v1/rust_profile_phase2.py": {
+      "bytes": 892,
+      "git_blob_oid": "bd3ec1af24e2dde9e67d9aca7b4593b84292f018",
+      "git_mode": "100644",
+      "sha256": "66361c04b8c7069868aa03205dbb33f9d28ede06e55ea262326671b91108316b"
+    },
+    "som-rs/tests/typescript-output-v1/tree_sha.py": {
+      "bytes": 1448,
+      "git_blob_oid": "753e12781ca154ffa848ac25468302e8da7f6c82",
+      "git_mode": "100644",
+      "sha256": "6c9bccd1293aa8629f18539ea89fa0b5bb284dc70a579b13bc86f8d0324fa9a2"
+    }
+  },
+  "suites": [
+    {
+      "key": "bootstrap",
+      "methods": [
+        {
+          "assert_count": 1,
+          "name": "SourceStrategyParentTests.test_fixed_deferred_graph_import_compiles_but_admission_importer_refuses_it",
+          "sha256": "60377e9e93d8c6d3f34bb9a85a18b75869e012e5e820137ce8af0d0df505628c"
+        },
+        {
+          "assert_count": 2,
+          "name": "SourceStrategyParentTests.test_fixed_active_binding_import_at_graph_module_scope_is_refused_before_exec",
+          "sha256": "e263ee53b6ebf1b673a6c9871c9fa97a2f799e997c46739a5d489bd426ba25ac"
+        },
+        {
+          "assert_count": 6,
+          "name": "SourceStrategyParentTests.test_fresh_actual_self_entry_is_registered_before_first_admission_call",
+          "sha256": "29617acab845532e1f84482079886ca3691a2726593150164a332749dbff0241"
+        },
+        {
+          "assert_count": 5,
+          "name": "SourceStrategyParentTests.test_actual_outputs_matrix_is_not_a_strategy_or_a_job_name_suffix_grant",
+          "sha256": "f85b14407f0d73347973e0711699abb47c935840808013ab509dc643b1893aba"
+        },
+        {
+          "assert_count": 2,
+          "name": "SourceStrategyParentTests.test_duplicate_or_inline_strategy_cannot_hide_in_an_outputs_block",
+          "sha256": "3a88d5877a53d679d69f547137a3fa3193c04c674c1d13eefcd2ad60df0544f9"
+        },
+        {
+          "assert_count": 12,
+          "name": "NativeSourceBootstrapTests.test_real_git_and_fixed_group_register_code_and_globals_before_each_exec",
+          "sha256": "dceb1c3c8d740bbfea35b059af8830dad38bb5afe6328287d944cbe21267dfe8"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeSourceBootstrapTests.test_each_current_reusable_job_keeps_root_and_called_workflow_identity",
+          "sha256": "6f73da74409efcdaeeb4486f9dc498429fa302e910390d4fdbbda76b91d3be84"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeSourceBootstrapTests.test_both_current_direct_admission_jobs_keep_the_root_workflow",
+          "sha256": "672e5712c7388dd8ff316a438c4c0a860993636577ccfb677e62b51da327197f"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeSourceBootstrapTests.test_changed_source_bytes_mode_entry_and_workflow_refuse_before_helper_exec",
+          "sha256": "ce333708bbc2eccbecb10a5eb954e410f7bdc7277820481c4312b804e29a1dd7"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeSourceBootstrapTests.test_actual_head_change_cannot_reuse_the_original_bootstrap_pins",
+          "sha256": "55ae78818f70617eef9902d648904dd53c0b6dc2d0b8fa2c2adf342ee74cf7c6"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeSourceBootstrapTests.test_missing_transitive_authority_is_refused_before_any_group_body_exec",
+          "sha256": "1f0b20da0d6c7d3fc8db691e278eee1792dda8fa989d881236f05628ead5f3e9"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeSourceBootstrapTests.test_new_repository_import_in_the_fixed_group_is_refused_before_any_helper_exec",
+          "sha256": "26d1c62219f77f67465b4a014e92795fe889b2cf976aede640e82415317ef15d"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeSourceBootstrapTests.test_matching_timestamp_pyc_and_dangling_adjacent_pyc_are_refused",
+          "sha256": "8d68540c561472b7b7af66f898a2c3737dc545fc57b217067612876b39b45bc2"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeSourceBootstrapTests.test_link_and_hardlink_source_aliases_are_refused",
+          "sha256": "cf34c5958a4e74e8f8f4faa9fbc95a4924157324238ff807e90aeb3f3151880d"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeSourceBootstrapTests.test_actual_environment_fields_cannot_be_replaced_by_call_arguments",
+          "sha256": "de1aa32db53d26eb45d6e54e858915ae4f088d2da78c83799bfcf1c20fc96d3f"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeSourceBootstrapTests.test_checked_process_identity_cannot_change_between_bootstrap_and_first_helper_exec",
+          "sha256": "875e7c01751b3b348278dc2c46e65f221fa8907ef163a561fe33e22018676eb0"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeSourceBootstrapTests.test_old_graph_entry_and_unlisted_entry_path_cannot_claim_preexecution_bootstrap",
+          "sha256": "514679264aa8a76cd7d42a1c2e54c52911142c7c49fe767a218d40ed5cd41f81"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeSourceBootstrapTests.test_live_run_workflow_called_source_and_runner_job_are_independently_joined",
+          "sha256": "9df594c59603fdb689816304efc7d6ac3354f7457d454d5c9cb69a8160f99c36"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeSourceBootstrapTests.test_incomplete_duplicate_or_ambiguous_live_job_pages_are_refused",
+          "sha256": "610d1e5b4d21d69f56d4f53668444d0adf23cd0ef5f28a4f392e9e0623f706f9"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeSourceBootstrapTests.test_forged_preload_sha_marker_never_grants_admission_module_ownership",
+          "sha256": "0eec233c03bfb426bebefff480b2611d8e1f2f1154f971f2c5a7c081f60a03e4"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeSourceBootstrapTests.test_unlisted_role_path_raw_code_and_generic_module_name_are_unavailable",
+          "sha256": "9c73e130261f316627a8897cb18379d175ce5493992b62d69d2bdcdebf92ebc3"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeSourceBootstrapTests.test_real_existing_raw_finder_and_checked_spec_stay_the_same_objects",
+          "sha256": "94c04748860a4204b084f4d00c95a5bd13bbba1428f7016c7d74b0dc224521c6"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeSourceBootstrapTests.test_spec_ownership_change_during_live_api_check_is_refused_before_exec",
+          "sha256": "8126782403d22976875ffa5a34cdf46b7e21cde2598630a55a0acce9cebcc380"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeSourceBootstrapTests.test_function_identity_cannot_be_replaced_with_a_matching_mutable_sha_marker",
+          "sha256": "c95dde7185bc4510ef2b21c2ce5343b69758400f26571b177d3dbb4b3eacbfc5"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeSourceBootstrapTests.test_original_admission_error_survives_a_secondary_ownership_failure",
+          "sha256": "abb7b7b01e6513ccde0a85790fee080f9c09273634de376d83656efe3e37bf1c"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeSourceBootstrapTests.test_source_owned_constant_and_class_method_mutation_cannot_keep_the_code_ledger_valid",
+          "sha256": "abc2070af3a67330f9e4a3a9beae4ce8be22043f32c540e1ca217aafc1b13275"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeSourceBootstrapTests.test_actual_helper_body_failure_keeps_first_error_and_only_removes_owned_namespaces",
+          "sha256": "ef7e96e8e7fe6345f2ee05e4c239ae07a885efcb24a2bedf812e80c8d818395d"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeSourceBootstrapTests.test_retired_entry_cannot_activate_even_when_fixture_result_identities_match",
+          "sha256": "d57ffb0cc907cfb1bd847c2020d37f94ee163d023e8038ff913c22b5a7be9eff"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeSourceBootstrapTests.test_context_exit_keeps_body_failure_and_still_removes_owned_modules_after_source_refusal",
+          "sha256": "d87e9c721ab4c059b2ab6dc978d4babb9a5b8d2e6b8badfadf0a20223aa45d54"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeSourceBootstrapTests.test_real_graph_default_reader_mutation_refuses_before_foreign_reader_runs",
+          "sha256": "edce255e4220ed877f34489fffeeb4b463b5ace848e522fb879df308c99c3812"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeSourceBootstrapTests.test_actual_keyword_default_binding_refuses_mutation_without_foreign_object_hooks",
+          "sha256": "c0499308568a3d8182e8522b7156db38cbc8c75f27c632bdc6ffaed14eabb727"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeSourceBootstrapTests.test_actual_closure_cell_identity_and_cyclic_content_are_checked_before_admission",
+          "sha256": "4dfe8da719f3f8c8abdb31d6f76abb35609dba92fb034a8e74a7a3bd7a14b6e6"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeSourceBootstrapTests.test_actual_explicit_source_display_name_keeps_its_distinct_environment_job_id",
+          "sha256": "25017a28effcfa5e1016ebfc7235b43a81854589eec99539b9a5b57446b8638d"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeSourceBootstrapTests.test_wrong_or_duplicate_explicit_name_runner_job_remains_refused",
+          "sha256": "aaad4ac293951ccd5516c11731aefb90a26d1b50055f381787b2e05310c318a4"
+        }
+      ],
+      "path": "som-rs/scripts/hosted_readiness/test_native_source_bootstrap.py",
+      "timeout_seconds": 600
+    },
+    {
+      "key": "core",
+      "methods": [
+        {
+          "assert_count": 5,
+          "name": "ActiveProtocolTests.test_actual_registered_caller_loads_same_target_module_and_code_before_exec",
+          "sha256": "aa7a104c64f4ef256a39b5818abfc20304f337a1e02c0f72e411958a1d0a45c3"
+        },
+        {
+          "assert_count": 2,
+          "name": "ActiveProtocolTests.test_same_filename_foreign_code_is_refused_before_target_exec",
+          "sha256": "f88d0cae21252f13c03f2936508655bacda25da2edbef0e27bc716c4f6f2d5ed"
+        },
+        {
+          "assert_count": 2,
+          "name": "ActiveProtocolTests.test_same_registered_code_with_foreign_globals_is_refused",
+          "sha256": "a6c93f01ae212da367e59147823e60da6e38f0b49e2bc5dd604e9234dc4101b5"
+        },
+        {
+          "assert_count": 2,
+          "name": "ActiveProtocolTests.test_unknown_intermediate_frame_cannot_launder_a_registered_caller",
+          "sha256": "5f84e67a29ba6d3842355bee67601f5e27f5cacfbd3ecf30bc8d62f0e921c86d"
+        },
+        {
+          "assert_count": 2,
+          "name": "ActiveProtocolTests.test_missing_transitive_source_closure_refuses_before_body",
+          "sha256": "68d92d1361904a22d1b3b6d3bdbe6a5b50ca41f0ebc8a80aef0af01352d98801"
+        },
+        {
+          "assert_count": 2,
+          "name": "ActiveProtocolTests.test_preloaded_target_namespace_is_refused_without_replacement",
+          "sha256": "cef66572d9e369a17da2a1030e133dbf2eba06a808cfa6c334f65e05a2afa6de"
+        },
+        {
+          "assert_count": 2,
+          "name": "ActiveProtocolTests.test_fixed_import_executes_same_registered_target_with_exact_origin",
+          "sha256": "c34bc7031411e2cfb4c99ad7405d9938b01511851dda1a0ab2eae14f3b75a500"
+        },
+        {
+          "assert_count": 2,
+          "name": "ActiveProtocolTests.test_fixed_import_refuses_an_unlisted_qualified_origin_before_target_exec",
+          "sha256": "59e7a5d3856640d34c489b555c13dc16c9498df457c781ab94d60a8b0a63b364"
+        },
+        {
+          "assert_count": 3,
+          "name": "ActiveProtocolTests.test_borrowed_close_keeps_original_finder_and_spec_same_objects",
+          "sha256": "5705938a363d631e2637d0531ad373acb4ebe685cdcbe4f3596f72776b2f70d2"
+        },
+        {
+          "assert_count": 2,
+          "name": "ActiveProtocolTests.test_actual_guard_rules_mutation_refuses_before_target_body",
+          "sha256": "92023145b27fa685409d7b7aaea5468f555f2f5237bdf0e0a1fbed47a423a0ae"
+        },
+        {
+          "assert_count": 3,
+          "name": "ActiveProtocolTests.test_actual_source_function_defaults_change_is_refused_before_use",
+          "sha256": "03c2cc8d25ef660fb3311c6d07c79a8871a77efc4e51e37f45f27edb1aaa857c"
+        },
+        {
+          "assert_count": 3,
+          "name": "ActiveProtocolTests.test_body_error_survives_foreign_namespace_cleanup_refusal",
+          "sha256": "5bf123548220981167beea0f387be30b91d029b3e61f12f20fe440dbc48b015b"
+        },
+        {
+          "assert_count": 6,
+          "name": "ActiveProtocolTests.test_group_load_uses_private_aliases_and_keeps_collector_module_unchanged",
+          "sha256": "db287626649465819f494ecc8def95d6d2ef3321472e98d82ccfc48a8a90f1cd"
+        },
+        {
+          "assert_count": 3,
+          "name": "ActiveProtocolTests.test_group_collision_refuses_before_any_member_body",
+          "sha256": "9d0a3efcd57c5d9edfa405892e4f8887148fcb73ea47ca077a722ddf9459010c"
+        },
+        {
+          "assert_count": 4,
+          "name": "ActiveProtocolTests.test_actual_trusted_entry_is_registered_before_its_body",
+          "sha256": "80eb7756892481cf4dd2681806febafb9d1fa1cce8ae20bf683b12502fc9e12e"
+        },
+        {
+          "assert_count": 1,
+          "name": "ActiveProtocolTests.test_declared_general_binding_keeps_actual_role_origin",
+          "sha256": "64845889ef9458e243fb2331e582b5f04d2ceedfbff5fea98d5b7c6966ae354e"
+        },
+        {
+          "assert_count": 2,
+          "name": "ActiveProtocolTests.test_general_binding_replacement_cannot_call_foreign_handle_methods",
+          "sha256": "72f63a75f92d5f1b1e2c790c91a73ece93bade096f97e2a940a158ae4a960909"
+        },
+        {
+          "assert_count": 2,
+          "name": "ActiveProtocolTests.test_unregistered_initial_entry_never_runs_qa_body",
+          "sha256": "b5f05abf06a8ce20a0dc8a369c03d6df4e0b4ea322d13795403d2feddbb09a1c"
+        },
+        {
+          "assert_count": 2,
+          "name": "ActiveProtocolTests.test_fake_sysmodule_transfer_class_cannot_run_a_foreign_verifier",
+          "sha256": "b0dcb38646e3748785929c06b362bd30eb80a18529d73cab5b17d2c61ba8adc1"
+        },
+        {
+          "assert_count": 2,
+          "name": "ActiveProtocolTests.test_pending_complete_policy_is_an_explicit_refusal",
+          "sha256": "6c13c71f26d2b841ec30b89f339ed53e24ef66037254afaa17f838e797fb8f5d"
+        },
+        {
+          "assert_count": 4,
+          "name": "ActualContextProtocolTests.test_whole_actual_context_module_and_runtime_bridge_use_actual_origin",
+          "sha256": "7570fabcdb73f2d8287f8a4b6261d2e3437199cfd023bf588562fe080ca10169"
+        },
+        {
+          "assert_count": 2,
+          "name": "ActualContextProtocolTests.test_actual_context_rejects_replaced_global_handle_before_fake_methods",
+          "sha256": "e07c4ac4e0b10373835981131690c32f1cf97335d4285d73e9c0ed140a2199d2"
+        },
+        {
+          "assert_count": 1,
+          "name": "ActualContextProtocolTests.test_context_bridge_cannot_launder_a_foreign_caller",
+          "sha256": "418257aeeac661a8e8f30bd8df0daa09a3c49b19cda9664c22cd23fa0097398a"
+        },
+        {
+          "assert_count": 1,
+          "name": "ActualContextProtocolTests.test_context_module_cache_replacement_is_refused",
+          "sha256": "8a4145de785818e6be1638010ba8652dc194b7423f1f6420c9dbcda39230d235"
+        },
+        {
+          "assert_count": 5,
+          "name": "FragmentProtocolTests.test_original_whole_function_and_typed_local_are_fresh_for_every_call",
+          "sha256": "bfce5ef47814f4a461659f71e0a9ea5d2828cbcedc35e2064bf8d430305860ba"
+        },
+        {
+          "assert_count": 2,
+          "name": "FragmentProtocolTests.test_changed_original_fragment_ast_refuses_before_exec",
+          "sha256": "3bafd21395da4794a5ae12ac1bf57986b98af6b7c6cba66bd93720384ec57c17"
+        },
+        {
+          "assert_count": 1,
+          "name": "FragmentProtocolTests.test_typed_local_json_rejects_foreign_objects_without_calling_hooks",
+          "sha256": "9ab646a3c8670723b42cd39861ac56348ae8ea2decb7e323655ec7b0985c5dc1"
+        },
+        {
+          "assert_count": 1,
+          "name": "FragmentProtocolTests.test_closed_fragment_cannot_supply_exports",
+          "sha256": "60e9f5f2e4e014252675de1ff414cce53a51f4922fc2460a360b0187c6928181"
+        },
+        {
+          "assert_count": 4,
+          "name": "FragmentProtocolTests.test_replacement_typed_class_with_original_methods_refuses_before_foreign_hook",
+          "sha256": "5aa63b15f3e73c554d595a9e9ba227551859c42d87df42c902b8ad2fa08d2eec"
+        },
+        {
+          "assert_count": 3,
+          "name": "FragmentProtocolTests.test_original_typed_class_added_hook_refuses_without_invoking_it",
+          "sha256": "055ba685dbb17cb19f55f3ab0d61290f0e5c0ae1a9fe3ce08e219c04d4f66089"
+        },
+        {
+          "assert_count": 2,
+          "name": "FragmentProtocolTests.test_already_bound_fragment_rechecks_typed_class_before_export_use",
+          "sha256": "3a0a22975d5f7e4bb438288cbbbfd76ce8ce63a41977f7e4bcf70af94260c0a2"
+        },
+        {
+          "assert_count": 2,
+          "name": "FragmentProtocolTests.test_typed_class_inherited_hook_change_refuses_before_foreign_hook",
+          "sha256": "d9e076640aee2dc886a78513cd4916314eb4b6154f2b665753522a53c3ef7828"
+        },
+        {
+          "assert_count": 2,
+          "name": "FragmentProtocolTests.test_typed_class_added_property_refuses_before_foreign_descriptor",
+          "sha256": "3278bdfb28d99fc2982c0c686d2f1014a3ab9685c040b1887331052ad7f92b9e"
+        },
+        {
+          "assert_count": 2,
+          "name": "FragmentProtocolTests.test_unrelated_source_owned_class_adapter_remains_allowed",
+          "sha256": "7f7e2e6c1d93ce6b28c01540c976ea86a72ccd1a387459964e65c36a2325b028"
+        },
+        {
+          "assert_count": 3,
+          "name": "FixedBindingProtocolTests.test_fixed_module_alias_refuses_before_foreign_module_hook",
+          "sha256": "33ffda406a32fead4572ad07cc3b02abf43e44704bca2cbe09234680be580deb"
+        },
+        {
+          "assert_count": 3,
+          "name": "FixedBindingProtocolTests.test_fixed_class_alias_refuses_before_foreign_class_call",
+          "sha256": "064555c534d2dec25d1f1f2956759e125e29efc6f6f34ebde5937c2af95e6099"
+        },
+        {
+          "assert_count": 4,
+          "name": "FixedBindingProtocolTests.test_fixed_function_alias_refuses_another_registered_source_function",
+          "sha256": "21935137132bba88cabb08fe95567fa05499586db913cde35421be0886d055f9"
+        },
+        {
+          "assert_count": 3,
+          "name": "FixedBindingProtocolTests.test_provider_export_change_refuses_even_when_caller_alias_is_original",
+          "sha256": "f2be0ae95e8ff89740f9615fa8aba5e780f60ce7899eb27a2868a1b406b2e4db"
+        },
+        {
+          "assert_count": 2,
+          "name": "FixedBindingProtocolTests.test_provider_module_alias_replacement_refuses_before_foreign_hook",
+          "sha256": "3062d3d0b23b2fec85fde39d95ae82104e8a3717107f5775b94214f6057e5b67"
+        },
+        {
+          "assert_count": 4,
+          "name": "FixedBindingProtocolTests.test_executing_body_cannot_skip_fixed_binding_check",
+          "sha256": "1e61214638d99d41ec03cd59ad26cda0f67473734105d16aa6bd3aba46a18108"
+        },
+        {
+          "assert_count": 2,
+          "name": "FixedBindingProtocolTests.test_missing_provider_export_refuses_without_module_getattr",
+          "sha256": "4155b72e583b4b8acb776d1a53cfbc1ab01af8d53dbba888c2756da1d8e46588"
+        },
+        {
+          "assert_count": 3,
+          "name": "FixedBindingProtocolTests.test_provider_pattern_change_refuses_before_foreign_fullmatch_hook",
+          "sha256": "ba902cb5a9d870882b710ad2f3ec730c962e20af3581b61c8e3cda8a39b49eb9"
+        },
+        {
+          "assert_count": 6,
+          "name": "FixedBindingProtocolTests.test_fixed_exports_keep_unrelated_source_adapter_and_data_mutable",
+          "sha256": "57519caaac08a53fc80f611bd7caceb662da936bf5df203f402ebccf7f609eba"
+        },
+        {
+          "assert_count": 4,
+          "name": "FixedExportClassStateTests.test_fixed_same_class_new_hook_refuses_before_construction",
+          "sha256": "58a1adbd26e6229ebd16422fba83cce4ba6987216a719f819c23b540d74a2771"
+        },
+        {
+          "assert_count": 2,
+          "name": "FixedExportClassStateTests.test_fixed_same_class_init_hook_refuses_before_construction",
+          "sha256": "c28aac3a8b6d2b2410648ada1420fc7cb8ba86186189433bd0a2ff4d97a58052"
+        },
+        {
+          "assert_count": 2,
+          "name": "FixedExportClassStateTests.test_fixed_class_added_descriptor_refuses_before_getter",
+          "sha256": "9776fee1aedacc8c91c830a342dff1d12954abc3833176ee7a22dddd55326927"
+        },
+        {
+          "assert_count": 2,
+          "name": "FixedExportClassStateTests.test_fixed_class_inherited_new_hook_refuses_before_construction",
+          "sha256": "56723cd40d30eaa4259afd9eab11c26ee3d0c3a1937d1e32915da0b32eb64a13"
+        },
+        {
+          "assert_count": 3,
+          "name": "FixedExportClassStateTests.test_fixed_source_base_registered_adapter_change_refuses",
+          "sha256": "0a7c234c57420faf478caef9f537dd28bcea1a536f0b19a9ae11087fe19ebea1"
+        },
+        {
+          "assert_count": 1,
+          "name": "FixedExportClassStateTests.test_fixed_class_MRO_change_refuses_before_use",
+          "sha256": "673944ca2d2ee38acd7ef894335250607dcc1cd31cddf24e864a4085c3c70a38"
+        },
+        {
+          "assert_count": 4,
+          "name": "FixedExportClassStateTests.test_fixed_class_is_pinned_before_the_first_consumer_load",
+          "sha256": "9aa2220c814ff61f3a503c7218efb60508d2f574b4896855706d053ae81e6f72"
+        },
+        {
+          "assert_count": 7,
+          "name": "FixedExportClassStateTests.test_fixed_builtin_base_keeps_unrelated_same_provider_class_mutable",
+          "sha256": "135a6e0400526f6b8cc018428c44179f0e63b536e05c1e8f9b96a30d19741e0d"
+        }
+      ],
+      "path": "som-rs/scripts/hosted_readiness/test_native_active_controls.py",
+      "timeout_seconds": 600
+    },
+    {
+      "key": "http",
+      "methods": [
+        {
+          "assert_count": 23,
+          "name": "NativeHttpTests.test_all_original_five_targets_use_actual_fresh_entries_main_argv_and_exit",
+          "sha256": "6e612017b47f22e5f46a41f04735d79d5f30134fbedd1acb59b3e5394d9f106e"
+        },
+        {
+          "assert_count": 9,
+          "name": "NativeHttpTests.test_native_ports_and_actual_raw_response_survive_without_network",
+          "sha256": "542a7fbba9d9346b3afb44941aa1a9a1e6449654e6b695bc84c333d1d079e1f5"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeHttpTests.test_legacy_port_cannot_enter_native_transport",
+          "sha256": "fa424c71b3374ec7ae1a27bb12de57457876b6491753992f951397674fa49ce5"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeHttpTests.test_extra_admitted_source_refuses_before_output_and_target_body",
+          "sha256": "e6ce9b1c0e320eb3579fcb7562fd6bd6097de772d3fcbe1fd409d686e5ef5d84"
+        },
+        {
+          "assert_count": 12,
+          "name": "NativeHttpTests.test_foreign_context_and_fake_handle_never_run_attribute_hooks_or_legacy",
+          "sha256": "366b3cf886b8495451d853548019c8a996003f0fceff28ffa9b6cb2ba37911ac"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeHttpTests.test_removed_binding_with_and_without_core_key_keeps_actual_guard",
+          "sha256": "48542ae96f32f4f5f120b05068b590601bd6eeb7ba99cfbca59d548fb454bfa4"
+        },
+        {
+          "assert_count": 13,
+          "name": "NativeHttpTests.test_original_primary_identity_and_trace_survive_real_finalize_write_failure",
+          "sha256": "b82f6e29a7066847b45fbc84ea3a85e7fc7f46896f44b02324c59a507d1bf437"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeHttpTests.test_actual_tracked_target_and_original_context_bytes_are_postchecked",
+          "sha256": "93043e8843edc3a3cf38679af82b666200682345275657c9787cac89c35148e3"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeHttpTests.test_actual_native_environment_is_preserved_and_changed_target_state_refuses",
+          "sha256": "df5f5d80ded64215d456106fb8414862a57277689ceb47a6acc580385088ff12"
+        },
+        {
+          "assert_count": 10,
+          "name": "NativeHttpFirstErrorTests.test_transport_error_stays_primary_when_its_raw_finalizer_also_fails",
+          "sha256": "20882cf00bcf873cd32cf3e253d73ca5a0c167b453bdea8ab7050b2c32b283bc"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeHttpFirstErrorTests.test_read_error_keeps_original_identity_trace_and_finalize_secondary",
+          "sha256": "bd69d2326ea2c86cb6b52e074d08a1bcf44b59e2c268c0ce671bcbcc139439fa"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeHttpFirstErrorTests.test_close_error_stays_primary_when_final_raw_write_fails",
+          "sha256": "711fa9c8ed95d241f86ef878091fb9e5158c3401716db5a9ad69a902fd4e9dea"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeHttpFirstErrorTests.test_attach_error_survives_finalize_and_response_close_failures",
+          "sha256": "4e7b5819a06ea1d410c3acd5c9eb079cd9a238cbb1d096d86cd5f4c2a220266d"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeHttpFirstErrorTests.test_active_read_error_survives_real_response_context_close_failure",
+          "sha256": "b77b4d9491b67f074d4b40fcc0642768123e67b62c44defaa19d67933c2f4cd1"
+        },
+        {
+          "assert_count": 11,
+          "name": "NativeHttpFirstErrorTests.test_second_pending_call_is_saved_after_first_finalizer_write_failure",
+          "sha256": "aba8f45ec37ab713f7cbc0f313e0e60e1280436811293b65000b6165f7cb88a6"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeHttpFirstErrorTests.test_caught_transport_error_cannot_hide_failed_raw_evidence",
+          "sha256": "d6f39282e341b4ee0b6f374103699f2e5b0b1f2bdeab5b14abf9a51c58d4c38a"
+        },
+        {
+          "assert_count": 7,
+          "name": "NativeHttpFirstErrorTests.test_successful_read_with_failed_save_has_the_actual_save_error_primary",
+          "sha256": "ac1c697b17d499b12f6b83a80dc55b1f0f77c91ed6e22262354b9b60769be785"
+        },
+        {
+          "assert_count": 8,
+          "name": "NativeHttpFirstErrorTests.test_saved_read_error_survives_owner_change_before_response_close",
+          "sha256": "ab2ee3bce08cff6afc80ec1926c9f15e72f797947a89114efd26062b8d42f2c2"
+        },
+        {
+          "assert_count": 9,
+          "name": "NativeHttpFirstErrorTests.test_read_error_survives_owner_change_before_its_raw_finalizer",
+          "sha256": "f8e81244bd721b4689f11c873f142c1752a4be60befc4ce7b45be15a5900bd70"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeHttpFirstErrorTests.test_target_body_error_stays_primary_when_close_owner_guard_refuses",
+          "sha256": "1dad3caf98d727b15aed4d04af4c47e1f9a7cf34a8f7803b575a56e9c915f688"
+        },
+        {
+          "assert_count": 10,
+          "name": "NativeHttpFirstErrorTests.test_caught_read_error_allows_successful_close_to_return_normally",
+          "sha256": "21b16b5b82d5831045dea530355cf2be0a7051023dc8546d329e0cd1401a1301"
+        },
+        {
+          "assert_count": 8,
+          "name": "NativeHttpV3Tests.test_error_metadata_never_calls_reason_errno_string_or_traceback_properties",
+          "sha256": "1d23d0beccb4665eb05090a4e478bb98cd8bf67b778cac536a09f892478651b3"
+        },
+        {
+          "assert_count": 7,
+          "name": "NativeHttpV3Tests.test_same_class_matching_context_cannot_replace_initial_owner_for_a_read",
+          "sha256": "d5c3deb9eae7afa96da4d7e237476388c8a88547b868315ce23a8dbf52731623"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeHttpV3Tests.test_shadow_recorder_call_sinks_and_containers_never_run_foreign_hooks",
+          "sha256": "4d58ca5af698af6a84a1355387dbaec972b185d3b9e7fe59a3a98d56cbc15ed3"
+        },
+        {
+          "assert_count": 9,
+          "name": "NativeHttpV3Tests.test_actual_httpresponse_and_httperror_object_types_survive_explicit_exit_scope",
+          "sha256": "6c77fc9819760143d75a3f1dd268e0363461e0411b9fd701d2f7068233b96e5d"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeHttpV3Tests.test_unrelated_handled_exception_does_not_become_close_error_primary",
+          "sha256": "4a62565d3d6e639776b7f8cb0dba99aac856ed06fb84fe5f2c2f482f1f84efb1"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeHttpV3Tests.test_true_with_body_error_remains_primary_over_close_and_raw_failures",
+          "sha256": "abfb4716c9e7fc3eab9721fa65276d3c11a71bcb4ca034a73f0a6041d1786a7f"
+        },
+        {
+          "assert_count": 7,
+          "name": "NativeHttpV3Tests.test_different_nested_and_worker_calls_keep_separate_explicit_exit_tokens",
+          "sha256": "23db6b92d4fe08822e40fcf9d3c46688a7ff212515098088633104e4c0120912"
+        },
+        {
+          "assert_count": 7,
+          "name": "NativeHttpV3Tests.test_late_foreign_exit_field_is_preserved_and_other_owned_field_is_restored",
+          "sha256": "f6e7ca8ff83c0381d314a6bb3fd665caabcd5e3dc2ee67d7bd73c5f72e258b54"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeHttpV3Tests.test_changed_original_stdlib_method_code_refuses_without_running_foreign_body",
+          "sha256": "decda773a082d638746fe998fc9e5577a442a82fee0e6af2d63b20b53f190faa"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeHttpV3Tests.test_same_call_exit_reentry_fails_after_actual_target_entry_and_restores_fields",
+          "sha256": "b8664ac6ce099d6a7fbac969f003c4c4299f70701630fd6b005057bab133433f"
+        },
+        {
+          "assert_count": 8,
+          "name": "NativeHttpV4Tests.test_real_class_alias_two_calls_restore_verify_and_true_owner_cleanup",
+          "sha256": "3a879259efd5d69274b562aa330019faa4d8c2de61c515de64dead95bc559fa4"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeHttpV4Tests.test_late_SourceBytes_git_read_verify_shadows_refuse_before_dispatch",
+          "sha256": "4039986bb544c4904106f30e427bc698f7f4962efb99f115fd9147264e524f4d"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeHttpV4Tests.test_nonowning_close_descriptor_is_not_looked_up_and_other_cleanup_runs",
+          "sha256": "2996598b07ff9ba289f26a623ab1c663e79c85d5381b3f5d4f001283cc552a8a"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeHttpV4Tests.test_actual_finalizer_cell_change_never_runs_hook_and_second_call_is_saved",
+          "sha256": "5a26891a3acebf4ce4fd59d5c0639ca220bc73d619f2764bdfb734b085ecf62c"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeHttpV4Tests.test_forged_public_finisher_signature_cannot_grant_clone_authority",
+          "sha256": "793fd2884b693afb8fa2bc21659a089ac48ee718331fdb89e82b708eedff2417"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeHttpV4Tests.test_descriptor_checks_original_cell_before_returning_or_binding_callable",
+          "sha256": "3fb971cc3137c91c165bfdea8c3af6f3a2498bc5096288f983a548c0e4139371"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeHttpV4Tests.test_registered_response_read_close_and_HTTPError_inner_replacements_never_run",
+          "sha256": "0cd2c11262f4af9021b7ed11de09465e6bdd4912019bae8a0e3a0ad1329729aa"
+        },
+        {
+          "assert_count": 8,
+          "name": "NativeHttpV4Tests.test_same_response_two_threads_keep_own_body_and_one_exit_owner",
+          "sha256": "6a5d70f10e29b997efc37090612935b758d494bcfafbc0fdaa49cd993bc25b4b"
+        },
+        {
+          "assert_count": 16,
+          "name": "NativeHttpV4Tests.test_constructor_record_pins_and_original_delegate_seals_refuse_before_foreign_hooks",
+          "sha256": "ce2e124a99c3e872317df289d426c309536107163569acd9a4150da826f2acf0"
+        },
+        {
+          "assert_count": 13,
+          "name": "NativeHttpConsumerOriginTests.test_same_class_forged_global_issuer_and_matching_public_rows_never_authorize_foreign_finalizer",
+          "sha256": "5241ae59d201cebed282a69436f79243a5fb0fe029d9274df1e294b4faa18350"
+        },
+        {
+          "assert_count": 24,
+          "name": "NativeHttpConsumerOriginTests.test_constructor_origin_rejects_fake_first_send_cloned_factory_and_cross_recording_reuse",
+          "sha256": "b884a4f8abd35ea6bb7c15622c482cac43320ab93041e379822510a61a84a8f3"
+        },
+        {
+          "assert_count": 13,
+          "name": "NativeHttpConsumerOriginTests.test_private_arbitration_allows_different_responses_and_refuses_same_thread_short_reentry",
+          "sha256": "509410b298314812602cadce9a84391184e6b9cdc9f6bcf7898dbceae8dc51cc"
+        }
+      ],
+      "path": "som-rs/scripts/hosted_readiness/test_native_m6_record_http.py",
+      "timeout_seconds": 600
+    },
+    {
+      "key": "legacy",
+      "methods": [
+        {
+          "assert_count": 15,
+          "name": "RecordingTests.test_exact_raw_request_response_and_actual_response_object_survive",
+          "sha256": "0238d754b49f23f79580e29f7f9f97653d91eb4746f403117dc8420952c65255"
+        },
+        {
+          "assert_count": 4,
+          "name": "RecordingTests.test_http_error_keeps_its_type_and_full_raw_body",
+          "sha256": "6d56852347e578a48038df6ddfd47663e98787d8a80f2ff89066324ae44cdd6c"
+        },
+        {
+          "assert_count": 2,
+          "name": "RecordingTests.test_chunked_reads_and_zero_read_do_not_change_bytes",
+          "sha256": "5896742d0af8e9c7174d7ac3a81002401fd72875f43aea26db555c7d301715de"
+        },
+        {
+          "assert_count": 3,
+          "name": "RecordingTests.test_partial_read_is_preserved_and_cannot_claim_complete",
+          "sha256": "896ffbd001c3c5976d8b0c56ae3bb2756593ed5c2fec2c4b03cf6f6dc6d1dd68"
+        },
+        {
+          "assert_count": 4,
+          "name": "RecordingTests.test_parallel_duplicate_requests_keep_all_multiplicities",
+          "sha256": "c108cdd44e6805b31295dcb0b33eeae92f620e0b711ec594b4ae2c2b69eb9671"
+        },
+        {
+          "assert_count": 5,
+          "name": "RecordingTests.test_transport_error_is_retained_without_exception_text",
+          "sha256": "b2170660e760d8fff9fc7381bac2c370efb418a3cf150cc7464eaf8a3ea52a38"
+        },
+        {
+          "assert_count": 3,
+          "name": "RecordingTests.test_network_boundaries_block_before_the_transport",
+          "sha256": "d6739b1967a6c380473f047a559215107d660f186a84a07cb133c4ad072cf575"
+        },
+        {
+          "assert_count": 5,
+          "name": "RecordingTests.test_original_arguments_file_name_path_and_exit_are_preserved",
+          "sha256": "ed1c487f4d70fca5678724a53d3436670d57db46fb8580e9c21390a90da4635e"
+        },
+        {
+          "assert_count": 5,
+          "name": "RecordingTests.test_guards_keep_existing_outputs_and_nonadmitted_script",
+          "sha256": "826152b11a1c78f5e6607fdbb48a1c5a99f6b540aba4f24775867ac8b45959b9"
+        },
+        {
+          "assert_count": 5,
+          "name": "RecordingTests.test_exception_keeps_completed_wire_evidence_and_restores_the_hook",
+          "sha256": "2b65528ce452cf05430ec4ad1a0f6fa8c67072be4544fb96c812765db4f016c5"
+        },
+        {
+          "assert_count": 2,
+          "name": "RecordingTests.test_cli_forwards_original_arguments_without_a_shell",
+          "sha256": "93d530e380cd42221fd41e03675606dd27dc74d15a56500748d69b6e13389f4f"
+        }
+      ],
+      "path": "som-rs/scripts/react_output_acceptance/test_record_http.py",
+      "timeout_seconds": 300
+    },
+    {
+      "key": "firstlaunch",
+      "methods": [
+        {
+          "assert_count": 1,
+          "name": "FirstLaunchControlTests.test_stat_exact_52_fields_signed_values_and_one_task",
+          "sha256": "9b1efcd898bd2a3d54eb1ec57a59ccced139b0bd241652a9e6a3b8630af40ec3"
+        },
+        {
+          "assert_count": 1,
+          "name": "FirstLaunchControlTests.test_complete_kernel_argv_and_original_sys_arrays",
+          "sha256": "dd0bcbe3c7f2d8999a760d3c6591de5596df8fb580452f490acdf6d8099859c6"
+        },
+        {
+          "assert_count": 1,
+          "name": "FirstLaunchControlTests.test_maps_fixed_categories_bounds_and_executable_refusal",
+          "sha256": "deba7f84efee8fc414f2423f37cfc59e5fc28dc4b0170721d23b88b05a49c474"
+        },
+        {
+          "assert_count": 3,
+          "name": "FirstLaunchControlTests.test_elf_header_load_dynamic_and_string_ranges",
+          "sha256": "df6a00e4f9590325bb3d9231947107571e33bb4f8ea1373b33d68b56a81494b7"
+        },
+        {
+          "assert_count": 4,
+          "name": "FirstLaunchControlTests.test_fixed_reader_roles_host_leaf_and_every_physical_ancestor",
+          "sha256": "d69874223b0d49293d2909c331da19092e1630649264a4026ba0b13576e0ad82"
+        },
+        {
+          "assert_count": 13,
+          "name": "FirstLaunchControlTests.test_reader_stable_bounds_primary_traceback_and_once_close",
+          "sha256": "d8d4fe71caf481fd83006d8187c7b8a96f6c53bb7b30e102c243f74f50751d80"
+        },
+        {
+          "assert_count": 5,
+          "name": "FirstLaunchControlTests.test_private_environment_exact_names_values_and_no_secret_output",
+          "sha256": "9bb7ba9043823eee964e1c210b8fd0d95af77c833eab57e51168730ab467d449"
+        },
+        {
+          "assert_count": 7,
+          "name": "FirstLaunchControlTests.test_private_environment_cleanup_keeps_first_error",
+          "sha256": "3e1220750c76f3eecf5812b625d4cd952eb1f328515ec022d316c57e2a8fa912"
+        },
+        {
+          "assert_count": 4,
+          "name": "FirstLaunchControlTests.test_runtime_source_capsule_restore_origin_and_archive_join",
+          "sha256": "3e85e64fa33d0073f2b9e423a96ff5d04948ea7461f22a7e02cf230644274200"
+        },
+        {
+          "assert_count": 3,
+          "name": "FirstLaunchControlTests.test_complete_inventory_modes_aliases_and_all_cache_bytes",
+          "sha256": "12e363b9886b814a70ae230c2db53dbf74c4ac9d8202c9c855410de0315b646d"
+        },
+        {
+          "assert_count": 3,
+          "name": "FirstLaunchControlTests.test_module_native_namespaces_and_only_pinned_aliases",
+          "sha256": "b7a77f8b7fb6cc5e59aee5e411bece043e6d9a4b2b7f2bc29c55f383b566ac30"
+        },
+        {
+          "assert_count": 3,
+          "name": "FirstLaunchControlTests.test_source_frozen_normal_cache_association_and_complete_code_tree",
+          "sha256": "4fa912a9070081b43a3653fac70893a20a45608d543320d28dbcd994428c8a2d"
+        },
+        {
+          "assert_count": 1,
+          "name": "FirstLaunchControlTests.test_native_module_file_graph_instrumentation_and_no_wheel_startup",
+          "sha256": "3fc839e84c617bd2665c68fe8e6cb6f0b1d42aa64173d30d83a05924e5199ddf"
+        },
+        {
+          "assert_count": 2,
+          "name": "FirstLaunchControlTests.test_host_dependency_config_package_locale_and_loader_graph",
+          "sha256": "c747f21d7867f44e9fe0738cb11e0e2b0ffce6491003d729234ee11e4d658ad8"
+        },
+        {
+          "assert_count": 3,
+          "name": "FirstLaunchControlTests.test_origin_single_token_static_suffix_and_all_tail_variable_refusals",
+          "sha256": "ae2eef250d2000db4aada6309d9af73ed9d18df2813d97ae8ba3dc787be00c73"
+        },
+        {
+          "assert_count": 72,
+          "name": "FirstLaunchControlTests.test_report_completed_schema_bounded_data_and_exclusive_files",
+          "sha256": "9474ac779f402550bf7239d74c033661960d8ead1f95790352ef9758514edc1c"
+        },
+        {
+          "assert_count": 8,
+          "name": "FirstLaunchControlTests.test_report_partial_write_fsync_reverse_close_and_primary_error",
+          "sha256": "c59189d3eb781fbe67411e0b807b7241d7da9eeb92c71f6c4678c0f144565099"
+        },
+        {
+          "assert_count": 14,
+          "name": "FirstLaunchControlTests.test_marker_is_flushed_only_after_all_owned_report_fds_close",
+          "sha256": "2eb39f0e430bccc780404ef096bfbaafa97c8a8f2ae83987fe4a68df3a595255"
+        },
+        {
+          "assert_count": 9,
+          "name": "FirstLaunchControlTests.test_orchestrator_phase_failures_keep_primary_and_never_enter_target",
+          "sha256": "8adddd2d99b8ad67ed8c3396cbffd1b2aa16669b7def0c42a2d4640d533825c8"
+        },
+        {
+          "assert_count": 6,
+          "name": "FirstLaunchControlTests.test_original_main_calls_once_before_target_and_other_calls_are_silent",
+          "sha256": "4f4cee63cdf6300e16312c9495fad586a292e585d721b2ecbe98b336ab0dfe19"
+        },
+        {
+          "assert_count": 23,
+          "name": "FirstLaunchControlTests.test_original_workflow_pipeline_retains_both_real_exit_statuses",
+          "sha256": "fc597f27f5033c1582f93cb0e9577612f902e43420ab7cfe7fc6916b78bcb2fd"
+        },
+        {
+          "assert_count": 22,
+          "name": "FirstLaunchControlTests.test_frozen_build_expected_nested_literal_oracle_and_unchanged_compile_data",
+          "sha256": "ff53a0676704a77416208975cc15d92afed03f0a455acd0e3e7cf139aa3477c2"
+        },
+        {
+          "assert_count": 9,
+          "name": "FirstLaunchControlTests.test_frozen_build_expected_builtin_sort_and_repr_fallback_literal_goldens",
+          "sha256": "f942c80c8302edaaac8bd56fcfea358c1539aa7727ab68fba23e028d9232d305"
+        },
+        {
+          "assert_count": 3,
+          "name": "FirstLaunchControlTests.test_frozen_build_expected_refuses_foreign_subclasses_hooks_and_finite_bounds",
+          "sha256": "ef861c92b49dbeb85aabfb19307db13655fd7a35b0109089ae350dd4a6e38dad"
+        }
+      ],
+      "path": "som-rs/scripts/hosted_readiness/test_native_first_launch.py",
+      "timeout_seconds": 300
+    },
+    {
+      "key": "nested",
+      "methods": [
+        {
+          "assert_count": 7,
+          "name": "NativeNestedContextTests.test_actual_core_context_getter_ignores_foreign_generic_alias_and_retains_owner",
+          "sha256": "b4471c59b9e0de2503fd19ec9ecbc2a90cd5ae05ce0935c6d078726bfbed59a3"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeNestedContextTests.test_foreign_context_refuses_before_attribute_hooks",
+          "sha256": "6827f00360c2ea65c6d40d0fa30d183aaededa9cfe2a61fb215b47243292f4ef"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeNestedContextTests.test_inactive_owner_and_changed_context_data_refuse_at_original_getter",
+          "sha256": "8830135f11f26af64b796b61f271fcb98b9901aee2138ef2083bfdd51a7375c0"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeNestedContextTests.test_foreign_source_hook_revision_and_changed_git_bytes_refuse",
+          "sha256": "2636b5825bb8de58f57af1a14801924fcc9068cac26b53d170d1e888c7e785b5"
+        }
+      ],
+      "path": "som-rs/scripts/hosted_readiness/test_native_ts_nested_context.py",
+      "timeout_seconds": 300
+    },
+    {
+      "key": "ts_host",
+      "methods": [
+        {
+          "assert_count": 14,
+          "name": "NativeHostFragmentTests.test_actual_partial_configure_keeps_first_error_and_closes_two_acquired_scopes",
+          "sha256": "bf2bf2865ae6af5a2c5c3bdeb30d1995fdbf56ad3b32c53c2bb305ec57b883cb"
+        },
+        {
+          "assert_count": 25,
+          "name": "NativeHostFragmentTests.test_actual_whole_fragments_real_popen_owned_http_wait_and_borrow_lifetime",
+          "sha256": "455f465fe423e2331999f473fb420e6c39c5e38cec25801d667ba8beda8f6a66"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeHostFragmentTests.test_safe_no_acquisition_and_foreign_provider_hooks_refuse_before_execution",
+          "sha256": "57266cb2935309aab24f3e15749cf91eadd1cae5816a4db02e648e292af94952"
+        },
+        {
+          "assert_count": 10,
+          "name": "NativeHostFragmentTests.test_later_owner_and_failed_actual_scope_close_keep_primary_trace_and_secondary",
+          "sha256": "89e4befb55b351b7b0c1420d157a91df2960e92a4cde3ef944a1d4afb6fa59e3"
+        }
+      ],
+      "path": "som-rs/scripts/hosted_readiness/test_native_ts_host_fragments.py",
+      "timeout_seconds": 300
+    },
+    {
+      "key": "input",
+      "methods": [
+        {
+          "assert_count": 19,
+          "name": "NativeInputFragmentTests.test_whole_record_selector_actual_code_exports_and_all584_synthetic_prompts",
+          "sha256": "fb5870837ee4c65c3223164c2a0fd16a65998b618412e543d8f2c0b218f64447"
+        },
+        {
+          "assert_count": 10,
+          "name": "NativeInputFragmentTests.test_actual_git_profile_named_input_hash_mode_link_and_ancestor_guards",
+          "sha256": "cfe1c84cbf6b595f60105b01a8a3d0b2c7e7df99f0a32dcf22099467c41e00ea"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeInputFragmentTests.test_original584_count_names_prompt_hash_and_no_fallback_refuse_at_intended_guards",
+          "sha256": "535a9f4df8bc97888f3278c537bc86ffbddd49b3cb7cfaf75ff5a0e24c2cd086"
+        },
+        {
+          "assert_count": 20,
+          "name": "NativeInputFragmentTests.test_original_rust_http_body_and_callback_lifetime_then_owned_restore",
+          "sha256": "411b864d21bb2ad35af3a9241d1b90edf6b4696e6a8d5533c36593f66c611bc9"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeInputFragmentTests.test_foreign_typed_hook_fake_target_and_callback_refuse_before_hook",
+          "sha256": "7156c9682f6dda28b6dab504edbce657a9eec660a3c354ecc44a1ae673f4bb4d"
+        },
+        {
+          "assert_count": 12,
+          "name": "NativeInputFragmentTests.test_later_owner_kept_and_first_exception_trace_all_cleanup_secondary_retained",
+          "sha256": "773f5ed02a1cad12070c5d8eb501074fb8e4fd8d4a9fbfe768c7eef8c06a5ef3"
+        }
+      ],
+      "path": "som-rs/scripts/hosted_readiness/test_native_ts_input_fragments.py",
+      "timeout_seconds": 300
+    },
+    {
+      "key": "contract",
+      "methods": [
+        {
+          "assert_count": 2,
+          "name": "VerificationContractTests.test_missing_evidence_root_refuses_before_capture_or_source_read",
+          "sha256": "2f12d264bf90756a96dcc9bdd4af4166865a5433e5c1605f898eed68c8cc89a0"
+        },
+        {
+          "assert_count": 2,
+          "name": "VerificationContractTests.test_unadmitted_archive_view_refuses_before_capture_or_source_read",
+          "sha256": "fc8d383eb787a6be8b7fe104931cd76e3270ad33a540ce1efe25c3b243e63ddb"
+        },
+        {
+          "assert_count": 1,
+          "name": "VerificationContractTests.test_recorded_before_is_explicitly_supplemental",
+          "sha256": "2e4e636673bd2664bb6c84e9b4221ad6f74f375262334b638e03f157cd6a9128"
+        },
+        {
+          "assert_count": 1,
+          "name": "VerificationContractTests.test_recorded_before_cannot_use_current_or_f59_source_role",
+          "sha256": "47c6c50bdc5f82d6e5909babbe1d4e776cf7bc2b099cae7b83717a5a010c2443"
+        },
+        {
+          "assert_count": 1,
+          "name": "VerificationContractTests.test_live_before_requires_the_exact_frozen_identity",
+          "sha256": "d5e19301d45ba2a148eded6e399f23e05774326ae09f7c8131eb31bae6c15ff2"
+        },
+        {
+          "assert_count": 1,
+          "name": "VerificationContractTests.test_other_live_binary_is_not_a_before_substitute",
+          "sha256": "f3533b7a7c69ded79c786a1090c178cfa4b74fc40ecddc690d1f13cb73ffe5ea"
+        },
+        {
+          "assert_count": 1,
+          "name": "VerificationContractTests.test_only_exact_two_native_python_hash_checks_can_be_replaced",
+          "sha256": "ce9fd5ea42a3d8a940ac2f400b3cbbf744c9fa32bf33c6d48730074a829b9bcf"
+        },
+        {
+          "assert_count": 1,
+          "name": "VerificationContractTests.test_unknown_failed_assertion_stays_failed",
+          "sha256": "7fa29f2981e347db4a363e6a5a85753f2575665b8142f2dd2b226d82ebe615e7"
+        },
+        {
+          "assert_count": 1,
+          "name": "VerificationContractTests.test_other_row_cannot_clear_a_failed_assertion",
+          "sha256": "f1e5e790b4b64902e30e4c9845c65d7ef20cd0a22148c531098e2e996d16d8a9"
+        },
+        {
+          "assert_count": 1,
+          "name": "VerificationContractTests.test_unrun_or_postcondition_failure_cannot_be_replaced",
+          "sha256": "654c52d04a5ee5165b3a8287def8a91898d04194ff270206659d1ff285c65f97"
+        },
+        {
+          "assert_count": 3,
+          "name": "InputBindingLifecycleTests.test_owned_input_binding_cleanup_restores_original_objects",
+          "sha256": "74740b9f2497ebe6c3a77b9eaad216880948996abdc405ee0ddce23958bc2002"
+        },
+        {
+          "assert_count": 3,
+          "name": "InputBindingLifecycleTests.test_input_cleanup_preserves_a_new_owner_and_refuses",
+          "sha256": "6f8bdd3ba31492f8212da650ae73ea00dd16e31f59395c0c2cc055a2e125b24a"
+        }
+      ],
+      "path": "som-rs/scripts/hosted_readiness/test_typescript_regression_v2_contract.py",
+      "timeout_seconds": 300
+    },
+    {
+      "key": "driver",
+      "methods": [
+        {
+          "assert_count": 12,
+          "name": "NativeRoleProtocolTests.test_registered_fixed_entry_constructs_context_before_body_and_rechecks_sources",
+          "sha256": "33702531a8418cb37f8454169af8c1d03d6b6913718a780593e351238ae3848d"
+        },
+        {
+          "assert_count": 9,
+          "name": "NativeRoleProtocolTests.test_checker_first_failure_retains_exact_error_and_restores_main_and_argv",
+          "sha256": "6ee42d29b1bb90e8e685e6f260030a17c4f05e79bbcad9b7e7004daae3e2a5fb"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeRoleProtocolTests.test_source_admitted_but_nonfinite_entry_refuses_before_body",
+          "sha256": "6541490cfd4e9ca57b0530f48643d64da911441920d2b0459d7246a02cc23139"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeRoleProtocolTests.test_missing_reserved_binding_refuses_before_context_or_checker_execution",
+          "sha256": "6937ae17ff280d36053c32d6396b051e8bf9bdf74c62f053e6561a5fa9393500"
+        },
+        {
+          "assert_count": 9,
+          "name": "NativeRoleProtocolTests.test_native_phase2_registered_roles_keep_all_584_names_and_original_source_keys",
+          "sha256": "e98e508b0bd5daf506246c9f3630287cc6db4ff918ac45ad05809598f8029423"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeRoleProtocolTests.test_native_phase2_rejects_wrong_role_source_before_loading_checker",
+          "sha256": "7aae9aa68d7bd5d3fdf6cafd43d4cb8e11783fbc0b1ee3a5f982314784cee27a"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeRoleProtocolTests.test_native_phase2_actual_git_and_working_source_must_stay_equal",
+          "sha256": "b27805b3b5e7bd97daade55b9c6899ae2bb1b368a51731b52c2892388e1f6209"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeRoleProtocolTests.test_native_phase2_rows_cannot_hide_exit_signal_wait_or_cleanup_failure",
+          "sha256": "abfed7455d59820b2cccb395f9877b68d000217e34873cdb28a140eb0daa41e4"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeRoleProtocolTests.test_native_phase2_worker_and_raw_summary_gates_remain_required",
+          "sha256": "b40a844f5f87ec358a7208aef8194930bcbb40da9f242b508500990ee38ad037"
+        },
+        {
+          "assert_count": 9,
+          "name": "CallbackBaseContextTests.test_actual_prepare_stores_exact_fixed_bindings_before_constructor",
+          "sha256": "ef629d84b6d0c0692809d7de3dd2ec59cb5deb9091cec57bea020d187e895de2"
+        },
+        {
+          "assert_count": 4,
+          "name": "CallbackBaseContextTests.test_absent_options_preserve_original_base_context_shape",
+          "sha256": "47520136f4e4b8b0f511aceb93ee106600ebad511846420a1752b4f6661e85d4"
+        },
+        {
+          "assert_count": 8,
+          "name": "CallbackBaseContextTests.test_cli_passes_explicit_fixed_gate_and_repeated_two_value_bindings",
+          "sha256": "b4084e6ba8a4c9e58b22714bb909043aef62e4f8df777ada9d02aedda77ed20b"
+        },
+        {
+          "assert_count": 2,
+          "name": "CallbackBaseContextTests.test_bindings_require_sealed_prepare_only_and_explicit_gate_and_nonempty_map",
+          "sha256": "6f5aff4f7442bb81863f61b8328ae5fe789f0dcc95a4cfb807b5d5992371a096"
+        },
+        {
+          "assert_count": 2,
+          "name": "CallbackBaseContextTests.test_duplicate_profiles_and_more_than32_bindings_refuse_before_output",
+          "sha256": "18e70613e3145c5d71b76635c27a9364cde62a715f85dd154ac16d3f44075a3a"
+        },
+        {
+          "assert_count": 6,
+          "name": "CallbackBaseContextTests.test_untracked_missing_or_nonoperational_profile_cannot_bind",
+          "sha256": "7e9c7291ebd3fdc84a2b847365498ab19ed8c0afc72cbfffa4ba7c1e7de6634e"
+        },
+        {
+          "assert_count": 2,
+          "name": "CallbackBaseContextTests.test_link_and_traversal_and_relative_roots_refuse_before_output",
+          "sha256": "53d15eeffb5b819e2fd252a7da4d3955dc2a5c181ff22fa54b51bf9103cdca5c"
+        },
+        {
+          "assert_count": 4,
+          "name": "CallbackBaseContextTests.test_baselines_exclude_every_protected_scope_and_each_other",
+          "sha256": "7d87c608774f08ff6858706daaf194faffbc309d0dc7266fcc016557e7cf135b"
+        },
+        {
+          "assert_count": 6,
+          "name": "CallbackBaseContextTests.test_only_the_admitted_fixed_typescript_adapter_can_be_selected",
+          "sha256": "2fbd4841a8021ae384d0d027ae158f2ecc5fa8a3cf3ac20eec00d8adb8c4157f"
+        },
+        {
+          "assert_count": 2,
+          "name": "CohortScopeTests.test_stride_join_preserves_all_584_named_slots",
+          "sha256": "baff87193212f5efe81df74d0a5f1dd3995d89539a862fcaeece17caf6a694f3"
+        },
+        {
+          "assert_count": 2,
+          "name": "CohortScopeTests.test_no_overlap_between_671_product_shards",
+          "sha256": "fef331ec626d84a239e0401614be663640610f6cf70b180db8c49cecaf02716c"
+        },
+        {
+          "assert_count": 1,
+          "name": "CohortScopeTests.test_repeated_ids_are_refused",
+          "sha256": "8a581c33c76b789baaf2b1cca3c472ca4b01e3106363129e9f0e4c0be7ac46b4"
+        },
+        {
+          "assert_count": 1,
+          "name": "CohortScopeTests.test_boolean_shard_index_is_refused",
+          "sha256": "2d0e433b1df4e7e892b0b25f8bae7ad31eba99921de585a0a4f423e87e536ffd"
+        },
+        {
+          "assert_count": 1,
+          "name": "CohortScopeTests.test_out_of_range_shard_is_refused",
+          "sha256": "2d1aba858a561b3cc72484dc29e004c92c777c16b3bf0f55592e988fdf255694"
+        },
+        {
+          "assert_count": 1,
+          "name": "CohortScopeTests.test_zero_shard_count_is_refused",
+          "sha256": "5b627bfe3d593b1d4803f8ba53f9ca67d6037f7f59dd9707d8de85312bd6695d"
+        },
+        {
+          "assert_count": 1,
+          "name": "CohortScopeTests.test_each_named_duplicate_prompt_slot_is_kept",
+          "sha256": "256592d00e11acf1a3c877b571288c29b1355b8acbffde89a8a2840e6c8e98c5"
+        },
+        {
+          "assert_count": 1,
+          "name": "CohortScopeTests.test_syntax_is_not_used_as_file_parity",
+          "sha256": "f2678c6a75316da2075dfc2e11107595a90af0128a4d311a0370d27ff1fca418"
+        },
+        {
+          "assert_count": 1,
+          "name": "CohortScopeTests.test_acceptance_mode_refuses_before_loading_runtime",
+          "sha256": "22d559e38115253c9932cd4000953040fe8700bbd00aaef38e4c932c59fa1909"
+        },
+        {
+          "assert_count": 2,
+          "name": "CohortScopeTests.test_pending_gates_still_name_fresh_compiler_and_independent_scope",
+          "sha256": "767c62fcebd2285f3af36b09af4d9d48899e68b7197ac1f53ee4ded20a4952a5"
+        },
+        {
+          "assert_count": 1,
+          "name": "JoinRefusalTests.test_partial_receipt_is_not_joined",
+          "sha256": "ca32210160ee4eec659e1ea85a6f8360610857555fbe7fd9020d830899dab59a"
+        },
+        {
+          "assert_count": 1,
+          "name": "JoinRefusalTests.test_missing_tool_postcheck_is_refused",
+          "sha256": "bf49873f47775413dc7e6256332edf9f47635ec040ba8b3a3c8e7654f478c8e0"
+        },
+        {
+          "assert_count": 1,
+          "name": "JoinRefusalTests.test_false_preparation_acceptance_is_refused",
+          "sha256": "fe8328ae1c3c2b52e20cf30a557199c182fd650ddfc5e545eb174f9fdc7ad227"
+        },
+        {
+          "assert_count": 1,
+          "name": "JoinRefusalTests.test_mixed_candidate_binaries_are_refused",
+          "sha256": "92dcb78234d3a19758702930c54222d94dccdd51bab859426391f6bd1a6c3712"
+        },
+        {
+          "assert_count": 0,
+          "name": "DependencyIdentityTests.test_dependency_proof_keeps_distinct_helper_and_candidate_roles",
+          "sha256": "4f7191e60b1764fdbf0e89a9851e71f4a7c29743182a0aa6ebbead8d54c9e1f6"
+        },
+        {
+          "assert_count": 1,
+          "name": "DependencyIdentityTests.test_dependency_roles_are_explicit_and_cannot_default",
+          "sha256": "88b2526ad9716a488fac16fd304914902b72514e139b46f656c3d9244b5b0cc1"
+        },
+        {
+          "assert_count": 1,
+          "name": "DependencyIdentityTests.test_dependency_admission_binds_actual_recipe_and_artifact_proof",
+          "sha256": "a0270e8f5e5a191d0c98e864189db86ffacb562b41c928fbb8fb251602d0a6b2"
+        },
+        {
+          "assert_count": 4,
+          "name": "DependencyIdentityTests.test_cargo_tested_sha_names_candidate_and_still_reaches_full_content_checks",
+          "sha256": "b94733d79d184ae976111ddaba2fd8d11915716c54ef4b385b0e9825ce7df0b9"
+        },
+        {
+          "assert_count": 1,
+          "name": "DependencyIdentityTests.test_wheel_receipt_checks_candidate_roles_before_environment_use",
+          "sha256": "fb64be4defdf030cb79fe4eeeb8f1c5235e82132f7f1c5d5511f57015d6109e5"
+        },
+        {
+          "assert_count": 3,
+          "name": "CarrierProvenanceTests.test_original_carrier_defaults_to_no_rebuild_and_preserves_proof",
+          "sha256": "c5a983f85ba17dbb92e5e366ecedaf8b388257ab613ca776cd7723c090814273"
+        },
+        {
+          "assert_count": 4,
+          "name": "CarrierProvenanceTests.test_byte_identical_rebuild_records_new_origin_and_restores_same_identities",
+          "sha256": "c627cb4ad572b7efe1f776a59011e1e88c708bf0b5e3d1d59f1e07a74d2512e2"
+        },
+        {
+          "assert_count": 2,
+          "name": "CarrierProvenanceTests.test_rebuild_flag_cannot_waive_binary_asset_or_tool_bytes_and_mode",
+          "sha256": "c324601ecabcd005b19a7cc9824fcf497221819b2a7fb5a490e723e3c2956b69"
+        },
+        {
+          "assert_count": 5,
+          "name": "CarrierProvenanceTests.test_long_license_paths_roundtrip_without_pax_headers",
+          "sha256": "a6066a2147d72d04e119ff6073380aeb00a95c81ce954cac25876b25561f6c75"
+        },
+        {
+          "assert_count": 2,
+          "name": "CarrierProvenanceTests.test_too_long_paths_fail_instead_of_selecting_extended_headers",
+          "sha256": "051478968147f48041b840b51cb67d30449d839a302440a2684f14887c006459"
+        },
+        {
+          "assert_count": 3,
+          "name": "Phase2ResultTests.test_success_binds_every_raw_row_summary_and_process_postcheck",
+          "sha256": "12bf228bef4ab2d8fe2dc65f84f515f7a74c685e44728a643ea1290b621230f8"
+        },
+        {
+          "assert_count": 1,
+          "name": "Phase2ResultTests.test_all_true_rows_cannot_hide_nonzero_driver_or_missing_wait_cleanup",
+          "sha256": "45f533a24e5ad163157ef1177ecce8f7448545b3a730f0e7a141f5d2e4b819cc"
+        },
+        {
+          "assert_count": 1,
+          "name": "Phase2ResultTests.test_tool_cleanup_exception_keeps_full_rows_but_fails_them",
+          "sha256": "dba6d8addde414707df2f9a686c716d54bfc75618ead7da9ca82c521183c4801"
+        },
+        {
+          "assert_count": 2,
+          "name": "Phase2ResultTests.test_phase2_entry_point_consumes_failed_tool_return",
+          "sha256": "6e53b29e1b46a8573ee9ee5565ba9980af8f049e16dca972ca53e6543bb5e449"
+        },
+        {
+          "assert_count": 2,
+          "name": "Phase2ResultTests.test_phase2_entry_point_preserves_rows_after_tool_exception",
+          "sha256": "7afdd6bc69e9be19de238cc795e83ad07279c6932e132bf747fe42d3e64e5efa"
+        },
+        {
+          "assert_count": 1,
+          "name": "Phase2ResultTests.test_summary_binds_order_scope_shard_candidate_and_complete_raw_rows",
+          "sha256": "d9bfa0cfafc318ce0928de33f98283c5a884a6a20f1b94a8312f46b0675e69ed"
+        },
+        {
+          "assert_count": 1,
+          "name": "Phase2ResultTests.test_nonzero_or_missing_worker_exit_cannot_pass_with_true_rows",
+          "sha256": "519d6accd77843156ce48dd14479fe4adc4b3046b57acbbbb88777f936a70016"
+        },
+        {
+          "assert_count": 2,
+          "name": "Phase2ResultTests.test_rehashed_named_case_cannot_replace_summary_raw_hash",
+          "sha256": "001f8d72bb813964f2c58e226312051bc0b660f5cf943be3db0ab2ed85c98877"
+        },
+        {
+          "assert_count": 1,
+          "name": "Phase2ResultTests.test_extra_saved_case_cannot_expand_the_admitted_shard",
+          "sha256": "f11193ed5b314b8c92ecd54e828e147ba333d2a29ecdc401e75cf8fd5d754e6f"
+        },
+        {
+          "assert_count": 2,
+          "name": "Phase2ResultTests.test_missing_or_changed_driver_postcheck_fails_complete_rows",
+          "sha256": "9d757c7d83f6801f11ba36b3e5f0bddada760936dd3c154744cc91e28bc912ec"
+        }
+      ],
+      "path": "som-rs/scripts/hosted_readiness/test_run_full_products.py",
+      "timeout_seconds": 600
+    },
+    {
+      "key": "startup",
+      "methods": [
+        {
+          "assert_count": 4,
+          "name": "NativeStartup.test_real_wheel_and_uv_payload_accept_ordinary_metadata_without_audit_promotion",
+          "sha256": "1fa826e2844fda362afbd2ef637bd2a422e6f4ade64a2d47d5bd8110e52ddbc7"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeStartup.test_changed_payload_cannot_pass_by_rehashing_installed_snapshot",
+          "sha256": "b60d1d7449674c2a1381fe196903556077e968b46e72303b6cd066548af84ed6"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeStartup.test_unknown_pth_customize_code_or_pyc_fails_before_site_activation",
+          "sha256": "95fd8f7a6ee3df977b3a760ce22636cca1745a92653742443d32dde7594fed7d"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeStartup.test_changed_uv_hook_is_not_authorized_by_a_stable_inventory",
+          "sha256": "f6740a8c94236241143d566256452cc79ea01e25380f9a4e6b99d26aabf6e6e5"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeStartup.test_missing_payload_or_extra_directory_fails",
+          "sha256": "a5364e4efe54f4e3d4d11e7c9b790655b3a389f9b951c2e10b9549558534d9fd"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeStartup.test_installer_metadata_is_data_only_and_remains_separate",
+          "sha256": "7a4adfbc4f363a483202535df0e5cd34364345d01ede39f61c0e0cedcaa7f16a"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeStartup.test_installed_symlink_cannot_replace_source_payload",
+          "sha256": "689e149b0e8f3429a98df974163e6f5f93d02cf73b9787a9271e123cf523700c"
+        },
+        {
+          "assert_count": 7,
+          "name": "NativeStartup.test_real_isolated_child_imports_dependency_after_check_without_uv_hook",
+          "sha256": "98e4c6756f75e3f6025e2d841cc9a8a68b1e98c9ede6f9527ee4426c5ad04a5a"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeStartup.test_real_sitecustomize_control_runs_but_isolated_rejects_before_hook",
+          "sha256": "8561517cad0855320fb68c66c2d0d977139a5448240f8f15b67de58ec48c2d4b"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeStartup.test_real_matching_timestamp_pyc_is_not_consumed_before_payload_rejection",
+          "sha256": "2e03724dc62473c6b0e8833c7dafa1487f3302267aa5dcb325680323626a10d1"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeStartup.test_native_driver_and_generic_argv_have_real_isolation_flags",
+          "sha256": "b40da9cd46f791f2e5e1605dfc910c457a7a2a5aab7c8aa3c520c41c9ba1206e"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeStartup.test_historical_and_preparation_commands_remain_exact",
+          "sha256": "e82ef06b15a1937335bf377df79159728f3a4262a00ee89762530700a85b6d7b"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeStartup.test_unknown_or_unsupported_python_startup_is_not_silently_enabled",
+          "sha256": "393df254f36d02980cff5d7d479170eb7899cd325fd66a3f62a0a2424447a373"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeStartup.test_source_authority_must_precede_explicit_package_path",
+          "sha256": "3c0560530fd48df869ed3a90d34f90fd0b5db45917313eb65fae54341270666a"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeStartup.test_external_venv_requires_specific_payload_proof_without_observer_fallback",
+          "sha256": "f723995a0b5e77ea23e5f07772da8a375c4ac7ce56de616fa3a21fcf999c808c"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeStartup.test_explicit_existing_isolation_is_kept_and_version_uses_no_site",
+          "sha256": "d6bc2e03c97c60ed4d8d45a1b7be18eb4c0a335799f450383bfe2c1300659cf9"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeStartup.test_non_python_native_tools_do_not_get_a_python_bootstrap",
+          "sha256": "2f8943799e80024dbd9765c1df5bb09f3846d368bc50b593e3d42269a3af4a1e"
+        },
+        {
+          "assert_count": 8,
+          "name": "NativeStartup.test_actual_popen_args_are_retained_and_guard_has_owned_teardown",
+          "sha256": "d517d3d5fb576d5b6d7b8bbdd32c8adee36634febec4c3947f1e8efee2e9c44a"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeStartup.test_borrowed_python_lease_cannot_remove_active_context_controls",
+          "sha256": "cc97177caab38c8b974ae4fe20c97520e3aabdae8a92991ea268d8135fe12cbf"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeStartup.test_another_context_cannot_borrow_existing_python_guard",
+          "sha256": "f44fba5ad3f6d6f0e4f660e729e6de6d56dc7bb462d7d8ab6faa6a087bb47665"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeStartup.test_python_shell_or_executable_override_is_refused_before_process",
+          "sha256": "c1e2785a3ec248f048314eb8bd9a2892fda0679755dd08043d993200c7bd0a23"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeStartup.test_product_owner_uses_actual_bootstrap_tail_and_receipt",
+          "sha256": "e57c13723786172d0428b296eaeb16cfd6dbf6f598b5beb0f410686785831105"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeStartup.test_exact_source_bootstrap_prefix_is_idempotent_and_reads_both_actual_sources",
+          "sha256": "e4c5c4db6bace9ce249043d7bdc2384b6b4cab8c0a46a80a330ab9afe11cc8c6"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeStartup.test_wrong_bootstrap_source_role_or_parameters_refuse_without_rewrapping",
+          "sha256": "b43508df5add56806225763360d87a96447c826dcb979d51810d5a02ca2c94e4"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeStartup.test_direct_native_tool_and_old_bootstrap_tails_keep_their_driver_semantics",
+          "sha256": "f5ce107738c03ba59dd67d521817e927145b4b3d1351080fa921e4d8791c3db8"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeStartup.test_bootstrap_requires_actual_matching_context_source_before_launch",
+          "sha256": "9c93f78d6663aa5a0d741ac05b06200a924ff926e897305eaadc860564883341"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeStartup.test_already_isolated_bootstrap_and_native_entry_overrides_are_refused_before_start",
+          "sha256": "bbbaa733d45b8b6c780f8bd7d9a84e30360608392832ca0cb45b2aee83b4e6cf"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeStartup.test_python_positional_popen_options_are_refused_before_start",
+          "sha256": "9179daf6f22ecf7cd84651fbf1d43cc0252487ba414f63c600a45ca559e38b34"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeStartup.test_nonpython_ordinary_popen_options_keep_original_semantics",
+          "sha256": "9250ce43f0d8cd71ab443101a9eb55f1b7031e9b98d588bbd1e131828c8a4621"
+        },
+        {
+          "assert_count": 8,
+          "name": "NativeStartup.test_receipt_failure_fast_exit_signal_error_still_reaps_real_child_and_keeps_primary",
+          "sha256": "58e7b5b9c0cfa77784f8dacfaef61a88b890c3097c966c6a04fad35dbf341b3d"
+        },
+        {
+          "assert_count": 7,
+          "name": "NativeStartup.test_receipt_failure_timeout_and_escalation_signal_error_always_attempt_terminal_wait",
+          "sha256": "2cafcd268a48f596055eee80630da4391db37740abece05a031b497522c534f6"
+        },
+        {
+          "assert_count": 7,
+          "name": "NativeStartup.test_receipt_failure_unreaped_child_stays_failed_with_primary_and_secondary_errors",
+          "sha256": "4400c3bd561cad8659d3135483365080b04634e3b5093ee9ee203ebfec454128"
+        },
+        {
+          "assert_count": 7,
+          "name": "NativeStartup.test_receipt_failure_stops_and_waits_real_owned_child_positive_control",
+          "sha256": "3131d85817e7f38123020015ea1aaf7b59966148f541a776655a266b67eadc67"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeStartup.test_failed_cleanup_evidence_write_cannot_replace_receipt_error_or_skip_wait",
+          "sha256": "f5d338fad9429c241702d4c289bd2c0e1a5ee4fc6c42129d0aa9190a4331d30f"
+        },
+        {
+          "assert_count": 12,
+          "name": "NativeStartup.test_command_keeps_first_request_and_records_real_guard_argv_and_receipt",
+          "sha256": "a14e13fec3365b52c4c29c6042f4d340b749290d1f89583b829d744afd43215a"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeStartup.test_command_missing_foreign_or_removed_guard_refuses_before_any_python_start",
+          "sha256": "86fa53fb576bc8a2ffc75b0d3c5113325b5626cd91058a01c58da1a43dd41ccc"
+        },
+        {
+          "assert_count": 12,
+          "name": "NativeStartup.test_idempotent_direct_and_command_python_launches_have_real_startup_proofs",
+          "sha256": "a7fb6d548b46ed727cff367f385b682e5b6ac085f1c54edff7593943ad09f02b"
+        },
+        {
+          "assert_count": 10,
+          "name": "NativeStartup.test_command_second_rewrite_mismatch_reaps_actual_child_and_keeps_both_vectors",
+          "sha256": "84fdf224c7429f7eee0c353044f2b5904e9694bb1e8cdac18bd72e50aa8831e7"
+        },
+        {
+          "assert_count": 8,
+          "name": "NativeStartup.test_guard_wrong_actual_vector_records_real_args_and_reaps_without_mutating_args",
+          "sha256": "a0df569625a81a1b8d23e2a0311cb3c0ed12e44e28426c13167da98aee565b79"
+        },
+        {
+          "assert_count": 12,
+          "name": "NativeStartup.test_command_receipt_failure_preserves_first_error_and_actual_terminal_wait",
+          "sha256": "6d5509cc1e2d7d3554d4601c516315104d8e0eda1939301e751e9b5344229272"
+        },
+        {
+          "assert_count": 12,
+          "name": "NativeStartup.test_real_version_nonpython_and_historical_commands_keep_their_original_semantics",
+          "sha256": "1ddf33d66d3099f7c400ed64cfac461ca90f688a8e40bf2ddaa7febfd4feebb8"
+        },
+        {
+          "assert_count": 7,
+          "name": "NativeStartup.test_exact_api_bridge_calls_admitted_owner_itself_and_preserves_false_acceptance",
+          "sha256": "8c63cd6d3860cbe789304739e4e4a29f1cd6d964466f64cd4d4551991f56e559"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeStartup.test_api_bridge_refuses_provider_outside_authority_before_load_or_admit",
+          "sha256": "208f6864c174e8f043dc69151528950007f4a90b940bc85a0ceca11485fad7b4"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeStartup.test_api_bridge_refuses_supplied_plain_record_or_foreign_immutable_type",
+          "sha256": "baf531710c83769e8edb57cfdf7a9b87d924310d598009f803799bc96f4cb4cc"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeStartup.test_api_bridge_rejects_bad_schema_roles_hashes_counts_source_hooks_or_acceptance",
+          "sha256": "f10c4f03e35e21d2d50a94137cb5563647a905341765cfc534bdc2c95619eb8f"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeStartup.test_api_bridge_rejects_changed_raw_module_and_base_bytes_during_admission",
+          "sha256": "83bd2adaf82f0a3e1ddb732a8c89909f5858a1bf468df588f83b4489295057e2"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeStartup.test_api_bridge_does_not_hide_actual_provider_runtime_root_refusal",
+          "sha256": "12f3819b4a7283728e6e39265c852392cee17bb43f95f59c505f4c2597f9bedf"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeStartup.test_api_bridge_cannot_select_base_outside_actual_context_runtime",
+          "sha256": "795849b605df9add7495afc159d565bd9c9633ece55a9003029cf6366a11d40a"
+        }
+      ],
+      "path": "som-rs/scripts/hosted_readiness/test_native_python_startup.py",
+      "timeout_seconds": 600
+    },
+    {
+      "key": "recorded",
+      "methods": [
+        {
+          "assert_count": 10,
+          "name": "NativeRecordedSubprocessTests.test_actual_Core_Context_guard_binary_and_text_CP_and_guard_identity",
+          "sha256": "1681fc1f4dfa973242d4b8674bf905c69f8e9d5afd51515da04a112b7685d4d3"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeRecordedSubprocessTests.test_actual_nonzero_check_uses_actual_CalledProcessError_and_streams",
+          "sha256": "7c263215cbe0f2815799a9db6f5676bece5d5e006f0ba9698828689b4c1761e2"
+        },
+        {
+          "assert_count": 10,
+          "name": "NativeRecordedSubprocessTests.test_actual_timeout_partial_output_kill_terminal_wait_and_original_trace",
+          "sha256": "439680c1c3628a94ee760217fbb12ba684f30fa580d38485358cfd8c51e00dc2"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeRecordedSubprocessTests.test_actual_direct_Popen_STDOUT_wait_and_late_owner_not_overwritten",
+          "sha256": "9cf32b2b589604415644972db754a12f2a6c9bd5c75397cbe2ab3626ad72f6cf"
+        },
+        {
+          "assert_count": 8,
+          "name": "NativeRecordedSubprocessTests.test_actual_observation_writer_errors_keep_original_strings_and_live_error_objects",
+          "sha256": "7ff6dec9d8c8a7a1a1d16f1ca65028a36dcf0fdf5bde5044e405f5a22c49c66b"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeRecordedSubprocessTests.test_close_preserves_active_body_error_and_all_evidence_secondary",
+          "sha256": "2e9351f623c7a5d1a7f032182344297253bff4c82798b89c6f401cbe94206199"
+        },
+        {
+          "assert_count": 13,
+          "name": "NativeRecordedSubprocessTests.test_foreign_Context_method_borrow_binding_thread_and_reentry_refuse_without_hooks",
+          "sha256": "19cbc427844b7226c5bc6b5c6e65244a1e45f1b2dc1831de917fd6f0c692c49a"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeRecordedSubprocessTests.test_wrong_actual_argv_refuses_but_owned_cleanup_waits_and_preserves_first_error",
+          "sha256": "3e48a659321479c04487d1b02a545a6af74e5cf13f3853276f8549ac17dd68ba"
+        },
+        {
+          "assert_count": 15,
+          "name": "NativeRecordedSubprocessTests.test_live_public_method_shadows_cannot_block_owned_kill_wait_or_replace_body_first",
+          "sha256": "8f7373f4a8b16ed457a5207be04b199920b4cceee55659645029a5797de226f7"
+        },
+        {
+          "assert_count": 16,
+          "name": "NativeRecordedSubprocessTests.test_tuple_or_foreign_secondary_metadata_keeps_body_first_and_prior_evidence_without_hooks",
+          "sha256": "c3869e4512a7d35337e0c7e7274d732ab881eb9709e64e73ab29ba0bbd705629"
+        },
+        {
+          "assert_count": 16,
+          "name": "NativeRecordedSubprocessTests.test_original_callback_and_pre_registration_adoption_failures_still_kill_wait_and_close_pipes",
+          "sha256": "5124eb816c9cbe71048f9632082fd56c73b0eea563af407eafa8904a13ee8d66"
+        },
+        {
+          "assert_count": 15,
+          "name": "NativeRecordedSubprocessTests.test_successful_original_Recorder_then_pre_registration_failure_closes_all_created_pipes",
+          "sha256": "3358cd8691949734574ea1b323e98c4e02c88ba34600e32021010aace1b4b649"
+        },
+        {
+          "assert_count": 8,
+          "name": "NativeRecordedSubprocessTests.test_fully_waited_child_public_pid_mutation_refuses_but_ledger_uses_captured_pid",
+          "sha256": "ac510a47cacd76c3375c032d343aece46918b8d481d1ea606a5e79e5825aac53"
+        },
+        {
+          "assert_count": 13,
+          "name": "NativeRecordedSubprocessTests.test_actual_Core_binding_postcheck_failure_still_unwinds_intact_nonowning_source_borrow",
+          "sha256": "85cc48ce69dd39f20eaa62a7b142fc650d8ac16365c997dc77c64dcfa1bf8cf2"
+        },
+        {
+          "assert_count": 10,
+          "name": "NativeRecordedSubprocessTests.test_changed_global_kill_and_signal_never_run_foreign_hook_but_owned_cleanup_uses_capture",
+          "sha256": "7dd67340696503d42175d27a79dd6b277a39522f89dcb7d0d4abd018e9e9590f"
+        },
+        {
+          "assert_count": 11,
+          "name": "NativeRecordedSubprocessTests.test_changed_guard_private_wait_refuses_without_hook_or_false_terminal_wait_then_restores",
+          "sha256": "a85488fbd679433284efe470310a71293e266d3b487253522abdd418a9338ca2"
+        },
+        {
+          "assert_count": 8,
+          "name": "NativeRecordedSubprocessTests.test_same_Python_close_function_with_foreign_code_is_not_invoked_or_claimed_closed",
+          "sha256": "3b48f4efd91cdda687be2f3829c8776f8e0dcbe08f20771f04c6fd9342ea947d"
+        },
+        {
+          "assert_count": 15,
+          "name": "NativeRecordedSubprocessTests.test_live_returncode_claim_requires_actual_kernel_status_and_real_cleanup",
+          "sha256": "711943033b29877570bd86cf134d28b4b6c2bcd969feb5181ec7d2b2d2fd3ea0"
+        },
+        {
+          "assert_count": 11,
+          "name": "NativeRecordedSubprocessTests.test_foreign_global_waitpid_never_runs_and_captured_kernel_proves_cleanup",
+          "sha256": "b703bfea2a486d004584023a75d92a108c56ad45177d29cce4ac8c37e3b4e785"
+        },
+        {
+          "assert_count": 13,
+          "name": "NativeRecordedSubprocessTests.test_foreign_wait_lock_never_runs_and_unproved_wait_stays_unknown",
+          "sha256": "d7f797dd4aef61d497a545bba3071ac1ea131a9dd58a030bcfacad8ced2902c2"
+        },
+        {
+          "assert_count": 13,
+          "name": "NativeRecordedSubprocessTests.test_partial_adoption_foreign_stdout_closes_all_captured_actual_pipes_without_foreign_hook",
+          "sha256": "899a4e75b2871e5690be09586b7a9261320bead2201a9622598881f98146c235"
+        },
+        {
+          "assert_count": 10,
+          "name": "NativeRecordedSubprocessTests.test_changed_same_Recorder_popen_code_cannot_authorize_matching_foreign_nested_wait",
+          "sha256": "0008a8f2454d99a662b9d6e19ef79e87b456e65b024360bd68ef457d52422f8d"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeRecordedSubprocessTests.test_exact_contextlib_decorated_method_closure_is_checked_before_source_verification_spawns",
+          "sha256": "2cdeca4c5a73e561a65770ac92e3193697c25e3b8b382ae355a0f1858979df3d"
+        },
+        {
+          "assert_count": 15,
+          "name": "NativeRecordedSubprocessTests.test_external_reap_remains_ECHILD_unknown_and_never_becomes_exit_zero",
+          "sha256": "f0bb6d8f14b32ba23ec7ac3d46a3d084d29f07748c072232f52a9e5ec7535bda"
+        },
+        {
+          "assert_count": 17,
+          "name": "NativeRecordedSubprocessV4Tests.test_coordinated_public_terminal_claim_cannot_replace_real_kernel_wait_and_cleanup",
+          "sha256": "5f490639066c58723a05cc3ecc99c91befe68c774b5a64e7c7d0787f1a0dadb4"
+        },
+        {
+          "assert_count": 15,
+          "name": "NativeRecordedSubprocessV4Tests.test_foreign_retained_wait_and_decoder_aliases_never_dispatch_during_real_cleanup",
+          "sha256": "a23b25b471fb7d3dcd6da3fb5a75ee52a1ef8653f32e296d111a7a5493eb5921"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeRecordedSubprocessV4Tests.test_comparison_constant_type_refuses_before_hostile_metaclass_hash_or_equality",
+          "sha256": "fbc19e7455252e883dc5b7d6fa2a3869c1882f0f5b9beadce11e77170787111c"
+        },
+        {
+          "assert_count": 12,
+          "name": "NativeRecordedSubprocessV4Tests.test_foreign_stream_type_refuses_before_metaclass_or_object_hooks_and_closes_actual_pipes",
+          "sha256": "c2c0d98a75ce44b03f2b992e66ad4da64666481a63b86064c4cd31ce3e27dd78"
+        },
+        {
+          "assert_count": 8,
+          "name": "NativeRecordedSubprocessV4Tests.test_foreign_capture_locator_is_neither_sent_to_nor_closed_by_owned_finalizer",
+          "sha256": "78f37a455cb3ce6542b80a1a0e70fad71e7e3a0aad41d4e9078e9766731bdfe4"
+        },
+        {
+          "assert_count": 9,
+          "name": "ApiV4QaLifecycleTests.test_nonclearing_capture_keeps_actual_object_frame_and_trace_and_rejects_wrong_or_no_error",
+          "sha256": "cbbe2a1d52b4fa465c3deab28ea1b9b7a25a94b441545e0336d26b5cba329548"
+        },
+        {
+          "assert_count": 24,
+          "name": "ApiV4QaLifecycleTests.test_early_assertion_failure_closes_real_child_before_ENV_and_Core_then_restores_globals",
+          "sha256": "bf8c3e2670361c5e7c7685d0086eb6f093c6693ec54708aa1a98b41ab430ad09"
+        },
+        {
+          "assert_count": 21,
+          "name": "NativeRecordedSubprocessC1C6Tests.test_foreign_actual_PID_comparison_refuses_before_hook_and_keeps_private_PID_evidence",
+          "sha256": "714293277a20ea37abfd271194be8a2b72087612a2faaf6e7f8004c64dc4b0d3"
+        },
+        {
+          "assert_count": 11,
+          "name": "NativeRecordedSubprocessC1C6Tests.test_coordinated_public_close_expectations_cannot_authorize_changed_original_close",
+          "sha256": "979dfacd335940285e36d896c4d8d56cb0bb75a02539bc5213dc701d17180eb8"
+        },
+        {
+          "assert_count": 19,
+          "name": "NativeRecordedSubprocessC1C6Tests.test_after_refusal_evidence_rejects_finite_foreign_inputs_before_hooks_and_continues_close",
+          "sha256": "2f1549377d5700b8d902f3980e824b11164ba7451852ada1618680bbe5ed6921"
+        }
+      ],
+      "path": "som-rs/scripts/react_output_acceptance/test_native_m6_recorded_subprocess.py",
+      "timeout_seconds": 600
+    },
+    {
+      "key": "collector",
+      "methods": [
+        {
+          "assert_count": 34,
+          "name": "RunAcceptanceTestCase.test_1_happy_path_all_12_steps",
+          "sha256": "0309f0c65733086d7898698093cd35556e8ac52fe9a63fa746faa360177a0961"
+        },
+        {
+          "assert_count": 3,
+          "name": "RunAcceptanceTestCase.test_2_latest_contract_receipt_selection",
+          "sha256": "97124004785443bbe7fbf735498375dda000009844f34c79d0a2a55144ea8920"
+        },
+        {
+          "assert_count": 30,
+          "name": "RunAcceptanceTestCase.test_3_refusals_exit_2_before_step_1",
+          "sha256": "5ffce6074a4c0d4622120018800ea3e8bf235b62c869ab499b704c4153a24cc5"
+        },
+        {
+          "assert_count": 7,
+          "name": "RunAcceptanceTestCase.test_4_step_failure_judged_from_report_not_exit_code_alone",
+          "sha256": "0aeaffad530f000ff394b6cb0b8580e8b9425870154d0d29335c5ddb52f8986f"
+        },
+        {
+          "assert_count": 8,
+          "name": "RunAcceptanceTestCase.test_5_missing_bundles_manifest_records_products_not_run",
+          "sha256": "fc965ea59ddfd4eb851a17622f78db733420ef933b357179872da752d7d7bcbf"
+        },
+        {
+          "assert_count": 5,
+          "name": "RunAcceptanceTestCase.test_6_identity_drift_fails_run",
+          "sha256": "9cdbc25ebf10d749635cff501983833a4b2603049764b82590bd5f8f320203b7"
+        },
+        {
+          "assert_count": 9,
+          "name": "RunAcceptanceTestCase.test_7_missing_and_unparseable_reports_fail_without_stopping_steps",
+          "sha256": "d2bde951d93f3909f3627a4fc2c9dce4dba388815a7643e916fc7962e4ff9715"
+        },
+        {
+          "assert_count": 11,
+          "name": "RunAcceptanceTestCase.test_8_launch_failure_is_recorded_and_later_steps_continue",
+          "sha256": "f2afab258935b1a3dcbf9e4c774dfc9f2b531988d6c1ee73f1757e65202ece3d"
+        },
+        {
+          "assert_count": 4,
+          "name": "RunAcceptanceTestCase.test_9_controls_require_complete_counts_and_lists",
+          "sha256": "379e230b192111b58b9b06fd7741c3354f7a22ebb78b4f7db16739ac4f256f21"
+        },
+        {
+          "assert_count": 5,
+          "name": "RunAcceptanceTestCase.test_product_cleanup_option_preserves_all_twelve_gate_commands",
+          "sha256": "7764f56fc33060b5b6e0d3e2d94031199b520a62e6660582975de834d25cec7b"
+        },
+        {
+          "assert_count": 10,
+          "name": "RunAcceptanceTestCase.test_rust_baseline_run_override_changes_only_its_gate",
+          "sha256": "b9e30373c31fe3ecd85cf483e19e631fcf883793615588ac82dcea6f4cc75a39"
+        },
+        {
+          "assert_count": 4,
+          "name": "RunAcceptanceTestCase.test_raw_recording_wraps_only_five_frozen_http_collectors",
+          "sha256": "2aa6bf526766d0f6aee0756c9bf3c4fc38b57e648ce79171c072fc44e4e97fab"
+        },
+        {
+          "assert_count": 2,
+          "name": "RunAcceptanceTestCase.test_10_loopback_url_validation_preserves_ipv6",
+          "sha256": "1591e065b077c16479afdcbd01b001710bc777eeb3b3a9d57c5f741cf9f711ea"
+        },
+        {
+          "assert_count": 20,
+          "name": "RunAcceptanceTestCase.test_11_explicit_absent_mode_runs_all_12_steps_and_records_refused_gets",
+          "sha256": "f11619f210aaa9d2707604ed708372751ee64f815c4f2a988cc135632bc25892"
+        },
+        {
+          "assert_count": 8,
+          "name": "RunAcceptanceTestCase.test_12_default_healthy_mode_fails_when_protected_default_is_absent",
+          "sha256": "b8665ac70928a290ab9a255041683558f4201dd0d9bbe35d91cf137b772933f0"
+        },
+        {
+          "assert_count": 10,
+          "name": "RunAcceptanceTestCase.test_13_absent_mode_fails_on_alive_transition_or_timeout",
+          "sha256": "1dd6512018bb577a17a0a204547f765112b23cb13d6b22430143e2e6e1cfe8da"
+        },
+        {
+          "assert_count": 5,
+          "name": "FetchHealthzErrorTestCase.test_only_os_econnrefused_can_record_absence",
+          "sha256": "456920a069f34df3e374f81085ea9b830cbc62d45fe37e2de2beb78cb12a7bd5"
+        },
+        {
+          "assert_count": 2,
+          "name": "FetchHealthzErrorTestCase.test_timeout_dns_and_unknown_errors_do_not_record_absence",
+          "sha256": "6f43767bc08ab13eebfd7dbca12747174a483b313a4829843eedc2f68380d8c6"
+        },
+        {
+          "assert_count": 7,
+          "name": "FetchHealthzErrorTestCase.test_http_error_does_not_record_absence",
+          "sha256": "03a2c1c231b94aee79b4181f7db8426858e75b5077dad54c811ccf23ed9025b8"
+        },
+        {
+          "assert_count": 1,
+          "name": "FetchHealthzErrorTestCase.test_healthy_response_keeps_existing_record_fields",
+          "sha256": "c3a0d5b3e0ddbdae6c576b71b1c215fd577db8bad472c8d5ae314e7e264233c3"
+        }
+      ],
+      "path": "som-rs/scripts/react_output_acceptance/test_run_acceptance.py",
+      "timeout_seconds": 600
+    },
+    {
+      "key": "entry",
+      "methods": [
+        {
+          "assert_count": 20,
+          "name": "NativeM6EntryTests.test_actual_third_entry_keeps_original_main_argv_exit_and_restores_owner",
+          "sha256": "b55197ed7e949f63b4ba759c7c14c8eaaecbd5ae4e3484a7d1d2913c64299c8d"
+        },
+        {
+          "assert_count": 7,
+          "name": "NativeM6EntryTests.test_unique_fourth_entry_has_no_invented_numeric_depth_cap",
+          "sha256": "861a5b5dd8bdadc24d0498c75c03efc53723f39ddf9cc75e1560a4c06794be75"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeM6EntryTests.test_old_graph_helper_APIs_refuse_without_foreign_attribute_access",
+          "sha256": "700c26e556844b1b604228a2e168ab2467ed8e5b8e1982a95a6c9882e9fa3dee"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeM6EntryTests.test_admitted_source_outside_exact16_table_cannot_execute",
+          "sha256": "18e12b63ab5f3eb9b83635ff11a72f406f0d77d9bc18e52b32614223e094bbdc"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeM6EntryTests.test_wrong_revision_is_exact_bootstrap_guard_before_provider_or_target",
+          "sha256": "e389bc18a47cc6e2f90f6a0198452b25cecdca11368d90230cc291f4e43e1ae8"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeM6EntryTests.test_foreign_active_context_cannot_run_hooks_or_legacy_bootstrap",
+          "sha256": "508ebb0235dfb2c1ef9639b0298667c94263d367c7c3d952a306231aede84929"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeM6EntryTests.test_preloaded_router_is_preserved_and_never_used_as_authority",
+          "sha256": "7b727af63b5dff69dce57ab85e0d084e2190c21744d88e7c8a183d892129a179"
+        },
+        {
+          "assert_count": 11,
+          "name": "NativeM6EntryTests.test_primary_target_trace_and_all_scope_secondaries_survive_cleanup",
+          "sha256": "7435bcdaf734709d6044eff1cb80dd580c464c04fdda42846a9040171c8eec4a"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeM6EntryTests.test_actual_tracked_source_change_after_target_refuses_postcheck",
+          "sha256": "fba6c66fb564c4f805b344868ecd97cc75b172f7adc35fa8b4bf6d88b35eb53a"
+        },
+        {
+          "assert_count": 7,
+          "name": "NativeM6EntryTests.test_case_scope_keeps_original_case_recheck_without_full_step_verify",
+          "sha256": "ebffe83e5abb8331cbd8e6a4af93dab13fe11d5187422284405615fc032428e3"
+        }
+      ],
+      "path": "som-rs/scripts/hosted_readiness/test_native_m6_entry.py",
+      "timeout_seconds": 300
+    },
+    {
+      "key": "callback",
+      "methods": [
+        {
+          "assert_count": 7,
+          "name": "M6CallbackContextTests.test_all_eight_explicit_locations_bind_exactly_without_creating_outputs",
+          "sha256": "3b3a0ce5bd5513f4dbbda1c58846e1d2abae667252e89985979276ffba135011"
+        },
+        {
+          "assert_count": 2,
+          "name": "M6CallbackContextTests.test_missing_duplicate_unknown_and_foreign_names_refuse_without_hooks",
+          "sha256": "a43131fcb1a01e1947bc2e5d231ca57b2af5bb13638de11095fc495a690c9d2c"
+        },
+        {
+          "assert_count": 3,
+          "name": "M6CallbackContextTests.test_exact_baseline_and_physical_types_are_required",
+          "sha256": "ba16c3e75673176d04d5d2fa62bfa1f21749b7f0dbe2069500d2f2956507be55"
+        },
+        {
+          "assert_count": 4,
+          "name": "M6CallbackContextTests.test_output_collision_protected_inputs_and_missing_admission_refuse",
+          "sha256": "3dbb63fe59d8eefb921726e37b8cdda3b2bb26f5218dca2047fafaa7d08f50ac"
+        },
+        {
+          "assert_count": 4,
+          "name": "M6CallbackContextTests.test_original_ts_shape_and_inactive_return_stay_exact_and_m6_values_cannot_leak",
+          "sha256": "466cd2f56f79b74e52a77c999c8f28c1577092568e63e44bed4c0a288f97f297"
+        }
+      ],
+      "path": "som-rs/scripts/hosted_readiness/test_native_m6_callback_context.py",
+      "timeout_seconds": 300
+    },
+    {
+      "key": "interop",
+      "methods": [
+        {
+          "assert_count": 4,
+          "name": "NativeCollectorInteropControlTests.test_native_profile_flags_parse_as_paths_and_ordinary_cli_retains_refusal",
+          "sha256": "5a390980c4f0ba24c8d3d565665462da58b05fe24e40bea7072d9105c081d409"
+        },
+        {
+          "assert_count": 13,
+          "name": "NativeCollectorInteropControlTests.test_partial_group_member_failure_closes_group_then_borrow_once_and_preserves_error",
+          "sha256": "48bf97ed38b1282eeaa9407b1f4dccc9c8530646cb8f6ed4d1def9c2fcee2de7"
+        },
+        {
+          "assert_count": 9,
+          "name": "NativeCollectorInteropControlTests.test_failed_rollback_closes_each_resource_once_and_keeps_both_secondary_errors",
+          "sha256": "4d34e24b6193c240671890a5a756c36a9dafdf9f0c816cdef947a631644d0dc6"
+        },
+        {
+          "assert_count": 7,
+          "name": "NativeCollectorInteropControlTests.test_live_owner_finalizer_uses_actual_context_and_reports_first_close_error",
+          "sha256": "4a20ac648893ea061f755fcf668b51c5efdf5502b26650769de6c24fc97b2571"
+        },
+        {
+          "assert_count": 13,
+          "name": "NativeCollectorInteropControlTests.test_native_normal_capture_owns_both_0600_logs_and_captures_python_and_fd_writes",
+          "sha256": "f14cee60c599b2dc51fdf89c54ae9139e26e231c0da5649adb0f01ada2d23ebf"
+        },
+        {
+          "assert_count": 7,
+          "name": "NativeCollectorInteropControlTests.test_missing_manifest_owns_empty_logs_and_never_dispatches",
+          "sha256": "f28e020b40cdc182490cca5c99492fb579868a90e89308ff368fddc1cc1393f2"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeCollectorInteropControlTests.test_existing_file_and_symlink_refuse_before_dispatch_without_overwrite",
+          "sha256": "c594bdae68d74f2f8fba101fe07ba3d65280360d42afc166a67fa1df8bb57ff3"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeCollectorInteropControlTests.test_second_log_acquisition_failure_closes_first_fd_and_does_not_replay_open",
+          "sha256": "ae9eb4e9b4120b92d9e5b26567acbff1fa95513052adc22c9ba4607a6f86408b"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeCollectorInteropControlTests.test_body_first_error_and_traceback_survive_stream_restoration_and_close",
+          "sha256": "130ec55dd84cea47e0eec793f91e0495861b9089208db97ee5490795ea4a091d"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeCollectorInteropControlTests.test_driver_one_context_last_full_verify_then_provider_python_source_release",
+          "sha256": "389ebcabb819f62f48128ce77dcd4e836b463fce67b12d936c96194e6468f938"
+        },
+        {
+          "assert_count": 7,
+          "name": "NativeCollectorInteropControlTests.test_driver_first_entry_error_survives_postverify_error_and_all_release_actions",
+          "sha256": "23b09332a2b46f5f46e4e41d643aab24eed7d15130d6c74fecec0ddeafa21458"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeCollectorInteropControlTests.test_driver_activation_error_still_releases_held_provider_before_both_context_leases",
+          "sha256": "96caa972aa0bd273f3fa6ea1ff3756f145b935672b1ecb1c81a992108cdc5afc"
+        }
+      ],
+      "path": "som-rs/scripts/react_output_acceptance/test_native_collector_interop.py",
+      "timeout_seconds": 300
+    },
+    {
+      "key": "case",
+      "methods": [
+        {
+          "assert_count": 3,
+          "name": "NativeAPICaseControls.test_duplicate_nonfinite_and_foreign_json_are_refused",
+          "sha256": "9628408c01f05ba0fee75b7f64254287cb8c9c212fc165dcd14dc13881eda6f4"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeAPICaseControls.test_all129_unique_cases_are_required_without_sampling",
+          "sha256": "b66a5ee4b539d16816da16f4bde6e6bb4a07c6cb7a54ed05bf5b41eebe6da09c"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeAPICaseControls.test_python_response_prompt_and_complete_product_bytes_join",
+          "sha256": "07237828f5c6c64009c5b8d5b772eec06d43660c859942b7721d40fc13857af6"
+        },
+        {
+          "assert_count": 4,
+          "name": "NativeAPICaseControls.test_target_wrong_prompt_traversal_and_symlink_are_refused",
+          "sha256": "003d98efe4b10eee06c50bf90b6a18cd9dcd72dbbc5cd41d74121ab3b8278c11"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeAPICaseControls.test_invocation_seals_reject_changed_defaults_code_and_closure",
+          "sha256": "92f700537b506468926d9e9523828118f24ed043b1574f70a415d74bb1afe4a7"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeAPICaseControls.test_actual_noargument_call_offset_differs_from_supplied_argument",
+          "sha256": "1b3b05196c2072ff08ecd26e6a7db279e465901e8f5b7f1edb96d4f807ef9f1c"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeAPICaseControls.test_equal_filename_code_copy_does_not_satisfy_identity",
+          "sha256": "27ea76712ef4f32af150acaaa6af2de00d8f0abb674c3561fe3e2f291f4c4678"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeAPICaseControls.test_deep_and_oversized_json_are_incomplete",
+          "sha256": "13e7f7c0989a0e4336381de1eee8621b09d02b910e8e0f239a8cbd616f22b181"
+        },
+        {
+          "assert_count": 2,
+          "name": "NativeAPICaseControls.test_exact_output_data_refuses_sibling_case_other_C_and_arbitrary_descendant",
+          "sha256": "d3727c38366fc7c973a4e3eea416a9ba995a95dd8e18510e51e22a3781cfd957"
+        },
+        {
+          "assert_count": 6,
+          "name": "NativeAPICaseControls.test_native_case_log_keeps_python_os_bytes_and_original_error_then_restores",
+          "sha256": "219b11d3c2f8c1c65d45ffe7199b3a0420426197f073c24a5b4e692aa7c64f2f"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeAPICaseControls.test_deadline_restores_handler_and_timer_after_original_body_error",
+          "sha256": "b81ebd5bc222d8e3aa8e52070668bdfa9919bf5538abe43c3a9929647e89e5bb"
+        }
+      ],
+      "path": "som-rs/scripts/react_output_acceptance/test_native_api_case.py",
+      "timeout_seconds": 600
+    },
+    {
+      "key": "api_host",
+      "methods": [
+        {
+          "assert_count": 5,
+          "name": "NativeApiHostBodyControls.test_proc_identity_parser_reaches_live_owner_and_rejects_zombie_wrong_uid_and_short_data",
+          "sha256": "1ae32f5cc787454e410b1469f893375b1c88f059c7c5ca1d74902338aea1f6f5"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeApiHostBodyControls.test_linux_cwd_control_reaches_fixed_lsof_and_both_process_identity_reads",
+          "sha256": "f1da0e4724816757e60b44cc5b81703878578cbd53bf0aefe32fe5ffa447693f"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeApiHostBodyControls.test_linux_cwd_control_rejects_changed_process_foreign_lsof_owner_and_nonzero_tool",
+          "sha256": "2c81855eac83d3f69bf1714925cec3aac58966727e4b478a74e34e2babba881d"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeApiHostBodyControls.test_linux_listening_control_requires_only_requested_pid_and_unchanged_identity",
+          "sha256": "6dc7018e65b4cf7fc869b20c40d24bbc8158b724384eba2ad50eeb4ab44238c2"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeApiHostBodyControls.test_original_tracker_never_signals_or_waits_after_known_reap",
+          "sha256": "75c482aae77348dd9a7d81990448a79f196b8d4bb2b7174a75c2717a18063afc"
+        },
+        {
+          "assert_count": 5,
+          "name": "NativeApiHostBodyControls.test_original_tracker_refuses_signal_when_actual_cwd_check_fails",
+          "sha256": "82d003e05602884f90d75db0687879cfee7a97321425712a95450372df78cb33"
+        },
+        {
+          "assert_count": 1,
+          "name": "NativeApiHostBodyControls.test_native_python_path_uses_only_held_actual_payload_site",
+          "sha256": "6b3f7696641728d1bb1c0c6e8e89028160c2d412cc0fe4c0806149dc4befd370"
+        },
+        {
+          "assert_count": 3,
+          "name": "NativeApiHostBodyControls.test_native_gate_cache_refusal_reaches_exact_guard_before_output_or_child_effects",
+          "sha256": "12c701089a565a130d36003518defe88ce63a8b6d8ca2760b4648abef059c447"
+        }
+      ],
+      "path": "som-rs/tests/react-output-v1/test_native_api_host_controls.py",
+      "timeout_seconds": 300
+    },
+    {
+      "key": "cleanup",
+      "methods": [
+        {
+          "assert_count": 8,
+          "name": "ProductRuntimeCleanupTests.test_cleanup_removes_only_owned_runtime_and_keeps_all_evidence",
+          "sha256": "1412567734e905ada3fc3a8cdf7261ba3c1d91019f4030b522b0398a574faf20"
+        },
+        {
+          "assert_count": 2,
+          "name": "ProductRuntimeCleanupTests.test_missing_runtime_directories_need_no_stop_report",
+          "sha256": "64ce27dd9df873c009e0e09cf4e62561a2ba7fd8776fe8a4c25a371e20232fcc"
+        },
+        {
+          "assert_count": 4,
+          "name": "ProductRuntimeCleanupTests.test_symlink_root_case_target_or_ancestor_is_refused",
+          "sha256": "2dd37d0d74493f7a891fb6214cf416a1841b86a18696a3159c6840492b2112a3"
+        },
+        {
+          "assert_count": 4,
+          "name": "ProductRuntimeCleanupTests.test_symlink_above_output_root_is_refused",
+          "sha256": "74056ab0ee13b364b5bc15076b4acf88d7180fe632eb73a7bc9073fa0ffc62ae"
+        },
+        {
+          "assert_count": 3,
+          "name": "ProductRuntimeCleanupTests.test_live_or_ambiguous_postgres_is_refused",
+          "sha256": "bd8e11fc5d8e34afb3fc73902a7e726eeb4efb71fcf189ae1878fe4e4a569dde"
+        },
+        {
+          "assert_count": 3,
+          "name": "ProductRuntimeCleanupTests.test_missing_malformed_or_duplicate_postgres_report_is_refused",
+          "sha256": "4fa6b30253ae99753f29055bdedfd4b0ec52576f1e54d31cea0ee4c84799ce65"
+        },
+        {
+          "assert_count": 3,
+          "name": "ProductRuntimeCleanupTests.test_any_postmaster_pid_blocks_postgres_cleanup",
+          "sha256": "24b931ee2ee98f6936816afcc9638ad2cc4eb6f90aea1caf2bd404fd9eb6667a"
+        },
+        {
+          "assert_count": 3,
+          "name": "ProductRuntimeCleanupTests.test_file_targets_and_unsafe_case_names_are_refused",
+          "sha256": "f60185717440cd4dadb72458cfce3e9962488d85b66692cdf0674b690b5d16f1"
+        },
+        {
+          "assert_count": 7,
+          "name": "ProductRuntimeCleanupTests.test_default_main_keeps_old_rows_and_all_runtime",
+          "sha256": "dd3a18f965e1fb421e5cd81c567e905bca951f43b38d76db7c4f3c62b74d0b12"
+        },
+        {
+          "assert_count": 7,
+          "name": "ProductRuntimeCleanupTests.test_flag_main_cleans_each_completed_case_and_keeps_evidence",
+          "sha256": "f3a6c5f8dcc2cfe48e3509753820f0a0ba925b0aad93ab787d4958c909b8ac35"
+        },
+        {
+          "assert_count": 10,
+          "name": "ProductRuntimeCleanupTests.test_cleanup_exception_fails_case_and_main_continues",
+          "sha256": "b23f29c3ecb85a1f4e26ec24137ba4cb1fa41dc37a9f331663c49bb237970d04"
+        }
+      ],
+      "path": "som-rs/scripts/react_output_acceptance/test_check_products_cleanup.py",
+      "timeout_seconds": 300
+    },
+    {
+      "key": "legacy_api",
+      "methods": [
+        {
+          "assert_count": 4,
+          "name": "RecorderTests.test_fetch_hook_is_limited_to_exact_api_node_child",
+          "sha256": "696dcaa9ef535b514c42fabb50cb4bb9e2ffe990b8da88e6eeda83188c6dc07d"
+        },
+        {
+          "assert_count": 2,
+          "name": "RecorderTests.test_existing_node_options_are_refused",
+          "sha256": "be5b2f163fad8350e93d8c277ee80a07371437f4b38c69d2115c1ff402949859"
+        },
+        {
+          "assert_count": 5,
+          "name": "RecorderTests.test_snapshot_retains_exact_os_commands_and_absence",
+          "sha256": "4a149abaf229ed149b6916be87e20c1805f43ad6515d6b8e23ed882ec2289411"
+        },
+        {
+          "assert_count": 3,
+          "name": "RecorderTests.test_postmaster_bytes_are_saved_before_stop",
+          "sha256": "541b873f1636fb4ef06b5486e8ccb9a305ed82351f93bfd4e9b64f3a7c3c61c3"
+        },
+        {
+          "assert_count": 2,
+          "name": "RecorderTests.test_failed_observation_is_recorded_without_interrupting_cleanup",
+          "sha256": "e1edad5f855943f6273a59feaa203bcf336ca3853a731a461b544e5b6da3476e"
+        },
+        {
+          "assert_count": 4,
+          "name": "RecorderTests.test_write_and_snapshot_failure_cannot_suppress_original_pg_stop",
+          "sha256": "976c2c289367ee427cf21dbbe9d98c11974a18993a7ca9c0a54a2ce6e11cc164"
+        },
+        {
+          "assert_count": 2,
+          "name": "RecorderTests.test_snapshot_failure_returns_original_lsof_result_to_owner",
+          "sha256": "80ffbb8e3bf5d0860de1315f4805dc5b34732d2bfff84dd71c298d303f34fa9a"
+        },
+        {
+          "assert_count": 4,
+          "name": "RecorderTests.test_runpy_uses_the_frozen_path_and_original_argv",
+          "sha256": "444be66d2aa73610d3248d840806920c1fd23969949015a64346aef658f98d22"
+        }
+      ],
+      "path": "som-rs/scripts/react_output_acceptance/test_record_api.py",
+      "timeout_seconds": 300
+    }
+  ]
+}

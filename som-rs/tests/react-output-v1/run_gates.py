@@ -22,12 +22,52 @@ import subprocess
 import sys
 from typing import Any
 
+# Native mode uses fixed source bindings. A globals flag grants no authority.
+_NATIVE_API = '__som_native_active_controls__' in globals()
+if _NATIVE_API:
+    from _som_native_active_controls_binding import controls as _native_controls
+    from types import FunctionType as _NativeFunction
+    _native_controls.verify_installed()
+    if (_native_controls is not __som_native_active_controls__
+            or _native_controls.role_sources.get('entry.m6.product-gates') != 'som-rs/tests/react-output-v1/run_gates.py'
+            or __file__ != str(_native_controls.root / 'som-rs/tests/react-output-v1/run_gates.py')
+            or __name__ != '__main__'
+            or type(__som_native_API_tools__) is not _NativeFunction):
+        raise ValueError('actual fixed native API host/runner bindings required')
+    if __som_native_API_tools__.__globals__.get('__file__') != str(_native_controls.root /
+            _native_controls.role_sources['m6.api.case.consumer']):
+        raise ValueError('fixed stable native API tools getter source differs')
+    _NATIVE_API_TOOLS = __som_native_API_tools__()
+    _native_keys = ('python', 'node', 'npm_cli', 'cache', 'pg_bin', 'lsof', 'ps', 'site')
+    if (type(_NATIVE_API_TOOLS) is not dict or not all(type(key) is str for key in _NATIVE_API_TOOLS)
+            or not all(key in _NATIVE_API_TOOLS and type(_NATIVE_API_TOOLS[key]) is str
+                       and _NATIVE_API_TOOLS[key] for key in _native_keys)):
+        raise ValueError('actual source-owned native API tool data required')
+    for _native_key in _native_keys:
+        _native_path = pathlib.Path(_NATIVE_API_TOOLS[_native_key])
+        if not _native_path.is_absolute() or '..' in _native_path.parts:
+            raise ValueError('absolute exact native API tool path required')
+    if (_NATIVE_API_TOOLS['lsof'] != '/usr/bin/lsof'
+            or _NATIVE_API_TOOLS['ps'] != '/bin/ps'):
+        raise ValueError('fixed Linux lsof/ps paths required')
+    # Gates precede API recording. Keep the original real subprocess module.
+    _native_controls.verify_installed()
+else:
+    if '_som_native_active_controls' in sys.modules:
+        raise ValueError('native API host/runner has no fixed binding')
+
+
 from common import CONTRACT, REPO
 from tree_sha import tree_sha
 
 TOOLCHAIN = json.loads((CONTRACT / "toolchain.json").read_text())
-NODE = TOOLCHAIN["node"]["binary"]
-NPM_CLI = str(pathlib.Path(TOOLCHAIN["npm"]["root"]) / "bin" / "npm-cli.js")
+if _NATIVE_API:
+    NODE = _NATIVE_API_TOOLS['node']
+    NPM_CLI = _NATIVE_API_TOOLS['npm_cli']
+    _NATIVE_CACHE = pathlib.Path(_NATIVE_API_TOOLS['cache'])
+else:
+    NODE = TOOLCHAIN["node"]["binary"]
+    NPM_CLI = str(pathlib.Path(TOOLCHAIN["npm"]["root"]) / "bin" / "npm-cli.js")
 STEPS = ["install", "typecheck", "format_check", "test"]
 
 
@@ -61,8 +101,10 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("product", type=pathlib.Path)
     parser.add_argument("work", type=pathlib.Path)
-    parser.add_argument("--cache", type=pathlib.Path, default=REPO / TOOLCHAIN["vendored_cache"]["path"])
+    parser.add_argument("--cache", type=pathlib.Path, default=(_NATIVE_CACHE if _NATIVE_API else REPO / TOOLCHAIN["vendored_cache"]["path"]))
     args = parser.parse_args()
+    if _NATIVE_API and args.cache.absolute() != _NATIVE_CACHE:
+        raise ValueError('native gate cache differs from actual fixed tool source')
     work = args.work.resolve()
     work.mkdir(parents=True, exist_ok=False)
     product = work / "product"

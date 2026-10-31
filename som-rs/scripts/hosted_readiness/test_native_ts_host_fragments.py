@@ -55,7 +55,7 @@ REVIEWED_SHA256 = {
     "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py": "7329f3dc88d63957a7ac33c847ec3416f4a7b35b8c7b10793154f22a5516a440",
     "som-rs/scripts/hosted_readiness/typescript_regression_nested_rust.py": "e0b0f1c17f5337aac8ba071d68ae7475fd13617844944cd72f436b0237ab55a6",
     "som-rs/scripts/hosted_readiness/typescript_regression_owner.py": "db90a5f459763359d3438e179dcd7301655d335ef08fcf1d0e194e2ce6d7c493",
-    "som-rs/behavior/typescript/host.py": "bab520b2874fcb5c770b694ac63a511e18a61a06c25f475ea34da04901c8f310",
+    "som-rs/behavior/typescript/host.py": "9a30912b4185fdd5c64dcf0df39c0b6c2cc52a666f0f9405ba23c2c9211c6aef",
     "som-rs/som-targets/qa/check_ts_products.py": "fb52e35d465779a31affad4078e9209050f55ade3803e6931881bc523e2271d1",
     "som-rs/tests/typescript-output-v1/tree_sha.py": "6c9bccd1293aa8629f18539ea89fa0b5bb284dc70a579b13bc86f8d0324fa9a2",
     "som-rs/contracts/typescript-output-v1/toolchain.json": "0875aeb7e60aa72a44bc59c9aef89b971dffc5fc5304813e0b04ec5dc26da618",
@@ -297,6 +297,8 @@ class HostFixture(protocol.Fixture):
         for target, source, name in ((HOST, HOST_SOURCE, '_som_ts_native_original_typescript_host'),
                 (CHECKER, CHECKER_SOURCE, '_som_ts_native_original_ts_products')):
             super().add_role(target, source, actual(source), module=name,
+                bindings={'__som_native_active_controls__': {'kind': 'active-controls'}}
+                    if target == HOST else None,
                 callers=[{'role': 'caller', 'function': 'make'}, {'role': ADAPTER, 'function': '_module'},
                          {'role': 'caller', 'function': 'context_double'},
                          {'role': CHECKER, 'function': '<module>'}])
