@@ -406,13 +406,17 @@ class NativeCollectorInteropControlTests(unittest.TestCase):
             stack, data, module, events = self.driver_scope(root, entry_error=first, verify_error=later)
             with stack:
                 with self.assertRaises(RuntimeError) as caught:
-                    self.driver._native_execute_collector([self.driver.COLLECTOR], root / 'context.json', data, root)
+                    try:
+                        self.driver._native_execute_collector([self.driver.COLLECTOR], root / 'context.json', data, root)
+                    except RuntimeError as actual:
+                        raised_trace = actual.__traceback__
+                        raise
                 self.assertIs(caught.exception, first)
                 self.assertEqual(first.__som_native_collector_secondary__, (later,))
                 self.assertEqual(events[-3:], ['provider-release', 'python-close', 'source-close'])
                 self.assertEqual(events.count('Context-construct'), 1)
                 self.assertFalse(first.__som_native_collector_postcheck__['source_runtime_tools_inputs_unchanged'])
-                trace = first.__traceback__
+                trace = raised_trace
                 while trace is not None and trace.tb_frame.f_code is not ControlDriverSourceLease.execute_entry.__code__:
                     trace = trace.tb_next
                 self.assertIsNotNone(trace)

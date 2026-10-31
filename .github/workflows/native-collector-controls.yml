@@ -2,7 +2,7 @@ name: Native collector and case whole controls
 on:
   push:
     branches:
-      - codex/m12-native-collector-controls-v3
+      - codex/m12-native-collector-controls-v4
   workflow_dispatch:
 permissions:
   contents: read
@@ -14,7 +14,7 @@ defaults:
     shell: bash
 jobs:
   whole:
-    if: github.repository == 'faberline/som' && github.ref == 'refs/heads/codex/m12-native-collector-controls-v3'
+    if: github.repository == 'faberline/som' && github.ref == 'refs/heads/codex/m12-native-collector-controls-v4'
     runs-on: ubuntu-24.04
     timeout-minutes: 127
     steps:
@@ -31,11 +31,11 @@ jobs:
           cat > "$WHOLE_EVIDENCE/source_bind.py" <<'PY'
           import ast, hashlib, json, os, re, stat, subprocess, sys, traceback
           from pathlib import Path
-          BASE = '4b60f4aad930e160fda84e6b217a8d0ec0ed758a'
+          BASE = '372c58bdc0451a13d4b87a3d47c95430a8385519'
           WORKFLOW = '.github/workflows/native-collector-controls.yml'
           DATA_PATH = '.github/ci/native-collector-controls-v1.json'
           DATA_RAW = (Path(os.environ['WHOLE_EVIDENCE'])/'fixed-data.json').read_bytes()
-          if hashlib.sha256(DATA_RAW).hexdigest() != '748bb70b7e41296328425a00637f1e79ec417eee96141f769a00aecc0adeb611':
+          if hashlib.sha256(DATA_RAW).hexdigest() != 'b30a206f253b890e9e6dbeb98dde856dac4f1ff371bc3457b66acd660be97ed1':
               raise ValueError('fixed whole-suite data bytes differ')
           DATA = json.loads(DATA_RAW)
           EXPECTED, SUITES, CHANGES = DATA['expected'], DATA['suites'], DATA['changes']
@@ -94,7 +94,7 @@ jobs:
                       'control data verifier flags mismatch')
               require(os.environ['GITHUB_ACTIONS']=='true' and sys.platform=='linux','GitHub Linux control lane only')
               require(os.environ['GITHUB_REPOSITORY']=='faberline/som','wrong public repository')
-              require(os.environ['GITHUB_REF']=='refs/heads/codex/m12-native-collector-controls-v3','wrong finite branch')
+              require(os.environ['GITHUB_REF']=='refs/heads/codex/m12-native-collector-controls-v4','wrong finite branch')
               require(os.environ['GITHUB_EVENT_NAME'] in ('push','workflow_dispatch'),'wrong event')
               head=git('rev-parse','HEAD').decode().strip();report['HEAD']=head
               require(re.fullmatch('[0-9a-f]{40}',head) is not None and head==os.environ['GITHUB_SHA'],'actual HEAD mismatch')
@@ -113,7 +113,7 @@ jobs:
               require(git('status','--porcelain=v1','-z','--untracked-files=all')==b'','checkout must remain entirely clean')
               for name in sorted(EXPECTED):
                   read_source(name)
-              require(sha(read_source(DATA_PATH)) == '748bb70b7e41296328425a00637f1e79ec417eee96141f769a00aecc0adeb611', 'tracked fixed CI data differs')
+              require(sha(read_source(DATA_PATH)) == 'b30a206f253b890e9e6dbeb98dde856dac4f1ff371bc3457b66acd660be97ed1', 'tracked fixed CI data differs')
               report['methods'] = {}
               for suite in SUITES:
                   parsed = ast.parse((REPO/suite['path']).read_bytes())
@@ -185,7 +185,7 @@ jobs:
 
           root = Path(os.environ['WHOLE_EVIDENCE'])
           data_raw = (root / 'fixed-data.json').read_bytes()
-          if hashlib.sha256(data_raw).hexdigest() != '748bb70b7e41296328425a00637f1e79ec417eee96141f769a00aecc0adeb611':
+          if hashlib.sha256(data_raw).hexdigest() != 'b30a206f253b890e9e6dbeb98dde856dac4f1ff371bc3457b66acd660be97ed1':
               raise ValueError('fixed whole-suite data bytes differ')
           SUITES = json.loads(data_raw)['suites']
           key = sys.argv[1]
@@ -271,7 +271,7 @@ jobs:
           data_failure = None
           try:
               data_raw = (root / 'fixed-data.json').read_bytes()
-              if hashlib.sha256(data_raw).hexdigest() != '748bb70b7e41296328425a00637f1e79ec417eee96141f769a00aecc0adeb611':
+              if hashlib.sha256(data_raw).hexdigest() != 'b30a206f253b890e9e6dbeb98dde856dac4f1ff371bc3457b66acd660be97ed1':
                   raise ValueError('fixed whole-suite data bytes differ')
               DATA = json.loads(data_raw)
               SUITES, EXPECTED = DATA['suites'], DATA['expected']
@@ -403,7 +403,7 @@ jobs:
           WHOLE_EVIDENCE: ${{ runner.temp }}/som-native-collector-controls-evidence
         run: |
           set -euo pipefail
-          printf '%s  %s\n' '748bb70b7e41296328425a00637f1e79ec417eee96141f769a00aecc0adeb611' "$GITHUB_WORKSPACE/.github/ci/native-collector-controls-v1.json" | /usr/bin/sha256sum --check --strict
+          printf '%s  %s\n' 'b30a206f253b890e9e6dbeb98dde856dac4f1ff371bc3457b66acd660be97ed1' "$GITHUB_WORKSPACE/.github/ci/native-collector-controls-v1.json" | /usr/bin/sha256sum --check --strict
           /usr/bin/cp "$GITHUB_WORKSPACE/.github/ci/native-collector-controls-v1.json" "$WHOLE_EVIDENCE/fixed-data.json"
       - name: Select control CPython3.12.11
         id: setup
@@ -515,7 +515,7 @@ jobs:
         timeout-minutes: 5
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: native-collector-controls-v3-${{ github.run_id }}-${{ github.run_attempt }}
+          name: native-collector-controls-v4-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/som-native-collector-controls-evidence
           if-no-files-found: error
           retention-days: 30
