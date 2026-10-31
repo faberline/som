@@ -33,7 +33,7 @@ REPO=HERE.parents[2]
 BASE='som-rs/scripts/hosted_readiness/'
 SELF='som-rs/scripts/react_output_acceptance/record_http.py'
 CONTEXT=BASE+'product_runtime/full_product_context.py'
-PINS={SELF:'9ff11648d68e6f84120d98a91feefbff65b6f4c25fb6208a33c50bf1da1a4e56',
+PINS={SELF:'ed0dd5841a47cdab12453b64187a3f45d432d481c2acc055ae2ff6f24e844588',
       CONTEXT:'7329f3dc88d63957a7ac33c847ec3416f4a7b35b8c7b10793154f22a5516a440',
       BASE+'native_active_controls.py':'eb0f804a8aa7de0857213d34478adc869fe51f7259c5552439dca109e4e6a038',
       BASE+'native_qa_authority.py':'024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1',
@@ -206,6 +206,7 @@ class HttpFixture(protocol.Fixture):
         # Close the preceding real owner before constructing the next fixture.
         previous_fixture=getattr(case,'_som_http_fixture_owner',None)
         if previous_fixture is not None:
+            previous_fixture.restore_response_methods()
             previous_fixture.ctx.qa_import_controls.close()
             previous_fixture.stack.close()
             case.assertTrue(previous_fixture.domain.closed)
@@ -229,10 +230,22 @@ class HttpFixture(protocol.Fixture):
         case.addCleanup(self.ctx.qa_import_controls.close)
         self.data=self.domain.load_known('fixture.http.data',self.domain.prepare('fixture.http.data'),None)
         self.original_response_closes=[]
+        self.original_response_methods=[]
         case.addCleanup(lambda:[close() for close in self.original_response_closes])
+        case.addCleanup(self.restore_response_methods)
         self.initial=self.seeds['_som_native_trusted_bootstrap_entry']['module']
         self.sequence=0;self.transports=[]
         case._som_http_fixture_owner=self
+
+    def restore_response_methods(self):
+        # Test-owned data restoration runs after assertions and before fixture
+        # Core teardown. A retained HTTPError closer must see the real method,
+        # not a negative-test replacement when its actual destructor runs.
+        for response, originals in self.original_response_methods:
+            fields=object.__getattribute__(response,'__dict__')
+            for name,present,value in originals:
+                if present:dict.__setitem__(fields,name,value)
+                else:dict.pop(fields,name,None)
 
     def synthetic_seed(self,name,path,raw):
         if name=='_som_native_trusted_bootstrap_entry':
@@ -316,6 +329,9 @@ class HttpFixture(protocol.Fixture):
         value=http.client.HTTPResponse(Socket());value.begin()
         value.code,value.msg,value.url=value.status,value.reason,request.full_url
         self.original_response_closes.append(value.close)
+        fields=object.__getattribute__(value,'__dict__')
+        self.original_response_methods.append((value,tuple((name,name in fields,dict.get(fields,name))
+            for name in ('read','close'))))
         return value
 
     def arguments(self,script=None,mode='plain',code=0,direct=False):

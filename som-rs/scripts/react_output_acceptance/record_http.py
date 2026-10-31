@@ -893,7 +893,7 @@ def _native_transaction(subject, operation, candidate=None):
     rlock_acquire, rlock_release = __som_native_HTTP_RLOCK_ACQUIRE__, __som_native_HTTP_RLOCK_RELEASE__
     if not (type(operation) is str and operation in (
         'preflight', 'begin-recording', 'recording-init', 'recording-active', 'recording-failed',
-        'recording-check', 'safe-recording', 'recording-release', 'new-call', 'begin-call', 'call-init', 'call-check',
+        'recording-check', 'safe-recording', 'safe-call', 'recording-release', 'new-call', 'begin-call', 'call-init', 'call-check',
         'response-init', 'exit-init', 'borrow-init', 'open-init', 'open-constructor-check')):
         raise ValueError('unlisted private HTTP operation')
     # The qualified VM creates this kind directly. Do not inspect a changed
@@ -996,8 +996,13 @@ def _native_recording_issue(state, *, cleanup=False):
     return _native_origin_view(state, cleanup=cleanup)
 
 
-def _native_call_issue(state):
+def _native_call_issue(state, *, cleanup=False):
     _native_need(type(state) is _NativeCallState, 'actual constructor-issued call required')
+    _native_need(cleanup is False or cleanup is True, 'literal call cleanup selector required')
+    if cleanup is True:
+        # Derive the real issue inside the producer. No public candidate tuple
+        # or callback is accepted as expected cleanup authority.
+        return _native_transaction(state, 'safe-call')
     row = dict.get(object.__getattribute__(state, '__dict__'), '_native_call_record')
     _native_need(type(row) is tuple and row[0] is state, 'call lacks original constructor issue')
     _native_transaction(state, 'call-check', row)
@@ -1015,17 +1020,31 @@ def _native_safe_finalization(state, number, saved, error=None, attempted=True):
 
 
 def _native_after_error(state, primary, phase, *, observed_error=None):
-    """Validate the private method too; a public closure cannot authorize it."""
-    owner = _native_call_issue(state)[5]
+    """Keep the real primary while deriving cleanup data from the producer."""
+    owner = number = None
     try:
-        record = _native_recording_issue(owner)
+        issue = _native_call_issue(state, cleanup=True)
+        owner, number = issue[5], issue[6][0]
+        record = _native_recording_issue(owner, cleanup=True)
         function = _native_check_invocation(record['call_after_error'])
+        # Cleanup data does not bypass normal dispatch authorization.
         _native_runtime_preflight(state)
         function(state, primary, phase, observed_error=observed_error)
     except BaseException as later:
-        state.refused = True
-        _native_safe_finalization(owner, state.number, False, later, False)
-        _native_safe_failure(owner, phase, primary, later)
+        try:
+            if owner is None:
+                namespace = BaseException.__dict__['__dict__'].__get__(primary, BaseException)
+                previous = dict.get(namespace, '__som_native_http_after_error_secondary__', ())
+                dict.__setitem__(namespace, '__som_native_http_after_error_secondary__',
+                                 (*previous, later) if type(previous) is tuple else (later,))
+            else:
+                _native_safe_finalization(owner, number, False, later, False)
+                _native_safe_failure(owner, phase, primary, later)
+        except BaseException as cleanup_error:
+            namespace = BaseException.__dict__['__dict__'].__get__(primary, BaseException)
+            previous = dict.get(namespace, '__som_native_http_after_error_secondary__', ())
+            dict.__setitem__(namespace, '__som_native_http_after_error_secondary__',
+                             (*previous, later, cleanup_error) if type(previous) is tuple else (later, cleanup_error))
 
 
 class _NativeCallbackSeal:
@@ -1938,7 +1957,7 @@ class NativeRecorder(Recorder):
                                          and any(signature[3] is source_frame.f_code and signature[4] is source_frame.f_globals
                                                  for signature in signatures),
                                          'private HTTP operation lacks its original source caller')
-                            cleanup = operation in ('safe-recording', 'recording-failed', 'recording-release')
+                            cleanup = operation in ('safe-recording', 'safe-call', 'recording-failed', 'recording-release')
                             if not cleanup:
                                 _native_need(_NATIVE_ISSUER is compatibility_issuer,
                                              'original HTTP compatibility issuer was replaced')
@@ -2105,6 +2124,15 @@ class NativeRecorder(Recorder):
                                 elif operation == 'call-check':
                                     _native_need(any(issue[0] is subject and candidate is issue for issue, fields in calls),
                                                  'native call candidate is not its private original')
+                                elif operation == 'safe-call':
+                                    # The normal call-check above is unchanged.
+                                    # This finite cleanup read has no supplied
+                                    # expected row and performs no finalization.
+                                    matches = tuple(issue for issue, fields in calls if issue[0] is subject)
+                                    _native_need(candidate is None and len(matches) == 1
+                                                 and source_frame.f_code.co_qualname == '_native_after_error',
+                                                 'safe call cleanup needs its original error source and receiver')
+                                    result = matches[0]
                                 elif operation == 'response-init':
                                     _native_need(source_frame.f_code.co_qualname == '_NativeCallState.attach'
                                                  and source_frame.f_locals.get('response_issue') is candidate
