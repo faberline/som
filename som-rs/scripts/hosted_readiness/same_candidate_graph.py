@@ -355,8 +355,49 @@ def verify_compile_proof(root, candidate):
             'complete current same-job compile/assembly proof required')
     observations = assembled['observations']
     require(len(observations) == 2045 and [row['observation_index'] for row in observations] == list(range(2045))
-            and all(row['state'] == 'passed' and row['http_status'] == 200
-                    and row['frozen_product_files_passed'] is True for row in observations),
+            and all(row['state'] == 'passed' and row['http_status'] == 200 for row in observations),
+            'complete 2045 assembly observations required')
+    frozen, defaults = [], []
+    for row in observations:
+        compare = row.get('compare_frozen_product')
+        require(type(compare) is bool, 'complete 2045 assembly observations required')
+        if compare:
+            expected = row.get('expected_files_map_sha256')
+            actual = row.get('actual_files_map_sha256')
+            require(row.get('frozen_product_files_passed') is True
+                    and type(expected) is str and re.fullmatch('[0-9a-f]{64}', expected)
+                    and type(actual) is str and actual == expected,
+                    'complete 2045 assembly observations required')
+            frozen.append(row)
+        else:
+            accepted = row.get('accepted_qa_assemble_raw_sha256')
+            response = row.get('response_sha256')
+            identity = row.get('identity')
+            index = row.get('compile_row_index')
+            require(row.get('target') == 'python' and row.get('mode') == 'compile-default'
+                    and row.get('assembly_variant') == 'checked'
+                    and 'frozen_product_files_passed' not in row
+                    and type(accepted) is str and re.fullmatch('[0-9a-f]{64}', accepted)
+                    and type(response) is str and response == accepted
+                    and type(identity) is dict and set(identity) == {'source', 'id', 'variant'}
+                    and all(type(value) is str and value for value in identity.values())
+                    and identity['source'] in {'public', 'legacy'} and identity['variant'] in {'none', 'python'}
+                    and type(index) is int and 0 <= index < 2041,
+                    'complete 2045 assembly observations required')
+            defaults.append(row)
+    checked = [row for row in frozen if row.get('target') == 'python'
+               and row.get('mode') == 'checked-dsl' and row.get('assembly_variant') == 'checked']
+    require(len(frozen) == 2039 and len(defaults) == len(checked) == 6,
+            'complete 2045 assembly observations required')
+    paired = []
+    for row in defaults:
+        matches = [other for other in checked
+                   if type(other.get('identity')) is dict and other['identity'] == row['identity']
+                   and type(other.get('compile_row_index')) is int
+                   and other['compile_row_index'] == row['compile_row_index']]
+        require(len(matches) == 1, 'complete 2045 assembly observations required')
+        paired.append(matches[0]['observation_index'])
+    require(sorted(paired) == sorted(row['observation_index'] for row in checked),
             'complete 2045 assembly observations required')
     return {'compile_manifest_sha256': sha(compiled_raw), 'assembly_manifest_sha256': sha(assembled_raw),
             'binary_identity': compiled['initial_identities']['binary']}

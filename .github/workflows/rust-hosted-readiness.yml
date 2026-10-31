@@ -884,6 +884,9 @@ jobs:
             if ! printf '{"version":"som.ts-producer-step-terminal.v1","step":"derive","shell_pid":%s,"exit_code":%s,"wait_scope":"outer step shell only; nested actual owned records are separate","product_acceptance_passed":false}\n' "$BASHPID" "$original_exit" > "$RUNNER_TEMP/ts-producer-evidence/derive.step.json"; then
               if [ "$original_exit" -eq 0 ]; then original_exit=1; fi
             fi
+            if [ "$original_exit" -ne 0 ]; then
+              cat "$RUNNER_TEMP/ts-producer-evidence/derive.stderr" >&2 || true
+            fi
             exit "$original_exit"
           }
           trap save_producer_step_terminal EXIT
@@ -1053,6 +1056,14 @@ jobs:
           assert temporary.is_absolute() and '..' not in temporary.parts
           assert not any(p.is_symlink() for p in (output,*output.parents))
           output.mkdir(mode=0o700,exist_ok=True)
+          # This public step ends before the original-input or keyring steps.
+          diagnostics=output/'public-bootstrap-diagnostics'
+          diagnostics.mkdir(mode=0o700,exist_ok=True)
+          for name in ('derive.stderr','derive.step.json'):
+              path=temporary/'ts-producer-evidence'/name
+              if path.exists():
+                  assert path.is_file() and not path.is_symlink() and path.stat().st_nlink==1
+                  with (diagnostics/name).open('xb') as stream:stream.write(path.read_bytes())
           streams={}
           for name in ('launch.stdout','launch.stderr'):
               path=temporary/'som-ts-producer-exporter-raw'/name

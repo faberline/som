@@ -185,6 +185,171 @@ class GraphTests(unittest.TestCase):
             self.assertEqual(result['raw_manifest_sha256'], hashlib.sha256((root / 'result.json').read_bytes()).hexdigest())
 
 
+    def test_compile_assembly_schema_keeps_checked_defaults_paired_with_frozen_products(self):
+        # Producer-shaped synthetic records, not native execution or admission.
+        candidate = '1' * 40
+        special = {
+            1316: ('m2-alternative-checked', 'none'),
+            1317: ('m2-alternative-checked', 'python'),
+            1324: ('supplement-mongodb-child-patch-read-checked', 'none'),
+            1325: ('supplement-mongodb-child-patch-read-checked', 'python'),
+            1336: ('supplement-postgresql-child-read-checked', 'none'),
+            1337: ('supplement-postgresql-child-read-checked', 'python'),
+        }
+        observations = []
+        for index in range(1342):
+            identity = {'source': 'public' if index < 254 else 'legacy',
+                        'id': 'fixture-python-' + str(index // 2),
+                        'variant': 'none' if index % 2 == 0 else 'python'}
+            if index in special:
+                identity.update(source='legacy', id=special[index][0], variant=special[index][1])
+            row = {'observation_index': index, 'target': 'python', 'identity': identity,
+                   'compile_row_index': index, 'compile_variant': identity['variant'],
+                   'mode': 'compile-default', 'assembly_variant': 'checked' if index in special else 'standard',
+                   'compare_frozen_product': index not in special, 'state': 'passed', 'http_status': 200,
+                   'accepted_qa_assemble_raw_sha256': 'b' * 64, 'response_sha256': 'b' * 64}
+            if index not in special:
+                row.update(frozen_product_files_passed=True, expected_files_map_sha256='a' * 64,
+                           actual_files_map_sha256='a' * 64)
+            observations.append(row)
+        rust_compile_indices = [index for index in range(1342, 2041) if index not in {2030, 2031}]
+        for index, compile_index in enumerate(rust_compile_indices):
+            observations.append({'observation_index': 1342 + index, 'target': 'rust',
+                'identity': {'phase': 'phase2', 'id': 'fixture-rust-' + str(index)},
+                'compile_row_index': compile_index, 'mode': 'compile-default',
+                'compare_frozen_product': True, 'state': 'passed', 'http_status': 200,
+                'frozen_product_files_passed': True, 'expected_files_map_sha256': 'a' * 64,
+                'actual_files_map_sha256': 'a' * 64})
+        for index, compile_index in enumerate(special):
+            row = copy.deepcopy(observations[compile_index])
+            row.pop('accepted_qa_assemble_raw_sha256')
+            row.update(observation_index=2039 + index, mode='checked-dsl', compare_frozen_product=True,
+                       frozen_product_files_passed=True, expected_files_map_sha256='a' * 64,
+                       actual_files_map_sha256='a' * 64, response_sha256='c' * 64,
+                       accepted_product_raw_sha256='c' * 64,
+                       checked_dsl={'dsl_sha256': 'e' * 64, 'prompt_sha256': 'f' * 64})
+            observations.append(row)
+        identities = {'binary': {'sha256': 'd' * 64, 'role': 'synthetic fixture binary'}}
+        compiled = {'tested_sha': candidate, 'experiment_complete': True, 'passed': 2041,
+            'expected_rows': {'python': 1342, 'rust': 699}, 'actual_rows': {'python': 1342, 'rust': 699},
+            'rows': [{'index': index, 'state': 'passed',
+                      'http_status': 400 if index in {2030, 2031} else 200,
+                      'expected_http_status': 400 if index in {2030, 2031} else 200}
+                     for index in range(2041)],
+            'identity_stability_passed': True, 'initial_identities': identities,
+            'final_identities': copy.deepcopy(identities), 'product_acceptance_passed': False,
+            'cleanup': {'cleanup_passed': True, 'remaining_owned_session_members': []}}
+        assembled = {'tested_sha': candidate, 'assembly_experiment_complete': True,
+            'product_acceptance_passed': False,
+            'owned_cleanup': {'cleanup_passed': True, 'remaining_owned_session_members': []},
+            'checked_input_stability_passed': True, 'saved_observation_stability_passed': True,
+            'identity_stability_passed': True,
+            'expected_observations': {'python_default': 1342, 'rust_default': 697, 'python_checked': 6},
+            'actual_observations': {'python_default': 1342, 'rust_default': 697, 'python_checked': 6},
+            'expected_products': {'python': 671, 'rust': 697}, 'actual_products': {'python': 671, 'rust': 697},
+            'product_slots_passed': {'python': 671, 'rust': 697}, 'observations_passed': 2045,
+            'compile_stage': {'rows': 2041, 'passed': 2041}, 'observations': observations}
+        compiled_raw = json.dumps(compiled, sort_keys=True, separators=(',', ':')).encode()
+        assembled_raw = json.dumps(assembled, sort_keys=True, separators=(',', ':')).encode()
+        self.assertEqual(len(observations), 2045)
+        self.assertEqual(sum(row['compare_frozen_product'] is True for row in observations), 2039)
+        self.assertEqual([row['observation_index'] for row in observations
+                          if row['compare_frozen_product'] is False], list(special))
+        with mock.patch.object(g, 'read', side_effect=[compiled_raw, assembled_raw]) as reader:
+            result = g.verify_compile_proof(Path('/synthetic-compile-assembly'), candidate)
+        self.assertEqual(reader.call_args_list,
+                         [mock.call(Path('/synthetic-compile-assembly/manifest.json')),
+                          mock.call(Path('/synthetic-compile-assembly/assembly/manifest.json'))])
+        self.assertEqual(result, {'compile_manifest_sha256': hashlib.sha256(compiled_raw).hexdigest(),
+                                  'assembly_manifest_sha256': hashlib.sha256(assembled_raw).hexdigest(),
+                                  'binary_identity': identities['binary']})
+        # Each mutation retains the complete base records unless the existing
+        # count/order guard itself is the subject of that negative case.
+        cases = [
+            ('frozen-result-missing', 'assembly', [('drop', ('observations', 0, 'frozen_product_files_passed'), None)]),
+            ('frozen-result-false', 'assembly', [('set', ('observations', 0, 'frozen_product_files_passed'), False)]),
+            ('frozen-result-zero', 'assembly', [('set', ('observations', 0, 'frozen_product_files_passed'), 0)]),
+            ('frozen-result-one', 'assembly', [('set', ('observations', 0, 'frozen_product_files_passed'), 1)]),
+            ('frozen-result-string', 'assembly', [('set', ('observations', 0, 'frozen_product_files_passed'), 'true')]),
+            ('frozen-map-missing', 'assembly', [('drop', ('observations', 0, 'expected_files_map_sha256'), None)]),
+            ('frozen-map-mismatch', 'assembly', [('set', ('observations', 0, 'actual_files_map_sha256'), 'b' * 64)]),
+            ('frozen-map-nonhex', 'assembly', [('set', ('observations', 0, 'expected_files_map_sha256'), 'g' * 64),
+                                            ('set', ('observations', 0, 'actual_files_map_sha256'), 'g' * 64)]),
+            ('compare-missing', 'assembly', [('drop', ('observations', 0, 'compare_frozen_product'), None)]),
+            ('compare-null', 'assembly', [('set', ('observations', 0, 'compare_frozen_product'), None)]),
+            ('compare-zero', 'assembly', [('set', ('observations', 0, 'compare_frozen_product'), 0)]),
+            ('compare-one', 'assembly', [('set', ('observations', 0, 'compare_frozen_product'), 1)]),
+            ('compare-string', 'assembly', [('set', ('observations', 0, 'compare_frozen_product'), 'false')]),
+            ('compare-list', 'assembly', [('set', ('observations', 0, 'compare_frozen_product'), [])]),
+            ('compare-object', 'assembly', [('set', ('observations', 0, 'compare_frozen_product'), {})]),
+            ('false-on-rust', 'assembly', [('set', ('observations', 1316, 'target'), 'rust')]),
+            ('false-on-standard', 'assembly', [('set', ('observations', 1316, 'assembly_variant'), 'standard')]),
+            ('false-on-checked-dsl', 'assembly', [('set', ('observations', 1316, 'mode'), 'checked-dsl')]),
+            ('invented-frozen-pass', 'assembly', [('set', ('observations', 1316, 'frozen_product_files_passed'), True)]),
+            ('invented-frozen-failure', 'assembly', [('set', ('observations', 1316, 'frozen_product_files_passed'), False)]),
+            ('default-raw-missing', 'assembly', [('drop', ('observations', 1316, 'accepted_qa_assemble_raw_sha256'), None)]),
+            ('default-response-missing', 'assembly', [('drop', ('observations', 1316, 'response_sha256'), None)]),
+            ('default-raw-mismatch', 'assembly', [('set', ('observations', 1316, 'response_sha256'), 'c' * 64)]),
+            ('default-raw-nonhex', 'assembly', [('set', ('observations', 1316, 'accepted_qa_assemble_raw_sha256'), 'g' * 64),
+                                            ('set', ('observations', 1316, 'response_sha256'), 'g' * 64)]),
+            ('default-raw-type', 'assembly', [('set', ('observations', 1316, 'accepted_qa_assemble_raw_sha256'), 1),
+                                           ('set', ('observations', 1316, 'response_sha256'), 1)]),
+            ('default-identity-missing', 'assembly', [('drop', ('observations', 1316, 'identity'), None)]),
+            ('default-identity-empty', 'assembly', [('set', ('observations', 1316, 'identity'), {})]),
+            ('default-index-bool', 'assembly', [('set', ('observations', 1316, 'compile_row_index'), True)]),
+            ('counterpart-missing', 'assembly', [('set', ('observations', 2039, 'mode'), 'compile-default')]),
+            ('counterpart-duplicate', 'assembly', [('set', ('observations', 2040, 'identity'),
+                {'source': 'legacy', 'id': 'm2-alternative-checked', 'variant': 'none'}),
+                ('set', ('observations', 2040, 'compile_row_index'), 1316)]),
+            ('counterpart-wrong-identity', 'assembly', [('set', ('observations', 2039, 'identity'),
+                {'source': 'legacy', 'id': 'different-checked-case', 'variant': 'none'})]),
+            ('counterpart-wrong-index', 'assembly', [('set', ('observations', 2039, 'compile_row_index'), 1318)]),
+            ('counterpart-index-bool', 'assembly', [('set', ('observations', 2039, 'compile_row_index'), True)]),
+            ('counterpart-identity-missing', 'assembly', [('drop', ('observations', 2039, 'identity'), None)]),
+            ('counterpart-frozen-false', 'assembly', [('set', ('observations', 2039, 'frozen_product_files_passed'), False)]),
+            ('default-reuses-counterpart', 'assembly', [('set', ('observations', 1317, 'identity'),
+                {'source': 'legacy', 'id': 'm2-alternative-checked', 'variant': 'none'}),
+                ('set', ('observations', 1317, 'compile_row_index'), 1316)]),
+            ('compile-source', 'compile', [('set', ('tested_sha',), '2' * 40)]),
+            ('assembly-source', 'assembly', [('set', ('tested_sha',), '2' * 40)]),
+            ('compile-count', 'compile', [('set', ('passed',), 2040)]),
+            ('compile-row-order', 'compile', [('set', ('rows', 0, 'index'), 1)]),
+            ('compile-row-state', 'compile', [('set', ('rows', 0, 'state'), 'failed')]),
+            ('compile-http', 'compile', [('set', ('rows', 0, 'http_status'), 400)]),
+            ('compile-stability', 'compile', [('set', ('identity_stability_passed',), False)]),
+            ('compile-identities', 'compile', [('set', ('final_identities', 'binary', 'sha256'), 'e' * 64)]),
+            ('assembly-count', 'assembly', [('set', ('observations_passed',), 2044)]),
+            ('observation-order', 'assembly', [('set', ('observations', 0, 'observation_index'), 1)]),
+            ('observation-state', 'assembly', [('set', ('observations', 0, 'state'), 'failed')]),
+            ('observation-http', 'assembly', [('set', ('observations', 0, 'http_status'), 400)]),
+            ('checked-count', 'assembly', [('set', ('actual_observations', 'python_checked'), 5)]),
+            ('product-count', 'assembly', [('set', ('product_slots_passed', 'python'), 670)]),
+            ('checked-input-stability', 'assembly', [('set', ('checked_input_stability_passed',), False)]),
+            ('saved-observation-stability', 'assembly', [('set', ('saved_observation_stability_passed',), False)]),
+            ('assembly-identity-stability', 'assembly', [('set', ('identity_stability_passed',), False)]),
+            ('compile-cleanup', 'compile', [('set', ('cleanup', 'cleanup_passed'), False)]),
+            ('assembly-cleanup', 'assembly', [('set', ('owned_cleanup', 'cleanup_passed'), False)]),
+            ('remaining-owned-child', 'assembly', [('set', ('owned_cleanup', 'remaining_owned_session_members'), [123])]),
+            ('compile-product-claim', 'compile', [('set', ('product_acceptance_passed',), True)]),
+            ('assembly-product-claim', 'assembly', [('set', ('product_acceptance_passed',), True)]),
+        ]
+        for label, source, changes in cases:
+            failed_compile, failed_assembly = copy.deepcopy(compiled), copy.deepcopy(assembled)
+            for operation, path, value in changes:
+                selected = failed_compile if source == 'compile' else failed_assembly
+                for key in path[:-1]:
+                    selected = selected[key]
+                if operation == 'drop':
+                    selected.pop(path[-1])
+                else:
+                    selected[path[-1]] = copy.deepcopy(value)
+            before = json.dumps(failed_compile, sort_keys=True, separators=(',', ':')).encode()
+            after = json.dumps(failed_assembly, sort_keys=True, separators=(',', ':')).encode()
+            with self.subTest(mutation=label), mock.patch.object(g, 'read', side_effect=[before, after]), \
+                 self.assertRaises(ValueError):
+                g.verify_compile_proof(Path('/synthetic-compile-assembly'), candidate)
+
+
 class WorkflowClosureTests(unittest.TestCase):
     """Check the actual workflow callers and raw current callee source."""
     MAIN = '.github/workflows/rust-hosted-readiness.yml'

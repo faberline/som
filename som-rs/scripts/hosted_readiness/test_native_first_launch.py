@@ -329,7 +329,7 @@ class SnapshotData:
         self.raw, self.calls = raw, []
         self.workflows = {}
         for name, expected, size in (
-                ('.github/workflows/rust-hosted-readiness.yml', '959ea8407ee8086f7649d55cf7ac3dc713a8549d3129b12815ca5b5bafb2314a', 64808),
+                ('.github/workflows/rust-hosted-readiness.yml', '680d3cefc1898f749d750caf7dc734ba0e669a0aea1b10adcf8cb22736c57f1f', 65481),
                 ('.github/workflows/rust-same-candidate-products.yml', WORKFLOW_SHA, 41264)):
             path = self.root / name
             if any(item.is_symlink() for item in (path, *path.parents)):
