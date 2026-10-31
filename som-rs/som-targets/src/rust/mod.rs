@@ -29,7 +29,7 @@ pub const BACKEND_ID: &str = "som.rust-backend.v1";
 pub const TARGET_CONTRACT_ID: &str = "som.rust-output-contract.v1";
 /// H(files map) for contracts/rust-output-v1: amendment 8. Receipt status determines authority.
 pub const TARGET_CONTRACT_SHA256: &str =
-    "b4e0510254056935ea3488c8cc51feef9436a40b9959d87e69c17965afd46f2c";
+    "744f0b5046e609be7510033489e97a8372c7e92b90d06e7d5947f8bd0d16dd25";
 
 pub const CATALOG_TEXT: &str = include_str!("../../catalog/rust-catalog.v1.json");
 const BLOCK_LIBRARY_TEXT: &str = concat!(

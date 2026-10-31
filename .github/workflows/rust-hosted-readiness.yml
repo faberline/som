@@ -195,6 +195,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
           persist-credentials: false
       - name: Record tested revision
         env:
@@ -205,6 +206,10 @@ jobs:
       - name: Run every source fixture file in a fresh checked Python process
         run: |
           python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/run_source_fixtures.py -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --out "$RUNNER_TEMP/som-main-source-fixtures" 2>&1 | tee unit-tests.log
+      - name: Run all 8 existing React native source controls
+        if: always()
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/tests/react-output-v1/test_native_api_host_controls.py" -v 2>&1 | tee react-native-source-fixtures.log
       - name: Keep all 34 current input source fixtures required
         if: always()
         run: |
@@ -218,6 +223,7 @@ jobs:
             tested-sha.txt
             unit-tests.log
             current-context-fixtures.log
+            react-native-source-fixtures.log
             ${{ runner.temp }}/som-main-source-fixtures
           if-no-files-found: error
           retention-days: 14

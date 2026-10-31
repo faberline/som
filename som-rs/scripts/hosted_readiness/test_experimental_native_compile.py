@@ -50,7 +50,20 @@ SEALED_FIXTURE_SOURCES = {'som-rs/tests/rust-output-v1/check_contract.py': {'ass
                                                          'sha256': 'a26c5c59579b609ff0ffe651f57292efd3eb8e4cce95a841232b2e98c409d376'},
  'som-rs/som-targets/src/typescript/mod.rs': {'asset': '.github/actions/native-active-source-fixtures/compile-sealed-before/typescript-mod.rs.txt',
                                               'bytes': 57010,
-                                              'sha256': 'dd164529ba7b321cf6d3ba491cbd2ddd9aa0b2f65d04401849f0259bbc2eb793'}}
+                                              'sha256': 'dd164529ba7b321cf6d3ba491cbd2ddd9aa0b2f65d04401849f0259bbc2eb793'},
+ 'som-rs/evidence/rust-output-contract-amendment-007.json': {'asset': 'som-rs/evidence/rust-output-contract-amendment-007.json',
+  'bytes': 11592,
+  'sha256': '225b98c2bc01e79c5c6e13ad17f93adda68717498d70fa7577e65930813f9144'},
+ 'som-rs/evidence/typescript-output-contract-amendment-003.json': {'asset': 'som-rs/evidence/typescript-output-contract-amendment-003.json',
+  'bytes': 9740,
+  'sha256': '7052daacfc89bf468e399e09f635e6d773187177eb684a0399d46d8ddf650089'}}
+
+# Explicit historical unit-data receipt view, not current candidate admission.
+SEALED_FIXTURE_RECEIPTS = {
+    'rust': 'som-rs/evidence/rust-output-contract-amendment-007.json',
+    'typescript': 'som-rs/evidence/typescript-output-contract-amendment-003.json',
+}
+
 
 
 def sealed_fixture_sources():
@@ -85,7 +98,7 @@ class FixtureRepository:
         return self.read(path).decode()
 
     def paths(self):
-        return sorted({p.relative_to(REPO).as_posix() for p in (REPO / "som-rs/evidence").glob("*.json")} | set(self.overrides))
+        return sorted(set(SEALED_FIXTURE_RECEIPTS.values()) | set(self.overrides))
 
 
 class CompileTests(unittest.TestCase):
@@ -332,7 +345,7 @@ class CompileTests(unittest.TestCase):
             e.backend(FixtureRepository({e.RUST: source}), "rust")
 
     def test_active_receipt_files_and_source_constant_must_agree(self):
-        receipt_path = sorted((REPO / "som-rs/evidence").glob("rust-output-contract-amendment-*.json"))[-1]
+        receipt_path = REPO / SEALED_FIXTURE_RECEIPTS["rust"]
         receipt = json.loads(receipt_path.read_bytes())
         member = next(iter(receipt["files"]))
         with self.assertRaisesRegex(e.Refusal, "receipt file differs"):

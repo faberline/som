@@ -44,6 +44,10 @@ jobs:
             --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" \
             --out "$RUNNER_TEMP/som-source-fixture-run" \
             2>&1 | tee readiness-source-fixtures.log
+      - name: Run all 8 existing React native source controls
+        if: always()
+        run: |
+          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/tests/react-output-v1/test_native_api_host_controls.py" -v 2>&1 | tee react-native-source-fixtures.log
       - name: Preserve all fixture output including first failures
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -55,6 +59,7 @@ jobs:
             tested-sha.txt
             python-version.log
             readiness-source-fixtures.log
+            react-native-source-fixtures.log
             ${{ runner.temp }}/som-source-fixture-run
 
   current-context-source-fixtures:
