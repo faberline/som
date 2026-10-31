@@ -1,0 +1,101 @@
+{
+  "acceptance": {
+    "product_acceptance_passed": false,
+    "status": "not_run"
+  },
+  "added_paths": [
+    "som-rs/contracts/typescript-output-v1/native-tools-compatibility.json"
+  ],
+  "amendment": 4,
+  "baseline_commit": "9763e9b86f36a99229b70d8c571734e9a740e81c",
+  "bundle": "som.dsl-bundle.v2",
+  "changed_paths": [
+    "som-rs/tests/typescript-output-v1/check_contract.py"
+  ],
+  "changes": [
+    {
+      "archived_copy": "som-rs/evidence/typescript-output-contract-archive/check_contract-before-amendment-004.py",
+      "archived_copy_sha256": "a26c5c59579b609ff0ffe651f57292efd3eb8e4cce95a841232b2e98c409d376",
+      "new_sha256": "555704d0b5cf1d2ba23eb7ec65137af0d3d96891f4363692b6f6a1e24f2f68b0",
+      "old_sha256": "a26c5c59579b609ff0ffe651f57292efd3eb8e4cce95a841232b2e98c409d376",
+      "path": "som-rs/tests/typescript-output-v1/check_contract.py"
+    }
+  ],
+  "files": {
+    "som-rs/contracts/typescript-output-v1/CONTRACT.md": "ed3fbf2182763a43ea8985034d770af3108c30b088b609b8ed40291a2c92ead1",
+    "som-rs/contracts/typescript-output-v1/acceptance-plan.json": "17478469d02bf362e6d394ef9081ff4e842eeab239fbfc89550fba92951d35f5",
+    "som-rs/contracts/typescript-output-v1/api.schema.json": "bef2cb55ec61680eb997429d5290d8ced8ab61f790be751e5608dba3ce28f75f",
+    "som-rs/contracts/typescript-output-v1/behavior-normalization.json": "cc068fe361cfbcb960a299be67143eab06e7a02930a981c122251ff6afb4e8b0",
+    "som-rs/contracts/typescript-output-v1/bundle.schema.json": "c5f69b453562cd2259996994c6e57d8e69745d72109cac52ee746d754fc979b6",
+    "som-rs/contracts/typescript-output-v1/case-inventory.json": "f45572b155c89808bae9153c7a833da779ad043fb4c0a34002de9c9ef26dee0c",
+    "som-rs/contracts/typescript-output-v1/catalog/typescript-catalog.v1.json": "14c87b4421a0b5f015d3e6a7a65321edaa256a37bf24fe50db145ce22b5b4642",
+    "som-rs/contracts/typescript-output-v1/native-tools-compatibility.json": "5ceae0536edabd39aa9cc5beb98c9c16921d075e61114689b28a55d81354a049",
+    "som-rs/contracts/typescript-output-v1/native-tools.json": "c9f4e0418d43996b8b8994eccffb6eb146795ed559277b0875da30bb3b5e0ce0",
+    "som-rs/contracts/typescript-output-v1/negative-cases.json": "858906170db681b95ecfb28cf4f0374157570771250a6dead23b84bbf6bce52d",
+    "som-rs/contracts/typescript-output-v1/product-layout.json": "eec61af43adb02583b86ded51478edb57459098f0899062a69c7591591f7ce47",
+    "som-rs/contracts/typescript-output-v1/reference/package-lock.json": "d5daa744e5efc0c7ad754e42930b34880a077ca2a38b466003786931a9f56606",
+    "som-rs/contracts/typescript-output-v1/reference/package.json": "02b2aa2b167dcf5f9282c8c04a7d8deb8f77888d1fa2c5726ea4e98d17b5eaa7",
+    "som-rs/contracts/typescript-output-v1/reference/tsconfig.json": "e1bb40b56013abf2525a53023ebc1ce455d176fe4c0c5061d18a563f25962fae",
+    "som-rs/contracts/typescript-output-v1/scope.json": "7e4beea87179bb06f3263645dd67ce110ec12d28df7e6239da61d4a3fc106304",
+    "som-rs/contracts/typescript-output-v1/target-examples.json": "fac94a5cb3295c5cb26c39f541ef395f6fa6ca1a99f25ca8cb5b3ff16f1aa6c5",
+    "som-rs/contracts/typescript-output-v1/toolchain.json": "0875aeb7e60aa72a44bc59c9aef89b971dffc5fc5304813e0b04ec5dc26da618",
+    "som-rs/evidence/typescript-output-v1/python-controls-2026-10-21.json": "7e97dceb3a8b20ab19c4c26b7029ebc1541783c1104cb35ebe840e7ac71d2cec",
+    "som-rs/evidence/typescript-output-v1/python-controls-2026-10-23.json": "b5b81e63e3d41dac2358862ccc968b66eeaf5c1d4d0c0d391007788d1f46ccfd",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/README.md": "69dad36d620542832b94fce0e40c2a1dbe8a65332ba200e1cbbbf37da47dd6b6",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/migrations/0001_rev0000.sql": "346dd960b0704ab14229e2d1e87ecbfbd5ddc6030223f1908207527bc72b9704",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/package-lock.json": "d5daa744e5efc0c7ad754e42930b34880a077ca2a38b466003786931a9f56606",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/package.json": "02b2aa2b167dcf5f9282c8c04a7d8deb8f77888d1fa2c5726ea4e98d17b5eaa7",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/app.ts": "89bcd9d11d43d450242e9bff3e65cfe56c116bca6b2df0b4513d2f641b9dc6c9",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/db.ts": "a57e3ead187815f5b3c517184dd419e5831841448d704f85b542fe896d62105b",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/main.ts": "3c2392b474f3dfd369083fb2602ee5d1667bbd29da815f4425ba13530b8682b2",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/migrate.ts": "c3452a5125857ab259bef72af4c42bb9407113613cf0a4fbca2ca620d3af5b65",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/src/schemas.ts": "f2159727c1156b727c285c42660c53bcd959e22e14c3fcb95847b6145506a174",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/test/api.test.ts": "25c3936cde84cdc5d8e1ec2f99f703c4addee32d7eed7b3964027db7c3abbcd3",
+    "som-rs/evidence/typescript-output-v1/reference-product-001/tsconfig.json": "e1bb40b56013abf2525a53023ebc1ce455d176fe4c0c5061d18a563f25962fae",
+    "som-rs/evidence/typescript-output-v1/reference-verification-2026-10-21.json": "5dd5f94cd6bcd2f6d84bed937c3df83a161c361e9317d9bc9a2bb37141498b42",
+    "som-rs/tests/typescript-output-v1/build_case_inventory.py": "9ae6096a1708c478f19ec75b361e0bc721b12f64646d24ef190fb1b51e92e1f1",
+    "som-rs/tests/typescript-output-v1/build_negative_cases.py": "32158c2324e271d4bfd49a5a45106f046e67a136f91605463b21f87b1fc2d7e4",
+    "som-rs/tests/typescript-output-v1/build_target_examples.py": "9bbc13521fcbf9530aadb8417a45128a20d7b972b3b7460ab51dc21f7bb24efd",
+    "som-rs/tests/typescript-output-v1/check_contract.py": "555704d0b5cf1d2ba23eb7ec65137af0d3d96891f4363692b6f6a1e24f2f68b0",
+    "som-rs/tests/typescript-output-v1/check_python_controls.py": "3e4bb02ecad2e9ee748de327c1db63813cc4c6dc3c0e5cbfa569f6b02c660172",
+    "som-rs/tests/typescript-output-v1/common.py": "77b92f00cdf13d66c54c1069e215bc8de479953887bc853e4316275b02a24497",
+    "som-rs/tests/typescript-output-v1/tree_sha.py": "6c9bccd1293aa8629f18539ea89fa0b5bb284dc70a579b13bc86f8d0324fa9a2",
+    "som-rs/tests/typescript-output-v1/ts_profile.py": "de964991d0022711e799e7b3dfca4f44fa7eb834e978d2a5ec40b52d93d8f6c4"
+  },
+  "frozen_at": "2026-10-31T15:12:20Z",
+  "implementation_already_in_progress": true,
+  "implementation_order": {
+    "acceptance_rule": "prospective_full_same_candidate_gates",
+    "historical_receipt_bytes_changed": false,
+    "historical_results_promoted_to_current_acceptance": false,
+    "implementation_already_existed": true,
+    "prior_work_relabelled_as_preimplementation": false,
+    "scope": "native_tools_and_metadata_only",
+    "version": "som.native-acceptance-chronology.v1"
+  },
+  "independent_review": {
+    "candidate_source_review": "APPROVED: {\"GitHub_source_run\":\"https://github.com/faberline/som/actions/runs/41211131295/attempts/1\",\"actual_source_cases\":{\"React_controls\":8,\"context\":146,\"readiness\":1209,\"total\":1363},\"all74_actual_invoked_wait_exit0_stable\":true,\"context_React_completion\":\"Complete named/Ran/OK artifacts plus actual synchronous successful steps. Dedicated per-suite wait/exitJSON not supplied.\",\"report_bytes\":31157,\"report_sha256\":\"33637fe3f69f73ae61a281f05f13481a4a118ef9f7b722e270814c20569fba52\",\"review_metadata_evidence\":{\"date\":\"2026-10-31\",\"findings\":[],\"head\":\"1e0d4f931982d448fb93ca3a8519eb3ecf319c21\",\"result\":\"source approved to seal within native_policy_validator_and_exact_qa_source_maps only\",\"reviewer\":\"Independent nonauthor source reviewer AW bb76265b-c73f-4567-8c02-af2ab25dd01e\",\"verdict\":\"APPROVED\"},\"reviewer_AW_revision\":39,\"reviewer_AW_session\":\"bb76265b-c73f-4567-8c02-af2ab25dd01e\",\"reviewer_admission_history\":\"38 admitted actual sourceQA;39 added exact frozen provider/inputs JSON within the same atomic task.\",\"runtime_product_or_617a_exception_approved\":false,\"scope\":\"native_policy_validator_and_exact_qa_source_maps\",\"source_candidate\":\"1e0d4f931982d448fb93ca3a8519eb3ecf319c21\",\"source_tree\":\"0dba9ef5b9a79dbc2fe0d456b76ab16c761e0cb5\"}",
+    "final_verdict": "APPROVED",
+    "prior_review_role": "Old inactive draft review is historical. It does not approve this expanded source map.",
+    "receipt_files_sha256": "2b17083328f689df948a1d4a07c7b38f27c6007a615f22156d2787a01c73265f",
+    "scope": "native_policy_validator_and_exact_qa_source_maps"
+  },
+  "issue": [
+    141,
+    146
+  ],
+  "previous_receipt": "som-rs/evidence/typescript-output-contract-amendment-003.json",
+  "previous_receipt_sha256": "7052daacfc89bf468e399e09f635e6d773187177eb684a0399d46d8ddf650089",
+  "reason": "Make the existing reviewed native tool extension precise for prospective raw-byte acceptance. Preserve every prior semantic/product file. Admit truthful implementation order and retain full gates.\n\nAdditional Mac full12 INPUT decision som.mac-full12-input-manifest.v1:829efe8e49e32bbd58b655e854443eea593a467775fdc7e74d0c4d44dd570061: this receipt explicitly adopts only the independently reconstructed complete INPUT assets/manifest.json backend source-vector difference, and its exact recomputed manifest/backend identities, for the reviewed original-before/current-native pair. Every other manifest member and all six asset files remain byte-identical. Each full manifest must equal its own actual compiled release. Original run_hosted_acceptance.py:280 four-way equality remains NOT_PASSED and is retained separately. This INPUT decision is outside prior response decision3cc4a99acd70b1a909640a1ddcf10db2f9cbc2e59e3fca641cbfd8f69268bc7b. All671 cases, both typed-target forms, original CNL forms, all12 steps, exact product outputs, tool/source/process controls and four-receipt lifecycle remain mandatory. This receipt must also bind the exact frozen proposal-manifest SHA256 and the final selected source/tool/QA maps; no draft, local data report or component pass activates this scope.\n\nFrozen INPUT proposal-manifest SHA256: f95e13b9660a85f68c60fdd4f2c47f6b580ff308143fa70113829e5d7e6d9f58. INPUT scope: New prospective Mac full12 INPUT asset-manifest decision only. aarch64-apple-darwin/macOS26/native-qa-v1. Not included in prior3cc4 response-digest authorization.\n\nOriginal INPUT plan applicability: som-rs/contracts/typescript-output-v1/acceptance-plan.json [\"/python_unchanged/rule\",\"/python_unchanged/checks/0\"]. All remaining original obligations stay mandatory.\n\nFrozen response proposal-manifest SHA256: 3cc4a99acd70b1a909640a1ddcf10db2f9cbc2e59e3fca641cbfd8f69268bc7b. Response scope: {\"candidate\":\"One future exact final sealed shared source; fresh per-platform binary/assets. Source9763 diagnostic is historical preparation only.\",\"historical_default_or_M6_acceptance_changed\":false,\"issues\":[141,146],\"mode\":\"native-qa-v1\",\"platforms\":[\"x86_64-unknown-linux-gnu\",\"aarch64-apple-darwin\"],\"targets\":[\"absent\",\"python\"]}.\n\nOriginal response plan applicability: {\"change\":\"For Python success compile bodies only, use the same narrow independent digest rule. All remaining original assertions remain mandatory, including exact negatives, names, file hashes and historical rebases.\",\"paths\":[\"/python_unchanged/rule\",\"/python_unchanged/checks/0\"],\"plan\":\"som-rs/contracts/typescript-output-v1/acceptance-plan.json\"}.\n\nFinal source qualification: 1e0d4f931982d448fb93ca3a8519eb3ecf319c21, tree0dba9ef5b9a79dbc2fe0d456b76ab16c761e0cb5; source manifest SHA256 f8e28da64fb1aa793c6680fba82eaedd74c3801a883c18bd02fc22470bfc8375; actual GitHub run41211131295 attempt1. Receipt metadata is finalized later without source/H changes.\n\nFinal native QA source map canonical SHA256 95130720cfb08dd9faf32a4f6d3773dd6bc1b6b602480c649f89b68982235b8f; fixed source sets269 operational/68native/77support/500edges/188roots/16searchroots; Role5rawSHA23c048d72cd50c25a06247b28076aae149ca23d1104297182c2ecf48dbb36e70. Complete backend58-source-vector data SHA256 a36862803b6127c69dfc3fb7e6c88a788c290ce8d610a161d221080f2d40c5e1.\n\nFrozen tool-map source: som-rs/contracts/native-tools-v1/artifacts.json SHA256959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193. This pins tool definitions; it does not claim actual native tool qualification or product acceptance.\n\nThe existing3cc response scope stays absent/python only. No React-target target_contract/backend/payload three-leaf exception is adopted; proposal617a remains unapproved. Original strict failures remain. Actual native/source/process admission, waits/cleanup and every original product gate remain required.",
+  "sealing_dependencies": [],
+  "status": "amendment_sealed_after_independent_review",
+  "target": "typescript",
+  "target_contract": {
+    "id": "som.typescript-output-contract.v1",
+    "previous_sha256": "17ffc6028d66657381464a4d6beaecc1e097f54e421168777e5959cfbdaf063f",
+    "rule": "SHA256 of frozen canonical JSON files map",
+    "sha256": "2b17083328f689df948a1d4a07c7b38f27c6007a615f22156d2787a01c73265f"
+  },
+  "unchanged": "Every other prior files-map path keeps its exact bytes. No contract text, schema, diagnostic, inventory, product, reference or formatter option changes.",
+  "version": "som.typescript-output-contract-amendment.v1"
+}
