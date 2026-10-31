@@ -31,9 +31,9 @@ RETAINED=M6+'retained_evidence.py'
 LIVE=M6+'linux_api_live_inputs.py'
 NODE='som-rs/tests/react-output-v1/linux_qa_profile.py'
 PINS={ENTRY:'83887548acdea1f3dfebaab114c1c87ea484881ae427de3d7b3843c6ff72da74',CONTEXT:'7329f3dc88d63957a7ac33c847ec3416f4a7b35b8c7b10793154f22a5516a440',
-      BASE+'native_active_controls.py':'eb0f804a8aa7de0857213d34478adc869fe51f7259c5552439dca109e4e6a038',
+      BASE+'native_active_controls.py':'eead8e03186f8f55812566a11d5aa837fb5cdb542d2c3de9435da9bad6bb5b32',
       BASE+'native_qa_authority.py':'024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1',
-      BASE+'test_native_active_controls.py':'1a5852fb1693bcb921fcb19e9a20fb8281751e85f6f0ea2805b88323d230a201'}
+      BASE+'test_native_active_controls.py':'f76335be9269618bcec26750895202a896bbe759cfc6ea490d7b8dffddc99e0d'}
 
 def checked(path):
     raw=(REPO/path).read_bytes()

@@ -20,7 +20,7 @@ if not (os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux'
     raise RuntimeError('actual GitHub Linux -I -S -B required')
 HERE=Path(__file__).absolute().parent
 SOURCE=HERE/'run_full_products.py'
-EXPECTED_DRIVER_SHA='b9fd4184619cd3bcbee6282348243a2089e4b3ecfa0b7e91f83617ede70ca1ac'
+EXPECTED_DRIVER_SHA='8f7084ea5ed1b60ea28013b3b79beed743982fa98719a84fdf690601780f208c'
 raw=SOURCE.read_bytes()
 if hashlib.sha256(raw).hexdigest()!=EXPECTED_DRIVER_SHA:
     raise RuntimeError('exact reviewed driver source required')

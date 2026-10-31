@@ -238,6 +238,12 @@ class Gate:
             self.gates[name] = self.storage(host, env)
         except Exception as error:  # noqa: BLE001
             self.gates[name] = outcome(1, f"{type(error).__name__}: {error}\n{traceback.format_exc()[-2000:]}")
+            primary = getattr(error, "__som_native_storage_primary_failure__", None)
+            if isinstance(primary, dict):
+                self.gates[name]["native_storage_failure"] = {
+                    "primary": primary,
+                    "retention_secondary": getattr(error, "__som_native_storage_retention_failure__", None),
+                }
         try:
             self.gates["missing_setting"] = self.missing_setting(host, env)
         except Exception as error:  # noqa: BLE001
@@ -257,12 +263,16 @@ class Gate:
         stamp = uuid.uuid4().hex[:12]
         rust, python = (backend(self.prompt, f"som_test_gate_{side}_{stamp}", self.fixture) for side in "rp")
         root = self.work / "python"
-        if root.exists():
+        retention = phase2.native_retention_context()
+        if retention is not None:
+            root = retention.new_native_product_root(root, "phase2-storage")
+        elif root.exists():
             shutil.rmtree(root)
         root.mkdir()
         phase2.write_product(root, self.python_files)
         rust.create(run)
         python.create(run)
+        primary = None
         try:
             run([host.binary, "migrate", "upgrade"], cwd=host.root, env={**env, **rust.env})
             product = PythonProduct(root)
@@ -273,13 +283,30 @@ class Gate:
             else:
                 found = {"rust": products.schema("postgresql:///" + rust.name, RUST_RECORDS),
                          "python": products.schema("postgresql:///" + python.name, PYTHON_RECORDS)}
+        except BaseException as error:
+            if retention is not None:
+                primary = error
+                primary.__som_native_storage_primary_failure__ = {
+                    "type": type(error).__name__, "message": str(error), "traceback": traceback.format_exc(),
+                }
+            raise
         finally:
             for side in (rust, python):
                 try:
                     side.close(run)
                 except Exception:  # noqa: BLE001
                     pass
-            if (root / ".venv").is_dir():
+            if retention is not None:
+                try:
+                    retention.retain_native_environments(root, "phase2-storage")
+                except BaseException as secondary:
+                    if primary is None:
+                        raise
+                    primary.__som_native_storage_retention_failure__ = {
+                        "type": type(secondary).__name__, "message": str(secondary),
+                        "traceback": traceback.format_exc(),
+                    }
+            elif (root / ".venv").is_dir():
                 shutil.rmtree(root / ".venv")
         equal = found["rust"] == found["python"]
         return {"passed": equal, **({} if equal else {"differences": self.differences(found)}),
@@ -313,6 +340,7 @@ class Gate:
         return path
 
     def finish(self, product: pathlib.Path, files: dict | None) -> None:
+        product = phase2.current_product_path(product)
         runs = [json.loads(path.read_text()) for path in self.test_logs if path.exists()]
         problems = []
         for index, test in enumerate(runs, 1):
@@ -482,8 +510,7 @@ def worker(out: pathlib.Path, index: int, claims: str, ids: list[str], qa: str) 
         import tempfile
 
         import hosts
-        with tempfile.TemporaryDirectory(prefix="som-phase2-", dir=out / "fixtures",
-                                         ignore_cleanup_errors=True) as scratch:
+        with phase2.retained_scratch(out / "fixtures") as scratch:
             work = pathlib.Path(scratch)
             ports = hosts.Ports()
             with hosts.cluster(work, ports.take()) as pg:

@@ -48,6 +48,16 @@ NATIVE_QA_ENTRIES = {
     'som-rs/scripts/hosted_readiness/product_runtime/recorded_before_oracle.py': 'entry.qa.recorded-before',
     'som-rs/scripts/hosted_readiness/run_experimental_native_cnl.py': 'entry.qa.native-cnl',
     'som-rs/scripts/react_output_acceptance/m6_native_entry.py': 'entry.qa.m6-native',
+    'som-rs/tests/rust-output-v1/build_cases.py': 'entry.qa.rust-cases',
+    'som-rs/tests/rust-output-v1/build_negative_cases.py': 'entry.qa.rust-negative-cases',
+    'som-rs/tests/rust-output-v1/build_case_inventory.py': 'entry.qa.rust-case-inventory',
+    'som-rs/tests/rust-output-v1/build_target_examples.py': 'entry.qa.rust-target-examples',
+    'som-rs/tests/typescript-output-v1/build_negative_cases.py': 'entry.qa.typescript-negative-cases',
+    'som-rs/tests/typescript-output-v1/build_target_examples.py': 'entry.qa.typescript-target-examples',
+    'som-rs/tests/typescript-output-v1/build_case_inventory.py': 'entry.qa.typescript-case-inventory',
+    'som-rs/tests/react-output-v1/build_negative_cases.py': 'entry.qa.react-negative-cases',
+    'som-rs/tests/react-output-v1/build_target_examples.py': 'entry.qa.react-target-examples',
+    'som-rs/tests/react-output-v1/build_case_inventory.py': 'entry.qa.react-case-inventory',
 }
 
 

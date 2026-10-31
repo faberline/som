@@ -42,7 +42,7 @@ def native_protocol_fixture(case, *, entry_failure=False, shard=None):
         return raw
     driver_raw = source(driver.SELF)
     case.assertEqual(hashlib.sha256(driver_raw).hexdigest(),
-                     'b9fd4184619cd3bcbee6282348243a2089e4b3ecfa0b7e91f83617ede70ca1ac')
+                     '8f7084ea5ed1b60ea28013b3b79beed743982fa98719a84fdf690601780f208c')
     protocol = subject('full_product_core_protocol_fixture', HERE / 'test_native_active_controls.py')
     actual_context = source(driver.CONTEXT)
     context_tree = ast.parse(actual_context)
@@ -941,6 +941,137 @@ class Phase2ResultTests(unittest.TestCase):
             with self.subTest(field=field):
                 self.proof_path.write_bytes(driver.canonical({**self.proof, field: value}))
                 self.assert_failed_scope(self.results())
+
+
+class SerializerImportAdapterProtocolTests(unittest.TestCase):
+    """Actual Core/shim/function protocol; synthetic admission, never product credit."""
+    ENTRY = 'entry.qa.rust-cases'
+    ADAPTER = 'qa.builder.compiler-serializer-import'
+    ORIGINAL = 'qa.builder.compiler-serializer'
+    SHIM_SOURCE = 'som-rs/scripts/compiler_acceptance/serializer.py'
+    ORIGINAL_SOURCE = 'som-rs/tests/compiler-v1/serializer.py'
+    SHIM_NAME = '_som_qa_builder_compiler_serializer_import'
+    ORIGINAL_NAME = '_som_qa_builder_compiler_serializer'
+
+    def fixture(self, *, wrong_shim_source=False):
+        protocol = subject('full_product_serializer_core_protocol_fixture',
+                           HERE / 'test_native_active_controls.py')
+        repo = HERE.parents[2]
+        shim_raw = (repo / self.SHIM_SOURCE).read_bytes()
+        original_raw = (repo / self.ORIGINAL_SOURCE).read_bytes()
+        self.assertEqual(hashlib.sha256(shim_raw).hexdigest(),
+                         'dc18611b7ea98a2aed342d250c16ca9265c297d78c0348609cef6fe529527e26')
+        self.assertEqual(hashlib.sha256(original_raw).hexdigest(),
+                         'bfb8eca480c08ee16c1a8bb42aae4a8a10f947ed0ca9c9c5521c75d09809632d')
+        entry, adapter, original = self.ENTRY, self.ADAPTER, self.ORIGINAL
+        shim_source = ('som-rs/scripts/compiler_acceptance/serializer_protocol_wrong_source.py'
+                       if wrong_shim_source else self.SHIM_SOURCE)
+        original_source = self.ORIGINAL_SOURCE
+        shim_name, original_name = self.SHIM_NAME, self.ORIGINAL_NAME
+
+        class Fixture(protocol.Fixture):
+            def add_role(self, role, path, raw, **kwargs):
+                if role != 'caller':
+                    return super().add_role(role, path, raw, **kwargs)
+                result = super().add_role(entry, path, raw, **kwargs)
+                super().add_role(adapter, shim_source, shim_raw, module=shim_name,
+                    callers=[{'role': entry, 'function': '<module>'}],
+                    bindings={'__som_native_active_controls__': {'kind': 'active-controls'}})
+                super().add_role(original, original_source, original_raw, module=original_name,
+                    callers=[{'role': adapter, 'function': '<module>'}])
+                return result
+
+        f = Fixture(self, caller='from serializer import serialize_prompt\n', entry=True)
+        f.rows[entry]['closure'] = [entry, adapter, original]
+        f.rows[adapter]['closure'] = [adapter, original]
+        f.rows[original]['closure'] = [original]
+        f.policy['imports'] = [{'caller': entry, 'name': 'serializer', 'level': 0,
+            'fromlist': ['serialize_prompt'], 'result': adapter, 'from_roles': {}}]
+        return f
+
+    def run_entry(self, f):
+        return f.seeds[f.core.ENTRY_MODULE]['module']._trusted_run(f.controls, self.ENTRY, [])
+
+    def assert_original_not_loaded(self, f, loads):
+        # Observe the original role load boundary, including attempts later rolled back.
+        self.assertFalse(any(call.args[0] == self.ORIGINAL for call in loads.call_args_list))
+        self.assertNotIn(self.ORIGINAL, f.domain.records)
+        self.assertNotIn(self.ORIGINAL_NAME, sys.modules)
+
+    def test_serializer_adapter_exports_the_actual_original_function_through_bound_controls(self):
+        f = self.fixture()
+        self.assertEqual(self.run_entry(f), 0)
+        adapter_record = f.domain.records[self.ADAPTER]
+        original_record = f.domain.records[self.ORIGINAL]
+        adapter, original = adapter_record.module, original_record.module
+        controls = adapter_record.injections['__som_native_active_controls__']
+        self.assertIs(type(controls), f.core._Lease)
+        self.assertIs(controls._domain, f.domain)
+        self.assertIs(adapter._controls, controls)
+        self.assertIs(adapter._original, original)
+        self.assertIs(adapter.serialize_prompt, original.serialize_prompt)
+        self.assertIs(adapter.serialize_prompt.__globals__, original_record.namespace)
+        self.assertIs(original_record.codes[id(adapter.serialize_prompt.__code__)],
+                      adapter.serialize_prompt.__code__)
+        self.assertEqual(adapter.__file__, str(f.root / self.SHIM_SOURCE))
+        self.assertEqual(original.__file__, str(f.root / self.ORIGINAL_SOURCE))
+        self.assertIs(sys.modules[self.SHIM_NAME], adapter)
+        self.assertIs(sys.modules[self.ORIGINAL_NAME], original)
+        with self.assertRaisesRegex(ValueError, '^pass statement_map or contract_dir$'):
+            adapter.serialize_prompt({})
+
+    def test_serializer_adapter_reserved_import_rejects_wrong_injected_binding_before_hooks(self):
+        f = self.fixture()
+        hooks, injections = [], []
+
+        class ForeignControls:
+            def __getattribute__(self, name):
+                hooks.append(name)
+                raise AssertionError('foreign control hook must not run')
+
+        foreign = ForeignControls()
+        original_binding = f.domain.binding
+        def wrong_binding(rule, frame, prepared):
+            if rule['kind'] == 'active-controls':
+                injections.append(rule)
+                return foreign
+            return original_binding(rule, frame, prepared)
+
+        with mock.patch.object(f.domain, 'binding', side_effect=wrong_binding), \
+                mock.patch.object(f.domain, 'load_known', wraps=f.domain.load_known) as loads:
+            with self.assertRaisesRegex(ValueError, '^fixed active-controls binding was replaced$'):
+                self.run_entry(f)
+        self.assertEqual(len(injections), 1)
+        self.assertEqual(hooks, [])
+        self.assertTrue(any(call.args[0] == self.ADAPTER for call in loads.call_args_list))
+        self.assert_original_not_loaded(f, loads)
+
+    def test_serializer_adapter_rejects_wrong_self_source_mapping_before_original_load(self):
+        # Exact shim bytes execute from a controlled, admitted wrong physical source.
+        f = self.fixture(wrong_shim_source=True)
+        with mock.patch.object(f.domain, 'load_known', wraps=f.domain.load_known) as loads:
+            with self.assertRaisesRegex(RuntimeError, '^fixed native serializer import source required$'):
+                self.run_entry(f)
+        self.assertTrue(any(call.args[0] == self.ADAPTER for call in loads.call_args_list))
+        self.assert_original_not_loaded(f, loads)
+
+    def test_serializer_adapter_rejects_wrong_original_role_source_before_original_load(self):
+        f = self.fixture()
+        f.rows[self.ORIGINAL]['source'] = f.rows['target']['source']
+        with mock.patch.object(f.domain, 'load_known', wraps=f.domain.load_known) as loads:
+            with self.assertRaisesRegex(RuntimeError, '^fixed original compiler serializer source required$'):
+                self.run_entry(f)
+        self.assertTrue(any(call.args[0] == self.ADAPTER for call in loads.call_args_list))
+        self.assert_original_not_loaded(f, loads)
+
+    def test_serializer_adapter_rejects_wrong_namespace_before_original_load(self):
+        f = self.fixture()
+        f.rows[self.ADAPTER]['module'] = self.SHIM_NAME + '_wrong'
+        with mock.patch.object(f.domain, 'load_known', wraps=f.domain.load_known) as loads:
+            with self.assertRaisesRegex(RuntimeError, '^fixed native serializer import source required$'):
+                self.run_entry(f)
+        self.assertTrue(any(call.args[0] == self.ADAPTER for call in loads.call_args_list))
+        self.assert_original_not_loaded(f, loads)
 
 
 if __name__ == '__main__':

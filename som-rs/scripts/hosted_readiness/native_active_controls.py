@@ -860,7 +860,92 @@ class _Domain:
                 continue
             seen.add(source)
             pending.update(edge['source'] for edge in self.policy['static_edges'] if edge['caller'] == source)
-        require(seen <= paths, 'target transitive source closure is missing before exec')
+        role_paths = {record['source'] for record in self.policy['roles'].values()}
+        require(seen.intersection(role_paths) <= paths, 'target transitive source closure is missing before exec')
+        self.transfer.verify_sources()
+        raw_sources = {}
+        def source_bytes(path):
+            if path not in raw_sources:
+                require(path in self.policy['sources']
+                        and path in self.transfer.admission['admitted_repository_python_sources'],
+                        'physical source outside actual native admission')
+                raw = self.transfer.read(path)
+                pin = self.policy['sources'][path]
+                require(sha(raw) == pin['sha256'], 'physical source bytes changed')
+                require(self.transfer.mode(path) == pin['mode'], 'physical source mode changed')
+                raw_sources[path] = raw
+            return raw_sources[path]
+        # All physical candidates remain checked code data, not execution roles.
+        for path in sorted(seen):
+            compile(source_bytes(path), str(self.root / path), 'exec', dont_inherit=True)
+        if seen - paths:
+            original_imports, retained_imports = {}, {}
+            def import_key(node):
+                return (node.lineno, node.col_offset, node.end_lineno, node.end_col_offset,
+                        ast.dump(node, include_attributes=False))
+            def original_calls(path):
+                if path not in original_imports:
+                    calls = []
+                    for node in ast.walk(ast.parse(source_bytes(path))):
+                        if isinstance(node, ast.Import):
+                            calls.extend((import_key(node), alias.name, 0, (), {alias.name})
+                                         for alias in node.names)
+                        elif isinstance(node, ast.ImportFrom):
+                            name, level = node.module or '', node.level
+                            names = tuple(alias.name for alias in node.names)
+                            spellings = {'.' * level + name}
+                            spellings.update('.' * level + '.'.join(filter(None, (name, item)))
+                                             for item in names if item != '*')
+                            calls.append((import_key(node), name, level, names, spellings))
+                    original_imports[path] = calls
+                return original_imports[path]
+            def retained(name, record):
+                if name not in retained_imports:
+                    raw = source_bytes(record['source'])
+                    tree = select_nodes(raw, record['selector']) if record['kind'] == 'fragment' else ast.parse(raw)
+                    retained_imports[name] = {import_key(node) for node in ast.walk(tree)
+                                              if isinstance(node, (ast.Import, ast.ImportFrom))}
+                return retained_imports[name]
+            def unused_alternative(edge):
+                caller, target = edge['caller'], edge['source']
+                if caller not in paths or target in role_paths:
+                    return False
+                calls = [call for call in original_calls(caller) if edge['import'] in call[4]]
+                if not calls:
+                    return False
+                possible = {item['source'] for item in self.policy['static_edges']
+                            if item['caller'] == caller and item['import'] == edge['import']}
+                for name, record in selected.items():
+                    if record['source'] != caller:
+                        continue
+                    included = retained(name, record)
+                    for key, imported, level, names, _ in calls:
+                        if key not in included:
+                            continue
+                        matches = [rule for rule in self.policy['imports']
+                                   if rule['caller'] == name and rule['name'] == imported
+                                   and rule['level'] == level and tuple(rule['fromlist']) == names]
+                        if len(matches) != 1:
+                            return False
+                        rule = matches[0]
+                        targets = {rule['result'], *rule['from_roles'].values()}
+                        if not targets <= set(record['closure']) or not targets <= set(self.policy['roles']):
+                            return False
+                        sources = {self.policy['roles'][item]['source'] for item in targets}
+                        if target in sources or not sources.intersection(possible):
+                            return False
+                return True
+            # Bindings can load any prepared role, including sources outside seen.
+            live_pending, live = set(paths), set()
+            while live_pending:
+                source = live_pending.pop()
+                if source in live:
+                    continue
+                live.add(source)
+                for edge in self.policy['static_edges']:
+                    if edge['caller'] == source and not unused_alternative(edge):
+                        live_pending.add(edge['source'])
+            require(not (seen - paths).intersection(live), 'target transitive source closure is missing before exec')
         compiled = {}
         for name, record in selected.items():
             raw = self.transfer.read(record['source'])

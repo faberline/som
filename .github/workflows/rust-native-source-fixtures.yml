@@ -1,0 +1,116 @@
+name: Native source admission and complete evidence fixture checks
+
+on:
+  push:
+    branches:
+      - codex/m12-native-source-fixtures
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: som-native-source-fixtures-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  HELPER_REVISION: ${{ github.sha }}
+
+jobs:
+  readiness-source-fixtures:
+    name: Run all existing and new readiness source fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Record the exact source and Python version
+        run: |
+          test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
+          printf '%s\n' "$HELPER_REVISION" > tested-sha.txt
+          python3 --version 2>&1 | tee python-version.log
+      - name: Run the complete source fixture inventory on GitHub
+        run: |
+          python3 -I -S -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/run_source_fixtures.py" \
+            --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" \
+            --out "$RUNNER_TEMP/som-source-fixture-run" \
+            2>&1 | tee readiness-source-fixtures.log
+      - name: Preserve all fixture output including first failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-readiness-source-fixtures
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            tested-sha.txt
+            python-version.log
+            readiness-source-fixtures.log
+            ${{ runner.temp }}/som-source-fixture-run
+
+  current-context-source-fixtures:
+    name: Run all current input role and retained process proof fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Record the exact source and Python version
+        run: |
+          test "$(git rev-parse HEAD)" = "$HELPER_REVISION"
+          printf '%s\n' "$HELPER_REVISION" > tested-sha.txt
+          python3 --version 2>&1 | tee python-version.log
+      - name: Run all 34 current input source fixtures on GitHub
+        run: |
+          python3 -I -S -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_current_input_context.py" \
+            -v 2>&1 | tee current-context-fixtures.log
+      - name: Run the complete existing current-candidate-layout source fixtures
+        if: always()
+        run: |
+          python3 -I -S -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_current_candidate_layout.py" \
+            -v 2>&1 | tee current-candidate-layout-source-fixtures.log
+      - name: Run the complete existing recorded-before-oracle source fixtures
+        if: always()
+        run: |
+          python3 -I -S -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_recorded_before_oracle.py" \
+            -v 2>&1 | tee recorded-before-oracle-source-fixtures.log
+      - name: Run the complete existing runtime-capsule source fixtures
+        if: always()
+        run: |
+          python3 -I -S -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/product_runtime/test_runtime_capsule.py" \
+            -v 2>&1 | tee runtime-capsule-source-fixtures.log
+      - name: Run the complete existing recorded-subprocess source fixtures
+        if: always()
+        run: |
+          python3 -I -S -B \
+            "$GITHUB_WORKSPACE/som-rs/scripts/react_output_acceptance/test_native_m6_recorded_subprocess.py" \
+            -v 2>&1 | tee recorded-subprocess-source-fixtures.log
+      - name: Preserve all fixture output including first failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-current-context-source-fixtures
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            tested-sha.txt
+            python-version.log
+            current-context-fixtures.log
+            current-candidate-layout-source-fixtures.log
+            recorded-before-oracle-source-fixtures.log
+            runtime-capsule-source-fixtures.log
+            recorded-subprocess-source-fixtures.log

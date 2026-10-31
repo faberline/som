@@ -42,6 +42,42 @@ SUPPLEMENT_REQUEST_PINS = {
     "supplement-postgresql-query-plain": ("ccfbfa63a152703d9e68778f987cfae718d63166d0bb5da7129bdeff587e4fd3", "3555d48c7a6053b26ee1f31cd725d4fde02bb77c2c2ce28720f2fe3e42dde9d4"),
 }
 SOURCE_COUNT = 35
+
+_NATIVE_PUBLIC_RECIPE_ROLES = {
+    '_som_active_companions_entry_capture_reconstruct_public_inputs': {
+        'probe': 'companions.entry.capture.reconstruct-public-inputs.recipe.probe',
+        'serializer': 'companions.entry.capture.reconstruct-public-inputs.recipe.serializer'
+    },
+    '_som_active_semantic_common_postclose_join_reconstruct_public_inputs': {
+        'probe': 'semantic.common-postclose.join.reconstruct-public-inputs.recipe.probe',
+        'serializer': 'semantic.common-postclose.join.reconstruct-public-inputs.recipe.serializer'
+    },
+    '_som_active_semantic_common_runtime_join_reconstruct_public_inputs': {
+        'probe': 'semantic.common-runtime.join.reconstruct-public-inputs.recipe.probe',
+        'serializer': 'semantic.common-runtime.join.reconstruct-public-inputs.recipe.serializer'
+    },
+    '_som_active_semantic_common_verify_join_reconstruct_public_inputs': {
+        'probe': 'semantic.common-verify.join.reconstruct-public-inputs.recipe.probe',
+        'serializer': 'semantic.common-verify.join.reconstruct-public-inputs.recipe.serializer'
+    },
+    '_som_active_semantic_entry_join_reconstruct_public_inputs': {
+        'probe': 'semantic.entry.join.reconstruct-public-inputs.recipe.probe',
+        'serializer': 'semantic.entry.join.reconstruct-public-inputs.recipe.serializer'
+    },
+    '_som_active_semantic_graph_join_reconstruct_public_inputs': {
+        'probe': 'semantic.graph.join.reconstruct-public-inputs.recipe.probe',
+        'serializer': 'semantic.graph.join.reconstruct-public-inputs.recipe.serializer'
+    },
+    '_som_active_semantic_capture_driver_imports_reconstruct_public_inputs': {
+        'probe': 'semantic.capture.driver.imports.reconstruct-public-inputs.recipe.probe',
+        'serializer': 'semantic.capture.driver.imports.reconstruct-public-inputs.recipe.serializer'
+    },
+    '_som_active_cnl_entry_helper_reconstruct_public_inputs': {
+        'probe': 'cnl.entry.helper.reconstruct-public-inputs.recipe.probe',
+        'serializer': 'cnl.entry.helper.reconstruct-public-inputs.recipe.serializer'
+    }
+}
+
 PROBE = "som-core/scripts/probe_flow_maximum_matrix.py"
 FREEZE = "som-core/scripts/freeze_flow_cases.py"
 SERIALIZER = "som-rs/tests/compiler-v1/serializer.py"
@@ -267,6 +303,54 @@ def runtime(sources):
                 del sys.modules[name]
 
 
+@contextmanager
+def _native_runtime(sources):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    require(type(sources) is Sources, "source-owned public recipe inputs required")
+    require(sources.repo == controls.root, "native public recipe repository differs")
+    require(type(__name__) is str and type(_NATIVE_PUBLIC_RECIPE_ROLES) is dict,
+            "fixed native public recipe table required")
+    targets = _NATIVE_PUBLIC_RECIPE_ROLES.get(__name__)
+    require(type(targets) is dict and all(type(name) is str for name in targets)
+            and set(targets) == {'probe', 'serializer'}
+            and all(type(role) is str for role in targets.values()),
+            "unlisted native public recipe namespace")
+    sources.verify_runtime()
+    require(controls.role_sources.get(targets['probe']) == PROBE
+            and controls.role_sources.get(targets['serializer']) == SERIALIZER,
+            "fixed native public recipe source differs")
+    lease = controls.borrow()
+    primary = None
+    try:
+        probe = lease.load_module(targets['probe'])
+        serializer = lease.load_module(targets['serializer'])
+        require(probe.__file__ == str(sources.repo / PROBE)
+                and serializer.__file__ == str(sources.repo / SERIALIZER),
+                "actual native public recipe source differs")
+        lease.verify_installed()
+        sources.verify_runtime()
+        yield probe.maximum_matrix, serializer.serialize_prompt
+        lease.verify_installed()
+        sources.verify_runtime()
+    except BaseException as error:
+        primary = error
+        raise
+    finally:
+        try:
+            lease.close()
+        except BaseException as secondary:
+            if primary is None:
+                raise
+            BaseException.__setattr__(primary, '__som_native_recipe_close_error__', secondary)
+
+
+def _recipe_runtime(sources):
+    if __name__ in {"reconstruct_public_inputs", "__main__"} and "__som_native_active_controls__" not in globals():
+        return runtime(sources)
+    return _native_runtime(sources)
+
+
 def public_case(sources, row):
     where = row["public_source"]
     if "prompt_pointer" in where:
@@ -364,7 +448,7 @@ def reconstruct(document, repo, out):
         public_rows.append({"id": row["id"], "index": row["index"], "state": "reconstructed",
                             "prompt_sha256": row["prompt_sha256"], "cnl_sha256": row["cnl_sha256"],
                             "requests": requests})
-    with runtime(sources) as (maximum_matrix, serialize_prompt):
+    with _recipe_runtime(sources) as (maximum_matrix, serialize_prompt):
         generated = {}
         for identity, prompt in maximum_matrix():
             identity = case_id("m2-" + identity)

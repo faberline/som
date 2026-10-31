@@ -26,6 +26,21 @@ from types import MappingProxyType, ModuleType
 
 RAW_COMPAT_REVIEWED_SHA256 = "a025bd99b56dafc4de65c268318f583e117adfe16988d61bb9180cb5e8da0896"
 
+_NATIVE_RAW_COMPAT_ROLES = {
+    '_som_active_companions_entry_capture_experimental_native_compile': 'companions.entry.capture.experimental-native-compile.raw-compat',
+    '_som_active_semantic_common_postclose_join_experimental_native_compile': 'semantic.common-postclose.join.experimental-native-compile.raw-compat',
+    '_som_active_semantic_common_runtime_join_experimental_native_compile': 'semantic.common-runtime.join.experimental-native-compile.raw-compat',
+    '_som_active_semantic_common_verify_join_experimental_native_compile': 'semantic.common-verify.join.experimental-native-compile.raw-compat',
+    '_som_active_semantic_entry_join_experimental_native_compile': 'semantic.entry.join.experimental-native-compile.raw-compat',
+    '_som_active_semantic_graph_join_experimental_native_compile': 'semantic.graph.join.experimental-native-compile.raw-compat',
+    '_som_active_semantic_capture_driver_imports_experimental_native_compile': 'semantic.capture.driver.imports.experimental-native-compile.raw-compat',
+    '_som_active_cnl_entry_helper_experimental_native_compile': 'cnl.entry.helper.experimental-native-compile.raw-compat',
+    '_som_active_context_current_refusal_checker': 'context.current-refusal-checker.raw-compat',
+    '_som_active_context_typescript_regression_native_factory': 'context.typescript-regression-native-factory.raw-compat',
+    '_som_ts_domain_typescript_regression_native_factory': 'ts.domain.typescript-regression-native-factory.raw-compat'
+}
+
+
 
 def bootstrap_raw_compat(path):
     """Execute only the reviewed helper bytes before any comparison can start."""
@@ -52,7 +67,48 @@ def bootstrap_raw_compat(path):
     return module
 
 
-raw_compat = bootstrap_raw_compat(Path(__file__).absolute().with_name("raw_digest_compat.py"))
+def _native_raw_compat(path):
+    from _som_native_active_controls_binding import controls
+    controls.verify_installed()
+    if type(__name__) is not str or type(_NATIVE_RAW_COMPAT_ROLES) is not dict:
+        raise RuntimeError("fixed native raw compatibility table required")
+    role = _NATIVE_RAW_COMPAT_ROLES.get(__name__)
+    if type(role) is not str:
+        raise RuntimeError("unlisted native raw compatibility namespace")
+    path = Path(path).absolute()
+    if path != controls.root / "som-rs/scripts/hosted_readiness/raw_digest_compat.py":
+        raise RuntimeError("fixed native raw compatibility source path required")
+    if controls.role_sources.get(role) != "som-rs/scripts/hosted_readiness/raw_digest_compat.py":
+        raise RuntimeError("native raw compatibility role source differs")
+    suffix = ("som-rs", "scripts", "hosted_readiness", "raw_digest_compat.py")
+    if ".." in path.parts or path.parts[-len(suffix):] != suffix:
+        raise RuntimeError("fixed raw compatibility source path required")
+    for member in (path, *path.parents):
+        info = member.lstat()
+        if stat.S_ISLNK(info.st_mode) or (member != path and not stat.S_ISDIR(info.st_mode)):
+            raise RuntimeError("linked or nonregular raw compatibility source")
+    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK
+    with os.fdopen(os.open(path, flags), "rb") as stream:
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 65536:
+            raise RuntimeError("linked, nonregular, or oversized raw compatibility source")
+        raw = stream.read(65537)
+    if len(raw) > 65536 or hashlib.sha256(raw).hexdigest() != RAW_COMPAT_REVIEWED_SHA256:
+        raise RuntimeError("raw compatibility source SHA differs before execution")
+    module = controls.load_module(role)
+    if type(module) is not ModuleType or module.__file__ != str(path):
+        raise RuntimeError("actual native raw compatibility module differs")
+    if not (raw_compat is module and _native_mask_raw is module.mask_raw
+            and _native_verify_frozen is module.verify_frozen
+            and _native_RawDigestError is module.RawDigestError):
+        raise RuntimeError("fixed native raw compatibility bindings differ")
+    return module
+
+
+if __name__ in {"experimental_native_compile", "__main__"} and "__som_native_active_controls__" not in globals():
+    raw_compat = bootstrap_raw_compat(Path(__file__).absolute().with_name("raw_digest_compat.py"))
+else:
+    raw_compat = _native_raw_compat(Path(__file__).absolute().with_name("raw_digest_compat.py"))
 
 BASELINE = "som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json"
 BASELINE_SHA256 = "650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9"

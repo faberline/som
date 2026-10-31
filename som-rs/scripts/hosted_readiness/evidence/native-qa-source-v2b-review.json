@@ -1,0 +1,440 @@
+{
+  "version": "som.native-policy-V2b-independent-source-review.v1",
+  "reviewer": "/root/native_policy_role_audit",
+  "author_is_reviewer": false,
+  "review_scope": "Immutable native policy V2b source mechanisms, three V1 P1 repairs, draft maps and narrow entry/Context integration contract. This is not final source sealing, product acceptance or full M6/graph review.",
+  "basis_source_revision": "9763e9b86f36a99229b70d8c571734e9a740e81c",
+  "packet_manifest": {
+    "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/proposal-manifest.json",
+    "sha256": "a310f109b100cda4337133a3be74137a5aecada3b09f29fe7dfc1d00e6e6977a",
+    "bytes": 14970
+  },
+  "proposal_patch": {
+    "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/source-and-policy-PROPOSAL.patch",
+    "sha256": "5166d36c8cd604256ca2b3cd79a9cf5d5f9b9ce7e46535e02b275ed7c3769743",
+    "bytes": 1068164
+  },
+  "authority": {
+    "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/native_qa_authority.py",
+    "sha256": "024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1",
+    "bytes": 31631
+  },
+  "verdict": "APPROVED_FOR_GITHUB_SOURCE_FIXTURE_VALIDATION_ONLY",
+  "findings": [],
+  "prior_findings": [
+    {
+      "id": "P1-QA-SUPPORT-CLOSURE",
+      "status": "FIXED_IN_REVIEWED_SOURCE",
+      "evidence_lines": [
+        [
+          213,
+          265
+        ],
+        [
+          343,
+          365
+        ]
+      ],
+      "result": "The verifier derives static imports from16 explicit gate roots plus admitted Python source. Resolution uses only the16 fixed QA source search roots. Every complete source hash and import edge must equal the policy. The independently reconstructed overlay closure is exactly30 added sources and418 edges. Required hosts/products/targets/phase2, replay and flow/service QA paths are present. There is no all-repository fallback."
+    },
+    {
+      "id": "P1-MANUAL-LOADER-PYC",
+      "status": "FIXED_IN_REVIEWED_SOURCE",
+      "evidence_lines": [
+        [
+          268,
+          305
+        ],
+        [
+          392,
+          405
+        ],
+        [
+          443,
+          486
+        ]
+      ],
+      "result": "Both unchanged TypeScript and React common.py manual calls are derived from their actual AST path bindings and fixed importlib.util call. The rule binds caller hash, exact rust_build_negative_cases module, shared builder path and shared builder hash. The spec wrapper rejects unknown caller/path/module/options and unbound caller metadata. It returns a raw-byte loader. Ordinary imports use a direct ModuleSpec with checked raw bytes. A matching timestamp PYC cannot supply the checked body."
+    },
+    {
+      "id": "P1-ENTRY-BEFORE-AUTHORITY",
+      "status": "FIXED_IN_REVIEWED_NARROW_ENTRY_SUBSET",
+      "evidence_lines": [
+        [
+          48,
+          105
+        ],
+        [
+          108,
+          185
+        ]
+      ],
+      "result": "Native execute_tool calls the exact new identity/bootstrap authority check before Context raw body import. Context installs native controls before loading dependency helpers. Context is active and its admitted source set is checked before the entry is read or executed. Success and failure perform source/runtime/import postchecks and save evidence. The first entry error remains primary. The original/preparation route gets an owned raw Git finder and restores it on success or failure."
+    }
+  ],
+  "independent_source_data_checks": {
+    "manifest_files": 67,
+    "all_manifest_sha256_and_size_matches": true,
+    "Python_sources_AST_valid": 22,
+    "three_QA_admissions_exactly_equal": true,
+    "draft_files_maps_all_rehash_against_Git9763_plus_packet_overlay": true,
+    "native_operational_support_maps_all_rehash": true,
+    "frozen_sources": 68,
+    "native_sources": 68,
+    "exact_source_replacements": 4,
+    "operational_sources": 139,
+    "explicit_gate_roots": 16,
+    "fixed_search_roots": 16,
+    "independently_derived_support_sources": 30,
+    "independently_derived_import_edges": 418,
+    "support_sources_and_edges_equal_policy": true,
+    "manual_AST_rules": [
+      {
+        "caller": "som-rs/tests/react-output-v1/common.py",
+        "module": "rust_build_negative_cases",
+        "path": "som-rs/tests/rust-output-v1/build_negative_cases.py",
+        "caller_sha256": "56c7318db6cbd85e27e6ac3c168de3cb9591e9c66cdb751b7d039ce3c8e3da73",
+        "sha256": "6c0d9313452a8e44f93b981babadf3b7ab433a96d3d9020e56f1004a62f7c7c7"
+      },
+      {
+        "caller": "som-rs/tests/typescript-output-v1/common.py",
+        "module": "rust_build_negative_cases",
+        "path": "som-rs/tests/rust-output-v1/build_negative_cases.py",
+        "caller_sha256": "77b92f00cdf13d66c54c1069e215bc8de479953887bc853e4316275b02a24497",
+        "sha256": "6c0d9313452a8e44f93b981babadf3b7ab433a96d3d9020e56f1004a62f7c7c7"
+      }
+    ],
+    "drafts": [
+      {
+        "file": {
+          "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/DRAFT-rust-compiler-contract-amendment-005.json",
+          "sha256": "fa49fee8d4d36cadf99fcddc813413679af75b0d578d48cad09f81e91ed0fa7e",
+          "bytes": 8100
+        },
+        "status": "draft_not_sealed_not_active",
+        "files": 45,
+        "pending_Hfiles": "ebde42105ff0c34ab2821f9e79563158d4fa72fe4ea2df0d2bbee78b4afc9418",
+        "review": "PENDING",
+        "acceptance": {
+          "status": "not_run",
+          "product_acceptance_passed": false
+        }
+      },
+      {
+        "file": {
+          "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/DRAFT-rust-output-contract-amendment-008.json",
+          "sha256": "bd7de77d8e318629e3150fb221e6d8a99eee7cbde4ac82bd899062f1de086d4a",
+          "bytes": 10590
+        },
+        "status": "draft_not_sealed_not_active",
+        "files": 56,
+        "pending_Hfiles": "ffac5e405b3b84ab78abc0fc9d76c329995e7156ba037d07b7df5327c766dfeb",
+        "review": "PENDING",
+        "acceptance": {
+          "status": "not_run",
+          "product_acceptance_passed": false
+        }
+      },
+      {
+        "file": {
+          "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/DRAFT-typescript-output-contract-amendment-004.json",
+          "sha256": "183a106cbe88e385945322f04e16097af166440340257e5aeb881c69f189aa11",
+          "bytes": 8762
+        },
+        "status": "draft_not_sealed_not_active",
+        "files": 39,
+        "pending_Hfiles": "98fb7add1ce80a073035860b78d4da49bee8a9e3c38d6989b72864638b4dd6d0",
+        "review": "PENDING",
+        "acceptance": {
+          "status": "not_run",
+          "product_acceptance_passed": false
+        }
+      }
+    ],
+    "entry_subset_manifest_sha256": "7deba82f0a33f024a08500c01f172852707ff323ab374788aa6b2a2adc63b6ce",
+    "entry_function_AST_sha256": {
+      "load_context_module": "96d5d3e8366655e54b4ecf815f47c42f822a14c538686b93af9d7e85aed37a01",
+      "execute_tool": "fc71f79e28801f5503bb40cdfd8a7343854a7f98f738779f60475c4ff7ff0838"
+    },
+    "entry_AST_equals_frozen_subset_reference": true,
+    "entry_file_hash_equals_subset_reference": true
+  },
+  "import_lifecycle_review": {
+    "owner": "A new install receives RawImportLease(owns_controls=True). Its close verifies the exact finder and spec wrapper, restores its original spec, removes its own finder and is idempotent through the lease.",
+    "borrower": "An active checked native Context must match exact source hash, repo and authority and have its original controls installed. The borrower gets a distinct lease over those controls with owns_controls=False. Closing it does not remove Context controls.",
+    "preloads": "Before a new installation, repository modules must be admitted and carry their checked raw source hash, except the admitted __main__ bootstrap whose executing bytes are checked by the entry bootstrap. Unbound ordinary helper preloads fail.",
+    "postchecks": "Context.verify checks installed controls and re-derives identical numbered authority before runtime/tool/input checks. Native entry execution has an unconditional postcheck and raw evidence save.",
+    "no_live_fallback": "Raw finders reject repository bytecode/extension origins and paths outside the admitted source set. The manual spec hook admits only the two exact existing shared-builder calls. Source readers compare regular working bytes to exact committed Git blobs."
+  },
+  "fixture_source_review": {
+    "all54_GitHub_unrun": true,
+    "method_AST_preservation": [
+      {
+        "path": "som-rs/scripts/hosted_readiness/test_native_receipt_chronology.py",
+        "original": 18,
+        "current": 18,
+        "all_original_method_AST_exact": true
+      },
+      {
+        "path": "som-rs/scripts/hosted_readiness/test_native_qa_authority.py",
+        "original": 19,
+        "current": 19,
+        "all_original_method_AST_exact": true
+      }
+    ],
+    "counts": {
+      "chronology_original": 18,
+      "authority_original": 19,
+      "real_import_PYC_lease": 12,
+      "entry_barrier": 5
+    },
+    "meaningful_real_imports": "A real hosts import graph loads products, targets, Python replay and qa_harness under checked raw imports. Support omission, tampered raw source and omitted edge cases must fail after re-bound synthetic review.",
+    "real_matching_timestamp_PYC": "Each unchanged TS/React common.py has a distinct test. A real SourceFileLoader first executes a poison PYC with the real source timestamp and size as a control. After guard installation, the actual common module must load the raw shared builder and leave its sentinel unused. The old cache bytes/mode are restored.",
+    "real_entry_records": "Five fixtures include an actual Git-tracked unlisted sentinel refused before read, a real committed pending receipt refused before Context import or entry, and default/preparation raw imports despite a matching timestamp PYC.",
+    "lease_tests": "Actual owner close restores both guards; a borrowed Context lease close leaves its owner installed. Tampered manual spec control fails its postcheck.",
+    "test_execution": "No fixture was run locally. No claimed GitHub pass exists for this packet."
+  },
+  "preserved_authority": {
+    "old_bytes": [
+      {
+        "path": "som-rs/evidence/rust-compiler-contract-amendment-004.json",
+        "sha256": "2f0c12e6fed43b8364649a0afff207e72b15738179cf56a8ff69036e4534f42c",
+        "unchanged": true
+      },
+      {
+        "path": "som-rs/evidence/rust-output-contract-amendment-007.json",
+        "sha256": "225b98c2bc01e79c5c6e13ad17f93adda68717498d70fa7577e65930813f9144",
+        "unchanged": true
+      },
+      {
+        "path": "som-rs/evidence/typescript-output-contract-amendment-003.json",
+        "sha256": "7052daacfc89bf468e399e09f635e6d773187177eb684a0399d46d8ddf650089",
+        "unchanged": true
+      },
+      {
+        "path": "som-rs/contracts/native-tools-v1/CONTRACT.md",
+        "sha256": "47d72cabd57bdb380171a54f4dddeeabf25693c3781cabb483c572c162efac6e",
+        "unchanged": true
+      },
+      {
+        "path": "som-rs/contracts/native-tools-v1/artifacts.json",
+        "sha256": "959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193",
+        "unchanged": true
+      },
+      {
+        "path": "som-rs/contracts/compiler-v1/CONTRACT.md",
+        "sha256": "cf0a1727f924fd5b43df976ab8ca98c811d10e39d9ba41b6434f99f57fc65f3e",
+        "unchanged": true
+      },
+      {
+        "path": "som-rs/tests/typescript-output-v1/common.py",
+        "sha256": "77b92f00cdf13d66c54c1069e215bc8de479953887bc853e4316275b02a24497",
+        "unchanged": true
+      },
+      {
+        "path": "som-rs/tests/react-output-v1/common.py",
+        "sha256": "56c7318db6cbd85e27e6ac3c168de3cb9591e9c66cdb751b7d039ce3c8e3da73",
+        "unchanged": true
+      }
+    ],
+    "old_checker_archives_exact": {
+      "rust": "958aacace4f99badd190715140665bb3bf9f08ec0e88c8557b6d24f87a069b15",
+      "typescript": "a26c5c59579b609ff0ffe651f57292efd3eb8e4cce95a841232b2e98c409d376"
+    },
+    "compiler_descriptor_rule": "Raw compiler CONTRACT SHA stays cf0a1727f924fd5b43df976ab8ca98c811d10e39d9ba41b6434f99f57fc65f3e; it is not H(receipt.files).",
+    "chronology": "Rust007 and TS003 bytes and true implementation chronology stay unchanged. Draft005/008/004 declare prior implementation truthfully, prospective same-candidate acceptance and not_run/false.",
+    "Mac_routes": "The source patch changes no old Mac native CONTRACT/artifacts/profile bytes. The new Context route requires GitHub Linux and validates the Linux product profile; it does not accept a Mac binary from Linux results. A Mac candidate needs its own per-host source/binary/tool expectations and applicable M6 gates.",
+    "preview_scope": "Rust PREVIEW changes only TARGET_CONTRACT_SHA256. TS PREVIEW changes its target constant plus the latest-receipt unit-test path003 to004. Both are pending proposal values.",
+    "Cargo_scope": {
+      "phase1": 203,
+      "phase2": 334,
+      "union": 352,
+      "licenses": 647
+    },
+    "native_phase2_outcomes": {
+      "mode": "native-qa-v1",
+      "named_rows": 584,
+      "real_product_gate_rows": 582,
+      "current_compiler_refusal_rows": [
+        "RS12_CNL_V3_FILTER_LIMIT",
+        "RS13_JSON_V3_FILTER_OFFSET"
+      ],
+      "refusal_status": 400,
+      "refusal_code": "INVALID_VALUE",
+      "raw_refusal_forms": 4,
+      "refusal_product_role": "No product exists. Record exact current compiler-refusal/no-product; no product pass or historical product substitution.",
+      "diagnostic_rule": "Compare the complete source-derived diagnostic and actual raw request/reply forms from the new same candidate. Never relabel omitted-target bytes as explicit-python bytes.",
+      "source_rule": "Compiler-v1 Amendment004 and exact current phase2_expected. No generic400 shortcut or unsupported-positive waiver.",
+      "whole_scope_rule": "Keep every584 named row, exact summary, workers, real waits, exits and cleanup. Run every applicable gate on all582 real products.",
+      "repaired_current_ids": [
+        "RS07_CNL_FIELD_SELF",
+        "RS14_CNL_V5_FOREIGN_KEY_SELF",
+        "RS16_CNL_V5_FIRST_REFUSAL"
+      ],
+      "repaired_product_role": "Use only fresh verified current files for the current role. Keep each old product_sha256 separately as unchanged historical provenance.",
+      "python_quality_named_rows": 671,
+      "python_quality_rule": "Current28 lookup fallback does not add or remove any of the671 frozen Python quality rows.",
+      "historical_hashes_rewritten": false
+    },
+    "Python671": "Context.python_rows, legacy_cases and phase2_cases method ASTs remain exact to9763 in this policy packet. Current28 routing is a separate narrow overlay.",
+    "f59": "f59 capture output is explicitly not a source-sealing prerequisite. f59 is refused as the new final native source candidate."
+  },
+  "activation_and_integration_boundaries": {
+    "current_state": "All three receipts are draft_not_sealed_not_active; review=PENDING; all three policy authority states=PENDING with nonempty sealing_dependencies. The runtime verifier refuses them. This review does not change those fields.",
+    "checksums": "Final graph/M6/capture/current28/runtime capsule source checksums are intentionally pending integration. Their absence here is not a new defect. Root must refresh all exact maps from the actual settled source before final H(files)/constant/vector review.",
+    "Context": "Merge only the native constructor/controls/finder/postcheck/tool-dispatch changes into Root Context. Preserve separate current28/refusal methods. The known current-input V1 typed lifecycle P1 stays separate and unapproved. Do not replace the whole Context snapshot.",
+    "driver": "Merge only the frozen entry subset into the final graph driver. The old prepare/worker/join bootstrap call sites in this9763-based snapshot do not yet carry explicit native parameters. Root must propagate the mode and helper/candidate identities when integrating the actual native graph. This is a documented narrow-subset integration requirement, not proof that the full final graph is ready.",
+    "source_gate_order": [
+      "Integrate final source while preserving ownership and known separate fixes.",
+      "Refresh all exact operational/support/dynamic M6 maps and per-host pins.",
+      "Run the54 meaningful source fixtures on GitHub.",
+      "Obtain independent review of final numbered H(files), matching target constants and complete owning source/factory vectors.",
+      "Root may then seal the source-only numbered authority in one exact batch.",
+      "Build the new common final candidate and run fresh applicable compiler/CNL/CLI/refusal/rebase/current68/product/per-host gates plus raw independent audit."
+    ],
+    "no_product_acceptance_from_seal": true
+  },
+  "evidence": [
+    {
+      "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/native_qa_authority.py",
+      "sha256": "024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1",
+      "lines": [
+        165,
+        265
+      ],
+      "purpose": "Fixed roots, explicit582/two-refusal policy and full static closure"
+    },
+    {
+      "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/native_qa_authority.py",
+      "sha256": "024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1",
+      "lines": [
+        268,
+        305
+      ],
+      "purpose": "Both AST-derived manual caller rules"
+    },
+    {
+      "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/native_qa_authority.py",
+      "sha256": "024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1",
+      "lines": [
+        308,
+        389
+      ],
+      "purpose": "Draft refusal, exact maps, native profiles and no acceptance authority"
+    },
+    {
+      "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/native_qa_authority.py",
+      "sha256": "024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1",
+      "lines": [
+        392,
+        486
+      ],
+      "purpose": "Raw manual/ordinary import loaders and exact installed guards"
+    },
+    {
+      "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/native_qa_authority.py",
+      "sha256": "024a8e96487db8455f4f57008967524e6ce81fe4a3c853baafb67969e56a0cc1",
+      "lines": [
+        489,
+        534
+      ],
+      "purpose": "Owning/borrowed lease and preload policy"
+    },
+    {
+      "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py",
+      "sha256": "9d238fadd7bf89c3957f38569b2bec6be6923024c8375770000d37135842a095",
+      "lines": [
+        181,
+        220
+      ],
+      "purpose": "Native Context verifies authority and installs controls before other helper use"
+    },
+    {
+      "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py",
+      "sha256": "9d238fadd7bf89c3957f38569b2bec6be6923024c8375770000d37135842a095",
+      "lines": [
+        612,
+        642
+      ],
+      "purpose": "Native source/import/runtime postchecks"
+    },
+    {
+      "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/run_full_products.py",
+      "sha256": "e1d10ba99668977bc100d7d08229b19cc8d51ba359a7ee3fd1211696b906cf78",
+      "lines": [
+        48,
+        105
+      ],
+      "purpose": "Native authority before Context body import"
+    },
+    {
+      "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/run_full_products.py",
+      "sha256": "e1d10ba99668977bc100d7d08229b19cc8d51ba359a7ee3fd1211696b906cf78",
+      "lines": [
+        108,
+        185
+      ],
+      "purpose": "Entry admission before raw read/execute and unconditional evidence/postcheck"
+    },
+    {
+      "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/test_native_qa_imports.py",
+      "sha256": "2ad1d5b8d7bfb7950828a633641f3e8d46c701aa45bde61c104e92dc730321b4",
+      "lines": [
+        66,
+        100
+      ],
+      "purpose": "Real import graph and support tamper fixtures"
+    },
+    {
+      "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/test_native_qa_imports.py",
+      "sha256": "2ad1d5b8d7bfb7950828a633641f3e8d46c701aa45bde61c104e92dc730321b4",
+      "lines": [
+        106,
+        155
+      ],
+      "purpose": "Both actual shared-builder matching timestamp-PYC controls"
+    },
+    {
+      "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/test_native_qa_imports.py",
+      "sha256": "2ad1d5b8d7bfb7950828a633641f3e8d46c701aa45bde61c104e92dc730321b4",
+      "lines": [
+        181,
+        216
+      ],
+      "purpose": "Owning and borrowed control tests plus scope refusal"
+    },
+    {
+      "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/test_native_entry_barrier.py",
+      "sha256": "57ca1234ec10b4e3b6bad15bda3cc8d86f7e709f2e441b97a7af34c8dca4512f",
+      "lines": [
+        79,
+        128
+      ],
+      "purpose": "Real Git sentinel and real pending policy tests"
+    },
+    {
+      "path": "/private/tmp/som-m12-native-policy-successor-9763-v2b/som-rs/scripts/hosted_readiness/test_native_entry_barrier.py",
+      "sha256": "57ca1234ec10b4e3b6bad15bda3cc8d86f7e709f2e441b97a7af34c8dca4512f",
+      "lines": [
+        130,
+        198
+      ],
+      "purpose": "Legacy default/preparation raw imports and owned restoration"
+    }
+  ],
+  "aw": {
+    "own_session_id": "a4f89387-5783-4ef3-95e0-243600286bad",
+    "preflight_id": "a90bf0d4-cdb8-43c0-a03a-4fc02ce615d1",
+    "scope_update": "update_session is not exposed; no scope update or borrowed identity was claimed",
+    "root_worktree_claim_preserved": true
+  },
+  "local_operations": "Only source text, stdlib AST/JSON/hash and raw Git data reads. No project/helper imports, tests, builds, compiler/native tools, servers, restores or author scripts ran locally.",
+  "repository_or_Git_or_tracker_writes": false,
+  "github_tests": "unrun",
+  "source_repair_review_passed": true,
+  "source_authority_activation_approved": false,
+  "sealing_approved": false,
+  "compiler_acceptance_passed": false,
+  "product_acceptance_passed": false,
+  "whole_acceptance_complete": false
+}

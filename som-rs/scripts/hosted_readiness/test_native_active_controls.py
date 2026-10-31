@@ -399,6 +399,241 @@ class ActiveProtocolTests(unittest.TestCase):
             f.core._Policy(f.transfer)
 
 
+    def _paired_fixture(self, caller=None, *, alias=False, reentry=False, cycle=False):
+        # These are physical synthetic sources and explicit protocol data doubles.
+        alternative = 'som-rs/tests/rust-output-v1/synthetic_target.py'
+        tail = 'som-rs/tests/rust-output-v1/synthetic_tail.py'
+        provider = BASE + 'synthetic_paired_provider.py'
+        template = caller or (
+            'from __future__ import annotations\n'
+            'with open(__PREFIX_FILE__, "w", encoding="utf-8") as stream:\n'
+            '    stream.write("parent prefix ran")\n'
+            'from synthetic_target import VALUE\n'
+            'def run(controls):\n'
+            '    return VALUE\n')
+        class PairedFixture(Fixture):
+            def add_role(self, role, path, raw, **options):
+                if role == 'caller':
+                    raw = template.replace('__PREFIX_FILE__', repr(str(self.root / 'paired-prefix')))
+                row = super().add_role(role, path, raw, **options)
+                if role == 'caller' and alias:
+                    super().add_role('caller.alias', path, raw, module='_synthetic_paired_alias')
+                if role == 'target':
+                    self.raw[alternative] = ((b'import synthetic_tail\n' if cycle else b'')
+                                             + b'raise AssertionError("unselected alternative executed")\n')
+                    (self.root / alternative).parent.mkdir(parents=True, exist_ok=True)
+                    (self.root / alternative).write_bytes(self.raw[alternative])
+                    if cycle:
+                        self.raw[tail] = b'import synthetic_target\nraise AssertionError("unselected tail executed")\n'
+                        (self.root / tail).write_bytes(self.raw[tail])
+                    if reentry:
+                        super().add_role('paired.provider', provider,
+                            'from synthetic_target import VALUE\n', module='_synthetic_paired_provider')
+                return row
+        f = PairedFixture(self)
+        extras = (['caller.alias'] if alias else []) + (['paired.provider'] if reentry else [])
+        f.rows['caller']['closure'] = ['caller', 'target', *extras]
+        f.rows['target']['closure'] = ['target']
+        f.rows['target']['callers'] = [
+            {'role': 'caller', 'function': '<module>'}, {'role': 'caller', 'function': 'run'}]
+        for name in extras:
+            f.rows[name]['closure'] = [name, 'target']
+        if reentry:
+            f.rows['caller']['bindings']['support'] = {'kind': 'role-module', 'role': 'paired.provider'}
+        roots = [CALLER, *([provider] if reentry else [])]
+        f.policy['static_edges'] = f.core.static_edges(f.transfer.read, roots, f.transfer.source_paths,
+            [BASE.rstrip('/'), 'som-rs/tests/rust-output-v1'])
+        f.policy['imports'] = [{'caller': 'caller', 'name': 'synthetic_target', 'level': 0,
+            'fromlist': ['VALUE'], 'result': 'target', 'from_roles': {}}]
+        return f, alternative, f.root / 'paired-prefix'
+
+    def test_redirected_roleless_cycle_is_only_checked_code_data(self):
+        f, alternative, marker = self._paired_fixture(cycle=True)
+        prepared = f.domain.prepare('caller')
+        self.assertEqual(set(prepared), {'caller', 'target'})
+        self.assertEqual(f.run(), 41)
+        self.assertTrue(marker.exists())
+        self.assertNotIn(alternative, {row['source'] for row in f.rows.values()})
+        self.assertNotIn(alternative, {record.row['source'] for record in f.domain.records.values()})
+        checked_paths = {str(f.root / alternative), str(f.root / 'som-rs/tests/rust-output-v1/synthetic_tail.py')}
+        self.assertTrue(all(code.co_filename not in checked_paths
+            for entries in f.domain.codes.values() for code, _ in entries))
+        self.assertIs(f.domain.records['target'].module, sys.modules[f.rows['target']['module']])
+
+    def test_unresolved_roleless_import_refuses_before_parent_prefix(self):
+        f, _, marker = self._paired_fixture()
+        f.policy['imports'] = []
+        with self.assertRaisesRegex(ValueError, 'closure is missing before exec'):
+            f.run()
+        self.assertFalse(marker.exists())
+        self.assertNotIn('caller', f.domain.records)
+        self.assertNotIn('target', f.domain.records)
+
+    def test_roleless_cycle_cannot_create_its_own_exclusion(self):
+        f, _, marker = self._paired_fixture(cycle=True)
+        f.policy['imports'] = []
+        with self.assertRaisesRegex(ValueError, 'closure is missing before exec'):
+            f.run()
+        self.assertFalse(marker.exists())
+        self.assertNotIn('caller', f.domain.records)
+
+    def test_ambiguous_import_rule_refuses_before_parent_prefix(self):
+        f, _, marker = self._paired_fixture()
+        f.policy['imports'].append(dict(f.policy['imports'][0]))
+        with self.assertRaisesRegex(ValueError, 'closure is missing before exec'):
+            f.run()
+        self.assertFalse(marker.exists())
+        self.assertNotIn('caller', f.domain.records)
+
+    def test_ordered_fromlist_mismatch_cannot_exclude_an_alternative(self):
+        caller = ('from __future__ import annotations\n'
+                  'with open(__PREFIX_FILE__, "w", encoding="utf-8") as stream:\n'
+                  '    stream.write("parent prefix ran")\n'
+                  'from synthetic_target import VALUE, OTHER\n'
+                  'def run(controls): return VALUE\n')
+        f, _, marker = self._paired_fixture(caller)
+        f.policy['imports'][0]['fromlist'] = ['OTHER', 'VALUE']
+        with self.assertRaisesRegex(ValueError, 'closure is missing before exec'):
+            f.run()
+        self.assertFalse(marker.exists())
+        self.assertNotIn('caller', f.domain.records)
+
+    def test_second_compiled_import_occurrence_keeps_alternative_live(self):
+        caller = ('from __future__ import annotations\n'
+                  'with open(__PREFIX_FILE__, "w", encoding="utf-8") as stream:\n'
+                  '    stream.write("parent prefix ran")\n'
+                  'from synthetic_target import VALUE\n'
+                  'def never_called():\n'
+                  '    from synthetic_target import OTHER\n'
+                  'def run(controls): return VALUE\n')
+        f, _, marker = self._paired_fixture(caller)
+        with self.assertRaisesRegex(ValueError, 'closure is missing before exec'):
+            f.run()
+        self.assertFalse(marker.exists())
+        self.assertNotIn('caller', f.domain.records)
+
+    def test_another_prepared_alias_needs_its_own_exact_import_rule(self):
+        f, _, marker = self._paired_fixture(alias=True)
+        with self.assertRaisesRegex(ValueError, 'closure is missing before exec'):
+            f.run()
+        self.assertFalse(marker.exists())
+        self.assertNotIn('caller', f.domain.records)
+        self.assertNotIn('caller.alias', f.domain.records)
+
+    def test_prepared_binding_source_outside_physical_seen_keeps_reentry_live(self):
+        f, _, marker = self._paired_fixture(reentry=True)
+        provider = f.rows['paired.provider']['source']
+        original_seen, pending = set(), {CALLER}
+        while pending:
+            path = pending.pop()
+            if path in original_seen:
+                continue
+            original_seen.add(path)
+            pending.update(edge['source'] for edge in f.policy['static_edges'] if edge['caller'] == path)
+        self.assertNotIn(provider, original_seen)
+        self.assertIn('paired.provider', f.rows['caller']['closure'])
+        with self.assertRaisesRegex(ValueError, 'closure is missing before exec'):
+            f.run()
+        self.assertFalse(marker.exists())
+        self.assertNotIn('caller', f.domain.records)
+        self.assertNotIn('paired.provider', f.domain.records)
+
+    def test_exact_fragment_omits_original_import_without_invented_rule(self):
+        caller = ('from __future__ import annotations\n'
+                  'with open(__PREFIX_FILE__, "w", encoding="utf-8") as stream:\n'
+                  '    stream.write("excluded prefix ran")\n'
+                  'from synthetic_target import VALUE\n'
+                  'def run(controls): return 41\n')
+        f, _, marker = self._paired_fixture(caller)
+        original = ast.Module(body=[node for node in ast.parse(f.raw[CALLER]).body
+            if isinstance(node, ast.FunctionDef) and node.name == 'run'], type_ignores=[])
+        f.rows['caller']['kind'] = 'fragment'
+        f.rows['caller']['selector'] = {'kind': 'top-level-functions', 'names': ['run'],
+            'ast_sha256': hashlib.sha256(ast.dump(original, include_attributes=False).encode()).hexdigest()}
+        f.policy['imports'] = []
+        self.assertEqual(f.run(), 41)
+        self.assertFalse(marker.exists())
+        self.assertNotIn('target', f.domain.records)
+        self.assertEqual(f.domain.records['caller'].row['kind'], 'fragment')
+
+    def test_whole_module_cannot_inherit_a_fragment_import_absence(self):
+        caller = ('from __future__ import annotations\n'
+                  'with open(__PREFIX_FILE__, "w", encoding="utf-8") as stream:\n'
+                  '    stream.write("parent prefix ran")\n'
+                  'from synthetic_target import VALUE\n'
+                  'def run(controls): return 41\n')
+        f, _, marker = self._paired_fixture(caller)
+        f.policy['imports'] = []
+        with self.assertRaisesRegex(ValueError, 'closure is missing before exec'):
+            f.run()
+        self.assertFalse(marker.exists())
+        self.assertNotIn('caller', f.domain.records)
+
+    def test_compiled_fragment_import_still_refuses_before_parent_body(self):
+        caller = ('from __future__ import annotations\n'
+                  'def run(controls):\n'
+                  '    with open(__PREFIX_FILE__, "w", encoding="utf-8") as stream:\n'
+                  '        stream.write("function prefix ran")\n'
+                  '    from synthetic_target import VALUE\n'
+                  '    return VALUE\n')
+        f, _, marker = self._paired_fixture(caller)
+        original = ast.Module(body=[node for node in ast.parse(f.raw[CALLER]).body
+            if isinstance(node, ast.FunctionDef) and node.name == 'run'], type_ignores=[])
+        f.rows['caller']['kind'] = 'fragment'
+        f.rows['caller']['selector'] = {'kind': 'top-level-functions', 'names': ['run'],
+            'ast_sha256': hashlib.sha256(ast.dump(original, include_attributes=False).encode()).hexdigest()}
+        f.policy['imports'] = []
+        with self.assertRaisesRegex(ValueError, 'closure is missing before exec'):
+            f.run()
+        self.assertFalse(marker.exists())
+        self.assertNotIn('caller', f.domain.records)
+
+    def test_unused_candidate_raw_change_refuses_before_parent_prefix(self):
+        f, alternative, marker = self._paired_fixture()
+        f.raw[alternative] = b'VALUE = "changed raw bytes"\n'
+        (f.root / alternative).write_bytes(f.raw[alternative])
+        with self.assertRaisesRegex(ValueError, 'physical source bytes changed'):
+            f.run()
+        self.assertFalse(marker.exists())
+        self.assertNotIn('caller', f.domain.records)
+
+    def test_unused_candidate_mode_change_refuses_before_parent_prefix(self):
+        f, alternative, marker = self._paired_fixture()
+        original_mode = f.transfer.mode
+        f.transfer.mode = lambda path: 0o755 if path == alternative else original_mode(path)
+        with self.assertRaisesRegex(ValueError, 'physical source mode changed'):
+            f.run()
+        self.assertFalse(marker.exists())
+        self.assertNotIn('caller', f.domain.records)
+
+    def test_unused_candidate_invalid_syntax_still_refuses_before_parent_prefix(self):
+        f, alternative, marker = self._paired_fixture()
+        f.raw[alternative] = b'if True:\n'
+        (f.root / alternative).write_bytes(f.raw[alternative])
+        f.policy['sources'][alternative]['sha256'] = f.core.sha(f.raw[alternative])
+        with self.assertRaises(SyntaxError):
+            f.run()
+        self.assertFalse(marker.exists())
+        self.assertNotIn('caller', f.domain.records)
+
+    def test_unused_candidate_requires_actual_admission_before_parent_prefix(self):
+        f, alternative, marker = self._paired_fixture()
+        f.transfer.admission['admitted_repository_python_sources'].remove(alternative)
+        with self.assertRaisesRegex(ValueError, 'physical source outside actual native admission'):
+            f.run()
+        self.assertFalse(marker.exists())
+        self.assertNotIn('caller', f.domain.records)
+
+    def test_physical_edge_without_original_import_has_no_absence_proof(self):
+        f, alternative, marker = self._paired_fixture()
+        f.policy['static_edges'].append({'caller': CALLER, 'import': 'not_an_original_import',
+                                        'source': alternative})
+        with self.assertRaisesRegex(ValueError, 'closure is missing before exec'):
+            f.run()
+        self.assertFalse(marker.exists())
+        self.assertNotIn('caller', f.domain.records)
+
+
 class ActualContextProtocolTests(unittest.TestCase):
     CALLER = ('from pathlib import Path\nimport threading\n'
         'def run(controls):\n'

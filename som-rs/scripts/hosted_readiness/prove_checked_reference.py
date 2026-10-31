@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import re
 import sys
+from types import ModuleType
 
 import reconstruct_public_inputs as replay
 from export_goldens import Refusal, digest_text, no_symlinks, parse, pointer, require, sha, value_sha
@@ -171,14 +172,158 @@ def checked_runtime(sources):
                 del sys.modules[name]
 
 
+_NATIVE_CHECKED_ROLES = {'_som_active_semantic_common_postclose_join_prove_checked_reference': {'som_core': 'semantic.common-postclose.join.prove-checked-reference.recipe.som-core',
+                                                                        'som_core.business': 'semantic.common-postclose.join.prove-checked-reference.recipe.som-core.business',
+                                                                        'som_core.compact_names': 'semantic.common-postclose.join.prove-checked-reference.recipe.som-core.compact-names',
+                                                                        'som_core.composed': 'semantic.common-postclose.join.prove-checked-reference.recipe.som-core.composed',
+                                                                        'som_core.flow': 'semantic.common-postclose.join.prove-checked-reference.recipe.som-core.flow',
+                                                                        'som_core.flow_codec': 'semantic.common-postclose.join.prove-checked-reference.recipe.som-core.flow-codec',
+                                                                        'som_core.flow_compact': 'semantic.common-postclose.join.prove-checked-reference.recipe.som-core.flow-compact',
+                                                                        'som_core.quality': 'semantic.common-postclose.join.prove-checked-reference.recipe.som-core.quality',
+                                                                        'som_core.related': 'semantic.common-postclose.join.prove-checked-reference.recipe.som-core.related',
+                                                                        'som_core.v1': 'semantic.common-postclose.join.prove-checked-reference.recipe.som-core.v1'},
+ '_som_active_semantic_common_runtime_join_prove_checked_reference': {'som_core': 'semantic.common-runtime.join.prove-checked-reference.recipe.som-core',
+                                                                      'som_core.business': 'semantic.common-runtime.join.prove-checked-reference.recipe.som-core.business',
+                                                                      'som_core.compact_names': 'semantic.common-runtime.join.prove-checked-reference.recipe.som-core.compact-names',
+                                                                      'som_core.composed': 'semantic.common-runtime.join.prove-checked-reference.recipe.som-core.composed',
+                                                                      'som_core.flow': 'semantic.common-runtime.join.prove-checked-reference.recipe.som-core.flow',
+                                                                      'som_core.flow_codec': 'semantic.common-runtime.join.prove-checked-reference.recipe.som-core.flow-codec',
+                                                                      'som_core.flow_compact': 'semantic.common-runtime.join.prove-checked-reference.recipe.som-core.flow-compact',
+                                                                      'som_core.quality': 'semantic.common-runtime.join.prove-checked-reference.recipe.som-core.quality',
+                                                                      'som_core.related': 'semantic.common-runtime.join.prove-checked-reference.recipe.som-core.related',
+                                                                      'som_core.v1': 'semantic.common-runtime.join.prove-checked-reference.recipe.som-core.v1'},
+ '_som_active_semantic_common_verify_join_prove_checked_reference': {'som_core': 'semantic.common-verify.join.prove-checked-reference.recipe.som-core',
+                                                                     'som_core.business': 'semantic.common-verify.join.prove-checked-reference.recipe.som-core.business',
+                                                                     'som_core.compact_names': 'semantic.common-verify.join.prove-checked-reference.recipe.som-core.compact-names',
+                                                                     'som_core.composed': 'semantic.common-verify.join.prove-checked-reference.recipe.som-core.composed',
+                                                                     'som_core.flow': 'semantic.common-verify.join.prove-checked-reference.recipe.som-core.flow',
+                                                                     'som_core.flow_codec': 'semantic.common-verify.join.prove-checked-reference.recipe.som-core.flow-codec',
+                                                                     'som_core.flow_compact': 'semantic.common-verify.join.prove-checked-reference.recipe.som-core.flow-compact',
+                                                                     'som_core.quality': 'semantic.common-verify.join.prove-checked-reference.recipe.som-core.quality',
+                                                                     'som_core.related': 'semantic.common-verify.join.prove-checked-reference.recipe.som-core.related',
+                                                                     'som_core.v1': 'semantic.common-verify.join.prove-checked-reference.recipe.som-core.v1'},
+ '_som_active_semantic_entry_join_prove_checked_reference': {'som_core': 'semantic.entry.join.prove-checked-reference.recipe.som-core',
+                                                             'som_core.business': 'semantic.entry.join.prove-checked-reference.recipe.som-core.business',
+                                                             'som_core.compact_names': 'semantic.entry.join.prove-checked-reference.recipe.som-core.compact-names',
+                                                             'som_core.composed': 'semantic.entry.join.prove-checked-reference.recipe.som-core.composed',
+                                                             'som_core.flow': 'semantic.entry.join.prove-checked-reference.recipe.som-core.flow',
+                                                             'som_core.flow_codec': 'semantic.entry.join.prove-checked-reference.recipe.som-core.flow-codec',
+                                                             'som_core.flow_compact': 'semantic.entry.join.prove-checked-reference.recipe.som-core.flow-compact',
+                                                             'som_core.quality': 'semantic.entry.join.prove-checked-reference.recipe.som-core.quality',
+                                                             'som_core.related': 'semantic.entry.join.prove-checked-reference.recipe.som-core.related',
+                                                             'som_core.v1': 'semantic.entry.join.prove-checked-reference.recipe.som-core.v1'},
+ '_som_active_semantic_graph_join_prove_checked_reference': {'som_core': 'semantic.graph.join.prove-checked-reference.recipe.som-core',
+                                                             'som_core.business': 'semantic.graph.join.prove-checked-reference.recipe.som-core.business',
+                                                             'som_core.compact_names': 'semantic.graph.join.prove-checked-reference.recipe.som-core.compact-names',
+                                                             'som_core.composed': 'semantic.graph.join.prove-checked-reference.recipe.som-core.composed',
+                                                             'som_core.flow': 'semantic.graph.join.prove-checked-reference.recipe.som-core.flow',
+                                                             'som_core.flow_codec': 'semantic.graph.join.prove-checked-reference.recipe.som-core.flow-codec',
+                                                             'som_core.flow_compact': 'semantic.graph.join.prove-checked-reference.recipe.som-core.flow-compact',
+                                                             'som_core.quality': 'semantic.graph.join.prove-checked-reference.recipe.som-core.quality',
+                                                             'som_core.related': 'semantic.graph.join.prove-checked-reference.recipe.som-core.related',
+                                                             'som_core.v1': 'semantic.graph.join.prove-checked-reference.recipe.som-core.v1'}}
+
+
+class _NativeCheckedInputs:
+    def __init__(self, repo, pins):
+        self.repo, self.pins = repo, dict(pins)
+
+
+def _checked_native_mode():
+    if __name__ in {'prove_checked_reference', '__main__'} and '__som_native_active_controls__' not in globals():
+        return False
+    require(type(__name__) is str and type(_NATIVE_CHECKED_ROLES) is dict
+            and __name__ in _NATIVE_CHECKED_ROLES, 'unlisted native checked recipe namespace')
+    require('__som_native_active_controls__' in globals(), 'native checked controls binding is absent')
+    return True
+
+
+def _native_checked_controls():
+    require(_checked_native_mode(), 'native checked recipe controls required')
+    try:
+        from _som_native_active_controls_binding import controls
+    except ImportError as error:
+        raise Refusal('actual Core checked recipe import binding required') from error
+    controls.verify_installed()
+    targets = _NATIVE_CHECKED_ROLES[__name__]
+    expected = {'som_core' if path.endswith('/__init__.py') else path[len(MODULE_PREFIX):-3].replace('/', '.'):
+                path for path in MODULE_FILES}
+    require(type(targets) is dict and set(targets) == set(expected) and len(targets) == 10
+            and all(type(role) is str and controls.role_sources.get(role) == expected[name] for name, role in targets.items()),
+            'fixed native checked module/source universe differs')
+    return controls, targets, expected
+
+
+@contextmanager
+def _native_checked_runtime(sources):
+    controls, targets, expected = _native_checked_controls()
+    require(type(sources) is ProofSources, 'actual source-owned native checked inputs required')
+    fields = object.__getattribute__(sources, '__dict__')
+    require(type(fields) is dict and set(fields) == {'repo', 'raw', 'recipe', 'pins', 'anchors'}
+            and type(fields['repo']) is type(controls.root) and fields['repo'] == controls.root
+            and type(fields['raw']) is bytes and type(fields['recipe']) is dict
+            and all(type(fields[name]) is dict and all(type(key) is str and type(value) is str
+                    for key, value in fields[name].items()) for name in ('pins', 'anchors')),
+            'native checked source data fields differ')
+    sources.verify()
+    typed_sources = _NativeCheckedInputs(sources.repo, {path: sources.pins[path] for path in MODULE_FILES})
+    lease = controls.borrow(); primary = None; modules = {}
+    def check_loaded():
+        lease.verify_installed()
+        for name, module in modules.items():
+            path = expected[name]
+            require(type(module) is ModuleType and module.__file__ == str(sources.repo / path)
+                    and module.__cached__ is None and module.__som_raw_sha256__ == sources.pins[path]
+                    and sys.modules.get(module.__name__) is module,
+                    'checked Core module did not keep its actual source identity')
+        require(set(modules) == set(expected), 'checked Core import closure differs')
+        sources.verify()
+        return sorted(modules)
+    try:
+        modules['som_core.flow_compact'] = lease.load_module(targets['som_core.flow_compact'])
+        for name in sorted(targets):
+            if name not in modules: modules[name] = lease.load_module(targets[name])
+        check_loaded()
+        yield modules['som_core.flow_compact'], modules['som_core.flow'], modules['som_core.v1'], check_loaded
+    except BaseException as error:
+        primary = error
+        raise
+    finally:
+        secondary = None
+        try:
+            if modules: check_loaded()
+            else: lease.verify_installed(); sources.verify()
+        except BaseException as error:
+            secondary = error
+        try:
+            lease.close()
+        except BaseException as error:
+            if secondary is None: secondary = error
+            else: BaseException.__setattr__(secondary, '__som_checked_close_error__', error)
+        if secondary is not None:
+            if primary is None: raise secondary
+            BaseException.__setattr__(primary, '__som_native_checked_postcheck_error__', secondary)
+
+
+def _checked_recipe(sources):
+    if not _checked_native_mode():
+        return checked_runtime(sources)
+    return _native_checked_runtime(sources)
+
+
 def prove(repo, out, tested_sha):
     require(re.fullmatch(r"[0-9a-f]{40}", tested_sha) is not None, "tested commit must be an exact Git SHA")
     require(not out.exists() and out != repo and repo not in out.parents, "proof output must be new and outside the checkout")
     no_symlinks(out)
+    if _checked_native_mode():
+        controls, _, _ = _native_checked_controls()
+        require(type(repo) is type(controls.root) and repo == controls.root
+                and tested_sha == controls.helper_revision == controls.candidate_revision,
+                'native checked source/revision differs before ProofSources construction')
     sources = ProofSources(repo)
     prompt = parse(sources.read(INPUT_FILE, sources.pins[INPUT_FILE]).decode("utf-8").splitlines()[0])["prompt"]
     require(value_sha(prompt) == EXPECTED_PROMPT_SHA256, "checked public prompt digest differs")
-    with checked_runtime(sources) as (compact, flow, v1, check_loaded):
+    with _checked_recipe(sources) as (compact, flow, v1, check_loaded):
         blocks = v1.load_blocks(repo / BLOCKS_DIRECTORY)
         dsl = compact.reference(prompt, blocks, "checked")
         require(value_sha(dsl) == EXPECTED_DSL_SHA256, "generated checked DSL differs from accepted canonical digest")

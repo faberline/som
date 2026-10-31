@@ -1,0 +1,184 @@
+{
+  "reviewer": "/root/native_policy_role_audit",
+  "review_kind": "Independent source-only rereview",
+  "author_is_reviewer": false,
+  "verdict": "APPROVED_FOR_GITHUB_FIXTURE_VALIDATION_ONLY",
+  "findings": [],
+  "local_operations": "Read source, stdlib AST/JSON/hash and saved data only. No project/helper imports, tests, builds, native/compiler commands, service, resolver, restore or author script execution.",
+  "repository_Git_tracker_writes": false,
+  "github_tests": "unrun",
+  "real_final_candidate_execution": "unrun",
+  "sealing_approved": false,
+  "compiler_acceptance_passed": false,
+  "product_acceptance_passed": false,
+  "whole_acceptance_complete": false,
+  "aw": {
+    "own_session_id": "a4f89387-5783-4ef3-95e0-243600286bad",
+    "preflight_id": "bfdcb030-ee98-4ad2-8137-162d868bad18",
+    "update_session": "not exposed; no borrowed identity or claimed scope update",
+    "root_worktree_claim_preserved": true
+  },
+  "version": "som.current-input-context-V2-independent-source-rereview.v1",
+  "manifest": {
+    "path": "/private/tmp/som-m12-current-input-context-v2/proposal-manifest.json",
+    "sha256": "c12a46d0d39483dfc4f93978c427fbce9a7fa76baee277bdd63f6b805b0aad33",
+    "bytes": 4157
+  },
+  "helper": {
+    "path": "/private/tmp/som-m12-current-input-context-v2/som-rs/scripts/hosted_readiness/product_runtime/current_input_context.py",
+    "sha256": "d2de38a9962213381bb3b59045d3ddf39075a385f6f82db9c21ceb1baa654185",
+    "bytes": 14889
+  },
+  "previous_review": {
+    "path": "/private/tmp/som-m12-current-input-context-v1-independent-review.json",
+    "sha256": "d827c8083bf1c80d588c84840e981c782fd4605cd664be8459792a34daedc5ca"
+  },
+  "summary": "The retained typed-proof lifecycle P1 is fixed in inspected source. The narrow repair checks the current complete source vector, stable binary/assets/tools, exact row owner/socket and actual retained terminal cleanup. It keeps all prior full frozen request/reply statements. No new source defect found.",
+  "fixed_finding": {
+    "id": "CURRENT-CONTEXT-RUST-TYPED-PROOF-LIFECYCLE",
+    "status": "FIXED_IN_REVIEWED_SOURCE",
+    "identity": "Current helper=candidate=tested commit, independent commit, exact initial/final source/binary/assets/tools equality and identity_stability_passed are required. Each source hash is re-read through checked raw Git. The full independent source vector must equal the initial source vector. Fresh ExperimentalChecker source_record must be contained in that complete vector.",
+    "owner": "Positive integer PID/pgrp/session/start_ticks/executable_inode; PID=pgrp=session; exact IPv4 loopback TCP listener and positive inode; live non-zombie state. The row stamp equals the owned start apart from transient live state, and executable_inode equals the binary inode.",
+    "cleanup": "The retained cleanup must name that PID, carry a terminal integer exit, original owned-group signal target, a legal original signal list, cleanup_passed=True and no remaining owned session members.",
+    "wait_authority": "The exact checked raw run_experimental_native_compile.py SHA is bb3653edc9021b1476d659276fbf9a549ba33de594fad9dac3713ac368b37d87. Its original OwnedService.close performs wait/poll/reap. These retained terminal records and source are the accepted wait authority. No wait_result field, OS wait trace or new2041-row rerun is required.",
+    "raw_refusals": "Both named Rust full raw request/reply checks remain unchanged, including frozen TS065 request hash and real complete response verifier. The new result separately records source-based-retained-typed-process-proof, with no product claim."
+  },
+  "integrity_and_preservation": {
+    "all4_source_and5_packet_file_hashes_and_sizes_match": true,
+    "all4_Python_sources_AST_valid": true,
+    "all19_original_fixture_method_AST_exact": true,
+    "fixture_count": 34,
+    "added_methods": [
+      "test_both_actual_schema_refusals_pass_without_new_wait_field",
+      "test_current_raw_git_source_and_fixed_driver_pin_are_rechecked",
+      "test_each_initial_final_identity_vector_is_stable",
+      "test_foreign_cleanup_owner_and_nonterminal_exit_refused",
+      "test_full_vectors_cannot_omit_independently_derived_checker_source",
+      "test_missing_or_foreign_process_group_and_session_refused",
+      "test_missing_or_foreign_start_pid_refused_with_raws_unchanged",
+      "test_non_loopback_non_tcp_missing_socket_or_wrong_executable_refused",
+      "test_raw_request_and_response_tamper_still_refused",
+      "test_remaining_process_or_false_cleanup_refused",
+      "test_source_vector_missing_or_extra_independent_member_refused",
+      "test_stale_row_start_stamp_and_changed_socket_identity_refused",
+      "test_terminal_signal_sequences_and_transient_live_state_are_retained",
+      "test_typed_tested_helper_candidate_and_independent_commits_must_match",
+      "test_wrong_signal_target_or_sequence_refused"
+    ],
+    "all_original_Rust_request_response_statement_AST_in_order": true,
+    "original_Rust_branch_statements": 21,
+    "V2_Rust_branch_statements": 25,
+    "unchanged_V1_overlays": {
+      "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py": true,
+      "som-rs/behavior/phase2/check_phase2.py": true,
+      "rust-refusal-driver-overlay.txt": true
+    },
+    "rows_lookup_and_phase2_input_method_AST_exact": true,
+    "scope_preserved": "All28 current slots still pass the admitted current capture consumer before use. The exact20 positive RS current maps and three distinct repaired current/history roles remain. Both named negatives retain four original native/typed Python forms. All584 phase2 names remain582 real products plus exactRS12/13 no-product400 rows; original671 quality scope remains unchanged."
+  },
+  "fixture_review": {
+    "new_methods": 15,
+    "both_real_frozen_refusal_hashes": {
+      "RS12_CNL_V3_FILTER_LIMIT": {
+        "request": {
+          "sha256": "41c9146bbb576f9b2c490ed4fec8eaf645afafe9598d194d1d83a22e0ab98270",
+          "matches_frozen_TS065": true
+        },
+        "response": {
+          "sha256": "f411204ff2866568b2a2b57b65dbf262737c0d314ecfb3c5dae500475a0014ad",
+          "matches_frozen_TS065": true
+        }
+      },
+      "RS13_JSON_V3_FILTER_OFFSET": {
+        "request": {
+          "sha256": "2ab2de00357da6e1610ab4116038f246f26a33bce19dba2a0626901f9d8ff262",
+          "matches_frozen_TS065": true
+        },
+        "response": {
+          "sha256": "54f6a8861e2722ea9269539836a9fc9ed78719081f9c92df14a9219b00668bd2",
+          "matches_frozen_TS065": true
+        }
+      }
+    },
+    "real_response_oracle": "The fixtures load the real ExperimentalChecker.verify_response method and exact frozen baseline bytes. They use a narrow synthetic constructor/source-vector fixture, not a current service or fake newly accepted response.",
+    "meaningful_cases": [
+      "Both named refusals pass with original retained schema and no new wait field",
+      "legal original cleanup signal sequences and live transient state variation",
+      "missing/foreign PID, pgrp or session",
+      "stale row start tick, changed listener or executable inode",
+      "non-loopback/non-TCP/missing listener and wrong executable",
+      "foreign cleanup PID, missing/null/boolean terminal exit",
+      "remaining process or cleanup false",
+      "wrong signal target/order",
+      "mixed helper/tested/independent commit",
+      "missing or extra independent source member",
+      "changed raw source or fixed driver pin",
+      "omitted fresh checker source member from all saved vectors",
+      "changed initial/final source, binary, assets or tool identity",
+      "raw request/reply tamper with other saved data unchanged"
+    ],
+    "execution": "All34 methods are GitHub-unrun. Saved c8a9 values are schema examples only. Synthetic fixture source/binary values are not final candidate expected values."
+  },
+  "evidence": [
+    {
+      "path": "/private/tmp/som-m12-current-input-context-v2/som-rs/scripts/hosted_readiness/product_runtime/current_input_context.py",
+      "sha256": "d2de38a9962213381bb3b59045d3ddf39075a385f6f82db9c21ceb1baa654185",
+      "lines": [
+        99,
+        139
+      ],
+      "purpose": "Stable complete raw source and full file identity vectors"
+    },
+    {
+      "path": "/private/tmp/som-m12-current-input-context-v2/som-rs/scripts/hosted_readiness/product_runtime/current_input_context.py",
+      "sha256": "d2de38a9962213381bb3b59045d3ddf39075a385f6f82db9c21ceb1baa654185",
+      "lines": [
+        140,
+        171
+      ],
+      "purpose": "One exact owned row/start and retained terminal cleanup"
+    },
+    {
+      "path": "/private/tmp/som-m12-current-input-context-v2/som-rs/scripts/hosted_readiness/product_runtime/current_input_context.py",
+      "sha256": "d2de38a9962213381bb3b59045d3ddf39075a385f6f82db9c21ceb1baa654185",
+      "lines": [
+        174,
+        230
+      ],
+      "purpose": "Narrow lifecycle call plus unchanged full frozen Rust raw request/reply checks"
+    },
+    {
+      "path": "/private/tmp/som-m12-current-input-context-v2/som-rs/scripts/hosted_readiness/product_runtime/test_current_input_context.py",
+      "sha256": "a9e4b93fecc31a3fc23f9b4117fbd9ca92acb434df634437e9fdbafa864a6846",
+      "lines": [
+        172,
+        254
+      ],
+      "purpose": "Real frozen response verifier with narrow synthetic constructor and exact raw fixtures"
+    },
+    {
+      "path": "/private/tmp/som-m12-current-input-context-v2/som-rs/scripts/hosted_readiness/product_runtime/test_current_input_context.py",
+      "sha256": "a9e4b93fecc31a3fc23f9b4117fbd9ca92acb434df634437e9fdbafa864a6846",
+      "lines": [
+        255,
+        390
+      ],
+      "purpose": "Fifteen lifecycle/source/raw mutation fixture methods"
+    },
+    {
+      "path": "/Users/chrischeng/.codex/worktrees/70ce/som/som-rs/scripts/hosted_readiness/run_experimental_native_compile.py",
+      "sha256": "bb3653edc9021b1476d659276fbf9a549ba33de594fad9dac3713ac368b37d87",
+      "lines": [
+        341,
+        380
+      ],
+      "purpose": "Original checked wait/poll/reap and empty owned session cleanup source"
+    }
+  ],
+  "integration_requirements": [
+    "Apply the narrow helper/fixture repair. Preserve native policy V2 raw import controls and Root current28 methods when merging Context. Do not replace the final Context snapshot.",
+    "Integrate the real Rust refusal driver branch from the unchanged text overlay. Preserve all original worker, summary, wait, exit, cleanup and584-name gates.",
+    "Refresh exact final source/profile maps after integration and independently review the final source authority.",
+    "Run all34 fixtures on GitHub, then fresh same-candidate current68 and all applicable final product gates. No source-only or fixture-only acceptance."
+  ]
+}

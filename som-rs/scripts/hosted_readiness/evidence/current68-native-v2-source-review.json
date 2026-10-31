@@ -1,0 +1,33 @@
+{
+  "version": "som.current68-final-candidate-v2-independent-source-review.v1",
+  "reviewer": "root",
+  "author": "cache_fix_review",
+  "proposal_manifest_sha256": "956d0d7e63e6d69c3f2c8bfe4b090304680bb9c7a76e0eb9414a83d1283b28f7",
+  "verdict": "APPROVED_BOUNDED_SOURCE_FOR_GITHUB_FIXTURE_AND_CURRENT_CAPTURE_VALIDATION_ONLY",
+  "findings": [],
+  "previous_review_sha256": "15b48fe531906ba1ea3fd41e8cba224e0e09ba61067d2952a30c27aa03f7a84a",
+  "resolved": [
+    "producer binds every complete typed-proof source through Git reader before source snapshot; full source vector and after-descriptor equality required",
+    "explicit RawImportLease verifies installed guards and closes only owned controls; borrowed Context controls stay active",
+    "five new meaningful fixtures cover complete source vector omission/change and actual manual timestamp-PYC guard lifecycle success/failure/borrow"
+  ],
+  "preserved": [
+    "all35prior test method ASTs",
+    "all historical f59/binary/before2bce/packet pins",
+    "all68form/64positive/4negative raw capture checks",
+    "newfinal samehelper/candidate and active native source authority",
+    "same-run/attempt original carrier compiler_rebuilt false",
+    "all source,tool,input,process/socket/wait/cleanup postchecks"
+  ],
+  "fixture_definitions": 40,
+  "github_fixtures": "unrun",
+  "real_current_capture": "unrun",
+  "required_dependencies": [
+    "independently reviewed native_qa_authority V2 RawImportLease API",
+    "actual final sealed source and matching target constants",
+    "fresh same-candidate typed/assembly/carrier artifacts",
+    "approved sealed transport for affected raw payloads"
+  ],
+  "product_acceptance_passed": false,
+  "local_subject_executed": false
+}

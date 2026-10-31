@@ -1,0 +1,49 @@
+{
+  "admission_complete": true,
+  "artifacts": {
+    "calibration": {
+      "digest": "sha256:109e809fd0f628644dc7d02098806ac920fc8b8ca1b07fb2aa63e167fd9b4895",
+      "head_sha": "9925c3dc36bf538934afe6975f61bdcf44b3bfed",
+      "id": 12883513668,
+      "index_sha256": "9a941a7dd65ef39aa4785feabc0e1fb2acb058e140371b54f69038816a5fbbba",
+      "name": "m6-recorded-before-calibration-sealed",
+      "run_id": 40843685234,
+      "size_in_bytes": 409709
+    },
+    "fresh": {
+      "digest": "sha256:63aed26168d112b6b5c2f3a1bf030d0f97fcc0734aaf4bb9d42cce9e13d43f69",
+      "head_sha": "e120a04d8ca9c2989638c643e834b1e66d0a8e01",
+      "id": 12884153563,
+      "index_sha256": "6b4b4c39b4207808dcee6953dc8636bc4aae264094de8d13da372871b61400ea",
+      "name": "m6-rust-fresh-before-sealed",
+      "run_id": 40844637378,
+      "size_in_bytes": 52890528
+    },
+    "original": {
+      "digest": "sha256:33fbad9d63cfa257636384b9b7c10e1406f2306922e4f28e8189c79f703b041e",
+      "head_sha": "40cffc13b3bff35e3ea5804b9f43a49cdef7b3c0",
+      "id": 12843589912,
+      "index_sha256": "3759239392208eab81bf740ca9ca2a41465be3e3e4995de2bd255774f4596bea",
+      "name": "m6-sealed-raw-evidence",
+      "run_id": 40743738705,
+      "size_in_bytes": 249935784
+    }
+  },
+  "inventory_path": "som-rs/scripts/hosted_readiness/inputs/recorded-before-slots-v1.json",
+  "receipts": {
+    "calibration": {
+      "path": "run/receipt.json",
+      "sha256": "0214894bf20ebfbe0e9bd524c12e4447ac88b1bb1e47aeae8562d869d0c8652e"
+    },
+    "fresh": {
+      "path": "run/rust-before-assemble/receipt.json",
+      "sha256": "8908ced7cdba8f7bbae24d3b04de662044cac604df3657e635d7bd58790f5308"
+    }
+  },
+  "role": "recorded-same-request-before",
+  "source_compiler": {
+    "binary_sha256": "2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c",
+    "source_revision": "8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af"
+  },
+  "version": "som.linux-qa-recorded-before.v1"
+}

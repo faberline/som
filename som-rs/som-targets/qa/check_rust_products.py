@@ -566,6 +566,22 @@ def check_case(qa: str, case: dict, work: pathlib.Path, pg: str, target_dir: str
     return row
 
 
+def input_source_key(path: pathlib.Path) -> str:
+    if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+        ctx = hosted_products.context()
+        if ctx.qa_mode == 'native-qa-v1' and 'typescript_regression_inputs' in ctx.data:
+            bindings = ctx.cache.get('typescript_replay_input_bindings', ctx.data['typescript_regression_inputs'])
+            inventory = pathlib.Path(bindings['roots']['legacy_run']) / 'inventory-003.json'
+            if path.absolute() == inventory.absolute():
+                profile = json.loads(ctx.sources.read('som-rs/scripts/hosted_readiness/inputs/typescript-regression-inputs-v1.json'))
+                raw = path.read_bytes(); info = path.stat()
+                expected = profile['roles']['legacy_run']['files']['inventory-003.json']
+                if {'sha256': targets.sha(raw), 'size': len(raw), 'mode': info.st_mode & 0o7777} != expected:
+                    raise ValueError('explicit legacy inventory differs from its current source profile')
+                return 'typescript_regression_inputs/legacy_run/inventory-003.json'
+    return path.relative_to(targets.REPO).as_posix()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--qa", required=True, help="QA compiler base URL")
@@ -611,7 +627,7 @@ def main() -> int:
         "issue": 49,
         "qa": args.qa,
         "refusal_plan": args.refusals,
-        "inputs": {p.relative_to(targets.REPO).as_posix(): targets.sha(p.read_bytes()) for p in
+        "inputs": {input_source_key(p): targets.sha(p.read_bytes()) for p in
                    [CONTRACT / "acceptance-plan.json", CONTRACT / "case-inventory.json",
                     CONTRACT / "bundle.schema.json", CONTRACT / "product-layout.json",
                     CONTRACT / "behavior-normalization.json", CONTRACT / "scope.json",
