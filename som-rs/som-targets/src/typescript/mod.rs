@@ -21,7 +21,7 @@ pub const MAX_BLOCKS: usize = 64;
 pub const TARGET_CONTRACT_ID: &str = "som.typescript-output-contract.v1";
 /// H(files map) for contracts/typescript-output-v1: amendment 4. Receipt status determines authority.
 pub const TARGET_CONTRACT_SHA256: &str =
-    "68921fbbfac90049a0f12644fb547dc9550188e8424c4877a292a5efcf6e6071";
+    "295a5b69cdd76d8f5b93e60cda9093ec9e87b841b05a7a3a5d75ccb0421e01da";
 pub const CATALOG_ID: &str = "som.typescript-catalog.v1";
 pub const BLOCK_LIBRARY_ID: &str = "som.typescript-block-library.v1";
 pub const BACKEND_ID: &str = "som.typescript-backend.v1";

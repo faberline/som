@@ -15343,6 +15343,10 @@
     },
     "entry.ts-input-producer": {
       "bindings": {
+        "_Fetch": {
+          "kind": "role-module",
+          "role": "ts.transport.original19-fetch"
+        },
         "_SourceBytes": {
           "attribute": "SourceBytes",
           "kind": "role-export",
@@ -15367,6 +15371,7 @@
         "entry.ts-transport.rebuild-pyc",
         "runtime.context",
         "ts.transport.consumer-data",
+        "ts.transport.original19-fetch",
         "ts.transport.role-inventory"
       ],
       "group": null,
@@ -32505,6 +32510,19 @@
       "package": "",
       "source": "som-rs/scripts/hosted_readiness/typescript_input_consumer.py"
     },
+    "ts.transport.original19-fetch": {
+      "bindings": {},
+      "callers": [],
+      "closure": [
+        "ts.transport.original19-fetch"
+      ],
+      "group": null,
+      "is_package": false,
+      "kind": "module",
+      "module": "_som_ts_transport_fetch_hosted_inputs",
+      "package": "",
+      "source": "som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py"
+    },
     "ts.transport.role-inventory": {
       "bindings": {},
       "callers": [
@@ -33064,6 +33082,10 @@
     "som-rs/scripts/react_output_acceptance/cli_raw.py": {
       "mode": 420,
       "sha256": "43f32984b95d212bfead28eacbfa61f96cbea17295eb65a249e1f5e25e3dd328"
+    },
+    "som-rs/scripts/react_output_acceptance/fetch_hosted_inputs.py": {
+      "mode": 420,
+      "sha256": "916c013815a467c71f9bf922104dd33cb7a0fd7e2ee30568921751b21dbbb03a"
     },
     "som-rs/scripts/react_output_acceptance/linux_api_context.py": {
       "mode": 420,
