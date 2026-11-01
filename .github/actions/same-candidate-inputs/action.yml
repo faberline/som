@@ -24,7 +24,7 @@ runs:
       run: |
         test "$HELPER_REVISION" = "$EXPECTED_HELPER"
         test "$CANDIDATE_REVISION" = "$EXPECTED_CANDIDATE"
-        python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- admit --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --out "$RUNNER_TEMP/native-source-authority.json"
+        python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.native-graph -- admit --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --out "$RUNNER_TEMP/native-source-authority.json"
     - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
       with:
         artifact-ids: ${{ fromJSON(inputs.artifact_spec).public_inputs.id }}
@@ -48,7 +48,7 @@ runs:
     - name: Restore the current compiler and native bytes without executing them
       shell: bash
       run: |
-        python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/same_candidate_graph.py -- restore-carrier --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --out "$RUNNER_TEMP/som-current-transport-carrier"
+        python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.native-graph -- restore-carrier --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --out "$RUNNER_TEMP/som-current-transport-carrier"
         printf '%s\n' "SOM_RAW_TRANSPORT_NODE=$RUNNER_TEMP/som-current-transport-carrier/native/bin/node" >> "$GITHUB_ENV"
     - if: inputs.require_runtime == 'true'
       uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
