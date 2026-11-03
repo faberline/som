@@ -447,7 +447,7 @@
       "som-rs/scripts/hosted_readiness/python_backend_source_data.py": "144c662a236b51e953827de8a0ca4ea4078c2eab57d2d5d9c037bc5d572a961f",
       "som-rs/scripts/hosted_readiness/python_raw_response_compat.py": "5d0a69ab90acc46475944851aa81e11110458345a7fe4a87228cf157d12adc30",
       "som-rs/scripts/hosted_readiness/raw_digest_compat.py": "a025bd99b56dafc4de65c268318f583e117adfe16988d61bb9180cb5e8da0896",
-      "som-rs/scripts/hosted_readiness/readiness.json": "fa96b731dc58ef1aca6bc284ffb202d82eed70433bafd033f45ee5ac7be762b3",
+      "som-rs/scripts/hosted_readiness/readiness.json": "8b6ecc95ed7b1b545d4edd847ca00b25cdf7f6ac1d57fd4bcd998fe54c28ab2d",
       "som-rs/scripts/hosted_readiness/reconstruct_public_inputs.py": "fad2dcb172d425c491f8eec3c53a732e2140431d71c68d47c6d33e3929d6f721",
       "som-rs/scripts/hosted_readiness/reconstruct_ts125_requests.py": "2a44d7171562d25b18f81d4015ea0b1aef72d68ef10aa00ee412ae65a75deaa0",
       "som-rs/scripts/hosted_readiness/role_inventory.py": "1d03b9bfc1d02f7d25501bae560780d27634829dbdb34e30482b7e2a4ff10e53",
