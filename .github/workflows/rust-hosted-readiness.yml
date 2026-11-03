@@ -91,6 +91,48 @@ jobs:
           python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/dependency_candidate.py -- classify \
             --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_SHA" $mode
 
+  native-caller-context:
+    name: Native caller revision data (diagnostic only)
+    needs: candidate-source-guard
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      SELECTED_HELPER: ${{ needs.candidate-source-guard.outputs.helper_revision }}
+      SELECTED_CANDIDATE: ${{ needs.candidate-source-guard.outputs.candidate_revision }}
+    steps:
+      - name: Record only public workflow and selected revision data
+        run: |
+          python3 -I -S -B - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+          names = (
+              'GITHUB_REPOSITORY', 'GITHUB_REPOSITORY_ID', 'GITHUB_SERVER_URL',
+              'GITHUB_API_URL', 'GITHUB_EVENT_NAME', 'GITHUB_SHA',
+              'GITHUB_WORKFLOW_SHA', 'GITHUB_REF', 'GITHUB_WORKFLOW_REF',
+              'SELECTED_HELPER', 'SELECTED_CANDIDATE',
+          )
+          data = {name: os.environ.get(name, '') for name in names}
+          for name in ('SELECTED_HELPER', 'SELECTED_CANDIDATE'):
+              assert not data[name] or re.fullmatch('[a-f0-9]{40}', data[name])
+          data['product_acceptance_passed'] = False
+          out = Path(os.environ['RUNNER_TEMP']) / 'native-caller-context.json'
+          out.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
+          print(json.dumps(data, sort_keys=True))
+          PY
+      - name: Keep the ordinary caller revision data
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-caller-context
+          path: ${{ runner.temp }}/native-caller-context.json
+          if-no-files-found: error
+          retention-days: 14
+
   dependency-preparation:
     name: Dependency helper iteration with recorded compiler identity
     needs: [candidate-source-guard, fixture-tests]
@@ -308,7 +350,7 @@ jobs:
       carrier_id: ${{ steps.publish-carrier.outputs.artifact-id }}
       carrier_digest: ${{ steps.publish-carrier.outputs.artifact-digest }}
     needs: [cargo-tests, public-input-reconstruction, candidate-source-guard]
-    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true'
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     permissions:
       contents: read
       actions: read
@@ -821,7 +863,7 @@ jobs:
 
   current-product-rust-tools:
     needs: [fixture-tests, experimental-native-compile, candidate-source-guard]
-    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true'
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     permissions:
       contents: read
       actions: read
@@ -878,7 +920,7 @@ jobs:
   typescript-regression-inputs:
     name: typescript-regression-inputs
     needs: [candidate-source-guard, fixture-tests]
-    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true'
+    if: needs.candidate-source-guard.outputs.run_full_candidate == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     permissions:
       contents: read
       actions: read
