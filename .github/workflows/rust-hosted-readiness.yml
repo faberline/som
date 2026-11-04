@@ -626,6 +626,34 @@ jobs:
         run: |
           RUSTUP_HOME="$PWD/rustup" CARGO_HOME="$PWD/bootstrap-cargo" \
             rustup toolchain install 1.96.1 --profile minimal > rustup-install.log 2>&1
+      - name: Wait for the original exact live workflow binding
+        id: live-run-binding
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          timeout --kill-after=5s 315s bash --noprofile --norc -euo pipefail <<'LIVE_RUN_BINDING'
+          for binding_probe_attempt in $(seq 1 60); do
+            timeout 15s gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"               --jq '{id, head_sha, run_attempt, event, repository: .repository.full_name, repository_id: .repository.id, path, head_branch, status}'               > "$RUNNER_TEMP/source-admission-live-run.json"
+            binding_probe_result=0
+            python3 -I -S -B -c '
+          import json, os, pathlib, sys
+          record = json.loads((pathlib.Path(os.environ["RUNNER_TEMP"]) / "source-admission-live-run.json").read_bytes())
+          expected = {"id": int(os.environ["GITHUB_RUN_ID"]), "head_sha": os.environ["GITHUB_SHA"],
+                      "run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]), "event": os.environ["GITHUB_EVENT_NAME"],
+                      "repository": os.environ["GITHUB_REPOSITORY"], "repository_id": int(os.environ["GITHUB_REPOSITORY_ID"]),
+                      "path": ".github/workflows/rust-hosted-readiness.yml", "head_branch": os.environ["GITHUB_REF"].split("/", 2)[2]}
+          exact = all(record.get(key) == value and type(record.get(key)) is type(value) for key, value in expected.items())
+          sys.exit(0 if exact and record.get("status") == "in_progress" else 2 if exact and record.get("status") == "queued" else 1)
+          ' || binding_probe_result=$?
+            case "$binding_probe_result" in
+              0) exit 0 ;;
+              2) sleep 5 ;;
+              *) echo 'The current workflow binding differs' >&2; exit 1 ;;
+            esac
+          done
+          echo 'The original exact live workflow binding did not become visible' >&2
+          exit 1
+          LIVE_RUN_BINDING
       - name: Make and verify all 352 registry packages
         working-directory: ${{ runner.temp }}/som-cargo-closure-run
         env:
@@ -661,6 +689,14 @@ jobs:
             ${{ runner.temp }}/som-cargo-closure-run/consumer-roots.json
             ${{ runner.temp }}/som-cargo-closure-run/rustup-install.log
             ${{ runner.temp }}/som-cargo-closure-run/closure
+      - name: Preserve the public source-admission run observation
+        if: always() && steps.live-run-binding.outcome != 'skipped'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: source-admission-run-binding-${{ github.job }}
+          path: ${{ runner.temp }}/source-admission-live-run.json
+          if-no-files-found: error
+          retention-days: 14
 
   product-runtime-reuse:
     outputs:
@@ -857,6 +893,34 @@ jobs:
       - name: Recheck the existing fresh-self admission regression
         run: |
           python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/bound_source.py" --repo "$GITHUB_WORKSPACE" --revision "$HELPER_REVISION" --entry som-rs/scripts/hosted_readiness/test_native_source_bootstrap.py -- SourceStrategyParentTests.test_fresh_actual_self_entry_is_registered_before_first_admission_call -v
+      - name: Wait for the original exact live workflow binding
+        id: live-run-binding
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          timeout --kill-after=5s 315s bash --noprofile --norc -euo pipefail <<'LIVE_RUN_BINDING'
+          for binding_probe_attempt in $(seq 1 60); do
+            timeout 15s gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"               --jq '{id, head_sha, run_attempt, event, repository: .repository.full_name, repository_id: .repository.id, path, head_branch, status}'               > "$RUNNER_TEMP/source-admission-live-run.json"
+            binding_probe_result=0
+            python3 -I -S -B -c '
+          import json, os, pathlib, sys
+          record = json.loads((pathlib.Path(os.environ["RUNNER_TEMP"]) / "source-admission-live-run.json").read_bytes())
+          expected = {"id": int(os.environ["GITHUB_RUN_ID"]), "head_sha": os.environ["GITHUB_SHA"],
+                      "run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]), "event": os.environ["GITHUB_EVENT_NAME"],
+                      "repository": os.environ["GITHUB_REPOSITORY"], "repository_id": int(os.environ["GITHUB_REPOSITORY_ID"]),
+                      "path": ".github/workflows/rust-hosted-readiness.yml", "head_branch": os.environ["GITHUB_REF"].split("/", 2)[2]}
+          exact = all(record.get(key) == value and type(record.get(key)) is type(value) for key, value in expected.items())
+          sys.exit(0 if exact and record.get("status") == "in_progress" else 2 if exact and record.get("status") == "queued" else 1)
+          ' || binding_probe_result=$?
+            case "$binding_probe_result" in
+              0) exit 0 ;;
+              2) sleep 5 ;;
+              *) echo 'The current workflow binding differs' >&2; exit 1 ;;
+            esac
+          done
+          echo 'The original exact live workflow binding did not become visible' >&2
+          exit 1
+          LIVE_RUN_BINDING
       - name: Verify sealed native authority before product native tool qualification
         env:
           SOM_DEPENDENCY_ACTIONS_TOKEN: ${{ github.token }}
@@ -874,6 +938,14 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
+      - name: Preserve the public source-admission run observation
+        if: always() && steps.live-run-binding.outcome != 'skipped'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: source-admission-run-binding-${{ github.job }}
+          path: ${{ runner.temp }}/source-admission-live-run.json
+          if-no-files-found: error
+          retention-days: 14
 
   typescript-regression-inputs:
     name: typescript-regression-inputs
