@@ -512,7 +512,7 @@
       "som-rs/scripts/hosted_readiness/test_raw_digest_compat.py": "99d425e7a7392534ee8635bdad2ed33c5ae60afbff4aa799761b47b3a09e8d37",
       "som-rs/scripts/hosted_readiness/test_reconstruct_public_inputs.py": "679ef2803607356f16744d396ec7234c3f079feecdb3921ad1fac61d4d77fb08",
       "som-rs/scripts/hosted_readiness/test_reconstruct_ts125_requests.py": "9f4423d80b0fb4a14c2383f52e93b1e4c25924d976408843d625cfedcffbf9ce",
-      "som-rs/scripts/hosted_readiness/test_run_candidate_semantic_gates.py": "5b11f5fe619e7dda1daca885d657cf1984d9ec052f5126aafc9c5ba61b31c6c6",
+      "som-rs/scripts/hosted_readiness/test_run_candidate_semantic_gates.py": "c09153e1c820127d820f7db4061877b03b4782e1e3a091f0b71a8c7dca9d2431",
       "som-rs/scripts/hosted_readiness/test_run_current_candidate_gate.py": "c5d2f7d374149e06d17114cdb9f2dabb01207b24f8df5e3ada422cd52a515906",
       "som-rs/scripts/hosted_readiness/test_run_current_python_companions.py": "bf7b6e4e5b766087475951dcb0439358f48706a95b883c7b34eb3b73be33d227",
       "som-rs/scripts/hosted_readiness/test_run_experimental_native_assembly.py": "e4ca3673b84ba88681c13fece69cab9c2817459a6698a8bc9037389c03943635",
