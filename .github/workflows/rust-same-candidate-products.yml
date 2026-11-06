@@ -96,8 +96,29 @@ jobs:
           require_runtime: 'false'
       - name: Capture all68 exact current forms and retain private driver streams
         run: |
-          mkdir -m 700 "$RUNNER_TEMP/som-current-python-raw"
-          python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.current-python-companions -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --qa-mode native-qa-v1 --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --restored-candidate "$RUNNER_TEMP/som-current-companion-restored" --out "$RUNNER_TEMP/som-current-python-raw/som-current-python-companions" > "$RUNNER_TEMP/som-current-python-raw/driver.stdout" 2> "$RUNNER_TEMP/som-current-python-raw/driver.stderr"
+          stage_dir="$RUNNER_TEMP/som-current-python-diagnostic"
+          stage_ready=false
+          if mkdir -m 700 -- "$stage_dir" 2>/dev/null; then
+            stage_ready=true
+          fi
+          if mkdir -m 700 "$RUNNER_TEMP/som-current-python-raw" &&
+            python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.current-python-companions -- --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --qa-mode native-qa-v1 --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --restored-candidate "$RUNNER_TEMP/som-current-companion-restored" --out "$RUNNER_TEMP/som-current-python-raw/som-current-python-companions" > "$RUNNER_TEMP/som-current-python-raw/driver.stdout" 2> "$RUNNER_TEMP/som-current-python-raw/driver.stderr"; then
+            exit 0
+          else
+            capture_status=$?
+          fi
+          stage=unclassified
+          stage_file="$stage_dir/stage"
+          if [ "$stage_ready" = true ] && [ -f "$stage_file" ] && [ ! -L "$stage_file" ]; then
+            for code in entry inputs capture outputs; do
+              if printf '%s\n' "$code" | cmp -s - "$stage_file"; then
+                stage=$code
+                break
+              fi
+            done
+          fi
+          printf '::error title=Python capture failed::%s (exit %s)\n' "$stage" "$capture_status" || true
+          exit "$capture_status"
       - name: Recheck all raw current forms with the owning consumer
         run: |
           python3 -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.native-graph -- verify-callback --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --python-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-public-inputs" --rust-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-rust-complete-inputs" --stage current-python-companions --root "$RUNNER_TEMP/som-current-python-raw/som-current-python-companions" --out "$RUNNER_TEMP/som-current-python-raw/data-check.json" > "$RUNNER_TEMP/som-current-python-raw/verify.stdout" 2> "$RUNNER_TEMP/som-current-python-raw/verify.stderr"

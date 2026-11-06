@@ -452,7 +452,7 @@
       "som-rs/scripts/hosted_readiness/role_inventory.py": "1d03b9bfc1d02f7d25501bae560780d27634829dbdb34e30482b7e2a4ff10e53",
       "som-rs/scripts/hosted_readiness/run_candidate_semantic_gates.py": "372e9e9d8b6a8d3d346a3ddc0abb447baa69e3aa3934249a22c7ae088e36fa08",
       "som-rs/scripts/hosted_readiness/run_current_candidate_gate.py": "0bf886ef766220ba217d36fb4e6f68e1c5f0cc10abe9fc51cd4022e88f7d7605",
-      "som-rs/scripts/hosted_readiness/run_current_python_companions.py": "93147d315bf22d9b0a99ddeff290cfab8fa4e6b8deb659cd81f2880243ddcadc",
+      "som-rs/scripts/hosted_readiness/run_current_python_companions.py": "38919f4622432a8bfbb596d70e7bb3bb25f1dd6b0e9dd0e70782abf4ffeaf5d8",
       "som-rs/scripts/hosted_readiness/run_experimental_native_assembly.py": "f37eddbcec79963312c936c752fd897d9ed1906c3e2b0adc3241eb0ace4d8eaa",
       "som-rs/scripts/hosted_readiness/run_experimental_native_cnl.py": "272b3db7592cbeef3ba9c439add7978c8b3c3e883fe2fd124ec88b88d0d4ab71",
       "som-rs/scripts/hosted_readiness/run_experimental_native_compile.py": "bb3653edc9021b1476d659276fbf9a549ba33de594fad9dac3713ac368b37d87",

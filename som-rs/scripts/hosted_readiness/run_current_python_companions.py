@@ -814,7 +814,7 @@ def bind_current_proof_factory_sources(checker, proof, candidate_revision):
     return record
 
 
-def run(args, sources, modules):
+def run(args, sources, modules, *, mark_stage=None):
     driver, carrier, export = (modules[name] for name in ('run_experimental_native_compile', 'candidate_carrier', 'export_goldens'))
     qa_authority = getattr(args, '_native_source_authority', None)
     if getattr(args, 'qa_mode', 'recorded-f59') == 'native-qa-v1':
@@ -873,6 +873,8 @@ def run(args, sources, modules):
                        'carrier_json_sha256': sha(read(args.carrier_root / 'carrier.json')),
                        'carrier_archive_sha256': sha(read(args.carrier_root / 'candidate.tar.gz', 2 * 1024**3))}
             report['initial_identities'] = initial
+            if mark_stage is not None:
+                mark_stage('capture')
             report['protected_ports_before'] = {str(port): driver.listeners(port) for port in (8765, 18765)}
             report['owned_port_absent_before'] = not driver.listeners(PORT)
             require(report['owned_port_absent_before'], 'current companion port is occupied')
@@ -937,6 +939,9 @@ def run(args, sources, modules):
     report['passed_forms'] = sum(row['state'] == 'passed' for row in records)
     report['positive_assemblies'] = sum(row.get('assemble_status') == 200 for row in records)
     report['refusal_forms'] = sum(row.get('refusal_verified') is True for row in records)
+    if (mark_stage is not None and report['actual_forms'] == report['passed_forms'] == 68
+            and 'setup_error' not in report and 'postcheck_error' not in report):
+        mark_stage('outputs')
     try:
         report['server_events'] = verify_events(out, records, export)
         verify_process_report(report)
@@ -1133,7 +1138,7 @@ def verify_capture(root, source_reader, helper_revision, candidate_revision, adm
     return result
 
 
-def main():
+def _capture_entry(mark_stage):
     require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'GitHub Linux execution only')
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('repo', 'assembly-root', 'carrier-root', 'restored-candidate', 'out'):
@@ -1142,6 +1147,7 @@ def main():
     parser.add_argument('--candidate-revision', required=True)
     parser.add_argument('--qa-mode', choices=('recorded-f59', 'native-qa-v1'), default='recorded-f59')
     args = parser.parse_args()
+    mark_stage('inputs')
     sources = Sources(args.repo, args.helper_revision)
     args._native_source_authority = selected_current_identity(args, sources)
     if args._native_source_authority is not None:
@@ -1157,9 +1163,44 @@ def main():
                 require(modules[name].__file__ == str(sources.root / path)
                         and modules[name].__som_raw_sha256__ == sha(raw[name]), 'current capture helper bytes differ')
             require(set(modules) == set(MODULES), 'loaded helper closure differs')
-            return run(args, sources, modules)
+            return run(args, sources, modules, mark_stage=mark_stage)
     with BoundModules(sources).installed() as modules:
-        return run(args, sources, modules)
+        return run(args, sources, modules, mark_stage=mark_stage)
+
+
+def _save_failure_stage(stage):
+    if os.environ.get('GITHUB_ACTIONS') != 'true' or sys.platform != 'linux':
+        return
+    temporary = os.environ.get('RUNNER_TEMP')
+    if not temporary or not Path(temporary).is_absolute():
+        return
+    directory = Path(temporary) / 'som-current-python-diagnostic'
+    try:
+        if directory.is_symlink():
+            return
+        pending = directory / 'stage.pending'
+        with pending.open('x', encoding='ascii') as stream:
+            stream.write(stage + '\n')
+        # Publish only after the complete value is written and closed.
+        os.link(pending, directory / 'stage', follow_symlinks=False)
+    except OSError:
+        pass
+
+
+def main():
+    stage = 'entry'
+    status = None
+
+    def mark_stage(value):
+        nonlocal stage
+        stage = value
+
+    try:
+        status = _capture_entry(mark_stage)
+        return status
+    finally:
+        if status != 0:
+            _save_failure_stage(stage)
 
 
 if __name__ == '__main__':
