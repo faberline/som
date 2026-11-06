@@ -42,7 +42,7 @@ def core_native_fixture(case, kind='semantic', authority_body=None, entry=False,
     relative = base + ('run_candidate_semantic_gates.py' if kind == 'semantic' else 'run_current_python_companions.py')
     production = protocol_source(relative)
     expected = {'semantic': '372e9e9d8b6a8d3d346a3ddc0abb447baa69e3aa3934249a22c7ae088e36fa08',
-                'companions': '392d233383a98be19ef1717958d7464c4ae4a2d605953cd2357d84b6d5e31428'}
+                'companions': '7cc2250edc4b1c0507281509a3a6a9f46b4f75d7297f3a52ce33dcabb38387cb'}
     case.assertEqual(hashlib.sha256(production).hexdigest(), expected[kind])
     if variant is None: variant = '_som_graph_semantic_gate_data' if kind == 'semantic' else '_som_full_current_capture'
     prefix = 'semantic.graph' if kind == 'semantic' else 'companions.context'

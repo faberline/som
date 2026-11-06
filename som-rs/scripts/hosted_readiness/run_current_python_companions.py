@@ -339,7 +339,7 @@ def selected_current_identity(args, sources):
     return native_source_authority(sources.read, source_paths(sources), args.helper_revision, args.candidate_revision)
 
 
-def prepare_jobs(sources, proof_root, modules, candidate_revision=CANDIDATE):
+def prepare_jobs(sources, proof_root, modules, candidate_revision=CANDIDATE, *, qa_mode='recorded-f59'):
     export, driver = modules['export_goldens'], modules['run_experimental_native_compile']
     rs = packet(sources, RS_PACKET, RS_PACKET_SHA)
     coverage = packet(sources, COVERAGE_PACKET, COVERAGE_PACKET_SHA)
@@ -352,6 +352,22 @@ def prepare_jobs(sources, proof_root, modules, candidate_revision=CANDIDATE):
     require(len(rs['rows']) == len(native) == 22
             and [row['id'] for row in rs['rows']] == [row['id'] for row in inventory[-22:]],
             'whole ordered22 RS source scope required')
+    current_rust = None
+    if qa_mode == 'native-qa-v1':
+        proof_root = Path(proof_root).absolute()
+        require(proof_root.parts[-3:] == ('assembly', '_temp', 'som-unsealed-native-compile'),
+                'fixed same-candidate assembly root required')
+        rust_root = proof_root.parents[2] / 'public' / '_temp' / 'som-rust-complete-inputs'
+        public = parse(read(rust_root / 'manifest.json'))
+        require(public['version'] == 'som.public-rust-input-completion.v1'
+                and public['tested_sha'] == candidate_revision and public['request_mapping_complete'] is True
+                and public['typed_input_set_ready'] is True and public['paired_request_set_ready'] is True
+                and public['product_acceptance_passed'] is False,
+                'complete same-candidate Rust input mapping required')
+        selected = [item for item in public['cohorts']['rust_phase2'] if item['id'] in native]
+        current_rust = {item['id']: item for item in selected}
+        require(len(selected) == len(current_rust) == 22 and set(current_rust) == set(native),
+                'complete current RS JSON descriptor set required')
     proof = parse(read(proof_root / 'manifest.json'))
     require(proof['tested_sha'] == candidate_revision and proof['experiment_complete'] is True
             and proof['passed'] == 2041, 'complete original candidate compile proof required')
@@ -368,8 +384,20 @@ def prepare_jobs(sources, proof_root, modules, candidate_revision=CANDIDATE):
                 'RS source role or refusal identity differs')
         observed = rust[identity]
         raw = read(proof_root / 'rows' / f'{observed["index"]:04d}' / 'request.raw')
-        require(sha(raw) == observed['expected_request_sha256'] == row['typed_rust_input']['raw_sha256'],
-                'original typed Rust request differs')
+        proof_request_sha256 = observed['expected_request_sha256']
+        require(sha(raw) == proof_request_sha256, 'original typed Rust request differs')
+        if current_rust is not None:
+            current = current_rust[identity]
+            index = current['index']
+            require(type(index) is int and 0 <= index < 10000, 'current Rust request index differs')
+            request_path = f'rust_phase2/{index:04d}/json.request.raw'
+            descriptor = current['requests']['json']
+            require(current['baseline_json_request']['raw_sha256'] == proof_request_sha256
+                    and descriptor['path'] == request_path
+                    and descriptor['raw_sha256'] == row['typed_rust_input']['raw_sha256'],
+                    'separate baseline and current Rust request bindings differ')
+            raw = read(rust_root / request_path)
+        require(sha(raw) == row['typed_rust_input']['raw_sha256'], 'original typed Rust request differs')
         request = parse(raw)
         require(request['target'] == 'rust' and export.value_sha(request['prompt']) == row['prompt_sha256'],
                 'RS frozen prompt differs')
@@ -848,7 +876,8 @@ def run(args, sources, modules, *, mark_stage=None):
             guard = modules['dependency_candidate']
             report['candidate_admission'] = guard.verify_candidate_inputs(args.repo, args.helper_revision, args.candidate_revision, args.assembly_root)
             report_stage('input-requests')
-            jobs = prepare_jobs(sources, args.assembly_root, modules, args.candidate_revision)
+            jobs = prepare_jobs(sources, args.assembly_root, modules, args.candidate_revision,
+                                qa_mode=getattr(args, 'qa_mode', 'recorded-f59'))
             report['original_requests_before'] = request_vector(jobs)
             report_stage('input-oracle')
             oracle = RefusalOracle(sources, modules)
@@ -931,7 +960,9 @@ def run(args, sources, modules, *, mark_stage=None):
                     require(guard.verify_candidate_inputs(args.repo, args.helper_revision, args.candidate_revision, args.assembly_root)
                             == report['candidate_admission'], 'candidate source/artifact admission changed')
                 if jobs:
-                    report['original_requests_after'] = request_vector(prepare_jobs(sources, args.assembly_root, modules, args.candidate_revision))
+                    report['original_requests_after'] = request_vector(prepare_jobs(
+                        sources, args.assembly_root, modules, args.candidate_revision,
+                        qa_mode=getattr(args, 'qa_mode', 'recorded-f59')))
                     require(report['original_requests_before'] == report['original_requests_after'], 'original request vector changed')
                 if qa_authority is not None:
                     require(selected_current_identity(args, sources) == qa_authority, 'native source authority changed during capture')
@@ -1060,7 +1091,8 @@ def verify_capture(root, source_reader, helper_revision, candidate_revision, adm
     checker = type('Factory', (), {'IDS': descriptor_ids(source_reader),
                                    'after': proof['independent_source_record']['after_descriptors']})()
     expected_jobs = prepare_jobs(type('Reader', (), {'read': staticmethod(source_reader)})(), Path(assembly_root),
-        {'export_goldens': export, 'run_experimental_native_compile': type('Driver', (), {'compact': staticmethod(compact)})()}, candidate_revision)
+        {'export_goldens': export, 'run_experimental_native_compile': type('Driver', (), {'compact': staticmethod(compact)})()},
+        candidate_revision, qa_mode=qa_mode)
     require(report['original_requests_before'] == report['original_requests_after'] == request_vector(expected_jobs),
             'original current request vector differs')
     verify_event_sources(source_reader)
