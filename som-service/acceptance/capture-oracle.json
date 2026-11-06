@@ -1,0 +1,255 @@
+{
+  "schema": "som.dfr07.capture-oracle.v1",
+  "basis": "Frozen service contract and pinned native DTO fields. Expected values are authored independently of generated client code.",
+  "responses": [
+    {
+      "id": "extra-response-field",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a225363686564756c6564222c226675747572655f6669656c64223a747275657d",
+      "expected_kind": "Ok",
+      "expected_decoded": {
+        "task_id": "t",
+        "status": "Scheduled"
+      }
+    },
+    {
+      "id": "leased-u64-max",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a7b224c6561736564223a7b22617474656d70745f6964223a2261222c226578656375746f725f6e6f6465223a31383434363734343037333730393535313631352c2265706f6368223a31383434363734343037333730393535313631352c22657870697265735f6174223a22323032362d31312d30365430303a30303a33305a227d7d7d",
+      "expected_kind": "Ok",
+      "expected_decoded": {
+        "task_id": "t",
+        "status": {
+          "Leased": {
+            "attempt_id": "a",
+            "executor_node": 18446744073709551615,
+            "epoch": 18446744073709551615,
+            "expires_at": "2026-11-06T00:00:30Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "invalid-json",
+      "response_status": 200,
+      "response_body_hex": "6e6f742d6a736f6e",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "6e6f742d6a736f6e"
+    },
+    {
+      "id": "missing-task-id",
+      "response_status": 200,
+      "response_body_hex": "7b22737461747573223a225363686564756c6564227d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "7b22737461747573223a225363686564756c6564227d"
+    },
+    {
+      "id": "missing-status",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a2274227d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "7b227461736b5f6964223a2274227d"
+    },
+    {
+      "id": "duplicate-task-id",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a2274222c227461736b5f6964223a2275222c22737461747573223a225363686564756c6564227d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "7b227461736b5f6964223a2274222c227461736b5f6964223a2275222c22737461747573223a225363686564756c6564227d"
+    },
+    {
+      "id": "duplicate-status",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a225363686564756c6564222c22737461747573223a2243616e63656c6564227d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a225363686564756c6564222c22737461747573223a2243616e63656c6564227d"
+    },
+    {
+      "id": "unknown-status",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a2252756e6e696e67227d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a2252756e6e696e67227d"
+    },
+    {
+      "id": "string-leased",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a224c6561736564227d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a224c6561736564227d"
+    },
+    {
+      "id": "leased-missing-fields",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a7b224c6561736564223a7b22617474656d70745f6964223a2261227d7d7d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a7b224c6561736564223a7b22617474656d70745f6964223a2261227d7d7d"
+    },
+    {
+      "id": "wrong-task-type",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a312c22737461747573223a225363686564756c6564227d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "7b227461736b5f6964223a312c22737461747573223a225363686564756c6564227d"
+    },
+    {
+      "id": "null-status",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a6e756c6c7d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a6e756c6c7d"
+    },
+    {
+      "id": "empty-200",
+      "response_status": 200,
+      "response_body_hex": "",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": ""
+    },
+    {
+      "id": "non-object",
+      "response_status": 200,
+      "response_body_hex": "5b5d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "5b5d"
+    },
+    {
+      "id": "trailing-json",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a225363686564756c6564227d207b7d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a225363686564756c6564227d207b7d"
+    },
+    {
+      "id": "invalid-executor_node-18446744073709551616",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a7b224c6561736564223a7b22617474656d70745f6964223a2261222c226578656375746f725f6e6f6465223a31383434363734343037333730393535313631362c2265706f6368223a312c22657870697265735f6174223a22323032362d31312d30365430303a30303a33305a227d7d7d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a7b224c6561736564223a7b22617474656d70745f6964223a2261222c226578656375746f725f6e6f6465223a31383434363734343037333730393535313631362c2265706f6368223a312c22657870697265735f6174223a22323032362d31312d30365430303a30303a33305a227d7d7d"
+    },
+    {
+      "id": "invalid-epoch-18446744073709551616",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a7b224c6561736564223a7b22617474656d70745f6964223a2261222c226578656375746f725f6e6f6465223a302c2265706f6368223a31383434363734343037333730393535313631362c22657870697265735f6174223a22323032362d31312d30365430303a30303a33305a227d7d7d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a7b224c6561736564223a7b22617474656d70745f6964223a2261222c226578656375746f725f6e6f6465223a302c2265706f6368223a31383434363734343037333730393535313631362c22657870697265735f6174223a22323032362d31312d30365430303a30303a33305a227d7d7d"
+    },
+    {
+      "id": "invalid-epoch--1",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a7b224c6561736564223a7b22617474656d70745f6964223a2261222c226578656375746f725f6e6f6465223a302c2265706f6368223a2d312c22657870697265735f6174223a22323032362d31312d30365430303a30303a33305a227d7d7d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a7b224c6561736564223a7b22617474656d70745f6964223a2261222c226578656375746f725f6e6f6465223a302c2265706f6368223a2d312c22657870697265735f6174223a22323032362d31312d30365430303a30303a33305a227d7d7d"
+    },
+    {
+      "id": "invalid-expires_at-not-a-time",
+      "response_status": 200,
+      "response_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a7b224c6561736564223a7b22617474656d70745f6964223a2261222c226578656375746f725f6e6f6465223a302c2265706f6368223a312c22657870697265735f6174223a226e6f742d612d74696d65227d7d7d",
+      "expected_kind": "InvalidResponse",
+      "expected_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a7b224c6561736564223a7b22617474656d70745f6964223a2261222c226578656375746f725f6e6f6465223a302c2265706f6368223a312c22657870697265735f6174223a226e6f742d612d74696d65227d7d7d"
+    },
+    {
+      "id": "binary-error",
+      "response_status": 418,
+      "response_body_hex": "00fffe207365637265742d666978747572652d76616c7565",
+      "expected_kind": "Http",
+      "expected_body_hex": "00fffe207365637265742d666978747572652d76616c7565",
+      "expected_native": null
+    },
+    {
+      "id": "empty-204",
+      "response_status": 204,
+      "response_body_hex": "",
+      "expected_kind": "Http",
+      "expected_body_hex": "",
+      "expected_native": null
+    },
+    {
+      "id": "created-is-error",
+      "response_status": 201,
+      "response_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a225363686564756c6564227d",
+      "expected_kind": "Http",
+      "expected_body_hex": "7b227461736b5f6964223a2274222c22737461747573223a225363686564756c6564227d",
+      "expected_native": null
+    },
+    {
+      "id": "redirect-refused",
+      "response_status": 302,
+      "response_body_hex": "7265646972656374207365637265742d666978747572652d76616c7565",
+      "expected_kind": "Http",
+      "expected_body_hex": "7265646972656374207365637265742d666978747572652d76616c7565",
+      "expected_native": null,
+      "response_headers": {
+        "Location": "/redirect-must-not-run"
+      }
+    },
+    {
+      "id": "native-error",
+      "response_status": 400,
+      "response_body_hex": "7b226572726f72223a226e6174697665222c226d657373616765223a227365637265742d666978747572652d76616c7565227d",
+      "expected_kind": "Http",
+      "expected_body_hex": "7b226572726f72223a226e6174697665222c226d657373616765223a227365637265742d666978747572652d76616c7565227d",
+      "expected_native": {
+        "error": "native",
+        "message": "secret-fixture-value"
+      }
+    },
+    {
+      "id": "native-error-extra-field",
+      "response_status": 400,
+      "response_body_hex": "7b226572726f72223a226e6174697665222c226d657373616765223a226661696c757265222c226578747261223a747275657d",
+      "expected_kind": "Http",
+      "expected_body_hex": "7b226572726f72223a226e6174697665222c226d657373616765223a226661696c757265222c226578747261223a747275657d",
+      "expected_native": {
+        "error": "native",
+        "message": "failure"
+      }
+    },
+    {
+      "id": "native-error-missing-field",
+      "response_status": 400,
+      "response_body_hex": "7b226572726f72223a226e6174697665227d",
+      "expected_kind": "Http",
+      "expected_body_hex": "7b226572726f72223a226e6174697665227d",
+      "expected_native": null
+    },
+    {
+      "id": "native-error-duplicate",
+      "response_status": 400,
+      "response_body_hex": "7b226572726f72223a2261222c226572726f72223a2262222c226d657373616765223a226661696c757265227d",
+      "expected_kind": "Http",
+      "expected_body_hex": "7b226572726f72223a2261222c226572726f72223a2262222c226d657373616765223a226661696c757265227d",
+      "expected_native": null
+    },
+    {
+      "id": "non-json-error",
+      "response_status": 503,
+      "response_body_hex": "7365727669636520756e617661696c61626c65",
+      "expected_kind": "Http",
+      "expected_body_hex": "7365727669636520756e617661696c61626c65",
+      "expected_native": null
+    },
+    {
+      "id": "truncated-success-body",
+      "response_status": 200,
+      "response_body_hex": "7061727469616c2d7365637265742d666978747572652d76616c7565",
+      "expected_kind": "Network",
+      "expected_body_hex": "7061727469616c2d7365637265742d666978747572652d76616c7565",
+      "declared_extra_bytes": 100,
+      "close_after_body": true
+    }
+  ],
+  "invalid_origins": [
+    "ftp://127.0.0.1",
+    "http://user:password@127.0.0.1",
+    "http://@127.0.0.1",
+    "http://127.0.0.1/prefix",
+    "http://127.0.0.1/..",
+    "http://127.0.0.1?x=1",
+    "http://127.0.0.1#fragment",
+    "http://127.0.0.1/./",
+    " http://127.0.0.1",
+    "http://127.0.0.1\\prefix",
+    "http://127.0.0.1:99999"
+  ]
+}

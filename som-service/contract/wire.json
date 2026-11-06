@@ -1,0 +1,198 @@
+{
+  "source": {
+    "repository": "faberline/defer",
+    "revision": "5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0",
+    "worktree": "/Users/chrischeng/faberlines/defer",
+    "source_files": {
+      "crates/defer-dispatch/src/dispatcher.rs": "f443ca5d2e81fa8d041e7e13d0bd66acf0f5fb27afdd52fdc08c2be84c52e4b9",
+      "crates/defer-queue/src/server.rs": "0e99cc539a9acd41a70cf57d54883b2101be71c827b0e3087e095a9ab58cdccb",
+      "crates/defer-queue/src/server/dto.rs": "6425c7f458db68904b731d1d24f7d6539d8deb3c0a0c533dbfc0ce27f759c644",
+      "crates/defer-queue/src/server/state.rs": "242d9020e27d77dc04956ea6e78246b8cf89741b99bb1c066b2083e2c0187412",
+      "crates/defer-replication/src/raft/host.rs": "8eacf2210e32b661953feb8eeb7fb6c9535d0f6de680d80e25f8b620932f304d",
+      "crates/defer-shared-kernel/src/scheduler.rs": "2e50cbc006e646fa90bb035de6658194b06208b4cd35de3568183b09f0629a92",
+      "crates/defer-shared-kernel/src/scheduler/lease.rs": "b2b43e73335645cd23e06e84918c8df3b47ed93c7b6c9f821a83f8cbe36334f0",
+      "crates/defer-shared-kernel/src/types.rs": "1b7d0dc9aae28b56f8a55294ef9b7ed61c52183c65fb598f89b256d71da53405",
+      "crates/defer/src/bin/defer/serve.rs": "9961b6066fa93c04db6699b1db811512f6c0a581af1d5f59d584ac3f4e7eb90f",
+      "crates/defer/tests/it/http_api.rs": "28039cc1912d206af2a1bc372718cdfcefd0c6fad833c42488cc6fd6e53f9196",
+      "crates/defer/tests/it/http_dispatch.rs": "4aad38778a05774a61e3758cefe653602839779753de9b5f6407751555446aa6",
+      "crates/defer/tests/it/http_dispatch_signing.rs": "5f108d82927ca353fbc02c70e7df1f3a403b745c8617fdf713eb8c50a0c014ec",
+      "crates/defer/tests/it/raft_scheduler.rs": "e61a5fea9dc55f04e78c05539314cf1e6fa82bc9e4852e127e865dad81066864",
+      "crates/defer/tests/it/rate_limits.rs": "ac8ebe6bfda78caf2ccfc5f31a9dce0550cd80aa70157e261feaa9ec0e0a8a15",
+      "crates/defer/tests/it/task_lifecycle.rs": "fbf8348a0c55706741119e0cd8948e999ee3983a5f1c3594daaf3e80e2059e46",
+      "docs/adr/0002-commit-lease-before-side-effect.md": "1945a1c7927628e11842d301efe90c67d635621729e80074f37e6ecba0766453",
+      "Cargo.lock": "df937e2141413ff3e42c536690e3913ddf2c9c4c264357a1c85694c7465214cd",
+      "clients/openapi.json": "60610be0037ed1be2eaac8ffb6fd20a98e5698975e43211fd0804b5eae68d920",
+      "crates/defer-access/src/policy.rs": "7ebd411e7aaab2c957cdc0febffd449c97056523a4d93781dea540db50f491a9",
+      "crates/defer-replication/src/raft/state_machine.rs": "48d3257f0b08cd0c2749b375d6c847b78b7dd5a9e5b4f50c5e536192415c774c"
+    }
+  },
+  "dependencies": [
+    {
+      "repository": "faberline/core",
+      "revision": "029e765efaac4080bb9e8283005a9c6792953f54",
+      "resolution": "Defer Cargo.lock pins tag v0.4.14 to this full commit. Read git blobs at this commit, not the newer local Core worktree.",
+      "source_files": {
+        "crates/raft-runtime/src/fenced_assignment.rs": "6813d6e10fc13e328e39a511b873c54366224b8e042f9d05fdbdb70b842d6436",
+        "crates/service-auth/src/middleware.rs": "326845784f18ba2196ed2033c7f36c43cbd6d45a7482aff65e0f78d099b6c66f",
+        "crates/service-auth/src/error.rs": "cc880928a4bea5c9a0077c3c7c3dbafd9aaa4db611900e2f4874c1031898b58a",
+        "crates/service-auth/src/role_map.rs": "92fcef17055cc6552046cf3a90f5134b18ebdf9e4e0b1eb1e5e2c929de2135f2",
+        "crates/service-auth/src/reload.rs": "4adc86d5bbcb020ac76a4aa2003217860a3c26af8c67b22e04144d00166de668",
+        "crates/service-http/src/error.rs": "c3ae58799415752a5ec4f70cfedac2143bee4f22c6e75b8a120b1937663ed4bd",
+        "Cargo.toml": "9c30ebd5aa71308d6cf79285ed7b1a66b9163b0d13fef8f3ea8625b792c99fb1",
+        "crates/raft-runtime/Cargo.toml": "de52e140aa15b95f26b87992d9f76e5722d1bffd71eea80358b542fe5fa724ee",
+        "crates/service-auth/Cargo.toml": "fec37082c98c48f13af52461defe4fa700b9b02f82179c9bb57f73badf5c3b0d",
+        "crates/service-http/Cargo.toml": "0999a9535cac9134369baa34d3f803e38632c64e9cd846f635256b133bf2fd27",
+        "crates/service-executor/src/lib.rs": "a7391b9d310245c6e88ab32526abea9ac42ca743c7b33b80a13719a9022a8857"
+      },
+      "anchors": [
+        {
+          "path": "crates/raft-runtime/src/fenced_assignment.rs",
+          "start": 77,
+          "end": 133,
+          "url": "https://github.com/faberline/core/blob/029e765efaac4080bb9e8283005a9c6792953f54/crates/raft-runtime/src/fenced_assignment.rs#L77"
+        },
+        {
+          "path": "crates/raft-runtime/src/fenced_assignment.rs",
+          "start": 158,
+          "end": 182,
+          "url": "https://github.com/faberline/core/blob/029e765efaac4080bb9e8283005a9c6792953f54/crates/raft-runtime/src/fenced_assignment.rs#L158"
+        },
+        {
+          "path": "crates/service-auth/src/middleware.rs",
+          "start": 32,
+          "end": 61,
+          "url": "https://github.com/faberline/core/blob/029e765efaac4080bb9e8283005a9c6792953f54/crates/service-auth/src/middleware.rs#L32"
+        },
+        {
+          "path": "crates/service-auth/src/error.rs",
+          "start": 16,
+          "end": 21,
+          "url": "https://github.com/faberline/core/blob/029e765efaac4080bb9e8283005a9c6792953f54/crates/service-auth/src/error.rs#L16"
+        },
+        {
+          "path": "crates/service-auth/src/error.rs",
+          "start": 43,
+          "end": 61,
+          "url": "https://github.com/faberline/core/blob/029e765efaac4080bb9e8283005a9c6792953f54/crates/service-auth/src/error.rs#L43"
+        },
+        {
+          "path": "crates/service-auth/src/role_map.rs",
+          "start": 50,
+          "end": 74,
+          "url": "https://github.com/faberline/core/blob/029e765efaac4080bb9e8283005a9c6792953f54/crates/service-auth/src/role_map.rs#L50"
+        },
+        {
+          "path": "crates/service-auth/src/role_map.rs",
+          "start": 377,
+          "end": 405,
+          "url": "https://github.com/faberline/core/blob/029e765efaac4080bb9e8283005a9c6792953f54/crates/service-auth/src/role_map.rs#L377"
+        },
+        {
+          "path": "crates/service-auth/src/reload.rs",
+          "start": 275,
+          "end": 301,
+          "url": "https://github.com/faberline/core/blob/029e765efaac4080bb9e8283005a9c6792953f54/crates/service-auth/src/reload.rs#L275"
+        },
+        {
+          "path": "crates/service-auth/src/reload.rs",
+          "start": 428,
+          "end": 429,
+          "url": "https://github.com/faberline/core/blob/029e765efaac4080bb9e8283005a9c6792953f54/crates/service-auth/src/reload.rs#L428"
+        },
+        {
+          "path": "crates/service-auth/src/reload.rs",
+          "start": 559,
+          "end": 589,
+          "url": "https://github.com/faberline/core/blob/029e765efaac4080bb9e8283005a9c6792953f54/crates/service-auth/src/reload.rs#L559"
+        },
+        {
+          "path": "crates/service-http/src/error.rs",
+          "start": 25,
+          "end": 33,
+          "url": "https://github.com/faberline/core/blob/029e765efaac4080bb9e8283005a9c6792953f54/crates/service-http/src/error.rs#L25"
+        },
+        {
+          "path": "crates/service-http/src/error.rs",
+          "start": 114,
+          "end": 122,
+          "url": "https://github.com/faberline/core/blob/029e765efaac4080bb9e8283005a9c6792953f54/crates/service-http/src/error.rs#L114"
+        },
+        {
+          "path": "crates/service-http/src/error.rs",
+          "start": 163,
+          "end": 173,
+          "url": "https://github.com/faberline/core/blob/029e765efaac4080bb9e8283005a9c6792953f54/crates/service-http/src/error.rs#L163"
+        },
+        {
+          "path": "crates/service-executor/src/lib.rs",
+          "start": 18,
+          "end": 33,
+          "url": "https://github.com/faberline/core/blob/029e765efaac4080bb9e8283005a9c6792953f54/crates/service-executor/src/lib.rs#L18"
+        }
+      ]
+    }
+  ],
+  "success_bodies": [
+    {
+      "task_id": "t",
+      "status": "Scheduled"
+    },
+    {
+      "task_id": "t",
+      "status": "Succeeded"
+    },
+    {
+      "task_id": "t",
+      "status": "DeadLettered"
+    },
+    {
+      "task_id": "t",
+      "status": "Canceled"
+    },
+    {
+      "task_id": "t",
+      "status": {
+        "Leased": {
+          "attempt_id": "jobs:t:0",
+          "executor_node": 0,
+          "epoch": 1,
+          "expires_at": "2026-11-06T00:00:30Z"
+        }
+      }
+    }
+  ],
+  "errors": [
+    {
+      "condition": "Auth required; bearer missing or unknown",
+      "status": 401,
+      "body": {
+        "error": "unauthenticated",
+        "message": "valid bearer token required"
+      }
+    },
+    {
+      "condition": "Valid subject s lacks Read on jobs",
+      "status": 403,
+      "body": {
+        "error": "forbidden",
+        "message": "subject `s` lacks Read on queue `jobs`"
+      }
+    },
+    {
+      "condition": "Authorized; queue exists and task absent",
+      "status": 404,
+      "body": {
+        "error": "not_found",
+        "message": "task not found"
+      }
+    },
+    {
+      "condition": "Authorized for missing queue; queue absent",
+      "status": 404,
+      "body": {
+        "error": "not_found",
+        "message": "queue `missing` is not configured"
+      }
+    }
+  ]
+}

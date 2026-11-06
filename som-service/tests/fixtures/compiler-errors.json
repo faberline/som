@@ -1,0 +1,35 @@
+[
+  {
+    "id": "unsupported_operation",
+    "replace": ["to task_status.", "to task_cancel."],
+    "line": 5,
+    "token": "task_cancel",
+    "status": 422,
+    "code": "UNSUPPORTED_OPERATION",
+    "pointer": "/operation/name",
+    "detail": "Only task_status is supported.",
+    "allowed_form": "Bind operation ALIAS to task_status."
+  },
+  {
+    "id": "unsupported_target",
+    "replace": ["Target rust-service-client.v1.", "Target rust."],
+    "line": 3,
+    "token": "rust",
+    "status": 422,
+    "code": "UNSUPPORTED_TARGET",
+    "pointer": "/target",
+    "detail": "Only rust-service-client.v1 is supported.",
+    "allowed_form": "Target rust-service-client.v1."
+  },
+  {
+    "id": "unsupported_contract_unicode",
+    "replace": ["\"defer.http@5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0\"", "\"defer.佇列@unknown\""],
+    "line": 4,
+    "token": "\"defer.佇列@unknown\"",
+    "status": 422,
+    "code": "UNSUPPORTED_CONTRACT",
+    "pointer": "/service/contract",
+    "detail": "The service contract is not supported.",
+    "allowed_form": "Bind service defer using contract \"defer.http@5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0\"."
+  }
+]
