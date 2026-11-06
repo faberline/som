@@ -110,7 +110,9 @@ jobs:
           stage=unclassified
           stage_file="$stage_dir/stage"
           if [ "$stage_ready" = true ] && [ -f "$stage_file" ] && [ ! -L "$stage_file" ]; then
-            for code in entry inputs capture outputs; do
+            for code in entry inputs capture outputs \
+                input-authority input-helpers input-recheck input-paths input-admission input-requests input-oracle \
+                input-events input-carrier-proof input-carrier-restore input-checker input-factory input-snapshot; do
               if printf '%s\n' "$code" | cmp -s - "$stage_file"; then
                 stage=$code
                 break

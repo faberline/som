@@ -815,12 +815,15 @@ def bind_current_proof_factory_sources(checker, proof, candidate_revision):
 
 
 def run(args, sources, modules, *, mark_stage=None):
+    report_stage = mark_stage if mark_stage is not None else lambda _stage: None
     driver, carrier, export = (modules[name] for name in ('run_experimental_native_compile', 'candidate_carrier', 'export_goldens'))
+    report_stage('input-recheck')
     qa_authority = getattr(args, '_native_source_authority', None)
     if getattr(args, 'qa_mode', 'recorded-f59') == 'native-qa-v1':
         require(qa_authority == selected_current_identity(args, sources), 'fresh native source authority required before capture')
     else:
         require(args.candidate_revision == CANDIDATE, 'recorded mode admits only original f59 candidate')
+    report_stage('input-paths')
     temporary = Path(os.environ['RUNNER_TEMP']).resolve(strict=True)
     out, restored = args.out.absolute(), args.restored_candidate.absolute()
     roots = [args.repo.absolute(), args.assembly_root.absolute(), args.carrier_root.absolute(), restored]
@@ -841,12 +844,17 @@ def run(args, sources, modules, *, mark_stage=None):
     service, checker, initial, jobs = None, None, None, []
     with driver.cancellation_handlers() as cancellation:
         try:
+            report_stage('input-admission')
             guard = modules['dependency_candidate']
             report['candidate_admission'] = guard.verify_candidate_inputs(args.repo, args.helper_revision, args.candidate_revision, args.assembly_root)
+            report_stage('input-requests')
             jobs = prepare_jobs(sources, args.assembly_root, modules, args.candidate_revision)
             report['original_requests_before'] = request_vector(jobs)
+            report_stage('input-oracle')
             oracle = RefusalOracle(sources, modules)
+            report_stage('input-events')
             verify_event_sources(sources.read)
+            report_stage('input-carrier-proof')
             proof = parse(read(args.assembly_root / 'manifest.json'))
             if qa_authority is not None:
                 carrier_input = parse(read(args.carrier_root / 'carrier.json'))
@@ -854,12 +862,14 @@ def run(args, sources, modules, *, mark_stage=None):
                         and carrier_input.get('github', {}).get('GITHUB_RUN_ID') == os.environ['GITHUB_RUN_ID']
                         and carrier_input.get('github', {}).get('GITHUB_RUN_ATTEMPT') == os.environ['GITHUB_RUN_ATTEMPT'],
                         'new final capture requires the current-run original same-job carrier')
+            report_stage('input-carrier-restore')
             record = carrier.restore(args.carrier_root, restored, args.assembly_root / 'manifest.json', args.candidate_revision)
             expected_binary = proof['initial_identities']['binary']['sha256']
             require((args.candidate_revision != CANDIDATE or expected_binary == BINARY_SHA)
                     and record['identity']['binary']['sha256'] == expected_binary, 'restored current proof binary identity differs')
             report['carrier'] = {k: v for k, v in record.items() if k in ('carrier_sha256', 'archive_sha256', 'identity')}
             write(out / 'carrier.input.json', read(args.carrier_root / 'carrier.json'))
+            report_stage('input-checker')
             checker = modules['experimental_native_compile'].ExperimentalChecker(args.repo)
             require(checker.repo.commit == args.helper_revision
                     and dict(checker.after) == proof['independent_source_record']['after_descriptors'],
@@ -867,8 +877,10 @@ def run(args, sources, modules, *, mark_stage=None):
             # Make the exact descriptor ID table explicit without admitting
             # response-derived IDs or changing the owning checker.
             checker.IDS = modules['experimental_native_compile'].IDS
+            report_stage('input-factory')
             report['factory_source_record'] = (bind_current_proof_factory_sources(checker, proof, args.candidate_revision)
                 if qa_authority is not None else checker.source_record())
+            report_stage('input-snapshot')
             initial = {'source': driver.source_snapshot(checker), 'candidate': carrier.identities(restored),
                        'carrier_json_sha256': sha(read(args.carrier_root / 'carrier.json')),
                        'carrier_archive_sha256': sha(read(args.carrier_root / 'candidate.tar.gz', 2 * 1024**3))}
@@ -1176,7 +1188,9 @@ def main():
         args = parser.parse_args()
         mark_stage('inputs')
         sources = Sources(args.repo, args.helper_revision)
+        mark_stage('input-authority')
         args._native_source_authority = selected_current_identity(args, sources)
+        mark_stage('input-helpers')
         if args._native_source_authority is not None:
             with _borrowed_native(sources) as controls:
                 require(_native_companion_prefix() == 'companions.entry', 'current capture needs its fixed entry namespace')
