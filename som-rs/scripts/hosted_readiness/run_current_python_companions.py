@@ -1138,36 +1138,6 @@ def verify_capture(root, source_reader, helper_revision, candidate_revision, adm
     return result
 
 
-def _capture_entry(mark_stage):
-    require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'GitHub Linux execution only')
-    parser = argparse.ArgumentParser(description=__doc__)
-    for name in ('repo', 'assembly-root', 'carrier-root', 'restored-candidate', 'out'):
-        parser.add_argument('--' + name, type=Path, required=True)
-    parser.add_argument('--helper-revision', required=True)
-    parser.add_argument('--candidate-revision', required=True)
-    parser.add_argument('--qa-mode', choices=('recorded-f59', 'native-qa-v1'), default='recorded-f59')
-    args = parser.parse_args()
-    mark_stage('inputs')
-    sources = Sources(args.repo, args.helper_revision)
-    args._native_source_authority = selected_current_identity(args, sources)
-    if args._native_source_authority is not None:
-        with _borrowed_native(sources) as controls:
-            require(_native_companion_prefix() == 'companions.entry', 'current capture needs its fixed entry namespace')
-            raw = {name: sources.read(path) for name, path in MODULES.items()}
-            roles = {name: 'companions.entry.capture.' + name.replace('_', '-') for name in MODULES}
-            require(all(controls.role_sources[roles[name]] == path for name, path in MODULES.items()),
-                    'fixed current capture helper source differs')
-            modules = {}
-            for name, path in MODULES.items():
-                modules[name] = controls.load_module(roles[name])
-                require(modules[name].__file__ == str(sources.root / path)
-                        and modules[name].__som_raw_sha256__ == sha(raw[name]), 'current capture helper bytes differ')
-            require(set(modules) == set(MODULES), 'loaded helper closure differs')
-            return run(args, sources, modules, mark_stage=mark_stage)
-    with BoundModules(sources).installed() as modules:
-        return run(args, sources, modules, mark_stage=mark_stage)
-
-
 def _save_failure_stage(stage):
     if os.environ.get('GITHUB_ACTIONS') != 'true' or sys.platform != 'linux':
         return
@@ -1196,7 +1166,35 @@ def main():
         stage = value
 
     try:
-        status = _capture_entry(mark_stage)
+        require(os.environ.get('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux', 'GitHub Linux execution only')
+        parser = argparse.ArgumentParser(description=__doc__)
+        for name in ('repo', 'assembly-root', 'carrier-root', 'restored-candidate', 'out'):
+            parser.add_argument('--' + name, type=Path, required=True)
+        parser.add_argument('--helper-revision', required=True)
+        parser.add_argument('--candidate-revision', required=True)
+        parser.add_argument('--qa-mode', choices=('recorded-f59', 'native-qa-v1'), default='recorded-f59')
+        args = parser.parse_args()
+        mark_stage('inputs')
+        sources = Sources(args.repo, args.helper_revision)
+        args._native_source_authority = selected_current_identity(args, sources)
+        if args._native_source_authority is not None:
+            with _borrowed_native(sources) as controls:
+                require(_native_companion_prefix() == 'companions.entry', 'current capture needs its fixed entry namespace')
+                raw = {name: sources.read(path) for name, path in MODULES.items()}
+                roles = {name: 'companions.entry.capture.' + name.replace('_', '-') for name in MODULES}
+                require(all(controls.role_sources[roles[name]] == path for name, path in MODULES.items()),
+                        'fixed current capture helper source differs')
+                modules = {}
+                for name, path in MODULES.items():
+                    modules[name] = controls.load_module(roles[name])
+                    require(modules[name].__file__ == str(sources.root / path)
+                            and modules[name].__som_raw_sha256__ == sha(raw[name]), 'current capture helper bytes differ')
+                require(set(modules) == set(MODULES), 'loaded helper closure differs')
+                result = run(args, sources, modules, mark_stage=mark_stage)
+        else:
+            with BoundModules(sources).installed() as modules:
+                result = run(args, sources, modules, mark_stage=mark_stage)
+        status = result
         return status
     finally:
         if status != 0:

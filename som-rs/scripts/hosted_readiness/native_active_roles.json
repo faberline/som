@@ -32929,7 +32929,7 @@
     },
     "som-rs/scripts/hosted_readiness/run_current_python_companions.py": {
       "mode": 420,
-      "sha256": "38919f4622432a8bfbb596d70e7bb3bb25f1dd6b0e9dd0e70782abf4ffeaf5d8"
+      "sha256": "d595516b974ae7e7bfc455f12fe59a4262a925b9e2436feaa8f355b940b59cb1"
     },
     "som-rs/scripts/hosted_readiness/run_experimental_native_assembly.py": {
       "mode": 420,
