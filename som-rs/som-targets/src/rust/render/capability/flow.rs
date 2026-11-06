@@ -25,7 +25,10 @@ pub fn render(id: &str, params: &Value) -> Result<String, String> {
             base()? + "\n" + &super::models(&product)
         }
         "rust.db.capability_flow" => db(base()?)?,
-        "rust.api.capability_flow" => flow_object::api(params, api(base()?, params)?)?,
+        "rust.api.capability_flow" => {
+            let base_api = super::api(params, &Product::read(params)?, true)?;
+            flow_object::api(params, api(base_api, params)?)?
+        }
         "rust.migration.capability_flow" => migration(base()?)?,
         "rust.tests.capability_flow" => tests(base()?, flow_name(params)?)?,
         _ => base()?,
@@ -57,7 +60,10 @@ fn mongo(id: &str, params: &Value) -> Result<String, String> {
             base()? + "\n" + &super::mongo::render("rust.models.capability_mongodb", params)?
         }
         "rust.db.capability_flow_mongodb" => mongo_db(base()?, package()?)?,
-        "rust.api.capability_flow_mongodb" => flow_object::api(params, api(base()?, params)?)?,
+        "rust.api.capability_flow_mongodb" => {
+            let base_api = super::mongo::render_api(params, true)?;
+            flow_object::api(params, api(base_api, params)?)?
+        }
         "rust.tests.capability_flow_mongodb" => tests(base()?, flow_name(params)?)?,
         _ => base()?,
     })

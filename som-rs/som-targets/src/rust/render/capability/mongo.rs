@@ -20,7 +20,7 @@ pub(super) fn render(id: &str, params: &Value) -> Result<String, String> {
         "rust.lib.capability_mongodb" => lib()?,
         "rust.models.capability_mongodb" => models(&product()?),
         "rust.schemas.capability_mongodb" => super::schemas(&product()?),
-        "rust.api.capability_mongodb" => api(super::api(params, &product()?)?)?,
+        "rust.api.capability_mongodb" => render_api(params, false)?,
         "rust.db.capability_mongodb" => db(&product()?),
         "rust.integrations.capability_mongodb" => {
             let v5 = params["version"] == "som.prompt.v5";
@@ -52,6 +52,10 @@ pub(super) fn render(id: &str, params: &Value) -> Result<String, String> {
         }
         _ => return Err(format!("no renderer for block {id}")),
     })
+}
+
+pub(super) fn render_api(params: &Value, flow_body: bool) -> Result<String, String> {
+    api(super::api(params, &Product::read(params)?, flow_body)?)
 }
 
 /// Replace `old` with `new` in `text`, which must hold `old` exactly `count` times.

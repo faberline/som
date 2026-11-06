@@ -10,6 +10,10 @@ The legacy M2 runtime, model and block links remain saved for rollback.
 
 CNL uses fixed English clauses. Data strings can include Chinese.
 The caller supplies each business choice. The compiler does not guess missing facts.
+The CNL syntax parser is the pure Rust `faberline-nlp-cnl` dependency.
+SOM converts its versioned events to typed prompts and source maps.
+SOM owns validation, DSL planning, and code output.
+See [parser ownership and local acceptance](scripts/cnl_parity/README.md).
 The new production path does not load models or start Python.
 Python remains the output language and an independent test tool.
 
