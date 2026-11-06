@@ -1,0 +1,23 @@
+{
+  "version": "som.dsl.service.v1",
+  "package": "queue_status_sdk",
+  "target": "rust-service-client.v1",
+  "provider": {
+    "id": "defer.http.task_status.v1",
+    "revision": "5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0",
+    "contract": "defer.http@5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0"
+  },
+  "operation": {
+    "alias": "fetch_status",
+    "method": "GET",
+    "path": "/v1/queues/{queue}/tasks/{task_id}",
+    "inputs": [
+      {"name": "queue_name", "type": "string", "parameter": "queue"},
+      {"name": "job_id", "type": "string", "parameter": "task_id"}
+    ],
+    "response": "TaskStatusResponse",
+    "errors": "native-status-body.v1",
+    "authorization": "queue-read",
+    "request_body": false
+  }
+}

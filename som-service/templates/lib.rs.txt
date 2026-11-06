@@ -1,0 +1,222 @@
+//! A client for Defer's pinned task-status HTTP contract.
+use chrono::{DateTime, Utc};
+use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
+use serde::{Deserialize, Serialize};
+use std::{fmt, time::Duration};
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct TaskStatusResponse {
+    pub task_id: String,
+    pub status: TaskStatus,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub enum TaskStatus {
+    Scheduled,
+    Leased {
+        attempt_id: String,
+        executor_node: u64,
+        epoch: u64,
+        expires_at: DateTime<Utc>,
+    },
+    Succeeded,
+    DeadLettered,
+    Canceled,
+}
+
+/// Native HTTP error data. Read these fields explicitly when needed.
+#[derive(Clone, Deserialize, Serialize, PartialEq, Eq)]
+pub struct ErrorEnvelope {
+    pub error: String,
+    pub message: String,
+}
+
+impl fmt::Debug for ErrorEnvelope {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ErrorEnvelope").finish_non_exhaustive()
+    }
+}
+
+pub enum ClientError {
+    InvalidConfiguration {
+        reason: &'static str,
+    },
+    InvalidInput {
+        parameter: &'static str,
+        reason: &'static str,
+    },
+    Network {
+        timeout: bool,
+        status: Option<u16>,
+        body: Vec<u8>,
+    },
+    Http {
+        status: u16,
+        body: Vec<u8>,
+        native: Option<ErrorEnvelope>,
+    },
+    InvalidResponse {
+        status: u16,
+        body: Vec<u8>,
+    },
+}
+
+impl fmt::Display for ClientError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidConfiguration { reason } => {
+                write!(f, "Invalid client configuration: {reason}")
+            }
+            Self::InvalidInput { parameter, reason } => write!(f, "Invalid {parameter}: {reason}"),
+            Self::Network { timeout: true, .. } => f.write_str("The HTTP request timed out."),
+            Self::Network { timeout: false, .. } => f.write_str("The HTTP request failed."),
+            Self::Http { status, .. } => write!(f, "Defer returned HTTP {status}."),
+            Self::InvalidResponse { status, .. } => {
+                write!(f, "Invalid task status response (HTTP {status}).")
+            }
+        }
+    }
+}
+
+// Servers can echo secrets in response bodies. Debug must not print those bytes.
+impl fmt::Debug for ClientError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(self, f)
+    }
+}
+
+impl std::error::Error for ClientError {}
+
+#[derive(Clone)]
+pub struct DeferClient {
+    client: reqwest::Client,
+    base_url: reqwest::Url,
+}
+
+impl fmt::Debug for DeferClient {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("DeferClient").finish_non_exhaustive()
+    }
+}
+
+impl DeferClient {
+    pub fn new(base_url: &str, bearer: Option<&str>) -> Result<Self, ClientError> {
+        // Check the original text: URL parsing otherwise removes dot segments,
+        // empty credentials, backslashes, and some whitespace before validation.
+        let invalid_origin = || ClientError::InvalidConfiguration {
+            reason: "Use an HTTP or HTTPS origin without credentials, path, query, or fragment.",
+        };
+        let (scheme, rest) = base_url.split_once("://").ok_or_else(invalid_origin)?;
+        if !(scheme.eq_ignore_ascii_case("http") || scheme.eq_ignore_ascii_case("https"))
+            || base_url
+                .chars()
+                .any(|c| c.is_whitespace() || c.is_control())
+            || base_url.contains(['\\', '?', '#', '@'])
+            || rest.is_empty()
+        {
+            return Err(invalid_origin());
+        }
+        if let Some((_, path)) = rest.split_once('/') {
+            if !path.is_empty() {
+                return Err(invalid_origin());
+            }
+        }
+        let base_url = reqwest::Url::parse(base_url).map_err(|_| invalid_origin())?;
+        if base_url.host_str().is_none()
+            || !base_url.username().is_empty()
+            || base_url.password().is_some()
+            || base_url.path() != "/"
+            || base_url.query().is_some()
+            || base_url.fragment().is_some()
+        {
+            return Err(invalid_origin());
+        }
+        let mut headers = HeaderMap::new();
+        if let Some(bearer) = bearer {
+            let mut value = HeaderValue::from_str(&format!("Bearer {bearer}")).map_err(|_| {
+                ClientError::InvalidConfiguration {
+                    reason: "The bearer value is not a valid HTTP header.",
+                }
+            })?;
+            value.set_sensitive(true);
+            headers.insert(AUTHORIZATION, value);
+        }
+        let client = reqwest::Client::builder()
+            .default_headers(headers)
+            .redirect(reqwest::redirect::Policy::none())
+            .timeout(Duration::from_secs(30))
+            .build()
+            .map_err(|_| ClientError::InvalidConfiguration {
+                reason: "HTTP client setup failed.",
+            })?;
+        Ok(Self { client, base_url })
+    }
+
+    pub async fn {{ALIAS}}(
+        &self,
+        {{QUEUE_ARGUMENT}}: &str,
+        {{TASK_ARGUMENT}}: &str,
+    ) -> Result<TaskStatusResponse, ClientError> {
+        let parameters = [
+            ("queue", {{QUEUE_ARGUMENT}}),
+            ("task_id", {{TASK_ARGUMENT}}),
+        ];
+        for (parameter, value) in parameters {
+            if matches!(value, "" | "." | "..") {
+                return Err(ClientError::InvalidInput {
+                    parameter,
+                    reason: "Use a nonempty path segment other than dot or dot-dot.",
+                });
+            }
+        }
+        let mut endpoint = self.base_url.clone();
+        {
+            let mut path =
+                endpoint
+                    .path_segments_mut()
+                    .map_err(|_| ClientError::InvalidConfiguration {
+                        reason: "The base URL cannot hold path segments.",
+                    })?;
+            path.clear()
+                .push("v1")
+                .push("queues")
+                .push(parameters[0].1)
+                .push("tasks")
+                .push(parameters[1].1);
+        }
+        let mut response =
+            self.client
+                .get(endpoint)
+                .send()
+                .await
+                .map_err(|error| ClientError::Network {
+                    timeout: error.is_timeout(),
+                    status: None,
+                    body: Vec::new(),
+                })?;
+        let status = response.status().as_u16();
+        let mut body = Vec::new();
+        loop {
+            match response.chunk().await {
+                Ok(Some(chunk)) => body.extend_from_slice(&chunk),
+                Ok(None) => break,
+                Err(error) => {
+                    return Err(ClientError::Network {
+                        timeout: error.is_timeout(),
+                        status: Some(status),
+                        body,
+                    })
+                }
+            }
+        }
+        if status != 200 {
+            let native = serde_json::from_slice(&body).ok();
+            return Err(ClientError::Http {
+                status,
+                body,
+                native,
+            });
+        }
+        serde_json::from_slice(&body).map_err(|_| ClientError::InvalidResponse { status, body })
+    }
+}

@@ -1,0 +1,7 @@
+Service prompt version 1.
+Package queue_status_sdk.
+Target rust-service-client.v1.
+Bind service defer using contract "defer.http@5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0".
+Bind operation fetch_status to task_status.
+Accept job_id as string for task_id.
+Accept queue_name as string for queue.

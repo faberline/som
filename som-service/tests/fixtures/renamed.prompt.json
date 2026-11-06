@@ -1,0 +1,17 @@
+{
+  "version": "som.prompt.service.v1",
+  "package": "queue_status_sdk",
+  "target": "rust-service-client.v1",
+  "service": {
+    "name": "defer",
+    "contract": "defer.http@5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0"
+  },
+  "operation": {
+    "alias": "fetch_status",
+    "name": "task_status",
+    "inputs": [
+      {"name": "job_id", "type": "string", "parameter": "task_id"},
+      {"name": "queue_name", "type": "string", "parameter": "queue"}
+    ]
+  }
+}

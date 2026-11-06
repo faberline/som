@@ -1,0 +1,39 @@
+{
+  "version": "som.service-contract-freeze.v1",
+  "task_id": "som-cnl-expansion-defer",
+  "status": "frozen_for_implementation",
+  "source_nlp_message_id": "4ed37f01-ceca-438a-857a-7cedef0ad131",
+  "source_nlp_request_id": "nlp-defer-get-contract-proposal-07",
+  "files_sha256": {
+    "CONTRACT.md": "156f72f88a9a8af4417af605ac8b1ad2af5d4140dc6e357ce67293302dc20f6a",
+    "contract/dsl.json": "6a4d3b5f8c9c396542b7dd32942b4127a8daff5347ddcd84b31f512c400b7a19",
+    "contract/prompt.json": "1aa3f3f0eaa5030a2d8973ddd45138b3aa30556df246ae44a94d7baee8fbaa14",
+    "contract/task-status.cnl": "47f6d19af8b24536c6230958f0c937b3ad5778f165be7730db0ca67d18158e11",
+    "contract/wire.json": "10db721d0144a02c92761b11343d9503ef2b9f68d31bbb7854bf1072d73ee049"
+  },
+  "syntax_api": {
+    "module": "service",
+    "entry_point": "parse_service_document",
+    "report": "ServiceSyntaxReport",
+    "api_version": 1,
+    "events": [
+      "Header{version}",
+      "Package{name}",
+      "Target{profile}",
+      "ServiceBinding{service,contract}",
+      "OperationBinding{alias,operation}",
+      "InputBinding{name,ty,parameter}"
+    ],
+    "order": "fixed Header Package Target ServiceBinding OperationBinding InputBinding InputBinding",
+    "contract_token": "raw JSON string including quotes; SOM decodes",
+    "positions": "existing SourceSpan,UTF8 half-open bytes,1-based Unicode-scalar columns",
+    "error_order": "lexical then version dispatch then structure; prior events diagnostic-only",
+    "duplicate_input_name": "NLP structural error",
+    "duplicate_parameter_binding": "SOM semantic error"
+  },
+  "new_formats": [
+    "som.cnl.service.v1",
+    "som.prompt-json.service.v1"
+  ],
+  "legacy_unchanged": true
+}

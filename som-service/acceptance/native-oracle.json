@@ -1,0 +1,597 @@
+{
+  "schema": "som.dfr07.native-oracle.v1",
+  "defer_revision": "5f7adac1fe1333b33e3ec69a92b5ca4a634a97d0",
+  "core_revision": "029e765efaac4080bb9e8283005a9c6792953f54",
+  "source_cases_sha256": "2b38a575ed448d965d1dbd100a58b441a10400e5cfe0f46083a3477d28fd00ee",
+  "oracle_basis": "Pinned DFR-07 requirements and native source, frozen before test execution. Fixture-specific queue names preserve exact task t and Leased contract. No generated client source was used.",
+  "cases": [
+    {
+      "id": "native-scheduled",
+      "queue": "scheduled",
+      "task_id": "t",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "t",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/scheduled/tasks/t"
+    },
+    {
+      "id": "native-succeeded",
+      "queue": "succeeded",
+      "task_id": "t",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "t",
+        "status": "Succeeded"
+      },
+      "path": "/v1/queues/succeeded/tasks/t"
+    },
+    {
+      "id": "native-deadlettered",
+      "queue": "dead-lettered",
+      "task_id": "t",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "t",
+        "status": "DeadLettered"
+      },
+      "path": "/v1/queues/dead-lettered/tasks/t"
+    },
+    {
+      "id": "native-canceled",
+      "queue": "canceled",
+      "task_id": "t",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "t",
+        "status": "Canceled"
+      },
+      "path": "/v1/queues/canceled/tasks/t"
+    },
+    {
+      "id": "native-leased",
+      "queue": "jobs",
+      "task_id": "t",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "t",
+        "status": {
+          "Leased": {
+            "attempt_id": "jobs:t:0",
+            "executor_node": 0,
+            "epoch": 1,
+            "expires_at": "2026-11-06T00:00:30Z"
+          }
+        }
+      },
+      "path": "/v1/queues/jobs/tasks/t"
+    },
+    {
+      "id": "auth-None",
+      "queue": "jobs",
+      "task_id": "t",
+      "token": null,
+      "server": "required",
+      "expected_status": 401,
+      "expected_body": {
+        "error": "unauthenticated",
+        "message": "valid bearer token required"
+      },
+      "path": "/v1/queues/jobs/tasks/t"
+    },
+    {
+      "id": "auth-unknown",
+      "queue": "jobs",
+      "task_id": "t",
+      "token": "unknown",
+      "server": "required",
+      "expected_status": 401,
+      "expected_body": {
+        "error": "unauthenticated",
+        "message": "valid bearer token required"
+      },
+      "path": "/v1/queues/jobs/tasks/t"
+    },
+    {
+      "id": "auth-forbidden",
+      "queue": "jobs",
+      "task_id": "t",
+      "token": "denied",
+      "server": "required",
+      "expected_status": 403,
+      "expected_body": {
+        "error": "forbidden",
+        "message": "subject `s` lacks Read on queue `jobs`"
+      },
+      "path": "/v1/queues/jobs/tasks/t"
+    },
+    {
+      "id": "missing-task",
+      "queue": "jobs",
+      "task_id": "absent",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 404,
+      "expected_body": {
+        "error": "not_found",
+        "message": "task not found"
+      },
+      "path": "/v1/queues/jobs/tasks/absent"
+    },
+    {
+      "id": "missing-queue",
+      "queue": "missing",
+      "task_id": "t",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 404,
+      "expected_body": {
+        "error": "not_found",
+        "message": "queue `missing` is not configured"
+      },
+      "path": "/v1/queues/missing/tasks/t"
+    },
+    {
+      "id": "missing-queue-auth-first",
+      "queue": "missing",
+      "task_id": "t",
+      "token": null,
+      "server": "required",
+      "expected_status": 401,
+      "expected_body": {
+        "error": "unauthenticated",
+        "message": "valid bearer token required"
+      },
+      "path": "/v1/queues/missing/tasks/t"
+    },
+    {
+      "id": "missing-queue-grant-first",
+      "queue": "missing",
+      "task_id": "t",
+      "token": "queue-reader",
+      "server": "required",
+      "expected_status": 403,
+      "expected_body": {
+        "error": "forbidden",
+        "message": "subject `queue-reader` lacks Read on queue `missing`"
+      },
+      "path": "/v1/queues/missing/tasks/t"
+    },
+    {
+      "id": "role-writer",
+      "queue": "jobs",
+      "task_id": "t",
+      "token": "writer",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "t",
+        "status": {
+          "Leased": {
+            "attempt_id": "jobs:t:0",
+            "executor_node": 0,
+            "epoch": 1,
+            "expires_at": "2026-11-06T00:00:30Z"
+          }
+        }
+      },
+      "path": "/v1/queues/jobs/tasks/t"
+    },
+    {
+      "id": "role-admin",
+      "queue": "jobs",
+      "task_id": "t",
+      "token": "admin",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "t",
+        "status": {
+          "Leased": {
+            "attempt_id": "jobs:t:0",
+            "executor_node": 0,
+            "epoch": 1,
+            "expires_at": "2026-11-06T00:00:30Z"
+          }
+        }
+      },
+      "path": "/v1/queues/jobs/tasks/t"
+    },
+    {
+      "id": "role-queue-reader",
+      "queue": "jobs",
+      "task_id": "t",
+      "token": "queue-reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "t",
+        "status": {
+          "Leased": {
+            "attempt_id": "jobs:t:0",
+            "executor_node": 0,
+            "epoch": 1,
+            "expires_at": "2026-11-06T00:00:30Z"
+          }
+        }
+      },
+      "path": "/v1/queues/jobs/tasks/t"
+    },
+    {
+      "id": "auth-off-no-token",
+      "queue": "jobs",
+      "task_id": "t",
+      "token": null,
+      "server": "open",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "t",
+        "status": {
+          "Leased": {
+            "attempt_id": "jobs:t:0",
+            "executor_node": 0,
+            "epoch": 1,
+            "expires_at": "2026-11-06T00:00:30Z"
+          }
+        }
+      },
+      "path": "/v1/queues/jobs/tasks/t"
+    },
+    {
+      "id": "auth-off-unknown-token",
+      "queue": "jobs",
+      "task_id": "t",
+      "token": "unknown",
+      "server": "open",
+      "expected_status": 401,
+      "expected_body": {
+        "error": "unauthenticated",
+        "message": "valid bearer token required"
+      },
+      "path": "/v1/queues/jobs/tasks/t"
+    },
+    {
+      "id": "path-task-0",
+      "queue": "paths",
+      "task_id": "simple",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "simple",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/paths/tasks/simple"
+    },
+    {
+      "id": "path-queue-0",
+      "queue": "simple",
+      "task_id": "path-task",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "path-task",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/simple/tasks/path-task"
+    },
+    {
+      "id": "path-task-1",
+      "queue": "paths",
+      "task_id": "team/a",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "team/a",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/paths/tasks/team%2Fa"
+    },
+    {
+      "id": "path-queue-1",
+      "queue": "team/a",
+      "task_id": "path-task",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "path-task",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/team%2Fa/tasks/path-task"
+    },
+    {
+      "id": "path-task-2",
+      "queue": "paths",
+      "task_id": "x%20",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "x%20",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/paths/tasks/x%2520"
+    },
+    {
+      "id": "path-queue-2",
+      "queue": "x%20",
+      "task_id": "path-task",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "path-task",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/x%2520/tasks/path-task"
+    },
+    {
+      "id": "path-task-3",
+      "queue": "paths",
+      "task_id": "hello world",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "hello world",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/paths/tasks/hello%20world"
+    },
+    {
+      "id": "path-queue-3",
+      "queue": "hello world",
+      "task_id": "path-task",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "path-task",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/hello%20world/tasks/path-task"
+    },
+    {
+      "id": "path-task-4",
+      "queue": "paths",
+      "task_id": "a?b",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "a?b",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/paths/tasks/a%3Fb"
+    },
+    {
+      "id": "path-queue-4",
+      "queue": "a?b",
+      "task_id": "path-task",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "path-task",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/a%3Fb/tasks/path-task"
+    },
+    {
+      "id": "path-task-5",
+      "queue": "paths",
+      "task_id": "a#b",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "a#b",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/paths/tasks/a%23b"
+    },
+    {
+      "id": "path-queue-5",
+      "queue": "a#b",
+      "task_id": "path-task",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "path-task",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/a%23b/tasks/path-task"
+    },
+    {
+      "id": "path-task-6",
+      "queue": "paths",
+      "task_id": "雪☃",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "雪☃",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/paths/tasks/%E9%9B%AA%E2%98%83"
+    },
+    {
+      "id": "path-queue-6",
+      "queue": "雪☃",
+      "task_id": "path-task",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "path-task",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/%E9%9B%AA%E2%98%83/tasks/path-task"
+    },
+    {
+      "id": "path-task-7",
+      "queue": "paths",
+      "task_id": "%2e",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "%2e",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/paths/tasks/%252e"
+    },
+    {
+      "id": "path-queue-7",
+      "queue": "%2e",
+      "task_id": "path-task",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "path-task",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/%252e/tasks/path-task"
+    },
+    {
+      "id": "path-task-8",
+      "queue": "paths",
+      "task_id": "%2F",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "%2F",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/paths/tasks/%252F"
+    },
+    {
+      "id": "path-queue-8",
+      "queue": "%2F",
+      "task_id": "path-task",
+      "token": "reader",
+      "server": "required",
+      "expected_status": 200,
+      "expected_body": {
+        "task_id": "path-task",
+        "status": "Scheduled"
+      },
+      "path": "/v1/queues/%252F/tasks/path-task"
+    }
+  ],
+  "native_path_edge_cases": [
+    {
+      "field": "queue",
+      "value": "",
+      "path": "/v1/queues//tasks/path-task",
+      "status": 200,
+      "body_utf8": "{\"task_id\":\"path-task\",\"status\":\"Scheduled\"}"
+    },
+    {
+      "field": "task_id",
+      "value": "",
+      "path": "/v1/queues/paths/tasks/",
+      "status": 404,
+      "body_utf8": ""
+    },
+    {
+      "field": "queue",
+      "value": ".",
+      "path": "/v1/queues/./tasks/path-task",
+      "status": 200,
+      "body_utf8": "{\"task_id\":\"path-task\",\"status\":\"Scheduled\"}"
+    },
+    {
+      "field": "task_id",
+      "value": ".",
+      "path": "/v1/queues/paths/tasks/.",
+      "status": 200,
+      "body_utf8": "{\"task_id\":\".\",\"status\":\"Scheduled\"}"
+    },
+    {
+      "field": "queue",
+      "value": "..",
+      "path": "/v1/queues/../tasks/path-task",
+      "status": 200,
+      "body_utf8": "{\"task_id\":\"path-task\",\"status\":\"Scheduled\"}"
+    },
+    {
+      "field": "task_id",
+      "value": "..",
+      "path": "/v1/queues/paths/tasks/..",
+      "status": 200,
+      "body_utf8": "{\"task_id\":\"..\",\"status\":\"Scheduled\"}"
+    },
+    {
+      "field": "queue",
+      "value": ".",
+      "path": "/v1/queues/%2E/tasks/path-task",
+      "status": 200,
+      "body_utf8": "{\"task_id\":\"path-task\",\"status\":\"Scheduled\"}"
+    },
+    {
+      "field": "task_id",
+      "value": ".",
+      "path": "/v1/queues/paths/tasks/%2E",
+      "status": 200,
+      "body_utf8": "{\"task_id\":\".\",\"status\":\"Scheduled\"}"
+    },
+    {
+      "field": "queue",
+      "value": "..",
+      "path": "/v1/queues/%2E%2E/tasks/path-task",
+      "status": 200,
+      "body_utf8": "{\"task_id\":\"path-task\",\"status\":\"Scheduled\"}"
+    },
+    {
+      "field": "task_id",
+      "value": "..",
+      "path": "/v1/queues/paths/tasks/%2E%2E",
+      "status": 200,
+      "body_utf8": "{\"task_id\":\"..\",\"status\":\"Scheduled\"}"
+    }
+  ],
+  "client_transport_refusals": [
+    {
+      "parameter": "queue",
+      "value": ""
+    },
+    {
+      "parameter": "queue",
+      "value": "."
+    },
+    {
+      "parameter": "queue",
+      "value": ".."
+    },
+    {
+      "parameter": "task_id",
+      "value": ""
+    },
+    {
+      "parameter": "task_id",
+      "value": "."
+    },
+    {
+      "parameter": "task_id",
+      "value": ".."
+    }
+  ]
+}
