@@ -1368,6 +1368,21 @@ mod tests {
         prompt
     }
 
+    #[test]
+    fn a_read_only_flow_can_read_its_request_body() {
+        let source = include_str!("../../../tests/cnl-dsl/flaskr-post.cnl");
+        let mut prompt = som::cnl::parse(source).expect("parse Flaskr CNL").prompt;
+        for database in ["postgresql", "mongodb"] {
+            prompt["capabilities"]["database"] = json!(database);
+            let dsl = plan(&prompt).expect("plan the read-only flow");
+            let files = render_files(&prompt, &dsl)
+                .unwrap_or_else(|err| panic!("render the read-only flow on {database}: {err:?}"));
+            check_output(&files).expect("layout");
+            assert!(files["src/api.rs"].contains("pub(crate) fn read_body<"));
+            assert!(files["src/flows.rs"].contains("\"get_post\""));
+        }
+    }
+
     /// Issue #54 I: flow_postgresql renders 12 files with the runtime in src/flows.rs, and
     /// flow_mongodb the same 11 files without a migration. Issue #54 J: a batch, a csv import
     /// and a run of every workflow.

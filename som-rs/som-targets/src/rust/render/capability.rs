@@ -137,7 +137,7 @@ pub fn render(id: &str, params: &Value) -> Result<String, String> {
         "rust.lib.capability" => LIB.replace("@REVISION@", text(params, "revision")?),
         "rust.models.capability" => models(&product()?),
         "rust.schemas.capability" => schemas(&product()?),
-        "rust.api.capability" => api(params, &product()?)?,
+        "rust.api.capability" => api(params, &product()?, false)?,
         "rust.db.capability" => db(&product()?),
         "rust.integrations.capability" => {
             let v5 = params["version"] == "som.prompt.v5";
@@ -522,12 +522,13 @@ pub struct ParentWithChildrenRead {
 
 // ---------------------------------------------------------------- src/api.rs
 
-fn api(params: &Value, product: &Product) -> Result<String, String> {
+fn api(params: &Value, product: &Product, flow_body: bool) -> Result<String, String> {
     let ops = &product.ops;
     let workflow = Workflow::read(params, &product.child)?;
     let flow = workflow.flow;
     let csv = flow == Flow::Csv;
-    let bodies = ops.bodies();
+    // Starting a flow reads a JSON body even when the flow only reads data.
+    let bodies = flow_body || ops.bodies();
     let auth = Auth::read(params)?;
     let storage = Storage::read(params)?;
     let routes = routes(product, flow, auth, storage);

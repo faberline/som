@@ -45,6 +45,9 @@ fn backend_manifest() -> Value {
     let files = [
         ("src/lib.rs", include_str!("lib.rs")),
         ("src/cnl.rs", include_str!("cnl.rs")),
+        ("src/cnl_diagnostics.rs", include_str!("cnl_diagnostics.rs")),
+        ("src/cnl_lower.rs", include_str!("cnl_lower.rs")),
+        ("src/cnl_lower_base.rs", include_str!("cnl_lower_base.rs")),
         ("src/cnl_semantics.rs", include_str!("cnl_semantics.rs")),
         ("src/planner.rs", include_str!("planner.rs")),
         ("src/python_names.rs", include_str!("python_names.rs")),
@@ -89,10 +92,16 @@ fn backend_manifest() -> Value {
         ),
         ("flow_compact/engine.py.tpl", flow_compact::ENGINE_TEXT),
     ];
-    let files: BTreeMap<_, _> = files
+    let mut files: BTreeMap<_, _> = files
         .iter()
-        .map(|(name, text)| (*name, digest(text.as_bytes())))
+        .map(|(name, text)| (name.to_string(), digest(text.as_bytes())))
         .collect();
+    for (name, bytes) in faberline_nlp_cnl::SOURCE_FILES {
+        files.insert(
+            format!("dependencies/faberline-nlp-cnl/{name}"),
+            digest(bytes),
+        );
+    }
     json!({"version":"som.compiler-backend.v1","files":files})
 }
 
