@@ -1,0 +1,132 @@
+{
+  "version": "som.rust-output-contract-amendment.v1",
+  "amendment": 7,
+  "issue": [
+    146
+  ],
+  "baseline_commit": "88dd693334c120546ca62c929837cf0d2f202eb9",
+  "target": "rust",
+  "bundle": "som.dsl-bundle.v2",
+  "status": "amendment_sealed_after_independent_review",
+  "implementation_already_in_progress": true,
+  "implementation_order": "Native adapter source was staged during contract preparation. This receipt does not claim a wholly pre-implementation freeze.",
+  "previous_receipt": "som-rs/evidence/rust-output-contract-amendment-006.json",
+  "previous_receipt_sha256": "502da0c71d8215361d22fa5765f86a5038bbf821ad94b57b388e9cf79d7dc08a",
+  "reason": "The current fixed compiler needs no model or Apple Silicon. Add trusted native Linux artifacts while preserving historical macOS artifacts and every product/behavior requirement. Only native-tools.json is added to the old frozen file set. The referenced native contract and artifact manifest are bound transitively by their file digests.",
+  "changed_paths": [],
+  "added_paths": [
+    "som-rs/contracts/rust-output-v1/native-tools.json"
+  ],
+  "changes": [],
+  "unchanged": "Every prior frozen contract, test and evidence file keeps its exact bytes. The new native-tools.json extends tool selection without changing the old file bytes.",
+  "target_contract": {
+    "id": "som.rust-output-contract.v1",
+    "previous_sha256": "ec825f3d584a05b05fd42103caead344bc03e62a358682f925fca3b997a7365d",
+    "sha256": "090b9060a5b5f24d8e6994072f4e6c8a796110790b119229650cf0e4a52bee3c",
+    "rule": "sha256 of canonical JSON of files map"
+  },
+  "files": {
+    "som-rs/contracts/rust-output-v1/CONTRACT.md": "067c6392b78dab379abd0688b2291a21349be66db384834e769e9ab0eb082897",
+    "som-rs/contracts/rust-output-v1/acceptance-plan.json": "bea96ef0e19eb5d2e9923cba5e8a41d05df2ac95e0d55baf2d080a5f9f76a83d",
+    "som-rs/contracts/rust-output-v1/api.schema.json": "fb97891d28a1c757f3cbcad1a82a0d4ab286cfa4478f435309505282477d113f",
+    "som-rs/contracts/rust-output-v1/behavior-normalization.json": "c75b29346d605af7e6ec8ad5d856381f4f8e0e0d321f1d236a5d93b545be97bf",
+    "som-rs/contracts/rust-output-v1/bundle.schema.json": "0d9e9db5495c0d9121b3213ed0eb15b18af6de462ee16ef3e91561414f4547bd",
+    "som-rs/contracts/rust-output-v1/case-inventory.json": "fc6fbec822623cb9bdc0a6e11c2a72b6f0dfac3c41e8b7c1e35830090eb7d2a5",
+    "som-rs/contracts/rust-output-v1/native-tools.json": "d04d2d78f0ab64b855ee9d990b89c69b03113e8f808ce0225b8e11e45caaf1f4",
+    "som-rs/contracts/rust-output-v1/negative-cases.json": "9bb36d689ad4be26e608ac8be779a1a8bb8db043d37788b5819c9fe1bf402e22",
+    "som-rs/contracts/rust-output-v1/phase2/behavior.json": "d2007cc091a5f3ff22a2d0aeeef2c6cfe0e8f620caa255b5dc14c06efdf82ece",
+    "som-rs/contracts/rust-output-v1/phase2/case-inventory.json": "b2d13ec6ede88ee6175ba12abd7b608453330030abb184c66a37c886d1e8e7e6",
+    "som-rs/contracts/rust-output-v1/phase2/constructs.json": "6ef923690ce209795141076aec0d76d67d702d0fa35831324da136dd83e463dd",
+    "som-rs/contracts/rust-output-v1/phase2/naming.json": "cf9e2b70608f8ba7bd65710e901c99682bb4478562377ae3d1457abbc1e54de2",
+    "som-rs/contracts/rust-output-v1/phase2/pins.json": "76fa9338f987211dfc4cd1ff01f2b812855c131da7e58f5de3bdac117826e5f1",
+    "som-rs/contracts/rust-output-v1/phase2/services.json": "64c7b3ad93ea8359280232b5b6244f21c5bdcf1fb84931711376708b44ed572d",
+    "som-rs/contracts/rust-output-v1/product-layout.json": "d2d781f31d959fb913b1182a481e44bc4520e6157ef80de1e7e2fcec46be0b8f",
+    "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.lock": "0483374722515e3daa7f8509708abb9c551f1bc1815f9110e6662b893db443ad",
+    "som-rs/contracts/rust-output-v1/reference-phase2/Cargo.toml": "d06a474e62ab474465c73f4ad99ddcf5d0e33a750684e3a8cfa83714949cd430",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.lock": "c56ff78ed4a4f6bd0418b3d027cbf8efec2d088e81f407bcbc25d0eceeb85f20",
+    "som-rs/contracts/rust-output-v1/reference/Cargo.toml": "8b708c38686b77e6740171e24c28793c4a40b54a8e9807f8e147a9ef3b44591d",
+    "som-rs/contracts/rust-output-v1/scope.json": "0f31b4c0290afda9b4c4ccf99b575edec81c3361ae31c74b44bc16d5ff20e51d",
+    "som-rs/contracts/rust-output-v1/target-examples.json": "4d91b175e9c75cadb61ae335dc1540582b3d89c01815abe651b02d57ac6889ae",
+    "som-rs/contracts/rust-output-v1/toolchain.json": "9a05dd1953defc89c4a44eada333cbfc41570e4728295ab1a2be060c76b7029d",
+    "som-rs/evidence/rust-output-v1/coverage-cases-python-2026-10-15.json": "e8d506220cdd2991ce01e2e6c5f63cb3fe618520b0c4d4d0984dcb44b9d1afd8",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-15.json": "b83e01caf26dbd403d04dac4948a04b97f059accd22edceae78f8c2519438462",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-20.json": "2398079609c673ff8086dff85f0fc27c51a66b5b087a09b2622d6913d81fcfdf",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-21.json": "8d302755f218237a5fcdb0275d4a35da0566604598e1d0c8c9c0e51ced8142a7",
+    "som-rs/evidence/rust-output-v1/negative-python-controls-2026-10-23.json": "7f6ddae1dbc9c14ca3d9c25437dc6721f54d9693de43bc178ae1a73a27957b8a",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-16.json": "64eb707bdecdcacb878240ca87094834015cb3dd1a77c2050e852335b18932da",
+    "som-rs/evidence/rust-output-v1/phase2-python-behavior-2026-10-17.json": "24cee7a81cf46379c318efd9271dfb18b15acddbde03e549208df162b538f383",
+    "som-rs/tests/rust-output-v1/build_case_inventory.py": "494976a61dd2184d2a9135d297c635fc4b6bd04be4cbb34bd2b7efc00b855874",
+    "som-rs/tests/rust-output-v1/build_cases.py": "13096aacb9ba3eafe84e4389586478622aca5eea8622f6d8774a15bb4da265b3",
+    "som-rs/tests/rust-output-v1/build_negative_cases.py": "6c0d9313452a8e44f93b981babadf3b7ab433a96d3d9020e56f1004a62f7c7c7",
+    "som-rs/tests/rust-output-v1/build_phase2_behavior.py": "7d58af568f093cff9caaae0bff83dba2bac5ba9dbe8e2fc27ad029bbb8d22d9b",
+    "som-rs/tests/rust-output-v1/build_phase2_constructs.py": "a1c2b3ff09644ef246580a2afec062c78299e9cace169d4e750d11313f1e80ee",
+    "som-rs/tests/rust-output-v1/build_phase2_inventory.py": "60328ce9c02446891a5aff86a1681ce103b895a58b25cd970a0529625b44c994",
+    "som-rs/tests/rust-output-v1/build_phase2_pins.py": "7476958452c998972074a9b9e4ae3ee56d5598617ad4f1d4b3cf41b6d9c31c61",
+    "som-rs/tests/rust-output-v1/build_target_examples.py": "697ca7c91c2c9f4c3d27985ed0f50ce6c6f2a103ea7ed264ba1915c056d43ab2",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.cnl": "22e6cb0aacd219cb47478dca4ff5f244b63ae605de399f08a16bb62093ec9ce7",
+    "som-rs/tests/rust-output-v1/cases/cov-v1-types.prompt.json": "e3a960561e6315900af067cbe3e62d2736efb96419d58cfaa1ca1a968347237c",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.cnl": "a2512cdbbea998a8f051160166e3c1d2f4b43ae5d7bbcbe5e6a0cd211a9b7c1d",
+    "som-rs/tests/rust-output-v1/cases/cov-v2-types.prompt.json": "1ac4b8c37b1c19930ffdd6bbdf236a8c50b858541d44c4d7a7dba09e8cebac53",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.cnl": "554eb27bbd5c894fa7ccd473b45734a33753b1ec32395ccb5f73133b0a71a12c",
+    "som-rs/tests/rust-output-v1/cases/cov-v3-types.prompt.json": "931db289eea1da333b9b39fb27349c526b967e91ad3457fa6ccb967e5dbfff23",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.cnl": "cb7f5fb994d6c7bfbdff549e71286211cd1d3f7177b91bdbeeb34337229b7724",
+    "som-rs/tests/rust-output-v1/cases/cov-v4-types.prompt.json": "4516fc930150a1c4cec7650b2d6c687d1065843e06cea40b3704124eb4ee124e",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.cnl": "97cb49f506fb16fb9da2ea203b5a114ea68766ec46ebb69cdb4d63f012deb16c",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-max.prompt.json": "47657a7899b56c99420d281f04bf9aa56568ab228206de614dfd85a24b939f4d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.cnl": "627623f91944b13158487086efec5653948be6c2e77a341e0d0ba9410d291e5d",
+    "som-rs/tests/rust-output-v1/cases/cov-v5-min.prompt.json": "6c169522307102d28d73ef0a292cd17ce68b0f11dac367ca96b5d9cb273cb347",
+    "som-rs/tests/rust-output-v1/cases/index.json": "b49af2a7ba842e5dd810d8d010fcf93436474df7f49f1c569367bed1bc94ed1b",
+    "som-rs/tests/rust-output-v1/check_contract.py": "958aacace4f99badd190715140665bb3bf9f08ec0e88c8557b6d24f87a069b15",
+    "som-rs/tests/rust-output-v1/check_python_controls.py": "50e081a6a10cdbb7db8e84e094854ef8833f25d3cfa0857cc98e9cb4e9ccd047",
+    "som-rs/tests/rust-output-v1/rust_profile.py": "62b972b5735ee71fc6b3969a115f57a1a0a53af2e8b0d203321217ab565bf513",
+    "som-rs/tests/rust-output-v1/rust_profile_phase2.py": "66361c04b8c7069868aa03205dbb33f9d28ede06e55ea262326671b91108316b",
+    "som-rs/tests/rust-output-v1/validate_cases.py": "9b9131de7a56a54c6a9f103da170143bc18ec6d113bedb6f79ea0a7f8453d4bb"
+  },
+  "independent_review": {
+    "final_verdict": "APPROVED",
+    "scope": "Contract/pins/hash-chain and source review only. Tool execution, product gates and milestone acceptance are not granted.",
+    "candidate_receipt_sha256": "71eb9630e7dcc4899f2f8427d84f9ea5a2e88f5cd756c2ea3de6f75cc7659e61",
+    "reviewed_source_sha256": {
+      "som-rs/src/compiler.rs": "49c8309e102b1f7c686c8a975ed8b2c81d0133557c0443d8986474ca41cd9f3c",
+      "som-rs/src/quality.rs": "4522527da6a96bfee72365ab0b130c816022194fdff3de386cf604bb7c8e713b",
+      "som-rs/som-targets/src/rust/format.rs": "852d1ff7b7b7a57f7eac564a6d5db248a56ff8e48fe02163aac7fcd960ea1b05",
+      "som-rs/som-targets/src/typescript/format.rs": "b9c9d3025de0263f2010a47d5374869b89a2c752ddc324a3eb99b774df3fbbaf",
+      "som-rs/scripts/hosted_readiness/provision_native.py": "97158732941f4f3cf025b07794dd020636fce6642304bd892445804c123f24bf",
+      "som-rs/scripts/hosted_readiness/test_provision_native.py": "924917d2389139fad0f5d9a7f6e559e69b4331d33551e15384c7b52d42272875",
+      "som-rs/contracts/native-tools-v1/CONTRACT.md": "47d72cabd57bdb380171a54f4dddeeabf25693c3781cabb483c572c162efac6e",
+      "som-rs/contracts/native-tools-v1/artifacts.json": "959ba78afaffe3bbe7e9c675bdc17f49e9d6a8a282cd82e5ca149fb5f5eca193"
+    },
+    "reviews": [
+      {
+        "reviewer": "rust_readiness_audit",
+        "verdict": "APPROVED",
+        "scope": "Native contract and artifact provenance, both receipt chains, Rust/TypeScript formatter adapters, provider and fixtures. Compiler/quality excluded because this reviewer authored its initial patch.",
+        "resolved": [
+          "Prettier must use an absolute verified root",
+          "Cache identity includes ctime and mode"
+        ]
+      },
+      {
+        "reviewer": "typescript_native_port",
+        "verdict": "APPROVED",
+        "scope": "Independent compiler/quality and root Rustfmt adapter review, native contract and receipt chain. TypeScript adapter excluded because this reviewer authored its initial patch.",
+        "resolved": [
+          "Ruff read/live identity and packaging refuse symlinks",
+          "Cache identity detects same-length writes with restored modification time"
+        ]
+      },
+      {
+        "reviewer": "native_provisioner",
+        "verdict": "APPROVED",
+        "scope": "Workflow/provisioner/asset packager integration and actual manifest shape. Provisioner implementation excluded because this reviewer authored it.",
+        "qualification": "Fetching both manifest locks is reproducibility hardening, not an observed failure."
+      }
+    ],
+    "execution": "No local tests, builds, native executable runs or product acceptance were performed."
+  },
+  "execution": {
+    "cargo_tests": "unrun for this candidate",
+    "full_product_acceptance": "unrun"
+  },
+  "frozen_at": "2026-10-28T14:34:28+00:00"
+}

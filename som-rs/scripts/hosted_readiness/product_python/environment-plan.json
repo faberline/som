@@ -1,0 +1,83 @@
+{
+  "version": "som.hosted-python-environment-plan.v1",
+  "python": "3.12.11",
+  "uv": "0.9.9",
+  "product_runtime_ready": false,
+  "product_acceptance_passed": false,
+  "source_sha256": {
+    "som-code-python/data/blocks/v5/blocks.json": "6dd5359cc320cb804f87f3d16fa5899b5ae801f37c970e3b9ac4fced0cc0170f",
+    "som-code-python/data/blocks/composed-quality/blocks.json": "0bfbf2a452a559a2661ac5c0c8355d0dfb9ce21cc310e505f121a51bb63e85cc",
+    "som-code-python/data/blocks/flow-v7-compact-self/blocks.json": "c7269e89d5f7b8fb2b36703cc2ccb6ef8201eccfc62fbffe526714fbd570311e",
+    "som-rs/behavior/phase2/phase2_host.py": "695cd7a15001eddd29f5312a147ddc05764425ac9369eb78eab84d4d2e8ed582",
+    "som-core/scripts/local_business_services.py": "9345e0a82d621ba322c377f55ffa191d7754ad7dbbf7ba80fcceda4a9541ecc3",
+    "som-core/scripts/verify_python_quality.py": "c0d1e43fa332396c0ec5a3ad82977f7a655c62e11919e854733559e9ddf3300d",
+    "som-core/scripts/verify_flow_service.py": "6cd3b8932d5c9c092f12baeca442814c66cbc3fe22cc10cdee100e126827fbbe",
+    "som-rs/behavior/hosts.py": "2dc1dc43fd77a3fa8079c6c73462cc1fa7324246a83d56417ef666790287ec9f",
+    "som-rs/scripts/hosted_readiness/inputs/public-golden-hashes-v1.json": "ea573d3c842d367b32538ad8b9fec01608b4f05f676a07a80d9b9acf81a69a8b",
+    "som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json": "650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9",
+    "som-core/scripts/m3_local_fixture.py": "7c6163ce7f2ac10ea2e424d462a66416887db45f2e029e5d6434f36fc3dd0d42",
+    "som-core/scripts/verify_service_v3.py": "f2d1a13a291cda286a7524d98c61e13aa8000f6850cc4e6f8c1d88c84e6f832e"
+  },
+  "template_sources": [
+    "som-code-python/data/blocks/v5/blocks.json",
+    "som-code-python/data/blocks/composed-quality/blocks.json",
+    "som-code-python/data/blocks/flow-v7-compact-self/blocks.json"
+  ],
+  "observer_requirements": [
+    "alembic==1.20.0",
+    "anyio==4.15.1",
+    "boto3==1.43.105",
+    "cryptography==50.0.1",
+    "fastapi==0.118.0",
+    "google-crc32c==1.9.0",
+    "httpx==0.28.1",
+    "jsonschema==4.26.0",
+    "moto[server,s3]==5.2.3",
+    "psutil==7.2.2",
+    "psycopg==3.3.6",
+    "psycopg-binary==3.3.6",
+    "pydantic==2.11.9",
+    "pyjwt==2.15.1",
+    "pymongo==4.18.2",
+    "redis==8.1.0",
+    "requests==2.34.2",
+    "sqlalchemy==2.0.44",
+    "uvicorn==0.53.0"
+  ],
+  "observer_role": "Orchestrate fixtures and observations. Execute the unchanged strict quality checker under each quality product venv. Do not install som-core/pyproject.toml.",
+  "quality_checker_route": {
+    "source": "som-core/scripts/verify_python_quality.py",
+    "interpreter": "each actual quality product venv/bin/python",
+    "tool_requirements_authority": "exact product dependency-groups.dev and tool.som.python-quality.tools plus the bound checker PINS",
+    "undeclared_tool": "refuse and require the owning product/checker dependency source; do not install a global union"
+  },
+  "assembly_input": {
+    "manifest": "assembly/manifest.json",
+    "version": "som.native-assembly-experiment.v1",
+    "completion_field": "assembly_experiment_complete",
+    "python_products": 671,
+    "variants": [
+      "none",
+      "python"
+    ],
+    "authority": "re-read all actual bytes against the fixed accepted file map and every accepted per-file hash; also verify both owned exchange receipts"
+  },
+  "environment_policy": {
+    "observer_requests": "requests==2.34.2",
+    "product_requests": "requests==2.32.5",
+    "moto": "moto[server,s3]==5.2.3",
+    "per_product_venv": true,
+    "per_product_cache": true,
+    "per_environment_wheelhouse": true,
+    "constraint_overrides_allowed": false,
+    "source_distributions_allowed": false,
+    "product_requirements_may_change": false
+  },
+  "remaining_required_inputs": [
+    "independently qualified native Python3.12.11 and uv0.9.9 runtime",
+    "GitHub-only full transitive uv locks and hash-locked wheel closure for each emitted environment",
+    "preserved wheel bytes, distribution versions, METADATA and all license/notice file hashes with independent audit",
+    "offline wheel-only provision, frozen uv run and exact quality tool-version receipts under each owning product environment",
+    "complete unchanged product and behavior gates plus independent acceptance"
+  ]
+}

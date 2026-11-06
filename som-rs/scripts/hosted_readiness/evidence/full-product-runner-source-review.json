@@ -1,0 +1,177 @@
+{
+  "baseline_review": {
+    "path": "/private/tmp/som-m12-full-product-runner-independent-source-review.json",
+    "sha256": "19385ad78a298db0be60cd4ca85ba5f2393b5fd65a5ec23dc71e38b79b97de7d"
+  },
+  "carrier_provenance": "Optional --byte-identical-rebuild is explicit bool, defaults false and records new-build comparison origin when true. Existing original-proof/raw binary/assets/formatter hash,size,mode comparisons and restore universe checks remain. It does not claim a new build is the original process. Recovery workflow source-binding must be fixed separately before use.",
+  "changed_source_paths": [
+    "som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py",
+    "som-rs/scripts/hosted_readiness/product_runtime/consume_cargo.py",
+    "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py",
+    "som-rs/scripts/hosted_readiness/readiness.json",
+    "som-rs/scripts/hosted_readiness/run_full_products.py",
+    "som-rs/scripts/hosted_readiness/test_run_full_products.py"
+  ],
+  "findings": [],
+  "fixture_source_review": {
+    "execution": "unrun; GitHub only",
+    "meaningful_coverage": [
+      "crossed or absent candidate/helper fields stop before lock/env use",
+      "different recipe/artifact admission proof refuses",
+      "old true case rows cannot hide driver nonzero exit or missing wait/cleanup",
+      "tool exception keeps full named rows and fails them",
+      "wrong scope/order/shard/candidate/worker codes/rawrowhash/extra case fails",
+      "missing or changed exact driver source postcheck fails",
+      "byte-identical carrier origin and binary/assets/tool bytes and modes stay enforced"
+    ],
+    "new_function_definitions": 18,
+    "old14_function_ASTs_identical": true,
+    "total_function_definitions": 32
+  },
+  "local_checks": {
+    "Python_ASTs": "passed",
+    "all_manifest_source_file_sizes_hashes": "passed",
+    "fixture14old_18new_AST_comparison": "passed",
+    "git_apply_check": "passed on current d6cb root working tree"
+  },
+  "local_project_helper_imports_tests_builds_native_services": false,
+  "next_step": "Root may integrate this exact source successor. Fix and separately freeze/review the carrier recovery workflow source launcher before running it. Run all32 fixtures and actual fresh product stages on GitHub only.",
+  "product_acceptance_passed": false,
+  "release_ready": false,
+  "repository_writes_by_reviewer": false,
+  "resolved": {
+    "F1": "Cargo tested_sha is candidate. dependency_identity requires explicit source/helper/candidate identity and exact admission equality before frozen full lock/archive checks.",
+    "F2": "Original checker command failure/exception is retained. Every selected full case result remains. Success requires zero exit, completed wait, owned group cleanup, exact identity/scope/IDs/shard/wholeinventoryhash/rawrowhash summary and complete zero worker-code set. Exact current checker PID/source postcheck is bound.",
+    "F3": "Wheel consumer calls strict dependency_identity before reading environments, preventing absent/crossed helper/candidate and stale admission proof."
+  },
+  "review_scope": "Narrow successor to frozen cf559d3f: F1-F3 plus explicitly requested truthful byte-identical carrier rebuild provenance. All execution remains GitHub-only. Workflow recovery fragment is separate and has an open raw-helper source binding finding.",
+  "reviewed_at_utc": "2026-10-29T03:52:51.144527+00:00",
+  "reviewed_file_pins": [
+    {
+      "before_sha256": "14610dabdd276f89ff8429735da0904e88d2934f949bd942039392dd54184439",
+      "bytes": 5903,
+      "new": false,
+      "path": "som-core/scripts/m3_local_fixture.py",
+      "sha256": "7c6163ce7f2ac10ea2e424d462a66416887db45f2e029e5d6434f36fc3dd0d42"
+    },
+    {
+      "before_sha256": "f344871618b725f92ac2830ea72ed5413f08838e08ac0db9d5e518292af9187b",
+      "bytes": 11282,
+      "new": false,
+      "path": "som-core/scripts/verify_service_v3.py",
+      "sha256": "f2d1a13a291cda286a7524d98c61e13aa8000f6850cc4e6f8c1d88c84e6f832e"
+    },
+    {
+      "before_sha256": "2e350522225e10087737ddfd2824e84508e8c295662eb6805a607fdd27f3f69b",
+      "bytes": 15211,
+      "new": false,
+      "path": "som-rs/behavior/hosts.py",
+      "sha256": "2dc1dc43fd77a3fa8079c6c73462cc1fa7324246a83d56417ef666790287ec9f"
+    },
+    {
+      "before_sha256": "7c37aa4cc6f40c988eb48da92873ffbdf8fab76a2faf8d953107c2fd1d6ff1b9",
+      "bytes": 26048,
+      "new": false,
+      "path": "som-rs/behavior/phase2/check_phase2.py",
+      "sha256": "48388c362434ec86a514516f75a8c82610a8852d9092776818f7811143975d52"
+    },
+    {
+      "before_sha256": "ca46edc076e51d43711223f70b97af0c35fbb4bf413c66da374aca72562d4449",
+      "bytes": 15539,
+      "new": false,
+      "path": "som-rs/behavior/phase2/phase2_host.py",
+      "sha256": "695cd7a15001eddd29f5312a147ddc05764425ac9369eb78eab84d4d2e8ed582"
+    },
+    {
+      "before_sha256": "f8a70d462306d105b192d38dfc36ea945f5e13d8fe12980d146a283584c088f6",
+      "bytes": 4296,
+      "new": false,
+      "path": "som-rs/scripts/hosted_readiness/product_python/environment-plan.json",
+      "sha256": "2a3f142a5f2759bdd8dfdbc4b9b42b145a753e880bcbd412fe41205f71f9bb55"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 9359,
+      "new": true,
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/candidate_carrier.py",
+      "sha256": "662501e5dbc8f84954bc5020c28e7d63069417077264a5b43104d334b5ac0968"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 6335,
+      "new": true,
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/consume_cargo.py",
+      "sha256": "78d57b5bad258cced8fd7b0776b1ccc01b599942d8a59ed95c8caa8babfc156e"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 40674,
+      "new": true,
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/full_product_context.py",
+      "sha256": "c3e20e1fce469c613172f5129cecc7004ba0b5c757d7d5bdf9807eb119ecdedd"
+    },
+    {
+      "before_sha256": "995a1c59fed9a22cb1f0c937d78a6e8e12561811ea3468da1d80ed4d6e04ea7e",
+      "bytes": 70382,
+      "new": false,
+      "path": "som-rs/scripts/hosted_readiness/readiness.json",
+      "sha256": "4c9176e02c8a9d7d8318ec779d092c31d8f91a71f24b6500af5b247f75c4c9a2"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 40081,
+      "new": true,
+      "path": "som-rs/scripts/hosted_readiness/run_full_products.py",
+      "sha256": "66461c0beeabf3ff7186d9923fafe1e31c7076d2c9b929f14faac01acfcd8303"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 22283,
+      "new": true,
+      "path": "som-rs/scripts/hosted_readiness/test_run_full_products.py",
+      "sha256": "8cab7d243c6128772417422daa306344f1c55dc4cbe31f6575a0c775bf039b7d"
+    },
+    {
+      "before_sha256": "b7f6cb1da58d3e88ddda60354019586f2a3ef09ff093e14de9555d9667bde2aa",
+      "bytes": 13268,
+      "new": false,
+      "path": "som-rs/scripts/rust_output_acceptance/prepare_candidate.py",
+      "sha256": "6cff0032291805dfec367b8cd4817876d1c9b3e0c25494487543bb8af82c159e"
+    },
+    {
+      "before_sha256": "1f747112bad2cf0f146ab478d858eac2337e3e51b2d526380e9a09dca7fe8c48",
+      "bytes": 41081,
+      "new": false,
+      "path": "som-rs/som-targets/qa/check_phase2_products.py",
+      "sha256": "5b82f6ed8e841604407af9b933b053208b04500adf6cbe6f626b6d4e6f96ebf2"
+    },
+    {
+      "before_sha256": "45a43e9bc86fbc7d5112c6add0f39154dc0ab2cb9bdf1499948ae5a2e4749e60",
+      "bytes": 34939,
+      "new": false,
+      "path": "som-rs/som-targets/qa/check_rust_products.py",
+      "sha256": "4e77dd27a46580be6e8ecfaed2f1eb0c840a8a19b8f75b9539e5fb8c4f57c50c"
+    },
+    {
+      "before_sha256": "59057734e5085cb8b78f62e63c607bd7da5da84e9e1c3334dc580e3ccaf236d2",
+      "bytes": 24044,
+      "new": false,
+      "path": "som-rs/som-targets/qa/check_targets.py",
+      "sha256": "8b95242ff7bab0da4c7e6f29a2f8735ea6482177044fcd5661f7174c8df0db75"
+    }
+  ],
+  "reviewer": "native_policy_closure",
+  "runtime_ready": false,
+  "source_manifest_sha256": "f06813a630fa6c005198a1dcf555fda1f0a57ecd4c9f0b4938666b606a22b805",
+  "source_patch_sha256": "fcb39116770524b43484b3fcb92584a412f7db38f08a23e7e05ddabd7310ca24",
+  "successor_delta_sha256": "b6f8643c2bf300e8b0b2a95cb9418f7c798deaa0e1369ef99e4f73d41f5b0a7b",
+  "unchanged_boundaries": [
+    "whole671/115/584 named cohorts and original product assertions",
+    "all missing6/18 current input failures and current refusal carrier block",
+    "ordinary uv metadata flag separation and pending independent installed scope",
+    "all false product/runtime/release flags",
+    "original frozen cf559d3f bundle untouched"
+  ],
+  "verdict": "APPROVED_BOUNDED_SOURCE_SUCCESSOR",
+  "version": "som.m12.full-product-runner-successor-independent-source-review.v1"
+}

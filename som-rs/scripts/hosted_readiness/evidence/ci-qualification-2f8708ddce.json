@@ -1,0 +1,78 @@
+{
+  "version": "som.hosted-ci-qualification.v1",
+  "tested_sha": "2f8708ddceb384d21c0573f0a8e34bb599b8ea25",
+  "run_url": "https://github.com/faberline/som/actions/runs/40720585487",
+  "workflow_conclusion": "failure",
+  "fixture_tests": {
+    "passed": 85,
+    "failed": 0,
+    "log_sha256": "9f21bc4f8f212a7b6b2fca514512c1140dae89a6ae2e807a1b62e67596f85685"
+  },
+  "cargo_jobs": {
+    "compiler": {
+      "passed": 48,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "result_rows": 14,
+      "cargo_log_sha256": "07d5995882eaf1d91c407b5623c0c478b950518203bb8a91905d97b74671e68e",
+      "native_receipt_sha256": "c0d6e9daa21b8edd997d0ba3885963fd06978f251176205403e1e0b252706a0e",
+      "tool_hashes": {
+        "ruff": "03b22709bb8f62028a0732423eaac6f7792235bbcb05b3feaddaac3d992318d8",
+        "rustfmt": "dbb30c6037c51a2bacb94d46e2d6435d9487531c06cf82330fdee0bda507db0d",
+        "node": "3de740a941a630439b22b79aafb383f4912b76354a2694765e8d59a033746538",
+        "prettier": "f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299"
+      },
+      "tool_versions": {
+        "ruff": "ruff 0.16.6",
+        "rustfmt": "rustfmt 1.9.0-stable (31fca3adb2 2026-06-26)",
+        "node": "v26.5.0",
+        "prettier": "3.9.10"
+      }
+    },
+    "targets": {
+      "passed": 61,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "result_rows": 3,
+      "cargo_log_sha256": "95aa6968397309dfb1f28b07b2058ffa98800fe79034d2afe7124ba051e16e49",
+      "native_receipt_sha256": "c0d6e9daa21b8edd997d0ba3885963fd06978f251176205403e1e0b252706a0e",
+      "tool_hashes": {
+        "ruff": "03b22709bb8f62028a0732423eaac6f7792235bbcb05b3feaddaac3d992318d8",
+        "rustfmt": "dbb30c6037c51a2bacb94d46e2d6435d9487531c06cf82330fdee0bda507db0d",
+        "node": "3de740a941a630439b22b79aafb383f4912b76354a2694765e8d59a033746538",
+        "prettier": "f61c8e4b88d59c4ed6688179213270127e34f90911987959ef21ee396f9b7299"
+      },
+      "tool_versions": {
+        "ruff": "ruff 0.16.6",
+        "rustfmt": "rustfmt 1.9.0-stable (31fca3adb2 2026-06-26)",
+        "node": "v26.5.0",
+        "prettier": "3.9.10"
+      }
+    }
+  },
+  "public_input_job": {
+    "state": "passed for declared partial scope",
+    "manifest_sha256": "538105adaa8a1a01665205356734fa034fb4117c3edc703a3608e10446e0e199",
+    "counts": {
+      "public_reconstructed": 127,
+      "legacy_reconstructed": 533,
+      "legacy_blocked": 11,
+      "legacy_named_total": 544,
+      "legacy_generator_reconstructed": 90,
+      "checked_dsl_blocked": 2,
+      "checked_dsl_public_recipe_unrun": 1
+    },
+    "generator_prompt_proof": "90 exact named prompt and CNL hashes matched",
+    "full_input_set_ready": false,
+    "product_acceptance_passed": false
+  },
+  "frozen_product_prerequisites": "failed; required assets and full gates remain unavailable",
+  "full_product_acceptance": "unrun",
+  "local_execution": "metadata/raw-log inspection only; no local tests, builds, compiler, products or services",
+  "limits": [
+    "Public input reconstruction and unit tests are not full acceptance.",
+    "Compatibility leaf/payload policy, full baseline response bytes, behavior and independent product audit remain required."
+  ]
+}

@@ -100,6 +100,9 @@ def checker(case: dict) -> tuple[str, bool]:
 
 def cases() -> list[dict]:
     """Every phase 2 case, with loaders for its prompt and files."""
+    if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+        from full_product_context import phase2_cases
+        return phase2_cases(checker)
     out: list[dict] = []
 
     def add(**row: Any) -> None:
@@ -216,6 +219,15 @@ def rust_files(qa_url: str, case: dict, prompt: dict, row: dict) -> dict[str, st
     """The Rust product of the typed prompt, or None for the expected refusal. The outcome must be
     the one phase2/case-inventory.json records for the case."""
     expected = {r["id"]: r["phase2_expected"] for r in read(INVENTORY)["rows"]}[case["id"]]
+    if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+        from full_product_context import recorded_transport, recorded_files
+        if recorded_transport():
+            if expected["result"] == "refusal":
+                raise RuntimeError("fresh refusal gate needs the same-candidate binary carrier")
+            files = recorded_files(prompt, "rust", case["id"])
+            row["rust"] = {"transport": "exact-recorded-assembled-input",
+                           "files_sha256": qa.sha(files), "fresh_compile_performed": False}
+            return files
     status, raw = post(qa_url, dump({"format": "som.prompt-json.v1", "target": "rust", "prompt": prompt}),
                        "/v1/compile")
     record: dict[str, Any] = {"expected": expected, "compile_status": status,
@@ -427,9 +439,16 @@ def run(args: argparse.Namespace) -> int:
         argv = [sys.executable, str(pathlib.Path(__file__).resolve()), "worker", "--out", str(out),
                 "--index", str(index), "--claims", claims, "--ids", json.dumps(ids),
                 "--language", args.language, *(["--qa", args.qa] if args.qa else [])]
+        if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+            from full_product_context import tool_command
+            argv = tool_command(pathlib.Path(__file__).resolve(), argv[2:])
         processes.append(subprocess.Popen(argv, stdout=log, stderr=log, env=env))
     codes = [p.wait() for p in processes]
     print("worker exit codes", codes, flush=True)
+    if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+        from full_product_context import phase2_result
+        summarize(out)
+        return phase2_result(out, every, args.only, codes)
     return summarize(out) or max(codes, default=0)
 
 
@@ -497,7 +516,11 @@ def main() -> int:
                   "" if case["standard"] else "subset")
         print(len(every), "cases", file=sys.stderr)
         return 0
-    if args.mode in ("run", "worker") and pathlib.Path(sys.prefix).resolve() != VENV.resolve():
+    if args.mode in ("run", "worker") and os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+        from full_product_context import observer_python
+        if pathlib.Path(sys.executable).absolute() != observer_python():
+            raise SystemExit("run with the admitted hosted observer interpreter")
+    elif args.mode in ("run", "worker") and pathlib.Path(sys.prefix).resolve() != VENV.resolve():
         raise SystemExit(f"run this with {VENV}/bin/python, the pinned acceptance environment")
     if args.mode == "run":
         return run(args)

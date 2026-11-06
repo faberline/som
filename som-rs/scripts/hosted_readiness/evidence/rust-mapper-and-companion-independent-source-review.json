@@ -1,0 +1,159 @@
+{
+  "version": "som.m12-independent-rust-mapper-and-companion-source-review.v1",
+  "reviewer": "independent companion_review child agent; not the author",
+  "candidate_head": "09ced52261c13e8da5fce2b2b51d59e0c8641d4a",
+  "review_kind": "source and existing metadata read/hash only",
+  "source_review_passed": true,
+  "actionable_findings": [],
+  "files": [
+    {
+      "path": "som-rs/scripts/hosted_readiness/complete_rust_inputs.py",
+      "raw_sha256": "9ef5c1bacba959d68f2aec8b62be18c5c0c0b51cdbe7e3341e9d8a23d650469c"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/test_complete_rust_inputs.py",
+      "raw_sha256": "234681f5fe6ceb7effd900139d010e2863056b6c7d83fec6ccb12b520347b086"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/map_rust_inputs.py",
+      "raw_sha256": "4e67dadbce7213917ab05b5fe29d685bec595493c7608c93de334338801c94b7"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/test_map_rust_inputs.py",
+      "raw_sha256": "781eb9a3a89fde491eaa76e41229e141637d397b97fe5f27e6964447ebdff64a"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/reconstruct_public_inputs.py",
+      "raw_sha256": "7ad8856988b2abb1bb10125489873aba922abf1a13fa155b71afa73ea4e28b67"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/export_goldens.py",
+      "raw_sha256": "b35440acbb5455fe90517d62fd860762c03882aa81b7ec5542f869cc1b40cc66"
+    },
+    {
+      "path": "som-rs/tests/rust-output-v1/build_negative_cases.py",
+      "raw_sha256": "6c0d9313452a8e44f93b981babadf3b7ab433a96d3d9020e56f1004a62f7c7c7"
+    },
+    {
+      "path": "som-rs/scripts/typescript_output_acceptance/check_rust_baseline.py",
+      "raw_sha256": "f99ff77f78ef80a1e9ff010e9cb669d0219b7ba3b8a4082b29ebbd267c7d309a"
+    },
+    {
+      "path": "som-rs/tests/compiler-v1/serializer.py",
+      "raw_sha256": "bfb8eca480c08ee16c1a8bb42aae4a8a10f947ed0ca9c9c5521c75d09809632d"
+    },
+    {
+      "path": "som-rs/contracts/compiler-v1/field-statement-map.json",
+      "raw_sha256": "76744262ece22db17c61683b206beaab67105245888719f9e86c2c84e8283be2"
+    },
+    {
+      "path": "som-rs/contracts/compiler-v1/examples/v1.prompt.json",
+      "raw_sha256": "8a0269b81d7831c329c04d3114d3feaaa4c2def6df378a76b6569e9bf282463a"
+    },
+    {
+      "path": "som-rs/contracts/compiler-v1/examples/v3.prompt.json",
+      "raw_sha256": "72361df884e7d4bf28b9a71da5c6dd4c119fde0e19aa78dcb5c4d2a2d45668ed"
+    },
+    {
+      "path": "som-rs/contracts/compiler-v1/examples/v4.prompt.json",
+      "raw_sha256": "6f123ea4ff72b7e0d6cba50278b10a5da1ecc449dd441b2ae0ff480500b8e43a"
+    },
+    {
+      "path": "som-rs/contracts/compiler-v1/examples/v5.prompt.json",
+      "raw_sha256": "65101209a650e209be40ee35d969c6f6764d471a5ea4d71f4561dc054d8bbc39"
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json",
+      "raw_sha256": "650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9"
+    }
+  ],
+  "observations": [
+    {
+      "area": "final immutable request pin fix",
+      "source": "map_rust_inputs.py:110-183",
+      "finding": "The mapper rereads all671 Python named rows in fixed order. Every prompt and CNL body matches the sealed canonical prompt/CNL hashes. It independently rechecks254 public raw request pins and454 known legacy typed raw request pins, including11 supplement pins imported from the committed reconstruction helper. It requires the exact708 known raw request check count and11 supplement subset. Re-signing the mutable manifest cannot authorize altered known request whitespace."
+    },
+    {
+      "area": "all699 frozen Rust identities",
+      "source": "map_rust_inputs.py:205-238,278-364",
+      "finding": "The mapper requires115 phase1 identities and584 phase2 identities, with exact group/kind partitions and no duplicate IDs. It keeps each named row even when typed prompt values duplicate. Phase1 mixed raw prompt-file vs canonical prompt hash semantics remain explicit. Phase2 typed prompt and input positions are bound to the frozen identities."
+    },
+    {
+      "area": "current400 collision refusals",
+      "source": "map_rust_inputs.py:224-238,317-334",
+      "finding": "Only RS12_CNL_V3_FILTER_LIMIT and RS13_JSON_V3_FILTER_OFFSET remain phase2 refusals. Each must retain HTTP400, INVALID_VALUE, the exact frozen cause and normalized pointer. Older historical native422 observations remain recorded as historical, without replacing current phase2 expectations."
+    },
+    {
+      "area": "native form and assembly preservation",
+      "source": "map_rust_inputs.py:224-276,310-350",
+      "finding": "The13 CNL and9 JSON native RS raw bodies are copied directly from pinned negative-case source strings. All22 raw Python controls are separately copied. Target rust and control-envelope equivalence are verified before output. The full current expectation, behavior checker metadata, standard behavior flag, assembly variant and expected file-map hash are retained. For legacy rows the assembly variant must equal the Python golden variant; checked variants cannot silently become standard."
+    },
+    {
+      "area": "final mapper fixtures",
+      "source": "test_map_rust_inputs.py:173-290",
+      "finding": "Ten inspected tests cover full named mapping and native bytes, source corruption, canonical prompt forgery, same-value raw-byte changes after mutable manifest rehash, omitted Python rows, duplicate Rust names, old422 replacement, native retargeting, symlink inputs and existing output preservation. No test was run during this review."
+    },
+    {
+      "area": "nine explicit typed companions",
+      "source": "complete_rust_inputs.py:42-101",
+      "finding": "The nine fixed recipe identities, public base versions and field edits match the corresponding unchanged public CNL authoring recipes. RS12 edits field index2 and query/filter_field. The final canonical typed prompt must match the independently frozen row hash."
+    },
+    {
+      "area": "RS20 public base structure",
+      "source": "som-rs/contracts/compiler-v1/examples/v5.prompt.json",
+      "finding": "The source JSON root has no capabilities key. Its child first field is title. The add /capabilities precondition is valid for this exact pinned base. The fixed added capability values match the public builder."
+    },
+    {
+      "area": "five CNL companions",
+      "source": "complete_rust_inputs.py:104-130,229-240",
+      "finding": "The mapper must expose exactly five missing CNL forms. Serialization uses the exact source-pinned serializer and statement map. The loader only admits that serializer module, compiles verified source bytes and rejects unbound som_core imports. No compiler validation API or parser bypass is added."
+    },
+    {
+      "area": "699 accepted baseline requests",
+      "source": "complete_rust_inputs.py:141-186,241-261",
+      "finding": "The fixed public TS065 artifact digest is 650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9. The code requires all699 named compile_equal rows and all2093 recorded Rust rows. For each named case it requires accepted request pins to agree and selects only one of two prompt-object order encodings by an exact full raw request SHA. It preserves the baseline writer header order format,target,prompt. This is a source-enforced condition; no live reconstruction was run during review."
+    },
+    {
+      "area": "native bodies and diagnostics",
+      "source": "map_rust_inputs.py:240-356; complete_rust_inputs.py:224-257",
+      "finding": "Completion fills only absent forms and writes baseline-json separately. It keeps the mapper native13 CNL and9 JSON bodies,22 Python controls, frozen native diagnostic records, assembly variants and expected_file hashes. Current phase2_expected is copied directly from the pinned phase2 inventory. Native format,prompt,target JSON bytes stay distinct from baseline format,target,prompt bytes."
+    },
+    {
+      "area": "source and output integrity",
+      "source": "complete_rust_inputs.py:59-68,189-223,260-288",
+      "finding": "The source reader verifies immutable source pins and rejects symlink paths. Completion uses an owned temporary mapping directory and refuses an existing output or output under source/input trees. It rereads staged requests against stored hashes, rereads the fixed baseline artifact, requires the exact declared2120-file set, then copies to the new output."
+    },
+    {
+      "area": "honest scope",
+      "source": "complete_rust_inputs.py:258-272",
+      "finding": "Both forms may be marked supplied only after the enforced hash conditions. CNL semantic validation, refusal validation, raw compile comparison, product suites and behavior gates remain unrun. full_input_set_ready and product_acceptance_passed remain false."
+    },
+    {
+      "area": "synthetic fixture coverage",
+      "source": "test_complete_rust_inputs.py:139-211",
+      "finding": "Seven source-defined tests cover all699 paired requests and preserved native/control bytes; wrong RS12 edits; third header order; immutable baseline digest; duplicate accepted identities; changed serializer source before runtime; and existing output preservation. These tests were inspected but not executed."
+    }
+  ],
+  "local_project_imports": false,
+  "local_reconstruction_run": false,
+  "local_tests_run": false,
+  "local_builds_run": false,
+  "local_servers_run": false,
+  "github_execution": "unrun for this helper at review time",
+  "cnl_semantic_validation": "unrun",
+  "cnl_refusal_validation": "unrun",
+  "full_input_set_ready": false,
+  "product_acceptance_passed": false,
+  "next_step": "Root may commit exact reviewed mapper/completion source files. Run all17 inspected fixtures and complete699 mapping on GitHub, audit emitted artifacts, then prove real compiler semantics/refusals and all applicable product gates.",
+  "review_scope": "Final fixed mapper plus companion completion and both synthetic fixture files",
+  "companion_component_review": {
+    "path": "som-m12-independent-rust-companion-source-review.json",
+    "raw_sha256": "50ce3b28a8736644ce3619cd39b7aed49d59eb87c8d923dbdbf8ddb96e2dfc84"
+  },
+  "mapper_source_review_passed": true,
+  "companion_source_review_passed": true,
+  "fixture_tests_inspected": {
+    "mapper": 10,
+    "companion": 7
+  }
+}

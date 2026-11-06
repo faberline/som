@@ -1,0 +1,280 @@
+{
+  "files": [
+    {
+      "bytes": 36335,
+      "path": ".github/workflows/rust-dependency-preparation.yml",
+      "sha256": "a6633463d499132fce37ec46e2b4378b72a01c5384469f914db53341890a4511"
+    },
+    {
+      "bytes": 34524,
+      "path": ".github/workflows/rust-hosted-readiness.yml",
+      "sha256": "9c900d487fe2ff620e7f8bd253603c73db3d9101543334efd8df8d9e67f288dd"
+    }
+  ],
+  "identity_checks": {
+    "all_helper_contexts_keep_inputs_helper_revision_fallback": true,
+    "every_matrix_job_fetches_fixed_f59": true,
+    "exact_expected_matrix": true,
+    "fresh_runtime_and_rust_qualification_receive_same_selected_helper_as_driver": true,
+    "matrix": [
+      [
+        "python-quality",
+        0,
+        8
+      ],
+      [
+        "python-quality",
+        1,
+        8
+      ],
+      [
+        "python-quality",
+        2,
+        8
+      ],
+      [
+        "python-quality",
+        3,
+        8
+      ],
+      [
+        "python-quality",
+        4,
+        8
+      ],
+      [
+        "python-quality",
+        5,
+        8
+      ],
+      [
+        "python-quality",
+        6,
+        8
+      ],
+      [
+        "python-quality",
+        7,
+        8
+      ],
+      [
+        "phase1",
+        0,
+        1
+      ],
+      [
+        "phase2-python",
+        0,
+        8
+      ],
+      [
+        "phase2-python",
+        1,
+        8
+      ],
+      [
+        "phase2-python",
+        2,
+        8
+      ],
+      [
+        "phase2-python",
+        3,
+        8
+      ],
+      [
+        "phase2-python",
+        4,
+        8
+      ],
+      [
+        "phase2-python",
+        5,
+        8
+      ],
+      [
+        "phase2-python",
+        6,
+        8
+      ],
+      [
+        "phase2-python",
+        7,
+        8
+      ],
+      [
+        "phase2-rust",
+        0,
+        16
+      ],
+      [
+        "phase2-rust",
+        1,
+        16
+      ],
+      [
+        "phase2-rust",
+        2,
+        16
+      ],
+      [
+        "phase2-rust",
+        3,
+        16
+      ],
+      [
+        "phase2-rust",
+        4,
+        16
+      ],
+      [
+        "phase2-rust",
+        5,
+        16
+      ],
+      [
+        "phase2-rust",
+        6,
+        16
+      ],
+      [
+        "phase2-rust",
+        7,
+        16
+      ],
+      [
+        "phase2-rust",
+        8,
+        16
+      ],
+      [
+        "phase2-rust",
+        9,
+        16
+      ],
+      [
+        "phase2-rust",
+        10,
+        16
+      ],
+      [
+        "phase2-rust",
+        11,
+        16
+      ],
+      [
+        "phase2-rust",
+        12,
+        16
+      ],
+      [
+        "phase2-rust",
+        13,
+        16
+      ],
+      [
+        "phase2-rust",
+        14,
+        16
+      ],
+      [
+        "phase2-rust",
+        15,
+        16
+      ]
+    ],
+    "matrix_candidate_revision": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+    "reusable_caller_passes_guard_selected_helper_revision": true
+  },
+  "initial_dependency_yaml_sha256": "4cfc4814eaf01538fd5af1e9b98ace55bd2750e14b3ce4f9fe4a88ed7653852e",
+  "local_project_helper_imports_or_execution": false,
+  "material_findings": [],
+  "product_acceptance_passed": false,
+  "repo_mutations": false,
+  "resolved_parent_finding": {
+    "finding": "Broad recursive result.json enumeration also selected nested strict quality evidence.",
+    "independent_final_fix_source_review": true,
+    "inline_python_ast_parse": "passed",
+    "line": 721,
+    "path": ".github/workflows/rust-dependency-preparation.yml",
+    "resolution": "Final a6633463 source enumerates exact33 artifact directories, then only each som-full-product-run/result.json. It checks regular/no-symlink/singlelink before passing a NUL-separated path list to the unchanged strict join. Nested quality evidence stays preserved."
+  },
+  "reviewed_at_utc": "2026-10-29T04:00:54.994870+00:00",
+  "reviewer": "full_runner_closure_review",
+  "scope": "Raw working YAML metadata review only: artifact producer/consumer paths, names, helper/candidate expressions, fixed origin and full33 matrix/join shape. Parent owns DAG and complete product gate review.",
+  "shape_checks": [
+    {
+      "consumer_line": 680,
+      "consumer_relative_path": "som-python-wheel-qualification",
+      "download_line": 657,
+      "least_common_ancestor": "RUNNER_TEMP",
+      "producer": "python-wheel-closure-qualification",
+      "result": "matches: sibling environment-input upload retains producer output directory",
+      "upload_lines": [
+        168,
+        179
+      ]
+    },
+    {
+      "producer": "python-wheel-qualification-summary",
+      "result": "small always() report remains separate from heavy closure artifact in both workflows",
+      "root_file": "receipt.json",
+      "upload_line": 187
+    },
+    {
+      "consumer_line": 681,
+      "consumer_relative_path": "closure",
+      "download_line": 662,
+      "least_common_ancestor": "som-cargo-closure-run",
+      "producer": "product-cargo-closure-candidate",
+      "result": "matches receipt.json/cargo-closure.tar.gz expected at closure root",
+      "upload_lines": [
+        295,
+        299
+      ]
+    },
+    {
+      "artifact_id": 12840425819,
+      "producer": "fixed audited runtime",
+      "restore_root": "RUNNER_TEMP/som-product-runtime-qualification",
+      "result": "exact cross-run ID/origin parameters and merge-multiple true; restored fresh at fixed prefix per matrix job",
+      "run_id": 40740849594
+    },
+    {
+      "consumer_line": 683,
+      "producer": "fresh Rust six-tool qualification",
+      "qualify_lines": [
+        637,
+        644
+      ],
+      "result": "complete profile qualification runs in every matrix instance; separate earlier qualification is a prerequisite, not reused as executable bytes",
+      "root": "RUNNER_TEMP/som-rust-product-tools-qualification"
+    },
+    {
+      "least_common_ancestor": "GITHUB_WORKSPACE and RUNNER_TEMP common work directory",
+      "producer": "recorded-f59-candidate-carrier",
+      "result": "carrier job uses fixed f59 original proof with current helper expression and exact source binding; no current full-product preparation stage consumes its output, so no incorrect download path is present",
+      "upload_lines": [
+        481,
+        487
+      ]
+    },
+    {
+      "consumer_lines": [
+        721,
+        738
+      ],
+      "consumer_relative_path": "som-full-product-run/result.json",
+      "least_common_ancestor": "RUNNER_TEMP",
+      "producer": "full-product-<stage>-<index>",
+      "result": "exact33 matrix and final join layout agree",
+      "upload_lines": [
+        694,
+        698
+      ]
+    }
+  ],
+  "tests": "All project fixtures and actual product/workflow execution remain unrun by this reviewer; GitHub only. Parent reports32 product runner fixture definitions still unrun.",
+  "verdict": "NO_OPEN_MATERIAL_FINDING_IN_BOUNDED_SCOPE",
+  "version": "som.full-product-workflow-shape-source-subreview.v1"
+}

@@ -1,0 +1,163 @@
+{
+  "acceptance_chain_review": {
+    "bindings": "each indexed raw or canonical binding matched its recorded parent digest; source index reaches the public release",
+    "header_raw_sha256": "086d83c57e90ec3c2da85b23d450987bbe2e9b2a6a2bb955ab2cb9d67119355a",
+    "new_acceptance_claim": false,
+    "receipt_count": 13,
+    "release_raw_sha256": "f8e649ea96bac3f5e62ef01537c4c517a857e0743d05fb38028d013faf08b640",
+    "source_index_files_raw_pins_verified": 97,
+    "source_index_raw_sha256": "663632b8985c3dfbfdbc09d30c078c71eaf07f16376ff3658d0dcb665561d422",
+    "summary_raw_sha256": "b2fade210f4084c225677796ea743953574bbdec21d909431bf72d329dc81db1"
+  },
+  "accepted_before": {
+    "binary_sha256": "2bceb3a0a1de02b08c71eb557c0c3e32fe5ee7b646935e7821e9e07ab3d56e0c",
+    "commit": "8c4a91fbb5e3b9ae2f96881cf2198b3d2ce321af",
+    "source_archive_sha256": "7ef528beccd9612f8ae2cf521164322c010ab389de27a273f4ffde22c1587fae",
+    "source_json_sha256": "d40578d8845fff8bfeff627924aa501e56f3973eddb09c2d871e25adec2bbbe5"
+  },
+  "artifact": {
+    "bytes": 1547577,
+    "path": "som-rs/scripts/hosted_readiness/inputs/ts125-baseline-hashes-v1.json",
+    "raw_sha256": "7009c29b93714dc1a827236b4ebeb255efc99c91c61460bc7a5ded49c902c868"
+  },
+  "authoring_sources": {
+    "exporter_sha256": "d1f541d9729b219853a84c5332f60799e415646e80e09504518c4ab7cbcaea02",
+    "metadata_authoring": "stdlib JSON, raw reads, digests, comparisons, and archive-member reads only",
+    "native_executables": "unrun locally",
+    "project_imports": "unrun locally",
+    "source_writer_execution": "unrun locally",
+    "synthetic_test_count": 19,
+    "synthetic_test_sha256": "2ff1d12e06b1fa711da1904de4c607d0c882054702b6539d4d6363eabdd3fad2",
+    "tests": "unrun; GitHub only"
+  },
+  "classification": "public_hash_only_metadata",
+  "current_product_acceptance": "unrun",
+  "historical_target_history": {
+    "current_react_scope": "not inferred from old TypeScript refusals",
+    "rows": 791,
+    "scope": "includes positive, negative, out-of-scope, Python controls, and legacy history; separate from the frozen125 product set",
+    "status200": 190,
+    "status400": 12,
+    "status422": 589
+  },
+  "immutable_previous_artifact": {
+    "path": "som-rs/scripts/hosted_readiness/inputs/ts065-baseline-hashes-v1.json",
+    "raw_sha256": "650c6d758519b92dc6bcc11678aa14e9942612a9ed0f1fd35202876065c425a9",
+    "state": "unchanged"
+  },
+  "negative_source_drift": {
+    "accepted_archive_raw_sha256": "c96fb4e6b3b1d86fdd2c1af12724f3e3585878c375c96c96deb057757f771543",
+    "current_refusal_policy_inference": "none",
+    "path": "som-rs/contracts/typescript-output-v1/negative-cases.json",
+    "public_ed56_raw_sha256": "858906170db681b95ecfb28cf4f0374157570771250a6dead23b84bbf6bce52d",
+    "selection": "accepted archive member only; source.json independently binds its raw hash; all33 old body digests match target report"
+  },
+  "next_step": "independent source/data review, then GitHub synthetic fixtures. A full new TypeScript gate still needs accepted complete before request captures or an independently approved equivalent authority.",
+  "ordered_named_cases": {
+    "bundle_report_manifest_product_report_and_frozen_inventory": "exact order and identities match",
+    "canonical_bundle_prompt_dsl_payload_hashes": "all declared forms recomputed and equal",
+    "cnl_and_json_cases": 121,
+    "duplicate_prompt_rows_preserved": 2,
+    "legacy": 100,
+    "legacy_inventory_indices": "all100 match",
+    "nonlegacy": 25,
+    "repeat_compile_and_assemble_responses": "raw bytes equal within each declared form and case",
+    "single_json_only_name_cases": 4
+  },
+  "policy_state": "unsealed",
+  "product_acceptance_passed": false,
+  "publication_data_review": {
+    "export_contents": "stable public IDs, relative tracked paths, method/endpoint/format/status metadata, counts, digests, and explicit unavailable fields",
+    "local_absolute_paths_in_export": 0,
+    "product_file_bodies_in_export": 0,
+    "prompt_or_CNL_bodies_in_export": 0,
+    "raw_request_or_response_bodies_in_export": 0
+  },
+  "request_authority_limits": {
+    "canary_assemble_raw_request_files": 2,
+    "canary_http_statuses": "not recorded in prerequisite; null. These are separate operations, not bundle-run request captures.",
+    "direct_compile_cnl_hashes": 21,
+    "direct_compile_json_hashes": 119,
+    "missing_bundle_run_assemble_request_hashes": 125,
+    "missing_compile_cnl_hashes": 100,
+    "missing_compile_json_hashes": 6,
+    "missing_field_value": null,
+    "separate_accepted_canary_operations": 6,
+    "source_reconstructed_request_hashes": "null; unrun. The accepted source archive does not include the before HTTP writer scripts. No current candidate or current writer encoding backfills these fields."
+  },
+  "scope": "separate historical accepted-before TS125 metadata; no current candidate execution or acceptance",
+  "source_writer_findings": [
+    {
+      "finding": "bundle_checks request_sha256 hashes first_req_body, a compile request; response_sha256 and http_status describe assemble_1. No request file is written by post_json.",
+      "lines": [
+        1100,
+        1318,
+        1409,
+        1720
+      ],
+      "path": "som-rs/scripts/typescript_output_acceptance/check_bundles.py"
+    },
+    {
+      "finding": "all791 target report rows keep the raw compile request digest and raw response digest. The writer saves responses, not request files. Repeated IDs across sections remain separate ordered records.",
+      "lines": [
+        110,
+        340,
+        931,
+        1298
+      ],
+      "path": "som-rs/scripts/typescript_output_acceptance/check_target.py"
+    },
+    {
+      "finding": "directory digest uses sorted relative path, NUL, raw file digest, LF. All three relevant accepted directory receipts recompute exactly.",
+      "lines": [
+        106
+      ],
+      "path": "som-rs/scripts/typescript_output_acceptance/run_acceptance.py"
+    },
+    {
+      "finding": "files_sha256 hashes compact sorted JSON of the complete relative-file-to-raw-digest map. All125 maps recompute from accepted assemble responses and match every retained product byte.",
+      "lines": [
+        690
+      ],
+      "path": "som-rs/som-targets/qa/check_ts_products.py"
+    }
+  ],
+  "verified_directory_receipts": [
+    {
+      "file_count": 819,
+      "name": "target/responses",
+      "raw_tree_sha256": "69e4502b801ce2edfb7133a33cf280108f26a021ea37731af8a423c427392a68",
+      "rule": "sorted_relative_path_NUL_raw_sha256_LF",
+      "verification": "verified"
+    },
+    {
+      "file_count": 881,
+      "name": "bundles/responses",
+      "raw_tree_sha256": "7fdfde2f2c575ec081f40182e649b7e1fe61fb39dfb84a5d9aab76ae7ce21c42",
+      "rule": "sorted_relative_path_NUL_raw_sha256_LF",
+      "verification": "verified"
+    },
+    {
+      "file_count": 1376,
+      "name": "bundles/products",
+      "raw_tree_sha256": "ab3a509c88c9fb9968e2e075217e10f70eab30acf79728bee1df85bd70169ef0",
+      "rule": "sorted_relative_path_NUL_raw_sha256_LF",
+      "verification": "verified"
+    }
+  ],
+  "verified_scope": {
+    "assemble_refusals": 12,
+    "bundle_assemble_request_hashes_unavailable": 125,
+    "compile_forms": 246,
+    "compile_request_hashes_unavailable": 106,
+    "directly_recorded_compile_request_hashes": 140,
+    "duplicate_prompt_rows_preserved": 2,
+    "legacy_cases": 100,
+    "named_cases": 125,
+    "nonlegacy_cases": 25,
+    "product_files": 1375,
+    "separate_raw_canary_operations": 6,
+    "target_history_rows": 791
+  },
+  "version": "som.ts125-before-source-data-authoring-review.v1"
+}

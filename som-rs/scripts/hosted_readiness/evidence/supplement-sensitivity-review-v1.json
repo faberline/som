@@ -1,0 +1,52 @@
+{
+  "version": "som.supplement-fixture-sensitivity-review.v1",
+  "reviewed_packet_sha256": "143b4f58b64654279b7388c6dcf502953a81b73c7568947d678edf7cfa2fc960",
+  "classification": "Synthetic test-fixture style payloads; no observed intrinsic sensitivity",
+  "review_scope": "All 11 typed input rows and both checked DSL inputs. Local static content and accepted hash-chain review only.",
+  "findings": {
+    "typed_input_string_leaves_reviewed": 1190,
+    "checked_dsl_string_leaves_reviewed": 612,
+    "public_tracked_text_files_compared": 3585,
+    "payload_string_values_absent_from_public_repository_text": 0,
+    "email_findings": 0,
+    "url_or_access_url_findings": 0,
+    "credential_token_private_key_findings": 0,
+    "IP_or_local_path_in_payload_findings": 0,
+    "sensitive_key_findings": 0,
+    "actual_runtime_record_findings": 0,
+    "business_specific_identity_or_customer_data_findings": 0
+  },
+  "content_assessment": [
+    "Typed payloads contain generic resource schemas, capability choices, flow operations and input references.",
+    "Checked DSL payloads contain project block references, symbolic bindings, file layout and flow operations.",
+    "No actual customer/person records, access-bearing endpoints or credential values were observed.",
+    "The whole source review packet contains local provenance paths and inherited distribution-approval metadata. These are absent from the prepared candidate."
+  ],
+  "interpretation": "The earlier private label reflects unpublished provenance and unapproved distribution, rather than detected secret payload content. A private GitHub repository is not an inherent technical requirement for these synthetic fixture bodies.",
+  "publication_candidate": {
+    "sha256": "fe68f59c26554510c87b94eae81fec3da7202e22bb8a158606dc1b869f9af711",
+    "bytes": 144323,
+    "typed_input_rows": 11,
+    "distinct_typed_prompts": 10,
+    "checked_dsl_rows": 2,
+    "complete_accepted_bundle_hashes_verified": 13,
+    "public_golden_export_sha256": "ea573d3c842d367b32538ad8b9fec01608b4f05f676a07a80d9b9acf81a69a8b",
+    "state": "historical synthetic regression fixtures; current product acceptance not established"
+  },
+  "verified_bindings": [
+    "Exact source packet and reviewed route root digests",
+    "Exact published public golden export digest and all 544 accepted legacy record identities",
+    "Accepted legacy result raw digest matches both public acceptance anchors",
+    "Every selected source bundle is in the reviewed index and matches its raw file hash",
+    "All 13 complete source bundle canonical hashes match accepted legacy result records",
+    "Prompt, DSL and payload hashes recompute from each selected accepted bundle",
+    "Typed prompt/CNL/product pins match the corresponding published golden rows",
+    "Both checked DSL bodies match the accepted source bundle and DSL digest"
+  ],
+  "limits": [
+    "Vocabulary overlap alone does not prove full compound fixtures were previously published.",
+    "No external ownership or license restriction is evident in the reviewed payloads; the review does not independently establish legal ownership.",
+    "No test, build, compiler, product, service, project import or upload ran. This is not current product acceptance.",
+    "This content and hash-chain review does not grant human permission for distribution."
+  ]
+}

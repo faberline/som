@@ -1,0 +1,90 @@
+{
+  "version": "som.dependency-normalization-independent-source-review.v1",
+  "reviewer": "cnl_source_review",
+  "reviewer_aw_session_id": "e6f8ac17-8649-442c-9120-c4f7e98dd79a",
+  "baseline_source": "f59e28d910ff4adb16e3becfdc82bd2978ca84fa",
+  "files": [
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/provision_cargo.py",
+      "bytes": 36629,
+      "sha256": "ee12d19c3648271cc031d55633f105e2ad30715fd89057b415faa931acc0fc3e",
+      "test_definitions": 0
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/test_provision_cargo.py",
+      "bytes": 32807,
+      "sha256": "1962df6b81ae7972221b218446cf17ddea0b8bf43293c7404dcc34cea87c6a7e",
+      "test_definitions": 31
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_runtime/CARGO_CLOSURE.md",
+      "bytes": 5183,
+      "sha256": "6b0e0f8a33cb0c004e90f39de7e627b03b8ce796d40dc93dc28086c94074edcd",
+      "test_definitions": null
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_python/produce_wheels.py",
+      "bytes": 75923,
+      "sha256": "15704e98ebad2cbb6fc104487963d327f3378161d1a65bcfd52c71de4b16714c",
+      "test_definitions": 0
+    },
+    {
+      "path": "som-rs/scripts/hosted_readiness/product_python/test_produce_wheels.py",
+      "bytes": 47889,
+      "sha256": "8ce076e65f9c05ac6a6221e31e5d2e7dafd50b6754b22c6dc085ab5a324b70bd",
+      "test_definitions": 47
+    }
+  ],
+  "verdict": "approved_bounded_normalization_source_only",
+  "findings": [],
+  "cargo_authority": {
+    "commit": "356927216a2d746168cf76e5e88cc3f4b58e029d",
+    "path": "src/cargo/ops/vendor.rs",
+    "git_blob_oid": "76ff4178a961e4acce5208902355609181f1a9ae",
+    "exact_gitblob_sha256": "908702bdee37140eb56508846f60eaaf1974dec57c5f3d71ce39b6624448c7c2",
+    "exact_gitblob_bytes": 23983,
+    "local_text_projection_note": "Root source cache had one extra final LF. Removing that one projection byte yields the exact independently checked primary Git blob OID. vendor_this code is unchanged.",
+    "rules": "Any .git path component; any-depth .gitignore/.gitattributes basename; root .cargo-ok only. Registry .orig/.rej retained.",
+    "implementation_equivalent_for_validated_posix_archive_relative_names": true,
+    "retained_checks": [
+      "everyactualfileandCargochecksum",
+      "everypublisherarchivechecksum",
+      "sourcebyteimmutability",
+      "source/license/unknownmetadataomissionrefusal",
+      "complete352scope"
+    ]
+  },
+  "wheel_authority": {
+    "actual_saved_lock_headers_read": 5,
+    "version": 1,
+    "revision": 3,
+    "requires_python": "==3.12.*",
+    "accepted_constraint_forms": [
+      ">=3.12,<3.13",
+      "==3.12.*"
+    ],
+    "qualification_interpreter": "exact3.12.11stillrequired",
+    "original_project_constraint_unchanged": true,
+    "arbitrary_python_ranges_or_new_lock_version_authorized": false
+  },
+  "fixtures_reviewed": [
+    "Cargo positive nestedGitmetadata omission with completepublisherbytes",
+    "Cargo negative actualsource,backup.orig/rej,otherdotfile omissions",
+    "ExistingCargorehashedstub/checksumpins unchanged",
+    "Wheel bothknownminor-rangeforms positive",
+    "Wheel otherminor/broad/unbounded/exactpatch forms negative",
+    "Wheel lockversion2 negative",
+    "Fakeuvcommandfixture now emits the actualv1/rev3/minorprefixheader"
+  ],
+  "github_cargo_fixtures": {
+    "definitions": 31,
+    "execution": "unrun_after_fix"
+  },
+  "github_wheel_fixtures": {
+    "definitions": 47,
+    "execution": "unrun_after_fix"
+  },
+  "actual_new_closure_execution": "unrun",
+  "product_acceptance_passed": false,
+  "local_execution": "Read source/diff/AST, saved lock headers and primary-source bytes only. No subject/helper import, tests, Cargo, uv, native binary, build, install or service ran."
+}

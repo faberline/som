@@ -1,0 +1,19 @@
+{
+  "version": "som.coordinator.carrier-single-link-source-review.v1",
+  "patch_sha256": "141f5b6f09ae38bff514d59897bdbd22c7af64ddf06ac57614747ff0ddf341bc",
+  "reviewed_workflow_sha256": "ebfc4c60476c24366e3241a24a040e066bc480e914873bb48a2c1e1d2dfda6c1",
+  "scope": "read-only source review of the exact owned binary/rustfmt copy step and unchanged packer checks",
+  "findings": [],
+  "source_review_passed": true,
+  "evidence": [
+    "Source bytes must equal original f59 sha256,size,mode before writing.",
+    "O_NOFOLLOW and regular/bounded fd checks remain; source fd/path identity and full bytes rechecked.",
+    "Fresh 0700 directory and exclusive output create a verified single-link copy.",
+    "Destination sha256,size,mode and single link are checked.",
+    "Original source before/after guard and whole binary/asset/tool identity equality remain mandatory.",
+    "Original packer regular single-link predicate remains unchanged."
+  ],
+  "github_staging_and_pack_completed": false,
+  "product_acceptance_passed": false,
+  "local_project_code_executed": false
+}

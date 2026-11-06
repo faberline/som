@@ -1,0 +1,1336 @@
+{
+  "components": {
+    "cargo": {
+      "all_aliases": {},
+      "all_regular_files": {
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/LICENSE-APACHE": {
+          "bytes": 10860,
+          "mode": 420,
+          "sha256": "8ada45cd9f843acf64e4722ae262c622a2b3b3007c7310ef36ac1061a30f6adb"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/LICENSE-MIT": {
+          "bytes": 1023,
+          "mode": 420,
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/LICENSE-THIRD-PARTY": {
+          "bytes": 68430,
+          "mode": 420,
+          "sha256": "cbc759b1f17a2ac38fe3eb9e9563b1a08ba0f900611c49faaf68b46907b6d898"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/README.md": {
+          "bytes": 4855,
+          "mode": 420,
+          "sha256": "d9b7b448fdd1bcdff86dc4034733602b8bcb60bdc1a14c37148525b67a157054"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/builder-config": {
+          "bytes": 9140,
+          "mode": 420,
+          "sha256": "46e08e33ac02f74607c22f174a9d8929120eed878b7ec0c8aa971c94a60b6255"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/bin/cargo": {
+          "bytes": 42878680,
+          "mode": 493,
+          "sha256": "a73b2c25573d251489101c0d8f19ad3702eb9761166de5ed8437b472b6c038ce"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/etc/bash_completion.d/cargo": {
+          "bytes": 11440,
+          "mode": 420,
+          "sha256": "42078a725b9e39803843991fbf2dc609097f7c7cf73af984f13564545da68971"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/manifest.in": {
+          "bytes": 1532,
+          "mode": 420,
+          "sha256": "5b2160ec3635b8c8f3129f12cbeee078d55d882f9362313e56e9fd484febe8ba"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/doc/cargo/LICENSE-APACHE": {
+          "bytes": 10860,
+          "mode": 420,
+          "sha256": "8ada45cd9f843acf64e4722ae262c622a2b3b3007c7310ef36ac1061a30f6adb"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/doc/cargo/LICENSE-MIT": {
+          "bytes": 1023,
+          "mode": 420,
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/doc/cargo/LICENSE-THIRD-PARTY": {
+          "bytes": 68430,
+          "mode": 420,
+          "sha256": "cbc759b1f17a2ac38fe3eb9e9563b1a08ba0f900611c49faaf68b46907b6d898"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/doc/cargo/README.md": {
+          "bytes": 4855,
+          "mode": 420,
+          "sha256": "d9b7b448fdd1bcdff86dc4034733602b8bcb60bdc1a14c37148525b67a157054"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-add.1": {
+          "bytes": 10793,
+          "mode": 420,
+          "sha256": "e37eb5889856fcb19ff43dd2a7952aef092d8a5fc1f808b200a3c99d18c7dd79"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-bench.1": {
+          "bytes": 20458,
+          "mode": 420,
+          "sha256": "51cc284d3718901a71ac8b2e812b2317890b1377f641eaf8989e865ccdcd8c05"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-build.1": {
+          "bytes": 16636,
+          "mode": 420,
+          "sha256": "ea0cb3adad4278bb427abb8fd7d2a96eff295d5b13a3f1d5c4b0933d5b3da9b0"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-check.1": {
+          "bytes": 16316,
+          "mode": 420,
+          "sha256": "006c2a65dc3a8a5c56e351511678748c3bbdd3c3eeb5bfcf95b9e20828b04505"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-clean.1": {
+          "bytes": 7810,
+          "mode": 420,
+          "sha256": "ac1056f03dccba5d6a082f4491e83498507e0984a34551d7be7d4c1b4dfc7273"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-doc.1": {
+          "bytes": 14756,
+          "mode": 420,
+          "sha256": "679cbbbb74c0352ea0d295a9d573419bb9533d10868866e260781caeffdd97bd"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-fetch.1": {
+          "bytes": 6940,
+          "mode": 420,
+          "sha256": "014fd2e78b79fe9134f5e3fc38e8a2906d2a3f4ca6ba4a236ae13aefdae70ec5"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-fix.1": {
+          "bytes": 19437,
+          "mode": 420,
+          "sha256": "5c7c676229879e262a3135298c22800c5c1afb57710ec19cc6dd2c8d23224ea6"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-generate-lockfile.1": {
+          "bytes": 5940,
+          "mode": 420,
+          "sha256": "9d673faf1b7c2bb645e1711592440da8d681c8a99744a8f8a927d6144446bc48"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-help.1": {
+          "bytes": 5769,
+          "mode": 420,
+          "sha256": "86b2088f8914fd887f14d3a691110bcd4fa3727ba77d5ace13de2c7cc2860df7"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-info.1": {
+          "bytes": 6117,
+          "mode": 420,
+          "sha256": "5e0b554a0d87716c2c3314289d225d8dfeaf2baad9ddc2b1666aed190b2761e4"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-init.1": {
+          "bytes": 5324,
+          "mode": 420,
+          "sha256": "574759d2269dff096b1c04bc1ae906c3a80389830966e6b5b2130410181f3a9d"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-install.1": {
+          "bytes": 18310,
+          "mode": 420,
+          "sha256": "8aaaef69518265d70d255f14444e43fd2e5b028f1be52934b3c282512add7936"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-locate-project.1": {
+          "bytes": 4665,
+          "mode": 420,
+          "sha256": "021abaf05ac72ac32bb7373ed9805bba19e204db25675895d2d41c013646f8d4"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-login.1": {
+          "bytes": 4791,
+          "mode": 420,
+          "sha256": "53a957a73cfcac30b751a5c6277f94b5a8511ce3cc2af144678a285a598c417a"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-logout.1": {
+          "bytes": 4843,
+          "mode": 420,
+          "sha256": "0f98f10235921e4fd2dd82e76c7fbf551121bef88cf8ef28027072c5d3ff5857"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-metadata.1": {
+          "bytes": 21988,
+          "mode": 420,
+          "sha256": "572a3e2f8d7753855d6dab6941961deb5ac9b99c9ad7d4d3423d8e5f6bc61196"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-new.1": {
+          "bytes": 5136,
+          "mode": 420,
+          "sha256": "920fa6698c28a2f5c2b2cfe69d1e4599e2698a0bceb3d514f19d891ec23b446b"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-owner.1": {
+          "bytes": 5750,
+          "mode": 420,
+          "sha256": "23e71b0c6b5f2701f978b818420835db0e74a938dccdc251ddb2f1c163f20d3d"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-package.1": {
+          "bytes": 15808,
+          "mode": 420,
+          "sha256": "7c2c62f0aa11d7fbb4a5095377316b9a691deb594168ae886cd0a7aa9ea157ff"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-pkgid.1": {
+          "bytes": 7457,
+          "mode": 420,
+          "sha256": "f9353443ca1c342f95845579e56dd69410e7517116dd76efda9ab3845c074058"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-publish.1": {
+          "bytes": 12669,
+          "mode": 420,
+          "sha256": "6d4859d5a12d4a8c814cc50b389d2f3d286bc6baae59d5c70e4cebb40058216c"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-remove.1": {
+          "bytes": 6289,
+          "mode": 420,
+          "sha256": "ba248f85986b141882454f3313eafb5a64a8f244b6abcbb1f9e7114c56fbfbf2"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-report-future-incompatibilities.1": {
+          "bytes": 5917,
+          "mode": 420,
+          "sha256": "a7642c840631e5659ef653271035760b1dc6c3fcf998b8d347fb49965a3ad35a"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-report.1": {
+          "bytes": 4918,
+          "mode": 420,
+          "sha256": "be9d8fe4a569a90e7e5d48c35c5daa74d1728133dc0f43240121654045b6f815"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-run.1": {
+          "bytes": 12398,
+          "mode": 420,
+          "sha256": "85650a39631df37c75e2d894e723710c39f65b86096c4330ede6a99c3b4fd0be"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-rustc.1": {
+          "bytes": 17558,
+          "mode": 420,
+          "sha256": "b7fba799920da5bb8c510e8c9e3c91bde56abb6feb705efeca9a3a42d15cccf2"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-rustdoc.1": {
+          "bytes": 16140,
+          "mode": 420,
+          "sha256": "9c558ed0899cf8e966d417dc2fea86d837c88b854bcdb0c62c30656fc41949d0"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-search.1": {
+          "bytes": 4200,
+          "mode": 420,
+          "sha256": "4761782dd91b5c471bf1b3fc5a3c7912c3c6935706383f3b2b44efb3a1893bea"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-test.1": {
+          "bytes": 22004,
+          "mode": 420,
+          "sha256": "daa865ffe6624ad518390a328d2632a4a6eacfafdfacf99b9c13d6f4d0c6a358"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-tree.1": {
+          "bytes": 17052,
+          "mode": 420,
+          "sha256": "9b0213fbb4e50ccaffc3bf1ab5bd3f7a50204059262f3b194dc99c12535f0ebb"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-uninstall.1": {
+          "bytes": 4467,
+          "mode": 420,
+          "sha256": "145d9580dc8a5e5a73cc4a8dd27827e0413e2bad589b2e62fa4dff8798ffc980"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-update.1": {
+          "bytes": 8144,
+          "mode": 420,
+          "sha256": "b4fd2b6269aff5ee8eb696273315056d94c9de231130b7d6d2e68d98298662d9"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-vendor.1": {
+          "bytes": 7441,
+          "mode": 420,
+          "sha256": "a8c4742f6b0b6d46da8b9cdc69766412efa72e02bf307753242c51394815bce4"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-version.1": {
+          "bytes": 664,
+          "mode": 420,
+          "sha256": "1dc8ad353b33ef871660f7d5af5e977b07a32bf718adce2deb85efdd5568e44b"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo-yank.1": {
+          "bytes": 8274,
+          "mode": 420,
+          "sha256": "a324983332e33580330c0902af4ee7713940bf219c44a1e3a12fc9b8b0d58309"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1/cargo.1": {
+          "bytes": 11180,
+          "mode": 420,
+          "sha256": "c483b800c9aceb307fb15ea4138783838cb379b6f4e306a8dabe84af8fd4b01d"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/zsh/site-functions/_cargo": {
+          "bytes": 24396,
+          "mode": 420,
+          "sha256": "2ba73906f7446d884ed5c466ed851046e6df6620c8d9cd02f192dfb784a6cb98"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/components": {
+          "bytes": 6,
+          "mode": 420,
+          "sha256": "7bb89d54b70dc6110f7bc980b181b6fd9316b7779bba2fd928521e1c5009cc59"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/git-commit-hash": {
+          "bytes": 40,
+          "mode": 420,
+          "sha256": "e0404dcb3136c80530e26a0d6820f48dc445611e046bb603d8f9c0a0e51782b8"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/git-commit-info": {
+          "bytes": 62,
+          "mode": 420,
+          "sha256": "5045e068506293abf0860c26a899fd72529e73ca9539d8a494b7ae422e4cbd50"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/install.sh": {
+          "bytes": 29287,
+          "mode": 493,
+          "sha256": "6a9caa4cf6b65286aae8c796481f11784f6f805752664592c6fb994c3a5f1f32"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/rust-installer-version": {
+          "bytes": 2,
+          "mode": 420,
+          "sha256": "1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2"
+        },
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/version": {
+          "bytes": 29,
+          "mode": 420,
+          "sha256": "bc8ebdc3cfc7c95ba5dbe19d3ddaa505760b35546d7550c6e3011dfd8ed74b75"
+        }
+      },
+      "archive_bytes": 11155376,
+      "component_dir": "cargo",
+      "directories": {
+        "cargo-1.96.1-x86_64-unknown-linux-gnu": 493,
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo": 493,
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/bin": 493,
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/etc": 493,
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/etc/bash_completion.d": 493,
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share": 493,
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/doc": 493,
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/doc/cargo": 493,
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man": 493,
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/man/man1": 493,
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/zsh": 493,
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/zsh/site-functions": 493
+      },
+      "install_manifest_text": "file:bin/cargo\nfile:etc/bash_completion.d/cargo\nfile:share/doc/cargo/LICENSE-APACHE\nfile:share/doc/cargo/LICENSE-MIT\nfile:share/doc/cargo/LICENSE-THIRD-PARTY\nfile:share/doc/cargo/README.md\nfile:share/man/man1/cargo-add.1\nfile:share/man/man1/cargo-bench.1\nfile:share/man/man1/cargo-build.1\nfile:share/man/man1/cargo-check.1\nfile:share/man/man1/cargo-clean.1\nfile:share/man/man1/cargo-doc.1\nfile:share/man/man1/cargo-fetch.1\nfile:share/man/man1/cargo-fix.1\nfile:share/man/man1/cargo-generate-lockfile.1\nfile:share/man/man1/cargo-help.1\nfile:share/man/man1/cargo-info.1\nfile:share/man/man1/cargo-init.1\nfile:share/man/man1/cargo-install.1\nfile:share/man/man1/cargo-locate-project.1\nfile:share/man/man1/cargo-login.1\nfile:share/man/man1/cargo-logout.1\nfile:share/man/man1/cargo-metadata.1\nfile:share/man/man1/cargo-new.1\nfile:share/man/man1/cargo-owner.1\nfile:share/man/man1/cargo-package.1\nfile:share/man/man1/cargo-pkgid.1\nfile:share/man/man1/cargo-publish.1\nfile:share/man/man1/cargo-remove.1\nfile:share/man/man1/cargo-report-future-incompatibilities.1\nfile:share/man/man1/cargo-report.1\nfile:share/man/man1/cargo-run.1\nfile:share/man/man1/cargo-rustc.1\nfile:share/man/man1/cargo-rustdoc.1\nfile:share/man/man1/cargo-search.1\nfile:share/man/man1/cargo-test.1\nfile:share/man/man1/cargo-tree.1\nfile:share/man/man1/cargo-uninstall.1\nfile:share/man/man1/cargo-update.1\nfile:share/man/man1/cargo-vendor.1\nfile:share/man/man1/cargo-version.1\nfile:share/man/man1/cargo-yank.1\nfile:share/man/man1/cargo.1\nfile:share/zsh/site-functions/_cargo\n",
+      "licenses": [
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/LICENSE-APACHE",
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/LICENSE-MIT",
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/LICENSE-THIRD-PARTY",
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/doc/cargo/LICENSE-APACHE",
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/doc/cargo/LICENSE-MIT",
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/share/doc/cargo/LICENSE-THIRD-PARTY"
+      ],
+      "member_root": "cargo-1.96.1-x86_64-unknown-linux-gnu",
+      "publisher_sha256": "ecc53a3c49fab5ab8c9301b3bbc8fb1dff9be6c65287add3f57a0fe8fddfea9e",
+      "required_binary_members": {
+        "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/bin/cargo": {
+          "bytes": 42878680,
+          "mode": 493,
+          "sha256": "a73b2c25573d251489101c0d8f19ad3702eb9761166de5ed8437b472b6c038ce"
+        }
+      },
+      "url": "https://static.rust-lang.org/dist/2026-06-30/cargo-1.96.1-x86_64-unknown-linux-gnu.tar.xz",
+      "version": "0.97.2 (356927216 2026-06-26)"
+    },
+    "clippy-preview": {
+      "all_aliases": {},
+      "all_regular_files": {
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/LICENSE-APACHE": {
+          "bytes": 10848,
+          "mode": 420,
+          "sha256": "d8b56cd45661bfc7ccf4ce5722388cab275f9dabb9e471c922cc80e36bbf9caa"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/LICENSE-MIT": {
+          "bytes": 1081,
+          "mode": 420,
+          "sha256": "8d07f0c9c9966be0aaec4196d7863b56ade114e9714dbc31ebba576c0446d2fc"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/README.md": {
+          "bytes": 10791,
+          "mode": 420,
+          "sha256": "bb0e2952ccbaab4376308b33f12ef083c83448feca3a5530bdd111ee0d625e9b"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/builder-config": {
+          "bytes": 9140,
+          "mode": 420,
+          "sha256": "46e08e33ac02f74607c22f174a9d8929120eed878b7ec0c8aa971c94a60b6255"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/bin/cargo-clippy": {
+          "bytes": 1267936,
+          "mode": 493,
+          "sha256": "092d67d9ea1895087ddea03d224959b28f7bead2247ab3f8e84380c2adf73c5f"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/bin/clippy-driver": {
+          "bytes": 20959320,
+          "mode": 493,
+          "sha256": "4b6976de2e62e12adaa5e6ef190b1d3f3fbf062e0f8ea5f4014fca45fb918a66"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/manifest.in": {
+          "bytes": 148,
+          "mode": 420,
+          "sha256": "266e3ebcb2cfa74930e774ac54d80e089f3d1ac299b085c7800114fc653502b9"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/share/doc/clippy/LICENSE-APACHE": {
+          "bytes": 10848,
+          "mode": 420,
+          "sha256": "d8b56cd45661bfc7ccf4ce5722388cab275f9dabb9e471c922cc80e36bbf9caa"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/share/doc/clippy/LICENSE-MIT": {
+          "bytes": 1081,
+          "mode": 420,
+          "sha256": "8d07f0c9c9966be0aaec4196d7863b56ade114e9714dbc31ebba576c0446d2fc"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/share/doc/clippy/README.md": {
+          "bytes": 10791,
+          "mode": 420,
+          "sha256": "bb0e2952ccbaab4376308b33f12ef083c83448feca3a5530bdd111ee0d625e9b"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/components": {
+          "bytes": 15,
+          "mode": 420,
+          "sha256": "20b359b2916427ac788e560df017fbd822af45c718bf01174b5cc6819344b6cd"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/git-commit-hash": {
+          "bytes": 40,
+          "mode": 420,
+          "sha256": "e0404dcb3136c80530e26a0d6820f48dc445611e046bb603d8f9c0a0e51782b8"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/git-commit-info": {
+          "bytes": 62,
+          "mode": 420,
+          "sha256": "5045e068506293abf0860c26a899fd72529e73ca9539d8a494b7ae422e4cbd50"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/install.sh": {
+          "bytes": 29288,
+          "mode": 493,
+          "sha256": "7691a613154ca5cc55e9ab3478ee73b75aecd574671a298e20f64dec5326b796"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/rust-installer-version": {
+          "bytes": 2,
+          "mode": 420,
+          "sha256": "1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/version": {
+          "bytes": 6,
+          "mode": 420,
+          "sha256": "0321f99067c60fafa5e26e2701a4111b87d9257695d11a7555ef730cd2b9169f"
+        }
+      },
+      "archive_bytes": 4803616,
+      "component_dir": "clippy-preview",
+      "directories": {
+        "clippy-1.96.1-x86_64-unknown-linux-gnu": 493,
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview": 493,
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/bin": 493,
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/share": 493,
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/share/doc": 493,
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/share/doc/clippy": 493
+      },
+      "install_manifest_text": "file:bin/cargo-clippy\nfile:bin/clippy-driver\nfile:share/doc/clippy/LICENSE-APACHE\nfile:share/doc/clippy/LICENSE-MIT\nfile:share/doc/clippy/README.md\n",
+      "licenses": [
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/LICENSE-APACHE",
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/LICENSE-MIT",
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/share/doc/clippy/LICENSE-APACHE",
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/share/doc/clippy/LICENSE-MIT"
+      ],
+      "member_root": "clippy-1.96.1-x86_64-unknown-linux-gnu",
+      "publisher_sha256": "385644867534c30c490f4507d61485a799f81dfaec7e2a91290a41bf43d8286a",
+      "required_binary_members": {
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/bin/cargo-clippy": {
+          "bytes": 1267936,
+          "mode": 493,
+          "sha256": "092d67d9ea1895087ddea03d224959b28f7bead2247ab3f8e84380c2adf73c5f"
+        },
+        "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/bin/clippy-driver": {
+          "bytes": 20959320,
+          "mode": 493,
+          "sha256": "4b6976de2e62e12adaa5e6ef190b1d3f3fbf062e0f8ea5f4014fca45fb918a66"
+        }
+      },
+      "url": "https://static.rust-lang.org/dist/2026-06-30/clippy-1.96.1-x86_64-unknown-linux-gnu.tar.xz",
+      "version": "0.1.96"
+    },
+    "rust-std": {
+      "all_aliases": {},
+      "all_regular_files": {
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/COPYRIGHT": {
+          "bytes": 1571,
+          "mode": 420,
+          "sha256": "172020dbfd5b53a226dfde77616190a48dcff519b0bc0e6deb91a8450782c4af"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/LICENSE-APACHE": {
+          "bytes": 9723,
+          "mode": 420,
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/LICENSE-MIT": {
+          "bytes": 1068,
+          "mode": 420,
+          "sha256": "b71bd43a069ca0641a9ecfe585ca7b3c53b5cc1608f8b68321168698e28b5ea1"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/README.md": {
+          "bytes": 3304,
+          "mode": 420,
+          "sha256": "b3f6ef2fef88b98cb9ec013a5c86213095e53e40eb228679574e4d06517f33c8"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/builder-config": {
+          "bytes": 9140,
+          "mode": 420,
+          "sha256": "46e08e33ac02f74607c22f174a9d8929120eed878b7ec0c8aa971c94a60b6255"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/components": {
+          "bytes": 34,
+          "mode": 420,
+          "sha256": "862c3aea2d90c77d9ae39b08a32507c8de0c803c8c71d31b2f85e622c0ab8098"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/git-commit-hash": {
+          "bytes": 40,
+          "mode": 420,
+          "sha256": "e0404dcb3136c80530e26a0d6820f48dc445611e046bb603d8f9c0a0e51782b8"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/git-commit-info": {
+          "bytes": 62,
+          "mode": 420,
+          "sha256": "5045e068506293abf0860c26a899fd72529e73ca9539d8a494b7ae422e4cbd50"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/install.sh": {
+          "bytes": 29290,
+          "mode": 493,
+          "sha256": "19c56df4d4a3251396a6a97be14daff33465572e4ecc7e37d776dba77b60a9a8"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-installer-version": {
+          "bytes": 2,
+          "mode": 420,
+          "sha256": "1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libaddr2line-94ed260f2f7faf7e.rlib": {
+          "bytes": 27610,
+          "mode": 420,
+          "sha256": "8ba2da3c0bd3b3212a494dc88028667757d617d1a79574780981fefc12d15a88"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libaddr2line-94ed260f2f7faf7e.rmeta": {
+          "bytes": 465754,
+          "mode": 420,
+          "sha256": "668ae3f000d9ad4b5d9564ee75db09f5cc9978d54490689bcb7ec53bdc545f87"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libadler2-837efa14e13728b1.rlib": {
+          "bytes": 9296,
+          "mode": 420,
+          "sha256": "3a48395e232bd4cb63b242042e28a1d771811c632e713e8cedec619509976620"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libadler2-837efa14e13728b1.rmeta": {
+          "bytes": 20275,
+          "mode": 420,
+          "sha256": "def98d5351618129edc56f8fd0cbd4b6b231ea8af1442464209c9baac8757036"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/liballoc-cd9fe659cf4de38a.rlib": {
+          "bytes": 854744,
+          "mode": 420,
+          "sha256": "23f0511874eca66867e48f8a2b3c73339896d25d86eda231aa4ddb08f4b6273f"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/liballoc-cd9fe659cf4de38a.rmeta": {
+          "bytes": 7289525,
+          "mode": 420,
+          "sha256": "ab1e93d5ba478d0ec9b33f6a50b19ae93d66fd5574b385228be0b6f199616d38"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcfg_if-daab000861c2df00.rlib": {
+          "bytes": 4166,
+          "mode": 420,
+          "sha256": "4ddfe9cc996037c04e70fab3247ca030fca37e99135e3c886800cf8ec32378ab"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcfg_if-daab000861c2df00.rmeta": {
+          "bytes": 5492,
+          "mode": 420,
+          "sha256": "a7e2e03f80c43d68e63a5c04ee17d4365b49b6c19d1e6b40a28611f3630daad7"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcompiler_builtins-17bce873ebfac7f5.rlib": {
+          "bytes": 4446012,
+          "mode": 420,
+          "sha256": "b361f8b73159d503708ed2efd2f99b59b42ec5a54067872130cff61f5f278fd4"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcompiler_builtins-17bce873ebfac7f5.rmeta": {
+          "bytes": 2037152,
+          "mode": 420,
+          "sha256": "b08b8c1c7f2a9e291631573feebec4d9f5d5b2cc687ec033ebab2d665a4b74c0"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcore-99c6fd12a66265d2.rlib": {
+          "bytes": 2909326,
+          "mode": 420,
+          "sha256": "64ea28988b27c89c6c7f6b6aa71474b21861eadf95c3d4daa761794c751a251f"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcore-99c6fd12a66265d2.rmeta": {
+          "bytes": 63221571,
+          "mode": 420,
+          "sha256": "9cdbf43d12928998920f4174c571170c23a3d98985316a653e8d0a6a96820490"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libgetopts-42841497824f4b6d.rlib": {
+          "bytes": 740728,
+          "mode": 420,
+          "sha256": "048abbbc49881d75d0c9b54aae7b4f467a014e6eef09e303488b54a06ab368ff"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libgetopts-42841497824f4b6d.rmeta": {
+          "bytes": 215096,
+          "mode": 420,
+          "sha256": "5e8d76ef1b91e660feabbde06dd2220dd531692b0191a1e7fdf2cdd2a2e25b2f"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libgimli-b0ed51a3bad0ee91.rlib": {
+          "bytes": 914786,
+          "mode": 420,
+          "sha256": "86a21e8a2a3dca59a1db7abc240e421f37dbe57183e90036f5aafde55553767a"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libgimli-b0ed51a3bad0ee91.rmeta": {
+          "bytes": 5266258,
+          "mode": 420,
+          "sha256": "57e1820cc72a2655b500e578b31caa1536bee006b4bdad02a63d07dc05e58275"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libhashbrown-42fa20878cf4d3cc.rlib": {
+          "bytes": 36084,
+          "mode": 420,
+          "sha256": "3f583c893009186260ee5c40303bdd2eb1c0abe87383e4fb12801296beb140f4"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libhashbrown-42fa20878cf4d3cc.rmeta": {
+          "bytes": 1592415,
+          "mode": 420,
+          "sha256": "cd703b4bbd10b6f8a6e0ea3337a03d449d227c897903ef63fdba8148b3ebf207"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/liblibc-ca260835748aac8f.rlib": {
+          "bytes": 30182,
+          "mode": 420,
+          "sha256": "5eeae23ed3ad6b7be30d80fabf12bab1148ff323deac7813a4ed37f1cdc4119e"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/liblibc-ca260835748aac8f.rmeta": {
+          "bytes": 4156041,
+          "mode": 420,
+          "sha256": "55321e74380851bcd54263e75901da3b6187cc561791de0255b7b19454dfed5b"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libmemchr-0e982fe764ed65af.rlib": {
+          "bytes": 414694,
+          "mode": 420,
+          "sha256": "7d59fbce3dd832fbca46a45a197f7c9417f182be8ba41cedb02b2f3b8d0277b2"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libmemchr-0e982fe764ed65af.rmeta": {
+          "bytes": 1381447,
+          "mode": 420,
+          "sha256": "6547692e6e9cefe329b535072f98b162e64becb9fd782ef82c524287654b5492"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libminiz_oxide-e8383d98bd3ce69a.rlib": {
+          "bytes": 101236,
+          "mode": 420,
+          "sha256": "e42eb29c602a31042fc504906d63e7e86cf8727a35b73f17de9068a6b2ba5754"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libminiz_oxide-e8383d98bd3ce69a.rmeta": {
+          "bytes": 124687,
+          "mode": 420,
+          "sha256": "3ac3510548259f989e206b16067d85c2fa7f796118582addf44488861f841d30"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libobject-b303998341bc1304.rlib": {
+          "bytes": 166580,
+          "mode": 420,
+          "sha256": "92992b294b448bb1962fa146d6c40ee290b3487c302678b250fd8df90a338934"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libobject-b303998341bc1304.rmeta": {
+          "bytes": 8406683,
+          "mode": 420,
+          "sha256": "35a647be1836c676f8b634a719595e820db076fb2b6a4fc7b2751d913ac5e506"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libpanic_abort-a6b59492d2e5bebf.rlib": {
+          "bytes": 10088,
+          "mode": 420,
+          "sha256": "3c5c258a40eaf949e937fbbe75a86199db9efcc52a265e7466da0e0f7ce22f7e"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libpanic_abort-a6b59492d2e5bebf.rmeta": {
+          "bytes": 2900,
+          "mode": 420,
+          "sha256": "5101c53cef0c7324fba88deae00eb7ad5b67b60fa736cf72193103be40a7246f"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libpanic_unwind-f23cf51374fc54ab.rlib": {
+          "bytes": 35202,
+          "mode": 420,
+          "sha256": "9c2f5ba6f855a37235ab022b55f800e963598971617a177003aa2536149a72e8"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libpanic_unwind-f23cf51374fc54ab.rmeta": {
+          "bytes": 7085,
+          "mode": 420,
+          "sha256": "0c9b9b5018cad3fc0de62151069388462b95f8623b3080e6e4a1f9d1f9ccd090"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libproc_macro-c102c03938982719.rlib": {
+          "bytes": 3642002,
+          "mode": 420,
+          "sha256": "3e1e312bf973bc9a7a911db18e2bec1ee8e9a37018e08b170a03d53c8c0da079"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libproc_macro-c102c03938982719.rmeta": {
+          "bytes": 1094360,
+          "mode": 420,
+          "sha256": "4dc544661ce779d4c97842b7204281951bf0a9538d82d27886d9ba51ec8fb977"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libprofiler_builtins-5eded53d873128e3.rlib": {
+          "bytes": 494604,
+          "mode": 420,
+          "sha256": "b6f183811a8ff50d6adba899489d7ff9c846ce427c222b412e4be74691552b62"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libprofiler_builtins-5eded53d873128e3.rmeta": {
+          "bytes": 1333,
+          "mode": 420,
+          "sha256": "edc17d31a47a890c7cc3e46c8a73e334d9d26e031f01efe7500d3d7bd294feb0"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc-stable_rt.asan.a": {
+          "bytes": 6099644,
+          "mode": 420,
+          "sha256": "0f646aa6406e73cc353b97828e206ac7eed03abf3aef6a01d9a41215a19f06f1"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc-stable_rt.dfsan.a": {
+          "bytes": 1985248,
+          "mode": 420,
+          "sha256": "30dbe14fe13597bed1a8ef842528dacbb617d8973f2a961d320eb6f739b0a70c"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc-stable_rt.lsan.a": {
+          "bytes": 2079802,
+          "mode": 420,
+          "sha256": "c486533ef849ea4f9c87b3ea8f6709fdaf03a59bffad471c5893cacdfa2b82a4"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc-stable_rt.msan.a": {
+          "bytes": 4678316,
+          "mode": 420,
+          "sha256": "212d833879203161de08bef37e5eda7c4607e84929e2c81477fedbcab206d4b7"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc-stable_rt.rtsan.a": {
+          "bytes": 1860052,
+          "mode": 420,
+          "sha256": "6a814e55bf0bcc8f113d17a991b3a6fcc2d876baec5a9a163e3c2db8878caf99"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc-stable_rt.safestack.a": {
+          "bytes": 29744,
+          "mode": 420,
+          "sha256": "845118a6e81883548552677c197b09d3e3c04b18d1ee20b2f52a977947afaae9"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc-stable_rt.tsan.a": {
+          "bytes": 5662488,
+          "mode": 420,
+          "sha256": "a35e4efb4316a278e446e05290bade2d6da55d645454669747f7f0819658fb03"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_demangle-8ebd22f4b5d4540a.rlib": {
+          "bytes": 228360,
+          "mode": 420,
+          "sha256": "626d97e0ece475d5b940d552cb99207fc0918eeec80b09d45da131c1cb57ac09"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_demangle-8ebd22f4b5d4540a.rmeta": {
+          "bytes": 90737,
+          "mode": 420,
+          "sha256": "73eb82cfe032bd1d65624ce488d1b3fe77f77533c5f4764b3372c75e36b80215"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_literal_escaper-a11749d4baa953c8.rlib": {
+          "bytes": 4308,
+          "mode": 420,
+          "sha256": "c0754986eb0b35153b42a2867b699876820fee53846a0398fb109eb3877eb4fd"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_literal_escaper-a11749d4baa953c8.rmeta": {
+          "bytes": 122051,
+          "mode": 420,
+          "sha256": "4c4355e4f398a772f92c639731f27062fa188626cf27cc3915cc6e9828027bba"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_alloc-3d4504a0d78e9ce9.rlib": {
+          "bytes": 4388,
+          "mode": 420,
+          "sha256": "2adc5b8f48865531bfa8b8dbaeddb078d0470301755979156f53e0c94bfbf0f5"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_alloc-3d4504a0d78e9ce9.rmeta": {
+          "bytes": 2149,
+          "mode": 420,
+          "sha256": "d3ac22800b09d8f45edd12555be144e6bcb640ddf3fe443f8a0c6fb75ebee35f"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_core-4c07b95da83eaeb0.rlib": {
+          "bytes": 4386,
+          "mode": 420,
+          "sha256": "740b310e468d866f08bf48769e1e6f1dae786f067ebbe095b0e46b207f05a1f3"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_core-4c07b95da83eaeb0.rmeta": {
+          "bytes": 5875,
+          "mode": 420,
+          "sha256": "8a649ceed239ca411cd7e6570b8134c72c7d1bdc46acb2f6c7163d9166af9d12"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_std-fb9500f6a9c5ea41.rlib": {
+          "bytes": 4368,
+          "mode": 420,
+          "sha256": "ac941f3384e01ccaacc4655fa08f1e2b7afb546419fbd4b8a717ad155a2aa23a"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_std-fb9500f6a9c5ea41.rmeta": {
+          "bytes": 7109,
+          "mode": 420,
+          "sha256": "6a0d43d3925d339f0b17459067719a0074798051378d57cb906e9060c6aa730c"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd-db18ac9af410b6dc.rlib": {
+          "bytes": 11676470,
+          "mode": 420,
+          "sha256": "859e40fc22d22a792e0bdec2e635608f36184661b03d0da42377356666c55fe2"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd-db18ac9af410b6dc.rmeta": {
+          "bytes": 8658862,
+          "mode": 420,
+          "sha256": "ce038edb87307e77cd50c2ed922ec35ef7a0727effe977bef2e3997f3b0b74e6"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd-db18ac9af410b6dc.so": {
+          "bytes": 5399912,
+          "mode": 493,
+          "sha256": "e03fd65724a5948f3024ce77af58dd671f79335e5bb11306111109497b8097ea"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd_detect-0f9134f360e6245a.rlib": {
+          "bytes": 62550,
+          "mode": 420,
+          "sha256": "138fe86a6d7fbe6f08fc08f40848c1c2fb92356ebba9e465f0c45d1701daea19"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd_detect-0f9134f360e6245a.rmeta": {
+          "bytes": 577910,
+          "mode": 420,
+          "sha256": "d1dec682d6aaa0b250ca6f7f52a006cee6c986968352c3ea135e57224ec09334"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libsysroot-251ba06a73de7995.rlib": {
+          "bytes": 4248,
+          "mode": 420,
+          "sha256": "2356fa89cfbef9d5db4cb711287307e4ccd7cd64ca08ede6bf96ad10074aa3ce"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libsysroot-251ba06a73de7995.rmeta": {
+          "bytes": 2222,
+          "mode": 420,
+          "sha256": "7eac51d9e0aa7f7a31483c0e4e41f18c560a1424c4ac76e47269cb7abb1dc225"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libtest-4aa7b46c7f22e712.rlib": {
+          "bytes": 6912504,
+          "mode": 420,
+          "sha256": "660a29c0faaaf59b4ac43c5adf7abcde176ab3d33be520daf06d75bcb925bf05"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libtest-4aa7b46c7f22e712.rmeta": {
+          "bytes": 988009,
+          "mode": 420,
+          "sha256": "7cc6fddd891e78f165b99ddd6c759d4fb35338c3862752c075983d9ed8ec27d9"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libunwind-56b12cec4762464b.rlib": {
+          "bytes": 4230,
+          "mode": 420,
+          "sha256": "f72ebee677e3add01782f71edda8ea8d4d2c302db19e214f1e19b21cb72a4819"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libunwind-56b12cec4762464b.rmeta": {
+          "bytes": 20054,
+          "mode": 420,
+          "sha256": "26c59f6341755dc298922ed3f323b36a6ec3a0b01cb1f0f8d69cfeced2a554f4"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/manifest.in": {
+          "bytes": 5063,
+          "mode": 420,
+          "sha256": "2342318dd282660b593cb604a1bdf34a1354ab41c8de5fa59c36dc0b5e4b9358"
+        },
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/version": {
+          "bytes": 29,
+          "mode": 420,
+          "sha256": "419618e81b94c97a708958ac5831772da949a691dfd4c0b1bd2c1a7dc6f5b9f7"
+        }
+      },
+      "archive_bytes": 29751260,
+      "component_dir": "rust-std-x86_64-unknown-linux-gnu",
+      "directories": {
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu": 493,
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu": 493,
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib": 493,
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib": 493,
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu": 493,
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib": 493,
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/self-contained": 493
+      },
+      "install_manifest_text": "file:lib/rustlib/x86_64-unknown-linux-gnu/lib/libaddr2line-94ed260f2f7faf7e.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libaddr2line-94ed260f2f7faf7e.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libadler2-837efa14e13728b1.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libadler2-837efa14e13728b1.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/liballoc-cd9fe659cf4de38a.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/liballoc-cd9fe659cf4de38a.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libcfg_if-daab000861c2df00.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libcfg_if-daab000861c2df00.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libcompiler_builtins-17bce873ebfac7f5.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libcompiler_builtins-17bce873ebfac7f5.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libcore-99c6fd12a66265d2.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libcore-99c6fd12a66265d2.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libgetopts-42841497824f4b6d.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libgetopts-42841497824f4b6d.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libgimli-b0ed51a3bad0ee91.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libgimli-b0ed51a3bad0ee91.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libhashbrown-42fa20878cf4d3cc.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libhashbrown-42fa20878cf4d3cc.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/liblibc-ca260835748aac8f.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/liblibc-ca260835748aac8f.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libmemchr-0e982fe764ed65af.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libmemchr-0e982fe764ed65af.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libminiz_oxide-e8383d98bd3ce69a.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libminiz_oxide-e8383d98bd3ce69a.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libobject-b303998341bc1304.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libobject-b303998341bc1304.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libpanic_abort-a6b59492d2e5bebf.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libpanic_abort-a6b59492d2e5bebf.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libpanic_unwind-f23cf51374fc54ab.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libpanic_unwind-f23cf51374fc54ab.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libproc_macro-c102c03938982719.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libproc_macro-c102c03938982719.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libprofiler_builtins-5eded53d873128e3.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libprofiler_builtins-5eded53d873128e3.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc-stable_rt.asan.a\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc-stable_rt.dfsan.a\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc-stable_rt.lsan.a\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc-stable_rt.msan.a\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc-stable_rt.rtsan.a\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc-stable_rt.safestack.a\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc-stable_rt.tsan.a\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_demangle-8ebd22f4b5d4540a.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_demangle-8ebd22f4b5d4540a.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_literal_escaper-a11749d4baa953c8.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_literal_escaper-a11749d4baa953c8.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_alloc-3d4504a0d78e9ce9.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_alloc-3d4504a0d78e9ce9.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_core-4c07b95da83eaeb0.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_core-4c07b95da83eaeb0.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_std-fb9500f6a9c5ea41.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_std-fb9500f6a9c5ea41.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd-db18ac9af410b6dc.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd-db18ac9af410b6dc.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd-db18ac9af410b6dc.so\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd_detect-0f9134f360e6245a.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd_detect-0f9134f360e6245a.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libsysroot-251ba06a73de7995.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libsysroot-251ba06a73de7995.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libtest-4aa7b46c7f22e712.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libtest-4aa7b46c7f22e712.rmeta\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libunwind-56b12cec4762464b.rlib\nfile:lib/rustlib/x86_64-unknown-linux-gnu/lib/libunwind-56b12cec4762464b.rmeta\n",
+      "licenses": [
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/COPYRIGHT",
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/LICENSE-APACHE",
+        "rust-std-1.96.1-x86_64-unknown-linux-gnu/LICENSE-MIT"
+      ],
+      "member_root": "rust-std-1.96.1-x86_64-unknown-linux-gnu",
+      "publisher_sha256": "1bf4fde5048cca33e6ea00c7471281ed96d792f6923141e3db45072743a1afae",
+      "required_binary_members": {},
+      "url": "https://static.rust-lang.org/dist/2026-06-30/rust-std-1.96.1-x86_64-unknown-linux-gnu.tar.xz",
+      "version": "1.96.1 (31fca3adb 2026-06-26)"
+    },
+    "rustc": {
+      "all_aliases": {},
+      "all_regular_files": {
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/COPYRIGHT": {
+          "bytes": 1571,
+          "mode": 420,
+          "sha256": "172020dbfd5b53a226dfde77616190a48dcff519b0bc0e6deb91a8450782c4af"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/LICENSE-APACHE": {
+          "bytes": 9723,
+          "mode": 420,
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/LICENSE-MIT": {
+          "bytes": 1068,
+          "mode": 420,
+          "sha256": "b71bd43a069ca0641a9ecfe585ca7b3c53b5cc1608f8b68321168698e28b5ea1"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/README.md": {
+          "bytes": 3304,
+          "mode": 420,
+          "sha256": "b3f6ef2fef88b98cb9ec013a5c86213095e53e40eb228679574e4d06517f33c8"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/builder-config": {
+          "bytes": 9140,
+          "mode": 420,
+          "sha256": "46e08e33ac02f74607c22f174a9d8929120eed878b7ec0c8aa971c94a60b6255"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/components": {
+          "bytes": 6,
+          "mode": 420,
+          "sha256": "17c769d50277575d5571ae0769c76c9cbbdd65314954e278e5b4c6faba8e0721"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/git-commit-hash": {
+          "bytes": 40,
+          "mode": 420,
+          "sha256": "e0404dcb3136c80530e26a0d6820f48dc445611e046bb603d8f9c0a0e51782b8"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/git-commit-info": {
+          "bytes": 62,
+          "mode": 420,
+          "sha256": "5045e068506293abf0860c26a899fd72529e73ca9539d8a494b7ae422e4cbd50"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/install.sh": {
+          "bytes": 29287,
+          "mode": 493,
+          "sha256": "1b1ab708c8de4dbfa345cf1ca8fe3a7796c5e8bd91afd14e55489b75c1260535"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rust-installer-version": {
+          "bytes": 2,
+          "mode": 420,
+          "sha256": "1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/bin/rust-gdb": {
+          "bytes": 980,
+          "mode": 493,
+          "sha256": "557985ec5a31f5617d25d26bd6fe23c4b8d6f85b1498e1aae82831ca0d7f17fe"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/bin/rust-gdbgui": {
+          "bytes": 2160,
+          "mode": 493,
+          "sha256": "bc60613775a098e59b49fa4584cea73631697fe1456c44284c337d6700340315"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/bin/rust-lldb": {
+          "bytes": 1060,
+          "mode": 493,
+          "sha256": "142c31bb3900c03b2b71693b6bd16d6da1174971d93628506db8438050fa69d7"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/bin/rustc": {
+          "bytes": 646024,
+          "mode": 493,
+          "sha256": "4a84e05991ad6f2a84c1361c29b52b38c390365bd1fc269b1936c88d482a8928"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/bin/rustdoc": {
+          "bytes": 13357552,
+          "mode": 493,
+          "sha256": "bc1c3300dcb73d37ca07c0e06cb1e3fc46f990ae442c34691e951ce9983aaa6a"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/etc/target-spec-json-schema.json": {
+          "bytes": 25658,
+          "mode": 420,
+          "sha256": "773d87bcec62ce2ce4cf57b5019cbf25365e66deaf99143675cd2b5d8eb3e195"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/libLLVM-22-rust-1.96.1-stable.so": {
+          "bytes": 42,
+          "mode": 420,
+          "sha256": "2460ca215162b987c4318ac434b84a42eb7e1bc9935011b658f4d008bd2950d0"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/libLLVM.so.22.1-rust-1.96.1-stable": {
+          "bytes": 199511024,
+          "mode": 420,
+          "sha256": "92968a38a6b4903ae9ce2cf652ed79209dec554ac9c19d9bdc3b422cff998765"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/librustc_driver-07ef66cfcebfb535.so": {
+          "bytes": 151572320,
+          "mode": 420,
+          "sha256": "10ee8fdd93bbd9e831f340ef8249719f48416138b08b4f3a636708b3ee27f70a"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/etc/gdb_load_rust_pretty_printers.py": {
+          "bytes": 504,
+          "mode": 420,
+          "sha256": "a32e7857651bc7ed7c52dfc71131cbbea01a5cd1886399876032c4de60fa4886"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/etc/gdb_lookup.py": {
+          "bytes": 3782,
+          "mode": 420,
+          "sha256": "ceb03e1a30a5cefa069d720808634f18a45c38d4fd0ed15d6551661810f5bf24"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/etc/gdb_providers.py": {
+          "bytes": 16067,
+          "mode": 420,
+          "sha256": "729b1f55be4e838640c2638f2f17a0eb38460b97b08ab73bcfe02e918d73084b"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/etc/lldb_commands": {
+          "bytes": 4624,
+          "mode": 420,
+          "sha256": "1fe777173773f88ee609347e4e54e6ca87e71c814abab33a85661e3499147184"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/etc/lldb_lookup.py": {
+          "bytes": 6649,
+          "mode": 420,
+          "sha256": "df541344796bb1f8565cfe411465636f5592e7ac04aa574714c36198f6288ddd"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/etc/lldb_providers.py": {
+          "bytes": 48985,
+          "mode": 420,
+          "sha256": "86dcd62c035f8184b27d85cc4ec82ab0b576cb986d25196da894ab1c4457c55b"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/etc/rust_types.py": {
+          "bytes": 4106,
+          "mode": 420,
+          "sha256": "38ec194ca7aa1f72d2ea103633cb23a1e75eceed7e142c468202f8332cf2cb4b"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld/ld.lld": {
+          "bytes": 377072,
+          "mode": 493,
+          "sha256": "73317fff40d78e46a53ddb58153fd22f65a0e38cdf8de4928d1f8b0384bc664d"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld/ld64.lld": {
+          "bytes": 377072,
+          "mode": 493,
+          "sha256": "73317fff40d78e46a53ddb58153fd22f65a0e38cdf8de4928d1f8b0384bc664d"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld/lld-link": {
+          "bytes": 377072,
+          "mode": 493,
+          "sha256": "73317fff40d78e46a53ddb58153fd22f65a0e38cdf8de4928d1f8b0384bc664d"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld/wasm-ld": {
+          "bytes": 377072,
+          "mode": 493,
+          "sha256": "73317fff40d78e46a53ddb58153fd22f65a0e38cdf8de4928d1f8b0384bc664d"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/x86_64-unknown-linux-gnu/bin/rust-lld": {
+          "bytes": 11604688,
+          "mode": 493,
+          "sha256": "0f4c878e8809b135d0e6b12576b26165126b401026ce8213fc90a4ff3f97c7b3"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/x86_64-unknown-linux-gnu/bin/rust-objcopy": {
+          "bytes": 281128,
+          "mode": 493,
+          "sha256": "aa2e8022998ae328b584eaa830da935062272339c5c882e8ec3e1b99d6648c09"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/x86_64-unknown-linux-gnu/bin/wasm-component-ld": {
+          "bytes": 5165592,
+          "mode": 493,
+          "sha256": "053399b53d6802732e584d20b02eb4a09b798d54d2828c8839c4f320a604aaa1"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/libexec/rust-analyzer-proc-macro-srv": {
+          "bytes": 1562776,
+          "mode": 493,
+          "sha256": "27b4c2b86477edeaa24333513967dcd72dfdffd600361178f49cb8aedbae4671"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/manifest.in": {
+          "bytes": 1691,
+          "mode": 420,
+          "sha256": "529097e3b06dcc42fd2d47a3c96fc30c83598b0e1e35039a20d9c7920b245e01"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/COPYRIGHT-library.html": {
+          "bytes": 425651,
+          "mode": 420,
+          "sha256": "78c163fcec50e64bfd85fedb850c273595602fafa2b41f30f75d4e410b80ee83"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/COPYRIGHT.html": {
+          "bytes": 15391536,
+          "mode": 420,
+          "sha256": "212061113c9e9260d9b62965127eecc1df9d8e4c55e946c658b137be94a60a22"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/README.md": {
+          "bytes": 3304,
+          "mode": 420,
+          "sha256": "b3f6ef2fef88b98cb9ec013a5c86213095e53e40eb228679574e4d06517f33c8"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/licenses/Apache-2.0.txt": {
+          "bytes": 10280,
+          "mode": 420,
+          "sha256": "074e6e32c86a4c0ef8b3ed25b721ca23aca83df277cd88106ef7177c354615ff"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/licenses/BSD-2-Clause.txt": {
+          "bytes": 1267,
+          "mode": 420,
+          "sha256": "f32fb3b417a194167cfad068223fc975ba96c5960513a10f66a3c28720aec1df"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/licenses/CC-BY-SA-4.0.txt": {
+          "bytes": 20137,
+          "mode": 420,
+          "sha256": "23ee78c8bae49cf08ea2f0c84945c66b987ebe4520881fb51b3dad4fb43d07c2"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/licenses/GCC-exception-3.1.txt": {
+          "bytes": 3320,
+          "mode": 420,
+          "sha256": "a3966c9410ef94a1efbfa9ec04e9c1994026a70623fbf0885ce36737bfba3b54"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/licenses/GPL-2.0-only.txt": {
+          "bytes": 17642,
+          "mode": 420,
+          "sha256": "54b212ba1f97f6948fa5486239ab505dd820b02e50cbfd296b4062c8609a70af"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/licenses/GPL-3.0-or-later.txt": {
+          "bytes": 34795,
+          "mode": 420,
+          "sha256": "05315fce6c35f79b8a35454828995fa26336f235895ac64557abc028f4ffcea2"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/licenses/ISC.txt": {
+          "bytes": 730,
+          "mode": 420,
+          "sha256": "0ff61769b238634e042ab759dddfd104a8e69d091e3600ae3410e401a6164381"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/licenses/LLVM-exception.txt": {
+          "bytes": 919,
+          "mode": 420,
+          "sha256": "e34c58338bd89d43e709e226610d8f32b3e3c47f4ad9a99a8dc1d4ac7842488e"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/licenses/MIT.txt": {
+          "bytes": 1078,
+          "mode": 420,
+          "sha256": "b85dcd3e453d05982552c52b5fc9e0bdd6d23c6f8e844b984a88af32570b0cc0"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/licenses/NCSA.txt": {
+          "bytes": 1676,
+          "mode": 420,
+          "sha256": "39cb0234065c92b9e6cee3830cbb52b1aa289aa8fe9ba2e66730fec5cf05c630"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/licenses/OFL-1.1.txt": {
+          "bytes": 4016,
+          "mode": 420,
+          "sha256": "8eea8287e5876b539670cadb82e99f9a7afddec6f6730811be1daf25d2e9bcfd"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/licenses/Unicode-3.0.txt": {
+          "bytes": 1995,
+          "mode": 420,
+          "sha256": "f5062c9a188d81dfe66b56db4182dcf9e4b17c0d9b0d311a8e20b3a1b075c443"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/man/man1/rustc.1": {
+          "bytes": 9169,
+          "mode": 420,
+          "sha256": "7c1064dc3ad4e2bc9624058a42d0d4bcd501d1895e1e328e434d7dd1306ed559"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/man/man1/rustdoc.1": {
+          "bytes": 3601,
+          "mode": 420,
+          "sha256": "12589c7d0539e29d7d15711b3adf28ef7d2344d0705357a90ee103e41818ef71"
+        },
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/version": {
+          "bytes": 29,
+          "mode": 420,
+          "sha256": "419618e81b94c97a708958ac5831772da949a691dfd4c0b1bd2c1a7dc6f5b9f7"
+        }
+      },
+      "archive_bytes": 80218896,
+      "component_dir": "rustc",
+      "directories": {
+        "rustc-1.96.1-x86_64-unknown-linux-gnu": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/bin": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/etc": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/etc": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/x86_64-unknown-linux-gnu": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/x86_64-unknown-linux-gnu/bin": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/libexec": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/licenses": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/man": 493,
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/man/man1": 493
+      },
+      "install_manifest_text": "file:bin/rust-gdb\nfile:bin/rust-gdbgui\nfile:bin/rust-lldb\nfile:bin/rustc\nfile:bin/rustdoc\nfile:etc/target-spec-json-schema.json\nfile:lib/libLLVM-22-rust-1.96.1-stable.so\nfile:lib/libLLVM.so.22.1-rust-1.96.1-stable\nfile:lib/librustc_driver-07ef66cfcebfb535.so\nfile:lib/rustlib/etc/gdb_load_rust_pretty_printers.py\nfile:lib/rustlib/etc/gdb_lookup.py\nfile:lib/rustlib/etc/gdb_providers.py\nfile:lib/rustlib/etc/lldb_commands\nfile:lib/rustlib/etc/lldb_lookup.py\nfile:lib/rustlib/etc/lldb_providers.py\nfile:lib/rustlib/etc/rust_types.py\nfile:lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld/ld.lld\nfile:lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld/ld64.lld\nfile:lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld/lld-link\nfile:lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld/wasm-ld\nfile:lib/rustlib/x86_64-unknown-linux-gnu/bin/rust-lld\nfile:lib/rustlib/x86_64-unknown-linux-gnu/bin/rust-objcopy\nfile:lib/rustlib/x86_64-unknown-linux-gnu/bin/wasm-component-ld\nfile:libexec/rust-analyzer-proc-macro-srv\nfile:share/doc/rust/COPYRIGHT-library.html\nfile:share/doc/rust/COPYRIGHT.html\nfile:share/doc/rust/README.md\nfile:share/doc/rust/licenses/Apache-2.0.txt\nfile:share/doc/rust/licenses/BSD-2-Clause.txt\nfile:share/doc/rust/licenses/CC-BY-SA-4.0.txt\nfile:share/doc/rust/licenses/GCC-exception-3.1.txt\nfile:share/doc/rust/licenses/GPL-2.0-only.txt\nfile:share/doc/rust/licenses/GPL-3.0-or-later.txt\nfile:share/doc/rust/licenses/ISC.txt\nfile:share/doc/rust/licenses/LLVM-exception.txt\nfile:share/doc/rust/licenses/MIT.txt\nfile:share/doc/rust/licenses/NCSA.txt\nfile:share/doc/rust/licenses/OFL-1.1.txt\nfile:share/doc/rust/licenses/Unicode-3.0.txt\nfile:share/man/man1/rustc.1\nfile:share/man/man1/rustdoc.1\n",
+      "licenses": [
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/COPYRIGHT",
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/LICENSE-APACHE",
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/LICENSE-MIT",
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/COPYRIGHT-library.html",
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/share/doc/rust/COPYRIGHT.html"
+      ],
+      "member_root": "rustc-1.96.1-x86_64-unknown-linux-gnu",
+      "publisher_sha256": "3545a0efad2355ecb0a3b9ac02efee96e27f1f9d24b7ce2fc3f279b2efb0d923",
+      "required_binary_members": {
+        "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/bin/rustc": {
+          "bytes": 646024,
+          "mode": 493,
+          "sha256": "4a84e05991ad6f2a84c1361c29b52b38c390365bd1fc269b1936c88d482a8928"
+        }
+      },
+      "url": "https://static.rust-lang.org/dist/2026-06-30/rustc-1.96.1-x86_64-unknown-linux-gnu.tar.xz",
+      "version": "1.96.1 (31fca3adb 2026-06-26)"
+    },
+    "rustfmt-preview": {
+      "all_aliases": {},
+      "all_regular_files": {
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/LICENSE-APACHE": {
+          "bytes": 10852,
+          "mode": 420,
+          "sha256": "092c8e82c47fb859d7385253c1b04052dbd65a8bcf0bbd8b6f7dba58a9e8753d"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/LICENSE-MIT": {
+          "bytes": 1076,
+          "mode": 420,
+          "sha256": "ae0f1f791e3b4faccf981c0b530199235a8b8a021c7ef0c3c85c6c676ea4d27f"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/README.md": {
+          "bytes": 10651,
+          "mode": 420,
+          "sha256": "851c5128590f0c9e63263a9afe534a6a27df9e1a065334534a1e0e77fa4dcb7d"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/builder-config": {
+          "bytes": 9140,
+          "mode": 420,
+          "sha256": "46e08e33ac02f74607c22f174a9d8929120eed878b7ec0c8aa971c94a60b6255"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/components": {
+          "bytes": 16,
+          "mode": 420,
+          "sha256": "f3ef7cc5dda30649844b7f11994ed6fc19d55fb47724df154f213407eb96ee66"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/git-commit-hash": {
+          "bytes": 40,
+          "mode": 420,
+          "sha256": "e0404dcb3136c80530e26a0d6820f48dc445611e046bb603d8f9c0a0e51782b8"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/git-commit-info": {
+          "bytes": 62,
+          "mode": 420,
+          "sha256": "5045e068506293abf0860c26a899fd72529e73ca9539d8a494b7ae422e4cbd50"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/install.sh": {
+          "bytes": 29289,
+          "mode": 493,
+          "sha256": "d9f6bd9a8c337a5fd097b89116120f375681c78e656ede1be743e407677776eb"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rust-installer-version": {
+          "bytes": 2,
+          "mode": 420,
+          "sha256": "1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/bin/cargo-fmt": {
+          "bytes": 3716160,
+          "mode": 493,
+          "sha256": "3779babd13af2735b535ed598203a1a40bd4f85b65526b3da3b031bd79b71e07"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/bin/rustfmt": {
+          "bytes": 5287872,
+          "mode": 493,
+          "sha256": "dbb30c6037c51a2bacb94d46e2d6435d9487531c06cf82330fdee0bda507db0d"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/manifest.in": {
+          "bytes": 142,
+          "mode": 420,
+          "sha256": "f131ba42a6667b5237b9fdca791e2da1fecd7b5cabf522b50efe5113aaaa60d7"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/share/doc/rustfmt/LICENSE-APACHE": {
+          "bytes": 10852,
+          "mode": 420,
+          "sha256": "092c8e82c47fb859d7385253c1b04052dbd65a8bcf0bbd8b6f7dba58a9e8753d"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/share/doc/rustfmt/LICENSE-MIT": {
+          "bytes": 1076,
+          "mode": 420,
+          "sha256": "ae0f1f791e3b4faccf981c0b530199235a8b8a021c7ef0c3c85c6c676ea4d27f"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/share/doc/rustfmt/README.md": {
+          "bytes": 10651,
+          "mode": 420,
+          "sha256": "851c5128590f0c9e63263a9afe534a6a27df9e1a065334534a1e0e77fa4dcb7d"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/version": {
+          "bytes": 5,
+          "mode": 420,
+          "sha256": "7717cbf90c63a3b096008763a02066239916fa9916f98254d1aa3b2470830fcd"
+        }
+      },
+      "archive_bytes": 2167316,
+      "component_dir": "rustfmt-preview",
+      "directories": {
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu": 493,
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview": 493,
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/bin": 493,
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/share": 493,
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/share/doc": 493,
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/share/doc/rustfmt": 493
+      },
+      "install_manifest_text": "file:bin/cargo-fmt\nfile:bin/rustfmt\nfile:share/doc/rustfmt/LICENSE-APACHE\nfile:share/doc/rustfmt/LICENSE-MIT\nfile:share/doc/rustfmt/README.md\n",
+      "licenses": [
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/LICENSE-APACHE",
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/LICENSE-MIT",
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/share/doc/rustfmt/LICENSE-APACHE",
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/share/doc/rustfmt/LICENSE-MIT"
+      ],
+      "member_root": "rustfmt-1.96.1-x86_64-unknown-linux-gnu",
+      "publisher_sha256": "dcee5627f709f387cdca416a1d2ae9e6c2581cd117cdb4fd097c56c196384662",
+      "required_binary_members": {
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/bin/cargo-fmt": {
+          "bytes": 3716160,
+          "mode": 493,
+          "sha256": "3779babd13af2735b535ed598203a1a40bd4f85b65526b3da3b031bd79b71e07"
+        },
+        "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/bin/rustfmt": {
+          "bytes": 5287872,
+          "mode": 493,
+          "sha256": "dbb30c6037c51a2bacb94d46e2d6435d9487531c06cf82330fdee0bda507db0d"
+        }
+      },
+      "url": "https://static.rust-lang.org/dist/2026-06-30/rustfmt-1.96.1-x86_64-unknown-linux-gnu.tar.xz",
+      "version": "1.9.0"
+    }
+  },
+  "executables": {
+    "cargo": {
+      "archive_member": "cargo-1.96.1-x86_64-unknown-linux-gnu/cargo/bin/cargo",
+      "bytes": 42878680,
+      "component": "cargo",
+      "path": "bin/cargo",
+      "sha256": "a73b2c25573d251489101c0d8f19ad3702eb9761166de5ed8437b472b6c038ce",
+      "version_prefix": "cargo 1.96.1 (356927216 2026-06-26)"
+    },
+    "cargo-clippy": {
+      "archive_member": "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/bin/cargo-clippy",
+      "bytes": 1267936,
+      "component": "clippy-preview",
+      "path": "bin/cargo-clippy",
+      "sha256": "092d67d9ea1895087ddea03d224959b28f7bead2247ab3f8e84380c2adf73c5f",
+      "version_prefix": "clippy 0.1.96"
+    },
+    "cargo-fmt": {
+      "archive_member": "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/bin/cargo-fmt",
+      "bytes": 3716160,
+      "component": "rustfmt-preview",
+      "path": "bin/cargo-fmt",
+      "sha256": "3779babd13af2735b535ed598203a1a40bd4f85b65526b3da3b031bd79b71e07",
+      "version_prefix": "rustfmt 1.9.0-stable (31fca3adb2 2026-06-26)"
+    },
+    "clippy-driver": {
+      "archive_member": "clippy-1.96.1-x86_64-unknown-linux-gnu/clippy-preview/bin/clippy-driver",
+      "bytes": 20959320,
+      "component": "clippy-preview",
+      "path": "bin/clippy-driver",
+      "sha256": "4b6976de2e62e12adaa5e6ef190b1d3f3fbf062e0f8ea5f4014fca45fb918a66",
+      "version_prefix": "clippy 0.1.96"
+    },
+    "rustc": {
+      "archive_member": "rustc-1.96.1-x86_64-unknown-linux-gnu/rustc/bin/rustc",
+      "bytes": 646024,
+      "component": "rustc",
+      "path": "bin/rustc",
+      "sha256": "4a84e05991ad6f2a84c1361c29b52b38c390365bd1fc269b1936c88d482a8928",
+      "version_prefix": "rustc 1.96.1 (31fca3adb 2026-06-26)"
+    },
+    "rustfmt": {
+      "archive_member": "rustfmt-1.96.1-x86_64-unknown-linux-gnu/rustfmt-preview/bin/rustfmt",
+      "bytes": 5287872,
+      "component": "rustfmt-preview",
+      "path": "bin/rustfmt",
+      "sha256": "dbb30c6037c51a2bacb94d46e2d6435d9487531c06cf82330fdee0bda507db0d",
+      "version_prefix": "rustfmt 1.9.0-stable (31fca3adb2 2026-06-26)"
+    }
+  },
+  "execution": "not_run; source/archive metadata only",
+  "host": "x86_64-unknown-linux-gnu",
+  "os": {
+    "id": "ubuntu",
+    "version_id": "22.04"
+  },
+  "product_acceptance_passed": false,
+  "publisher_manifest": {
+    "bytes": 857570,
+    "checksum_bytes": 91,
+    "checksum_sha256": "221e9f5b196762dc5e34b757a19f614a829b094185f3a7762836eb5d88c3c515",
+    "checksum_url": "https://static.rust-lang.org/dist/channel-rust-1.96.1.toml.sha256",
+    "sha256": "87eb76c53073e72b766083bed5530820694253b832a762d8385bda5759f03975",
+    "url": "https://static.rust-lang.org/dist/channel-rust-1.96.1.toml"
+  },
+  "rust_release": "1.96.1",
+  "source_metadata_sha256": "bd4429a05bbb869c08774b5de6c69f631526ef205c715b509e590c036417e132",
+  "version": "som.native-rust-product-tools-profile.v1"
+}

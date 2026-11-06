@@ -38,6 +38,9 @@ import check_targets as targets  # noqa: E402
 TOOLCHAIN = json.loads((SOM_RS / "contracts" / "rust-output-v1" / "toolchain.json").read_text())
 PG = TOOLCHAIN["postgresql"]
 PG_BIN = pathlib.Path(PG["bin_dir"])
+if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+    import full_product_context as hosted_products
+    PG_BIN = hosted_products.postgres_bin()
 FORBIDDEN_PORTS = frozenset({8765, 18765})
 QA_PORTS = range(18919, 19000)
 READY_SECONDS = 180
@@ -97,6 +100,9 @@ def sha(path: pathlib.Path) -> str:
 
 
 def pinned_postgres() -> None:
+    if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+        hosted_products.postgres_bin()
+        return
     for name in ("postgres", "initdb", "pg_ctl"):
         if sha(PG_BIN / name) != PG[name]["sha256"]:
             raise SystemExit(f"{PG_BIN / name} does not match the toolchain.json sha256")
@@ -153,6 +159,8 @@ def cluster(root: pathlib.Path, port: int) -> Iterator[str]:
 
 
 def bundle_files(qa: str, prompt: dict, target: str) -> dict[str, str]:
+    if os.environ.get("SOM_FULL_PRODUCT_CONTEXT") and hosted_products.recorded_transport():
+        return hosted_products.recorded_files(prompt, target)
     body = {"format": "som.prompt-json.v1", "prompt": prompt}
     if target == "rust":
         body["target"] = "rust"
@@ -312,7 +320,11 @@ class Host:
         env = {key_: value for key_, value in os.environ.items() if not key_.startswith("PYTHON")}
         env.update({"PYTHONPATH": str(root), "PYTHONDONTWRITEBYTECODE": "1",
                     "SOM_BEHAVIOR_DATABASE_URL": url, "DATABASE_URL": url})
-        code, output = run_tracked([self.python, str(self.alembic / "migrate.py"), str(self.alembic),
+        product_python = (str(hosted_products.prepare_python(root, files))
+                          if os.environ.get("SOM_FULL_PRODUCT_CONTEXT") else self.python)
+        env = (hosted_products.product_environment(root, env)
+               if os.environ.get("SOM_FULL_PRODUCT_CONTEXT") else env)
+        code, output = run_tracked([product_python, str(self.alembic / "migrate.py"), str(self.alembic),
                                     str(root / "alembic" / "versions")], root, env, timeout=300)
         if code:
             raise RuntimeError(f"migration failed: {output[-2000:]}")
@@ -323,7 +335,7 @@ class Host:
         else:
             app, extra = "som_behavior_host:app", ["--app-dir", str(self.shim)]
             env["SOM_BEHAVIOR_PACKAGE"] = name
-        command = [self.python, "-m", "uvicorn", app, *extra, "--host", "127.0.0.1", "--port", str(port),
+        command = [product_python, "-m", "uvicorn", app, *extra, "--host", "127.0.0.1", "--port", str(port),
                    "--no-access-log", "--log-level", "warning"]
         try:
             with serve(command, root, env, port, root / "server.log") as base:

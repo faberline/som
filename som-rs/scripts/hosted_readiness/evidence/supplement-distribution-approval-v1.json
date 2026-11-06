@@ -1,0 +1,24 @@
+{
+  "version": "som.synthetic-fixture-distribution-approval.v1",
+  "status": "human_approved_public_test_fixture_distribution",
+  "date": "2026-10-29",
+  "artifact": {
+    "path": "som-rs/scripts/hosted_readiness/inputs/supplement-fixtures-v1.json",
+    "sha256": "fe68f59c26554510c87b94eae81fec3da7202e22bb8a158606dc1b869f9af711",
+    "bytes": 144323
+  },
+  "scope": {
+    "typed_input_rows": 11,
+    "distinct_typed_prompts": 10,
+    "checked_dsl_rows": 2,
+    "purpose": "Public regression fixtures for GitHub-hosted acceptance work"
+  },
+  "approval": "The human explicitly selected public distribution of this exact candidate after content review. The original review packet and local provenance paths are excluded.",
+  "sensitivity_review": {
+    "path": "som-rs/scripts/hosted_readiness/evidence/supplement-sensitivity-review-v1.json",
+    "sha256": "c2b15eebfedfc975c9872e8218e69631f6c8f8fe7adae1716d29956fda08f258",
+    "finding": "Synthetic test definitions; no observed personal data, credentials, access URLs or business runtime data. Earlier private classification described unpublished provenance."
+  },
+  "limits": "Distribution approval does not approve a compatibility policy or establish current product acceptance.",
+  "product_acceptance_passed": false
+}

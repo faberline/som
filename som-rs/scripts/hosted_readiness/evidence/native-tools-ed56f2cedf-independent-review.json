@@ -1,0 +1,70 @@
+{
+  "version": "som.native-tools-independent-execution-review.v1",
+  "reviewer": "typescript_native_port independent raw-record review",
+  "verdict": "APPROVED",
+  "tested_commit": "ed56f2cedff497ad9853866c5b4fc10e4b2f8fa2",
+  "run": "https://github.com/faberline/som/actions/runs/40707956295",
+  "reviewed_summary": {
+    "path": "som-rs/scripts/hosted_readiness/evidence/native-tools-ed56f2cedf.json",
+    "sha256": "5678f274804bf8cdcbf8d4ec25444501a49b4aa5648a46f8e2945965ad7dc16a"
+  },
+  "scope": "Raw execution records only: complete default-feature Cargo phases and native-tool provisioning on GitHub. No implementation, product or milestone acceptance.",
+  "rederived_results": {
+    "compiler": {
+      "passed": 48,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 0,
+      "result_rows": 14,
+      "all_default_unit_targets": 8,
+      "all_default_integration_targets": 5,
+      "doc_tests_reached": true
+    },
+    "targets": {
+      "passed": 61,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 0,
+      "result_rows": 3,
+      "all_default_unit_targets": 2,
+      "all_default_integration_targets": 0,
+      "doc_tests_reached": true
+    },
+    "fixtures": {
+      "named_tests": 43,
+      "ok": 43,
+      "non_ok": 0,
+      "job_id": 122885080597
+    }
+  },
+  "checks": {
+    "exact_tested_sha_in_jobs_and_artifacts": true,
+    "raw_cargo_artifact_logs_match_github_job_sequences": true,
+    "test_result_rows_and_totals_match_raw_logs": true,
+    "summary_log_and_receipt_hashes_match": true,
+    "provisioning_manifest_hash_matches_tested_commit": true,
+    "archive_executable_or_tree_and_license_hashes_match_committed_manifest": true,
+    "raw_tool_version_stdout_and_exit_codes_match_expected_versions": true,
+    "compatibility_amendment_hashes_match_tested_commit": true,
+    "full_default_target_inventory_reached": true
+  },
+  "limits": [
+    "Separate frozen product prerequisite job failed with blocked status. The workflow overall is failure.",
+    "Complete product gates and unchanged-output byte regression are unrun.",
+    "Retired legacy-model feature remains outside default-feature scope.",
+    "No local tests, builds, native tools or project imports ran for this review."
+  ],
+  "remaining_findings": [],
+  "raw_files": {
+    "compiler-artifact/som/som/cargo-tests.log": "dab899856f1811ac70ef31a3c47ef5e868dd115536516bb926a7ae25ad9eaeaf",
+    "compiler-artifact/_temp/som-native-tools/receipt.json": "c0d6e9daa21b8edd997d0ba3885963fd06978f251176205403e1e0b252706a0e",
+    "compiler-artifact/som/som/tested-sha.txt": "25706ef559877376ae84bebbfa519b587d1cc2ef4ac128d31b9d7e94c1fea7c7",
+    "targets-artifact/som/som/cargo-tests.log": "a3ae89618d6737a84ca683ffa32da0371c7f61cbef00f49f2b7012c92bd2415d",
+    "targets-artifact/_temp/som-native-tools/receipt.json": "c0d6e9daa21b8edd997d0ba3885963fd06978f251176205403e1e0b252706a0e",
+    "targets-artifact/som/som/tested-sha.txt": "25706ef559877376ae84bebbfa519b587d1cc2ef4ac128d31b9d7e94c1fea7c7",
+    "som-m12-native-fixtures-ed56-github-job.log": "1ea26eac902e3ae2bd7d3e0a20cdb81f8dcfd0ec1166b3eeb13946086500c337",
+    "som-m12-native-compiler-ed56-github-job.log": "741c0da0efad461ab801673a59287c47264cba83a953a256beeca766a9e09c00",
+    "som-m12-native-targets-ed56-github-job.log": "2fa11e7ef4c781bb2365cc52fc089ab719dc978a932353fc136d6a69e5b9ba29"
+  },
+  "raw_file_path_note": "Artifact-relative labels only; local extraction locations are not published."
+}

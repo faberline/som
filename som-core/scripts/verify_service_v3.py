@@ -19,6 +19,10 @@ from sqlalchemy import inspect
 ROOT = Path(__file__).resolve().parents[2]
 PYTHON = ROOT / "som-code-python/.venv/bin/python"
 ALEMBIC = ROOT / "som-code-python/.venv/bin/alembic"
+if os.environ.get("SOM_FULL_PRODUCT_CONTEXT"):
+    from full_product_context import observer_python
+    PYTHON = observer_python()
+    ALEMBIC = PYTHON.parent / "alembic"
 BLOCKS_V3 = ROOT / "som-code-python/data/blocks/v3"
 BLOCKS_V4 = ROOT / "som-code-python/data/blocks/v4"
 
