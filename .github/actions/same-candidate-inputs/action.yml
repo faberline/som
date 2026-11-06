@@ -16,6 +16,68 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Select the pinned Python for native admission on product runners
+      if: inputs.require_runtime == 'true'
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+      with:
+        python-version: '3.12.11'
+    - name: Wait for the original exact live workflow binding
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        timeout --kill-after=5s 315s bash --noprofile --norc -euo pipefail <<'LIVE_RUN_BINDING'
+        for binding_probe_attempt in $(seq 1 30); do
+          if ! timeout 15s gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --jq '{id, head_sha, run_attempt, event, repository: .repository.full_name, repository_id: .repository.id, path, head_branch, status}' \
+            > "$RUNNER_TEMP/som-current-live-run.json" 2>/dev/null; then
+            echo '::error title=Live run binding::run-observation-unavailable'
+            exit 1
+          fi
+          binding_probe_result=0
+          python3 -I -S -B -c '
+        import json, os, sys
+        try:
+            record = json.load(sys.stdin)
+            expected = {
+                "id": int(os.environ["GITHUB_RUN_ID"]),
+                "head_sha": os.environ["GITHUB_SHA"],
+                "run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
+                "event": os.environ["GITHUB_EVENT_NAME"],
+                "repository": os.environ["GITHUB_REPOSITORY"],
+                "repository_id": int(os.environ["GITHUB_REPOSITORY_ID"]),
+                "path": ".github/workflows/rust-hosted-readiness.yml",
+                "head_branch": os.environ["GITHUB_REF"].split("/", 2)[2],
+            }
+        except (ValueError, IndexError, KeyError):
+            sys.exit(4)
+        if not isinstance(record, dict) or any(
+            type(record.get(key)) is not type(value) or record[key] != value
+            for key, value in expected.items()
+        ):
+            sys.exit(1)
+        status = record.get("status")
+        if status == "in_progress":
+            sys.exit(0)
+        sys.exit(2 if status == "queued" else 3)
+        ' < "$RUNNER_TEMP/som-current-live-run.json" || binding_probe_result=$?
+          case "$binding_probe_result" in
+            0) exit 0 ;;
+            2)
+              if [ "$binding_probe_attempt" -eq 1 ]; then
+                echo 'Exact workflow run is queued. Waiting for live status.'
+              fi
+              if [ "$binding_probe_attempt" -lt 30 ]; then
+                sleep 10
+              fi ;;
+            1) echo '::error title=Live run binding::run-identity-mismatch'; exit 1 ;;
+            3) echo '::error title=Live run binding::run-status-refused'; exit 1 ;;
+            *) echo '::error title=Live run binding::run-observation-invalid'; exit 1 ;;
+          esac
+        done
+        echo '::error title=Live run binding::run-visibility-timeout'
+        exit 1
+        LIVE_RUN_BINDING
     - name: Admit exact native source before helper imports
       shell: bash
       env:
