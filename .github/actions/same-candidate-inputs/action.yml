@@ -18,9 +18,23 @@ runs:
   steps:
     - name: Select the pinned Python for native admission on product runners
       if: inputs.require_runtime == 'true'
+      id: bootstrap_python
       uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
       with:
         python-version: '3.12.11'
+        update-environment: false
+    - name: Make only the pinned python3 available to runner helpers
+      if: inputs.require_runtime == 'true'
+      shell: bash
+      env:
+        BOOTSTRAP_PYTHON: ${{ steps.bootstrap_python.outputs.python-path }}
+      run: |
+        case "$BOOTSTRAP_PYTHON" in /*) ;; *) exit 1 ;; esac
+        test -x "$BOOTSTRAP_PYTHON"
+        bootstrap_bin="$RUNNER_TEMP/som-bootstrap-python"
+        mkdir -m 700 -- "$bootstrap_bin"
+        ln -s -- "$BOOTSTRAP_PYTHON" "$bootstrap_bin/python3"
+        printf '%s\n' "$bootstrap_bin" >> "$GITHUB_PATH"
     - name: Wait for the original exact live workflow binding
       shell: bash
       env:
