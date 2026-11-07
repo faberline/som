@@ -1,5 +1,11 @@
 # The executable oracle corpus
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../../docs/architecture.md).
+
 This directory is training data, committed so that anyone who clones the
 repository can train without a download step. It is not a raw dump. Every
 family carries, in its own `family.json`, the reason it is in the corpus,

@@ -1,5 +1,9 @@
 # SOM goal
 
+The current implementation uses fixed rules: `CNL → DSL → Code`.
+It needs no trained model or Apple chip.
+Read [the current architecture](architecture.md) before older training or platform notes.
+
 SOM's end goal is to generate code for four scenarios: backend (BE), frontend (FE), SRE, and AI.
 The user set this goal on 2026-10-21.
 
@@ -26,8 +30,12 @@ No SRE, AI, or FE output exists yet.
 - New targets never change existing output. The 127 public products and 544 legacy jobs stay byte-identical in Python and Rust.
 - The compiler never guesses a missing fact and never falls back to another target. An unsupported request fails with a diagnostic.
 - A target is supported only after an independent acceptance run passes with zero failures and zero unrun checks.
-- Local tools only. Building and testing a target needs no paid or cloud service.
-  A target that talks to a cloud or model API is tested against a local fake or emulator.
+- Product checks use tools, loopback services and emulators on the test host.
+  They need no paid product API. A generated product that calls a model API uses a fake in tests.
+- Develop locally. Push changes and run builds and tests on GitHub Actions runners.
+  Do not run them on the shared development computer. This includes `cargo test`.
+- The algorithm has no Apple hardware requirement or model-training requirement.
+  Replace old platform tool pins through reviewed amendments and verify output parity.
 
 The [roadmap](roadmap.md) lists the tracks, their open decisions, and their issues.
 The [Python backend quickstart](python-be.md) shows how to generate and run a Python backend project.

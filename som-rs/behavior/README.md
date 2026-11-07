@@ -1,5 +1,15 @@
 # Behavior suite (issue #46)
 
+## Development execution host — 2026-10-28
+
+The current compiler uses fixed `CNL → DSL → Code` algorithms.
+It needs no trained model or Apple chip.
+Run the build, test and service commands below on a GitHub Actions runner.
+Edit locally and push first. Do not run them on the shared development computer.
+Old native tool pins need compatible runner tools and the required contract amendments.
+Keep full case coverage and behavior checks.
+Read [the current architecture](../../docs/architecture.md).
+
 A black-box HTTP suite for phase 1 products. It never imports product code: it derives a request
 script from the typed prompt, sends it to a started product on a fresh PostgreSQL database, and
 checks each answer two ways.

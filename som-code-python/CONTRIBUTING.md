@@ -38,8 +38,11 @@ same edit to all five near misses so each stays a minimal edit of its gold
 and shares its comments and docstrings. A suppression comment is the last
 resort and says why on the same line.
 
-Create the virtualenv with `uv sync --project som-code-python`; the
-gates run from the repository root through `uv run`. There is no `aw` phase
+Create the virtualenv on the GitHub runner with `uv sync --project som-code-python`.
+Run the gates from the repository root through `uv run` on that runner.
+Edit locally and push first. Do not run builds or tests on the shared development computer.
+The corpus is not a model-training prerequisite for the current fixed compiler.
+See [the current architecture](../docs/architecture.md). There is no `aw` phase
 ladder for som yet, so a change here is verified by running the gates
 below before and after and keeping the STATUS matrix true to what they
 observe.
@@ -56,6 +59,9 @@ observe.
 | Project test suite | `uv run --project som-code-python python -m pytest som-code-python/tests -q` |
 | Product document contract | `uv run --python 3.13 --no-project scripts/meta/project_docs_contract.py check som-code-python --format json` |
 | META-doc contract | `aw metadoc check som-code-python` |
+
+Run the document checks on the GitHub runner.
+If a checker is unavailable there, report it as unavailable, not passed.
 
 Run the two document checks after editing `README.md`, `STATUS.md`,
 `ROADMAP.md`, or anything under `docs/product/`. Run the harness, the

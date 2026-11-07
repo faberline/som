@@ -1,8 +1,14 @@
 # Historical training requirements
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../../../docs/architecture.md).
+
 This file preserves the former layer-training plan.
 It does not describe the current Rust service or composed model.
-Read [the current training guide](training.md) first.
+Read [the later historical training guide](training.md) for the composed research that followed.
 
 ---
 

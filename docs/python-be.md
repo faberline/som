@@ -1,5 +1,14 @@
 # Python backend quickstart
 
+## Development test host — 2026-10-28
+
+SOM uses fixed rules: `CNL → DSL → Code`.
+It needs no model training or Apple chip.
+For repository development, edit locally and run the build, test and service commands below on a GitHub Actions runner.
+Do not start them on the shared development computer.
+In a runner, `127.0.0.1` refers to that runner's services.
+Read [the current architecture](architecture.md) for test and platform rules.
+
 This guide walks through generating and running a standalone Python backend project with SOM's local service.
 
 ## 1. What you get

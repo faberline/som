@@ -1,5 +1,11 @@
 # Standalone CRUD service contract
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../docs/architecture.md).
+
 `som.prompt.v3` asks for a complete FastAPI service. The agent names the
 resource, fields, five ordered operations, test, migration, and boolean query.
 It does not name code blocks. See the [Todo request](examples/service-prompt.json)

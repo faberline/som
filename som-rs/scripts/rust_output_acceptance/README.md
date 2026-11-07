@@ -1,5 +1,15 @@
 # Rust output acceptance (#50)
 
+## Development execution host — 2026-10-28
+
+The current compiler uses fixed `CNL → DSL → Code` algorithms.
+It needs no trained model or Apple chip.
+Run the build, test and service commands below on a GitHub Actions runner.
+Edit locally and push first. Do not run them on the shared development computer.
+Old native tool pins need compatible runner tools and the required contract amendments.
+Keep full case coverage and behavior checks.
+Read [the current architecture](../../../docs/architecture.md).
+
 Tools that run every check of `som-rs/contracts/rust-output-v1/acceptance-plan.json`
 on one recorded build. Outputs go under `.local/rust-compiler-goal/acceptance/`
 and are never overwritten.

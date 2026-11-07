@@ -1,5 +1,11 @@
 # SOM (Snippet-Oriented Model) 架構設計：SQL引擎哲學與多層次解壓
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../../../docs/architecture.md).
+
 ## Goal Description
 本架構精準借鏡 SQL Database 引擎的運作哲學，透過多層次解壓 (Density Decompression) 將自然語言平滑展開為實體組裝代碼。同時，我們確立了嚴格的「輸入邊界限制」，確保 SOM 專注於高內聚的執行任務，防範過大範圍的請求導致管線崩潰。
 

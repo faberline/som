@@ -1,5 +1,15 @@
 # SOM compiler acceptance tools
 
+## Development execution host — 2026-10-28
+
+The current compiler uses fixed `CNL → DSL → Code` algorithms.
+It needs no trained model or Apple chip.
+Run the build, test and service commands below on a GitHub Actions runner.
+Edit locally and push first. Do not run them on the shared development computer.
+Old native tool pins need compatible runner tools and the required contract amendments.
+Keep full case coverage and behavior checks.
+Read [the current architecture](../../../docs/architecture.md).
+
 This folder contains the reusable independent acceptance tools for the SOM Rust compiler. Install the whole folder at `som-rs/scripts/compiler_acceptance/`. The tools do not invoke a model. They use the frozen contracts, public prompts, public Python validators, the fixed selection policy, the existing independent behavior checks, and the archived products as regression inputs.
 
 Set `SOM_REPO` to the checkout root when this folder is still outside the repository. After installation, the tools find the repository from their file path. Evidence defaults to `<SOM_REPO>/.local/rust-compiler-goal/acceptance/`. Every runner requires a new output path below that directory. The scripts and this folder do not write repository source or Git state.

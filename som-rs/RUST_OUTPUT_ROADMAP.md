@@ -1,5 +1,12 @@
 # SOM Rust output roadmap — 2026-10-15
 
+> Current direction — 2026-10-28: fixed algorithms, `CNL → DSL → Code`.
+> No model training, model weights or Apple chip is required.
+> Develop locally. Run builds and tests on GitHub Actions runners.
+> Homebrew paths and binary hashes below record older accepted tools.
+> M12 owns their platform adaptation. Historical results are not a fresh portable acceptance run.
+> Read [the current architecture](../docs/architecture.md).
+
 This plan adds Rust as a second output language. The human approved it on 2026-10-15.
 Python output stays supported and unchanged. Rust is added beside it.
 The [compiler roadmap](RUST_ROADMAP.md) is complete. This plan builds on its accepted default.

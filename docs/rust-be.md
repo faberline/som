@@ -1,5 +1,14 @@
 # Rust backend quickstart
 
+## Development test host — 2026-10-28
+
+SOM uses fixed rules: `CNL → DSL → Code`.
+It needs no model training or Apple chip.
+For repository development, edit locally and run the build, test and service commands below on a GitHub Actions runner.
+Do not start them on the shared development computer.
+In a runner, `127.0.0.1` refers to that runner's services.
+Read [the current architecture](architecture.md) for test and platform rules.
+
 This guide walks through verifying the pinned Rust toolchain and offline crate cache, generating a standalone Rust backend project with SOM's local service, and building, testing, and running it offline.
 
 ## 1. What you get
@@ -28,7 +37,11 @@ As stated in [product-layout.json](../som-rs/contracts/rust-output-v1/product-la
 
 ## 2. Check the toolchain and the crates
 
-[toolchain.json](../som-rs/contracts/rust-output-v1/toolchain.json) pins the exact local toolchain and dependency versions used for offline builds:
+The following pins and Homebrew paths record the earlier accepted host.
+They are not an Apple hardware requirement for SOM.
+M12 must qualify compatible runner tools before these exact commands work on another host.
+Keep version, output and behavior checks when replacing host paths or binary hashes.
+[toolchain.json](../som-rs/contracts/rust-output-v1/toolchain.json) retains those tool and dependency records:
 
 - **Rust toolchain:** Homebrew Rust `1.96.1` at `/opt/homebrew/Cellar/rust/1.96.1/bin` (`rustc 1.96.1 (31fca3adb 2026-06-26)`, LLVM `22.1.8`, `cargo 1.96.1`, `rustfmt 1.9.0 (31fca3adbe 2026-06-26)`, `clippy 0.1.96 (31fca3adbe 2026-06-26)`, edition `2024`, host target `aarch64-apple-darwin`).
 - **Phase 1 crates ([reference/Cargo.toml](../som-rs/contracts/rust-output-v1/reference/Cargo.toml), 204 packages in [reference/Cargo.lock](../som-rs/contracts/rust-output-v1/reference/Cargo.lock)):** `axum =0.8.9`, `chrono =0.4.44`, `serde =1.0.229`, `serde_json =1.0.154`, `sqlx =0.8.6`, and `tokio =1.53.3`, plus dev-dependencies `http-body-util =0.1.5` and `tower =0.5.3`.

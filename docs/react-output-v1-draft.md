@@ -1,6 +1,12 @@
 # SOM React output contract v1 — scope proposal for issue #68
 
-Status: **proposal, not approved.** A person picks the options in section 6 and approves the scope. Only then does the contract get written and frozen.
+> Historical scope proposal. The [React contract](../som-rs/contracts/react-output-v1/CONTRACT.md)
+> and its recorded amendments describe the later implementation.
+> The 2026-10-28 direction removes any Apple chip requirement.
+> The original host-specific package choices below do not limit the algorithm.
+> Read [the current architecture](architecture.md). Run development builds and tests on GitHub runners.
+
+Original proposal status: **proposal, not approved.** The text below preserves the choices considered before the contract freeze.
 Nothing in this proposal changes code, contracts, or outputs.
 
 The milestone is [M6](https://github.com/faberline/som/milestone/12), release v0.3.0 ([roadmap](roadmap.md)).

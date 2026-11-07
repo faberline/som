@@ -1,5 +1,12 @@
 # Rust compiler guide
 
+> Current direction — 2026-10-28: fixed algorithms, `CNL → DSL → Code`.
+> No model training, model weights or Apple chip is required.
+> Develop locally. Run builds and tests on GitHub Actions runners.
+> Homebrew paths and binary hashes below record older accepted tools.
+> M12 owns their platform adaptation. Historical results are not a fresh portable acceptance run.
+> Read [the current architecture](../docs/architecture.md).
+
 This guide describes the local default on port 8765: TypeScript candidate-001, switched on `2026-10-22T13:55:00.006599+00:00` (#65). It adds `--target typescript`; read [docs/typescript-be.md](../docs/typescript-be.md) for TypeScript output.
 It serves the Python target, the phase 2 Rust target and the phase 1 TypeScript target. The post-switch check passed.
 The v0.2.0 default (rust-output-candidate-007 of #81) was switched in at `2026-10-21T17:09:02.500328+00:00`.

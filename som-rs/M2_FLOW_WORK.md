@@ -1,5 +1,11 @@
 # M2 flow work — 2026-10-05
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../docs/architecture.md).
+
 M1 and M2 have passed. Their issues and milestones are closed.
 See [the M2 closeout](M2_CLOSEOUT.md) and [M3 handoff](M3_HANDOFF.md).
 The accepted compact source and evidence are under `evals/m2-flow-2026-10-04/r31/`.

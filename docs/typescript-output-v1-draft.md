@@ -1,5 +1,9 @@
 # SOM TypeScript output contract v1 — draft for issue #65
 
+> Historical draft. Its Homebrew choices record the original test host.
+> They are not a current Apple chip requirement.
+> Read [the current architecture](architecture.md) for the fixed compiler and GitHub runner policy.
+
 Status: **draft, not frozen.** The options in section 6 and the four review decisions in section 10 were chosen on 2026-10-21.
 The frozen contract is [som-rs/contracts/typescript-output-v1/CONTRACT.md](../som-rs/contracts/typescript-output-v1/CONTRACT.md) with its JSON files, approved on 2026-10-21 and sealed by `som-rs/evidence/typescript-output-contract-freeze-2026-10-21.json`. This draft is history; the frozen contract wins where they differ.
 Nothing in this draft changes code, contracts, or outputs.

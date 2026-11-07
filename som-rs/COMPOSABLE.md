@@ -1,5 +1,11 @@
 # Composable SOM candidate
 
+> Historical research or model-era record. The current path uses fixed algorithms: `CNL → DSL → Code`.
+> It needs no model training, model weights or Apple chip.
+> The plans, default claims and commands below describe their original period.
+> They do not direct current training or replace current compiler acceptance.
+> Read [the current architecture](../docs/architecture.md).
+
 This work adds `som.prompt.v6` and the `block_plan` decoder.
 It is a development candidate. It does not change `current`.
 Claude and real cloud checks remain pending.
@@ -91,7 +97,7 @@ The evaluation helper is the only component here that places returned files.
 
 ## Training and data
 
-The [current training guide](../som-core/docs/product/training.md) separates
+The [historical training guide](../som-core/docs/product/training.md) separates
 the learning type, task, architecture, target representation, loss and optimizer.
 It records the actual input projection and model decision boundary.
 It also lists pending planner and structural-action comparisons, with existing
