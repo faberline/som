@@ -215,25 +215,34 @@ class SourceStrategyParentTests(unittest.TestCase):
 
 
 class NativeSourceBootstrapTests(unittest.TestCase):
-    def test_full_product_graph_authority_caller_matches_actual_module_alias(self):
+    def test_full_product_graph_and_context_callers_match_catalog(self):
         import ast
         catalog = json.loads((REPO / BASE / 'native_active_roles.json').read_bytes())
         roles = catalog['roles']
         self.assertEqual(roles['full.graph']['source'], GRAPH)
         self.assertIn({'role': 'entry.full-products', 'function': 'prepare'}, roles['full.graph']['callers'])
         graph = ast.parse((REPO / GRAPH).read_bytes())
-        functions = [node for node in graph.body if isinstance(node, ast.FunctionDef)
-                     and node.name == '_admitted_controller_sources']
-        self.assertEqual(len(functions), 1)
-        loads = [node for node in ast.walk(functions[0]) if isinstance(node, ast.Call)
-                 and isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name)
-                 and node.func.value.id == 'controls' and node.func.attr == 'load_module']
-        self.assertEqual(len(loads), 1)
-        self.assertEqual(len(loads[0].args), 1)
-        self.assertIsInstance(loads[0].args[0], ast.Constant)
-        target = loads[0].args[0].value
-        self.assertEqual(target, 'bootstrap.authority')
-        self.assertIn({'role': 'full.graph', 'function': functions[0].name}, roles[target]['callers'])
+        for function, target in (('_admitted_controller_sources', 'bootstrap.authority'),
+                                 ('restore_current_carrier', 'graph.carrier')):
+            with self.subTest(function=function):
+                matches = [node for node in graph.body if isinstance(node, ast.FunctionDef)
+                           and node.name == function]
+                self.assertEqual(len(matches), 1)
+                loads = [node for node in ast.walk(matches[0]) if isinstance(node, ast.Call)
+                         and isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name)
+                         and node.func.value.id == 'controls' and node.func.attr == 'load_module']
+                self.assertEqual(len(loads), 1)
+                self.assertEqual(len(loads[0].args), 1)
+                self.assertIsInstance(loads[0].args[0], ast.Constant)
+                self.assertEqual(loads[0].args[0].value, target)
+                self.assertIn({'role': 'full.graph', 'function': function}, roles[target]['callers'])
+
+        self.assertEqual(roles['runtime.context']['source'], BASE + 'product_runtime/full_product_context.py')
+        self.assertIn({'role': 'runtime.context', 'function': 'Context.module', 'kind': 'context-module'},
+                      catalog['bridges'])
+        self.assertEqual(catalog['context_keys']['native_qa_authority'], 'bootstrap.authority')
+        for function in ('Context.__init__', 'Context.verify'):
+            self.assertIn({'role': 'runtime.context', 'function': function}, roles['bootstrap.authority']['callers'])
 
     def setUp(self):
         self.assertEqual(os.environ.get('GITHUB_ACTIONS'), 'true', 'fixtures must run on GitHub')

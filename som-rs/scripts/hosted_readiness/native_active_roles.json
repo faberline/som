@@ -9963,6 +9963,14 @@
           "role": "full.graph"
         },
         {
+          "function": "Context.__init__",
+          "role": "runtime.context"
+        },
+        {
+          "function": "Context.verify",
+          "role": "runtime.context"
+        },
+        {
           "function": "main",
           "role": "graph.semantic"
         },
@@ -16537,6 +16545,10 @@
         {
           "function": "restore_current_carrier",
           "role": "graph.controller"
+        },
+        {
+          "function": "restore_current_carrier",
+          "role": "full.graph"
         }
       ],
       "closure": [
