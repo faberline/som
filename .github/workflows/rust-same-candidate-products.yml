@@ -179,7 +179,27 @@ jobs:
         run: |
           sudo install -d -m 1777 /private/tmp
           mkdir -m 700 "$RUNNER_TEMP/som-product-raw"
-          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.full-products -- --mode sealed-candidate-products --stage "$PRODUCT_STAGE" --build-provenance-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-current-build-provenance" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --python-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-public-inputs" --rust-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-rust-complete-inputs" --wheel-root "$RUNNER_TEMP/som-current-inputs/wheel/som-python-wheel-qualification" --cargo-root "$RUNNER_TEMP/som-current-inputs/cargo/closure" --runtime-root "$RUNNER_TEMP/som-product-runtime-qualification" --rust-tools-root "$RUNNER_TEMP/som-rust-product-tools-qualification" --current-companions-root "$RUNNER_TEMP/som-current-inputs/companions/som-current-python-companions" --shard-index "$SHARD_INDEX" --shard-count "$SHARD_COUNT" --out "$RUNNER_TEMP/som-product-raw/som-full-product-run" > "$RUNNER_TEMP/som-product-raw/driver.stdout" 2> "$RUNNER_TEMP/som-product-raw/driver.stderr"
+          capture_status=0
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.full-products -- --mode sealed-candidate-products --stage "$PRODUCT_STAGE" --build-provenance-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-current-build-provenance" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --python-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-public-inputs" --rust-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-rust-complete-inputs" --wheel-root "$RUNNER_TEMP/som-current-inputs/wheel/som-python-wheel-qualification" --cargo-root "$RUNNER_TEMP/som-current-inputs/cargo/closure" --runtime-root "$RUNNER_TEMP/som-product-runtime-qualification" --rust-tools-root "$RUNNER_TEMP/som-rust-product-tools-qualification" --current-companions-root "$RUNNER_TEMP/som-current-inputs/companions/som-current-python-companions" --shard-index "$SHARD_INDEX" --shard-count "$SHARD_COUNT" --out "$RUNNER_TEMP/som-product-raw/som-full-product-run" > "$RUNNER_TEMP/som-product-raw/driver.stdout" 2> "$RUNNER_TEMP/som-product-raw/driver.stderr" || capture_status=$?
+          if [ "$capture_status" -ne 0 ]; then
+            presence_root="$RUNNER_TEMP/som-product-raw/som-full-product-run"
+            checkpoint=output-missing
+            if [ -e "$presence_root/result.json" ] || [ -L "$presence_root/result.json" ]; then
+              checkpoint=result-path-present
+            elif [ -e "$presence_root/observer/.venv/bin/python" ] || [ -L "$presence_root/observer/.venv/bin/python" ]; then
+              checkpoint=observer-python-path-present
+            elif [ -e "$presence_root/observer/.venv" ] || [ -L "$presence_root/observer/.venv" ]; then
+              checkpoint=observer-venv-path-present
+            elif [ -e "$presence_root/context.json" ] || [ -L "$presence_root/context.json" ]; then
+              checkpoint=context-record-path-present
+            elif [ -e "$presence_root/candidate" ] || [ -L "$presence_root/candidate" ]; then
+              checkpoint=candidate-path-present
+            elif [ -e "$presence_root" ] || [ -L "$presence_root" ]; then
+              checkpoint=output-path-present
+            fi
+            printf '::error title=Product output state::%s (exit %s)\n' "$checkpoint" "$capture_status"
+          fi
+          exit "$capture_status"
       - name: Seal the complete affected raw tree through the existing M6 transport
         id: seal
         if: always()
@@ -361,7 +381,27 @@ jobs:
           if [ "$REQUIRED_GATE" = typescript-regression ]; then
             callback=(--callback-gate typescript-regression --baseline-input som-rs/scripts/hosted_readiness/inputs/recorded-before-profile-v1.json "$RUNNER_TEMP/som-recorded-before-inputs")
           fi
-          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.full-products -- --mode sealed-candidate-products --stage "$PRODUCT_STAGE" --build-provenance-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-current-build-provenance" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --python-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-public-inputs" --rust-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-rust-complete-inputs" --wheel-root "$RUNNER_TEMP/som-current-inputs/wheel/som-python-wheel-qualification" --cargo-root "$RUNNER_TEMP/som-current-inputs/cargo/closure" --runtime-root "$RUNNER_TEMP/som-product-runtime-qualification" --rust-tools-root "$RUNNER_TEMP/som-rust-product-tools-qualification" --current-companions-root "$RUNNER_TEMP/som-current-inputs/companions/som-current-python-companions" --shard-index "$SHARD_INDEX" --shard-count "$SHARD_COUNT" --out "$RUNNER_TEMP/som-callback-context" --prepare-context-only "${callback[@]}" > "$RUNNER_TEMP/som-callback-raw/context.stdout" 2> "$RUNNER_TEMP/som-callback-raw/context.stderr"
+          capture_status=0
+          "$SOM_PRODUCT_PYTHON" -I -S -B "$GITHUB_WORKSPACE/som-rs/scripts/hosted_readiness/native_source_bootstrap.py" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --entry-role entry.full-products -- --mode sealed-candidate-products --stage "$PRODUCT_STAGE" --build-provenance-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-current-build-provenance" --repo "$GITHUB_WORKSPACE" --helper-revision "$HELPER_REVISION" --candidate-revision "$CANDIDATE_REVISION" --artifact-inputs "$RUNNER_TEMP/som-current-inputs/catalog/artifact-inputs.json" --assembly-root "$RUNNER_TEMP/som-current-inputs/assembly/_temp/som-unsealed-native-compile" --carrier-root "$RUNNER_TEMP/som-current-inputs/carrier" --python-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-public-inputs" --rust-inputs-root "$RUNNER_TEMP/som-current-inputs/public/_temp/som-rust-complete-inputs" --wheel-root "$RUNNER_TEMP/som-current-inputs/wheel/som-python-wheel-qualification" --cargo-root "$RUNNER_TEMP/som-current-inputs/cargo/closure" --runtime-root "$RUNNER_TEMP/som-product-runtime-qualification" --rust-tools-root "$RUNNER_TEMP/som-rust-product-tools-qualification" --current-companions-root "$RUNNER_TEMP/som-current-inputs/companions/som-current-python-companions" --shard-index "$SHARD_INDEX" --shard-count "$SHARD_COUNT" --out "$RUNNER_TEMP/som-callback-context" --prepare-context-only "${callback[@]}" > "$RUNNER_TEMP/som-callback-raw/context.stdout" 2> "$RUNNER_TEMP/som-callback-raw/context.stderr" || capture_status=$?
+          if [ "$capture_status" -ne 0 ]; then
+            presence_root="$RUNNER_TEMP/som-callback-context"
+            checkpoint=output-missing
+            if [ -e "$presence_root/context-prepared.json" ] || [ -L "$presence_root/context-prepared.json" ]; then
+              checkpoint=result-path-present
+            elif [ -e "$presence_root/observer/.venv/bin/python" ] || [ -L "$presence_root/observer/.venv/bin/python" ]; then
+              checkpoint=observer-python-path-present
+            elif [ -e "$presence_root/observer/.venv" ] || [ -L "$presence_root/observer/.venv" ]; then
+              checkpoint=observer-venv-path-present
+            elif [ -e "$presence_root/context.json" ] || [ -L "$presence_root/context.json" ]; then
+              checkpoint=context-record-path-present
+            elif [ -e "$presence_root/candidate" ] || [ -L "$presence_root/candidate" ]; then
+              checkpoint=candidate-path-present
+            elif [ -e "$presence_root" ] || [ -L "$presence_root" ]; then
+              checkpoint=output-path-present
+            fi
+            printf '::error title=Callback context output state::%s (exit %s)\n' "$checkpoint" "$capture_status"
+          fi
+          exit "$capture_status"
       - name: Provision actual full TS inputs after the genuine base Context
         id: typescript_input_consumer
         if: matrix.gate == 'typescript-regression'

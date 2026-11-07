@@ -9959,6 +9959,10 @@
           "role": "graph.controller"
         },
         {
+          "function": "_admitted_controller_sources",
+          "role": "full.graph"
+        },
+        {
           "function": "main",
           "role": "graph.semantic"
         },

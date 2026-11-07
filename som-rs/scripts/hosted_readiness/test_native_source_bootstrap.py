@@ -215,6 +215,26 @@ class SourceStrategyParentTests(unittest.TestCase):
 
 
 class NativeSourceBootstrapTests(unittest.TestCase):
+    def test_full_product_graph_authority_caller_matches_actual_module_alias(self):
+        import ast
+        catalog = json.loads((REPO / BASE / 'native_active_roles.json').read_bytes())
+        roles = catalog['roles']
+        self.assertEqual(roles['full.graph']['source'], GRAPH)
+        self.assertIn({'role': 'entry.full-products', 'function': 'prepare'}, roles['full.graph']['callers'])
+        graph = ast.parse((REPO / GRAPH).read_bytes())
+        functions = [node for node in graph.body if isinstance(node, ast.FunctionDef)
+                     and node.name == '_admitted_controller_sources']
+        self.assertEqual(len(functions), 1)
+        loads = [node for node in ast.walk(functions[0]) if isinstance(node, ast.Call)
+                 and isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name)
+                 and node.func.value.id == 'controls' and node.func.attr == 'load_module']
+        self.assertEqual(len(loads), 1)
+        self.assertEqual(len(loads[0].args), 1)
+        self.assertIsInstance(loads[0].args[0], ast.Constant)
+        target = loads[0].args[0].value
+        self.assertEqual(target, 'bootstrap.authority')
+        self.assertIn({'role': 'full.graph', 'function': functions[0].name}, roles[target]['callers'])
+
     def setUp(self):
         self.assertEqual(os.environ.get('GITHUB_ACTIONS'), 'true', 'fixtures must run on GitHub')
         self.assertEqual(sys.platform, 'linux')

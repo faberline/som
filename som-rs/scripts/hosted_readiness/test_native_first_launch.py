@@ -35,7 +35,7 @@ BASE = 'som-rs/scripts/hosted_readiness/'
 SELF = BASE + 'native_source_bootstrap.py'
 SOURCE_SHA = 'c893be8a9560d5c1a3af6e090f9758611a9fa11062ca70eda96b42543b3d243e'
 PROFILE_SHA = '0937e44ad864c497e04f56fd07f6e048c7a538e072f27bdfdd58708921d198bb'
-WORKFLOW_SHA = '855d8523516232ea577d834d390316e48eec6868f15b3ecdc22bacf9a290d12e'
+WORKFLOW_SHA = '4d1d619499af14b95fe56971e172911d21778de250d0a1e0664e59a565cd335e'
 RUNTIME = '/home/runner/work/_temp/som-product-runtime-qualification'
 PYTHON = RUNTIME + '/install/python/bin/python3.12'
 TEMP = '/home/runner/work/_temp'
@@ -63,7 +63,7 @@ def assembly_bytes():
     paths = (HERE / 'native_source_bootstrap.py', HERE / 'native_first_launch_profile_v1.json',
              REPO / '.github/workflows/rust-same-candidate-products.yml')
     result = []
-    for path, expected, size in zip(paths, (SOURCE_SHA, PROFILE_SHA, WORKFLOW_SHA), (130001, 85991, 42460)):
+    for path, expected, size in zip(paths, (SOURCE_SHA, PROFILE_SHA, WORKFLOW_SHA), (130001, 85991, 45007)):
         if any(item.is_symlink() for item in (path, *path.parents)):
             raise RuntimeError('physical future assembly source required')
         initial = path.lstat()
@@ -330,7 +330,7 @@ class SnapshotData:
         self.workflows = {}
         for name, expected, size in (
                 ('.github/workflows/rust-hosted-readiness.yml', '63fb1021b7da5619292bd889be191f92d27fef7204042b390fe1acef28cbbc0d', 73932),
-                ('.github/workflows/rust-same-candidate-products.yml', WORKFLOW_SHA, 42460)):
+                ('.github/workflows/rust-same-candidate-products.yml', WORKFLOW_SHA, 45007)):
             path = self.root / name
             if any(item.is_symlink() for item in (path, *path.parents)):
                 raise AssertionError('linked fixed synthetic workflow input')
